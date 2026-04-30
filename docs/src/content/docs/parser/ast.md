@@ -12,7 +12,11 @@ The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/pa
 
 Beyond the base specs the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`.
 
-In practice almost everything you build on top of this AST goes through the [traverser](/parser/traverse): visitor hooks, scopes, symbols, and transforms all live there. This page is the reference for **what the traverser walks**: the node types, their fields, and how to read them directly when you need to.
+:::tip[Building tools on the AST?]
+The [traverser](/parser/traverse) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
+
+This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
+:::
 
 ## Memory model
 
