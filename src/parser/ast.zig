@@ -4083,6 +4083,184 @@ pub const NodeData = union(enum) {
     jsx_empty_expression: JSXEmptyExpression,
     jsx_text: JSXText,
     jsx_spread_child: JSXSpreadChild,
+
+    /// True when this node produces a value at runtime.
+    ///
+    /// Covers literals, identifiers used as values, operator expressions,
+    /// member access, calls, function and class expressions, JSX elements,
+    /// and the TypeScript value-position wrappers. For dual-purpose nodes
+    /// (`function`, `class`) the `type` field is consulted.
+    pub fn isExpression(self: NodeData) bool {
+        return switch (self) {
+            .identifier_reference,
+            .this_expression,
+            .super,
+            .meta_property,
+            .string_literal,
+            .numeric_literal,
+            .bigint_literal,
+            .boolean_literal,
+            .null_literal,
+            .regexp_literal,
+            .template_literal,
+            .binary_expression,
+            .logical_expression,
+            .unary_expression,
+            .update_expression,
+            .assignment_expression,
+            .conditional_expression,
+            .sequence_expression,
+            .member_expression,
+            .call_expression,
+            .chain_expression,
+            .new_expression,
+            .tagged_template_expression,
+            .arrow_function_expression,
+            .array_expression,
+            .object_expression,
+            .parenthesized_expression,
+            .import_expression,
+            .await_expression,
+            .yield_expression,
+            .ts_as_expression,
+            .ts_satisfies_expression,
+            .ts_type_assertion,
+            .ts_non_null_expression,
+            .ts_instantiation_expression,
+            .jsx_element,
+            .jsx_fragment,
+            => true,
+            .function => |f| f.type == .function_expression or f.type == .ts_empty_body_function_expression,
+            .class => |c| c.type == .class_expression,
+            else => false,
+        };
+    }
+
+    /// True when this node is valid at statement position.
+    ///
+    /// Covers control flow, structural statements, declarations, imports
+    /// and exports, and TypeScript top-level declarations. For dual-purpose
+    /// nodes (`function`, `class`) the `type` field is consulted.
+    pub fn isStatement(self: NodeData) bool {
+        return switch (self) {
+            .if_statement,
+            .switch_statement,
+            .for_statement,
+            .for_in_statement,
+            .for_of_statement,
+            .while_statement,
+            .do_while_statement,
+            .break_statement,
+            .continue_statement,
+            .labeled_statement,
+            .return_statement,
+            .throw_statement,
+            .try_statement,
+            .with_statement,
+            .block_statement,
+            .expression_statement,
+            .empty_statement,
+            .debugger_statement,
+            .variable_declaration,
+            .import_declaration,
+            .export_named_declaration,
+            .export_default_declaration,
+            .export_all_declaration,
+            .ts_type_alias_declaration,
+            .ts_interface_declaration,
+            .ts_enum_declaration,
+            .ts_module_declaration,
+            .ts_global_declaration,
+            .ts_import_equals_declaration,
+            .ts_export_assignment,
+            .ts_namespace_export_declaration,
+            => true,
+            .function => |f| f.type == .function_declaration or f.type == .ts_declare_function,
+            .class => |c| c.type == .class_declaration,
+            else => false,
+        };
+    }
+
+    /// True when this node is a literal value.
+    pub fn isLiteral(self: NodeData) bool {
+        return switch (self) {
+            .string_literal,
+            .numeric_literal,
+            .bigint_literal,
+            .boolean_literal,
+            .null_literal,
+            .regexp_literal,
+            .template_literal,
+            => true,
+            else => false,
+        };
+    }
+
+    /// True for nodes that introduce a function-like body. Covers `function`
+    /// (in any form) and `arrow_function_expression`. Does not include
+    /// `method_definition`, which wraps a `function` in its `value` field.
+    pub fn isCallable(self: NodeData) bool {
+        return switch (self) {
+            .function,
+            .arrow_function_expression,
+            => true,
+            else => false,
+        };
+    }
+
+    /// True for binding patterns introduced by destructuring.
+    ///
+    /// `binding_identifier`, `array_pattern`, `object_pattern`, or
+    /// `assignment_pattern`.
+    pub fn isPattern(self: NodeData) bool {
+        return switch (self) {
+            .binding_identifier,
+            .array_pattern,
+            .object_pattern,
+            .assignment_pattern,
+            => true,
+            else => false,
+        };
+    }
+
+    /// True for declaration nodes that introduce one or more bindings.
+    ///
+    /// Covers `variable_declaration`, function and class declaration forms,
+    /// imports and exports, and TypeScript declaration kinds.
+    pub fn isDeclaration(self: NodeData) bool {
+        return switch (self) {
+            .variable_declaration,
+            .import_declaration,
+            .export_named_declaration,
+            .export_default_declaration,
+            .export_all_declaration,
+            .ts_type_alias_declaration,
+            .ts_interface_declaration,
+            .ts_enum_declaration,
+            .ts_module_declaration,
+            .ts_global_declaration,
+            .ts_import_equals_declaration,
+            => true,
+            .function => |f| f.type == .function_declaration or f.type == .ts_declare_function,
+            .class => |c| c.type == .class_declaration,
+            else => false,
+        };
+    }
+
+    /// True for the iteration statements: `for`, `for-in`, `for-of`,
+    /// `while`, and `do-while`. Useful for `break` and `continue` scope
+    /// checks.
+    pub fn isIteration(self: NodeData) bool {
+        return switch (self) {
+            .for_statement,
+            .for_in_statement,
+            .for_of_statement,
+            .while_statement,
+            .do_while_statement,
+            => true,
+            else => false,
+        };
+    }
 };
 
 pub const Node = struct {

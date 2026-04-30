@@ -149,6 +149,65 @@ switch (data) {
 
 The same snake_case names are used for visitor hooks: a method named `enter_binary_expression` on your visitor struct fires when the traverser enters that node kind.
 
+## Predicates
+
+Beyond `getData`, `getSpan`, and friends, there are seven predicate methods on `NodeData`. That's the entire helper surface. Everything else is a `switch` away.
+
+These methods collapse a family of tags into a single boolean. Useful when you want to say "is this any kind of expression?" without enumerating thirty tags.
+
+| Method            | True for                                                                                                                                                                                                                                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isExpression()`  | Any node that produces a value at runtime. Includes literals, identifier references, operator expressions, member access, calls, function and class **expression** forms, JSX elements, and the TypeScript value-position wrappers.                                                                                                                          |
+| `isStatement()`   | Any node valid at statement position. Includes control flow, structural statements, declarations, imports and exports, and TypeScript top-level declarations. Function and class **declaration** forms are included; expression forms are not.                                                                                                                |
+| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                                                                                |
+| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Does not include `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                                                                    |
+| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                                                                                 |
+| `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`.                      |
+| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                                                                              |
+
+For `function` and `class` (which are dual-purpose nodes), the predicates consult the `type` field internally so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
+
+```zig
+const data = tree.getData(idx);
+
+if (data.isExpression()) {
+    // any value-producing node
+}
+
+if (data.isCallable()) {
+    // function or arrow_function_expression
+    // The body, params, etc. are still type-specific —
+    // switch on the tag to access them.
+}
+```
+
+That's the entire predicate surface. For anything narrower, switch directly:
+
+```zig
+switch (data) {
+    .arrow_function_expression => |arrow| { /* ... */ },
+    else => {},
+}
+```
+
+For walking children of a node, read the field directly. `NodeIndex` fields point to a single child; `IndexRange` fields are resolved with `tree.getExtra(range)`:
+
+```zig
+switch (data) {
+    .function => |func| {
+        // single child
+        const body_data = tree.getData(func.body);
+        // child list
+        for (tree.getExtra(tree.getData(func.params).formal_parameters.items)) |param| {
+            // ...
+        }
+    },
+    else => {},
+}
+```
+
+For generic tree walks that don't care about field names, use the [traverser](/parser/traverse), which provides visitor hooks plus scopes and symbol tracking.
+
 ## Node reference
 
 Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.getData()` switches and visitor hooks (`enter_<tag>`).

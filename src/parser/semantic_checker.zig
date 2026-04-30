@@ -854,13 +854,6 @@ const SemanticVisit = struct {
         return true;
     }
 
-    fn isIterationStatement(data: ast.NodeData) bool {
-        return switch (data) {
-            .for_statement, .for_in_statement, .for_of_statement, .while_statement, .do_while_statement => true,
-            else => false,
-        };
-    }
-
     fn isFunctionBoundary(data: ast.NodeData) bool {
         return switch (data) {
             .function, .arrow_function_expression, .static_block => true,
@@ -872,7 +865,7 @@ const SemanticVisit = struct {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             const data = ctx.tree.getData(i);
-            if (isIterationStatement(data) or data == .switch_statement) return true;
+            if (data.isIteration() or data == .switch_statement) return true;
             if (isFunctionBoundary(data)) return false;
         }
         return false;
@@ -882,7 +875,7 @@ const SemanticVisit = struct {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             const data = ctx.tree.getData(i);
-            if (isIterationStatement(data)) return true;
+            if (data.isIteration()) return true;
             if (isFunctionBoundary(data)) return false;
         }
         return false;
@@ -930,7 +923,7 @@ const SemanticVisit = struct {
                 if (eql(u8, lbl_name, name)) {
                     if (crossed_boundary) return .crossed_boundary;
                     const body = ctx.tree.getData(ls.body);
-                    if (isIterationStatement(body) or body == .labeled_statement) return .found;
+                    if (body.isIteration() or body == .labeled_statement) return .found;
                     return .not_iteration;
                 }
             }
