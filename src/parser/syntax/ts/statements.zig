@@ -108,7 +108,7 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     }
 }
 
-fn isConstEnumHead(after_const: Token) bool {
+pub fn isConstEnumHead(after_const: Token) bool {
     return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
 }
 

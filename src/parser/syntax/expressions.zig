@@ -162,11 +162,11 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
 fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const current = parser.current_token;
 
-    if (parser.tree.isTs()) switch (current.tag) {
-        .as, .satisfies => return ts.parseAsOrSatisfiesExpression(parser, left),
-        .logical_not => if (!current.hasLineTerminatorBefore()) return ts.parseNonNullExpression(parser, left),
+    switch (current.tag) {
+        .as, .satisfies => if (parser.tree.isTs()) return ts.parseAsOrSatisfiesExpression(parser, left),
+        .logical_not => if (parser.tree.isTs() and !current.hasLineTerminatorBefore()) return ts.parseNonNullExpression(parser, left),
         else => {},
-    };
+    }
 
     if (current.tag.isBinaryOperator()) {
         return parseBinaryExpression(parser, precedence, left);

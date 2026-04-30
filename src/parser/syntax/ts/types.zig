@@ -877,7 +877,7 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
         } },
         .{
             .start = parser.tree.span(type_name).start,
-            .end = endOfNameAndArgs(parser, type_name, type_arguments),
+            .end = parser.tree.span(if (type_arguments != .null) type_arguments else type_name).end,
         },
     );
 }
@@ -906,13 +906,8 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
             .expr_name = expr_name,
             .type_arguments = type_arguments,
         } },
-        .{ .start = start, .end = endOfNameAndArgs(parser, expr_name, type_arguments) },
+        .{ .start = start, .end = parser.tree.span(if (type_arguments != .null) type_arguments else expr_name).end },
     );
-}
-
-// span end including `<>` when present
-inline fn endOfNameAndArgs(parser: *Parser, name: ast.NodeIndex, type_arguments: ast.NodeIndex) u32 {
-    return parser.tree.span(if (type_arguments != .null) type_arguments else name).end;
 }
 
 // import("module")    import("module").Foo.Bar<T>    import("m", { with: ... })
@@ -1052,14 +1047,14 @@ pub fn extendQualifiedName(parser: *Parser, head: ast.NodeIndex) Error!?ast.Node
 
 // Foo<T, U, V>
 //    ^^^^^^^^^
-pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
+pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .arguments);
 }
 
 // `<>` after name in ref or typeof. newline before `<` keeps `typeof a` away from a generic fn type that follows
-fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
-    if (parser.current_token.hasLineTerminatorBefore()) return .null;
-    return parseTypeArguments(parser);
+inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
+    if (!isAngleOpen(parser.current_token.tag) or parser.current_token.hasLineTerminatorBefore()) return .null;
+    return parseAngleList(parser, .arguments);
 }
 
 // function f<T, U extends V>() {}
@@ -1659,7 +1654,7 @@ fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) E
     }
 
     const type_parameters = try parseTypeParameters(parser);
-    const params = try parseSignatureParameters(parser) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
 
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
@@ -1679,10 +1674,6 @@ fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) E
     } };
 
     return try parser.tree.addNode(data, .{ .start = start, .end = end });
-}
-
-inline fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
-    return functions.parseFormalParameters(parser, .signature, false);
 }
 
 pub const IndexSignatureModifiers = struct {
@@ -1811,7 +1802,7 @@ fn parseMethodSignatureBody(
     is_optional: bool,
 ) Error!?ast.NodeIndex {
     const type_parameters = try parseTypeParameters(parser);
-    const params = try parseSignatureParameters(parser) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
 
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
@@ -2065,6 +2056,9 @@ pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeI
 pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     if (!parser.tree.isTs()) return .null;
     if (!isAngleOpen(parser.current_token.tag)) return .null;
+
+    const after = (try parser.peekAhead()) orelse return .null;
+    if (!isStartOfType(after.tag) and after.tag != .greater_than) return .null;
 
     const cp = parser.checkpoint();
 

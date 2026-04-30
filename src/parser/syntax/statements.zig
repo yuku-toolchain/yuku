@@ -196,9 +196,10 @@ fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
-    if ((try ts_decl.isStartOfTsDeclaration(parser)) orelse return null)
-        return ts_decl.parseTsDeclaration(parser);
-
+    if (parser.tree.isTs()) {
+        const next = try parser.peekAhead() orelse return null;
+        if (ts_decl.isConstEnumHead(next)) return ts_decl.parseTsDeclaration(parser);
+    }
     return variables.parseVariableDeclaration(parser, .{}, null);
 }
 
