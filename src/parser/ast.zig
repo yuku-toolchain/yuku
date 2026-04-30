@@ -30,7 +30,8 @@ pub const Label = struct {
     message: []const u8,
 };
 
-/// An error, warning, hint, or info produced during parsing or semantic analysis.
+/// An error, warning, hint, or info produced during parsing or semantic
+/// analysis.
 pub const Diagnostic = struct {
     severity: Severity = .@"error",
     message: []const u8,
@@ -39,7 +40,7 @@ pub const Diagnostic = struct {
     labels: []const Label = &.{},
 };
 
-/// Source type of a JavaScript/TypeScript file.
+/// Source type of a JavaScript or TypeScript file.
 ///
 /// Determines whether the file is parsed as an ES module or a classic script.
 pub const SourceType = enum {
@@ -54,9 +55,8 @@ pub const SourceType = enum {
     }
 
     /// Determines the source type based on the file extension.
-    /// - `.mjs`, `.mts` are treated as modules (ES modules)
-    /// - `.cjs`, `.cts` are treated as scripts (CommonJS)
-    /// - All other files default to module (modern default)
+    /// `.mjs` and `.mts` are treated as modules, `.cjs` and `.cts` as
+    /// scripts. All other files default to module.
     pub fn fromPath(path: []const u8) SourceType {
         if (std.mem.endsWith(u8, path, ".cjs") or std.mem.endsWith(u8, path, ".cts")) {
             return .script;
@@ -66,8 +66,8 @@ pub const SourceType = enum {
     }
 };
 
-/// Language variant for JavaScript/TypeScript files.
-/// Determines which syntax features are enabled during parsing.
+/// Language variant for JavaScript or TypeScript files. Determines which
+/// syntax features are enabled during parsing.
 pub const Lang = enum {
     js,
     ts,
@@ -76,11 +76,11 @@ pub const Lang = enum {
     dts,
 
     /// Determines the language variant based on the file extension.
-    /// - `.d.ts`, `.d.mts`, `.d.cts` → `dts` (TypeScript declaration files)
-    /// - `.tsx` → `tsx` (TypeScript with JSX)
-    /// - `.ts`, `.mts`, `.cts` → `ts` (TypeScript)
-    /// - `.jsx` → `jsx` (JavaScript with JSX)
-    /// - `.js`, `.mjs`, `.cjs` or unknown → `js` (JavaScript)
+    ///
+    /// `.d.ts`, `.d.mts`, `.d.cts` resolve to `dts`. `.tsx` resolves to
+    /// `tsx`. `.ts`, `.mts`, `.cts` resolve to `ts`. `.jsx` resolves to
+    /// `jsx`. Anything else (including `.js`, `.mjs`, `.cjs`) resolves to
+    /// `js`.
     pub fn fromPath(path: []const u8) Lang {
         if (std.mem.endsWith(u8, path, ".d.ts") or
             std.mem.endsWith(u8, path, ".d.mts") or
@@ -105,8 +105,8 @@ pub const Lang = enum {
 ///
 /// ## Example
 /// ```js
-/// // this is a line comment
-/// /* this is a block comment */
+/// // line comment
+/// /* block comment */
 /// ```
 pub const Comment = struct {
     type: Type,
@@ -283,9 +283,6 @@ pub const Tree = struct {
     }
 };
 
-/// Index into the AST node array.
-///
-/// `.null` marks an absent child for optional slots.
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 
 /// Range of indices into the extra array for storing variadic node lists.
@@ -295,6 +292,9 @@ pub const IndexRange = struct {
 
     pub const empty: IndexRange = .{ .start = 0, .len = 0 };
 };
+
+// Node definitions follow. See `NodeIndex` for the field-annotation
+// conventions used in their doc comments.
 
 /// The `super` keyword used as an expression head.
 ///
@@ -324,9 +324,19 @@ pub const NullLiteral = struct {};
 pub const ThisExpression = struct {};
 
 /// The `debugger;` statement. Suspends execution when a debugger is attached.
+///
+/// ## Example
+/// ```js
+/// debugger;
+/// ```
 pub const DebuggerStatement = struct {};
 
 /// A standalone `;` used as a statement.
+///
+/// ## Example
+/// ```js
+/// ;
+/// ```
 pub const EmptyStatement = struct {};
 
 /// A decorator applied to a class or class member.
@@ -336,19 +346,17 @@ pub const EmptyStatement = struct {};
 /// ## Example
 /// ```js
 /// class C { @foo bar() {} }
-/// //         ^^^ expression (of the decorator `@foo`)
+/// //         ^^^ expression
 /// ```
 pub const Decorator = struct {
+    /// any expression
     expression: NodeIndex,
 };
 
 /// Class form.
 ///
-/// ## Example
-/// ```js
-/// class Foo {}          // class_declaration
-/// const x = class {};   //           class_expression
-/// ```
+/// `class_declaration` for `class Foo {}`. `class_expression` for
+/// `const x = class {}`.
 pub const ClassType = enum {
     class_declaration,
     class_expression,
@@ -356,7 +364,7 @@ pub const ClassType = enum {
 
 /// A class declaration or expression.
 ///
-/// <https://tc39.es/ecma262/#prod-ClassDeclaration>
+/// See: <https://tc39.es/ecma262/#prod-ClassDeclaration>
 ///
 /// ## Example
 /// ```ts
@@ -368,25 +376,31 @@ pub const ClassType = enum {
 /// //                                      ^ implements[0]
 /// //                                        ^^ body
 /// ```
-/// Modifiers: `@dec class` populates `decorators`; `abstract class`
-/// sets `abstract = true`; `declare class` sets `declare = true`.
+///
+/// `@dec class` populates `decorators`. `abstract class` sets `abstract`.
+/// `declare class` sets `declare`.
 pub const Class = struct {
     type: ClassType,
+    /// `decorator[]`
     decorators: IndexRange,
-    /// `.null` for anonymous class expressions
+    /// `binding_identifier`. `.null` for anonymous class expressions.
     id: NodeIndex,
-    /// `.null` when the class has no `extends` clause
+    /// any expression. `.null` when the class has no `extends` clause.
     super_class: NodeIndex,
+    /// `class_body`
     body: NodeIndex,
-    /// `.null` when the class has no `<T, U>` parameters
+    /// `ts_type_parameter_declaration`. `.null` when the class has no `<T, U>`
+    /// parameters.
     type_parameters: NodeIndex = .null,
-    /// `.null` when `extends` has no `<T>` arguments
+    /// `ts_type_parameter_instantiation`. `.null` when `extends` has no `<T>`
+    /// arguments.
     super_type_arguments: NodeIndex = .null,
-    /// empty when the class has no `implements` clause
+    /// `ts_class_implements[]`. Empty when the class has no `implements`
+    /// clause.
     implements: IndexRange = .empty,
-    /// true for `abstract class`
+    /// true for `abstract class`.
     abstract: bool = false,
-    /// true for `declare class`
+    /// true for `declare class`.
     declare: bool = false,
 };
 
@@ -399,9 +413,9 @@ pub const Class = struct {
 ///   b() {}
 ///   static {}
 /// }
-/// // body: [a, b, static block]
 /// ```
 pub const ClassBody = struct {
+    /// `method_definition`, `property_definition`, `static_block`, or `ts_index_signature`
     body: IndexRange,
 };
 
@@ -434,8 +448,8 @@ pub const MethodDefinitionKind = enum {
 
 /// Accessibility modifier on a TypeScript class member.
 ///
-/// `.none` means no modifier was written (distinct from `public`, which
-/// was written explicitly).
+/// `.none` means no modifier was written. This is distinct from `public`,
+/// which is written explicitly.
 pub const Accessibility = enum {
     none,
     public,
@@ -461,24 +475,27 @@ pub const Accessibility = enum {
 /// //               ^^^^^^^^ override
 /// //                        ^^^ key
 /// //                           ^ optional
-/// //                            ^^^^^^^^^^^ value (a Function)
+/// //                            ^^^^^^^^^^^ value
 /// ```
 pub const MethodDefinition = struct {
+    /// `decorator[]`
     decorators: IndexRange,
-    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
+    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
-    /// a `Function` node
+    /// `function`
     value: NodeIndex,
     kind: MethodDefinitionKind,
+    /// true when the key is written inside `[...]`.
     computed: bool,
+    /// true for the `static` modifier.
     static: bool,
-    /// true for the `override` modifier
+    /// true for the `override` modifier.
     override: bool = false,
-    /// true for optional method (`foo?()`)
+    /// true for an optional method (`foo?()`).
     optional: bool = false,
     /// true for the `abstract` modifier.
     abstract: bool = false,
-    /// `.none` when no modifier was written
+    /// `.none` when no accessibility modifier was written.
     accessibility: Accessibility = .none,
 };
 
@@ -495,36 +512,39 @@ pub const MethodDefinition = struct {
 /// //                                       ^ value
 /// ```
 pub const PropertyDefinition = struct {
+    /// `decorator[]`
     decorators: IndexRange,
-    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
+    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
-    /// initializer, `.null` when absent
+    /// any expression. `.null` when the field has no initializer.
     value: NodeIndex,
+    /// true when the key is written inside `[...]`.
     computed: bool,
+    /// true for the `static` modifier.
     static: bool,
-    /// true for `accessor x;` auto-accessor fields
+    /// true for `accessor x;` auto-accessor fields.
     accessor: bool,
-    /// `.null` when the field has no annotation
+    /// `ts_type_annotation`. `.null` when the field has no annotation.
     type_annotation: NodeIndex = .null,
-    /// true for the `declare` modifier
+    /// true for the `declare` modifier.
     declare: bool = false,
-    /// true for the `override` modifier
+    /// true for the `override` modifier.
     override: bool = false,
-    /// true for optional property (`foo?: T`)
+    /// true for an optional property (`foo?: T`).
     optional: bool = false,
-    /// true for definite assignment assertion (`foo!: T`)
+    /// true for a definite assignment assertion (`foo!: T`).
     definite: bool = false,
-    /// true for the `readonly` modifier
+    /// true for the `readonly` modifier.
     readonly: bool = false,
     /// true for the `abstract` modifier.
     abstract: bool = false,
-    /// `.none` when no modifier was written
+    /// `.none` when no accessibility modifier was written.
     accessibility: Accessibility = .none,
 };
 
 /// A `static { ... }` block inside a class body.
 ///
-/// See: [MDN - Static initialization blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks)
+/// See: [MDN Static initialization blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks)
 ///
 /// ## Example
 /// ```js
@@ -532,6 +552,7 @@ pub const PropertyDefinition = struct {
 /// //                 ^^^^^^^ body
 /// ```
 pub const StaticBlock = struct {
+    /// any statement
     body: IndexRange,
 };
 
@@ -635,13 +656,15 @@ pub const BinaryOperator = enum {
 ///
 /// ## Example
 /// ```js
-/// r = a + b
-/// //  ^ left
-/// //    ^ operator
-/// //      ^ right
+/// a + b
+/// // ^ left
+/// //   ^ operator
+/// //     ^ right
 /// ```
 pub const BinaryExpression = struct {
+    /// any expression
     left: NodeIndex,
+    /// any expression
     right: NodeIndex,
     operator: BinaryOperator,
 };
@@ -685,13 +708,15 @@ pub const LogicalOperator = enum {
 ///
 /// ## Example
 /// ```js
-/// r = a && b
-/// //  ^ left
-/// //    ^^ operator
-/// //       ^ right
+/// a && b
+/// // ^ left
+/// //   ^^ operator
+/// //      ^ right
 /// ```
 pub const LogicalExpression = struct {
+    /// any expression
     left: NodeIndex,
+    /// any expression
     right: NodeIndex,
     operator: LogicalOperator,
 };
@@ -700,14 +725,17 @@ pub const LogicalExpression = struct {
 ///
 /// ## Example
 /// ```js
-/// r = a ? b : c
-/// //  ^ test
-/// //      ^ consequent
-/// //          ^ alternate
+/// a ? b : c
+/// // ^ test
+/// //   ^ consequent
+/// //       ^ alternate
 /// ```
 pub const ConditionalExpression = struct {
+    /// any expression
     @"test": NodeIndex,
+    /// any expression
     consequent: NodeIndex,
+    /// any expression
     alternate: NodeIndex,
 };
 
@@ -765,10 +793,11 @@ pub const UnaryOperator = enum {
 /// ## Example
 /// ```js
 /// typeof foo
+/// // ^^^^^^ operator
 /// //     ^^^ argument
 /// ```
-/// `operator` is one of `-`, `+`, `!`, `~`, `typeof`, `void`, `delete`.
 pub const UnaryExpression = struct {
+    /// any expression
     argument: NodeIndex,
     operator: UnaryOperator,
 };
@@ -808,11 +837,14 @@ pub const UpdateOperator = enum {
 ///
 /// ## Example
 /// ```js
-/// ++x    // prefix = true
-/// x--    // prefix = false
+/// ++x
+/// x--
 /// ```
+///
+/// `prefix` is true for `++x` and false for `x++`.
 pub const UpdateExpression = struct {
-    /// an `IdentifierReference` or `MemberExpression`
+    /// any assignment target. In practice an `identifier_reference` or
+    /// `member_expression`.
     argument: NodeIndex,
     operator: UpdateOperator,
     prefix: bool,
@@ -898,15 +930,14 @@ pub const AssignmentOperator = enum {
 /// ## Example
 /// ```js
 /// x += 1
-/// //^^ operator
-/// //   ^ right
+/// // ^ left
+/// //  ^^ operator
+/// //     ^ right
 /// ```
-/// `left` is the assignment target (here `x`); it can also be an `ArrayPattern`
-/// or `ObjectPattern` for destructuring assignment.
 pub const AssignmentExpression = struct {
-    /// an assignment target: `IdentifierReference`, `MemberExpression`,
-    /// `ArrayPattern`, or `ObjectPattern`
+    /// any assignment target
     left: NodeIndex,
+    /// any expression
     right: NodeIndex,
     operator: AssignmentOperator,
 };
@@ -941,20 +972,19 @@ pub const VariableKind = enum {
 
 /// A `var`, `let`, `const`, `using`, or `await using` declaration.
 ///
-/// <https://tc39.es/ecma262/#prod-VariableStatement>
-///
-/// See also: [Explicit Resource Management (`using`)](https://github.com/tc39/proposal-explicit-resource-management)
+/// See: <https://tc39.es/ecma262/#prod-VariableStatement>,
+/// [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management)
 ///
 /// ## Example
 /// ```ts
 /// const x = 1, y = 2;
 /// //    ^^^^^^^^^^^^ declarators
 /// ```
-/// `kind` is `.@"const"`. `declare = true` for `declare const ...`.
 pub const VariableDeclaration = struct {
     kind: VariableKind,
+    /// `variable_declarator[]`
     declarators: IndexRange,
-    /// true for `declare var x: T`
+    /// true for `declare var x: T`.
     declare: bool = false,
 };
 
@@ -963,17 +993,17 @@ pub const VariableDeclaration = struct {
 /// ## Example
 /// ```ts
 /// let x!: number = 1;
-/// //  ^ id
-/// //   ^ definite
-/// //    ^^^^^^^^ type_annotation on the binding
-/// //               ^ init
+/// // ^ id
+/// //  ^ definite
+/// //   ^^^^^^^^ type_annotation lives on `id`
+/// //              ^ init
 /// ```
 pub const VariableDeclarator = struct {
-    /// a binding pattern (`BindingIdentifier`, `ArrayPattern`, `ObjectPattern`)
+    /// any binding pattern
     id: NodeIndex,
-    /// initializer, `.null` when absent
+    /// any expression. `.null` when there is no initializer.
     init: NodeIndex,
-    /// true for definite assignment assertion (`let x!: T`)
+    /// true for a definite assignment assertion (`let x!: T`).
     definite: bool = false,
 };
 
@@ -981,14 +1011,15 @@ pub const VariableDeclarator = struct {
 ///
 /// ## Example
 /// ```js
-/// { foo(); }
-/// //^^^^^ expression
+/// foo();
+/// // ^^^^ expression
 /// ```
 pub const ExpressionStatement = struct {
+    /// any expression
     expression: NodeIndex,
 };
 
-/// An `if`/`else` statement.
+/// An `if` / `else` statement.
 ///
 /// ## Example
 /// ```js
@@ -998,9 +1029,11 @@ pub const ExpressionStatement = struct {
 /// //                       ^^^^^^^^ alternate
 /// ```
 pub const IfStatement = struct {
+    /// any expression
     @"test": NodeIndex,
+    /// any statement
     consequent: NodeIndex,
-    /// `.null` when there is no `else` clause
+    /// any statement. `.null` when there is no `else` clause.
     alternate: NodeIndex,
 };
 
@@ -1010,10 +1043,12 @@ pub const IfStatement = struct {
 /// ```js
 /// switch (x) { case 1: stmt; }
 /// //      ^ discriminant
-/// //           ^^^^^^^^^^^^^ cases
+/// //           ^^^^^^^^^^^^^ cases[0]
 /// ```
 pub const SwitchStatement = struct {
+    /// any expression
     discriminant: NodeIndex,
+    /// `switch_case[]`
     cases: IndexRange,
 };
 
@@ -1028,12 +1063,13 @@ pub const SwitchStatement = struct {
 /// //                          ^^^^^ body
 /// ```
 pub const ForStatement = struct {
-    /// `VariableDeclaration`, expression, or `.null`
+    /// `variable_declaration` or any expression. `.null` when omitted.
     init: NodeIndex,
-    /// expression or `.null`
+    /// any expression. `.null` when omitted.
     @"test": NodeIndex,
-    /// expression or `.null`
+    /// any expression. `.null` when omitted.
     update: NodeIndex,
+    /// any statement
     body: NodeIndex,
 };
 
@@ -1047,9 +1083,11 @@ pub const ForStatement = struct {
 /// //                   ^^^^^ body
 /// ```
 pub const ForInStatement = struct {
-    /// `VariableDeclaration` or an assignment target
+    /// `variable_declaration` or any assignment target
     left: NodeIndex,
+    /// any expression
     right: NodeIndex,
+    /// any statement
     body: NodeIndex,
 };
 
@@ -1064,10 +1102,13 @@ pub const ForInStatement = struct {
 /// //                          ^^^^^ body
 /// ```
 pub const ForOfStatement = struct {
+    /// `variable_declaration` or any assignment target
     left: NodeIndex,
+    /// any expression
     right: NodeIndex,
+    /// any statement
     body: NodeIndex,
-    /// true for `for await (...)`
+    /// true for `for await (...)`.
     await: bool,
 };
 
@@ -1080,7 +1121,7 @@ pub const ForOfStatement = struct {
 /// //    ^^^^^ label
 /// ```
 pub const BreakStatement = struct {
-    /// `.null` for bare `break`
+    /// `label_identifier`. `.null` for bare `break`.
     label: NodeIndex,
 };
 
@@ -1093,7 +1134,7 @@ pub const BreakStatement = struct {
 /// //       ^^^^^ label
 /// ```
 pub const ContinueStatement = struct {
-    /// `.null` for bare `continue`
+    /// `label_identifier`. `.null` for bare `continue`.
     label: NodeIndex,
 };
 
@@ -1102,11 +1143,13 @@ pub const ContinueStatement = struct {
 /// ## Example
 /// ```js
 /// outer: for (;;) break outer;
+/// // ^^^ label
 /// //     ^^^^^^^^^^^^^^^^^^^^^ body
 /// ```
-/// `label` is the identifier before `:` (here `outer`).
 pub const LabeledStatement = struct {
+    /// `label_identifier`
     label: NodeIndex,
+    /// any statement
     body: NodeIndex,
 };
 
@@ -1118,10 +1161,10 @@ pub const LabeledStatement = struct {
 /// //   ^ test
 /// //      ^^^^^^^^^^^^^^ consequent
 /// ```
-/// `test` is `.null` for the `default` clause.
 pub const SwitchCase = struct {
-    /// `.null` for the `default` clause
+    /// any expression. `.null` for the `default` clause.
     @"test": NodeIndex,
+    /// any statement
     consequent: IndexRange,
 };
 
@@ -1134,7 +1177,7 @@ pub const SwitchCase = struct {
 /// //     ^^^^^ argument
 /// ```
 pub const ReturnStatement = struct {
-    /// `.null` for bare `return`
+    /// any expression. `.null` for bare `return`.
     argument: NodeIndex,
 };
 
@@ -1146,10 +1189,11 @@ pub const ReturnStatement = struct {
 /// //    ^^^^^^^^^^^^^^^^^ argument
 /// ```
 pub const ThrowStatement = struct {
+    /// any expression
     argument: NodeIndex,
 };
 
-/// A `try`/`catch`/`finally` statement.
+/// A `try` / `catch` / `finally` statement.
 ///
 /// ## Example
 /// ```js
@@ -1159,10 +1203,11 @@ pub const ThrowStatement = struct {
 /// //                                ^^^^^ finalizer
 /// ```
 pub const TryStatement = struct {
+    /// `block_statement`
     block: NodeIndex,
-    /// `.null` when no `catch` clause is present
+    /// `catch_clause`. `.null` when no `catch` clause is present.
     handler: NodeIndex,
-    /// `.null` when no `finally` clause is present
+    /// `block_statement`. `.null` when no `finally` clause is present.
     finalizer: NodeIndex,
 };
 
@@ -1174,10 +1219,10 @@ pub const TryStatement = struct {
 /// //            ^ param
 /// //               ^^^^^^^^ body
 /// ```
-/// `param` is `.null` for `catch { }` with no binding.
 pub const CatchClause = struct {
-    /// `.null` for `catch { }` with no binding
+    /// any binding pattern. `.null` for `catch { }` with no binding.
     param: NodeIndex,
+    /// `block_statement`
     body: NodeIndex,
 };
 
@@ -1190,7 +1235,9 @@ pub const CatchClause = struct {
 /// //           ^^^^^ body
 /// ```
 pub const WhileStatement = struct {
+    /// any expression
     @"test": NodeIndex,
+    /// any statement
     body: NodeIndex,
 };
 
@@ -1203,7 +1250,9 @@ pub const WhileStatement = struct {
 /// //              ^^^^ test
 /// ```
 pub const DoWhileStatement = struct {
+    /// any statement
     body: NodeIndex,
+    /// any expression
     @"test": NodeIndex,
 };
 
@@ -1216,7 +1265,9 @@ pub const DoWhileStatement = struct {
 /// //         ^^^^^ body
 /// ```
 pub const WithStatement = struct {
+    /// any expression
     object: NodeIndex,
+    /// any statement
     body: NodeIndex,
 };
 
@@ -1240,7 +1291,7 @@ pub const StringLiteral = struct {
 /// 0xFF        // hex
 /// 0o17        // octal
 /// 0b1010      // binary
-/// 1_000_000   // numeric separators are stripped when computing `value()`
+/// 1_000_000   // separators are stripped when computing `value()`
 /// ```
 pub const NumericLiteral = struct {
     kind: Kind,
@@ -1305,9 +1356,9 @@ pub const NumericLiteral = struct {
     };
 };
 
-/// A BigInt literal (numeric literal with a trailing `n`).
+/// A BigInt literal (a numeric literal with a trailing `n`).
 ///
-/// See: [MDN - BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+/// See: [MDN BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
 ///
 /// ## Example
 /// ```js
@@ -1328,13 +1379,13 @@ pub const BooleanLiteral = struct {
 
 /// A regular expression literal.
 ///
-/// <https://tc39.es/ecma262/#prod-RegularExpressionLiteral>
+/// See: <https://tc39.es/ecma262/#prod-RegularExpressionLiteral>
 ///
 /// ## Example
 /// ```js
-/// const r = /foo/gi;
-/// //         ^^^ pattern
-/// //             ^^ flags
+/// /foo/gi
+/// // ^^^ pattern
+/// //     ^^ flags
 /// ```
 pub const RegExpLiteral = struct {
     pattern: String = .empty,
@@ -1343,19 +1394,20 @@ pub const RegExpLiteral = struct {
 
 /// A template literal with zero or more interpolations.
 ///
-/// <https://tc39.es/ecma262/#prod-TemplateLiteral>
+/// See: <https://tc39.es/ecma262/#prod-TemplateLiteral>
 ///
 /// ## Example
 /// ```js
 /// `hello ${name}!`
 /// ```
+///
 /// `quasis` are the static text spans (`"hello "` and `"!"`), always
 /// `expressions.len + 1` elements. `expressions` are the interpolations
 /// (here, `name`).
 pub const TemplateLiteral = struct {
-    /// the static text spans; always `expressions.len + 1` elements
+    /// `template_element[]`. Always `expressions.len + 1` elements.
     quasis: IndexRange,
-    /// the interpolated expressions
+    /// any expression
     expressions: IndexRange,
 };
 
@@ -1365,27 +1417,31 @@ pub const TemplateLiteral = struct {
 /// ```js
 /// `a ${x} b`
 /// ```
-/// The two quasi elements are `"a "` (`tail = false`) and `" b"` (`tail = true`).
+///
+/// The two quasi elements are `"a "` (`tail = false`) and `" b"`
+/// (`tail = true`).
 pub const TemplateElement = struct {
     /// escape-decoded content, empty when `is_cooked_undefined`
     cooked: String = .empty,
     /// true for the final element (after the last interpolation)
     tail: bool,
     /// true when the cooked value is undefined per ECMAScript TV semantics
-    /// (invalid escape in tagged template)
+    /// (an invalid escape inside a tagged template)
     is_cooked_undefined: bool = false,
 };
 
 /// An identifier used as an expression.
 ///
-/// See: [ECMAScript - Identifiers](https://tc39.es/ecma262/#sec-identifiers)
+/// See: [ECMAScript Identifiers](https://tc39.es/ecma262/#sec-identifiers)
 ///
 /// ## Example
 /// ```js
 /// console.log(x);
 /// ```
-/// `console` and `x` are both `IdentifierReference`s. `log` is an `IdentifierName`
-/// because it is a property access, not a reference.
+///
+/// `console` and `x` are both `identifier_reference`s. `log` is an
+/// `identifier_name` because it appears in property-access position, not
+/// as a value reference.
 pub const IdentifierReference = struct {
     name: String = .empty,
 };
@@ -1394,12 +1450,12 @@ pub const IdentifierReference = struct {
 ///
 /// The stored `name` does not include the leading `#`.
 ///
-/// See: [MDN - Private class fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties)
+/// See: [MDN Private class fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties)
 ///
 /// ## Example
 /// ```js
 /// class C { #secret = 1; }
-/// //        ^^^^^^^ PrivateIdentifier (name = "secret")
+/// //         ^^^^^^ name = "secret"
 /// ```
 pub const PrivateIdentifier = struct {
     name: String = .empty,
@@ -1410,17 +1466,17 @@ pub const PrivateIdentifier = struct {
 /// ## Example
 /// ```ts
 /// function foo(x?: number) {}
-/// //       ^^^ BindingIdentifier (id)
-/// //           ^ BindingIdentifier (optional = true, type_annotation set)
+/// //       ^^^ id
+/// //           ^ optional, with type_annotation
 /// ```
 pub const BindingIdentifier = struct {
     name: String = .empty,
-    /// decorators on a parameter binding (legacy `experimentalDecorators`).
-    /// empty for non-parameter bindings.
+    /// `decorator[]`. Decorators on a parameter binding (legacy
+    /// `experimentalDecorators`). Empty for non-parameter bindings.
     decorators: IndexRange = .empty,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
-    /// true when marked optional (`x?: T`)
+    /// true when marked optional (`x?: T`).
     optional: bool = false,
 };
 
@@ -1437,14 +1493,15 @@ pub const IdentifierName = struct {
     name: String = .empty,
 };
 
-/// An identifier used as a statement label or as the target of `break`/`continue`.
+/// An identifier used as a statement label or as the target of `break` or
+/// `continue`.
 ///
 /// ## Example
 /// ```js
 /// outer: for (;;) break outer;
-/// //                    ^^^^^ LabelIdentifier (break target)
+/// // ^^^ label
+/// //                    ^^^^^ break target
 /// ```
-/// The label before `:` (here `outer`) is also a `LabelIdentifier`.
 pub const LabelIdentifier = struct {
     name: String = .empty,
 };
@@ -1459,13 +1516,16 @@ pub const LabelIdentifier = struct {
 /// //             ^ right
 /// ```
 pub const AssignmentPattern = struct {
+    /// any binding pattern
     left: NodeIndex,
+    /// any expression
     right: NodeIndex,
-    /// decorators on a parameter binding (legacy `experimentalDecorators`)
+    /// `decorator[]`. Decorators on a parameter binding (legacy
+    /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
-    /// true when marked optional in a parameter position
+    /// true when marked optional in a parameter position.
     optional: bool = false,
 };
 
@@ -1478,12 +1538,14 @@ pub const AssignmentPattern = struct {
 /// //            ^^^^ argument
 /// ```
 pub const BindingRestElement = struct {
+    /// any binding pattern
     argument: NodeIndex,
-    /// decorators on a parameter rest element (legacy `experimentalDecorators`)
+    /// `decorator[]`. Decorators on a parameter rest element (legacy
+    /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
-    /// true when marked optional in a parameter position
+    /// true when marked optional in a parameter position.
     optional: bool = false,
 };
 
@@ -1496,17 +1558,19 @@ pub const BindingRestElement = struct {
 /// //          ^ elements[2]
 /// //             ^^^^^^^ rest
 /// ```
-/// `elements[1]` is `.null` (hole between the two commas).
+///
+/// `elements[1]` is `.null` (the hole between the two commas).
 pub const ArrayPattern = struct {
-    /// binding patterns or `.null` for holes
+    /// any binding pattern. Entries are `.null` for holes.
     elements: IndexRange,
-    /// `.null` when no rest element is present
+    /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
-    /// decorators on a parameter binding (legacy `experimentalDecorators`)
+    /// `decorator[]`. Decorators on a parameter binding (legacy
+    /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
-    /// true when marked optional in a parameter position
+    /// true when marked optional in a parameter position.
     optional: bool = false,
 };
 
@@ -1520,31 +1584,36 @@ pub const ArrayPattern = struct {
 /// //               ^^^^^^^ rest
 /// ```
 pub const ObjectPattern = struct {
+    /// `binding_property[]`
     properties: IndexRange,
-    /// `.null` when no rest element is present
+    /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
-    /// decorators on a parameter binding (legacy `experimentalDecorators`)
+    /// `decorator[]`. Decorators on a parameter binding (legacy
+    /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
-    /// true when marked optional in a parameter position
+    /// true when marked optional in a parameter position.
     optional: bool = false,
 };
 
-/// A single property inside an `ObjectPattern`.
+/// A single property inside an `object_pattern`.
 ///
 /// ## Example
 /// ```js
 /// const { a, b: c, [k]: d } = obj;
 /// //      ^ shorthand
-/// //         ^^^^ key/value pair (shorthand = false)
-/// //               ^^^^^^ computed (key in brackets)
+/// //         ^^^^ key colon value
+/// //               ^^^^^^ computed key
 /// ```
 pub const BindingProperty = struct {
+    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
-    /// a binding pattern (`BindingIdentifier`, `ArrayPattern`, etc.)
+    /// any binding pattern
     value: NodeIndex,
+    /// true when written as the shorthand `{ a }` form.
     shorthand: bool,
+    /// true when the key is written inside `[...]`.
     computed: bool,
 };
 
@@ -1552,14 +1621,15 @@ pub const BindingProperty = struct {
 ///
 /// ## Example
 /// ```js
-/// x = [a, , b, ...c]
-/// //   ^ elements[0]
-/// //        ^ elements[2]
-/// //           ^^^^ elements[3] (SpreadElement)
+/// [a, , b, ...c]
+/// // ^ elements[0]
+/// //      ^ elements[2]
+/// //         ^^^^ elements[3] (SpreadElement)
 /// ```
-/// `elements[1]` is `.null` (hole between the two commas).
+///
+/// `elements[1]` is `.null` (the hole between the two commas).
 pub const ArrayExpression = struct {
-    /// expressions, spread elements, or `.null` for holes
+    /// any expression or `spread_element`. Entries are `.null` for holes.
     elements: IndexRange,
 };
 
@@ -1573,11 +1643,12 @@ pub const ArrayExpression = struct {
 /// //         ^^^^ properties[2] (SpreadElement)
 /// ```
 pub const ObjectExpression = struct {
-    /// object properties or spread elements
+    /// `object_property` or `spread_element`.
     properties: IndexRange,
 };
 
-/// A `...argument` element inside an array or object literal, or a call argument list.
+/// A `...argument` element inside an array or object literal, or in a call
+/// argument list.
 ///
 /// ## Example
 /// ```js
@@ -1586,6 +1657,7 @@ pub const ObjectExpression = struct {
 /// //     ^^^^ argument
 /// ```
 pub const SpreadElement = struct {
+    /// any expression
     argument: NodeIndex,
 };
 
@@ -1624,18 +1696,23 @@ pub const PropertyKind = enum {
 /// })
 /// ```
 pub const ObjectProperty = struct {
+    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
-    /// expression for init, or a `Function` for methods/getters/setters
+    /// any expression for `init` properties. `function` for methods, getters,
+    /// and setters.
     value: NodeIndex,
     kind: PropertyKind,
+    /// true when written as the shorthand method form `b() {}`.
     method: bool,
+    /// true when written as the shorthand `{ a }` form.
     shorthand: bool,
+    /// true when the key is written inside `[...]`.
     computed: bool,
 };
 
 /// The top-level node of every parsed file.
 ///
-/// <https://tc39.es/ecma262/#prod-Script>
+/// See: <https://tc39.es/ecma262/#prod-Script>,
 /// <https://tc39.es/ecma262/#prod-Module>
 ///
 /// ## Example
@@ -1645,13 +1722,15 @@ pub const ObjectProperty = struct {
 /// import x from "y";
 /// console.log(x);
 /// ```
+///
 /// `hashbang` is the `#!` line if present. `body` contains directives
 /// (`"use strict";`), imports, and statements.
 pub const Program = struct {
     source_type: SourceType,
-    /// statements and directives
+    /// any statement or `directive`. Import and export declarations are
+    /// classified as statements.
     body: IndexRange,
-    /// `null` when the file has no `#!` line
+    /// `null` when the file has no `#!` line.
     hashbang: ?Hashbang = null,
 };
 
@@ -1661,6 +1740,7 @@ pub const Program = struct {
 /// ```js
 /// #!/usr/bin/env node
 /// ```
+///
 /// `value` is everything after `#!`, so `/usr/bin/env node` here.
 pub const Hashbang = struct {
     value: String = .empty,
@@ -1672,30 +1752,35 @@ pub const Hashbang = struct {
 /// ```js
 /// "use strict";
 /// ```
-/// `expression` is the underlying `StringLiteral` (`"use strict"`).
+///
+/// `expression` is the underlying `string_literal` (`"use strict"`).
 /// `value` is the text between the quotes (`use strict`).
 pub const Directive = struct {
-    /// the underlying `StringLiteral`
+    /// `string_literal`
     expression: NodeIndex,
     /// the directive text without surrounding quotes
     value: String = .empty,
 };
 
 /// Form of a function node.
+///
+/// `function_declaration` for `function foo() {}`.
+/// `function_expression` for `const x = function () {}`.
+/// `ts_declare_function` for body-less function declarations. Covers
+/// ambient `declare function` and plain overload signatures.
+/// `ts_empty_body_function_expression` for body-less function expressions.
+/// Used as the `value` of body-less class methods (overloads, abstract
+/// methods, ambient methods).
 pub const FunctionType = enum {
     function_declaration,
     function_expression,
-    /// body-less function declaration. covers ambient `declare function`
-    /// and plain overload signatures.
     ts_declare_function,
-    /// body-less function expression. used as the `value` of body-less
-    /// class methods (overloads, abstract methods, ambient methods).
     ts_empty_body_function_expression,
 };
 
 /// A function declaration or expression.
 ///
-/// <https://tc39.es/ecma262/#prod-FunctionDeclaration>
+/// See: <https://tc39.es/ecma262/#prod-FunctionDeclaration>
 ///
 /// ## Example
 /// ```ts
@@ -1709,27 +1794,29 @@ pub const FunctionType = enum {
 /// ```
 pub const Function = struct {
     type: FunctionType,
-    /// `.null` for anonymous functions
+    /// `binding_identifier`. `.null` for anonymous functions.
     id: NodeIndex,
     generator: bool,
     async: bool,
-    /// true when preceded by the `declare` modifier. distinguishes real
-    /// ambient declarations from plain overload signatures, which share
-    /// the `.ts_declare_function` shape.
+    /// true when preceded by the `declare` modifier. Distinguishes a real
+    /// ambient declaration from a plain overload signature, which share the
+    /// `.ts_declare_function` shape.
     declare: bool = false,
+    /// `formal_parameters`
     params: NodeIndex,
-    /// `.null` for body-less declarations and signatures
+    /// `function_body`. `.null` for body-less declarations and signatures.
     body: NodeIndex,
-    /// `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     return_type: NodeIndex = .null,
 };
 
 /// The body of a function.
 ///
-/// <https://tc39.es/ecma262/#prod-FunctionBody>
+/// See: <https://tc39.es/ecma262/#prod-FunctionBody>
 pub const FunctionBody = struct {
+    /// any statement or `directive`.
     body: IndexRange,
 };
 
@@ -1741,6 +1828,7 @@ pub const FunctionBody = struct {
 /// //^^^^^^^^^^^^^ body
 /// ```
 pub const BlockStatement = struct {
+    /// any statement
     body: IndexRange,
 };
 
@@ -1748,14 +1836,16 @@ pub const BlockStatement = struct {
 ///
 /// Constrains which binding forms are legal and whether duplicates are
 /// allowed in strict mode.
+///
+/// `formal_parameters` is a plain `function` parameter list.
+/// `unique_formal_parameters` covers parameters of a generator, async,
+/// arrow, method, or setter. `arrow_formal_parameters` covers an arrow
+/// function parameter list. `signature` covers parameters of a TypeScript
+/// type signature.
 pub const FormalParameterKind = enum {
-    /// plain `function` parameter list
     formal_parameters,
-    /// parameters of a generator, async, arrow, method, or setter
     unique_formal_parameters,
-    /// arrow function parameter list
     arrow_formal_parameters,
-    /// parameters of a TypeScript type signature
     signature,
 };
 
@@ -1768,8 +1858,10 @@ pub const FormalParameterKind = enum {
 /// //                   ^^^^^^^ rest
 /// ```
 pub const FormalParameters = struct {
+    /// `formal_parameter[]`. May also include `ts_parameter_property` entries
+    /// (constructors only) and a leading `ts_this_parameter` (TypeScript).
     items: IndexRange,
-    /// `.null` when no rest element is present
+    /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
     kind: FormalParameterKind,
 };
@@ -1779,14 +1871,13 @@ pub const FormalParameters = struct {
 /// TypeScript metadata (decorators, type annotation, optional) lives on
 /// the inner pattern.
 pub const FormalParameter = struct {
-    /// a binding pattern (`BindingIdentifier`, `ObjectPattern`, `ArrayPattern`,
-    /// `AssignmentPattern`)
+    /// any binding pattern or `ts_this_parameter`.
     pattern: NodeIndex,
 };
 
 /// An expression wrapped in parentheses.
 ///
-/// <https://tc39.es/ecma262/#prod-ParenthesizedExpression>
+/// See: <https://tc39.es/ecma262/#prod-ParenthesizedExpression>
 ///
 /// ## Example
 /// ```js
@@ -1794,12 +1885,13 @@ pub const FormalParameter = struct {
 /// //   ^^^^^ expression
 /// ```
 pub const ParenthesizedExpression = struct {
+    /// any expression
     expression: NodeIndex,
 };
 
 /// An arrow function expression.
 ///
-/// <https://tc39.es/ecma262/#prod-ArrowFunction>
+/// See: <https://tc39.es/ecma262/#prod-ArrowFunction>
 ///
 /// ## Example
 /// ```ts
@@ -1809,17 +1901,18 @@ pub const ParenthesizedExpression = struct {
 /// //             ^^^ return_type
 /// //                    ^ body (expression = true)
 /// ```
-/// `async = true` for `async (...) => ...`.
 pub const ArrowFunctionExpression = struct {
-    /// true for concise body `() => expr`; false for block body `() => { ... }`
+    /// true for a concise body `() => expr`. false for a block body
+    /// `() => { ... }`.
     expression: bool,
     async: bool,
+    /// `formal_parameters`
     params: NodeIndex,
-    /// a `FunctionBody` when `expression` is false, otherwise an expression
+    /// `function_body` when `expression` is false. any expression otherwise.
     body: NodeIndex,
-    /// `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     return_type: NodeIndex = .null,
 };
 
@@ -1827,16 +1920,17 @@ pub const ArrowFunctionExpression = struct {
 ///
 /// ## Example
 /// ```js
-/// x = (a, b, c)
-/// //   ^^^^^^^ expressions
+/// (a, b, c)
+/// // ^^^^^^^ expressions
 /// ```
 pub const SequenceExpression = struct {
+    /// any expression
     expressions: IndexRange,
 };
 
 /// Property access, in static, computed, or optional form.
 ///
-/// <https://tc39.es/ecma262/#prod-MemberExpression>
+/// See: <https://tc39.es/ecma262/#prod-MemberExpression>
 ///
 /// ## Example
 /// ```js
@@ -1846,17 +1940,19 @@ pub const SequenceExpression = struct {
 /// obj.#priv        // property is a PrivateIdentifier
 /// ```
 pub const MemberExpression = struct {
+    /// any expression
     object: NodeIndex,
-    /// an expression when `computed`, otherwise `IdentifierName` or `PrivateIdentifier`
+    /// any expression when `computed`. `identifier_name` or `private_identifier`
+    /// otherwise.
     property: NodeIndex,
     computed: bool,
-    /// true for `obj?.foo`
+    /// true for `obj?.foo`.
     optional: bool,
 };
 
 /// A function call.
 ///
-/// <https://tc39.es/ecma262/#prod-CallExpression>
+/// See: <https://tc39.es/ecma262/#prod-CallExpression>
 ///
 /// ## Example
 /// ```ts
@@ -1864,28 +1960,32 @@ pub const MemberExpression = struct {
 /// // ^^^ type_arguments
 /// //     ^^^^^^^ arguments
 /// ```
-/// `callee` is the called expression (here `foo`). `optional = true` for `foo?.()`.
+///
+/// `optional` is true for `foo?.()`.
 pub const CallExpression = struct {
+    /// any expression
     callee: NodeIndex,
-    /// expressions or spread elements
+    /// any expression or `spread_element`.
     arguments: IndexRange,
-    /// true for `foo?.()`
+    /// true for `foo?.()`.
     optional: bool,
-    /// `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
-/// Wraps an optional chain so that short-circuiting applies to the whole chain.
+/// Wraps an optional chain so that short-circuiting applies to the whole
+/// chain.
 ///
-/// See: [MDN - Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+/// See: [MDN Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
 ///
 /// ## Example
 /// ```js
-/// r = foo?.bar.baz
-/// //  ^^^^^^^^^^^^ expression
+/// foo?.bar.baz
+/// // ^^^^^^^^^^ expression
 /// ```
 pub const ChainExpression = struct {
-    /// a `CallExpression` or `MemberExpression` with an optional link in the chain
+    /// `call_expression` or `member_expression` containing an optional link
+    /// somewhere in the chain.
     expression: NodeIndex,
 };
 
@@ -1894,20 +1994,22 @@ pub const ChainExpression = struct {
 /// ## Example
 /// ```ts
 /// obj.tag<T>`hello`
-/// //  ^^^ tag (the last property access)
+/// //  ^^^ tag
 /// //     ^^^ type_arguments
-/// //        ^^^^^^^ quasi (TemplateLiteral)
+/// //        ^^^^^^^ quasi
 /// ```
 pub const TaggedTemplateExpression = struct {
+    /// any expression
     tag: NodeIndex,
+    /// `template_literal`
     quasi: NodeIndex,
-    /// `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
 /// A `new` expression.
 ///
-/// <https://tc39.es/ecma262/#prod-NewExpression>
+/// See: <https://tc39.es/ecma262/#prod-NewExpression>
 ///
 /// ## Example
 /// ```ts
@@ -1917,15 +2019,17 @@ pub const TaggedTemplateExpression = struct {
 /// //         ^^^^ arguments
 /// ```
 pub const NewExpression = struct {
+    /// any expression
     callee: NodeIndex,
+    /// any expression or `spread_element`.
     arguments: IndexRange,
-    /// `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
 /// An `await` expression.
 ///
-/// <https://tc39.es/ecma262/#prod-AwaitExpression>
+/// See: <https://tc39.es/ecma262/#prod-AwaitExpression>
 ///
 /// ## Example
 /// ```js
@@ -1933,12 +2037,13 @@ pub const NewExpression = struct {
 /// //    ^^^^^^^ argument
 /// ```
 pub const AwaitExpression = struct {
+    /// any expression
     argument: NodeIndex,
 };
 
 /// A `yield` or `yield*` expression.
 ///
-/// <https://tc39.es/ecma262/#prod-YieldExpression>
+/// See: <https://tc39.es/ecma262/#prod-YieldExpression>
 ///
 /// ## Example
 /// ```js
@@ -1947,15 +2052,15 @@ pub const AwaitExpression = struct {
 /// yield        // argument = .null
 /// ```
 pub const YieldExpression = struct {
-    /// `.null` for bare `yield`
+    /// any expression. `.null` for bare `yield`.
     argument: NodeIndex,
-    /// true for `yield*`
+    /// true for `yield*`.
     delegate: bool,
 };
 
 /// A meta property.
 ///
-/// <https://tc39.es/ecma262/#prod-MetaProperty>
+/// See: <https://tc39.es/ecma262/#prod-MetaProperty>
 ///
 /// ## Example
 /// ```js
@@ -1964,13 +2069,16 @@ pub const YieldExpression = struct {
 /// new.target
 /// //  ^^^^^^ property
 /// ```
+///
 /// `meta` is the head keyword (`import` or `new`).
 pub const MetaProperty = struct {
+    /// `identifier_name`
     meta: NodeIndex,
+    /// `identifier_name`
     property: NodeIndex,
 };
 
-/// `value` vs `type` on a TypeScript import or export specifier.
+/// `value` versus `type` on a TypeScript import or export specifier.
 ///
 /// ## Example
 /// ```ts
@@ -2017,16 +2125,17 @@ pub const ImportPhase = enum {
 /// import.defer("m")           // phase = .defer
 /// ```
 pub const ImportExpression = struct {
+    /// any expression. The module specifier expression.
     source: NodeIndex,
-    /// `.null` when no options argument was passed
+    /// any expression. `.null` when no options argument was passed.
     options: NodeIndex,
-    /// `null` for a plain `import(...)`
+    /// `null` for a plain `import(...)`.
     phase: ?ImportPhase,
 };
 
 /// A static `import` declaration.
 ///
-/// <https://tc39.es/ecma262/#prod-ImportDeclaration>
+/// See: <https://tc39.es/ecma262/#prod-ImportDeclaration>
 ///
 /// ## Example
 /// ```ts
@@ -2034,16 +2143,21 @@ pub const ImportExpression = struct {
 /// //       ^^^^^^^^^^ specifiers[0]
 /// //                         ^^^ source
 /// ```
-/// `import_kind = .type` for `import type { ... }`, `phase` is set for the
-/// `import source` / `import defer` forms; `attributes` holds a trailing
+///
+/// `import_kind = .type` for `import type { ... }`. `phase` is set for the
+/// `import source` and `import defer` forms. `attributes` holds a trailing
 /// `with { ... }` clause.
 pub const ImportDeclaration = struct {
+    /// `import_specifier`, `import_default_specifier`, or
+    /// `import_namespace_specifier`. Empty for side-effect-only imports.
     specifiers: IndexRange,
+    /// `string_literal`
     source: NodeIndex,
+    /// `import_attribute[]`
     attributes: IndexRange,
-    /// `null` for a regular import
+    /// `null` for a regular import.
     phase: ?ImportPhase,
-    /// `.type` for `import type { ... }`
+    /// `.type` for `import type { ... }`.
     import_kind: ImportOrExportKind = .value,
 };
 
@@ -2059,10 +2173,11 @@ pub const ImportDeclaration = struct {
 /// //       ^^^^ import_kind = type
 /// ```
 pub const ImportSpecifier = struct {
-    /// `IdentifierName` or `StringLiteral`
+    /// `identifier_name` or `string_literal`.
     imported: NodeIndex,
+    /// `binding_identifier`
     local: NodeIndex,
-    /// `.type` for `import { type X }`
+    /// `.type` for `import { type X }`.
     import_kind: ImportOrExportKind = .value,
 };
 
@@ -2074,6 +2189,7 @@ pub const ImportSpecifier = struct {
 /// //     ^^^^^ local
 /// ```
 pub const ImportDefaultSpecifier = struct {
+    /// `binding_identifier`
     local: NodeIndex,
 };
 
@@ -2085,6 +2201,7 @@ pub const ImportDefaultSpecifier = struct {
 /// //          ^^ local
 /// ```
 pub const ImportNamespaceSpecifier = struct {
+    /// `binding_identifier`
     local: NodeIndex,
 };
 
@@ -2097,8 +2214,9 @@ pub const ImportNamespaceSpecifier = struct {
 /// //                             ^^^^^^ value
 /// ```
 pub const ImportAttribute = struct {
-    /// `IdentifierName` or `StringLiteral`
+    /// `identifier_name` or `string_literal`.
     key: NodeIndex,
+    /// `string_literal`
     value: NodeIndex,
 };
 
@@ -2111,16 +2229,21 @@ pub const ImportAttribute = struct {
 /// //            ^^^^^^^^ specifiers
 /// //                            ^^^ source
 /// ```
-/// For `export const x = 1`, `declaration` is the inner `VariableDeclaration`
-/// and `specifiers` is empty.
+///
+/// For `export const x = 1`, `declaration` is the inner
+/// `variable_declaration` and `specifiers` is empty.
 pub const ExportNamedDeclaration = struct {
-    /// `.null` for the `export { ... }` form
+    /// `variable_declaration`, `function`, `class`, `ts_type_alias_declaration`,
+    /// `ts_interface_declaration`, `ts_enum_declaration`, or
+    /// `ts_module_declaration`. `.null` for the `export { ... }` form.
     declaration: NodeIndex,
+    /// `export_specifier[]`
     specifiers: IndexRange,
-    /// `.null` when there is no `from` clause
+    /// `string_literal`. `.null` when there is no `from` clause.
     source: NodeIndex,
+    /// `import_attribute[]`
     attributes: IndexRange,
-    /// `.type` for `export type { ... }`
+    /// `.type` for `export type { ... }`.
     export_kind: ImportOrExportKind = .value,
 };
 
@@ -2131,10 +2254,10 @@ pub const ExportNamedDeclaration = struct {
 /// export default foo;
 /// //             ^^^ declaration
 /// export default function () {}
-/// //             ^^^^^^^^^^^^^^ declaration (Function)
+/// //             ^^^^^^^^^^^^^^ declaration
 /// ```
 pub const ExportDefaultDeclaration = struct {
-    /// an expression, `Function`, or `Class`
+    /// any expression, `function`, or `class`.
     declaration: NodeIndex,
 };
 
@@ -2146,13 +2269,17 @@ pub const ExportDefaultDeclaration = struct {
 /// //          ^^ exported
 /// //                  ^^^ source
 /// ```
+///
 /// `export_kind = .type` for `export type * from "..."`.
 pub const ExportAllDeclaration = struct {
-    /// `.null` for `export *` without `as`
+    /// `identifier_name` or `string_literal`. `.null` for `export *` without
+    /// `as`.
     exported: NodeIndex,
+    /// `string_literal`
     source: NodeIndex,
+    /// `import_attribute[]`
     attributes: IndexRange,
-    /// `.type` for `export type * from "..."`
+    /// `.type` for `export type * from "..."`.
     export_kind: ImportOrExportKind = .value,
 };
 
@@ -2168,11 +2295,12 @@ pub const ExportAllDeclaration = struct {
 /// //       ^^^^ export_kind = type
 /// ```
 pub const ExportSpecifier = struct {
-    /// `IdentifierReference`, or `IdentifierName` / `StringLiteral` when re-exporting from a module
+    /// `identifier_reference`. `identifier_name` or `string_literal` when
+    /// re-exporting from a module.
     local: NodeIndex,
-    /// `IdentifierName` or `StringLiteral`
+    /// `identifier_name` or `string_literal`.
     exported: NodeIndex,
-    /// `.type` for `export { type X }`
+    /// `.type` for `export { type X }`.
     export_kind: ImportOrExportKind = .value,
 };
 
@@ -2187,13 +2315,14 @@ pub const ExportSpecifier = struct {
 /// //     ^^^^^^ type_annotation
 /// ```
 pub const TSTypeAnnotation = struct {
-    /// the inner `TSType` node
+    /// any ts type
     type_annotation: NodeIndex,
 };
 
-/// The `any` primitive type. Disables all type checking for the annotated value.
+/// The `any` primitive type. Disables all type checking for the annotated
+/// value.
 ///
-/// See: [TypeScript Handbook - any](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any)
+/// See: [TypeScript Handbook any](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any)
 ///
 /// ## Example
 /// ```ts
@@ -2204,7 +2333,7 @@ pub const TSAnyKeyword = struct {};
 
 /// The `unknown` primitive type. The type-safe counterpart of `any`.
 ///
-/// See: [TypeScript 3.0 Release Notes - unknown](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html#new-unknown-top-type)
+/// See: [TypeScript 3.0 Release Notes unknown](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html#new-unknown-top-type)
 ///
 /// ## Example
 /// ```ts
@@ -2213,10 +2342,10 @@ pub const TSAnyKeyword = struct {};
 /// ```
 pub const TSUnknownKeyword = struct {};
 
-/// The `never` primitive type. Represents values that never occur (e.g. the
-/// return type of a function that always throws).
+/// The `never` primitive type. Represents values that never occur, for
+/// example the return type of a function that always throws.
 ///
-/// See: [TypeScript Handbook - never](https://www.typescriptlang.org/docs/handbook/2/functions.html#never)
+/// See: [TypeScript Handbook never](https://www.typescriptlang.org/docs/handbook/2/functions.html#never)
 ///
 /// ## Example
 /// ```ts
@@ -2307,8 +2436,9 @@ pub const TSSymbolKeyword = struct {};
 /// ```
 pub const TSObjectKeyword = struct {};
 
-/// The `intrinsic` keyword. Marks a type as built into the TypeScript compiler
-/// (for example `Uppercase<T>` and other string-manipulation utilities).
+/// The `intrinsic` keyword. Marks a type as built into the TypeScript
+/// compiler, for example `Uppercase<T>` and other string-manipulation
+/// utilities.
 ///
 /// ## Example
 /// ```ts
@@ -2317,8 +2447,8 @@ pub const TSObjectKeyword = struct {};
 /// ```
 pub const TSIntrinsicKeyword = struct {};
 
-/// The polymorphic `this` type. Refers to the type of the enclosing class or
-/// interface at the usage site.
+/// The polymorphic `this` type. Refers to the type of the enclosing class
+/// or interface at the usage site.
 ///
 /// ## Example
 /// ```ts
@@ -2328,9 +2458,6 @@ pub const TSIntrinsicKeyword = struct {};
 pub const TSThisType = struct {};
 
 /// A reference to a named type, optionally applied to type arguments.
-///
-/// `type_name` carries the identifier or dotted path that names the type, and
-/// `type_arguments` carries the `<T, U>` instantiation when present.
 ///
 /// ## Example
 /// ```ts
@@ -2344,89 +2471,93 @@ pub const TSThisType = struct {};
 /// //     ^^^^^^^^^ TSTypeReference (type_name is a TSQualifiedName)
 /// ```
 pub const TSTypeReference = struct {
-    /// `IdentifierReference`, `TSQualifiedName`, or `ThisExpression`
+    /// `identifier_reference`, `ts_qualified_name`, or `this_expression`
     type_name: NodeIndex,
-    /// `TSTypeParameterInstantiation` or `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
-/// A dotted type name like `A.B.C`. Left associative, so `A.B.C` is parsed as
-/// `(A.B).C` with the outer `TSQualifiedName` holding the inner one as `left`.
+/// A dotted type name like `A.B.C`. Left associative, so `A.B.C` parses as
+/// `(A.B).C` with the outer `ts_qualified_name` holding the inner one as
+/// `left`.
 ///
 /// ## Example
 /// ```ts
 /// let x: Tools.Pos;
 /// //     ^^^^^^^^^ TSQualifiedName
-/// //     ^^^^^ left (IdentifierReference, or nested TSQualifiedName)
-/// //           ^^^ right (IdentifierName)
+/// //     ^^^^^ left
+/// //           ^^^ right
 /// ```
 pub const TSQualifiedName = struct {
-    /// `IdentifierReference`, `IdentifierName`, `TSQualifiedName`, or `ThisExpression`
+    /// `identifier_reference`, `identifier_name`, `ts_qualified_name`, or
+    /// `this_expression`.
     left: NodeIndex,
-    /// `IdentifierName`
+    /// `identifier_name`
     right: NodeIndex,
 };
 
-/// The `typeof` type operator applied to a value reference. Extracts the type
-/// of an existing binding (or a dotted member path) at the usage site.
+/// The `typeof` type operator applied to a value reference. Extracts the
+/// type of an existing binding or a dotted member path at the usage site.
 ///
 /// ## Example
 /// ```ts
 /// let x: typeof console;
-/// //     ^^^^^^^^^^^^^^ TSTypeQuery (expr_name is an IdentifierReference)
+/// //     ^^^^^^^^^^^^^^ TSTypeQuery
 /// let y: typeof console.log;
 /// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (expr_name is a TSQualifiedName)
 /// let z: typeof Err<number>;
-/// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (type_arguments is a TSTypeParameterInstantiation)
+/// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (with type_arguments)
 /// let w: typeof import("foo").Bar;
 /// //     ^^^^^^^^^^^^^^^^^^^^^^^^ TSTypeQuery (expr_name is a TSImportType)
 /// ```
 pub const TSTypeQuery = struct {
-    /// `IdentifierReference`, `TSQualifiedName`, or `TSImportType`
+    /// `identifier_reference`, `ts_qualified_name`, or `ts_import_type`.
     expr_name: NodeIndex,
-    /// `TSTypeParameterInstantiation` or `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
 /// A reference to a named type imported from a module path, written
-/// `import("module").Foo<T>` in type position. The `import("...")` head names
-/// the module, an optional dotted `qualifier` selects a specific type from the
-/// module namespace, and an optional `<T, U>` instantiates a generic type.
+/// `import("module").Foo<T>` in type position. The `import("...")` head
+/// names the module. An optional dotted `qualifier` selects a specific type
+/// from the module namespace, and an optional `<T, U>` instantiates a
+/// generic type.
 ///
 /// ## Example
 /// ```ts
 /// type A = import("./mod");
-/// //       ^^^^^^^^^^^^^^^ TSImportType (qualifier = null, type_arguments = .null)
+/// //       ^^^^^^^^^^^^^^^ TSImportType
 /// type B = import("./mod").Foo;
 /// //       ^^^^^^^^^^^^^^^^^^^ TSImportType (qualifier is an IdentifierName)
 /// type C = import("./mod").Foo.Bar;
 /// //       ^^^^^^^^^^^^^^^^^^^^^^^ TSImportType (qualifier is a TSQualifiedName)
 /// type D = import("./mod").Foo<number>;
-/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSImportType (type_arguments is a TSTypeParameterInstantiation)
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSImportType (with type_arguments)
 /// type E = import("./mod", { with: { type: "json" } });
-/// //                        ^^^^^^^^^^^^^^^^^^^^^^^^ options (ObjectExpression)
+/// //                        ^^^^^^^^^^^^^^^^^^^^^^^^ options
 /// ```
 pub const TSImportType = struct {
-    /// the `StringLiteral` naming the imported module
+    /// `string_literal` naming the imported module.
     source: NodeIndex,
-    /// the second argument to `import(...)`, an `ObjectExpression` (the
-    /// import attributes object), or `.null` when absent
+    /// `object_expression` carrying the import attributes object. `.null`
+    /// when absent.
     options: NodeIndex = .null,
-    /// `IdentifierName` for a single segment qualifier, a `TSQualifiedName`
-    /// chain whose leaves are all `IdentifierName`s for a dotted qualifier, or
-    /// `.null` when there is no qualifier
+    /// `identifier_name` for a single segment, or a left-associative
+    /// `ts_qualified_name` chain whose leaves are all `identifier_name`s.
+    /// `.null` when there is no qualifier.
     qualifier: NodeIndex = .null,
-    /// `TSTypeParameterInstantiation` or `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
-/// A single `<T>` type parameter introduced by a generic declaration. Carries
-/// the parameter name along with the optional `extends` constraint, optional
-/// default type, and the three variance / invariance modifier keywords.
+/// A single `<T>` type parameter introduced by a generic declaration.
+/// Carries the parameter name along with the optional `extends` constraint,
+/// optional default type, and the three variance and invariance modifier
+/// keywords.
 ///
 /// The span starts at the first modifier keyword when present, otherwise at
-/// the name, and ends at the default (if present), the constraint (if
-/// present), or the name.
+/// the name, and ends at the default if present, the constraint if
+/// present, or the name.
 ///
 /// ## Example
 /// ```ts
@@ -2440,17 +2571,17 @@ pub const TSImportType = struct {
 /// //                 ^^^^^^^  const = true
 /// ```
 pub const TSTypeParameter = struct {
-    /// `BindingIdentifier` naming the parameter
+    /// `binding_identifier`
     name: NodeIndex,
-    /// `TSType` bound introduced by `extends`, or `.null` when absent
+    /// any ts type. `.null` when there is no `extends` constraint.
     constraint: NodeIndex = .null,
-    /// default `TSType` introduced by `=`, or `.null` when absent
+    /// any ts type. `.null` when there is no default.
     default: NodeIndex = .null,
-    /// `in` variance modifier keyword was present
+    /// true when the `in` variance modifier was written.
     in: bool = false,
-    /// `out` variance modifier keyword was present
+    /// true when the `out` variance modifier was written.
     out: bool = false,
-    /// `const` modifier keyword was present
+    /// true when the `const` modifier was written.
     @"const": bool = false,
 };
 
@@ -2465,7 +2596,7 @@ pub const TSTypeParameter = struct {
 /// //        ^  ^^^^^^^^^^^  params
 /// ```
 pub const TSTypeParameterDeclaration = struct {
-    /// the `TSTypeParameter` entries in source order
+    /// `ts_type_parameter[]`
     params: IndexRange,
 };
 
@@ -2480,16 +2611,17 @@ pub const TSTypeParameterDeclaration = struct {
 /// //             ^^^^^^  ^^^^^^ params
 /// ```
 pub const TSTypeParameterInstantiation = struct {
-    /// the `TSType` arguments in source order
+    /// any ts type
     params: IndexRange,
 };
 
 /// A literal value used in type position. Wraps a string, numeric, bigint,
-/// boolean, or no-substitution template literal directly, or a `UnaryExpression`
-/// when the literal is preceded by a `-` or `+` sign (for example `-1`).
+/// boolean, or no-substitution template literal directly, or a
+/// `unary_expression` when the literal is preceded by a `-` or `+` sign (for
+/// example `-1`).
 ///
-/// Template literals that contain interpolations use `TSTemplateLiteralType`
-/// rather than `TSLiteralType`. The `null` keyword uses `TSNullKeyword`.
+/// Template literals that contain interpolations use
+/// `ts_template_literal_type` instead. The `null` keyword uses `ts_null_keyword`.
 ///
 /// ## Example
 /// ```ts
@@ -2503,21 +2635,23 @@ pub const TSTypeParameterInstantiation = struct {
 /// //       ^^ TSLiteralType (literal is a UnaryExpression)
 /// ```
 pub const TSLiteralType = struct {
-    /// `StringLiteral`, `NumericLiteral`, `BigIntLiteral`, `BooleanLiteral`,
-    /// `TemplateLiteral`, or `UnaryExpression` wrapping one of the numeric kinds
+    /// `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`,
+    /// `template_literal`, or `unary_expression` wrapping one of the numeric
+    /// kinds.
     literal: NodeIndex,
 };
 
-/// A template literal used in type position with one or more interpolations.
+/// A template literal used in type position with one or more
+/// interpolations.
 ///
-/// Parallels the expression-level `TemplateLiteral` but with types filling the
-/// interpolation slots instead of expressions. `quasis` holds the static text
-/// spans as `TemplateElement` nodes and always has exactly `types.len + 1`
-/// elements. The final quasi is marked `tail = true`.
+/// Parallels the expression-level `template_literal` but with types filling
+/// the interpolation slots instead of expressions. `quasis` holds the
+/// static text spans as `template_element` nodes and always has exactly
+/// `types.len + 1` elements. The final quasi is marked `tail = true`.
 ///
 /// A template literal with no interpolations is still parsed as a
-/// `TSLiteralType` wrapping a `TemplateLiteral`, not as a
-/// `TSTemplateLiteralType`.
+/// `ts_literal_type` wrapping a `template_literal`, not as a
+/// `ts_template_literal_type`.
 ///
 /// The span covers the opening and closing backticks.
 ///
@@ -2534,27 +2668,27 @@ pub const TSLiteralType = struct {
 /// //                                              types:  [T, U]
 /// ```
 pub const TSTemplateLiteralType = struct {
-    /// the static text spans; always `types.len + 1` elements
+    /// `template_element[]`. Always `types.len + 1` elements.
     quasis: IndexRange,
-    /// the interpolated types, one per `${...}` slot
+    /// any ts type. One entry per `${...}` slot.
     types: IndexRange,
 };
 
 /// An array type. Applies the postfix `[]` suffix to an element type.
 ///
-/// Stacks naturally: `T[][]` is a `TSArrayType` whose `element_type` is another
-/// `TSArrayType`.
+/// Stacks naturally. `T[][]` is a `ts_array_type` whose `element_type` is
+/// another `ts_array_type`.
 ///
 /// ## Example
 /// ```ts
 /// let xs: number[];
 /// //      ^^^^^^^^ TSArrayType
-/// //      ^^^^^^ element_type (TSNumberKeyword)
+/// //      ^^^^^^ element_type
 /// let ys: string[][];
 /// //      ^^^^^^^^^^ TSArrayType (element_type is another TSArrayType)
 /// ```
 pub const TSArrayType = struct {
-    /// the inner type that `[]` is applied to
+    /// any ts type
     element_type: NodeIndex,
 };
 
@@ -2562,35 +2696,36 @@ pub const TSArrayType = struct {
 /// `index_type` on `object_type`, mirroring expression-level member access
 /// but in type position.
 ///
-/// Stacks naturally: `T[K][L]` is a `TSIndexedAccessType` whose `object_type`
-/// is another `TSIndexedAccessType`.
+/// Stacks naturally. `T[K][L]` is a `ts_indexed_access_type` whose
+/// `object_type` is another `ts_indexed_access_type`.
 ///
 /// ## Example
 /// ```ts
 /// type A = Person["age"];
 /// //       ^^^^^^^^^^^^^ TSIndexedAccessType
 /// //       ^^^^^^ object_type
-/// //              ^^^^^ index_type (TSLiteralType)
+/// //              ^^^^^ index_type
 /// type B = T[K];
 /// //       ^^^^ TSIndexedAccessType
 /// ```
 pub const TSIndexedAccessType = struct {
-    /// the type being indexed into
+    /// any ts type
     object_type: NodeIndex,
-    /// the type used as the index key
+    /// any ts type
     index_type: NodeIndex,
 };
 
 /// A tuple type. A fixed length sequence of positional or named elements
-/// whose types can differ from slot to slot. Elements may be marked optional
-/// with `?` and the trailing element may be a rest element with `...`.
+/// whose types can differ from slot to slot. Elements may be marked
+/// optional with `?` and the trailing element may be a rest element with
+/// `...`.
 ///
 /// Each entry in `element_types` is one of:
-/// - a plain `TSType` for a positional element
-/// - a `TSOptionalType` for `Type?` in positional form
-/// - a `TSRestType` for `...Type` in positional form, optionally wrapping a
-///   `TSNamedTupleMember`
-/// - a `TSNamedTupleMember` for `label: Type` or `label?: Type`
+/// - a plain any ts type for a positional element
+/// - a `ts_optional_type` for `Type?` in positional form
+/// - a `ts_rest_type` for `...Type` in positional form, optionally wrapping a
+///   `ts_named_tuple_member`
+/// - a `ts_named_tuple_member` for `label: Type` or `label?: Type`
 ///
 /// The span covers the opening `[` through the closing `]`.
 ///
@@ -2602,19 +2737,19 @@ pub const TSIndexedAccessType = struct {
 /// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTupleType with TSNamedTupleMember entries
 /// ```
 pub const TSTupleType = struct {
-    /// the tuple's elements in source order
+    /// any ts type, `ts_optional_type`, `ts_rest_type`, or `ts_named_tuple_member`.
     element_types: IndexRange,
 };
 
-/// A labeled element inside a tuple type. Carries a name that appears only as
-/// documentation in TypeScript (it has no runtime effect) alongside the element
-/// type. The whole member may be marked optional with a trailing `?` on the
-/// label; the `?` modifies the tuple slot itself rather than wrapping the inner
-/// type in a `TSOptionalType`.
+/// A labeled element inside a tuple type. Carries a name that appears only
+/// as documentation in TypeScript (it has no runtime effect) alongside the
+/// element type. The whole member may be marked optional with a trailing
+/// `?` on the label. The `?` modifies the tuple slot itself rather than
+/// wrapping the inner type in a `ts_optional_type`.
 ///
-/// When preceded by `...` the member is wrapped in a `TSRestType` whose inner
-/// is this `TSNamedTupleMember`, matching TypeScript's spec shape for named
-/// rest elements like `[...selectors: S]`.
+/// When preceded by `...` the member is wrapped in a `ts_rest_type` whose
+/// inner is this `ts_named_tuple_member`, matching TypeScript's spec shape for
+/// named rest elements like `[...selectors: S]`.
 ///
 /// ## Example
 /// ```ts
@@ -2625,49 +2760,49 @@ pub const TSTupleType = struct {
 /// //        ^^^^^^^^^^^^^^^^^ TSRestType wrapping TSNamedTupleMember
 /// ```
 pub const TSNamedTupleMember = struct {
-    /// `IdentifierName` labeling the element
+    /// `identifier_name`
     label: NodeIndex,
-    /// the `TSType` of the element
+    /// any ts type
     element_type: NodeIndex,
-    /// true when the label is followed by `?`
+    /// true when the label is followed by `?`.
     optional: bool = false,
 };
 
-/// An optional element inside a tuple type. Parsed as a `Type?` suffix on an
-/// unnamed tuple element; the `?` marks the slot as optional without changing
-/// the element's underlying type.
+/// An optional element inside a tuple type. Parsed as a `Type?` suffix on
+/// an unnamed tuple element. The `?` marks the slot as optional without
+/// changing the element's underlying type.
 ///
-/// Only valid as a direct tuple element. An optional marker on a named tuple
-/// element (`label?: Type`) is captured on `TSNamedTupleMember.optional`
-/// rather than producing a `TSOptionalType`.
+/// Only valid as a direct tuple element. An optional marker on a named
+/// tuple element (`label?: Type`) is captured on
+/// `TSNamedTupleMember.optional` rather than producing a `ts_optional_type`.
 ///
 /// ## Example
 /// ```ts
 /// type T = [number, string?];
 /// //                ^^^^^^^ TSOptionalType
-/// //                ^^^^^^ type_annotation (TSStringKeyword)
+/// //                ^^^^^^ type_annotation
 /// ```
 pub const TSOptionalType = struct {
-    /// the inner `TSType` that is made optional
+    /// any ts type
     type_annotation: NodeIndex,
 };
 
-/// A rest element inside a tuple type. Marks the trailing slot as consuming
-/// zero or more elements whose type is the inner annotation.
+/// A rest element inside a tuple type. Marks the trailing slot as
+/// consuming zero or more elements whose type is the inner annotation.
 ///
-/// The inner may be any `TSType` (typically an array or tuple type) or a
-/// `TSNamedTupleMember` for named rest elements like `[...rest: T[]]`.
+/// The inner may be any any ts type (typically an array or tuple type) or a
+/// `ts_named_tuple_member` for named rest elements like `[...rest: T[]]`.
 ///
 /// ## Example
 /// ```ts
 /// type T = [number, ...string[]];
 /// //                ^^^^^^^^^^^ TSRestType
-/// //                   ^^^^^^^^ type_annotation (TSArrayType)
+/// //                   ^^^^^^^^ type_annotation
 /// type U = [...rest: number[]];
 /// //        ^^^^^^^^^^^^^^^^^ TSRestType wrapping TSNamedTupleMember
 /// ```
 pub const TSRestType = struct {
-    /// the inner type consumed by `...`
+    /// any ts type or `ts_named_tuple_member`.
     type_annotation: NodeIndex,
 };
 
@@ -2682,9 +2817,9 @@ pub const TSRestType = struct {
 /// //     ^^^^^^^ TSJSDocNullableType (postfix = true)
 /// ```
 pub const TSJSDocNullableType = struct {
-    /// the inner `TSType` the `?` applies to
+    /// any ts type
     type_annotation: NodeIndex,
-    /// true when the `?` follows the type, false when it precedes it
+    /// true when the `?` follows the type, false when it precedes it.
     postfix: bool = false,
 };
 
@@ -2699,9 +2834,9 @@ pub const TSJSDocNullableType = struct {
 /// //     ^^^^^^^ TSJSDocNonNullableType (postfix = true)
 /// ```
 pub const TSJSDocNonNullableType = struct {
-    /// the inner `TSType` the `!` applies to
+    /// any ts type
     type_annotation: NodeIndex,
-    /// true when the `!` follows the type, false when it precedes it
+    /// true when the `!` follows the type, false when it precedes it.
     postfix: bool = false,
 };
 
@@ -2718,10 +2853,10 @@ pub const TSJSDocUnknownType = struct {};
 /// A union type. Combines two or more types with `|`, representing a value
 /// that is any one of the constituents.
 ///
-/// Binds looser than `TSIntersectionType`, so `A & B | C` parses as
+/// Binds looser than `ts_intersection_type`, so `A & B | C` parses as
 /// `(A & B) | C`. A leading `|` before the first operand is allowed and is
-/// preserved in the span: `type A = | string` yields a single-operand
-/// `TSUnionType` whose span starts at the leading `|` rather than at the
+/// preserved in the span. `type A = | string` yields a single-operand
+/// `ts_union_type` whose span starts at the leading `|` rather than at the
 /// first operand.
 ///
 /// ## Example
@@ -2733,17 +2868,17 @@ pub const TSJSDocUnknownType = struct {};
 ///     | { kind: "err"; message: string };
 /// ```
 pub const TSUnionType = struct {
-    /// the constituent types in source order
+    /// any ts type
     types: IndexRange,
 };
 
-/// An intersection type. Combines two or more types with `&`, representing a
-/// value that satisfies every constituent simultaneously.
+/// An intersection type. Combines two or more types with `&`, representing
+/// a value that satisfies every constituent simultaneously.
 ///
-/// Binds tighter than `TSUnionType`, so `A | B & C` parses as `A | (B & C)`.
-/// A leading `&` before the first operand is allowed and is preserved in the
-/// span: `type A = & X` yields a single-operand `TSIntersectionType` whose
-/// span starts at the leading `&` rather than at the first operand.
+/// Binds tighter than `ts_union_type`, so `A | B & C` parses as `A | (B & C)`.
+/// A leading `&` before the first operand is allowed and is preserved in
+/// the span. `type A = & X` yields a single-operand `ts_intersection_type`
+/// whose span starts at the leading `&` rather than at the first operand.
 ///
 /// ## Example
 /// ```ts
@@ -2752,14 +2887,14 @@ pub const TSUnionType = struct {
 /// type B = { name: string } & { age: number } & Serializable;
 /// ```
 pub const TSIntersectionType = struct {
-    /// the constituent types in source order
+    /// any ts type
     types: IndexRange,
 };
 
 /// A conditional type. Selects between two branches based on whether
 /// `check_type` is assignable to `extends_type`.
 ///
-/// See: [TypeScript Handbook - Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html)
+/// See: [TypeScript Handbook Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html)
 ///
 /// ## Example
 /// ```ts
@@ -2771,22 +2906,22 @@ pub const TSIntersectionType = struct {
 /// //                                            ^^^^ false_type
 /// ```
 pub const TSConditionalType = struct {
-    /// the type on the left of `extends`
+    /// any ts type
     check_type: NodeIndex,
-    /// the type on the right of `extends` that `check_type` is tested against
+    /// any ts type
     extends_type: NodeIndex,
-    /// the type selected when `check_type` is assignable to `extends_type`
+    /// any ts type
     true_type: NodeIndex,
-    /// the type selected when `check_type` is not assignable to `extends_type`
+    /// any ts type
     false_type: NodeIndex,
 };
 
-/// An `infer` type placeholder. Introduces a new type variable that captures
-/// a position inside the extends branch of a conditional type, made available
-/// in the true branch of that conditional.
+/// An `infer` type placeholder. Introduces a new type variable that
+/// captures a position inside the extends branch of a conditional type,
+/// made available in the true branch of that conditional.
 ///
 /// The span starts at the `infer` keyword and ends at the name or the
-/// constraint (when present).
+/// constraint when present.
 ///
 /// ## Example
 /// ```ts
@@ -2798,15 +2933,14 @@ pub const TSConditionalType = struct {
 /// //                              ^^^^^^^^^^^^^^^^ type_parameter (name + constraint)
 /// ```
 pub const TSInferType = struct {
-    /// the `TSTypeParameter` holding the introduced name and optional
-    /// `extends` constraint
+    /// `ts_type_parameter`
     type_parameter: NodeIndex,
 };
 
-/// The prefix operator used by `TSTypeOperator`.
+/// The prefix operator used by `ts_type_operator`.
 ///
-/// `keyof` produces the union of property keys of the operand, `unique` marks
-/// a unique symbol type (only meaningful before `symbol`), and `readonly`
+/// `keyof` produces the union of property keys of the operand. `unique`
+/// marks a unique symbol type (only meaningful before `symbol`). `readonly`
 /// applies to tuple and array types to make their elements immutable.
 pub const TSTypeOperatorKind = enum {
     keyof,
@@ -2838,9 +2972,8 @@ pub const TSTypeOperatorKind = enum {
 /// //       ^^^^^^^^^^^^^^^^^ TSTypeOperator (operator = readonly)
 /// ```
 pub const TSTypeOperator = struct {
-    /// the prefix operator applied to the inner type
     operator: TSTypeOperatorKind,
-    /// the type the operator is applied to
+    /// any ts type
     type_annotation: NodeIndex,
 };
 
@@ -2858,7 +2991,7 @@ pub const TSTypeOperator = struct {
 /// //       ^^^^^^^^^^^^ TSParenthesizedType
 /// ```
 pub const TSParenthesizedType = struct {
-    /// the inner type wrapped by the parentheses
+    /// any ts type
     type_annotation: NodeIndex,
 };
 
@@ -2874,12 +3007,12 @@ pub const TSParenthesizedType = struct {
 /// //       ^^^^^^^^^^^^^^ TSFunctionType with type_parameters
 /// ```
 pub const TSFunctionType = struct {
-    /// the generic `<...>` declaration, or `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// the parameter list as a `FormalParameters` node
+    /// `formal_parameters`
     params: NodeIndex,
-    /// a `TSTypeAnnotation` wrapping the return type, with its span starting
-    /// at the `=>` token
+    /// `ts_type_annotation` wrapping the return type. The wrapper's span
+    /// starts at the `=>` token.
     return_type: NodeIndex,
 };
 
@@ -2895,22 +3028,22 @@ pub const TSFunctionType = struct {
 /// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSConstructorType (abstract = true)
 /// ```
 pub const TSConstructorType = struct {
-    /// the generic `<...>` declaration, or `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// the parameter list as a `FormalParameters` node
+    /// `formal_parameters`
     params: NodeIndex,
-    /// a `TSTypeAnnotation` wrapping the return type, with its span starting
-    /// at the `=>` token
+    /// `ts_type_annotation` wrapping the return type. The wrapper's span
+    /// starts at the `=>` token.
     return_type: NodeIndex,
-    /// true when the constructor is preceded by `abstract`
+    /// true when the constructor is preceded by `abstract`.
     abstract: bool = false,
 };
 
 /// A TypeScript type predicate. Appears only in a function's return-type
-/// position and narrows the type of a parameter (or `this`) in the call site's
-/// control-flow analysis.
+/// position and narrows the type of a parameter (or `this`) in the call
+/// site's control-flow analysis.
 ///
-/// See: [TypeScript Handbook - Using type predicates](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)
+/// See: [TypeScript Handbook Type Predicates](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)
 ///
 /// ## Example
 /// ```ts
@@ -2919,22 +3052,23 @@ pub const TSConstructorType = struct {
 /// function assertNumber(x: unknown): asserts x is number { ... }
 /// //                                 ^^^^^^^^^^^^^^^^^^^ TSTypePredicate (asserts = true)
 /// function assert(c: boolean): asserts c { ... }
-/// //                           ^^^^^^^^^ TSTypePredicate (asserts = true, type_annotation = null)
+/// //                           ^^^^^^^^^ TSTypePredicate (asserts = true, type_annotation = .null)
 /// ```
 pub const TSTypePredicate = struct {
-    /// the parameter being narrowed. an `IdentifierName` for a named parameter,
-    /// or a `TSThisType` for the implicit `this` parameter
+    /// `identifier_name` for a named parameter, or `ts_this_type` for the
+    /// implicit `this` parameter.
     parameter_name: NodeIndex,
-    /// a `TSTypeAnnotation` wrapping the narrowed type, with the wrapper's
-    /// span equal to the inner type's span. `.null` for a bare `asserts x`
-    /// predicate that carries no `is Type` clause
+    /// `ts_type_annotation` wrapping the narrowed type. The wrapper's span
+    /// equals the inner type's span. `.null` for a bare `asserts x`
+    /// predicate that carries no `is Type` clause.
     type_annotation: NodeIndex = .null,
-    /// true when the predicate is introduced by the `asserts` keyword
+    /// true when the predicate is introduced by the `asserts` keyword.
     asserts: bool = false,
 };
 
-/// An anonymous object type. Holds a list of signatures (properties, methods,
-/// index signatures, call signatures, construct signatures) in source order.
+/// An anonymous object type. Holds a list of signatures (properties,
+/// methods, index signatures, call signatures, construct signatures) in
+/// source order.
 ///
 /// ## Example
 /// ```ts
@@ -2944,16 +3078,16 @@ pub const TSTypePredicate = struct {
 /// //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTypeLiteral
 /// ```
 pub const TSTypeLiteral = struct {
-    /// the signatures in source order
+    /// `ts_property_signature`, `ts_method_signature`, `ts_call_signature_declaration`, `ts_construct_signature_declaration`, or `ts_index_signature`
     members: IndexRange,
 };
 
-/// The tri state `+` / `-` modifier that may decorate the `?` or `readonly`
-/// slots of a `TSMappedType`.
+/// The tri-state `+` or `-` modifier that may decorate the `?` or
+/// `readonly` slots of a `ts_mapped_type`.
 ///
 /// `none` means the modifier keyword is absent. `true` means it is present
-/// without a sign. `plus` and `minus` explicitly add (`+?`, `+readonly`) or
-/// remove (`-?`, `-readonly`) the modifier from the mapped property.
+/// without a sign. `plus` and `minus` explicitly add (`+?`, `+readonly`)
+/// or remove (`-?`, `-readonly`) the modifier from the mapped property.
 pub const TSMappedTypeModifier = enum(u2) {
     none,
     true,
@@ -2961,18 +3095,18 @@ pub const TSMappedTypeModifier = enum(u2) {
     minus,
 };
 
-/// A TypeScript mapped type. Projects every key in a union to a new property
-/// type: `{ [K in Keys]: Value }`. Supports the `as` remapping clause, the
-/// `?` / `+?` / `-?` optionality modifiers, and the `readonly` / `+readonly`
-/// / `-readonly` mutability modifiers.
+/// A TypeScript mapped type. Projects every key in a union to a new
+/// property type: `{ [K in Keys]: Value }`. Supports the `as` remapping
+/// clause, the `?` / `+?` / `-?` optionality modifiers, and the
+/// `readonly` / `+readonly` / `-readonly` mutability modifiers.
 ///
-/// See: [TypeScript Handbook - Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html)
+/// See: [TypeScript Handbook Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html)
 ///
 /// ## Example
 /// ```ts
 /// type Readonly<T> = { readonly [K in keyof T]: T[K] };
 /// //                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSMappedType
-/// //                            ^ key (BindingIdentifier)
+/// //                            ^ key
 /// //                                  ^^^^^^^ constraint
 /// //                                              ^^^^ type_annotation
 /// type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -2983,29 +3117,28 @@ pub const TSMappedTypeModifier = enum(u2) {
 /// //                                ^^ name_type = template literal type
 /// ```
 pub const TSMappedType = struct {
-    /// the key type parameter. a `BindingIdentifier` that names the binding
-    /// introduced by the `in` clause (`K` in `[K in T]`). visible inside
-    /// `name_type` and `type_annotation`.
+    /// `binding_identifier` naming the binding introduced by the `in` clause
+    /// (`K` in `[K in T]`). Visible inside `name_type` and
+    /// `type_annotation`.
     key: NodeIndex,
-    /// the constraint the key iterates over, to the right of `in`.
+    /// any ts type. The constraint the key iterates over, to the right of
+    /// `in`.
     constraint: NodeIndex,
-    /// the optional remapping type supplied after `as`. `.null` when no `as`
-    /// clause is present.
+    /// any ts type. The optional remapping type supplied after `as`. `.null`
+    /// when no `as` clause is present.
     name_type: NodeIndex = .null,
-    /// the value type following `:`. `.null` when the annotation is omitted
-    /// (`{ [K in T] }` is accepted by the grammar).
+    /// any ts type. `.null` when the annotation is omitted (`{ [K in T] }`
+    /// is accepted by the grammar).
     type_annotation: NodeIndex = .null,
-    /// the `?` modifier. `none` decodes to `false`; `true`, `plus`, and
-    /// `minus` decode to `true`, `"+"`, and `"-"` respectively.
+    /// the `?` modifier
     optional: TSMappedTypeModifier = .none,
-    /// the `readonly` modifier. `none` decodes to `null`; `true`, `plus`, and
-    /// `minus` decode to `true`, `"+"`, and `"-"` respectively.
+    /// the `readonly` modifier
     readonly: TSMappedTypeModifier = .none,
 };
 
-/// A property declaration inside a type literal or interface body. Written as
-/// `key: Type`, with optional `readonly` and `?` modifiers. A missing type
-/// annotation is allowed and decodes to `typeAnnotation: null`.
+/// A property declaration inside a type literal or interface body. Written
+/// as `key: Type`, with optional `readonly` and `?` modifiers. A missing
+/// type annotation is allowed.
 ///
 /// ## Example
 /// ```ts
@@ -3015,21 +3148,20 @@ pub const TSMappedType = struct {
 /// //                      ^^^^^^^^ type_annotation
 /// ```
 pub const TSPropertySignature = struct {
-    /// `IdentifierName`, `StringLiteral`, `NumericLiteral`, `PrivateIdentifier`,
-    /// or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
-    /// `TSTypeAnnotation` or `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
-    /// true when the key is written inside `[...]`
+    /// true when the key is written inside `[...]`.
     computed: bool = false,
-    /// true when a `?` follows the key
+    /// true when a `?` follows the key.
     optional: bool = false,
-    /// true when preceded by the `readonly` modifier
+    /// true when preceded by the `readonly` modifier.
     readonly: bool = false,
 };
 
-/// The kind of a method signature. Accessors use `get` or `set`; all other
-/// method signatures use `method`.
+/// The kind of a method signature. Accessors use `get` or `set`. All
+/// other method signatures use `method`.
 pub const TSMethodSignatureKind = enum(u2) {
     method,
     get,
@@ -3044,12 +3176,13 @@ pub const TSMethodSignatureKind = enum(u2) {
     }
 };
 
-/// A method, getter, or setter declaration inside a type literal or interface
-/// body. Carries the key, an optional generic parameter list, the parameter
-/// list, and an optional return type.
+/// A method, getter, or setter declaration inside a type literal or
+/// interface body. Carries the key, an optional generic parameter list,
+/// the parameter list, and an optional return type.
 ///
-/// Getters accept no parameters and may declare a return type. Setters accept
-/// exactly one parameter and carry no return type (`returnType` is `.null`).
+/// Getters accept no parameters and may declare a return type. Setters
+/// accept exactly one parameter and carry no return type
+/// (`return_type = .null`).
 ///
 /// ## Example
 /// ```ts
@@ -3059,32 +3192,32 @@ pub const TSMethodSignatureKind = enum(u2) {
 ///   get size(): number;
 /// //^^^^^^^^^^^^^^^^^^ TSMethodSignature (kind = get)
 ///   set name(v: string);
-/// //^^^^^^^^^^^^^^^^^^^ TSMethodSignature (kind = set, return_type = .null)
+/// //^^^^^^^^^^^^^^^^^^^ TSMethodSignature (kind = set)
 ///   optional?<T>(x: T): T;
 /// //^^^^^^^^^^^^^^^^^^^^^ TSMethodSignature (optional = true, type_parameters set)
 /// };
 /// ```
 pub const TSMethodSignature = struct {
-    /// `IdentifierName`, `StringLiteral`, `NumericLiteral`, `PrivateIdentifier`,
-    /// or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
-    /// `TSTypeParameterDeclaration` or `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// the parameter list as a `FormalParameters` node
+    /// `formal_parameters`
     params: NodeIndex,
-    /// `TSTypeAnnotation` or `.null` when absent (setters always have `.null`)
+    /// `ts_type_annotation`. `.null` when absent. Setters always have
+    /// `.null`.
     return_type: NodeIndex = .null,
-    /// method, getter, or setter
     kind: TSMethodSignatureKind = .method,
-    /// true when the key is written inside `[...]`
+    /// true when the key is written inside `[...]`.
     computed: bool = false,
-    /// true when a `?` follows the key
+    /// true when a `?` follows the key.
     optional: bool = false,
 };
 
-/// A bare call signature inside a type literal or interface body. Written as
-/// `(params): ReturnType`. Distinct from `TSFunctionType`, which is used as a
-/// standalone type. Call signatures are members of an enclosing object type.
+/// A bare call signature inside a type literal or interface body. Written
+/// as `(params): ReturnType`. Distinct from `ts_function_type`, which is
+/// used as a standalone type. Call signatures are members of an enclosing
+/// object type.
 ///
 /// ## Example
 /// ```ts
@@ -3092,17 +3225,17 @@ pub const TSMethodSignature = struct {
 /// //                ^^^^^^^^^^^^^ TSCallSignatureDeclaration
 /// ```
 pub const TSCallSignatureDeclaration = struct {
-    /// `TSTypeParameterDeclaration` or `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// the parameter list as a `FormalParameters` node
+    /// `formal_parameters`
     params: NodeIndex,
-    /// `TSTypeAnnotation` or `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     return_type: NodeIndex = .null,
 };
 
-/// A bare construct signature inside a type literal or interface body. Written
-/// as `new (params): ReturnType`. Distinct from `TSConstructorType`, which is
-/// used as a standalone type.
+/// A bare construct signature inside a type literal or interface body.
+/// Written as `new (params): ReturnType`. Distinct from `ts_constructor_type`,
+/// which is used as a standalone type.
 ///
 /// ## Example
 /// ```ts
@@ -3110,35 +3243,35 @@ pub const TSCallSignatureDeclaration = struct {
 /// //            ^^^^^^^^^^^^^^^^^ TSConstructSignatureDeclaration
 /// ```
 pub const TSConstructSignatureDeclaration = struct {
-    /// `TSTypeParameterDeclaration` or `.null` when absent
+    /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
-    /// the parameter list as a `FormalParameters` node
+    /// `formal_parameters`
     params: NodeIndex,
-    /// `TSTypeAnnotation` or `.null` when absent
+    /// `ts_type_annotation`. `.null` when absent.
     return_type: NodeIndex = .null,
 };
 
-/// An index signature inside a type literal, interface body, or class body.
-/// Written as `[name: KeyType]: ValueType`, optionally preceded by
-/// `readonly`. The parameter list is a small array of identifier-like bindings
-/// carrying a type annotation. Almost always one entry.
+/// An index signature inside a type literal, interface body, or class
+/// body. Written as `[name: KeyType]: ValueType`, optionally preceded by
+/// `readonly`. The parameter list is a small array of identifier-like
+/// bindings carrying a type annotation. Almost always one entry.
 ///
 /// ## Example
 /// ```ts
 /// type Dict = { [k: string]: number };
 /// //            ^^^^^^^^^^^^^^^^^^^^ TSIndexSignature
-/// //             ^^^^^^^^^ parameters (one binding: k with string annotation)
-/// //                         ^^^^^^^ type_annotation (number)
+/// //             ^^^^^^^^^ parameters
+/// //                         ^^^^^^^ type_annotation
 /// type ReadOnly = { readonly [i: number]: string };
 /// //                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSIndexSignature (readonly)
 /// ```
 pub const TSIndexSignature = struct {
-    /// the parameter bindings in source order. each entry is a
-    /// `BindingIdentifier` that carries its own type annotation.
+    /// `binding_identifier[]`. Each entry carries its own
+    /// `type_annotation`.
     parameters: IndexRange,
-    /// `TSTypeAnnotation` for the value type
+    /// `ts_type_annotation`
     type_annotation: NodeIndex,
-    /// true when preceded by the `readonly` modifier
+    /// true when preceded by the `readonly` modifier.
     readonly: bool = false,
     /// true for class-body index signatures marked `static`.
     static: bool = false,
@@ -3148,63 +3281,65 @@ pub const TSIndexSignature = struct {
 /// optionally parameterized by one or more type parameters, and optionally
 /// prefixed by the `declare` modifier for ambient contexts.
 ///
-/// See: [TypeScript Handbook - Type Aliases](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases)
+/// See: [TypeScript Handbook Type Aliases](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases)
 ///
 /// ## Example
 /// ```ts
 /// type Maybe<T> = T | null | undefined;
-/// //   ^^^^^ id (BindingIdentifier)
-/// //        ^^^ type_parameters (TSTypeParameterDeclaration)
-/// //              ^^^^^^^^^^^^^^^^^^^^ type_annotation (TSType)
+/// //   ^^^^^ id
+/// //        ^^^ type_parameters
+/// //              ^^^^^^^^^^^^^^^^^^^^ type_annotation
 /// declare type Id = number;
 /// // ^^^^^^^ declare = true
 /// ```
 pub const TSTypeAliasDeclaration = struct {
-    /// the alias name, a `BindingIdentifier`
+    /// `binding_identifier`
     id: NodeIndex,
-    /// `TSTypeParameterDeclaration` or `.null` when the alias has no `<T>` list
+    /// `ts_type_parameter_declaration`. `.null` when the alias has no `<T>`
+    /// list.
     type_parameters: NodeIndex = .null,
-    /// the aliased type, stored as a bare `TSType` without a wrapping
-    /// `TSTypeAnnotation` node
+    /// any ts type. Stored as a bare type without a wrapping
+    /// `ts_type_annotation` node.
     type_annotation: NodeIndex,
-    /// true when preceded by the `declare` modifier
+    /// true when preceded by the `declare` modifier.
     declare: bool = false,
 };
 
-/// A TypeScript `interface` declaration. Introduces a named structural type
-/// with an optional list of parent interfaces and a body of signatures. May
-/// be prefixed by the `declare` modifier for ambient contexts.
+/// A TypeScript `interface` declaration. Introduces a named structural
+/// type with an optional list of parent interfaces and a body of
+/// signatures. May be prefixed by the `declare` modifier for ambient
+/// contexts.
 ///
-/// See: [TypeScript Handbook - Interfaces](https://www.typescriptlang.org/docs/handbook/2/objects.html#interfaces)
+/// See: [TypeScript Handbook Interfaces](https://www.typescriptlang.org/docs/handbook/2/objects.html#interfaces)
 ///
 /// ## Example
 /// ```ts
 /// interface Foo<T> extends Bar, Base.Thing<T> { a: T; b(): void }
 /// //        ^^^ id
 /// //           ^^^ type_parameters
-/// //                       ^^^^^^^^^^^^^^^^^^ extends (two TSInterfaceHeritage)
-/// //                                         ^^^^^^^^^^^^^^^^^^^^^^ body (TSInterfaceBody)
+/// //                       ^^^^^^^^^^^^^^^^^^ extends
+/// //                                         ^^^^^^^^^^^^^^^^^^^^^^ body
 /// declare interface Id { x: number }
 /// // ^^^^^^^ declare = true
 /// ```
 pub const TSInterfaceDeclaration = struct {
-    /// the interface name, a `BindingIdentifier`
+    /// `binding_identifier`
     id: NodeIndex,
-    /// a `TSTypeParameterDeclaration` or `.null` when the interface has no
-    /// `<T>` list
+    /// `ts_type_parameter_declaration`. `.null` when the interface has no
+    /// `<T>` list.
     type_parameters: NodeIndex = .null,
-    /// the list of `TSInterfaceHeritage` nodes that follow `extends`. empty
-    /// when the interface has no `extends` clause.
+    /// `ts_interface_heritage[]`. Empty when the interface has no `extends`
+    /// clause.
     extends: IndexRange = .empty,
-    /// the `TSInterfaceBody` holding the member signatures
+    /// `ts_interface_body`
     body: NodeIndex,
-    /// true when preceded by the `declare` modifier
+    /// true when preceded by the `declare` modifier.
     declare: bool = false,
 };
 
 /// The body of an interface. Holds the signatures (property, method, call,
 /// construct, index) in source order. Shares the same signature family as
-/// `TSTypeLiteral`.
+/// `ts_type_literal`.
 ///
 /// ## Example
 /// ```ts
@@ -3212,79 +3347,80 @@ pub const TSInterfaceDeclaration = struct {
 /// //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSInterfaceBody
 /// ```
 pub const TSInterfaceBody = struct {
-    /// the signatures in source order
+    /// `ts_property_signature`, `ts_method_signature`, `ts_call_signature_declaration`, `ts_construct_signature_declaration`, or `ts_index_signature`
     body: IndexRange,
 };
 
 /// One entry in an interface's `extends` clause. The parent interface is
-/// identified by a runtime expression (an identifier path) with an optional
-/// `<T, U>` type argument list.
+/// identified by a runtime expression (an identifier path) with an
+/// optional `<T, U>` type argument list.
 ///
 /// ## Example
 /// ```ts
 /// interface Foo extends Bar, Base.Thing<T> {}
-/// //                    ^^^ TSInterfaceHeritage (expression = Identifier "Bar")
+/// //                    ^^^ TSInterfaceHeritage (expression = IdentifierReference "Bar")
 /// //                         ^^^^^^^^^^^^^^^ TSInterfaceHeritage (expression = MemberExpression, type_arguments = <T>)
 /// ```
 pub const TSInterfaceHeritage = struct {
-    /// the parent interface expression. an `IdentifierReference` or a
-    /// left-associative `MemberExpression` chain of identifier names. calls,
-    /// computed access, and optional chaining are rejected by the grammar.
+    /// `identifier_reference` or a left-associative `member_expression`
+    /// chain of identifier names. Calls, computed access, and optional
+    /// chaining are rejected by the grammar.
     expression: NodeIndex,
-    /// a `TSTypeParameterInstantiation` or `.null` when the heritage has no
-    /// `<T>` type arguments
+    /// `ts_type_parameter_instantiation`. `.null` when the heritage has no
+    /// `<T>` arguments.
     type_arguments: NodeIndex = .null,
 };
 
-/// One entry in a class's `implements` clause. The implemented interface is
-/// identified by a runtime expression (an identifier path) with an optional
-/// `<T, U>` type argument list.
+/// One entry in a class's `implements` clause. The implemented interface
+/// is identified by a runtime expression (an identifier path) with an
+/// optional `<T, U>` type argument list.
 ///
 /// ## Example
 /// ```ts
 /// class Foo implements Bar, Base.Thing<T> {}
-/// //                   ^^^ TSClassImplements (expression = Identifier "Bar")
+/// //                   ^^^ TSClassImplements (expression = IdentifierReference "Bar")
 /// //                        ^^^^^^^^^^^^^^^ TSClassImplements (expression = MemberExpression, type_arguments = <T>)
 /// ```
 pub const TSClassImplements = struct {
-    /// the implemented type expression. an `IdentifierReference` or a
-    /// left-associative `MemberExpression` chain of identifier names. calls,
-    /// computed access, and optional chaining are rejected by the grammar.
+    /// `identifier_reference` or a left-associative `member_expression`
+    /// chain of identifier names. Calls, computed access, and optional
+    /// chaining are rejected by the grammar.
     expression: NodeIndex,
-    /// a `TSTypeParameterInstantiation` or `.null` when the entry has no
-    /// `<T>` type arguments
+    /// `ts_type_parameter_instantiation`. `.null` when the entry has no
+    /// `<T>` arguments.
     type_arguments: NodeIndex = .null,
 };
 
-/// A TypeScript `enum` declaration. Creates a named runtime binding that also
-/// acts as a type. May be prefixed by `const` (enum whose members are inlined
-/// at use sites) and/or `declare` (ambient declaration, no emitted runtime).
+/// A TypeScript `enum` declaration. Creates a named runtime binding that
+/// also acts as a type. May be prefixed by `const` (an enum whose members
+/// are inlined at use sites) or `declare` (ambient declaration, no emitted
+/// runtime), or both.
 ///
-/// See: [TypeScript Handbook - Enums](https://www.typescriptlang.org/docs/handbook/enums.html)
+/// See: [TypeScript Handbook Enums](https://www.typescriptlang.org/docs/handbook/enums.html)
 ///
 /// ## Example
 /// ```ts
 /// enum Color { Red, Green = 2, Blue }
 /// //   ^^^^^ id
-/// //         ^^^^^^^^^^^^^^^^^^^^^^^^ body (TSEnumBody)
+/// //         ^^^^^^^^^^^^^^^^^^^^^^^^ body
 /// const enum Flags { A = 1, B = 2 }
 /// // ^^^^^ is_const = true
 /// declare enum Ambient { X, Y }
 /// // ^^^^^^^ declare = true
 /// ```
 pub const TSEnumDeclaration = struct {
-    /// the enum name, a `BindingIdentifier`
+    /// `binding_identifier`
     id: NodeIndex,
-    /// the `TSEnumBody` holding the member list
+    /// `ts_enum_body`
     body: NodeIndex,
-    /// true when preceded by the `const` modifier
+    /// true when preceded by the `const` modifier.
     is_const: bool = false,
-    /// true when preceded by the `declare` modifier
+    /// true when preceded by the `declare` modifier.
     declare: bool = false,
 };
 
 /// The body of an enum declaration. Holds the members in source order,
-/// delimited by commas (trailing comma permitted).
+/// delimited by commas (a trailing comma is permitted).
 ///
 /// ## Example
 /// ```ts
@@ -3292,7 +3428,7 @@ pub const TSEnumDeclaration = struct {
 /// //       ^^^^^^^^^^^^^^ TSEnumBody
 /// ```
 pub const TSEnumBody = struct {
-    /// the enum members in source order
+    /// `ts_enum_member[]`
     members: IndexRange,
 };
 
@@ -3303,23 +3439,22 @@ pub const TSEnumBody = struct {
 /// ## Example
 /// ```ts
 /// enum E {
-///     A,        // id = Identifier "A",    initializer = null
-///     B = 1,    // id = Identifier "B",    initializer = NumericLiteral 1
-///     "s" = 2,  // id = StringLiteral "s", initializer = NumericLiteral 2
+///     A,        // id = IdentifierName "A",  initializer = .null
+///     B = 1,    // id = IdentifierName "B",  initializer = NumericLiteral 1
+///     "s" = 2,  // id = StringLiteral "s",   initializer = NumericLiteral 2
 /// }
 /// ```
 pub const TSEnumMember = struct {
-    /// the member name. one of `IdentifierName`, `StringLiteral`, or
-    /// `TemplateLiteral`. when the source used the computed `[...]` form,
-    /// `computed` is true.
+    /// `identifier_name`, `string_literal`, or `template_literal`. When the
+    /// source used the computed `[...]` form, `computed` is true.
     id: NodeIndex,
-    /// the `= expr` value for this member, or `.null` when absent
+    /// any expression. `.null` when there is no `=` initializer.
     initializer: NodeIndex = .null,
-    /// true when the source wrote the name as a computed key `[...]`
+    /// true when the source wrote the name as a computed key `[...]`.
     computed: bool = false,
 };
 
-/// The keyword used to introduce a `TSModuleDeclaration`.
+/// The keyword used to introduce a `ts_module_declaration`.
 pub const TSModuleDeclarationKind = enum(u1) {
     namespace,
     module,
@@ -3334,32 +3469,31 @@ pub const TSModuleDeclarationKind = enum(u1) {
 
 /// A TypeScript `namespace` or `module` declaration.
 ///
-/// See: [TypeScript Handbook - Namespaces](https://www.typescriptlang.org/docs/handbook/namespaces.html)
+/// See: [TypeScript Handbook Namespaces](https://www.typescriptlang.org/docs/handbook/namespaces.html)
 ///
 /// ## Example
 /// ```ts
 /// namespace Foo { ... }
-/// //        ^^^ id (BindingIdentifier), kind = namespace
+/// //        ^^^ id, kind = namespace
 /// namespace A.B.C { ... }
 /// //        ^^^^^ id (TSQualifiedName, left-associative)
 /// declare module "./mod" { ... }
 /// //             ^^^^^^^ id (StringLiteral), kind = module, declare = true
 /// ```
 pub const TSModuleDeclaration = struct {
-    /// the name. one of `BindingIdentifier`, `StringLiteral`, or `TSQualifiedName`.
+    /// `binding_identifier`, `string_literal`, or `ts_qualified_name`.
     id: NodeIndex,
-    /// the `TSModuleBlock` body, or `.null` for bodyless forward declarations
-    /// like `declare module "foo";`.
+    /// `ts_module_block`. `.null` for body-less forward declarations like
+    /// `declare module "foo";`.
     body: NodeIndex = .null,
-    /// which keyword introduced the declaration.
     kind: TSModuleDeclarationKind,
     /// true when preceded by the `declare` modifier.
     declare: bool = false,
 };
 
-/// The body of a `namespace`, `module`, or `declare global` declaration. Holds
-/// the inner statements and declarations in source order, delimited by the
-/// enclosing `{` and `}`.
+/// The body of a `namespace`, `module`, or `declare global` declaration.
+/// Holds the inner statements and declarations in source order, delimited
+/// by the enclosing `{` and `}`.
 ///
 /// ## Example
 /// ```ts
@@ -3367,7 +3501,7 @@ pub const TSModuleDeclaration = struct {
 /// //            ^^^^^^^^^^^^^^^^^^^^^^^^^^ TSModuleBlock
 /// ```
 pub const TSModuleBlock = struct {
-    /// the inner statements in source order.
+    /// any statement
     body: IndexRange,
 };
 
@@ -3376,40 +3510,41 @@ pub const TSModuleBlock = struct {
 /// ## Example
 /// ```ts
 /// declare global { interface Window { x: number } }
-/// //      ^^^^^^ id (IdentifierName "global")
-/// //             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ body (TSModuleBlock)
+/// //      ^^^^^^ id
+/// //             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ body
 /// ```
 pub const TSGlobalDeclaration = struct {
-    /// an `IdentifierName` capturing the span of the `global` keyword.
+    /// `identifier_name` capturing the span of the `global` keyword.
     id: NodeIndex,
-    /// the `TSModuleBlock` holding the inner declarations.
+    /// `ts_module_block`
     body: NodeIndex,
     /// true when preceded by the `declare` modifier. In valid TypeScript
-    /// `declare global` always has `declare = true`, a bare `global { ... }`
-    /// nested inside an ambient `declare namespace` body has `declare = false`.
+    /// `declare global` always has `declare = true`. A bare `global { ... }`
+    /// nested inside an ambient `declare namespace` body has
+    /// `declare = false`.
     declare: bool = false,
 };
 
-/// A TypeScript parameter property, a constructor parameter that carries an
-/// accessibility, `readonly`, or `override` modifier and therefore implicitly
-/// declares a class field of the same name and initial value.
+/// A TypeScript parameter property. A constructor parameter that carries
+/// an accessibility, `readonly`, or `override` modifier and therefore
+/// implicitly declares a class field of the same name and initial value.
 ///
-/// See: [TypeScript Handbook - Parameter Properties](https://www.typescriptlang.org/docs/handbook/2/classes.html#parameter-properties)
+/// See: [TypeScript Handbook Parameter Properties](https://www.typescriptlang.org/docs/handbook/2/classes.html#parameter-properties)
 ///
 /// ## Example
 /// ```ts
 /// class C {
 ///   constructor(
-///     public x: number,        // accessibility "public"
+///     public x: number,        // accessibility = public
 ///     readonly y: string,      // readonly
-///     protected override z: T, // accessibility "protected", override
+///     protected override z: T, // accessibility = protected, override
 ///   ) {}
 /// }
 /// ```
 pub const TSParameterProperty = struct {
-    /// `@dec` decorators preceding the modifier, in source order.
+    /// `decorator[]`. Decorators preceding the modifier, in source order.
     decorators: IndexRange,
-    /// a `BindingIdentifier` or `AssignmentPattern`.
+    /// `binding_identifier` or `assignment_pattern`.
     parameter: NodeIndex,
     /// true for the `override` modifier.
     override: bool = false,
@@ -3419,31 +3554,32 @@ pub const TSParameterProperty = struct {
     accessibility: Accessibility = .none,
 };
 
-/// A TypeScript explicit `this` parameter. Declares the type of the `this`
-/// binding inside the function body. Not a real parameter, it contributes
-/// nothing to the call's argument positions and is erased at emit time.
-/// TypeScript requires `this` to be the first parameter when present.
+/// A TypeScript explicit `this` parameter. Declares the type of the
+/// `this` binding inside the function body. Not a real parameter. It
+/// contributes nothing to the call's argument positions and is erased at
+/// emit time. TypeScript requires `this` to be the first parameter when
+/// present.
 ///
-/// See: [TypeScript Handbook - `this` parameters](https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function)
+/// See: [TypeScript Handbook this parameters](https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function)
 ///
 /// ## Example
 /// ```ts
 /// function f(this: void, x: number) {}
-/// //         ^^^^^^^^^^ TSThisParameter (type_annotation = TSVoidKeyword)
+/// //         ^^^^^^^^^^ TSThisParameter
 /// type Handler = (this: Element, e: Event) => void;
 /// //              ^^^^^^^^^^^^^ TSThisParameter
 /// interface I { m(this: this): void }
 /// //              ^^^^^^^^^^ TSThisParameter (type_annotation = TSThisType)
 /// ```
 pub const TSThisParameter = struct {
-    /// a `TSTypeAnnotation` wrapping the declared type of `this`, or `.null`
+    /// `ts_type_annotation` wrapping the declared type of `this`. `.null`
     /// when the parameter is written as bare `this` with no annotation.
     type_annotation: NodeIndex = .null,
 };
 
 /// TypeScript `expr as Type` postfix assertion.
 ///
-/// See: [TypeScript Handbook - Type Assertions](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions)
+/// See: [TypeScript Handbook Type Assertions](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions)
 ///
 /// ## Example
 /// ```ts
@@ -3452,9 +3588,9 @@ pub const TSThisParameter = struct {
 /// //                 ^^^^^^ type_annotation
 /// ```
 pub const TSAsExpression = struct {
-    /// the expression being asserted.
+    /// any expression
     expression: NodeIndex,
-    /// the target type. any `TSType` node.
+    /// any ts type
     type_annotation: NodeIndex,
 };
 
@@ -3467,9 +3603,9 @@ pub const TSAsExpression = struct {
 /// //                                      ^^^^^^ type_annotation
 /// ```
 pub const TSSatisfiesExpression = struct {
-    /// the expression being constrained.
+    /// any expression
     expression: NodeIndex,
-    /// the type that `expression` must satisfy.
+    /// any ts type
     type_annotation: NodeIndex,
 };
 
@@ -3482,9 +3618,9 @@ pub const TSSatisfiesExpression = struct {
 /// //                ^^^^^ expression
 /// ```
 pub const TSTypeAssertion = struct {
-    /// the target type. any `TSType` node.
+    /// any ts type
     type_annotation: NodeIndex,
-    /// the expression being asserted.
+    /// any expression
     expression: NodeIndex,
 };
 
@@ -3496,7 +3632,7 @@ pub const TSTypeAssertion = struct {
 /// //        ^^^^^ expression
 /// ```
 pub const TSNonNullExpression = struct {
-    /// the expression being asserted as non null.
+    /// any expression
     expression: NodeIndex,
 };
 
@@ -3509,15 +3645,15 @@ pub const TSNonNullExpression = struct {
 /// //               ^^^^^^^^ type_arguments
 /// ```
 pub const TSInstantiationExpression = struct {
-    /// the expression being instantiated. any `LeftHandSideExpression`.
+    /// any expression. Any left-hand-side expression.
     expression: NodeIndex,
-    /// the applied type argument list. a `TSTypeParameterInstantiation`.
+    /// `ts_type_parameter_instantiation`
     type_arguments: NodeIndex,
 };
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
 ///
-/// See: [TypeScript Handbook - export =](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
+/// See: [TypeScript Handbook export =](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
 ///
 /// ## Example
 /// ```ts
@@ -3525,6 +3661,7 @@ pub const TSInstantiationExpression = struct {
 /// //       ^^^^^^^^^^^ expression
 /// ```
 pub const TSExportAssignment = struct {
+    /// any expression
     expression: NodeIndex,
 };
 
@@ -3536,30 +3673,35 @@ pub const TSExportAssignment = struct {
 /// //                  ^^^^^ id
 /// ```
 pub const TSNamespaceExportDeclaration = struct {
+    /// `binding_identifier`
     id: NodeIndex,
 };
 
 /// TypeScript `import x = <module reference>` declaration. Binds the local
-/// name `id` to either an external module (`require("m")`) or an entity name
-/// path (`Foo.Bar`).
+/// name `id` to either an external module (`require("m")`) or an entity
+/// name path (`Foo.Bar`).
 ///
-/// See: [TypeScript Handbook - import = and export =](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
+/// See: [TypeScript Handbook import = and export =](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
 ///
-/// ## Examples
+/// ## Example
 /// ```ts
 /// import fs = require("fs");
-/// //     ^^ id       ^^^^^^^^^^^^ module_reference (TSExternalModuleReference)
+/// //     ^^ id
+/// //          ^^^^^^^^^^^^ module_reference (TSExternalModuleReference)
 /// import alias = Foo.Bar;
-/// //     ^^^^^ id   ^^^^^^^ module_reference (TSQualifiedName)
+/// //     ^^^^^ id
+/// //             ^^^^^^^ module_reference (TSQualifiedName)
 /// import alias = Foo;
-/// //     ^^^^^ id   ^^^ module_reference (IdentifierReference)
+/// //     ^^^^^ id
+/// //             ^^^ module_reference (IdentifierReference)
 /// ```
 pub const TSImportEqualsDeclaration = struct {
-    /// the local binding introduced by this declaration.
+    /// `binding_identifier`
     id: NodeIndex,
-    /// `TSExternalModuleReference`, `IdentifierReference`, or `TSQualifiedName`.
+    /// `ts_external_module_reference`, `identifier_reference`, or
+    /// `ts_qualified_name`.
     module_reference: NodeIndex,
-    /// `.type` for `import type x = ...`, `.value` otherwise.
+    /// `.type` for `import type x = ...`. `.value` otherwise.
     import_kind: ImportOrExportKind = .value,
 };
 
@@ -3570,29 +3712,30 @@ pub const TSImportEqualsDeclaration = struct {
 /// ```ts
 /// import x = require("./m");
 /// //         ^^^^^^^^^^^^^^^ TSExternalModuleReference
-/// //                 ^^^^^^ expression (StringLiteral)
+/// //                 ^^^^^^ expression
 /// ```
 pub const TSExternalModuleReference = struct {
-    /// the `StringLiteral` naming the required module.
+    /// `string_literal` naming the required module.
     expression: NodeIndex,
 };
 
 /// A JSX element, possibly self-closing.
 ///
-/// See: [JSX Specification - JSXElement](https://facebook.github.io/jsx/#prod-JSXElement)
+/// See: [JSX Specification JSXElement](https://facebook.github.io/jsx/#prod-JSXElement)
 ///
 /// ## Example
 /// ```jsx
-/// x = <Foo bar="baz">hello</Foo>
-/// //  ^^^^^^^^^^^^^^^ opening_element
+/// <Foo bar="baz">hello</Foo>
+/// // ^^^^^^^^^^^^^^^ opening_element
 /// //                 ^^^^^ children
 /// //                      ^^^^^^ closing_element
 /// ```
-/// `closing_element = .null` for self-closing tags like `<Foo />`.
 pub const JSXElement = struct {
+    /// `jsx_opening_element`
     opening_element: NodeIndex,
+    /// `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`
     children: IndexRange,
-    /// `.null` for self-closing tags
+    /// `jsx_closing_element`. `.null` for self-closing tags like `<Foo />`.
     closing_element: NodeIndex,
 };
 
@@ -3604,35 +3747,48 @@ pub const JSXElement = struct {
 /// //  ^^^ type_arguments
 /// //      ^^^^^^^^^ attributes
 /// ```
-/// `name` is the tag (here `Foo`). `self_closing = true` for the trailing `/>`.
+///
+/// `name` is the tag (here `Foo`). `self_closing` is true for the
+/// trailing `/>`.
 pub const JSXOpeningElement = struct {
-    /// `JSXIdentifier`, `JSXNamespacedName`, or `JSXMemberExpression`
+    /// `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`
     name: NodeIndex,
+    /// `jsx_attribute` or `jsx_spread_attribute`.
     attributes: IndexRange,
     self_closing: bool,
-    /// `.null` when absent
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
 };
 
 /// The closing `</Foo>` of a JSX element.
+///
+/// ## Example
+/// ```jsx
+/// </Foo>
+/// // ^^^ name
+/// ```
 pub const JSXClosingElement = struct {
-    /// `JSXIdentifier`, `JSXNamespacedName`, or `JSXMemberExpression`
+    /// `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`
     name: NodeIndex,
 };
 
 /// A JSX fragment `<>...</>`.
 ///
-/// See: [JSX Specification - JSXFragment](https://facebook.github.io/jsx/#prod-JSXFragment)
+/// See: [JSX Specification JSXFragment](https://facebook.github.io/jsx/#prod-JSXFragment)
 ///
 /// ## Example
 /// ```jsx
-/// x = <>hello</>
-/// //    ^^^^^ children
+/// <>hello</>
+/// //^^^^^ children
 /// ```
+///
 /// `opening_fragment` is `<>`, `closing_fragment` is `</>`.
 pub const JSXFragment = struct {
+    /// `jsx_opening_fragment`
     opening_fragment: NodeIndex,
+    /// `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`
     children: IndexRange,
+    /// `jsx_closing_fragment`
     closing_fragment: NodeIndex,
 };
 
@@ -3649,7 +3805,8 @@ pub const JSXClosingFragment = struct {};
 /// <Foo bar="baz" />
 /// //   ^^^ JSXIdentifier (attribute name)
 /// ```
-/// The tag `Foo` is also a `JSXIdentifier`.
+///
+/// The tag `Foo` is also a `jsx_identifier`.
 pub const JSXIdentifier = struct {
     name: String = .empty,
 };
@@ -3659,11 +3816,13 @@ pub const JSXIdentifier = struct {
 /// ## Example
 /// ```jsx
 /// <svg:path />
-/// //   ^^^^ name
+/// // ^^^ namespace
+/// //     ^^^^ name
 /// ```
-/// `namespace` is the portion before `:` (here `svg`).
 pub const JSXNamespacedName = struct {
+    /// `jsx_identifier`
     namespace: NodeIndex,
+    /// `jsx_identifier`
     name: NodeIndex,
 };
 
@@ -3672,12 +3831,13 @@ pub const JSXNamespacedName = struct {
 /// ## Example
 /// ```jsx
 /// <Foo.Bar.Baz />
-/// //       ^^^ property
+/// // ^^^^^^^ object
+/// //         ^^^ property
 /// ```
-/// `object` is the qualifier (`Foo.Bar`, itself a `JSXMemberExpression`).
 pub const JSXMemberExpression = struct {
-    /// `JSXIdentifier` or a nested `JSXMemberExpression`
+    /// `jsx_identifier` or a nested `jsx_member_expression`.
     object: NodeIndex,
+    /// `jsx_identifier`
     property: NodeIndex,
 };
 
@@ -3687,14 +3847,14 @@ pub const JSXMemberExpression = struct {
 /// ```jsx
 /// <Foo bar="baz" disabled />
 /// //   ^^^ name
-/// //       ^^^^^ value (StringLiteral)
+/// //       ^^^^^ value
 /// //             ^^^^^^^^ boolean attribute (value = .null)
 /// ```
 pub const JSXAttribute = struct {
-    /// `JSXIdentifier` or `JSXNamespacedName`
+    /// `jsx_identifier` or `jsx_namespaced_name`.
     name: NodeIndex,
-    /// `StringLiteral`, `JSXExpressionContainer`, `JSXElement`, `JSXFragment`,
-    /// or `.null` for boolean-like attributes
+    /// `string_literal`, `jsx_expression_container`, `jsx_element`, or
+    /// `jsx_fragment`. `.null` for boolean-like attributes.
     value: NodeIndex,
 };
 
@@ -3706,6 +3866,7 @@ pub const JSXAttribute = struct {
 /// //    ^^^^^^^^ argument
 /// ```
 pub const JSXSpreadAttribute = struct {
+    /// any expression
     argument: NodeIndex,
 };
 
@@ -3718,7 +3879,7 @@ pub const JSXSpreadAttribute = struct {
 /// //             ^^^^^^^^^^ child container
 /// ```
 pub const JSXExpressionContainer = struct {
-    /// a `JSXEmptyExpression` for `{}` or any expression otherwise
+    /// any expression. `jsx_empty_expression` for `{}`.
     expression: NodeIndex,
 };
 
@@ -3744,6 +3905,7 @@ pub const JSXText = struct {
 /// //    ^^^^^^^ expression
 /// ```
 pub const JSXSpreadChild = struct {
+    /// any expression
     expression: NodeIndex,
 };
 
