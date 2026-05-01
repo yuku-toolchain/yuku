@@ -14,7 +14,7 @@ const elements_per_chunk = chunk_elements * bits_per_element; // = 512 codepoint
 const total_codepoints = std.math.maxInt(u21) + 1; // unicode max = 0x10FFFF + 1
 const total_chunks = total_codepoints / elements_per_chunk; // total number of chunks to process
 
-const CodepointSet = std.AutoArrayHashMap(u32, void);
+const CodepointSet = std.array_hash_map.Auto(u32, void);
 const BitsetChunk = [chunk_elements]u32;
 const TableData = struct { root: []u32, leaf: []u32 };
 
@@ -32,8 +32,8 @@ pub fn main(init: std.process.Init) !void {
     }
 
     var start_set, var continue_set = try parseUnicodeProperties(io, alloc);
-    defer start_set.deinit();
-    defer continue_set.deinit();
+    defer start_set.deinit(alloc);
+    defer continue_set.deinit(alloc);
 
     const start_tables = try buildLookupTables(alloc, start_set);
     const continue_tables = try buildLookupTables(alloc, continue_set);
@@ -180,8 +180,8 @@ pub fn parseUnicodeProperties(io: std.Io, alloc: std.mem.Allocator) !struct { Co
     const file_data = try data_dir.readFileAlloc(io, target_file, alloc, .limited(2 * 1024 * 1024));
     defer alloc.free(file_data);
 
-    var start_set = CodepointSet.init(alloc);
-    var continue_set = CodepointSet.init(alloc);
+    var start_set: CodepointSet = .{};
+    var continue_set: CodepointSet = .{};
 
     var line_iter = std.mem.splitScalar(u8, file_data, '\n');
 
@@ -204,7 +204,7 @@ pub fn parseUnicodeProperties(io: std.Io, alloc: std.mem.Allocator) !struct { Co
         var cp = range.start;
         while (cp < range.end) : (cp += 1) {
             const target_set = if (prop_type == .Start) &start_set else &continue_set;
-            try target_set.put(@intCast(cp), {});
+            try target_set.put(alloc, @intCast(cp), {});
         }
     }
 
