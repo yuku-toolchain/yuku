@@ -4,8 +4,8 @@
     .dependencies = .{
         // dev dependencies
         .codspeed_zig = .{
-            .url = "git+https://github.com/arshad-yaseen/codspeed-zig.git#01fbd2dc5834ebd12f2c2e3818da304f942129bc",
-            .hash = "codspeed_zig-0.1.0-cdqftph4DwBYmqHqHdMwFXJ4xMB_Tj2rNAsM2k3RmvQZ",
+            .url = "git+https://github.com/arshad-yaseen/codspeed-zig/?ref=HEAD#749df21baed0a29abd6d10ea59948913f20cf567",
+            .hash = "codspeed_zig-0.2.0-cdqftmyuHgDbmwtyWnqrol8vMXRErZmZH7SLrOhhpKdl",
         },
         .napi_zig = .{
             .url = "git+https://github.com/yuku-toolchain/napi-zig.git/?ref=HEAD#c65dd4f7ff724b74a0c4c6228ed8c1e3bf3ce35d",
