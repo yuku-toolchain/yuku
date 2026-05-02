@@ -1,4 +1,6 @@
-# crashing the profiler ('core dumped'), in the new Zig version 0.17, was working before, let's see if we can renable this workflow
+# crashing the profiler ('core dumped'), happening on the new Zig version 0.17, was working before 0.16.
+# let's see if we can renable this workflow in anytime future.
+#
 # name: Profiler
 
 # on:
