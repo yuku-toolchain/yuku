@@ -1,8 +1,6 @@
 const std = @import("std");
 const parser = @import("parser");
 
-std.testing.FailingAllocator
-
 pub fn main(init: std.process.Init) !void {
     const file_path = "test/index.ts";
 
