@@ -269,7 +269,7 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
     // tristate dispatch for `(params) => body`. `.no` falls through to
     // the js cover grammar below.
-    if (parser.tree.isTs() and precedence <= Precedence.Assignment) switch (try ts.classifyArrowHead(parser)) {
+    if (parser.tree.isTs() and precedence <= Precedence.Assignment) switch (ts.classifyArrowHead(parser)) {
         .yes => return ts.parseArrow(parser, false, start),
         .maybe => if (try ts.tryParseArrow(parser, false, start)) |arrow| return arrow,
         .no => {},
@@ -336,7 +336,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // async ident => body
     if (next.tag.isIdentifierLike()) {
-        const after_id = try parser.peekAhead() orelse return null;
+        const after_id = parser.peekAhead() orelse return null;
         if (after_id.tag == .arrow and !after_id.hasLineTerminatorBefore()) {
             if (is_escaped) try parser.reportEscapedKeyword(async_span);
             const id = try literals.parseIdentifier(parser) orelse return null;
@@ -353,7 +353,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
     // tristate dispatch for `async (params) => body`. `.no` falls
     // through to the js cover path below, which also handles
     // `async(args)` as a call expression
-    if (parser.tree.isTs() and precedence <= Precedence.Assignment) switch (try ts.classifyArrowHead(parser)) {
+    if (parser.tree.isTs() and precedence <= Precedence.Assignment) switch (ts.classifyArrowHead(parser)) {
         .yes => {
             if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
             return ts.parseArrow(parser, true, start);
@@ -617,7 +617,10 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     // `new Foo<T>(...)` or `new Foo<T>`. parse `<T>` speculatively. on
     // commit, the args fold straight into the `NewExpression`
-    const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
+    const type_arguments = if (parser.tree.isTs())
+        try ts.tryParseTypeArgumentsInExpression(parser)
+    else
+        ast.NodeIndex.null;
 
     // optional arguments
     var arguments = ast.IndexRange.empty;

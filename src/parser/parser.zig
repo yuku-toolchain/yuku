@@ -45,7 +45,9 @@ pub const Context = packed struct {
     /// or module-block body.
     directive_prologue: bool = false,
     /// a speculatively parsed arrow with a return type must be followed
-    /// by an outer `:` to commit.
+    /// by an outer `:` to commit. set to `false` only by the conditional-
+    /// expression's consequent slot, where a `(x): T => ...` arrow would
+    /// otherwise eat the ternary `:`. read by `tryParseArrow` in ts/types.zig.
     allow_arrow_return_type: bool = true,
 };
 
@@ -325,9 +327,11 @@ pub const Parser = struct {
 
     /// peeks the token immediately after `current_token` without advancing.
     /// returns `null` if the lexer cannot produce another token (for example
-    /// after a lexical error).
-    pub inline fn peekAhead(self: *Parser) Error!?Token {
-        return (try self.peekAheadN(1))[0];
+    /// after a lexical error). for multi-token lookahead, use `beginPeek`.
+    pub inline fn peekAhead(self: *Parser) ?Token {
+        var peek = self.beginPeek();
+        defer peek.end();
+        return peek.next();
     }
 
     /// captures a full snapshot of parser state. pair with `rewind` to
@@ -373,28 +377,30 @@ pub const Parser = struct {
         self.state = cp.state;
     }
 
-    /// peeks the next `n` tokens after `current_token` in a single forward
-    /// scan, returning them by position. index `0` is the immediately
-    /// following token, index `1` the one after that, and so on. slots past
-    /// the end of the token stream are `null`.
-    pub fn peekAheadN(self: *Parser, comptime n: usize) Error![n]?Token {
-        comptime std.debug.assert(n >= 1);
+    pub const Peek = struct {
+        parser: *Parser,
+        state: lexer.LexerState,
+        cursor: u32,
+        comments_len: usize,
 
-        const prev_state = self.lexer.state;
-        const prev_cursor = self.lexer.cursor;
-        const prev_comments_len = self.lexer.comments.items.len;
-
-        defer {
-            self.lexer.state = prev_state;
-            self.lexer.cursor = prev_cursor;
-            self.lexer.comments.shrinkRetainingCapacity(prev_comments_len);
+        pub inline fn next(self: *Peek) ?Token {
+            return self.parser.lexer.nextToken() catch null;
         }
 
-        var tokens: [n]?Token = @splat(null);
-        inline for (0..n) |i| {
-            tokens[i] = try self.nextToken() orelse break;
+        pub inline fn end(self: Peek) void {
+            self.parser.lexer.state = self.state;
+            self.parser.lexer.cursor = self.cursor;
+            self.parser.lexer.comments.shrinkRetainingCapacity(self.comments_len);
         }
-        return tokens;
+    };
+
+    pub inline fn beginPeek(self: *Parser) Peek {
+        return .{
+            .parser = self,
+            .state = self.lexer.state,
+            .cursor = self.lexer.cursor,
+            .comments_len = self.lexer.comments.items.len,
+        };
     }
 
     /// sets current token from a re-scanned token and advances to the next token.

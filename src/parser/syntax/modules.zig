@@ -32,12 +32,11 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     var phase: ?ast.ImportPhase = null;
     var import_kind: ast.ImportOrExportKind = .value;
 
-    const peek = try parser.peekAheadN(2);
-    const next = peek[0] orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     // ts `import type { }` etc not `import type from`
     if (is_ts and parser.current_token.tag == .type and
-        isTypeImportModifier(next, peek[1]))
+        isTypeImportModifier(parser, next))
     {
         import_kind = .type;
         try parser.advance() orelse return null;
@@ -55,7 +54,7 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
 
     // ts import x = rhs when id then assign, covers import type x = too
     if (is_ts and parser.current_token.tag.isIdentifierLike()) {
-        const after_id = try parser.peekAhead() orelse return null;
+        const after_id = parser.peekAhead() orelse return null;
         if (after_id.tag == .assign) {
             return ts.parseImportEqualsBody(parser, start, import_kind);
         }
@@ -90,13 +89,18 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
 }
 
 // `import type` modifier vs default binding named type
-fn isTypeImportModifier(after_type: Token, after_after: ?Token) bool {
+fn isTypeImportModifier(parser: *Parser, after_type: Token) bool {
     if (after_type.tag == .left_brace or after_type.tag == .star) return true;
     if (!after_type.tag.isIdentifierLike()) return false;
+
     if (after_type.tag == .from) {
-        const a2 = after_after orelse return false;
+        var peek = parser.beginPeek();
+        defer peek.end();
+        _ = peek.next();
+        const a2 = peek.next() orelse return false;
         return a2.tag == .from or a2.tag == .assign;
     }
+
     return true;
 }
 
@@ -380,7 +384,7 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         .as => return parseTSNamespaceExportDeclaration(parser, start),
         // export type { } / export type *
         .type => {
-            const next = try parser.peekAhead() orelse return null;
+            const next = parser.peekAhead() orelse return null;
             if (next.tag == .left_brace) {
                 try parser.advance() orelse return null;
                 return parseExportNamedFromClause(parser, start, .type);
@@ -435,13 +439,13 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
 
 // abstract then class on same line, like ts decl probe
 fn isAbstractClassNext(parser: *Parser) Error!bool {
-    const next = try parser.peekAhead() orelse return false;
+    const next = parser.peekAhead() orelse return false;
     return next.tag == .class and !next.hasLineTerminatorBefore();
 }
 
 // legacy `export public import x =`, only import after modifier matters here
 fn isLegacyAccessibilityImport(parser: *Parser) Error!bool {
-    const next = try parser.peekAhead() orelse return false;
+    const next = parser.peekAhead() orelse return false;
     return next.tag == .import and !next.hasLineTerminatorBefore();
 }
 
@@ -591,7 +595,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32, export_kind: ast.Impo
 fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
 
-    if (is_ts and ((try ts.isStartOfTsDeclaration(parser)) orelse return null)) {
+    if (is_ts and ts.isStartOfTsDeclaration(parser)) {
         const declaration = try ts.parseTsDeclaration(parser) orelse return null;
         return try parser.tree.addNode(.{
             .export_named_declaration = .{

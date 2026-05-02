@@ -152,7 +152,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `await using` declaration, or fall through to expression statement.
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     return switch (next.tag) {
         .using => {
@@ -180,7 +180,7 @@ fn parseAwaitExpressionStatement(parser: *Parser, start: u32) Error!?ast.NodeInd
 
 /// import declaration, or fall through to import expression statement (`import(` / `import.`).
 fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     return switch (next.tag) {
         // `import(` and `import.` are expression forms (dynamic import / import.meta / phase imports)
@@ -190,14 +190,14 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    if ((try ts_decl.isStartOfTsDeclaration(parser)) orelse return null)
+    if (ts_decl.isStartOfTsDeclaration(parser))
         return ts_decl.parseTsDeclaration(parser);
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
 fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.tree.isTs()) {
-        const next = try parser.peekAhead() orelse return null;
+        const next = parser.peekAhead() orelse return null;
         if (ts_decl.isConstEnumHead(next)) return ts_decl.parseTsDeclaration(parser);
     }
     return variables.parseVariableDeclaration(parser, .{}, null);
@@ -205,7 +205,7 @@ fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `async function` declaration, or fall through to expression statement.
 fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;

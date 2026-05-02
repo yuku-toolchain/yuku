@@ -80,14 +80,17 @@ pub fn parseClassDecorated(
     else
         .null;
 
-    // `extends expr <T>`, a trailing bare `<T>` rides the lhs as a
-    // `TSInstantiationExpression` (when committed) or sits at the cursor
-    // (when rewound on same-line `{`), both split into the class fields.
+    // `extends Expr<T>`. lhs may commit a `ts_instantiation_expression` when
+    // a `<T>` is followed by something other than `(` or a template, peel it
+    // back into the dedicated `super_type_arguments` slot. when the lhs
+    // rewinds on a same-line `{`, the unconsumed `<T>` sits at the cursor.
     var super_class: ast.NodeIndex = .null;
     var super_type_arguments: ast.NodeIndex = .null;
+
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
         super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse return null;
+
         if (is_ts) switch (parser.tree.data(super_class)) {
             .ts_instantiation_expression => |inst| {
                 super_class = inst.expression;
@@ -126,7 +129,7 @@ inline fn canStartClassName(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
     if (!tag.isIdentifierLike() or tag == .extends) return false;
     if (parser.tree.isTs() and tag == .implements) {
-        const next = (try parser.peekAhead()) orelse return true;
+        const next = parser.peekAhead() orelse return true;
         return !next.tag.isIdentifierLike();
     }
     return true;
@@ -200,7 +203,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     if (key == .null and
         is_ts and
         parser.current_token.tag == .left_bracket and
-        try ts.isIndexSignatureStart(parser))
+        ts.isIndexSignatureStart(parser))
     {
         return parseIndexSignatureElement(parser, elem_start, decorators, mods);
     }
@@ -336,6 +339,8 @@ const Modifiers = struct {
 
     // whether `tag` would apply a modifier already carried. duplicate
     // modifiers are reinterpreted as the key name, not flagged as errors.
+    // every tag returned `true` by `isModifier` must be handled here and in
+    // `set`, otherwise this hits `unreachable` on a real input.
     fn has(m: Modifiers, tag: TokenTag) bool {
         return switch (tag) {
             .static => m.is_static,
@@ -352,7 +357,8 @@ const Modifiers = struct {
         };
     }
 
-    // commits a modifier tag. pair with `has` and `isModifier`.
+    // commits a modifier tag. mirrors the tag set handled by `has` and
+    // `isModifier`.
     fn set(m: *Modifiers, tag: TokenTag) void {
         switch (tag) {
             .static => m.is_static = true,
@@ -387,7 +393,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
     const token = parser.current_token;
     if (!isModifier(token.tag, parser.tree.isTs())) return .none;
 
-    const next = try parser.peekAhead() orelse return .none;
+    const next = parser.peekAhead() orelse return .none;
 
     const is_modifier =
         canStartElementKey(next.tag) and
@@ -413,7 +419,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
 // static block is a parse error, reported here so the block still parses.
 fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .static) return null;
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
     if (next.tag != .left_brace) return null;
 
     const static_token = parser.current_token;

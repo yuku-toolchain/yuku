@@ -53,7 +53,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             return parseForWithDeclaration(parser, start, is_for_await, kind, decl_start);
         },
         .using => {
-            const next = try parser.peekAhead() orelse return null;
+            const next = parser.peekAhead() orelse return null;
 
             // [+Using] using [no LineTerminator here] ForBinding
             if (next.hasLineTerminatorBefore()) {
@@ -74,7 +74,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                 .of => {
                     const using_identifier = try literals.parseIdentifier(parser) orelse return null;
 
-                    const after_of = try parser.peekAhead() orelse return null;
+                    const after_of = parser.peekAhead() orelse return null;
 
                     if (after_of.tag == .assign or after_of.tag == .semicolon or after_of.tag == .colon) {
                         return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
@@ -91,7 +91,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             }
         },
         .await => {
-            const next = try parser.peekAhead() orelse return null;
+            const next = parser.peekAhead() orelse return null;
 
             if (next.tag != .using or next.hasLineTerminatorBefore()) return parseForWithExpression(parser, start, is_for_await);
 

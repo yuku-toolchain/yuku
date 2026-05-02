@@ -392,7 +392,7 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
 fn isParameterPropertyModifierStart(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
     if (!isParameterPropertyModifierTag(tag)) return false;
-    const next = try parser.peekAhead() orelse return false;
+    const next = parser.peekAhead() orelse return false;
     if (next.hasLineTerminatorBefore()) return false;
     return canFollowParameterPropertyModifier(next.tag);
 }

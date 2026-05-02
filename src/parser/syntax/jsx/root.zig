@@ -33,7 +33,7 @@ pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     // fragment: <>...</>
     if (next.tag == .greater_than) {
@@ -260,7 +260,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         switch (parser.current_token.tag) {
             .less_than => {
                 // check if it's a closing tag
-                const next = try parser.peekAhead() orelse return null;
+                const next = parser.peekAhead() orelse return null;
                 if (next.tag == .slash) break;
 
                 // nested element

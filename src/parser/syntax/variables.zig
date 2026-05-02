@@ -187,7 +187,7 @@ pub fn canStartBinding(tag: TokenTag) bool {
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .let);
 
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     // 'let' followed by a semicolon should be parsed as an identifier, not a declaration.
     if (next.tag == .semicolon) {
@@ -209,7 +209,7 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
 pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .using);
 
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     // if next token starts a BindingList and ASI cannot insert a semicolon,
     // treat `using` as the contextual keyword (declaration form).

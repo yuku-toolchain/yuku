@@ -19,22 +19,21 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     parser.context.disallow_conditional_types = false;
     defer parser.context.disallow_conditional_types = saved;
 
-    return parseTypeWithBody(parser, parseConditionalType);
+    if (try isStartOfFunctionOrConstructorType(parser)) {
+        return parseFunctionOrConstructorType(parser);
+    }
+    return try parseConditionalType(parser) orelse {
+        try parser.reportExpected(parser.current_token.span, "Expected a type", .{});
+        return null;
+    };
 }
 
 // `extends` arm in conditional type, no nested `? :` here
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
-    return parseTypeWithBody(parser, parseUnionType);
-}
-
-inline fn parseTypeWithBody(
-    parser: *Parser,
-    comptime body: fn (*Parser) Error!?ast.NodeIndex,
-) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
-        return try parseFunctionOrConstructorType(parser);
+        return parseFunctionOrConstructorType(parser);
     }
-    return try body(parser) orelse {
+    return try parseUnionType(parser) orelse {
         try parser.reportExpected(parser.current_token.span, "Expected a type", .{});
         return null;
     };
@@ -204,7 +203,7 @@ fn parseJSDocPostfix(parser: *Parser, inner: ast.NodeIndex, comptime kind: JSDoc
 
 // postfix `?` only when no type follows, else outer conditional eats it
 fn isPostfixNullable(parser: *Parser) Error!bool {
-    const next = (try parser.peekAhead()) orelse return false;
+    const next = parser.peekAhead() orelse return false;
     return !isStartOfType(next.tag);
 }
 
@@ -251,7 +250,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             },
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
-            .left_brace => return if (try isStartOfMappedType(parser))
+            .left_brace => return if (isStartOfMappedType(parser))
                 parseMappedType(parser)
             else
                 parseTypeLiteral(parser),
@@ -276,7 +275,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
 
 // more qualified name when `.` same line after keyword type
 fn isQualifiedTypeContinuation(parser: *Parser) Error!bool {
-    const next = (try parser.peekAhead()) orelse return false;
+    const next = parser.peekAhead() orelse return false;
     return next.tag == .dot and !next.hasLineTerminatorBefore();
 }
 
@@ -309,7 +308,7 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
 // only `type Name = intrinsic` uses `TSIntrinsicKeyword`, else normal ref
 pub fn parseTypeAliasBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .intrinsic and !parser.current_token.isEscaped()) {
-        const next = (try parser.peekAhead()) orelse return null;
+        const next = parser.peekAhead() orelse return null;
         if (!continuesType(next.tag)) {
             const span = parser.current_token.span;
             try parser.advance() orelse return null;
@@ -360,7 +359,7 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 // unary plus or minus then numeric literal in a `UnaryExpression`
 fn parseSignedNumericLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const sign_token = parser.current_token;
-    const next = (try parser.peekAhead()) orelse return null;
+    const next = parser.peekAhead() orelse return null;
     if (!next.tag.isNumericLiteral()) return null;
 
     try parser.advance() orelse return null;
@@ -629,7 +628,7 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     if (tag == .new) return true;
 
     if (tag == .abstract) {
-        const next = (try parser.peekAhead()) orelse return false;
+        const next = parser.peekAhead() orelse return false;
         return next.tag == .new;
     }
 
@@ -637,33 +636,37 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
 
     if (tag != .left_paren) return false;
 
-    const peek = try parser.peekAheadN(3);
+    var peek = parser.beginPeek();
+    defer peek.end();
 
-    const t1 = peek[0] orelse return false;
+    const t1 = peek.next() orelse return false;
 
     switch (t1.tag) {
         .right_paren => {
-            const t2 = peek[1] orelse return false;
+            const t2 = peek.next() orelse return false;
             return t2.tag == .arrow;
         },
         .spread => return true,
         .this => {
-            const t2 = peek[1] orelse return false;
+            const t2 = peek.next() orelse return false;
             return t2.tag == .colon;
         },
         // object or tuple pattern head might be value param or type tuple
-        .left_brace, .left_bracket => return isFunctionTypeAfterPattern(parser),
+        .left_brace, .left_bracket => {
+            peek.end();
+            return isFunctionTypeAfterPattern(parser);
+        },
         else => {},
     }
 
     if (!t1.tag.isIdentifierLike()) return false;
 
-    const t2 = peek[1] orelse return false;
+    const t2 = peek.next() orelse return false;
 
     return switch (t2.tag) {
         .colon, .question, .comma, .assign => true,
         .right_paren => blk: {
-            const t3 = peek[2] orelse break :blk false;
+            const t3 = peek.next() orelse break :blk false;
             break :blk t3.tag == .arrow;
         },
         else => false,
@@ -813,7 +816,7 @@ fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
 
 // tuple slot rewrites postfix jsdoc `?` to optional type
 fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
-    if (try isNamedTupleElement(parser)) return parseNamedTupleMember(parser);
+    if (isNamedTupleElement(parser)) return parseNamedTupleMember(parser);
 
     const ty = try parseType(parser) orelse return null;
 
@@ -828,16 +831,18 @@ fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
     return ty;
 }
 
-fn isNamedTupleElement(parser: *Parser) Error!bool {
+fn isNamedTupleElement(parser: *Parser) bool {
     if (!parser.current_token.tag.isIdentifierLike()) return false;
 
-    const peek = try parser.peekAheadN(2);
-    const t1 = peek[0] orelse return false;
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    const t1 = peek.next() orelse return false;
 
     if (t1.tag == .colon) return true;
     if (t1.tag != .question) return false;
 
-    const t2 = peek[1] orelse return false;
+    const t2 = peek.next() orelse return false;
     return t2.tag == .colon;
 }
 
@@ -868,17 +873,16 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
 // ^^^^^^^^^^^^^^^^^
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     const type_name = try parseEntityName(parser) orelse return null;
+    const name_span = parser.tree.span(type_name);
     const type_arguments = try parseTypeArgumentsAfterEntityName(parser);
+    const end = if (type_arguments != .null) parser.tree.span(type_arguments).end else name_span.end;
 
     return try parser.tree.addNode(
         .{ .ts_type_reference = .{
             .type_name = type_name,
             .type_arguments = type_arguments,
         } },
-        .{
-            .start = parser.tree.span(type_name).start,
-            .end = parser.tree.span(if (type_arguments != .null) type_arguments else type_name).end,
-        },
+        .{ .start = name_span.start, .end = end },
     );
 }
 
@@ -901,12 +905,13 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
     else
         try parseTypeArgumentsAfterEntityName(parser);
 
+    const end = parser.tree.span(if (type_arguments != .null) type_arguments else expr_name).end;
     return try parser.tree.addNode(
         .{ .ts_type_query = .{
             .expr_name = expr_name,
             .type_arguments = type_arguments,
         } },
-        .{ .start = start, .end = parser.tree.span(if (type_arguments != .null) type_arguments else expr_name).end },
+        .{ .start = start, .end = end },
     );
 }
 
@@ -1162,7 +1167,7 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
             else => break,
         };
 
-        const next = (try parser.peekAhead()) orelse break;
+        const next = parser.peekAhead() orelse break;
         if (!next.tag.isIdentifierLike()) break;
 
         if (seen_ptr.*) {
@@ -1336,7 +1341,7 @@ fn finishTypePredicate(
 fn isAssertsPredicateStart(parser: *Parser) Error!bool {
     if (parser.current_token.tag != .asserts or parser.current_token.isEscaped()) return false;
 
-    const next = (try parser.peekAhead()) orelse return false;
+    const next = parser.peekAhead() orelse return false;
     if (next.hasLineTerminatorBefore()) return false;
 
     return next.tag == .this or next.tag.isIdentifierLike();
@@ -1347,7 +1352,7 @@ fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     const current = parser.current_token;
     if (current.isEscaped() or current.tag == .this or !current.tag.isIdentifierLike()) return false;
 
-    const next = (try parser.peekAhead()) orelse return false;
+    const next = parser.peekAhead() orelse return false;
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
@@ -1455,32 +1460,26 @@ fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool
 }
 
 // `{ [K in T]: V }` vs `{ [expr]: T }`
-pub fn isStartOfMappedType(parser: *Parser) Error!bool {
+pub fn isStartOfMappedType(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
-    const peek = try parser.peekAheadN(5);
+    var peek = parser.beginPeek();
+    defer peek.end();
 
-    var i: usize = 0;
-    const first = peek[i] orelse return false;
-
-    if (first.tag == .plus or first.tag == .minus) {
-        i += 1;
-        const ro = peek[i] orelse return false;
+    var t = peek.next() orelse return false;
+    if (t.tag == .plus or t.tag == .minus) {
+        const ro = peek.next() orelse return false;
         if (ro.tag != .readonly) return false;
-        i += 1;
-    } else if (first.tag == .readonly) {
-        i += 1;
+        t = peek.next() orelse return false;
+    } else if (t.tag == .readonly) {
+        t = peek.next() orelse return false;
     }
+    if (t.tag != .left_bracket) return false;
 
-    const bracket = peek[i] orelse return false;
-    if (bracket.tag != .left_bracket) return false;
-    i += 1;
-
-    const name = peek[i] orelse return false;
+    const name = peek.next() orelse return false;
     if (!name.tag.isIdentifierLike()) return false;
-    i += 1;
 
-    const in_tok = peek[i] orelse return false;
+    const in_tok = peek.next() orelse return false;
     return in_tok.tag == .in;
 }
 
@@ -1586,7 +1585,7 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     if (tag == .left_paren or tag == .less_than) return parseCallOrConstructSignature(parser, false);
 
     if (tag == .new) {
-        const next = (try parser.peekAhead()) orelse return null;
+        const next = parser.peekAhead() orelse return null;
         if (next.tag == .left_paren or next.tag == .less_than) {
             return parseCallOrConstructSignature(parser, true);
         }
@@ -1594,18 +1593,18 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
 
     // readonly modifier only when same line token starts a real member
     if (tag == .readonly) {
-        const next = (try parser.peekAhead()) orelse return null;
+        const next = parser.peekAhead() orelse return null;
         if (!next.hasLineTerminatorBefore() and canFollowReadonlyModifier(next.tag)) {
             const readonly_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
-            if (parser.current_token.tag == .left_bracket and try isIndexSignatureStart(parser)) {
+            if (parser.current_token.tag == .left_bracket and isIndexSignatureStart(parser)) {
                 return parseIndexSignature(parser, readonly_start, .{ .readonly = true });
             }
             return parsePropertyOrMethodSignature(parser, readonly_start, true);
         }
     }
 
-    if (tag == .left_bracket and try isIndexSignatureStart(parser)) {
+    if (tag == .left_bracket and isIndexSignatureStart(parser)) {
         const start = parser.current_token.span.start;
         return parseIndexSignature(parser, start, .{});
     }
@@ -1615,15 +1614,16 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // `[k: T]: V` index vs `[expr]: T` computed prop
-pub fn isIndexSignatureStart(parser: *Parser) Error!bool {
+pub fn isIndexSignatureStart(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .left_bracket);
 
-    const peek = try parser.peekAheadN(2);
+    var peek = parser.beginPeek();
+    defer peek.end();
 
-    const t1 = peek[0] orelse return false;
+    const t1 = peek.next() orelse return false;
     if (!t1.tag.isIdentifierLike()) return false;
 
-    const t2 = peek[1] orelse return false;
+    const t2 = peek.next() orelse return false;
     return t2.tag == .colon or t2.tag == .comma;
 }
 
@@ -1749,7 +1749,7 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
     var kind: ast.TSMethodSignatureKind = .method;
     const head_tag = parser.current_token.tag;
     if (head_tag == .get or head_tag == .set) {
-        const next = (try parser.peekAhead()) orelse return null;
+        const next = parser.peekAhead() orelse return null;
         if (canFollowAccessorKeyword(next.tag)) {
             kind = if (head_tag == .get) .get else .set;
             try parser.advance() orelse return null;
@@ -1873,14 +1873,16 @@ fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
 
 pub const ArrowHead = enum { no, yes, maybe };
 
-pub fn classifyArrowHead(parser: *Parser) Error!ArrowHead {
+pub fn classifyArrowHead(parser: *Parser) ArrowHead {
     if (parser.current_token.tag != .left_paren) return .no;
     return classifyParenArrowHead(parser);
 }
 
-fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
-    const peek = try parser.peekAheadN(3);
-    const second = peek[0] orelse return .no;
+fn classifyParenArrowHead(parser: *Parser) ArrowHead {
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    const second = peek.next() orelse return .no;
 
     switch (second.tag) {
         .spread => return .yes,
@@ -1888,7 +1890,7 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
         .left_bracket, .left_brace => return .maybe,
         // bare `()` needs `=>` or `:` after
         .right_paren => {
-            const third = peek[1] orelse return .no;
+            const third = peek.next() orelse return .no;
             return switch (third.tag) {
                 .arrow, .colon => .yes,
                 else => .no,
@@ -1896,16 +1898,16 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
         },
         // `this` param only when `:T` follows
         .this => {
-            const third = peek[1] orelse return .no;
+            const third = peek.next() orelse return .no;
             return if (third.tag == .colon) .yes else .no;
         },
         else => {
             if (!second.tag.isIdentifierLike()) return .no;
-            const third = peek[1] orelse return .no;
+            const third = peek.next() orelse return .no;
             return switch (third.tag) {
                 .colon => .yes,
                 .question => blk: {
-                    const fourth = peek[2] orelse break :blk .no;
+                    const fourth = peek.next() orelse break :blk .no;
                     break :blk switch (fourth.tag) {
                         .colon, .comma, .assign, .right_paren => .yes,
                         else => .no,
@@ -1969,7 +1971,7 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
 pub fn tryParseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
-    const next = try parser.peekAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
     if (!next.tag.isIdentifierLike() and next.tag != .@"const") return null;
 
     return tryParseArrow(parser, is_async, arrow_start);
@@ -2052,12 +2054,12 @@ pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeI
     };
 }
 
-// try `<>` args, rewind so `<` can stay relational compare
+// try `<>` args, rewind so `<` can stay relational compare. callers must
+// already be in ts mode.
 pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
-    if (!parser.tree.isTs()) return .null;
     if (!isAngleOpen(parser.current_token.tag)) return .null;
 
-    const after = (try parser.peekAhead()) orelse return .null;
+    const after = parser.peekAhead() orelse return .null;
     if (!isStartOfType(after.tag) and after.tag != .greater_than) return .null;
 
     const cp = parser.checkpoint();
