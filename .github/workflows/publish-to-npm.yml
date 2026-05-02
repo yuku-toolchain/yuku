@@ -22,7 +22,7 @@ jobs:
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
         with:
-          version: 0.17.0-dev.27+0dd99c37c
+          version: 0.17.0-dev.224+c166c49b1
 
       - name: Setup Node
         uses: actions/setup-node@v6
