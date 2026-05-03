@@ -32,18 +32,21 @@ pub const Context = packed struct {
     @"await": bool = false,
     /// `[Return]`
     @"return": bool = false,
-    /// inside any `declare`-prefixed declaration. nested declarations
-    /// inherit ambient-context rules (body-less functions, initializer-
-    /// less `const`, etc).
-    ambient: bool = false,
-    /// trailing `?` after a type does not start a new conditional.
-    disallow_conditional_types: bool = false,
     /// body of `if`, `while`, `for`, `with`, or a labelled statement,
     /// where lexical declarations (`let`, `const`) need a block.
     single_statement: bool = false,
     /// directive prologue at the start of a script, module, function,
     /// or module-block body.
     directive_prologue: bool = false,
+};
+
+pub const TsContext = packed struct {
+    /// inside any `declare`-prefixed declaration. nested declarations
+    /// inherit ambient-context rules (body-less functions, initializer-
+    /// less `const`, etc).
+    ambient: bool = false,
+    /// trailing `?` after a type does not start a new conditional.
+    disallow_conditional_types: bool = false,
     /// a speculatively parsed arrow with a return type must be followed
     /// by an outer `:` to commit. set to `false` only by the conditional-
     /// expression's consequent slot, where a `(x): T => ...` arrow would
@@ -88,6 +91,7 @@ pub const Parser = struct {
     //
 
     context: Context = .{},
+    ts_context: TsContext = .{},
     state: ParserState = .{},
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
@@ -334,7 +338,7 @@ pub const Parser = struct {
         return peek.next();
     }
 
-    /// captures a full snapshot of parser state. pair with `rewind` to
+    /// captures a snapshot of parser state. pair with `rewind` to
     /// commit or discard a speculative parse.
     pub fn checkpoint(self: *const Parser) Checkpoint {
         return .{
@@ -347,12 +351,8 @@ pub const Parser = struct {
             .nodes_len = self.tree.nodes.len,
             .extra_len = self.tree.extras.items.len,
             .diagnostics_len = self.diagnostics.items.len,
-            .scratch_statements_len = self.scratch_statements.items.items.len,
-            .scratch_cover_len = self.scratch_cover.items.items.len,
-            .scratch_decorators_len = self.scratch_decorators.items.items.len,
-            .scratch_a_len = self.scratch_a.items.items.len,
-            .scratch_b_len = self.scratch_b.items.items.len,
             .context = self.context,
+            .ts_context = self.ts_context,
             .state = self.state,
         };
     }
@@ -368,12 +368,8 @@ pub const Parser = struct {
         self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
         self.tree.extras.shrinkRetainingCapacity(cp.extra_len);
         self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
-        self.scratch_statements.items.shrinkRetainingCapacity(cp.scratch_statements_len);
-        self.scratch_cover.items.shrinkRetainingCapacity(cp.scratch_cover_len);
-        self.scratch_decorators.items.shrinkRetainingCapacity(cp.scratch_decorators_len);
-        self.scratch_a.items.shrinkRetainingCapacity(cp.scratch_a_len);
-        self.scratch_b.items.shrinkRetainingCapacity(cp.scratch_b_len);
         self.context = cp.context;
+        self.ts_context = cp.ts_context;
         self.state = cp.state;
     }
 
@@ -608,15 +604,9 @@ pub const Checkpoint = struct {
     extra_len: usize,
     diagnostics_len: usize,
 
-    // scratch buffers
-    scratch_statements_len: usize,
-    scratch_cover_len: usize,
-    scratch_decorators_len: usize,
-    scratch_a_len: usize,
-    scratch_b_len: usize,
-
     // parser flags, small structs copied by value.
     context: Context,
+    ts_context: TsContext,
     state: ParserState,
 };
 

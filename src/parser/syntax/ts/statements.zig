@@ -137,9 +137,9 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    const saved_ambient = parser.context.ambient;
-    defer parser.context.ambient = saved_ambient;
-    if (mods.declare) parser.context.ambient = true;
+    const saved_ambient = parser.ts_context.ambient;
+    defer parser.ts_context.ambient = saved_ambient;
+    if (mods.declare) parser.ts_context.ambient = true;
 
     return switch (parser.current_token.tag) {
         .type => parseTypeAliasDeclaration(parser, mods, start),

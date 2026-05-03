@@ -824,14 +824,14 @@ fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.Node
     // consequent gets [+In]: `in` is always allowed, and ts arrows with a
     // return type must defer to the ternary `:` when they would eat it.
     const saved_allow_in = parser.context.in;
-    const saved_allow_arrow_return_type = parser.context.allow_arrow_return_type;
+    const saved_allow_arrow_return_type = parser.ts_context.allow_arrow_return_type;
     parser.context.in = true;
-    parser.context.allow_arrow_return_type = false;
+    parser.ts_context.allow_arrow_return_type = false;
 
     const consequent = try parseExpression(parser, precedence, .{}) orelse return null;
 
     parser.context.in = saved_allow_in;
-    parser.context.allow_arrow_return_type = saved_allow_arrow_return_type;
+    parser.ts_context.allow_arrow_return_type = saved_allow_arrow_return_type;
 
     if (!try parser.expect(.colon, "Expected ':' after conditional expression consequent", "The ternary operator requires a colon (:) to separate the consequent and alternate expressions.")) return null;
 

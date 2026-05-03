@@ -12,7 +12,7 @@ const ParseFunctionOpts = struct {
     is_async: bool = false,
     is_expression: bool = false,
     /// sets the `declare` flag on the resulting `Function`. ambient
-    /// policy comes from `parser.context.ambient`.
+    /// policy comes from `parser.ts_context.ambient`.
     is_declare: bool = false,
     /// `export default function`: name is optional but the result is
     /// still a `FunctionDeclaration`.
@@ -109,7 +109,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     }
 
     // function expressions always carry a body, only declarations obey ambient rules.
-    const is_ambient_declaration = parser.context.ambient and !is_function_expression;
+    const is_ambient_declaration = parser.ts_context.ambient and !is_function_expression;
     if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
         try parser.report(
             parser.current_token.span,
