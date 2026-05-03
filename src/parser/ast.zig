@@ -1,10 +1,10 @@
 const std = @import("std");
-const ast_string = @import("ast_string.zig");
+const strings = @import("strings.zig");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
-pub const String = ast_string.String;
-pub const StringPool = ast_string.ASTStringPool;
+pub const String = strings.String;
+pub const StringPool = strings.ASTStringPool;
 
 pub const Span = TokenSpan;
 
@@ -4270,3 +4270,10 @@ pub const Node = struct {
 };
 
 pub const NodeList = std.MultiArrayList(Node);
+
+comptime {
+    std.debug.assert(@sizeOf(NodeData) == 44);
+    std.debug.assert(@sizeOf(Node) == 52);
+    std.debug.assert(@sizeOf(Class) == 40);
+    std.debug.assert(@sizeOf(PropertyDefinition) == 32);
+}
