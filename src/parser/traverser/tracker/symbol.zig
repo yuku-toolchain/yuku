@@ -216,8 +216,8 @@ pub const Reference = struct {
 /// `resolveAll` to build the cross-index between symbols and
 /// references.
 pub const SymbolTable = struct {
-    symbols: std.MultiArrayList(Symbol).Slice,
-    references: std.MultiArrayList(Reference).Slice,
+    symbols: []const Symbol,
+    references: []const Reference,
     scope_maps: []const ScopeMap,
     hoisting_variables: []const ScopeMap,
     strings: *const ast.StringPool,
@@ -234,14 +234,14 @@ pub const SymbolTable = struct {
         return self.strings.get(id);
     }
 
-    /// Returns the symbol for the given id, rebuilt from the SoA columns.
+    /// Returns the symbol for the given id.
     pub inline fn getSymbol(self: SymbolTable, id: SymbolId) Symbol {
-        return self.symbols.get(@intFromEnum(id));
+        return self.symbols[@intFromEnum(id)];
     }
 
-    /// Returns the reference for the given id, rebuilt from the SoA columns.
+    /// Returns the reference for the given id.
     pub inline fn getReference(self: SymbolTable, id: ReferenceId) Reference {
-        return self.references.get(@intFromEnum(id));
+        return self.references[@intFromEnum(id)];
     }
 
     /// Number of symbols in the table.
@@ -252,17 +252,6 @@ pub const SymbolTable = struct {
     /// Number of references in the table.
     pub inline fn referenceCount(self: SymbolTable) usize {
         return self.references.len;
-    }
-
-    /// Direct access to a single symbol field as a slice. For tools
-    /// that scan one column (e.g. minifier filtering by `.exported`).
-    pub inline fn symbolField(self: SymbolTable, comptime field: std.meta.FieldEnum(Symbol)) []const std.meta.FieldType(Symbol, field) {
-        return self.symbols.items(field);
-    }
-
-    /// Direct access to a single reference field as a slice.
-    pub inline fn referenceField(self: SymbolTable, comptime field: std.meta.FieldEnum(Reference)) []const std.meta.FieldType(Reference, field) {
-        return self.references.items(field);
     }
 
     /// Returns a symbol's source name as a string slice.
@@ -316,14 +305,12 @@ pub const SymbolTable = struct {
         if (ref_count == 0) return;
 
         const resolutions = try allocator.alloc(SymbolId, ref_count);
-        const ref_names = self.references.items(.name);
-        const ref_scopes = self.references.items(.scope);
 
-        for (0..ref_count) |i| {
-            const name = self.string(ref_names[i]);
+        for (self.references, resolutions) |ref, *out| {
+            const name = self.string(ref.name);
             const pctx = PrehashCtx{ .h = std.hash.Wyhash.hash(0, name) };
-            resolutions[i] = blk: {
-                var it = scope_tree.ancestors(ref_scopes[i]);
+            out.* = blk: {
+                var it = scope_tree.ancestors(ref.scope);
                 while (it.next()) |ancestor| {
                     const idx = @intFromEnum(ancestor);
                     if (self.scope_maps[idx].getAdapted(name, pctx)) |id| break :blk id;
@@ -417,8 +404,8 @@ const PrehashCtx = struct {
 pub const SymbolTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
-    symbols: std.MultiArrayList(Symbol) = .empty,
-    references: std.MultiArrayList(Reference) = .empty,
+    symbols: std.ArrayList(Symbol) = .empty,
+    references: std.ArrayList(Reference) = .empty,
     scope_maps: std.ArrayList(ScopeMap) = .empty,
     hoisting_variables: std.ArrayList(ScopeMap) = .empty,
 
@@ -675,14 +662,13 @@ pub const SymbolTracker = struct {
         if (self.scope_maps.items[target_idx].get(name_str) orelse
             self.hoisting_variables.items[target_idx].get(name_str)) |existing|
         {
-            const flags_col = self.symbols.items(.flags);
-            const existing_idx = @intFromEnum(existing);
-            if (flags_col[existing_idx].intersects(excludes)) return existing;
+            const sym = &self.symbols.items[@intFromEnum(existing)];
+            if (sym.flags.intersects(excludes)) return existing;
 
-            var merged = flags_col[existing_idx].merge(flags);
+            var merged = sym.flags.merge(flags);
             merged.exported = merged.exported or self.export_state != .none;
             merged.is_default = merged.is_default or self.export_state == .default;
-            flags_col[existing_idx] = merged;
+            sym.flags = merged;
             return existing;
         }
 
@@ -700,7 +686,7 @@ pub const SymbolTracker = struct {
         node: ast.NodeIndex,
         kind: Reference.Kind,
     ) Allocator.Error!ReferenceId {
-        const id: ReferenceId = @enumFromInt(@as(u32, @intCast(self.references.len)));
+        const id: ReferenceId = @enumFromInt(@as(u32, @intCast(self.references.items.len)));
         try self.references.append(self.allocator, .{
             .name = name,
             .scope = scope,
@@ -717,7 +703,7 @@ pub const SymbolTracker = struct {
         target: sc.ScopeId,
         node: ast.NodeIndex,
     ) Allocator.Error!SymbolId {
-        const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.len)));
+        const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
         var stored = flags;
         stored.exported = self.export_state != .none;
         stored.is_default = self.export_state == .default;
@@ -745,9 +731,9 @@ pub const SymbolTracker = struct {
         return self.target;
     }
 
-    /// Returns the symbol for the given id, rebuilt from the SoA columns.
+    /// Returns the symbol for the given id.
     pub inline fn getSymbol(self: *const SymbolTracker, id: SymbolId) Symbol {
-        return self.symbols.get(@intFromEnum(id));
+        return self.symbols.items[@intFromEnum(id)];
     }
 
     /// Returns a symbol's source name as a string slice.
@@ -790,8 +776,8 @@ pub const SymbolTracker = struct {
     /// lifetime.
     pub fn toSymbolTable(self: *SymbolTracker) SymbolTable {
         return .{
-            .symbols = self.symbols.slice(),
-            .references = self.references.slice(),
+            .symbols = self.symbols.items,
+            .references = self.references.items,
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
             .strings = &self.tree.strings,

@@ -176,18 +176,25 @@ Returns a `ScopeTree` containing all scopes created during the walk.
 
 The scope tracker automatically pushes and pops scopes as the walker enters and exits scope-creating nodes:
 
-| Node                            | Scope Kind                                     |
-| ------------------------------- | ---------------------------------------------- |
-| Program                         | `global` (+ `module` if source_type is module) |
-| Function declaration/expression | `function`                                     |
-| Arrow function                  | `function`                                     |
-| Block statement                 | `block`                                        |
-| For / for-in / for-of           | `block`                                        |
-| Catch clause                    | `block`                                        |
-| Switch statement                | `block`                                        |
-| Class declaration/expression    | `class`                                        |
-| Static block                    | `static_block`                                 |
-| Named function/class expression | `expression_name` + `function`/`class`         |
+| Node                                                         | Scope Kind                                     |
+| ------------------------------------------------------------ | ---------------------------------------------- |
+| Program                                                      | `global` (+ `module` if source_type is module) |
+| Function declaration/expression                              | `function`                                     |
+| Arrow function                                               | `function`                                     |
+| Block statement                                              | `block`                                        |
+| For / for-in / for-of                                        | `block`                                        |
+| Catch clause                                                 | `block`                                        |
+| Switch statement                                             | `block`                                        |
+| Class declaration/expression                                 | `class`                                        |
+| Static block                                                 | `static_block`                                 |
+| Named function/class expression                              | `expression_name` + `function`/`class`         |
+| TS interface / type alias                                    | `block`                                        |
+| TS function/constructor type, call/construct/index signature | `block`                                        |
+| TS method signature                                          | `block`                                        |
+| TS mapped type, conditional type                             | `block`                                        |
+| TS namespace body (`module` block)                           | `ts_module`                                    |
+
+The TS rows scope `<T>` type parameters and parameter labels so they don't leak to the outer scope. `ts_conditional_type` isolates `infer T` per conditional so siblings can reuse the same name. `ts_module` is its own kind because namespace bodies act as a `var`-hoist target, so a `var` declared inside a namespace doesn't escape to the surrounding scope.
 
 Named function and class expressions create two scopes. For `const x = function foo() { ... }`:
 
@@ -269,7 +276,7 @@ const result = try sem.traverse(MyVisitor, &tree, &visitor);
 
 The semantic traverser uses a two-phase approach for symbol declaration:
 
-1. **Phase 1 (enter)**: When entering a `variable_declaration`, `function`, `class`, `import_declaration`, etc., the tracker records what kind of binding is coming next (`let`, `var`, `function`, etc.) and where it should land.
+1. **Phase 1 (enter)**: When entering a `variable_declaration`, `function`, `class`, `import_declaration`, etc., the tracker records the flags, redeclaration excludes, and target scope that the next `binding_identifier` should be declared with.
 
 2. **Phase 2 (post_enter)**: After your enter hooks run but before children are walked, the tracker creates the actual symbol or reference for `binding_identifier` and `identifier_reference` nodes.
 
@@ -284,18 +291,30 @@ pub fn enter_binding_identifier(
     index: ast.NodeIndex,
     ctx: *sem.Ctx,
 ) !traverser.Action {
-    // What kind of binding is this?
-    const kind = ctx.symbols.currentBindingKind();
-    // .lexical, .hoisted, .function, .class, .parameter, .import
+    // What flags will the new symbol have?
+    const flags = ctx.symbols.currentBindingFlags();
+    if (flags.function_scoped_var) { /* var, parameter, or catch_var */ }
+    if (flags.block_scoped_var)    { /* let / const / using */ }
+    if (flags.parameter)           { /* function or method parameter */ }
+    if (flags.import or flags.type_import) { /* import binding */ }
 
-    // Which scope will it land in?
-    const target = ctx.symbols.resolveTargetScope(&ctx.scope);
+    // What flags would conflict with this declaration if a symbol
+    // with the same name already exists in the target scope?
+    const excludes = ctx.symbols.currentBindingExcludes();
+
+    // Which scope will it land in? (already resolved on enter)
+    const target = ctx.symbols.currentTarget();
 
     // Is there already a symbol with this name in that scope?
     const name = ctx.tree.string(id.name);
-    if (ctx.symbols.findInScope(target, name)) |existing_id| {
+    if (ctx.symbols.findInScopeOrHoisted(target, name)) |existing_id| {
         const existing = ctx.symbols.getSymbol(existing_id);
-        // Handle duplicate...
+        if (existing.flags.intersects(excludes)) {
+            // Real conflict. Emit a redeclaration diagnostic.
+        } else {
+            // Compatible merge (e.g. function overload, class + interface,
+            // namespace + value). The tracker merges them automatically.
+        }
     }
 
     return .proceed;
@@ -304,14 +323,97 @@ pub fn enter_binding_identifier(
 
 ### Symbol Flags
 
-Each symbol carries flags:
+`Symbol.Flags` is a `packed struct(u32)` of bits. A single symbol can carry several at once. `class` is in both value and type space, an `interface` and a `class` of the same name merge, an exported `var` carries both `function_scoped_var` and `exported`. Flags are grouped roughly as:
+
+**Declaration kind**
 
 ```zig
-symbol.flags.exported     // exported from module
-symbol.flags.is_default   // default export
-symbol.flags.is_const     // const or using binding
-symbol.flags.is_ambient   // TypeScript declare
+symbol.flags.function_scoped_var  // var, parameter, catch_var
+symbol.flags.block_scoped_var     // let, const, using, await_using
+symbol.flags.function             // function declaration / expression
+symbol.flags.class                // class declaration / expression
+symbol.flags.interface            // TS interface
+symbol.flags.type_alias           // TS type alias
+symbol.flags.type_parameter       // TS <T>, infer T, mapped key
+symbol.flags.regular_enum         // TS enum
+symbol.flags.const_enum           // TS const enum
+symbol.flags.value_module         // TS namespace with runtime body
+symbol.flags.namespace_module     // TS namespace (any kind)
+symbol.flags.import               // value or unspecified-kind import
+symbol.flags.type_import          // `import type`, or `import { type x }`
 ```
+
+**Modifiers**
+
+```zig
+symbol.flags.const_var   // const or using binding
+symbol.flags.parameter   // function/method parameter
+symbol.flags.catch_var   // catch (e) binding
+symbol.flags.ambient     // TS `declare`
+symbol.flags.exported    // exported from module
+symbol.flags.is_default  // default export
+```
+
+**Bit-set helpers**
+
+The flags are designed for bitwise operations. The tracker uses three helpers and a few canned constants per declaration kind:
+
+```zig
+// True when two flag sets share at least one bit.
+flags.intersects(other);
+
+// Bitwise OR, used when merging compatible declarations into one symbol.
+flags.merge(other);
+
+// Predefined sets that match the spec's notion of "value space" and "type space":
+Symbol.VALUE   // function_scoped_var, block_scoped_var, function, class, regular_enum, const_enum, value_module
+Symbol.TYPE    // class, regular_enum, const_enum, interface, type_alias, type_parameter
+
+// Per-kind redeclaration rules. A new declaration with `Excludes.X` conflicts
+// with any existing symbol whose flags also intersect `Excludes.X`. Otherwise
+// the two declarations merge into one symbol.
+Symbol.Excludes.block_var        // let / const / using
+Symbol.Excludes.function_var     // var
+Symbol.Excludes.function         // function (allows overloads in TS)
+Symbol.Excludes.class
+Symbol.Excludes.interface
+Symbol.Excludes.type_alias
+Symbol.Excludes.regular_enum
+Symbol.Excludes.const_enum
+Symbol.Excludes.value_module
+Symbol.Excludes.namespace_module
+Symbol.Excludes.import_binding
+Symbol.Excludes.parameter
+Symbol.Excludes.catch_param
+Symbol.Excludes.type_parameter
+```
+
+This is how the tracker handles function overloads, `class` + `interface` declaration merging, namespace + enum merging, and ambient module patterns without special-casing each one.
+
+### TypeScript Context
+
+In semantic mode `Ctx` exposes two flags that track whether the walker is currently inside a TS-only subtree:
+
+```zig
+pub fn enter_identifier_reference(
+    self: *V,
+    id: ast.IdentifierReference,
+    index: ast.NodeIndex,
+    ctx: *sem.Ctx,
+) traverser.Action {
+    if (ctx.inTypePosition()) {
+        // We're inside a type annotation, type reference, type parameter,
+        // type literal, mapped/conditional type, etc. References here
+        // resolve in TS type space.
+    }
+    if (ctx.inTsNamespace()) {
+        // We're inside a TS `namespace` body.
+    }
+    return .proceed;
+}
+```
+
+The tracker uses `inTypePosition()` itself to decide that a `binding_identifier` inside a type-position node is a parameter label rather than a real declaration (only `type_parameter` bindings are real in type position).
 
 ### Iterating Symbols in a Scope
 
@@ -334,7 +436,17 @@ while (it.next()) |sym_id_ptr| {
 
 ### References and Resolution
 
-Every `identifier_reference` node creates a `Reference`. After traversal, call `resolveAll` to resolve all references and build a reverse index (symbol to references):
+Every `identifier_reference` node creates a `Reference`. Each reference carries a `kind` tagging it as value-position or type-position, so rename-aware tooling can distinguish a runtime use from a use inside an annotation:
+
+```zig
+const ref = table.getReference(ref_id);
+switch (ref.kind) {
+    .value => { /* runtime use */ },
+    .type  => { /* in an annotation, extends/implements, type argument, etc. */ },
+}
+```
+
+After traversal, call `resolveAll` to resolve all references and build a reverse index (symbol to references):
 
 ```zig
 const result = try sem.traverse(MyVisitor, &tree, &visitor);
@@ -372,7 +484,18 @@ if (table.resolve(scope_id, "myVar", result.scope_tree)) |found| {
 }
 ```
 
-`resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup. It also checks hoisted `var` declarations that pass through intermediate block scopes. Use `findInScopeOrHoisted()` for the same behavior when looking up names directly.
+`resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup. It also checks hoisted `var` declarations that pass through intermediate block scopes.
+
+For single-scope lookups (no chain walk), the tracker and the table both expose:
+
+```zig
+findInScope(scope, name)           // bindings declared directly in `scope`
+findInScopeOrHoisted(scope, name)  // also matches a `var` passing through `scope`
+```
+
+`findInScopeOrHoisted` is the same lookup the tracker uses internally to detect block-scoped redeclarations of names that a hoisting `var` is travelling through.
+
+This is what tools like a minifier or dead-code pass want: one tight loop over a single field, instead of materializing whole `Symbol` structs.
 
 ## Transform Traverser
 

@@ -1,5 +1,5 @@
 ---
-title: Yuku — JavaScript/TypeScript Compiler Toolchain in Zig
+title: Yuku, a JavaScript/TypeScript Compiler Toolchain in Zig
 description: Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 head:
   - tag: style
@@ -34,7 +34,7 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 ## Current Status
 
-The `.js(x)`/`.ts(x)` parser and [Traverser](/parser/traverse) are stable and ready for production use in both Node.js and Zig. The API is stable, the implementation is 100% spec-compliant, and the AST output is fully validated against Test262, Babel, and TypeScript fixtures.
+The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node.js and Zig. The API is stable, the implementation is 100% spec-compliant, and the AST output is fully validated against Test262, Babel, and TypeScript fixtures. The [Traverser](/parser/traverse) is usable today and powers Yuku's semantic checker, but its API surface may still evolve as we build more tools on top of it.
 
 The rest of the toolchain (minifier, resolver, transpiler including `.d.ts` generation, and more) is planned and being built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
 

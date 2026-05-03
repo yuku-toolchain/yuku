@@ -200,8 +200,8 @@ if (data.isExpression()) {
 
 if (data.isCallable()) {
     // function or arrow_function_expression
-    // The body, params, etc. are still type-specific —
-    // switch on the tag to access them.
+    // The body, params, etc. are still type-specific,
+    // so switch on the tag to access them.
 }
 ```
 
