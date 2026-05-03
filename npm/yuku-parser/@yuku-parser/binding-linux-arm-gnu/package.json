@@ -1,13 +1,6 @@
 {
   "name": "@yuku-parser/binding-linux-arm-gnu",
   "version": "0.4.6",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuku-toolchain/yuku.git"
-  },
-  "files": [
-    "yuku-parser.node"
-  ],
   "os": [
     "linux"
   ],
@@ -17,5 +10,12 @@
   "libc": [
     "glibc"
   ],
-  "main": "yuku-parser.node"
+  "main": "yuku-parser.node",
+  "files": [
+    "yuku-parser.node"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku.git"
+  }
 }

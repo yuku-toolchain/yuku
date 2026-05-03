@@ -1,0 +1,97 @@
+misc/ts
+=======
+Passed:       22/22 (100.00%)
+Failed:       0
+AST mismatch: 0/22
+
+✓ test/parser/misc/ts/ambient-reserved-param.ts
+✓ test/parser/misc/ts/catch-type-annotation.ts
+✓ test/parser/misc/ts/constructor-overloads.ts
+✓ test/parser/misc/ts/declare-function-overloads.ts
+✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
+✓ test/parser/misc/ts/extends-non-null-assertion.ts
+✓ test/parser/misc/ts/function-overloads.ts
+✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
+✓ test/parser/misc/ts/optional-chain-call-fused-angle.ts
+✓ test/parser/misc/ts/optional-chain-instantiation-fused-angle.ts
+✓ test/parser/misc/ts/redeclare-error-class.ts
+error: Identifier 'B1' has already been declared
+   |
+ 3 | // class + class
+ 4 | class B1 {}
+   |       ~~ 'B1' was first declared as a class here
+ 5 | class B1 {}
+   |       ^^
+   |       ~~ cannot be redeclared here
+ 6 | 
+   |
+   = help: Consider removing or renaming this declaration of 'B1'
+
+
+✓ test/parser/misc/ts/redeclare-error-enum.ts
+error: Identifier 'C1' has already been declared
+   |
+ 3 | // regular enum + const enum (different constness)
+ 4 | enum C1 {
+   |      ~~ 'C1' was first declared as an enum here
+ 5 |   A,
+ 6 | }
+ 7 | const enum C1 {
+   |            ^^
+   |            ~~ cannot be redeclared here
+ 8 |   B,
+   |
+   = help: Consider removing or renaming this declaration of 'C1'
+
+
+✓ test/parser/misc/ts/redeclare-error-namespace.ts
+error: Identifier 'D1' has already been declared
+   |
+ 3 | // instantiated namespace + var (instantiated namespace occupies value space)
+ 4 | namespace D1 {
+   |           ~~ 'D1' was first declared as a namespace here
+ 5 |   export const a = 1;
+ 6 | }
+ 7 | var D1 = 0;
+   |     ^^
+   |     ~~ cannot be redeclared here
+ 8 | 
+   |
+   = help: Consider removing or renaming this declaration of 'D1'
+
+
+✓ test/parser/misc/ts/redeclare-error-type-alias.ts
+error: Identifier 'A1' has already been declared
+   |
+ 3 | // type alias + type alias
+ 4 | type A1 = number;
+   |      ~~ 'A1' was first declared as a type alias here
+ 5 | type A1 = string;
+   |      ^^
+   |      ~~ cannot be redeclared here
+ 6 | 
+   |
+   = help: Consider removing or renaming this declaration of 'A1'
+
+
+✓ test/parser/misc/ts/redeclare-merge-class-interface.ts
+✓ test/parser/misc/ts/redeclare-merge-cross-space.ts
+✓ test/parser/misc/ts/redeclare-merge-enum.ts
+✓ test/parser/misc/ts/redeclare-merge-import.module.ts
+error: Identifier 'T7' has already been declared
+   |
+37 | // Two imports of the same name DO conflict (unambiguous duplicate).
+38 | import T7 from "./a";
+   |        ~~ 'T7' was first declared as an import here
+39 | import T7 from "./b";
+   |        ^^
+   |        ~~ cannot be redeclared here
+40 | 
+   |
+   = help: Consider removing or renaming this declaration of 'T7'
+
+
+✓ test/parser/misc/ts/redeclare-merge-interfaces.ts
+✓ test/parser/misc/ts/redeclare-merge-namespace.ts
+✓ test/parser/misc/ts/redeclare-merge-overloads.ts
+✓ test/parser/misc/ts/redeclare-type-parameter-scope.ts

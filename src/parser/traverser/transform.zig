@@ -2,7 +2,7 @@
 //!
 //! Walks a `Tree` and lets visitor hooks mutate the AST in place.
 //! The context exposes the mutable tree directly via `ctx.tree`, giving
-//! access to all read and write operations: `getData`, `getSpan`, `replaceData`, `createNode`, and `createExtra`.
+//! access to all read and write operations: `data`, `span`, `setData`, `addNode`, and `addExtra`.
 //!
 //! ## Replacing a node
 //!
@@ -18,7 +18,7 @@
 //!     ctx: *transform.Ctx,
 //! ) traverser.Action {
 //!     if (expr.operator == .add) {
-//!         ctx.tree.replaceData(index, .{ .binary_expression = .{
+//!         ctx.tree.setData(index, .{ .binary_expression = .{
 //!             .left = expr.left,
 //!             .right = expr.right,
 //!             .operator = .multiply,
@@ -30,8 +30,8 @@
 //!
 //! ## Creating new nodes
 //!
-//! Use `createNode` to append a new node to the tree and get its index.
-//! Use `createExtra` to allocate a child list (for nodes with `IndexRange` fields).
+//! Use `addNode` to append a new node to the tree and get its index.
+//! Use `addExtra` to allocate a child list (for nodes with `IndexRange` fields).
 //! Both are safe to call during traversal.
 //!
 //! A common pattern is wrapping a node: copy the original data to a new node,
@@ -40,16 +40,16 @@
 //! added parentheses):
 //!
 //! ```
-//! const span = ctx.tree.getSpan(index);
+//! const span = ctx.tree.span(index);
 //!
 //! // Move the original data to a new node, keeping its original span.
-//! const inner = try ctx.tree.createNode(
+//! const inner = try ctx.tree.addNode(
 //!     .{ .binary_expression = expr },
 //!     span,
 //! );
 //!
 //! // Replace the current node with a wrapper.
-//! ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
+//! ctx.tree.setData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });
 //!
@@ -65,15 +65,15 @@
 //!
 //! ```
 //! // WRONG: creates a cycle (node points to itself).
-//! const wrapper = try ctx.tree.createNode(
+//! const wrapper = try ctx.tree.addNode(
 //!     .{ .parenthesized_expression = .{ .expression = index } },
 //!     span,
 //! );
-//! ctx.tree.replaceData(index, ctx.tree.getData(wrapper));
+//! ctx.tree.setData(index, ctx.tree.data(wrapper));
 //!
 //! // RIGHT: move original data to a new node, point wrapper to it.
-//! const inner = try ctx.tree.createNode(original_data, span);
-//! ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
+//! const inner = try ctx.tree.addNode(original_data, span);
+//! ctx.tree.setData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });
 //! ```

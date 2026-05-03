@@ -6,8 +6,8 @@ const sy = @import("tracker/symbol.zig");
 
 const Allocator = std.mem.Allocator;
 
-pub const ScopeId = sc.ScopeId;
 pub const Scope = sc.Scope;
+pub const ScopeId = sc.ScopeId;
 pub const ScopeTree = sc.ScopeTree;
 pub const ScopeTracker = sc.ScopeTracker;
 pub const SymbolId = sy.SymbolId;
@@ -17,11 +17,19 @@ pub const Reference = sy.Reference;
 pub const SymbolTable = sy.SymbolTable;
 pub const SymbolTracker = sy.SymbolTracker;
 
+/// Walk context combining the path stack, scope tracker, and symbol
+/// tracker. Visitor hooks receive `*Ctx` and use it to inspect the
+/// surrounding source structure (`scope`, `path`, `inTypePosition`) or
+/// to query and contribute symbols (`symbols`).
 pub const Ctx = struct {
     tree: *const ast.Tree,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
+    // depth of ts type-only context. inspect via `inTypePosition()`.
+    type_position_depth: u32 = 0,
+    // depth of ts namespace bodies. inspect via `inTsNamespace()`.
+    ts_namespace_depth: u32 = 0,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
         return .{
@@ -31,38 +39,97 @@ pub const Ctx = struct {
         };
     }
 
+    /// True when the walker is currently inside a TS type-only subtree.
+    pub inline fn inTypePosition(self: *const Ctx) bool {
+        return self.type_position_depth > 0;
+    }
+
+    /// True when the walker is currently inside a TS namespace body.
+    pub inline fn inTsNamespace(self: *const Ctx) bool {
+        return self.ts_namespace_depth > 0;
+    }
+
     pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
         try self.scope.enter(index, data);
-        self.symbols.setBindingContext(data);
+        if (isTypeContextNode(data)) self.type_position_depth += 1;
+        if (data == .ts_module_block) self.ts_namespace_depth += 1;
+        self.symbols.setBindingContext(data, &self.scope);
     }
 
     pub fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
-        try self.symbols.declareBindings(index, data, &self.scope);
+        _ = try self.symbols.declareBindings(index, data, &self.scope, self.inTypePosition());
     }
 
     pub fn exit(self: *Ctx, data: ast.NodeData) void {
         self.symbols.exit(data);
         self.scope.exit(data);
+        if (data == .ts_module_block) self.ts_namespace_depth -= 1;
+        if (isTypeContextNode(data)) self.type_position_depth -= 1;
         self.path.pop();
     }
 };
 
-/// Combined output of a semantic traversal.
+// ts nodes whose children are all type-side
+fn isTypeContextNode(data: ast.NodeData) bool {
+    return switch (data) {
+        .ts_type_annotation,
+        .ts_type_reference,
+        .ts_qualified_name,
+        .ts_type_query,
+        .ts_import_type,
+        .ts_type_parameter,
+        .ts_type_parameter_declaration,
+        .ts_type_parameter_instantiation,
+        .ts_literal_type,
+        .ts_template_literal_type,
+        .ts_array_type,
+        .ts_indexed_access_type,
+        .ts_tuple_type,
+        .ts_named_tuple_member,
+        .ts_optional_type,
+        .ts_rest_type,
+        .ts_jsdoc_nullable_type,
+        .ts_jsdoc_non_nullable_type,
+        .ts_jsdoc_unknown_type,
+        .ts_union_type,
+        .ts_intersection_type,
+        .ts_conditional_type,
+        .ts_infer_type,
+        .ts_type_operator,
+        .ts_parenthesized_type,
+        .ts_function_type,
+        .ts_constructor_type,
+        .ts_type_predicate,
+        .ts_type_literal,
+        .ts_property_signature,
+        .ts_method_signature,
+        .ts_call_signature_declaration,
+        .ts_construct_signature_declaration,
+        .ts_index_signature,
+        .ts_mapped_type,
+        .ts_class_implements,
+        .ts_interface_heritage,
+        .ts_interface_body,
+        => true,
+        else => false,
+    };
+}
+
+/// Combined output of a semantic traversal. Holds the scope tree and
+/// the symbol table.
 pub const Result = struct {
     scope_tree: ScopeTree,
     symbol_table: SymbolTable,
 };
 
-/// Walks the tree with full path, scope, and symbol tracking.
-/// Returns a `Result` containing the scope tree and symbol table.
+/// Walks the tree with full path, scope, and symbol tracking. Returns
+/// the scope tree and the unresolved symbol table. Call
+/// `SymbolTable.resolveAll` to build the reference cross-index.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Result {
     var ctx = try Ctx.init(tree);
-
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
-
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
-
     return .{
         .scope_tree = ctx.scope.toScopeTree(),
         .symbol_table = ctx.symbols.toSymbolTable(),

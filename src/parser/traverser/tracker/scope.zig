@@ -53,10 +53,14 @@ pub const Scope = struct {
         ///       function scope (body bindings live here)
         expression_name,
 
+        /// TS namespace body. Acts as a var-hoist target so vars
+        /// declared inside don't escape to the surrounding scope.
+        ts_module,
+
         /// Returns whether `var` declarations hoist to this scope kind.
         pub fn isHoistTarget(kind: Kind) bool {
             return switch (kind) {
-                .global, .module, .function, .static_block => true,
+                .global, .module, .function, .static_block, .ts_module => true,
                 else => false,
             };
         }
@@ -98,33 +102,12 @@ pub const ScopeTree = struct {
     };
 };
 
-const ScopeStack = struct {
-    const capacity = 256;
-
-    buf: [capacity]ScopeId = undefined,
-    len: usize = 0,
-
-    pub fn push(self: *ScopeStack, id: ScopeId) void {
-        if (self.len < capacity) {
-            self.buf[self.len] = id;
-        }
-        self.len += 1;
-    }
-
-    pub fn pop(self: *ScopeStack) void {
-        self.len -= 1;
-    }
-
-    pub inline fn top(self: *const ScopeStack) ScopeId {
-        return if (self.len > 0 and self.len <= capacity) self.buf[self.len - 1] else .root;
-    }
-};
-
 pub const ScopeTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .empty,
-    scope_stack: ScopeStack = .{},
+    // active scope. follow the parent chain to walk the path.
+    current: ScopeId = .root,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
         const alloc = tree.allocator();
@@ -139,49 +122,48 @@ pub const ScopeTracker = struct {
 
     fn pushRoot(self: *ScopeTracker) void {
         self.scopes.appendAssumeCapacity(.{
-            .node = self.tree.program,
+            .node = self.tree.root,
             .parent = .none,
             .hoist_target = .root,
             .kind = .global,
             .flags = .{},
         });
-
-        self.scope_stack.push(.root);
+        self.current = .root;
 
         if (self.tree.source_type == .module) {
             self.scopes.appendAssumeCapacity(.{
-                .node = self.tree.program,
+                .node = self.tree.root,
                 .parent = .root,
                 .hoist_target = .module,
                 .kind = .module,
                 .flags = .{ .strict = true },
             });
-
-            self.scope_stack.push(.module);
+            self.current = .module;
         }
     }
 
-    // creates a new child scope under the current one.
     pub fn pushScope(self: *ScopeTracker, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
         const parent = self.currentScope();
 
         try self.scopes.append(self.allocator, .{
             .node = node,
-            .parent = self.currentScopeId(),
+            .parent = self.current,
             .hoist_target = if (kind.isHoistTarget()) id else parent.hoist_target,
             .kind = kind,
             .flags = flags,
         });
-
-        self.scope_stack.push(id);
+        self.current = id;
     }
 
-    // processes a node on enter, pushes scopes for scope-creating nodes.
+    fn popScope(self: *ScopeTracker) void {
+        self.current = self.scopes.items[@intFromEnum(self.current)].parent;
+    }
+
     pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         switch (data) {
             .directive => |d| {
-                if (std.mem.eql(u8, self.tree.getString(d.value), "use strict")) {
+                if (std.mem.eql(u8, self.tree.string(d.value), "use strict")) {
                     self.currentScopeMut().flags.strict = true;
                 }
             },
@@ -191,9 +173,9 @@ pub const ScopeTracker = struct {
                         .{ .strict = true }
                     else self.inheritStrictFlag();
 
-                // named function expressions get an extra scope for their name.
-                // we push it before the function scope so it sits between
-                // outer and body. see Scope.Kind.expression_name for details.
+                // named function expressions get an extra scope for the
+                // name, pushed before the function scope so it sits
+                // between outer and body
                 if (isNamedFunctionExpression(func))
                     try self.pushScope(.expression_name, index, flags);
 
@@ -213,7 +195,7 @@ pub const ScopeTracker = struct {
                 // and the Block body. The body block reuses the catch scope
                 // so that findInScopeOrHoisted naturally detects conflicts
                 // required by Section 14.15.1 early errors.
-                const current = self.tree.getData(self.currentScope().node);
+                const current = self.tree.data(self.currentScope().node);
                 if (current != .catch_clause or current.catch_clause.body != index)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
             },
@@ -221,7 +203,24 @@ pub const ScopeTracker = struct {
             .catch_clause,
             // Section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
+            // ts nodes that scope their `<T>` type parameters and any
+            // parameter labels so they don't leak to the outer scope.
+            // ts_conditional_type isolates `infer T` per conditional
+            // so siblings can reuse the same name.
+            .ts_interface_declaration,
+            .ts_type_alias_declaration,
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
+            .ts_mapped_type,
+            .ts_conditional_type,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
+            // TS namespace bodies act as a var-hoist target so `var`
+            // declarations don't escape to the outer scope.
+            .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             .class => |cls| {
                 // Section 15.7.14: classes are always strict mode.
                 const flags = Scope.Flags{ .strict = true };
@@ -258,18 +257,18 @@ pub const ScopeTracker = struct {
     fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
         if (body_index == .null) return false;
 
-        const body = self.tree.getData(body_index);
+        const body = self.tree.data(body_index);
 
         if (body != .function_body) return false;
 
         const function_body = body.function_body;
 
-        for (self.tree.getExtra(function_body.body)) |s| {
-            const d = self.tree.getData(s);
+        for (self.tree.extra(function_body.body)) |s| {
+            const d = self.tree.data(s);
 
             if (d != .directive) break;
 
-            if (std.mem.eql(u8, self.tree.getString(d.directive.value), "use strict")) {
+            if (std.mem.eql(u8, self.tree.string(d.directive.value), "use strict")) {
                 return true;
             }
         }
@@ -281,37 +280,42 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    // mirrors `enter`, pops the same number of scopes that were pushed.
-    // For named function/class expressions, that's two pops (body + name).
+    // pops one scope per push from `enter`. named function / class
+    // expressions pop twice (body + name).
     pub fn exit(self: *ScopeTracker, data: ast.NodeData) void {
         switch (data) {
             .function => |func| {
-                self.scope_stack.pop();
-                if (isNamedFunctionExpression(func))
-                    self.scope_stack.pop();
+                self.popScope();
+                if (isNamedFunctionExpression(func)) self.popScope();
             },
             .arrow_function_expression,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
             .static_block,
-            => self.scope_stack.pop(),
+            .ts_module_block,
+            .ts_interface_declaration,
+            .ts_type_alias_declaration,
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
+            .ts_mapped_type,
+            .ts_conditional_type,
+            => self.popScope(),
             .block_statement => {
                 // catch body blocks share the catch scope (Section 14.15.2)
-                if (self.tree.getData(self.currentScope().node) != .catch_clause)
-                    self.scope_stack.pop();
+                if (self.tree.data(self.currentScope().node) != .catch_clause)
+                    self.popScope();
             },
             .class => |cls| {
-                self.scope_stack.pop();
-                if (isNamedClassExpression(cls))
-                    self.scope_stack.pop();
+                self.popScope();
+                if (isNamedClassExpression(cls)) self.popScope();
             },
             else => {},
         }
     }
-
-    // declarations bind their name in the parent scope directly,
-    // expressions bind in an intermediate expression_name scope.
-    // these check if we're dealing with a named expression.
 
     fn isNamedFunctionExpression(func: ast.Function) bool {
         return switch (func.type) {
@@ -326,7 +330,7 @@ pub const ScopeTracker = struct {
 
     /// Returns the ID of the current scope.
     pub inline fn currentScopeId(self: *const ScopeTracker) ScopeId {
-        return self.scope_stack.top();
+        return self.current;
     }
 
     /// Returns the ID of the nearest hoist target scope (where `var` lands).

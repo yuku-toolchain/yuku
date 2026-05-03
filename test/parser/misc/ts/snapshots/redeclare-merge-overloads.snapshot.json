@@ -1,0 +1,414 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 446,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSDeclareFunction",
+        "start": 117,
+        "end": 154,
+        "id": {
+          "type": "Identifier",
+          "start": 126,
+          "end": 134,
+          "name": "overload",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 135,
+            "end": 144,
+            "name": "x",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 136,
+              "end": 144,
+              "typeAnnotation": {
+                "type": "TSNumberKeyword",
+                "start": 138,
+                "end": 144
+              }
+            },
+            "optional": false
+          }
+        ],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 145,
+          "end": 153,
+          "typeAnnotation": {
+            "type": "TSNumberKeyword",
+            "start": 147,
+            "end": 153
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "TSDeclareFunction",
+        "start": 155,
+        "end": 192,
+        "id": {
+          "type": "Identifier",
+          "start": 164,
+          "end": 172,
+          "name": "overload",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 173,
+            "end": 182,
+            "name": "x",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 174,
+              "end": 182,
+              "typeAnnotation": {
+                "type": "TSStringKeyword",
+                "start": 176,
+                "end": 182
+              }
+            },
+            "optional": false
+          }
+        ],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 183,
+          "end": 191,
+          "typeAnnotation": {
+            "type": "TSStringKeyword",
+            "start": 185,
+            "end": 191
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 193,
+        "end": 239,
+        "id": {
+          "type": "Identifier",
+          "start": 202,
+          "end": 210,
+          "name": "overload",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 211,
+            "end": 217,
+            "name": "x",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 212,
+              "end": 217,
+              "typeAnnotation": {
+                "type": "TSAnyKeyword",
+                "start": 214,
+                "end": 217
+              }
+            },
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 224,
+          "end": 239,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 228,
+              "end": 237,
+              "argument": {
+                "type": "Identifier",
+                "start": 235,
+                "end": 236,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 218,
+          "end": 223,
+          "typeAnnotation": {
+            "type": "TSAnyKeyword",
+            "start": 220,
+            "end": 223
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 285,
+        "end": 445,
+        "id": {
+          "type": "Identifier",
+          "start": 294,
+          "end": 299,
+          "name": "outer",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 302,
+          "end": 445,
+          "body": [
+            {
+              "type": "TSDeclareFunction",
+              "start": 306,
+              "end": 340,
+              "id": {
+                "type": "Identifier",
+                "start": 315,
+                "end": 320,
+                "name": "inner",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "generator": false,
+              "async": false,
+              "params": [
+                {
+                  "type": "Identifier",
+                  "start": 321,
+                  "end": 330,
+                  "name": "x",
+                  "decorators": [],
+                  "typeAnnotation": {
+                    "type": "TSTypeAnnotation",
+                    "start": 322,
+                    "end": 330,
+                    "typeAnnotation": {
+                      "type": "TSNumberKeyword",
+                      "start": 324,
+                      "end": 330
+                    }
+                  },
+                  "optional": false
+                }
+              ],
+              "body": null,
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 331,
+                "end": 339,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 333,
+                  "end": 339
+                }
+              },
+              "declare": false
+            },
+            {
+              "type": "TSDeclareFunction",
+              "start": 343,
+              "end": 377,
+              "id": {
+                "type": "Identifier",
+                "start": 352,
+                "end": 357,
+                "name": "inner",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "generator": false,
+              "async": false,
+              "params": [
+                {
+                  "type": "Identifier",
+                  "start": 358,
+                  "end": 367,
+                  "name": "x",
+                  "decorators": [],
+                  "typeAnnotation": {
+                    "type": "TSTypeAnnotation",
+                    "start": 359,
+                    "end": 367,
+                    "typeAnnotation": {
+                      "type": "TSStringKeyword",
+                      "start": 361,
+                      "end": 367
+                    }
+                  },
+                  "optional": false
+                }
+              ],
+              "body": null,
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 368,
+                "end": 376,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 370,
+                  "end": 376
+                }
+              },
+              "declare": false
+            },
+            {
+              "type": "FunctionDeclaration",
+              "start": 380,
+              "end": 427,
+              "id": {
+                "type": "Identifier",
+                "start": 389,
+                "end": 394,
+                "name": "inner",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "generator": false,
+              "async": false,
+              "params": [
+                {
+                  "type": "Identifier",
+                  "start": 395,
+                  "end": 401,
+                  "name": "x",
+                  "decorators": [],
+                  "typeAnnotation": {
+                    "type": "TSTypeAnnotation",
+                    "start": 396,
+                    "end": 401,
+                    "typeAnnotation": {
+                      "type": "TSAnyKeyword",
+                      "start": 398,
+                      "end": 401
+                    }
+                  },
+                  "optional": false
+                }
+              ],
+              "body": {
+                "type": "BlockStatement",
+                "start": 408,
+                "end": 427,
+                "body": [
+                  {
+                    "type": "ReturnStatement",
+                    "start": 414,
+                    "end": 423,
+                    "argument": {
+                      "type": "Identifier",
+                      "start": 421,
+                      "end": 422,
+                      "name": "x",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    }
+                  }
+                ]
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 402,
+                "end": 407,
+                "typeAnnotation": {
+                  "type": "TSAnyKeyword",
+                  "start": 404,
+                  "end": 407
+                }
+              },
+              "declare": false
+            },
+            {
+              "type": "ReturnStatement",
+              "start": 430,
+              "end": 443,
+              "argument": {
+                "type": "Identifier",
+                "start": 437,
+                "end": 442,
+                "name": "inner",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Valid: function overloads at module scope (TS allows; sloppy JS Annex B",
+      "start": 0,
+      "end": 74
+    },
+    {
+      "type": "Line",
+      "value": " also allows at function/global scope).",
+      "start": 75,
+      "end": 116
+    },
+    {
+      "type": "Line",
+      "value": " Valid: overloads inside a function body.",
+      "start": 241,
+      "end": 284
+    }
+  ],
+  "diagnostics": []
+}

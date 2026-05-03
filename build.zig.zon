@@ -2,17 +2,19 @@
     .name = .yuku,
     .version = "0.0.0",
     .dependencies = .{
+        // dev dependencies
         .codspeed_zig = .{
-            .url = "git+https://github.com/arshad-yaseen/codspeed-zig.git#01fbd2dc5834ebd12f2c2e3818da304f942129bc",
-            .hash = "codspeed_zig-0.1.0-cdqftph4DwBYmqHqHdMwFXJ4xMB_Tj2rNAsM2k3RmvQZ",
+            .url = "git+https://github.com/arshad-yaseen/codspeed-zig/?ref=HEAD#749df21baed0a29abd6d10ea59948913f20cf567",
+            .hash = "codspeed_zig-0.2.0-cdqftmyuHgDbmwtyWnqrol8vMXRErZmZH7SLrOhhpKdl",
         },
         .napi_zig = .{
-            .url = "git+https://github.com/yuku-toolchain/napi-zig.git/?ref=HEAD#c65dd4f7ff724b74a0c4c6228ed8c1e3bf3ce35d",
-            .hash = "napi_zig-0.1.0-XRkY0T1FAQDYQ-32h7Ru7iLXhZfrXY4OajfvO5tqDlmN",
+            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#0bc9fbe1814732474c5e5f4aaf60386a588c17cd",
+            .hash = "napi_zig-0.2.0-XRkY0cGbAQBq4eaDX8NzlxNVQXTKhEZizIu1JzRjBVjl",
         },
+        //
     },
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
-    .minimum_zig_version = "0.16.0-dev.2535+b5bd49460",
+    .minimum_zig_version = "0.17.0-dev.224+c166c49b1",
     .paths = .{
         "build.zig",
         "build.zig.zon",

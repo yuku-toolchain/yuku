@@ -97,16 +97,16 @@ pub fn enter_binary_expression(
 }
 ```
 
-When you need to inspect a child node eagerly without waiting for the traverser to visit it, switch on `ctx.tree.getData`:
+When you need to inspect a child node eagerly without waiting for the traverser to visit it, switch on `ctx.tree.data`:
 
 ```zig
 pub fn enter_call_expression(self: *V, call: ast.CallExpression, index: ast.NodeIndex, ctx: *Ctx) traverser.Action {
-    switch (ctx.tree.getData(call.callee)) {
+    switch (ctx.tree.data(call.callee)) {
         .member_expression => |mem| {
             // callee is obj.method
         },
         .identifier_reference => |id| {
-            const name = ctx.tree.getString(id.name);
+            const name = ctx.tree.string(id.name);
             // callee is a plain identifier
         },
         else => {},
@@ -145,13 +145,13 @@ pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *basi
     // Walk from current node up to root
     var it = ctx.path.ancestors();
     while (it.next()) |ancestor_index| {
-        const ancestor_data = ctx.tree.getData(ancestor_index);
+        const ancestor_data = ctx.tree.data(ancestor_index);
         // ...
     }
 
     // Navigate sideways or down (the full tree is always accessible)
     if (ctx.path.parent()) |p| {
-        const parent_data = ctx.tree.getData(p);
+        const parent_data = ctx.tree.data(p);
         // inspect siblings via parent's children, or descend into any subtree
     }
 
@@ -176,18 +176,25 @@ Returns a `ScopeTree` containing all scopes created during the walk.
 
 The scope tracker automatically pushes and pops scopes as the walker enters and exits scope-creating nodes:
 
-| Node                            | Scope Kind                                     |
-| ------------------------------- | ---------------------------------------------- |
-| Program                         | `global` (+ `module` if source_type is module) |
-| Function declaration/expression | `function`                                     |
-| Arrow function                  | `function`                                     |
-| Block statement                 | `block`                                        |
-| For / for-in / for-of           | `block`                                        |
-| Catch clause                    | `block`                                        |
-| Switch statement                | `block`                                        |
-| Class declaration/expression    | `class`                                        |
-| Static block                    | `static_block`                                 |
-| Named function/class expression | `expression_name` + `function`/`class`         |
+| Node                                                         | Scope Kind                                     |
+| ------------------------------------------------------------ | ---------------------------------------------- |
+| Program                                                      | `global` (+ `module` if source_type is module) |
+| Function declaration/expression                              | `function`                                     |
+| Arrow function                                               | `function`                                     |
+| Block statement                                              | `block`                                        |
+| For / for-in / for-of                                        | `block`                                        |
+| Catch clause                                                 | `block`                                        |
+| Switch statement                                             | `block`                                        |
+| Class declaration/expression                                 | `class`                                        |
+| Static block                                                 | `static_block`                                 |
+| Named function/class expression                              | `expression_name` + `function`/`class`         |
+| TS interface / type alias                                    | `block`                                        |
+| TS function/constructor type, call/construct/index signature | `block`                                        |
+| TS method signature                                          | `block`                                        |
+| TS mapped type, conditional type                             | `block`                                        |
+| TS namespace body (`module` block)                           | `ts_module`                                    |
+
+The TS rows scope `<T>` type parameters and parameter labels so they don't leak to the outer scope. `ts_conditional_type` isolates `infer T` per conditional so siblings can reuse the same name. `ts_module` is its own kind because namespace bodies act as a `var`-hoist target, so a `var` declared inside a namespace doesn't escape to the surrounding scope.
 
 Named function and class expressions create two scopes. For `const x = function foo() { ... }`:
 
@@ -269,7 +276,7 @@ const result = try sem.traverse(MyVisitor, &tree, &visitor);
 
 The semantic traverser uses a two-phase approach for symbol declaration:
 
-1. **Phase 1 (enter)**: When entering a `variable_declaration`, `function`, `class`, `import_declaration`, etc., the tracker records what kind of binding is coming next (`let`, `var`, `function`, etc.) and where it should land.
+1. **Phase 1 (enter)**: When entering a `variable_declaration`, `function`, `class`, `import_declaration`, etc., the tracker records the flags, redeclaration excludes, and target scope that the next `binding_identifier` should be declared with.
 
 2. **Phase 2 (post_enter)**: After your enter hooks run but before children are walked, the tracker creates the actual symbol or reference for `binding_identifier` and `identifier_reference` nodes.
 
@@ -284,18 +291,30 @@ pub fn enter_binding_identifier(
     index: ast.NodeIndex,
     ctx: *sem.Ctx,
 ) !traverser.Action {
-    // What kind of binding is this?
-    const kind = ctx.symbols.currentBindingKind();
-    // .lexical, .hoisted, .function, .class, .parameter, .import
+    // What flags will the new symbol have?
+    const flags = ctx.symbols.currentBindingFlags();
+    if (flags.function_scoped_var) { /* var, parameter, or catch_var */ }
+    if (flags.block_scoped_var)    { /* let / const / using */ }
+    if (flags.parameter)           { /* function or method parameter */ }
+    if (flags.import or flags.type_import) { /* import binding */ }
 
-    // Which scope will it land in?
-    const target = ctx.symbols.resolveTargetScope(&ctx.scope);
+    // What flags would conflict with this declaration if a symbol
+    // with the same name already exists in the target scope?
+    const excludes = ctx.symbols.currentBindingExcludes();
+
+    // Which scope will it land in? (already resolved on enter)
+    const target = ctx.symbols.currentTarget();
 
     // Is there already a symbol with this name in that scope?
-    const name = ctx.tree.getString(id.name);
-    if (ctx.symbols.findInScope(target, name)) |existing_id| {
+    const name = ctx.tree.string(id.name);
+    if (ctx.symbols.findInScopeOrHoisted(target, name)) |existing_id| {
         const existing = ctx.symbols.getSymbol(existing_id);
-        // Handle duplicate...
+        if (existing.flags.intersects(excludes)) {
+            // Real conflict. Emit a redeclaration diagnostic.
+        } else {
+            // Compatible merge (e.g. function overload, class + interface,
+            // namespace + value). The tracker merges them automatically.
+        }
     }
 
     return .proceed;
@@ -304,14 +323,97 @@ pub fn enter_binding_identifier(
 
 ### Symbol Flags
 
-Each symbol carries flags:
+`Symbol.Flags` is a `packed struct(u32)` of bits. A single symbol can carry several at once. `class` is in both value and type space, an `interface` and a `class` of the same name merge, an exported `var` carries both `function_scoped_var` and `exported`. Flags are grouped roughly as:
+
+**Declaration kind**
 
 ```zig
-symbol.flags.exported     // exported from module
-symbol.flags.is_default   // default export
-symbol.flags.is_const     // const or using binding
-symbol.flags.is_ambient   // TypeScript declare
+symbol.flags.function_scoped_var  // var, parameter, catch_var
+symbol.flags.block_scoped_var     // let, const, using, await_using
+symbol.flags.function             // function declaration / expression
+symbol.flags.class                // class declaration / expression
+symbol.flags.interface            // TS interface
+symbol.flags.type_alias           // TS type alias
+symbol.flags.type_parameter       // TS <T>, infer T, mapped key
+symbol.flags.regular_enum         // TS enum
+symbol.flags.const_enum           // TS const enum
+symbol.flags.value_module         // TS namespace with runtime body
+symbol.flags.namespace_module     // TS namespace (any kind)
+symbol.flags.import               // value or unspecified-kind import
+symbol.flags.type_import          // `import type`, or `import { type x }`
 ```
+
+**Modifiers**
+
+```zig
+symbol.flags.const_var   // const or using binding
+symbol.flags.parameter   // function/method parameter
+symbol.flags.catch_var   // catch (e) binding
+symbol.flags.ambient     // TS `declare`
+symbol.flags.exported    // exported from module
+symbol.flags.is_default  // default export
+```
+
+**Bit-set helpers**
+
+The flags are designed for bitwise operations. The tracker uses three helpers and a few canned constants per declaration kind:
+
+```zig
+// True when two flag sets share at least one bit.
+flags.intersects(other);
+
+// Bitwise OR, used when merging compatible declarations into one symbol.
+flags.merge(other);
+
+// Predefined sets that match the spec's notion of "value space" and "type space":
+Symbol.VALUE   // function_scoped_var, block_scoped_var, function, class, regular_enum, const_enum, value_module
+Symbol.TYPE    // class, regular_enum, const_enum, interface, type_alias, type_parameter
+
+// Per-kind redeclaration rules. A new declaration with `Excludes.X` conflicts
+// with any existing symbol whose flags also intersect `Excludes.X`. Otherwise
+// the two declarations merge into one symbol.
+Symbol.Excludes.block_var        // let / const / using
+Symbol.Excludes.function_var     // var
+Symbol.Excludes.function         // function (allows overloads in TS)
+Symbol.Excludes.class
+Symbol.Excludes.interface
+Symbol.Excludes.type_alias
+Symbol.Excludes.regular_enum
+Symbol.Excludes.const_enum
+Symbol.Excludes.value_module
+Symbol.Excludes.namespace_module
+Symbol.Excludes.import_binding
+Symbol.Excludes.parameter
+Symbol.Excludes.catch_param
+Symbol.Excludes.type_parameter
+```
+
+This is how the tracker handles function overloads, `class` + `interface` declaration merging, namespace + enum merging, and ambient module patterns without special-casing each one.
+
+### TypeScript Context
+
+In semantic mode `Ctx` exposes two flags that track whether the walker is currently inside a TS-only subtree:
+
+```zig
+pub fn enter_identifier_reference(
+    self: *V,
+    id: ast.IdentifierReference,
+    index: ast.NodeIndex,
+    ctx: *sem.Ctx,
+) traverser.Action {
+    if (ctx.inTypePosition()) {
+        // We're inside a type annotation, type reference, type parameter,
+        // type literal, mapped/conditional type, etc. References here
+        // resolve in TS type space.
+    }
+    if (ctx.inTsNamespace()) {
+        // We're inside a TS `namespace` body.
+    }
+    return .proceed;
+}
+```
+
+The tracker uses `inTypePosition()` itself to decide that a `binding_identifier` inside a type-position node is a parameter label rather than a real declaration (only `type_parameter` bindings are real in type position).
 
 ### Iterating Symbols in a Scope
 
@@ -334,7 +436,17 @@ while (it.next()) |sym_id_ptr| {
 
 ### References and Resolution
 
-Every `identifier_reference` node creates a `Reference`. After traversal, call `resolveAll` to resolve all references and build a reverse index (symbol to references):
+Every `identifier_reference` node creates a `Reference`. Each reference carries a `kind` tagging it as value-position or type-position, so rename-aware tooling can distinguish a runtime use from a use inside an annotation:
+
+```zig
+const ref = table.getReference(ref_id);
+switch (ref.kind) {
+    .value => { /* runtime use */ },
+    .type  => { /* in an annotation, extends/implements, type argument, etc. */ },
+}
+```
+
+After traversal, call `resolveAll` to resolve all references and build a reverse index (symbol to references):
 
 ```zig
 const result = try sem.traverse(MyVisitor, &tree, &visitor);
@@ -372,7 +484,18 @@ if (table.resolve(scope_id, "myVar", result.scope_tree)) |found| {
 }
 ```
 
-`resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup. It also checks hoisted `var` declarations that pass through intermediate block scopes. Use `findInScopeOrHoisted()` for the same behavior when looking up names directly.
+`resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup. It also checks hoisted `var` declarations that pass through intermediate block scopes.
+
+For single-scope lookups (no chain walk), the tracker and the table both expose:
+
+```zig
+findInScope(scope, name)           // bindings declared directly in `scope`
+findInScopeOrHoisted(scope, name)  // also matches a `var` passing through `scope`
+```
+
+`findInScopeOrHoisted` is the same lookup the tracker uses internally to detect block-scoped redeclarations of names that a hoisting `var` is travelling through.
+
+This is what tools like a minifier or dead-code pass want: one tight loop over a single field, instead of materializing whole `Symbol` structs.
 
 ## Transform Traverser
 
@@ -397,7 +520,7 @@ pub fn enter_binary_expression(
     ctx: *transform.Ctx,
 ) traverser.Action {
     if (expr.operator == .add) {
-        ctx.tree.replaceData(index, .{ .binary_expression = .{
+        ctx.tree.setData(index, .{ .binary_expression = .{
             .left = expr.left,
             .right = expr.right,
             .operator = .multiply,
@@ -409,17 +532,17 @@ pub fn enter_binary_expression(
 
 ### Creating New Nodes
 
-Use `createNode` to append a new node and `createExtra` to allocate child lists:
+Use `addNode` to append a new node and `addExtra` to allocate child lists:
 
 ```zig
 // Create a new node
-const new_node = try ctx.tree.createNode(
+const new_node = try ctx.tree.addNode(
     .{ .numeric_literal = .{ .raw = "42" } },
     .none,
 );
 
 // Create a child list for nodes with IndexRange fields
-const children = try ctx.tree.createExtra(&.{ child1, child2, child3 });
+const children = try ctx.tree.addExtra(&.{ child1, child2, child3 });
 ```
 
 ### Wrapping Nodes
@@ -427,16 +550,16 @@ const children = try ctx.tree.createExtra(&.{ child1, child2, child3 });
 A common pattern is wrapping a node: copy the original to a new node, then replace the current node with a wrapper:
 
 ```zig
-const span = ctx.tree.getSpan(index);
+const span = ctx.tree.span(index);
 
 // Move original data to a new node
-const inner = try ctx.tree.createNode(
+const inner = try ctx.tree.addNode(
     .{ .binary_expression = expr },
     span,
 );
 
 // Replace current node with wrapper
-ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
+ctx.tree.setData(index, .{ .parenthesized_expression = .{
     .expression = inner,
 } });
 
@@ -452,12 +575,12 @@ Never point a node's child back to its own index. The walker re-reads node data 
 
 ```zig
 // WRONG: creates a cycle
-const wrapper = try ctx.tree.createNode(.{ .parenthesized_expression = .{ .expression = index } }, span);
-ctx.tree.replaceData(index, ctx.tree.getData(wrapper));
+const wrapper = try ctx.tree.addNode(.{ .parenthesized_expression = .{ .expression = index } }, span);
+ctx.tree.setData(index, ctx.tree.data(wrapper));
 
 // RIGHT: move original to new node, point wrapper to it
-const inner = try ctx.tree.createNode(original_data, span);
-ctx.tree.replaceData(index, .{ .parenthesized_expression = .{ .expression = inner } });
+const inner = try ctx.tree.addNode(original_data, span);
+ctx.tree.setData(index, .{ .parenthesized_expression = .{ .expression = inner } });
 ```
 
 ## Building ASTs from Scratch
@@ -474,22 +597,22 @@ defer out.deinit();
 
 // Create a string literal node: "hello"
 const hello_str = try out.addString("hello");
-const hello = try out.createNode(
+const hello = try out.addNode(
     .{ .string_literal = .{ .value = hello_str } },
     .none,
 );
 
 // Create an expression statement wrapping the literal
-const stmt = try out.createNode(
+const stmt = try out.addNode(
     .{ .expression_statement = .{ .expression = hello } },
     .none,
 );
 
 // Build the program body (list of statements)
-const body = try out.createExtra(&.{stmt});
+const body = try out.addExtra(&.{stmt});
 
 // Create the root program node
-out.program = try out.createNode(
+out.root = try out.addNode(
     .{ .program = .{ .source_type = .module, .body = body } },
     .none,
 );
@@ -513,11 +636,11 @@ const Transpiler = struct {
     ) !traverser.Action {
         // Full context from the source tree:
         const is_strict = ctx.scope.isStrict();
-        const source_span = ctx.tree.getSpan(index);
+        const source_span = ctx.tree.span(index);
 
         // Build nodes in the output tree:
         const name_str = try self.out.addString("transpiledFn");
-        const name_node = try self.out.createNode(
+        const name_node = try self.out.addNode(
             .{ .binding_identifier = .{ .name = name_str } },
             source_span,
         );

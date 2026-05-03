@@ -1,0 +1,426 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 585,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 106,
+        "end": 123,
+        "id": {
+          "type": "Identifier",
+          "start": 111,
+          "end": 113,
+          "name": "T1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSNumberKeyword",
+          "start": 116,
+          "end": 122
+        },
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 124,
+        "end": 135,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 128,
+            "end": 134,
+            "id": {
+              "type": "Identifier",
+              "start": 128,
+              "end": 130,
+              "name": "t1",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 133,
+              "end": 134,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 173,
+        "end": 188,
+        "id": {
+          "type": "Identifier",
+          "start": 183,
+          "end": 185,
+          "name": "T2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 186,
+          "end": 188,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 189,
+        "end": 202,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 195,
+            "end": 201,
+            "id": {
+              "type": "Identifier",
+              "start": 195,
+              "end": 197,
+              "name": "t2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 200,
+              "end": 201,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 238,
+        "end": 253,
+        "id": {
+          "type": "Identifier",
+          "start": 248,
+          "end": 250,
+          "name": "T3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 251,
+          "end": 253,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 254,
+        "end": 265,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 258,
+            "end": 264,
+            "id": {
+              "type": "Identifier",
+              "start": 258,
+              "end": 260,
+              "name": "t3",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 263,
+              "end": 264,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 306,
+        "end": 321,
+        "id": {
+          "type": "Identifier",
+          "start": 316,
+          "end": 318,
+          "name": "T4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 319,
+          "end": 321,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 322,
+        "end": 338,
+        "id": {
+          "type": "Identifier",
+          "start": 331,
+          "end": 333,
+          "name": "t4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 336,
+          "end": 338,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 411,
+        "end": 458,
+        "id": {
+          "type": "Identifier",
+          "start": 421,
+          "end": 423,
+          "name": "T5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 424,
+          "end": 458,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 428,
+              "end": 456,
+              "declaration": {
+                "type": "TSTypeAliasDeclaration",
+                "start": 435,
+                "end": 456,
+                "id": {
+                  "type": "Identifier",
+                  "start": 440,
+                  "end": 446,
+                  "name": "Member",
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false
+                },
+                "typeParameters": null,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 449,
+                  "end": 455
+                },
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "type"
+            }
+          ]
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 459,
+        "end": 470,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 463,
+            "end": 469,
+            "id": {
+              "type": "Identifier",
+              "start": 463,
+              "end": 465,
+              "name": "t5",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 468,
+              "end": 469,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 520,
+        "end": 537,
+        "id": {
+          "type": "Identifier",
+          "start": 525,
+          "end": 527,
+          "name": "T6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSStringKeyword",
+          "start": 530,
+          "end": 536
+        },
+        "declare": false
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 538,
+        "end": 584,
+        "id": {
+          "type": "Identifier",
+          "start": 548,
+          "end": 550,
+          "name": "T6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 551,
+          "end": 584,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 555,
+              "end": 582,
+              "declaration": {
+                "type": "TSTypeAliasDeclaration",
+                "start": 562,
+                "end": 582,
+                "id": {
+                  "type": "Identifier",
+                  "start": 567,
+                  "end": 572,
+                  "name": "Inner",
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false
+                },
+                "typeParameters": null,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 575,
+                  "end": 581
+                },
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "type"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Valid: type-only declarations don't conflict with value-only ones.",
+      "start": 0,
+      "end": 69
+    },
+    {
+      "type": "Line",
+      "value": " type alias (type) + var (value)",
+      "start": 71,
+      "end": 105
+    },
+    {
+      "type": "Line",
+      "value": " interface (type) + const (value)",
+      "start": 137,
+      "end": 172
+    },
+    {
+      "type": "Line",
+      "value": " interface (type) + let (value)",
+      "start": 204,
+      "end": 237
+    },
+    {
+      "type": "Line",
+      "value": " interface (type) + function (value)",
+      "start": 267,
+      "end": 305
+    },
+    {
+      "type": "Line",
+      "value": " non-instantiated namespace (type+namespace, no value) + var (value)",
+      "start": 340,
+      "end": 410
+    },
+    {
+      "type": "Line",
+      "value": " type alias + namespace (type-only namespace)",
+      "start": 472,
+      "end": 519
+    }
+  ],
+  "diagnostics": []
+}

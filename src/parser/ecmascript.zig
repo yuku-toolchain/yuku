@@ -13,18 +13,18 @@ pub const PropName = struct {
 
 /// https://tc39.es/ecma262/#sec-static-semantics-propname
 pub fn propName(tree: *const ast.Tree, key: ast.NodeIndex) ?PropName {
-    switch (tree.getData(key)) {
+    switch (tree.data(key)) {
         .identifier_name => |id| return .{
-            .name = tree.getString(id.name),
-            .span = tree.getSpan(key),
+            .name = tree.string(id.name),
+            .span = tree.span(key),
             .is_string_literal = false,
         },
         .string_literal => |str| {
-            const name = tree.getString(str.value);
+            const name = tree.string(str.value);
             if (name.len == 0) return null;
             return .{
                 .name = name,
-                .span = tree.getSpan(key),
+                .span = tree.span(key),
                 .is_string_literal = true,
             };
         },
@@ -36,10 +36,12 @@ pub fn propName(tree: *const ast.Tree, key: ast.NodeIndex) ?PropName {
 pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameters) ?ast.NodeIndex {
     if (params.rest != .null) return params.rest;
 
-    for (tree.getExtra(params.items)) |param_idx| {
-        const pattern = tree.getData(param_idx).formal_parameter.pattern;
-        switch (tree.getData(pattern)) {
-            .binding_identifier => {},
+    for (tree.extra(params.items)) |param_idx| {
+        const pattern = tree.data(param_idx).formal_parameter.pattern;
+        switch (tree.data(pattern)) {
+            // `this: T` is not a runtime parameter, erased at emit, so the
+            // ECMAScript "simple parameter list" rule does not apply to it.
+            .binding_identifier, .ts_this_parameter => {},
             else => return pattern,
         }
     }

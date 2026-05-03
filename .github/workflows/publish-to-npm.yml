@@ -22,7 +22,7 @@ jobs:
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
         with:
-          version: 0.16.0-dev.2535+b5bd49460
+          version: 0.17.0-dev.224+c166c49b1
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -43,6 +43,12 @@ jobs:
 
       - name: Build
         run: bun run build:npm
+
+      - name: Generate changelog
+        run: bunx changelogithub
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update npm
         run: npm install -g npm@latest

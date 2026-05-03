@@ -1,0 +1,179 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 139,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 51,
+        "end": 79,
+        "id": {
+          "type": "Identifier",
+          "start": 61,
+          "end": 62,
+          "name": "I",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 63,
+          "end": 79,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 67,
+              "end": 77,
+              "key": {
+                "type": "Identifier",
+                "start": 67,
+                "end": 68,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 68,
+                "end": 76,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 70,
+                  "end": 76
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 80,
+        "end": 108,
+        "id": {
+          "type": "Identifier",
+          "start": 90,
+          "end": 91,
+          "name": "I",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 92,
+          "end": 108,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 96,
+              "end": 106,
+              "key": {
+                "type": "Identifier",
+                "start": 96,
+                "end": 97,
+                "name": "b",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 97,
+                "end": 105,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 99,
+                  "end": 105
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 109,
+        "end": 138,
+        "id": {
+          "type": "Identifier",
+          "start": 119,
+          "end": 120,
+          "name": "I",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 121,
+          "end": 138,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 125,
+              "end": 136,
+              "key": {
+                "type": "Identifier",
+                "start": 125,
+                "end": 126,
+                "name": "c",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 126,
+                "end": 135,
+                "typeAnnotation": {
+                  "type": "TSBooleanKeyword",
+                  "start": 128,
+                  "end": 135
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " All valid: interfaces with the same name merge.",
+      "start": 0,
+      "end": 50
+    }
+  ],
+  "diagnostics": []
+}

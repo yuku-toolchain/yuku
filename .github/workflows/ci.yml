@@ -13,6 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # [windows-latest], bun is crashing on windows
         os: [ubuntu-latest, macos-latest]
 
     steps:
@@ -22,7 +23,7 @@ jobs:
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
         with:
-          version: 0.16.0-dev.2535+b5bd49460
+          version: 0.17.0-dev.224+c166c49b1
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

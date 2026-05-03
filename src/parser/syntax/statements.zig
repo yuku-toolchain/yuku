@@ -14,6 +14,8 @@ const extensions = @import("extensions.zig");
 const grammar = @import("../grammar.zig");
 const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
+const ts_types = @import("ts/types.zig");
+const ts_decl = @import("ts/statements.zig");
 
 const ParseStatementOpts = struct {
     /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
@@ -22,21 +24,23 @@ const ParseStatementOpts = struct {
 };
 
 pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.NodeIndex {
-    parser.context.in_single_statement_context = opts.can_be_single_statement_context;
-    defer parser.context.in_single_statement_context = false;
+    parser.context.single_statement = opts.can_be_single_statement_context;
+    defer parser.context.single_statement = false;
 
-    parser.context.in_directive_prologue = parser.context.in_directive_prologue and parser.current_token.tag == .string_literal;
+    parser.context.directive_prologue = parser.context.directive_prologue and parser.current_token.tag == .string_literal;
 
     return switch (parser.current_token.tag) {
-        .at => extensions.parseDecorated(parser, .{}),
+        .at => parseDecoratedStatement(parser),
         .await => parseAwaitUsingOrExpression(parser),
         .import => parseImportDeclarationOrExpression(parser),
         .async => parseAsyncFunctionOrExpression(parser),
-        .@"var", .@"const" => variables.parseVariableDeclaration(parser, false, null),
+        .@"var" => variables.parseVariableDeclaration(parser, .{}, null),
+        .@"const" => parseConstOrConstEnum(parser),
         .let => parseLet(parser),
         .using => parseUsingOrExpression(parser),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
+        .type, .interface, .@"enum", .namespace, .module, .global, .declare, .abstract => parseTsDeclarationOrExpression(parser),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
@@ -56,11 +60,23 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     };
 }
 
+/// `@dec class C` or `@dec export [default] class C`.
+fn parseDecoratedStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    const decorators = try extensions.parseDecorators(parser) orelse return null;
+
+    if (parser.current_token.tag == .@"export") {
+        return modules.parseExportDecorated(parser, decorators);
+    }
+
+    return class.parseClassDecorated(parser, .{}, start, decorators);
+}
+
 fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
-    const expression_data = parser.tree.getData(expression);
+    const expression_data = parser.tree.data(expression);
 
-    if (parser.context.in_directive_prologue and expression_data == .string_literal) {
+    if (parser.context.directive_prologue and expression_data == .string_literal) {
         return parseDirective(parser, expression);
     }
 
@@ -81,23 +97,23 @@ fn parseExpressionStatementWithExpression(
     parser: *Parser,
     expression: ast.NodeIndex,
 ) Error!?ast.NodeIndex {
-    const span = parser.tree.getSpan(expression);
+    const span = parser.tree.span(expression);
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .expression_statement = .{ .expression = expression } },
         .{ .start = span.start, .end = try parser.eatSemicolon(span.end) orelse return null },
     );
 }
 
 fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeIndex {
-    const string_literal_span = parser.tree.getSpan(expression);
+    const string_literal_span = parser.tree.span(expression);
 
     // directive value is the raw source text without quotes (escape sequences preserved).
     // per spec, "use strict" recognition uses exact code unit sequences, not decoded values.
     const value_start = string_literal_span.start + 1;
     const value_end = string_literal_span.end - 1;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .directive = .{
             .expression = expression,
             .value = parser.tree.sourceSlice(value_start, value_end),
@@ -115,7 +131,7 @@ fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!is_identifier) {
         // parse as variable declaration: let x = 5;
-        return variables.parseVariableDeclaration(parser, false, null);
+        return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
     // otherwise, fall through to parse 'let' as an identifier in an expression statement.
@@ -128,7 +144,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
     if (!is_using_identifier) {
-        return variables.parseVariableDeclaration(parser, false, null);
+        return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
     return parseExpressionStatement(parser);
@@ -136,7 +152,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `await using` declaration, or fall through to expression statement.
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     return switch (next.tag) {
         .using => {
@@ -147,7 +163,7 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
             const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
             if (!is_using_identifier) {
-                return variables.parseVariableDeclaration(parser, true, start);
+                return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
             }
 
             return parseAwaitExpressionStatement(parser, start);
@@ -164,7 +180,7 @@ fn parseAwaitExpressionStatement(parser: *Parser, start: u32) Error!?ast.NodeInd
 
 /// import declaration, or fall through to import expression statement (`import(` / `import.`).
 fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     return switch (next.tag) {
         // `import(` and `import.` are expression forms (dynamic import / import.meta / phase imports)
@@ -173,9 +189,23 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
+fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
+    if (ts_decl.isStartOfTsDeclaration(parser))
+        return ts_decl.parseTsDeclaration(parser);
+    return parseExpressionOrLabeledStatementOrDirective(parser);
+}
+
+fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.tree.isTs()) {
+        const next = parser.peekAhead() orelse return null;
+        if (ts_decl.isConstEnumHead(next)) return ts_decl.parseTsDeclaration(parser);
+    }
+    return variables.parseVariableDeclaration(parser, .{}, null);
+}
+
 /// `async function` declaration, or fall through to expression statement.
 fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    const next = parser.peekAhead() orelse return null;
 
     if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
@@ -188,11 +218,11 @@ fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// https://tc39.es/ecma262/#sec-labelled-statements
 fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.NodeIndex {
-    const id_data = parser.tree.getData(identifier);
-    const id_span = parser.tree.getSpan(identifier);
+    const id_data = parser.tree.data(identifier);
+    const id_span = parser.tree.span(identifier);
 
     // IdentifierReference to LabelIdentifier
-    const label = try parser.tree.createNode(.{
+    const label = try parser.tree.addNode(.{
         .label_identifier = .{
             .name = id_data.identifier_reference.name,
         },
@@ -202,9 +232,9 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
 
     const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .labeled_statement = .{ .label = label, .body = body },
-    }, .{ .start = id_span.start, .end = parser.tree.getSpan(body).end });
+    }, .{ .start = id_span.start, .end = parser.tree.span(body).end });
 }
 
 /// https://tc39.es/ecma262/#prod-BlockStatement
@@ -227,7 +257,7 @@ pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the block statement, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.tree.createNode(.{ .block_statement = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .block_statement = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-switch-statement
@@ -247,7 +277,7 @@ pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(.right_brace, "Expected '}' to close switch body", null)) return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .switch_statement = .{
             .discriminant = discriminant,
             .cases = cases,
@@ -264,7 +294,7 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
         try parser.scratch_a.append(parser.allocator(), case_node);
     }
 
-    return parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+    return parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
@@ -284,11 +314,11 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
 
     const consequent = try parseCaseConsequent(parser);
     const end = if (consequent.len > 0)
-        parser.tree.getSpan(parser.tree.getExtra(consequent)[consequent.len - 1]).end
+        parser.tree.span(parser.tree.extra(consequent)[consequent.len - 1]).end
     else
         colon_end;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .switch_case = .{
             .@"test" = test_expr,
             .consequent = consequent,
@@ -306,19 +336,16 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         parser.current_token.tag != .eof)
     {
         if (try parseStatement(parser, .{})) |stmt| {
-            const stmt_data = parser.tree.getData(stmt);
+            const stmt_data = parser.tree.data(stmt);
 
             // A using declaration can appear in the following contexts:
             //  - The top level of a Module anywhere a VariableStatement is allowed, as long as it is not
             //    immediately nested inside of a `CaseClause` or `DefaultClause`.
-            if(stmt_data == .variable_declaration) {
+            if (stmt_data == .variable_declaration) {
                 const kind = stmt_data.variable_declaration.kind;
 
-                if(kind == .using or kind == .await_using) {
-                    try parser.report(
-                        parser.tree.getSpan(stmt),
-                        "Using declaration cannot appear in the bare case statement.",
-                        .{ .help = "Wrap this declaration in a block statement" });
+                if (kind == .using or kind == .await_using) {
+                    try parser.report(parser.tree.span(stmt), "Using declaration cannot appear in the bare case statement.", .{ .help = "Wrap this declaration in a block statement" });
                 }
             }
 
@@ -328,7 +355,7 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         }
     }
 
-    return parser.createExtraFromScratch(&parser.scratch_b, checkpoint);
+    return parser.addExtraFromScratch(&parser.scratch_b, checkpoint);
 }
 
 /// https://tc39.es/ecma262/#sec-if-statement
@@ -344,16 +371,16 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const consequent = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    var end = parser.tree.getSpan(consequent).end;
+    var end = parser.tree.span(consequent).end;
     var alternate: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .@"else") {
         try parser.advance() orelse return null; // consume 'else'
         alternate = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
-        end = parser.tree.getSpan(alternate).end;
+        end = parser.tree.span(alternate).end;
     }
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .if_statement = .{
             .@"test" = test_expr,
             .consequent = consequent,
@@ -375,12 +402,12 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .while_statement = .{
             .@"test" = test_expr,
             .body = body,
         },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
 /// https://tc39.es/ecma262/#sec-do-while-statement
@@ -400,7 +427,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = try parser.eatSemicolonLenient(rparen_end) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .do_while_statement = .{
             .body = body,
             .@"test" = test_expr,
@@ -421,19 +448,19 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .with_statement = .{
             .object = object,
             .body = body,
         },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
 /// EmptyStatement: `;`
 fn parseEmptyStatement(parser: *Parser) Error!?ast.NodeIndex {
     const span = parser.current_token.span;
     try parser.advance() orelse return null; // consume ';'
-    return try parser.tree.createNode(.{ .empty_statement = .{} }, span);
+    return try parser.tree.addNode(.{ .empty_statement = .{} }, span);
 }
 
 /// https://tc39.es/ecma262/#sec-break-statement
@@ -448,12 +475,12 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
     if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
-        end = parser.tree.getSpan(label_node).end;
+        end = parser.tree.span(label_node).end;
     }
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.tree.createNode(.{ .break_statement = .{ .label = label } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .break_statement = .{ .label = label } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-continue-statement
@@ -468,12 +495,12 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
     if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
-        end = parser.tree.getSpan(label_node).end;
+        end = parser.tree.span(label_node).end;
     }
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.tree.createNode(.{ .continue_statement = .{ .label = label } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .continue_statement = .{ .label = label } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-return-statement
@@ -481,7 +508,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
 
-    if (!parser.context.allow_return_statement) {
+    if (!parser.context.@"return") {
         try parser.report(
             .{ .start = start, .end = end },
             "'return' statement is only valid inside a function",
@@ -496,12 +523,12 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     // return [no LineTerminator here] Expression?
     if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
         argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
-        end = parser.tree.getSpan(argument).end;
+        end = parser.tree.span(argument).end;
     }
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.tree.createNode(.{ .return_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .return_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-throw-statement
@@ -519,9 +546,9 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
-    const end = try parser.eatSemicolon(parser.tree.getSpan(argument).end) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.span(argument).end) orelse return null;
 
-    return try parser.tree.createNode(.{ .throw_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .throw_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-try-statement
@@ -533,17 +560,17 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     var handler: ast.NodeIndex = .null;
     var finalizer: ast.NodeIndex = .null;
-    var end = parser.tree.getSpan(block).end;
+    var end = parser.tree.span(block).end;
 
     if (parser.current_token.tag == .@"catch") {
         handler = try parseCatchClause(parser) orelse return null;
-        end = parser.tree.getSpan(handler).end;
+        end = parser.tree.span(handler).end;
     }
 
     if (parser.current_token.tag == .finally) {
         try parser.advance() orelse return null; // consume 'finally'
         finalizer = try parseBlockStatement(parser) orelse return null;
-        end = parser.tree.getSpan(finalizer).end;
+        end = parser.tree.span(finalizer).end;
     }
 
     if (handler == .null and finalizer == .null) {
@@ -551,7 +578,7 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .try_statement = .{
             .block = block,
             .handler = handler,
@@ -565,23 +592,26 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'catch'
 
-    var param: ast.NodeIndex = .null;
-
     // optional catch binding: catch (param) or catch
+    var param: ast.NodeIndex = .null;
     if (parser.current_token.tag == .left_paren) {
         try parser.advance() orelse return null; // consume '('
         param = try patterns.parseBindingPattern(parser) orelse return null;
+
+        if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+            ts_types.applyTypeAnnotationToPattern(parser, param, annotation);
+        }
+
         if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) return null;
     }
 
     const body = try parseBlockStatement(parser) orelse return null;
 
-    return try parser.tree.createNode(.{
-        .catch_clause = .{
-            .param = param,
-            .body = body,
-        },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    return try parser.tree.addNode(
+        .{ .catch_clause = .{ .param = param, .body = body } },
+        .{ .start = start, .end = parser.tree.span(body).end },
+    );
 }
 
 /// https://tc39.es/ecma262/#sec-debugger-statement
@@ -590,5 +620,5 @@ fn parseDebuggerStatement(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume 'debugger'
     end = try parser.eatSemicolon(end) orelse return null;
-    return try parser.tree.createNode(.{ .debugger_statement = .{} }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .debugger_statement = .{} }, .{ .start = start, .end = end });
 }

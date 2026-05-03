@@ -1,0 +1,31 @@
+# Yuku
+
+> A high-performance JavaScript and TypeScript parser and toolchain, written in Zig. Faster than Oxc, SWC, Babel, and Acorn. 100% ECMAScript spec compliant, zero dependencies.
+
+Yuku is a JavaScript/TypeScript compiler toolchain in Zig. It provides a fast, spec-compliant parser with an ESTree-compatible AST, a traverser system (basic, scoped, semantic, transform), and semantic analysis. It is designed for correctness, performance, and clarity.
+
+## Performance
+
+Yuku is faster than Oxc, SWC, Babel, and Acorn. Native parsing is competitive with Oxc and roughly 2× faster than SWC. On the JavaScript (npm) side, Yuku is 3–5× faster than alternatives, driven by a flat, near-binary AST transfer format.
+
+Live benchmark sources:
+
+- Native: https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native
+- JavaScript (npm): https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js
+
+## Correctness
+
+Yuku passes 55,000+ tests from Test262, Babel, TypeScript, and others with full AST matching. Zero failures, zero AST mismatches for JavaScript and JSX.
+
+## Documentation
+
+- [Introduction](https://yuku.dev/): overview, benchmarks, status
+- [Parser](https://yuku.dev/parser/): install, quick start, options, diagnostics, traversal, semantic analysis
+- [AST reference](https://yuku.dev/parser/ast/): memory model, core types, full node catalog
+- [Traverse](https://yuku.dev/parser/traverse/): basic, scoped, semantic, transform traversers
+
+## Repository
+
+- GitHub: https://github.com/yuku-toolchain/yuku
+- npm: https://www.npmjs.com/package/yuku-parser
+- Zig: `zig fetch --save git+https://github.com/yuku-toolchain/yuku.git`
