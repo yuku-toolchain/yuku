@@ -8159,7 +8159,7 @@ error: Identifier 'a' has already been declared
    |
  1 | try {} catch ({a, a}) {}
    |                   ^
-   |                ~ 'a' was first declared as a parameter here
+   |                ~ 'a' was first declared as a catch parameter here
    |                   ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -11278,7 +11278,7 @@ error: Identifier 'a' has already been declared
    |
  1 | try {} catch(a) { let a; }
    |                       ^
-   |              ~ 'a' was first declared as a parameter here
+   |              ~ 'a' was first declared as a catch parameter here
    |                       ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -14539,7 +14539,7 @@ error: Identifier 'b' has already been declared
    |
  1 | try {} catch ({a: b, c: b}) {}
    |                         ^
-   |                   ~ 'b' was first declared as a parameter here
+   |                   ~ 'b' was first declared as a catch parameter here
    |                         ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'b'
@@ -16152,7 +16152,7 @@ error: Identifier 'a' has already been declared
    |
  1 | try {} catch ([a,a]) {}
    |                  ^
-   |                ~ 'a' was first declared as a parameter here
+   |                ~ 'a' was first declared as a catch parameter here
    |                  ~ cannot be redeclared here
  2 | 
    |
@@ -19252,7 +19252,7 @@ error: Identifier 'x' has already been declared
    |
  1 | try { } catch (x) { let x; }
    |                         ^
-   |                ~ 'x' was first declared as a parameter here
+   |                ~ 'x' was first declared as a catch parameter here
    |                         ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'x'
@@ -19619,7 +19619,7 @@ error: Identifier 'x' has already been declared
    |
  1 | try { } catch ([x, x]) {}
    |                    ^
-   |                 ~ 'x' was first declared as a parameter here
+   |                 ~ 'x' was first declared as a catch parameter here
    |                    ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'x'
@@ -22669,7 +22669,7 @@ error: Identifier 'a' has already been declared
    |
  1 | try {} catch(a) { function a(){} }
    |                            ^
-   |              ~ 'a' was first declared as a parameter here
+   |              ~ 'a' was first declared as a catch parameter here
    |                            ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -28054,7 +28054,7 @@ error: Identifier 'a' has already been declared
    |
  1 | try {} catch ({a = 1, b: a}) {}
    |                          ^
-   |                ~ 'a' was first declared as a parameter here
+   |                ~ 'a' was first declared as a catch parameter here
    |                          ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -31689,7 +31689,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e462669423ea79e4.js
-error: Cannot use import statement outside a module
+error: 'import' declaration may only appear at the top level
    |
  1 | if (1) import "acorn";
    |        ^^^^^^^^^^^^^^^
@@ -33654,7 +33654,7 @@ error: Identifier 'a' has already been declared
    |
  1 | try {} catch ([a, a]) {}
    |                   ^
-   |                ~ 'a' was first declared as a parameter here
+   |                ~ 'a' was first declared as a catch parameter here
    |                   ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -33741,7 +33741,7 @@ error: Identifier 'e' has already been declared
    |
  2 |     try {
  3 |     } catch (e) {
-   |              ~ 'e' was first declared as a parameter here
+   |              ~ 'e' was first declared as a catch parameter here
  4 |         function e(){}
    |                  ^
    |                  ~ cannot be redeclared here

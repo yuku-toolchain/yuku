@@ -14,13 +14,13 @@ pub fn main(init: std.process.Init) !void {
     const n: i96 = 100;
 
     const parse_ns = try bench(io, source, .parse_only, n);
-    // const semantic_ns = try bench(io, source, .with_semantic, n);
-    // const resolve_ns = try bench(io, source, .with_resolve, n);
+    const semantic_ns = try bench(io, source, .with_semantic, n);
+    const resolve_ns = try bench(io, source, .with_resolve, n);
 
     printMs("Parse      ", parse_ns);
-    // printMs("Semantic   ", semantic_ns - parse_ns);
-    // printMs("resolveAll ", resolve_ns - semantic_ns);
-    // printMs("Total      ", resolve_ns);
+    printMs("Semantic   ", semantic_ns - parse_ns);
+    printMs("resolveAll ", resolve_ns - semantic_ns);
+    printMs("Total      ", resolve_ns);
 }
 
 const BenchMode = enum { parse_only, with_semantic, with_resolve };

@@ -51,82 +51,84 @@ const SemanticVisit = struct {
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.string(id.name);
-
-        const is_ambient = ctx.symbols.currentBindingIsAmbient();
+        const flags = ctx.symbols.currentBindingFlags();
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
-        if (ctx.scope.isStrict() and !is_ambient) {
+        if (ctx.scope.isStrict() and !flags.ambient) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
-
             if (isEvalOrArguments(name))
                 try self.report(ctx.tree.span(node_index), try self.fmt("'{s}' is not allowed as a binding identifier in strict mode", .{name}), .{});
-        } else if (ctx.symbols.currentBindingKind() == .lexical and eql(u8, name, "let")) {
+        } else if (flags.block_scoped_var and eql(u8, name, "let")) {
             try self.report(ctx.tree.span(node_index), "'let' is not allowed as a variable name in a lexical declaration", .{});
         }
 
-        // redeclaration checks
+        try self.checkRedeclaration(id, node_index, name, flags, ctx);
 
-        const target = ctx.symbols.resolveTargetScope(&ctx.scope);
-        const current_kind = ctx.symbols.currentBindingKind();
-        const target_scope_kind = ctx.scope.getScope(target).kind;
-
-        if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
-            const existing = ctx.symbols.getSymbol(sym);
-
-            // Section 14.2.1, 14.12.1: block/switch lexical redeclaration.
-            const merging_with_ambient = is_ambient or existing.flags.is_ambient;
-            if (!merging_with_ambient and
-                (existing.kind.isBlockScoped(target_scope_kind) or
-                    current_kind.isBlockScoped(target_scope_kind)))
-            {
-                try self.reportRedeclaration(id, node_index, existing, ctx);
-                return .proceed;
-            }
-
-            // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
-            if (existing.kind == .parameter) {
-                if (findFormalParameters(ctx)) |formal_parameters| {
-                    if (
-                        ctx.scope.isStrict() or
-                        formal_parameters.kind == .unique_formal_parameters or
-                        formal_parameters.kind == .arrow_formal_parameters
-                    ) {
-                        try self.reportRedeclaration(id, node_index, existing, ctx);
-                    } else if (ecmascript.findNonSimpleParameter(ctx.tree, formal_parameters)) |_| {
-                        try self.reportRedeclaration(id, node_index, existing, ctx);
-                    }
-                } else if (current_kind == .parameter) {
-                    // Section 14.15.1: "It is a Syntax Error if the BoundNames
-                    // of CatchParameter contains any duplicate elements."
-                    try self.reportRedeclaration(id, node_index, existing, ctx);
-                }
-            }
-        }
-
-        // a hoisted var must also check intermediate block scopes for
-        // conflicting block-scoped declarations (e.g. `{ let x; var x; }`).
-        if (current_kind == .hoisted) {
-            var iter = ctx.scope.ancestors(ctx.scope.currentScopeId());
-            while (iter.next()) |scope_id| {
-                if (scope_id == target) break;
-                if (ctx.symbols.findInScope(scope_id, name)) |sym| {
-                    if (ctx.symbols.getSymbol(sym).kind.isBlockScoped(.block)) {
-                        try self.reportRedeclaration(id, node_index, ctx.symbols.getSymbol(sym), ctx);
-                        break;
-                    }
-                }
-            }
-        }
-
-        // track exported binding names (export const x, export function f, etc.)
         if (ctx.symbols.is_export and !ctx.symbols.is_default_export)
             try self.recordExportedName(name, node_index, ctx);
 
         return .proceed;
     }
 
+    fn checkRedeclaration(
+        self: *Self,
+        id: ast.BindingIdentifier,
+        node_index: ast.NodeIndex,
+        name: []const u8,
+        flags: Symbol.Flags,
+        ctx: *SemanticCtx,
+    ) AnalysisError!void {
+        const target = ctx.symbols.currentTarget();
+        const excludes = ctx.symbols.currentBindingExcludes();
+
+        if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
+            const existing = ctx.symbols.getSymbol(sym);
+            const merging_with_ambient = flags.ambient or existing.flags.ambient;
+
+            if (!merging_with_ambient and existing.flags.intersects(excludes)) {
+                try self.reportRedeclaration(id, node_index, existing, ctx);
+                return;
+            }
+
+            // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
+            // duplicate parameters are allowed in sloppy simple-param-list
+            // functions. The unified rule won't catch them, so re-add the
+            // conflict for strict, unique, arrow, and non-simple cases.
+            if (existing.flags.parameter and flags.parameter) {
+                if (findFormalParameters(ctx)) |params| {
+                    const must_be_unique = ctx.scope.isStrict() or
+                        params.kind == .unique_formal_parameters or
+                        params.kind == .arrow_formal_parameters or
+                        ecmascript.findNonSimpleParameter(ctx.tree, params) != null;
+                    if (must_be_unique)
+                        try self.reportRedeclaration(id, node_index, existing, ctx);
+                }
+            }
+        }
+
+        // 14.2.1: a hoisting `var` conflicts with block-scoped names
+        // in any intermediate block it passes through.
+        if (flags.isHoistingVar()) {
+            var iter = ctx.scope.ancestors(ctx.scope.currentScopeId());
+            while (iter.next()) |scope_id| {
+                if (scope_id == target) break;
+                if (ctx.symbols.findInScope(scope_id, name)) |sym| {
+                    const existing = ctx.symbols.getSymbol(sym);
+                    if (existing.flags.intersects(Symbol.BLOCK_SCOPED_LIKE)) {
+                        try self.reportRedeclaration(id, node_index, existing, ctx);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        // type-position identifiers are TS type references, not JS
+        // identifier references. JS early-error rules don't apply.
+        if (ctx.inTypePosition()) return .proceed;
+
         const name = ctx.tree.string(id.name);
         try self.checkStrictReserved(name, node_index, ctx, "an identifier");
 
@@ -146,7 +148,10 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
     pub fn enter_string_literal(self: *Self, _: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (!ctx.scope.isStrict()) return .proceed;
+        // string literals inside TS type positions are type-level
+        // values, not runtime JS strings, so strict-mode escape rules
+        // don't apply.
+        if (ctx.inTypePosition() or !ctx.scope.isStrict()) return .proceed;
 
         const span = ctx.tree.span(node_index);
         if (util.Utf.hasOctalEscape(ctx.tree.source[span.start..span.end]))
@@ -159,7 +164,7 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
     pub fn enter_numeric_literal(self: *Self, _: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (!ctx.scope.isStrict()) return .proceed;
+        if (ctx.inTypePosition() or !ctx.scope.isStrict()) return .proceed;
 
         const span = ctx.tree.span(node_index);
         const raw = ctx.tree.source[span.start..span.end];
@@ -405,45 +410,46 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_import_declaration(self: *Self, decl: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (!ctx.tree.isModule())
-            try self.report(ctx.tree.span(node_index), "Cannot use import statement outside a module", .{})
-        else if (!isAtProgramLevel(ctx))
-            try self.report(ctx.tree.span(node_index), "'import' declaration may only appear at the top level", .{});
+        try self.checkImportExportPosition(node_index, "import statement", "'import' declaration", ctx);
         try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
     pub fn enter_export_named_declaration(self: *Self, decl: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (!ctx.tree.isModule())
-            try self.report(ctx.tree.span(node_index), "Cannot use 'export' declaration outside a module", .{})
-        else if (!isAtProgramLevel(ctx))
-            try self.report(ctx.tree.span(node_index), "'export' declaration may only appear at the top level", .{});
+        try self.checkImportExportPosition(node_index, "'export' declaration", "'export' declaration", ctx);
         try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (!ctx.tree.isModule())
-            try self.report(ctx.tree.span(node_index), "Cannot use 'export default' declaration outside a module", .{})
-        else if (!isAtProgramLevel(ctx))
-            try self.report(ctx.tree.span(node_index), "'export default' declaration may only appear at the top level", .{});
-
+        try self.checkImportExportPosition(node_index, "'export default' declaration", "'export default' declaration", ctx);
         try self.recordExportedName("default", node_index, ctx);
         return .proceed;
     }
 
     pub fn enter_export_all_declaration(self: *Self, decl: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (!ctx.tree.isModule())
-            try self.report(ctx.tree.span(node_index), "Cannot use 'export *' declaration outside a module", .{})
-        else if (!isAtProgramLevel(ctx))
-            try self.report(ctx.tree.span(node_index), "'export *' declaration may only appear at the top level", .{});
-
-        // export * as name from '...'
+        try self.checkImportExportPosition(node_index, "'export *' declaration", "'export *' declaration", ctx);
         if (decl.exported != .null)
             try self.recordExportedName(getModuleExportName(ctx.tree, decl.exported), node_index, ctx);
-
         try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
+    }
+
+    fn checkImportExportPosition(
+        self: *Self,
+        node_index: ast.NodeIndex,
+        comptime out_of_module_label: []const u8,
+        comptime top_level_label: []const u8,
+        ctx: *SemanticCtx,
+    ) AnalysisError!void {
+        const parent = ctx.path.parent() orelse return;
+        const span = ctx.tree.span(node_index);
+        switch (ctx.tree.data(parent)) {
+            .program => if (!ctx.tree.isModule())
+                try self.report(span, "Cannot use " ++ out_of_module_label ++ " outside a module", .{}),
+            .ts_module_block => {},
+            else => try self.report(span, top_level_label ++ " may only appear at the top level", .{}),
+        }
     }
 
     /// https://tc39.es/ecma262/#sec-exports-static-semantics-early-errors
@@ -848,10 +854,11 @@ const SemanticVisit = struct {
     }
 
     fn isAtProgramLevel(ctx: *SemanticCtx) bool {
-        if (ctx.path.parent()) |parent| {
-            return ctx.tree.data(parent) == .program;
-        }
-        return true;
+        const parent = ctx.path.parent() orelse return true;
+        return switch (ctx.tree.data(parent)) {
+            .program, .ts_module_block => true,
+            else => false,
+        };
     }
 
     fn isFunctionBoundary(data: ast.NodeData) bool {
@@ -1038,7 +1045,7 @@ const SemanticVisit = struct {
 
         try self.report(current_span, try self.fmt("Identifier '{s}' has already been declared", .{name}), .{
             .labels = try self.labels(&.{
-                self.label(existing_span, try self.fmt("'{s}' was first declared as a {s} here", .{ name, existing.kind.toString() })),
+                self.label(existing_span, try self.fmt("'{s}' was first declared as a {s} here", .{ name, existing.flags.toString() })),
                 self.label(current_span, "cannot be redeclared here"),
             }),
             .help = try self.fmt("Consider removing or renaming this declaration of '{s}'", .{name}),

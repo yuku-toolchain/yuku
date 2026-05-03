@@ -109,12 +109,6 @@ pub fn Layer(comptime C: type, comptime V: type) type {
         inner: *V,
 
         pub fn enter_node(self: *@This(), data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
-            // optional ctx predicate that can prune whole subtrees before any
-            // state change. returning .skip here avoids ctx.enter, children,
-            // and ctx.exit entirely so there is no state to rebalance.
-            if (comptime @hasDecl(C, "shouldWalk")) {
-                if (!ctx.shouldWalk(data)) return .skip;
-            }
             try ctx.enter(index, data);
             const action = try dispatch.enter(C, V, self.inner, data, index, ctx);
             if (comptime @hasDecl(C, "post_enter")) try ctx.post_enter(index, data);

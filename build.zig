@@ -122,7 +122,9 @@ pub fn build(b: *std.Build) void {
                 .type = "git",
                 .url = "https://github.com/yuku-toolchain/yuku.git",
             },
-            .dts = b.path("src/parser/ffi/index.d.ts"),
+            .dts = .{
+                .file = b.path("src/parser/ffi/index.d.ts"),
+            },
         },
     });
 
