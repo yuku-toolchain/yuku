@@ -1,7 +1,5 @@
-function Nice() {
+import { nice } from "cool"
 
-}
-
-class Nice {
-
-}
+const nice = class implements nice {
+    declare _symbolLinksBrand: any;
+};

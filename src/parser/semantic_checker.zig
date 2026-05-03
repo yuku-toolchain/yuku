@@ -53,6 +53,10 @@ const SemanticVisit = struct {
         const name = ctx.tree.string(id.name);
         const flags = ctx.symbols.currentBindingFlags();
 
+        // type-position binding identifiers are parameter labels, not
+        // real bindings. only type parameters are real here.
+        if (ctx.inTypePosition() and !flags.type_parameter) return .proceed;
+
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict() and !flags.ambient) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
@@ -62,10 +66,16 @@ const SemanticVisit = struct {
             try self.report(ctx.tree.span(node_index), "'let' is not allowed as a variable name in a lexical declaration", .{});
         }
 
-        try self.checkRedeclaration(id, node_index, name, flags, ctx);
+        const existing = ctx.symbols.findInScopeOrHoisted(ctx.symbols.currentTarget(), name);
+        try self.checkRedeclaration(id, node_index, name, flags, ctx, existing);
 
-        if (ctx.symbols.is_export and !ctx.symbols.is_default_export)
-            try self.recordExportedName(name, node_index, ctx);
+        // ts loosens duplicate-export for declaration merges (interface
+        // +class, namespace+value, function overloads, var redeclares).
+        // skip in ts when the name is already in scope.
+        if (ctx.symbols.export_state == .named) {
+            const skip = existing != null and ctx.tree.isTs();
+            if (!skip) try self.recordExportedName(name, node_index, ctx);
+        }
 
         return .proceed;
     }
@@ -77,11 +87,12 @@ const SemanticVisit = struct {
         name: []const u8,
         flags: Symbol.Flags,
         ctx: *SemanticCtx,
+        existing_id: ?semantic.SymbolId,
     ) AnalysisError!void {
         const target = ctx.symbols.currentTarget();
         const excludes = ctx.symbols.currentBindingExcludes();
 
-        if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
+        if (existing_id) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
             const merging_with_ambient = flags.ambient or existing.flags.ambient;
 
@@ -91,9 +102,9 @@ const SemanticVisit = struct {
             }
 
             // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
-            // duplicate parameters are allowed in sloppy simple-param-list
-            // functions. The unified rule won't catch them, so re-add the
-            // conflict for strict, unique, arrow, and non-simple cases.
+            // duplicate params are allowed in sloppy simple-param-list
+            // functions. re-add the conflict for strict, unique, arrow,
+            // and non-simple cases.
             if (existing.flags.parameter and flags.parameter) {
                 if (findFormalParameters(ctx)) |params| {
                     const must_be_unique = ctx.scope.isStrict() or
@@ -106,8 +117,8 @@ const SemanticVisit = struct {
             }
         }
 
-        // 14.2.1: a hoisting `var` conflicts with block-scoped names
-        // in any intermediate block it passes through.
+        // 14.2.1: hoisting var conflicts with block-scoped names in
+        // any intermediate block it passes through.
         if (flags.isHoistingVar()) {
             var iter = ctx.scope.ancestors(ctx.scope.currentScopeId());
             while (iter.next()) |scope_id| {
@@ -125,8 +136,8 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        // type-position identifiers are TS type references, not JS
-        // identifier references. JS early-error rules don't apply.
+        // type-position identifiers are ts type references, not js
+        // identifier references. js early-error rules don't apply.
         if (ctx.inTypePosition()) return .proceed;
 
         const name = ctx.tree.string(id.name);
@@ -148,9 +159,7 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
     pub fn enter_string_literal(self: *Self, _: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        // string literals inside TS type positions are type-level
-        // values, not runtime JS strings, so strict-mode escape rules
-        // don't apply.
+        // type-position strings are type-level, no strict escape rules
         if (ctx.inTypePosition() or !ctx.scope.isStrict()) return .proceed;
 
         const span = ctx.tree.span(node_index);
@@ -237,7 +246,7 @@ const SemanticVisit = struct {
         const is_strict = ctx.scope.isStrict();
         var through_labels = false;
         var iter = ctx.path.ancestors();
-        _ = iter.next(); // skip the function node itself
+        _ = iter.next(); // skip the function itself
 
         const parent = while (iter.next()) |idx| {
             const d = ctx.tree.data(idx);
@@ -249,6 +258,8 @@ const SemanticVisit = struct {
             .program, .function_body, .class_body, .static_block,
             .block_statement, .switch_case,
             .export_named_declaration, .export_default_declaration,
+            // ts namespace bodies host function declarations
+            .ts_module_block,
             => !is_strict or !through_labels,
             .if_statement => !is_strict and !through_labels,
             else => false,
@@ -457,11 +468,11 @@ const SemanticVisit = struct {
         const exported_name = getModuleExportName(ctx.tree, spec.exported);
         try self.recordExportedName(exported_name, node_index, ctx);
 
-        // collect for unresolved check (only for local exports, not re-exports).
-        // type-only exports refer to type bindings that live outside the value
-        // scope our checker tracks, so skip the check for both `export type { X }`
-        // (declaration level) and `export { type X }` (specifier level).
+        // collect for unresolved check (local exports only). skip
+        // type-only exports and exports inside ts namespaces (the
+        // checker tracks the value scope, not type or namespace).
         if (spec.export_kind == .type) return .proceed;
+        if (ctx.inTsNamespace()) return .proceed;
         if (ctx.path.parent()) |parent| {
             const parent_data = ctx.tree.data(parent);
             if (parent_data == .export_named_declaration and
@@ -939,7 +950,7 @@ const SemanticVisit = struct {
         return .not_found;
     }
 
-    /// true when the nearest enclosing boundary is a static block
+    // true when the nearest enclosing boundary is a static block
     fn isInsideStaticBlock(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1015,6 +1026,8 @@ const SemanticVisit = struct {
     /// records an exported name and reports a duplicate if one already exists.
     fn recordExportedName(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
         if (!ctx.tree.isModule()) return;
+        // exports inside a TS namespace are namespace-scoped, not module-scoped
+        if (ctx.inTsNamespace()) return;
         const gop = try self.exported_names.getOrPut(self.allocator, name);
         if (gop.found_existing) {
             try self.report(ctx.tree.span(node_index), try self.fmt("Duplicate export of '{s}'", .{name}), .{

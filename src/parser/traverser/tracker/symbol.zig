@@ -417,8 +417,14 @@ pub const SymbolTracker = struct {
     binding_flags: Symbol.Flags = .{},
     binding_excludes: Symbol.Flags = .{},
     target: sc.ScopeId = .root,
-    is_export: bool = false,
-    is_default_export: bool = false,
+    /// Whether the next `binding_identifier` is the directly-exported
+    /// name of an `export` declaration. Set when entering an export
+    /// declaration, cleared on entering any node whose children should
+    /// not inherit the `export` (function/class expressions, parameter
+    /// lists, class bodies, namespace bodies, type-parameter sites).
+    export_state: ExportState = .none,
+
+    pub const ExportState = enum { none, named, default };
 
     pub fn init(tree: *ast.Tree) Allocator.Error!SymbolTracker {
         const alloc = tree.allocator();
@@ -439,12 +445,9 @@ pub const SymbolTracker = struct {
     pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) void {
         switch (data) {
             .export_named_declaration => |decl| {
-                if (decl.export_kind != .type) self.is_export = true;
+                if (decl.export_kind != .type) self.export_state = .named;
             },
-            .export_default_declaration => {
-                self.is_export = true;
-                self.is_default_export = true;
-            },
+            .export_default_declaration => self.export_state = .default,
 
             .variable_declaration => |decl| switch (decl.kind) {
                 .@"var" => {
@@ -469,25 +472,26 @@ pub const SymbolTracker = struct {
                     func.type == .ts_declare_function or
                     func.type == .ts_empty_body_function_expression;
                 self.binding_flags = .{ .function = true, .ambient = ambient };
-                self.target = switch (func.type) {
-                    .function_declaration, .ts_declare_function => scope.currentScope().parent,
-                    else => exprNameScope(scope),
-                };
-                // sloppy JS at function/global/static_block lets functions
-                // merge with var (Annex B). Anywhere else (block, module,
-                // and TS) functions are lexical, so use block_var excludes.
+                const is_decl = func.type == .function_declaration or func.type == .ts_declare_function;
+                self.target = if (is_decl) scope.currentScope().parent else exprNameScope(scope);
+
+                // ts overloads, sloppy js annex b 3.2, and global merge
+                // with var. lexical scopes (block/module) are not.
                 const k = scope.getScope(self.target).kind;
-                const hoisted = !self.tree.isTs() and (k == .function or k == .global or k == .static_block);
-                self.binding_excludes = if (hoisted) Symbol.Excludes.function else Symbol.Excludes.block_var;
+                const allow_overload = self.tree.isTs() or k == .function or k == .global or k == .static_block;
+                self.binding_excludes = if (allow_overload) Symbol.Excludes.function else Symbol.Excludes.block_var;
+
+                // expression names are local
+                if (!is_decl) self.export_state = .none;
             },
 
             .class => |cls| {
                 self.binding_flags = .{ .class = true, .ambient = cls.declare };
                 self.binding_excludes = Symbol.Excludes.class;
-                self.target = switch (cls.type) {
-                    .class_declaration => scope.currentScope().parent,
-                    else => exprNameScope(scope),
-                };
+                const is_decl = cls.type == .class_declaration;
+                self.target = if (is_decl) scope.currentScope().parent else exprNameScope(scope);
+                // expression names are local
+                if (!is_decl) self.export_state = .none;
             },
 
             .formal_parameters => {
@@ -498,14 +502,11 @@ pub const SymbolTracker = struct {
                 };
                 self.binding_excludes = Symbol.Excludes.parameter;
                 self.target = scope.currentScopeId();
-                self.is_export = false;
-                self.is_default_export = false;
+                self.export_state = .none;
             },
 
-            .class_body, .ts_module_block => {
-                self.is_export = false;
-                self.is_default_export = false;
-            },
+            // members are not the exported binding
+            .class_body, .ts_module_block => self.export_state = .none,
 
             inline .import_declaration, .ts_import_equals_declaration => |decl| {
                 self.binding_flags = if (decl.import_kind == .type)
@@ -529,16 +530,18 @@ pub const SymbolTracker = struct {
                 self.target = scope.currentScopeId();
             },
 
+            // the id binds in the surrounding scope. type-parameter
+            // and body bindings live in a scope pushed by the tracker.
             .ts_interface_declaration => |decl| {
                 self.binding_flags = .{ .interface = true, .ambient = decl.declare };
                 self.binding_excludes = Symbol.Excludes.interface;
-                self.target = scope.currentScopeId();
+                self.target = scope.currentScope().parent;
             },
 
             .ts_type_alias_declaration => |decl| {
                 self.binding_flags = .{ .type_alias = true, .ambient = decl.declare };
                 self.binding_excludes = Symbol.Excludes.type_alias;
-                self.target = scope.currentScopeId();
+                self.target = scope.currentScope().parent;
             },
 
             .ts_enum_declaration => |decl| {
@@ -553,12 +556,18 @@ pub const SymbolTracker = struct {
             },
 
             .ts_module_declaration => |decl| {
+                // type-only bodies (interface/type alias/etc.) don't
+                // occupy value space
+                const instantiated = isNamespaceInstantiated(self.tree, decl.body);
                 self.binding_flags = .{
-                    .value_module = true,
+                    .value_module = instantiated,
                     .namespace_module = true,
                     .ambient = decl.declare,
                 };
-                self.binding_excludes = Symbol.Excludes.value_module;
+                self.binding_excludes = if (instantiated)
+                    Symbol.Excludes.value_module
+                else
+                    Symbol.Excludes.namespace_module;
                 self.target = scope.currentScopeId();
             },
 
@@ -568,10 +577,14 @@ pub const SymbolTracker = struct {
                 self.target = scope.currentScopeId();
             },
 
-            .ts_type_parameter => {
+            // ts_type_parameter wraps `<T>` and `infer U`. mapped type
+            // keys `[K in T]` are bare binding_identifiers under
+            // ts_mapped_type, so the same context applies.
+            .ts_type_parameter, .ts_mapped_type => {
                 self.binding_flags = .{ .type_parameter = true };
                 self.binding_excludes = Symbol.Excludes.type_parameter;
                 self.target = scope.currentScopeId();
+                self.export_state = .none;
             },
 
             else => {},
@@ -594,10 +607,15 @@ pub const SymbolTracker = struct {
 
         switch (data) {
             .binding_identifier => |id| {
+                // type-position identifiers are parameter labels (function
+                // type, index signature, etc.). only type parameters are
+                // real declarations here.
+                if (in_type_position and !self.binding_flags.type_parameter) return;
+
                 const sym_id = try self.declare(id.name, self.binding_flags, self.binding_excludes, self.target, index);
 
-                // Register a hoisting `var` in each intermediate block
-                // so later let/const/class declarations see the conflict.
+                // register the hoisting var in each block it passes
+                // through so block-scoped redeclarations see it
                 if (self.binding_flags.isHoistingVar()) {
                     var iter = scope.ancestors(scope.currentScopeId());
                     while (iter.next()) |s| {
@@ -619,10 +637,7 @@ pub const SymbolTracker = struct {
     /// Called from `Ctx.exit`.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
-            .export_named_declaration, .export_default_declaration => {
-                self.is_export = false;
-                self.is_default_export = false;
-            },
+            .export_named_declaration, .export_default_declaration => self.export_state = .none,
             else => {},
         }
     }
@@ -652,8 +667,8 @@ pub const SymbolTracker = struct {
             if (flags_col[existing_idx].intersects(excludes)) return existing;
 
             var merged = flags_col[existing_idx].merge(flags);
-            if (self.is_export) merged.exported = true;
-            if (self.is_default_export) merged.is_default = true;
+            merged.exported = merged.exported or self.export_state != .none;
+            merged.is_default = merged.is_default or self.export_state == .default;
             flags_col[existing_idx] = merged;
             return existing;
         }
@@ -691,8 +706,8 @@ pub const SymbolTracker = struct {
     ) Allocator.Error!SymbolId {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.len)));
         var stored = flags;
-        stored.exported = self.is_export;
-        stored.is_default = self.is_default_export;
+        stored.exported = self.export_state != .none;
+        stored.is_default = self.export_state == .default;
         try self.symbols.append(self.allocator, .{
             .name = name,
             .flags = stored,
@@ -771,10 +786,43 @@ pub const SymbolTracker = struct {
     }
 };
 
-/// Function and class expressions bind their name in an `expression_name`
-/// scope between the outer scope and the body. That scope is the parent
-/// of the current function or class scope.
+// expression_name scope sits between outer and the function/class
+// scope, so it's the parent of the current scope.
 fn exprNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
     const cur = scope.currentScope();
     return if (cur.kind == .function or cur.kind == .class) cur.parent else scope.currentScopeId();
+}
+
+// a namespace occupies value space if its body has any
+// value-producing statement (var, function, class, non-const enum,
+// instantiated nested namespace, value re-export). body-less ambient
+// modules are instantiated by spec.
+fn isNamespaceInstantiated(tree: *const ast.Tree, body_node: ast.NodeIndex) bool {
+    if (body_node == .null) return true;
+    const body = tree.data(body_node);
+    const block = switch (body) {
+        .ts_module_block => |b| b,
+        else => return true,
+    };
+    for (tree.extra(block.body)) |stmt| {
+        if (isInstantiatingStatement(tree, stmt)) return true;
+    }
+    return false;
+}
+
+fn isInstantiatingStatement(tree: *const ast.Tree, idx: ast.NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .ts_interface_declaration,
+        .ts_type_alias_declaration,
+        .ts_import_equals_declaration,
+        => false,
+        .ts_enum_declaration => |e| !e.is_const,
+        .ts_module_declaration => |m| isNamespaceInstantiated(tree, m.body),
+        .export_named_declaration => |e| {
+            if (e.export_kind == .type) return false;
+            if (e.declaration != .null) return isInstantiatingStatement(tree, e.declaration);
+            return e.source != .null;
+        },
+        else => true,
+    };
 }

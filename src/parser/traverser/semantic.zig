@@ -26,10 +26,10 @@ pub const Ctx = struct {
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
-    /// Depth of TS type-only context. Incremented on enter into a
-    /// type-context node, decremented on exit. Inspect via
-    /// `inTypePosition()`.
+    // depth of ts type-only context. inspect via `inTypePosition()`.
     type_position_depth: u32 = 0,
+    // depth of ts namespace bodies. inspect via `inTsNamespace()`.
+    ts_namespace_depth: u32 = 0,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
         return .{
@@ -40,16 +40,20 @@ pub const Ctx = struct {
     }
 
     /// True when the walker is currently inside a TS type-only subtree.
-    /// Visitors should consult this rather than reading
-    /// `type_position_depth` directly.
     pub inline fn inTypePosition(self: *const Ctx) bool {
         return self.type_position_depth > 0;
+    }
+
+    /// True when the walker is currently inside a TS namespace body.
+    pub inline fn inTsNamespace(self: *const Ctx) bool {
+        return self.ts_namespace_depth > 0;
     }
 
     pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
         try self.scope.enter(index, data);
         if (isTypeContextNode(data)) self.type_position_depth += 1;
+        if (data == .ts_module_block) self.ts_namespace_depth += 1;
         self.symbols.setBindingContext(data, &self.scope);
     }
 
@@ -60,12 +64,13 @@ pub const Ctx = struct {
     pub fn exit(self: *Ctx, data: ast.NodeData) void {
         self.symbols.exit(data);
         self.scope.exit(data);
+        if (data == .ts_module_block) self.ts_namespace_depth -= 1;
         if (isTypeContextNode(data)) self.type_position_depth -= 1;
         self.path.pop();
     }
 };
 
-/// TS nodes whose children are all type-side
+// ts nodes whose children are all type-side
 fn isTypeContextNode(data: ast.NodeData) bool {
     return switch (data) {
         .ts_type_annotation,
