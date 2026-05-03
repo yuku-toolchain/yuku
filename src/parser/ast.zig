@@ -3829,7 +3829,7 @@ pub const JSXNamespacedName = struct {
 ///
 /// ## Example
 /// ```jsx
-/// <Foo.Bar.Baz />
+///   <Foo.Bar.Baz />
 /// // ^^^^^^^ object
 /// //         ^^^ property
 /// ```
