@@ -2,7 +2,7 @@
 
 > A high-performance JavaScript and TypeScript parser and toolchain, written in Zig. Faster than Oxc, SWC, Babel, and Acorn. 100% ECMAScript spec compliant, zero dependencies.
 
-Yuku is a JavaScript/TypeScript compiler and toolchain in Zig. It provides a fast, spec-compliant parser with an ESTree-compatible AST, a traverser system (basic, scoped, semantic, transform), and semantic analysis. It is designed for correctness, performance, and clarity.
+Yuku is a JavaScript/TypeScript compiler toolchain in Zig. It provides a fast, spec-compliant parser with an ESTree-compatible AST, a traverser system (basic, scoped, semantic, transform), and semantic analysis. It is designed for correctness, performance, and clarity.
 
 ## Performance
 
