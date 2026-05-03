@@ -581,9 +581,7 @@ pub const SymbolTracker = struct {
     /// Materializes the pending binding context into a symbol (for
     /// `binding_identifier`) or records a reference (for
     /// `identifier_reference`). Called from `Ctx.post_enter` for every
-    /// node. `in_type_position` tags identifier references inside TS
-    /// type subtrees so consumers can rename value and type spaces
-    /// independently.
+    /// node.
     pub fn declareBindings(
         self: *SymbolTracker,
         index: ast.NodeIndex,
