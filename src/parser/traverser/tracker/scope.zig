@@ -204,7 +204,9 @@ pub const ScopeTracker = struct {
             // Section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
             // ts nodes that scope their `<T>` type parameters and any
-            // parameter labels so they don't leak to the outer scope
+            // parameter labels so they don't leak to the outer scope.
+            // ts_conditional_type isolates `infer T` per conditional
+            // so siblings can reuse the same name.
             .ts_interface_declaration,
             .ts_type_alias_declaration,
             .ts_function_type,
@@ -214,6 +216,7 @@ pub const ScopeTracker = struct {
             .ts_construct_signature_declaration,
             .ts_index_signature,
             .ts_mapped_type,
+            .ts_conditional_type,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             // TS namespace bodies act as a var-hoist target so `var`
             // declarations don't escape to the outer scope.
@@ -299,6 +302,7 @@ pub const ScopeTracker = struct {
             .ts_construct_signature_declaration,
             .ts_index_signature,
             .ts_mapped_type,
+            .ts_conditional_type,
             => self.popScope(),
             .block_statement => {
                 // catch body blocks share the catch scope (Section 14.15.2)

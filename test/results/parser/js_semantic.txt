@@ -2452,7 +2452,7 @@ error: Identifier 'a' has already been declared
    |
  1 | import {b as a, c as a} from "module";
    |                      ^
-   |              ~ 'a' was first declared as a import here
+   |              ~ 'a' was first declared as an import here
    |                      ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -5867,7 +5867,7 @@ error: Identifier 'a' has already been declared
    |
  1 | import a, {b as a} from "module";
    |                 ^
-   |        ~ 'a' was first declared as a import here
+   |        ~ 'a' was first declared as an import here
    |                 ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -13729,7 +13729,7 @@ error: Identifier 'a' has already been declared
    |
  1 | import a, * as a from "module";
    |                ^
-   |        ~ 'a' was first declared as a import here
+   |        ~ 'a' was first declared as an import here
    |                ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -14577,7 +14577,7 @@ error: Identifier 'a' has already been declared
    |
  1 | import {a, b as a} from "module";
    |                 ^
-   |         ~ 'a' was first declared as a import here
+   |         ~ 'a' was first declared as an import here
    |                 ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -15112,7 +15112,7 @@ error: Identifier 'a' has already been declared
    |
  1 | import a, {a} from "module";
    |            ^
-   |        ~ 'a' was first declared as a import here
+   |        ~ 'a' was first declared as an import here
    |            ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -27131,7 +27131,7 @@ error: Identifier 'a' has already been declared
    |
  1 | import {a, a} from "module";
    |            ^
-   |         ~ 'a' was first declared as a import here
+   |         ~ 'a' was first declared as an import here
    |            ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
@@ -28573,7 +28573,7 @@ error: Identifier 'x' has already been declared
    |
  1 | import { x, y as x } from 'z';
    |                  ^
-   |          ~ 'x' was first declared as a import here
+   |          ~ 'x' was first declared as an import here
    |                  ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'x'

@@ -1,0 +1,256 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 221,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 79,
+        "end": 104,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 85,
+          "end": 87,
+          "name": "C1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 88,
+          "end": 104,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 92,
+              "end": 102,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 92,
+                "end": 93,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": null,
+              "computed": false,
+              "static": false,
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 93,
+                "end": 101,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 95,
+                  "end": 101
+                }
+              },
+              "declare": false,
+              "override": false,
+              "optional": false,
+              "definite": false,
+              "readonly": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 105,
+        "end": 134,
+        "id": {
+          "type": "Identifier",
+          "start": 115,
+          "end": 117,
+          "name": "C1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 118,
+          "end": 134,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 122,
+              "end": 132,
+              "key": {
+                "type": "Identifier",
+                "start": 122,
+                "end": 123,
+                "name": "y",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 123,
+                "end": 131,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 125,
+                  "end": 131
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 165,
+        "end": 194,
+        "id": {
+          "type": "Identifier",
+          "start": 175,
+          "end": 177,
+          "name": "C2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 178,
+          "end": 194,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 182,
+              "end": 192,
+              "key": {
+                "type": "Identifier",
+                "start": 182,
+                "end": 183,
+                "name": "y",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 183,
+                "end": 191,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 185,
+                  "end": 191
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 195,
+        "end": 220,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 201,
+          "end": 203,
+          "name": "C2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 204,
+          "end": 220,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 208,
+              "end": 218,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 208,
+                "end": 209,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": null,
+              "computed": false,
+              "static": false,
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 209,
+                "end": 217,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 211,
+                  "end": 217
+                }
+              },
+              "declare": false,
+              "override": false,
+              "optional": false,
+              "definite": false,
+              "readonly": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Valid: class + interface merge (interface adds members to class instances).",
+      "start": 0,
+      "end": 78
+    },
+    {
+      "type": "Line",
+      "value": " Reverse order also valid.",
+      "start": 136,
+      "end": 164
+    }
+  ],
+  "diagnostics": []
+}

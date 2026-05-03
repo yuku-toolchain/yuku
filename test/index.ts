@@ -1,5 +1,1 @@
-import { nice } from "cool"
-
-const nice = class implements nice {
-    declare _symbolLinksBrand: any;
-};
+function f1<T, T>(): void {}

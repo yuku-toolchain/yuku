@@ -1,0 +1,359 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 352,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 97,
+        "end": 114,
+        "id": {
+          "type": "Identifier",
+          "start": 102,
+          "end": 104,
+          "name": "A1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSNumberKeyword",
+          "start": 107,
+          "end": 113
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 115,
+        "end": 132,
+        "id": {
+          "type": "Identifier",
+          "start": 120,
+          "end": 122,
+          "name": "A1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSStringKeyword",
+          "start": 125,
+          "end": 131
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 160,
+        "end": 177,
+        "id": {
+          "type": "Identifier",
+          "start": 165,
+          "end": 167,
+          "name": "A2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSNumberKeyword",
+          "start": 170,
+          "end": 176
+        },
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 178,
+        "end": 207,
+        "id": {
+          "type": "Identifier",
+          "start": 188,
+          "end": 190,
+          "name": "A2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 191,
+          "end": 207,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 195,
+              "end": 205,
+              "key": {
+                "type": "Identifier",
+                "start": 195,
+                "end": 196,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 196,
+                "end": 204,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 198,
+                  "end": 204
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 251,
+        "end": 280,
+        "id": {
+          "type": "Identifier",
+          "start": 261,
+          "end": 263,
+          "name": "A3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 264,
+          "end": 280,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 268,
+              "end": 278,
+              "key": {
+                "type": "Identifier",
+                "start": 268,
+                "end": 269,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 269,
+                "end": 277,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 271,
+                  "end": 277
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 281,
+        "end": 298,
+        "id": {
+          "type": "Identifier",
+          "start": 286,
+          "end": 288,
+          "name": "A3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSNumberKeyword",
+          "start": 291,
+          "end": 297
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 322,
+        "end": 339,
+        "id": {
+          "type": "Identifier",
+          "start": 327,
+          "end": 329,
+          "name": "A4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSNumberKeyword",
+          "start": 332,
+          "end": 338
+        },
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 340,
+        "end": 351,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 346,
+          "end": 348,
+          "name": "A4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 349,
+          "end": 351,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Error: type aliases do not merge with anything in the type space.",
+      "start": 0,
+      "end": 68
+    },
+    {
+      "type": "Line",
+      "value": " type alias + type alias",
+      "start": 70,
+      "end": 96
+    },
+    {
+      "type": "Line",
+      "value": " type alias + interface",
+      "start": 134,
+      "end": 159
+    },
+    {
+      "type": "Line",
+      "value": " interface + type alias (reverse order)",
+      "start": 209,
+      "end": 250
+    },
+    {
+      "type": "Line",
+      "value": " type alias + class",
+      "start": 300,
+      "end": 321
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'A1' has already been declared",
+      "start": 120,
+      "end": 122,
+      "help": "Consider removing or renaming this declaration of 'A1'",
+      "labels": [
+        {
+          "start": 102,
+          "end": 104,
+          "message": "'A1' was first declared as a type alias here"
+        },
+        {
+          "start": 120,
+          "end": 122,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A2' has already been declared",
+      "start": 188,
+      "end": 190,
+      "help": "Consider removing or renaming this declaration of 'A2'",
+      "labels": [
+        {
+          "start": 165,
+          "end": 167,
+          "message": "'A2' was first declared as a type alias here"
+        },
+        {
+          "start": 188,
+          "end": 190,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A3' has already been declared",
+      "start": 286,
+      "end": 288,
+      "help": "Consider removing or renaming this declaration of 'A3'",
+      "labels": [
+        {
+          "start": 261,
+          "end": 263,
+          "message": "'A3' was first declared as an interface here"
+        },
+        {
+          "start": 286,
+          "end": 288,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A4' has already been declared",
+      "start": 346,
+      "end": 348,
+      "help": "Consider removing or renaming this declaration of 'A4'",
+      "labels": [
+        {
+          "start": 327,
+          "end": 329,
+          "message": "'A4' was first declared as a type alias here"
+        },
+        {
+          "start": 346,
+          "end": 348,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    }
+  ]
+}

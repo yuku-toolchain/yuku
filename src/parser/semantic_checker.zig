@@ -1055,10 +1055,15 @@ const SemanticVisit = struct {
         const name = ctx.tree.string(id.name);
         const current_span = ctx.tree.span(node_index);
         const existing_span = ctx.tree.span(existing.node);
+        const kind = existing.flags.toString();
+        const article: []const u8 = switch (kind[0]) {
+            'a', 'e', 'i', 'o', 'u' => "an",
+            else => "a",
+        };
 
         try self.report(current_span, try self.fmt("Identifier '{s}' has already been declared", .{name}), .{
             .labels = try self.labels(&.{
-                self.label(existing_span, try self.fmt("'{s}' was first declared as a {s} here", .{ name, existing.flags.toString() })),
+                self.label(existing_span, try self.fmt("'{s}' was first declared as {s} {s} here", .{ name, article, kind })),
                 self.label(current_span, "cannot be redeclared here"),
             }),
             .help = try self.fmt("Consider removing or renaming this declaration of '{s}'", .{name}),

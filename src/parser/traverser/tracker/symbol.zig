@@ -78,6 +78,9 @@ pub const Symbol = struct {
     };
 
     /// Bits in JS value space. Things visible at runtime.
+    /// `import` is intentionally not in VALUE, a parser cannot know
+    /// whether an imported name is a value, a type, or both, so
+    /// imports merge permissively with following declarations.
     pub const VALUE: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
@@ -89,7 +92,8 @@ pub const Symbol = struct {
     };
 
     /// Bits in TS type space. `class` and `enum` appear in both
-    /// `VALUE` and `TYPE`.
+    /// `VALUE` and `TYPE`. `type_import` is excluded for the same
+    /// reason as `import` in `VALUE`.
     pub const TYPE: Flags = .{
         .class = true,
         .regular_enum = true,
@@ -182,6 +186,10 @@ pub const Symbol = struct {
 
         pub const catch_param: Flags = VALUE;
 
+        // type parameters merge silently with other type parameters
+        // (multiple `infer T` in the same conditional unify per ts).
+        // duplicate explicit `<T, T>` is caught structurally in the
+        // semantic checker, not via excludes.
         pub const type_parameter: Flags = blk: {
             var f = TYPE;
             f.type_parameter = false;
@@ -633,11 +641,16 @@ pub const SymbolTracker = struct {
         }
     }
 
-    /// Resets the pending export state when an export declaration ends.
-    /// Called from `Ctx.exit`.
+    /// Resets pending state at the end of a declaration node, so it
+    /// doesn't leak to siblings or following nodes. Called from
+    /// `Ctx.exit`.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
             .export_named_declaration, .export_default_declaration => self.export_state = .none,
+            // type-parameter binding flags would otherwise leak into
+            // sibling member signatures or index parameters in the
+            // surrounding type body.
+            .ts_type_parameter, .ts_mapped_type => self.binding_flags = .{},
             else => {},
         }
     }

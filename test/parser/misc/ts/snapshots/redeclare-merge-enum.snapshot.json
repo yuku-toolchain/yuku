@@ -1,0 +1,194 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 188,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSEnumDeclaration",
+        "start": 50,
+        "end": 66,
+        "id": {
+          "type": "Identifier",
+          "start": 55,
+          "end": 57,
+          "name": "E1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 58,
+          "end": 66,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 62,
+              "end": 63,
+              "id": {
+                "type": "Identifier",
+                "start": 62,
+                "end": 63,
+                "name": "A",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": null,
+              "computed": false
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 67,
+        "end": 88,
+        "id": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 74,
+          "name": "E1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 75,
+          "end": 88,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 79,
+              "end": 85,
+              "id": {
+                "type": "Identifier",
+                "start": 79,
+                "end": 80,
+                "name": "B",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 83,
+                "end": 85,
+                "value": 10,
+                "raw": "10"
+              },
+              "computed": false
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 138,
+        "end": 160,
+        "id": {
+          "type": "Identifier",
+          "start": 149,
+          "end": 151,
+          "name": "E2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 152,
+          "end": 160,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 156,
+              "end": 157,
+              "id": {
+                "type": "Identifier",
+                "start": 156,
+                "end": 157,
+                "name": "X",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": null,
+              "computed": false
+            }
+          ]
+        },
+        "const": true,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 161,
+        "end": 187,
+        "id": {
+          "type": "Identifier",
+          "start": 172,
+          "end": 174,
+          "name": "E2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 175,
+          "end": 187,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 179,
+              "end": 184,
+              "id": {
+                "type": "Identifier",
+                "start": 179,
+                "end": 180,
+                "name": "Y",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 183,
+                "end": 184,
+                "value": 5,
+                "raw": "5"
+              },
+              "computed": false
+            }
+          ]
+        },
+        "const": true,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Valid: regular enums with the same name merge.",
+      "start": 0,
+      "end": 49
+    },
+    {
+      "type": "Line",
+      "value": " Valid: const enums with the same name merge.",
+      "start": 90,
+      "end": 137
+    }
+  ],
+  "diagnostics": []
+}
