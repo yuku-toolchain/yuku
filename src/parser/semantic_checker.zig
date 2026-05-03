@@ -281,13 +281,23 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_await_expression(self: *Self, _: ast.AwaitExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (isInFormalParameters(ctx))
-            try self.report(ctx.tree.span(node_index), "Await expression is not allowed in formal parameters", .{});
-
         // ClassStaticBlockBody uses [~Await]
-        if (isInsideStaticBlock(ctx))
-            try self.report(ctx.tree.span(node_index), "Cannot use await in class static initialization block", .{});
 
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.data(i)) {
+                .formal_parameters => {
+                    try self.report(ctx.tree.span(node_index), "Await expression is not allowed in formal parameters", .{});
+                    return .proceed;
+                },
+                .static_block => {
+                    try self.report(ctx.tree.span(node_index), "Cannot use await in class static initialization block", .{});
+                    return .proceed;
+                },
+                .function, .arrow_function_expression, .program => return .proceed,
+                else => {},
+            }
+        }
         return .proceed;
     }
 
