@@ -8,7 +8,7 @@
             .hash = "codspeed_zig-0.2.0-cdqftmyuHgDbmwtyWnqrol8vMXRErZmZH7SLrOhhpKdl",
         },
         .napi_zig = .{
-            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#0bc9fbe1814732474c5e5f4aaf60386a588c17cd",
+            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#3825013a2703f78498006f9b6ec72e4a606ff277",
             .hash = "napi_zig-0.2.0-XRkY0cGbAQBq4eaDX8NzlxNVQXTKhEZizIu1JzRjBVjl",
         },
         //
