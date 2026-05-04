@@ -455,19 +455,15 @@ pub const SymbolTable = struct {
 
 const PrehashCtx = struct {
     h: u64,
-    pub fn hash(self: @This(), _: []const u8) u64 { return self.h; }
+    pub fn hash(self: @This(), _: []const u8) u64 {
+        return self.h;
+    }
     pub fn eql(_: @This(), a: []const u8, b: []const u8) bool {
         return std.mem.eql(u8, a, b);
     }
 };
 
-/// Collects symbols and references during the AST walk.
-///
-/// Parent declaration nodes set `binding_flags`, `binding_excludes`,
-/// and `target` in `setBindingContext` (called on enter). The next
-/// `binding_identifier` consumes them in `declareBindings` (called on
-/// post_enter). The two-phase split keeps user visitor hooks observing
-/// a consistent view, parent context is in place when child nodes fire.
+/// Collects symbols and references during the AST walk
 pub const SymbolTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
@@ -480,13 +476,21 @@ pub const SymbolTracker = struct {
     binding_excludes: Symbol.Flags = .{},
     target: sc.ScopeId = .root,
     /// Whether the next `binding_identifier` is the directly-exported
-    /// name of an `export` declaration. Set when entering an export
-    /// declaration, cleared on entering any node whose children should
-    /// not inherit the `export` (function/class expressions, parameter
-    /// lists, class bodies, namespace bodies, type-parameter sites).
+    /// name of an `export` declaration.
     export_state: ExportState = .none,
 
+    saved_stack: std.ArrayList(SavedContext) = .empty,
+
     pub const ExportState = enum { none, named, default };
+
+    /// Snapshot of the four context fields, taken before a mutator
+    /// rewrites them so the mutator's exit can restore the prior state.
+    pub const SavedContext = struct {
+        flags: Symbol.Flags,
+        excludes: Symbol.Flags,
+        target: sc.ScopeId,
+        export_state: ExportState,
+    };
 
     pub fn init(tree: *ast.Tree) Allocator.Error!SymbolTracker {
         const alloc = tree.allocator();
@@ -497,14 +501,24 @@ pub const SymbolTracker = struct {
         try self.references.ensureTotalCapacity(alloc, estimated);
         try self.scope_maps.ensureTotalCapacity(alloc, estimated / 2);
         try self.hoisting_variables.ensureTotalCapacity(alloc, estimated / 2);
+        try self.saved_stack.ensureTotalCapacity(alloc, 32);
         return self;
     }
 
-    /// Records the pending binding state for the next `binding_identifier`.
-    /// Called from `Ctx.enter` for every node so parent declaration nodes
-    /// can configure flags, excludes, and target scope before the child
-    /// binding identifier fires.
-    pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) void {
+    /// Records the binding context for the next `binding_identifier`.
+    /// Called from `Ctx.enter` for every node so parent declaration
+    /// nodes can configure flags, excludes, target scope, and export
+    /// state before the child binding identifier fires.
+    pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
+        if (mutatesBindingContext(data)) {
+            try self.saved_stack.append(self.allocator, .{
+                .flags = self.binding_flags,
+                .excludes = self.binding_excludes,
+                .target = self.target,
+                .export_state = self.export_state,
+            });
+        }
+
         switch (data) {
             .export_named_declaration => |decl| {
                 if (decl.export_kind != .type) self.export_state = .named;
@@ -695,18 +709,47 @@ pub const SymbolTracker = struct {
         }
     }
 
-    /// Resets pending state at the end of a declaration node, so it
-    /// doesn't leak to siblings or following nodes. Called from
-    /// `Ctx.exit`.
+    /// Restores the context to what it was before the matching enter.
+    /// Called from `Ctx.exit`. Safe for any node; only nodes that
+    /// pushed in `setBindingContext` actually pop.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
+        if (mutatesBindingContext(data)) {
+            if (self.saved_stack.pop()) |saved| {
+                self.binding_flags = saved.flags;
+                self.binding_excludes = saved.excludes;
+                self.target = saved.target;
+                if (data != .formal_parameters) self.export_state = saved.export_state;
+            }
+        }
         switch (data) {
             .export_named_declaration, .export_default_declaration => self.export_state = .none,
-            // type-parameter binding flags would otherwise leak into
-            // sibling member signatures or index parameters in the
-            // surrounding type body.
-            .ts_type_parameter, .ts_mapped_type => self.binding_flags = .{},
             else => {},
         }
+    }
+
+    /// Nodes whose enter writes to any of `binding_flags`,
+    /// `binding_excludes`, `target`, or `export_state`. Single source
+    /// of truth so push and pop stay in sync.
+    fn mutatesBindingContext(data: ast.NodeData) bool {
+        return switch (data) {
+            .variable_declaration,
+            .function,
+            .class,
+            .formal_parameters,
+            .import_declaration,
+            .ts_import_equals_declaration,
+            .import_specifier,
+            .catch_clause,
+            .ts_interface_declaration,
+            .ts_type_alias_declaration,
+            .ts_enum_declaration,
+            .ts_module_declaration,
+            .ts_namespace_export_declaration,
+            .ts_type_parameter,
+            .ts_mapped_type,
+            => true,
+            else => false,
+        };
     }
 
     /// Declares a binding in `target`. If the name is already bound

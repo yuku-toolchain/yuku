@@ -110,7 +110,7 @@ for (tree.extra(program.body)) |child_idx| {
 }
 ```
 
-The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](/parser/ast) for the full node catalog, the field conventions, and the seven categorical predicates on `NodeData`.
+The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](/parser/ast) for the full node catalog, the field conventions, and the eight categorical predicates on `NodeData`.
 
 ## Diagnostics
 

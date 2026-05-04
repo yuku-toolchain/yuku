@@ -177,17 +177,18 @@ For tree-wide walks, use the [traverser](/parser/traverse) instead of writing re
 
 ## Predicates
 
-Seven methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
+Eight methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
 
-| Method            | True for                                                                                                                                                                                                                                                                                                  |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isExpression()`  | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers.                                                                                  |
-| `isStatement()`   | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included; expression forms are not.                                                                          |
-| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                            |
-| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                       |
-| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                            |
-| `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
-| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                         |
+| Method              | True for                                                                                                                                                                                                                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isExpression()`    | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers.                                                                                  |
+| `isStatement()`     | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included; expression forms are not.                                                                          |
+| `isLiteral()`       | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                            |
+| `isCallable()`      | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                       |
+| `isPattern()`       | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                            |
+| `isDeclaration()`   | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
+| `isIteration()`     | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                         |
+| `isTypeContext()`   | Any node that roots a TypeScript type-only subtree: type annotations, type references, function and constructor types, conditional and mapped types, type literals, interface heritage, and the various TS signatures. The semantic traverser uses this to drive its `inTypePosition()` context flag.   |
 
 For dual-purpose nodes (`function` and `class`) the predicates consult the `type` field internally, so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
 
@@ -205,7 +206,7 @@ if (data.isCallable()) {
 }
 ```
 
-For anything narrower than these seven, `switch` directly:
+For anything narrower than these eight, `switch` directly:
 
 ```zig
 switch (data) {

@@ -4262,6 +4262,52 @@ pub const NodeData = union(enum) {
             else => false,
         };
     }
+
+    /// True when this node roots a TypeScript type-only subtree.
+    pub fn isTypeContext(self: NodeData) bool {
+        return switch (self) {
+            .ts_type_annotation,
+            .ts_type_reference,
+            .ts_qualified_name,
+            .ts_type_query,
+            .ts_import_type,
+            .ts_type_parameter,
+            .ts_type_parameter_declaration,
+            .ts_type_parameter_instantiation,
+            .ts_literal_type,
+            .ts_template_literal_type,
+            .ts_array_type,
+            .ts_indexed_access_type,
+            .ts_tuple_type,
+            .ts_named_tuple_member,
+            .ts_optional_type,
+            .ts_rest_type,
+            .ts_jsdoc_nullable_type,
+            .ts_jsdoc_non_nullable_type,
+            .ts_jsdoc_unknown_type,
+            .ts_union_type,
+            .ts_intersection_type,
+            .ts_conditional_type,
+            .ts_infer_type,
+            .ts_type_operator,
+            .ts_parenthesized_type,
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_type_predicate,
+            .ts_type_literal,
+            .ts_property_signature,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
+            .ts_mapped_type,
+            .ts_class_implements,
+            .ts_interface_heritage,
+            .ts_interface_body,
+            => true,
+            else => false,
+        };
+    }
 };
 
 pub const Node = struct {
