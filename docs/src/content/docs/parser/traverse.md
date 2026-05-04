@@ -164,6 +164,22 @@ Every enter hook returns one of three actions:
 
 `.skip` is what you return after hand-walking a subtree yourself, or after a transform that should not be re-entered. `.stop` is how you implement "find the first X and exit".
 
+### Running Without Hooks
+
+Sometimes the only thing you want from the traverser is its output: a `ScopeTree` from the scoped mode, or a `ScopeTree` + `SymbolTable` from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
+
+```zig
+// Just the scope tree:
+var noop = struct {}{};
+const scope_tree = try scoped.traverse(@TypeOf(noop), &tree, &noop);
+
+// Just the scope tree + symbol table:
+var result = try sem.traverse(@TypeOf(noop), &tree, &noop);
+try result.symbol_table.resolveAll();
+```
+
+The empty struct makes the absence of hooks visible in the code, which is why there is no hidden `analyze`-style helper inside the traverser. If a tool wants the result of a walk without any per-node logic, the caller spells that out exactly.
+
 ## The Path
 
 Every mode tracks the path from the root down to the current node. The path is a small fixed-capacity stack of `NodeIndex` values you can read at any time through `ctx.path`.
@@ -534,18 +550,18 @@ pub const Reference = struct {
 
 ### Resolving References
 
-During traversal, references are recorded but not yet linked to their declarations. After traversal, call `resolveAll` to walk every reference up its scope chain and build the cross-index:
+During traversal, references are recorded but not yet linked to their declarations. After traversal, call `resolveAll` to walk every reference up its scope chain and build the cross-index. The table already knows its allocator and scope tree, so `resolveAll` takes no arguments:
 
 ```zig
-const result = try sem.traverse(MyVisitor, &tree, &visitor);
-
-var table = result.symbol_table;
-try table.resolveAll(tree.allocator(), result.scope_tree);
+var result = try sem.traverse(MyVisitor, &tree, &visitor);
+try result.symbol_table.resolveAll();
 ```
 
 Once resolved you have the full bidirectional map:
 
 ```zig
+const table = result.symbol_table;
+
 // Forward: what does this reference point to?
 const sym_id = table.referenceSymbol(some_ref_id);
 if (sym_id != .none) {
@@ -566,18 +582,19 @@ if (!table.isReferenced(my_sym_id)) {
 
 // References that did not resolve to any local binding.
 // These are globals, undeclared names, or free variables.
-for (table.unresolvedReferences()) |ref_id| {
-    const ref = table.getReference(ref_id);
-    _ = ref;
+var it = table.iterUnresolved();
+while (it.next()) |entry| {
+    // entry.id, entry.reference
+    _ = entry;
 }
 ```
 
-`unresolvedReferences()` is exactly what a "no-undef" linter wants, every name the parser saw that is not bound anywhere in the tree.
+`iterUnresolved` is exactly what a "no-undef" linter wants: every name the parser saw that is not bound anywhere in the tree.
 
 You can also resolve a name manually from any starting scope:
 
 ```zig
-if (table.resolve(scope_id, "myVar", result.scope_tree)) |found| {
+if (table.resolve(scope_id, "myVar")) |found| {
     const sym = table.getSymbol(found);
     _ = sym;
 }
@@ -596,16 +613,38 @@ findInScopeOrHoisted(scope, name)  // also matches a `var` passing through `scop
 
 `findInScopeOrHoisted` is the same lookup the tracker uses internally to detect block-scoped redeclarations of names that a hoisting `var` is travelling through.
 
-### Iterating Symbols in a Scope
+### Iterating the Table
 
-Both during and after traversal you can walk every symbol declared in a given scope without materialising whole `Symbol` structs:
+Three iterators walk the whole table; each yields a `(id, value)` entry so you never reach back through the table for a lookup you were just handed:
+
+```zig
+var syms = table.iterSymbols();
+while (syms.next()) |entry| {
+    // entry.id, entry.symbol
+    _ = entry;
+}
+
+var refs = table.iterReferences();
+while (refs.next()) |entry| {
+    // entry.id, entry.reference
+    _ = entry;
+}
+
+var unresolved = table.iterUnresolved();
+while (unresolved.next()) |entry| {
+    // entry.id, entry.reference (only refs that did not resolve)
+    _ = entry;
+}
+```
+
+For tight per-scope loops (a minifier checking shadowing in one scope, a renamer enumerating bindings in a function body), `scopeSymbols(scope_id)` yields raw `*SymbolId`s straight out of the per-scope hash map, so you avoid copying full `Symbol` structs:
 
 ```zig
 // During traversal (live tracker):
 var it = ctx.symbols.scopeSymbols(scope_id);
 while (it.next()) |sym_id_ptr| {
     const sym = ctx.symbols.getSymbol(sym_id_ptr.*);
-    const name = ctx.symbols.getName(sym);
+    const name = ctx.tree.string(sym.name);
     _ = name;
 }
 
@@ -617,18 +656,32 @@ while (it2.next()) |sym_id_ptr| {
 }
 ```
 
-This iterator gives you raw `SymbolId`s. That is what a minifier or dead-code pass wants: a tight loop over a single field, instead of copying out full `Symbol` structs only to read one bit.
-
 ### SymbolTable Reference
 
-Other useful methods on the immutable table:
+The table's public surface, in one place:
 
 ```zig
-table.symbolCount()             // total symbols
-table.referenceCount()          // total references
-table.string(id)                // resolve a String handle to []const u8
-table.getName(symbol)           // shortcut for table.string(symbol.name)
-table.getRefName(reference)     // shortcut for table.string(reference.name)
+table.symbols                          // []const Symbol, in declaration order
+table.references                       // []const Reference, in source order
+table.scope_tree                       // ScopeTree this table was built against
+
+table.string(handle)                   // []const u8 from a String handle
+table.getSymbol(sym_id)                // Symbol by id
+table.getReference(ref_id)             // Reference by id
+
+table.iterSymbols()                    // (id, symbol) entries
+table.iterReferences()                 // (id, reference) entries
+table.iterUnresolved()                 // unresolved (id, reference) entries
+table.scopeSymbols(scope_id)           // *SymbolId per binding in the scope
+
+table.findInScope(scope, name)         // single-scope lookup
+table.findInScopeOrHoisted(scope, name)// + hoisting var passing through
+table.resolve(scope, name)             // scope-chain lookup
+
+try table.resolveAll()                 // build the cross-index
+table.referenceSymbol(ref_id)          // forward (ref -> sym) after resolveAll
+table.symbolReferences(sym_id)         // reverse (sym -> []ref) after resolveAll
+table.isReferenced(sym_id)             // shorthand for "any references?"
 ```
 
 ## Transform Traverser
@@ -830,10 +883,78 @@ try transform.traverse(MyTransform, &tree, &rewriter);
 
 // Pass 2: semantic analysis on the rewritten tree
 var analyser = MyAnalyser{};
-const result = try sem.traverse(MyAnalyser, &tree, &analyser);
-try result.symbol_table.resolveAll(tree.allocator(), result.scope_tree);
+var result = try sem.traverse(MyAnalyser, &tree, &analyser);
+try result.symbol_table.resolveAll();
 
 // Pass 3: emit, lint, minify, etc.
 ```
 
 Because read-only modes take `*const Tree` and transform takes `*Tree`, the type system enforces that you cannot accidentally smuggle a tracking pass into a mutation pass. If a function compiles with `*const Tree` you have a mathematical guarantee it will not change the AST.
+
+## Putting It Together: An Unused-Variables Linter
+
+To anchor the pieces above in something concrete, here is a complete linter that reports two classic problems at once: **declared-but-never-used bindings** (no-unused-vars) and **referenced-but-never-declared names** (no-undef). It calls `parser.semantic.analyze` (which runs the full semantic checker so spec early-errors land in `tree.diagnostics` for free), then `resolveAll`, `isReferenced`, and `iterUnresolved`. The whole thing fits in one function.
+
+```zig
+const std = @import("std");
+const parser = @import("parser");
+const Symbol = parser.traverser.semantic.Symbol;
+
+pub fn lintUnused(allocator: std.mem.Allocator, source: []const u8) !void {
+    var tree = try parser.parse(allocator, source, .{});
+    defer tree.deinit();
+
+    var result = try parser.semantic.analyze(&tree);
+    try result.symbol_table.resolveAll();
+
+    // 1. Declared but never used: candidate "no-unused-vars" reports.
+    var symbols = result.symbol_table.iterSymbols();
+    while (symbols.next()) |entry| {
+        const sym = entry.symbol;
+
+        // Skip things a sensible linter ignores by default:
+        // - parameters and catch bindings (often intentionally unused)
+        // - exported and ambient (`declare`) names (used out-of-tree)
+        // - pure type-space symbols (interfaces, type aliases)
+        if (sym.flags.parameter or sym.flags.catch_var) continue;
+        if (sym.flags.exported or sym.flags.ambient) continue;
+        if (!sym.flags.intersects(Symbol.VALUE)) continue;
+
+        if (!result.symbol_table.isReferenced(entry.id)) {
+            std.debug.print("unused {s}: {s}\n", .{
+                sym.flags.toString(),
+                tree.string(sym.name),
+            });
+        }
+    }
+
+    // 2. Referenced but never declared: candidate "no-undef" reports.
+    // Type-position uses are skipped because most TS lib types live
+    // outside the tree (`Promise`, `Record`, ...).
+    var unresolved = result.symbol_table.iterUnresolved();
+    while (unresolved.next()) |entry| {
+        const ref = entry.reference;
+        if (ref.kind != .value) continue;
+        std.debug.print("undefined: {s}\n", .{tree.string(ref.name)});
+    }
+}
+```
+
+Run it on something like:
+
+```js
+import fs from "node:fs";
+const used = 1;
+const unused = 2;
+console.log(used, undeclared);
+```
+
+and you get:
+
+```
+unused import: fs
+unused variable: unused
+undefined: undeclared
+```
+
+Three traversers worth of machinery (path, scopes, symbols, references, declaration merging, hoisting, type-position tagging) collapse into one short post-pass. That is the shape every serious tool built on Yuku will end up with: let the traverser do the bookkeeping, then iterate the table.

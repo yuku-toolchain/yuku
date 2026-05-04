@@ -212,7 +212,7 @@ pub const Reference = struct {
 };
 
 /// Immutable result of a semantic walk. Holds every symbol declared,
-/// every reference recorded, and the per-scope binding maps. Pass to
+/// every reference recorded, and the per-scope binding maps. Call
 /// `resolveAll` to build the cross-index between symbols and
 /// references.
 pub const SymbolTable = struct {
@@ -221,6 +221,8 @@ pub const SymbolTable = struct {
     scope_maps: []const ScopeMap,
     hoisting_variables: []const ScopeMap,
     strings: *const ast.StringPool,
+    allocator: Allocator,
+    scope_tree: sc.ScopeTree,
 
     resolutions: []const SymbolId = &.{},
     symbol_refs: []const ReferenceId = &.{},
@@ -228,6 +230,53 @@ pub const SymbolTable = struct {
     unresolved_refs: []const ReferenceId = &.{},
 
     const Range = struct { start: u32, len: u32 };
+
+    /// A `(id, symbol)` pair yielded by `iterSymbols`.
+    pub const SymbolEntry = struct { id: SymbolId, symbol: Symbol };
+
+    /// A `(id, reference)` pair yielded by `iterReferences` and `iterUnresolved`.
+    pub const ReferenceEntry = struct { id: ReferenceId, reference: Reference };
+
+    /// Yields every `(id, symbol)` pair in declaration order.
+    pub const SymbolIterator = struct {
+        symbols: []const Symbol,
+        index: u32 = 0,
+
+        pub fn next(self: *SymbolIterator) ?SymbolEntry {
+            if (self.index >= self.symbols.len) return null;
+            const i = self.index;
+            self.index += 1;
+            return .{ .id = @enumFromInt(i), .symbol = self.symbols[i] };
+        }
+    };
+
+    /// Yields every `(id, reference)` pair in source order.
+    pub const ReferenceIterator = struct {
+        references: []const Reference,
+        index: u32 = 0,
+
+        pub fn next(self: *ReferenceIterator) ?ReferenceEntry {
+            if (self.index >= self.references.len) return null;
+            const i = self.index;
+            self.index += 1;
+            return .{ .id = @enumFromInt(i), .reference = self.references[i] };
+        }
+    };
+
+    /// Yields every unresolved `(id, reference)` pair. Only valid after
+    /// `resolveAll` has run.
+    pub const UnresolvedIterator = struct {
+        references: []const Reference,
+        ids: []const ReferenceId,
+        index: u32 = 0,
+
+        pub fn next(self: *UnresolvedIterator) ?ReferenceEntry {
+            if (self.index >= self.ids.len) return null;
+            const id = self.ids[self.index];
+            self.index += 1;
+            return .{ .id = id, .reference = self.references[@intFromEnum(id)] };
+        }
+    };
 
     /// Returns the source text for a `String` handle.
     pub inline fn string(self: SymbolTable, id: String) []const u8 {
@@ -244,24 +293,20 @@ pub const SymbolTable = struct {
         return self.references[@intFromEnum(id)];
     }
 
-    /// Number of symbols in the table.
-    pub inline fn symbolCount(self: SymbolTable) usize {
-        return self.symbols.len;
+    /// Iterator over every `(id, symbol)` pair in the table.
+    pub fn iterSymbols(self: SymbolTable) SymbolIterator {
+        return .{ .symbols = self.symbols };
     }
 
-    /// Number of references in the table.
-    pub inline fn referenceCount(self: SymbolTable) usize {
-        return self.references.len;
+    /// Iterator over every `(id, reference)` pair in the table.
+    pub fn iterReferences(self: SymbolTable) ReferenceIterator {
+        return .{ .references = self.references };
     }
 
-    /// Returns a symbol's source name as a string slice.
-    pub inline fn getName(self: SymbolTable, sym: Symbol) []const u8 {
-        return self.string(sym.name);
-    }
-
-    /// Returns a reference's source name as a string slice.
-    pub inline fn getRefName(self: SymbolTable, ref: Reference) []const u8 {
-        return self.string(ref.name);
+    /// Iterator over `(id, reference)` pairs that did not resolve to any
+    /// symbol. Only valid after `resolveAll` has run.
+    pub fn iterUnresolved(self: SymbolTable) UnresolvedIterator {
+        return .{ .references = self.references, .ids = self.unresolved_refs };
     }
 
     /// Iterator over symbol ids declared in `scope` (excluding hoisted).
@@ -284,8 +329,8 @@ pub const SymbolTable = struct {
 
     /// Walks up the scope chain from `scope` to find the nearest binding
     /// of `name`, including hoisted vars in any visited scope.
-    pub fn resolve(self: SymbolTable, scope: sc.ScopeId, name: []const u8, scope_tree: sc.ScopeTree) ?SymbolId {
-        var it = scope_tree.ancestors(scope);
+    pub fn resolve(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+        var it = self.scope_tree.ancestors(scope);
         while (it.next()) |ancestor| {
             if (self.findInScopeOrHoisted(ancestor, name)) |id| return id;
         }
@@ -296,9 +341,11 @@ pub const SymbolTable = struct {
     /// reverse index. After this returns:
     ///   - `referenceSymbol(ref_id)` gives the symbol the reference resolves to.
     ///   - `symbolReferences(sym_id)` gives all references to that symbol.
-    ///   - `unresolvedReferences()` gives references with no matching symbol
-    ///     (free variables, globals, or undeclared names).
-    pub fn resolveAll(self: *SymbolTable, allocator: Allocator, scope_tree: sc.ScopeTree) Allocator.Error!void {
+    ///   - `iterUnresolved()` walks references that did not resolve
+    ///     (free variables, globals, undeclared names).
+    pub fn resolveAll(self: *SymbolTable) Allocator.Error!void {
+        const allocator = self.allocator;
+        const scope_tree = self.scope_tree;
         const ref_count: u32 = @intCast(self.references.len);
         const sym_count: u32 = @intCast(self.symbols.len);
 
@@ -378,11 +425,6 @@ pub const SymbolTable = struct {
         const idx = @intFromEnum(id);
         if (idx >= self.symbol_ref_ranges.len) return false;
         return self.symbol_ref_ranges[idx].len > 0;
-    }
-
-    /// Reference ids that did not resolve to any symbol in the table.
-    pub inline fn unresolvedReferences(self: SymbolTable) []const ReferenceId {
-        return self.unresolved_refs;
     }
 };
 
@@ -736,11 +778,6 @@ pub const SymbolTracker = struct {
         return self.symbols.items[@intFromEnum(id)];
     }
 
-    /// Returns a symbol's source name as a string slice.
-    pub inline fn getName(self: *const SymbolTracker, sym: Symbol) []const u8 {
-        return self.tree.string(sym.name);
-    }
-
     /// Iterator over symbol ids declared directly in `scope`.
     pub fn scopeSymbols(self: *const SymbolTracker, scope: sc.ScopeId) ScopeMap.ValueIterator {
         return self.scope_maps.items[@intFromEnum(scope)].valueIterator();
@@ -774,13 +811,15 @@ pub const SymbolTracker = struct {
     /// Finalizes into an immutable `SymbolTable`. The tracker's backing
     /// arrays are aliased into the table. Both share the tree's arena
     /// lifetime.
-    pub fn toSymbolTable(self: *SymbolTracker) SymbolTable {
+    pub fn toSymbolTable(self: *SymbolTracker, scope_tree: sc.ScopeTree) SymbolTable {
         return .{
             .symbols = self.symbols.items,
             .references = self.references.items,
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
             .strings = &self.tree.strings,
+            .allocator = self.allocator,
+            .scope_tree = scope_tree,
         };
     }
 };

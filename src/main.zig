@@ -33,7 +33,7 @@ fn bench(io: std.Io, source: []const u8, mode: BenchMode, n: i96) !i96 {
         if (mode != .parse_only) {
             var result = try parser.semantic.analyze(&tree);
             if (mode == .with_resolve)
-                try result.symbol_table.resolveAll(tree.allocator(), result.scope_tree);
+                try result.symbol_table.resolveAll();
         }
         tree.deinit();
     }
