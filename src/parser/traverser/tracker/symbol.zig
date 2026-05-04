@@ -43,21 +43,44 @@ pub const Symbol = struct {
         is_default: bool = false,
         _: u13 = 0,
 
-        /// True when `a` and `b` share at least one set bit.
+        /// True when `a` and `b` have at least one flag in common.
         pub inline fn intersects(a: Flags, b: Flags) bool {
             return @as(u32, @bitCast(a)) & @as(u32, @bitCast(b)) != 0;
         }
 
-        /// Bitwise OR of two flag sets.
+        /// Returns the union of two flag sets: every flag set in either
+        /// `a` or `b` ends up set in the result. Used when merging two
+        /// compatible declarations into a single symbol.
         pub inline fn merge(a: Flags, b: Flags) Flags {
             return @bitCast(@as(u32, @bitCast(a)) | @as(u32, @bitCast(b)));
         }
 
-        /// True for a `var` that hoists past intermediate blocks. False
-        /// for parameters and catch variables, which are function-scoped
-        /// but don't hoist.
+        /// True for a `var` that hoists past intermediate blocks.
+        /// Parameters and catch variables are function-scoped but do
+        /// not hoist, so they return false here.
         pub inline fn isHoistingVar(self: Flags) bool {
             return self.function_scoped_var and !self.parameter and !self.catch_var;
+        }
+
+        /// True when this is a JavaScript value-space binding (visible
+        /// at runtime): `var`/`let`/`const`, function, class, enum, or
+        /// an instantiated namespace.
+        pub inline fn inValueSpace(self: Flags) bool {
+            return self.intersects(value_space);
+        }
+
+        /// True when this is a TypeScript type-space binding: interface,
+        /// type alias, type parameter, plus class and enum, which exist
+        /// in both spaces.
+        pub inline fn inTypeSpace(self: Flags) bool {
+            return self.intersects(type_space);
+        }
+
+        /// True for declarations a hoisting `var` is forbidden to pass
+        /// through: block-scoped bindings (`let`, `const`), classes,
+        /// and functions.
+        pub inline fn isBlockScopedLike(self: Flags) bool {
+            return self.intersects(block_scoped_like);
         }
 
         /// Human-readable category for diagnostics.
@@ -77,11 +100,11 @@ pub const Symbol = struct {
         }
     };
 
-    /// Bits in JS value space. Things visible at runtime.
-    /// `import` is intentionally not in VALUE, a parser cannot know
-    /// whether an imported name is a value, a type, or both, so
-    /// imports merge permissively with following declarations.
-    pub const VALUE: Flags = .{
+    // Bits in JS value space. Things visible at runtime. `import` is
+    // intentionally excluded: a parser cannot know whether an imported
+    // name is a value, a type, or both, so imports merge permissively
+    // with following declarations. Reach via `Flags.inValueSpace`.
+    const value_space: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
         .function = true,
@@ -91,10 +114,10 @@ pub const Symbol = struct {
         .value_module = true,
     };
 
-    /// Bits in TS type space. `class` and `enum` appear in both
-    /// `VALUE` and `TYPE`. `type_import` is excluded for the same
-    /// reason as `import` in `VALUE`.
-    pub const TYPE: Flags = .{
+    // Bits in TS type space. `class` and `enum` straddle both spaces.
+    // `type_import` is excluded for the same reason as `import` above.
+    // Reach via `Flags.inTypeSpace`.
+    const type_space: Flags = .{
         .class = true,
         .regular_enum = true,
         .const_enum = true,
@@ -103,8 +126,9 @@ pub const Symbol = struct {
         .type_parameter = true,
     };
 
-    /// Names a hoisted `var` cannot pass through (section 14.2.1).
-    pub const BLOCK_SCOPED_LIKE: Flags = .{
+    // Names a hoisted `var` cannot pass through (Section 14.2.1).
+    // Reach via `Flags.isBlockScopedLike`.
+    const block_scoped_like: Flags = .{
         .block_scoped_var = true,
         .class = true,
         .function = true,
@@ -114,10 +138,10 @@ pub const Symbol = struct {
     /// `Excludes.X` conflicts with any existing flag also in
     /// `Excludes.X`. Otherwise both declarations merge into one symbol.
     pub const Excludes = struct {
-        pub const block_var: Flags = VALUE;
+        pub const block_var: Flags = value_space;
 
         pub const function_var: Flags = blk: {
-            var f = VALUE;
+            var f = value_space;
             f.function_scoped_var = false;
             f.function = false;
             break :blk f;
@@ -128,7 +152,7 @@ pub const Symbol = struct {
         /// (Annex B 3.2). The `block_var` excludes are used instead at
         /// lexical scopes (block/module).
         pub const function: Flags = blk: {
-            var f = VALUE;
+            var f = value_space;
             f.function_scoped_var = false;
             f.function = false;
             f.value_module = false;
@@ -137,36 +161,36 @@ pub const Symbol = struct {
         };
 
         pub const class: Flags = blk: {
-            var f = VALUE.merge(TYPE);
+            var f = value_space.merge(type_space);
             f.value_module = false;
             f.interface = false;
             break :blk f;
         };
 
         pub const interface: Flags = blk: {
-            var f = TYPE;
+            var f = type_space;
             f.interface = false;
             f.class = false;
             break :blk f;
         };
 
-        pub const type_alias: Flags = TYPE;
+        pub const type_alias: Flags = type_space;
 
         pub const regular_enum: Flags = blk: {
-            var f = VALUE.merge(TYPE);
+            var f = value_space.merge(type_space);
             f.regular_enum = false;
             f.value_module = false;
             break :blk f;
         };
 
         pub const const_enum: Flags = blk: {
-            var f = VALUE.merge(TYPE);
+            var f = value_space.merge(type_space);
             f.const_enum = false;
             break :blk f;
         };
 
         pub const value_module: Flags = blk: {
-            var f = VALUE;
+            var f = value_space;
             f.function = false;
             f.class = false;
             f.regular_enum = false;
@@ -179,19 +203,19 @@ pub const Symbol = struct {
         pub const import_binding: Flags = .{ .import = true, .type_import = true };
 
         pub const parameter: Flags = blk: {
-            var f = VALUE;
+            var f = value_space;
             f.function_scoped_var = false;
             break :blk f;
         };
 
-        pub const catch_param: Flags = VALUE;
+        pub const catch_param: Flags = value_space;
 
         // type parameters merge silently with other type parameters
         // (multiple `infer T` in the same conditional unify per ts).
         // duplicate explicit `<T, T>` is caught structurally in the
         // semantic checker, not via excludes.
         pub const type_parameter: Flags = blk: {
-            var f = TYPE;
+            var f = type_space;
             f.type_parameter = false;
             break :blk f;
         };

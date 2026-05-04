@@ -185,5 +185,17 @@ Semantic diagnostics are appended directly to `tree.diagnostics` alongside parse
 All allocations (scope tree, symbol table) use the tree's arena, so they are valid for the lifetime of the tree and freed by `tree.deinit()`.
 
 :::note
-If you need the scope tree and symbol table without running the early-error checks, call the [semantic traverser](/parser/traverse#semantic-traverser) directly with your own visitor (or an empty `struct {}` if you only want the tables). `semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic_checker.zig).
+If you need the scope tree and symbol table without running the early-error checks, call the [semantic traverser](/parser/traverse#semantic-traverser) directly with your own visitor (or an empty `struct {}` if you only want the tables):
+
+```zig
+const sem = parser.traverser.semantic;
+
+var noop = struct {}{};
+const result = try sem.traverse(@TypeOf(noop), &tree, &noop);
+
+// result.scope_tree   - all lexical scopes
+// result.symbol_table - all symbols and references (no diagnostics emitted)
+```
+
+`semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic_checker.zig), with a real visitor that emits the early-error diagnostics on top.
 :::

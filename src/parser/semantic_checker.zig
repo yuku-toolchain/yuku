@@ -125,7 +125,7 @@ const SemanticVisit = struct {
                 if (scope_id == target) break;
                 if (ctx.symbols.findInScope(scope_id, name)) |sym| {
                     const existing = ctx.symbols.getSymbol(sym);
-                    if (existing.flags.intersects(Symbol.BLOCK_SCOPED_LIKE)) {
+                    if (existing.flags.isBlockScopedLike()) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                         break;
                     }

@@ -460,27 +460,22 @@ symbol.flags.is_default  // default export
 **Helpers** on the flag struct itself:
 
 ```zig
-flags.intersects(other)   // true if any bit is set in both
-flags.merge(other)        // bitwise OR (used when merging compatible declarations)
-flags.isHoistingVar()     // true for a real `var` (not a parameter, not a catch_var)
-flags.toString()          // human-readable category for diagnostics
+flags.intersects(other)     // true if any bit is set in both
+flags.merge(other)          // bitwise OR (used when merging compatible declarations)
+flags.isHoistingVar()       // true for a real `var` (not a parameter, not a catch_var)
+flags.toString()            // human-readable category for diagnostics
 ```
 
-### Predefined Flag Sets
-
-The tracker uses three canned flag sets to express the JS / TS spec rules cleanly:
+**Space predicates.** A symbol can occupy JS value space (visible at runtime), TS type space (referenced from annotations), or both (a `class` straddles them by design). These are common enough questions that they have direct predicates, no manual flag combinations needed:
 
 ```zig
-Symbol.VALUE              // bits visible at runtime: function_scoped_var,
-                          // block_scoped_var, function, class, regular_enum,
-                          // const_enum, value_module
-Symbol.TYPE               // bits in TS type space: class, regular_enum,
-                          // const_enum, interface, type_alias, type_parameter
-Symbol.BLOCK_SCOPED_LIKE  // names a hoisting `var` cannot pass through
-                          // (block_scoped_var, class, function)
+flags.inValueSpace()        // var, let, const, function, class, enum, value namespace
+flags.inTypeSpace()         // class, enum, interface, type alias, type parameter
+flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
+                            // (block_scoped_var, class, function)
 ```
 
-`class` and `regular_enum` deliberately appear in both `VALUE` and `TYPE`. That is what makes "use a class as a type" work without special-casing.
+`class` and `regular_enum` deliberately satisfy both `inValueSpace` and `inTypeSpace`. That is what makes "use a class as a type" work without special-casing.
 
 ### Per-Kind Redeclaration Excludes
 
@@ -890,71 +885,3 @@ try result.symbol_table.resolveAll();
 ```
 
 Because read-only modes take `*const Tree` and transform takes `*Tree`, the type system enforces that you cannot accidentally smuggle a tracking pass into a mutation pass. If a function compiles with `*const Tree` you have a mathematical guarantee it will not change the AST.
-
-## Putting It Together: An Unused-Variables Linter
-
-To anchor the pieces above in something concrete, here is a complete linter that reports two classic problems at once: **declared-but-never-used bindings** (no-unused-vars) and **referenced-but-never-declared names** (no-undef). It calls `parser.semantic.analyze` (which runs the full semantic checker so spec early-errors land in `tree.diagnostics` for free), then `resolveAll`, `isReferenced`, and `iterUnresolved`. The whole thing fits in one function.
-
-```zig
-const std = @import("std");
-const parser = @import("parser");
-const Symbol = parser.traverser.semantic.Symbol;
-
-pub fn lintUnused(allocator: std.mem.Allocator, source: []const u8) !void {
-    var tree = try parser.parse(allocator, source, .{});
-    defer tree.deinit();
-
-    var result = try parser.semantic.analyze(&tree);
-    try result.symbol_table.resolveAll();
-
-    // 1. Declared but never used: candidate "no-unused-vars" reports.
-    var symbols = result.symbol_table.iterSymbols();
-    while (symbols.next()) |entry| {
-        const sym = entry.symbol;
-
-        // Skip things a sensible linter ignores by default:
-        // - parameters and catch bindings (often intentionally unused)
-        // - exported and ambient (`declare`) names (used out-of-tree)
-        // - pure type-space symbols (interfaces, type aliases)
-        if (sym.flags.parameter or sym.flags.catch_var) continue;
-        if (sym.flags.exported or sym.flags.ambient) continue;
-        if (!sym.flags.intersects(Symbol.VALUE)) continue;
-
-        if (!result.symbol_table.isReferenced(entry.id)) {
-            std.debug.print("unused {s}: {s}\n", .{
-                sym.flags.toString(),
-                tree.string(sym.name),
-            });
-        }
-    }
-
-    // 2. Referenced but never declared: candidate "no-undef" reports.
-    // Type-position uses are skipped because most TS lib types live
-    // outside the tree (`Promise`, `Record`, ...).
-    var unresolved = result.symbol_table.iterUnresolved();
-    while (unresolved.next()) |entry| {
-        const ref = entry.reference;
-        if (ref.kind != .value) continue;
-        std.debug.print("undefined: {s}\n", .{tree.string(ref.name)});
-    }
-}
-```
-
-Run it on something like:
-
-```js
-import fs from "node:fs";
-const used = 1;
-const unused = 2;
-console.log(used, undeclared);
-```
-
-and you get:
-
-```
-unused import: fs
-unused variable: unused
-undefined: undeclared
-```
-
-Three traversers worth of machinery (path, scopes, symbols, references, declaration merging, hoisting, type-position tagging) collapse into one short post-pass. That is the shape every serious tool built on Yuku will end up with: let the traverser do the bookkeeping, then iterate the table.
