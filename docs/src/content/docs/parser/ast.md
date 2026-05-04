@@ -1,31 +1,37 @@
 ---
 title: AST
-description: Internal AST structure, node types, and the data model for Yuku's parser.
+description: The flat, data-oriented AST returned by Yuku's parser, with the full node reference.
 ---
 
-Yuku's internal AST is a flat, arena-allocated structure optimized for sequential access. When serialized to JSON or exposed through Node.js bindings, it is converted to an [ESTree](https://github.com/estree/estree)-compatible format matching [Oxc](https://oxc.rs):
+The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
 
-- **JavaScript / JSX**: Fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
-- **TypeScript**: Conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
+The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs):
 
-Extensions beyond the base specs: Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `Program`.
+- **JavaScript / JSX**: fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
+- **TypeScript**: conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
 
-This page covers the internal Zig AST, its memory model, core types, and the complete node reference.
+Beyond the base specs the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`.
 
-## Memory Model
+:::tip[Building tools on the AST?]
+The [traverser](/parser/traverse) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
 
-The AST is not a graph of heap-allocated structs. All nodes live in a single flat array (`Tree.nodes`), and children reference each other by integer index. This gives linear memory layout and predictable cache behavior during traversal.
+This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
+:::
+
+## Memory model
+
+The AST is not a graph of heap-allocated structs. Every node lives in a single flat array (`Tree.nodes`), and child references are indices into that array. Variable-length child lists live in a second flat array (`Tree.extras`), and string content lives in a string pool. Three arrays, one arena.
 
 ```
 Tree
- nodes   NodeList        flat array of all nodes (data + span, struct-of-arrays)
- extra   []NodeIndex     variable-length child lists (IndexRange points here)
- strings StringPool      all string content (source refs + interned extras)
+ nodes    NodeList         flat array of all nodes (data + span, struct-of-arrays)
+ extras   []NodeIndex      variable-length child lists (IndexRange points here)
+ strings  StringPool       all string content (source refs + interned extras)
 ```
 
-`NodeList` is a `MultiArrayList(Node)`, meaning `data` and `span` are stored in separate parallel arrays. Reading only spans, or only data, stays within a single array.
+`NodeList` is a `MultiArrayList(Node)`, so `data` and `span` are stored in two separate parallel arrays. Code that only reads spans, or only reads data, touches one array.
 
-All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everything at once.
+All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the entire tree at once.
 
 ## The Tree
 
@@ -33,32 +39,30 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everythi
 
 | Field         | Type                    | Description                             |
 | ------------- | ----------------------- | --------------------------------------- |
-| `program`     | `NodeIndex`             | Root node (always a `program`)          |
+| `root`        | `NodeIndex`             | Index of the root node (a `program`)    |
 | `nodes`       | `NodeList`              | All AST nodes                           |
-| `extra`       | `ArrayList(NodeIndex)`  | Variable-length child index lists       |
+| `extras`      | `ArrayList(NodeIndex)`  | Variable-length child index lists       |
 | `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints           |
 | `comments`    | `[]const Comment`       | All comments found in source            |
 | `source`      | `[]const u8`            | Original source text                    |
 | `source_type` | `SourceType`            | `.script` or `.module`                  |
 | `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts` |
 
-Key read methods:
-
 ```zig
-tree.getData(index)           // NodeData for a node
-tree.getSpan(index)           // Span (source byte range) for a node
-tree.getExtra(range)          // []const NodeIndex for an IndexRange
-tree.getString(handle)        // []const u8 from a String handle
+tree.data(idx)           // NodeData for the node at idx
+tree.span(idx)           // Span (source byte range) for the node at idx
+tree.extra(range)        // []const NodeIndex for an IndexRange
+tree.string(handle)      // []const u8 for a String handle
 
-tree.hasErrors()              // true if any diagnostic has severity .error
-tree.isTs()                   // true for .ts, .tsx, .dts
-tree.isJsx()                  // true for .jsx, .tsx
-tree.isModule()               // true for source_type .module
+tree.isTs()              // language is .ts, .tsx, or .dts
+tree.isJsx()             // language is .jsx or .tsx
+tree.isModule()          // source_type is .module
+tree.hasErrors()         // any diagnostic with severity .error
 ```
 
-## Core Types
+## Core types
 
-Four types appear in nearly every node definition. Understanding them once makes the entire node reference readable.
+Four small types carry every reference inside the AST.
 
 ### NodeIndex
 
@@ -66,12 +70,12 @@ Four types appear in nearly every node definition. Understanding them once makes
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 ```
 
-Every node is identified by its position in `Tree.nodes`. Optional child fields use `.null` to indicate absence:
+Every node is identified by its position in `Tree.nodes`. Optional child slots use `.null` to signal absence.
 
 ```zig
 // if_statement.alternate is .null when there is no else branch
 if (node.alternate != .null) {
-    const else_data = tree.getData(node.alternate);
+    const else_data = tree.data(node.alternate);
 }
 ```
 
@@ -81,16 +85,16 @@ if (node.alternate != .null) {
 pub const IndexRange = struct { start: u32, len: u32 };
 ```
 
-Nodes with a variable number of children store them as a contiguous slice in `Tree.extra`. An `IndexRange` is a `(start, len)` window into that array.
+Variable-length children are stored as a contiguous slice in `Tree.extras`. An `IndexRange` is a `(start, len)` window into that array. Resolve it with `tree.extra(range)`:
 
 ```zig
-const children = tree.getExtra(node.body); // []const NodeIndex
-for (children) |child_index| {
-    const child_data = tree.getData(child_index);
+const children = tree.extra(node.body); // []const NodeIndex
+for (children) |child| {
+    const child_data = tree.data(child);
 }
 ```
 
-`IndexRange.empty` (`{ .start = 0, .len = 0 }`) represents an empty list.
+`IndexRange.empty` is the zero-length range.
 
 ### String
 
@@ -98,15 +102,15 @@ for (children) |child_index| {
 pub const String = struct { start: u32, end: u32 };
 ```
 
-A `String` is a lightweight handle to string content . It points into one of two backing stores:
+`String` is a lightweight handle to text. It points into one of two backing stores:
 
-- **Source slice (zero-copy)**: most identifiers and string literals parsed from source. The bytes live inside the original `source` slice .
-- **Pool entry**: programmatically added strings (`tree.addString()`), transformed names, or escaped identifiers. These live in the string pool's extra buffer.
+- **Source slice (zero-copy)**: most identifiers and string literals parsed from input. The bytes live inside `tree.source` directly.
+- **Pool entry**: interned strings such as escaped identifiers and names produced by transforms. These live in the string pool's extra buffer.
 
-`tree.getString(handle)` resolves both cases transparently:
+`tree.string(handle)` resolves both transparently and always returns `[]const u8`:
 
 ```zig
-const name = tree.getString(node.name); // always returns []const u8
+const name = tree.string(node.name);
 ```
 
 ### Span
@@ -115,169 +119,230 @@ const name = tree.getString(node.name); // always returns []const u8
 pub const Span = struct { start: u32, end: u32 };
 ```
 
-Byte offsets into the source text. `start` is inclusive, `end` is exclusive:
+Byte offsets into the source text. `start` is inclusive, `end` is exclusive.
 
 ```zig
-const span = tree.getSpan(index);
-const source_text = tree.source[span.start..span.end];
+const span = tree.span(idx);
+const text = tree.source[span.start..span.end];
 ```
 
-## NodeData
+## Reading a node
 
-`NodeData` is a tagged union with a variant for every node type. `tree.getData(index)` returns one, and you switch on the tag to determine the type and unpack its fields:
+`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(idx)` returns one. `switch` on the tag and unpack:
 
 ```zig
-const data = tree.getData(index);
-switch (data) {
+switch (tree.data(idx)) {
     .binary_expression => |expr| {
-        // expr.left and expr.right are NodeIndex (recurse with getData)
+        // expr.left and expr.right are NodeIndex (recurse with data)
         // expr.operator is a BinaryOperator enum
-        const left_data = tree.getData(expr.left);
+        const left = tree.data(expr.left);
     },
     .variable_declaration => |decl| {
         // decl.kind is VariableKind (.var, .let, .const, .using, .await_using)
-        // decl.declarators is IndexRange (read with getExtra)
-        const declarators = tree.getExtra(decl.declarators);
+        // decl.declarators is IndexRange (read with extra)
+        for (tree.extra(decl.declarators)) |d| { /* ... */ }
     },
     .identifier_reference => |id| {
-        // id.name is a String (resolve with getString)
-        const name = tree.getString(id.name);
+        // id.name is a String (resolve with string)
+        const text = tree.string(id.name);
     },
     else => {},
 }
 ```
 
-## Node Reference
+The same snake_case tag names are used as visitor hook names: a method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse) enters that node kind.
 
-Every field of `ast.NodeData` is a distinct node type. The field name is the exact hook name used in visitor structs:
+### Reading children
+
+A node's children sit in two kinds of fields:
+
+- **Single child**: `NodeIndex`. Either a real index, or `.null` for an absent optional slot. Read with `tree.data(field)`.
+- **Variadic children**: `IndexRange`. Resolve with `tree.extra(range)` to get `[]const NodeIndex`, then iterate.
 
 ```zig
-// NodeData field:  binary_expression: BinaryExpression
-// Visitor hook:    enter_binary_expression / exit_binary_expression
+switch (tree.data(idx)) {
+    .function => |func| {
+        // single child
+        const body = tree.data(func.body);
+
+        // variadic children: function params -> formal_parameters -> items
+        const params = tree.data(func.params).formal_parameters;
+        for (tree.extra(params.items)) |param| { /* ... */ }
+    },
+    else => {},
+}
 ```
 
-The full `NodeData` union is what the traverser's compile-time validation checks against. Any `enter_*` or `exit_*` method on your visitor must match a field name here exactly.
+For tree-wide walks, use the [traverser](/parser/traverse) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
 
-Optional child fields (`.null`) and optional child lists (`IndexRange.empty`) are noted where they apply.
+## Predicates
+
+Seven methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
+
+| Method            | True for                                                                                                                                                                                                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isExpression()`  | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers.                                                                                  |
+| `isStatement()`   | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included; expression forms are not.                                                                          |
+| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                            |
+| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                       |
+| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                            |
+| `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
+| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                         |
+
+For dual-purpose nodes (`function` and `class`) the predicates consult the `type` field internally, so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
+
+```zig
+const data = tree.data(idx);
+
+if (data.isExpression()) {
+    // any value-producing node
+}
+
+if (data.isCallable()) {
+    // function or arrow_function_expression
+    // The body, params, etc. are still type-specific,
+    // so switch on the tag to access them.
+}
+```
+
+For anything narrower than these seven, `switch` directly:
+
+```zig
+switch (data) {
+    .arrow_function_expression => |arrow| { /* ... */ },
+    else => {},
+}
+```
+
+## Node reference
+
+Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.data()` switches and visitor hooks (`enter_<tag>`).
+
+Optional child fields are noted with `.null`. Optional child lists are noted with `.empty`.
 
 ---
 
 ### Program
 
-The root of every tree. There is always exactly one `program` node at `tree.program`.
+The root of every tree. There is always exactly one `program` node at `tree.root`.
 
 ```zig
 pub const Program = struct {
     source_type: SourceType,    // .script or .module
-    body: IndexRange,           // (Statement | Directive)[]
+    body: IndexRange,           // (any statement | directive)[]
     hashbang: ?Hashbang,        // non-null for #!/usr/bin/env node lines
 };
 ```
+
+`directive` nodes (such as `"use strict";`) appear at the start of the body. Imports and exports appear in source order alongside other statements.
 
 ---
 
 ### Statements
 
-| Node                   | JS Syntax                       | Notes                                                   |
-| ---------------------- | ------------------------------- | ------------------------------------------------------- |
-| `expression_statement` | `expr;`                         | Wraps any expression used as a statement                |
-| `block_statement`      | `{ ... }`                       | `body` is a statement/directive list                    |
-| `empty_statement`      | `;`                             | No fields                                               |
-| `debugger_statement`   | `debugger;`                     | No fields                                               |
-| `if_statement`         | `if (test) cons else alt`       | `alternate` is `.null` when no else branch              |
-| `switch_statement`     | `switch (d) { cases }`          | `cases` is a list of `switch_case` nodes                |
-| `switch_case`          | `case x: ...` / `default: ...`  | `test` is `.null` for the default case                  |
-| `for_statement`        | `for (init; test; update) body` | `init`, `test`, and `update` are all optional (`.null`) |
-| `for_in_statement`     | `for (x in y) body`             | `left` is a declaration or assignment target            |
-| `for_of_statement`     | `for (x of y) body`             | `await: bool` for `for await (...of...)`                |
-| `while_statement`      | `while (test) body`             |                                                         |
-| `do_while_statement`   | `do body while (test)`          |                                                         |
-| `break_statement`      | `break;` / `break label;`       | `label` is `.null` for unlabeled                        |
-| `continue_statement`   | `continue;` / `continue label;` | `label` is `.null` for unlabeled                        |
-| `labeled_statement`    | `label: stmt`                   |                                                         |
-| `return_statement`     | `return;` / `return expr;`      | `argument` is `.null` for bare return                   |
-| `throw_statement`      | `throw expr;`                   |                                                         |
-| `try_statement`        | `try {} catch {} finally {}`    | `handler` and `finalizer` are `.null` when absent       |
-| `catch_clause`         | `catch (e) { body }`            | `param` is `.null` for `catch {}` without binding       |
-| `with_statement`       | `with (obj) body`               |                                                         |
+| Tag                    | Syntax                          | Description                                                                       |
+| ---------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| `expression_statement` | `expr;`                         | An expression used as a statement.                                                |
+| `block_statement`      | `{ ... }`                       | A braced block.                                                                   |
+| `empty_statement`      | `;`                             | A standalone semicolon.                                                           |
+| `debugger_statement`   | `debugger;`                     | A debugger breakpoint.                                                            |
+| `if_statement`         | `if (test) cons else alt`       | An `if` / `else` branch.                                                          |
+| `switch_statement`     | `switch (d) { cases }`          | A `switch` with one or more `case` and `default` clauses.                         |
+| `switch_case`          | `case x: ...` / `default: ...`  | A single clause inside a `switch`.                                                |
+| `for_statement`        | `for (init; test; update) body` | A C-style `for` loop.                                                             |
+| `for_in_statement`     | `for (x in y) body`             | A `for ... in` loop iterating over enumerable property keys.                      |
+| `for_of_statement`     | `for (x of y) body`             | A `for ... of` or `for await ... of` loop iterating over an iterable.             |
+| `while_statement`      | `while (test) body`             | A `while` loop.                                                                   |
+| `do_while_statement`   | `do body while (test)`          | A `do ... while` loop.                                                            |
+| `break_statement`      | `break;` / `break label;`       | A `break` exiting the nearest loop, switch, or labeled statement.                 |
+| `continue_statement`   | `continue;` / `continue label;` | A `continue` jumping to the next iteration of the nearest or labeled loop.        |
+| `labeled_statement`    | `label: stmt`                   | A statement prefixed with a label that `break` and `continue` can target.         |
+| `return_statement`     | `return;` / `return expr;`      | A `return` from the enclosing function.                                           |
+| `throw_statement`      | `throw expr;`                   | A `throw` raising an exception.                                                   |
+| `try_statement`        | `try {} catch {} finally {}`    | A `try` with optional `catch` and `finally` clauses.                              |
+| `catch_clause`         | `catch (e) { body }`            | The `catch` clause of a `try`, with an optional binding.                          |
+| `with_statement`       | `with (obj) body`               | A `with` block. Forbidden in strict mode.                                         |
 
 ---
 
 ### Declarations
 
-| Node                   | JS Syntax                     | Notes                                                                                   |
-| ---------------------- | ----------------------------- | --------------------------------------------------------------------------------------- |
-| `variable_declaration` | `var/let/const/using x = ...` | `kind` is a `VariableKind` enum; `declarators` is a list of `variable_declarator` nodes |
-| `variable_declarator`  | `x = init`                    | `id` is a binding pattern; `init` is `.null` for `let x;`                               |
-| `directive`            | `"use strict";`               | Only appears at the start of a function or module body, before regular statements       |
-| `function`             | `function foo() {}`           | Covers all function forms; check the `type` field                                       |
-| `class`                | `class Foo {}`                | Covers both declarations and expressions; check the `type` field                        |
+| Tag                    | Syntax                        | Description                                                                       |
+| ---------------------- | ----------------------------- | --------------------------------------------------------------------------------- |
+| `variable_declaration` | `var/let/const/using x = ...` | A `var`, `let`, `const`, `using`, or `await using` declaration.                   |
+| `variable_declarator`  | `x = init`                    | A single binding inside a variable declaration.                                   |
+| `directive`            | `"use strict";`               | A directive prologue, only valid at the top of a function or module body.        |
+| `function`             | `function foo() {}`           | Every function form (declaration, expression, ambient, body-less signature).      |
+| `class`                | `class Foo {}`                | Both class declarations and class expressions.                                    |
 
 `function` and `class` are dual-purpose nodes. The `type` field distinguishes the form:
 
 ```zig
 // FunctionType
-function_declaration          // function foo() {}
-function_expression           // const x = function() {}
-ts_declare_function           // declare function foo(): void
-ts_empty_body_function_expression  // abstract methods, interface methods
+function_declaration                // function foo() {}
+function_expression                 // const x = function () {}
+ts_declare_function                 // declare function foo(): void
+                                    // also: plain overload signatures
+ts_empty_body_function_expression   // body-less class methods (overloads,
+                                    // abstract, ambient)
 
 // ClassType
-class_declaration             // class Foo {}
-class_expression              // const x = class {}
+class_declaration                   // class Foo {}
+class_expression                    // const x = class {}
 ```
 
 ---
 
 ### Expressions
 
-| Node                         | JS Syntax                               | Notes                                                                     |
-| ---------------------------- | --------------------------------------- | ------------------------------------------------------------------------- |
-| `binary_expression`          | `a + b`, `a === b`, `a instanceof b`    | `operator` is a `BinaryOperator` enum                                     |
-| `logical_expression`         | `a && b`, `a \|\| b`, `a ?? b`          | `operator` is a `LogicalOperator` enum                                    |
-| `unary_expression`           | `!x`, `typeof x`, `void x`, `delete x`  | `operator` is a `UnaryOperator` enum                                      |
-| `update_expression`          | `x++`, `++x`, `x--`                     | `operator` is `UpdateOperator`; `prefix: bool` distinguishes pre/post     |
-| `assignment_expression`      | `x = y`, `x += y`, `x ??= y`            | `operator` is an `AssignmentOperator` enum                                |
-| `conditional_expression`     | `test ? a : b`                          |                                                                           |
-| `sequence_expression`        | `a, b, c`                               | `expressions` is a node list                                              |
-| `parenthesized_expression`   | `(expr)`                                | Wraps an expression to preserve explicit parentheses in the tree          |
-| `member_expression`          | `obj.prop`, `obj[x]`, `obj.#priv`       | `computed: bool` for bracket access; `optional: bool` for `?.`            |
-| `call_expression`            | `fn(args)`, `fn?.()`                    | `optional: bool` for `?.()`                                               |
-| `new_expression`             | `new Foo(args)`                         |                                                                           |
-| `chain_expression`           | `a?.b`, `a?.()`                         | Wrapper around an optional chain; the inner node carries `optional: true` |
-| `tagged_template_expression` | `` tag`hello` ``                        | `tag` is the function; `quasi` is the template literal                    |
-| `await_expression`           | `await expr`                            |                                                                           |
-| `yield_expression`           | `yield expr`, `yield* expr`             | `delegate: bool` for `yield*`; `argument` may be `.null`                  |
-| `meta_property`              | `import.meta`, `new.target`             | `meta` and `property` are `identifier_name` nodes                         |
-| `array_expression`           | `[a, , b, ...c]`                        | `elements` may contain `.null` entries for holes                          |
-| `object_expression`          | `{a: 1, b, ...c}`                       | `properties` contains `object_property` and `spread_element` nodes        |
-| `object_property`            | `key: value`, getters, setters, methods | `kind` (`PropertyKind`), `method`, `shorthand`, `computed`                |
-| `spread_element`             | `...expr`                               | Used in arrays, calls, and object literals                                |
-| `import_expression`          | `import(src)`, `import.source(src)`     | Dynamic import; `phase` may be `.source`, `.defer`, or `null`             |
-| `this_expression`            | `this`                                  | No fields                                                                 |
+| Tag                          | Syntax                                  | Description                                                                          |
+| ---------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------ |
+| `binary_expression`          | `a + b`, `a === b`, `a instanceof b`    | A non-logical, non-assignment binary operation.                                      |
+| `logical_expression`         | `a && b`, `a \|\| b`, `a ?? b`          | A short-circuiting logical operation.                                                |
+| `unary_expression`           | `!x`, `typeof x`, `void x`, `delete x`  | A unary prefix operation.                                                            |
+| `update_expression`          | `x++`, `++x`, `x--`                     | A prefix or postfix increment or decrement.                                          |
+| `assignment_expression`      | `x = y`, `x += y`, `x ??= y`            | An assignment or compound assignment.                                                |
+| `conditional_expression`     | `test ? a : b`                          | A ternary expression.                                                                |
+| `sequence_expression`        | `a, b, c`                               | A comma-separated sequence of expressions.                                           |
+| `parenthesized_expression`   | `(expr)`                                | An expression wrapped in parentheses, preserved in the tree.                         |
+| `member_expression`          | `obj.prop`, `obj[x]`, `obj.#priv`       | Property access, in static, computed, or optional form.                              |
+| `call_expression`            | `fn(args)`, `fn?.()`                    | A function call, optionally with type arguments or optional invocation.              |
+| `new_expression`             | `new Foo(args)`                         | A `new` constructor invocation.                                                      |
+| `chain_expression`           | `a?.b`, `a?.()`                         | A wrapper that scopes optional-chain short-circuiting to a member or call chain.     |
+| `tagged_template_expression` | `` tag`hello` ``                        | A template literal preceded by a tag function.                                       |
+| `await_expression`           | `await expr`                            | An `await` of a promise inside an async context.                                     |
+| `yield_expression`           | `yield expr`, `yield* expr`             | A `yield` or delegating `yield*` inside a generator.                                 |
+| `meta_property`              | `import.meta`, `new.target`             | A meta property reference such as `import.meta` or `new.target`.                     |
+| `array_expression`           | `[a, , b, ...c]`                        | An array literal, including holes and spread elements.                               |
+| `object_expression`          | `{a: 1, b, ...c}`                       | An object literal, including spread elements.                                        |
+| `object_property`            | `key: value`, getters, setters, methods | A property entry inside an object literal.                                           |
+| `spread_element`             | `...expr`                               | A spread element used in arrays, calls, and object literals.                         |
+| `import_expression`          | `import(src)`, `import.source(src)`     | A dynamic `import()` call or phased import.                                          |
+| `this_expression`            | `this`                                  | The `this` keyword used as an expression.                                            |
+| `super`                      | `super`                                 | The `super` keyword used as an expression head.                                      |
 
 ---
 
 ### Literals
 
-| Node               | JS Syntax                     | Notes                                                                                                                                                      |
-| ------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `string_literal`   | `"hello"`, `'world'`          | `value` is the decoded content without quotes (escape sequences resolved). Raw source text is available via the span.                                      |
-| `numeric_literal`  | `42`, `0xFF`, `0o7`, `0b1010` | `value` is the parsed `f64`; `kind` distinguishes decimal / hex / octal / binary                                                                           |
-| `bigint_literal`   | `42n`                         | `value` is the digits without the trailing `n` suffix                                                                                                      |
-| `boolean_literal`  | `true`, `false`               | `value: bool`                                                                                                                                              |
-| `null_literal`     | `null`                        | No fields                                                                                                                                                  |
-| `regexp_literal`   | `/pattern/flags`              | `pattern` and `flags` are separate `String` handles                                                                                                        |
-| `template_literal` | `` `hello ${name}` ``         | `quasis` (list of `template_element`) and `expressions` are interleaved; always `quasis.len == expressions.len + 1`                                        |
-| `template_element` | the text parts between `${}`  | `cooked` is the escape-decoded content (empty when `is_cooked_undefined`); `tail: bool` marks the last segment. Raw source text is available via the span. |
+| Tag                | Syntax                        | Description                                                                       |
+| ------------------ | ----------------------------- | --------------------------------------------------------------------------------- |
+| `string_literal`   | `"hello"`, `'world'`          | A string literal with escape sequences resolved.                                  |
+| `numeric_literal`  | `42`, `0xFF`, `0o7`, `0b1010` | A numeric literal in decimal, hex, octal, or binary.                              |
+| `bigint_literal`   | `42n`                         | A BigInt literal.                                                                 |
+| `boolean_literal`  | `true`, `false`               | The `true` or `false` keyword as a value.                                         |
+| `null_literal`     | `null`                        | The `null` literal.                                                               |
+| `regexp_literal`   | `/pattern/flags`              | A regular expression literal.                                                     |
+| `template_literal` | `` `hello ${name}` ``         | A template literal with zero or more interpolations.                              |
+| `template_element` | text part between `${...}`    | A static text span inside a template literal.                                     |
 
 ---
 
 ### Identifiers
 
-Four distinct identifier node types all carry a single `name: String` field:
+Five tags, all carrying a single `name: String` field. They are structurally identical but appear in different syntactic positions and resolve differently.
 
-| Node                   | Used For                                                                                                                   |
+| Tag                    | Used for                                                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `identifier_reference` | A name used as a value: `x`, `console`, `Math`                                                                             |
 | `binding_identifier`   | A name being declared: `const x`, `function foo`, `import { x }`                                                           |
@@ -288,26 +353,26 @@ Four distinct identifier node types all carry a single `name: String` field:
 ```js
 const foo = bar.baz;
 //    ^^^   ^^^ ^^^
-//    |     |   IdentifierName (property, never resolved)
-//    |     IdentifierReference (variable use, resolved by scope chain)
-//    BindingIdentifier (declaration, recorded as a symbol)
+//    |     |   identifier_name (property, never resolved)
+//    |     identifier_reference (variable use, resolved by scope chain)
+//    binding_identifier (declaration, recorded as a symbol)
 ```
 
-:::
+`binding_identifier` additionally carries decorators, an optional type annotation, and an optional `?` flag when it appears in a parameter position.
 
 ---
 
-### Patterns (Destructuring)
+### Patterns (destructuring)
 
-| Node                   | JS Syntax                       | Notes                                                                                                 |
-| ---------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `array_pattern`        | `[a, , b, ...rest]`             | `elements` may include `.null` for holes; `rest` is `.null` if absent                                 |
-| `object_pattern`       | `{a, b: c, ...rest}`            | `properties` contains `binding_property` nodes; `rest` is `.null` if absent                           |
-| `binding_property`     | `key: value` or shorthand `key` | `shorthand: bool`, `computed: bool`                                                                   |
-| `assignment_pattern`   | `x = default`                   | Used for default values in destructuring and function parameters                                      |
-| `binding_rest_element` | `...rest`                       | `argument` is the binding pattern the rest collects into                                              |
-| `formal_parameters`    | `(a, b = 1, ...rest)`           | `items` contains `formal_parameter` nodes; `rest` is `.null` if absent                                |
-| `formal_parameter`     | a single parameter slot         | `pattern` is the binding (may be any binding pattern, with optional default via `assignment_pattern`) |
+| Tag                    | Syntax                          | Description                                                                       |
+| ---------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| `array_pattern`        | `[a, , b, ...rest]`             | An array destructuring pattern.                                                   |
+| `object_pattern`       | `{a, b: c, ...rest}`            | An object destructuring pattern.                                                  |
+| `binding_property`     | `key: value` or shorthand `key` | A single property inside an object pattern.                                       |
+| `assignment_pattern`   | `x = default`                   | A binding pattern with a default value, used in destructuring and parameter lists.|
+| `binding_rest_element` | `...rest`                       | A `...rest` element inside a binding pattern or parameter list.                   |
+| `formal_parameters`    | `(a, b = 1, ...rest)`           | The parameter list of a function.                                                 |
+| `formal_parameter`     | a single parameter slot         | A single parameter slot wrapping a binding pattern.                               |
 
 ---
 
@@ -316,19 +381,22 @@ const foo = bar.baz;
 ```zig
 pub const Function = struct {
     type: FunctionType,    // declaration, expression, or TS forms
-    id: NodeIndex,         // BindingIdentifier (.null for anonymous functions)
+    id: NodeIndex,         // binding_identifier (.null for anonymous)
     generator: bool,       // true for function*
     async: bool,           // true for async function
-    params: NodeIndex,     // FormalParameters
-    body: NodeIndex,       // FunctionBody (.null for TS overloads/abstract methods)
+    declare: bool,         // true for declare function
+    params: NodeIndex,     // formal_parameters
+    body: NodeIndex,       // function_body (.null for TS overloads / abstract)
+    type_parameters: NodeIndex,  // ts_type_parameter_declaration or .null
+    return_type: NodeIndex,      // ts_type_annotation or .null
 };
 ```
 
-| Node                        | Description                                                                                                                 |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `function`                  | All named and anonymous function forms. Use `type`, `generator`, and `async` to distinguish them.                           |
-| `function_body`             | The `{ ... }` body of a function. Contains directives and statements in `body: IndexRange`.                                 |
-| `arrow_function_expression` | Arrow functions. `expression: bool` is `true` when the body is an expression (not a block). `async: bool` for async arrows. |
+| Tag                         | Description                                                                       |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `function`                  | Every named and anonymous function form, including ambient and body-less ones.    |
+| `function_body`             | The braced body of a function.                                                    |
+| `arrow_function_expression` | An arrow function, with either an expression or a block body.                     |
 
 ---
 
@@ -336,39 +404,44 @@ pub const Function = struct {
 
 ```zig
 pub const Class = struct {
-    type: ClassType,        // class_declaration or class_expression
-    decorators: IndexRange, // Decorator[] (empty if none)
-    id: NodeIndex,          // BindingIdentifier (.null for anonymous expressions)
-    super_class: NodeIndex, // Expression (.null if no extends clause)
-    body: NodeIndex,        // ClassBody
+    type: ClassType,           // class_declaration or class_expression
+    decorators: IndexRange,    // decorator[] (empty if none)
+    id: NodeIndex,             // binding_identifier (.null for anonymous expressions)
+    super_class: NodeIndex,    // any expression (.null if no extends clause)
+    body: NodeIndex,           // class_body
+    type_parameters: NodeIndex,    // ts_type_parameter_declaration or .null
+    super_type_arguments: NodeIndex, // ts_type_parameter_instantiation or .null
+    implements: IndexRange,    // ts_class_implements[] (empty if none)
+    abstract: bool,            // true for abstract class
+    declare: bool,             // true for declare class
 };
 ```
 
-| Node                  | Description                                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `class`               | Both `class Foo {}` and `const x = class {}`. Check `type`.                                                                                                  |
-| `class_body`          | The `{ members }` block. `body` contains `method_definition`, `property_definition`, and `static_block` nodes.                                               |
-| `method_definition`   | A method, getter, setter, or constructor. `kind` is a `MethodDefinitionKind` enum (`constructor`, `method`, `get`, `set`). `static: bool`, `computed: bool`. |
-| `property_definition` | A class field (`x = 1`). `value` is `.null` for fields without an initializer. `accessor: bool` for auto-accessors. `static: bool`, `computed: bool`.        |
-| `static_block`        | `static { ... }`. `body` is a list of statements.                                                                                                            |
-| `decorator`           | `@expr`. `expression` is the decorator expression node.                                                                                                      |
-| `super`               | The `super` keyword. No fields.                                                                                                                              |
+| Tag                   | Description                                                                       |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `class`               | Both class declarations and class expressions.                                    |
+| `class_body`          | The braced body of a class, holding its members.                                  |
+| `method_definition`   | A method, getter, setter, or constructor inside a class.                          |
+| `property_definition` | A class field or auto-accessor declaration.                                       |
+| `static_block`        | A `static { ... }` initialization block inside a class.                           |
+| `decorator`           | A decorator (`@expr`) applied to a class or class member.                         |
+| `super`               | The `super` keyword used as an expression head.                                   |
 
 ---
 
 ### Modules
 
-| Node                         | JS Syntax                      | Notes                                                                                                                       |
-| ---------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `import_declaration`         | `import x from 'y'`            | `specifiers` is empty for side-effect-only imports; `phase` is `.source` or `.defer` for staged imports, `null` for regular |
-| `import_specifier`           | `{ imported as local }`        |                                                                                                                             |
-| `import_default_specifier`   | `import x from ...`            | `local` is the binding                                                                                                      |
-| `import_namespace_specifier` | `import * as x from ...`       | `local` is the binding                                                                                                      |
-| `import_attribute`           | `{ type: "json" }`             | Import attributes / assertions                                                                                              |
-| `export_named_declaration`   | `export { x }`, `export var x` | `declaration` is `.null` for specifier-only; `source` is `.null` for local (non-re-export)                                  |
-| `export_default_declaration` | `export default expr`          | `declaration` is an expression, function, or class                                                                          |
-| `export_all_declaration`     | `export * from 'y'`            | `exported` is `.null` for `export *`; non-null for `export * as name`                                                       |
-| `export_specifier`           | `{ local as exported }`        |                                                                                                                             |
+| Tag                          | Syntax                         | Description                                                                       |
+| ---------------------------- | ------------------------------ | --------------------------------------------------------------------------------- |
+| `import_declaration`         | `import x from 'y'`            | A static `import` declaration, including side-effect and phased forms.            |
+| `import_specifier`           | `{ imported as local }`        | A named binding specifier in an import declaration.                               |
+| `import_default_specifier`   | `import x from ...`            | The default-binding specifier in an import declaration.                           |
+| `import_namespace_specifier` | `import * as x from ...`       | A `* as local` namespace import specifier.                                        |
+| `import_attribute`           | `{ type: "json" }`             | A single attribute in a `with { ... }` clause on an import or export.             |
+| `export_named_declaration`   | `export { x }`, `export var x` | An `export { ... }` or `export <decl>` declaration, with optional re-export.      |
+| `export_default_declaration` | `export default expr`          | An `export default` declaration.                                                  |
+| `export_all_declaration`     | `export * from 'y'`            | An `export * from "m"` or `export * as ns from "m"` declaration.                  |
+| `export_specifier`           | `{ local as exported }`        | A named binding specifier in an export declaration.                               |
 
 ---
 
@@ -376,29 +449,190 @@ pub const Class = struct {
 
 JSX nodes are only present in `.jsx` and `.tsx` trees.
 
-| Node                       | JSX Syntax                  | Notes                                                         |
-| -------------------------- | --------------------------- | ------------------------------------------------------------- |
-| `jsx_element`              | `<Foo>...</Foo>`            | `closing_element` is `.null` for self-closing tags            |
-| `jsx_opening_element`      | `<Foo ...>`                 | `self_closing: bool` for `<Foo />`; `name` is a JSX name node |
-| `jsx_closing_element`      | `</Foo>`                    |                                                               |
-| `jsx_fragment`             | `<>...</>`                  |                                                               |
-| `jsx_opening_fragment`     | `<>`                        | No fields                                                     |
-| `jsx_closing_fragment`     | `</>`                       | No fields                                                     |
-| `jsx_identifier`           | `Foo` in JSX position       | `name: String`                                                |
-| `jsx_namespaced_name`      | `namespace:name`            |                                                               |
-| `jsx_member_expression`    | `Foo.Bar.Baz`               |                                                               |
-| `jsx_attribute`            | `foo="bar"` or `foo={expr}` | `value` is `.null` for boolean attributes like `disabled`     |
-| `jsx_spread_attribute`     | `{...props}`                | `argument` is the spread expression                           |
-| `jsx_expression_container` | `{expression}`              | `expression` is a `jsx_empty_expression` node for `{}`        |
-| `jsx_empty_expression`     | `{}`                        | No fields                                                     |
-| `jsx_text`                 | Text content between tags   | `value: String` is the text content                           |
-| `jsx_spread_child`         | `{...children}`             | `expression` is the spread expression                         |
+| Tag                        | Syntax                      | Description                                                                       |
+| -------------------------- | --------------------------- | --------------------------------------------------------------------------------- |
+| `jsx_element`              | `<Foo>...</Foo>`            | A JSX element, possibly self-closing.                                             |
+| `jsx_opening_element`      | `<Foo ...>`                 | The opening tag of a JSX element.                                                 |
+| `jsx_closing_element`      | `</Foo>`                    | The closing tag of a JSX element.                                                 |
+| `jsx_fragment`             | `<>...</>`                  | A JSX fragment.                                                                   |
+| `jsx_opening_fragment`     | `<>`                        | The opening `<>` of a JSX fragment.                                               |
+| `jsx_closing_fragment`     | `</>`                       | The closing `</>` of a JSX fragment.                                              |
+| `jsx_identifier`           | `Foo` in JSX position       | An identifier used as a JSX tag or attribute name.                                |
+| `jsx_namespaced_name`      | `namespace:name`            | A namespaced JSX name.                                                            |
+| `jsx_member_expression`    | `Foo.Bar.Baz`               | A dotted JSX tag name.                                                            |
+| `jsx_attribute`            | `foo="bar"` or `foo={expr}` | A single JSX attribute, including boolean-only forms.                             |
+| `jsx_spread_attribute`     | `{...props}`                | A spread attribute on a JSX element.                                              |
+| `jsx_expression_container` | `{expression}`              | An `{ expression }` slot inside JSX.                                              |
+| `jsx_empty_expression`     | `{}`                        | The empty `{}` placeholder inside a JSX expression slot.                          |
+| `jsx_text`                 | text content between tags   | A span of raw text inside a JSX element or fragment.                              |
+| `jsx_spread_child`         | `{...children}`             | A spread child inside a JSX element.                                              |
+
+A JSX tag name (the `name` field on `jsx_opening_element`, `jsx_closing_element`, and one form of `jsx_attribute`) is one of `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`.
+
+A JSX child (entries in the `children` list on `jsx_element` and `jsx_fragment`) is one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
 
 ---
 
-### TypeScript
+## TypeScript
 
-| Node                              | TS Syntax                  | Notes                                   |
-| --------------------------------- | -------------------------- | --------------------------------------- |
-| `ts_export_assignment`            | `export = expr`            | CommonJS-style TypeScript module export |
-| `ts_namespace_export_declaration` | `export as namespace name` | UMD global namespace declaration        |
+TypeScript nodes are present in `.ts`, `.tsx`, and `.dts` trees.
+
+### Type wrapper
+
+| Tag                  | Syntax | Description                                                                       |
+| -------------------- | ------ | --------------------------------------------------------------------------------- |
+| `ts_type_annotation` | `: T`  | A `: T` annotation wrapping an inner type. The span starts at the `:` token.      |
+
+### Keyword types
+
+Each keyword is its own zero-field node.
+
+| Tag                     | Syntax       |
+| ----------------------- | ------------ |
+| `ts_any_keyword`        | `any`        |
+| `ts_unknown_keyword`    | `unknown`    |
+| `ts_never_keyword`      | `never`      |
+| `ts_void_keyword`       | `void`       |
+| `ts_null_keyword`       | `null`       |
+| `ts_undefined_keyword`  | `undefined`  |
+| `ts_string_keyword`     | `string`     |
+| `ts_number_keyword`     | `number`     |
+| `ts_bigint_keyword`     | `bigint`     |
+| `ts_boolean_keyword`    | `boolean`    |
+| `ts_symbol_keyword`     | `symbol`     |
+| `ts_object_keyword`     | `object`     |
+| `ts_intrinsic_keyword`  | `intrinsic`  |
+| `ts_this_type`          | `this`       |
+
+### Type references
+
+| Tag                  | Syntax                | Description                                                                       |
+| -------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| `ts_type_reference`  | `Foo`, `Promise<T>`   | A reference to a named type, optionally with type arguments.                      |
+| `ts_qualified_name`  | `A.B.C`               | A left-associative dotted type name.                                              |
+| `ts_type_query`      | `typeof console.log`  | The `typeof` type operator applied to a value reference.                          |
+| `ts_import_type`     | `import("m").Foo<T>`  | A reference to a type imported from a module path, written in type position.      |
+
+### Type parameters and arguments
+
+| Tag                                | Syntax                  | Description                                                                       |
+| ---------------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `ts_type_parameter`                | `T`, `T extends U = V`  | A single type parameter introduced by a generic declaration.                      |
+| `ts_type_parameter_declaration`    | `<T, U>`                | The `<...>` parameter list introduced by a generic declaration.                   |
+| `ts_type_parameter_instantiation`  | `<number, string>`      | The `<...>` argument list applied at a call site, reference, or instantiation.    |
+
+### Literal and template types
+
+| Tag                          | Syntax                          | Description                                                                       |
+| ---------------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_literal_type`            | `"hello"`, `42`, `true`, `-1`   | A literal value used in type position.                                            |
+| `ts_template_literal_type`   | `` `Hello, ${N}!` ``            | A template literal in type position with one or more interpolations.              |
+
+### Composite types
+
+| Tag                       | Syntax                  | Description                                                                       |
+| ------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `ts_array_type`           | `T[]`                   | A postfix array type.                                                             |
+| `ts_indexed_access_type`  | `T[K]`                  | An indexed access type that looks up a property type.                             |
+| `ts_tuple_type`           | `[T, U?, ...V[]]`       | A fixed-length tuple type with positional, optional, rest, or named entries.      |
+| `ts_named_tuple_member`   | `label: T`, `label?: T` | A labeled element inside a tuple type.                                            |
+| `ts_optional_type`        | `T?` (in tuple slot)    | An optional element inside a tuple type.                                          |
+| `ts_rest_type`            | `...T` (in tuple slot)  | A rest element inside a tuple type.                                               |
+
+### Set-operation types
+
+| Tag                     | Syntax                              | Description                                                                       |
+| ----------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_union_type`         | `A \| B \| C`                       | A union of two or more types.                                                     |
+| `ts_intersection_type`  | `A & B & C`                         | An intersection of two or more types.                                             |
+| `ts_conditional_type`   | `T extends U ? X : Y`               | A conditional type selecting between two branches.                                |
+| `ts_infer_type`         | `infer R`, `infer R extends string` | An `infer` placeholder inside a conditional type's extends branch.                |
+
+### Type operators
+
+| Tag                       | Syntax                                     | Description                                                                       |
+| ------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
+| `ts_type_operator`        | `keyof T`, `unique symbol`, `readonly T[]` | A `keyof`, `unique`, or `readonly` prefix on an inner type.                       |
+| `ts_parenthesized_type`   | `(T)`                                      | A parenthesized type used for grouping or precedence.                             |
+
+### Callable types
+
+| Tag                   | Syntax                                  | Description                                                                       |
+| --------------------- | --------------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_function_type`    | `(x: T) => U`                           | A callable signature in type position.                                            |
+| `ts_constructor_type` | `new (x: T) => U`, `abstract new ...`   | A constructor signature in type position, optionally `abstract`.                  |
+| `ts_type_predicate`   | `x is T`, `asserts x is T`, `asserts x` | A type predicate that narrows a parameter or `this` in control-flow analysis.     |
+
+### Object-shape types
+
+| Tag                | Syntax              | Description                                                                       |
+| ------------------ | ------------------- | --------------------------------------------------------------------------------- |
+| `ts_type_literal`  | `{ x: T; y: U }`    | An anonymous object type holding a list of signatures.                            |
+| `ts_mapped_type`   | `{ [K in T]: V }`   | A mapped type that projects every key in a union to a new property type.          |
+
+### JSDoc types
+
+| Tag                          | Syntax            | Description                                                                       |
+| ---------------------------- | ----------------- | --------------------------------------------------------------------------------- |
+| `ts_jsdoc_nullable_type`     | `?T` or `T?`      | A JSDoc-style nullable type marker.                                               |
+| `ts_jsdoc_non_nullable_type` | `!T` or `T!`      | A JSDoc-style non-nullable type marker.                                           |
+| `ts_jsdoc_unknown_type`      | `?` (in `Foo<?>`) | A JSDoc-style unknown type, valid only in a type argument slot.                   |
+
+### Signature members
+
+These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
+
+| Tag                                   | Syntax                                    | Description                                                                       |
+| ------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_property_signature`               | `key: T`, `readonly key?: T`              | A property declaration inside a type literal or interface body.                   |
+| `ts_method_signature`                 | `m(x: T): U`, `get x(): T`, `set x(v: T)` | A method, getter, or setter declaration inside a type literal or interface body.  |
+| `ts_call_signature_declaration`       | `(x: T): U`                               | A bare call signature inside a type literal or interface body.                    |
+| `ts_construct_signature_declaration`  | `new (x: T): U`                           | A bare construct signature inside a type literal or interface body.               |
+| `ts_index_signature`                  | `[k: K]: V`, `readonly [...]: V`          | An index signature inside a type literal, interface body, or class body.          |
+
+### Type, interface, and enum declarations
+
+| Tag                            | Syntax                                    | Description                                                                       |
+| ------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_type_alias_declaration`    | `type Maybe<T> = T \| null`               | A `type` alias declaration, optionally generic and optionally ambient.            |
+| `ts_interface_declaration`     | `interface Foo<T> extends Bar { ... }`    | An `interface` declaration, optionally generic and optionally ambient.            |
+| `ts_interface_body`            | `{ ... }` of an interface                 | The body of an interface, holding its signature members.                          |
+| `ts_interface_heritage`        | one entry of an `extends` clause          | A single parent listed in an interface's `extends` clause.                        |
+| `ts_class_implements`          | one entry of an `implements` clause       | A single interface listed in a class's `implements` clause.                       |
+| `ts_enum_declaration`          | `enum Color { ... }`                      | An `enum` declaration, optionally `const` and optionally ambient.                 |
+| `ts_enum_body`                 | `{ ... }` of an enum                      | The body of an enum, holding its members in source order.                         |
+| `ts_enum_member`               | `A = 1` inside an enum body               | A single member of an enum body, with an optional initializer.                    |
+
+### Module and namespace declarations
+
+| Tag                            | Syntax                                    | Description                                                                       |
+| ------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_module_declaration`        | `namespace Foo { ... }`, `module "x" {}`  | A `namespace` or `module` declaration, optionally ambient.                        |
+| `ts_module_block`              | the `{ ... }` of a module                 | The body of a `namespace`, `module`, or `declare global` declaration.             |
+| `ts_global_declaration`        | `declare global { ... }`                  | A `declare global` augmentation block.                                            |
+
+### Parameters and `this`
+
+| Tag                       | Syntax                          | Description                                                                       |
+| ------------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_parameter_property`   | `constructor(public x: T) {}`   | A constructor parameter that implicitly declares a class field.                   |
+| `ts_this_parameter`       | `function f(this: T)`           | An explicit `this` parameter declaring the type of `this` in the function body.   |
+
+### TypeScript expressions
+
+| Tag                            | Syntax              | Description                                                                       |
+| ------------------------------ | ------------------- | --------------------------------------------------------------------------------- |
+| `ts_as_expression`             | `expr as T`         | A postfix `as` type assertion.                                                    |
+| `ts_satisfies_expression`      | `expr satisfies T`  | A postfix `satisfies` constraint check.                                           |
+| `ts_type_assertion`            | `<T>expr`           | A prefix `<T>` type assertion. Forbidden in `.tsx`.                               |
+| `ts_non_null_expression`       | `expr!`             | A postfix non-null assertion.                                                     |
+| `ts_instantiation_expression`  | `expr<T>`           | A type instantiation expression without call parentheses.                         |
+
+### TypeScript module forms
+
+| Tag                                | Syntax                                          | Description                                                                       |
+| ---------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
+| `ts_export_assignment`             | `export = expr`                                 | A CommonJS-style ambient export.                                                  |
+| `ts_namespace_export_declaration`  | `export as namespace Name`                      | A UMD ambient namespace export.                                                   |
+| `ts_import_equals_declaration`     | `import x = require("m")`, `import x = Foo.Bar` | An `import =` declaration binding to a require or entity name.                    |
+| `ts_external_module_reference`     | `require("m")`                                  | The `require("module")` form on the right-hand side of `import x = require(...)`. |

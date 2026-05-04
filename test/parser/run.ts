@@ -22,12 +22,16 @@ interface TestSuite {
   recursive?: boolean;
   allowErrors?: boolean;
   skipOnCI?: boolean;
+  /** Write a snapshot file on first run when one does not yet exist.
+   *  Already-existing snapshots still require `--update-snapshots` to overwrite. */
+  autoSnapshot?: boolean;
 }
 
 interface FileResult {
   file: string;
   passed: boolean;
   snapshotCompared: boolean;
+  reason?: string;
   source?: string;
   diagnostics?: Diagnostic[];
 }
@@ -45,17 +49,28 @@ const suites: TestSuite[] = [
     expect: "fail",
     lang: ["js"],
     options: { semanticErrors: true },
-    skipOnCI: true,
   },
   { path: "suite/jsx/pass", expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
   { path: "suite/jsx/fail", expect: "fail", lang: ["jsx"] },
-  { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true },
-  { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true },
+  { path: "suite/ts/pass", expect: "snapshot", lang: ["ts", "tsx"], options: { semanticErrors: true } },
+  { path: "suite/ts/semantic", expect: "fail", lang: ["ts", "tsx"], options: { semanticErrors: true } },
+  { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true, autoSnapshot: true },
+  { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true, autoSnapshot: true },
+  {
+    path: "misc/ts",
+    expect: "snapshot",
+    lang: ["ts", "tsx"],
+    recursive: false,
+    allowErrors: true,
+    autoSnapshot: true,
+    options: { semanticErrors: true },
+  },
   {
     path: "misc/js/preserve-parens-disabled",
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
+    autoSnapshot: true,
     options: { preserveParens: false },
   },
   {
@@ -63,6 +78,7 @@ const suites: TestSuite[] = [
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
+    autoSnapshot: true,
     options: { allowReturnOutsideFunction: true },
   },
 ];
@@ -131,11 +147,13 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
   }
 }
 
-async function checkSnapshot(file: string, parsed: ParseResult): Promise<SnapshotResult> {
+async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
 
   if (!(await Bun.file(snapshotFile).exists())) {
-    return { status: "no_snapshot" };
+    if (!suite.autoSnapshot) return { status: "no_snapshot" };
+    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    return { status: "match" };
   }
 
   const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
@@ -183,15 +201,16 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
     }
 
     if (passed && suite.expect === "snapshot") {
-      const snap = await checkSnapshot(file, parsed);
+      const snap = await checkSnapshot(file, parsed, suite);
       if (snap.status !== "no_snapshot") {
         entry.snapshotCompared = true;
       }
       if (snap.status === "mismatch") {
         passed = false;
         entry.passed = false;
+        entry.reason = "snapshot mismatch";
         clearProgress();
-        console.log(`\nx ${file}\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`);
+        console.log(`\nx ${file} (${entry.reason})\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`);
       }
     }
 
@@ -201,10 +220,12 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
         suite.expect === "pass" ||
         (suite.expect === "snapshot" && !suite.allowErrors && parsed.diagnostics.length > 0)
       ) {
-        console.log(`\nx ${file}`);
+        entry.reason ??= "parse errors";
+        console.log(`\nx ${file} (${entry.reason})`);
         console.log(formatDiagnostics(content, parsed.diagnostics, file));
       } else if (suite.expect === "fail" && parsed.diagnostics.length === 0) {
-        console.log(`\nx ${file} (expected error, but parsed successfully)`);
+        entry.reason ??= "expected error, but parsed successfully";
+        console.log(`\nx ${file} (${entry.reason})`);
       }
     }
 
@@ -239,8 +260,9 @@ function writeResultFile(result: SuiteResult): string {
   lines.push("");
 
   const sorted = [...result.files].sort((a, b) => a.file.localeCompare(b.file));
-  for (const { file, passed, source, diagnostics } of sorted) {
-    lines.push(`${passed ? "✓" : "✗"} ${file}`);
+  for (const { file, passed, reason, source, diagnostics } of sorted) {
+    const suffix = !passed && reason ? ` (${reason})` : "";
+    lines.push(`${passed ? "✓" : "✗"} ${file}${suffix}`);
     if (diagnostics && diagnostics.length > 0 && source) {
       lines.push(formatDiagnostics(source, [diagnostics[0]], file, { showFilename: false }));
       lines.push("");

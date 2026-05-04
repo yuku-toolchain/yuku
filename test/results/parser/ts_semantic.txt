@@ -1,0 +1,1789 @@
+suite/ts/semantic
+=================
+Passed:       176/176 (100.00%)
+Failed:       0
+
+✓ test/parser/suite/ts/semantic/041d72a631bbe0e2.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 4 |     public implements() { }
+ 5 |     public foo(arguments: any) { }
+   |                ^^^^^^^^^^^^^^
+ 6 |     private bar(eval:any) {
+   |
+
+✓ test/parser/suite/ts/semantic/0556245dd6080c76.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | //@target: ES5, ES2015
+ 2 | for (var a, b of X) {
+   |      ^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/098e53087f223d35.module.ts
+error: Export 'string' is not defined
+   |
+ 2 | // @target: es2015
+ 3 | export { string };
+   |          ^^^^^^
+ 4 | export type { number };
+   |
+
+✓ test/parser/suite/ts/semantic/09a1d6c3a37de1a1.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 2 | {
+ 3 |    export function bar() {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |    }
+   | ^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/0c63afab136ff78a.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | eval = 1;
+   | ^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/0c9d889b961f6912.module.ts
+error: Duplicate export of 'default'
+   |
+ 6 | 
+ 7 | export default function () { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 8 | export { default } from './hi'
+   |          ^^^^^^^
+   |          ~~~~~~~ exported again here
+ 9 | export { aa as default } from './hi'
+   |
+
+✓ test/parser/suite/ts/semantic/0d2185396fa29978.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | var v = function f(eval) {
+   |                    ^^^^
+ 5 | };
+   |
+
+✓ test/parser/suite/ts/semantic/0ed8e6225a4afccb.module.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 2 | export function foo() {
+ 3 |    export function bar() {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |    }
+   | ^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/0f09e010e5d84467.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 3 | 
+ 4 | ++eval;
+   | ^^^^^^
+ 5 | --eval;
+   |
+
+✓ test/parser/suite/ts/semantic/0f4c14b6701b04d0.ts
+error: Label 'target' does not denote an iteration statement
+   |
+ 2 | target:
+ 3 |   continue target;
+   |   ^^^^^^^^^^^^^^^^
+   |
+   = help: A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement
+
+
+✓ test/parser/suite/ts/semantic/0ff63a135e127a5c.ts
+error: Illegal continue statement
+   |
+ 5 |     case 5:
+ 6 |         continue;
+   |         ^^^^^^^^^
+ 7 | }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/1291f5d5e9a6dbd4.ts
+error: Illegal break statement
+   |
+ 1 | // @target: es2015
+ 2 | break;
+   | ^^^^^^
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
+✓ test/parser/suite/ts/semantic/12f22188052c4702.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/149e25c736add938.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+10 | class B {
+11 |     constructor() { super(value => String(value)); }
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 | }
+   |
+   = help: Add an 'extends' clause to the class or remove the 'super()' call
+
+
+✓ test/parser/suite/ts/semantic/15371163f95d91e1.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default 0;
+   | ~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default function() {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/171d4598153404a6.module.ts
+error: 'with' statements are not allowed in strict mode
+   |
+68 | // @ts-ignore
+69 | with (_) {
+   | ^^^^^^^^^^^
+70 |     var y = _;
+   | ^^^^^^^^^^^^^^^
+71 | }
+   | ^
+72 | 
+   |
+
+✓ test/parser/suite/ts/semantic/17387757f7d1ac52.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+74 |         function inner() {
+75 |             super.publicFunc();
+   |             ^^^^^^^^^^^^^^^^
+76 |         }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/18e4a08fa7f50fd9.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 3 | class c1 {
+ 4 |     public foo(i: number, ...arguments) { //arguments is error
+   |                              ^^^^^^^^^
+ 5 |         var arguments: any[]; // no error
+   |
+
+✓ test/parser/suite/ts/semantic/196a813ab9a08ea0.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | var v = { set foo(eval) { } }
+   |                   ^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/1a964a2c4756dc39.ts
+error: Private field '#method' must be declared in an enclosing class
+   |
+10 | console.log(C.getInstance().getField());
+11 | C.getInstance().#method; // Error
+   |                 ^^^^^^^
+12 | C.getInstance().#field; // Error
+   |
+
+✓ test/parser/suite/ts/semantic/1cbaedb142c6af4d.ts
+error: A class can only have one constructor
+   |
+ 3 | class C {
+ 4 |     constructor(x) { }
+   |     ~~~~~~~~~~~ first constructor defined here
+ 5 |     constructor(y, x) { } // illegal, 2 constructor implementations
+   |     ^^^^^^^^^^^
+ 6 | }
+   |
+
+✓ test/parser/suite/ts/semantic/1d3d5d75833ab052.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 3 | class test {
+ 4 |     constructor (static) { }
+   |                  ^^^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/22c720a519ecf008.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 7 | class C extends Base {
+ 8 |     [super.bar()]() { }
+   |      ^^^^^^^^^
+ 9 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/257c2a538ca20656.module.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+26 | /// shadowed arguments
+27 | function f1(arguments, ...a) {
+   |             ^^^^^^^^^
+28 | }
+   |
+
+✓ test/parser/suite/ts/semantic/273461f5fcc43446.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function foo(value: number): number
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default function foo(value: string): string
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 5 | export default function foo(value: string | number): string | number {
+   |
+
+✓ test/parser/suite/ts/semantic/2770ef90e9c8f4e0.ts
+error: Private field '#method' must be declared in an enclosing class
+   |
+13 | }
+14 | new A2().#method(); // Error
+   |          ^^^^^^^
+15 | 
+   |
+
+✓ test/parser/suite/ts/semantic/28882c659f08470f.ts
+error: Private field '#unknown' must be declared in an enclosing class
+   |
+20 |                 x.#bar;
+21 |                 x.#unknown; // Error
+   |                   ^^^^^^^^
+22 |             }
+   |
+
+✓ test/parser/suite/ts/semantic/28d0908453c92c7b.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | // @target: es2015
+ 2 | for (var a: number = 1, b: string = "" in X) {
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/2ab8ff972e204808.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | //@target: ES6
+ 2 | for (var a: number = 1, b: string = "" of X) {
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/2af5479d1ecf91fd.ts
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 7 | 
+ 8 | new A().#foo = 4;               // Error
+   |         ^^^^
+ 9 | 
+   |
+
+✓ test/parser/suite/ts/semantic/2c82b050900068c0.ts
+error: Private field '#method' must be declared in an enclosing class
+   |
+10 | console.log(C.getClass().getField());
+11 | C.getClass().#method; // Error
+   |              ^^^^^^^
+12 | C.getClass().#field; // Error
+   |
+
+✓ test/parser/suite/ts/semantic/2c84337734f4a8c5.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | function f(eval) {
+   |            ^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/2d6cbe29890859ee.module.ts
+error: 'with' statements are not allowed in strict mode
+   |
+ 2 | "use strict";
+ 3 | with (a) {
+   | ^^^^^^^^^^^
+ 4 | }
+   | ^
+   |
+
+✓ test/parser/suite/ts/semantic/2dd50e8c1ecbb459.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 3 |     namespace M { }
+ 4 |     export namespace N {
+   |     ^^^^^^^^^^^^^^^^^^^^^
+ 5 |         export interface I { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 6 |     }
+   | ^^^^^
+ 7 | 
+   |
+
+✓ test/parser/suite/ts/semantic/2e2ffd4369575eef.ts
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 2 | // @target: es5, es2015
+ 3 | const a = new.target;
+   |           ^^^^^^^^^^
+ 4 | const b = () => new.target;
+   |
+
+✓ test/parser/suite/ts/semantic/313f15e777d766b7.ts
+error: Private field '#bar' must be declared in an enclosing class
+   |
+11 |         thing.#baz;
+12 |         thing.#bar; // Error
+   |               ^^^^
+13 |         thing.#foo();
+   |
+
+✓ test/parser/suite/ts/semantic/334202a257523643.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 4 | class C {
+ 5 |     f(arguments) {
+   |       ^^^^^^^^^
+ 6 |         var a = () => arguments;
+   |
+
+✓ test/parser/suite/ts/semantic/34c262272b11f2f3.ts
+error: 'private' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 4 | class Foo {
+ 5 |     constructor(private, public, static) {
+   |                 ^^^^^^^
+ 6 |         private = public = static;
+   |
+
+✓ test/parser/suite/ts/semantic/3536849d391da08d.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+10 |             function inner() {
+11 |                 super.sayHello();
+   |                 ^^^^^^^^^^^^^^
+12 |             }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/37903a588d3e49f0.module.ts
+error: 'package' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | "use strict"
+ 3 | import * as package from "./1"
+   |             ^^^^^^^
+ 4 | import {foo as private} from "./1"
+   |
+
+✓ test/parser/suite/ts/semantic/3a0e45519904869b.ts
+error: Illegal break statement
+   |
+ 7 | // naked break not allowed
+ 8 | break;
+   | ^^^^^^
+ 9 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
+✓ test/parser/suite/ts/semantic/3be18cefeb9cd727.ts
+error: A class can only have one constructor
+   |
+ 4 |     constructor(n: number);
+ 5 |     constructor(x: any) {
+   |     ~~~~~~~~~~~ first constructor defined here
+ 6 | 
+ 7 |     }
+ 8 |     constructor(x: any) {
+   |     ^^^^^^^^^^^
+ 9 | 
+   |
+
+✓ test/parser/suite/ts/semantic/3c16aa738bf4e46d.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 9 |         var r3 = () => { super(); }
+10 |         var r4 = function () { super(); }
+   |                                ^^^^^^^
+11 |         var r5 = {
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/3dcf410716d8a859.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | // @target: esnext
+ 2 | for (const a, { [b]: c} of [1]) {
+   |      ^^^^^^^^^^^^^^^^^^
+ 3 | 
+   |
+
+✓ test/parser/suite/ts/semantic/3f015840dca0db8d.module.ts
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 2 | "use strict";
+ 3 | yield(foo);
+   | ^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/3f57a8c7cfc712c0.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | const foo = 1
+ 4 | export default foo
+   | ~~~~~~~~~~~~~~~~~~ first exported here
+ 5 | export default class Foo {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 6 | export default interface Foo {}
+   |
+
+✓ test/parser/suite/ts/semantic/3fd35eba4180a07d.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | // @target: es2015
+ 2 | for (var a, b in X) {
+   |      ^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/419ed0aaa5ff7c38.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // Should be an error
+ 4 | for (let let of [1,2,3]) {}
+   |          ^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/4357127d6a7ebafa.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | const foo = 1
+ 4 | export default foo
+   | ~~~~~~~~~~~~~~~~~~ first exported here
+ 5 | export default class Foo {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 6 | 
+   |
+
+✓ test/parser/suite/ts/semantic/447eebd15f70c46d.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 6 | class D extends C {
+ 7 |     static c = super();
+   |                ^^^^^^^
+ 8 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/467104d2ed9fdabe.module.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 3 | export function foo() {
+ 4 |    export var x = this;
+   |    ^^^^^^^^^^^^^^^^^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/47807c6ae2571454.module.ts
+error: Deleting a variable in strict mode is not allowed
+   |
+ 3 | var a;
+ 4 | delete a;
+   | ^^^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/48322585650cd3f8.ts
+error: Cannot break to label 'target' across function boundaries
+   |
+ 5 |     while (true) {
+ 6 |       break target;
+   |       ^^^^^^^^^^^^^
+ 7 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/4c9259f10a5f7ac8.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+10 |     static method(x: Derived) {
+11 |         console.log(x.#prop);
+   |                       ^^^^^
+12 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/4fbe0b328fa8af31.ts
+error: 'await using' is not allowed at the top level of a script
+   |
+ 6 | 
+ 7 | await using x = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+ 8 | 
+   |
+
+✓ test/parser/suite/ts/semantic/5286e2bbaba0939b.ts
+error: Illegal break statement
+   |
+ 3 |   function f() {
+ 4 |     break;
+   |     ^^^^^^
+ 5 |   }
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
+✓ test/parser/suite/ts/semantic/54d7e58a5dcb0207.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 4 | function foo() {
+ 5 |     super(value => String(value));
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 6 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/56d4a512d86ed210.ts
+error: Use of undefined label 'target'
+   |
+ 2 | while (true) {
+ 3 |   continue target;
+   |   ^^^^^^^^^^^^^^^^
+ 4 | }
+   |
+
+✓ test/parser/suite/ts/semantic/57658e1e4c0e3966.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | arguments = 1;
+   | ^^^^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/58df139dea95360b.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+17 |     p1: function () {
+18 |         super.method();
+   |         ^^^^^^^^^^^^
+19 |     },
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/5934625485a58d5d.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+10 |     static method(x: Derived) {
+11 |         console.log(x.#prop());
+   |                       ^^^^^
+12 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/5c283c131dbe5d58.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | //@target: ES6
+ 2 | for (var a, b of X) {
+   |      ^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/5e8a0444bfde16f3.ts
+error: A class can only have one constructor
+   |
+ 3 | class C {
+ 4 |     constructor() { } // error
+   |     ~~~~~~~~~~~ first constructor defined here
+ 5 |     constructor(x) { } // error
+   |     ^^^^^^^^^^^
+ 6 | }
+   |
+
+✓ test/parser/suite/ts/semantic/61819de3b56bf114.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function bar() { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default class C {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+   |
+
+✓ test/parser/suite/ts/semantic/61cbe59ceb37440c.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | //@target: ES6
+ 2 | for (var a = 1, b = 2 of X) {
+   |      ^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/693aaecb1cfb3183.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default {
+   | ~~~~~~~~~~~~~~~~~
+ 4 |     uhoh: "another default",
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 5 | };
+   | ~~ first exported here
+ 6 | 
+ 7 | export default function Foo() { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 8 | 
+   |
+
+✓ test/parser/suite/ts/semantic/6dee4998cf1f9d02.module.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+16 | 
+17 | A2.#prop; // Error
+   |    ^^^^^
+18 | 
+   |
+
+✓ test/parser/suite/ts/semantic/6e1ee2dd504b97ce.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | eval++;
+   | ^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/70425adb194f08f2.ts
+error: Cannot continue to label 'target' across function boundaries
+   |
+ 7 |     while (true) {
+ 8 |       continue target;
+   |       ^^^^^^^^^^^^^^^^
+ 9 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/75bc58e2025f6d79.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+17 | throw NotEarlyError;
+18 | var public = 1;
+   |     ^^^^^^
+19 | 
+   |
+
+✓ test/parser/suite/ts/semantic/7654b666a62fcfc5.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function foo(value: number): number
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default function foo(value: string): string
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 5 | export default function foo(value: string | number): string | number {
+   |
+
+✓ test/parser/suite/ts/semantic/79152c29b731eb7a.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 3 |     namespace M { }
+ 4 |     export namespace N {
+   |     ^^^^^^^^^^^^^^^^^^^^^
+ 5 |         export interface I { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 6 |     }
+   | ^^^^^
+ 7 | 
+   |
+
+✓ test/parser/suite/ts/semantic/7a283c13f0fcce22.ts
+error: Illegal continue statement
+   |
+ 3 |   function f() {
+ 4 |     continue;
+   |     ^^^^^^^^^
+ 5 |   }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/7ab551d56cc54e08.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 4 | }
+ 5 | catch(eval) {
+   |       ^^^^
+ 6 | }
+   |
+
+✓ test/parser/suite/ts/semantic/7b28736bed0ab406.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | let x = 50, let = 5;
+   |             ^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/7b8feaac9c98b7d9.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/7d8c8a15bc77f080.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 2 | //@target: ES5, ES2015
+ 3 | for (var of = 0 in of) { }
+   |          ^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/7d9ebba8416a3bef.ts
+error: Private field '#foo' must be declared in an enclosing class
+   |
+25 | declare let b: C<string>;
+26 | a.#foo;                                   // Error
+   |   ^^^^
+27 | a.#method;                                // Error
+   |
+
+✓ test/parser/suite/ts/semantic/7f007371ad5795d9.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 4 | "use strict"
+ 5 | import public = require("1");
+   |        ^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/8067686818574509.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | var eval;
+   |     ^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/8447f2a7404b4c89.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 4 | class C extends Base {
+ 5 |     [(super(), "prop")]() { }
+   |       ^^^^^^^
+ 6 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/84cdbcc1411d77fe.module.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 5 | class test {
+ 6 |     constructor (static) { }
+   |                  ^^^^^^
+ 7 | }
+   |
+
+✓ test/parser/suite/ts/semantic/8553f3ab261adeff.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | "use strict"
+ 3 | var [public] = [1];
+   |      ^^^^^^
+ 4 | var { x: public } = { x: 1 };
+   |
+
+✓ test/parser/suite/ts/semantic/86a3fb6b164eefdf.ts
+error: Private field '#f' must be declared in an enclosing class
+   |
+ 8 |     constructor(message: string) {
+ 9 |         this.#f = 3           // Error (index signatures do not implicitly declare private names)
+   |              ^^
+10 |         this["#foo"] = 3;     // Okay (type has index signature and "#foo" does not collide with private identifier #foo)
+   |
+
+✓ test/parser/suite/ts/semantic/86ba8aa30a461081.ts
+error: Yield expression is not allowed in formal parameters
+   |
+ 3 |   // 'yield' here is an identifier, and not a yield expression.
+ 4 |   function*foo(a = yield) {
+   |                    ^^^^^
+ 5 |   }
+   |
+
+✓ test/parser/suite/ts/semantic/870fdd42cafb4a26.ts
+error: Use of undefined label 'target'
+   |
+ 2 | while (true) {
+ 3 |   break target;
+   |   ^^^^^^^^^^^^^
+ 4 | }
+   |
+
+✓ test/parser/suite/ts/semantic/88cb205e14e0cd7b.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function Foo (){
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 4 |     
+   | ~~~~~
+ 5 | }
+   | ~ first exported here
+ 6 | 
+ 7 | export default {
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~
+ 8 |     uhoh: "another default",
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 9 | };
+   | ^^
+   | ~~ exported again here
+10 | 
+   |
+
+✓ test/parser/suite/ts/semantic/8e3987aa381cfee7.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 7 |     class C extends S {
+ 8 |         @(super.decorator)
+   |           ^^^^^^^^^^^^^^^
+ 9 |         method() { }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/8e39a04f4e42bb3f.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | const foo = 1
+ 4 | export default foo
+   | ~~~~~~~~~~~~~~~~~~ first exported here
+ 5 | export default class Foo {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 6 | type Bar = {}
+   |
+
+✓ test/parser/suite/ts/semantic/8e958aa177b9829f.ts
+error: Private field '#nope' must be declared in an enclosing class
+   |
+ 2 | 
+ 3 | exports.#nope = 1;           // Error (outside class body)
+   |         ^^^^^
+ 4 | function A() { }
+   |
+
+✓ test/parser/suite/ts/semantic/8ee7307933c57819.ts
+error: 'public' is reserved in strict mode and cannot be used as an identifier
+   |
+ 2 | class C {
+ 3 |     [public]() { }
+   |      ^^^^^^
+ 4 | }
+   |
+
+✓ test/parser/suite/ts/semantic/8efc6c63af2a3905.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | let x = 50, let = 5;
+   |             ^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/8fbab75776366129.ts
+error: Illegal break statement
+   |
+ 4 | // naked break not allowed
+ 5 | break;
+   | ^^^^^^
+ 6 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
+✓ test/parser/suite/ts/semantic/925863dd9a17514f.ts
+error: 'public' is reserved in strict mode and cannot be used as an identifier
+   |
+ 2 | class C {
+ 3 |     [public ]: string;
+   |      ^^^^^^
+ 4 | }
+   |
+
+✓ test/parser/suite/ts/semantic/927748d11d85014e.ts
+error: Illegal continue statement
+   |
+ 3 |   default:
+ 4 |     continue;
+   |     ^^^^^^^^^
+ 5 | }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/93621a6eabf6fb18.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 1 | //@target: ES6
+ 2 | for (var a = 1 of X) {
+   |          ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/9631743ff20d5f7b.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 3 |     constructor() {
+ 4 |         super(); // error
+   |         ^^^^^^^
+ 5 |     }
+   |
+   = help: Add an 'extends' clause to the class or remove the 'super()' call
+
+
+✓ test/parser/suite/ts/semantic/973d9414df8c6b22.module.ts
+error: Illegal 'use strict' directive in function with non-simple parameter list
+   |
+ 2 | // @strict: false
+ 3 | function a(a = 10) {
+   |            ~~~~~~ non-simple parameter
+ 4 |     "use strict";
+   |     ^^^^^^^^^^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/97d35f8dbb14a4b0.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 4 | class C extends Base {
+ 5 |     [(super(), "prop")]() { }
+   |       ^^^^^^^
+ 6 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/99c285c730a19774.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 4 | class c1 {
+ 5 |     constructor(i: number, ...arguments) { // error
+   |                               ^^^^^^^^^
+ 6 |         var arguments: any[]; // no error
+   |
+
+✓ test/parser/suite/ts/semantic/99fedadb9eb4543e.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // Should be an error
+ 4 | for (let let of [1,2,3]) {}
+   |          ^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/9b7f0a610d0670d4.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+11 |         test: function () {
+12 |             return super._foo;
+   |                    ^^^^^^^^^^
+13 |         }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/9e3e96b15d116238.ts
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 6 | 
+ 7 | @dec(x => x.#foo) // error
+   |             ^^^^
+ 8 | class A {
+   |
+
+✓ test/parser/suite/ts/semantic/9e5cb38a5f5d5047.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/a3d03aca539b4e16.module.ts
+error: 'static' is reserved in strict mode and cannot be used as an identifier
+   |
+ 5 | foo1();
+ 6 | static();
+   | ^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/a3e8eb3007dd2145.ts
+error: 'with' statements are not allowed in strict mode
+   |
+12 |     constructor() {
+13 |         with(new C()) {
+   |         ^^^^^^^^^^^^^^^^
+14 |             foo();
+   | ^^^^^^^^^^^^^^^^^^^
+15 |             super();
+   | ^^^^^^^^^^^^^^^^^^^^^
+16 |             bar();
+   | ^^^^^^^^^^^^^^^^^^^
+17 |         }
+   | ^^^^^^^^^
+18 | 
+   |
+
+✓ test/parser/suite/ts/semantic/a4776496a3fc1606.ts
+error: Illegal continue statement
+   |
+ 1 | // @target: es2015
+ 2 | continue;
+   | ^^^^^^^^^
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/a4edcdea780301ad.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 5 | class test {
+ 6 |     constructor (static) { }
+   |                  ^^^^^^
+ 7 | }
+   |
+
+✓ test/parser/suite/ts/semantic/a5f9c2a73058382a.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+17 |     p1: function () {
+18 |         super.method();
+   |         ^^^^^^^^^^^^
+19 |     },
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/a63105be9e60e57d.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+12 | function func(x: I) {
+13 |     x.#prop = 123;
+   |       ^^^^^
+14 | }
+   |
+
+✓ test/parser/suite/ts/semantic/a8e560cc3cd981b3.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | //@target: ES5, ES2015
+ 2 | for (var a = 1, b = 2 of X) {
+   |      ^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/a98d6aaeb4a1b036.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function foo(value: number): number
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default function foo(value: string): string
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 5 | export default function foo(value: string | number): string | number {
+   |
+
+✓ test/parser/suite/ts/semantic/abad149ad298f072.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | // @target: es2015
+ 2 | for (var a = 1, b = 2 in X) {
+   |      ^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/abd3451a93473890.ts
+error: Deleting a variable in strict mode is not allowed
+   |
+ 6 |     static [() => { }]() { }
+ 7 |     get [delete id]() { }
+   |          ^^^^^^^^^
+ 8 |     set [[0, 1]](v) { }
+   |
+
+✓ test/parser/suite/ts/semantic/aee66b63f2862974.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | "use strict"
+ 3 | interface public { }
+   |           ^^^^^^
+ 4 | interface implements {
+   |
+
+✓ test/parser/suite/ts/semantic/aefa17ca3c01c04e.module.ts
+error: Duplicate export of 'default'
+   |
+ 4 | 
+ 5 | export default function f();
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 6 | export default function f(x: string);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 7 | export default function f(...args: any[]) {
+   |
+
+✓ test/parser/suite/ts/semantic/af60cec5ca84720e.ts
+error: Deleting a variable in strict mode is not allowed
+   |
+ 6 |     static [() => { }]() { }
+ 7 |     get [delete id]() { }
+   |          ^^^^^^^^^
+ 8 |     set [[0, 1]](v) { }
+   |
+
+✓ test/parser/suite/ts/semantic/b0bdc13752b79510.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 1 | // @target: es2015
+ 2 | for (var a = 1 in X) {
+   |          ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/b11f9ce81fa5fd63.ts
+error: Cannot break to label 'target' across function boundaries
+   |
+ 7 |     while (true) {
+ 8 |       break target;
+   |       ^^^^^^^^^^^^^
+ 9 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/b178f8990ade6f95.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 1 | //@target: ES5, ES2015
+ 2 | for (var a = 1 of X) {
+   |          ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/b1794f4577729dee.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default interface A { a: string; }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default function() { return 1; }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 5 | declare var x: A;
+   |
+
+✓ test/parser/suite/ts/semantic/b338dd29b0fe5641.ts
+error: Illegal break statement
+   |
+ 7 | // naked break not allowed
+ 8 | break;
+   | ^^^^^^
+ 9 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
+✓ test/parser/suite/ts/semantic/b4715a885d67e26c.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+24 |     constructor() { // error
+25 |         var r = function () { super() } // error
+   |                               ^^^^^^^
+26 |     }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/b6f4760035f77cd7.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | const x = 50, let = 5;
+   |               ^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/b78a65906332d71a.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 9 |     // use of super in static properties initializers.
+10 |     [super.bar()]() { }
+   |      ^^^^^^^^^
+11 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/b83efdc85b59d01b.ts
+error: A switch statement can only have one default clause
+   |
+ 6 |         case 2:
+ 7 |         default:    // No issues.
+   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 8 |             break;
+   | ~~~~~~~~~~~~~~~~~~ first default defined here
+ 9 |         default:    // Error; second 'default' clause.
+   |         ^^^^^^^^
+10 |         default:    // Error; third 'default' clause.
+   |
+
+✓ test/parser/suite/ts/semantic/b922d8c2fd4c3c27.ts
+error: Illegal continue statement
+   |
+ 3 |     if (true) {
+ 4 |         continue;
+   |         ^^^^^^^^^
+ 5 |     }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/b9c29578f6714b5c.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default class Foo {}
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | type Bar = {}
+ 5 | export default Bar
+   | ^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~ exported again here
+ 6 | 
+   |
+
+✓ test/parser/suite/ts/semantic/b9f5db097d266b11.ts
+error: Private fields cannot be deleted
+   |
+ 6 |     constructor() {
+ 7 |         delete this.#v; // Error: The operand of a delete operator cannot be a private name.
+   |         ^^^^^^^^^^^^^^
+ 8 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/ba8d3653fc145ad9.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+15 | }
+16 | new A2().#prop; // Error
+   |          ^^^^^
+17 | 
+   |
+
+✓ test/parser/suite/ts/semantic/baf89d2fbe6a2d7b.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default interface A {}
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | interface B {}
+ 5 | export default B;
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~ exported again here
+ 6 | 
+   |
+
+✓ test/parser/suite/ts/semantic/bb2899ee75af6ffb.ts
+error: Cannot continue to label 'TWO' across function boundaries
+   |
+ 6 |   var x = () => {
+ 7 |     continue TWO;
+   |     ^^^^^^^^^^^^^
+ 8 |   }
+   |
+
+✓ test/parser/suite/ts/semantic/bc0f7c24294ad30f.ts
+error: Duplicate private name '#foo'
+   |
+ 3 | class A {
+ 4 |     #foo = 1;
+   |     ~~~~~~~~~ first declared here
+ 5 |     static #foo = true; // error (duplicate)
+   |     ^^^^^^^^^^^^^^^^^^^
+ 6 |                         // because static and instance private names
+   |
+
+✓ test/parser/suite/ts/semantic/be42e965c0383c62.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 8 |     static arrowFunctionBoundary = () => super.f + 1;
+ 9 |     static functionExprBoundary = function () { return super.f + 2 };
+   |                                                        ^^^^^^^
+10 |     static classExprBoundary = class { a = super.f + 3 };
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/bf9d28c442102332.ts
+error: Yield expression is not allowed in formal parameters
+   |
+ 1 | // @target: es6
+ 2 | function*foo(a = yield) {
+   |                  ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/c12a14bf698f9df2.ts
+error: Illegal break statement
+   |
+ 7 | // naked break not allowed
+ 8 | break;
+   | ^^^^^^
+ 9 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
+✓ test/parser/suite/ts/semantic/c1fb3ef863086776.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | "use strict"
+ 3 | namespace public { }
+   |           ^^^^^^
+ 4 | namespace private { }
+   |
+
+✓ test/parser/suite/ts/semantic/c2a2602f3ebf23bb.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+19 | throw NotEarlyError;
+20 | var public = 1;
+   |     ^^^^^^
+21 | 
+   |
+
+✓ test/parser/suite/ts/semantic/ca0cdde37aaec33e.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | ++eval;
+   | ^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/cb0e3ada713fd0a3.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/ts/semantic/cc7b04da234ac562.ts
+error: 'using' is not allowed at the top level of a script
+   |
+ 6 | 
+ 7 | using x = {};
+   | ^^^^^^^^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/ccdfc1b8ad01d7a6.ts
+error: Await expression is not allowed in formal parameters
+   |
+ 7 |   class Class {
+ 8 |     async method(@dec(await value) arg: number) {}
+   |                       ^^^^^^^^^^^
+ 9 |   }
+   |
+
+✓ test/parser/suite/ts/semantic/cd98ac0690e2442f.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default {
+   | ~~~~~~~~~~~~~~~~~
+ 4 |     lol: 1
+   | ~~~~~~~~~~~
+ 5 | }
+   | ~ first exported here
+ 6 | 
+ 7 | export default {
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~
+ 8 |     lol: 2
+   | ^^^^^^^^^^^
+   | ~~~~~~~~~~~
+ 9 | }
+   | ^
+   | ~ exported again here
+   |
+
+✓ test/parser/suite/ts/semantic/ce124ae9a0e99d8e.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default {
+   | ~~~~~~~~~~~~~~~~~
+ 4 |     uhoh: "another default",
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 5 | };
+   | ~~ first exported here
+ 6 | 
+ 7 | export default class C { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 8 | 
+   |
+
+✓ test/parser/suite/ts/semantic/cec0ecc1e0019278.ts
+error: Private field '#y' must be declared in an enclosing class
+   |
+12 |     getX = (obj: C) => obj.#x;
+13 |     getY = (obj: D) => obj.#y;
+   |                            ^^
+14 |   }
+   |
+
+✓ test/parser/suite/ts/semantic/d017c9355a112b5f.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default class C { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | 
+ 5 | export default {
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~
+ 6 |     uhoh: "another default",
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 7 | };
+   | ^^
+   | ~~ exported again here
+   |
+
+✓ test/parser/suite/ts/semantic/d02d7d0feac77d82.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | //@target: ES6
+ 2 | for (let let of []) {}
+   |          ^^^
+   |
+
+✓ test/parser/suite/ts/semantic/d344d078383ab683.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+10 |     [
+11 |         { [super.bar()]: 1 }[0]
+   |            ^^^^^^^^^
+12 |     ]() { }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/d385619b459a9685.ts
+error: Only a single variable declaration is allowed in a for-in/of statement
+   |
+ 1 | //@target: ES5, ES2015
+ 2 | for (var a: number = 1, b: string = "" of X) {
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/ts/semantic/d4d1baa9bffd88c9.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 4 |         namespace M { }
+ 5 |         export namespace N {
+   |         ^^^^^^^^^^^^^^^^^^^^^
+ 6 |             export interface I { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 7 |         }
+   | ^^^^^^^^^
+ 8 | 
+   |
+
+✓ test/parser/suite/ts/semantic/d50893cbcc09c646.module.ts
+error: 'interface' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 3 | 
+ 4 | var interface: number = 123;
+   |     ^^^^^^^^^^^^^^^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/d6424bb20f39ebf1.module.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 5 | class test {
+ 6 |     constructor (static) { }
+   |                  ^^^^^^
+ 7 | }
+   |
+
+✓ test/parser/suite/ts/semantic/d79924562c50ee11.ts
+error: Private field '#foo' must be declared in an enclosing class
+   |
+26 | const x: number = a.baz                   // OK
+27 | a.#foo;                                   // Error
+   |   ^^^^
+28 | a = b;                                    // Error
+   |
+
+✓ test/parser/suite/ts/semantic/d914ad5837e60a91.ts
+error: Private field '#derivedProp' must be declared in an enclosing class
+   |
+ 5 |     static method(x: Derived) {
+ 6 |         Derived.#derivedProp // error
+   |                 ^^^^^^^^^^^^
+ 7 |         Base.#prop  = 10;
+   |
+
+✓ test/parser/suite/ts/semantic/db644223d3095c7d.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 8 |     [
+ 9 |         { [super.bar()]: 1 }[0]
+   |            ^^^^^^^^^
+10 |     ]() { }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/dd7653e174eb5aab.module.ts
+error: Illegal 'use strict' directive in function with non-simple parameter list
+   |
+ 3 | 
+ 4 | function a(a = 10) {
+   |            ~~~~~~ non-simple parameter
+ 5 |     "use strict";
+   |     ^^^^^^^^^^^^^
+ 6 | }
+   |
+
+✓ test/parser/suite/ts/semantic/df42156a6503f9b9.ts
+error: Cannot continue to label 'TWO' across function boundaries
+   |
+ 4 |   var x = () => {
+ 5 |     continue TWO;
+   |     ^^^^^^^^^^^^^
+ 6 |   }
+   |
+
+✓ test/parser/suite/ts/semantic/e0c2b208a96b37e6.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 6 | class D extends C {
+ 7 |     x = super(); 
+   |         ^^^^^^^
+ 8 |  
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/ts/semantic/e22424cab3f4ae33.ts
+error: Cannot continue to label 'target' across function boundaries
+   |
+ 5 |     while (true) {
+ 6 |       continue target;
+   |       ^^^^^^^^^^^^^^^^
+ 7 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/e27e176dfb219e6a.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | function eval() {
+   |          ^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/e4a8ac38abc733e8.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | eval += 1;
+   | ^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/e864a65573216228.ts
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 3 |   return class T {
+ 4 |      a = arguments
+   |          ^^^^^^^^^
+ 5 |   }
+   |
+
+✓ test/parser/suite/ts/semantic/eb0607f3b8bd0052.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+10 |     static method(x: Derived) {
+11 |         console.log(x.#prop);
+   |                       ^^^^^
+12 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/eb302e53d6c4d8f7.ts
+error: Illegal 'use strict' directive in function with non-simple parameter list
+   |
+ 8 | 
+ 9 | function foobar({ bar = {}, ...opts }: Foo = {}) {
+   |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ non-simple parameter
+10 |     "use strict";
+   |     ^^^^^^^^^^^^^
+11 |     "Some other prologue";
+   |
+
+✓ test/parser/suite/ts/semantic/eb4d77629aa1b4ac.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 2 | "use strict";
+ 3 | var v = function eval() {
+   |                  ^^^^
+ 4 | };
+   |
+
+✓ test/parser/suite/ts/semantic/eb5c0944e503c65f.ts
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 2 | // @target: es6
+ 3 | const a = new.target;
+   |           ^^^^^^^^^^
+ 4 | const b = () => new.target;
+   |
+
+✓ test/parser/suite/ts/semantic/ef1759dbfdabf857.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | const x = 50, let = 5;
+   |               ^^^
+ 5 | 
+   |
+
+✓ test/parser/suite/ts/semantic/eff575122955dc0c.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | 
+ 4 | export default class AA1 {}
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 5 | 
+ 6 | export default class BB1 {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 7 | 
+   |
+
+✓ test/parser/suite/ts/semantic/f02ff9c08aef9a56.module.ts
+error: Deleting a variable in strict mode is not allowed
+   |
+ 2 | "use strict";
+ 3 | delete a;
+   | ^^^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/f0df19d2fac92b1b.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 5 |     constructor() {
+ 6 |         super(); // error
+   |         ^^^^^^^
+ 7 |     }
+   |
+   = help: Add an 'extends' clause to the class or remove the 'super()' call
+
+
+✓ test/parser/suite/ts/semantic/f2c6db3ad9c90b42.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 4 | class C {
+ 5 |     f(arguments) {
+   |       ^^^^^^^^^
+ 6 |         var a = () => arguments;
+   |
+
+✓ test/parser/suite/ts/semantic/f4df05868024e821.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 2 | //@target: ES6
+ 3 | for (var of = 0 in of) { }
+   |          ^^^^^^
+   |
+
+✓ test/parser/suite/ts/semantic/f58265e2fc9606a9.ts
+error: Cannot break to label 'label' across function boundaries
+   |
+ 6 |                 if (v === 1) {
+ 7 |                     break label;
+   |                     ^^^^^^^^^^^^
+ 8 |                 }
+   |
+
+✓ test/parser/suite/ts/semantic/f5dab850cf19bf50.module.ts
+error: 'public' is reserved in strict mode and cannot be used as an identifier
+   |
+ 3 | class C {
+ 4 |     [public]() { }
+   |      ^^^^^^
+ 5 | }
+   |
+
+✓ test/parser/suite/ts/semantic/f7c3318268a1e01f.ts
+error: Private field '#prop' must be declared in an enclosing class
+   |
+10 |     static method(x: typeof Derived) {
+11 |         console.log(x.#prop);
+   |                       ^^^^^
+12 |     }
+   |
+
+✓ test/parser/suite/ts/semantic/ff771f51af5a6bb8.module.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | export declare namespace Foo {
+ 3 |   export var static: any;
+   |              ^^^^^^^^^^^
+ 4 | }
+   |
+

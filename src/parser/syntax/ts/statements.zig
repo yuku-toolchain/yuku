@@ -1,0 +1,587 @@
+const std = @import("std");
+const ast = @import("../../ast.zig");
+
+const Parser = @import("../../parser.zig").Parser;
+const Error = @import("../../parser.zig").Error;
+const TokenTag = @import("../../token.zig").TokenTag;
+const Precedence = @import("../../token.zig").Precedence;
+const Token = @import("../../token.zig").Token;
+
+const types = @import("types.zig");
+const literals = @import("../literals.zig");
+const functions = @import("../functions.zig");
+const expressions = @import("../expressions.zig");
+const variables = @import("../variables.zig");
+const class = @import("../class.zig");
+
+
+// `is_const` only matters on enums
+pub const Modifiers = struct {
+    declare: bool = false,
+    abstract: bool = false,
+    is_const: bool = false,
+};
+
+pub fn isStartOfTsDeclaration(parser: *Parser) bool {
+    if (!parser.tree.isTs()) return false;
+
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    var cur = parser.current_token;
+    var has_declare = false;
+    var has_abstract = false;
+
+    if (cur.tag == .declare) {
+        cur = peek.next() orelse return false;
+        if (cur.hasLineTerminatorBefore()) return false;
+        has_declare = true;
+    }
+
+    // abstract only before class here
+    if (cur.tag == .abstract) {
+        const next = peek.next() orelse return false;
+        if (next.hasLineTerminatorBefore()) return false;
+        if (next.tag != .class) return false;
+        cur = next;
+        has_abstract = true;
+    }
+
+    // const enum, declare const enum, declare const binding
+    if (cur.tag == .@"const") {
+        const next = peek.next() orelse return false;
+        if (isConstEnumHead(next)) {
+            cur = next;
+        } else if (has_declare) {
+            return !next.hasLineTerminatorBefore() and variables.canStartBinding(next.tag);
+        } else {
+            return false;
+        }
+    }
+
+    switch (cur.tag) {
+        .type, .interface, .@"enum", .namespace => {
+            // reserved word after head is not a name, fall through to expr
+            const name = peek.next() orelse return false;
+            return isDeclarationName(name);
+        },
+        .module => {
+            // id for namespace or string for ambient module
+            const name = peek.next() orelse return false;
+            if (name.hasLineTerminatorBefore()) return false;
+            return isDeclarationName(name) or name.tag == .string_literal;
+        },
+        .global => {
+            // global block only if `{` on same line
+            const next = peek.next() orelse return false;
+            return next.tag == .left_brace and !next.hasLineTerminatorBefore();
+        },
+        // declare var let function class, abstract class
+        .@"var", .let, .function, .class => {
+            if (!has_declare and !has_abstract) return false;
+            const name = peek.next() orelse return false;
+            if (name.hasLineTerminatorBefore()) return false;
+            return switch (cur.tag) {
+                .@"var", .let => variables.canStartBinding(name.tag),
+                else => isDeclarationName(name),
+            };
+        },
+        // declare async function only
+        .async => {
+            if (!has_declare) return false;
+            const fn_token = peek.next() orelse return false;
+            if (fn_token.tag != .function or fn_token.hasLineTerminatorBefore()) return false;
+            const name = peek.next() orelse return false;
+            return isDeclarationName(name);
+        },
+        // declare import needs `=` form, not from clause
+        .import => {
+            if (!has_declare) return false;
+            const name = peek.next() orelse return false;
+            if (!isDeclarationName(name)) return false;
+            const eq = peek.next() orelse return false;
+            return eq.tag == .assign and !eq.hasLineTerminatorBefore();
+        },
+        else => return false,
+    }
+}
+
+pub fn isConstEnumHead(after_const: Token) bool {
+    return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
+}
+
+// next token is same line binding name, not reserved, else expr path eats it
+fn isDeclarationName(token: Token) bool {
+    return token.tag.isIdentifierLike() and
+        !token.tag.isUnconditionallyReserved() and
+        !token.hasLineTerminatorBefore();
+}
+
+pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    var mods: Modifiers = .{};
+
+    if (parser.current_token.tag == .declare) {
+        mods.declare = true;
+        try parser.advance() orelse return null;
+    }
+    if (parser.current_token.tag == .abstract) {
+        mods.abstract = true;
+        try parser.advance() orelse return null;
+    }
+    if (parser.current_token.tag == .@"const") {
+        const next = parser.peekAhead() orelse return null;
+        if (isConstEnumHead(next)) {
+            mods.is_const = true;
+            try parser.advance() orelse return null;
+        }
+    }
+
+    const saved_ambient = parser.ts_context.ambient;
+    defer parser.ts_context.ambient = saved_ambient;
+    if (mods.declare) parser.ts_context.ambient = true;
+
+    return switch (parser.current_token.tag) {
+        .type => parseTypeAliasDeclaration(parser, mods, start),
+        .interface => parseInterfaceDeclaration(parser, mods, start),
+        .@"enum" => parseEnumDeclaration(parser, mods, start),
+        .namespace => parseModuleDeclaration(parser, mods, start, .namespace),
+        .module => parseModuleDeclaration(parser, mods, start, .module),
+        .global => parseGlobalDeclaration(parser, mods, start),
+        .@"var", .let, .@"const" => variables.parseVariableDeclaration(
+            parser,
+            .{ .is_declare = mods.declare },
+            start,
+        ),
+        .function => functions.parseFunction(parser, .{ .is_declare = mods.declare }, start),
+        .async => blk: {
+            try parser.advance() orelse break :blk null;
+            break :blk functions.parseFunction(
+                parser,
+                .{ .is_declare = mods.declare, .is_async = true },
+                start,
+            );
+        },
+        .class => class.parseClass(
+            parser,
+            .{ .is_declare = mods.declare, .is_abstract = mods.abstract },
+            start,
+        ),
+        .import => parseDeclareImportEquals(parser, start),
+        else => unreachable,
+    };
+}
+
+// `declare import x = Foo.Bar` / `declare import x = require("m")`
+fn parseDeclareImportEquals(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null;
+    return parseImportEqualsBody(parser, start, .value);
+}
+
+// after `import` already eaten. `BindingIdentifier '=' ModuleReference` then optional stmt end
+pub fn parseImportEqualsBody(
+    parser: *Parser,
+    start: u32,
+    import_kind: ast.ImportOrExportKind,
+) Error!?ast.NodeIndex {
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!try parser.expect(
+        .assign,
+        "Expected '=' in import equals declaration",
+        "An import equals declaration is written 'import x = Foo.Bar' or 'import x = require(\"m\")'",
+    )) return null;
+
+    const module_reference = try parseModuleReference(parser) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.span(module_reference).end) orelse return null;
+
+    return try parser.tree.addNode(.{
+        .ts_import_equals_declaration = .{
+            .id = id,
+            .module_reference = module_reference,
+            .import_kind = import_kind,
+        },
+    }, .{ .start = start, .end = end });
+}
+
+// rhs of import equals, `require("m")` or dotted name
+fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .require) {
+        const next = parser.peekAhead() orelse return null;
+        if (next.tag == .left_paren) return parseExternalModuleReference(parser);
+    }
+    const head = try literals.parseIdentifier(parser) orelse return null;
+    return types.extendQualifiedName(parser, head);
+}
+
+// `require("m")` in import equals
+fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' after 'require'",
+        "External module references are written 'require(\"module\")'",
+    )) return null;
+
+    const expression = try literals.parseStringLiteral(parser) orelse return null;
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(.right_paren, "Expected ')' to close 'require'", null)) return null;
+
+    return try parser.tree.addNode(.{
+        .ts_external_module_reference = .{ .expression = expression },
+    }, .{ .start = start, .end = end });
+}
+
+// type Foo<T> = Bar<T>
+pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .type);
+    try parser.advance() orelse return null;
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+    const type_parameters = try types.parseTypeParameters(parser);
+
+    if (!try parser.expect(
+        .assign,
+        "Expected '=' in type alias declaration",
+        "A type alias is written 'type Foo = Bar'",
+    )) return null;
+
+    const type_annotation = try types.parseTypeAliasBody(parser) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.span(type_annotation).end) orelse return null;
+
+    return try parser.tree.addNode(
+        .{ .ts_type_alias_declaration = .{
+            .id = id,
+            .type_parameters = type_parameters,
+            .type_annotation = type_annotation,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+// interface Foo<T> extends Bar, Baz<U> { ... }
+pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .interface);
+    try parser.advance() orelse return null;
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+    const type_parameters = try types.parseTypeParameters(parser);
+    const extends = try parseHeritageClause(parser, .extends, .interface) orelse return null;
+    const body = try parseInterfaceBody(parser) orelse return null;
+
+    return try parser.tree.addNode(
+        .{ .ts_interface_declaration = .{
+            .id = id,
+            .type_parameters = type_parameters,
+            .extends = extends,
+            .body = body,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+const HeritageKind = enum { interface, class };
+
+// optional extends or implements list, empty if keyword missing
+fn parseHeritageClause(
+    parser: *Parser,
+    comptime keyword: TokenTag,
+    comptime kind: HeritageKind,
+) Error!?ast.IndexRange {
+    if (parser.current_token.tag != keyword) return .empty;
+    try parser.advance() orelse return null;
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (true) {
+        const entry = try parseHeritageEntry(parser, kind) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), entry);
+        if (parser.current_token.tag != .comma) break;
+        try parser.advance() orelse return null;
+    }
+
+    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+}
+
+// Bar    Foo.Bar    Foo.Bar<U>
+fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.NodeIndex {
+    const expression = try parseHeritageExpression(parser) orelse return null;
+    const type_arguments = try types.parseTypeArguments(parser);
+
+    const data: ast.NodeData = switch (kind) {
+        .interface => .{ .ts_interface_heritage = .{
+            .expression = expression,
+            .type_arguments = type_arguments,
+        } },
+        .class => .{ .ts_class_implements = .{
+            .expression = expression,
+            .type_arguments = type_arguments,
+        } },
+    };
+
+    const expr_span = parser.tree.span(expression);
+    const end = if (type_arguments != .null)
+        parser.tree.span(type_arguments).end
+    else
+        expr_span.end;
+
+    return try parser.tree.addNode(data, .{ .start = expr_span.start, .end = end });
+}
+
+pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
+    return parseHeritageClause(parser, .implements, .class);
+}
+
+// dotted heritage name, plain `.prop` chain only
+fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
+    var expression = try literals.parseIdentifier(parser) orelse return null;
+
+    while (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null;
+        const property = try literals.parseIdentifierName(parser) orelse return null;
+        expression = try parser.tree.addNode(
+            .{ .member_expression = .{
+                .object = expression,
+                .property = property,
+                .computed = false,
+                .optional = false,
+            } },
+            .{
+                .start = parser.tree.span(expression).start,
+                .end = parser.tree.span(property).end,
+            },
+        );
+    }
+
+    return expression;
+}
+
+// enum Foo { A, B = 1 }
+pub fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .@"enum");
+    try parser.advance() orelse return null;
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+    const body = try parseEnumBody(parser) orelse return null;
+
+    return try parser.tree.addNode(
+        .{ .ts_enum_declaration = .{
+            .id = id,
+            .body = body,
+            .is_const = mods.is_const,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// { A, B = 1, }
+fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '{' to start an enum body",
+            .{ .help = "An enum body is written '{ A, B = 1 }'" },
+        );
+        return null;
+    }
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
+        const member = try parseEnumMember(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), member);
+
+        if (parser.current_token.tag != .comma) break;
+        try parser.advance() orelse return null;
+    }
+
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close an enum body",
+        "Each '{' in an enum must be matched by a '}'",
+    )) return null;
+
+    const members = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+
+    return try parser.tree.addNode(
+        .{ .ts_enum_body = .{ .members = members } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// name [= initializer]
+fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
+    const name = try parseEnumMemberName(parser) orelse return null;
+    const id_span = parser.tree.span(name.id);
+    // computed name ends at `]` in prev_token_end
+    var end = if (name.computed) parser.prev_token_end else id_span.end;
+
+    var initializer: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .assign) {
+        try parser.advance() orelse return null;
+        initializer = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        end = parser.tree.span(initializer).end;
+    }
+
+    return try parser.tree.addNode(
+        .{ .ts_enum_member = .{
+            .id = name.id,
+            .initializer = initializer,
+            .computed = name.computed,
+        } },
+        .{ .start = id_span.start, .end = end },
+    );
+}
+
+const EnumMemberName = struct {
+    id: ast.NodeIndex,
+    computed: bool,
+};
+
+// identifier, string, template, or `[expr]`.
+fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
+    const tag = parser.current_token.tag;
+
+    if (tag == .left_bracket) {
+        try parser.advance() orelse return null;
+        const inner = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        if (!try parser.expect(
+            .right_bracket,
+            "Expected ']' to close a computed enum member name",
+            "A computed enum member name is written '[\"name\"]'",
+        )) return null;
+        return .{ .id = inner, .computed = true };
+    }
+
+    const id = if (tag.isIdentifierLike())
+        try literals.parseIdentifierName(parser) orelse return null
+    else if (tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (tag == .no_substitution_template)
+        try literals.parseNoSubstitutionTemplate(parser, false) orelse return null
+    else {
+        try parser.report(
+            parser.current_token.span,
+            try parser.fmt("Unexpected token '{s}' as enum member name", .{parser.describeToken(parser.current_token)}),
+            .{ .help = "Enum member names must be identifiers, string literals, or computed expressions '[name]'." },
+        );
+        return null;
+    };
+
+    return .{ .id = id, .computed = false };
+}
+
+// `{ ... }` interface members
+fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '{' to start an interface body",
+            .{ .help = "An interface body is written '{ member1; member2 }'" },
+        );
+        return null;
+    }
+
+    const start = parser.current_token.span.start;
+    const members = try types.parseObjectTypeMembers(parser) orelse return null;
+
+    return try parser.tree.addNode(
+        .{ .ts_interface_body = .{ .body = members } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// namespace Foo { ... }    namespace A.B.C { ... }    module "./m" { ... }
+pub fn parseModuleDeclaration(
+    parser: *Parser,
+    mods: Modifiers,
+    start: u32,
+    kind: ast.TSModuleDeclarationKind,
+) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null;
+
+    const id = if (kind == .module and parser.current_token.tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else
+        try parseModuleName(parser) orelse return null;
+
+    const body = try parseOptionalModuleBlock(parser) orelse return null;
+    const end = if (body == .null)
+        try parser.eatSemicolon(parser.tree.span(id).end) orelse return null
+    else
+        parser.prev_token_end;
+
+    return try parser.tree.addNode(
+        .{ .ts_module_declaration = .{
+            .id = id,
+            .body = body,
+            .kind = kind,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+// global block augmentation `declare global` etc
+pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .global);
+
+    const id = try literals.parseIdentifierName(parser) orelse return null;
+    const body = try parseModuleBlock(parser) orelse return null;
+
+    return try parser.tree.addNode(
+        .{ .ts_global_declaration = .{
+            .id = id,
+            .body = body,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// `A.B.C` qualified name from head id
+fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
+    const head = try literals.parseBindingIdentifier(parser) orelse return null;
+    return types.extendQualifiedName(parser, head);
+}
+
+// null when no braced body eg ambient `declare module "m"`
+fn parseOptionalModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) return .null;
+    return parseModuleBlock(parser);
+}
+
+fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    if (!try parser.expect(
+        .left_brace,
+        "Expected '{' to start a module body",
+        "A module body is written '{ <statements> }'",
+    )) return null;
+
+    const body = try parser.parseBody(.right_brace, .module_block);
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close a module body",
+        "Each '{' in a module must be matched by a '}'",
+    )) return null;
+
+    return try parser.tree.addNode(
+        .{ .ts_module_block = .{ .body = body } },
+        .{ .start = start, .end = end },
+    );
+}

@@ -6,8 +6,8 @@ const t = std.testing;
 
 test "unicode_id can start and continue" {
     var id_starts, var id_contts = try gen_unicode_id.downloadAndParseProperties(t.io, t.allocator);
-    defer id_starts.deinit();
-    defer id_contts.deinit();
+    defer id_starts.deinit(t.allocator);
+    defer id_contts.deinit(t.allocator);
 
     for (0..std.math.maxInt(u21)) |ch| {
         const expected = id_starts.contains(@intCast(ch));

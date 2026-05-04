@@ -7,6 +7,7 @@ const array = @import("array.zig");
 const object = @import("object.zig");
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
+const ts = @import("ts/types.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isIdentifierLike()) {
@@ -38,7 +39,7 @@ fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const start = parser.tree.getSpan(left).start;
+    const start = parser.tree.span(left).start;
 
     if (parser.current_token.tag != .assign) return left;
 
@@ -46,9 +47,9 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
-        .{ .start = start, .end = parser.tree.getSpan(right).end },
+        .{ .start = start, .end = parser.tree.span(right).end },
     );
 }
 
@@ -57,16 +58,23 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume ...
 
     const argument = try parseBindingPattern(parser) orelse return null;
-    const end = parser.tree.getSpan(argument).end;
+    var end = parser.tree.span(argument).end;
 
-    return try parser.tree.createNode(
-        .{ .binding_rest_element = .{ .argument = argument } },
+    // `function f(...rest: Type[]) { ... }`
+    var type_annotation: ast.NodeIndex = .null;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
+        end = parser.tree.span(type_annotation).end;
+    }
+
+    return try parser.tree.addNode(
+        .{ .binding_rest_element = .{ .argument = argument, .type_annotation = type_annotation } },
         .{ .start = start, .end = end },
     );
 }
 
 pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {
-    return switch (parser.tree.getData(index)) {
+    return switch (parser.tree.data(index)) {
         .array_pattern, .object_pattern => true,
         .assignment_pattern => |pattern| isDestructuringPattern(parser, pattern.left),
         else => false,

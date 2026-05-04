@@ -1,0 +1,687 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 527,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 108,
+        "end": 159,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 114,
+          "end": 116,
+          "name": "S1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 120,
+          "end": 159,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 124,
+              "end": 157,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 124,
+                "end": 125,
+                "name": "m",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 125,
+                "end": 157,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 129,
+                    "end": 133,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 130,
+                      "end": 133,
+                      "typeAnnotation": {
+                        "type": "TSTypeReference",
+                        "start": 132,
+                        "end": 133,
+                        "typeName": {
+                          "type": "Identifier",
+                          "start": 132,
+                          "end": 133,
+                          "name": "T",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "typeArguments": null
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 138,
+                  "end": 157,
+                  "body": [
+                    {
+                      "type": "ReturnStatement",
+                      "start": 144,
+                      "end": 153,
+                      "argument": {
+                        "type": "Identifier",
+                        "start": 151,
+                        "end": 152,
+                        "name": "x",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      }
+                    }
+                  ]
+                },
+                "expression": false,
+                "typeParameters": {
+                  "type": "TSTypeParameterDeclaration",
+                  "start": 125,
+                  "end": 128,
+                  "params": [
+                    {
+                      "type": "TSTypeParameter",
+                      "start": 126,
+                      "end": 127,
+                      "name": {
+                        "type": "Identifier",
+                        "start": 126,
+                        "end": 127,
+                        "name": "T",
+                        "decorators": [],
+                        "typeAnnotation": null,
+                        "optional": false
+                      },
+                      "constraint": null,
+                      "default": null,
+                      "in": false,
+                      "out": false,
+                      "const": false
+                    }
+                  ]
+                },
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 134,
+                  "end": 137,
+                  "typeAnnotation": {
+                    "type": "TSTypeReference",
+                    "start": 136,
+                    "end": 137,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 136,
+                      "end": 137,
+                      "name": "T",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": {
+          "type": "TSTypeParameterDeclaration",
+          "start": 116,
+          "end": 119,
+          "params": [
+            {
+              "type": "TSTypeParameter",
+              "start": 117,
+              "end": 118,
+              "name": {
+                "type": "Identifier",
+                "start": 117,
+                "end": 118,
+                "name": "T",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "constraint": null,
+              "default": null,
+              "in": false,
+              "out": false,
+              "const": false
+            }
+          ]
+        },
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 201,
+        "end": 286,
+        "id": {
+          "type": "Identifier",
+          "start": 210,
+          "end": 212,
+          "name": "s2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 218,
+          "end": 286,
+          "body": [
+            {
+              "type": "FunctionDeclaration",
+              "start": 222,
+              "end": 268,
+              "id": {
+                "type": "Identifier",
+                "start": 231,
+                "end": 236,
+                "name": "inner",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "generator": false,
+              "async": false,
+              "params": [
+                {
+                  "type": "Identifier",
+                  "start": 240,
+                  "end": 244,
+                  "name": "x",
+                  "decorators": [],
+                  "typeAnnotation": {
+                    "type": "TSTypeAnnotation",
+                    "start": 241,
+                    "end": 244,
+                    "typeAnnotation": {
+                      "type": "TSTypeReference",
+                      "start": 243,
+                      "end": 244,
+                      "typeName": {
+                        "type": "Identifier",
+                        "start": 243,
+                        "end": 244,
+                        "name": "T",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "typeArguments": null
+                    }
+                  },
+                  "optional": false
+                }
+              ],
+              "body": {
+                "type": "BlockStatement",
+                "start": 249,
+                "end": 268,
+                "body": [
+                  {
+                    "type": "ReturnStatement",
+                    "start": 255,
+                    "end": 264,
+                    "argument": {
+                      "type": "Identifier",
+                      "start": 262,
+                      "end": 263,
+                      "name": "x",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    }
+                  }
+                ]
+              },
+              "expression": false,
+              "typeParameters": {
+                "type": "TSTypeParameterDeclaration",
+                "start": 236,
+                "end": 239,
+                "params": [
+                  {
+                    "type": "TSTypeParameter",
+                    "start": 237,
+                    "end": 238,
+                    "name": {
+                      "type": "Identifier",
+                      "start": 237,
+                      "end": 238,
+                      "name": "T",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "constraint": null,
+                    "default": null,
+                    "in": false,
+                    "out": false,
+                    "const": false
+                  }
+                ]
+              },
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 245,
+                "end": 248,
+                "typeAnnotation": {
+                  "type": "TSTypeReference",
+                  "start": 247,
+                  "end": 248,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 247,
+                    "end": 248,
+                    "name": "T",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              },
+              "declare": false
+            },
+            {
+              "type": "ReturnStatement",
+              "start": 271,
+              "end": 284,
+              "argument": {
+                "type": "Identifier",
+                "start": 278,
+                "end": 283,
+                "name": "inner",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": {
+          "type": "TSTypeParameterDeclaration",
+          "start": 212,
+          "end": 215,
+          "params": [
+            {
+              "type": "TSTypeParameter",
+              "start": 213,
+              "end": 214,
+              "name": {
+                "type": "Identifier",
+                "start": 213,
+                "end": 214,
+                "name": "T",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "constraint": null,
+              "default": null,
+              "in": false,
+              "out": false,
+              "const": false
+            }
+          ]
+        },
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 352,
+        "end": 367,
+        "id": {
+          "type": "Identifier",
+          "start": 362,
+          "end": 364,
+          "name": "S3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 365,
+          "end": 367,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 368,
+        "end": 410,
+        "id": {
+          "type": "Identifier",
+          "start": 377,
+          "end": 379,
+          "name": "s3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 384,
+            "end": 389,
+            "name": "x",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 385,
+              "end": 389,
+              "typeAnnotation": {
+                "type": "TSTypeReference",
+                "start": 387,
+                "end": 389,
+                "typeName": {
+                  "type": "Identifier",
+                  "start": 387,
+                  "end": 389,
+                  "name": "S3",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "typeArguments": null
+              }
+            },
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 395,
+          "end": 410,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 399,
+              "end": 408,
+              "argument": {
+                "type": "Identifier",
+                "start": 406,
+                "end": 407,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": {
+          "type": "TSTypeParameterDeclaration",
+          "start": 379,
+          "end": 383,
+          "params": [
+            {
+              "type": "TSTypeParameter",
+              "start": 380,
+              "end": 382,
+              "name": {
+                "type": "Identifier",
+                "start": 380,
+                "end": 382,
+                "name": "S3",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "constraint": null,
+              "default": null,
+              "in": false,
+              "out": false,
+              "const": false
+            }
+          ]
+        },
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 390,
+          "end": 394,
+          "typeAnnotation": {
+            "type": "TSTypeReference",
+            "start": 392,
+            "end": 394,
+            "typeName": {
+              "type": "Identifier",
+              "start": 392,
+              "end": 394,
+              "name": "S3",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeArguments": null
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 472,
+        "end": 483,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 478,
+          "end": 480,
+          "name": "S4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 481,
+          "end": 483,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 484,
+        "end": 526,
+        "id": {
+          "type": "Identifier",
+          "start": 493,
+          "end": 495,
+          "name": "s4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 500,
+            "end": 505,
+            "name": "x",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 501,
+              "end": 505,
+              "typeAnnotation": {
+                "type": "TSTypeReference",
+                "start": 503,
+                "end": 505,
+                "typeName": {
+                  "type": "Identifier",
+                  "start": 503,
+                  "end": 505,
+                  "name": "S4",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "typeArguments": null
+              }
+            },
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 511,
+          "end": 526,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 515,
+              "end": 524,
+              "argument": {
+                "type": "Identifier",
+                "start": 522,
+                "end": 523,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": {
+          "type": "TSTypeParameterDeclaration",
+          "start": 495,
+          "end": 499,
+          "params": [
+            {
+              "type": "TSTypeParameter",
+              "start": 496,
+              "end": 498,
+              "name": {
+                "type": "Identifier",
+                "start": 496,
+                "end": 498,
+                "name": "S4",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "constraint": null,
+              "default": null,
+              "in": false,
+              "out": false,
+              "const": false
+            }
+          ]
+        },
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 506,
+          "end": 510,
+          "typeAnnotation": {
+            "type": "TSTypeReference",
+            "start": 508,
+            "end": 510,
+            "typeName": {
+              "type": "Identifier",
+              "start": 508,
+              "end": 510,
+              "name": "S4",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeArguments": null
+          }
+        },
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Valid: same name in nested type-parameter scopes (each scope is fresh).",
+      "start": 0,
+      "end": 74
+    },
+    {
+      "type": "Line",
+      "value": " outer T shadowed by method T",
+      "start": 76,
+      "end": 107
+    },
+    {
+      "type": "Line",
+      "value": " outer T shadowed by inner function T",
+      "start": 161,
+      "end": 200
+    },
+    {
+      "type": "Line",
+      "value": " type parameter shadowing an outer interface of the same name",
+      "start": 288,
+      "end": 351
+    },
+    {
+      "type": "Line",
+      "value": " type parameter shadowing an outer class of the same name",
+      "start": 412,
+      "end": 471
+    }
+  ],
+  "diagnostics": []
+}

@@ -13,7 +13,7 @@
 [![NPM Version](https://img.shields.io/npm/v/yuku?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku)
 [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
-Yuku is a high-performance JavaScript and TypeScript compiler and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
+Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
 </div>
 
@@ -34,6 +34,8 @@ import { parse } from "yuku-parser";
 
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
+
+Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs), and runs 3–5x faster than alternatives on npm.
 
 ### Zig
 

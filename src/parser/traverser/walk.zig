@@ -24,13 +24,13 @@ pub const Action = enum {
 /// `exit_block_statement`, or the catch-all `enter_node`/`exit_node`.
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
-    _ = try walkNode(C, V, visitor, ctx.tree.program, ctx);
+    _ = try walkNode(C, V, visitor, ctx.tree.root, ctx);
 }
 
 fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
     if (index == .null) return .proceed;
 
-    const data = ctx.tree.getData(index);
+    const data = ctx.tree.data(index);
 
     switch (try dispatch.enter(C, V, visitor, data, index, ctx)) {
         .skip => return .proceed,
@@ -44,7 +44,7 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
     const current = if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const)
         data
     else
-        ctx.tree.getData(index);
+        ctx.tree.data(index);
 
     const result = try walkChildren(C, V, visitor, current, ctx);
 
@@ -78,7 +78,7 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
         } else if (field.type == ast.IndexRange) {
             const range = @field(payload, field.name);
             for (0..range.len) |i| {
-                const child = ctx.tree.getExtra(range)[i];
+                const child = ctx.tree.extra(range)[i];
                 if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
             }
         }

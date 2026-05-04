@@ -1,0 +1,423 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 382,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 55,
+        "end": 66,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 61,
+          "end": 63,
+          "name": "B1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 64,
+          "end": 66,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 67,
+        "end": 78,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 73,
+          "end": 75,
+          "name": "B1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 76,
+          "end": 78,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 95,
+        "end": 106,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 101,
+          "end": 103,
+          "name": "B2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 104,
+          "end": 106,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 107,
+        "end": 118,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 111,
+            "end": 117,
+            "id": {
+              "type": "Identifier",
+              "start": 111,
+              "end": 113,
+              "name": "B2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 116,
+              "end": 117,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 135,
+        "end": 146,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 139,
+            "end": 145,
+            "id": {
+              "type": "Identifier",
+              "start": 139,
+              "end": 141,
+              "name": "B3",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 144,
+              "end": 145,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 147,
+        "end": 158,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 153,
+          "end": 155,
+          "name": "B3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 156,
+          "end": 158,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 282,
+        "end": 293,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 288,
+          "end": 290,
+          "name": "B4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 291,
+          "end": 293,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 294,
+        "end": 310,
+        "id": {
+          "type": "Identifier",
+          "start": 303,
+          "end": 305,
+          "name": "B4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 308,
+          "end": 310,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 353,
+        "end": 364,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 359,
+          "end": 361,
+          "name": "B5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 362,
+          "end": 364,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 365,
+        "end": 381,
+        "id": {
+          "type": "Identifier",
+          "start": 370,
+          "end": 372,
+          "name": "B5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 373,
+          "end": 381,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 377,
+              "end": 378,
+              "id": {
+                "type": "Identifier",
+                "start": 377,
+                "end": 378,
+                "name": "A",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": null,
+              "computed": false
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Error: class redeclaration cases.",
+      "start": 0,
+      "end": 36
+    },
+    {
+      "type": "Line",
+      "value": " class + class",
+      "start": 38,
+      "end": 54
+    },
+    {
+      "type": "Line",
+      "value": " class + let",
+      "start": 80,
+      "end": 94
+    },
+    {
+      "type": "Line",
+      "value": " let + class",
+      "start": 120,
+      "end": 134
+    },
+    {
+      "type": "Line",
+      "value": " class + function (function is value, class is value+type. Both occupy value",
+      "start": 160,
+      "end": 238
+    },
+    {
+      "type": "Line",
+      "value": " space, no overload merge across kinds.)",
+      "start": 239,
+      "end": 281
+    },
+    {
+      "type": "Line",
+      "value": " class + enum (both occupy value+type)",
+      "start": 312,
+      "end": 352
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'B1' has already been declared",
+      "start": 73,
+      "end": 75,
+      "help": "Consider removing or renaming this declaration of 'B1'",
+      "labels": [
+        {
+          "start": 61,
+          "end": 63,
+          "message": "'B1' was first declared as a class here"
+        },
+        {
+          "start": 73,
+          "end": 75,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'B2' has already been declared",
+      "start": 111,
+      "end": 113,
+      "help": "Consider removing or renaming this declaration of 'B2'",
+      "labels": [
+        {
+          "start": 101,
+          "end": 103,
+          "message": "'B2' was first declared as a class here"
+        },
+        {
+          "start": 111,
+          "end": 113,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'B3' has already been declared",
+      "start": 153,
+      "end": 155,
+      "help": "Consider removing or renaming this declaration of 'B3'",
+      "labels": [
+        {
+          "start": 139,
+          "end": 141,
+          "message": "'B3' was first declared as a variable here"
+        },
+        {
+          "start": 153,
+          "end": 155,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'B5' has already been declared",
+      "start": 370,
+      "end": 372,
+      "help": "Consider removing or renaming this declaration of 'B5'",
+      "labels": [
+        {
+          "start": 359,
+          "end": 361,
+          "message": "'B5' was first declared as a class here"
+        },
+        {
+          "start": 370,
+          "end": 372,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 939,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 252,
+        "end": 280,
+        "specifiers": [
+          {
+            "type": "ImportSpecifier",
+            "start": 261,
+            "end": 265,
+            "imported": {
+              "type": "Identifier",
+              "start": 261,
+              "end": 265,
+              "name": "nice",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "local": {
+              "type": "Identifier",
+              "start": 261,
+              "end": 265,
+              "name": "nice",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "importKind": "value"
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 273,
+          "end": 279,
+          "value": "cool",
+          "raw": "\"cool\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 281,
+        "end": 354,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 287,
+            "end": 353,
+            "id": {
+              "type": "Identifier",
+              "start": 287,
+              "end": 291,
+              "name": "nice",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ClassExpression",
+              "start": 294,
+              "end": 353,
+              "decorators": [],
+              "id": null,
+              "superClass": null,
+              "body": {
+                "type": "ClassBody",
+                "start": 316,
+                "end": 353,
+                "body": [
+                  {
+                    "type": "PropertyDefinition",
+                    "start": 320,
+                    "end": 351,
+                    "decorators": [],
+                    "key": {
+                      "type": "Identifier",
+                      "start": 328,
+                      "end": 345,
+                      "name": "_symbolLinksBrand",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "value": null,
+                    "computed": false,
+                    "static": false,
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 345,
+                      "end": 350,
+                      "typeAnnotation": {
+                        "type": "TSAnyKeyword",
+                        "start": 347,
+                        "end": 350
+                      }
+                    },
+                    "declare": true,
+                    "override": false,
+                    "optional": false,
+                    "definite": false,
+                    "readonly": false,
+                    "accessibility": null
+                  }
+                ]
+              },
+              "typeParameters": null,
+              "superTypeArguments": null,
+              "implements": [
+                {
+                  "type": "TSClassImplements",
+                  "start": 311,
+                  "end": 315,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 311,
+                    "end": 315,
+                    "name": "nice",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              ],
+              "abstract": false,
+              "declare": false
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 406,
+        "end": 429,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 413,
+            "end": 415,
+            "local": {
+              "type": "Identifier",
+              "start": 413,
+              "end": 415,
+              "name": "T1",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 421,
+          "end": 428,
+          "value": "./mod",
+          "raw": "\"./mod\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 430,
+        "end": 441,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 436,
+          "end": 438,
+          "name": "T1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 439,
+          "end": 441,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 461,
+        "end": 484,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 468,
+            "end": 470,
+            "local": {
+              "type": "Identifier",
+              "start": 468,
+              "end": 470,
+              "name": "T2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 476,
+          "end": 483,
+          "value": "./mod",
+          "raw": "\"./mod\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 485,
+        "end": 498,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 491,
+            "end": 497,
+            "id": {
+              "type": "Identifier",
+              "start": 491,
+              "end": 493,
+              "name": "T2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 496,
+              "end": 497,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 521,
+        "end": 548,
+        "specifiers": [
+          {
+            "type": "ImportSpecifier",
+            "start": 530,
+            "end": 532,
+            "imported": {
+              "type": "Identifier",
+              "start": 530,
+              "end": 532,
+              "name": "T3",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "local": {
+              "type": "Identifier",
+              "start": 530,
+              "end": 532,
+              "name": "T3",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "importKind": "value"
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 540,
+          "end": 547,
+          "value": "./mod",
+          "raw": "\"./mod\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 549,
+        "end": 565,
+        "id": {
+          "type": "Identifier",
+          "start": 558,
+          "end": 560,
+          "name": "T3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 563,
+          "end": 565,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 602,
+        "end": 630,
+        "specifiers": [
+          {
+            "type": "ImportNamespaceSpecifier",
+            "start": 609,
+            "end": 616,
+            "local": {
+              "type": "Identifier",
+              "start": 614,
+              "end": 616,
+              "name": "T4",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 622,
+          "end": 629,
+          "value": "./mod",
+          "raw": "\"./mod\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 631,
+        "end": 642,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 635,
+            "end": 641,
+            "id": {
+              "type": "Identifier",
+              "start": 635,
+              "end": 637,
+              "name": "T4",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 640,
+              "end": 641,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 705,
+        "end": 728,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 712,
+            "end": 714,
+            "local": {
+              "type": "Identifier",
+              "start": 712,
+              "end": 714,
+              "name": "T5",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 720,
+          "end": 727,
+          "value": "./mod",
+          "raw": "\"./mod\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 729,
+        "end": 758,
+        "id": {
+          "type": "Identifier",
+          "start": 739,
+          "end": 741,
+          "name": "T5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 742,
+          "end": 758,
+          "body": [
+            {
+              "type": "TSPropertySignature",
+              "start": 746,
+              "end": 756,
+              "key": {
+                "type": "Identifier",
+                "start": 746,
+                "end": 747,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 747,
+                "end": 755,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 749,
+                  "end": 755
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 783,
+        "end": 806,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 790,
+            "end": 792,
+            "local": {
+              "type": "Identifier",
+              "start": 790,
+              "end": 792,
+              "name": "T6",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 798,
+          "end": 805,
+          "value": "./mod",
+          "raw": "\"./mod\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 807,
+        "end": 824,
+        "id": {
+          "type": "Identifier",
+          "start": 812,
+          "end": 814,
+          "name": "T6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSNumberKeyword",
+          "start": 817,
+          "end": 823
+        },
+        "declare": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 895,
+        "end": 916,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 902,
+            "end": 904,
+            "local": {
+              "type": "Identifier",
+              "start": 902,
+              "end": 904,
+              "name": "T7",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 910,
+          "end": 915,
+          "value": "./a",
+          "raw": "\"./a\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 917,
+        "end": 938,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 924,
+            "end": 926,
+            "local": {
+              "type": "Identifier",
+              "start": 924,
+              "end": 926,
+              "name": "T7",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 932,
+          "end": 937,
+          "value": "./b",
+          "raw": "\"./b\""
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Imports are permissive: a parser cannot tell whether an imported name",
+      "start": 0,
+      "end": 72
+    },
+    {
+      "type": "Line",
+      "value": " resolves to a value, a type, or both. The original bug case --",
+      "start": 73,
+      "end": 138
+    },
+    {
+      "type": "Line",
+      "value": " `import { nice } from \"cool\"; const nice = class implements nice {}`",
+      "start": 139,
+      "end": 210
+    },
+    {
+      "type": "Line",
+      "value": " must NOT fire a redeclaration error.",
+      "start": 211,
+      "end": 250
+    },
+    {
+      "type": "Line",
+      "value": " import + class with same name: still no error.",
+      "start": 356,
+      "end": 405
+    },
+    {
+      "type": "Line",
+      "value": " import + const",
+      "start": 443,
+      "end": 460
+    },
+    {
+      "type": "Line",
+      "value": " import + function",
+      "start": 500,
+      "end": 520
+    },
+    {
+      "type": "Line",
+      "value": " import + let (namespace import)",
+      "start": 567,
+      "end": 601
+    },
+    {
+      "type": "Line",
+      "value": " import + interface (the import might be a type re-export)",
+      "start": 644,
+      "end": 704
+    },
+    {
+      "type": "Line",
+      "value": " import + type alias",
+      "start": 760,
+      "end": 782
+    },
+    {
+      "type": "Line",
+      "value": " Two imports of the same name DO conflict (unambiguous duplicate).",
+      "start": 826,
+      "end": 894
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'T7' has already been declared",
+      "start": 924,
+      "end": 926,
+      "help": "Consider removing or renaming this declaration of 'T7'",
+      "labels": [
+        {
+          "start": 902,
+          "end": 904,
+          "message": "'T7' was first declared as an import here"
+        },
+        {
+          "start": 924,
+          "end": 926,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    }
+  ]
+}

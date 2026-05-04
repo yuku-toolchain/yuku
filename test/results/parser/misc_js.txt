@@ -126,8 +126,6 @@ error: Expected declaration after 'export', but found 'using'
    |        ^^^^^
  2 | 
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/misc/js/using-var.js
 ✓ test/parser/misc/js/yield-expression-in-arrow-function.js

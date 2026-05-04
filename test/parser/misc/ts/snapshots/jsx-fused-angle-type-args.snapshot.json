@@ -1,0 +1,161 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 50,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 23,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 14,
+            "end": 22,
+            "id": {
+              "type": "Identifier",
+              "start": 14,
+              "end": 22,
+              "name": "Foo",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 17,
+                "end": 22,
+                "typeAnnotation": {
+                  "type": "TSAnyKeyword",
+                  "start": 19,
+                  "end": 22
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 25,
+        "end": 49,
+        "expression": {
+          "type": "JSXElement",
+          "start": 25,
+          "end": 48,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 25,
+            "end": 48,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 26,
+              "end": 29,
+              "name": "Foo"
+            },
+            "attributes": [],
+            "selfClosing": true,
+            "typeArguments": {
+              "type": "TSTypeParameterInstantiation",
+              "start": 29,
+              "end": 45,
+              "params": [
+                {
+                  "type": "TSFunctionType",
+                  "start": 30,
+                  "end": 44,
+                  "typeParameters": {
+                    "type": "TSTypeParameterDeclaration",
+                    "start": 30,
+                    "end": 33,
+                    "params": [
+                      {
+                        "type": "TSTypeParameter",
+                        "start": 31,
+                        "end": 32,
+                        "name": {
+                          "type": "Identifier",
+                          "start": 31,
+                          "end": 32,
+                          "name": "T",
+                          "decorators": [],
+                          "typeAnnotation": null,
+                          "optional": false
+                        },
+                        "constraint": null,
+                        "default": null,
+                        "in": false,
+                        "out": false,
+                        "const": false
+                      }
+                    ]
+                  },
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 34,
+                      "end": 38,
+                      "name": "x",
+                      "decorators": [],
+                      "typeAnnotation": {
+                        "type": "TSTypeAnnotation",
+                        "start": 35,
+                        "end": 38,
+                        "typeAnnotation": {
+                          "type": "TSTypeReference",
+                          "start": 37,
+                          "end": 38,
+                          "typeName": {
+                            "type": "Identifier",
+                            "start": 37,
+                            "end": 38,
+                            "name": "T",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "typeArguments": null
+                        }
+                      },
+                      "optional": false
+                    }
+                  ],
+                  "returnType": {
+                    "type": "TSTypeAnnotation",
+                    "start": 40,
+                    "end": 44,
+                    "typeAnnotation": {
+                      "type": "TSTypeReference",
+                      "start": 43,
+                      "end": 44,
+                      "typeName": {
+                        "type": "Identifier",
+                        "start": 43,
+                        "end": 44,
+                        "name": "T",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "typeArguments": null
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "children": [],
+          "closingElement": null
+        },
+        "directive": null
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

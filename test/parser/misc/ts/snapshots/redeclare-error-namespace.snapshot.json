@@ -1,0 +1,501 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 417,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSModuleDeclaration",
+        "start": 110,
+        "end": 148,
+        "id": {
+          "type": "Identifier",
+          "start": 120,
+          "end": 122,
+          "name": "D1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 123,
+          "end": 148,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 127,
+              "end": 146,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 134,
+                "end": 146,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 140,
+                    "end": 145,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 140,
+                      "end": 141,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 144,
+                      "end": 145,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 149,
+        "end": 160,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 153,
+            "end": 159,
+            "id": {
+              "type": "Identifier",
+              "start": 153,
+              "end": 155,
+              "name": "D1",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 158,
+              "end": 159,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 194,
+        "end": 205,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 198,
+            "end": 204,
+            "id": {
+              "type": "Identifier",
+              "start": 198,
+              "end": 200,
+              "name": "D2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 203,
+              "end": 204,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 206,
+        "end": 244,
+        "id": {
+          "type": "Identifier",
+          "start": 216,
+          "end": 218,
+          "name": "D2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 219,
+          "end": 244,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 223,
+              "end": 242,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 230,
+                "end": 242,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 236,
+                    "end": 241,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 236,
+                      "end": 237,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 240,
+                      "end": 241,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 278,
+        "end": 316,
+        "id": {
+          "type": "Identifier",
+          "start": 288,
+          "end": 290,
+          "name": "D3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 291,
+          "end": 316,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 295,
+              "end": 314,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 302,
+                "end": 314,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 308,
+                    "end": 313,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 308,
+                      "end": 309,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 312,
+                      "end": 313,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 317,
+        "end": 328,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 321,
+            "end": 327,
+            "id": {
+              "type": "Identifier",
+              "start": 321,
+              "end": 323,
+              "name": "D3",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 326,
+              "end": 327,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 364,
+        "end": 402,
+        "id": {
+          "type": "Identifier",
+          "start": 374,
+          "end": 376,
+          "name": "D4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 377,
+          "end": 402,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 381,
+              "end": 400,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 388,
+                "end": 400,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 394,
+                    "end": 399,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 394,
+                      "end": 395,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 398,
+                      "end": 399,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 403,
+        "end": 416,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 409,
+            "end": 415,
+            "id": {
+              "type": "Identifier",
+              "start": 409,
+              "end": 411,
+              "name": "D4",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 414,
+              "end": 415,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Error: namespace conflicts.",
+      "start": 0,
+      "end": 30
+    },
+    {
+      "type": "Line",
+      "value": " instantiated namespace + var (instantiated namespace occupies value space)",
+      "start": 32,
+      "end": 109
+    },
+    {
+      "type": "Line",
+      "value": " var + instantiated namespace",
+      "start": 162,
+      "end": 193
+    },
+    {
+      "type": "Line",
+      "value": " instantiated namespace + let",
+      "start": 246,
+      "end": 277
+    },
+    {
+      "type": "Line",
+      "value": " instantiated namespace + const",
+      "start": 330,
+      "end": 363
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'D1' has already been declared",
+      "start": 153,
+      "end": 155,
+      "help": "Consider removing or renaming this declaration of 'D1'",
+      "labels": [
+        {
+          "start": 120,
+          "end": 122,
+          "message": "'D1' was first declared as a namespace here"
+        },
+        {
+          "start": 153,
+          "end": 155,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'D2' has already been declared",
+      "start": 216,
+      "end": 218,
+      "help": "Consider removing or renaming this declaration of 'D2'",
+      "labels": [
+        {
+          "start": 198,
+          "end": 200,
+          "message": "'D2' was first declared as a variable here"
+        },
+        {
+          "start": 216,
+          "end": 218,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'D3' has already been declared",
+      "start": 321,
+      "end": 323,
+      "help": "Consider removing or renaming this declaration of 'D3'",
+      "labels": [
+        {
+          "start": 288,
+          "end": 290,
+          "message": "'D3' was first declared as a namespace here"
+        },
+        {
+          "start": 321,
+          "end": 323,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'D4' has already been declared",
+      "start": 409,
+      "end": 411,
+      "help": "Consider removing or renaming this declaration of 'D4'",
+      "labels": [
+        {
+          "start": 374,
+          "end": 376,
+          "message": "'D4' was first declared as a namespace here"
+        },
+        {
+          "start": 409,
+          "end": 411,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    }
+  ]
+}
