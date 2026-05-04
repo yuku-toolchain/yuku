@@ -100,10 +100,11 @@ pub const Symbol = struct {
         }
     };
 
-    // Bits in JS value space. Things visible at runtime. `import` is
-    // intentionally excluded: a parser cannot know whether an imported
-    // name is a value, a type, or both, so imports merge permissively
-    // with following declarations. Reach via `Flags.inValueSpace`.
+    // Declarations that live in JS value space (visible at runtime).
+    // `import` is intentionally excluded: a parser cannot know whether
+    // an imported name is a value, a type, or both, so imports merge
+    // permissively with following declarations. Reach via
+    // `Flags.inValueSpace`.
     const value_space: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
@@ -114,9 +115,9 @@ pub const Symbol = struct {
         .value_module = true,
     };
 
-    // Bits in TS type space. `class` and `enum` straddle both spaces.
-    // `type_import` is excluded for the same reason as `import` above.
-    // Reach via `Flags.inTypeSpace`.
+    // Declarations that live in TS type space. `class` and `enum`
+    // straddle both spaces. `type_import` is excluded for the same
+    // reason as `import` above. Reach via `Flags.inTypeSpace`.
     const type_space: Flags = .{
         .class = true,
         .regular_enum = true,
@@ -832,9 +833,9 @@ pub const SymbolTracker = struct {
         while (self.hoisting_variables.items.len < n) self.hoisting_variables.appendAssumeCapacity(.empty);
     }
 
-    /// Finalizes into an immutable `SymbolTable`. The tracker's backing
-    /// arrays are aliased into the table. Both share the tree's arena
-    /// lifetime.
+    /// Finalizes the tracker into an immutable `SymbolTable`. The
+    /// table reuses the tracker's storage (no copy), so it stays valid
+    /// for as long as the source tree is alive.
     pub fn toSymbolTable(self: *SymbolTracker, scope_tree: sc.ScopeTree) SymbolTable {
         return .{
             .symbols = self.symbols.items,

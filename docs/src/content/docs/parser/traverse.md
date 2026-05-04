@@ -424,9 +424,9 @@ pub fn enter_binding_identifier(
 
 ### Symbol Flags
 
-`Symbol.Flags` is a `packed struct(u32)`. A single symbol can carry several bits at once: a `class` lives in both value and type space, an exported `var` carries `function_scoped_var` and `exported`, an interface and a class of the same name merge into a symbol with both bits set.
+`Symbol.Flags` describes everything the tracker knows about a binding. A single symbol can carry several flags at once: a `class` lives in both value and type space, an exported `var` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into a single symbol that satisfies both kinds.
 
-The bits group into three categories.
+The flags group into three categories.
 
 **Declaration kind** (what created the binding):
 
@@ -460,8 +460,8 @@ symbol.flags.is_default  // default export
 **Helpers** on the flag struct itself:
 
 ```zig
-flags.intersects(other)     // true if any bit is set in both
-flags.merge(other)          // bitwise OR (used when merging compatible declarations)
+flags.intersects(other)     // true if `flags` and `other` share at least one flag
+flags.merge(other)          // union of two flag sets (used when merging compatible declarations)
 flags.isHoistingVar()       // true for a real `var` (not a parameter, not a catch_var)
 flags.toString()            // human-readable category for diagnostics
 ```
@@ -500,7 +500,7 @@ Symbol.Excludes.catch_param
 Symbol.Excludes.type_parameter
 ```
 
-This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching. If you ever need to teach the tracker a new merging rule, you change one bitset, not a tangle of `if` statements.
+This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching. If you ever need to teach the tracker a new merging rule, you change one flag set, not a tangle of `if` statements.
 
 ### TypeScript Context Flags
 
