@@ -1,4 +1,4 @@
-name: CI
+name: Tools
 
 on: [push, pull_request]
 
@@ -7,34 +7,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build & Zig tests on ${{ matrix.os }}
+  tools:
+    name: Tools on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # [windows-latest], bun is crashing on windows
         os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
         with:
           version: 0.17.0-dev.224+c166c49b1
 
-      - name: Load files
-        run: bun run load-files
-
-      - name: Build
-        run: zig build
-
-      - name: Run Zig tests
-        run: zig build test
+      - name: Run tools tests
+        run: zig build test-tools

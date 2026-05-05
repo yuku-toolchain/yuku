@@ -6,6 +6,7 @@ pub const Utf8Error = error{InvalidUtf8};
 
 pub fn codePointAt(str: []const u8, i: usize) Utf8Error!CodePoint {
     const len = std.unicode.utf8ByteSequenceLength(str[i]) catch return error.InvalidUtf8;
+    if (str.len - i < len) return error.InvalidUtf8;
 
     const codepoint: u21 = switch (len) {
         1 => str[i],
@@ -316,6 +317,21 @@ test "codePointAt 4 byte utf8" {
 
 test "codePointAt invalid leading byte" {
     const s = &[_]u8{0xFF};
+    try testing.expectError(error.InvalidUtf8, codePointAt(s, 0));
+}
+
+test "codePointAt truncated 2-byte sequence" {
+    const s = &[_]u8{0xC3}; // lead byte for 2-byte sequence, no continuation
+    try testing.expectError(error.InvalidUtf8, codePointAt(s, 0));
+}
+
+test "codePointAt truncated 3-byte sequence" {
+    const s = &[_]u8{0xE2}; // lead byte for 3-byte sequence, no continuation
+    try testing.expectError(error.InvalidUtf8, codePointAt(s, 0));
+}
+
+test "codePointAt truncated 4-byte sequence" {
+    const s = &[_]u8{ 0xF0, 0x90 }; // lead byte for 4-byte sequence, only 2 bytes available
     try testing.expectError(error.InvalidUtf8, codePointAt(s, 0));
 }
 

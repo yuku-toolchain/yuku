@@ -102,8 +102,16 @@ pub fn build(b: *std.Build) void {
     const test_tools_step = b.step("test-tools", "Run the tools tests");
     test_tools_step.dependOn(&run_tools_tests.step);
 
+    const fuzz_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/fuzz.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    fuzz_module.addImport("util", util_module);
+
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = fuzz_module })).step);
 
     const napi_dep = b.dependency("napi_zig", .{});
 
