@@ -1,5 +1,5 @@
 const std = @import("std");
-const ast = @import("../../ast.zig");
+const ast = @import("ast.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -203,10 +203,6 @@ pub const ScopeTracker = struct {
             .catch_clause,
             // Section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
-            // ts nodes that scope their `<T>` type parameters and any
-            // parameter labels so they don't leak to the outer scope.
-            // ts_conditional_type isolates `infer T` per conditional
-            // so siblings can reuse the same name.
             .ts_interface_declaration,
             .ts_type_alias_declaration,
             .ts_function_type,
@@ -218,8 +214,6 @@ pub const ScopeTracker = struct {
             .ts_mapped_type,
             .ts_conditional_type,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
-            // TS namespace bodies act as a var-hoist target so `var`
-            // declarations don't escape to the outer scope.
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             .class => |cls| {
                 // Section 15.7.14: classes are always strict mode.

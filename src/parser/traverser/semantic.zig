@@ -1,8 +1,8 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const wk = @import("walk.zig");
-const sc = @import("tracker/scope.zig");
-const sy = @import("tracker/symbol.zig");
+const sc = @import("../scope.zig");
+const bi = @import("../binder.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -10,12 +10,12 @@ pub const Scope = sc.Scope;
 pub const ScopeId = sc.ScopeId;
 pub const ScopeTree = sc.ScopeTree;
 pub const ScopeTracker = sc.ScopeTracker;
-pub const SymbolId = sy.SymbolId;
-pub const ReferenceId = sy.ReferenceId;
-pub const Symbol = sy.Symbol;
-pub const Reference = sy.Reference;
-pub const SymbolTable = sy.SymbolTable;
-pub const SymbolTracker = sy.SymbolTracker;
+pub const SymbolId = bi.SymbolId;
+pub const ReferenceId = bi.ReferenceId;
+pub const Symbol = bi.Symbol;
+pub const Reference = bi.Reference;
+pub const SymbolTable = bi.SymbolTable;
+pub const SymbolTracker = bi.SymbolTracker;
 
 /// Walk context combining the path stack, scope tracker, and symbol
 /// tracker. Visitor hooks receive `*Ctx` and use it to inspect the

@@ -1,5 +1,5 @@
 const std = @import("std");
-const ast = @import("../../ast.zig");
+const ast = @import("ast.zig");
 const sc = @import("scope.zig");
 const String = ast.String;
 
@@ -100,11 +100,7 @@ pub const Symbol = struct {
         }
     };
 
-    // Declarations that live in JS value space (visible at runtime).
-    // `import` is intentionally excluded: a parser cannot know whether
-    // an imported name is a value, a type, or both, so imports merge
-    // permissively with following declarations. Reach via
-    // `Flags.inValueSpace`.
+    // Declarations that live in JS value space (visible at runtime)
     const value_space: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
@@ -115,9 +111,7 @@ pub const Symbol = struct {
         .value_module = true,
     };
 
-    // Declarations that live in TS type space. `class` and `enum`
-    // straddle both spaces. `type_import` is excluded for the same
-    // reason as `import` above. Reach via `Flags.inTypeSpace`.
+    // Declarations that live in TS type space
     const type_space: Flags = .{
         .class = true,
         .regular_enum = true,
@@ -127,8 +121,7 @@ pub const Symbol = struct {
         .type_parameter = true,
     };
 
-    // Names a hoisted `var` cannot pass through (Section 14.2.1).
-    // Reach via `Flags.isBlockScopedLike`.
+    // Names a hoisted `var` cannot pass through
     const block_scoped_like: Flags = .{
         .block_scoped_var = true,
         .class = true,
@@ -149,8 +142,8 @@ pub const Symbol = struct {
         };
 
         /// Function in a hoist scope (function/global/static_block). TS
-        /// allows function overloads, sloppy JS allows merge with `var`
-        /// (Annex B 3.2). The `block_var` excludes are used instead at
+        /// allows function overloads, sloppy JS allows merge with `var`.
+        /// The `block_var` excludes are used instead at
         /// lexical scopes (block/module).
         pub const function: Flags = blk: {
             var f = value_space;

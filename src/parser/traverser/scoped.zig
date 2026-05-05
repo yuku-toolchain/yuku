@@ -1,7 +1,7 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const wk = @import("walk.zig");
-const sc = @import("tracker/scope.zig");
+const sc = @import("../scope.zig");
 
 const Allocator = std.mem.Allocator;
 
