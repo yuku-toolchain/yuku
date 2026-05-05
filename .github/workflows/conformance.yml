@@ -1,4 +1,4 @@
-name: CI
+name: Conformance
 
 on: [push, pull_request]
 
@@ -7,8 +7,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build & Zig tests on ${{ matrix.os }}
+  conformance:
+    name: Conformance on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -25,8 +25,13 @@ jobs:
         with:
           version: 0.17.0-dev.224+c166c49b1
 
-      - name: Build
-        run: zig build
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-      - name: Run Zig tests
-        run: zig build test
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run conformance tests
+        run: bun run test

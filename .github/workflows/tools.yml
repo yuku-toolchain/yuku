@@ -1,4 +1,4 @@
-name: CI
+name: Tools
 
 on: [push, pull_request]
 
@@ -7,13 +7,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build & Zig tests on ${{ matrix.os }}
+  tools:
+    name: Tools on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # [windows-latest], bun is crashing on windows
         os: [ubuntu-latest, macos-latest]
 
     steps:
@@ -25,8 +24,5 @@ jobs:
         with:
           version: 0.17.0-dev.224+c166c49b1
 
-      - name: Build
-        run: zig build
-
-      - name: Run Zig tests
-        run: zig build test
+      - name: Run tools tests
+        run: zig build test-tools
