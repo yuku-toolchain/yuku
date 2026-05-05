@@ -6,7 +6,7 @@ const codspeed = @import("codspeed");
 // check load-parser-bench-files.ts script in profiler dir
 const parser_bench_files = .{
     .{ .name = "typescript.js", .path = "files/typescript.js" },
-    .{ .name = "three.js", .path = "files/three.js" },
+    .{ .name = "calcom.tsx", .path = "files/calcom.tsx" },
     .{ .name = "react.js", .path = "files/react.js" },
 };
 
@@ -18,7 +18,9 @@ pub fn main() !void {
         const BenchFn = struct {
             fn run() void {
                 const contents = @embedFile(file.path);
-                const tree = parser.parse(std.heap.page_allocator, contents, .{}) catch unreachable;
+                const tree = parser.parse(std.heap.page_allocator, contents, .{
+                    .lang = comptime .fromPath(file.path)
+                }) catch unreachable;
                 defer tree.deinit();
             }
         };
