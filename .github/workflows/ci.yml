@@ -26,7 +26,7 @@ jobs:
           version: 0.17.0-dev.224+c166c49b1
 
       - name: Build
-        run: zig build
+        run: bun run load-files && zig build
 
       - name: Run Zig tests
         run: zig build test

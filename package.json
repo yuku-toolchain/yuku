@@ -8,7 +8,6 @@
   "scripts": {
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
-    "test:zig": "zig build test",
     "test:fuzz": "zig build test --fuzz=200K",
     "format": "zig fmt **/*.zig",
     "test": "bun load-files && bun build:npm && bun test/parser/run.ts",
