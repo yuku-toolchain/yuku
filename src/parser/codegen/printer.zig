@@ -73,6 +73,11 @@ pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(false, allocator, tree, options);
 }
 
+/// Strips TypeScript from `tree` and codegens JavaScript.
+pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
+    return printImpl(true, allocator, tree, options);
+}
+
 pub fn printImpl(comptime strip_ts: bool, allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     var p = try Printer(strip_ts).init(allocator, tree, options);
     defer p.deinit();
