@@ -1,0 +1,14 @@
+{
+  "name": "@yuku-strip/binding-freebsd-x64",
+  "version": "0.0.0",
+  "os": [
+    "freebsd"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "yuku-strip.node",
+  "files": [
+    "yuku-strip.node"
+  ]
+}

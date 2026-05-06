@@ -145,6 +145,28 @@ fn Printer(comptime strip_ts: bool) type {
         try self.code.appendNTimes(self.allocator, ' ', n);
     }
 
+    inline fn mark(self: *const Self) usize {
+        return self.code.items.len;
+    }
+
+    inline fn rewindTo(self: *Self, pos: usize) void {
+        self.code.shrinkRetainingCapacity(pos);
+    }
+
+    /// Emits `idx`. Returns true if any bytes were written.
+    fn tryEmit(self: *Self, idx: NodeIndex) Error!bool {
+        const start = self.mark();
+        try self.emit(idx);
+        return self.code.items.len > start;
+    }
+
+    /// Emits `idx` in a position where a statement is grammatically required.
+    /// If the emit produces no output, an empty statement is written so the
+    /// surrounding control flow stays valid.
+    fn emitStmt(self: *Self, idx: NodeIndex) Error!void {
+        if (!try self.tryEmit(idx)) try self.writeByte(';');
+    }
+
     fn printRoot(self: *Self) Error!void {
         try self.emit(self.tree.root);
         if (self.options.final_newline and (self.code.items.len == 0 or self.code.items[self.code.items.len - 1] != '\n')) {
@@ -220,14 +242,12 @@ fn Printer(comptime strip_ts: bool) type {
         const list = self.tree.extra(items);
         var first = true;
         for (list) |s| {
-            const before = self.code.items.len;
+            const before = self.mark();
             if (!first) try self.newline();
-            const after_sep = self.code.items.len;
-            try self.emit(s);
-            if (self.code.items.len == after_sep) {
-                self.code.shrinkRetainingCapacity(before);
-            } else {
+            if (try self.tryEmit(s)) {
                 first = false;
+            } else {
+                self.rewindTo(before);
             }
         }
     }
@@ -236,14 +256,14 @@ fn Printer(comptime strip_ts: bool) type {
         try self.writeByte('{');
         const list = self.tree.extra(items);
         if (list.len > 0) {
-            const before = self.code.items.len;
+            const before = self.mark();
             self.indent_depth += 1;
             try self.newline();
-            const after_indent = self.code.items.len;
+            const after_indent = self.mark();
             try self.printStmtList(items);
             self.indent_depth -= 1;
-            if (self.code.items.len == after_indent) {
-                self.code.shrinkRetainingCapacity(before);
+            if (self.mark() == after_indent) {
+                self.rewindTo(before);
             } else {
                 try self.newline();
             }
@@ -290,11 +310,11 @@ fn Printer(comptime strip_ts: bool) type {
         try self.emit(s.@"test");
         try self.writeByte(')');
         try self.space();
-        try self.emit(s.consequent);
+        try self.emitStmt(s.consequent);
         if (s.alternate != .null) {
             try self.space();
             try self.writeStr("else ");
-            try self.emit(s.alternate);
+            try self.emitStmt(s.alternate);
         }
     }
 
@@ -335,7 +355,7 @@ fn Printer(comptime strip_ts: bool) type {
         try self.emit(s.label);
         try self.writeByte(':');
         try self.space();
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
     }
 
     fn emit_with_statement(self: *Self, s: ast.WithStatement) Error!void {
@@ -345,7 +365,7 @@ fn Printer(comptime strip_ts: bool) type {
         try self.emit(s.object);
         try self.writeByte(')');
         try self.space();
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
     }
 
     fn emit_while_statement(self: *Self, s: ast.WhileStatement) Error!void {
@@ -355,12 +375,12 @@ fn Printer(comptime strip_ts: bool) type {
         try self.emit(s.@"test");
         try self.writeByte(')');
         try self.space();
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
     }
 
     fn emit_do_while_statement(self: *Self, s: ast.DoWhileStatement) Error!void {
         try self.writeStr("do ");
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
         try self.space();
         try self.writeStr("while");
         try self.space();
@@ -386,7 +406,7 @@ fn Printer(comptime strip_ts: bool) type {
         }
         try self.writeByte(')');
         try self.space();
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
     }
 
     fn emit_for_in_statement(self: *Self, s: ast.ForInStatement) Error!void {
@@ -398,7 +418,7 @@ fn Printer(comptime strip_ts: bool) type {
         try self.emit(s.right);
         try self.writeByte(')');
         try self.space();
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
     }
 
     fn emit_for_of_statement(self: *Self, s: ast.ForOfStatement) Error!void {
@@ -411,7 +431,7 @@ fn Printer(comptime strip_ts: bool) type {
         try self.emit(s.right);
         try self.writeByte(')');
         try self.space();
-        try self.emit(s.body);
+        try self.emitStmt(s.body);
     }
 
     fn printForLeft(self: *Self, idx: NodeIndex) Error!void {
@@ -452,8 +472,9 @@ fn Printer(comptime strip_ts: bool) type {
         if (list.len > 0) {
             self.indent_depth += 1;
             for (list) |s| {
+                const before = self.mark();
                 try self.newline();
-                try self.emit(s);
+                if (!try self.tryEmit(s)) self.rewindTo(before);
             }
             self.indent_depth -= 1;
         }
@@ -963,21 +984,17 @@ fn Printer(comptime strip_ts: bool) type {
         try self.writeByte(')');
     }
 
-    /// writes `, ` then emits `idx`. rolls back the separator if emit produced
-    /// no output. returns the new value of `first`.
+    /// Writes `, ` then emits `idx`. Rolls back the separator if emit
+    /// produced no output. Returns the new value of `first`.
     fn emitSeparated(self: *Self, idx: NodeIndex, first: bool) Error!bool {
-        const before = self.code.items.len;
+        const before = self.mark();
         if (!first) {
             try self.writeByte(',');
             try self.space();
         }
-        const after_sep = self.code.items.len;
-        try self.emit(idx);
-        if (self.code.items.len == after_sep) {
-            self.code.shrinkRetainingCapacity(before);
-            return first;
-        }
-        return false;
+        if (try self.tryEmit(idx)) return false;
+        self.rewindTo(before);
+        return first;
     }
 
     fn emit_formal_parameter(self: *Self, p: ast.FormalParameter) Error!void {
@@ -1006,14 +1023,12 @@ fn Printer(comptime strip_ts: bool) type {
         self.indent_depth += 1;
         var emitted = false;
         for (list) |m| {
-            const before = self.code.items.len;
+            const before = self.mark();
             try self.newline();
-            const after_nl = self.code.items.len;
-            try self.emit(m);
-            if (self.code.items.len == after_nl) {
-                self.code.shrinkRetainingCapacity(before);
-            } else {
+            if (try self.tryEmit(m)) {
                 emitted = true;
+            } else {
+                self.rewindTo(before);
             }
         }
         self.indent_depth -= 1;
@@ -1101,16 +1116,7 @@ fn Printer(comptime strip_ts: bool) type {
                     try self.writeByte('{');
                     try self.space();
                     var first = true;
-                    while (i < list.len) : (i += 1) {
-                        const spec = self.tree.data(list[i]);
-                        if (comptime strip_ts) if (spec == .import_specifier and spec.import_specifier.import_kind == .type) continue;
-                        if (!first) {
-                            try self.writeByte(',');
-                            try self.space();
-                        }
-                        first = false;
-                        try self.emit(list[i]);
-                    }
+                    while (i < list.len) : (i += 1) first = try self.emitSeparated(list[i], first);
                     try self.space();
                     try self.writeByte('}');
                 }
@@ -1126,6 +1132,7 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn emit_import_specifier(self: *Self, s: ast.ImportSpecifier) Error!void {
+        if (comptime strip_ts) if (s.import_kind == .type) return;
         if (s.import_kind == .type) try self.writeStr("type ");
         try self.emit(s.imported);
         if (!sameIdentifier(self.tree, s.imported, s.local)) {
@@ -1174,18 +1181,12 @@ fn Printer(comptime strip_ts: bool) type {
         const list = self.tree.extra(d.specifiers);
         if (comptime strip_ts) if (d.declaration == .null and list.len > 0 and !hasValueExportSpecifier(self.tree, list)) return;
 
+        const outer = self.mark();
         try self.writeStr("export");
         if (d.export_kind == .type) try self.writeStr(" type");
         if (d.declaration != .null) {
-            // a stripped declaration (`export declare …`, `export interface …`)
-            // produces nothing, so back out the `export` keyword to avoid a stray prefix
-            const before_decl = self.code.items.len;
             try self.writeByte(' ');
-            const after_sep = self.code.items.len;
-            try self.emit(d.declaration);
-            if (self.code.items.len == after_sep) {
-                self.code.shrinkRetainingCapacity(before_decl - "export".len);
-            }
+            if (!try self.tryEmit(d.declaration)) self.rewindTo(outer);
             return;
         }
         try self.space();
@@ -1193,16 +1194,7 @@ fn Printer(comptime strip_ts: bool) type {
         if (list.len > 0) {
             try self.space();
             var first = true;
-            for (list) |s| {
-                const sd = self.tree.data(s);
-                if (comptime strip_ts) if (sd == .export_specifier and sd.export_specifier.export_kind == .type) continue;
-                if (!first) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                first = false;
-                try self.emit(s);
-            }
+            for (list) |s| first = try self.emitSeparated(s, first);
             try self.space();
         }
         try self.writeByte('}');
@@ -1215,8 +1207,14 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn emit_export_default_declaration(self: *Self, d: ast.ExportDefaultDeclaration) Error!void {
+        const outer = self.mark();
         try self.writeStr("export default ");
-        try self.emit(d.declaration);
+        // strip can erase the inner declaration (`export default interface ...`);
+        // back out the `export default ` prefix if so
+        if (!try self.tryEmit(d.declaration)) {
+            self.rewindTo(outer);
+            return;
+        }
         // expression default needs ';'; function/class declaration default does not
         switch (self.tree.data(d.declaration)) {
             .function, .class => {},
@@ -1240,6 +1238,7 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn emit_export_specifier(self: *Self, s: ast.ExportSpecifier) Error!void {
+        if (comptime strip_ts) if (s.export_kind == .type) return;
         if (s.export_kind == .type) try self.writeStr("type ");
         try self.emit(s.local);
         if (!sameIdentifier(self.tree, s.local, s.exported)) {
