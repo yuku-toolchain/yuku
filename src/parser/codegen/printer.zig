@@ -1,19 +1,11 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const sm = @import("sourcemap.zig");
 
 const Allocator = std.mem.Allocator;
 const Tree = ast.Tree;
 const NodeIndex = ast.NodeIndex;
 const NodeData = ast.NodeData;
 const IndexRange = ast.IndexRange;
-
-pub const SourceMap = sm.SourceMap;
-pub const SourceMapV3 = sm.SourceMapV3;
-pub const Mapping = sm.Mapping;
-
-/// Source map output mode.
-pub const SourceMapMode = enum { none, v3 };
 
 /// Whitespace mode for the output.
 pub const Format = enum {
@@ -32,12 +24,6 @@ pub const Options = struct {
     format: Format = .pretty,
     /// Spaces per indentation level (used only when `format == .pretty`).
     indent: u8 = 2,
-    /// Source map output mode.
-    sourcemap: SourceMapMode = .none,
-    /// Filename to record in the source map's `sources`. Defaults to `"input"`.
-    source_filename: []const u8 = "input",
-    /// Whether to embed the original source bytes in `sourcesContent`.
-    source_content: bool = true,
     /// Quote style for emitted string literals.
     quotes: Quotes = .double,
     /// Append a trailing newline to the output if missing.
@@ -61,14 +47,11 @@ pub const Diagnostic = struct {
 pub const Result = struct {
     /// Generated source code.
     code: []const u8,
-    /// Source map, when `Options.sourcemap != .none`.
-    map: ?SourceMap = null,
     /// Codegen-detected problems. Empty when codegen succeeded cleanly.
     errors: []const Diagnostic,
 
     pub fn deinit(self: Result, allocator: Allocator) void {
         allocator.free(self.code);
-        if (self.map) |m| m.deinit(allocator);
         allocator.free(self.errors);
     }
 };
@@ -81,18 +64,15 @@ pub const Error = error{OutOfMemory};
 /// specialization of `Printer`, so disabled features cost nothing at runtime.
 pub const Config = struct {
     strip_ts: bool = false,
-    sourcemap: bool = false,
 };
 
 /// Renders a `Tree` to source code.
 pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    if (options.sourcemap == .v3) return printImpl(.{ .sourcemap = true }, allocator, tree, options);
     return printImpl(.{}, allocator, tree, options);
 }
 
 /// Strips TypeScript from `tree` and codegens JavaScript.
 pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    if (options.sourcemap == .v3) return printImpl(.{ .strip_ts = true, .sourcemap = true }, allocator, tree, options);
     return printImpl(.{ .strip_ts = true }, allocator, tree, options);
 }
 
@@ -106,17 +86,13 @@ pub fn printImpl(comptime cfg: Config, allocator: Allocator, tree: *Tree, option
     const errors = try p.errors.toOwnedSlice(allocator);
     errdefer allocator.free(errors);
 
-    var map: ?SourceMap = null;
-    if (comptime cfg.sourcemap) map = try p.builder.finish(code);
-
-    return .{ .code = code, .map = map, .errors = errors };
+    return .{ .code = code, .errors = errors };
 }
 
 fn Printer(comptime cfg: Config) type {
     return struct {
         const Self = @This();
         const strip_ts = cfg.strip_ts;
-        const sourcemap_on = cfg.sourcemap;
 
         tree: *Tree,
         code: std.ArrayList(u8) = .empty,
@@ -125,7 +101,6 @@ fn Printer(comptime cfg: Config) type {
         arena: std.heap.ArenaAllocator,
         allocator: Allocator,
         indent_depth: u32 = 0,
-        builder: if (sourcemap_on) sm.Builder else void = if (sourcemap_on) undefined else {},
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
@@ -135,16 +110,6 @@ fn Printer(comptime cfg: Config) type {
             .allocator = allocator,
         };
         try p.code.ensureTotalCapacity(allocator, tree.source.len);
-        if (comptime sourcemap_on) {
-            // ~1 mapping per 16 source bytes is a generous estimate for typical
-            // JS/TS, undershoots cost a couple of doublings.
-            p.builder = try sm.Builder.init(
-                allocator,
-                options.source_filename,
-                if (options.source_content) tree.source else null,
-                tree.source.len / 16,
-            );
-        }
         return p;
     }
 
@@ -152,7 +117,6 @@ fn Printer(comptime cfg: Config) type {
         self.arena.deinit();
         self.code.deinit(self.allocator);
         self.errors.deinit(self.allocator);
-        if (comptime sourcemap_on) self.builder.deinit();
     }
 
     inline fn pretty(self: *const Self) bool {
@@ -246,8 +210,6 @@ fn Printer(comptime cfg: Config) type {
             }
         }
 
-        if (comptime sourcemap_on) try self.addMapping(idx);
-
         switch (data) {
             inline else => |node, tag| {
                 const fn_name = "emit_" ++ @tagName(tag);
@@ -258,14 +220,6 @@ fn Printer(comptime cfg: Config) type {
                 }
             },
         }
-    }
-
-    fn addMapping(self: *Self, idx: NodeIndex) Error!void {
-        try self.builder.addMapping(
-            @intCast(self.code.items.len),
-            self.tree.span(idx).start,
-            sm.no_name,
-        );
     }
 
     fn diagnose(self: *Self, idx: NodeIndex, message: []const u8) Error!void {
