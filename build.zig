@@ -117,7 +117,7 @@ pub fn build(b: *std.Build) void {
 
     napi_zig.addLib(b, napi_dep, .{
         .name = "yuku-parser",
-        .root = b.path("src/parser/ffi/napi.zig"),
+        .root = b.path("src/parser/ffi/parser.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
@@ -127,7 +127,24 @@ pub fn build(b: *std.Build) void {
             .scope = "@yuku-parser",
             .description = "High-performance JavaScript/TypeScript parser written in Zig",
             .dts = .{
-                .file = b.path("src/parser/ffi/index.d.ts"),
+                .file = b.path("src/parser/ffi/parser.d.ts"),
+            },
+        },
+    });
+
+    napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-strip",
+        .root = b.path("src/parser/ffi/strip.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "parser", .module = parser_module },
+        },
+        .npm = .{
+            .scope = "@yuku-strip",
+            .description = "Strips TypeScript syntax from source, leaving JavaScript",
+            .dts = .{
+                .file = b.path("src/parser/ffi/strip.d.ts"),
             },
         },
     });

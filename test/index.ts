@@ -1,0 +1,1 @@
+const nice: string = "Cool";
