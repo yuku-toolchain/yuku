@@ -179,13 +179,14 @@ fn Printer(comptime strip_ts: bool) type {
         const data = self.tree.data(idx);
 
         if (comptime strip_ts) {
+            // every type-position node is erased
+            if (data.isTypeContext()) return;
             switch (data) {
                 // type-only declarations and signatures, erased silently
                 .ts_type_alias_declaration,
                 .ts_interface_declaration,
                 .ts_global_declaration,
                 .ts_namespace_export_declaration,
-                .ts_index_signature,
                 .ts_this_parameter,
                 => return,
                 // expression wrappers, pass through to the inner expression
@@ -512,6 +513,7 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn printVariableDecl(self: *Self, d: ast.VariableDeclaration, with_semicolon: bool) Error!void {
+        if (comptime !strip_ts) if (d.declare) try self.writeStr("declare ");
         try self.writeStr(d.kind.toString());
         try self.writeByte(' ');
         const list = self.tree.extra(d.declarators);
@@ -527,6 +529,7 @@ fn Printer(comptime strip_ts: bool) type {
 
     fn emit_variable_declarator(self: *Self, d: ast.VariableDeclarator) Error!void {
         try self.emit(d.id);
+        if (comptime !strip_ts) if (d.definite) try self.writeByte('!');
         if (d.init != .null) {
             try self.space();
             try self.writeByte('=');
@@ -691,6 +694,7 @@ fn Printer(comptime strip_ts: bool) type {
     fn emit_call_expression(self: *Self, e: ast.CallExpression) Error!void {
         try self.emit(e.callee);
         if (e.optional) try self.writeStr("?.");
+        try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
     }
 
@@ -701,11 +705,13 @@ fn Printer(comptime strip_ts: bool) type {
     fn emit_new_expression(self: *Self, e: ast.NewExpression) Error!void {
         try self.writeStr("new ");
         try self.emit(e.callee);
+        try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
     }
 
     fn emit_tagged_template_expression(self: *Self, e: ast.TaggedTemplateExpression) Error!void {
         try self.emit(e.tag);
+        try self.emit(e.type_arguments);
         try self.emit(e.quasi);
     }
 
@@ -853,7 +859,10 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn emit_binding_identifier(self: *Self, id: ast.BindingIdentifier) Error!void {
+        if (comptime !strip_ts) try self.printDecorators(id.decorators);
         try self.writeString(id.name);
+        if (comptime !strip_ts) if (id.optional) try self.writeByte('?');
+        try self.emit(id.type_annotation);
     }
 
     fn emit_label_identifier(self: *Self, id: ast.LabelIdentifier) Error!void {
@@ -866,7 +875,10 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn emit_assignment_pattern(self: *Self, p: ast.AssignmentPattern) Error!void {
+        if (comptime !strip_ts) try self.printDecorators(p.decorators);
         try self.emit(p.left);
+        if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
+        try self.emit(p.type_annotation);
         try self.space();
         try self.writeByte('=');
         try self.space();
@@ -874,11 +886,15 @@ fn Printer(comptime strip_ts: bool) type {
     }
 
     fn emit_binding_rest_element(self: *Self, r: ast.BindingRestElement) Error!void {
+        if (comptime !strip_ts) try self.printDecorators(r.decorators);
         try self.writeStr("...");
         try self.emit(r.argument);
+        if (comptime !strip_ts) if (r.optional) try self.writeByte('?');
+        try self.emit(r.type_annotation);
     }
 
     fn emit_array_pattern(self: *Self, p: ast.ArrayPattern) Error!void {
+        if (comptime !strip_ts) try self.printDecorators(p.decorators);
         try self.writeByte('[');
         const list = self.tree.extra(p.elements);
         for (list, 0..) |x, i| {
@@ -896,9 +912,12 @@ fn Printer(comptime strip_ts: bool) type {
             try self.emit(p.rest);
         }
         try self.writeByte(']');
+        if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
+        try self.emit(p.type_annotation);
     }
 
     fn emit_object_pattern(self: *Self, p: ast.ObjectPattern) Error!void {
+        if (comptime !strip_ts) try self.printDecorators(p.decorators);
         try self.writeByte('{');
         const list = self.tree.extra(p.properties);
         const has_any = list.len > 0 or p.rest != .null;
@@ -919,6 +938,8 @@ fn Printer(comptime strip_ts: bool) type {
         }
         if (has_any) try self.space();
         try self.writeByte('}');
+        if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
+        try self.emit(p.type_annotation);
     }
 
     fn emit_binding_property(self: *Self, p: ast.BindingProperty) Error!void {
@@ -944,6 +965,7 @@ fn Printer(comptime strip_ts: bool) type {
 
     fn emit_function(self: *Self, f: ast.Function) Error!void {
         if (comptime strip_ts) if (f.declare or f.type == .ts_declare_function or f.type == .ts_empty_body_function_expression) return;
+        if (comptime !strip_ts) if (f.declare) try self.writeStr("declare ");
         if (f.@"async") try self.writeStr("async ");
         try self.writeStr("function");
         if (f.generator) try self.writeByte('*');
@@ -951,24 +973,34 @@ fn Printer(comptime strip_ts: bool) type {
             try self.writeByte(' ');
             try self.emit(f.id);
         }
+        try self.emit(f.type_parameters);
         try self.emit(f.params);
+        try self.emit(f.return_type);
         if (f.body != .null) {
             try self.space();
             try self.emit(f.body);
+        } else if (comptime !strip_ts) {
+            try self.writeByte(';');
         }
     }
 
     fn printFunctionAsMethod(self: *Self, f: ast.Function) Error!void {
+        try self.emit(f.type_parameters);
         try self.emit(f.params);
+        try self.emit(f.return_type);
         if (f.body != .null) {
             try self.space();
             try self.emit(f.body);
+        } else if (comptime !strip_ts) {
+            try self.writeByte(';');
         }
     }
 
     fn emit_arrow_function_expression(self: *Self, a: ast.ArrowFunctionExpression) Error!void {
         if (a.@"async") try self.writeStr("async ");
+        try self.emit(a.type_parameters);
         try self.emit(a.params);
+        try self.emit(a.return_type);
         try self.space();
         try self.writeStr("=>");
         try self.space();
@@ -1004,14 +1036,33 @@ fn Printer(comptime strip_ts: bool) type {
     fn emit_class(self: *Self, c: ast.Class) Error!void {
         if (comptime strip_ts) if (c.declare) return;
         try self.printDecorators(c.decorators);
+        if (comptime !strip_ts) {
+            if (c.declare) try self.writeStr("declare ");
+            if (c.abstract) try self.writeStr("abstract ");
+        }
         try self.writeStr("class");
         if (c.id != .null) {
             try self.writeByte(' ');
             try self.emit(c.id);
         }
+        try self.emit(c.type_parameters);
         if (c.super_class != .null) {
             try self.writeStr(" extends ");
             try self.emit(c.super_class);
+            try self.emit(c.super_type_arguments);
+        }
+        if (comptime !strip_ts) {
+            const impl = self.tree.extra(c.implements);
+            if (impl.len > 0) {
+                try self.writeStr(" implements ");
+                for (impl, 0..) |i, idx| {
+                    if (idx > 0) {
+                        try self.writeByte(',');
+                        try self.space();
+                    }
+                    try self.emit(i);
+                }
+            }
         }
         try self.space();
         try self.emit(c.body);
@@ -1040,7 +1091,15 @@ fn Printer(comptime strip_ts: bool) type {
         const fn_data = self.tree.data(m.value).function;
         if (comptime strip_ts) if (m.abstract or fn_data.body == .null) return;
         try self.printDecorators(m.decorators);
+        if (comptime !strip_ts) if (m.accessibility != .none) {
+            try self.writeStr(m.accessibility.toString());
+            try self.writeByte(' ');
+        };
         if (m.static) try self.writeStr("static ");
+        if (comptime !strip_ts) {
+            if (m.abstract) try self.writeStr("abstract ");
+            if (m.override) try self.writeStr("override ");
+        }
         switch (m.kind) {
             .get => try self.writeStr("get "),
             .set => try self.writeStr("set "),
@@ -1050,15 +1109,33 @@ fn Printer(comptime strip_ts: bool) type {
             },
         }
         try self.printPropertyKey(m.key, m.computed);
+        if (comptime !strip_ts) if (m.optional) try self.writeByte('?');
         try self.printFunctionAsMethod(fn_data);
     }
 
     fn emit_property_definition(self: *Self, p: ast.PropertyDefinition) Error!void {
         if (comptime strip_ts) if (p.declare or p.abstract) return;
         try self.printDecorators(p.decorators);
+        if (comptime !strip_ts) {
+            if (p.declare) try self.writeStr("declare ");
+            if (p.accessibility != .none) {
+                try self.writeStr(p.accessibility.toString());
+                try self.writeByte(' ');
+            }
+        }
         if (p.static) try self.writeStr("static ");
+        if (comptime !strip_ts) {
+            if (p.abstract) try self.writeStr("abstract ");
+            if (p.override) try self.writeStr("override ");
+            if (p.readonly) try self.writeStr("readonly ");
+        }
         if (p.accessor) try self.writeStr("accessor ");
         try self.printPropertyKey(p.key, p.computed);
+        if (comptime !strip_ts) {
+            if (p.optional) try self.writeByte('?');
+            if (p.definite) try self.writeByte('!');
+        }
+        try self.emit(p.type_annotation);
         if (p.value != .null) {
             try self.space();
             try self.writeByte('=');
@@ -1262,6 +1339,590 @@ fn Printer(comptime strip_ts: bool) type {
         }
         try self.space();
         try self.writeByte('}');
+    }
+
+    fn emit_ts_type_annotation(self: *Self, t: ast.TSTypeAnnotation) Error!void {
+        try self.writeByte(':');
+        try self.space();
+        try self.emit(t.type_annotation);
+    }
+
+    fn emit_ts_any_keyword(self: *Self, _: ast.TSAnyKeyword) Error!void { try self.writeStr("any"); }
+    fn emit_ts_unknown_keyword(self: *Self, _: ast.TSUnknownKeyword) Error!void { try self.writeStr("unknown"); }
+    fn emit_ts_never_keyword(self: *Self, _: ast.TSNeverKeyword) Error!void { try self.writeStr("never"); }
+    fn emit_ts_void_keyword(self: *Self, _: ast.TSVoidKeyword) Error!void { try self.writeStr("void"); }
+    fn emit_ts_null_keyword(self: *Self, _: ast.TSNullKeyword) Error!void { try self.writeStr("null"); }
+    fn emit_ts_undefined_keyword(self: *Self, _: ast.TSUndefinedKeyword) Error!void { try self.writeStr("undefined"); }
+    fn emit_ts_string_keyword(self: *Self, _: ast.TSStringKeyword) Error!void { try self.writeStr("string"); }
+    fn emit_ts_number_keyword(self: *Self, _: ast.TSNumberKeyword) Error!void { try self.writeStr("number"); }
+    fn emit_ts_bigint_keyword(self: *Self, _: ast.TSBigIntKeyword) Error!void { try self.writeStr("bigint"); }
+    fn emit_ts_boolean_keyword(self: *Self, _: ast.TSBooleanKeyword) Error!void { try self.writeStr("boolean"); }
+    fn emit_ts_symbol_keyword(self: *Self, _: ast.TSSymbolKeyword) Error!void { try self.writeStr("symbol"); }
+    fn emit_ts_object_keyword(self: *Self, _: ast.TSObjectKeyword) Error!void { try self.writeStr("object"); }
+    fn emit_ts_intrinsic_keyword(self: *Self, _: ast.TSIntrinsicKeyword) Error!void { try self.writeStr("intrinsic"); }
+    fn emit_ts_this_type(self: *Self, _: ast.TSThisType) Error!void { try self.writeStr("this"); }
+
+    fn emit_ts_type_reference(self: *Self, t: ast.TSTypeReference) Error!void {
+        try self.emit(t.type_name);
+        try self.emit(t.type_arguments);
+    }
+
+    fn emit_ts_qualified_name(self: *Self, q: ast.TSQualifiedName) Error!void {
+        try self.emit(q.left);
+        try self.writeByte('.');
+        try self.emit(q.right);
+    }
+
+    fn emit_ts_type_query(self: *Self, q: ast.TSTypeQuery) Error!void {
+        try self.writeStr("typeof ");
+        try self.emit(q.expr_name);
+        try self.emit(q.type_arguments);
+    }
+
+    fn emit_ts_import_type(self: *Self, t: ast.TSImportType) Error!void {
+        try self.writeStr("import(");
+        try self.emit(t.source);
+        if (t.options != .null) {
+            try self.writeByte(',');
+            try self.space();
+            try self.emit(t.options);
+        }
+        try self.writeByte(')');
+        if (t.qualifier != .null) {
+            try self.writeByte('.');
+            try self.emit(t.qualifier);
+        }
+        try self.emit(t.type_arguments);
+    }
+
+    fn emit_ts_type_parameter(self: *Self, p: ast.TSTypeParameter) Error!void {
+        if (p.@"const") try self.writeStr("const ");
+        if (p.in) try self.writeStr("in ");
+        if (p.out) try self.writeStr("out ");
+        try self.emit(p.name);
+        if (p.constraint != .null) {
+            try self.writeStr(" extends ");
+            try self.emit(p.constraint);
+        }
+        if (p.default != .null) {
+            try self.space();
+            try self.writeByte('=');
+            try self.space();
+            try self.emit(p.default);
+        }
+    }
+
+    fn emit_ts_type_parameter_declaration(self: *Self, d: ast.TSTypeParameterDeclaration) Error!void {
+        try self.writeByte('<');
+        const list = self.tree.extra(d.params);
+        for (list, 0..) |p, i| {
+            if (i > 0) {
+                try self.writeByte(',');
+                try self.space();
+            }
+            try self.emit(p);
+        }
+        try self.writeByte('>');
+    }
+
+    fn emit_ts_type_parameter_instantiation(self: *Self, d: ast.TSTypeParameterInstantiation) Error!void {
+        try self.writeByte('<');
+        const list = self.tree.extra(d.params);
+        for (list, 0..) |p, i| {
+            if (i > 0) {
+                try self.writeByte(',');
+                try self.space();
+            }
+            try self.emit(p);
+        }
+        try self.writeByte('>');
+    }
+
+    fn emit_ts_literal_type(self: *Self, t: ast.TSLiteralType) Error!void {
+        try self.emit(t.literal);
+    }
+
+    fn emit_ts_template_literal_type(self: *Self, t: ast.TSTemplateLiteralType) Error!void {
+        try self.writeByte('`');
+        const quasis = self.tree.extra(t.quasis);
+        const types = self.tree.extra(t.types);
+        for (quasis, 0..) |q, i| {
+            try self.emit(q);
+            if (i < types.len) {
+                try self.writeStr("${");
+                try self.emit(types[i]);
+                try self.writeByte('}');
+            }
+        }
+        try self.writeByte('`');
+    }
+
+    fn emit_ts_array_type(self: *Self, t: ast.TSArrayType) Error!void {
+        try self.emit(t.element_type);
+        try self.writeStr("[]");
+    }
+
+    fn emit_ts_indexed_access_type(self: *Self, t: ast.TSIndexedAccessType) Error!void {
+        try self.emit(t.object_type);
+        try self.writeByte('[');
+        try self.emit(t.index_type);
+        try self.writeByte(']');
+    }
+
+    fn emit_ts_tuple_type(self: *Self, t: ast.TSTupleType) Error!void {
+        try self.writeByte('[');
+        const list = self.tree.extra(t.element_types);
+        for (list, 0..) |x, i| {
+            if (i > 0) {
+                try self.writeByte(',');
+                try self.space();
+            }
+            try self.emit(x);
+        }
+        try self.writeByte(']');
+    }
+
+    fn emit_ts_named_tuple_member(self: *Self, m: ast.TSNamedTupleMember) Error!void {
+        try self.emit(m.label);
+        if (m.optional) try self.writeByte('?');
+        try self.writeByte(':');
+        try self.space();
+        try self.emit(m.element_type);
+    }
+
+    fn emit_ts_optional_type(self: *Self, t: ast.TSOptionalType) Error!void {
+        try self.emit(t.type_annotation);
+        try self.writeByte('?');
+    }
+
+    fn emit_ts_rest_type(self: *Self, t: ast.TSRestType) Error!void {
+        try self.writeStr("...");
+        try self.emit(t.type_annotation);
+    }
+
+    fn emit_ts_jsdoc_nullable_type(self: *Self, t: ast.TSJSDocNullableType) Error!void {
+        if (t.postfix) {
+            try self.emit(t.type_annotation);
+            try self.writeByte('?');
+        } else {
+            try self.writeByte('?');
+            try self.emit(t.type_annotation);
+        }
+    }
+
+    fn emit_ts_jsdoc_non_nullable_type(self: *Self, t: ast.TSJSDocNonNullableType) Error!void {
+        if (t.postfix) {
+            try self.emit(t.type_annotation);
+            try self.writeByte('!');
+        } else {
+            try self.writeByte('!');
+            try self.emit(t.type_annotation);
+        }
+    }
+
+    fn emit_ts_jsdoc_unknown_type(self: *Self, _: ast.TSJSDocUnknownType) Error!void {
+        try self.writeByte('?');
+    }
+
+    fn emit_ts_union_type(self: *Self, t: ast.TSUnionType) Error!void {
+        const list = self.tree.extra(t.types);
+        for (list, 0..) |x, i| {
+            if (i > 0) {
+                try self.space();
+                try self.writeByte('|');
+                try self.space();
+            }
+            try self.emit(x);
+        }
+    }
+
+    fn emit_ts_intersection_type(self: *Self, t: ast.TSIntersectionType) Error!void {
+        const list = self.tree.extra(t.types);
+        for (list, 0..) |x, i| {
+            if (i > 0) {
+                try self.space();
+                try self.writeByte('&');
+                try self.space();
+            }
+            try self.emit(x);
+        }
+    }
+
+    fn emit_ts_conditional_type(self: *Self, t: ast.TSConditionalType) Error!void {
+        try self.emit(t.check_type);
+        try self.writeStr(" extends ");
+        try self.emit(t.extends_type);
+        try self.space();
+        try self.writeByte('?');
+        try self.space();
+        try self.emit(t.true_type);
+        try self.space();
+        try self.writeByte(':');
+        try self.space();
+        try self.emit(t.false_type);
+    }
+
+    fn emit_ts_infer_type(self: *Self, t: ast.TSInferType) Error!void {
+        try self.writeStr("infer ");
+        try self.emit(t.type_parameter);
+    }
+
+    fn emit_ts_type_operator(self: *Self, t: ast.TSTypeOperator) Error!void {
+        try self.writeStr(t.operator.toString());
+        try self.writeByte(' ');
+        try self.emit(t.type_annotation);
+    }
+
+    fn emit_ts_parenthesized_type(self: *Self, t: ast.TSParenthesizedType) Error!void {
+        try self.writeByte('(');
+        try self.emit(t.type_annotation);
+        try self.writeByte(')');
+    }
+
+    fn emit_ts_function_type(self: *Self, t: ast.TSFunctionType) Error!void {
+        try self.emit(t.type_parameters);
+        try self.emit(t.params);
+        try self.space();
+        try self.writeStr("=>");
+        try self.space();
+        try self.emit(t.return_type);
+    }
+
+    fn emit_ts_constructor_type(self: *Self, t: ast.TSConstructorType) Error!void {
+        if (t.abstract) try self.writeStr("abstract ");
+        try self.writeStr("new ");
+        try self.emit(t.type_parameters);
+        try self.emit(t.params);
+        try self.space();
+        try self.writeStr("=>");
+        try self.space();
+        try self.emit(t.return_type);
+    }
+
+    fn emit_ts_type_predicate(self: *Self, t: ast.TSTypePredicate) Error!void {
+        if (t.asserts) try self.writeStr("asserts ");
+        try self.emit(t.parameter_name);
+        if (t.type_annotation != .null) {
+            try self.writeStr(" is ");
+            // type_annotation here wraps the narrowed type but we just want the inner type
+            const inner = self.tree.data(t.type_annotation);
+            if (inner == .ts_type_annotation) {
+                try self.emit(inner.ts_type_annotation.type_annotation);
+            } else {
+                try self.emit(t.type_annotation);
+            }
+        }
+    }
+
+    fn emit_ts_type_literal(self: *Self, t: ast.TSTypeLiteral) Error!void {
+        try self.printSignatureBody(t.members);
+    }
+
+    fn emit_ts_mapped_type(self: *Self, t: ast.TSMappedType) Error!void {
+        try self.writeByte('{');
+        try self.space();
+        try self.printMappedModifier(t.readonly, "readonly");
+        try self.writeByte('[');
+        try self.emit(t.key);
+        try self.writeStr(" in ");
+        try self.emit(t.constraint);
+        if (t.name_type != .null) {
+            try self.writeStr(" as ");
+            try self.emit(t.name_type);
+        }
+        try self.writeByte(']');
+        try self.printMappedOptional(t.optional);
+        if (t.type_annotation != .null) {
+            try self.writeByte(':');
+            try self.space();
+            try self.emit(t.type_annotation);
+        }
+        try self.writeByte(';');
+        try self.space();
+        try self.writeByte('}');
+    }
+
+    fn printMappedModifier(self: *Self, m: ast.TSMappedTypeModifier, keyword: []const u8) Error!void {
+        switch (m) {
+            .none => {},
+            .true => {
+                try self.writeStr(keyword);
+                try self.writeByte(' ');
+            },
+            .plus => {
+                try self.writeByte('+');
+                try self.writeStr(keyword);
+                try self.writeByte(' ');
+            },
+            .minus => {
+                try self.writeByte('-');
+                try self.writeStr(keyword);
+                try self.writeByte(' ');
+            },
+        }
+    }
+
+    fn printMappedOptional(self: *Self, m: ast.TSMappedTypeModifier) Error!void {
+        switch (m) {
+            .none => {},
+            .true => try self.writeByte('?'),
+            .plus => try self.writeStr("+?"),
+            .minus => try self.writeStr("-?"),
+        }
+    }
+
+    fn emit_ts_property_signature(self: *Self, s: ast.TSPropertySignature) Error!void {
+        if (s.readonly) try self.writeStr("readonly ");
+        try self.printPropertyKey(s.key, s.computed);
+        if (s.optional) try self.writeByte('?');
+        if (s.type_annotation != .null) try self.emit(s.type_annotation);
+    }
+
+    fn emit_ts_method_signature(self: *Self, s: ast.TSMethodSignature) Error!void {
+        switch (s.kind) {
+            .get => try self.writeStr("get "),
+            .set => try self.writeStr("set "),
+            .method => {},
+        }
+        try self.printPropertyKey(s.key, s.computed);
+        if (s.optional) try self.writeByte('?');
+        try self.emit(s.type_parameters);
+        try self.emit(s.params);
+        if (s.return_type != .null) try self.emit(s.return_type);
+    }
+
+    fn emit_ts_call_signature_declaration(self: *Self, s: ast.TSCallSignatureDeclaration) Error!void {
+        try self.emit(s.type_parameters);
+        try self.emit(s.params);
+        if (s.return_type != .null) try self.emit(s.return_type);
+    }
+
+    fn emit_ts_construct_signature_declaration(self: *Self, s: ast.TSConstructSignatureDeclaration) Error!void {
+        try self.writeStr("new ");
+        try self.emit(s.type_parameters);
+        try self.emit(s.params);
+        if (s.return_type != .null) try self.emit(s.return_type);
+    }
+
+    fn emit_ts_index_signature(self: *Self, s: ast.TSIndexSignature) Error!void {
+        if (s.static) try self.writeStr("static ");
+        if (s.readonly) try self.writeStr("readonly ");
+        try self.writeByte('[');
+        const params = self.tree.extra(s.parameters);
+        for (params, 0..) |p, i| {
+            if (i > 0) {
+                try self.writeByte(',');
+                try self.space();
+            }
+            try self.emit(p);
+        }
+        try self.writeByte(']');
+        try self.emit(s.type_annotation);
+    }
+
+    /// Emits a `{ … }` block of TS signatures (type literal or interface body).
+    fn printSignatureBody(self: *Self, items: IndexRange) Error!void {
+        try self.writeByte('{');
+        const list = self.tree.extra(items);
+        if (list.len > 0) {
+            self.indent_depth += 1;
+            for (list) |s| {
+                try self.newline();
+                try self.emit(s);
+                try self.writeByte(';');
+            }
+            self.indent_depth -= 1;
+            try self.newline();
+        }
+        try self.writeByte('}');
+    }
+
+    fn emit_ts_type_alias_declaration(self: *Self, d: ast.TSTypeAliasDeclaration) Error!void {
+        if (d.declare) try self.writeStr("declare ");
+        try self.writeStr("type ");
+        try self.emit(d.id);
+        try self.emit(d.type_parameters);
+        try self.space();
+        try self.writeByte('=');
+        try self.space();
+        try self.emit(d.type_annotation);
+        try self.writeByte(';');
+    }
+
+    fn emit_ts_interface_declaration(self: *Self, d: ast.TSInterfaceDeclaration) Error!void {
+        if (d.declare) try self.writeStr("declare ");
+        try self.writeStr("interface ");
+        try self.emit(d.id);
+        try self.emit(d.type_parameters);
+        const heritage = self.tree.extra(d.extends);
+        if (heritage.len > 0) {
+            try self.writeStr(" extends ");
+            for (heritage, 0..) |h, i| {
+                if (i > 0) {
+                    try self.writeByte(',');
+                    try self.space();
+                }
+                try self.emit(h);
+            }
+        }
+        try self.space();
+        try self.emit(d.body);
+    }
+
+    fn emit_ts_interface_body(self: *Self, b: ast.TSInterfaceBody) Error!void {
+        try self.printSignatureBody(b.body);
+    }
+
+    fn emit_ts_interface_heritage(self: *Self, h: ast.TSInterfaceHeritage) Error!void {
+        try self.emit(h.expression);
+        try self.emit(h.type_arguments);
+    }
+
+    fn emit_ts_class_implements(self: *Self, c: ast.TSClassImplements) Error!void {
+        try self.emit(c.expression);
+        try self.emit(c.type_arguments);
+    }
+
+    fn emit_ts_enum_declaration(self: *Self, d: ast.TSEnumDeclaration) Error!void {
+        if (d.declare) try self.writeStr("declare ");
+        if (d.is_const) try self.writeStr("const ");
+        try self.writeStr("enum ");
+        try self.emit(d.id);
+        try self.space();
+        try self.emit(d.body);
+    }
+
+    fn emit_ts_enum_body(self: *Self, b: ast.TSEnumBody) Error!void {
+        try self.writeByte('{');
+        const list = self.tree.extra(b.members);
+        if (list.len > 0) {
+            self.indent_depth += 1;
+            for (list, 0..) |m, i| {
+                try self.newline();
+                try self.emit(m);
+                if (i < list.len - 1) try self.writeByte(',');
+            }
+            self.indent_depth -= 1;
+            try self.newline();
+        }
+        try self.writeByte('}');
+    }
+
+    fn emit_ts_enum_member(self: *Self, m: ast.TSEnumMember) Error!void {
+        if (m.computed) {
+            try self.writeByte('[');
+            try self.emit(m.id);
+            try self.writeByte(']');
+        } else {
+            try self.emit(m.id);
+        }
+        if (m.initializer != .null) {
+            try self.space();
+            try self.writeByte('=');
+            try self.space();
+            try self.emit(m.initializer);
+        }
+    }
+
+    fn emit_ts_module_declaration(self: *Self, d: ast.TSModuleDeclaration) Error!void {
+        if (d.declare) try self.writeStr("declare ");
+        try self.writeStr(d.kind.toString());
+        try self.writeByte(' ');
+        try self.emit(d.id);
+        if (d.body != .null) {
+            try self.space();
+            try self.emit(d.body);
+        } else {
+            try self.writeByte(';');
+        }
+    }
+
+    fn emit_ts_module_block(self: *Self, b: ast.TSModuleBlock) Error!void {
+        try self.printBlock(b.body);
+    }
+
+    fn emit_ts_global_declaration(self: *Self, d: ast.TSGlobalDeclaration) Error!void {
+        if (d.declare) try self.writeStr("declare ");
+        try self.emit(d.id);
+        try self.space();
+        try self.emit(d.body);
+    }
+
+    fn emit_ts_as_expression(self: *Self, e: ast.TSAsExpression) Error!void {
+        try self.emit(e.expression);
+        try self.writeStr(" as ");
+        try self.emit(e.type_annotation);
+    }
+
+    fn emit_ts_satisfies_expression(self: *Self, e: ast.TSSatisfiesExpression) Error!void {
+        try self.emit(e.expression);
+        try self.writeStr(" satisfies ");
+        try self.emit(e.type_annotation);
+    }
+
+    fn emit_ts_type_assertion(self: *Self, e: ast.TSTypeAssertion) Error!void {
+        try self.writeByte('<');
+        try self.emit(e.type_annotation);
+        try self.writeByte('>');
+        try self.emit(e.expression);
+    }
+
+    fn emit_ts_non_null_expression(self: *Self, e: ast.TSNonNullExpression) Error!void {
+        try self.emit(e.expression);
+        try self.writeByte('!');
+    }
+
+    fn emit_ts_instantiation_expression(self: *Self, e: ast.TSInstantiationExpression) Error!void {
+        try self.emit(e.expression);
+        try self.emit(e.type_arguments);
+    }
+
+    fn emit_ts_export_assignment(self: *Self, e: ast.TSExportAssignment) Error!void {
+        try self.writeStr("export");
+        try self.space();
+        try self.writeByte('=');
+        try self.space();
+        try self.emit(e.expression);
+        try self.writeByte(';');
+    }
+
+    fn emit_ts_namespace_export_declaration(self: *Self, d: ast.TSNamespaceExportDeclaration) Error!void {
+        try self.writeStr("export as namespace ");
+        try self.emit(d.id);
+        try self.writeByte(';');
+    }
+
+    fn emit_ts_import_equals_declaration(self: *Self, d: ast.TSImportEqualsDeclaration) Error!void {
+        try self.writeStr("import ");
+        if (d.import_kind == .type) try self.writeStr("type ");
+        try self.emit(d.id);
+        try self.space();
+        try self.writeByte('=');
+        try self.space();
+        try self.emit(d.module_reference);
+        try self.writeByte(';');
+    }
+
+    fn emit_ts_external_module_reference(self: *Self, r: ast.TSExternalModuleReference) Error!void {
+        try self.writeStr("require(");
+        try self.emit(r.expression);
+        try self.writeByte(')');
+    }
+
+    fn emit_ts_parameter_property(self: *Self, p: ast.TSParameterProperty) Error!void {
+        try self.printDecorators(p.decorators);
+        if (p.accessibility != .none) {
+            try self.writeStr(p.accessibility.toString());
+            try self.writeByte(' ');
+        }
+        if (p.override) try self.writeStr("override ");
+        if (p.readonly) try self.writeStr("readonly ");
+        try self.emit(p.parameter);
+    }
+
+    fn emit_ts_this_parameter(self: *Self, p: ast.TSThisParameter) Error!void {
+        try self.writeStr("this");
+        if (p.type_annotation != .null) try self.emit(p.type_annotation);
     }
     };
 }
