@@ -9,10 +9,14 @@ const Options = struct {
     indent: u8 = 2,
     quotes: parser.codegen.Quotes = .double,
     final_newline: bool = true,
+    sourcemap: parser.codegen.SourceMapMode = .none,
+    source_filename: []const u8 = "input",
+    source_content: bool = true,
 };
 
 const StripResult = struct {
     code: []const u8,
+    map: ?parser.codegen.SourceMapV3 = null,
     errors: []const parser.codegen.Diagnostic,
 };
 
@@ -30,9 +34,15 @@ pub fn strip(env: napi.Env, source: []const u8, options: Options) !StripResult {
         .indent = options.indent,
         .quotes = options.quotes,
         .final_newline = options.final_newline,
+        .sourcemap = options.sourcemap,
+        .source_filename = options.source_filename,
+        .source_content = options.source_content,
     });
 
-    return .{ .code = result.code, .errors = result.errors };
+    var map: ?parser.codegen.SourceMapV3 = null;
+    if (result.map) |m| map = try m.toV3(allocator);
+
+    return .{ .code = result.code, .map = map, .errors = result.errors };
 }
 
 comptime {

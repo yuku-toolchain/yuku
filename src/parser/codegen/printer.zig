@@ -1,11 +1,19 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
+const sm = @import("sourcemap.zig");
 
 const Allocator = std.mem.Allocator;
 const Tree = ast.Tree;
 const NodeIndex = ast.NodeIndex;
 const NodeData = ast.NodeData;
 const IndexRange = ast.IndexRange;
+
+pub const SourceMap = sm.SourceMap;
+pub const SourceMapV3 = sm.SourceMapV3;
+pub const Mapping = sm.Mapping;
+
+/// Source map output mode.
+pub const SourceMapMode = enum { none, v3 };
 
 /// Whitespace mode for the output.
 pub const Format = enum {
@@ -14,9 +22,6 @@ pub const Format = enum {
     /// No discretionary whitespace; only the separators the JS grammar requires.
     compact,
 };
-
-/// Source map output mode. `v3` is reserved for a later phase.
-pub const SourceMap = enum { none, v3 };
 
 /// Quote style for string literals.
 pub const Quotes = enum { double, single };
@@ -28,7 +33,11 @@ pub const Options = struct {
     /// Spaces per indentation level (used only when `format == .pretty`).
     indent: u8 = 2,
     /// Source map output mode.
-    sourcemap: SourceMap = .none,
+    sourcemap: SourceMapMode = .none,
+    /// Filename to record in the source map's `sources`. Defaults to `"input"`.
+    source_filename: []const u8 = "input",
+    /// Whether to embed the original source bytes in `sourcesContent`.
+    source_content: bool = true,
     /// Quote style for emitted string literals.
     quotes: Quotes = .double,
     /// Append a trailing newline to the output if missing.
@@ -53,13 +62,13 @@ pub const Result = struct {
     /// Generated source code.
     code: []const u8,
     /// Source map, when `Options.sourcemap != .none`.
-    map: ?[]const u8,
+    map: ?SourceMap = null,
     /// Codegen-detected problems. Empty when codegen succeeded cleanly.
     errors: []const Diagnostic,
 
     pub fn deinit(self: Result, allocator: Allocator) void {
         allocator.free(self.code);
-        if (self.map) |m| allocator.free(m);
+        if (self.map) |m| m.deinit(allocator);
         allocator.free(self.errors);
     }
 };
@@ -68,30 +77,46 @@ pub const Result = struct {
 /// user-code problems are reported in `Result.errors`.
 pub const Error = error{OutOfMemory};
 
+/// Comptime configuration. Each unique value monomorphizes its own
+/// specialization of `Printer`, so disabled features cost nothing at runtime.
+pub const Config = struct {
+    strip_ts: bool = false,
+    sourcemap: bool = false,
+};
+
 /// Renders a `Tree` to source code.
 pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    return printImpl(false, allocator, tree, options);
+    if (options.sourcemap == .v3) return printImpl(.{ .sourcemap = true }, allocator, tree, options);
+    return printImpl(.{}, allocator, tree, options);
 }
 
 /// Strips TypeScript from `tree` and codegens JavaScript.
 pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    return printImpl(true, allocator, tree, options);
+    if (options.sourcemap == .v3) return printImpl(.{ .strip_ts = true, .sourcemap = true }, allocator, tree, options);
+    return printImpl(.{ .strip_ts = true }, allocator, tree, options);
 }
 
-pub fn printImpl(comptime strip_ts: bool, allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    var p = try Printer(strip_ts).init(allocator, tree, options);
+pub fn printImpl(comptime cfg: Config, allocator: Allocator, tree: *Tree, options: Options) Error!Result {
+    var p = try Printer(cfg).init(allocator, tree, options);
     defer p.deinit();
     try p.printRoot();
-    return .{
-        .code = try p.code.toOwnedSlice(allocator),
-        .map = null,
-        .errors = try p.errors.toOwnedSlice(allocator),
-    };
+
+    const code = try p.code.toOwnedSlice(allocator);
+    errdefer allocator.free(code);
+    const errors = try p.errors.toOwnedSlice(allocator);
+    errdefer allocator.free(errors);
+
+    var map: ?SourceMap = null;
+    if (comptime cfg.sourcemap) map = try p.builder.finish(code);
+
+    return .{ .code = code, .map = map, .errors = errors };
 }
 
-fn Printer(comptime strip_ts: bool) type {
+fn Printer(comptime cfg: Config) type {
     return struct {
         const Self = @This();
+        const strip_ts = cfg.strip_ts;
+        const sourcemap_on = cfg.sourcemap;
 
         tree: *Tree,
         code: std.ArrayList(u8) = .empty,
@@ -100,6 +125,7 @@ fn Printer(comptime strip_ts: bool) type {
         arena: std.heap.ArenaAllocator,
         allocator: Allocator,
         indent_depth: u32 = 0,
+        builder: if (sourcemap_on) sm.Builder else void = if (sourcemap_on) undefined else {},
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
@@ -109,6 +135,16 @@ fn Printer(comptime strip_ts: bool) type {
             .allocator = allocator,
         };
         try p.code.ensureTotalCapacity(allocator, tree.source.len);
+        if (comptime sourcemap_on) {
+            // ~1 mapping per 16 source bytes is a generous estimate for typical
+            // JS/TS, undershoots cost a couple of doublings.
+            p.builder = try sm.Builder.init(
+                allocator,
+                options.source_filename,
+                if (options.source_content) tree.source else null,
+                tree.source.len / 16,
+            );
+        }
         return p;
     }
 
@@ -116,6 +152,7 @@ fn Printer(comptime strip_ts: bool) type {
         self.arena.deinit();
         self.code.deinit(self.allocator);
         self.errors.deinit(self.allocator);
+        if (comptime sourcemap_on) self.builder.deinit();
     }
 
     inline fn pretty(self: *const Self) bool {
@@ -209,6 +246,8 @@ fn Printer(comptime strip_ts: bool) type {
             }
         }
 
+        if (comptime sourcemap_on) try self.addMapping(idx);
+
         switch (data) {
             inline else => |node, tag| {
                 const fn_name = "emit_" ++ @tagName(tag);
@@ -219,6 +258,14 @@ fn Printer(comptime strip_ts: bool) type {
                 }
             },
         }
+    }
+
+    fn addMapping(self: *Self, idx: NodeIndex) Error!void {
+        try self.builder.addMapping(
+            @intCast(self.code.items.len),
+            self.tree.span(idx).start,
+            sm.no_name,
+        );
     }
 
     fn diagnose(self: *Self, idx: NodeIndex, message: []const u8) Error!void {
@@ -1923,6 +1970,98 @@ fn Printer(comptime strip_ts: bool) type {
     fn emit_ts_this_parameter(self: *Self, p: ast.TSThisParameter) Error!void {
         try self.writeStr("this");
         if (p.type_annotation != .null) try self.emit(p.type_annotation);
+    }
+
+    fn emit_jsx_element(self: *Self, e: ast.JSXElement) Error!void {
+        try self.emit(e.opening_element);
+        for (self.tree.extra(e.children)) |c| try self.emit(c);
+        if (e.closing_element != .null) try self.emit(e.closing_element);
+    }
+
+    fn emit_jsx_opening_element(self: *Self, o: ast.JSXOpeningElement) Error!void {
+        try self.writeByte('<');
+        try self.emit(o.name);
+        try self.emit(o.type_arguments);
+        for (self.tree.extra(o.attributes)) |a| {
+            try self.writeByte(' ');
+            try self.emit(a);
+        }
+        if (o.self_closing) {
+            try self.space();
+            try self.writeStr("/>");
+        } else {
+            try self.writeByte('>');
+        }
+    }
+
+    fn emit_jsx_closing_element(self: *Self, c: ast.JSXClosingElement) Error!void {
+        try self.writeStr("</");
+        try self.emit(c.name);
+        try self.writeByte('>');
+    }
+
+    fn emit_jsx_fragment(self: *Self, f: ast.JSXFragment) Error!void {
+        try self.emit(f.opening_fragment);
+        for (self.tree.extra(f.children)) |c| try self.emit(c);
+        try self.emit(f.closing_fragment);
+    }
+
+    fn emit_jsx_opening_fragment(self: *Self, _: ast.JSXOpeningFragment) Error!void {
+        try self.writeStr("<>");
+    }
+
+    fn emit_jsx_closing_fragment(self: *Self, _: ast.JSXClosingFragment) Error!void {
+        try self.writeStr("</>");
+    }
+
+    fn emit_jsx_identifier(self: *Self, id: ast.JSXIdentifier) Error!void {
+        try self.writeString(id.name);
+    }
+
+    fn emit_jsx_namespaced_name(self: *Self, n: ast.JSXNamespacedName) Error!void {
+        try self.emit(n.namespace);
+        try self.writeByte(':');
+        try self.emit(n.name);
+    }
+
+    fn emit_jsx_member_expression(self: *Self, m: ast.JSXMemberExpression) Error!void {
+        try self.emit(m.object);
+        try self.writeByte('.');
+        try self.emit(m.property);
+    }
+
+    fn emit_jsx_attribute(self: *Self, a: ast.JSXAttribute) Error!void {
+        try self.emit(a.name);
+        if (a.value != .null) {
+            try self.writeByte('=');
+            try self.emit(a.value);
+        }
+    }
+
+    fn emit_jsx_spread_attribute(self: *Self, a: ast.JSXSpreadAttribute) Error!void {
+        try self.writeByte('{');
+        try self.writeStr("...");
+        try self.emit(a.argument);
+        try self.writeByte('}');
+    }
+
+    fn emit_jsx_expression_container(self: *Self, c: ast.JSXExpressionContainer) Error!void {
+        try self.writeByte('{');
+        try self.emit(c.expression);
+        try self.writeByte('}');
+    }
+
+    fn emit_jsx_empty_expression(_: *Self, _: ast.JSXEmptyExpression) Error!void {}
+
+    fn emit_jsx_text(self: *Self, t: ast.JSXText) Error!void {
+        try self.writeString(t.value);
+    }
+
+    fn emit_jsx_spread_child(self: *Self, c: ast.JSXSpreadChild) Error!void {
+        try self.writeByte('{');
+        try self.writeStr("...");
+        try self.emit(c.expression);
+        try self.writeByte('}');
     }
     };
 }

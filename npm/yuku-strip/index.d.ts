@@ -10,6 +10,9 @@ type Format = "pretty" | "compact";
 /** Quote style for emitted string literals. */
 type Quotes = "double" | "single";
 
+/** Source map output mode. */
+type SourceMapMode = "none" | "v3";
+
 /** Options for `strip`. */
 interface StripOptions {
   /**
@@ -42,6 +45,21 @@ interface StripOptions {
    * @default true
    */
   finalNewline?: boolean;
+  /**
+   * Source map output mode.
+   * @default "none"
+   */
+  sourcemap?: SourceMapMode;
+  /**
+   * Filename to record in the source map's `sources`.
+   * @default "input"
+   */
+  sourceFilename?: string;
+  /**
+   * Whether to embed the original source bytes in `sourcesContent`.
+   * @default true
+   */
+  sourceContent?: boolean;
 }
 
 /** A codegen-detected problem in the input source. */
@@ -53,9 +71,23 @@ interface Diagnostic {
   end: number;
 }
 
+/** A v3 source map ready for `.map` files or browser dev tools. */
+interface SourceMap {
+  version: 3;
+  file?: string;
+  sourceRoot?: string;
+  sources: string[];
+  sourcesContent?: (string | null)[];
+  names: string[];
+  /** Base64 VLQ-encoded mappings. */
+  mappings: string;
+}
+
 interface StripResult {
   /** Generated JavaScript. */
   code: string;
+  /** Source map, when `sourcemap !== "none"`. */
+  map: SourceMap | null;
   /** Codegen-detected problems. Empty when codegen succeeded cleanly. */
   errors: Diagnostic[];
 }
@@ -65,4 +97,4 @@ interface StripResult {
  */
 export function strip(source: string, options?: StripOptions): StripResult;
 
-export type { StripOptions, StripResult, Diagnostic, SourceType, SourceLang, Format, Quotes };
+export type { StripOptions, StripResult, SourceMap, Diagnostic, SourceType, SourceLang, Format, Quotes, SourceMapMode };
