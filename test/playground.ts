@@ -1,13 +1,10 @@
-import { parse } from "yuku-parser";
+import { minify } from "yuku-minify";
 
 const source = await Bun.file("test/fixture.ts").text();
 
-console.time('parse')
-const {program: _, diagnostics} = parse(source, {
+const { code, errors } = minify(source, {
   lang: "ts",
-  semanticErrors: true
 });
-console.timeEnd('parse')
 
-console.log(JSON.stringify(diagnostics, null, 2))
-// console.log(JSON.stringify(_, null, 2))
+console.log(code);
+console.log(errors);
