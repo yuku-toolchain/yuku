@@ -1,6 +1,6 @@
 {
   "name": "@yuku-strip/binding-linux-arm-gnu",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "os": [
     "linux"
   ],

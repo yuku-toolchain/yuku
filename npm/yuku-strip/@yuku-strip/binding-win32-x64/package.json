@@ -1,6 +1,6 @@
 {
   "name": "@yuku-strip/binding-win32-x64",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "os": [
     "win32"
   ],
