@@ -84,9 +84,8 @@ pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!
     var ctx = try Ctx.init(tree);
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
-    const scope_tree = ctx.scope.toScopeTree();
     return .{
-        .scope_tree = scope_tree,
-        .symbol_table = ctx.symbols.toSymbolTable(scope_tree),
+        .scope_tree = ctx.scope.toScopeTree(),
+        .symbol_table = ctx.symbols.toSymbolTable(),
     };
 }

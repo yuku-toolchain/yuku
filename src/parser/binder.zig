@@ -240,7 +240,6 @@ pub const SymbolTable = struct {
     hoisting_variables: []const ScopeMap,
     strings: *const ast.StringPool,
     allocator: Allocator,
-    scope_tree: sc.ScopeTree,
 
     resolutions: []const SymbolId = &.{},
     symbol_refs: []const ReferenceId = &.{},
@@ -347,8 +346,8 @@ pub const SymbolTable = struct {
 
     /// Walks up the scope chain from `scope` to find the nearest binding
     /// of `name`, including hoisted vars in any visited scope.
-    pub fn resolve(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        var it = self.scope_tree.ancestors(scope);
+    pub fn resolve(self: SymbolTable, scope_tree: sc.ScopeTree, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+        var it = scope_tree.ancestors(scope);
         while (it.next()) |ancestor| {
             if (self.findInScopeOrHoisted(ancestor, name)) |id| return id;
         }
@@ -361,9 +360,8 @@ pub const SymbolTable = struct {
     ///   - `symbolReferences(sym_id)` gives all references to that symbol.
     ///   - `iterUnresolved()` walks references that did not resolve
     ///     (free variables, globals, undeclared names).
-    pub fn resolveAll(self: *SymbolTable) Allocator.Error!void {
+    pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) Allocator.Error!void {
         const allocator = self.allocator;
-        const scope_tree = self.scope_tree;
         const ref_count: u32 = @intCast(self.references.len);
         const sym_count: u32 = @intCast(self.symbols.len);
 
@@ -872,7 +870,7 @@ pub const SymbolTracker = struct {
     /// Finalizes the tracker into an immutable `SymbolTable`. The
     /// table reuses the tracker's storage (no copy), so it stays valid
     /// for as long as the source tree is alive.
-    pub fn toSymbolTable(self: *SymbolTracker, scope_tree: sc.ScopeTree) SymbolTable {
+    pub fn toSymbolTable(self: *SymbolTracker) SymbolTable {
         return .{
             .symbols = self.symbols.items,
             .references = self.references.items,
@@ -880,7 +878,6 @@ pub const SymbolTracker = struct {
             .hoisting_variables = self.hoisting_variables.items,
             .strings = &self.tree.strings,
             .allocator = self.allocator,
-            .scope_tree = scope_tree,
         };
     }
 };

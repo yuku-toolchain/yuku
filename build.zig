@@ -24,6 +24,14 @@ pub fn build(b: *std.Build) void {
 
     parser_module.addImport("util", util_module);
 
+    const minifier_module = b.addModule("minifier", .{
+        .root_source_file = b.path("src/minifier/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    minifier_module.addImport("parser", parser_module);
+
     const exe_module = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
@@ -31,6 +39,7 @@ pub fn build(b: *std.Build) void {
     });
 
     exe_module.addImport("parser", parser_module);
+    exe_module.addImport("minifier", minifier_module);
 
     const exe = b.addExecutable(.{
         .name = "yuku",
@@ -112,6 +121,8 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = fuzz_module })).step);
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser_module })).step);
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = minifier_module })).step);
 
     const napi_dep = b.dependency("napi_zig", .{});
 

@@ -175,7 +175,7 @@ const scope_tree = try scoped.traverse(@TypeOf(noop), &tree, &noop);
 
 // Just the scope tree + symbol table:
 var result = try sem.traverse(@TypeOf(noop), &tree, &noop);
-try result.symbol_table.resolveAll();
+try result.symbol_table.resolveAll(result.scope_tree);
 ```
 
 The empty struct makes the absence of hooks visible in the code, which is why there is no hidden `analyze`-style helper inside the traverser. If a tool wants the result of a walk without any per-node logic, the caller spells that out exactly.
@@ -545,11 +545,11 @@ pub const Reference = struct {
 
 ### Resolving References
 
-During traversal, references are recorded but not yet linked to their declarations. After traversal, call `resolveAll` to walk every reference up its scope chain and build the cross-index. The table already knows its allocator and scope tree, so `resolveAll` takes no arguments:
+During traversal, references are recorded but not yet linked to their declarations. After traversal, call `resolveAll` with the scope tree to walk every reference up its chain and build the cross-index:
 
 ```zig
 var result = try sem.traverse(MyVisitor, &tree, &visitor);
-try result.symbol_table.resolveAll();
+try result.symbol_table.resolveAll(result.scope_tree);
 ```
 
 Once resolved you have the full bidirectional map:
@@ -586,10 +586,10 @@ while (it.next()) |entry| {
 
 `iterUnresolved` is exactly what a "no-undef" linter wants: every name the parser saw that is not bound anywhere in the tree.
 
-You can also resolve a name manually from any starting scope:
+You can also resolve a name manually from any starting scope. `resolve` takes the scope tree alongside the starting scope:
 
 ```zig
-if (table.resolve(scope_id, "myVar")) |found| {
+if (table.resolve(result.scope_tree, scope_id, "myVar")) |found| {
     const sym = table.getSymbol(found);
     _ = sym;
 }
@@ -658,7 +658,6 @@ The table's public surface, in one place:
 ```zig
 table.symbols                          // []const Symbol, in declaration order
 table.references                       // []const Reference, in source order
-table.scope_tree                       // ScopeTree this table was built against
 
 table.string(handle)                   // []const u8 from a String handle
 table.getSymbol(sym_id)                // Symbol by id
@@ -671,9 +670,9 @@ table.scopeSymbols(scope_id)           // *SymbolId per binding in the scope
 
 table.findInScope(scope, name)         // single-scope lookup
 table.findInScopeOrHoisted(scope, name)// + hoisting var passing through
-table.resolve(scope, name)             // scope-chain lookup
+table.resolve(scope_tree, scope, name) // scope-chain lookup
 
-try table.resolveAll()                 // build the cross-index
+try table.resolveAll(scope_tree)       // build the cross-index
 table.referenceSymbol(ref_id)          // forward (ref -> sym) after resolveAll
 table.symbolReferences(sym_id)         // reverse (sym -> []ref) after resolveAll
 table.isReferenced(sym_id)             // shorthand for "any references?"
@@ -879,7 +878,7 @@ try transform.traverse(MyTransform, &tree, &rewriter);
 // Pass 2: semantic analysis on the rewritten tree
 var analyser = MyAnalyser{};
 var result = try sem.traverse(MyAnalyser, &tree, &analyser);
-try result.symbol_table.resolveAll();
+try result.symbol_table.resolveAll(result.scope_tree);
 
 // Pass 3: emit, lint, minify, etc.
 ```

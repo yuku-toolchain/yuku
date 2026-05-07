@@ -1,7 +1,11 @@
-const a = <Foo bar="baz" disabled {...props} count={1 + 2}>
-  hello <span>world</span> {name}
-  {...kids}
-  <svg:path />
-  <Mod.Sub.Leaf<T> a />
-</Foo>;
-const b = <>fragment <em>text</em></>;
+class Store<T extends { id: `id_${string}` }> implements Iterable<T> {
+  declare readonly index!: ReadonlyMap<T["id"], T>
+
+  async load<R extends T = T>(id: T["id"]): Promise<R | null> {
+    return (await run<R>(id))! satisfies R | null
+  }
+
+  *[Symbol.iterator](): IterableIterator<T> {
+    for (const [, v] of this.index!) yield v
+  }
+}

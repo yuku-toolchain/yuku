@@ -569,6 +569,15 @@ fn Printer(comptime cfg: Config) type {
             try self.space();
             try self.writeStr(op);
             try self.space();
+            // prevent a token merge if the right operand begins
+            // with the same `+`/`-` sign (would lex as `++` / `--`) or with a
+            // regex literal after `/` (would lex as `//` line comment).
+            if (!self.pretty() and op.len == 1) {
+                switch (op[0]) {
+                    '+', '-', '/' => if (leftmostByteIs(self.tree, e.right, op[0])) try self.writeByte(' '),
+                    else => {},
+                }
+            }
         }
         try self.emit(e.right);
     }
@@ -597,6 +606,11 @@ fn Printer(comptime cfg: Config) type {
         const op = e.operator.toString();
         try self.writeStr(op);
         if (isWordOp(op)) try self.writeByte(' ');
+        // same token-merge guard as binary +/-.
+        // `+ +x` would print as `++x` and re-lex as a prefix update.
+        if (!self.pretty() and op.len == 1 and (op[0] == '+' or op[0] == '-')) {
+            if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
+        }
         try self.emit(e.argument);
     }
 
@@ -2030,6 +2044,41 @@ fn isWordOp(op: []const u8) bool {
         std.mem.eql(u8, op, "delete");
 }
 
+fn leftmostByteIs(tree: *const Tree, idx: NodeIndex, byte: u8) bool {
+    if (idx == .null) return false;
+    return switch (tree.data(idx)) {
+        .unary_expression => |u| switch (u.operator) {
+            .positive => byte == '+',
+            .negate => byte == '-',
+            .logical_not => byte == '!',
+            .bitwise_not => byte == '~',
+            else => false, // typeof/void/delete start with a letter
+        },
+        .update_expression => |u| if (u.prefix) switch (u.operator) {
+            .increment => byte == '+',
+            .decrement => byte == '-',
+        } else leftmostByteIs(tree, u.argument, byte),
+        .regexp_literal => byte == '/',
+        .member_expression => |m| leftmostByteIs(tree, m.object, byte),
+        .call_expression => |c| leftmostByteIs(tree, c.callee, byte),
+        .chain_expression => |c| leftmostByteIs(tree, c.expression, byte),
+        .tagged_template_expression => |tt| leftmostByteIs(tree, tt.tag, byte),
+        .binary_expression => |b| leftmostByteIs(tree, b.left, byte),
+        .logical_expression => |l| leftmostByteIs(tree, l.left, byte),
+        .conditional_expression => |c| leftmostByteIs(tree, c.@"test", byte),
+        .assignment_expression => |a| leftmostByteIs(tree, a.left, byte),
+        .sequence_expression => |s| blk: {
+            const list = tree.extra(s.expressions);
+            break :blk list.len > 0 and leftmostByteIs(tree, list[0], byte);
+        },
+        .ts_as_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        .ts_satisfies_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        .ts_non_null_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        .ts_instantiation_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        else => false,
+    };
+}
+
 fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     if (a == .null or b == .null) return false;
     const an = identifierStringOrNull(tree, a) orelse return false;
@@ -2065,4 +2114,44 @@ fn hasValueExportSpecifier(tree: *const Tree, list: []const NodeIndex) bool {
         }
     }
     return false;
+}
+
+const parser = @import("../parser.zig");
+
+fn expectCompact(source: []const u8, expected: []const u8) !void {
+    const testing = std.testing;
+    var tree = try parser.parse(testing.allocator, source, .{});
+    defer tree.deinit();
+    const result = try print(testing.allocator, &tree, .{ .format = .compact, .final_newline = false });
+    defer result.deinit(testing.allocator);
+    try testing.expectEqualStrings(expected, result.code);
+}
+
+test "binary +/- adjacency does not merge with prefix unary" {
+    // `a + +b` must not become `a++b` (which lexes as postfix `a++` then `b`).
+    try expectCompact("a + +b;", "a+ +b;");
+    try expectCompact("a - -b;", "a- -b;");
+    // same for prefix update.
+    try expectCompact("a + ++b;", "a+ ++b;");
+    try expectCompact("a - --b;", "a- --b;");
+    // postfix update on the left followed by same-sign unary on the right.
+    try expectCompact("a++ + +b;", "a+++ +b;");
+    try expectCompact("a-- - -b;", "a--- -b;");
+    // mixed signs are safe (cannot merge into `++`/`--`).
+    try expectCompact("a + -b;", "a+-b;");
+    try expectCompact("a - +b;", "a-+b;");
+}
+
+test "unary +/- over same-sign unary does not merge" {
+    // `+ +x` must not become `++x` (a prefix update).
+    try expectCompact("var x = + +y;", "var x=+ +y;");
+    try expectCompact("var x = - -y;", "var x=- -y;");
+    // mixed unary signs cannot merge.
+    try expectCompact("var x = + -y;", "var x=+-y;");
+    try expectCompact("var x = - +y;", "var x=-+y;");
+}
+
+test "division before regex literal does not start a comment" {
+    // `a / /b/` must not become `a//b/` (which would start a line comment).
+    try expectCompact("a / /b/.test(c);", "a/ /b/.test(c);");
 }
