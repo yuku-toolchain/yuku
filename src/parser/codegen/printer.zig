@@ -56,12 +56,9 @@ pub const Result = struct {
     }
 };
 
-/// All return-value errors are allocation errors. Codegen-detected
-/// user-code problems are reported in `Result.errors`.
 pub const Error = error{OutOfMemory};
 
-/// Comptime configuration. Each unique value monomorphizes its own
-/// specialization of `Printer`, so disabled features cost nothing at runtime.
+/// comptime configuration
 pub const Config = struct {
     strip_ts: bool = false,
 };
@@ -71,7 +68,7 @@ pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(.{}, allocator, tree, options);
 }
 
-/// Strips TypeScript from `tree` and codegens JavaScript.
+/// Render TypeScript `Tree` to JavaScript output, excluding TypeScript-specific syntax.
 pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(.{ .strip_ts = true }, allocator, tree, options);
 }
