@@ -1,0 +1,17 @@
+{
+  "name": "@yuku-strip/binding-linux-x64-musl",
+  "version": "0.0.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "libc": [
+    "musl"
+  ],
+  "main": "yuku-strip.node",
+  "files": [
+    "yuku-strip.node"
+  ]
+}

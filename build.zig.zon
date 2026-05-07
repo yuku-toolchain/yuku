@@ -8,8 +8,8 @@
             .hash = "codspeed_zig-0.2.0-cdqftmyuHgDbmwtyWnqrol8vMXRErZmZH7SLrOhhpKdl",
         },
         .napi_zig = .{
-            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#3825013a2703f78498006f9b6ec72e4a606ff277",
-            .hash = "napi_zig-0.2.0-XRkY0cGbAQBq4eaDX8NzlxNVQXTKhEZizIu1JzRjBVjl",
+            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#1988fe8c839141a0e9ad86fc9d2bc086646876af",
+            .hash = "napi_zig-0.2.0-XRkY0QeuAQA1oO9wvfHRQLXwio7r0-lL98S2Nj3bj34o",
         },
         //
     },

@@ -24,6 +24,7 @@
     "jest-diff": "^30.3.0",
     "napi-zig": "^0.1.30",
     "typescript": "^6.0.2",
-    "yuku-parser": "workspace:*"
+    "yuku-parser": "workspace:*",
+    "yuku-strip": "workspace:*"
   }
 }
