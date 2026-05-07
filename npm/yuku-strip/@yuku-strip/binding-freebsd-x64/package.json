@@ -1,6 +1,6 @@
 {
   "name": "@yuku-strip/binding-freebsd-x64",
-  "version": "0.0.0",
+  "version": "0.5.1",
   "os": [
     "freebsd"
   ],
