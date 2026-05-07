@@ -84,6 +84,7 @@ export default defineConfig({
             { label: "Introduction", slug: "parser" },
             { label: "AST", slug: "parser/ast" },
             { label: "Traverse", slug: "parser/traverse" },
+            { label: "Codegen", slug: "parser/codegen" },
           ],
         },
       ],
