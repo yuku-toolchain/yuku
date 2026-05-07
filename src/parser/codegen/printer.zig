@@ -779,7 +779,7 @@ fn Printer(comptime cfg: Config) type {
                 0x08 => "\\b",
                 0x0C => "\\f",
                 0x0B => "\\v",
-                0 => "\\0",
+                0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
                 else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
             };
             if (esc) |e| {
@@ -840,6 +840,8 @@ fn Printer(comptime cfg: Config) type {
                 '\\' => "\\\\",
                 '`' => "\\`",
                 '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
+                '\r' => "\\r",
+                0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
                 else => null,
             };
             if (esc) |e| {
