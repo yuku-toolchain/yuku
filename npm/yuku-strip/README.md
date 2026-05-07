@@ -18,9 +18,9 @@ const { code, errors } = strip(readFileSync("example.ts", "utf8"));
 console.log(code);
 ```
 
-Given the following `example.ts`, with mixed type and value imports, recursive conditional types with `infer`, mapped types with key remapping and template literals, an assertion function, a `<const T>` parameter, generic call instantiation, `declare`/`!`/`satisfies` chained on an `await`, and a generator method with a computed name, all of which are notoriously easy to mishandle in regex or whitespace-based strippers:
-
 ```ts
+// example.ts
+
 import { run, type Awaitable, type Result as Res } from "./api"
 
 export type Unwrap<T> = T extends Awaitable<infer U> ? Unwrap<U> : T
