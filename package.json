@@ -9,9 +9,11 @@
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
     "test:fuzz": "zig build test --fuzz=200K",
+    "test:parser": "bun test/parser/run.ts",
+    "test:minifier": "bun test/minifier/run.ts",
     "format": "zig fmt **/*.zig",
-    "test": "bun load-files && bun build:npm && bun test/parser/run.ts",
-    "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
+    "test": "bun load-files && bun build:npm && bun test:parser && bun test:minifier",
+    "load-files": "bun profiler/load-parser-bench-files && bun test/load test/suite",
     "play": "bun build:npm && bun --console-depth=20 test/playground.ts",
     "release:npm": "napi bump",
     "debug:npm": "napi build",
@@ -25,6 +27,7 @@
     "napi-zig": "^0.1.36",
     "typescript": "^6.0.2",
     "yuku-parser": "workspace:*",
-    "yuku-strip": "workspace:*"
+    "yuku-strip": "workspace:*",
+    "yuku-minify": "workspace:*"
   }
 }

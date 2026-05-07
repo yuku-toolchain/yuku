@@ -1,0 +1,17 @@
+{
+  "name": "@yuku-minify/binding-linux-arm-musl",
+  "version": "0.0.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm"
+  ],
+  "libc": [
+    "musl"
+  ],
+  "main": "yuku-minify.node",
+  "files": [
+    "yuku-minify.node"
+  ]
+}

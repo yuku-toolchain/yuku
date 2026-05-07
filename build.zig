@@ -160,6 +160,24 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-minify",
+        .root = b.path("src/minifier/ffi/minify.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "parser", .module = parser_module },
+            .{ .name = "minifier", .module = minifier_module },
+        },
+        .npm = .{
+            .scope = "@yuku-minify",
+            .description = "High-performance JavaScript/TypeScript minifier written in Zig",
+            .dts = .{
+                .file = b.path("src/minifier/ffi/minify.d.ts"),
+            },
+        },
+    });
+
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{
         .root_source_file = b.path("src/parser/ffi/transfer.zig"),

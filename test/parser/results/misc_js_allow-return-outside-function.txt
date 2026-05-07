@@ -1,5 +1,5 @@
-misc/js/allow-return-outside-function
-=====================================
+test/parser/misc/js/allow-return-outside-function
+=================================================
 Passed:       4/4 (100.00%)
 Failed:       0
 AST mismatch: 0/4

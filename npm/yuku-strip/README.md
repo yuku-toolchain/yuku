@@ -116,6 +116,19 @@ interface Diagnostic {
 
 > **Note:** `yuku-strip` does not yet return sourcemaps and has no sourcemap option. Sourcemap support is on the roadmap.
 
+## Path helpers
+
+Two small helpers are exported for resolving the `lang` and `sourceType` options from a file path:
+
+```ts
+import { langFromPath, sourceTypeFromPath } from "yuku-strip";
+
+langFromPath("foo.tsx");        // "tsx"
+langFromPath("types.d.ts");     // "dts"
+sourceTypeFromPath("foo.cjs");  // "script"
+sourceTypeFromPath("foo.mjs");  // "module"
+```
+
 ## What stripping does not do
 
 A few TypeScript features (`enum`, `namespace`, `module`, `export =`, `import = require()`, parameter properties) emit JavaScript runtime values. Converting them to JavaScript equivalents is a transpilation step, not a syntax-stripping step. `yuku-strip` does exactly what its name says, it strips TypeScript syntax. When a runtime-emitting construct is encountered, it is reported as a `Diagnostic` and skipped, and the rest of the file is still emitted.

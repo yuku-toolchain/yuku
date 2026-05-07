@@ -22,7 +22,7 @@ fn size(bytes: usize) Size {
 pub fn main(init: std.process.Init) !void {
     const allocator = std.heap.page_allocator;
 
-    const file_path = "test/index.ts";
+    const file_path = "test/fixture.ts";
     const source = try std.Io.Dir.cwd().readFileAlloc(
         init.io,
         file_path,

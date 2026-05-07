@@ -1,6 +1,6 @@
 import binding from './binding.js';
 
-export const { strip } = binding;
+export const { minify } = binding;
 
 export function langFromPath(path) {
   if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";

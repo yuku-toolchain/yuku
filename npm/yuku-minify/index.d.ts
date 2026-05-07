@@ -4,34 +4,30 @@ type SourceType = "script" | "module";
 /** Language variant of the source code. */
 type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
 
-/** Whitespace mode for the output. */
-type Format = "pretty" | "compact";
-
 /** Quote style for emitted string literals. */
 type Quotes = "double" | "single";
 
-/** Options for `strip`. */
-interface StripOptions {
+/** Identifier mangling configuration. */
+interface MangleOptions {
   /**
-   * Parse as a classic script or an ES module.
-   * @default "module"
+   * Rename local bindings to short names.
+   * @default true
    */
-  sourceType?: SourceType;
+  enabled?: boolean;
   /**
-   * Language variant of the input source.
-   * @default "ts"
+   * Skip renaming `function foo()` declarations and named function expressions.
+   * @default false
    */
-  lang?: SourceLang;
+  keepFnames?: boolean;
   /**
-   * Output whitespace mode.
-   * @default "pretty"
+   * Skip renaming `class Foo {}` declarations and named class expressions.
+   * @default false
    */
-  format?: Format;
-  /**
-   * Spaces per indentation level (used only when `format === "pretty"`).
-   * @default 2
-   */
-  indent?: number;
+  keepClassnames?: boolean;
+}
+
+/** Output format configuration. */
+interface FormatOptions {
   /**
    * Quote style for emitted string literals.
    * @default "double"
@@ -39,9 +35,31 @@ interface StripOptions {
   quotes?: Quotes;
   /**
    * Append a trailing newline to the output if missing.
-   * @default true
+   * @default false
    */
   finalNewline?: boolean;
+}
+
+/** Options for `minify`. */
+interface MinifyOptions {
+  /**
+   * Parse as a classic script or an ES module.
+   * @default "module"
+   */
+  sourceType?: SourceType;
+  /**
+   * Language variant of the input source.
+   * @default "js"
+   */
+  lang?: SourceLang;
+  /**
+   * Identifier mangling configuration.
+   */
+  mangle?: MangleOptions;
+  /**
+   * Output format configuration.
+   */
+  format?: FormatOptions;
 }
 
 /** A codegen-detected problem in the input source. */
@@ -53,17 +71,17 @@ interface Diagnostic {
   end: number;
 }
 
-interface StripResult {
-  /** Generated JavaScript. */
+interface MinifyResult {
+  /** Minified JavaScript. */
   code: string;
   /** Codegen-detected problems. Empty when codegen succeeded cleanly. */
   errors: Diagnostic[];
 }
 
 /**
- * Strips TypeScript syntax from `source`, returning JavaScript.
+ * Minifies `source`, returning compact JavaScript.
  */
-export function strip(source: string, options?: StripOptions): StripResult;
+export function minify(source: string, options?: MinifyOptions): MinifyResult;
 
 /**
  * Resolves a {@link SourceLang} from a file path's extension.
@@ -84,4 +102,13 @@ export function langFromPath(path: string): SourceLang;
  */
 export function sourceTypeFromPath(path: string): SourceType;
 
-export type { StripOptions, StripResult, Diagnostic, SourceType, SourceLang, Format, Quotes };
+export type {
+  MinifyOptions,
+  MangleOptions,
+  FormatOptions,
+  MinifyResult,
+  Diagnostic,
+  SourceType,
+  SourceLang,
+  Quotes,
+};

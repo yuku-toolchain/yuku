@@ -1,0 +1,64 @@
+test/parser/misc/ts  (round-trip)
+=================================
+Passed:  17/22 (77.27%)
+Failed:  5
+Skipped: 0
+
+✓ test/parser/misc/ts/ambient-reserved-param.ts
+✓ test/parser/misc/ts/catch-type-annotation.ts
+✓ test/parser/misc/ts/constructor-overloads.ts
+✓ test/parser/misc/ts/declare-function-overloads.ts
+✗ test/parser/misc/ts/extends-fused-angle-type-args.ts (minified output failed to re-parse)
+error: Expected a type, but found ':'
+   |
+ 1 | declare const B:any;class A extends B<<a>(x:a)=>:a>{}
+   |                                                 ^
+   |
+
+✓ test/parser/misc/ts/extends-non-null-assertion.ts
+✓ test/parser/misc/ts/function-overloads.ts
+✗ test/parser/misc/ts/jsx-fused-angle-type-args.tsx (minified output failed to re-parse)
+error: Expected a type, but found ':'
+   |
+ 1 | declare const Foo:any;<Foo<<a>(x:a)=>:a>/>;
+   |                                      ^
+   |
+
+✗ test/parser/misc/ts/optional-chain-call-fused-angle.ts (minified output failed to re-parse)
+error: Expected ',' or ')' in parenthesized expression, but found ':'
+   |
+ 1 | declare const a:any;a?.b<<b>(x:b)=>:b>(0);
+   |                               ^
+   |
+   = help: Add a comma between elements or close with ')'.
+
+
+✗ test/parser/misc/ts/optional-chain-instantiation-fused-angle.ts (minified output failed to re-parse)
+error: Expected property name, '[', or '(' after '?.', but found '<<'
+   |
+ 1 | declare const f:any;f?.<<a>(x:a)=>:a>(0);
+   |                        ^^
+   |
+   = help: Optional chaining must be followed by property access (.x), computed access ([x]), or a call (()).
+
+
+✓ test/parser/misc/ts/redeclare-error-class.ts
+✓ test/parser/misc/ts/redeclare-error-enum.ts
+✓ test/parser/misc/ts/redeclare-error-namespace.ts
+✓ test/parser/misc/ts/redeclare-error-type-alias.ts
+✓ test/parser/misc/ts/redeclare-merge-class-interface.ts
+✗ test/parser/misc/ts/redeclare-merge-cross-space.ts (minified output failed to re-parse)
+error: Expected '=' in type alias declaration, but found 'a'
+   |
+ 1 | type T1=number;var t1=0;interface T2{}const t2=0;interface T3{}let t3=0;interface T4{}function t4(){}namespace T5{export type type a=number;}var t5=0;type T6=string;namespace T6{export type type a=number;}
+   |                                                                                                                                    ^
+   |
+   = help: A type alias is written 'type Foo = Bar'
+
+
+✓ test/parser/misc/ts/redeclare-merge-enum.ts
+✓ test/parser/misc/ts/redeclare-merge-import.module.ts
+✓ test/parser/misc/ts/redeclare-merge-interfaces.ts
+✓ test/parser/misc/ts/redeclare-merge-namespace.ts
+✓ test/parser/misc/ts/redeclare-merge-overloads.ts
+✓ test/parser/misc/ts/redeclare-type-parameter-scope.ts

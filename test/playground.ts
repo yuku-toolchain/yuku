@@ -1,6 +1,6 @@
 import { parse } from "yuku-parser";
 
-const source = await Bun.file("test/index.ts").text();
+const source = await Bun.file("test/fixture.ts").text();
 
 console.time('parse')
 const {program: _, diagnostics} = parse(source, {

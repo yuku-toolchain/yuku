@@ -1,5 +1,5 @@
-misc/js
-=======
+test/parser/misc/js
+===================
 Passed:       37/37 (100.00%)
 Failed:       0
 AST mismatch: 0/37

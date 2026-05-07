@@ -123,7 +123,7 @@ fn isManglable(sym: Symbol, scope: sc.Scope, tree: *const ast.Tree, toplevel: bo
 }
 
 const NameGen = struct {
-    counter: u64 = 0,
+    counter: usize = 0,
     buf: [16]u8 = undefined,
 
     const head_alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$";
@@ -133,16 +133,16 @@ const NameGen = struct {
         var n = self.counter;
         self.counter += 1;
 
-        const head_len: u64 = head_alpha.len;
+        const head_len: usize = head_alpha.len;
         if (n < head_len) {
             self.buf[0] = head_alpha[n];
             return self.buf[0..1];
         }
         n -= head_len;
 
-        const tail_len: u64 = tail_alpha.len;
+        const tail_len: usize = tail_alpha.len;
         var len: usize = 1;
-        var place: u64 = head_len * tail_len;
+        var place: usize = head_len * tail_len;
         while (n >= place) : (len += 1) {
             n -= place;
             place *= tail_len;

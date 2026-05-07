@@ -1,5 +1,5 @@
-misc/ts
-=======
+test/parser/misc/ts
+===================
 Passed:       22/22 (100.00%)
 Failed:       0
 AST mismatch: 0/22

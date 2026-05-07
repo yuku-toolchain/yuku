@@ -11,6 +11,7 @@
         "jest-diff": "^30.3.0",
         "napi-zig": "^0.1.36",
         "typescript": "^6.0.2",
+        "yuku-minify": "workspace:*",
         "yuku-parser": "workspace:*",
         "yuku-strip": "workspace:*",
       },
@@ -23,6 +24,67 @@
         "astro": "^6.0.6",
         "sharp": "^0.34.2",
       },
+    },
+    "npm/yuku-minify": {
+      "name": "yuku-minify",
+      "version": "0.0.0",
+      "optionalDependencies": {
+        "@yuku-minify/binding-darwin-arm64": "0.0.0",
+        "@yuku-minify/binding-darwin-x64": "0.0.0",
+        "@yuku-minify/binding-freebsd-x64": "0.0.0",
+        "@yuku-minify/binding-linux-arm-gnu": "0.0.0",
+        "@yuku-minify/binding-linux-arm-musl": "0.0.0",
+        "@yuku-minify/binding-linux-arm64-gnu": "0.0.0",
+        "@yuku-minify/binding-linux-arm64-musl": "0.0.0",
+        "@yuku-minify/binding-linux-x64-gnu": "0.0.0",
+        "@yuku-minify/binding-linux-x64-musl": "0.0.0",
+        "@yuku-minify/binding-win32-arm64": "0.0.0",
+        "@yuku-minify/binding-win32-x64": "0.0.0",
+      },
+    },
+    "npm/yuku-minify/@yuku-minify/binding-darwin-arm64": {
+      "name": "@yuku-minify/binding-darwin-arm64",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-darwin-x64": {
+      "name": "@yuku-minify/binding-darwin-x64",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-freebsd-x64": {
+      "name": "@yuku-minify/binding-freebsd-x64",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-linux-arm-gnu": {
+      "name": "@yuku-minify/binding-linux-arm-gnu",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-linux-arm-musl": {
+      "name": "@yuku-minify/binding-linux-arm-musl",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-linux-arm64-gnu": {
+      "name": "@yuku-minify/binding-linux-arm64-gnu",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-linux-arm64-musl": {
+      "name": "@yuku-minify/binding-linux-arm64-musl",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-linux-x64-gnu": {
+      "name": "@yuku-minify/binding-linux-x64-gnu",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-linux-x64-musl": {
+      "name": "@yuku-minify/binding-linux-x64-musl",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-win32-arm64": {
+      "name": "@yuku-minify/binding-win32-arm64",
+      "version": "0.0.0",
+    },
+    "npm/yuku-minify/@yuku-minify/binding-win32-x64": {
+      "name": "@yuku-minify/binding-win32-x64",
+      "version": "0.0.0",
     },
     "npm/yuku-parser": {
       "name": "yuku-parser",
@@ -419,6 +481,28 @@
     "@types/unist": ["@types/unist@3.0.3", "", {}, "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="],
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.3.0", "", {}, "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g=="],
+
+    "@yuku-minify/binding-darwin-arm64": ["@yuku-minify/binding-darwin-arm64@workspace:npm/yuku-minify/@yuku-minify/binding-darwin-arm64"],
+
+    "@yuku-minify/binding-darwin-x64": ["@yuku-minify/binding-darwin-x64@workspace:npm/yuku-minify/@yuku-minify/binding-darwin-x64"],
+
+    "@yuku-minify/binding-freebsd-x64": ["@yuku-minify/binding-freebsd-x64@workspace:npm/yuku-minify/@yuku-minify/binding-freebsd-x64"],
+
+    "@yuku-minify/binding-linux-arm-gnu": ["@yuku-minify/binding-linux-arm-gnu@workspace:npm/yuku-minify/@yuku-minify/binding-linux-arm-gnu"],
+
+    "@yuku-minify/binding-linux-arm-musl": ["@yuku-minify/binding-linux-arm-musl@workspace:npm/yuku-minify/@yuku-minify/binding-linux-arm-musl"],
+
+    "@yuku-minify/binding-linux-arm64-gnu": ["@yuku-minify/binding-linux-arm64-gnu@workspace:npm/yuku-minify/@yuku-minify/binding-linux-arm64-gnu"],
+
+    "@yuku-minify/binding-linux-arm64-musl": ["@yuku-minify/binding-linux-arm64-musl@workspace:npm/yuku-minify/@yuku-minify/binding-linux-arm64-musl"],
+
+    "@yuku-minify/binding-linux-x64-gnu": ["@yuku-minify/binding-linux-x64-gnu@workspace:npm/yuku-minify/@yuku-minify/binding-linux-x64-gnu"],
+
+    "@yuku-minify/binding-linux-x64-musl": ["@yuku-minify/binding-linux-x64-musl@workspace:npm/yuku-minify/@yuku-minify/binding-linux-x64-musl"],
+
+    "@yuku-minify/binding-win32-arm64": ["@yuku-minify/binding-win32-arm64@workspace:npm/yuku-minify/@yuku-minify/binding-win32-arm64"],
+
+    "@yuku-minify/binding-win32-x64": ["@yuku-minify/binding-win32-x64@workspace:npm/yuku-minify/@yuku-minify/binding-win32-x64"],
 
     "@yuku-parser/binding-darwin-arm64": ["@yuku-parser/binding-darwin-arm64@workspace:npm/yuku-parser/@yuku-parser/binding-darwin-arm64"],
 
@@ -1071,6 +1155,8 @@
     "yocto-queue": ["yocto-queue@1.2.2", "", {}, "sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ=="],
 
     "yuku-docs": ["yuku-docs@workspace:docs"],
+
+    "yuku-minify": ["yuku-minify@workspace:npm/yuku-minify"],
 
     "yuku-parser": ["yuku-parser@workspace:npm/yuku-parser"],
 
