@@ -19,5 +19,5 @@ pub fn main(init: std.process.Init) !void {
     const result = try minifier.minify(allocator, &tree, .{});
     defer result.deinit(allocator);
 
-    std.debug.print("{s}", .{result.code});
+    std.debug.print("{s}\n", .{result.code});
 }

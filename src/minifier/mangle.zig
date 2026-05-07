@@ -104,8 +104,6 @@ fn rename(tree: *ast.Tree, table: SymbolTable, sid: SymbolId, sym: Symbol, name:
 }
 
 fn isManglable(sym: Symbol, scope: sc.Scope, tree: *const ast.Tree, toplevel: bool, opts: MangleOptions) bool {
-    if (!sym.flags.inValueSpace()) return false;
-
     if (sym.flags.exported or sym.flags.is_default) return false;
     if (sym.flags.ambient) return false;
 
