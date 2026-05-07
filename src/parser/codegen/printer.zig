@@ -180,28 +180,33 @@ fn Printer(comptime cfg: Config) type {
         const data = self.tree.data(idx);
 
         if (comptime strip_ts) {
-            // every type-position node is erased
             if (data.isTypeContext()) return;
+
             switch (data) {
-                // type-only declarations and signatures, erased silently
                 .ts_type_alias_declaration,
                 .ts_interface_declaration,
                 .ts_global_declaration,
                 .ts_namespace_export_declaration,
                 .ts_this_parameter,
                 => return,
-                // expression wrappers, pass through to the inner expression
                 .ts_as_expression => |e| return self.emit(e.expression),
                 .ts_satisfies_expression => |e| return self.emit(e.expression),
                 .ts_type_assertion => |e| return self.emit(e.expression),
                 .ts_non_null_expression => |e| return self.emit(e.expression),
                 .ts_instantiation_expression => |e| return self.emit(e.expression),
-                // not strippable, report as error and skip
-                .ts_enum_declaration => return self.diagnose(idx, "TypeScript enums cannot be stripped to JavaScript"),
-                .ts_module_declaration => return self.diagnose(idx, "TypeScript namespaces cannot be stripped to JavaScript"),
+                .ts_enum_declaration => |e| {
+                    if (e.declare) return;
+                    return self.diagnose(idx, "TypeScript enums cannot be stripped to JavaScript");
+                },
+                .ts_module_declaration => |m| {
+                    if (m.declare) return;
+                    return self.diagnose(idx, "TypeScript namespaces cannot be stripped to JavaScript");
+                },
+                .ts_import_equals_declaration => |i| {
+                    if (i.import_kind == .type) return;
+                    return self.diagnose(idx, "`import = require()` cannot be stripped to JavaScript");
+                },
                 .ts_export_assignment => return self.diagnose(idx, "`export =` cannot be stripped to JavaScript"),
-                .ts_import_equals_declaration => return self.diagnose(idx, "`import = require()` cannot be stripped to JavaScript"),
-                // parameter property, report and emit the inner pattern so call arity is preserved
                 .ts_parameter_property => |pp| {
                     try self.diagnose(idx, "parameter properties cannot be stripped to JavaScript");
                     return self.emit(pp.parameter);
