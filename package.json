@@ -24,10 +24,10 @@
     "@types/node": "^25.5.0",
     "fast-deep-equal": "^3.1.3",
     "jest-diff": "^30.3.0",
-    "napi-zig": "^0.1.36",
+    "napi-zig": "^0.1.39",
     "typescript": "^6.0.2",
+    "yuku-minify": "workspace:*",
     "yuku-parser": "workspace:*",
-    "yuku-strip": "workspace:*",
-    "yuku-minify": "workspace:*"
+    "yuku-strip": "workspace:*"
   }
 }

@@ -377,7 +377,6 @@ pub const SymbolTable = struct {
                 while (it.next()) |ancestor| {
                     const idx = @intFromEnum(ancestor);
                     if (self.scope_maps[idx].getAdapted(name, pctx)) |id| break :blk id;
-                    if (self.hoisting_variables[idx].getAdapted(name, pctx)) |id| break :blk id;
                 }
                 break :blk .none;
             };

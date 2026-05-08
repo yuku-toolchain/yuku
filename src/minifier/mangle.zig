@@ -41,11 +41,16 @@ pub fn run(
     // count manglables per scope, reserve kept names along the way.
     const count_in_scope = try a.alloc(u32, scope_tree.scopes.len);
     @memset(count_in_scope, 0);
+
+    var manglable_ids: std.ArrayList(SymbolId) = .empty;
+    try manglable_ids.ensureTotalCapacity(a, table.symbols.len);
+
     var symbols = table.iterSymbols();
     while (symbols.next()) |entry| {
         const sym = entry.symbol;
         if (isManglable(sym, scope_tree.getScope(sym.scope), tree, toplevel, opts)) {
             count_in_scope[@intFromEnum(sym.scope)] += 1;
+            manglable_ids.appendAssumeCapacity(entry.id);
         } else {
             try fixed.put(a, table.string(sym.name), {});
         }
@@ -76,17 +81,13 @@ pub fn run(
         }
     }
 
-    // walk symbols, hand out slots, rewrite via sym.node and ref.node.
-    symbols = table.iterSymbols();
-    while (symbols.next()) |entry| {
-        const sym = entry.symbol;
-        if (!isManglable(sym, scope_tree.getScope(sym.scope), tree, toplevel, opts)) continue;
-
+    // walk manglable symbols, hand out slots, rewrite via sym.node and ref.node.
+    for (manglable_ids.items) |sid| {
+        const sym = table.getSymbol(sid);
         const si = @intFromEnum(sym.scope);
         const slot = ancestor_count[si];
         ancestor_count[si] += 1;
-
-        rename(tree, table, entry.id, sym, names[slot]);
+        rename(tree, table, sid, sym, names[slot]);
     }
 }
 
