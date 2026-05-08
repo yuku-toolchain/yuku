@@ -13,13 +13,17 @@ pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
 const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
 
+/// A `(start, len)` window into a backing slice.
+pub const Range = struct { start: u32, len: u32 };
+
 /// A declared binding. `flags` describes which spaces (value, type,
-/// namespace) and modifiers it occupies.
+/// namespace) and modifiers it occupies. `decls` indexes
+/// `SymbolTable.decl_nodes` and lists every declarator of the symbol.
 pub const Symbol = struct {
     name: String,
     flags: Flags,
     scope: sc.ScopeId,
-    node: ast.NodeIndex,
+    decls: Range,
 
     pub const Flags = packed struct(u32) {
         function_scoped_var: bool = false,
@@ -216,14 +220,14 @@ pub const Symbol = struct {
     };
 };
 
-/// A use of a name (not a declaration). Each `identifier_reference` in
-/// the source produces one entry.
+/// A use of a name. One entry per `identifier_reference` in the
+/// source. Declaration sites live in `Symbol.decls`.
 pub const Reference = struct {
     name: String,
     scope: sc.ScopeId,
     node: ast.NodeIndex,
     /// `.value` for runtime uses, `.type` for type-position uses
-    /// (annotations, `extends`, `implements`, type arguments)
+    /// (annotations, `extends`, `implements`, type arguments).
     kind: Kind = .value,
 
     pub const Kind = enum(u1) { value, type };
@@ -236,6 +240,8 @@ pub const Reference = struct {
 pub const SymbolTable = struct {
     symbols: []const Symbol,
     references: []const Reference,
+    /// Flat array of declarator nodes indexed by `Symbol.decls`.
+    decl_nodes: []const ast.NodeIndex,
     scope_maps: []const ScopeMap,
     hoisting_variables: []const ScopeMap,
     strings: *const ast.StringPool,
@@ -245,8 +251,6 @@ pub const SymbolTable = struct {
     symbol_refs: []const ReferenceId = &.{},
     symbol_ref_ranges: []const Range = &.{},
     unresolved_refs: []const ReferenceId = &.{},
-
-    const Range = struct { start: u32, len: u32 };
 
     /// A `(id, symbol)` pair yielded by `iterSymbols`.
     pub const SymbolEntry = struct { id: SymbolId, symbol: Symbol };
@@ -295,10 +299,42 @@ pub const SymbolTable = struct {
         }
     };
 
-    /// Returns the source text for a `String` handle.
-    pub inline fn string(self: SymbolTable, id: String) []const u8 {
-        return self.strings.get(id);
-    }
+    /// Yields the node index of every `identifier_reference` resolved
+    /// to a symbol.
+    pub const UseIterator = struct {
+        references: []const Reference,
+        ids: []const ReferenceId,
+        index: u32 = 0,
+
+        pub fn next(self: *UseIterator) ?ast.NodeIndex {
+            if (self.index >= self.ids.len) return null;
+            const ref = self.references[@intFromEnum(self.ids[self.index])];
+            self.index += 1;
+            return ref.node;
+        }
+    };
+
+    /// Yields every node index bound to a symbol. Declaration sites
+    /// come first in source order, then use sites.
+    pub const SiteIterator = struct {
+        decls: []const ast.NodeIndex,
+        references: []const Reference,
+        use_ids: []const ReferenceId,
+        decl_index: u32 = 0,
+        use_index: u32 = 0,
+
+        pub fn next(self: *SiteIterator) ?ast.NodeIndex {
+            if (self.decl_index < self.decls.len) {
+                const node = self.decls[self.decl_index];
+                self.decl_index += 1;
+                return node;
+            }
+            if (self.use_index >= self.use_ids.len) return null;
+            const node = self.references[@intFromEnum(self.use_ids[self.use_index])].node;
+            self.use_index += 1;
+            return node;
+        }
+    };
 
     /// Returns the symbol for the given id.
     pub inline fn getSymbol(self: SymbolTable, id: SymbolId) Symbol {
@@ -315,7 +351,7 @@ pub const SymbolTable = struct {
         return .{ .symbols = self.symbols };
     }
 
-    /// Iterator over every `(id, reference)` pair in the table.
+    /// Iterator over every `(id, reference)` pair in source order.
     pub fn iterReferences(self: SymbolTable) ReferenceIterator {
         return .{ .references = self.references };
     }
@@ -326,7 +362,8 @@ pub const SymbolTable = struct {
         return .{ .references = self.references, .ids = self.unresolved_refs };
     }
 
-    /// Iterator over symbol ids declared in `scope` (excluding hoisted).
+    /// Iterator over symbol ids declared directly in `scope` (excluding
+    /// hoisted vars passing through).
     pub fn scopeSymbols(self: SymbolTable, scope: sc.ScopeId) ScopeMap.ValueIterator {
         return self.scope_maps[@intFromEnum(scope)].valueIterator();
     }
@@ -337,11 +374,11 @@ pub const SymbolTable = struct {
         return self.scope_maps[@intFromEnum(scope)].get(name);
     }
 
-    /// Like `findInScope`, but also matches a hoisting `var` that is
-    /// passing through `scope` on its way to its target.
+    /// Like `findInScope`, but also matches a hoisting `var` passing
+    /// through `scope` on its way to its target.
     pub fn findInScopeOrHoisted(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        if (self.findInScope(scope, name)) |id| return id;
-        return self.hoisting_variables[@intFromEnum(scope)].get(name);
+        return self.findInScope(scope, name) orelse
+            self.hoisting_variables[@intFromEnum(scope)].get(name);
     }
 
     /// Walks up the scope chain from `scope` to find the nearest binding
@@ -356,10 +393,11 @@ pub const SymbolTable = struct {
 
     /// Resolves every reference to its declaring symbol and builds the
     /// reverse index. After this returns:
-    ///   - `referenceSymbol(ref_id)` gives the symbol the reference resolves to.
-    ///   - `symbolReferences(sym_id)` gives all references to that symbol.
-    ///   - `iterUnresolved()` walks references that did not resolve
-    ///     (free variables, globals, undeclared names).
+    ///   - `referenceSymbol(ref_id)` gives the symbol a reference resolves to.
+    ///   - `symbolUses(sym_id)` walks the use sites of a symbol.
+    ///   - `symbolSites(sym_id)` walks declarations and uses together.
+    ///   - `iterUnresolved()` walks references that did not resolve.
+    /// `symbolDecls` is available without calling `resolveAll`.
     pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) Allocator.Error!void {
         const allocator = self.allocator;
         const ref_count: u32 = @intCast(self.references.len);
@@ -370,7 +408,7 @@ pub const SymbolTable = struct {
         const resolutions = try allocator.alloc(SymbolId, ref_count);
 
         for (self.references, resolutions) |ref, *out| {
-            const name = self.string(ref.name);
+            const name = self.strings.get(ref.name);
             const pctx = PrehashCtx{ .h = std.hash.Wyhash.hash(0, name) };
             out.* = blk: {
                 var it = scope_tree.ancestors(ref.scope);
@@ -399,13 +437,12 @@ pub const SymbolTable = struct {
         const unresolved = try allocator.alloc(ReferenceId, ref_count - offset);
         var unresolved_cursor: u32 = 0;
 
-        for (0..ref_count) |i| {
+        for (resolutions, 0..) |resolved, i| {
             const ref_id: ReferenceId = @enumFromInt(@as(u32, @intCast(i)));
-            const resolved = resolutions[i];
             if (resolved != .none) {
-                const sym_idx = @intFromEnum(resolved);
-                symbol_refs[ranges[sym_idx].start + ranges[sym_idx].len] = ref_id;
-                ranges[sym_idx].len += 1;
+                const r = &ranges[@intFromEnum(resolved)];
+                symbol_refs[r.start + r.len] = ref_id;
+                r.len += 1;
             } else {
                 unresolved[unresolved_cursor] = ref_id;
                 unresolved_cursor += 1;
@@ -418,28 +455,45 @@ pub const SymbolTable = struct {
         self.unresolved_refs = unresolved;
     }
 
-    /// Returns the symbol a reference resolves to, or `.none` if the
-    /// reference is unresolved. Only valid after `resolveAll` has run.
+    /// The symbol a reference resolves to, or `.none` if the reference
+    /// is unresolved. Only valid after `resolveAll` has run.
     pub inline fn referenceSymbol(self: SymbolTable, id: ReferenceId) SymbolId {
         const idx = @intFromEnum(id);
         if (idx >= self.resolutions.len) return .none;
         return self.resolutions[idx];
     }
 
-    /// Returns every reference resolved to `id`. Only valid after
-    /// `resolveAll` has run. Returns an empty slice before then.
-    pub inline fn symbolReferences(self: SymbolTable, id: SymbolId) []const ReferenceId {
+    /// Every declaration site of `id`, in declaration order.
+    pub fn symbolDecls(self: SymbolTable, id: SymbolId) []const ast.NodeIndex {
+        const range = self.symbols[@intFromEnum(id)].decls;
+        return self.decl_nodes[range.start..][0..range.len];
+    }
+
+    /// Iterates the use sites of `id`.
+    pub fn symbolUses(self: SymbolTable, id: SymbolId) UseIterator {
+        return .{ .references = self.references, .ids = self.useIds(id) };
+    }
+
+    /// Iterates every site of `id`. Declarations come first in source
+    /// order, then use sites.
+    pub fn symbolSites(self: SymbolTable, id: SymbolId) SiteIterator {
+        return .{
+            .decls = self.symbolDecls(id),
+            .references = self.references,
+            .use_ids = self.useIds(id),
+        };
+    }
+
+    /// True when `id` has at least one use.
+    pub fn isReferenced(self: SymbolTable, id: SymbolId) bool {
+        return self.useIds(id).len > 0;
+    }
+
+    inline fn useIds(self: SymbolTable, id: SymbolId) []const ReferenceId {
         const idx = @intFromEnum(id);
         if (idx >= self.symbol_ref_ranges.len) return &.{};
         const range = self.symbol_ref_ranges[idx];
         return self.symbol_refs[range.start..][0..range.len];
-    }
-
-    /// True when at least one reference resolves to `id`.
-    pub inline fn isReferenced(self: SymbolTable, id: SymbolId) bool {
-        const idx = @intFromEnum(id);
-        if (idx >= self.symbol_ref_ranges.len) return false;
-        return self.symbol_ref_ranges[idx].len > 0;
     }
 };
 
@@ -459,6 +513,7 @@ pub const SymbolTracker = struct {
     allocator: Allocator,
     symbols: std.ArrayList(Symbol) = .empty,
     references: std.ArrayList(Reference) = .empty,
+    decl_pairs: std.ArrayList(DeclPair) = .empty,
     scope_maps: std.ArrayList(ScopeMap) = .empty,
     hoisting_variables: std.ArrayList(ScopeMap) = .empty,
 
@@ -472,6 +527,8 @@ pub const SymbolTracker = struct {
     saved_stack: std.ArrayList(SavedContext) = .empty,
 
     pub const ExportState = enum { none, named, default };
+
+    const DeclPair = struct { sid: SymbolId, node: ast.NodeIndex };
 
     /// Snapshot of the four context fields, taken before a mutator
     /// rewrites them so the mutator's exit can restore the prior state.
@@ -489,6 +546,7 @@ pub const SymbolTracker = struct {
         const estimated: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 32)));
         try self.symbols.ensureTotalCapacity(alloc, estimated);
         try self.references.ensureTotalCapacity(alloc, estimated);
+        try self.decl_pairs.ensureTotalCapacity(alloc, estimated);
         try self.scope_maps.ensureTotalCapacity(alloc, estimated / 2);
         try self.hoisting_variables.ensureTotalCapacity(alloc, estimated / 2);
         try self.saved_stack.ensureTotalCapacity(alloc, 32);
@@ -500,40 +558,35 @@ pub const SymbolTracker = struct {
     /// nodes can configure flags, excludes, target scope, and export
     /// state before the child binding identifier fires.
     pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
-        if (mutatesBindingContext(data)) {
-            try self.saved_stack.append(self.allocator, .{
-                .flags = self.binding_flags,
-                .excludes = self.binding_excludes,
-                .target = self.target,
-                .export_state = self.export_state,
-            });
-        }
-
         switch (data) {
             .export_named_declaration => |decl| {
                 if (decl.export_kind != .type) self.export_state = .named;
             },
             .export_default_declaration => self.export_state = .default,
 
-            .variable_declaration => |decl| switch (decl.kind) {
-                .@"var" => {
-                    self.binding_flags = .{ .function_scoped_var = true };
-                    self.binding_excludes = Symbol.Excludes.function_var;
-                    self.target = scope.currentHoistScopeId();
-                },
-                .@"const", .using, .await_using => {
-                    self.binding_flags = .{ .block_scoped_var = true, .const_var = true };
-                    self.binding_excludes = Symbol.Excludes.block_var;
-                    self.target = scope.currentScopeId();
-                },
-                .let => {
-                    self.binding_flags = .{ .block_scoped_var = true };
-                    self.binding_excludes = Symbol.Excludes.block_var;
-                    self.target = scope.currentScopeId();
-                },
+            .variable_declaration => |decl| {
+                try self.pushSavedContext();
+                switch (decl.kind) {
+                    .@"var" => {
+                        self.binding_flags = .{ .function_scoped_var = true };
+                        self.binding_excludes = Symbol.Excludes.function_var;
+                        self.target = scope.currentHoistScopeId();
+                    },
+                    .@"const", .using, .await_using => {
+                        self.binding_flags = .{ .block_scoped_var = true, .const_var = true };
+                        self.binding_excludes = Symbol.Excludes.block_var;
+                        self.target = scope.currentScopeId();
+                    },
+                    .let => {
+                        self.binding_flags = .{ .block_scoped_var = true };
+                        self.binding_excludes = Symbol.Excludes.block_var;
+                        self.target = scope.currentScopeId();
+                    },
+                }
             },
 
             .function => |func| {
+                try self.pushSavedContext();
                 const ambient = func.declare or
                     func.type == .ts_declare_function or
                     func.type == .ts_empty_body_function_expression;
@@ -552,6 +605,7 @@ pub const SymbolTracker = struct {
             },
 
             .class => |cls| {
+                try self.pushSavedContext();
                 self.binding_flags = .{ .class = true, .ambient = cls.declare };
                 self.binding_excludes = Symbol.Excludes.class;
                 const is_decl = cls.type == .class_declaration;
@@ -561,6 +615,7 @@ pub const SymbolTracker = struct {
             },
 
             .formal_parameters => {
+                try self.pushSavedContext();
                 self.binding_flags = .{
                     .function_scoped_var = true,
                     .parameter = true,
@@ -575,6 +630,7 @@ pub const SymbolTracker = struct {
             .class_body, .ts_module_block => self.export_state = .none,
 
             inline .import_declaration, .ts_import_equals_declaration => |decl| {
+                try self.pushSavedContext();
                 self.binding_flags = if (decl.import_kind == .type)
                     .{ .type_import = true }
                 else
@@ -584,6 +640,7 @@ pub const SymbolTracker = struct {
             },
 
             .import_specifier => |spec| {
+                try self.pushSavedContext();
                 if (spec.import_kind == .type) {
                     self.binding_flags = .{ .type_import = true };
                     self.binding_excludes = Symbol.Excludes.import_binding;
@@ -591,6 +648,7 @@ pub const SymbolTracker = struct {
             },
 
             .catch_clause => {
+                try self.pushSavedContext();
                 self.binding_flags = .{ .function_scoped_var = true, .catch_var = true };
                 self.binding_excludes = Symbol.Excludes.catch_param;
                 self.target = scope.currentScopeId();
@@ -599,18 +657,21 @@ pub const SymbolTracker = struct {
             // the id binds in the surrounding scope. type-parameter
             // and body bindings live in a scope pushed by the tracker.
             .ts_interface_declaration => |decl| {
+                try self.pushSavedContext();
                 self.binding_flags = .{ .interface = true, .ambient = decl.declare };
                 self.binding_excludes = Symbol.Excludes.interface;
                 self.target = scope.currentScope().parent;
             },
 
             .ts_type_alias_declaration => |decl| {
+                try self.pushSavedContext();
                 self.binding_flags = .{ .type_alias = true, .ambient = decl.declare };
                 self.binding_excludes = Symbol.Excludes.type_alias;
                 self.target = scope.currentScope().parent;
             },
 
             .ts_enum_declaration => |decl| {
+                try self.pushSavedContext();
                 if (decl.is_const) {
                     self.binding_flags = .{ .const_enum = true, .ambient = decl.declare };
                     self.binding_excludes = Symbol.Excludes.const_enum;
@@ -622,6 +683,7 @@ pub const SymbolTracker = struct {
             },
 
             .ts_module_declaration => |decl| {
+                try self.pushSavedContext();
                 // type-only bodies (interface/type alias/etc.) don't
                 // occupy value space
                 const instantiated = isNamespaceInstantiated(self.tree, decl.body);
@@ -638,6 +700,7 @@ pub const SymbolTracker = struct {
             },
 
             .ts_namespace_export_declaration => {
+                try self.pushSavedContext();
                 self.binding_flags = .{ .namespace_module = true };
                 self.binding_excludes = Symbol.Excludes.namespace_module;
                 self.target = scope.currentScopeId();
@@ -647,6 +710,7 @@ pub const SymbolTracker = struct {
             // keys `[K in T]` are bare binding_identifiers under
             // ts_mapped_type, so the same context applies.
             .ts_type_parameter, .ts_mapped_type => {
+                try self.pushSavedContext();
                 self.binding_flags = .{ .type_parameter = true };
                 self.binding_excludes = Symbol.Excludes.type_parameter;
                 self.target = scope.currentScopeId();
@@ -655,6 +719,15 @@ pub const SymbolTracker = struct {
 
             else => {},
         }
+    }
+
+    inline fn pushSavedContext(self: *SymbolTracker) Allocator.Error!void {
+        try self.saved_stack.append(self.allocator, .{
+            .flags = self.binding_flags,
+            .excludes = self.binding_excludes,
+            .target = self.target,
+            .export_state = self.export_state,
+        });
     }
 
     /// Materializes the pending binding context into a symbol (for
@@ -700,32 +773,21 @@ pub const SymbolTracker = struct {
     }
 
     /// Restores the context to what it was before the matching enter.
-    /// Called from `Ctx.exit`. Safe for any node; only nodes that
-    /// pushed in `setBindingContext` actually pop.
+    /// Safe for any node. Only nodes that pushed in `setBindingContext`
+    /// actually pop.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
-        if (mutatesBindingContext(data)) {
-            if (self.saved_stack.pop()) |saved| {
-                self.binding_flags = saved.flags;
-                self.binding_excludes = saved.excludes;
-                self.target = saved.target;
-                if (data != .formal_parameters) self.export_state = saved.export_state;
-            }
-        }
         switch (data) {
-            .export_named_declaration, .export_default_declaration => self.export_state = .none,
-            else => {},
-        }
-    }
+            .formal_parameters => {
+                if (self.saved_stack.pop()) |saved| {
+                    self.binding_flags = saved.flags;
+                    self.binding_excludes = saved.excludes;
+                    self.target = saved.target;
+                }
+            },
 
-    /// Nodes whose enter writes to any of `binding_flags`,
-    /// `binding_excludes`, `target`, or `export_state`. Single source
-    /// of truth so push and pop stay in sync.
-    fn mutatesBindingContext(data: ast.NodeData) bool {
-        return switch (data) {
             .variable_declaration,
             .function,
             .class,
-            .formal_parameters,
             .import_declaration,
             .ts_import_equals_declaration,
             .import_specifier,
@@ -737,17 +799,26 @@ pub const SymbolTracker = struct {
             .ts_namespace_export_declaration,
             .ts_type_parameter,
             .ts_mapped_type,
-            => true,
-            else => false,
-        };
+            => {
+                if (self.saved_stack.pop()) |saved| {
+                    self.binding_flags = saved.flags;
+                    self.binding_excludes = saved.excludes;
+                    self.target = saved.target;
+                    self.export_state = saved.export_state;
+                }
+            },
+
+            .export_named_declaration, .export_default_declaration => self.export_state = .none,
+
+            else => {},
+        }
     }
 
     /// Declares a binding in `target`. If the name is already bound
     /// there with non-conflicting flags, merges into the existing
-    /// symbol. If the name conflicts (`existing.flags ∩ excludes ≠ ∅`),
-    /// keeps the existing symbol unchanged and returns its id (the
-    /// caller already detected the conflict and emitted a diagnostic).
-    /// Otherwise creates a fresh symbol.
+    /// symbol. If the name conflicts, keeps the existing symbol
+    /// unchanged (the caller emits a diagnostic). Otherwise creates
+    /// a fresh symbol. `node` is always recorded as a declarator.
     pub fn declare(
         self: *SymbolTracker,
         name: String,
@@ -759,22 +830,25 @@ pub const SymbolTracker = struct {
         const name_str = self.tree.string(name);
         const target_idx = @intFromEnum(target);
 
-        if (self.scope_maps.items[target_idx].get(name_str) orelse
+        const id = if (self.scope_maps.items[target_idx].get(name_str) orelse
             self.hoisting_variables.items[target_idx].get(name_str)) |existing|
-        {
+        sid: {
             const sym = &self.symbols.items[@intFromEnum(existing)];
-            if (sym.flags.intersects(excludes)) return existing;
+            if (!sym.flags.intersects(excludes)) {
+                var merged = sym.flags.merge(flags);
+                merged.exported = merged.exported or self.export_state != .none;
+                merged.is_default = merged.is_default or self.export_state == .default;
+                sym.flags = merged;
+            }
+            break :sid existing;
+        } else sid: {
+            const new_id = try self.append(name, flags, target);
+            try self.scope_maps.items[target_idx].put(self.allocator, name_str, new_id);
+            break :sid new_id;
+        };
 
-            var merged = sym.flags.merge(flags);
-            merged.exported = merged.exported or self.export_state != .none;
-            merged.is_default = merged.is_default or self.export_state == .default;
-            sym.flags = merged;
-            return existing;
-        }
-
-        const new_id = try self.append(name, flags, target, node);
-        try self.scope_maps.items[target_idx].put(self.allocator, name_str, new_id);
-        return new_id;
+        try self.decl_pairs.append(self.allocator, .{ .sid = id, .node = node });
+        return id;
     }
 
     /// Records an identifier reference in `scope`. The kind tags it as
@@ -801,7 +875,6 @@ pub const SymbolTracker = struct {
         name: String,
         flags: Symbol.Flags,
         target: sc.ScopeId,
-        node: ast.NodeIndex,
     ) Allocator.Error!SymbolId {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
         var stored = flags;
@@ -811,7 +884,7 @@ pub const SymbolTracker = struct {
             .name = name,
             .flags = stored,
             .scope = target,
-            .node = node,
+            .decls = .{ .start = 0, .len = 0 },
         });
         return id;
     }
@@ -834,6 +907,15 @@ pub const SymbolTracker = struct {
     /// Returns the symbol for the given id.
     pub inline fn getSymbol(self: *const SymbolTracker, id: SymbolId) Symbol {
         return self.symbols.items[@intFromEnum(id)];
+    }
+
+    /// First declarator recorded for `id`, or `.null` if none.
+    /// Slow path. Post-finalize callers use `symbolDecls(id)[0]`.
+    pub fn firstDeclOf(self: *const SymbolTracker, id: SymbolId) ast.NodeIndex {
+        for (self.decl_pairs.items) |pair| {
+            if (pair.sid == id) return pair.node;
+        }
+        return .null;
     }
 
     /// Iterator over symbol ids declared directly in `scope`.
@@ -867,12 +949,37 @@ pub const SymbolTracker = struct {
     }
 
     /// Finalizes the tracker into an immutable `SymbolTable`. The
-    /// table reuses the tracker's storage (no copy), so it stays valid
-    /// for as long as the source tree is alive.
-    pub fn toSymbolTable(self: *SymbolTracker) SymbolTable {
+    /// table aliases the tracker's storage and stays valid for the
+    /// lifetime of the source tree.
+    pub fn toSymbolTable(self: *SymbolTracker) Allocator.Error!SymbolTable {
+        const decl_nodes = try self.allocator.alloc(ast.NodeIndex, self.decl_pairs.items.len);
+
+        // count per symbol
+        for (self.symbols.items) |*s| s.decls = .{ .start = 0, .len = 0 };
+        for (self.decl_pairs.items) |pair| {
+            self.symbols.items[@intFromEnum(pair.sid)].decls.len += 1;
+        }
+
+        // prefix sum, reusing len as a write cursor during fill
+        var offset: u32 = 0;
+        for (self.symbols.items) |*s| {
+            const count = s.decls.len;
+            s.decls.start = offset;
+            s.decls.len = 0;
+            offset += count;
+        }
+
+        // fill
+        for (self.decl_pairs.items) |pair| {
+            const s = &self.symbols.items[@intFromEnum(pair.sid)];
+            decl_nodes[s.decls.start + s.decls.len] = pair.node;
+            s.decls.len += 1;
+        }
+
         return .{
             .symbols = self.symbols.items,
             .references = self.references.items,
+            .decl_nodes = decl_nodes,
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
             .strings = &self.tree.strings,

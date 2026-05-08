@@ -239,6 +239,24 @@ pub const Tree = struct {
         self.nodes.items(.span)[@intFromEnum(index)] = new_span;
     }
 
+    /// Updates the name of an identifier-shaped node in place.
+    pub fn setIdentifierName(self: *Tree, index: NodeIndex, name: String) void {
+        switch (self.data(index)) {
+            .binding_identifier => |bid| {
+                var n = bid;
+                n.name = name;
+                self.setData(index, .{ .binding_identifier = n });
+            },
+            inline .identifier_reference,
+            .identifier_name,
+            .label_identifier,
+            .private_identifier,
+            .jsx_identifier,
+            => |_, tag| self.setData(index, @unionInit(NodeData, @tagName(tag), .{ .name = name })),
+            else => unreachable,
+        }
+    }
+
     /// Creates a new node. Returns its index.
     pub inline fn addNode(self: *Tree, node_data: NodeData, node_span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));

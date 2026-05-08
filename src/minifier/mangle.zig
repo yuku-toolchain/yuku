@@ -31,12 +31,12 @@ pub fn run(
 
     const toplevel = opts.toplevel orelse tree.isModule();
 
-    // mames the generator must never produce
+    // names the generator must never produce
     var fixed: NameSet = .empty;
     for (reserved_words) |kw| try fixed.put(a, kw, {});
     for (opts.reserved) |r| try fixed.put(a, r, {});
     var unresolved = table.iterUnresolved();
-    while (unresolved.next()) |entry| try fixed.put(a, table.string(entry.reference.name), {});
+    while (unresolved.next()) |entry| try fixed.put(a, tree.string(entry.reference.name), {});
 
     // count manglables per scope, reserve kept names along the way.
     const count_in_scope = try a.alloc(u32, scope_tree.scopes.len);
@@ -52,7 +52,7 @@ pub fn run(
             count_in_scope[@intFromEnum(sym.scope)] += 1;
             manglable_ids.appendAssumeCapacity(entry.id);
         } else {
-            try fixed.put(a, table.string(sym.name), {});
+            try fixed.put(a, tree.string(sym.name), {});
         }
     }
 
@@ -81,26 +81,14 @@ pub fn run(
         }
     }
 
-    // walk manglable symbols, hand out slots, rewrite via sym.node and ref.node.
+    // walk manglable symbols, hand out slots, rewrite every site.
     for (manglable_ids.items) |sid| {
         const sym = table.getSymbol(sid);
         const si = @intFromEnum(sym.scope);
         const slot = ancestor_count[si];
         ancestor_count[si] += 1;
-        rename(tree, table, sid, sym, names[slot]);
-    }
-}
-
-/// rewrites the binding and every reference of `sym` in place.
-fn rename(tree: *ast.Tree, table: SymbolTable, sid: SymbolId, sym: Symbol, name: ast.String) void {
-    if (sym.node != .null) {
-        var bid = tree.data(sym.node).binding_identifier;
-        bid.name = name;
-        tree.setData(sym.node, .{ .binding_identifier = bid });
-    }
-    for (table.symbolReferences(sid)) |ref_id| {
-        const ref = table.getReference(ref_id);
-        tree.setData(ref.node, .{ .identifier_reference = .{ .name = name } });
+        var sites = table.symbolSites(sid);
+        while (sites.next()) |node| tree.setIdentifierName(node, names[slot]);
     }
 }
 
