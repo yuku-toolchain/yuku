@@ -71,6 +71,7 @@ pub fn run(
 
     // slot → ast.String
     const names = try a.alloc(ast.String, name_count);
+    try tree.ensureUnusedStringCapacity(name_count *| 4, name_count);
     var gen = NameGen{};
     for (names) |*n| {
         while (true) {
