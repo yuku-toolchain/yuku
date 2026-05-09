@@ -1,6 +1,7 @@
-const nice = "aja"
+const nice = {
+  cool: () => {
 
-for (async of nice) {
-  console.log(async)
-  console.log(nice)
+  }
 }
+
+console.log(nice.cool())
