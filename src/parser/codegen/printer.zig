@@ -98,6 +98,10 @@ fn Printer(comptime cfg: Config) type {
         arena: std.heap.ArenaAllocator,
         allocator: Allocator,
         indent_depth: u32 = 0,
+        /// set while emitting a destructuring/assignment target so nested
+        /// array/object literals know to re-paren ts `as`/`satisfies`/
+        /// type-assertion leaves the parser elided.
+        in_assign_target: bool = false,
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
@@ -151,16 +155,15 @@ fn Printer(comptime cfg: Config) type {
         self.code.shrinkRetainingCapacity(pos);
     }
 
-    /// Emits `idx`. Returns true if any bytes were written.
+    /// emits `idx`. returns true if any bytes were written.
     fn tryEmit(self: *Self, idx: NodeIndex) Error!bool {
         const start = self.mark();
         try self.emit(idx);
         return self.code.items.len > start;
     }
 
-    /// Emits `idx` in a position where a statement is grammatically required.
-    /// If the emit produces no output, an empty statement is written so the
-    /// surrounding control flow stays valid.
+    /// emits `idx` in a position where a statement is grammatically required;
+    /// substitutes an empty statement if the emit produces no output.
     fn emitStmt(self: *Self, idx: NodeIndex) Error!void {
         if (!try self.tryEmit(idx)) try self.writeByte(';');
     }
@@ -430,9 +433,7 @@ fn Printer(comptime cfg: Config) type {
         if (s.@"await") try self.writeStr(" await");
         try self.space();
         try self.writeByte('(');
-        // `for (async of ...)` is forbidden by the grammar to disambiguate
-        // from `for await (...)`. The bare `async` identifier on the left
-        // must be parenthesized.
+        // `for (async of …)` is forbidden — disambiguates from `for await`.
         const wrap_async = !s.@"await" and isBareAsyncIdentifier(self.tree, s.left);
         if (wrap_async) try self.writeByte('(');
         try self.printForLeft(s.left);
@@ -573,16 +574,13 @@ fn Printer(comptime cfg: Config) type {
             try self.writeStr(op);
             try self.writeByte(' ');
         } else {
-            // `x!` followed by `==`/`===` would re-lex as `!==`/`!===`. Force
-            // a space so the non-null assertion stays separate.
-            if (op.len > 0 and op[0] == '=') try self.separateBangFromAssign();
+            // `x! == y` would re-lex as `!==`.
+            if (op[0] == '=') try self.separateBangFromAssign();
             try self.space();
             try self.writeStr(op);
             try self.space();
-            // prevent a token merge if the right operand begins
-            // with the same `+`/`-` sign (would lex as `++` / `--`) or with a
-            // regex literal after `/` (would lex as `//` line comment).
-            // Also avoid `<!--` (Annex B HTML-like line comment in scripts).
+            // guard against token merges: `++`/`--`, `//` regex/comment,
+            // `<!--` annex B html-like line comment.
             if (!self.pretty() and op.len == 1) {
                 switch (op[0]) {
                     '+', '-', '/' => if (leftmostByteIs(self.tree, e.right, op[0])) try self.writeByte(' '),
@@ -618,7 +616,6 @@ fn Printer(comptime cfg: Config) type {
         const op = e.operator.toString();
         try self.writeStr(op);
         if (isWordOp(op)) try self.writeByte(' ');
-        // same token-merge guard as binary +/-.
         // `+ +x` would print as `++x` and re-lex as a prefix update.
         if (!self.pretty() and op.len == 1 and (op[0] == '+' or op[0] == '-')) {
             if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
@@ -646,48 +643,60 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(e.right);
     }
 
-    /// In compact mode, `x!` followed by `=` becomes `x!=` (a comparison).
-    /// Insert a space so the `!` stays a non-null assertion.
+    /// `x!=…` would re-lex `!` (non-null assertion) into `!=`. pad if needed.
     inline fn separateBangFromAssign(self: *Self) Error!void {
-        if (!self.pretty() and self.code.items.len > 0 and
-            self.code.items[self.code.items.len - 1] == '!')
-        {
-            try self.writeByte(' ');
-        }
+        if (self.pretty()) return;
+        const items = self.code.items;
+        if (items.len > 0 and items[items.len - 1] == '!') try self.writeByte(' ');
     }
 
-    /// Emits a reference target for assignment, for-in/of, etc. TS expressions
-    /// such as `(x as T)` or `(x satisfies T)` are valid targets in TS only
-    /// when parenthesized, the parens disappeared in the AST, so we put them
-    /// back here.
+    /// emits `idx` as an assignment/destructuring target, wrapping a bare
+    /// ts `as`/`satisfies`/type-assertion in parens (the parser elides
+    /// them, the grammar doesn't).
     fn emitAssignTarget(self: *Self, idx: NodeIndex) Error!void {
         if (idx == .null) return;
+        const prev = self.in_assign_target;
+        defer self.in_assign_target = prev;
+
         if (needsParensAsAssignTarget(self.tree, idx)) {
+            self.in_assign_target = false;
             try self.writeByte('(');
             try self.emit(idx);
             try self.writeByte(')');
         } else {
+            self.in_assign_target = true;
             try self.emit(idx);
         }
     }
 
+    /// routes a child of an array/object literal: if the literal is itself
+    /// a target, the child is too.
+    inline fn emitChildOfAssignTarget(self: *Self, idx: NodeIndex) Error!void {
+        if (self.in_assign_target) try self.emitAssignTarget(idx) else try self.emit(idx);
+    }
+
     fn emit_array_expression(self: *Self, e: ast.ArrayExpression) Error!void {
+        const in_target = self.in_assign_target;
+        self.in_assign_target = false;
+        defer self.in_assign_target = in_target;
+
         try self.writeByte('[');
-        const list = self.tree.extra(e.elements);
-        for (list, 0..) |x, i| {
+        for (self.tree.extra(e.elements), 0..) |x, i| {
             if (i > 0) {
                 try self.writeByte(',');
                 try self.space();
             }
-            // The array may be reinterpreted as a destructuring pattern by an
-            // enclosing assignment. TS type expressions are valid pattern
-            // elements only when parenthesized, so wrap them defensively.
-            try self.emitAssignTarget(x);
+            if (in_target) try self.emitAssignTarget(x) else try self.emit(x);
         }
         try self.writeByte(']');
     }
 
     fn emit_object_expression(self: *Self, e: ast.ObjectExpression) Error!void {
+        // re-set per-property so a value's recursion can't strip the flag
+        // from later siblings.
+        const in_target = self.in_assign_target;
+        defer self.in_assign_target = in_target;
+
         try self.writeByte('{');
         const list = self.tree.extra(e.properties);
         if (list.len > 0) {
@@ -697,6 +706,7 @@ fn Printer(comptime cfg: Config) type {
                     try self.writeByte(',');
                     try self.space();
                 }
+                self.in_assign_target = in_target;
                 try self.emit(x);
             }
             try self.space();
@@ -721,16 +731,14 @@ fn Printer(comptime cfg: Config) type {
         }
 
         if (p.shorthand) {
-            try self.emitAssignTarget(p.value);
+            try self.emitChildOfAssignTarget(p.value);
             return;
         }
 
         try self.printPropertyKey(p.key, p.computed);
         try self.writeByte(':');
         try self.space();
-        // Same defensive wrap as in array_expression: object may be reinterpreted
-        // as a destructuring pattern.
-        try self.emitAssignTarget(p.value);
+        try self.emitChildOfAssignTarget(p.value);
     }
 
     fn emit_spread_element(self: *Self, s: ast.SpreadElement) Error!void {
@@ -1079,8 +1087,8 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte(')');
     }
 
-    /// Writes `, ` then emits `idx`. Rolls back the separator if emit
-    /// produced no output. Returns the new value of `first`.
+    /// writes `, ` then emits `idx`. rolls back the separator if emit
+    /// produced no output. returns the new value of `first`.
     fn emitSeparated(self: *Self, idx: NodeIndex, first: bool) Error!bool {
         const before = self.mark();
         if (!first) {
@@ -1140,12 +1148,6 @@ fn Printer(comptime cfg: Config) type {
             const before = self.mark();
             try self.newline();
             if (try self.tryEmit(m)) {
-                // most class members self-terminate (`}` for methods/static
-                // blocks, `;` for property definitions). index signatures and
-                // a few abstract TS members do not, so ensure a `;` separator
-                // before the next member.
-                const last = self.code.items[self.code.items.len - 1];
-                if (last != '}' and last != ';') try self.writeByte(';');
                 emitted = true;
             } else {
                 self.rewindTo(before);
@@ -1223,14 +1225,8 @@ fn Printer(comptime cfg: Config) type {
         const list = self.tree.extra(decs);
         for (list, 0..) |d, i| {
             try self.emit(d);
-            if (self.pretty()) {
-                try self.newline();
-            } else if (i + 1 == list.len) {
-                // a decorator's trailing token may be an identifier (e.g. `@a.b`),
-                // which would fuse with the following keyword/identifier
-                // (`class`, `static`, method name, ...).
-                try self.writeByte(' ');
-            }
+            // `@a.b class` would fuse to `@a.bclass` without a separator.
+            if (self.pretty()) try self.newline() else if (i + 1 == list.len) try self.writeByte(' ');
         }
     }
 
@@ -1336,6 +1332,7 @@ fn Printer(comptime cfg: Config) type {
 
         const outer = self.mark();
         try self.writeStr("export");
+        // for `export type Foo = …`, the declaration emits its own `type`.
         if (d.export_kind == .type and d.declaration == .null) try self.writeStr(" type");
         if (d.declaration != .null) {
             try self.writeByte(' ');
@@ -1661,7 +1658,7 @@ fn Printer(comptime cfg: Config) type {
         try self.space();
         try self.writeStr("=>");
         try self.space();
-        try self.printArrowReturnType(t.return_type);
+        try self.emitUnwrappedType(t.return_type);
     }
 
     fn emit_ts_constructor_type(self: *Self, t: ast.TSConstructorType) Error!void {
@@ -1672,14 +1669,13 @@ fn Printer(comptime cfg: Config) type {
         try self.space();
         try self.writeStr("=>");
         try self.space();
-        try self.printArrowReturnType(t.return_type);
+        try self.emitUnwrappedType(t.return_type);
     }
 
-    /// `TSFunctionType.return_type` and `TSConstructorType.return_type` are
-    /// stored as `ts_type_annotation` wrappers (whose span starts at `=>`),
-    /// but in arrow-form output the leading colon is wrong. Emit the inner
-    /// type directly.
-    fn printArrowReturnType(self: *Self, idx: NodeIndex) Error!void {
+    /// strips the `ts_type_annotation` wrapper before emitting. used for
+    /// arrow-form return types and `is`-predicates where the wrapper's
+    /// leading `:` would be wrong.
+    fn emitUnwrappedType(self: *Self, idx: NodeIndex) Error!void {
         if (idx == .null) return;
         const data = self.tree.data(idx);
         if (data == .ts_type_annotation) {
@@ -1694,13 +1690,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(t.parameter_name);
         if (t.type_annotation != .null) {
             try self.writeStr(" is ");
-            // type_annotation here wraps the narrowed type but we just want the inner type
-            const inner = self.tree.data(t.type_annotation);
-            if (inner == .ts_type_annotation) {
-                try self.emit(inner.ts_type_annotation.type_annotation);
-            } else {
-                try self.emit(t.type_annotation);
-            }
+            try self.emitUnwrappedType(t.type_annotation);
         }
     }
 
@@ -1766,6 +1756,7 @@ fn Printer(comptime cfg: Config) type {
         try self.printPropertyKey(s.key, s.computed);
         if (s.optional) try self.writeByte('?');
         if (s.type_annotation != .null) try self.emit(s.type_annotation);
+        try self.writeByte(';');
     }
 
     fn emit_ts_method_signature(self: *Self, s: ast.TSMethodSignature) Error!void {
@@ -1779,12 +1770,14 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(s.type_parameters);
         try self.emit(s.params);
         if (s.return_type != .null) try self.emit(s.return_type);
+        try self.writeByte(';');
     }
 
     fn emit_ts_call_signature_declaration(self: *Self, s: ast.TSCallSignatureDeclaration) Error!void {
         try self.emit(s.type_parameters);
         try self.emit(s.params);
         if (s.return_type != .null) try self.emit(s.return_type);
+        try self.writeByte(';');
     }
 
     fn emit_ts_construct_signature_declaration(self: *Self, s: ast.TSConstructSignatureDeclaration) Error!void {
@@ -1792,6 +1785,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(s.type_parameters);
         try self.emit(s.params);
         if (s.return_type != .null) try self.emit(s.return_type);
+        try self.writeByte(';');
     }
 
     fn emit_ts_index_signature(self: *Self, s: ast.TSIndexSignature) Error!void {
@@ -1808,9 +1802,11 @@ fn Printer(comptime cfg: Config) type {
         }
         try self.writeByte(']');
         try self.emit(s.type_annotation);
+        try self.writeByte(';');
     }
 
-    /// Emits a `{ … }` block of TS signatures (type literal or interface body).
+    /// emits a `{ … }` block of ts signatures (type literal or interface body).
+    /// each signature is responsible for its own trailing `;`.
     fn printSignatureBody(self: *Self, items: IndexRange) Error!void {
         try self.writeByte('{');
         const list = self.tree.extra(items);
@@ -1819,7 +1815,6 @@ fn Printer(comptime cfg: Config) type {
             for (list) |s| {
                 try self.newline();
                 try self.emit(s);
-                try self.writeByte(';');
             }
             self.indent_depth -= 1;
             try self.newline();
@@ -1952,8 +1947,7 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_ts_type_assertion(self: *Self, e: ast.TSTypeAssertion) Error!void {
         try self.writeByte('<');
-        // `<<a>(x:a)=>a>` would re-lex with leading `<<` (left shift).
-        // Pad when the inner type itself starts with `<` (a generic).
+        // `<<T>` would re-lex as `<<` (left shift).
         if (typeStartsWithLeftAngle(self.tree, e.type_annotation)) try self.writeByte(' ');
         try self.emit(e.type_annotation);
         try self.writeByte('>');
@@ -2207,8 +2201,7 @@ fn needsParensAsAssignTarget(tree: *const Tree, idx: NodeIndex) bool {
 
 fn typeStartsWithLeftAngle(tree: *const Tree, idx: NodeIndex) bool {
     if (idx == .null) return false;
-    const data = tree.data(idx);
-    return switch (data) {
+    return switch (tree.data(idx)) {
         .ts_function_type => |t| t.type_parameters != .null,
         .ts_constructor_type => |t| !t.abstract and t.type_parameters != .null,
         else => false,
