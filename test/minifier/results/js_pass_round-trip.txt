@@ -1,8 +1,8 @@
 test/suite/js/pass  (round-trip)
 ================================
-Passed:  37449/37464 (99.96%)
-Failed:  15
-Skipped: 0
+Passed:  37459/37459 (100.00%)
+Failed:  0
+Skipped: 16
 
 ✓ test/suite/js/pass/00004f77ab493ca5.js
 ✓ test/suite/js/pass/0002acdfadf901db.js
@@ -1131,13 +1131,7 @@ Skipped: 0
 ✓ test/suite/js/pass/07bce073a241288b.js
 ✓ test/suite/js/pass/07bf1e873459b93d.js
 ✓ test/suite/js/pass/07c3093162a4038b.js
-✗ test/suite/js/pass/07c40d9f9a103b70.js (minified output failed to re-parse)
-error: Expected 'class' keyword, but found '{'
-   |
- 1 | let ns={$(){},_(){},o(){},℘(){},ZW_‌_NJ(){},ZW_‍_J(){},yield(){},await(){}};var C=@ns.$@ns._@ns.o@ns.℘@ns.ZW_‌_NJ@ns.ZW_‍_J@ns.yield@ns.awaitclass{};
-   |                                                                                                                                                   ^
-   |
-
+✓ test/suite/js/pass/07c40d9f9a103b70.js
 ✓ test/suite/js/pass/07c4f0fe5a4a5e96.js
 ✓ test/suite/js/pass/07c71162ca02e89a.js
 ✓ test/suite/js/pass/07c739323098b4ce.js
@@ -1597,6 +1591,7 @@ error: Expected 'class' keyword, but found '{'
 ✓ test/suite/js/pass/0af9e174fc32bbd4.js
 ✓ test/suite/js/pass/0afae664ce0b5194.js
 ✓ test/suite/js/pass/0afb48f174e7b55c.js
+✓ test/suite/js/pass/0afb54f4a26dc8ee.js
 ✓ test/suite/js/pass/0afd9de2268a0a27.js
 ✓ test/suite/js/pass/0b009de7f6b896b6.js
 ✓ test/suite/js/pass/0b01d45c05c26e98.js
@@ -1844,6 +1839,7 @@ error: Expected 'class' keyword, but found '{'
 ✓ test/suite/js/pass/0ca1ebb25cb4177d.js
 ✓ test/suite/js/pass/0ca66582aaba024a.js
 ✓ test/suite/js/pass/0caa7a5ec64b85b7.js
+✓ test/suite/js/pass/0caaf5a1e7387363.js
 ✓ test/suite/js/pass/0cab6ac7ce6936cd.js
 ✓ test/suite/js/pass/0cac6aa4965697b0.js
 ✓ test/suite/js/pass/0cb20c367251de1e.js
@@ -2033,7 +2029,7 @@ error: Expected 'class' keyword, but found '{'
 ✓ test/suite/js/pass/0deb88fb7c456187.js
 ✓ test/suite/js/pass/0def12c63f682470.js
 ✓ test/suite/js/pass/0defba5100721551.js
-✓ test/suite/js/pass/0df19c6187ef3cbc.js
+· test/suite/js/pass/0df19c6187ef3cbc.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/0df4da12e595aecf.js
 ✓ test/suite/js/pass/0df721d15123bb00.js
 ✓ test/suite/js/pass/0df862de7f041e59.js
@@ -2319,15 +2315,7 @@ error: Expected 'class' keyword, but found '{'
 ✓ test/suite/js/pass/0fd7ec8221b7cd5b.js
 ✓ test/suite/js/pass/0fd80ca0743744b7.js
 ✓ test/suite/js/pass/0fd9bd92c7b85df4.js
-✗ test/suite/js/pass/0fdb303768239e51.js (minified output failed to re-parse)
-error: Unexpected token '{' as class element key
-   |
- 1 | let ns={$(){},_(){},o(){},℘(){},ZW_‌_NJ(){},ZW_‍_J(){},yield(){},await(){}};class C{@ns.$@ns._@ns.o@ns.℘@ns.ZW_‌_NJ@ns.ZW_‍_J@ns.yield@ns.awaitmethod(){}@ns.$@ns._@ns.o@ns.℘@ns.ZW_‌_NJ@ns.ZW_‍_J@ns.yield@ns.awaitstatic method(){}@ns.$@ns._@ns.o@ns.℘@ns.ZW_‌_NJ@ns.ZW_‍_J@ns.yield@ns.awaitfield;@ns.$@ns._@ns.o@ns.℘@ns.ZW_‌_NJ@ns.ZW_‍_J@ns.yield@ns.awaitstatic field;}
-   |                                                                                                                                                        ^
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/suite/js/pass/0fdb303768239e51.js
 ✓ test/suite/js/pass/0fdee86e2eab499f.js
 ✓ test/suite/js/pass/0fe1f55610641156.js
 ✓ test/suite/js/pass/0fe28cf0ba30f7c3.js
@@ -3735,6 +3723,7 @@ error: Unexpected token '{' as class element key
 ✓ test/suite/js/pass/195b1f747119b16f.js
 ✓ test/suite/js/pass/195c542f483f80c6.js
 ✓ test/suite/js/pass/195c9e25694a222d.js
+✓ test/suite/js/pass/195de3b57629aeac.js
 ✓ test/suite/js/pass/196371416896fd66.js
 ✓ test/suite/js/pass/19637913356d7faa.js
 ✓ test/suite/js/pass/196548511a6c3e45.js
@@ -3970,15 +3959,7 @@ error: Unexpected token '{' as class element key
 ✓ test/suite/js/pass/1aee225cd3e6adba.js
 ✓ test/suite/js/pass/1aeea8eec1a2dae5.js
 ✓ test/suite/js/pass/1aefe299dad4ee3d.js
-✗ test/suite/js/pass/1aefe47e20eb91fa.js (minified output failed to re-parse)
-error: Unexpected token ';'
-   |
- 1 | await;
-   |      ^
-   |
-   = help: Expected an expression
-
-
+· test/suite/js/pass/1aefe47e20eb91fa.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/1af27ea56a71ae1d.js
 ✓ test/suite/js/pass/1af2cfd2ba9377af.js
 ✓ test/suite/js/pass/1af311247cb9ab70.js
@@ -7680,6 +7661,7 @@ error: Unexpected token ';'
 ✓ test/suite/js/pass/34a8954b38b6131f.js
 ✓ test/suite/js/pass/34aa0b7f57e6cb75.js
 ✓ test/suite/js/pass/34ac47034cb64cab.js
+✓ test/suite/js/pass/34adc5be5f011112.js
 ✓ test/suite/js/pass/34b1f8822e859e2a.js
 ✓ test/suite/js/pass/34b2062ce23bb6c6.js
 ✓ test/suite/js/pass/34b5292c26c2a11f.js
@@ -9241,15 +9223,7 @@ error: Unexpected token ';'
 ✓ test/suite/js/pass/3eefadfdc62c9193.js
 ✓ test/suite/js/pass/3ef1b061042bfe01.js
 ✓ test/suite/js/pass/3ef40f1b16df2329.js
-✗ test/suite/js/pass/3ef907e91801e501.js (minified output failed to re-parse)
-error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
-   |
- 1 | let async;for(async of [7]);assert.sameValue(async,7);
-   |               ^^^^^
-   |
-   = help: Use a different variable name or add parentheses: 'for ((async) of ...)'
-
-
+✓ test/suite/js/pass/3ef907e91801e501.js
 ✓ test/suite/js/pass/3efb9f5c9e798378.js
 ✓ test/suite/js/pass/3efddfbf689dcdf6.js
 ✓ test/suite/js/pass/3f00c041a15690e2.js
@@ -10314,13 +10288,7 @@ error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
 ✓ test/suite/js/pass/4695b76ea6b8d6d9.js
 ✓ test/suite/js/pass/46961f89e55f3493.js
 ✓ test/suite/js/pass/4696ebf4f4f0c0f9.js
-✗ test/suite/js/pass/46975638cd68f5d2.js (minified output failed to re-parse)
-error: Expected 'class' keyword, but found 'C'
-   |
- 1 | let ns={$(){},_(){},o(){},℘(){},ZW_‌_NJ(){},ZW_‍_J(){},yield(){},await(){}};@ns.$@ns._@ns.o@ns.℘@ns.ZW_‌_NJ@ns.ZW_‍_J@ns.yield@ns.awaitclass C{}
-   |                                                                                                                                              ^
-   |
-
+✓ test/suite/js/pass/46975638cd68f5d2.js
 ✓ test/suite/js/pass/469774dd9f5b042f.js
 ✓ test/suite/js/pass/46985be20e1f42cd.js
 ✓ test/suite/js/pass/46995c2b59c37e18.js
@@ -12903,6 +12871,7 @@ error: Expected 'class' keyword, but found 'C'
 ✓ test/suite/js/pass/57b8b46eede485c9.js
 ✓ test/suite/js/pass/57bafc1808ea13f8.js
 ✓ test/suite/js/pass/57bb2347b0c67f1c.js
+✓ test/suite/js/pass/57be271ee6a8dca7.js
 ✓ test/suite/js/pass/57bebca2b2ee0dff.js
 ✓ test/suite/js/pass/57bee961a47040ed.js
 ✓ test/suite/js/pass/57c0b18749dba7d3.js
@@ -12919,15 +12888,7 @@ error: Expected 'class' keyword, but found 'C'
 ✓ test/suite/js/pass/57d0795178c58891.js
 ✓ test/suite/js/pass/57d1651e7d2dceb3.js
 ✓ test/suite/js/pass/57d300b9a7eaa2d6.js
-✗ test/suite/js/pass/57d50fc5fc851c1e.js (minified output failed to re-parse)
-error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
-   |
- 1 | let async;for(async of [7]);assert.sameValue(async,7);
-   |               ^^^^^
-   |
-   = help: Use a different variable name or add parentheses: 'for ((async) of ...)'
-
-
+✓ test/suite/js/pass/57d50fc5fc851c1e.js
 ✓ test/suite/js/pass/57d5c8c814811bc3.js
 ✓ test/suite/js/pass/57d60fab10a47ab8.js
 ✓ test/suite/js/pass/57d77698d279308d.js
@@ -13758,7 +13719,7 @@ error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
 ✓ test/suite/js/pass/5d5621fac22c0e7d.js
 ✓ test/suite/js/pass/5d578e86cd34d3cf.js
 ✓ test/suite/js/pass/5d59d0e9ef15c864.js
-✓ test/suite/js/pass/5d5b9de6d9b95f3e.js
+· test/suite/js/pass/5d5b9de6d9b95f3e.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/5d5c63ea0c8c9edd.js
 ✓ test/suite/js/pass/5d5cabe3cddc9fae.js
 ✓ test/suite/js/pass/5d5ddd54023b7752.js
@@ -14379,7 +14340,7 @@ error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
 ✓ test/suite/js/pass/61e931aa5edbc8be.js
 ✓ test/suite/js/pass/61eb5af16a7e6e7d.js
 ✓ test/suite/js/pass/61ed4081ed8564c2.js
-✓ test/suite/js/pass/61f32cd9c113a8ca.js
+· test/suite/js/pass/61f32cd9c113a8ca.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/61f3ffc224d2f6c2.js
 ✓ test/suite/js/pass/61f55d9f22cc8426.js
 ✓ test/suite/js/pass/61f7e9f2aa1dc07c.js
@@ -17262,22 +17223,14 @@ error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
 ✓ test/suite/js/pass/76a346635a67c5ab.js
 ✓ test/suite/js/pass/76a46be6c2f09fa3.js
 ✓ test/suite/js/pass/76a6175fa2f086a4.js
-✗ test/suite/js/pass/76a88d38487dbe0e.js (minified output failed to re-parse)
-error: Unexpected token ':'
-   |
- 1 | await:1;
-   |      ^
-   |
-   = help: Expected an expression
-
-
+· test/suite/js/pass/76a88d38487dbe0e.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/76aac6f3475ce971.js
 ✓ test/suite/js/pass/76ae401e74926349.js
 ✓ test/suite/js/pass/76b216347df78a35.js
 ✓ test/suite/js/pass/76b63e7ed0323b9c.js
 ✓ test/suite/js/pass/76ba5b71362fff70.js
 ✓ test/suite/js/pass/76bcedcd45aa5287.js
-✓ test/suite/js/pass/76bde68f68869045.js
+· test/suite/js/pass/76bde68f68869045.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/76bee5a9afb6c9d7.js
 ✓ test/suite/js/pass/76bf3b3b5782c713.js
 ✓ test/suite/js/pass/76bf487e533b381c.js
@@ -17941,7 +17894,7 @@ error: Unexpected token ':'
 ✓ test/suite/js/pass/7aebb5e384bc8d4e.js
 ✓ test/suite/js/pass/7aed881c17025788.js
 ✓ test/suite/js/pass/7af3df6376739810.js
-✓ test/suite/js/pass/7af4f23326112f26.js
+· test/suite/js/pass/7af4f23326112f26.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/7af57fc975281026.js
 ✓ test/suite/js/pass/7afd38d79e6795a8.js
 ✓ test/suite/js/pass/7afeb7627242877f.js
@@ -18643,6 +18596,7 @@ error: Unexpected token ':'
 ✓ test/suite/js/pass/7ff9663c05b62061.js
 ✓ test/suite/js/pass/7ff97329e2a2f5c1.js
 ✓ test/suite/js/pass/7ffa2d75867a1631.js
+✓ test/suite/js/pass/7ffb44132f460d69.js
 ✓ test/suite/js/pass/7ffc27c48592ae52.js
 ✓ test/suite/js/pass/7ffe9c2abbd9174c.js
 ✓ test/suite/js/pass/7fff64bc39aaf4db.js
@@ -19642,6 +19596,7 @@ error: Unexpected token ':'
 ✓ test/suite/js/pass/86f4bce70a5bcc19.js
 ✓ test/suite/js/pass/86f68610fcefaeae.js
 ✓ test/suite/js/pass/86f6bbeebe54c9b1.js
+✓ test/suite/js/pass/86f80edaf234f3c3.js
 ✓ test/suite/js/pass/86fbd09c54c58d42.js
 ✓ test/suite/js/pass/86fbe3d933ebdf23.module.js
 ✓ test/suite/js/pass/86fdcb1aa3445d0f.js
@@ -20289,15 +20244,7 @@ error: Unexpected token ':'
 ✓ test/suite/js/pass/8b7d9120d69f5f58.js
 ✓ test/suite/js/pass/8b7ecc2d216d8ad0.js
 ✓ test/suite/js/pass/8b7fe2eb896ad0db.js
-✗ test/suite/js/pass/8b8b3c7f752a64ee.js (minified output failed to re-parse)
-error: Unexpected token ';'
-   |
- 1 | await;
-   |      ^
-   |
-   = help: Expected an expression
-
-
+· test/suite/js/pass/8b8b3c7f752a64ee.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/8b8cb38fc8c253c8.js
 ✓ test/suite/js/pass/8b8cbcdee0184a0a.js
 ✓ test/suite/js/pass/8b8ccf9b2579e6e3.js
@@ -22279,13 +22226,7 @@ error: Unexpected token ';'
 ✓ test/suite/js/pass/98fcd6266c1c1ebb.js
 ✓ test/suite/js/pass/98fdfc6843b1c7a4.js
 ✓ test/suite/js/pass/98fefb611d131d7a.js
-✗ test/suite/js/pass/9901811dd63aff2a.js (minified output failed to re-parse)
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
-   |
- 1 | var await;
-   |     ^^^^^
-   |
-
+· test/suite/js/pass/9901811dd63aff2a.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/9903f9372f8ed517.js
 ✓ test/suite/js/pass/9906fb547cd2ea76.js
 ✓ test/suite/js/pass/9907934065707de1.js
@@ -22959,6 +22900,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 ✓ test/suite/js/pass/9d846d6080f65dc8.js
 ✓ test/suite/js/pass/9d85b75bb12b00f9.js
 ✓ test/suite/js/pass/9d8b266ba179d20b.js
+✓ test/suite/js/pass/9d8b32a99912636f.js
 ✓ test/suite/js/pass/9d8c51f592a66909.js
 ✓ test/suite/js/pass/9d9067666a6f8e61.js
 ✓ test/suite/js/pass/9d935d1b787ed251.js
@@ -23201,13 +23143,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 ✓ test/suite/js/pass/9f0017a45436f5b4.js
 ✓ test/suite/js/pass/9f0058f701cc05fc.js
 ✓ test/suite/js/pass/9f014dbbe002d075.js
-✗ test/suite/js/pass/9f06163232b2b965.js (minified output failed to re-parse)
-error: 'await' is reserved in an async/module context and cannot be used as an identifier
-   |
- 1 | new await();
-   |     ^^^^^
-   |
-
+· test/suite/js/pass/9f06163232b2b965.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/9f066d10f78d21e8.js
 ✓ test/suite/js/pass/9f0c585c4ccf2aef.js
 ✓ test/suite/js/pass/9f0d533023e0f70e.js
@@ -23338,7 +23274,7 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 ✓ test/suite/js/pass/9ff360f7736e095f.js
 ✓ test/suite/js/pass/9ff5e0311fd684e8.js
 ✓ test/suite/js/pass/9ff64677b70e3d5c.js
-✓ test/suite/js/pass/9ff6d57c18ddbb72.js
+· test/suite/js/pass/9ff6d57c18ddbb72.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/9ffb542b699500ad.js
 ✓ test/suite/js/pass/9ffc4e1d3e558944.js
 ✓ test/suite/js/pass/9ffe51633ae4df4b.js
@@ -24922,6 +24858,7 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 ✓ test/suite/js/pass/aac76d3ca18cdcbc.js
 ✓ test/suite/js/pass/aac8eb507dd3dbaa.js
 ✓ test/suite/js/pass/aac99a8e7962ae76.js
+✓ test/suite/js/pass/aacc655eb0d1a2fe.js
 ✓ test/suite/js/pass/aacc690b5b69829c.js
 ✓ test/suite/js/pass/aacebfb2847435b0.js
 ✓ test/suite/js/pass/aacefa75b652e0ab.js
@@ -26084,13 +26021,7 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 ✓ test/suite/js/pass/b2aace8096a59f35.js
 ✓ test/suite/js/pass/b2ab0bfe9d3e8fda.js
 ✓ test/suite/js/pass/b2ab37cb219dfb4c.js
-✗ test/suite/js/pass/b2ac6e2b2f24e7e2.js (minified output failed to re-parse)
-error: Expected 'class' keyword, but found 'a'
-   |
- 1 | class C{static #$(){}static #_(){}static #o(){}static #℘(){}static #ZW_‌_NJ(){}static #ZW_‍_J(){}static #yield(){}static #await(){}static{@C.#$@C.#_@C.#o@C.#℘@C.#ZW_‌_NJ@C.#ZW_‍_J@C.#yield@C.#awaitclass a{}}}
-   |                                                                                                                                                                                                            ^
-   |
-
+✓ test/suite/js/pass/b2ac6e2b2f24e7e2.js
 ✓ test/suite/js/pass/b2ae50d4159d98eb.js
 ✓ test/suite/js/pass/b2b22fd4cb922c2b.js
 ✓ test/suite/js/pass/b2b4f73cc3e67603.module.js
@@ -26325,13 +26256,7 @@ error: Expected 'class' keyword, but found 'a'
 ✓ test/suite/js/pass/b42507d6da7a414a.js
 ✓ test/suite/js/pass/b427a5d16e8ba5a5.js
 ✓ test/suite/js/pass/b42846fcff46a002.js
-✗ test/suite/js/pass/b429fad313d4a48c.js (minified output failed to re-parse)
-error: Expected 'class' keyword, but found '{'
-   |
- 1 | class C{static #$(){}static #_(){}static #o(){}static #℘(){}static #ZW_‌_NJ(){}static #ZW_‍_J(){}static #yield(){}static #await(){}static{var a=@C.#$@C.#_@C.#o@C.#℘@C.#ZW_‌_NJ@C.#ZW_‍_J@C.#yield@C.#awaitclass{};}};
-   |                                                                                                                                                                                                                 ^
-   |
-
+✓ test/suite/js/pass/b429fad313d4a48c.js
 ✓ test/suite/js/pass/b42ba5ce0ff05648.js
 ✓ test/suite/js/pass/b42d9943e3fde52a.js
 ✓ test/suite/js/pass/b4308a103a7302ac.js
@@ -27852,6 +27777,7 @@ error: Expected 'class' keyword, but found '{'
 ✓ test/suite/js/pass/be3f45c0d30c279d.js
 ✓ test/suite/js/pass/be3f4ce2a17c5299.js
 ✓ test/suite/js/pass/be3f5cd557ae927c.js
+✓ test/suite/js/pass/be3ff3746abbf013.js
 ✓ test/suite/js/pass/be42fa3ce8c580c2.js
 ✓ test/suite/js/pass/be465b34f7dddb3e.js
 ✓ test/suite/js/pass/be49dde5f1217c57.js
@@ -28829,15 +28755,7 @@ error: Expected 'class' keyword, but found '{'
 ✓ test/suite/js/pass/c4ac4c248ada75b2.js
 ✓ test/suite/js/pass/c4b18ec69bf62cc7.js
 ✓ test/suite/js/pass/c4b2aa7b70345b4a.js
-✗ test/suite/js/pass/c4b447a812697bb3.js (minified output failed to re-parse)
-error: Unexpected token ':'
-   |
- 1 | await:1;
-   |      ^
-   |
-   = help: Expected an expression
-
-
+· test/suite/js/pass/c4b447a812697bb3.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/c4b6abe3e339759b.js
 ✓ test/suite/js/pass/c4b7c6ffa21630ad.js
 ✓ test/suite/js/pass/c4b81a62056c89b2.js
@@ -29260,6 +29178,7 @@ error: Unexpected token ':'
 ✓ test/suite/js/pass/c7a175b770903b2e.js
 ✓ test/suite/js/pass/c7a885a03af329ed.js
 ✓ test/suite/js/pass/c7a924d22cb97986.js
+✓ test/suite/js/pass/c7a9fa50607e306c.js
 ✓ test/suite/js/pass/c7aed0f002c20db7.js
 ✓ test/suite/js/pass/c7b10b5af3704a0d.js
 ✓ test/suite/js/pass/c7b18c0f4962186c.js
@@ -30112,13 +30031,7 @@ error: Unexpected token ':'
 ✓ test/suite/js/pass/cd95b9f715eb02f3.js
 ✓ test/suite/js/pass/cd976cd99efbc784.js
 ✓ test/suite/js/pass/cd9f50999d843edb.js
-✗ test/suite/js/pass/cd9f9fef0292b0c8.js (minified output failed to re-parse)
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
-   |
- 1 | class await{}
-   |       ^^^^^
-   |
-
+· test/suite/js/pass/cd9f9fef0292b0c8.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/cda1a6d2c9a4f0a3.js
 ✓ test/suite/js/pass/cda1e3f6ac429790.js
 ✓ test/suite/js/pass/cda3abcfd3c228ef.js
@@ -30533,13 +30446,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 ✓ test/suite/js/pass/d056436427d12f85.js
 ✓ test/suite/js/pass/d0586be961fb3c21.js
 ✓ test/suite/js/pass/d05cd189abf52636.js
-✗ test/suite/js/pass/d05de7f89d74add1.js (minified output failed to re-parse)
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
-   |
- 1 | class await{}
-   |       ^^^^^
-   |
-
+· test/suite/js/pass/d05de7f89d74add1.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/d05dff532c95a936.js
 ✓ test/suite/js/pass/d05e29570407ec05.js
 ✓ test/suite/js/pass/d0601d523c1d7bf9.js
@@ -30561,7 +30468,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 ✓ test/suite/js/pass/d073a183d3715b49.js
 ✓ test/suite/js/pass/d07437813e1ed2f0.js
 ✓ test/suite/js/pass/d07d33560353ae77.js
-✓ test/suite/js/pass/d0804b4856dbb6be.js
+· test/suite/js/pass/d0804b4856dbb6be.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/d08139646491e6ba.js
 ✓ test/suite/js/pass/d082f8d1c2eec454.js
 ✓ test/suite/js/pass/d083f1b30b6f6ad6.js
@@ -31002,7 +30909,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 ✓ test/suite/js/pass/d3a4583eac18ba7c.js
 ✓ test/suite/js/pass/d3a4674514107144.js
 ✓ test/suite/js/pass/d3a540c2e4aa8934.js
-✓ test/suite/js/pass/d3ac25ddc7ba9779.js
+· test/suite/js/pass/d3ac25ddc7ba9779.js (script-only source not valid in module mode)
 ✓ test/suite/js/pass/d3ac3a1712216dd6.js
 ✓ test/suite/js/pass/d3ac7b400d3eeba5.js
 ✓ test/suite/js/pass/d3ac899ae84c5dc9.js

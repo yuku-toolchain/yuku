@@ -1,8 +1,8 @@
 test/parser/misc/js  (round-trip)
 =================================
-Passed:  25/26 (96.15%)
-Failed:  1
-Skipped: 11
+Passed:  25/25 (100.00%)
+Failed:  0
+Skipped: 12
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 · test/parser/misc/js/async-arrow-function-line-terminator-1.js (original has parse errors)
@@ -15,13 +15,7 @@ Skipped: 11
 ✓ test/parser/misc/js/async-function.js
 · test/parser/misc/js/await-exponentiation-left.module.js (original has parse errors)
 · test/parser/misc/js/await-expression-in-non-async-arrow-function.js (original has parse errors)
-✗ test/parser/misc/js/await-id-in-non-async-arrow-function.js (minified output failed to re-parse)
-error: 'await' is reserved in an async/module context and cannot be used as an identifier
-   |
- 1 | const execute=(a)=>{await;};
-   |                     ^^^^^
-   |
-
+· test/parser/misc/js/await-id-in-non-async-arrow-function.js (script-only source not valid in module mode)
 ✓ test/parser/misc/js/await-using-new-line.js
 ✓ test/parser/misc/js/await-using.js
 ✓ test/parser/misc/js/bigint-class-property-key.js

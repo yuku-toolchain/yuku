@@ -75,6 +75,16 @@ function runFile(file: string, content: string, suite: TestSuite): FileResult {
     return { file, status: "skip", reason: "original has parse errors" };
   }
 
+  // step 3 reparses as module; skip script-only sources that exercise
+  // identifiers reserved in module/strict (await, yield) — the minifier
+  // preserves them correctly but they can never be valid module code.
+  if (sourceType === "script") {
+    const moduleParse = parse(content, { sourceType: "module", lang });
+    if (moduleParse.diagnostics.length > 0) {
+      return { file, status: "skip", reason: "script-only source not valid in module mode" };
+    }
+  }
+
   // 2. minify.
   let minified;
   try {
