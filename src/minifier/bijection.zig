@@ -1,8 +1,3 @@
-//! Bijective numeral system that maps `usize` indices to unique valid
-//! JavaScript identifiers, in length-then-lex order. The first position
-//! draws from `head_alpha` (no digits); subsequent positions draw from
-//! `tail_alpha`. Every nonneg integer maps to exactly one identifier.
-
 pub const Bijection = struct {
     counter: usize = 0,
     buf: [16]u8 = undefined,
