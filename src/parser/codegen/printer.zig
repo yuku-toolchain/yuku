@@ -60,7 +60,7 @@ pub const Error = error{OutOfMemory};
 /// comptime configuration
 pub const Config = struct {
     strip_ts: bool = false,
-    /// When true, applies size-reducing substitutions during emit
+    /// when true, applies size-reducing substitutions during emit
     minify: bool = false,
 };
 
@@ -74,8 +74,8 @@ pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(.{ .strip_ts = true }, allocator, tree, options);
 }
 
-/// Render `Tree` with print-time minification substitutions enabled.
-/// Combine with `Options.format = .compact` for fully minified output.
+/// render `Tree` with print-time minification substitutions enabled.
+/// combine with `Options.format = .compact` for fully minified output.
 pub fn minify(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(.{ .minify = true }, allocator, tree, options);
 }
@@ -280,6 +280,17 @@ fn Printer(comptime cfg: Config) type {
                 try self.newline();
             }
         }
+        try self.closeBrace();
+    }
+
+    /// writes `}` after dropping a redundant trailing `;` in minify mode.
+    /// the `}` itself terminates the preceding statement so the semicolon
+    /// is noise.
+    inline fn closeBrace(self: *Self) Error!void {
+        if (comptime minify_mode) {
+            const items = self.code.items;
+            if (items.len > 0 and items[items.len - 1] == ';') self.rewindTo(items.len - 1);
+        }
         try self.writeByte('}');
     }
 
@@ -473,7 +484,7 @@ fn Printer(comptime cfg: Config) type {
             }
             try self.newline();
         }
-        try self.writeByte('}');
+        try self.closeBrace();
     }
 
     fn emit_switch_case(self: *Self, c: ast.SwitchCase) Error!void {
@@ -867,10 +878,22 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emitStringLit(self: *Self, value: ast.String) Error!void {
-        const q: u8 = if (self.options.quotes == .single) '\'' else '"';
+        const s = self.tree.string(value);
+        const q = self.pickQuote(s);
         try self.writeByte(q);
-        try self.writeEscapedString(self.tree.string(value), q);
+        try self.writeEscapedString(s, q);
         try self.writeByte(q);
+    }
+
+    /// in minify mode, picks the quote character that needs fewer escapes
+    /// for `s`. outside minify mode, always honors `Options.quotes`.
+    inline fn pickQuote(self: *const Self, s: []const u8) u8 {
+        const default: u8 = if (self.options.quotes == .single) '\'' else '"';
+        if (comptime !minify_mode) return default;
+        const single = std.mem.count(u8, s, "'");
+        const double = std.mem.count(u8, s, "\"");
+        if (single == double) return default;
+        return if (double < single) '"' else '\'';
     }
 
     fn writeEscapedString(self: *Self, s: []const u8, quote: u8) Error!void {
@@ -1102,6 +1125,25 @@ fn Printer(comptime cfg: Config) type {
         try self.printPropertyKey(key, computed);
     }
 
+    /// class member key. non-computed string keys collapse to bare
+    /// identifiers the same way object keys do. computed `["…"]` collapses
+    /// are gated to avoid the cases ECMA reinterprets or rejects.
+    ///   `["constructor"]` on a plain non-static method becomes the actual
+    ///     constructor (different `kind`)
+    ///   `["constructor"]` on a field is a SyntaxError per ECMA
+    ///   `["prototype"]` on any static member is a SyntaxError per ECMA
+    fn printClassKey(self: *Self, key: NodeIndex, computed: bool, static: bool, plain_method: bool, is_field: bool) Error!void {
+        if (comptime minify_mode) {
+            if (simpleStringKey(self.tree, key)) |s| {
+                if (!computed) return self.writeStr(s);
+                const ctor_clash = std.mem.eql(u8, s, "constructor") and (is_field or (plain_method and !static));
+                const proto_clash = static and std.mem.eql(u8, s, "prototype");
+                if (!ctor_clash and !proto_clash) return self.writeStr(s);
+            }
+        }
+        try self.printPropertyKey(key, computed);
+    }
+
     fn emit_function(self: *Self, f: ast.Function) Error!void {
         if (comptime strip_ts) if (f.declare or f.type == .ts_declare_function or f.type == .ts_empty_body_function_expression) return;
         if (comptime !strip_ts) if (f.declare) try self.writeStr("declare ");
@@ -1223,7 +1265,7 @@ fn Printer(comptime cfg: Config) type {
         }
         self.indent_depth -= 1;
         if (emitted) try self.newline();
-        try self.writeByte('}');
+        try self.closeBrace();
     }
 
     fn emit_method_definition(self: *Self, m: ast.MethodDefinition) Error!void {
@@ -1247,7 +1289,7 @@ fn Printer(comptime cfg: Config) type {
                 if (fn_data.generator) try self.writeByte('*');
             },
         }
-        try self.printPropertyKey(m.key, m.computed);
+        try self.printClassKey(m.key, m.computed, m.static, m.kind == .method, false);
         if (comptime !strip_ts) if (m.optional) try self.writeByte('?');
         try self.printFunctionAsMethod(fn_data);
     }
@@ -1269,7 +1311,7 @@ fn Printer(comptime cfg: Config) type {
             if (p.readonly) try self.writeStr("readonly ");
         }
         if (p.accessor) try self.writeStr("accessor ");
-        try self.printPropertyKey(p.key, p.computed);
+        try self.printClassKey(p.key, p.computed, p.static, false, true);
         if (comptime !strip_ts) {
             if (p.optional) try self.writeByte('?');
             if (p.definite) try self.writeByte('!');
@@ -1887,7 +1929,7 @@ fn Printer(comptime cfg: Config) type {
             self.indent_depth -= 1;
             try self.newline();
         }
-        try self.writeByte('}');
+        try self.closeBrace();
     }
 
     fn emit_ts_type_alias_declaration(self: *Self, d: ast.TSTypeAliasDeclaration) Error!void {
@@ -2287,9 +2329,9 @@ fn isMinifiedToNonPrimary(tree: *const Tree, idx: NodeIndex) bool {
     };
 }
 
-/// Returns the decoded value of `idx` if it's a string literal whose contents
-/// form a valid IdentifierName. Used for `obj["foo"]` → `obj.foo` and
-/// `{"foo": x}` → `{foo: x}`.
+/// returns the decoded value of `idx` if it's a string literal whose
+/// contents form a valid IdentifierName. used by the `obj["foo"]` to
+/// `obj.foo` and `{"foo": x}` to `{foo: x}` rewrites.
 fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
     const lit = switch (tree.data(idx)) {
         .string_literal => |l| l,
@@ -2329,8 +2371,8 @@ fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
     return buf[0..len];
 }
 
-/// Returns the shortest semantically-equivalent spelling of decimal `s`.
-/// Falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
+/// returns the shortest semantically-equivalent spelling of decimal `s`.
+/// falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
 /// not alias each other.
 fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
     const exp_at = std.mem.indexOfAny(u8, s, "eE") orelse s.len;
@@ -2342,13 +2384,13 @@ fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
     const frac_raw = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
     const frac_part = std.mem.trimEnd(u8, frac_raw, "0");
 
-    // `0.5` → `.5` once the leading zero is bare.
+    // `0.5` shortens to `.5` once the leading zero is bare.
     if (frac_part.len > 0 and std.mem.eql(u8, int_part, "0")) int_part = "";
 
-    // `0.0`, `.0`, `0e10`, … all collapse to `0`.
+    // `0.0`, `.0`, `0e10`, and similar all collapse to `0`.
     if (int_part.len == 0 and frac_part.len == 0) return "0";
 
-    // Pure integer with ≥3 trailing zeros: `Ne<k>` form shortens.
+    // pure integer with three or more trailing zeros, the `Ne<k>` form shortens.
     if (frac_part.len == 0 and exp_suffix.len == 0) {
         const head = std.mem.trimEnd(u8, int_part, "0");
         const trail = int_part.len - head.len;

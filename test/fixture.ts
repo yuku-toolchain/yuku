@@ -1,3 +1,8 @@
-const nice = {
-  10: 10
+class Nice {
+  ["consructor"]() {
+
+  }
+  ["hello"]() {
+
+  }
 }
