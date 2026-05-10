@@ -33,11 +33,6 @@ interface FormatOptions {
    * @default "double"
    */
   quotes?: Quotes;
-  /**
-   * Append a trailing newline to the output if missing.
-   * @default false
-   */
-  finalNewline?: boolean;
 }
 
 /** Options for `minify`. */

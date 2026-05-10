@@ -84,7 +84,6 @@ const { code, errors } = strip(source, {
   format: "pretty",
   indent: 2,
   quotes: "double",
-  finalNewline: true,
 });
 ```
 
@@ -95,7 +94,6 @@ const { code, errors } = strip(source, {
 | `format`       | `"pretty"`, `"compact"`                   | `"pretty"` | Whitespace mode for the output                             |
 | `indent`       | `number`                                  | `2`        | Spaces per level when `format === "pretty"`                |
 | `quotes`       | `"double"`, `"single"`                    | `"double"` | Quote style for emitted string literals                    |
-| `finalNewline` | `boolean`                                 | `true`     | Append a trailing newline to the output if missing         |
 
 ## Result
 

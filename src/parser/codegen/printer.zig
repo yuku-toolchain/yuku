@@ -26,8 +26,6 @@ pub const Options = struct {
     indent: u8 = 2,
     /// Quote style for emitted string literals.
     quotes: Quotes = .double,
-    /// Append a trailing newline to the output if missing.
-    final_newline: bool = true,
 };
 
 /// A codegen-detected problem in the input tree.
@@ -170,9 +168,6 @@ fn Printer(comptime cfg: Config) type {
 
     fn printRoot(self: *Self) Error!void {
         try self.emit(self.tree.root);
-        if (self.options.final_newline and (self.code.items.len == 0 or self.code.items[self.code.items.len - 1] != '\n')) {
-            try self.writeByte('\n');
-        }
     }
 
     fn emit(self: *Self, idx: NodeIndex) Error!void {
@@ -2214,7 +2209,7 @@ fn expectCompact(source: []const u8, expected: []const u8) !void {
     const testing = std.testing;
     var tree = try parser.parse(testing.allocator, source, .{});
     defer tree.deinit();
-    const result = try print(testing.allocator, &tree, .{ .format = .compact, .final_newline = false });
+    const result = try print(testing.allocator, &tree, .{ .format = .compact });
     defer result.deinit(testing.allocator);
     try testing.expectEqualStrings(expected, result.code);
 }

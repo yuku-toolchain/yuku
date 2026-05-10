@@ -27,7 +27,6 @@ pub fn minify(allocator: std.mem.Allocator, tree: *parser.ast.Tree, opts: Option
     return parser.codegen.print(allocator, tree, .{
         .format = opts.format.format,
         .quotes = opts.format.quotes,
-        .final_newline = opts.format.final_newline,
     });
 }
 

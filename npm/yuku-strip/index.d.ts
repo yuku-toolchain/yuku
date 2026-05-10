@@ -37,11 +37,6 @@ interface StripOptions {
    * @default "double"
    */
   quotes?: Quotes;
-  /**
-   * Append a trailing newline to the output if missing.
-   * @default true
-   */
-  finalNewline?: boolean;
 }
 
 /** A codegen-detected problem in the input source. */

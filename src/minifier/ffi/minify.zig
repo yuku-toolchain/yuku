@@ -11,7 +11,6 @@ const MangleOpts = struct {
 
 const FormatOpts = struct {
     quotes: parser.codegen.Quotes = .double,
-    final_newline: bool = false,
 };
 
 const Options = struct {
@@ -44,7 +43,6 @@ pub fn minify(env: napi.Env, source: []const u8, options: Options) !MinifyResult
         .format = .{
             .format = .compact,
             .quotes = options.format.quotes,
-            .final_newline = options.format.final_newline,
         },
     });
 

@@ -8,7 +8,6 @@ const Options = struct {
     format: parser.codegen.Format = .pretty,
     indent: u8 = 2,
     quotes: parser.codegen.Quotes = .double,
-    final_newline: bool = true,
 };
 
 const StripResult = struct {
@@ -29,7 +28,6 @@ pub fn strip(env: napi.Env, source: []const u8, options: Options) !StripResult {
         .format = options.format,
         .indent = options.indent,
         .quotes = options.quotes,
-        .final_newline = options.final_newline,
     });
 
     return .{ .code = result.code, .errors = result.errors };

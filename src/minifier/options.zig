@@ -38,5 +38,4 @@ pub const MangleOptions = struct {
 pub const FormatOptions = struct {
     format: codegen.Format = .compact,
     quotes: codegen.Quotes = .double,
-    final_newline: bool = false,
 };
