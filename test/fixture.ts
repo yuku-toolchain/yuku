@@ -1,8 +1,1 @@
-class Nice {
-  ["consructor"]() {
-
-  }
-  ["hello"]() {
-
-  }
-}
+const nice = undefined
