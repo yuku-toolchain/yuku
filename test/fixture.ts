@@ -1,7 +1,3 @@
 const nice = {
-  cool: () => {
-
-  }
+  10: 10
 }
-
-console.log(nice.cool())

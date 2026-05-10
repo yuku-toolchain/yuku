@@ -9,6 +9,7 @@ pub const Error = printer.Error;
 
 pub const print = printer.print;
 pub const strip = printer.strip;
+pub const minify = printer.minify;
 
 test {
     _ = printer;

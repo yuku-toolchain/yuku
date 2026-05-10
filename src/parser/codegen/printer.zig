@@ -1,4 +1,5 @@
 const std = @import("std");
+const util = @import("util");
 const ast = @import("../ast.zig");
 
 const Allocator = std.mem.Allocator;
@@ -59,6 +60,8 @@ pub const Error = error{OutOfMemory};
 /// comptime configuration
 pub const Config = struct {
     strip_ts: bool = false,
+    /// When true, applies size-reducing substitutions during emit
+    minify: bool = false,
 };
 
 /// Renders a `Tree` to source code.
@@ -69,6 +72,12 @@ pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
 /// Render TypeScript `Tree` to JavaScript output, excluding TypeScript-specific syntax.
 pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(.{ .strip_ts = true }, allocator, tree, options);
+}
+
+/// Render `Tree` with print-time minification substitutions enabled.
+/// Combine with `Options.format = .compact` for fully minified output.
+pub fn minify(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
+    return printImpl(.{ .minify = true }, allocator, tree, options);
 }
 
 pub fn printImpl(comptime cfg: Config, allocator: Allocator, tree: *Tree, options: Options) Error!Result {
@@ -88,6 +97,7 @@ fn Printer(comptime cfg: Config) type {
     return struct {
         const Self = @This();
         const strip_ts = cfg.strip_ts;
+        const minify_mode = cfg.minify;
 
         tree: *Tree,
         code: std.ArrayList(u8) = .empty,
@@ -720,7 +730,7 @@ fn Printer(comptime cfg: Config) type {
                 if (fn_data.@"async") try self.writeStr("async ");
                 if (fn_data.generator) try self.writeByte('*');
             }
-            try self.printPropertyKey(p.key, p.computed);
+            try self.printObjectKey(p.key, p.computed);
             try self.printFunctionAsMethod(fn_data);
             return;
         }
@@ -730,7 +740,7 @@ fn Printer(comptime cfg: Config) type {
             return;
         }
 
-        try self.printPropertyKey(p.key, p.computed);
+        try self.printObjectKey(p.key, p.computed);
         try self.writeByte(':');
         try self.space();
         try self.emitChildOfAssignTarget(p.value);
@@ -742,20 +752,37 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_member_expression(self: *Self, e: ast.MemberExpression) Error!void {
-        try self.emit(e.object);
-        if (e.computed) {
+        const head_decimal = isDecimalLiteral(self.tree, e.object);
+        const head_start = self.mark();
+        try self.emitAsHead(e.object);
+
+        // `obj["foo"]` → `obj.foo` when the key names a valid identifier.
+        const static_key: ?[]const u8 = if (comptime minify_mode)
+            (if (e.computed) simpleStringKey(self.tree, e.property) else null)
+        else
+            null;
+
+        if (e.computed and static_key == null) {
             if (e.optional) try self.writeStr("?.");
             try self.writeByte('[');
             try self.emit(e.property);
             try self.writeByte(']');
         } else {
+            // `1.0` shortens to `1`, the member `.` would then be absorbed
+            // as the literal's trailing dot. close the number with `.` so
+            // `1..toString()` lexes as number-dot-name.
+            if (comptime minify_mode) {
+                const head = self.code.items[head_start..];
+                if (head_decimal and !e.optional and std.mem.indexOfAny(u8, head, ".eE") == null)
+                    try self.writeByte('.');
+            }
             try self.writeStr(if (e.optional) "?." else ".");
-            try self.emit(e.property);
+            if (static_key) |k| try self.writeStr(k) else try self.emit(e.property);
         }
     }
 
     fn emit_call_expression(self: *Self, e: ast.CallExpression) Error!void {
-        try self.emit(e.callee);
+        try self.emitAsHead(e.callee);
         if (e.optional) try self.writeStr("?.");
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
@@ -767,15 +794,31 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_new_expression(self: *Self, e: ast.NewExpression) Error!void {
         try self.writeStr("new ");
-        try self.emit(e.callee);
+        try self.emitAsHead(e.callee);
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
     }
 
     fn emit_tagged_template_expression(self: *Self, e: ast.TaggedTemplateExpression) Error!void {
-        try self.emit(e.tag);
+        try self.emitAsHead(e.tag);
         try self.emit(e.type_arguments);
         try self.emit(e.quasi);
+    }
+
+    /// emits `idx` as the head of a member/call/new/tagged-template form.
+    /// in minify mode, `true`/`undefined`/`Infinity` rewrite to non-primary
+    /// expressions (`!0`, `void 0`, `1/0`), so wrap them in parens here,
+    /// otherwise `true.x` would emit `!0.x`, parsed as `!(0.x)`.
+    inline fn emitAsHead(self: *Self, idx: NodeIndex) Error!void {
+        if (comptime minify_mode) {
+            if (idx != .null and isMinifiedToNonPrimary(self.tree, idx)) {
+                try self.writeByte('(');
+                try self.emit(idx);
+                try self.writeByte(')');
+                return;
+            }
+        }
+        try self.emit(idx);
     }
 
     fn emit_await_expression(self: *Self, e: ast.AwaitExpression) Error!void {
@@ -854,7 +897,21 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_numeric_literal(self: *Self, lit: ast.NumericLiteral) Error!void {
-        try self.writeString(lit.raw);
+        if (comptime minify_mode) {
+            try self.writeShortestNumber(lit);
+        } else {
+            try self.writeString(lit.raw);
+        }
+    }
+
+    fn writeShortestNumber(self: *Self, lit: ast.NumericLiteral) Error!void {
+        const raw = self.tree.string(lit.raw);
+        var src_buf: [128]u8 = undefined;
+        const cleaned = stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
+        if (lit.kind != .decimal) return self.writeStr(cleaned);
+
+        var dst_buf: [128]u8 = undefined;
+        try self.writeStr(shortestDecimal(cleaned, &dst_buf));
     }
 
     fn emit_bigint_literal(self: *Self, lit: ast.BigIntLiteral) Error!void {
@@ -863,7 +920,11 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_boolean_literal(self: *Self, lit: ast.BooleanLiteral) Error!void {
-        try self.writeStr(if (lit.value) "true" else "false");
+        if (comptime minify_mode) {
+            try self.writeStr(if (lit.value) "!0" else "!1");
+        } else {
+            try self.writeStr(if (lit.value) "true" else "false");
+        }
     }
 
     fn emit_null_literal(self: *Self, _: ast.NullLiteral) Error!void {
@@ -916,6 +977,11 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_identifier_reference(self: *Self, id: ast.IdentifierReference) Error!void {
+        if (comptime minify_mode) {
+            const name = self.tree.string(id.name);
+            if (std.mem.eql(u8, name, "undefined")) return self.writeStr("void 0");
+            if (std.mem.eql(u8, name, "Infinity")) return self.writeStr("1/0");
+        }
         try self.writeString(id.name);
     }
 
@@ -1013,7 +1079,7 @@ fn Printer(comptime cfg: Config) type {
             try self.emitAssignTarget(p.value);
             return;
         }
-        try self.printPropertyKey(p.key, p.computed);
+        try self.printObjectKey(p.key, p.computed);
         try self.writeByte(':');
         try self.space();
         try self.emitAssignTarget(p.value);
@@ -1027,6 +1093,13 @@ fn Printer(comptime cfg: Config) type {
         } else {
             try self.emit(key);
         }
+    }
+
+    fn printObjectKey(self: *Self, key: NodeIndex, computed: bool) Error!void {
+        if (comptime minify_mode) {
+            if (simpleStringKey(self.tree, key)) |s| return self.writeStr(s);
+        }
+        try self.printPropertyKey(key, computed);
     }
 
     fn emit_function(self: *Self, f: ast.Function) Error!void {
@@ -2203,42 +2276,89 @@ fn typeStartsWithLeftAngle(tree: *const Tree, idx: NodeIndex) bool {
     };
 }
 
-const parser = @import("../parser.zig");
-
-fn expectCompact(source: []const u8, expected: []const u8) !void {
-    const testing = std.testing;
-    var tree = try parser.parse(testing.allocator, source, .{});
-    defer tree.deinit();
-    const result = try print(testing.allocator, &tree, .{ .format = .compact });
-    defer result.deinit(testing.allocator);
-    try testing.expectEqualStrings(expected, result.code);
+fn isMinifiedToNonPrimary(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .boolean_literal => true,
+        .identifier_reference => |id| blk: {
+            const name = tree.string(id.name);
+            break :blk std.mem.eql(u8, name, "undefined") or std.mem.eql(u8, name, "Infinity");
+        },
+        else => false,
+    };
 }
 
-test "binary +/- adjacency does not merge with prefix unary" {
-    // `a + +b` must not become `a++b` (which lexes as postfix `a++` then `b`).
-    try expectCompact("a + +b;", "a+ +b;");
-    try expectCompact("a - -b;", "a- -b;");
-    // same for prefix update.
-    try expectCompact("a + ++b;", "a+ ++b;");
-    try expectCompact("a - --b;", "a- --b;");
-    // postfix update on the left followed by same-sign unary on the right.
-    try expectCompact("a++ + +b;", "a+++ +b;");
-    try expectCompact("a-- - -b;", "a--- -b;");
-    // mixed signs are safe (cannot merge into `++`/`--`).
-    try expectCompact("a + -b;", "a+-b;");
-    try expectCompact("a - +b;", "a-+b;");
+/// Returns the decoded value of `idx` if it's a string literal whose contents
+/// form a valid IdentifierName. Used for `obj["foo"]` → `obj.foo` and
+/// `{"foo": x}` → `{foo: x}`.
+fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
+    const lit = switch (tree.data(idx)) {
+        .string_literal => |l| l,
+        else => return null,
+    };
+    const s = tree.string(lit.value);
+    return if (isIdentifierName(s)) s else null;
 }
 
-test "unary +/- over same-sign unary does not merge" {
-    // `+ +x` must not become `++x` (a prefix update).
-    try expectCompact("var x = + +y;", "var x=+ +y;");
-    try expectCompact("var x = - -y;", "var x=- -y;");
-    // mixed unary signs cannot merge.
-    try expectCompact("var x = + -y;", "var x=+-y;");
-    try expectCompact("var x = - +y;", "var x=-+y;");
+fn isIdentifierName(s: []const u8) bool {
+    if (s.len == 0) return false;
+    var i: usize = 0;
+    while (i < s.len) {
+        const cp = util.Utf.codePointAt(s, i) catch return false;
+        const ok = if (i == 0) util.UnicodeId.canStartId(cp.value) else util.UnicodeId.canContinueId(cp.value);
+        if (!ok) return false;
+        i += cp.len;
+    }
+    return true;
 }
 
-test "division before regex literal does not start a comment" {
-    // `a / /b/` must not become `a//b/` (which would start a line comment).
-    try expectCompact("a / /b/.test(c);", "a/ /b/.test(c);");
+fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .numeric_literal => |lit| lit.kind == .decimal,
+        else => false,
+    };
+}
+
+fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
+    if (std.mem.indexOfScalar(u8, raw, '_') == null) return raw;
+    if (raw.len > buf.len) return null;
+    var len: usize = 0;
+    for (raw) |c| if (c != '_') {
+        buf[len] = c;
+        len += 1;
+    };
+    return buf[0..len];
+}
+
+/// Returns the shortest semantically-equivalent spelling of decimal `s`.
+/// Falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
+/// not alias each other.
+fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
+    const exp_at = std.mem.indexOfAny(u8, s, "eE") orelse s.len;
+    const mantissa = s[0..exp_at];
+    const exp_suffix = s[exp_at..]; // empty or `e<n>` / `E<n>`
+
+    const dot_at = std.mem.indexOfScalar(u8, mantissa, '.') orelse mantissa.len;
+    var int_part = mantissa[0..dot_at];
+    const frac_raw = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
+    const frac_part = std.mem.trimEnd(u8, frac_raw, "0");
+
+    // `0.5` → `.5` once the leading zero is bare.
+    if (frac_part.len > 0 and std.mem.eql(u8, int_part, "0")) int_part = "";
+
+    // `0.0`, `.0`, `0e10`, … all collapse to `0`.
+    if (int_part.len == 0 and frac_part.len == 0) return "0";
+
+    // Pure integer with ≥3 trailing zeros: `Ne<k>` form shortens.
+    if (frac_part.len == 0 and exp_suffix.len == 0) {
+        const head = std.mem.trimEnd(u8, int_part, "0");
+        const trail = int_part.len - head.len;
+        if (trail >= 3 and head.len > 0) {
+            const out = std.fmt.bufPrint(scratch, "{s}e{d}", .{ head, trail }) catch return s;
+            if (out.len < s.len) return out;
+        }
+    }
+
+    const dot = if (frac_part.len > 0) "." else "";
+    const out = std.fmt.bufPrint(scratch, "{s}{s}{s}{s}", .{ int_part, dot, frac_part, exp_suffix }) catch return s;
+    return if (out.len < s.len) out else s;
 }

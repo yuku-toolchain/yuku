@@ -24,7 +24,7 @@ pub fn minify(allocator: std.mem.Allocator, tree: *parser.ast.Tree, opts: Option
         try mangle.run(allocator, tree, sem.scope_tree, sem.symbol_table, opts.mangle);
     }
 
-    return parser.codegen.print(allocator, tree, .{
+    return parser.codegen.minify(allocator, tree, .{
         .format = opts.format.format,
         .quotes = opts.format.quotes,
     });

@@ -6,5 +6,5 @@ const { code, errors } = minify(source, {
   lang: "ts",
 });
 
-console.log(code);
+console.log(code.length);
 console.log(errors);
