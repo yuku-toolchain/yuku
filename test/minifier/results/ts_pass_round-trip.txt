@@ -1,6 +1,6 @@
 test/suite/ts/pass  (round-trip)
 ================================
-Passed:  8060/8060 (100.00%)
+Passed:  8061/8061 (100.00%)
 Failed:  0
 Skipped: 23
 
@@ -8075,6 +8075,7 @@ Skipped: 23
 ✓ test/suite/ts/pass/ff618dd2c3952e0b.ts
 ✓ test/suite/ts/pass/ff6275dceb1bea53.ts
 ✓ test/suite/ts/pass/ff753e27876cb421.ts
+✓ test/suite/ts/pass/ff771f51af5a6bb8.module.ts
 ✓ test/suite/ts/pass/ff87a85d7705b80d.ts
 ✓ test/suite/ts/pass/ff90880bf838c783.ts
 ✓ test/suite/ts/pass/ff9c8956ac219ea8.ts

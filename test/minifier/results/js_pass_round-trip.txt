@@ -1,6 +1,6 @@
 test/suite/js/pass  (round-trip)
 ================================
-Passed:  37459/37459 (100.00%)
+Passed:  37463/37463 (100.00%)
 Failed:  0
 Skipped: 16
 
@@ -302,6 +302,7 @@ Skipped: 16
 ✓ test/suite/js/pass/021053a03bca75f2.js
 ✓ test/suite/js/pass/02118a693384c214.js
 ✓ test/suite/js/pass/02120defc595697a.js
+✓ test/suite/js/pass/021352b0812eb1fe.js
 ✓ test/suite/js/pass/02140fc226e69faf.js
 ✓ test/suite/js/pass/0214674e88fdb8d0.js
 ✓ test/suite/js/pass/02160fd732fb3d0c.js
@@ -1712,6 +1713,7 @@ Skipped: 16
 ✓ test/suite/js/pass/0bb217e85ffea04a.js
 ✓ test/suite/js/pass/0bb32a1180105ef7.js
 ✓ test/suite/js/pass/0bb44acf2fd2c980.js
+✓ test/suite/js/pass/0bb460865002aa48.js
 ✓ test/suite/js/pass/0bb5570c5c295d5e.js
 ✓ test/suite/js/pass/0bb951ca9e41cb8f.js
 ✓ test/suite/js/pass/0bb9f41a7b403924.js
@@ -26177,6 +26179,7 @@ Skipped: 16
 ✓ test/suite/js/pass/b3a8cdcb492dec76.js
 ✓ test/suite/js/pass/b3acc86ccc400403.js
 ✓ test/suite/js/pass/b3af28ea51a1284a.js
+✓ test/suite/js/pass/b3afe3ca5bcdcc39.js
 ✓ test/suite/js/pass/b3b599e31fe4680d.js
 ✓ test/suite/js/pass/b3b645bbb4420421.js
 ✓ test/suite/js/pass/b3b725d3545d1d5a.js
@@ -30090,6 +30093,7 @@ Skipped: 16
 ✓ test/suite/js/pass/ce03313ae672c78d.js
 ✓ test/suite/js/pass/ce050c68baa4eb20.js
 ✓ test/suite/js/pass/ce083848975c3a0c.js
+✓ test/suite/js/pass/ce0873ca117cdcf5.js
 ✓ test/suite/js/pass/ce089231317fc885.js
 ✓ test/suite/js/pass/ce0a7b0382424e13.js
 ✓ test/suite/js/pass/ce0aaec02d5d4465.js

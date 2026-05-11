@@ -1,8 +1,8 @@
 test/suite/ts/pass
 ==================
-Passed:       8083/8083 (100.00%)
+Passed:       8084/8084 (100.00%)
 Failed:       0
-AST mismatch: 0/8083
+AST mismatch: 0/8084
 
 ✓ test/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/suite/ts/pass/0003972a26de5234.ts
@@ -8075,6 +8075,7 @@ AST mismatch: 0/8083
 ✓ test/suite/ts/pass/ff618dd2c3952e0b.ts
 ✓ test/suite/ts/pass/ff6275dceb1bea53.ts
 ✓ test/suite/ts/pass/ff753e27876cb421.ts
+✓ test/suite/ts/pass/ff771f51af5a6bb8.module.ts
 ✓ test/suite/ts/pass/ff87a85d7705b80d.ts
 ✓ test/suite/ts/pass/ff90880bf838c783.ts
 ✓ test/suite/ts/pass/ff9c8956ac219ea8.ts

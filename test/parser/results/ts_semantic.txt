@@ -1,6 +1,6 @@
 test/suite/ts/semantic
 ======================
-Passed:       176/176 (100.00%)
+Passed:       175/175 (100.00%)
 Failed:       0
 
 ✓ test/suite/ts/semantic/041d72a631bbe0e2.ts
@@ -1776,14 +1776,5 @@ error: Private field '#prop' must be declared in an enclosing class
 11 |         console.log(x.#prop);
    |                       ^^^^^
 12 |     }
-   |
-
-✓ test/suite/ts/semantic/ff771f51af5a6bb8.module.ts
-error: 'static' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 2 | export declare namespace Foo {
- 3 |   export var static: any;
-   |              ^^^^^^^^^^^
- 4 | }
    |
 

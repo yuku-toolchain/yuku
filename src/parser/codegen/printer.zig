@@ -280,17 +280,6 @@ fn Printer(comptime cfg: Config) type {
                 try self.newline();
             }
         }
-        try self.closeBrace();
-    }
-
-    /// writes `}` after dropping a redundant trailing `;` in minify mode.
-    /// the `}` itself terminates the preceding statement so the semicolon
-    /// is noise.
-    inline fn closeBrace(self: *Self) Error!void {
-        if (comptime minify_mode) {
-            const items = self.code.items;
-            if (items.len > 0 and items[items.len - 1] == ';') self.rewindTo(items.len - 1);
-        }
         try self.writeByte('}');
     }
 
@@ -449,7 +438,7 @@ fn Printer(comptime cfg: Config) type {
         if (s.@"await") try self.writeStr(" await");
         try self.space();
         try self.writeByte('(');
-        // `for (async of …)` is forbidden — disambiguates from `for await`.
+        // `for (async of …)` is forbidden, disambiguates from `for await`.
         const wrap_async = !s.@"await" and isBareAsyncIdentifier(self.tree, s.left);
         if (wrap_async) try self.writeByte('(');
         try self.printForLeft(s.left);
@@ -484,7 +473,7 @@ fn Printer(comptime cfg: Config) type {
             }
             try self.newline();
         }
-        try self.closeBrace();
+        try self.writeByte('}');
     }
 
     fn emit_switch_case(self: *Self, c: ast.SwitchCase) Error!void {
@@ -583,8 +572,22 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_binary_expression(self: *Self, e: ast.BinaryExpression) Error!void {
-        try self.emit(e.left);
         const op = e.operator.toString();
+        if (comptime minify_mode) {
+            // `**` requires its left operand to be an UpdateExpression, an
+            // unparenthesized unary is a SyntaxError. our minify substitutions
+            // (`true`/`false`/`undefined` -> unary) can produce such a left.
+            const is_pow = op.len == 2 and op[0] == '*' and op[1] == '*';
+            if (is_pow and minifiesToUnary(self.tree, e.left)) {
+                try self.writeByte('(');
+                try self.emit(e.left);
+                try self.writeByte(')');
+            } else {
+                try self.emit(e.left);
+            }
+        } else {
+            try self.emit(e.left);
+        }
         if (isWordOp(op)) {
             try self.writeByte(' ');
             try self.writeStr(op);
@@ -643,9 +646,9 @@ fn Printer(comptime cfg: Config) type {
         const op = e.operator.toString();
         if (e.prefix) {
             try self.writeStr(op);
-            try self.emit(e.argument);
+            try self.emitAssignTarget(e.argument);
         } else {
-            try self.emit(e.argument);
+            try self.emitAssignTarget(e.argument);
             try self.writeStr(op);
         }
     }
@@ -1001,9 +1004,11 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_identifier_reference(self: *Self, id: ast.IdentifierReference) Error!void {
         if (comptime minify_mode) {
-            const name = self.tree.string(id.name);
-            if (std.mem.eql(u8, name, "undefined")) return self.writeStr("void 0");
-            if (std.mem.eql(u8, name, "Infinity")) return self.writeStr("1/0");
+            if (!self.in_assign_target) {
+                const name = self.tree.string(id.name);
+                if (std.mem.eql(u8, name, "undefined")) return self.writeStr("void 0");
+                if (std.mem.eql(u8, name, "Infinity")) return self.writeStr("1/0");
+            }
         }
         try self.writeString(id.name);
     }
@@ -1128,15 +1133,16 @@ fn Printer(comptime cfg: Config) type {
     /// class member key. non-computed string keys collapse to bare
     /// identifiers the same way object keys do. computed `["…"]` collapses
     /// are gated to avoid the cases ECMA reinterprets or rejects.
-    ///   `["constructor"]` on a plain non-static method becomes the actual
+    ///   `["constructor"]` on a non-static method becomes the actual
     ///     constructor (different `kind`)
+    ///   `["constructor"]` on a non-static get/set is a SyntaxError per ECMA
     ///   `["constructor"]` on a field is a SyntaxError per ECMA
     ///   `["prototype"]` on any static member is a SyntaxError per ECMA
-    fn printClassKey(self: *Self, key: NodeIndex, computed: bool, static: bool, plain_method: bool, is_field: bool) Error!void {
+    fn printClassKey(self: *Self, key: NodeIndex, computed: bool, static: bool, is_field: bool) Error!void {
         if (comptime minify_mode) {
             if (simpleStringKey(self.tree, key)) |s| {
                 if (!computed) return self.writeStr(s);
-                const ctor_clash = std.mem.eql(u8, s, "constructor") and (is_field or (plain_method and !static));
+                const ctor_clash = std.mem.eql(u8, s, "constructor") and (is_field or !static);
                 const proto_clash = static and std.mem.eql(u8, s, "prototype");
                 if (!ctor_clash and !proto_clash) return self.writeStr(s);
             }
@@ -1229,7 +1235,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(c.type_parameters);
         if (c.super_class != .null) {
             try self.writeStr(" extends ");
-            try self.emit(c.super_class);
+            try self.emitAsHead(c.super_class);
             try self.emit(c.super_type_arguments);
         }
         if (comptime !strip_ts) {
@@ -1265,7 +1271,7 @@ fn Printer(comptime cfg: Config) type {
         }
         self.indent_depth -= 1;
         if (emitted) try self.newline();
-        try self.closeBrace();
+        try self.writeByte('}');
     }
 
     fn emit_method_definition(self: *Self, m: ast.MethodDefinition) Error!void {
@@ -1289,7 +1295,7 @@ fn Printer(comptime cfg: Config) type {
                 if (fn_data.generator) try self.writeByte('*');
             },
         }
-        try self.printClassKey(m.key, m.computed, m.static, m.kind == .method, false);
+        try self.printClassKey(m.key, m.computed, m.static, false);
         if (comptime !strip_ts) if (m.optional) try self.writeByte('?');
         try self.printFunctionAsMethod(fn_data);
     }
@@ -1311,7 +1317,7 @@ fn Printer(comptime cfg: Config) type {
             if (p.readonly) try self.writeStr("readonly ");
         }
         if (p.accessor) try self.writeStr("accessor ");
-        try self.printClassKey(p.key, p.computed, p.static, false, true);
+        try self.printClassKey(p.key, p.computed, p.static, true);
         if (comptime !strip_ts) {
             if (p.optional) try self.writeByte('?');
             if (p.definite) try self.writeByte('!');
@@ -1546,19 +1552,19 @@ fn Printer(comptime cfg: Config) type {
     fn emit_ts_this_type(self: *Self, _: ast.TSThisType) Error!void { try self.writeStr("this"); }
 
     fn emit_ts_type_reference(self: *Self, t: ast.TSTypeReference) Error!void {
-        try self.emit(t.type_name);
+        try self.emitEntityName(t.type_name);
         try self.emit(t.type_arguments);
     }
 
     fn emit_ts_qualified_name(self: *Self, q: ast.TSQualifiedName) Error!void {
-        try self.emit(q.left);
+        try self.emitEntityName(q.left);
         try self.writeByte('.');
         try self.emit(q.right);
     }
 
     fn emit_ts_type_query(self: *Self, q: ast.TSTypeQuery) Error!void {
         try self.writeStr("typeof ");
-        try self.emit(q.expr_name);
+        try self.emitEntityName(q.expr_name);
         try self.emit(q.type_arguments);
     }
 
@@ -1573,9 +1579,21 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte(')');
         if (t.qualifier != .null) {
             try self.writeByte('.');
-            try self.emit(t.qualifier);
+            try self.emitEntityName(t.qualifier);
         }
         try self.emit(t.type_arguments);
+    }
+
+    /// emits `idx` as a TS entity name (Identifier | QualifiedName | this |
+    /// ImportType). Suppresses `undefined`/`Infinity` rewrites that the
+    /// expression-context emitter applies, since type queries and type
+    /// references require a bare entity name.
+    fn emitEntityName(self: *Self, idx: NodeIndex) Error!void {
+        if (idx == .null) return;
+        switch (self.tree.data(idx)) {
+            .identifier_reference => |id| try self.writeString(id.name),
+            else => try self.emit(idx),
+        }
     }
 
     fn emit_ts_type_parameter(self: *Self, p: ast.TSTypeParameter) Error!void {
@@ -1929,7 +1947,7 @@ fn Printer(comptime cfg: Config) type {
             self.indent_depth -= 1;
             try self.newline();
         }
-        try self.closeBrace();
+        try self.writeByte('}');
     }
 
     fn emit_ts_type_alias_declaration(self: *Self, d: ast.TSTypeAliasDeclaration) Error!void {
@@ -2325,6 +2343,18 @@ fn isMinifiedToNonPrimary(tree: *const Tree, idx: NodeIndex) bool {
             const name = tree.string(id.name);
             break :blk std.mem.eql(u8, name, "undefined") or std.mem.eql(u8, name, "Infinity");
         },
+        else => false,
+    };
+}
+
+/// callers gate this on minify mode. returns true when `idx` would be
+/// emitted as an unparenthesized UnaryExpression, i.e. `true`/`false` ->
+/// `!0`/`!1` and `undefined` -> `void 0`. (`Infinity` -> `1/0` is a
+/// BinaryExpression, not a unary, so it doesn't count here)
+fn minifiesToUnary(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .boolean_literal => true,
+        .identifier_reference => |id| std.mem.eql(u8, tree.string(id.name), "undefined"),
         else => false,
     };
 }

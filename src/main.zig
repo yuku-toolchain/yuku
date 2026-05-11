@@ -90,7 +90,7 @@ pub fn main(init: std.process.Init) !void {
         try minifier.mangle.run(allocator, &tree, sem.scope_tree, sem.symbol_table, .{});
         const t4 = std.Io.Clock.Timestamp.now(init.io, .awake);
 
-        const result = try parser.codegen.print(allocator, &tree, .{ .format = .compact });
+        const result = try parser.codegen.minify(allocator, &tree, .{ .format = .compact });
         defer result.deinit(allocator);
         const t5 = std.Io.Clock.Timestamp.now(init.io, .awake);
 
