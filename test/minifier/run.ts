@@ -71,15 +71,21 @@ async function runCase(file: string) {
     return fail(file, "reparse", formatDiagnostics(minified, reparsed.diagnostics, file));
   }
 
+  const minBytes = Buffer.byteLength(minified, "utf8");
+  const srcBytes = Buffer.byteLength(source, "utf8");
+  const size = `${formatBytes(srcBytes)} → ${formatBytes(minBytes)} (${percent(minBytes, srcBytes)})`;
+
   const snap = path.join(SNAPS_DIR, file + ".snap");
   if (!existsSync(snap)) {
     if (CI) return fail(file, "snapshot", `missing ${snap}; commit a snapshot from a local run`);
     await writeFile(snap, minified);
-    return pass(file, "created snapshot");
+    return pass(file, `created snapshot, ${size}`);
   }
   const expected = await Bun.file(snap).text();
   if (expected !== minified) {
-    return fail(file, "snapshot", `--- expected\n${expected}\n--- actual\n${minified}`);
+    const delta = minBytes - Buffer.byteLength(expected, "utf8");
+    const sign = delta > 0 ? "+" : "";
+    return fail(file, "snapshot", `size delta: ${sign}${delta} bytes\n--- expected\n${expected}\n--- actual\n${minified}`);
   }
 
   const orig = await tryImport(path.resolve(srcPath));
@@ -99,12 +105,12 @@ async function runCase(file: string) {
     if (a !== b) return fail(file, "behavior", `original: ${a}\nminified: ${b}`);
   }
 
-  pass(file);
+  pass(file, size);
 }
 
 async function runCorpus() {
   console.log("\ncorpus");
-  let totalOk = 0, totalAll = 0, totalSkip = 0;
+  let totalOk = 0, totalAll = 0, totalSkip = 0, totalSrc = 0, totalMin = 0;
   for (const dir of CORPUS_DIRS) {
     if (!existsSync(dir)) {
       console.log(`  ${dir}: not found (run \`bun load-files\`)`);
@@ -112,30 +118,39 @@ async function runCorpus() {
     }
     const files = [...new Glob("**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}").scanSync({ cwd: dir })];
     const t = performance.now();
-    let ok = 0, bad = 0, skip = 0;
+    let ok = 0, bad = 0, skip = 0, src = 0, min = 0;
     const errs: string[] = [];
     for (let i = 0; i < files.length; i += 256) {
       const batch = files.slice(i, i + 256);
       const out = await Promise.all(batch.map((f) => corpusFile(path.join(dir, f))));
       for (const r of out) {
-        if (r === "pass") ok++;
-        else if (r === "skip") skip++;
-        else { bad++; errs.push(r); }
+        if (r.status === "pass") { ok++; src += r.src; min += r.min; }
+        else if (r.status === "skip") skip++;
+        else { bad++; errs.push(r.err); }
       }
     }
     const ms = Math.round(performance.now() - t);
-    console.log(`  ${dir}: ${ok}/${ok + bad} (${ms}ms${skip ? `, ${skip} skipped` : ""})`);
+    const sizes = ok > 0 ? `, ${formatBytes(src)} → ${formatBytes(min)} (${percent(min, src)})` : "";
+    console.log(`  ${dir}: ${ok}/${ok + bad} (${ms}ms${skip ? `, ${skip} skipped` : ""}${sizes})`);
     for (const e of errs.slice(0, 10)) console.log(`    ✗ ${e}`);
     if (errs.length > 10) console.log(`    ... ${errs.length - 10} more`);
     failed += bad;
     totalOk += ok;
     totalAll += ok + bad;
     totalSkip += skip;
+    totalSrc += src;
+    totalMin += min;
   }
-  console.log(`  total: ${totalOk}/${totalAll}${totalSkip ? `, ${totalSkip} skipped` : ""}`);
+  const totalSizes = totalOk > 0 ? `, ${formatBytes(totalSrc)} → ${formatBytes(totalMin)} (${percent(totalMin, totalSrc)})` : "";
+  console.log(`  total: ${totalOk}/${totalAll}${totalSkip ? `, ${totalSkip} skipped` : ""}${totalSizes}`);
 }
 
-async function corpusFile(file: string): Promise<"pass" | "skip" | string> {
+type CorpusResult =
+  | { status: "pass"; src: number; min: number }
+  | { status: "skip" }
+  | { status: "fail"; err: string };
+
+async function corpusFile(file: string): Promise<CorpusResult> {
   const lang = langFromPath(file);
   const sourceType = sourceTypeFromPath(file);
   const source = await Bun.file(file).text();
@@ -143,13 +158,15 @@ async function corpusFile(file: string): Promise<"pass" | "skip" | string> {
   try {
     minified = minify(source, { lang, sourceType }).code;
   } catch (e) {
-    return `${file}: minify threw: ${e}`;
+    return { status: "fail", err: `${file}: minify threw: ${e}` };
   }
-  if (parse(minified, { lang, sourceType }).diagnostics.length === 0) return "pass";
-  // If the input itself doesn't parse under the canonical sourceType, it's a
+  if (parse(minified, { lang, sourceType }).diagnostics.length === 0) {
+    return { status: "pass", src: Buffer.byteLength(source, "utf8"), min: Buffer.byteLength(minified, "utf8") };
+  }
+  // if the input itself doesn't parse under the canonical sourceType, it's a
   // parser-corpus oddity (e.g. `await` as identifier in `.js`), not a regression.
-  if (parse(source, { lang, sourceType }).diagnostics.length > 0) return "skip";
-  return `${file}: reparse failed`;
+  if (parse(source, { lang, sourceType }).diagnostics.length > 0) return { status: "skip" };
+  return { status: "fail", err: `${file}: reparse failed` };
 }
 
 function pass(file: string, note?: string) {
@@ -168,4 +185,15 @@ async function tryImport(p: string): Promise<Record<string, unknown> | null> {
 
 function call(fn: () => unknown): string {
   try { return JSON.stringify(fn()); } catch (e) { return `THREW: ${e}`; }
+}
+
+function formatBytes(b: number): string {
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} kB`;
+  return `${(b / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function percent(part: number, whole: number): string {
+  if (whole === 0) return "0%";
+  return `${((part / whole) * 100).toFixed(1)}%`;
 }
