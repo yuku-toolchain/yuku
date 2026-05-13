@@ -1,0 +1,1 @@
+interface a{name:string;age:number;role:string;}function b({name:b,age:c,role:d="guest"}:a):string{return `${b}:${c}:${d}`;}const c={name:"alice",age:30} as a;export function run(){return {explicit:b({name:"bob",age:5,role:"admin"}),defaulted:b(c),objectLiteralShorthand:(():unknown=>{const a="carol";const b=7;return {name:a,age:b};})()};}

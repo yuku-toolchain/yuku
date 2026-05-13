@@ -749,7 +749,7 @@ fn Printer(comptime cfg: Config) type {
             return;
         }
 
-        if (p.shorthand) {
+        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) {
             try self.emitChildOfAssignTarget(p.value);
             return;
         }
@@ -1103,7 +1103,7 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_binding_property(self: *Self, p: ast.BindingProperty) Error!void {
-        if (p.shorthand) {
+        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) {
             try self.emitAssignTarget(p.value);
             return;
         }
@@ -1640,7 +1640,14 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_ts_literal_type(self: *Self, t: ast.TSLiteralType) Error!void {
-        try self.emit(t.literal);
+        // In a type position `true`/`false` are literal types, not expressions:
+        // the minify-mode `!0`/`!1` shorthand is invalid syntax here. Emit the
+        // keyword form directly and let everything else (string/number/bigint/
+        // template) fall through to its normal emitter.
+        switch (self.tree.data(t.literal)) {
+            .boolean_literal => |b| try self.writeStr(if (b.value) "true" else "false"),
+            else => try self.emit(t.literal),
+        }
     }
 
     fn emit_ts_template_literal_type(self: *Self, t: ast.TSTemplateLiteralType) Error!void {
@@ -2280,6 +2287,19 @@ fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     const an = identifierStringOrNull(tree, a) orelse return false;
     const bn = identifierStringOrNull(tree, b) orelse return false;
     return std.mem.eql(u8, tree.string(an), tree.string(bn));
+}
+
+// Whether an object property / binding property can stay in shorthand form
+// (`{ name }`) at emit time. The parser sets `shorthand = true` when the
+// source was written that way, but a later rename pass (the mangler) may
+// have changed the value-side binding without touching the key. At that
+// point `{ name: a }` is required to preserve which property is being
+// read/destructured. Peels through `assignment_pattern` so `{ name = 1 }`
+// is still considered shorthand when the binding kept the same name.
+fn shorthandStillValid(tree: *const Tree, key: NodeIndex, value: NodeIndex) bool {
+    var v = value;
+    if (tree.data(v) == .assignment_pattern) v = tree.data(v).assignment_pattern.left;
+    return sameIdentifier(tree, key, v);
 }
 
 fn identifierStringOrNull(tree: *const Tree, idx: NodeIndex) ?ast.String {

@@ -1,0 +1,1 @@
+export function run(){function a(a){const b=a.first;const c=a.last;function d(){const a=30;const c="nyc";return [b,a,c];}return [d(),c];}return a({first:"alice",last:"smith"});}

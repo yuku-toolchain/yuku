@@ -13,7 +13,7 @@
     "test:minifier": "bun test/minifier/run.ts",
     "format": "zig fmt **/*.zig",
     "test": "bun load-files && bun build:npm && bun test:parser && bun test:minifier",
-    "load-files": "bun profiler/load-parser-bench-files && bun test/load test/suite",
+    "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
     "play": "bun build:npm && bun --console-depth=20 test/playground.ts",
     "release:npm": "napi bump",
     "debug:npm": "napi build",

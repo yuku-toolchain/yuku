@@ -42,7 +42,7 @@ interface SuiteResult {
   files: FileResult[];
 }
 
-const SUITE_DIR = "test/suite";
+const SUITE_DIR = "test/parser/suite";
 const MISC_DIR = "test/parser/misc";
 
 const suites: TestSuite[] = [

@@ -1,0 +1,15 @@
+import {useCallback as b,useEffect as c,useMemo as d,useState as e} from "react";import {createPortal as f} from "react-dom";import * as a from "./icons";export interface TodoItem{id:string;title:string;done:boolean;}interface g{items:TodoItem[];onToggle:(id:string,done:boolean)=>void;onRemove?:(id:string)=>void;filter?:"all"|"active"|"done";}const h=(a:unknown):a is TodoItem=>{return (!!a&&typeof a==="object"&&"id" in a&&typeof (a as TodoItem).id==="string");};export function TodoList({items:h,onToggle:l,onRemove:m,filter:i="all"}:g){const [n,j]=e<string|null>(null);const k=d(()=>{if(i==="active")return h.filter((a)=>!a.done);if(i==="done")return h.filter((a)=>a.done);return h;},[h,i]);const o=b((a:string,b:boolean)=>{l(a,!b);},[l]);c(()=>{const a=(a:KeyboardEvent)=>{if(a.key==="Escape")j(null);};window.addEventListener("keydown",a);return ()=>window.removeEventListener("keydown",a);},[]);if(k.length===0){return (<div className="empty">
+        <a.Empty/>
+        <p>nothing here</p>
+      </div>);}return (<ul className="todo-list">
+      {k.map((b)=>{const c=n===b.id;return (<li key={b.id} className={c?"todo todo-hover":"todo"} onMouseEnter={()=>j(b.id)} onMouseLeave={()=>j(null)}>
+            <label>
+              <input type="checkbox" checked={b.done} onChange={()=>o(b.id,b.done)}/>
+              <span className={b.done?"title done":"title"}>{b.title}</span>
+            </label>
+            {m&&c&&(<button type="button" onClick={()=>m(b.id)}>
+                <a.Trash/>
+              </button>)}
+          </li>);})}
+      {typeof document!=="undefined"&&f(<div className="todo-count">{k.length} item(s)</div>,document.body)}
+    </ul>);}export function pickFirstItem(a:unknown[]):TodoItem|null{for(const b of a)if(h(b))return b;return null;}

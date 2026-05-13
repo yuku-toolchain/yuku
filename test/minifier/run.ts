@@ -1,228 +1,171 @@
-import { mkdir } from "node:fs/promises";
+/**
+ * Minifier test runner.
+ *
+ * Each `cases/<name>.<ext>` is minified and checked three ways:
+ *
+ *   1. reparse  output parses with zero semantic diagnostics.
+ *   2. snapshot bytes match `cases/snapshots/<name>.<ext>.snap`. Missing
+ *               snapshots are created on first local run; delete a `.snap`
+ *               to regenerate after intentional changes. In CI a missing
+ *               snapshot fails so PRs can't merge without it.
+ *   3. run()    if the case file exports a `run` function, the runner
+ *               imports both the original and the minified output, calls
+ *               each, and asserts deep-equal results. Cases that can't
+ *               run standalone (e.g. JSX needing a runtime) simply omit
+ *               the export.
+ *
+ * After the cases we minify the parser corpus end to end as a codegen
+ * safety net: every parseable input must produce a parseable output.
+ */
+
 import { Glob } from "bun";
-import { parse, type SourceLang } from "yuku-parser";
-import { minify, langFromPath, type MinifyOptions } from "yuku-minify";
+import { parse, langFromPath, sourceTypeFromPath } from "yuku-parser";
+import { minify } from "yuku-minify";
+import { existsSync } from "node:fs";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { formatDiagnostics } from "../ast-helpers-for-test";
 
-interface TestSuite {
-  path: string;
-  lang: SourceLang[];
-  recursive?: boolean;
-  options?: Partial<MinifyOptions>;
-  skipOnCI?: boolean;
-}
-
-type Status = "pass" | "fail" | "skip";
-
-interface FileResult {
-  file: string;
-  status: Status;
-  reason?: string;
-  source?: string;
-  output?: string;
-  diagnostics?: import("yuku-parser").Diagnostic[];
-}
-
-interface SuiteResult {
-  suite: TestSuite;
-  files: FileResult[];
-}
-
-const SUITE_DIR = "test/suite";
-const MISC_DIR = "test/parser/misc";
-
-// Round-trip re-parse layer: for each corpus file that parses cleanly,
-// minify it and assert the output re-parses without errors.
-const suites: TestSuite[] = [
-  { path: `${SUITE_DIR}/js/pass`, lang: ["js"] },
-  { path: `${SUITE_DIR}/ts/pass`, lang: ["ts", "tsx"] },
-  { path: `${MISC_DIR}/js`, lang: ["js"], recursive: false },
-  { path: `${MISC_DIR}/ts`, lang: ["ts", "tsx"], recursive: false },
+const CASES_DIR = "test/minifier/cases";
+const SNAPS_DIR = path.join(CASES_DIR, "snapshots");
+const TMP_DIR = path.join(CASES_DIR, "__tmp__");
+const CORPUS_DIRS = [
+  "test/parser/suite/js/pass",
+  "test/parser/suite/jsx/pass",
+  "test/parser/suite/ts/pass",
 ];
+const CI = !!process.env.CI;
 
-const RESULTS_DIR = "test/minifier/results";
-const isCI = !!process.env.CI;
+let failed = 0;
 
-function isSourceFile(path: string, langs: SourceLang[]): boolean {
-  if (path.includes("/snapshots/") || path.endsWith(".snapshot.json")) return false;
-  if (path.endsWith(".d.ts")) return false;
-  return langs.includes(langFromPath(path));
+await mkdir(SNAPS_DIR, { recursive: true });
+await rm(TMP_DIR, { recursive: true, force: true });
+await mkdir(TMP_DIR, { recursive: true });
+
+await runCases();
+await runCorpus();
+
+await rm(TMP_DIR, { recursive: true, force: true });
+process.exit(failed > 0 ? 1 : 0);
+
+async function runCases() {
+  const files = [...new Glob("*.{ts,tsx,js,jsx}").scanSync({ cwd: CASES_DIR })].sort();
+  console.log(`cases (${files.length})`);
+  for (const file of files) await runCase(file);
 }
 
-async function collectFiles(suite: TestSuite): Promise<string[]> {
-  const pattern = suite.recursive === false ? "*" : "**/*";
-  const glob = new Glob(`${suite.path}/${pattern}`);
-  const files: string[] = [];
-  for await (const file of glob.scan(".")) {
-    if (isSourceFile(file, suite.lang)) files.push(file);
-  }
-  return files;
-}
-
-function sourceTypeOf(file: string): "module" | "script" {
-  return file.includes(".module.") ? "module" : "script";
-}
-
-function runFile(file: string, content: string, suite: TestSuite): FileResult {
+async function runCase(file: string) {
+  const srcPath = path.join(CASES_DIR, file);
+  const source = await Bun.file(srcPath).text();
   const lang = langFromPath(file);
-  const sourceType = sourceTypeOf(file);
 
-  // 1. parse the original. skip files that don't parse cleanly:
-  //    we can't expect the minifier to produce correct output for input
-  //    the parser already disagrees with.
-  const original = parse(content, { sourceType, lang });
-  if (original.diagnostics.length > 0) {
-    return { file, status: "skip", reason: "original has parse errors" };
-  }
-
-  // step 3 reparses as module; skip script-only sources that exercise
-  // identifiers reserved in module/strict (await, yield) — the minifier
-  // preserves them correctly but they can never be valid module code.
-  if (sourceType === "script") {
-    const moduleParse = parse(content, { sourceType: "module", lang });
-    if (moduleParse.diagnostics.length > 0) {
-      return { file, status: "skip", reason: "script-only source not valid in module mode" };
-    }
-  }
-
-  // 2. minify.
-  let minified;
+  let minified: string;
   try {
-    minified = minify(content, { sourceType, lang, ...suite.options });
-  } catch (err) {
-    return { file, status: "fail", reason: `minify threw: ${(err as Error).message}`, source: content };
+    minified = minify(source, { lang }).code;
+  } catch (e) {
+    return fail(file, "minify", String(e));
   }
 
-  if (minified.errors.length > 0) {
-    return {
-      file,
-      status: "fail",
-      reason: "codegen errors during minify",
-      source: content,
-    };
-  }
-
-  // 3. re-parse the output.
-  const reparsed = parse(minified.code, { sourceType: "module", lang: lang === "tsx" ? "tsx" : lang === "ts" ? "ts" : "js" });
+  const reparsed = parse(minified, { lang, semanticErrors: true });
   if (reparsed.diagnostics.length > 0) {
-    return {
-      file,
-      status: "fail",
-      reason: "minified output failed to re-parse",
-      source: content,
-      output: minified.code,
-      diagnostics: reparsed.diagnostics,
-    };
+    return fail(file, "reparse", formatDiagnostics(minified, reparsed.diagnostics, file));
   }
 
-  return { file, status: "pass" };
+  const snap = path.join(SNAPS_DIR, file + ".snap");
+  if (!existsSync(snap)) {
+    if (CI) return fail(file, "snapshot", `missing ${snap}; commit a snapshot from a local run`);
+    await writeFile(snap, minified);
+    return pass(file, "created snapshot");
+  }
+  const expected = await Bun.file(snap).text();
+  if (expected !== minified) {
+    return fail(file, "snapshot", `--- expected\n${expected}\n--- actual\n${minified}`);
+  }
+
+  const orig = await tryImport(path.resolve(srcPath));
+  if (orig && typeof orig.run === "function") {
+    const ext = path.extname(file);
+    const tmp = path.resolve(
+      TMP_DIR,
+      file.slice(0, -ext.length) + "." + Bun.hash(minified).toString(16) + ext,
+    );
+    await writeFile(tmp, minified);
+    const min = await tryImport(tmp);
+    if (!min || typeof min.run !== "function") {
+      return fail(file, "behavior", "minified module did not load");
+    }
+    const a = call(orig.run as () => unknown);
+    const b = call(min.run as () => unknown);
+    if (a !== b) return fail(file, "behavior", `original: ${a}\nminified: ${b}`);
+  }
+
+  pass(file);
 }
 
-let progressCurrent = 0;
-let progressTotal = 0;
-
-function showProgress(file: string, status: Status) {
-  if (isCI) return;
-  progressCurrent++;
-  const icon =
-    status === "pass" ? "\x1b[32m✓\x1b[0m" : status === "skip" ? "\x1b[33m·\x1b[0m" : "\x1b[31m✗\x1b[0m";
-  const label = file.length > 60 ? `...${file.slice(-57)}` : file;
-  process.stdout.write(`\r\x1b[K  ${icon} ${progressCurrent}/${progressTotal}  ${label}`);
-}
-
-function clearProgress() {
-  if (!isCI) process.stdout.write("\r\x1b[K");
-}
-
-async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult> {
-  const result: SuiteResult = { suite, files: [] };
-
-  for (const file of files) {
-    const content = await Bun.file(file).text();
-    const entry = runFile(file, content, suite);
-
-    if (entry.status === "fail") {
-      clearProgress();
-      console.log(`\nx ${file} (${entry.reason})`);
-      if (entry.diagnostics && entry.output) {
-        console.log(formatDiagnostics(entry.output, entry.diagnostics, file));
+async function runCorpus() {
+  console.log("\ncorpus");
+  let totalOk = 0, totalAll = 0, totalSkip = 0;
+  for (const dir of CORPUS_DIRS) {
+    if (!existsSync(dir)) {
+      console.log(`  ${dir}: not found (run \`bun load-files\`)`);
+      continue;
+    }
+    const files = [...new Glob("**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}").scanSync({ cwd: dir })];
+    const t = performance.now();
+    let ok = 0, bad = 0, skip = 0;
+    const errs: string[] = [];
+    for (let i = 0; i < files.length; i += 256) {
+      const batch = files.slice(i, i + 256);
+      const out = await Promise.all(batch.map((f) => corpusFile(path.join(dir, f))));
+      for (const r of out) {
+        if (r === "pass") ok++;
+        else if (r === "skip") skip++;
+        else { bad++; errs.push(r); }
       }
     }
-
-    result.files.push(entry);
-    showProgress(file, entry.status);
+    const ms = Math.round(performance.now() - t);
+    console.log(`  ${dir}: ${ok}/${ok + bad} (${ms}ms${skip ? `, ${skip} skipped` : ""})`);
+    for (const e of errs.slice(0, 10)) console.log(`    ✗ ${e}`);
+    if (errs.length > 10) console.log(`    ... ${errs.length - 10} more`);
+    failed += bad;
+    totalOk += ok;
+    totalAll += ok + bad;
+    totalSkip += skip;
   }
-
-  return result;
+  console.log(`  total: ${totalOk}/${totalAll}${totalSkip ? `, ${totalSkip} skipped` : ""}`);
 }
 
-function writeResultFile(result: SuiteResult): string {
-  const passed = result.files.filter((f) => f.status === "pass").length;
-  const failed = result.files.filter((f) => f.status === "fail").length;
-  const skipped = result.files.filter((f) => f.status === "skip").length;
-  const total = result.files.length;
-  const tested = total - skipped;
-  const rate = tested === 0 ? "0.00" : ((passed / tested) * 100).toFixed(2);
-
-  const lines: string[] = [
-    `${result.suite.path}  (round-trip)`,
-    "=".repeat(result.suite.path.length + 14),
-    `Passed:  ${passed}/${tested} (${rate}%)`,
-    `Failed:  ${failed}`,
-    `Skipped: ${skipped}`,
-    "",
-  ];
-
-  const sorted = [...result.files].sort((a, b) => a.file.localeCompare(b.file));
-  for (const { file, status, reason, output, diagnostics } of sorted) {
-    const icon = status === "pass" ? "✓" : status === "skip" ? "·" : "✗";
-    const suffix = reason ? ` (${reason})` : "";
-    lines.push(`${icon} ${file}${suffix}`);
-    if (status === "fail" && diagnostics && diagnostics.length > 0 && output) {
-      lines.push(formatDiagnostics(output, [diagnostics[0]], file, { showFilename: false }));
-      lines.push("");
-    }
+async function corpusFile(file: string): Promise<"pass" | "skip" | string> {
+  const lang = langFromPath(file);
+  const sourceType = sourceTypeFromPath(file);
+  const source = await Bun.file(file).text();
+  let minified: string;
+  try {
+    minified = minify(source, { lang, sourceType }).code;
+  } catch (e) {
+    return `${file}: minify threw: ${e}`;
   }
-
-  lines.push("");
-  return lines.join("\n");
+  if (parse(minified, { lang, sourceType }).diagnostics.length === 0) return "pass";
+  // If the input itself doesn't parse under the canonical sourceType, it's a
+  // parser-corpus oddity (e.g. `await` as identifier in `.js`), not a regression.
+  if (parse(source, { lang, sourceType }).diagnostics.length > 0) return "skip";
+  return `${file}: reparse failed`;
 }
 
-console.clear();
-console.log("");
-
-const suiteFiles = new Map<TestSuite, string[]>();
-for (const suite of suites) {
-  if (suite.skipOnCI && isCI) continue;
-  const files = await collectFiles(suite);
-  suiteFiles.set(suite, files);
-  progressTotal += files.length;
+function pass(file: string, note?: string) {
+  console.log(`  ✓ ${file}${note ? ` (${note})` : ""}`);
 }
 
-const results: SuiteResult[] = [];
-for (const [suite, files] of suiteFiles) {
-  results.push(await runSuite(suite, files));
+function fail(file: string, layer: string, details: string) {
+  failed++;
+  console.log(`  ✗ ${file} [${layer}]`);
+  console.log(details.split("\n").map((l) => "    " + l).join("\n"));
 }
 
-clearProgress();
-
-await mkdir(RESULTS_DIR, { recursive: true });
-
-let totalFailed = 0;
-for (const result of results) {
-  if (result.files.length === 0) continue;
-
-  totalFailed += result.files.filter((f) => f.status === "fail").length;
-
-  const name = result.suite.path
-    .replace(/^test\/suite\//, "")
-    .replace(/^test\/parser\//, "")
-    .replace(/\//g, "_");
-  await Bun.write(`${RESULTS_DIR}/${name}_round-trip.txt`, writeResultFile(result));
+async function tryImport(p: string): Promise<Record<string, unknown> | null> {
+  try { return await import(p); } catch { return null; }
 }
 
-console.log(`Results saved to ${RESULTS_DIR}/\n`);
-
-if (isCI && totalFailed > 0) {
-  process.exit(1);
+function call(fn: () => unknown): string {
+  try { return JSON.stringify(fn()); } catch (e) { return `THREW: ${e}`; }
 }

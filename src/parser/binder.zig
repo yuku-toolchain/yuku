@@ -474,6 +474,16 @@ pub const SymbolTable = struct {
         return .{ .references = self.references, .ids = self.useIds(id) };
     }
 
+    /// The number of use sites of `id`.
+    pub fn symbolUsesCount(self: SymbolTable, id: SymbolId) u32 {
+        return @intCast(self.useIds(id).len);
+    }
+
+    /// The number of declaration sites of `id`.
+    pub fn symbolDeclsCount(self: SymbolTable, id: SymbolId) u32 {
+        return @intCast(self.symbolDecls(id).len);
+    }
+
     /// Iterates every site of `id`. Declarations come first in source
     /// order, then use sites.
     pub fn symbolSites(self: SymbolTable, id: SymbolId) SiteIterator {
@@ -560,7 +570,18 @@ pub const SymbolTracker = struct {
     pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
         switch (data) {
             .export_named_declaration => |decl| {
-                if (decl.export_kind != .type) self.export_state = .named;
+                // Declaration form (`export type X = Y`, `export const x = 1`,
+                // `export interface I {}`, ...) always exports the binding it
+                // declares, even when `export_kind` is `.type` (which the
+                // parser sets automatically for type-aliases and interfaces).
+                // Pure re-export form (`export { Foo }` / `export type { Foo }`)
+                // has `declaration == .null`, no inner binding, and stays
+                // dependent on `export_kind` for the `.named` value-export
+                // case so we don't tag the value-side as exported for a
+                // type-only re-export.
+                if (decl.declaration != .null or decl.export_kind != .type) {
+                    self.export_state = .named;
+                }
             },
             .export_default_declaration => self.export_state = .default,
 
@@ -767,6 +788,37 @@ pub const SymbolTracker = struct {
             .identifier_reference => |id| {
                 const kind: Reference.Kind = if (in_type_position) .type else .value;
                 _ = try self.addReference(id.name, scope.currentScopeId(), index, kind);
+            },
+            // `param is T` / `asserts param is T`: the `param` is parsed as
+            // an `identifier_name` (the AST shape downstream FFI consumers
+            // expect) but it semantically references the surrounding
+            // function's parameter binding. Synthesize the reference here so
+            // renamers update both the parameter and the predicate together.
+            .ts_type_predicate => |pred| {
+                if (pred.parameter_name == .null) return;
+                const pname = self.tree.data(pred.parameter_name);
+                if (pname != .identifier_name) return;
+                const kind: Reference.Kind = if (in_type_position) .type else .value;
+                _ = try self.addReference(
+                    pname.identifier_name.name,
+                    scope.currentScopeId(),
+                    pred.parameter_name,
+                    kind,
+                );
+            },
+            // JSX tag names: `<Foo>`, `<Foo.Bar>`, `</Foo>`. The leftmost
+            // `jsx_identifier` is a JS binding reference (capitalized). The
+            // rest of the chain (`.Bar`, `:path`) is property/namespace
+            // syntax and not a binding. Lowercase tags (`<div>`) are
+            // intrinsic HTML element names, not bindings; skip them.
+            inline .jsx_opening_element, .jsx_closing_element => |el| {
+                if (jsxTagRoot(self.tree, el.name)) |root_idx| {
+                    const id = self.tree.data(root_idx).jsx_identifier;
+                    const text = self.tree.string(id.name);
+                    if (text.len > 0 and text[0] >= 'A' and text[0] <= 'Z') {
+                        _ = try self.addReference(id.name, scope.currentScopeId(), root_idx, .value);
+                    }
+                }
             },
             else => {},
         }
@@ -987,6 +1039,20 @@ pub const SymbolTracker = struct {
         };
     }
 };
+
+// Walks a JSX opening/closing tag name to its leftmost `jsx_identifier`.
+// Returns null for `<svg:path>` (XML namespace, not a JS binding) and for
+// anything that isn't a tag-shape expression. The returned NodeIndex always
+// points at a `jsx_identifier`.
+fn jsxTagRoot(tree: *const ast.Tree, name: ast.NodeIndex) ?ast.NodeIndex {
+    var cur = name;
+    while (true) switch (tree.data(cur)) {
+        .jsx_identifier => return cur,
+        .jsx_member_expression => |m| cur = m.object,
+        .jsx_namespaced_name => return null,
+        else => return null,
+    };
+}
 
 // expression_name scope sits between outer and the function/class
 // scope, so it's the parent of the current scope.

@@ -6,6 +6,10 @@ pub const String = struct {
     end: u32 = 0,
 
     pub const empty: String = .{};
+
+    pub fn len(self: String) u32 {
+        return self.end - self.start;
+    }
 };
 
 pub const ASTStringPool = struct {

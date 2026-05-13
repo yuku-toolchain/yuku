@@ -1,0 +1,1 @@
+export type ColorProps<a>={name:a;defaultValue?:string;};export interface Logger{log(msg:string):void;}const a:ColorProps<string>={name:"x"};export function run(){return {internal:a};}
