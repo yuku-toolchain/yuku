@@ -63,7 +63,6 @@ const result = try parser.codegen.print(allocator, &tree, .{
     .format = .pretty,
     .indent = 2,
     .quotes = .double,
-    .final_newline = true,
 });
 ```
 
@@ -72,7 +71,6 @@ const result = try parser.codegen.print(allocator, &tree, .{
 | `format`        | `Format` | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)     |
 | `indent`        | `u8`     | `2`       | Spaces per level when `format == .pretty`                    |
 | `quotes`        | `Quotes` | `.double` | `.double` or `.single` for emitted string literals           |
-| `final_newline` | `bool`   | `true`    | Append a trailing newline to the output if missing           |
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
@@ -166,7 +164,6 @@ The same options are accepted, in camelCase:
 | `format`       | `"pretty"`, `"compact"`                   | `"pretty"` |
 | `indent`       | `number`                                  | `2`        |
 | `quotes`       | `"double"`, `"single"`                    | `"double"` |
-| `finalNewline` | `boolean`                                 | `true`     |
 
 ### How it works
 

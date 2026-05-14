@@ -1,4 +1,5 @@
 const std = @import("std");
+const util = @import("util");
 const ast = @import("../ast.zig");
 
 const Allocator = std.mem.Allocator;
@@ -26,8 +27,6 @@ pub const Options = struct {
     indent: u8 = 2,
     /// Quote style for emitted string literals.
     quotes: Quotes = .double,
-    /// Append a trailing newline to the output if missing.
-    final_newline: bool = true,
 };
 
 /// A codegen-detected problem in the input tree.
@@ -61,6 +60,8 @@ pub const Error = error{OutOfMemory};
 /// comptime configuration
 pub const Config = struct {
     strip_ts: bool = false,
+    /// when true, applies size-reducing substitutions during emit
+    minify: bool = false,
 };
 
 /// Renders a `Tree` to source code.
@@ -71,6 +72,12 @@ pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
 /// Render TypeScript `Tree` to JavaScript output, excluding TypeScript-specific syntax.
 pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     return printImpl(.{ .strip_ts = true }, allocator, tree, options);
+}
+
+/// render `Tree` with print-time minification substitutions enabled.
+/// combine with `Options.format = .compact` for fully minified output.
+pub fn minify(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
+    return printImpl(.{ .minify = true }, allocator, tree, options);
 }
 
 pub fn printImpl(comptime cfg: Config, allocator: Allocator, tree: *Tree, options: Options) Error!Result {
@@ -90,6 +97,7 @@ fn Printer(comptime cfg: Config) type {
     return struct {
         const Self = @This();
         const strip_ts = cfg.strip_ts;
+        const minify_mode = cfg.minify;
 
         tree: *Tree,
         code: std.ArrayList(u8) = .empty,
@@ -98,6 +106,14 @@ fn Printer(comptime cfg: Config) type {
         arena: std.heap.ArenaAllocator,
         allocator: Allocator,
         indent_depth: u32 = 0,
+        /// set while emitting a destructuring/assignment target so nested
+        /// array/object literals know to re-paren ts `as`/`satisfies`/
+        /// type-assertion leaves the parser elided.
+        in_assign_target: bool = false,
+        /// In compact mode, statement terminators are deferred via this flag
+        /// rather than emitted immediately. The next statement flushes it,
+        /// a closing `}` clears it, eliminating the trailing `;` for free.
+        pending_semi: bool = false,
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
@@ -121,11 +137,27 @@ fn Printer(comptime cfg: Config) type {
     }
 
     inline fn writeByte(self: *Self, b: u8) Error!void {
+        self.dropPendingKeywordSpace(b);
         try self.code.append(self.allocator, b);
     }
 
     inline fn writeStr(self: *Self, s: []const u8) Error!void {
+        if (s.len == 0) return;
+        self.dropPendingKeywordSpace(s[0]);
         try self.code.appendSlice(self.allocator, s);
+    }
+
+    /// In compact mode, drop the trailing ` ` from a just-written `keyword `
+    /// when the upcoming byte is punctuation: `else { … }` → `else{…}`,
+    /// `return"x"` → `return"x"`. The space is preserved when the next byte
+    /// would extend the identifier (`return foo`, `case 5:`).
+    inline fn dropPendingKeywordSpace(self: *Self, next: u8) void {
+        if (self.pretty()) return;
+        const items = self.code.items;
+        if (items.len < 2 or items[items.len - 1] != ' ') return;
+        if (isIdCont(items[items.len - 2]) and !isIdCont(next)) {
+            _ = self.code.pop();
+        }
     }
 
     inline fn writeString(self: *Self, id: ast.String) Error!void {
@@ -151,25 +183,22 @@ fn Printer(comptime cfg: Config) type {
         self.code.shrinkRetainingCapacity(pos);
     }
 
-    /// Emits `idx`. Returns true if any bytes were written.
     fn tryEmit(self: *Self, idx: NodeIndex) Error!bool {
         const start = self.mark();
+        const tail: u8 = if (start > 0) self.code.items[start - 1] else 0;
         try self.emit(idx);
-        return self.code.items.len > start;
+        if (self.code.items.len > start) return true;
+        return start > 0 and self.code.items[start - 1] != tail;
     }
 
-    /// Emits `idx` in a position where a statement is grammatically required.
-    /// If the emit produces no output, an empty statement is written so the
-    /// surrounding control flow stays valid.
+    /// emits `idx` in a position where a statement is grammatically required;
+    /// substitutes an empty statement if the emit produces no output.
     fn emitStmt(self: *Self, idx: NodeIndex) Error!void {
         if (!try self.tryEmit(idx)) try self.writeByte(';');
     }
 
     fn printRoot(self: *Self) Error!void {
         try self.emit(self.tree.root);
-        if (self.options.final_newline and (self.code.items.len == 0 or self.code.items[self.code.items.len - 1] != '\n')) {
-            try self.writeByte('\n');
-        }
     }
 
     fn emit(self: *Self, idx: NodeIndex) Error!void {
@@ -240,26 +269,31 @@ fn Printer(comptime cfg: Config) type {
             try self.newline();
         }
         try self.printStmtList(p.body);
+        self.pending_semi = false;
     }
 
+    /// Emits a list of statements, flushing the deferred `;` between each.
+    /// On strip-to-nothing, rewinds buffer and restores `pending_semi` so the
+    /// preceding statement's terminator isn't lost.
     fn printStmtList(self: *Self, items: IndexRange) Error!void {
-        const list = self.tree.extra(items);
         var first = true;
-        for (list) |s| {
+        for (self.tree.extra(items)) |s| {
             const before = self.mark();
+            const saved_semi = self.pending_semi;
             if (!first) try self.newline();
+            try self.flushSemi();
             if (try self.tryEmit(s)) {
                 first = false;
             } else {
                 self.rewindTo(before);
+                self.pending_semi = saved_semi;
             }
         }
     }
 
     fn printBlock(self: *Self, items: IndexRange) Error!void {
         try self.writeByte('{');
-        const list = self.tree.extra(items);
-        if (list.len > 0) {
+        if (self.tree.extra(items).len > 0) {
             const before = self.mark();
             self.indent_depth += 1;
             try self.newline();
@@ -269,10 +303,25 @@ fn Printer(comptime cfg: Config) type {
             if (self.mark() == after_indent) {
                 self.rewindTo(before);
             } else {
+                self.pending_semi = false;
                 try self.newline();
             }
         }
         try self.writeByte('}');
+    }
+
+    /// Statement-terminator `;`. In compact mode, defers via `pending_semi`
+    /// so the next `flushSemi` writes it or a closing `}` drops it for free.
+    inline fn softSemi(self: *Self) Error!void {
+        if (self.pretty()) try self.writeByte(';') else self.pending_semi = true;
+    }
+
+    /// Emits any deferred `;` and clears the flag.
+    inline fn flushSemi(self: *Self) Error!void {
+        if (self.pending_semi) {
+            self.pending_semi = false;
+            try self.writeByte(';');
+        }
     }
 
     fn emit_block_statement(self: *Self, s: ast.BlockStatement) Error!void {
@@ -291,20 +340,24 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_directive(self: *Self, d: ast.Directive) Error!void {
         try self.emitStringLit(d.value);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_empty_statement(self: *Self, _: ast.EmptyStatement) Error!void {
+        // Direct `;` (not deferred): when this serves as the body of an outer
+        // control-flow construct (`if(x);`, `for(;;);`, `lbl:;`), the parser
+        // requires the `;` to materialize the body.
         try self.writeByte(';');
     }
 
     fn emit_debugger_statement(self: *Self, _: ast.DebuggerStatement) Error!void {
-        try self.writeStr("debugger;");
+        try self.writeStr("debugger");
+        try self.softSemi();
     }
 
     fn emit_expression_statement(self: *Self, s: ast.ExpressionStatement) Error!void {
         try self.emit(s.expression);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_if_statement(self: *Self, s: ast.IfStatement) Error!void {
@@ -316,6 +369,7 @@ fn Printer(comptime cfg: Config) type {
         try self.space();
         try self.emitStmt(s.consequent);
         if (s.alternate != .null) {
+            try self.flushSemi();
             try self.space();
             try self.writeStr("else ");
             try self.emitStmt(s.alternate);
@@ -328,13 +382,13 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte(' ');
             try self.emit(s.argument);
         }
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_throw_statement(self: *Self, s: ast.ThrowStatement) Error!void {
         try self.writeStr("throw ");
         try self.emit(s.argument);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_break_statement(self: *Self, s: ast.BreakStatement) Error!void {
@@ -343,7 +397,7 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte(' ');
             try self.emit(s.label);
         }
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_continue_statement(self: *Self, s: ast.ContinueStatement) Error!void {
@@ -352,7 +406,7 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte(' ');
             try self.emit(s.label);
         }
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_labeled_statement(self: *Self, s: ast.LabeledStatement) Error!void {
@@ -385,6 +439,7 @@ fn Printer(comptime cfg: Config) type {
     fn emit_do_while_statement(self: *Self, s: ast.DoWhileStatement) Error!void {
         try self.writeStr("do ");
         try self.emitStmt(s.body);
+        try self.flushSemi();
         try self.space();
         try self.writeStr("while");
         try self.space();
@@ -430,7 +485,11 @@ fn Printer(comptime cfg: Config) type {
         if (s.@"await") try self.writeStr(" await");
         try self.space();
         try self.writeByte('(');
+        // `for (async of …)` is forbidden, disambiguates from `for await`.
+        const wrap_async = !s.@"await" and isBareAsyncIdentifier(self.tree, s.left);
+        if (wrap_async) try self.writeByte('(');
         try self.printForLeft(s.left);
+        if (wrap_async) try self.writeByte(')');
         try self.writeStr(" of ");
         try self.emit(s.right);
         try self.writeByte(')');
@@ -441,7 +500,7 @@ fn Printer(comptime cfg: Config) type {
     fn printForLeft(self: *Self, idx: NodeIndex) Error!void {
         switch (self.tree.data(idx)) {
             .variable_declaration => |d| try self.printVariableDecl(d, false),
-            else => try self.emit(idx),
+            else => try self.emitAssignTarget(idx),
         }
     }
 
@@ -456,9 +515,11 @@ fn Printer(comptime cfg: Config) type {
         const cases = self.tree.extra(s.cases);
         if (cases.len > 0) {
             for (cases) |c| {
+                try self.flushSemi();
                 try self.newline();
                 try self.emit(c);
             }
+            self.pending_semi = false;
             try self.newline();
         }
         try self.writeByte('}');
@@ -472,16 +533,10 @@ fn Printer(comptime cfg: Config) type {
         } else {
             try self.writeStr("default:");
         }
-        const list = self.tree.extra(c.consequent);
-        if (list.len > 0) {
-            self.indent_depth += 1;
-            for (list) |s| {
-                const before = self.mark();
-                try self.newline();
-                if (!try self.tryEmit(s)) self.rewindTo(before);
-            }
-            self.indent_depth -= 1;
-        }
+        if (self.tree.extra(c.consequent).len == 0) return;
+        self.indent_depth += 1;
+        defer self.indent_depth -= 1;
+        try self.printStmtList(c.consequent);
     }
 
     fn emit_try_statement(self: *Self, s: ast.TryStatement) Error!void {
@@ -527,13 +582,14 @@ fn Printer(comptime cfg: Config) type {
             }
             try self.emit(dx);
         }
-        if (with_semicolon) try self.writeByte(';');
+        if (with_semicolon) try self.softSemi();
     }
 
     fn emit_variable_declarator(self: *Self, d: ast.VariableDeclarator) Error!void {
         try self.emit(d.id);
         if (comptime !strip_ts) if (d.definite) try self.writeByte('!');
         if (d.init != .null) {
+            try self.separateBangFromAssign();
             try self.space();
             try self.writeByte('=');
             try self.space();
@@ -559,16 +615,41 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_binary_expression(self: *Self, e: ast.BinaryExpression) Error!void {
-        try self.emit(e.left);
         const op = e.operator.toString();
+        if (comptime minify_mode) {
+            // `**` requires its left operand to be an UpdateExpression, an
+            // unparenthesized unary is a SyntaxError. our minify substitutions
+            // (`true`/`false`/`undefined` -> unary) can produce such a left.
+            const is_pow = op.len == 2 and op[0] == '*' and op[1] == '*';
+            if (is_pow and minifiesToUnary(self.tree, e.left)) {
+                try self.writeByte('(');
+                try self.emit(e.left);
+                try self.writeByte(')');
+            } else {
+                try self.emit(e.left);
+            }
+        } else {
+            try self.emit(e.left);
+        }
         if (isWordOp(op)) {
             try self.writeByte(' ');
             try self.writeStr(op);
             try self.writeByte(' ');
         } else {
+            // `x! == y` would re-lex as `!==`.
+            if (op[0] == '=') try self.separateBangFromAssign();
             try self.space();
             try self.writeStr(op);
             try self.space();
+            // guard against token merges: `++`/`--`, `//` regex/comment,
+            // `<!--` annex B html-like line comment.
+            if (!self.pretty() and op.len == 1) {
+                switch (op[0]) {
+                    '+', '-', '/' => if (leftmostByteIs(self.tree, e.right, op[0])) try self.writeByte(' '),
+                    '<' => if (leftmostByteIs(self.tree, e.right, '!')) try self.writeByte(' '),
+                    else => {},
+                }
+            }
         }
         try self.emit(e.right);
     }
@@ -597,6 +678,10 @@ fn Printer(comptime cfg: Config) type {
         const op = e.operator.toString();
         try self.writeStr(op);
         if (isWordOp(op)) try self.writeByte(' ');
+        // `+ +x` would print as `++x` and re-lex as a prefix update.
+        if (!self.pretty() and op.len == 1 and (op[0] == '+' or op[0] == '-')) {
+            if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
+        }
         try self.emit(e.argument);
     }
 
@@ -604,35 +689,76 @@ fn Printer(comptime cfg: Config) type {
         const op = e.operator.toString();
         if (e.prefix) {
             try self.writeStr(op);
-            try self.emit(e.argument);
+            try self.emitAssignTarget(e.argument);
         } else {
-            try self.emit(e.argument);
+            try self.emitAssignTarget(e.argument);
             try self.writeStr(op);
         }
     }
 
     fn emit_assignment_expression(self: *Self, e: ast.AssignmentExpression) Error!void {
-        try self.emit(e.left);
+        try self.emitAssignTarget(e.left);
+        try self.separateBangFromAssign();
         try self.space();
         try self.writeStr(e.operator.toString());
         try self.space();
         try self.emit(e.right);
     }
 
+    /// `x!=…` would re-lex `!` (non-null assertion) into `!=`. pad if needed.
+    inline fn separateBangFromAssign(self: *Self) Error!void {
+        if (self.pretty()) return;
+        const items = self.code.items;
+        if (items.len > 0 and items[items.len - 1] == '!') try self.writeByte(' ');
+    }
+
+    /// emits `idx` as an assignment/destructuring target, wrapping a bare
+    /// ts `as`/`satisfies`/type-assertion in parens (the parser elides
+    /// them, the grammar doesn't).
+    fn emitAssignTarget(self: *Self, idx: NodeIndex) Error!void {
+        if (idx == .null) return;
+        const prev = self.in_assign_target;
+        defer self.in_assign_target = prev;
+
+        if (needsParensAsAssignTarget(self.tree, idx)) {
+            self.in_assign_target = false;
+            try self.writeByte('(');
+            try self.emit(idx);
+            try self.writeByte(')');
+        } else {
+            self.in_assign_target = true;
+            try self.emit(idx);
+        }
+    }
+
+    /// routes a child of an array/object literal: if the literal is itself
+    /// a target, the child is too.
+    inline fn emitChildOfAssignTarget(self: *Self, idx: NodeIndex) Error!void {
+        if (self.in_assign_target) try self.emitAssignTarget(idx) else try self.emit(idx);
+    }
+
     fn emit_array_expression(self: *Self, e: ast.ArrayExpression) Error!void {
+        const in_target = self.in_assign_target;
+        self.in_assign_target = false;
+        defer self.in_assign_target = in_target;
+
         try self.writeByte('[');
-        const list = self.tree.extra(e.elements);
-        for (list, 0..) |x, i| {
+        for (self.tree.extra(e.elements), 0..) |x, i| {
             if (i > 0) {
                 try self.writeByte(',');
                 try self.space();
             }
-            try self.emit(x);
+            if (in_target) try self.emitAssignTarget(x) else try self.emit(x);
         }
         try self.writeByte(']');
     }
 
     fn emit_object_expression(self: *Self, e: ast.ObjectExpression) Error!void {
+        // re-set per-property so a value's recursion can't strip the flag
+        // from later siblings.
+        const in_target = self.in_assign_target;
+        defer self.in_assign_target = in_target;
+
         try self.writeByte('{');
         const list = self.tree.extra(e.properties);
         if (list.len > 0) {
@@ -642,6 +768,7 @@ fn Printer(comptime cfg: Config) type {
                     try self.writeByte(',');
                     try self.space();
                 }
+                self.in_assign_target = in_target;
                 try self.emit(x);
             }
             try self.space();
@@ -660,20 +787,20 @@ fn Printer(comptime cfg: Config) type {
                 if (fn_data.@"async") try self.writeStr("async ");
                 if (fn_data.generator) try self.writeByte('*');
             }
-            try self.printPropertyKey(p.key, p.computed);
+            try self.printObjectKey(p.key, p.computed);
             try self.printFunctionAsMethod(fn_data);
             return;
         }
 
-        if (p.shorthand) {
-            try self.emit(p.value);
+        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) {
+            try self.emitChildOfAssignTarget(p.value);
             return;
         }
 
-        try self.printPropertyKey(p.key, p.computed);
+        try self.printObjectKey(p.key, p.computed);
         try self.writeByte(':');
         try self.space();
-        try self.emit(p.value);
+        try self.emitChildOfAssignTarget(p.value);
     }
 
     fn emit_spread_element(self: *Self, s: ast.SpreadElement) Error!void {
@@ -682,20 +809,37 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_member_expression(self: *Self, e: ast.MemberExpression) Error!void {
-        try self.emit(e.object);
-        if (e.computed) {
+        const head_decimal = isDecimalLiteral(self.tree, e.object);
+        const head_start = self.mark();
+        try self.emitAsHead(e.object);
+
+        // `obj["foo"]` → `obj.foo` when the key names a valid identifier.
+        const static_key: ?[]const u8 = if (comptime minify_mode)
+            (if (e.computed) simpleStringKey(self.tree, e.property) else null)
+        else
+            null;
+
+        if (e.computed and static_key == null) {
             if (e.optional) try self.writeStr("?.");
             try self.writeByte('[');
             try self.emit(e.property);
             try self.writeByte(']');
         } else {
+            // `1.0` shortens to `1`, the member `.` would then be absorbed
+            // as the literal's trailing dot. close the number with `.` so
+            // `1..toString()` lexes as number-dot-name.
+            if (comptime minify_mode) {
+                const head = self.code.items[head_start..];
+                if (head_decimal and !e.optional and std.mem.indexOfAny(u8, head, ".eE") == null)
+                    try self.writeByte('.');
+            }
             try self.writeStr(if (e.optional) "?." else ".");
-            try self.emit(e.property);
+            if (static_key) |k| try self.writeStr(k) else try self.emit(e.property);
         }
     }
 
     fn emit_call_expression(self: *Self, e: ast.CallExpression) Error!void {
-        try self.emit(e.callee);
+        try self.emitAsHead(e.callee);
         if (e.optional) try self.writeStr("?.");
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
@@ -707,15 +851,31 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_new_expression(self: *Self, e: ast.NewExpression) Error!void {
         try self.writeStr("new ");
-        try self.emit(e.callee);
+        try self.emitAsHead(e.callee);
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
     }
 
     fn emit_tagged_template_expression(self: *Self, e: ast.TaggedTemplateExpression) Error!void {
-        try self.emit(e.tag);
+        try self.emitAsHead(e.tag);
         try self.emit(e.type_arguments);
         try self.emit(e.quasi);
+    }
+
+    /// emits `idx` as the head of a member/call/new/tagged-template form.
+    /// in minify mode, `true`/`undefined`/`Infinity` rewrite to non-primary
+    /// expressions (`!0`, `void 0`, `1/0`), so wrap them in parens here,
+    /// otherwise `true.x` would emit `!0.x`, parsed as `!(0.x)`.
+    inline fn emitAsHead(self: *Self, idx: NodeIndex) Error!void {
+        if (comptime minify_mode) {
+            if (idx != .null and isMinifiedToNonPrimary(self.tree, idx)) {
+                try self.writeByte('(');
+                try self.emit(idx);
+                try self.writeByte(')');
+                return;
+            }
+        }
+        try self.emit(idx);
     }
 
     fn emit_await_expression(self: *Self, e: ast.AwaitExpression) Error!void {
@@ -764,10 +924,22 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emitStringLit(self: *Self, value: ast.String) Error!void {
-        const q: u8 = if (self.options.quotes == .single) '\'' else '"';
+        const s = self.tree.string(value);
+        const q = self.pickQuote(s);
         try self.writeByte(q);
-        try self.writeEscapedString(self.tree.string(value), q);
+        try self.writeEscapedString(s, q);
         try self.writeByte(q);
+    }
+
+    /// in minify mode, picks the quote character that needs fewer escapes
+    /// for `s`. outside minify mode, always honors `Options.quotes`.
+    inline fn pickQuote(self: *const Self, s: []const u8) u8 {
+        const default: u8 = if (self.options.quotes == .single) '\'' else '"';
+        if (comptime !minify_mode) return default;
+        const single = std.mem.count(u8, s, "'");
+        const double = std.mem.count(u8, s, "\"");
+        if (single == double) return default;
+        return if (double < single) '"' else '\'';
     }
 
     fn writeEscapedString(self: *Self, s: []const u8, quote: u8) Error!void {
@@ -794,7 +966,21 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_numeric_literal(self: *Self, lit: ast.NumericLiteral) Error!void {
-        try self.writeString(lit.raw);
+        if (comptime minify_mode) {
+            try self.writeShortestNumber(lit);
+        } else {
+            try self.writeString(lit.raw);
+        }
+    }
+
+    fn writeShortestNumber(self: *Self, lit: ast.NumericLiteral) Error!void {
+        const raw = self.tree.string(lit.raw);
+        var src_buf: [128]u8 = undefined;
+        const cleaned = stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
+        if (lit.kind != .decimal) return self.writeStr(cleaned);
+
+        var dst_buf: [128]u8 = undefined;
+        try self.writeStr(shortestDecimal(cleaned, &dst_buf));
     }
 
     fn emit_bigint_literal(self: *Self, lit: ast.BigIntLiteral) Error!void {
@@ -803,7 +989,11 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_boolean_literal(self: *Self, lit: ast.BooleanLiteral) Error!void {
-        try self.writeStr(if (lit.value) "true" else "false");
+        if (comptime minify_mode) {
+            try self.writeStr(if (lit.value) "!0" else "!1");
+        } else {
+            try self.writeStr(if (lit.value) "true" else "false");
+        }
     }
 
     fn emit_null_literal(self: *Self, _: ast.NullLiteral) Error!void {
@@ -856,6 +1046,13 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_identifier_reference(self: *Self, id: ast.IdentifierReference) Error!void {
+        if (comptime minify_mode) {
+            if (!self.in_assign_target) {
+                const name = self.tree.string(id.name);
+                if (std.mem.eql(u8, name, "undefined")) return self.writeStr("void 0");
+                if (std.mem.eql(u8, name, "Infinity")) return self.writeStr("1/0");
+            }
+        }
         try self.writeString(id.name);
     }
 
@@ -884,6 +1081,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(p.left);
         if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
         try self.emit(p.type_annotation);
+        try self.separateBangFromAssign();
         try self.space();
         try self.writeByte('=');
         try self.space();
@@ -907,7 +1105,7 @@ fn Printer(comptime cfg: Config) type {
                 try self.writeByte(',');
                 try self.space();
             }
-            try self.emit(x);
+            try self.emitAssignTarget(x);
         }
         if (p.rest != .null) {
             if (list.len > 0) {
@@ -948,14 +1146,14 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_binding_property(self: *Self, p: ast.BindingProperty) Error!void {
-        if (p.shorthand) {
-            try self.emit(p.value);
+        if (p.shorthand and shorthandStillValid(self.tree, p.key, p.value)) {
+            try self.emitAssignTarget(p.value);
             return;
         }
-        try self.printPropertyKey(p.key, p.computed);
+        try self.printObjectKey(p.key, p.computed);
         try self.writeByte(':');
         try self.space();
-        try self.emit(p.value);
+        try self.emitAssignTarget(p.value);
     }
 
     fn printPropertyKey(self: *Self, key: NodeIndex, computed: bool) Error!void {
@@ -966,6 +1164,33 @@ fn Printer(comptime cfg: Config) type {
         } else {
             try self.emit(key);
         }
+    }
+
+    fn printObjectKey(self: *Self, key: NodeIndex, computed: bool) Error!void {
+        if (comptime minify_mode) {
+            if (simpleStringKey(self.tree, key)) |s| return self.writeStr(s);
+        }
+        try self.printPropertyKey(key, computed);
+    }
+
+    /// class member key. non-computed string keys collapse to bare
+    /// identifiers the same way object keys do. computed `["…"]` collapses
+    /// are gated to avoid the cases ECMA reinterprets or rejects.
+    ///   `["constructor"]` on a non-static method becomes the actual
+    ///     constructor (different `kind`)
+    ///   `["constructor"]` on a non-static get/set is a SyntaxError per ECMA
+    ///   `["constructor"]` on a field is a SyntaxError per ECMA
+    ///   `["prototype"]` on any static member is a SyntaxError per ECMA
+    fn printClassKey(self: *Self, key: NodeIndex, computed: bool, static: bool, is_field: bool) Error!void {
+        if (comptime minify_mode) {
+            if (simpleStringKey(self.tree, key)) |s| {
+                if (!computed) return self.writeStr(s);
+                const ctor_clash = std.mem.eql(u8, s, "constructor") and (is_field or !static);
+                const proto_clash = static and std.mem.eql(u8, s, "prototype");
+                if (!ctor_clash and !proto_clash) return self.writeStr(s);
+            }
+        }
+        try self.printPropertyKey(key, computed);
     }
 
     fn emit_function(self: *Self, f: ast.Function) Error!void {
@@ -985,7 +1210,7 @@ fn Printer(comptime cfg: Config) type {
             try self.space();
             try self.emit(f.body);
         } else if (comptime !strip_ts) {
-            try self.writeByte(';');
+            try self.softSemi();
         }
     }
 
@@ -997,7 +1222,7 @@ fn Printer(comptime cfg: Config) type {
             try self.space();
             try self.emit(f.body);
         } else if (comptime !strip_ts) {
-            try self.writeByte(';');
+            try self.softSemi();
         }
     }
 
@@ -1021,8 +1246,8 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte(')');
     }
 
-    /// Writes `, ` then emits `idx`. Rolls back the separator if emit
-    /// produced no output. Returns the new value of `first`.
+    /// writes `, ` then emits `idx`. rolls back the separator if emit
+    /// produced no output. returns the new value of `first`.
     fn emitSeparated(self: *Self, idx: NodeIndex, first: bool) Error!bool {
         const before = self.mark();
         if (!first) {
@@ -1053,7 +1278,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(c.type_parameters);
         if (c.super_class != .null) {
             try self.writeStr(" extends ");
-            try self.emit(c.super_class);
+            try self.emitAsHead(c.super_class);
             try self.emit(c.super_type_arguments);
         }
         if (comptime !strip_ts) {
@@ -1075,20 +1300,25 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_class_body(self: *Self, b: ast.ClassBody) Error!void {
         try self.writeByte('{');
-        const list = self.tree.extra(b.body);
         self.indent_depth += 1;
-        var emitted = false;
-        for (list) |m| {
+        var any = false;
+        for (self.tree.extra(b.body)) |m| {
             const before = self.mark();
+            const saved_semi = self.pending_semi;
+            try self.flushSemi();
             try self.newline();
             if (try self.tryEmit(m)) {
-                emitted = true;
+                any = true;
             } else {
                 self.rewindTo(before);
+                self.pending_semi = saved_semi;
             }
         }
         self.indent_depth -= 1;
-        if (emitted) try self.newline();
+        if (any) {
+            self.pending_semi = false;
+            try self.newline();
+        }
         try self.writeByte('}');
     }
 
@@ -1113,7 +1343,7 @@ fn Printer(comptime cfg: Config) type {
                 if (fn_data.generator) try self.writeByte('*');
             },
         }
-        try self.printPropertyKey(m.key, m.computed);
+        try self.printClassKey(m.key, m.computed, m.static, false);
         if (comptime !strip_ts) if (m.optional) try self.writeByte('?');
         try self.printFunctionAsMethod(fn_data);
     }
@@ -1135,7 +1365,7 @@ fn Printer(comptime cfg: Config) type {
             if (p.readonly) try self.writeStr("readonly ");
         }
         if (p.accessor) try self.writeStr("accessor ");
-        try self.printPropertyKey(p.key, p.computed);
+        try self.printClassKey(p.key, p.computed, p.static, true);
         if (comptime !strip_ts) {
             if (p.optional) try self.writeByte('?');
             if (p.definite) try self.writeByte('!');
@@ -1147,7 +1377,7 @@ fn Printer(comptime cfg: Config) type {
             try self.space();
             try self.emit(p.value);
         }
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_decorator(self: *Self, d: ast.Decorator) Error!void {
@@ -1157,9 +1387,10 @@ fn Printer(comptime cfg: Config) type {
 
     fn printDecorators(self: *Self, decs: IndexRange) Error!void {
         const list = self.tree.extra(decs);
-        for (list) |d| {
+        for (list, 0..) |d, i| {
             try self.emit(d);
-            try self.newline();
+            // `@a.b class` would fuse to `@a.bclass` without a separator.
+            if (self.pretty()) try self.newline() else if (i + 1 == list.len) try self.writeByte(' ');
         }
     }
 
@@ -1210,7 +1441,7 @@ fn Printer(comptime cfg: Config) type {
 
         try self.emit(d.source);
         try self.printAttributes(d.attributes);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_import_specifier(self: *Self, s: ast.ImportSpecifier) Error!void {
@@ -1265,7 +1496,8 @@ fn Printer(comptime cfg: Config) type {
 
         const outer = self.mark();
         try self.writeStr("export");
-        if (d.export_kind == .type) try self.writeStr(" type");
+        // for `export type Foo = …`, the declaration emits its own `type`.
+        if (d.export_kind == .type and d.declaration == .null) try self.writeStr(" type");
         if (d.declaration != .null) {
             try self.writeByte(' ');
             if (!try self.tryEmit(d.declaration)) self.rewindTo(outer);
@@ -1285,7 +1517,7 @@ fn Printer(comptime cfg: Config) type {
             try self.emit(d.source);
         }
         try self.printAttributes(d.attributes);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_export_default_declaration(self: *Self, d: ast.ExportDefaultDeclaration) Error!void {
@@ -1300,7 +1532,7 @@ fn Printer(comptime cfg: Config) type {
         // expression default needs ';'; function/class declaration default does not
         switch (self.tree.data(d.declaration)) {
             .function, .class => {},
-            else => try self.writeByte(';'),
+            else => try self.softSemi(),
         }
     }
 
@@ -1316,7 +1548,7 @@ fn Printer(comptime cfg: Config) type {
         try self.writeStr(" from ");
         try self.emit(d.source);
         try self.printAttributes(d.attributes);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_export_specifier(self: *Self, s: ast.ExportSpecifier) Error!void {
@@ -1368,19 +1600,19 @@ fn Printer(comptime cfg: Config) type {
     fn emit_ts_this_type(self: *Self, _: ast.TSThisType) Error!void { try self.writeStr("this"); }
 
     fn emit_ts_type_reference(self: *Self, t: ast.TSTypeReference) Error!void {
-        try self.emit(t.type_name);
+        try self.emitEntityName(t.type_name);
         try self.emit(t.type_arguments);
     }
 
     fn emit_ts_qualified_name(self: *Self, q: ast.TSQualifiedName) Error!void {
-        try self.emit(q.left);
+        try self.emitEntityName(q.left);
         try self.writeByte('.');
         try self.emit(q.right);
     }
 
     fn emit_ts_type_query(self: *Self, q: ast.TSTypeQuery) Error!void {
         try self.writeStr("typeof ");
-        try self.emit(q.expr_name);
+        try self.emitEntityName(q.expr_name);
         try self.emit(q.type_arguments);
     }
 
@@ -1395,9 +1627,21 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte(')');
         if (t.qualifier != .null) {
             try self.writeByte('.');
-            try self.emit(t.qualifier);
+            try self.emitEntityName(t.qualifier);
         }
         try self.emit(t.type_arguments);
+    }
+
+    /// emits `idx` as a TS entity name (Identifier | QualifiedName | this |
+    /// ImportType). Suppresses `undefined`/`Infinity` rewrites that the
+    /// expression-context emitter applies, since type queries and type
+    /// references require a bare entity name.
+    fn emitEntityName(self: *Self, idx: NodeIndex) Error!void {
+        if (idx == .null) return;
+        switch (self.tree.data(idx)) {
+            .identifier_reference => |id| try self.writeString(id.name),
+            else => try self.emit(idx),
+        }
     }
 
     fn emit_ts_type_parameter(self: *Self, p: ast.TSTypeParameter) Error!void {
@@ -1444,7 +1688,14 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_ts_literal_type(self: *Self, t: ast.TSLiteralType) Error!void {
-        try self.emit(t.literal);
+        // In a type position `true`/`false` are literal types, not expressions:
+        // the minify-mode `!0`/`!1` shorthand is invalid syntax here. Emit the
+        // keyword form directly and let everything else (string/number/bigint/
+        // template) fall through to its normal emitter.
+        switch (self.tree.data(t.literal)) {
+            .boolean_literal => |b| try self.writeStr(if (b.value) "true" else "false"),
+            else => try self.emit(t.literal),
+        }
     }
 
     fn emit_ts_template_literal_type(self: *Self, t: ast.TSTemplateLiteralType) Error!void {
@@ -1590,7 +1841,7 @@ fn Printer(comptime cfg: Config) type {
         try self.space();
         try self.writeStr("=>");
         try self.space();
-        try self.emit(t.return_type);
+        try self.emitUnwrappedType(t.return_type);
     }
 
     fn emit_ts_constructor_type(self: *Self, t: ast.TSConstructorType) Error!void {
@@ -1601,7 +1852,20 @@ fn Printer(comptime cfg: Config) type {
         try self.space();
         try self.writeStr("=>");
         try self.space();
-        try self.emit(t.return_type);
+        try self.emitUnwrappedType(t.return_type);
+    }
+
+    /// strips the `ts_type_annotation` wrapper before emitting. used for
+    /// arrow-form return types and `is`-predicates where the wrapper's
+    /// leading `:` would be wrong.
+    fn emitUnwrappedType(self: *Self, idx: NodeIndex) Error!void {
+        if (idx == .null) return;
+        const data = self.tree.data(idx);
+        if (data == .ts_type_annotation) {
+            try self.emit(data.ts_type_annotation.type_annotation);
+        } else {
+            try self.emit(idx);
+        }
     }
 
     fn emit_ts_type_predicate(self: *Self, t: ast.TSTypePredicate) Error!void {
@@ -1609,13 +1873,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(t.parameter_name);
         if (t.type_annotation != .null) {
             try self.writeStr(" is ");
-            // type_annotation here wraps the narrowed type but we just want the inner type
-            const inner = self.tree.data(t.type_annotation);
-            if (inner == .ts_type_annotation) {
-                try self.emit(inner.ts_type_annotation.type_annotation);
-            } else {
-                try self.emit(t.type_annotation);
-            }
+            try self.emitUnwrappedType(t.type_annotation);
         }
     }
 
@@ -1642,7 +1900,8 @@ fn Printer(comptime cfg: Config) type {
             try self.space();
             try self.emit(t.type_annotation);
         }
-        try self.writeByte(';');
+        try self.softSemi();
+        self.pending_semi = false;
         try self.space();
         try self.writeByte('}');
     }
@@ -1681,6 +1940,7 @@ fn Printer(comptime cfg: Config) type {
         try self.printPropertyKey(s.key, s.computed);
         if (s.optional) try self.writeByte('?');
         if (s.type_annotation != .null) try self.emit(s.type_annotation);
+        try self.softSemi();
     }
 
     fn emit_ts_method_signature(self: *Self, s: ast.TSMethodSignature) Error!void {
@@ -1694,12 +1954,14 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(s.type_parameters);
         try self.emit(s.params);
         if (s.return_type != .null) try self.emit(s.return_type);
+        try self.softSemi();
     }
 
     fn emit_ts_call_signature_declaration(self: *Self, s: ast.TSCallSignatureDeclaration) Error!void {
         try self.emit(s.type_parameters);
         try self.emit(s.params);
         if (s.return_type != .null) try self.emit(s.return_type);
+        try self.softSemi();
     }
 
     fn emit_ts_construct_signature_declaration(self: *Self, s: ast.TSConstructSignatureDeclaration) Error!void {
@@ -1707,6 +1969,7 @@ fn Printer(comptime cfg: Config) type {
         try self.emit(s.type_parameters);
         try self.emit(s.params);
         if (s.return_type != .null) try self.emit(s.return_type);
+        try self.softSemi();
     }
 
     fn emit_ts_index_signature(self: *Self, s: ast.TSIndexSignature) Error!void {
@@ -1723,20 +1986,21 @@ fn Printer(comptime cfg: Config) type {
         }
         try self.writeByte(']');
         try self.emit(s.type_annotation);
+        try self.softSemi();
     }
 
-    /// Emits a `{ … }` block of TS signatures (type literal or interface body).
+    /// emits a `{ … }` block of ts signatures (type literal or interface body).
     fn printSignatureBody(self: *Self, items: IndexRange) Error!void {
         try self.writeByte('{');
-        const list = self.tree.extra(items);
-        if (list.len > 0) {
+        if (self.tree.extra(items).len > 0) {
             self.indent_depth += 1;
-            for (list) |s| {
+            for (self.tree.extra(items)) |s| {
+                try self.flushSemi();
                 try self.newline();
                 try self.emit(s);
-                try self.writeByte(';');
             }
             self.indent_depth -= 1;
+            self.pending_semi = false;
             try self.newline();
         }
         try self.writeByte('}');
@@ -1751,7 +2015,7 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte('=');
         try self.space();
         try self.emit(d.type_annotation);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_ts_interface_declaration(self: *Self, d: ast.TSInterfaceDeclaration) Error!void {
@@ -1838,7 +2102,7 @@ fn Printer(comptime cfg: Config) type {
             try self.space();
             try self.emit(d.body);
         } else {
-            try self.writeByte(';');
+            try self.softSemi();
         }
     }
 
@@ -1867,6 +2131,8 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_ts_type_assertion(self: *Self, e: ast.TSTypeAssertion) Error!void {
         try self.writeByte('<');
+        // `<<T>` would re-lex as `<<` (left shift).
+        if (typeStartsWithLeftAngle(self.tree, e.type_annotation)) try self.writeByte(' ');
         try self.emit(e.type_annotation);
         try self.writeByte('>');
         try self.emit(e.expression);
@@ -1888,13 +2154,13 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte('=');
         try self.space();
         try self.emit(e.expression);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_ts_namespace_export_declaration(self: *Self, d: ast.TSNamespaceExportDeclaration) Error!void {
         try self.writeStr("export as namespace ");
         try self.emit(d.id);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_ts_import_equals_declaration(self: *Self, d: ast.TSImportEqualsDeclaration) Error!void {
@@ -1905,7 +2171,7 @@ fn Printer(comptime cfg: Config) type {
         try self.writeByte('=');
         try self.space();
         try self.emit(d.module_reference);
-        try self.writeByte(';');
+        try self.softSemi();
     }
 
     fn emit_ts_external_module_reference(self: *Self, r: ast.TSExternalModuleReference) Error!void {
@@ -2030,11 +2296,59 @@ fn isWordOp(op: []const u8) bool {
         std.mem.eql(u8, op, "delete");
 }
 
+fn leftmostByteIs(tree: *const Tree, idx: NodeIndex, byte: u8) bool {
+    if (idx == .null) return false;
+    return switch (tree.data(idx)) {
+        .unary_expression => |u| switch (u.operator) {
+            .positive => byte == '+',
+            .negate => byte == '-',
+            .logical_not => byte == '!',
+            .bitwise_not => byte == '~',
+            else => false, // typeof/void/delete start with a letter
+        },
+        .update_expression => |u| if (u.prefix) switch (u.operator) {
+            .increment => byte == '+',
+            .decrement => byte == '-',
+        } else leftmostByteIs(tree, u.argument, byte),
+        .regexp_literal => byte == '/',
+        .member_expression => |m| leftmostByteIs(tree, m.object, byte),
+        .call_expression => |c| leftmostByteIs(tree, c.callee, byte),
+        .chain_expression => |c| leftmostByteIs(tree, c.expression, byte),
+        .tagged_template_expression => |tt| leftmostByteIs(tree, tt.tag, byte),
+        .binary_expression => |b| leftmostByteIs(tree, b.left, byte),
+        .logical_expression => |l| leftmostByteIs(tree, l.left, byte),
+        .conditional_expression => |c| leftmostByteIs(tree, c.@"test", byte),
+        .assignment_expression => |a| leftmostByteIs(tree, a.left, byte),
+        .sequence_expression => |s| blk: {
+            const list = tree.extra(s.expressions);
+            break :blk list.len > 0 and leftmostByteIs(tree, list[0], byte);
+        },
+        .ts_as_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        .ts_satisfies_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        .ts_non_null_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        .ts_instantiation_expression => |e| leftmostByteIs(tree, e.expression, byte),
+        else => false,
+    };
+}
+
 fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     if (a == .null or b == .null) return false;
     const an = identifierStringOrNull(tree, a) orelse return false;
     const bn = identifierStringOrNull(tree, b) orelse return false;
     return std.mem.eql(u8, tree.string(an), tree.string(bn));
+}
+
+// Whether an object property / binding property can stay in shorthand form
+// (`{ name }`) at emit time. The parser sets `shorthand = true` when the
+// source was written that way, but a later rename pass (the mangler) may
+// have changed the value-side binding without touching the key. At that
+// point `{ name: a }` is required to preserve which property is being
+// read/destructured. Peels through `assignment_pattern` so `{ name = 1 }`
+// is still considered shorthand when the binding kept the same name.
+fn shorthandStillValid(tree: *const Tree, key: NodeIndex, value: NodeIndex) bool {
+    var v = value;
+    if (tree.data(v) == .assignment_pattern) v = tree.data(v).assignment_pattern.left;
+    return sameIdentifier(tree, key, v);
 }
 
 fn identifierStringOrNull(tree: *const Tree, idx: NodeIndex) ?ast.String {
@@ -2065,4 +2379,131 @@ fn hasValueExportSpecifier(tree: *const Tree, list: []const NodeIndex) bool {
         }
     }
     return false;
+}
+
+fn isBareAsyncIdentifier(tree: *const Tree, idx: NodeIndex) bool {
+    const name = identifierStringOrNull(tree, idx) orelse return false;
+    return std.mem.eql(u8, tree.string(name), "async");
+}
+
+fn needsParensAsAssignTarget(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .ts_as_expression,
+        .ts_satisfies_expression,
+        .ts_type_assertion,
+        => true,
+        else => false,
+    };
+}
+
+fn typeStartsWithLeftAngle(tree: *const Tree, idx: NodeIndex) bool {
+    if (idx == .null) return false;
+    return switch (tree.data(idx)) {
+        .ts_function_type => |t| t.type_parameters != .null,
+        .ts_constructor_type => |t| !t.abstract and t.type_parameters != .null,
+        else => false,
+    };
+}
+
+fn isMinifiedToNonPrimary(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .boolean_literal => true,
+        .identifier_reference => |id| blk: {
+            const name = tree.string(id.name);
+            break :blk std.mem.eql(u8, name, "undefined") or std.mem.eql(u8, name, "Infinity");
+        },
+        else => false,
+    };
+}
+
+/// callers gate this on minify mode. returns true when `idx` would be
+/// emitted as an unparenthesized UnaryExpression, i.e. `true`/`false` ->
+/// `!0`/`!1` and `undefined` -> `void 0`. (`Infinity` -> `1/0` is a
+/// BinaryExpression, not a unary, so it doesn't count here)
+fn minifiesToUnary(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .boolean_literal => true,
+        .identifier_reference => |id| std.mem.eql(u8, tree.string(id.name), "undefined"),
+        else => false,
+    };
+}
+
+/// returns the decoded value of `idx` if it's a string literal whose
+/// contents form a valid IdentifierName. used by the `obj["foo"]` to
+/// `obj.foo` and `{"foo": x}` to `{foo: x}` rewrites.
+fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
+    const lit = switch (tree.data(idx)) {
+        .string_literal => |l| l,
+        else => return null,
+    };
+    const s = tree.string(lit.value);
+    return if (isIdentifierName(s)) s else null;
+}
+
+inline fn isIdCont(c: u8) bool {
+    return c == '$' or c >= 0x80 or util.UnicodeId.canContinueId(c);
+}
+
+fn isIdentifierName(s: []const u8) bool {
+    if (s.len == 0) return false;
+    var i: usize = 0;
+    while (i < s.len) {
+        const cp = util.Utf.codePointAt(s, i) catch return false;
+        const ok = if (i == 0) util.UnicodeId.canStartId(cp.value) else util.UnicodeId.canContinueId(cp.value);
+        if (!ok) return false;
+        i += cp.len;
+    }
+    return true;
+}
+
+fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .numeric_literal => |lit| lit.kind == .decimal,
+        else => false,
+    };
+}
+
+fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
+    if (std.mem.indexOfScalar(u8, raw, '_') == null) return raw;
+    if (raw.len > buf.len) return null;
+    var len: usize = 0;
+    for (raw) |c| if (c != '_') {
+        buf[len] = c;
+        len += 1;
+    };
+    return buf[0..len];
+}
+
+/// returns the shortest semantically-equivalent spelling of decimal `s`.
+/// falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
+/// not alias each other.
+fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
+    const exp_at = std.mem.indexOfAny(u8, s, "eE") orelse s.len;
+    const mantissa = s[0..exp_at];
+    const exp_suffix = s[exp_at..]; // empty or `e<n>` / `E<n>`
+
+    const dot_at = std.mem.indexOfScalar(u8, mantissa, '.') orelse mantissa.len;
+    var int_part = mantissa[0..dot_at];
+    const frac_raw = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
+    const frac_part = std.mem.trimEnd(u8, frac_raw, "0");
+
+    // `0.5` shortens to `.5` once the leading zero is bare.
+    if (frac_part.len > 0 and std.mem.eql(u8, int_part, "0")) int_part = "";
+
+    // `0.0`, `.0`, `0e10`, and similar all collapse to `0`.
+    if (int_part.len == 0 and frac_part.len == 0) return "0";
+
+    // pure integer with three or more trailing zeros, the `Ne<k>` form shortens.
+    if (frac_part.len == 0 and exp_suffix.len == 0) {
+        const head = std.mem.trimEnd(u8, int_part, "0");
+        const trail = int_part.len - head.len;
+        if (trail >= 3 and head.len > 0) {
+            const out = std.fmt.bufPrint(scratch, "{s}e{d}", .{ head, trail }) catch return s;
+            if (out.len < s.len) return out;
+        }
+    }
+
+    const dot = if (frac_part.len > 0) "." else "";
+    const out = std.fmt.bufPrint(scratch, "{s}{s}{s}{s}", .{ int_part, dot, frac_part, exp_suffix }) catch return s;
+    return if (out.len < s.len) out else s;
 }

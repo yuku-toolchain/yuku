@@ -49,23 +49,113 @@ pub const Ctx = struct {
         return self.ts_namespace_depth > 0;
     }
 
-    pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub inline fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
         try self.scope.enter(index, data);
-        if (data.isTypeContext()) self.type_position_depth += 1;
-        if (data == .ts_module_block) self.ts_namespace_depth += 1;
+
+        switch (data) {
+            .ts_module_block => {
+                self.type_position_depth += 1;
+                self.ts_namespace_depth += 1;
+            },
+            .ts_type_annotation,
+            .ts_type_reference,
+            .ts_qualified_name,
+            .ts_type_query,
+            .ts_import_type,
+            .ts_type_parameter,
+            .ts_type_parameter_declaration,
+            .ts_type_parameter_instantiation,
+            .ts_literal_type,
+            .ts_template_literal_type,
+            .ts_array_type,
+            .ts_indexed_access_type,
+            .ts_tuple_type,
+            .ts_named_tuple_member,
+            .ts_optional_type,
+            .ts_rest_type,
+            .ts_jsdoc_nullable_type,
+            .ts_jsdoc_non_nullable_type,
+            .ts_jsdoc_unknown_type,
+            .ts_union_type,
+            .ts_intersection_type,
+            .ts_conditional_type,
+            .ts_infer_type,
+            .ts_type_operator,
+            .ts_parenthesized_type,
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_type_predicate,
+            .ts_type_literal,
+            .ts_property_signature,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
+            .ts_mapped_type,
+            .ts_class_implements,
+            .ts_interface_heritage,
+            .ts_interface_body,
+            => self.type_position_depth += 1,
+            else => {},
+        }
+
         try self.symbols.setBindingContext(data, &self.scope);
     }
 
-    pub fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub inline fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         _ = try self.symbols.declareBindings(index, data, &self.scope, self.inTypePosition());
     }
 
-    pub fn exit(self: *Ctx, data: ast.NodeData) void {
+    pub inline fn exit(self: *Ctx, data: ast.NodeData) void {
         self.symbols.exit(data);
         self.scope.exit(data);
-        if (data == .ts_module_block) self.ts_namespace_depth -= 1;
-        if (data.isTypeContext()) self.type_position_depth -= 1;
+        switch (data) {
+            .ts_module_block => {
+                self.ts_namespace_depth -= 1;
+                self.type_position_depth -= 1;
+            },
+            .ts_type_annotation,
+            .ts_type_reference,
+            .ts_qualified_name,
+            .ts_type_query,
+            .ts_import_type,
+            .ts_type_parameter,
+            .ts_type_parameter_declaration,
+            .ts_type_parameter_instantiation,
+            .ts_literal_type,
+            .ts_template_literal_type,
+            .ts_array_type,
+            .ts_indexed_access_type,
+            .ts_tuple_type,
+            .ts_named_tuple_member,
+            .ts_optional_type,
+            .ts_rest_type,
+            .ts_jsdoc_nullable_type,
+            .ts_jsdoc_non_nullable_type,
+            .ts_jsdoc_unknown_type,
+            .ts_union_type,
+            .ts_intersection_type,
+            .ts_conditional_type,
+            .ts_infer_type,
+            .ts_type_operator,
+            .ts_parenthesized_type,
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_type_predicate,
+            .ts_type_literal,
+            .ts_property_signature,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
+            .ts_mapped_type,
+            .ts_class_implements,
+            .ts_interface_heritage,
+            .ts_interface_body,
+            => self.type_position_depth -= 1,
+            else => {},
+        }
         self.path.pop();
     }
 };
@@ -84,9 +174,8 @@ pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!
     var ctx = try Ctx.init(tree);
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
-    const scope_tree = ctx.scope.toScopeTree();
     return .{
-        .scope_tree = scope_tree,
-        .symbol_table = ctx.symbols.toSymbolTable(scope_tree),
+        .scope_tree = ctx.scope.toScopeTree(),
+        .symbol_table = try ctx.symbols.toSymbolTable(),
     };
 }

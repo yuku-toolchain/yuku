@@ -5,6 +5,7 @@ import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
 import {
   parse,
+  langFromPath,
   type ParseOptions,
   type ParseResult,
   type Diagnostic,
@@ -41,23 +42,26 @@ interface SuiteResult {
   files: FileResult[];
 }
 
+const SUITE_DIR = "test/parser/suite";
+const MISC_DIR = "test/parser/misc";
+
 const suites: TestSuite[] = [
-  { path: "suite/js/pass", expect: "snapshot", lang: ["js"], options: { semanticErrors: true } },
-  { path: "suite/js/fail", expect: "fail", lang: ["js"] },
+  { path: `${SUITE_DIR}/js/pass`, expect: "snapshot", lang: ["js"], options: { semanticErrors: true } },
+  { path: `${SUITE_DIR}/js/fail`, expect: "fail", lang: ["js"] },
   {
-    path: "suite/js/semantic",
+    path: `${SUITE_DIR}/js/semantic`,
     expect: "fail",
     lang: ["js"],
     options: { semanticErrors: true },
   },
-  { path: "suite/jsx/pass", expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
-  { path: "suite/jsx/fail", expect: "fail", lang: ["jsx"] },
-  { path: "suite/ts/pass", expect: "snapshot", lang: ["ts", "tsx"], options: { semanticErrors: true } },
-  { path: "suite/ts/semantic", expect: "fail", lang: ["ts", "tsx"], options: { semanticErrors: true } },
-  { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true, autoSnapshot: true },
-  { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true, autoSnapshot: true },
+  { path: `${SUITE_DIR}/jsx/pass`, expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
+  { path: `${SUITE_DIR}/jsx/fail`, expect: "fail", lang: ["jsx"] },
+  { path: `${SUITE_DIR}/ts/pass`, expect: "snapshot", lang: ["ts", "tsx"], options: { semanticErrors: true } },
+  { path: `${SUITE_DIR}/ts/semantic`, expect: "fail", lang: ["ts", "tsx"], options: { semanticErrors: true } },
+  { path: `${MISC_DIR}/jsx`, expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true, autoSnapshot: true },
+  { path: `${MISC_DIR}/js`, expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true, autoSnapshot: true },
   {
-    path: "misc/ts",
+    path: `${MISC_DIR}/ts`,
     expect: "snapshot",
     lang: ["ts", "tsx"],
     recursive: false,
@@ -66,7 +70,7 @@ const suites: TestSuite[] = [
     options: { semanticErrors: true },
   },
   {
-    path: "misc/js/preserve-parens-disabled",
+    path: `${MISC_DIR}/js/preserve-parens-disabled`,
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
@@ -74,7 +78,7 @@ const suites: TestSuite[] = [
     options: { preserveParens: false },
   },
   {
-    path: "misc/js/allow-return-outside-function",
+    path: `${MISC_DIR}/js/allow-return-outside-function`,
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
@@ -88,18 +92,9 @@ type SnapshotResult =
   | { status: "match" }
   | { status: "mismatch"; snapshot: unknown };
 
-const PARSER_DIR = "test/parser";
-const RESULTS_DIR = "test/results/parser";
+const RESULTS_DIR = "test/parser/results";
 const isCI = !!process.env.CI;
 const updateSnapshots = process.argv.includes("--update-snapshots");
-
-function langFromPath(path: string): SourceLang {
-  if (path.endsWith(".tsx")) return "tsx";
-  if (path.endsWith(".jsx")) return "jsx";
-  if (path.endsWith(".d.ts")) return "dts";
-  if (path.endsWith(".ts")) return "ts";
-  return "js";
-}
 
 function baseName(file: string): string {
   const name = basename(file);
@@ -114,7 +109,7 @@ function isSourceFile(path: string, langs: SourceLang[]): boolean {
 
 async function collectFiles(suite: TestSuite): Promise<string[]> {
   const pattern = suite.recursive === false ? "*" : "**/*";
-  const glob = new Glob(`${PARSER_DIR}/${suite.path}/${pattern}`);
+  const glob = new Glob(`${suite.path}/${pattern}`);
   const files: string[] = [];
   for await (const file of glob.scan(".")) {
     if (isSourceFile(file, suite.lang)) files.push(file);
@@ -300,7 +295,9 @@ for (const result of results) {
   const failed = result.files.filter((f) => !f.passed).length;
   totalFailed += failed;
 
-  const name = result.suite.path.replace(/^suite\//, "").replace(/\//g, "_");
+  const name = result.suite.path
+    .replace(/^test\/parser\/suite\//, "")
+    .replace(/\//g, "_");
   await Bun.write(`${RESULTS_DIR}/${name}.txt`, writeResultFile(result));
 }
 

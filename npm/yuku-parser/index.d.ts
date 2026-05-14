@@ -100,6 +100,25 @@ interface ParseResult {
  */
 export function parse(source: string, options?: ParseOptions): ParseResult;
 
+/**
+ * Resolves a {@link SourceLang} from a file path's extension.
+ *
+ * - `.d.ts`, `.d.mts`, `.d.cts` → `"dts"`
+ * - `.tsx` → `"tsx"`
+ * - `.ts`, `.mts`, `.cts` → `"ts"`
+ * - `.jsx` → `"jsx"`
+ * - everything else → `"js"`
+ */
+export function langFromPath(path: string): SourceLang;
+
+/**
+ * Resolves a {@link SourceType} from a file path's extension.
+ *
+ * - `.cjs`, `.cts` → `"script"`
+ * - everything else → `"module"`
+ */
+export function sourceTypeFromPath(path: string): SourceType;
+
 // AST node types
 
 interface BaseNode {

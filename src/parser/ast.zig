@@ -239,6 +239,24 @@ pub const Tree = struct {
         self.nodes.items(.span)[@intFromEnum(index)] = new_span;
     }
 
+    /// Updates the name of an identifier-shaped node in place.
+    pub fn setIdentifierName(self: *Tree, index: NodeIndex, name: String) void {
+        switch (self.data(index)) {
+            .binding_identifier => |bid| {
+                var n = bid;
+                n.name = name;
+                self.setData(index, .{ .binding_identifier = n });
+            },
+            inline .identifier_reference,
+            .identifier_name,
+            .label_identifier,
+            .private_identifier,
+            .jsx_identifier,
+            => |_, tag| self.setData(index, @unionInit(NodeData, @tagName(tag), .{ .name = name })),
+            else => unreachable,
+        }
+    }
+
     /// Creates a new node. Returns its index.
     pub inline fn addNode(self: *Tree, node_data: NodeData, node_span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
@@ -261,10 +279,11 @@ pub const Tree = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Pre-allocates string pool capacity. Call before bulk `addString()` calls
-    /// to avoid repeated reallocations during programmatic AST building.
-    pub fn ensureStringCapacity(self: *Tree, bytes: u32, entries: u32) error{OutOfMemory}!void {
-        return self.strings.ensureCapacity(self.arena.allocator(), bytes, entries);
+    /// Reserves headroom for `entries` more strings totalling at most
+    /// `bytes`. Call before bulk `addString()` operations to avoid
+    /// repeated reallocations.
+    pub fn ensureUnusedStringCapacity(self: *Tree, bytes: u32, entries: u32) error{OutOfMemory}!void {
+        return self.strings.ensureUnusedCapacity(self.arena.allocator(), bytes, entries);
     }
 
     /// Returns a `String` referencing a range in the original source text.

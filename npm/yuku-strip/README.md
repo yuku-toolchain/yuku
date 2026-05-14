@@ -84,7 +84,6 @@ const { code, errors } = strip(source, {
   format: "pretty",
   indent: 2,
   quotes: "double",
-  finalNewline: true,
 });
 ```
 
@@ -95,7 +94,6 @@ const { code, errors } = strip(source, {
 | `format`       | `"pretty"`, `"compact"`                   | `"pretty"` | Whitespace mode for the output                             |
 | `indent`       | `number`                                  | `2`        | Spaces per level when `format === "pretty"`                |
 | `quotes`       | `"double"`, `"single"`                    | `"double"` | Quote style for emitted string literals                    |
-| `finalNewline` | `boolean`                                 | `true`     | Append a trailing newline to the output if missing         |
 
 ## Result
 
@@ -115,6 +113,19 @@ interface Diagnostic {
 `code` is the stripped JavaScript output. `errors` is empty on a clean strip.
 
 > **Note:** `yuku-strip` does not yet return sourcemaps and has no sourcemap option. Sourcemap support is on the roadmap.
+
+## Path helpers
+
+Two small helpers are exported for resolving the `lang` and `sourceType` options from a file path:
+
+```ts
+import { langFromPath, sourceTypeFromPath } from "yuku-strip";
+
+langFromPath("foo.tsx");        // "tsx"
+langFromPath("types.d.ts");     // "dts"
+sourceTypeFromPath("foo.cjs");  // "script"
+sourceTypeFromPath("foo.mjs");  // "module"
+```
 
 ## What stripping does not do
 

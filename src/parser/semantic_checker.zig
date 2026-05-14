@@ -97,7 +97,7 @@ const SemanticVisit = struct {
             const merging_with_ambient = flags.ambient or existing.flags.ambient;
 
             if (!merging_with_ambient and existing.flags.intersects(excludes)) {
-                try self.reportRedeclaration(id, node_index, existing, ctx);
+                try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                 return;
             }
 
@@ -112,7 +112,7 @@ const SemanticVisit = struct {
                         params.kind == .arrow_formal_parameters or
                         ecmascript.findNonSimpleParameter(ctx.tree, params) != null;
                     if (must_be_unique)
-                        try self.reportRedeclaration(id, node_index, existing, ctx);
+                        try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                 }
             }
         }
@@ -126,7 +126,7 @@ const SemanticVisit = struct {
                 if (ctx.symbols.findInScope(scope_id, name)) |sym| {
                     const existing = ctx.symbols.getSymbol(sym);
                     if (existing.flags.isBlockScopedLike()) {
-                        try self.reportRedeclaration(id, node_index, existing, ctx);
+                        try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                         break;
                     }
                 }
@@ -1061,10 +1061,10 @@ const SemanticVisit = struct {
         }
     }
 
-    fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
+    fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing_id: semantic.SymbolId, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
         const name = ctx.tree.string(id.name);
         const current_span = ctx.tree.span(node_index);
-        const existing_span = ctx.tree.span(existing.node);
+        const existing_span = ctx.tree.span(ctx.symbols.firstDeclOf(existing_id));
         const kind = existing.flags.toString();
         const article: []const u8 = switch (kind[0]) {
             'a', 'e', 'i', 'o', 'u' => "an",

@@ -1,13 +1,22 @@
-import { parse } from "yuku-parser";
+import { minify } from "yuku-minify";
+import { minifySync } from "oxc-minify";
 
-const source = await Bun.file("test/index.ts").text();
+const source = await Bun.file("test/fixture.ts").text();
 
-console.time('parse')
-const {program: _, diagnostics} = parse(source, {
+console.time('yuku')
+const {code} = minify(source, {
   lang: "ts",
-  semanticErrors: true
-});
-console.timeEnd('parse')
+}
+);
+console.timeEnd('yuku')
 
-console.log(JSON.stringify(diagnostics, null, 2))
-// console.log(JSON.stringify(_, null, 2))
+console.time('oxc')
+const { code: codeOxc } = minifySync("test/fixture.ts", source, {
+  compress: false,
+  mangle: true,
+  sourcemap: false,
+});
+console.timeEnd('oxc')
+
+console.log(code.length);
+console.log(codeOxc.length);

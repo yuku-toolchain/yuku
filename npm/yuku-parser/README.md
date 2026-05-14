@@ -44,6 +44,19 @@ import type { Node, Statement, Expression, Identifier } from "yuku-parser";
 
 The `Node` union type covers every possible AST node. Individual types like `Statement`, `Expression`, `Declaration`, etc. are also available. See the full list in the [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-parser/index.d.ts).
 
+## Path helpers
+
+Two small helpers are exported for resolving the `lang` and `sourceType` options from a file path:
+
+```ts
+import { langFromPath, sourceTypeFromPath } from "yuku-parser";
+
+langFromPath("foo.tsx");        // "tsx"
+langFromPath("types.d.ts");     // "dts"
+sourceTypeFromPath("foo.cjs");  // "script"
+sourceTypeFromPath("foo.mjs");  // "module"
+```
+
 ## Walking the AST
 
 The AST is standard ESTree, so any ESTree-compatible walker works. For example, with [zimmerframe](https://github.com/sveltejs/zimmerframe):

@@ -37,11 +37,6 @@ interface StripOptions {
    * @default "double"
    */
   quotes?: Quotes;
-  /**
-   * Append a trailing newline to the output if missing.
-   * @default true
-   */
-  finalNewline?: boolean;
 }
 
 /** A codegen-detected problem in the input source. */
@@ -64,5 +59,24 @@ interface StripResult {
  * Strips TypeScript syntax from `source`, returning JavaScript.
  */
 export function strip(source: string, options?: StripOptions): StripResult;
+
+/**
+ * Resolves a {@link SourceLang} from a file path's extension.
+ *
+ * - `.d.ts`, `.d.mts`, `.d.cts` → `"dts"`
+ * - `.tsx` → `"tsx"`
+ * - `.ts`, `.mts`, `.cts` → `"ts"`
+ * - `.jsx` → `"jsx"`
+ * - everything else → `"js"`
+ */
+export function langFromPath(path: string): SourceLang;
+
+/**
+ * Resolves a {@link SourceType} from a file path's extension.
+ *
+ * - `.cjs`, `.cts` → `"script"`
+ * - everything else → `"module"`
+ */
+export function sourceTypeFromPath(path: string): SourceType;
 
 export type { StripOptions, StripResult, Diagnostic, SourceType, SourceLang, Format, Quotes };

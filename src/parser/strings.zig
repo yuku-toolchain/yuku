@@ -6,6 +6,10 @@ pub const String = struct {
     end: u32 = 0,
 
     pub const empty: String = .{};
+
+    pub fn len(self: String) u32 {
+        return self.end - self.start;
+    }
 };
 
 pub const ASTStringPool = struct {
@@ -28,9 +32,9 @@ pub const ASTStringPool = struct {
         return .{ .start = start, .end = end };
     }
 
-    pub fn ensureCapacity(self: *ASTStringPool, alloc: std.mem.Allocator, bytes: u32, entries: u32) error{OutOfMemory}!void {
-        try self.extra.ensureTotalCapacity(alloc, bytes);
-        try self.dedup.ensureTotalCapacityContext(alloc, entries, MapCtx{
+    pub fn ensureUnusedCapacity(self: *ASTStringPool, alloc: std.mem.Allocator, bytes: u32, entries: u32) error{OutOfMemory}!void {
+        try self.extra.ensureUnusedCapacity(alloc, bytes);
+        try self.dedup.ensureUnusedCapacityContext(alloc, entries, MapCtx{
             .extra = self.extra.items,
             .src_len = @intCast(self.source.len),
         });
