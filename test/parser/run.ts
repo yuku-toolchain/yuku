@@ -296,8 +296,7 @@ for (const result of results) {
   totalFailed += failed;
 
   const name = result.suite.path
-    .replace(/^test\/suite\//, "")
-    .replace(/^test\/parser\//, "")
+    .replace(/^test\/parser\/suite\//, "")
     .replace(/\//g, "_");
   await Bun.write(`${RESULTS_DIR}/${name}.txt`, writeResultFile(result));
 }

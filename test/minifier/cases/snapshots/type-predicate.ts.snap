@@ -1,1 +1,1 @@
-function a(a:unknown):a is string{return typeof a==="string";}export function run(){return [a("hi"),a(42),a(null)];}
+function e(e:unknown):e is string{return typeof e==="string"}export function run(){return[e("hi"),e(42),e(null)]}

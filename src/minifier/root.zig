@@ -24,10 +24,16 @@ pub fn minify(allocator: std.mem.Allocator, tree: *parser.ast.Tree, opts: Option
         try mangle.run(allocator, tree, sem.scope_tree, sem.symbol_table, opts.mangle);
     }
 
-    return parser.codegen.minify(allocator, tree, .{
+    const codegen_opts: parser.codegen.Options = .{
         .format = opts.format.format,
         .quotes = opts.format.quotes,
-    });
+    };
+
+    if (opts.compress.enabled) {
+        return parser.codegen.minify(allocator, tree, codegen_opts);
+    } else {
+        return parser.codegen.print(allocator, tree, codegen_opts);
+    }
 }
 
 const NoopVisitor = struct {};

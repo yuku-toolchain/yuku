@@ -1,1 +1,1 @@
-const a=({children:a}:{children?:unknown;})=>["Foo",a];const b={Header:({title:a}:{title:string;})=>["Header",a]};export function run(){return {component:<a>hi</a>,member:<b.Header title="t"/>,intrinsic:<div className="x"/>,namespaced:<svg:path d="M0 0"/>};}
+const e=({children:e}:{children?:unknown})=>["Foo",e];const t={Header:({title:e}:{title:string})=>["Header",e]};export function run(){return{component:<e>hi</e>,member:<t.Header title="t"/>,intrinsic:<div className="x"/>,namespaced:<svg:path d="M0 0"/>}}

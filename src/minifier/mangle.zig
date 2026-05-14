@@ -7,7 +7,7 @@ const sem = parser.traverser.semantic;
 
 const Allocator = std.mem.Allocator;
 const MangleOptions = @import("options.zig").MangleOptions;
-const Bijection = @import("bijection.zig").Bijection;
+const NameSeq = @import("name_seq.zig").NameSeq;
 
 const NameSet = std.StringHashMapUnmanaged(void);
 const SlotCache = std.AutoArrayHashMapUnmanaged(u32, ast.String);
@@ -16,14 +16,10 @@ const OuterRefList = std.ArrayList(sem.SymbolId);
 /// Sentinel for "no slot assigned" / "symbol left un-renamed".
 const NO_SLOT: u32 = std.math.maxInt(u32);
 
-/// Names a bijection slot must avoid (reserved words, free vars, kept
-/// originals) all sit within the first few thousand entries of the sequence.
+/// Names a slot must avoid (reserved words, free vars, kept originals) all
+/// sit within the first few thousand entries of the name sequence.
 const FORBIDDEN_SCAN_LIMIT: u32 = 4096;
 
-/// Rename identifiers to short bijection-sequence names. Two-pass scope-aware
-/// algorithm: pass 1 records which outer symbols each scope's subtree
-/// references; pass 2 walks scopes top-down and picks the lowest free slot
-/// for each local in use-count order.
 pub fn run(
     allocator: Allocator,
     tree: *ast.Tree,
@@ -58,14 +54,14 @@ const Mangler = struct {
     opts: MangleOptions,
     toplevel: bool,
 
-    // Built by `collectForbiddenNames`.
+    // built by `collectForbiddenNames`.
     forbidden: NameSet = .empty,
 
-    // Built by `collectOuterRefs`. `outer_refs[s]` lists symbol ids declared
+    // built by `collectOuterRefs`. `outer_refs[s]` lists symbol ids declared
     // in a strict ancestor of scope `s` and used somewhere in subtree(s).
     outer_refs: []OuterRefList = &.{},
 
-    // Built / consumed by `assignAndRewrite`.
+    // built / consumed by `assignAndRewrite`.
     reserved: []u8 = &.{},
     slot_of: []u32 = &.{},
     slot_cache: SlotCache = .empty,
@@ -73,7 +69,7 @@ const Mangler = struct {
     locals: std.ArrayList(Local) = .empty,
     name_buf: [16]u8 = undefined,
 
-    /// Names no bijection slot may produce: keywords, the user reserved list,
+    /// Names no slot may produce, keywords, the user reserved list,
     /// free-variable references, and the literal names of every un-manglable
     /// symbol (they keep their original name in the output).
     fn collectForbiddenNames(m: *Mangler) !void {
@@ -94,7 +90,7 @@ const Mangler = struct {
 
     /// For each reference, walk from its use scope up the ancestor chain to
     /// (but not including) the declaration's scope, appending the symbol id
-    /// at every step. Duplicates are harmless; pass 2's bitmap is idempotent.
+    /// at every step. Duplicates are harmless, pass 2's bitmap is idempotent.
     fn collectOuterRefs(m: *Mangler) !void {
         m.outer_refs = try m.a.alloc(OuterRefList, m.scope_tree.scopes.len);
         for (m.outer_refs) |*r| r.* = .empty;
@@ -125,7 +121,7 @@ const Mangler = struct {
         m.reserved = try m.a.alloc(u8, @max(sym_count + 256, FORBIDDEN_SCAN_LIMIT));
         @memset(m.reserved, 0);
         for (0..FORBIDDEN_SCAN_LIMIT) |k| {
-            const name = Bijection.nameAt(@intCast(k), &m.name_buf);
+            const name = NameSeq.nameAt(@intCast(k), &m.name_buf);
             if (m.forbidden.contains(name)) m.reserved[k] = 1;
         }
 
@@ -179,7 +175,7 @@ const Mangler = struct {
     fn rewriteSites(m: *Mangler, sid: sem.SymbolId, slot: u32) !void {
         const gop = try m.slot_cache.getOrPut(m.a, slot);
         if (!gop.found_existing)
-            gop.value_ptr.* = try m.tree.addString(Bijection.nameAt(slot, &m.name_buf));
+            gop.value_ptr.* = try m.tree.addString(NameSeq.nameAt(slot, &m.name_buf));
         var sites = m.table.symbolSites(sid);
         while (sites.next()) |node| m.tree.setIdentifierName(node, gop.value_ptr.*);
     }

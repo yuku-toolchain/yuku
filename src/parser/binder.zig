@@ -890,6 +890,9 @@ pub const SymbolTracker = struct {
                 var merged = sym.flags.merge(flags);
                 merged.exported = merged.exported or self.export_state != .none;
                 merged.is_default = merged.is_default or self.export_state == .default;
+                // `function f(): T; function f() {}` is non-ambient
+                // because the implementation emits at runtime
+                merged.ambient = sym.flags.ambient and flags.ambient;
                 sym.flags = merged;
             }
             break :sid existing;

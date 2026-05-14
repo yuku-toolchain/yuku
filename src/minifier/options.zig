@@ -4,8 +4,14 @@ const codegen = @import("parser").codegen;
 pub const Options = struct {
     /// Identifier renaming. Set `mangle = .{ .enabled = false }` to disable.
     mangle: MangleOptions = .{},
+    // TODO
+    compress: CompressOptions = .{},
     /// Output format. Defaults to compact.
     format: FormatOptions = .{},
+};
+
+pub const CompressOptions = struct {
+    enabled: bool = false,
 };
 
 /// Identifier mangling configuration.
