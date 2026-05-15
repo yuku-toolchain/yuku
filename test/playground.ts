@@ -187,5 +187,3 @@ const {program} = parse(source, {
 }
 );
 console.timeEnd('yuku')
-
-console.log(program.body)
