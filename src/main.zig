@@ -47,7 +47,7 @@ const PhaseSamples = struct {
 };
 
 pub fn main(init: std.process.Init) !void {
-    const allocator = std.heap.page_allocator;
+    const allocator = std.heap.smp_allocator;
 
     const file_path = "test/fixture.ts";
     const source = try std.Io.Dir.cwd().readFileAlloc(

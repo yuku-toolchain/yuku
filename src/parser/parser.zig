@@ -573,6 +573,11 @@ pub const Parser = struct {
 
         try self.tree.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.tree.extras.ensureTotalCapacity(alloc, estimated_extra);
+        try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
+        try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
+        try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
+        try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
+        try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
     }
 };
 
