@@ -264,6 +264,18 @@ fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type
         };
         if (!include) continue;
         const js = comptime estreeField(tag_name, f.name);
+        if (f.type == ast.IndexRange and comptime useAccessor(tag_name, f.name)) {
+            if (sel == .ts_only) {
+                try w.print("Object.defineProperty(r, \"{s}\", {{ configurable: true, enumerable: true, get() {{ const v = ", .{js});
+                try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
+                try w.print("; _def(this, \"{s}\", v); return v; }} }}); ", .{js});
+            } else {
+                try w.print(", get {s}() {{ const v = ", .{js});
+                try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
+                try w.print("; _def(this, \"{s}\", v); return v; }}", .{js});
+            }
+            continue;
+        }
         if (sel == .ts_only) try w.print("r.{s} = ", .{js}) else try w.print(", {s}: ", .{js});
         try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
         if (sel == .ts_only) try w.writeAll("; ");
@@ -357,7 +369,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         // hashbang span includes the leading `#!`. value.start points to the
         // first byte after `#!`, so the node's start is value.start - 2.
         try emit(w,
-            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? {{ type: "Hashbang", start: _p(f{d} - 2), end: _p(f{d}), value: str(f{d}, f{d}) }} : null, body: nodeArr(f{d}, f0) }};
+            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? {{ type: "Hashbang", start: _p(f{d} - 2), end: _p(f{d}), value: str(f{d}, f{d}) }} : null, get body() {{ const v = nodeArr(f{d}, f0); _def(this, "body", v); return v; }} }};
         , .{ tag, comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, hs, hs + 1, sb });
     } else if (comptime eql(u8, name, "directive")) {
         const se = comptime slotOf(ast.Directive, "expression");
@@ -609,6 +621,7 @@ fn writeDecodeBody(w: *Writer) !void {
         \\    }}
         \\    diagnostics[j] = {{ severity: sev, message: msg, start: ds, end: de, help, labels }};
         \\  }}
+        \\  function _def(o, k, v) {{ Object.defineProperty(o, k, {{ value: v, writable: true, enumerable: true, configurable: true }}); }}
         \\  return {{ program: node(progIdx), comments, diagnostics }};
         \\}}
         \\
@@ -622,6 +635,30 @@ fn writeDecodeBody(w: *Writer) !void {
 }
 
 // per node metadata.
+
+/// container-style IndexRange fields whose contents are emitted behind an
+/// accessor property rather than a plain data property. only the few
+/// fields that hold the bulk of the tree (statement bodies, top-level
+/// member lists) belong here.
+const ACCESSOR_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{
+    .{ .node = "program", .fields = &.{"body"} },
+    .{ .node = "function_body", .fields = &.{"body"} },
+    .{ .node = "block_statement", .fields = &.{"body"} },
+    .{ .node = "class_body", .fields = &.{"body"} },
+    .{ .node = "static_block", .fields = &.{"body"} },
+    .{ .node = "ts_interface_body", .fields = &.{"body"} },
+    .{ .node = "ts_module_block", .fields = &.{"body"} },
+    .{ .node = "ts_enum_body", .fields = &.{"members"} },
+};
+
+fn useAccessor(comptime tag: []const u8, comptime field: []const u8) bool {
+    for (ACCESSOR_FIELDS) |e| {
+        if (!std.mem.eql(u8, e.node, tag)) continue;
+        for (e.fields) |f| if (std.mem.eql(u8, f, field)) return true;
+    }
+    return false;
+}
+
 
 /// typescript only fields, grouped by node. emitted only when the source
 /// language is typescript.

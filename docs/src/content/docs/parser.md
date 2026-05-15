@@ -46,8 +46,8 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main() !void {
-    // the page allocator is used as the backing allocator for the tree's internal arena
-    var tree = try parser.parse(std.heap.page_allocator, "const x = 5;", .{});
+    // the smp allocator is used as the backing allocator for the tree's internal arena
+    var tree = try parser.parse(std.heap.smp_allocator, "const x = 5;", .{});
     defer tree.deinit();
 
     for (tree.diagnostics.items) |d| {

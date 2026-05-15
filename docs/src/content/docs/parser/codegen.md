@@ -16,7 +16,7 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    const allocator = std.heap.smp_allocator;
 
     var tree = try parser.parse(allocator, "const x = 1 + 2;", .{});
     defer tree.deinit();

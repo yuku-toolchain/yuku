@@ -77,15 +77,9 @@ pub const Lexer = struct {
             .source_type = source_type,
         };
 
-        try self.ensureCapacity();
-
         self.skipHashbang();
 
         return self;
-    }
-
-    fn ensureCapacity(self: *Lexer) error{OutOfMemory}!void {
-        try self.comments.ensureTotalCapacity(self.allocator, @max(32, self.source.len / 256));
     }
 
     fn skipHashbang(self: *Lexer) void {
@@ -1341,6 +1335,7 @@ pub const Lexer = struct {
 
         self.comments.append(self.allocator, .{
             .type = .line,
+            .value = .{ .start = start + 2, .end = pos },
             .start = start,
             .end = pos,
         }) catch return error.OutOfMemory;
@@ -1361,6 +1356,7 @@ pub const Lexer = struct {
                         self.cursor = pos;
                         self.comments.append(self.allocator, .{
                             .type = .block,
+                            .value = .{ .start = start + 2, .end = pos - 2 },
                             .start = start,
                             .end = pos,
                         }) catch return error.OutOfMemory;
@@ -1403,6 +1399,7 @@ pub const Lexer = struct {
                 self.cursor += 3; // skip '-->'
                 self.comments.append(self.allocator, .{
                     .type = .line,
+                    .value = .{ .start = start + 2, .end = self.cursor },
                     .start = start,
                     .end = self.cursor,
                 }) catch return error.OutOfMemory;
@@ -1417,6 +1414,7 @@ pub const Lexer = struct {
         // comment ends at end of line
         self.comments.append(self.allocator, .{
             .type = .line,
+            .value = .{ .start = start + 2, .end = self.cursor },
             .start = start,
             .end = self.cursor,
         }) catch return error.OutOfMemory;
@@ -1435,6 +1433,7 @@ pub const Lexer = struct {
 
         self.comments.append(self.allocator, .{
             .type = .line,
+            .value = .{ .start = start + 2, .end = self.cursor },
             .start = start,
             .end = self.cursor,
         }) catch return error.OutOfMemory;
