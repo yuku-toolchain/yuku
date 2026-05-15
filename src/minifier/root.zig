@@ -1,3 +1,5 @@
+// this is wip, not yet final
+
 const std = @import("std");
 const parser = @import("parser");
 
