@@ -1,22 +1,191 @@
-import { minify } from "yuku-minify";
-import { minifySync } from "oxc-minify";
+import { parse } from "yuku-parser";
 
 const source = await Bun.file("test/fixture.ts").text();
 
+parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);parse(source, {
+  lang: "ts",
+}
+);
+
 console.time('yuku')
-const {code} = minify(source, {
+const {program} = parse(source, {
   lang: "ts",
 }
 );
 console.timeEnd('yuku')
 
-console.time('oxc')
-const { code: codeOxc } = minifySync("test/fixture.ts", source, {
-  compress: false,
-  mangle: true,
-  sourcemap: false,
-});
-console.timeEnd('oxc')
-
-console.log(code.length);
-console.log(codeOxc.length);
+console.log(program.body)

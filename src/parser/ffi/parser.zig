@@ -12,7 +12,12 @@ const Options = struct {
 };
 
 pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
-    var tree = parser.parse(std.heap.page_allocator, source, .{
+    // smp_allocator: fast userspace allocator that doesn't require libc
+    // (the napi build cross-compiles to windows-none which has no libc).
+    // it has its own per-thread freelists and mmaps large chunks directly,
+    // making arena-chunk allocation cheaper than page_allocator's syscall-
+    // per-chunk behavior.
+    var tree = parser.parse(std.heap.smp_allocator, source, .{
         .source_type = options.source_type,
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,

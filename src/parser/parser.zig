@@ -163,12 +163,6 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
 
-        for (self.lexer.comments.items) |*comment| {
-            // strip delimiters: '//' or '/*' from start, '*/' from block end
-            const content_start = comment.start + 2;
-            const content_end = if (comment.type == .block) comment.end - 2 else comment.end;
-            comment.value = self.tree.sourceSlice(content_start, content_end);
-        }
         self.tree.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
 
@@ -563,10 +557,12 @@ pub const Parser = struct {
         const alloc = self.allocator();
         const source_len = self.source.len;
 
-        const estimated_nodes = if (source_len < 10_000)
-            @max(512, source_len / 2)
+        const estimated_nodes = if (source_len < 4_000)
+            @max(256, source_len / 4)
+        else if (source_len < 10_000)
+            source_len / 3
         else if (source_len < 100_000)
-            source_len / 5
+            source_len / 6
         else
             source_len / 8;
 
@@ -577,12 +573,6 @@ pub const Parser = struct {
 
         try self.tree.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.tree.extras.ensureTotalCapacity(alloc, estimated_extra);
-        try self.diagnostics.ensureTotalCapacity(alloc, 32);
-        try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
-        try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
-        try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
-        try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
-        try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
     }
 };
 
