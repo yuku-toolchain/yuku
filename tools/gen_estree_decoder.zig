@@ -659,7 +659,6 @@ fn useAccessor(comptime tag: []const u8, comptime field: []const u8) bool {
     return false;
 }
 
-
 /// typescript only fields, grouped by node. emitted only when the source
 /// language is typescript.
 const TS_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{

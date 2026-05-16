@@ -28,7 +28,6 @@
     "oxc-minify": "^0.130.0",
     "typescript": "^6.0.2",
     "yuku-minify": "workspace:*",
-    "yuku-parser": "workspace:*",
-    "yuku-strip": "workspace:*"
+    "yuku-parser": "workspace:*"
   }
 }

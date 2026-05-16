@@ -144,23 +144,6 @@ pub fn build(b: *std.Build) void {
     });
 
     napi_zig.addLib(b, napi_dep, .{
-        .name = "yuku-strip",
-        .root = b.path("src/parser/ffi/strip.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "parser", .module = parser_module },
-        },
-        .npm = .{
-            .scope = "@yuku-strip",
-            .description = "Strips TypeScript syntax from source, leaving JavaScript",
-            .dts = .{
-                .file = b.path("src/parser/ffi/strip.d.ts"),
-            },
-        },
-    });
-
-    napi_zig.addLib(b, napi_dep, .{
         .name = "yuku-minify",
         .root = b.path("src/minifier/ffi/minify.zig"),
         .target = target,
