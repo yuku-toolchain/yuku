@@ -20,6 +20,10 @@ function bench(label: string, fn: () => void, iters = 30, warmup = 10) {
   );
 }
 
-bench("parse", () => {
-  parse(source, { lang: "ts" }).program.type;
+bench("just parse", () => {
+  parse(source, { lang: "ts" });
+});
+
+bench("parse + access program", () => {
+  const _ = parse(source, { lang: "ts" }).program;
 });

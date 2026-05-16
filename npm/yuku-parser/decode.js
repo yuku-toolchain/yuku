@@ -22,17 +22,24 @@ const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
 function buildPosMap(src, byteLen) {
   const m = new Uint32Array(byteLen + 1);
-  let bp = 0, u16p = 0;
-  for (let i = 0; i < src.length; i++) {
+  const len = src.length;
+  let bp = 0, u16p = 0, i = 0;
+  while (i < len) {
+    if (i + 16 <= len) {
+      let allAscii = true;
+      for (let k = 0; k < 16; k++) if (src.charCodeAt(i + k) >= 0x80) { allAscii = false; break; }
+      if (allAscii) {
+        for (let k = 0; k < 16; k++) m[bp + k] = u16p + k;
+        bp += 16; u16p += 16; i += 16;
+        continue;
+      }
+    }
+    const cu = src.charCodeAt(i);
     m[bp] = u16p;
-    const cp = src.codePointAt(i);
-    let bytes = 1;
-    if (cp > 0x7F) { if (cp > 0x7FF) { bytes = cp > 0xFFFF ? 4 : 3; } else { bytes = 2; } }
-    const units = bytes === 4 ? 2 : 1;
-    u16p += units;
-    for (let k = 1; k < bytes; k++) m[bp + k] = u16p;
-    bp += bytes;
-    if (bytes === 4) i++;
+    if (cu < 0x80) { bp++; u16p++; i++; }
+    else if (cu < 0x800) { m[bp + 1] = u16p + 1; bp += 2; u16p++; i++; }
+    else if (cu < 0xD800 || cu >= 0xE000) { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1; bp += 3; u16p++; i++; }
+    else { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2; bp += 4; u16p += 2; i += 2; }
   }
   m[byteLen] = u16p;
   return m;
@@ -46,8 +53,7 @@ function decode(buffer, source) {
   const nodeCount = _u32[0], extraCount = _u32[1], spLen = _u32[2];
   const commentCount = _u32[4], diagCount = _u32[5], progIdx = _u32[6];
   const _isTs = !!(_u32[7] & 2);
-  const pm = (_u32[7] & 1) ? null : buildPosMap(source, _srcLen);
-  const _p = pm ? (v => pm[v]) : (v => v);
+  const _isAscii = !!(_u32[7] & 1);
   const _nodesOff = 32;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
@@ -67,9 +73,23 @@ function decode(buffer, source) {
     }
     return r;
   }
-  const str = pm
-    ? ((s, e) => s === e ? "" : s < _srcLen ? _src.slice(pm[s], pm[e]) : _poolDecode(s, e))
-    : ((s, e) => s === e ? "" : s < _srcLen ? _src.slice(s, e) : _poolDecode(s, e));
+  let pm = null;
+  function _initPm() {
+    pm = buildPosMap(_src, _srcLen);
+    _p = v => pm[v];
+    str = (s, e) => s === e ? "" : s < _srcLen ? _src.slice(pm[s], pm[e]) : _poolDecode(s, e);
+  }
+  let _p = _isAscii
+    ? (v => v)
+    : v => { _initPm(); return pm[v]; };
+  let str = _isAscii
+    ? ((s, e) => s === e ? "" : s < _srcLen ? _src.slice(s, e) : _poolDecode(s, e))
+    : (s, e) => {
+        if (s === e) return "";
+        if (s >= _srcLen) return _poolDecode(s, e);
+        _initPm();
+        return _src.slice(pm[s], pm[e]);
+      };
   function nodeArr(s, len) {
     const r = new Array(len);
     for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
@@ -274,33 +294,44 @@ function decode(buffer, source) {
   }
   const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;
   const dv = new DataView(buffer);
-  const comments = new Array(commentCount);
-  for (let j = 0; j < commentCount; j++) {
-    const o = cOff + j * 20;
-    comments[j] = { type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)), start: _p(dv.getUint32(o + 4, true)), end: _p(dv.getUint32(o + 8, true)) };
-  }
-  const diagnostics = new Array(diagCount);
-  let dp = dOff;
-  for (let j = 0; j < diagCount; j++) {
-    const sev = SEVERITY[_u8[dp]]; dp++;
-    const ds = _p(dv.getUint32(dp, true)); dp += 4;
-    const de = _p(dv.getUint32(dp, true)); dp += 4;
-    const ml = dv.getUint32(dp, true); dp += 4;
-    const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
-    const hh = _u8[dp]; dp++;
-    let help = null;
-    if (hh) { const hl = dv.getUint32(dp, true); dp += 4; help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl; }
-    const lc = dv.getUint32(dp, true); dp += 4;
-    const labels = new Array(lc);
-    for (let k = 0; k < lc; k++) {
-      const ls = _p(dv.getUint32(dp, true)); dp += 4;
-      const le = _p(dv.getUint32(dp, true)); dp += 4;
-      const lml = dv.getUint32(dp, true); dp += 4;
-      labels[k] = { start: ls, end: le, message: _td.decode(_u8.subarray(dp, dp + lml)) }; dp += lml;
+  function _decodeComments() {
+    const out = new Array(commentCount);
+    for (let j = 0; j < commentCount; j++) {
+      const o = cOff + j * 20;
+      out[j] = { type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)), start: _p(dv.getUint32(o + 4, true)), end: _p(dv.getUint32(o + 8, true)) };
     }
-    diagnostics[j] = { severity: sev, message: msg, start: ds, end: de, help, labels };
+    return out;
+  }
+  function _decodeDiagnostics() {
+    const out = new Array(diagCount);
+    let dp = dOff;
+    for (let j = 0; j < diagCount; j++) {
+      const sev = SEVERITY[_u8[dp]]; dp++;
+      const ds = _p(dv.getUint32(dp, true)); dp += 4;
+      const de = _p(dv.getUint32(dp, true)); dp += 4;
+      const ml = dv.getUint32(dp, true); dp += 4;
+      const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
+      const hh = _u8[dp]; dp++;
+      let help = null;
+      if (hh) { const hl = dv.getUint32(dp, true); dp += 4; help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl; }
+      const lc = dv.getUint32(dp, true); dp += 4;
+      const labels = new Array(lc);
+      for (let k = 0; k < lc; k++) {
+        const ls = _p(dv.getUint32(dp, true)); dp += 4;
+        const le = _p(dv.getUint32(dp, true)); dp += 4;
+        const lml = dv.getUint32(dp, true); dp += 4;
+        labels[k] = { start: ls, end: le, message: _td.decode(_u8.subarray(dp, dp + lml)) }; dp += lml;
+      }
+      out[j] = { severity: sev, message: msg, start: ds, end: de, help, labels };
+    }
+    return out;
   }
   function _def(o, k, v) { Object.defineProperty(o, k, { value: v, writable: true, enumerable: true, configurable: true }); }
-  return { program: node(progIdx), comments, diagnostics };
+  let _program, _comments, _diagnostics;
+  return {
+    get program() { return _program !== undefined ? _program : (_program = node(progIdx)); },
+    get comments() { return _comments !== undefined ? _comments : (_comments = _decodeComments()); },
+    get diagnostics() { return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); },
+  };
 }
 export { decode };
