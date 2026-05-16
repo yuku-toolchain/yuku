@@ -78,8 +78,6 @@ const result = try parser.codegen.print(allocator, &tree, .{
 
 Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same options, with TypeScript-only nodes and fields removed from the output.
 
-### Zig
-
 ```zig
 var tree = try parser.parse(allocator, source, .{ .lang = .ts });
 defer tree.deinit();
@@ -89,81 +87,6 @@ defer result.deinit(allocator);
 
 std.debug.print("{s}", .{result.code});
 ```
-
-### Node.js
-
-```bash
-npm install yuku-strip
-```
-
-```js
-import { strip } from "yuku-strip";
-import { readFileSync } from "node:fs";
-
-const { code, errors } = strip(readFileSync("example.ts", "utf8"));
-console.log(code);
-```
-
-```ts
-// example.ts
-
-import { run, type Awaitable, type Result as Res } from "./api"
-
-export type Unwrap<T> = T extends Awaitable<infer U> ? Unwrap<U> : T
-export type Tagged<T> = { readonly [K in keyof T as `${string & K}$`]: T[K] }
-
-class Store<T extends { id: `id_${string}` }> implements Iterable<T> {
-  declare readonly index!: ReadonlyMap<T["id"], T>
-
-  async load<R extends T = T>(id: T["id"]): Promise<R | null> {
-    return (await run<R>(id))! satisfies R | null
-  }
-
-  *[Symbol.iterator](): IterableIterator<T> {
-    for (const [, v] of this.index!) yield v
-  }
-}
-
-function ensure<T, U extends T>(
-  xs: readonly T[],
-  is: (x: T) => x is U,
-): asserts xs is readonly U[] {
-  if (!xs.every(is)) throw new Error()
-}
-
-const fns = {
-  ok: <const T>(v: T) => ({ tag: "ok" as const, v }),
-  err: (r: string) => ({ tag: "err" as const, r }),
-} satisfies Record<string, (...a: never[]) => Res<unknown>>
-```
-
-`yuku-strip` produces:
-
-```js
-import { run } from "./api";
-class Store {
-  async load(id) {
-    return (await run(id));
-  }
-  *[Symbol.iterator]() {
-    for (const [, v] of this.index) yield v;
-  }
-}
-function ensure(xs, is) {
-  if (!xs.every(is)) throw new Error();
-}
-const fns = { ok: (v) => ({ tag: "ok", v }), err: (r) => ({ tag: "err", r }) };
-```
-
-The same options are accepted, in camelCase:
-
-| Option         | Values                                    | Default    |
-| -------------- | ----------------------------------------- | ---------- |
-| `sourceType`   | `"module"`, `"script"`                    | `"module"` |
-| `lang`         | `"ts"`, `"tsx"`, `"dts"`, `"js"`, `"jsx"` | `"ts"`     |
-| `format`       | `"pretty"`, `"compact"`                   | `"pretty"` |
-| `indent`       | `number`                                  | `2`        |
-| `quotes`       | `"double"`, `"single"`                    | `"double"` |
 
 ### How it works
 
