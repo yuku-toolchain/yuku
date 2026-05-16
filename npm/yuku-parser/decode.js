@@ -20,10 +20,15 @@ const TS_METHOD_SIGNATURE_KINDS = ["method", "get", "set"];
 const TS_MODULE_KINDS = ["namespace", "module"];
 const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
-function buildPosMap(src, byteLen) {
-  const m = new Uint32Array(byteLen + 1);
+// builds a partial pos-map covering bytes [startByte, byteLen]. for any
+// byte position v >= startByte, m[v - startByte] is the corresponding
+// UTF-16 code-unit index into `src`. positions below startByte are an
+// identity map (byte position == UTF-16 position because the prefix is
+// pure ASCII), so the caller checks `v < startByte` and returns v directly.
+function buildPosMap(src, byteLen, startByte) {
+  const m = new Uint32Array(byteLen - startByte + 1);
   const len = src.length;
-  let bp = 0, u16p = 0, i = 0;
+  let bp = 0, u16p = startByte, i = startByte;
   while (i < len) {
     if (i + 16 <= len) {
       let allAscii = true;
@@ -41,7 +46,7 @@ function buildPosMap(src, byteLen) {
     else if (cu < 0xD800 || cu >= 0xE000) { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1; bp += 3; u16p++; i++; }
     else { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2; bp += 4; u16p += 2; i += 2; }
   }
-  m[byteLen] = u16p;
+  m[byteLen - startByte] = u16p;
   return m;
 }
 function decode(buffer, source) {
@@ -52,9 +57,9 @@ function decode(buffer, source) {
   const _srcLen = _u32[3];
   const nodeCount = _u32[0], extraCount = _u32[1], spLen = _u32[2];
   const commentCount = _u32[4], diagCount = _u32[5], progIdx = _u32[6];
-  const _isTs = !!(_u32[7] & 2);
-  const _isAscii = !!(_u32[7] & 1);
-  const _nodesOff = 32;
+  const _isTs = !!(_u32[7] & 1);
+  const _firstNa = _u32[8];
+  const _nodesOff = 36;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
@@ -73,23 +78,25 @@ function decode(buffer, source) {
     }
     return r;
   }
+  // `_p` and `str` translate UTF-8 byte offsets into JS UTF-16 indices.
+  // for any offset below `_firstNa` (the prefix of the source that is pure
+  // ASCII) the mapping is the identity, so we short-circuit and skip
+  // building a pos-map. when offsets cross into non-ASCII territory we
+  // lazily build a pos-map for `[_firstNa, _srcLen]` on first use.
   let pm = null;
-  function _initPm() {
-    pm = buildPosMap(_src, _srcLen);
-    _p = v => pm[v];
-    str = (s, e) => s === e ? "" : s < _srcLen ? _src.slice(pm[s], pm[e]) : _poolDecode(s, e);
-  }
-  let _p = _isAscii
-    ? (v => v)
-    : v => { _initPm(); return pm[v]; };
-  let str = _isAscii
-    ? ((s, e) => s === e ? "" : s < _srcLen ? _src.slice(s, e) : _poolDecode(s, e))
-    : (s, e) => {
-        if (s === e) return "";
-        if (s >= _srcLen) return _poolDecode(s, e);
-        _initPm();
-        return _src.slice(pm[s], pm[e]);
-      };
+  const _p = v => {
+    if (v < _firstNa) return v;
+    if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
+    return pm[v - _firstNa];
+  };
+  const str = (s, e) => {
+    if (s === e) return "";
+    if (s >= _srcLen) return _poolDecode(s, e);
+    if (e <= _firstNa) return _src.slice(s, e);
+    if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
+    const ss = s < _firstNa ? s : pm[s - _firstNa];
+    return _src.slice(ss, pm[e - _firstNa]);
+  };
   function nodeArr(s, len) {
     const r = new Array(len);
     for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);

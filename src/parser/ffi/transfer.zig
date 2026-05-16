@@ -73,6 +73,11 @@ const Header = extern struct {
     diag_count: u32,
     program_index: u32,
     flags: u32,
+    /// byte offset of the first non-ASCII byte in `source`, or
+    /// `source_len` if the source is entirely ASCII. the decoder uses
+    /// this as the boundary above which UTF-8 byte offsets need a
+    /// `buildPosMap` walk; positions below it are an identity map.
+    first_non_ascii: u32,
 };
 
 /// packed ast node entry. `tag` identifies the `ast.NodeData` variant,
@@ -127,10 +132,10 @@ pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
 pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
+pub const HDR_FIRST_NON_ASCII_U32: u32 = @offsetOf(Header, "first_non_ascii") / 4;
 
 // `Header.flags` bit positions.
-pub const FLAG_ASCII: u32 = 1;
-pub const FLAG_TS: u32 = 2;
+pub const FLAG_TS: u32 = 1;
 
 // `PackedNode` byte offsets and u32 indices.
 pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
@@ -276,8 +281,6 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
 
 pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
-    var hdr_flags: u32 = if (isAsciiOnly(tree.source)) FLAG_ASCII else 0;
-    if (tree.isTs()) hdr_flags |= FLAG_TS;
 
     // header
     const hdr = Header{
@@ -288,7 +291,8 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .comment_count = @intCast(tree.comments.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
-        .flags = hdr_flags,
+        .flags = if (tree.isTs()) FLAG_TS else 0,
+        .first_non_ascii = @intCast(firstNonAsciiOffset(tree.source)),
     };
     @memcpy(buf[0..HEADER_SIZE], std.mem.asBytes(&hdr));
     var pos: usize = HEADER_SIZE;
@@ -438,15 +442,19 @@ inline fn w32(buf: []u8, pos: usize, val: u32) void {
     std.mem.writeInt(u32, buf[pos..][0..4], val, .little);
 }
 
-fn isAsciiOnly(source: []const u8) bool {
+/// returns the byte offset of the first non-ASCII byte in `source`, or
+/// `source.len` if the source is entirely ASCII.
+fn firstNonAsciiOffset(source: []const u8) usize {
     const Vec = @Vector(16, u8);
     const hi: Vec = @splat(0x80);
     var i: usize = 0;
     while (i + 16 <= source.len) : (i += 16) {
-        if (@reduce(.Or, source[i..][0..16].* & hi) != 0) return false;
+        if (@reduce(.Or, source[i..][0..16].* & hi) != 0) {
+            // non-ASCII somewhere in this 16-byte block; find it.
+            for (source[i..][0..16], 0..) |c, k| if (c >= 0x80) return i + k;
+            unreachable;
+        }
     }
-    for (source[i..]) |c| {
-        if (c >= 0x80) return false;
-    }
-    return true;
+    for (source[i..], 0..) |c, k| if (c >= 0x80) return i + k;
+    return source.len;
 }

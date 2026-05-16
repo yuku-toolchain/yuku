@@ -40,10 +40,15 @@ fn generate(w: *Writer) !void {
 /// reentrant, owns no module state, and needs no cleanup on exit.
 fn writeBuildPosMap(w: *Writer) !void {
     try w.writeAll(
-        \\function buildPosMap(src, byteLen) {
-        \\  const m = new Uint32Array(byteLen + 1);
+        \\// builds a partial pos-map covering bytes [startByte, byteLen]. for any
+        \\// byte position v >= startByte, m[v - startByte] is the corresponding
+        \\// UTF-16 code-unit index into `src`. positions below startByte are an
+        \\// identity map (byte position == UTF-16 position because the prefix is
+        \\// pure ASCII), so the caller checks `v < startByte` and returns v directly.
+        \\function buildPosMap(src, byteLen, startByte) {
+        \\  const m = new Uint32Array(byteLen - startByte + 1);
         \\  const len = src.length;
-        \\  let bp = 0, u16p = 0, i = 0;
+        \\  let bp = 0, u16p = startByte, i = startByte;
         \\  while (i < len) {
         \\    if (i + 16 <= len) {
         \\      let allAscii = true;
@@ -61,7 +66,7 @@ fn writeBuildPosMap(w: *Writer) !void {
         \\    else if (cu < 0xD800 || cu >= 0xE000) { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1; bp += 3; u16p++; i++; }
         \\    else { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2; bp += 4; u16p += 2; i += 2; }
         \\  }
-        \\  m[byteLen] = u16p;
+        \\  m[byteLen - startByte] = u16p;
         \\  return m;
         \\}
         \\
@@ -79,7 +84,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const nodeCount = _u32[{[u_nc]d}], extraCount = _u32[{[u_ec]d}], spLen = _u32[{[u_sp]d}];
         \\  const commentCount = _u32[{[u_cc]d}], diagCount = _u32[{[u_dc]d}], progIdx = _u32[{[u_pi]d}];
         \\  const _isTs = !!(_u32[{[u_fl]d}] & {[ts]d});
-        \\  const _isAscii = !!(_u32[{[u_fl]d}] & {[ascii]d});
+        \\  const _firstNa = _u32[{[u_fna]d}];
         \\  const _nodesOff = {[hdr]d};
         \\  const eOff = _nodesOff + nodeCount * {[size]d};
         \\  const _extraBase = eOff >> 2;
@@ -99,23 +104,25 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    }}
         \\    return r;
         \\  }}
+        \\  // `_p` and `str` translate UTF-8 byte offsets into JS UTF-16 indices.
+        \\  // for any offset below `_firstNa` (the prefix of the source that is pure
+        \\  // ASCII) the mapping is the identity, so we short-circuit and skip
+        \\  // building a pos-map. when offsets cross into non-ASCII territory we
+        \\  // lazily build a pos-map for `[_firstNa, _srcLen]` on first use.
         \\  let pm = null;
-        \\  function _initPm() {{
-        \\    pm = buildPosMap(_src, _srcLen);
-        \\    _p = v => pm[v];
-        \\    str = (s, e) => s === e ? "" : s < _srcLen ? _src.slice(pm[s], pm[e]) : _poolDecode(s, e);
-        \\  }}
-        \\  let _p = _isAscii
-        \\    ? (v => v)
-        \\    : v => {{ _initPm(); return pm[v]; }};
-        \\  let str = _isAscii
-        \\    ? ((s, e) => s === e ? "" : s < _srcLen ? _src.slice(s, e) : _poolDecode(s, e))
-        \\    : (s, e) => {{
-        \\        if (s === e) return "";
-        \\        if (s >= _srcLen) return _poolDecode(s, e);
-        \\        _initPm();
-        \\        return _src.slice(pm[s], pm[e]);
-        \\      }};
+        \\  const _p = v => {{
+        \\    if (v < _firstNa) return v;
+        \\    if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
+        \\    return pm[v - _firstNa];
+        \\  }};
+        \\  const str = (s, e) => {{
+        \\    if (s === e) return "";
+        \\    if (s >= _srcLen) return _poolDecode(s, e);
+        \\    if (e <= _firstNa) return _src.slice(s, e);
+        \\    if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
+        \\    const ss = s < _firstNa ? s : pm[s - _firstNa];
+        \\    return _src.slice(ss, pm[e - _firstNa]);
+        \\  }};
         \\  function nodeArr(s, len) {{
         \\    const r = new Array(len);
         \\    for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
@@ -146,8 +153,8 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_fl = rt.HDR_FLAGS_U32,
+        .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
         .ts = rt.FLAG_TS,
-        .ascii = rt.FLAG_ASCII,
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
         .f0 = rt.NODE_FIELD0_OFFSET,
