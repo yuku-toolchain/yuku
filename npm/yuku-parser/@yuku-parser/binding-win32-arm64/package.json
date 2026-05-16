@@ -7,12 +7,12 @@
   "cpu": [
     "arm64"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
   "main": "yuku-parser.node",
   "files": [
     "yuku-parser.node"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuku-toolchain/yuku.git"
-  }
+  ]
 }

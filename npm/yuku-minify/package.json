@@ -3,6 +3,10 @@
   "version": "0.5.6",
   "description": "High-performance JavaScript/TypeScript minifier written in Zig",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",

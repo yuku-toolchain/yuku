@@ -140,6 +140,7 @@ pub fn build(b: *std.Build) void {
             .dts = .{
                 .file = b.path("src/parser/ffi/parser.d.ts"),
             },
+            .repository = "https://github.com/yuku-toolchain/yuku",
         },
     });
 
@@ -158,6 +159,7 @@ pub fn build(b: *std.Build) void {
             .dts = .{
                 .file = b.path("src/minifier/ffi/minify.d.ts"),
             },
+            .repository = "https://github.com/yuku-toolchain/yuku",
         },
     });
 

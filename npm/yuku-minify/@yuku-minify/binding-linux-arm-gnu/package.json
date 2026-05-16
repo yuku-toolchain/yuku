@@ -10,6 +10,10 @@
   "libc": [
     "glibc"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
   "main": "yuku-minify.node",
   "files": [
     "yuku-minify.node"
