@@ -1,5 +1,5 @@
 // generates encode.js, the inverse of decode.js: walks an ESTree object
-// and writes a binary AST buffer in the v3 wire format that
+// and writes a binary AST buffer in the v4 wire format that
 // `transfer.deserializeFromBuf` reads back into an `ast.Tree`.
 const std = @import("std");
 const parser = @import("parser");
@@ -44,7 +44,6 @@ fn writePrologue(w: *Writer) !void {
         \\const _enc = new TextEncoder();
         \\const NODE_SIZE = {[node_size]d};
         \\const HEADER_SIZE = {[hdr_size]d};
-        \\const FLAG_ASCII = {[ascii]d};
         \\const NODE_FLAGS_OFFSET = {[flags_off]d};
         \\const NODE_FIELD0_OFFSET = {[f0_off]d};
         \\const NODE_HEADER_U32S = {[hdr_u32s]d};
@@ -54,13 +53,13 @@ fn writePrologue(w: *Writer) !void {
         \\const HDR_EXTRA_COUNT_U32 = {[u_ec]d};
         \\const HDR_STRING_POOL_LEN_U32 = {[u_sp]d};
         \\const HDR_SOURCE_LEN_U32 = {[u_src]d};
+        \\const HDR_FIRST_NON_ASCII_U32 = {[u_fna]d};
         \\const _DIRTY = Symbol.for("yuku.dirty");
         \\const _BUFIDX = Symbol.for("yuku.bufIdx");
         \\
     , .{
         .node_size = rt.NODE_SIZE,
         .hdr_size = rt.HEADER_SIZE,
-        .ascii = rt.FLAG_ASCII,
         .flags_off = rt.NODE_FLAGS_OFFSET,
         .f0_off = rt.NODE_FIELD0_OFFSET,
         .hdr_u32s = rt.NODE_HEADER_U32S,
@@ -70,6 +69,7 @@ fn writePrologue(w: *Writer) !void {
         .u_ec = rt.HDR_EXTRA_COUNT_U32,
         .u_sp = rt.HDR_STRING_POOL_LEN_U32,
         .u_src = rt.HDR_SOURCE_LEN_U32,
+        .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
     });
 }
 
@@ -109,7 +109,6 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
     }
     try w.writeAll("};\n");
 }
-
 
 // =====================================================================
 // Runtime: growable buffers, alloc, encStr, encArr
@@ -1383,7 +1382,8 @@ fn writeAssemble(w: *Writer) !void {
         \\  outU32[{[u_cc]d}] = 0;
         \\  outU32[{[u_dc]d}] = 0;
         \\  outU32[{[u_pi]d}] = progIdx;
-        \\  outU32[{[u_fl]d}] = FLAG_ASCII;
+        \\  outU32[{[u_fl]d}] = 0;
+        \\  outU32[{[u_fna]d}] = src ? src.u32[HDR_FIRST_NON_ASCII_U32] : dstSrcLen;
         \\  outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), HEADER_SIZE);
         \\  outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), HEADER_SIZE + totalNodeBytes);
         \\  outU8.set(pool.subarray(0, poolLen), HEADER_SIZE + totalNodeBytes + totalExtraBytes);
@@ -1399,5 +1399,6 @@ fn writeAssemble(w: *Writer) !void {
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_fl = rt.HDR_FLAGS_U32,
+        .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
     });
 }

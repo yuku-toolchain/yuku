@@ -6,8 +6,7 @@
 const NULL = 0xFFFFFFFF;
 const _enc = new TextEncoder();
 const NODE_SIZE = 48;
-const HEADER_SIZE = 32;
-const FLAG_ASCII = 1;
+const HEADER_SIZE = 36;
 const NODE_FLAGS_OFFSET = 2;
 const NODE_FIELD0_OFFSET = 4;
 const NODE_HEADER_U32S = 2;
@@ -17,6 +16,7 @@ const HDR_NODE_COUNT_U32 = 0;
 const HDR_EXTRA_COUNT_U32 = 1;
 const HDR_STRING_POOL_LEN_U32 = 2;
 const HDR_SOURCE_LEN_U32 = 3;
+const HDR_FIRST_NON_ASCII_U32 = 8;
 const _DIRTY = Symbol.for("yuku.dirty");
 const _BUFIDX = Symbol.for("yuku.bufIdx");
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
@@ -2111,7 +2111,8 @@ function encode(estree, srcBuffer) {
   outU32[4] = 0;
   outU32[5] = 0;
   outU32[6] = progIdx;
-  outU32[7] = FLAG_ASCII;
+  outU32[7] = 0;
+  outU32[8] = src ? src.u32[HDR_FIRST_NON_ASCII_U32] : dstSrcLen;
   outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), HEADER_SIZE);
   outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), HEADER_SIZE + totalNodeBytes);
   outU8.set(pool.subarray(0, poolLen), HEADER_SIZE + totalNodeBytes + totalExtraBytes);
