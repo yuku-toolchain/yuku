@@ -1,6 +1,6 @@
 import { Glob } from "bun";
 import { parse, langFromPath, sourceTypeFromPath } from "yuku-parser";
-import { generate } from "yuku-codegen";
+import { print } from "yuku-codegen";
 
 const CORPUS_DIRS = [
   "test/parser/suite/js/pass",
@@ -30,7 +30,7 @@ for (const dir of CORPUS_DIRS) {
     let out: string;
     try {
       const ast = parse(source, { lang, sourceType });
-      out = generate(ast.program, { format: { format: "pretty" } }).code;
+      out = print(ast.program, { format: "pretty" }).code;
     } catch (e) {
       bad++;
       errs.push(`${file}: generate threw: ${e}`);

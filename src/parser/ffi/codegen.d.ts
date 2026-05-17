@@ -6,19 +6,8 @@ type Format = "pretty" | "compact";
 /** Quote style for emitted string literals. */
 type Quotes = "double" | "single";
 
-/**
- * Codegen mode.
- *
- * - `"print"`: render the AST verbatim, preserving TypeScript syntax.
- * - `"strip"`: render the AST as JavaScript, dropping TypeScript-specific
- *   syntax (type annotations, declarations, etc).
- * - `"minify"`: apply size-reducing substitutions during emit. Combine with
- *   `format: "compact"` for fully minified output.
- */
-type Mode = "print" | "strip" | "minify";
-
-/** Output format configuration. */
-interface FormatOptions {
+/** Codegen options shared by `print`, `strip`, and `minify`. */
+interface CodegenOptions {
   /**
    * Whitespace mode.
    * @default "pretty"
@@ -36,17 +25,6 @@ interface FormatOptions {
   quotes?: Quotes;
 }
 
-/** Options for {@link generate}. */
-interface GenerateOptions {
-  /**
-   * Codegen mode.
-   * @default "print"
-   */
-  mode?: Mode;
-  /** Output format configuration. */
-  format?: FormatOptions;
-}
-
 /** A codegen-detected problem in the input AST. */
 interface Diagnostic {
   message: string;
@@ -57,16 +35,20 @@ interface Diagnostic {
 }
 
 /** Result of a codegen run. */
-interface GenerateResult {
+interface CodegenResult {
   /** Generated source code. */
   code: string;
   /** Codegen-detected problems. Empty when codegen succeeded cleanly. */
   errors: Diagnostic[];
 }
 
-/**
- * Generates source code from an ESTree AST.
- */
-export function generate(estree: Program, options?: GenerateOptions): GenerateResult;
+/** Renders the AST verbatim, preserving TypeScript syntax. */
+export function print(estree: Program, options?: CodegenOptions): CodegenResult;
 
-export type { GenerateOptions, FormatOptions, GenerateResult, Diagnostic, Format, Quotes, Mode };
+/** Renders the AST as JavaScript, dropping TypeScript-specific syntax. */
+export function strip(estree: Program, options?: CodegenOptions): CodegenResult;
+
+/** Renders the AST with size-reducing substitutions. Combine with `format: "compact"` for fully minified output. */
+export function minify(estree: Program, options?: CodegenOptions): CodegenResult;
+
+export type { CodegenOptions, CodegenResult, Diagnostic, Format, Quotes };
