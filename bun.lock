@@ -5,6 +5,9 @@
     "": {
       "name": "yuku-root",
       "devDependencies": {
+        "@babel/generator": "^7.29.1",
+        "@babel/parser": "^7.29.3",
+        "@types/babel__generator": "^7.27.0",
         "@types/bun": "^1.3.11",
         "@types/node": "^25.5.0",
         "fast-deep-equal": "^3.1.3",
@@ -12,6 +15,7 @@
         "napi-zig": "^0.1.39",
         "oxc-minify": "^0.130.0",
         "typescript": "^6.0.2",
+        "yuku-codegen": "workspace:*",
         "yuku-minify": "workspace:*",
         "yuku-parser": "workspace:*",
       },
@@ -25,9 +29,73 @@
         "sharp": "^0.34.2",
       },
     },
+    "npm/yuku-codegen": {
+      "name": "yuku-codegen",
+      "version": "0.5.8",
+      "dependencies": {
+        "yuku-parser": "workspace:*",
+      },
+      "optionalDependencies": {
+        "@yuku-codegen/binding-darwin-arm64": "0.5.8",
+        "@yuku-codegen/binding-darwin-x64": "0.5.8",
+        "@yuku-codegen/binding-freebsd-x64": "0.5.8",
+        "@yuku-codegen/binding-linux-arm-gnu": "0.5.8",
+        "@yuku-codegen/binding-linux-arm-musl": "0.5.8",
+        "@yuku-codegen/binding-linux-arm64-gnu": "0.5.8",
+        "@yuku-codegen/binding-linux-arm64-musl": "0.5.8",
+        "@yuku-codegen/binding-linux-x64-gnu": "0.5.8",
+        "@yuku-codegen/binding-linux-x64-musl": "0.5.8",
+        "@yuku-codegen/binding-win32-arm64": "0.5.8",
+        "@yuku-codegen/binding-win32-x64": "0.5.8",
+      },
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-darwin-arm64": {
+      "name": "@yuku-codegen/binding-darwin-arm64",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-darwin-x64": {
+      "name": "@yuku-codegen/binding-darwin-x64",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-freebsd-x64": {
+      "name": "@yuku-codegen/binding-freebsd-x64",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-linux-arm-gnu": {
+      "name": "@yuku-codegen/binding-linux-arm-gnu",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-linux-arm-musl": {
+      "name": "@yuku-codegen/binding-linux-arm-musl",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-gnu": {
+      "name": "@yuku-codegen/binding-linux-arm64-gnu",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-musl": {
+      "name": "@yuku-codegen/binding-linux-arm64-musl",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-linux-x64-gnu": {
+      "name": "@yuku-codegen/binding-linux-x64-gnu",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-linux-x64-musl": {
+      "name": "@yuku-codegen/binding-linux-x64-musl",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-win32-arm64": {
+      "name": "@yuku-codegen/binding-win32-arm64",
+      "version": "0.5.8",
+    },
+    "npm/yuku-codegen/@yuku-codegen/binding-win32-x64": {
+      "name": "@yuku-codegen/binding-win32-x64",
+      "version": "0.5.8",
+    },
     "npm/yuku-minify": {
       "name": "yuku-minify",
-      "version": "0.5.4",
+      "version": "0.5.8",
       "optionalDependencies": {
         "@yuku-minify/binding-darwin-arm64": "0.0.0",
         "@yuku-minify/binding-darwin-x64": "0.0.0",
@@ -44,108 +112,108 @@
     },
     "npm/yuku-minify/@yuku-minify/binding-darwin-arm64": {
       "name": "@yuku-minify/binding-darwin-arm64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-darwin-x64": {
       "name": "@yuku-minify/binding-darwin-x64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-freebsd-x64": {
       "name": "@yuku-minify/binding-freebsd-x64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-linux-arm-gnu": {
       "name": "@yuku-minify/binding-linux-arm-gnu",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-linux-arm-musl": {
       "name": "@yuku-minify/binding-linux-arm-musl",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-linux-arm64-gnu": {
       "name": "@yuku-minify/binding-linux-arm64-gnu",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-linux-arm64-musl": {
       "name": "@yuku-minify/binding-linux-arm64-musl",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-linux-x64-gnu": {
       "name": "@yuku-minify/binding-linux-x64-gnu",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-linux-x64-musl": {
       "name": "@yuku-minify/binding-linux-x64-musl",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-win32-arm64": {
       "name": "@yuku-minify/binding-win32-arm64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-minify/@yuku-minify/binding-win32-x64": {
       "name": "@yuku-minify/binding-win32-x64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser": {
       "name": "yuku-parser",
-      "version": "0.5.4",
+      "version": "0.5.8",
       "optionalDependencies": {
-        "@yuku-parser/binding-darwin-arm64": "0.0.0",
-        "@yuku-parser/binding-darwin-x64": "0.0.0",
-        "@yuku-parser/binding-freebsd-x64": "0.0.0",
-        "@yuku-parser/binding-linux-arm-gnu": "0.0.0",
-        "@yuku-parser/binding-linux-arm-musl": "0.0.0",
-        "@yuku-parser/binding-linux-arm64-gnu": "0.0.0",
-        "@yuku-parser/binding-linux-arm64-musl": "0.0.0",
-        "@yuku-parser/binding-linux-x64-gnu": "0.0.0",
-        "@yuku-parser/binding-linux-x64-musl": "0.0.0",
-        "@yuku-parser/binding-win32-arm64": "0.0.0",
-        "@yuku-parser/binding-win32-x64": "0.0.0",
+        "@yuku-parser/binding-darwin-arm64": "0.5.8",
+        "@yuku-parser/binding-darwin-x64": "0.5.8",
+        "@yuku-parser/binding-freebsd-x64": "0.5.8",
+        "@yuku-parser/binding-linux-arm-gnu": "0.5.8",
+        "@yuku-parser/binding-linux-arm-musl": "0.5.8",
+        "@yuku-parser/binding-linux-arm64-gnu": "0.5.8",
+        "@yuku-parser/binding-linux-arm64-musl": "0.5.8",
+        "@yuku-parser/binding-linux-x64-gnu": "0.5.8",
+        "@yuku-parser/binding-linux-x64-musl": "0.5.8",
+        "@yuku-parser/binding-win32-arm64": "0.5.8",
+        "@yuku-parser/binding-win32-x64": "0.5.8",
       },
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-arm64": {
       "name": "@yuku-parser/binding-darwin-arm64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-x64": {
       "name": "@yuku-parser/binding-darwin-x64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-freebsd-x64": {
       "name": "@yuku-parser/binding-freebsd-x64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-gnu": {
       "name": "@yuku-parser/binding-linux-arm-gnu",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-musl": {
       "name": "@yuku-parser/binding-linux-arm-musl",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-gnu": {
       "name": "@yuku-parser/binding-linux-arm64-gnu",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-musl": {
       "name": "@yuku-parser/binding-linux-arm64-musl",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-gnu": {
       "name": "@yuku-parser/binding-linux-x64-gnu",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-musl": {
       "name": "@yuku-parser/binding-linux-x64-musl",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-arm64": {
       "name": "@yuku-parser/binding-win32-arm64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-x64": {
       "name": "@yuku-parser/binding-win32-x64",
-      "version": "0.5.4",
+      "version": "0.5.8",
     },
   },
   "packages": {
@@ -165,11 +233,13 @@
 
     "@astrojs/telemetry": ["@astrojs/telemetry@3.3.0", "", { "dependencies": { "ci-info": "^4.2.0", "debug": "^4.4.0", "dlv": "^1.1.3", "dset": "^3.1.4", "is-docker": "^3.0.0", "is-wsl": "^3.1.0", "which-pm-runs": "^1.1.0" } }, "sha512-UFBgfeldP06qu6khs/yY+q1cDAaArM2/7AEIqQ9Cuvf7B1hNLq0xDrZkct+QoIGyjq56y8IaE2I3CTvG99mlhQ=="],
 
+    "@babel/generator": ["@babel/generator@7.29.1", "", { "dependencies": { "@babel/parser": "^7.29.0", "@babel/types": "^7.29.0", "@jridgewell/gen-mapping": "^0.3.12", "@jridgewell/trace-mapping": "^0.3.28", "jsesc": "^3.0.2" } }, "sha512-qsaF+9Qcm2Qv8SRIMMscAvG4O3lJ0F1GuMo5HR/Bp02LopNgnZBC/EkbevHFeGs4ls/oPz9v+Bsmzbkbe+0dUw=="],
+
     "@babel/helper-string-parser": ["@babel/helper-string-parser@7.27.1", "", {}, "sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA=="],
 
     "@babel/helper-validator-identifier": ["@babel/helper-validator-identifier@7.28.5", "", {}, "sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q=="],
 
-    "@babel/parser": ["@babel/parser@7.29.2", "", { "dependencies": { "@babel/types": "^7.29.0" }, "bin": "./bin/babel-parser.js" }, "sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA=="],
+    "@babel/parser": ["@babel/parser@7.29.3", "", { "dependencies": { "@babel/types": "^7.29.0" }, "bin": "./bin/babel-parser.js" }, "sha512-b3ctpQwp+PROvU/cttc4OYl4MzfJUWy6FZg+PMXfzmt/+39iHVF0sDfqay8TQM3JA2EUOyKcFZt75jWriQijsA=="],
 
     "@babel/runtime": ["@babel/runtime@7.29.2", "", {}, "sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g=="],
 
@@ -305,7 +375,13 @@
 
     "@jest/schemas": ["@jest/schemas@30.0.5", "", { "dependencies": { "@sinclair/typebox": "^0.34.0" } }, "sha512-DmdYgtezMkh3cpU8/1uyXakv3tJRcmcXxBOcO0tbaozPwpmh4YMsnWrQm9ZmZMfa5ocbxzbFk6O4bDPEc/iAnA=="],
 
+    "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
+
+    "@jridgewell/resolve-uri": ["@jridgewell/resolve-uri@3.1.2", "", {}, "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw=="],
+
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
+
+    "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@mdx-js/mdx": ["@mdx-js/mdx@3.1.1", "", { "dependencies": { "@types/estree": "^1.0.0", "@types/estree-jsx": "^1.0.0", "@types/hast": "^3.0.0", "@types/mdx": "^2.0.0", "acorn": "^8.0.0", "collapse-white-space": "^2.0.0", "devlop": "^1.0.0", "estree-util-is-identifier-name": "^3.0.0", "estree-util-scope": "^1.0.0", "estree-walker": "^3.0.0", "hast-util-to-jsx-runtime": "^2.0.0", "markdown-extensions": "^2.0.0", "recma-build-jsx": "^1.0.0", "recma-jsx": "^1.0.0", "recma-stringify": "^1.0.0", "rehype-recma": "^1.0.0", "remark-mdx": "^3.0.0", "remark-parse": "^11.0.0", "remark-rehype": "^11.0.0", "source-map": "^0.7.0", "unified": "^11.0.0", "unist-util-position-from-estree": "^2.0.0", "unist-util-stringify-position": "^4.0.0", "unist-util-visit": "^5.0.0", "vfile": "^6.0.0" } }, "sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ=="],
 
@@ -441,6 +517,8 @@
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.2", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg=="],
 
+    "@types/babel__generator": ["@types/babel__generator@7.27.0", "", { "dependencies": { "@babel/types": "^7.0.0" } }, "sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg=="],
+
     "@types/bun": ["@types/bun@1.3.11", "", { "dependencies": { "bun-types": "1.3.11" } }, "sha512-5vPne5QvtpjGpsGYXiFyycfpDF2ECyPcTSsFBMa0fraoxiQyMJ3SmuQIGhzPg2WJuWxVBoxWJ2kClYTcw/4fAg=="],
 
     "@types/debug": ["@types/debug@4.1.13", "", { "dependencies": { "@types/ms": "*" } }, "sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw=="],
@@ -468,6 +546,28 @@
     "@types/unist": ["@types/unist@3.0.3", "", {}, "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="],
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.3.0", "", {}, "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g=="],
+
+    "@yuku-codegen/binding-darwin-arm64": ["@yuku-codegen/binding-darwin-arm64@workspace:npm/yuku-codegen/@yuku-codegen/binding-darwin-arm64"],
+
+    "@yuku-codegen/binding-darwin-x64": ["@yuku-codegen/binding-darwin-x64@workspace:npm/yuku-codegen/@yuku-codegen/binding-darwin-x64"],
+
+    "@yuku-codegen/binding-freebsd-x64": ["@yuku-codegen/binding-freebsd-x64@workspace:npm/yuku-codegen/@yuku-codegen/binding-freebsd-x64"],
+
+    "@yuku-codegen/binding-linux-arm-gnu": ["@yuku-codegen/binding-linux-arm-gnu@workspace:npm/yuku-codegen/@yuku-codegen/binding-linux-arm-gnu"],
+
+    "@yuku-codegen/binding-linux-arm-musl": ["@yuku-codegen/binding-linux-arm-musl@workspace:npm/yuku-codegen/@yuku-codegen/binding-linux-arm-musl"],
+
+    "@yuku-codegen/binding-linux-arm64-gnu": ["@yuku-codegen/binding-linux-arm64-gnu@workspace:npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-gnu"],
+
+    "@yuku-codegen/binding-linux-arm64-musl": ["@yuku-codegen/binding-linux-arm64-musl@workspace:npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-musl"],
+
+    "@yuku-codegen/binding-linux-x64-gnu": ["@yuku-codegen/binding-linux-x64-gnu@workspace:npm/yuku-codegen/@yuku-codegen/binding-linux-x64-gnu"],
+
+    "@yuku-codegen/binding-linux-x64-musl": ["@yuku-codegen/binding-linux-x64-musl@workspace:npm/yuku-codegen/@yuku-codegen/binding-linux-x64-musl"],
+
+    "@yuku-codegen/binding-win32-arm64": ["@yuku-codegen/binding-win32-arm64@workspace:npm/yuku-codegen/@yuku-codegen/binding-win32-arm64"],
+
+    "@yuku-codegen/binding-win32-x64": ["@yuku-codegen/binding-win32-x64@workspace:npm/yuku-codegen/@yuku-codegen/binding-win32-x64"],
 
     "@yuku-minify/binding-darwin-arm64": ["@yuku-minify/binding-darwin-arm64@workspace:npm/yuku-minify/@yuku-minify/binding-darwin-arm64"],
 
@@ -760,6 +860,8 @@
     "jiti": ["jiti@2.6.1", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ=="],
 
     "js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA=="],
+
+    "jsesc": ["jsesc@3.1.0", "", { "bin": { "jsesc": "bin/jsesc" } }, "sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA=="],
 
     "kleur": ["kleur@3.0.3", "", {}, "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w=="],
 
@@ -1121,6 +1223,8 @@
 
     "yocto-queue": ["yocto-queue@1.2.2", "", {}, "sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ=="],
 
+    "yuku-codegen": ["yuku-codegen@workspace:npm/yuku-codegen"],
+
     "yuku-docs": ["yuku-docs@workspace:docs"],
 
     "yuku-minify": ["yuku-minify@workspace:npm/yuku-minify"],
@@ -1144,6 +1248,8 @@
     "dom-serializer/entities": ["entities@4.5.0", "", {}, "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="],
 
     "estree-util-build-jsx/estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
+
+    "magicast/@babel/parser": ["@babel/parser@7.29.2", "", { "dependencies": { "@babel/types": "^7.29.0" }, "bin": "./bin/babel-parser.js" }, "sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA=="],
 
     "parse-entities/@types/unist": ["@types/unist@2.0.11", "", {}, "sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA=="],
 

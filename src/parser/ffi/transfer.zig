@@ -2,8 +2,8 @@
 //
 // serializes the parsed ast into a compact binary buffer for passing to js.
 // the buffer is returned as an arraybuffer from the native napi binding.
-// js decoders walk the buffer to construct ast objects in any shape
-// (estree, babel, and so on). all integers are little endian.
+// the js decoder walks the buffer to construct an estree-shaped object.
+// all integers are little endian.
 //
 // the extern structs below (Header, PackedNode, CommentEntry) own the
 // wire layout. their @sizeOf and @offsetOf values drive both the
@@ -73,11 +73,6 @@ const Header = extern struct {
     diag_count: u32,
     program_index: u32,
     flags: u32,
-    /// byte offset of the first non-ASCII byte in `source`, or
-    /// `source_len` if the source is entirely ASCII. the decoder uses
-    /// this as the boundary above which UTF-8 byte offsets need a
-    /// `buildPosMap` walk; positions below it are an identity map.
-    first_non_ascii: u32,
 };
 
 /// packed ast node entry. `tag` identifies the `ast.NodeData` variant,
@@ -132,10 +127,10 @@ pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
 pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
-pub const HDR_FIRST_NON_ASCII_U32: u32 = @offsetOf(Header, "first_non_ascii") / 4;
 
 // `Header.flags` bit positions.
-pub const FLAG_TS: u32 = 1;
+pub const FLAG_ASCII: u32 = 1;
+pub const FLAG_TS: u32 = 2;
 
 // `PackedNode` byte offsets and u32 indices.
 pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
@@ -281,6 +276,8 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
 
 pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
+    var hdr_flags: u32 = if (isAsciiOnly(tree.source)) FLAG_ASCII else 0;
+    if (tree.isTs()) hdr_flags |= FLAG_TS;
 
     // header
     const hdr = Header{
@@ -291,8 +288,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .comment_count = @intCast(tree.comments.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
-        .flags = if (tree.isTs()) FLAG_TS else 0,
-        .first_non_ascii = @intCast(firstNonAsciiOffset(tree.source)),
+        .flags = hdr_flags,
     };
     @memcpy(buf[0..HEADER_SIZE], std.mem.asBytes(&hdr));
     var pos: usize = HEADER_SIZE;
@@ -442,19 +438,145 @@ inline fn w32(buf: []u8, pos: usize, val: u32) void {
     std.mem.writeInt(u32, buf[pos..][0..4], val, .little);
 }
 
-/// returns the byte offset of the first non-ASCII byte in `source`, or
-/// `source.len` if the source is entirely ASCII.
-fn firstNonAsciiOffset(source: []const u8) usize {
+fn isAsciiOnly(source: []const u8) bool {
     const Vec = @Vector(16, u8);
     const hi: Vec = @splat(0x80);
     var i: usize = 0;
     while (i + 16 <= source.len) : (i += 16) {
-        if (@reduce(.Or, source[i..][0..16].* & hi) != 0) {
-            // non-ASCII somewhere in this 16-byte block; find it.
-            for (source[i..][0..16], 0..) |c, k| if (c >= 0x80) return i + k;
-            unreachable;
+        if (@reduce(.Or, source[i..][0..16].* & hi) != 0) return false;
+    }
+    for (source[i..]) |c| {
+        if (c >= 0x80) return false;
+    }
+    return true;
+}
+
+// deserialization. reverses `serializeInto`, comptime-driven by the same
+// layout helpers. ignores the comments and diagnostics sections, which the
+// codegen path doesn't need. the caller passes in the source string, which
+// may be empty when every `String` resolves through the pool.
+
+pub const DeserializeError = error{ InvalidBuffer, OutOfMemory };
+
+pub fn deserializeFromBuf(
+    allocator: std.mem.Allocator,
+    buf: []const u8,
+    source: []const u8,
+) DeserializeError!ast.Tree {
+    if (buf.len < HEADER_SIZE) return error.InvalidBuffer;
+
+    var hdr: Header = undefined;
+    @memcpy(std.mem.asBytes(&hdr), buf[0..HEADER_SIZE]);
+
+    var tree = ast.Tree.init(allocator, source);
+    errdefer tree.deinit();
+
+    if (hdr.flags & FLAG_TS != 0) tree.lang = .ts;
+
+    var pos: usize = HEADER_SIZE;
+
+    // nodes
+    const nodes_bytes: usize = @as(usize, hdr.node_count) * NODE_SIZE;
+    if (buf.len < pos + nodes_bytes) return error.InvalidBuffer;
+    try tree.nodes.resize(tree.allocator(), hdr.node_count);
+    for (0..hdr.node_count) |i| {
+        var pn: PackedNode = undefined;
+        @memcpy(std.mem.asBytes(&pn), buf[pos..][0..NODE_SIZE]);
+        pos += NODE_SIZE;
+        tree.nodes.set(i, .{
+            .data = unpackNode(pn),
+            .span = .{ .start = pn.span_start, .end = pn.span_end },
+        });
+    }
+
+    // extras
+    const extras_bytes: usize = @as(usize, hdr.extra_count) * 4;
+    if (buf.len < pos + extras_bytes) return error.InvalidBuffer;
+    try tree.extras.resize(tree.allocator(), hdr.extra_count);
+    @memcpy(std.mem.sliceAsBytes(tree.extras.items), buf[pos..][0..extras_bytes]);
+    pos += extras_bytes;
+
+    // string pool
+    if (buf.len < pos + hdr.string_pool_len) return error.InvalidBuffer;
+    try tree.strings.extra.resize(tree.allocator(), hdr.string_pool_len);
+    @memcpy(tree.strings.extra.items, buf[pos..][0..hdr.string_pool_len]);
+
+    // skip comments + diagnostics. codegen doesn't read them.
+
+    tree.root = @enumFromInt(hdr.program_index);
+    return tree;
+}
+
+fn unpackNode(p: PackedNode) ast.NodeData {
+    @setEvalBranchQuota(100_000);
+    inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, tag| {
+        if (p.tag == tag) {
+            const T = field.type;
+            var payload: T = std.mem.zeroes(T);
+            unpackPayload(T, p, &payload);
+            return @unionInit(ast.NodeData, field.name, payload);
         }
     }
-    for (source[i..], 0..) |c, k| if (c >= 0x80) return i + k;
-    return source.len;
+    unreachable;
+}
+
+fn unpackPayload(comptime T: type, n: PackedNode, payload: *T) void {
+    if (@typeInfo(T) != .@"struct") return;
+    if (@typeInfo(T).@"struct".fields.len == 0) return;
+
+    inline for (std.meta.fields(T), 0..) |f, i| {
+        const bit = comptime flagBitForField(T, i);
+        const slot = comptime u32SlotForField(T, i);
+
+        if (f.type == bool) {
+            @field(payload.*, f.name) = readFlagBit(n, bit);
+        } else if (f.type == ast.NodeIndex) {
+            @field(payload.*, f.name) = @enumFromInt(readSlot(n, slot));
+        } else if (f.type == ast.IndexRange) {
+            const len: u32 = if (comptime isFirstRange(T, i)) n.field0 else readSlot(n, slot + 1);
+            // unset IndexRange slots default to NULL in the JS encoder; force
+            // start to 0 when len is 0 so we never produce an out-of-bounds
+            // slice into `extras`.
+            const start: u32 = if (len == 0) 0 else readSlot(n, slot);
+            @field(payload.*, f.name) = .{ .start = start, .len = len };
+        } else if (f.type == ast.String) {
+            @field(payload.*, f.name) = .{ .start = readSlot(n, slot), .end = readSlot(n, slot + 1) };
+        } else if (comptime isEnumType(f.type)) {
+            const bits = comptime enumBitWidth(f.type);
+            const mask: u16 = (@as(u16, 1) << @intCast(bits)) - 1;
+            const v: u16 = (n.flags >> @intCast(bit)) & mask;
+            @field(payload.*, f.name) = @enumFromInt(v);
+        } else if (f.type == ?ast.ImportPhase) {
+            const present = ((n.flags >> @intCast(bit)) & 1) == 1;
+            if (present) {
+                const bits = comptime enumBitWidth(ast.ImportPhase);
+                const mask: u16 = (@as(u16, 1) << @intCast(bits)) - 1;
+                const v: u16 = (n.flags >> @intCast(bit + 1)) & mask;
+                @field(payload.*, f.name) = @enumFromInt(v);
+            } else {
+                @field(payload.*, f.name) = null;
+            }
+        } else if (f.type == ?ast.Hashbang) {
+            const present = ((n.flags >> @intCast(bit)) & 1) == 1;
+            if (present) {
+                @field(payload.*, f.name) = .{
+                    .value = .{ .start = readSlot(n, slot), .end = readSlot(n, slot + 1) },
+                };
+            } else {
+                @field(payload.*, f.name) = null;
+            }
+        } else {
+            @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
+        }
+    }
+}
+
+inline fn readFlagBit(n: PackedNode, comptime bit: u8) bool {
+    return ((n.flags >> @intCast(bit)) & 1) == 1;
+}
+
+inline fn readSlot(n: PackedNode, comptime slot: u8) u32 {
+    if (comptime slot >= NODE_DATA_SLOTS) @compileError("slot index out of range");
+    const ptr: [*]const u32 = @ptrCast(&n.field1);
+    return ptr[slot];
 }
