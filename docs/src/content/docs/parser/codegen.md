@@ -1,15 +1,31 @@
 ---
 title: Codegen
-description: Print a parsed Tree back to JavaScript source. Configurable formatting, quote style, and indentation.
+description: Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.
 ---
 
-The codegen takes a `Tree` and writes it back as JavaScript source. It walks the AST directly and emits each node from its tag, so the output is always syntactically valid and faithful to the tree's structure. There is no source rewriting, no whitespace overlay, no second pass. One traversal, writing into a single output buffer.
+The codegen takes a `Tree` and writes it back as source code. It walks the AST directly and emits each node from its tag, so the output is always syntactically valid and faithful to the tree's structure.
 
-:::note
-Codegen does not yet emit sourcemaps and there is no sourcemap option on `Options`. Sourcemap support is on the roadmap.
-:::
+## Node.js
+
+```bash
+npm install yuku-codegen
+```
+
+```js
+import { parse } from "yuku-parser";
+import { print } from "yuku-codegen";
+
+const { program } = parse("const x = 1 + 2;");
+const { code } = print(program);
+```
+
+The input AST is exactly what [yuku-parser](https://www.npmjs.com/package/yuku-parser) produces. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
+
+```bash
+zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
+```
 
 ```zig
 const std = @import("std");
@@ -36,13 +52,15 @@ pub fn main() !void {
 pub const Result = struct {
     code: []const u8,
     errors: []const Diagnostic,
+    map: ?SourceMap = null,
 };
 ```
 
-| Field    | Type             | Description                                          |
-| -------- | ---------------- | ---------------------------------------------------- |
-| `code`   | `[]const u8`     | Generated source                                     |
-| `errors` | `[]Diagnostic`   | Codegen-detected problems, empty for a clean print   |
+| Field    | Type            | Description                                          |
+| -------- | --------------- | ---------------------------------------------------- |
+| `code`   | `[]const u8`    | Generated source                                     |
+| `errors` | `[]Diagnostic`  | Codegen-detected problems, empty for a clean print   |
+| `map`    | `?SourceMap`    | Source Map V3 when `source_maps` was set, else null  |
 
 The only return-value error from `print` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain `print`, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
 
@@ -63,16 +81,78 @@ const result = try parser.codegen.print(allocator, &tree, .{
     .format = .pretty,
     .indent = 2,
     .quotes = .double,
+    .source_maps = null,
 });
 ```
 
-| Field           | Type     | Default   | Description                                                  |
-| --------------- | -------- | --------- | ------------------------------------------------------------ |
-| `format`        | `Format` | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)     |
-| `indent`        | `u8`     | `2`       | Spaces per level when `format == .pretty`                    |
-| `quotes`        | `Quotes` | `.double` | `.double` or `.single` for emitted string literals           |
+| Field         | Type                  | Default   | Description                                                  |
+| ------------- | --------------------- | --------- | ------------------------------------------------------------ |
+| `format`      | `Format`              | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)     |
+| `indent`      | `u8`                  | `2`       | Spaces per level when `format == .pretty`                    |
+| `quotes`      | `Quotes`              | `.double` | `.double` or `.single` for emitted string literals           |
+| `source_maps` | `?SourceMapOptions`   | `null`    | Set to emit a Source Map V3 alongside the code               |
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
+
+## Source maps
+
+Set `source_maps` to emit a Source Map V3 alongside the generated code. The original source text is required, since the AST carries byte offsets only.
+
+```zig
+var tree = try parser.parse(allocator, source, .{});
+defer tree.deinit();
+
+const result = try parser.codegen.print(allocator, &tree, .{
+    .source_maps = .{
+        .source = source,
+        .file = "out.js",
+        .source_file_name = "in.js",
+        .sources_content = true,
+    },
+});
+defer result.deinit(allocator);
+
+// result.map is non-null when source_maps was set.
+const map = result.map.?;
+```
+
+### `SourceMapOptions`
+
+```zig
+pub const SourceMapOptions = struct {
+    source: []const u8,
+    file: ?[]const u8 = null,
+    source_file_name: ?[]const u8 = null,
+    source_root: ?[]const u8 = null,
+    sources_content: bool = false,
+};
+```
+
+| Field              | Type           | Required | Description                                                   |
+| ------------------ | -------------- | -------- | ------------------------------------------------------------- |
+| `source`           | `[]const u8`   | yes      | Original source the AST was parsed from                       |
+| `file`             | `?[]const u8`  | no       | Output filename, embedded as the map's `file`                 |
+| `source_file_name` | `?[]const u8`  | no       | Source filename, embedded as the single entry of `sources`    |
+| `source_root`      | `?[]const u8`  | no       | Prefix embedded as `sourceRoot`                               |
+| `sources_content`  | `bool`         | no       | When true, embeds `source` into the map's `sourcesContent`    |
+
+### Result shape
+
+`SourceMap` is the Source Map V3 wire format, ready to serialize:
+
+```zig
+pub const SourceMap = struct {
+    version: u8 = 3,
+    file: ?[]const u8,
+    source_root: ?[]const u8,
+    sources: []const []const u8,
+    sources_content: ?[]const ?[]const u8,
+    names: []const []const u8,
+    mappings: []const u8,
+};
+```
+
+Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome DevTools and consumer-side libraries (`@jridgewell/trace-mapping`, `source-map`, etc.).
 
 ## Type stripping
 
@@ -103,3 +183,23 @@ The ambient forms of these constructs (`declare enum`, `declare namespace`, `dec
 A future Yuku transpiler will fill that role. It will lower runtime-emitting constructs to JavaScript and drive the codegen with stripping enabled in the same pass, giving fast, clean TypeScript-to-JavaScript output in a single pipeline.
 
 All other TypeScript syntax (types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, `abstract`) strips cleanly today.
+
+## Minification
+
+`minify` applies size-reducing rewrites at print time:
+
+```zig
+const result = try parser.codegen.minify(allocator, &tree, .{ .format = .compact });
+defer result.deinit(allocator);
+```
+
+The substitutions:
+
+- `true` / `false` → `!0` / `!1`
+- `undefined` → `void 0` (in expression position)
+- `Infinity` → `1/0`
+- numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
+- `obj["foo"]` → `obj.foo` when the key is a valid identifier
+- `{ "foo": x }` → `{ foo: x }` when safe
+
+Combine with `format = .compact` for full minification.
