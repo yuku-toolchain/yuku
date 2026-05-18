@@ -3,9 +3,6 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 /// Source Map V3 output.
-///
-/// All slices are owned by the allocator passed to `State.build`. Call
-/// `deinit` with the same allocator to release them.
 pub const SourceMap = struct {
     version: u8 = 3,
     file: ?[]const u8 = null,
@@ -109,11 +106,13 @@ pub const State = struct {
     /// table outlives the AST it referenced.
     pub fn intern(self: *State, allocator: Allocator, name: []const u8) Allocator.Error!u32 {
         if (self.names_dedup.get(name)) |idx| return idx;
+        try self.names.ensureUnusedCapacity(allocator, 1);
+        try self.names_dedup.ensureUnusedCapacity(allocator, 1);
         const owned = try allocator.alloc(u8, name.len);
         @memcpy(owned, name);
         const idx: u32 = @intCast(self.names.items.len);
-        try self.names.append(allocator, owned);
-        try self.names_dedup.put(allocator, owned, idx);
+        self.names.appendAssumeCapacity(owned);
+        self.names_dedup.putAssumeCapacity(owned, idx);
         return idx;
     }
 
@@ -154,8 +153,9 @@ pub const State = struct {
 
     /// Records a mapping at the current generated position. When the
     /// previous segment is at the same generated position it is
-    /// overwritten, so the most deeply nested node wins at any
-    /// given output character.
+    /// overwritten. Because the printer walks parents before children,
+    /// the later call is always for a more deeply nested node, so the
+    /// leaf wins at any given output character.
     pub fn record(
         self: *State,
         allocator: Allocator,
@@ -303,11 +303,13 @@ inline fn writeVlq(dst: [*]u8, v: i32) [*]u8 {
     }
 }
 
-// encodes segments to the v3 `mappings` string. writes directly through
-// an over-reserved tail so the inner loop has no growth path.
+// encodes segments to the v3 `mappings` string. budget breakdown:
+//   per-segment fields: 5 vlq fields times 7 chars plus one separator = 40
+//   line gaps: total `;` written equals the final gen_line (telescoping
+//              sum), so we add `max_gen_line` once for the whole loop.
 fn encodeMappings(allocator: Allocator, mappings: []const Segment) Allocator.Error![]u8 {
-    // 5 fields times 7 chars plus separator equals 40 bytes per segment.
-    const buf = try allocator.alloc(u8, mappings.len * 40 + 64);
+    const max_gen_line: usize = if (mappings.len > 0) mappings[mappings.len - 1].gen_line else 0;
+    const buf = try allocator.alloc(u8, mappings.len * 40 + max_gen_line + 64);
     errdefer allocator.free(buf);
     var dst: [*]u8 = buf.ptr;
 
@@ -356,6 +358,5 @@ fn encodeMappings(allocator: Allocator, mappings: []const Segment) Allocator.Err
         }
     }
 
-    const len = @intFromPtr(dst) - @intFromPtr(buf.ptr);
-    return allocator.realloc(buf, len) catch buf[0..len];
+    return buf[0 .. @intFromPtr(dst) - @intFromPtr(buf.ptr)];
 }
