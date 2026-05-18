@@ -208,7 +208,7 @@ pub fn build(b: *std.Build) void {
     const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
     gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
 
-    // estree encoder codegen (mirror of the decoder, walks an ESTree AST into a v3 buffer).
+    // estree encoder codegen (mirror of the decoder, walks an ESTree AST into a v4 buffer).
     const estree_meta_module = b.createModule(.{
         .root_source_file = b.path("tools/estree_meta.zig"),
         .target = b.graph.host,

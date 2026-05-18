@@ -16,11 +16,11 @@ const Result = struct {
 
 const Op = enum { print, strip, minify };
 
-fn run(comptime op: Op, env: napi.Env, buffer: napi.Val, source: ?[]const u8, options: Options) !Result {
+fn run(comptime op: Op, env: napi.Env, buffer: napi.Val, options: Options) !Result {
     const allocator = env.allocator();
     const bytes = try buffer.getArrayBufferData(env);
 
-    var tree = transfer.deserializeFromBuf(allocator, bytes, source orelse "") catch return error.DecodeFailed;
+    var tree = transfer.deserializeFromBuf(allocator, bytes, "") catch return error.DecodeFailed;
     defer tree.deinit();
 
     const codegen_opts: parser.codegen.Options = .{
@@ -37,16 +37,16 @@ fn run(comptime op: Op, env: napi.Env, buffer: napi.Val, source: ?[]const u8, op
     return .{ .code = result.code, .errors = result.errors };
 }
 
-pub fn print(env: napi.Env, buffer: napi.Val, source: ?[]const u8, options: Options) !Result {
-    return run(.print, env, buffer, source, options);
+pub fn print(env: napi.Env, buffer: napi.Val, options: Options) !Result {
+    return run(.print, env, buffer, options);
 }
 
-pub fn strip(env: napi.Env, buffer: napi.Val, source: ?[]const u8, options: Options) !Result {
-    return run(.strip, env, buffer, source, options);
+pub fn strip(env: napi.Env, buffer: napi.Val, options: Options) !Result {
+    return run(.strip, env, buffer, options);
 }
 
-pub fn minify(env: napi.Env, buffer: napi.Val, source: ?[]const u8, options: Options) !Result {
-    return run(.minify, env, buffer, source, options);
+pub fn minify(env: napi.Env, buffer: napi.Val, options: Options) !Result {
+    return run(.minify, env, buffer, options);
 }
 
 comptime {
