@@ -1,14 +1,5 @@
 // https://fitzgen.com/2013/08/02/testing-source-maps.html
-//
-// For each parseable file in the corpus:
-//   1. Print with source maps enabled.
-//   2. Reparse the output.
-//   3. For every Identifier / PrivateIdentifier in the output AST, trace
-//      its generated position through the map and assert the input AST
-//      has an identifier with the same name at that source position.
-//
-// trace-mapping's constructor validates the entire VLQ mappings string,
-// so structural and encoding errors surface there.
+
 import { Glob } from "bun";
 import { parse, langFromPath, sourceTypeFromPath } from "yuku-parser";
 import { print, type SourceMap } from "yuku-codegen";
