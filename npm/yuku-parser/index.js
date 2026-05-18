@@ -14,6 +14,5 @@ export function langFromPath(path) {
 }
 
 export function sourceTypeFromPath(path) {
-  if (path.endsWith(".cjs") || path.endsWith(".cts")) return "script";
-  return "module";
+  return path.endsWith(".cjs") || path.endsWith(".cts") ? "script" : "module";
 }

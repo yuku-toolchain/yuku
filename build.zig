@@ -163,6 +163,24 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-codegen",
+        .root = b.path("src/parser/ffi/codegen.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "parser", .module = parser_module },
+        },
+        .npm = .{
+            .scope = "@yuku-codegen",
+            .description = "High-performance JavaScript/TypeScript code generator written in Zig",
+            .dts = .{
+                .file = b.path("src/parser/ffi/codegen.d.ts"),
+            },
+            .repository = "https://github.com/yuku-toolchain/yuku",
+        },
+    });
+
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{
         .root_source_file = b.path("src/parser/ffi/transfer.zig"),
@@ -189,4 +207,34 @@ pub fn build(b: *std.Build) void {
 
     const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
     gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
+
+    // estree encoder codegen (mirror of the decoder, walks an ESTree AST into a v4 buffer).
+    const estree_meta_module = b.createModule(.{
+        .root_source_file = b.path("tools/estree_meta.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    estree_meta_module.addImport("parser", parser_module);
+
+    gen_estree_module.addImport("estree_meta", estree_meta_module);
+
+    const gen_estree_encoder_module = b.createModule(.{
+        .root_source_file = b.path("tools/gen_estree_encoder.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    gen_estree_encoder_module.addImport("parser", parser_module);
+    gen_estree_encoder_module.addImport("transfer", ast_transfer_module);
+    gen_estree_encoder_module.addImport("estree_meta", estree_meta_module);
+
+    const gen_estree_encoder_exe = b.addExecutable(.{
+        .name = "gen-estree-encoder",
+        .root_module = gen_estree_encoder_module,
+    });
+
+    const run_gen_estree_encoder = b.addRunArtifact(gen_estree_encoder_exe);
+    const gen_estree_encoder_output = run_gen_estree_encoder.captureStdOut(.{});
+
+    const gen_estree_encoder_step = b.step("gen-estree-encoder", "Generate encode.js ESTree encoder from AST types");
+    gen_estree_encoder_step.dependOn(&b.addInstallFile(gen_estree_encoder_output, "encode.js").step);
 }
