@@ -65,7 +65,7 @@ pub fn parseClassDecorated(
     else
         .null;
 
-    if (id == .null and !opts.is_expression and !opts.is_default_export and !is_ts) {
+    if (id == .null and !opts.is_expression and !opts.is_default_export) {
         try parser.report(
             parser.current_token.span,
             "Class declaration requires a name",

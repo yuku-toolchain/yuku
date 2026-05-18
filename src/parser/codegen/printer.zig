@@ -16,7 +16,7 @@ pub const SourceMapOptions = sourcemap.Options;
 pub const Format = enum {
     /// Indented, with spaces around operators and after commas.
     pretty,
-    /// No discretionary whitespace; only what the grammar requires.
+    /// No discretionary whitespace, only what the grammar requires.
     compact,
 };
 
@@ -42,9 +42,9 @@ pub const Diagnostic = struct {
     end: u32,
 };
 
-/// Output of a codegen run. All buffers are owned by the allocator passed
-/// to `print`/`strip`/`minify`; `deinit` with the same allocator frees
-/// them.
+/// Output of a codegen run. All buffers are owned by the allocator
+/// passed to `print`/`strip`/`minify`. Call `deinit` with the same
+/// allocator to free them.
 pub const Result = struct {
     code: []const u8,
     /// Empty when codegen succeeded cleanly.
@@ -61,10 +61,10 @@ pub const Result = struct {
 
 pub const Error = error{OutOfMemory};
 
-/// comptime configuration
+/// Comptime configuration for the print pipeline.
 pub const Config = struct {
     strip_ts: bool = false,
-    /// when true, applies size-reducing substitutions during emit
+    /// When true, applies size-reducing substitutions during emit.
     minify: bool = false,
 };
 
@@ -118,7 +118,7 @@ fn Printer(comptime cfg: Config) type {
         /// rather than emitted immediately. The next statement flushes it,
         /// a closing `}` clears it, eliminating the trailing `;` for free.
         pending_semi: bool = false,
-        /// Source-map state. Present iff `options.source_maps != null`.
+        /// Source-map state. Present if `options.source_maps != null`.
         sm: ?sourcemap.State = null,
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
@@ -131,7 +131,8 @@ fn Printer(comptime cfg: Config) type {
         try p.code.ensureTotalCapacity(allocator, tree.source.len);
         if (options.source_maps) |sm_opts| {
             p.sm = try sourcemap.State.init(allocator, sm_opts);
-            // pre-size to ~one segment per node; avoids reallocations.
+            // pre-size to roughly one segment per node so the append
+            // loop never reallocates.
             try p.sm.?.mappings.ensureTotalCapacity(allocator, tree.nodes.len);
         }
         return p;
@@ -232,8 +233,8 @@ fn Printer(comptime cfg: Config) type {
         return start > 0 and self.code.items[start - 1] != tail;
     }
 
-    /// emits `idx` in a position where a statement is grammatically required;
-    /// substitutes an empty statement if the emit produces no output.
+    /// Emits `idx` in a position where a statement is grammatically required.
+    /// Substitutes an empty statement when the emit produces no output.
     fn emitStmt(self: *Self, idx: NodeIndex) Error!void {
         if (!try self.tryEmit(idx)) try self.writeByte(';');
     }
@@ -256,9 +257,9 @@ fn Printer(comptime cfg: Config) type {
                 .ts_namespace_export_declaration,
                 .ts_this_parameter,
                 => return,
-                .ts_as_expression => |e| return self.emit(e.expression),
-                .ts_satisfies_expression => |e| return self.emit(e.expression),
-                .ts_type_assertion => |e| return self.emit(e.expression),
+                .ts_as_expression => |e| return self.stripTsCast(e.expression),
+                .ts_satisfies_expression => |e| return self.stripTsCast(e.expression),
+                .ts_type_assertion => |e| return self.stripTsCast(e.expression),
                 .ts_non_null_expression => |e| return self.emit(e.expression),
                 .ts_instantiation_expression => |e| return self.emit(e.expression),
                 .ts_enum_declaration => |e| {
@@ -308,9 +309,18 @@ fn Printer(comptime cfg: Config) type {
             .identifier_name,
             .binding_identifier,
             .label_identifier,
-            .private_identifier,
             .jsx_identifier,
             => |id| @intCast(try sm.intern(self.allocator, self.tree.string(id.name))),
+            // a private field's span includes the leading `#`, so we
+            // record the name with the sigil to match the source token.
+            .private_identifier => |id| blk: {
+                const raw = self.tree.string(id.name);
+                var buf: [256]u8 = undefined;
+                if (raw.len + 1 > buf.len) break :blk -1;
+                buf[0] = '#';
+                @memcpy(buf[1..][0..raw.len], raw);
+                break :blk @intCast(try sm.intern(self.allocator, buf[0 .. raw.len + 1]));
+            },
             else => -1,
         };
         try sm.record(self.allocator, orig.line, orig.col, name_idx);
@@ -325,6 +335,20 @@ fn Printer(comptime cfg: Config) type {
         });
     }
 
+    /// Strip-mode helper for `as`, `satisfies`, and angle-bracket type
+    /// assertions. Wraps an object literal so the bare `{...}` is not
+    /// re-parsed as a block when the assertion sat in arrow-body or
+    /// expression-statement position.
+    fn stripTsCast(self: *Self, expr: NodeIndex) Error!void {
+        if (self.tree.data(expr) == .object_expression) {
+            try self.writeByte('(');
+            try self.emit(expr);
+            try self.writeByte(')');
+        } else {
+            try self.emit(expr);
+        }
+    }
+
     fn emit_program(self: *Self, p: ast.Program) Error!void {
         if (p.hashbang) |h| {
             try self.writeStr("#!");
@@ -336,8 +360,8 @@ fn Printer(comptime cfg: Config) type {
     }
 
     /// Emits a list of statements, flushing the deferred `;` between each.
-    /// On strip-to-nothing, rewinds buffer and restores `pending_semi` so the
-    /// preceding statement's terminator isn't lost.
+    /// On strip-to-nothing, rewinds the buffer and restores `pending_semi`
+    /// so the preceding statement's terminator is not lost.
     fn printStmtList(self: *Self, items: IndexRange) Error!void {
         var first = true;
         for (self.tree.extra(items)) |s| {
@@ -407,9 +431,9 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_empty_statement(self: *Self, _: ast.EmptyStatement) Error!void {
-        // Direct `;` (not deferred): when this serves as the body of an outer
-        // control-flow construct (`if(x);`, `for(;;);`, `lbl:;`), the parser
-        // requires the `;` to materialize the body.
+        // direct `;` (not deferred): when this is the body of an outer
+        // control-flow construct like `if(x);`, `for(;;);`, or `lbl:;`,
+        // the parser requires the `;` to materialize the body.
         try self.writeByte(';');
     }
 
@@ -1450,11 +1474,19 @@ fn Printer(comptime cfg: Config) type {
 
     fn printDecorators(self: *Self, decs: IndexRange) Error!void {
         const list = self.tree.extra(decs);
+        if (list.len == 0) return;
+        // capture the parent node's mapping before decorator content
+        // writes its own and re-record it after, so the text that
+        // follows the decorators still maps back to the parent.
+        const carry: ?sourcemap.Segment = if (self.sm) |*sm| sm.lastMapping() else null;
         for (list, 0..) |d, i| {
             try self.emit(d);
             // `@a.b class` would fuse to `@a.bclass` without a separator.
             if (self.pretty()) try self.newline() else if (i + 1 == list.len) try self.writeByte(' ');
         }
+        if (carry) |c| if (self.sm) |*sm| {
+            try sm.record(self.allocator, c.orig_line, c.orig_col, c.name_idx);
+        };
     }
 
     fn emit_import_declaration(self: *Self, d: ast.ImportDeclaration) Error!void {
@@ -1586,13 +1618,13 @@ fn Printer(comptime cfg: Config) type {
     fn emit_export_default_declaration(self: *Self, d: ast.ExportDefaultDeclaration) Error!void {
         const cur = self.cursor();
         try self.writeStr("export default ");
-        // strip can erase the inner declaration (`export default interface ...`);
-        // back out the `export default ` prefix if so
+        // strip can erase the inner declaration (`export default interface ...`),
+        // in which case we back out the `export default ` prefix too.
         if (!try self.tryEmit(d.declaration)) {
             self.restore(cur);
             return;
         }
-        // expression default needs ';'; function/class declaration default does not
+        // expression defaults need `;`, function/class declarations do not.
         switch (self.tree.data(d.declaration)) {
             .function, .class => {},
             else => try self.softSemi(),
@@ -1670,7 +1702,7 @@ fn Printer(comptime cfg: Config) type {
     fn emit_ts_qualified_name(self: *Self, q: ast.TSQualifiedName) Error!void {
         try self.emitEntityName(q.left);
         try self.writeByte('.');
-        try self.emit(q.right);
+        try self.emitEntityName(q.right);
     }
 
     fn emit_ts_type_query(self: *Self, q: ast.TSTypeQuery) Error!void {
@@ -1701,8 +1733,12 @@ fn Printer(comptime cfg: Config) type {
     /// references require a bare entity name.
     fn emitEntityName(self: *Self, idx: NodeIndex) Error!void {
         if (idx == .null) return;
-        switch (self.tree.data(idx)) {
-            .identifier_reference => |id| try self.writeString(id.name),
+        const data = self.tree.data(idx);
+        switch (data) {
+            .identifier_reference => |id| {
+                if (self.sm != null) try self.recordMapping(idx, data);
+                try self.writeString(id.name);
+            },
             else => try self.emit(idx),
         }
     }
@@ -2160,7 +2196,9 @@ fn Printer(comptime cfg: Config) type {
         if (d.declare) try self.writeStr("declare ");
         try self.writeStr(d.kind.toString());
         try self.writeByte(' ');
-        try self.emit(d.id);
+        // route through emitEntityName so the minify-mode `undefined ->
+        // void 0` rewrite never fires on a declaration name.
+        try self.emitEntityName(d.id);
         if (d.body != .null) {
             try self.space();
             try self.emit(d.body);
@@ -2175,7 +2213,7 @@ fn Printer(comptime cfg: Config) type {
 
     fn emit_ts_global_declaration(self: *Self, d: ast.TSGlobalDeclaration) Error!void {
         if (d.declare) try self.writeStr("declare ");
-        try self.emit(d.id);
+        try self.emitEntityName(d.id);
         try self.space();
         try self.emit(d.body);
     }

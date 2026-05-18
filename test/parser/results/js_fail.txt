@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       3634/3634 (100.00%)
+Passed:       3635/3635 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -13334,6 +13334,17 @@ error: Optional chaining is not allowed in assignment pattern
    | ^^^^
    |
    = help: Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns.
+
+
+✓ test/parser/suite/js/fail/61f44855711d6039.module.js
+error: Class declaration requires a name
+   |
+ 2 | //@target: es2015
+ 3 | export class {
+   |              ^
+ 4 | }
+   |
+   = help: Add a name after 'class', e.g. 'class MyClass {}'.
 
 
 ✓ test/parser/suite/js/fail/62d233859ff4b7c3.js

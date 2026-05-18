@@ -11,9 +11,10 @@
     "test:fuzz": "zig build test --fuzz=200K",
     "test:parser": "bun test/parser/run.ts",
     "test:codegen": "bun test/codegen/run.ts",
+    "test:sourcemap": "bun test/sourcemap/run.ts",
     "test:minifier": "bun test/minifier/run.ts",
     "format": "zig fmt **/*.zig",
-    "test": "bun load-files && bun build:npm && bun test:parser && bun test:codegen && bun test:minifier",
+    "test": "bun load-files && bun build:npm && bun test:parser && bun test:codegen && bun test:sourcemap && bun test:minifier",
     "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
     "play": "bun build:npm && bun --console-depth=20 test/playground.ts",
     "release:npm": "napi bump",
@@ -21,6 +22,9 @@
     "build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-estree-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen"
   },
   "devDependencies": {
+    "@babel/generator": "^7.29.1",
+    "@babel/parser": "^7.29.3",
+    "@jridgewell/trace-mapping": "^0.3.31",
     "@types/bun": "^1.3.11",
     "@types/node": "^25.5.0",
     "fast-deep-equal": "^3.1.3",
