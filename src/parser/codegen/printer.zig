@@ -679,7 +679,7 @@ fn Printer(comptime cfg: Config) type {
         try self.writeStr(op);
         if (isWordOp(op)) try self.writeByte(' ');
         // `+ +x` would print as `++x` and re-lex as a prefix update.
-        if (!self.pretty() and op.len == 1 and (op[0] == '+' or op[0] == '-')) {
+        if (op.len == 1 and (op[0] == '+' or op[0] == '-')) {
             if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
         }
         try self.emit(e.argument);
