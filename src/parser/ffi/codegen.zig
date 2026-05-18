@@ -7,11 +7,13 @@ const Options = struct {
     format: parser.codegen.Format = .pretty,
     indent: u8 = 2,
     quotes: parser.codegen.Quotes = .double,
+    source_maps: ?parser.codegen.SourceMapOptions = null,
 };
 
 const Result = struct {
     code: []const u8,
     errors: []const parser.codegen.Diagnostic,
+    map: ?parser.codegen.SourceMap = null,
 };
 
 const Op = enum { print, strip, minify };
@@ -23,18 +25,21 @@ fn run(comptime op: Op, env: napi.Env, buffer: napi.Val, options: Options) !Resu
     var tree = transfer.deserializeFromBuf(allocator, bytes, "") catch return error.DecodeFailed;
     defer tree.deinit();
 
-    const codegen_opts: parser.codegen.Options = .{
-        .format = options.format,
-        .indent = options.indent,
-        .quotes = options.quotes,
-    };
-
     const result = switch (op) {
-        .print => try parser.codegen.print(allocator, &tree, codegen_opts),
-        .strip => try parser.codegen.strip(allocator, &tree, codegen_opts),
-        .minify => try parser.codegen.minify(allocator, &tree, codegen_opts),
+        .print => try parser.codegen.print(allocator, &tree, asCodegenOptions(options)),
+        .strip => try parser.codegen.strip(allocator, &tree, asCodegenOptions(options)),
+        .minify => try parser.codegen.minify(allocator, &tree, asCodegenOptions(options)),
     };
-    return .{ .code = result.code, .errors = result.errors };
+    return .{ .code = result.code, .errors = result.errors, .map = result.map };
+}
+
+inline fn asCodegenOptions(o: Options) parser.codegen.Options {
+    return .{
+        .format = o.format,
+        .indent = o.indent,
+        .quotes = o.quotes,
+        .source_maps = o.source_maps,
+    };
 }
 
 pub fn print(env: napi.Env, buffer: napi.Val, options: Options) !Result {

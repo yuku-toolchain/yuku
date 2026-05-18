@@ -1,45 +1,71 @@
 import type { Program } from "yuku-parser";
 
 /** Whitespace mode for the generated output. */
-type Format = "pretty" | "compact";
+export type Format = "pretty" | "compact";
 
 /** Quote style for emitted string literals. */
-type Quotes = "double" | "single";
+export type Quotes = "double" | "single";
+
+/** Source-map configuration. Pass to `CodegenOptions.sourceMaps` to enable. */
+export interface SourceMapOptions {
+  /** Original source the AST was parsed from. Required. */
+  source: string;
+  /** Output filename, embedded as the map's `file`. */
+  file?: string;
+  /** Source filename, embedded as the single entry of `sources`. */
+  sourceFileName?: string;
+  /** Prefix embedded as `sourceRoot`. */
+  sourceRoot?: string;
+  /**
+   * When true, embeds `source` into `sourcesContent`.
+   * @default false
+   */
+  sourcesContent?: boolean;
+}
 
 /** Codegen options shared by `print`, `strip`, and `minify`. */
-interface CodegenOptions {
-  /**
-   * Whitespace mode.
-   * @default "pretty"
-   */
+export interface CodegenOptions {
+  /** @default "pretty" */
   format?: Format;
   /**
-   * Spaces per indentation level. Only used when `format === "pretty"`.
+   * Spaces per indentation level. Used only when `format = "pretty"`.
    * @default 2
    */
   indent?: number;
-  /**
-   * Quote style for emitted string literals.
-   * @default "double"
-   */
+  /** @default "double" */
   quotes?: Quotes;
+  /** Pass to enable source maps. Omit to disable. */
+  sourceMaps?: SourceMapOptions;
 }
 
 /** A codegen-detected problem in the input AST. */
-interface Diagnostic {
+export interface Diagnostic {
   message: string;
-  /** Byte offset. */
+  /** Byte offset where the problem starts. */
   start: number;
-  /** Byte offset. */
+  /** Byte offset where the problem ends. */
   end: number;
 }
 
+/** Source Map V3. */
+export interface SourceMap {
+  version: 3;
+  file: string | null;
+  sourceRoot: string | null;
+  sources: string[];
+  sourcesContent: (string | null)[] | null;
+  names: string[];
+  /** VLQ-encoded mappings string. */
+  mappings: string;
+}
+
 /** Result of a codegen run. */
-interface CodegenResult {
-  /** Generated source code. */
+export interface CodegenResult {
   code: string;
-  /** Codegen-detected problems. Empty when codegen succeeded cleanly. */
+  /** Empty when codegen succeeded cleanly. */
   errors: Diagnostic[];
+  /** `null` unless `sourceMaps` was enabled. */
+  map: SourceMap | null;
 }
 
 /** Renders the AST verbatim, preserving TypeScript syntax. */
@@ -48,7 +74,8 @@ export function print(estree: Program, options?: CodegenOptions): CodegenResult;
 /** Renders the AST as JavaScript, dropping TypeScript-specific syntax. */
 export function strip(estree: Program, options?: CodegenOptions): CodegenResult;
 
-/** Renders the AST with size-reducing substitutions. Combine with `format: "compact"` for fully minified output. */
+/**
+ * Renders the AST with size-reducing rewrites. Combine with
+ * `format: "compact"` for full minification.
+ */
 export function minify(estree: Program, options?: CodegenOptions): CodegenResult;
-
-export type { CodegenOptions, CodegenResult, Diagnostic, Format, Quotes };
