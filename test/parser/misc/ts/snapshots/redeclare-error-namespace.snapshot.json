@@ -391,45 +391,30 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Error: namespace conflicts.",
       "start": 0,
       "end": 30
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " instantiated namespace + var (instantiated namespace occupies value space)",
       "start": 32,
       "end": 109
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " var + instantiated namespace",
       "start": 162,
       "end": 193
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " instantiated namespace + let",
       "start": 246,
       "end": 277
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " instantiated namespace + const",
       "start": 330,
       "end": 363

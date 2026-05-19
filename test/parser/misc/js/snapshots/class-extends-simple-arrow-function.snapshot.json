@@ -12,9 +12,9 @@
     {
       "severity": "error",
       "message": "Expected '{' to start class body, but found '=>'",
+      "help": "Class body must be enclosed in braces: class Name { ... }",
       "start": 28,
       "end": 30,
-      "help": "Class body must be enclosed in braces: class Name { ... }",
       "labels": []
     }
   ]

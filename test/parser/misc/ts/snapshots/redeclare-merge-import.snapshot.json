@@ -594,99 +594,66 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Imports are permissive: a parser cannot tell whether an imported name",
       "start": 0,
       "end": 72
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " resolves to a value, a type, or both. The original bug case --",
       "start": 73,
       "end": 138
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " `import { nice } from \"cool\"; const nice = class implements nice {}`",
       "start": 139,
       "end": 210
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " must NOT fire a redeclaration error.",
       "start": 211,
       "end": 250
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " import + class with same name: still no error.",
       "start": 356,
       "end": 405
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " import + const",
       "start": 443,
       "end": 460
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " import + function",
       "start": 500,
       "end": 520
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " import + let (namespace import)",
       "start": 567,
       "end": 601
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " import + interface (the import might be a type re-export)",
       "start": 644,
       "end": 704
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " import + type alias",
       "start": 760,
       "end": 782
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " Two imports of the same name DO conflict (unambiguous duplicate).",
       "start": 826,
       "end": 894

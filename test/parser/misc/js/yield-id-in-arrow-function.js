@@ -1,5 +1,1 @@
-function* a() {
-  (b) => {
-    yield;
-  };
-}
+ function *a() { (b) => { yield }; }

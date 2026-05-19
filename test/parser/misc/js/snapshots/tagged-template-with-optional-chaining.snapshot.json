@@ -65,9 +65,9 @@
     {
       "severity": "error",
       "message": "Tagged template expressions are not permitted in an optional chain",
+      "help": "Remove the optional chaining operator '?.' before the template literal or add parentheses.",
       "start": 17,
       "end": 19,
-      "help": "Remove the optional chaining operator '?.' before the template literal or add parentheses.",
       "labels": []
     }
   ]

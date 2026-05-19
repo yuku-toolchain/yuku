@@ -381,63 +381,42 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Valid: type-only declarations don't conflict with value-only ones.",
       "start": 0,
       "end": 69
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " type alias (type) + var (value)",
       "start": 71,
       "end": 105
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " interface (type) + const (value)",
       "start": 137,
       "end": 172
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " interface (type) + let (value)",
       "start": 204,
       "end": 237
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " interface (type) + function (value)",
       "start": 267,
       "end": 305
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " non-instantiated namespace (type+namespace, no value) + var (value)",
       "start": 340,
       "end": 410
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " type alias + namespace (type-only namespace)",
       "start": 472,
       "end": 519

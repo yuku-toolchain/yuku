@@ -295,45 +295,30 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Error: enum redeclaration cases.",
       "start": 0,
       "end": 35
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " regular enum + const enum (different constness)",
       "start": 37,
       "end": 87
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " const enum + regular enum (reverse)",
       "start": 129,
       "end": 167
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " const enum + class (both occupy value+type)",
       "start": 209,
       "end": 255
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " regular enum + interface (regular enum occupies type space too)",
       "start": 292,
       "end": 358

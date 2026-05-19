@@ -1,1 +1,1 @@
-const testCall = async(firstArg, ...secondSpread, ...thirdSpread);
+const testCall = async(firstArg, ...secondSpread, ...thirdSpread)

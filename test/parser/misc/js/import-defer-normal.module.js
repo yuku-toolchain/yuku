@@ -1,1 +1,1 @@
-import defer from "module";
+import defer from "module"

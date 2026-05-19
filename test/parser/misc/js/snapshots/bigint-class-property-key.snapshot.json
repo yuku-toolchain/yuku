@@ -40,6 +40,7 @@
                 "type": "AssignmentExpression",
                 "start": 26,
                 "end": 48,
+                "operator": "=",
                 "left": {
                   "type": "MemberExpression",
                   "start": 26,
@@ -68,8 +69,7 @@
                   "end": 48,
                   "value": 200,
                   "raw": "200"
-                },
-                "operator": "="
+                }
               },
               "computed": false,
               "static": false

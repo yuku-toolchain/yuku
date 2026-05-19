@@ -301,63 +301,42 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Error: class redeclaration cases.",
       "start": 0,
       "end": 36
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " class + class",
       "start": 38,
       "end": 54
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " class + let",
       "start": 80,
       "end": 94
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " let + class",
       "start": 120,
       "end": 134
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " class + function (function is value, class is value+type. Both occupy value",
       "start": 160,
       "end": 238
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " space, no overload merge across kinds.)",
       "start": 239,
       "end": 281
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " class + enum (both occupy value+type)",
       "start": 312,
       "end": 352

@@ -31,6 +31,7 @@
                   "type": "Property",
                   "start": 20,
                   "end": 30,
+                  "kind": "init",
                   "key": {
                     "type": "Literal",
                     "start": 20,
@@ -45,7 +46,6 @@
                     "end": 30,
                     "name": "value"
                   },
-                  "kind": "init",
                   "method": false,
                   "shorthand": false,
                   "computed": false
@@ -54,6 +54,7 @@
                   "type": "Property",
                   "start": 34,
                   "end": 44,
+                  "kind": "init",
                   "key": {
                     "type": "Literal",
                     "start": 35,
@@ -70,7 +71,6 @@
                     "raw": "72n",
                     "bigint": "72"
                   },
-                  "kind": "init",
                   "method": false,
                   "shorthand": false,
                   "computed": true

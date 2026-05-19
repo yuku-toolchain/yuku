@@ -1,1 +1,1 @@
-const testCall = async(argument);
+const testCall = async(argument)

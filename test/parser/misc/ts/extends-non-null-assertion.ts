@@ -1,3 +1,3 @@
 declare const Base: { new (): {} } | null;
 
-class C extends (Base!) {}
+class C extends Base! {}

@@ -459,36 +459,24 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Valid: namespace + namespace merge.",
       "start": 0,
       "end": 38
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " Valid: namespace + class merge (instantiated namespace augments class).",
       "start": 118,
       "end": 192
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " Valid: namespace + function merge.",
       "start": 264,
       "end": 301
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " Valid: namespace + enum merge.",
       "start": 365,
       "end": 398

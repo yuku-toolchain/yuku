@@ -63,9 +63,9 @@
     {
       "severity": "error",
       "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'cool'",
+      "help": "Try inserting a semicolon here",
       "start": 32,
       "end": 36,
-      "help": "Try inserting a semicolon here",
       "labels": []
     }
   ]

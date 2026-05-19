@@ -1,1 +1,1 @@
-import(modulePath);
+import(modulePath)

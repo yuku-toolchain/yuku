@@ -34,33 +34,33 @@
     {
       "severity": "error",
       "message": "'for await' is only valid with for-of loops",
+      "help": null,
       "start": 34,
       "end": 35,
-      "help": null,
       "labels": []
     },
     {
       "severity": "error",
       "message": "'for await' requires 'of', not 'in'",
+      "help": null,
       "start": 56,
       "end": 58,
-      "help": null,
       "labels": []
     },
     {
       "severity": "error",
       "message": "'for await' requires 'of', not 'in'",
+      "help": null,
       "start": 84,
       "end": 86,
-      "help": null,
       "labels": []
     },
     {
       "severity": "error",
       "message": "'for await' is only valid with for-of loops",
+      "help": null,
       "start": 115,
       "end": 116,
-      "help": null,
       "labels": []
     }
   ]

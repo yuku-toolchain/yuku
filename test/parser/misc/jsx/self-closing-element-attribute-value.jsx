@@ -1,1 +1,1 @@
-<div attr=<span /> data-test />;
+<div attr=<span /> data-test />

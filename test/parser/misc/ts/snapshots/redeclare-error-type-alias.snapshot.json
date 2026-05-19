@@ -249,45 +249,30 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Error: type aliases do not merge with anything in the type space.",
       "start": 0,
       "end": 68
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " type alias + type alias",
       "start": 70,
       "end": 96
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " type alias + interface",
       "start": 134,
       "end": 159
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " interface + type alias (reverse order)",
       "start": 209,
       "end": 250
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " type alias + class",
       "start": 300,
       "end": 321

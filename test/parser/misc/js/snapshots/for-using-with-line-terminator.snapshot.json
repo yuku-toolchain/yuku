@@ -12,9 +12,9 @@
     {
       "severity": "error",
       "message": "Expected ';' after for-loop init, but found 'id'",
+      "help": null,
       "start": 11,
       "end": 13,
-      "help": null,
       "labels": []
     }
   ]

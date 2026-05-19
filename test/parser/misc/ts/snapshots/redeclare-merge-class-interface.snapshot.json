@@ -241,18 +241,12 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": false,
-      "followedByNewline": true,
       "value": " Valid: class + interface merge (interface adds members to class instances).",
       "start": 0,
       "end": 78
     },
     {
       "type": "Line",
-      "kind": "normal",
-      "precededByNewline": true,
-      "followedByNewline": true,
       "value": " Reverse order also valid.",
       "start": 136,
       "end": 164
