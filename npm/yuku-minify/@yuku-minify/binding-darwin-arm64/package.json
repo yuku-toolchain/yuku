@@ -1,18 +1,18 @@
 {
   "name": "@yuku-minify/binding-darwin-arm64",
   "version": "0.5.9",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuku-toolchain/yuku"
-  },
-  "files": [
-    "yuku-minify.node"
-  ],
   "os": [
     "darwin"
   ],
   "cpu": [
     "arm64"
   ],
-  "main": "yuku-minify.node"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "main": "yuku-minify.node",
+  "files": [
+    "yuku-minify.node"
+  ]
 }

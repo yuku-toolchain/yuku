@@ -1,13 +1,6 @@
 {
   "name": "@yuku-codegen/binding-linux-arm64-gnu",
   "version": "0.5.9",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuku-toolchain/yuku"
-  },
-  "files": [
-    "yuku-codegen.node"
-  ],
   "os": [
     "linux"
   ],
@@ -17,5 +10,12 @@
   "libc": [
     "glibc"
   ],
-  "main": "yuku-codegen.node"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "main": "yuku-codegen.node",
+  "files": [
+    "yuku-codegen.node"
+  ]
 }
