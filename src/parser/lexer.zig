@@ -1392,14 +1392,22 @@ pub const Lexer = struct {
 
     fn classifyBlockComment(value: []const u8) ast.Comment.Kind {
         if (value.len == 0) return .normal;
-        if (value[0] == '!') return .legal;
-        if (std.mem.indexOf(u8, value, "@license") != null) return .legal;
-        if (std.mem.indexOf(u8, value, "@preserve") != null) return .legal;
-        if (std.mem.indexOf(u8, value, "@cc_on") != null) return .legal;
+        const first = value[0];
+        if (first == '!') return .legal;
+
+        var i: usize = 0;
+        while (std.mem.findScalarPos(u8, value, i, '@')) |pos| {
+            const rest = value[pos..];
+            if (std.mem.startsWith(u8, rest, "@license") or
+                std.mem.startsWith(u8, rest, "@preserve") or
+                std.mem.startsWith(u8, rest, "@cc_on")) return .legal;
+            i = pos + 1;
+        }
+
         if (matchesAnnotation(value, "__PURE__")) return .pure;
         if (matchesAnnotation(value, "__NO_SIDE_EFFECTS__")) return .no_side_effects;
-        if (value[0] == '#' or value[0] == '@') return .annotation;
-        if (value[0] == '*') return .jsdoc;
+        if (first == '#' or first == '@') return .annotation;
+        if (first == '*') return .jsdoc;
         return .normal;
     }
 
