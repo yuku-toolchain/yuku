@@ -23,6 +23,23 @@ pub const Format = enum {
 /// Quote style for emitted string literals.
 pub const Quotes = enum { double, single };
 
+/// Filter applied to `tree.comments` when emitting. Consumers walking
+/// `tree.comments` themselves can mirror this by switching on
+/// `Comment.kind` and `Comment.type`.
+pub const Comments = enum {
+    /// Drop all comments.
+    none,
+    /// Emit every comment.
+    all,
+    /// Emit legal headers, JSDoc, and tree-shaking annotations
+    /// (`__PURE__`, `__NO_SIDE_EFFECTS__`, and `@`/`#` annotations).
+    some,
+    /// Emit `// ...` only.
+    line,
+    /// Emit `/* ... */` only.
+    block,
+};
+
 /// Codegen options.
 pub const Options = struct {
     format: Format = .pretty,
@@ -31,6 +48,9 @@ pub const Options = struct {
     quotes: Quotes = .double,
     /// Set to enable Source Map V3 output alongside the code.
     source_maps: ?SourceMapOptions = null,
+    /// Comment passthrough filter. Defaults to `.some`, which preserves
+    /// legal headers, JSDoc, and tree-shaking annotations.
+    comments: Comments = .some,
 };
 
 /// A codegen-detected problem in the input AST.
@@ -120,6 +140,11 @@ fn Printer(comptime cfg: Config) type {
         pending_semi: bool = false,
         /// Source-map state. Present if `options.source_maps != null`.
         sm: ?sourcemap.State = null,
+        /// Next comment to consider for emission.
+        comment_cursor: u32 = 0,
+        /// Source offset where the most recently emitted node ended.
+        /// Anchors trailing-same-line placement decisions.
+        last_emit_end: u32 = 0,
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
@@ -193,7 +218,7 @@ fn Printer(comptime cfg: Config) type {
 
     fn newline(self: *Self) Error!void {
         if (!self.pretty()) return;
-        try self.writeByte('\n');
+        if (self.lastByte() != '\n') try self.writeByte('\n');
         const n = self.indent_depth * self.options.indent;
         try self.code.appendNTimes(self.allocator, ' ', n);
         if (self.sm) |*sm| sm.gen_col = n;
@@ -283,6 +308,12 @@ fn Printer(comptime cfg: Config) type {
             }
         }
 
+        const span = self.tree.span(idx);
+        const has_span = !(span.start == 0 and span.end == 0);
+        if (self.options.comments != .none) {
+            if (has_span) try self.flushCommentsBefore(span.start);
+        }
+
         if (self.sm != null) try self.recordMapping(idx, data);
 
         switch (data) {
@@ -295,15 +326,109 @@ fn Printer(comptime cfg: Config) type {
                 }
             },
         }
+
+        if (has_span) self.last_emit_end = @max(self.last_emit_end, span.end);
     }
 
-    /// Records a mapping for `idx`. Skips synthetic spans (0, 0).
+    inline fn allowComment(self: *const Self, c: ast.Comment) bool {
+        return switch (self.options.comments) {
+            .none => false,
+            .all => true,
+            .some => c.kind != .normal,
+            .line => c.type == .line,
+            .block => c.type == .block,
+        };
+    }
+
+    inline fn lastByte(self: *const Self) u8 {
+        const items = self.code.items;
+        return if (items.len == 0) 0 else items[items.len - 1];
+    }
+
+    inline fn lineOf(self: *const Self, pos: u32) u32 {
+        return self.tree.lineColOf(pos).line;
+    }
+
+    fn flushCommentsBefore(self: *Self, next_start: u32) Error!void {
+        const next_line = self.lineOf(next_start);
+        while (self.comment_cursor < self.tree.comments.len) {
+            const c = self.tree.comments[self.comment_cursor];
+            if (c.start >= next_start) return;
+            self.comment_cursor += 1;
+            if (self.allowComment(c)) try self.placeComment(c, next_line);
+        }
+    }
+
+    fn flushTrailingComments(self: *Self) Error!void {
+        if (self.last_emit_end == 0) return;
+        const line = self.lineOf(self.last_emit_end);
+        while (self.comment_cursor < self.tree.comments.len) {
+            const c = self.tree.comments[self.comment_cursor];
+            if (c.preceded_by_newline or self.lineOf(c.start) != line) return;
+            self.comment_cursor += 1;
+            if (self.allowComment(c)) try self.emitTrailing(c);
+        }
+    }
+
+    fn placeComment(self: *Self, c: ast.Comment, next_line: u32) Error!void {
+        const start_line = self.lineOf(c.start);
+        const prev_line = if (self.last_emit_end == 0) start_line else self.lineOf(self.last_emit_end);
+        const last = self.lastByte();
+
+        if (c.type == .block and !c.followed_by_newline and self.lineOf(c.end) == next_line) {
+            if (self.pretty() and last != 0 and last != ' ' and last != '\n') try self.writeByte(' ');
+            try self.writeCommentBody(c);
+            if (self.pretty()) try self.writeByte(' ');
+            return;
+        }
+
+        if (self.last_emit_end != 0 and !c.preceded_by_newline and start_line == prev_line) {
+            try self.emitTrailing(c);
+            return;
+        }
+
+        if (last != '\n' and last != 0) try self.breakLine();
+        if (self.pretty() and self.last_emit_end != 0 and start_line > prev_line + 1) try self.breakLine();
+        try self.writeCommentBody(c);
+        if (c.type == .line or c.followed_by_newline) try self.breakLine() else if (self.pretty()) try self.writeByte(' ');
+    }
+
+    fn emitTrailing(self: *Self, c: ast.Comment) Error!void {
+        try self.writeByte(' ');
+        try self.writeCommentBody(c);
+        if (c.type == .line) try self.breakLine();
+    }
+
+    inline fn writeCommentBody(self: *Self, c: ast.Comment) Error!void {
+        const value = self.tree.string(c.value);
+        try self.writeStr(if (c.type == .line) "//" else "/*");
+        try self.code.appendSlice(self.allocator, value);
+        if (self.sm) |*sm| sm.advance(value);
+        if (c.type == .block) {
+            try self.code.appendSlice(self.allocator, "*/");
+            if (self.sm) |*sm| sm.advance("*/");
+        }
+    }
+
+    /// Forced newline plus indent, Newline is always written, indent is
+    /// pretty-mode only.
+    fn breakLine(self: *Self) Error!void {
+        try self.code.append(self.allocator, '\n');
+        const n = if (self.pretty()) self.indent_depth * self.options.indent else 0;
+        if (n > 0) try self.code.appendNTimes(self.allocator, ' ', n);
+        if (self.sm) |*sm| {
+            sm.gen_line += 1;
+            sm.gen_col = n;
+        }
+    }
+
+    /// Records a source-map segment for `idx`. Skips synthetic spans.
     fn recordMapping(self: *Self, idx: NodeIndex, data: NodeData) Error!void {
         var sm = &self.sm.?;
         const span = self.tree.span(idx);
         if (span.start == 0 and span.end == 0) return;
 
-        const orig = sm.locate(span.start);
+        const orig = self.tree.lineColOf(span.start);
         const name_idx: i32 = switch (data) {
             inline .identifier_reference,
             .identifier_name,
@@ -353,10 +478,13 @@ fn Printer(comptime cfg: Config) type {
         if (p.hashbang) |h| {
             try self.writeStr("#!");
             try self.writeString(h.value);
-            try self.newline();
+            // hashbang ends at the line terminator. force `\n` even in
+            // compact mode so the next token doesn't merge into it.
+            try self.writeByte('\n');
         }
         try self.printStmtList(p.body);
         self.pending_semi = false;
+        if (self.options.comments != .none) try self.flushCommentsBefore(std.math.maxInt(u32));
     }
 
     /// Emits a list of statements, flushing the deferred `;` between each.
@@ -371,6 +499,7 @@ fn Printer(comptime cfg: Config) type {
             try self.flushSemi();
             if (try self.tryEmit(s)) {
                 first = false;
+                if (self.options.comments != .none) try self.flushTrailingComments();
             } else {
                 self.restore(cur);
                 self.pending_semi = saved_semi;
@@ -795,8 +924,7 @@ fn Printer(comptime cfg: Config) type {
     /// `x!=…` would re-lex `!` (non-null assertion) into `!=`. pad if needed.
     inline fn separateBangFromAssign(self: *Self) Error!void {
         if (self.pretty()) return;
-        const items = self.code.items;
-        if (items.len > 0 and items[items.len - 1] == '!') try self.writeByte(' ');
+        if (self.lastByte() == '!') try self.writeByte(' ');
     }
 
     /// emits `idx` as an assignment/destructuring target, wrapping a bare
@@ -1438,6 +1566,11 @@ fn Printer(comptime cfg: Config) type {
     fn emit_property_definition(self: *Self, p: ast.PropertyDefinition) Error!void {
         if (comptime strip_ts) if (p.declare or p.abstract) return;
         try self.printDecorators(p.decorators);
+        // flush before any modifier so `/*..*/` can't land between a
+        // restricted-production modifier (`accessor`) and the key.
+        if (self.options.comments != .none) {
+            try self.flushCommentsBefore(self.tree.span(p.key).start);
+        }
         if (comptime !strip_ts) {
             if (p.declare) try self.writeStr("declare ");
             if (p.accessibility != .none) {
@@ -1787,8 +1920,8 @@ fn Printer(comptime cfg: Config) type {
     }
 
     fn emit_ts_literal_type(self: *Self, t: ast.TSLiteralType) Error!void {
-        // In a type position `true`/`false` are literal types, not expressions:
-        // the minify-mode `!0`/`!1` shorthand is invalid syntax here. Emit the
+        // in a type position `true`/`false` are literal types, not expressions:
+        // the minify-mode `!0`/`!1` shorthand is invalid syntax here. emit the
         // keyword form directly and let everything else (string/number/bigint/
         // template) fall through to its normal emitter.
         switch (self.tree.data(t.literal)) {
@@ -2439,12 +2572,12 @@ fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     return std.mem.eql(u8, tree.string(an), tree.string(bn));
 }
 
-// Whether an object property / binding property can stay in shorthand form
-// (`{ name }`) at emit time. The parser sets `shorthand = true` when the
+// whether an object property / binding property can stay in shorthand form
+// (`{ name }`) at emit time. the parser sets `shorthand = true` when the
 // source was written that way, but a later rename pass (the mangler) may
-// have changed the value-side binding without touching the key. At that
+// have changed the value-side binding without touching the key. at that
 // point `{ name: a }` is required to preserve which property is being
-// read/destructured. Peels through `assignment_pattern` so `{ name = 1 }`
+// read/destructured. peels through `assignment_pattern` so `{ name = 1 }`
 // is still considered shorthand when the binding kept the same name.
 fn shorthandStillValid(tree: *const Tree, key: NodeIndex, value: NodeIndex) bool {
     var v = value;

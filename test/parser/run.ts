@@ -144,21 +144,22 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
 
 async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
+  const { lineStarts: _drop, ...comparable } = parsed;
 
   if (!(await Bun.file(snapshotFile).exists())) {
     if (!suite.autoSnapshot) return { status: "no_snapshot" };
-    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    await Bun.write(snapshotFile, serializeAstJson(comparable, 2));
     return { status: "match" };
   }
 
   const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
 
-  if (equal(parsed, snapshot)) {
+  if (equal(comparable, snapshot)) {
     return { status: "match" };
   }
 
   if (updateSnapshots) {
-    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    await Bun.write(snapshotFile, serializeAstJson(comparable, 2));
     return { status: "match" };
   }
 

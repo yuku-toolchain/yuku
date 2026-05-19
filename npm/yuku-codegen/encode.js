@@ -4,12 +4,21 @@
 const NULL = 0xFFFFFFFF;
 const _enc = new TextEncoder();
 const NODE_SIZE = 48;
-const HEADER_SIZE = 36;
+const HEADER_SIZE = 40;
 const NODE_FLAGS_OFFSET = 2;
 const NODE_FIELD0_OFFSET = 4;
 const NODE_HEADER_U32S = 2;
 const NODE_SPAN_START_U32 = 10;
 const NODE_SPAN_END_U32 = 11;
+const COMMENT_SIZE = 20;
+const COMMENT_TYPE_OFFSET = 0;
+const COMMENT_KIND_OFFSET = 1;
+const COMMENT_FLAGS_OFFSET = 2;
+const COMMENT_START_OFFSET = 4;
+const COMMENT_END_OFFSET = 8;
+const COMMENT_VALUE_START_OFFSET = 12;
+const COMMENT_VALUE_END_OFFSET = 16;
+const COMMENT_KINDS_INV = {"normal": 0, "legal": 1, "jsdoc": 2, "annotation": 3, "pure": 4, "no_side_effects": 5};
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
 const LOGICAL_OPS_INV = {"&&": 0, "||": 1, "??": 2};
 const UNARY_OPS_INV = {"-": 0, "+": 1, "!": 2, "~": 3, "typeof": 4, "void": 5, "delete": 6};
@@ -26,7 +35,7 @@ const IMPORT_PHASE_INV = {"source": 0, "defer": 1};
 const ACCESSIBILITY_INV = (v) => v == null ? 0 : v === "public" ? 1 : v === "private" ? 2 : 3;
 const TS_MAPPED_OPTIONAL_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
 const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
-function encode(estree) {
+function encode(estree, comments, lineStarts) {
   let nodeCap = 512;
   let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);
   let nU8 = new Uint8Array(nodeAB);
@@ -2046,9 +2055,42 @@ function encode(estree) {
     }
   }
   const progIdx = encNode(estree);
+  // Comments are encoded after the node walk so string interning lands in the pool first.
+  const commentCount = Array.isArray(comments) ? comments.length : 0;
+  let commentBytes = null;
+  if (commentCount > 0) {
+    commentBytes = new ArrayBuffer(commentCount * COMMENT_SIZE);
+    const cU8 = new Uint8Array(commentBytes);
+    const cDV = new DataView(commentBytes);
+    for (let i = 0; i < commentCount; i++) {
+      const c = comments[i];
+      const v = encStr(typeof c.value === "string" ? c.value : "");
+      const kind = typeof c.kind === "string" ? (COMMENT_KINDS_INV[c.kind] ?? 0) : 0;
+      let flags = 0;
+      if (c.precededByNewline) flags |= 1;
+      if (c.followedByNewline) flags |= 2;
+      const o = i * COMMENT_SIZE;
+      cU8[o + COMMENT_TYPE_OFFSET] = c.type === "Block" ? 1 : 0;
+      cU8[o + COMMENT_KIND_OFFSET] = kind;
+      cU8[o + COMMENT_FLAGS_OFFSET] = flags;
+      cDV.setUint32(o + COMMENT_START_OFFSET, (c.start >>> 0), true);
+      cDV.setUint32(o + COMMENT_END_OFFSET, (c.end >>> 0), true);
+      cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
+      cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
+    }
+  }
+  const lineStartsCount = Array.isArray(lineStarts) ? lineStarts.length : 0;
+  let lineStartsBytes = null;
+  if (lineStartsCount > 0) {
+    lineStartsBytes = new ArrayBuffer(lineStartsCount * 4);
+    const lsDV = new DataView(lineStartsBytes);
+    for (let i = 0; i < lineStartsCount; i++) lsDV.setUint32(i * 4, lineStarts[i] >>> 0, true);
+  }
   const totalNodeBytes = nodeCount * NODE_SIZE;
   const totalExtraBytes = extraCount * 4;
-  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen;
+  const totalCommentBytes = commentCount * COMMENT_SIZE;
+  const totalLineStartsBytes = lineStartsCount * 4;
+  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalCommentBytes + totalLineStartsBytes;
   const out = new ArrayBuffer(finalSize);
   const outU8 = new Uint8Array(out);
   const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));
@@ -2056,14 +2098,22 @@ function encode(estree) {
   outU32[1] = extraCount;
   outU32[2] = poolLen;
   outU32[3] = 0;
-  outU32[4] = 0;
-  outU32[5] = 0;
-  outU32[6] = progIdx;
-  outU32[7] = 0;
+  outU32[4] = commentCount;
+  outU32[5] = lineStartsCount;
+  outU32[6] = 0;
+  outU32[7] = progIdx;
   outU32[8] = 0;
-  outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), HEADER_SIZE);
-  outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), HEADER_SIZE + totalNodeBytes);
-  outU8.set(pool.subarray(0, poolLen), HEADER_SIZE + totalNodeBytes + totalExtraBytes);
+  outU32[9] = 0;
+  const nodesOff = HEADER_SIZE;
+  const extrasOff = nodesOff + totalNodeBytes;
+  const poolOff = extrasOff + totalExtraBytes;
+  const commentsOff = poolOff + poolLen;
+  const lineStartsOff = commentsOff + totalCommentBytes;
+  outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
+  outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);
+  outU8.set(pool.subarray(0, poolLen), poolOff);
+  if (commentBytes !== null) outU8.set(new Uint8Array(commentBytes), commentsOff);
+  if (lineStartsBytes !== null) outU8.set(new Uint8Array(lineStartsBytes), lineStartsOff);
   return out;
 }
 export { encode };

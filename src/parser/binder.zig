@@ -104,7 +104,7 @@ pub const Symbol = struct {
         }
     };
 
-    // Declarations that live in JS value space (visible at runtime)
+    // declarations that live in js value space (visible at runtime)
     const value_space: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
@@ -115,7 +115,7 @@ pub const Symbol = struct {
         .value_module = true,
     };
 
-    // Declarations that live in TS type space
+    // declarations that live in ts type space
     const type_space: Flags = .{
         .class = true,
         .regular_enum = true,
@@ -125,7 +125,7 @@ pub const Symbol = struct {
         .type_parameter = true,
     };
 
-    // Names a hoisted `var` cannot pass through
+    // names a hoisted `var` cannot pass through
     const block_scoped_like: Flags = .{
         .block_scoped_var = true,
         .class = true,
@@ -570,11 +570,11 @@ pub const SymbolTracker = struct {
     pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
         switch (data) {
             .export_named_declaration => |decl| {
-                // Declaration form (`export type X = Y`, `export const x = 1`,
+                // declaration form (`export type X = Y`, `export const x = 1`,
                 // `export interface I {}`, ...) always exports the binding it
                 // declares, even when `export_kind` is `.type` (which the
                 // parser sets automatically for type-aliases and interfaces).
-                // Pure re-export form (`export { Foo }` / `export type { Foo }`)
+                // pure re-export form (`export { Foo }` / `export type { Foo }`)
                 // has `declaration == .null`, no inner binding, and stays
                 // dependent on `export_kind` for the `.named` value-export
                 // case so we don't tag the value-side as exported for a
@@ -806,11 +806,11 @@ pub const SymbolTracker = struct {
                     kind,
                 );
             },
-            // JSX tag names: `<Foo>`, `<Foo.Bar>`, `</Foo>`. The leftmost
-            // `jsx_identifier` is a JS binding reference (capitalized). The
+            // jsx tag names: `<Foo>`, `<Foo.Bar>`, `</Foo>`. the leftmost
+            // `jsx_identifier` is a js binding reference (capitalized). the
             // rest of the chain (`.Bar`, `:path`) is property/namespace
-            // syntax and not a binding. Lowercase tags (`<div>`) are
-            // intrinsic HTML element names, not bindings; skip them.
+            // syntax and not a binding. lowercase tags (`<div>`) are
+            // intrinsic html element names, not bindings, skip them.
             inline .jsx_opening_element, .jsx_closing_element => |el| {
                 if (jsxTagRoot(self.tree, el.name)) |root_idx| {
                     const id = self.tree.data(root_idx).jsx_identifier;
@@ -1043,9 +1043,9 @@ pub const SymbolTracker = struct {
     }
 };
 
-// Walks a JSX opening/closing tag name to its leftmost `jsx_identifier`.
-// Returns null for `<svg:path>` (XML namespace, not a JS binding) and for
-// anything that isn't a tag-shape expression. The returned NodeIndex always
+// walks a jsx opening/closing tag name to its leftmost `jsx_identifier`.
+// returns null for `<svg:path>` (xml namespace, not a js binding) and for
+// anything that isn't a tag-shape expression. the returned NodeIndex always
 // points at a `jsx_identifier`.
 fn jsxTagRoot(tree: *const ast.Tree, name: ast.NodeIndex) ?ast.NodeIndex {
     var cur = name;

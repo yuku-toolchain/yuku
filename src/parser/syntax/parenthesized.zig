@@ -56,7 +56,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
             const spread_end = parser.tree.span(argument).end;
 
-            // for now, store as spread_element; will convert to rest param for arrow functions
+            // for now, store as spread_element. will convert to rest param for arrow functions
             const rest = try parser.tree.addNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },

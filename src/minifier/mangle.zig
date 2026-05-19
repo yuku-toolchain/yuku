@@ -46,7 +46,7 @@ pub fn run(
 }
 
 const Mangler = struct {
-    // Inputs
+    // inputs
     a: Allocator,
     tree: *ast.Tree,
     scope_tree: sc.ScopeTree,
@@ -116,7 +116,7 @@ const Mangler = struct {
     fn assignAndRewrite(m: *Mangler) !void {
         const sym_count: u32 = @intCast(m.table.symbols.len);
 
-        // Bitmap of forbidden + scope-local reservations. Forbidden bits set
+        // bitmap of forbidden + scope-local reservations. forbidden bits set
         // once and never cleared.
         m.reserved = try m.a.alloc(u8, @max(sym_count + 256, FORBIDDEN_SCAN_LIMIT));
         @memset(m.reserved, 0);
@@ -207,7 +207,7 @@ const Local = struct {
 
 fn moreUsedFirst(_: void, x: Local, y: Local) bool {
     if (x.uses != y.uses) return x.uses > y.uses;
-    // Stable tie-break by id keeps output deterministic.
+    // stable tie-break by id keeps output deterministic.
     return @intFromEnum(x.sid) < @intFromEnum(y.sid);
 }
 

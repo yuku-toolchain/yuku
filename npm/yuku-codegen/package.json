@@ -29,17 +29,17 @@
     "@yuku-codegen/binding-win32-arm64": "0.5.9",
     "@yuku-codegen/binding-freebsd-x64": "0.5.9"
   },
+  "keywords": [
+    "ast",
+    "codegen",
+    "estree",
+    "javascript",
+    "minifier",
+    "napi",
+    "printer",
+    "typescript"
+  ],
   "dependencies": {
     "yuku-parser": "workspace:*"
-  },
-  "keywords": [
-    "codegen",
-    "javascript",
-    "typescript",
-    "ast",
-    "estree",
-    "printer",
-    "minifier",
-    "napi"
-  ]
+  }
 }

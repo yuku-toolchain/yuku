@@ -1,9 +1,17 @@
 // https://fitzgen.com/2013/08/02/testing-source-maps.html
 
 import { Glob } from "bun";
-import { parse, langFromPath, sourceTypeFromPath } from "yuku-parser";
+import {
+  parse,
+  langFromPath,
+  sourceTypeFromPath,
+  type Identifier,
+  type Node,
+  type PrivateIdentifier,
+  type Program,
+} from "yuku-parser";
 import { print, type SourceMap } from "yuku-codegen";
-import { TraceMap, originalPositionFor } from "@jridgewell/trace-mapping";
+import { TraceMap, originalPositionFor, type EncodedSourceMap } from "@jridgewell/trace-mapping";
 
 const CORPUS_DIRS = [
   "test/parser/suite/js/pass",
@@ -17,9 +25,7 @@ let totalFail = 0;
 const sampleErrs: string[] = [];
 
 for (const dir of CORPUS_DIRS) {
-  const files = [
-    ...new Glob("**/*.{ts,tsx,js,jsx}").scanSync({ cwd: dir }),
-  ].sort();
+  const files = [...new Glob("**/*.{ts,tsx,js,jsx}").scanSync({ cwd: dir })].sort();
   const start = performance.now();
   let dirFiles = 0;
   let dirSkip = 0;
@@ -38,12 +44,12 @@ for (const dir of CORPUS_DIRS) {
     }
     dirFiles++;
 
-    const result = print(input.program, {
+    const result = print(input, {
+      comments: true,
       sourceMaps: {
-        source,
         file: "out.js",
         sourceFileName: f,
-        sourcesContent: true,
+        sourcesContent: source,
       },
     });
     if (!result.map) {
@@ -59,7 +65,15 @@ for (const dir of CORPUS_DIRS) {
       continue;
     }
 
-    const errs = verify(source, input.program, result.code, output.program, result.map, "out.js", f);
+    const errs = verify(
+      source,
+      input.program,
+      result.code,
+      output.program,
+      result.map,
+      "out.js",
+      f,
+    );
     if (errs.length > 0) {
       dirFail++;
       if (sampleErrs.length < 8) sampleErrs.push(`${file}: ${errs[0]}`);
@@ -82,13 +96,11 @@ console.log(
 );
 process.exit(totalFail > 0 ? 1 : 0);
 
-type Id = { type: string; name: string; start: number };
-
 function verify(
   source: string,
-  inputAst: any,
+  inputAst: Program,
   code: string,
-  outputAst: any,
+  outputAst: Program,
   map: SourceMap,
   expectFile: string,
   expectSourceFileName: string,
@@ -97,81 +109,84 @@ function verify(
 
   if (map.version !== 3) errs.push(`version: ${map.version}`);
   if (map.file !== expectFile) errs.push(`file: ${map.file}`);
-  if (!Array.isArray(map.sources) || map.sources.length !== 1 || map.sources[0] !== expectSourceFileName)
+  if (
+    !Array.isArray(map.sources) ||
+    map.sources.length !== 1 ||
+    map.sources[0] !== expectSourceFileName
+  )
     errs.push(`sources: ${JSON.stringify(map.sources)}`);
   if (!map.sourcesContent || map.sourcesContent.length !== 1 || map.sourcesContent[0] !== source)
     errs.push(`sourcesContent mismatch`);
 
   let tracer: TraceMap;
   try {
-    tracer = new TraceMap(map as any);
+    tracer = new TraceMap(toEncodedSourceMap(map));
   } catch (e) {
     errs.push(`tracer: ${(e as Error).message}`);
     return errs;
   }
 
   const inputIds = collectIdentifiers(inputAst);
-  const stack: any[] = [outputAst];
-  while (stack.length) {
-    const n = stack.pop();
-    if (n === null || typeof n !== "object") continue;
-    if (Array.isArray(n)) {
-      for (let i = n.length - 1; i >= 0; i--) stack.push(n[i]);
-      continue;
-    }
-    if (typeof n.type === "string" && (n.type === "Identifier" || n.type === "PrivateIdentifier")) {
-      if (typeof n.start === "number" && typeof n.name === "string") {
-        const { line, col } = lineColOf(code, n.start);
-        const orig = originalPositionFor(tracer, { line: line + 1, column: col });
-        if (!orig.source) {
-          errs.push(`no mapping for ${n.type} "${n.name}" at gen ${line + 1}:${col}`);
-        } else {
-          const off = offsetOf(source, orig.line - 1, orig.column);
-          const input: Id | undefined = inputIds.get(off);
-          if (!input) {
-            errs.push(`gen "${n.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column}: no input identifier there`);
-          } else if (input.name !== n.name) {
-            errs.push(`gen "${n.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column} has "${input.name}"`);
-          }
-        }
-        if (errs.length > 4) return errs;
+  for (const node of walkNodes(outputAst)) {
+    if (node.type !== "Identifier" && node.type !== "PrivateIdentifier") continue;
+    const { line, col } = lineColOf(code, node.start);
+    const orig = originalPositionFor(tracer, { line: line + 1, column: col });
+    if (!orig.source) {
+      errs.push(`no mapping for ${node.type} "${node.name}" at gen ${line + 1}:${col}`);
+    } else {
+      const off = offsetOf(source, orig.line - 1, orig.column);
+      const input = inputIds.get(off);
+      if (!input) {
+        errs.push(
+          `gen "${node.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column}: no input identifier there`,
+        );
+      } else if (input.name !== node.name) {
+        errs.push(
+          `gen "${node.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column} has "${input.name}"`,
+        );
       }
     }
-    for (const k in n) {
-      if (k === "type" || k === "start" || k === "end" || k === "loc" || k === "range") continue;
-      const v = (n as any)[k];
-      if (v && typeof v === "object") stack.push(v);
-    }
+    if (errs.length > 4) return errs;
   }
 
   return errs;
 }
 
-function collectIdentifiers(root: any): Map<number, Id> {
-  const out = new Map<number, Id>();
-  const stack: any[] = [root];
-  while (stack.length) {
-    const n = stack.pop();
-    if (n === null || typeof n !== "object") continue;
-    if (Array.isArray(n)) {
-      for (let i = n.length - 1; i >= 0; i--) stack.push(n[i]);
-      continue;
-    }
-    if (
-      typeof n.type === "string" &&
-      (n.type === "Identifier" || n.type === "PrivateIdentifier") &&
-      typeof n.start === "number" &&
-      typeof n.name === "string"
-    ) {
-      out.set(n.start, { type: n.type, name: n.name, start: n.start });
-    }
-    for (const k in n) {
-      if (k === "type" || k === "start" || k === "end" || k === "loc" || k === "range") continue;
-      const v = (n as any)[k];
-      if (v && typeof v === "object") stack.push(v);
+function collectIdentifiers(root: Program): Map<number, Identifier | PrivateIdentifier> {
+  const out = new Map<number, Identifier | PrivateIdentifier>();
+  for (const node of walkNodes(root)) {
+    if (node.type === "Identifier" || node.type === "PrivateIdentifier") {
+      out.set(node.start, node);
     }
   }
   return out;
+}
+
+function* walkNodes(root: Node): Generator<Node> {
+  const stack: unknown[] = [root];
+  while (stack.length) {
+    const value = stack.pop();
+    if (Array.isArray(value)) {
+      for (let i = value.length - 1; i >= 0; i--) stack.push(value[i]);
+    } else if (isAstNode(value)) {
+      yield value;
+      for (const child of Object.values(value)) stack.push(child);
+    }
+  }
+}
+
+function isAstNode(value: unknown): value is Node {
+  return (
+    typeof value === "object" && value !== null && "type" in value && typeof value.type === "string"
+  );
+}
+
+function toEncodedSourceMap(map: SourceMap): EncodedSourceMap {
+  return {
+    ...map,
+    sourceRoot: map.sourceRoot ?? undefined,
+    sourcesContent: map.sourcesContent ?? undefined,
+  };
 }
 
 function lineColOf(s: string, offset: number): { line: number; col: number } {

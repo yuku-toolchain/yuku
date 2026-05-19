@@ -45,9 +45,27 @@ interface ParseOptions {
 /** Whether a {@link Comment} came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
+/**
+ * Semantic classification of a {@link Comment}, computed at parse time so
+ * consumers can route comments without rescanning their value.
+ *
+ * - `"normal"`: plain comment with no special meaning.
+ * - `"legal"`: `/*! ... *\/` or contains `@license`, `@preserve`, or `@cc_on`.
+ * - `"jsdoc"`: `/** ... *\/` block.
+ * - `"annotation"`: `/*# ... *\/` or `/*@ ... *\/` other than tree-shaking.
+ * - `"pure"`: `/*#__PURE__*\/` or `/*@__PURE__*\/`.
+ * - `"no_side_effects"`: `/*#__NO_SIDE_EFFECTS__*\/` or `/*@__NO_SIDE_EFFECTS__*\/`.
+ */
+type CommentKind = "normal" | "legal" | "jsdoc" | "annotation" | "pure" | "no_side_effects";
+
 /** A source code comment. */
 interface Comment {
   type: CommentType;
+  kind: CommentKind;
+  /** True when a line terminator immediately precedes this comment. */
+  precededByNewline: boolean;
+  /** True when a line terminator immediately follows this comment. */
+  followedByNewline: boolean;
   /** Comment text without the delimiters. */
   value: string;
   /** Byte offset. */
@@ -91,6 +109,8 @@ interface ParseResult {
   program: Program;
   /** All comments in source order. */
   comments: Comment[];
+  /** Byte offset where each source line begins. Index 0 is always 0. */
+  lineStarts: number[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
 }
@@ -912,7 +932,10 @@ interface ImportDeclaration extends BaseNode {
   importKind?: ImportOrExportKind;
 }
 
-type ImportDeclarationSpecifier = ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier;
+type ImportDeclarationSpecifier =
+  | ImportSpecifier
+  | ImportDefaultSpecifier
+  | ImportNamespaceSpecifier;
 
 interface ImportSpecifier extends BaseNode {
   type: "ImportSpecifier";
@@ -1189,7 +1212,13 @@ interface TSTypeParameterInstantiation extends BaseNode {
 
 interface TSLiteralType extends BaseNode {
   type: "TSLiteralType";
-  literal: StringLiteral | NumericLiteral | BigIntLiteral | BooleanLiteral | TemplateLiteral | UnaryExpression;
+  literal:
+    | StringLiteral
+    | NumericLiteral
+    | BigIntLiteral
+    | BooleanLiteral
+    | TemplateLiteral
+    | UnaryExpression;
 }
 
 interface TSTemplateLiteralType extends BaseNode {
@@ -1709,6 +1738,7 @@ export type {
   ParseResult,
   Comment,
   CommentType,
+  CommentKind,
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,

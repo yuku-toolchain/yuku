@@ -1,8 +1,8 @@
 # yuku-codegen
 
-A high-performance JavaScript/TypeScript code generator written in Zig, powered by [Yuku](https://github.com/yuku-toolchain/yuku).
+A high-performance JavaScript and TypeScript code generator written in Zig, powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
-Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. The input AST is exactly what [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) produces.
+Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. The input is exactly the `ParseResult` produced by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser).
 
 ## Install
 
@@ -16,21 +16,23 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const { program } = parse("const x = 1 + 2;");
-const { code } = print(program);
+const ast = parse("const x = 1 + 2;");
+const { code } = print(ast);
 
 console.log(code); // "const x = 1 + 2;"
 ```
 
 ## API
 
-Three entry points share the same options shape:
+Three entry points share the same options and result shape. Each accepts the full `ParseResult` from `yuku-parser`.
 
-- `print(ast, options?)` renders verbatim, preserving TypeScript syntax.
-- `strip(ast, options?)` drops type-only syntax and emits plain JavaScript.
-- `minify(ast, options?)` applies size-reducing rewrites such as `true → !0` and shortest-numeric-form. Combine with `format: "compact"` for full minification.
+| Function | Behavior                                                                                              |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `print`  | Renders verbatim, preserving TypeScript syntax.                                                       |
+| `strip`  | Drops type-only syntax and emits plain JavaScript. See [TypeScript stripping](#typescript-stripping). |
+| `minify` | Applies size-reducing rewrites at print time. See [Minification](#minification).                      |
 
-All return the same `CodegenResult`:
+All return a `CodegenResult`:
 
 ```ts
 interface CodegenResult {
@@ -40,7 +42,7 @@ interface CodegenResult {
 }
 ```
 
-`errors` is empty when codegen succeeded cleanly. `map` is populated only when `sourceMaps` is enabled.
+`errors` is empty on a clean run. `map` is non-null only when `sourceMaps` is set.
 
 ## Options
 
@@ -49,54 +51,54 @@ const result = print(ast, {
   format: "pretty",
   indent: 2,
   quotes: "double",
-  sourceMaps: { source },
+  comments: "some",
+  sourceMaps: { sourceFileName: "in.js" },
 });
 ```
 
-| Option       | Values                  | Default    | Description                                                                                |
-| ------------ | ----------------------- | ---------- | ------------------------------------------------------------------------------------------ |
-| `format`     | `"pretty"`, `"compact"` | `"pretty"` | Whitespace mode. `"compact"` emits only the separators the grammar requires.               |
-| `indent`     | `number`                | `2`        | Spaces per indentation level. Used only when `format` is `"pretty"`.                       |
-| `quotes`     | `"double"`, `"single"`  | `"double"` | Quote style for emitted string literals.                                                   |
-| `sourceMaps` | `SourceMapOptions`      | _disabled_ | Pass an object to emit a Source Map V3 alongside the code. Omit (or set to `null`) to skip. |
+| Option       | Type                                     | Default    | Description                                                                  |
+| ------------ | ---------------------------------------- | ---------- | ---------------------------------------------------------------------------- |
+| `format`     | `"pretty" \| "compact"`                  | `"pretty"` | Whitespace mode. `"compact"` emits only the separators the grammar requires. |
+| `indent`     | `number`                                 | `2`        | Spaces per indentation level. Applies in pretty mode only.                   |
+| `quotes`     | `"double" \| "single"`                   | `"double"` | Quote style for emitted string literals.                                     |
+| `comments`   | `boolean \| "some" \| "line" \| "block"` | `"some"`   | Comment passthrough filter. See [Comments](#comments).                       |
+| `sourceMaps` | `SourceMapOptions`                       | _disabled_ | Pass an object to emit a Source Map V3 alongside the code. Omit to skip.     |
 
 ## Source maps
 
-Pass `sourceMaps` to emit a Source Map V3 alongside the code. The original source text is required.
+Pass `sourceMaps` to emit a Source Map V3 alongside the generated code.
 
 ```js
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
 const source = `const greet = (name) => "Hello, " + name;`;
-const { program } = parse(source);
+const ast = parse(source);
 
-const { code, map } = print(program, {
+const { code, map } = print(ast, {
   sourceMaps: {
-    source,
     file: "out.js",
     sourceFileName: "in.js",
-    sourcesContent: true,
+    sourcesContent: source,
   },
 });
 
-await Bun.write("out.js", code + `\n//# sourceMappingURL=out.js.map`);
+await Bun.write("out.js", `${code}\n//# sourceMappingURL=out.js.map`);
 await Bun.write("out.js.map", JSON.stringify(map));
 ```
 
 ### `SourceMapOptions`
 
-| Field             | Type      | Required | Description                                                       |
-| ----------------- | --------- | -------- | ----------------------------------------------------------------- |
-| `source`          | `string`  | yes      | Original source the AST was parsed from.                          |
-| `file`            | `string`  | no       | Output filename, embedded as the map's `file`.                    |
-| `sourceFileName`  | `string`  | no       | Source filename, embedded as the single entry of `sources`.       |
-| `sourceRoot`      | `string`  | no       | Prefix embedded as `sourceRoot`.                                  |
-| `sourcesContent`  | `boolean` | no       | When `true`, embeds `source` into the map's `sourcesContent`.     |
+| Field            | Type     | Description                                                                         |
+| ---------------- | -------- | ----------------------------------------------------------------------------------- |
+| `file`           | `string` | Output filename, embedded as the map's `file`.                                      |
+| `sourceFileName` | `string` | Source filename, embedded as the single entry of `sources`.                         |
+| `sourceRoot`     | `string` | Prefix embedded as `sourceRoot`.                                                    |
+| `sourcesContent` | `string` | When set, embedded as the single entry of the map's `sourcesContent`. Omit to skip. |
 
-### Result
+### Output shape
 
-The returned `map` is a Source Map V3 object, ready to `JSON.stringify`:
+`map` is a Source Map V3 object, ready to serialize with `JSON.stringify`:
 
 ```ts
 interface SourceMap {
@@ -110,39 +112,57 @@ interface SourceMap {
 }
 ```
 
-Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome DevTools and every consumer-side library (`@jridgewell/trace-mapping`, `source-map`, etc.).
+Columns are 0-indexed UTF-16 code units, matching Chrome DevTools and consumer-side libraries like `@jridgewell/trace-mapping` and `source-map`.
 
 ## TypeScript stripping
 
-`strip` rewrites the AST as plain JavaScript:
+`strip` rewrites the AST as plain JavaScript.
 
 ```js
 import { parse } from "yuku-parser";
 import { strip } from "yuku-codegen";
 
-const { program } = parse(`const x: number = 1;`, { lang: "ts" });
-console.log(strip(program).code); // "const x = 1;"
+const ast = parse(`const x: number = 1;`, { lang: "ts" });
+console.log(strip(ast).code); // "const x = 1;"
 ```
 
-Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that don't have a clean JavaScript equivalent (`enum`, `namespace`, `import = require()`, `export =`) are reported in `errors` and elided. The output is always syntactically valid JavaScript.
+Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that have no clean JavaScript equivalent (`enum`, `namespace`, `import = require()`, `export =`) are reported in `errors` and elided. The output is always syntactically valid JavaScript.
+
+## Comments
+
+The `comments` option selects which entries from `ast.comments` are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
+
+| Value     | Behavior                                                        |
+| --------- | --------------------------------------------------------------- |
+| `"some"`  | Emit legal headers, JSDoc, and `@`/`#` annotations. _(default)_ |
+| `true`    | Emit every comment.                                             |
+| `false`   | Drop every comment.                                             |
+| `"line"`  | Emit `// ...` only.                                             |
+| `"block"` | Emit `/* ... */` only.                                          |
+
+```js
+const ast = parse(`// hello\nconst x = 1;`);
+print(ast, { comments: true }).code;
+// "// hello\nconst x = 1;"
+```
 
 ## Minification
 
 `minify` applies size-reducing rewrites at print time:
 
-- `true` / `false` → `!0` / `!1`
-- `undefined` → `void 0` (in expression position)
-- `Infinity` → `1/0`
-- numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
-- `obj["foo"]` → `obj.foo` when the key is a valid identifier
-- `{ "foo": x }` → `{ foo: x }` when safe
+- `true` and `false` rewrite to `!0` and `!1`.
+- `undefined` rewrites to `void 0` (in expression position).
+- `Infinity` rewrites to `1/0`.
+- Numeric literals shorten to their shortest form (`1000000` becomes `1e6`, `0.5` becomes `.5`).
+- `obj["foo"]` rewrites to `obj.foo` when the key is a valid identifier.
+- `{ "foo": x }` rewrites to `{ foo: x }` when safe.
 
 Combine with `format: "compact"` for full minification:
 
 ```js
 import { minify } from "yuku-codegen";
 
-const { code } = minify(program, { format: "compact" });
+const { code } = minify(ast, { format: "compact" });
 ```
 
 ## License

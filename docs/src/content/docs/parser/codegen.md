@@ -15,11 +15,11 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const { program } = parse("const x = 1 + 2;");
-const { code } = print(program);
+const ast = parse("const x = 1 + 2;");
+const { code } = print(ast);
 ```
 
-The input AST is exactly what [yuku-parser](https://www.npmjs.com/package/yuku-parser) produces. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+The input is the full `ParseResult` from [yuku-parser](https://www.npmjs.com/package/yuku-parser). See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
 
@@ -56,11 +56,11 @@ pub const Result = struct {
 };
 ```
 
-| Field    | Type            | Description                                          |
-| -------- | --------------- | ---------------------------------------------------- |
-| `code`   | `[]const u8`    | Generated source                                     |
-| `errors` | `[]Diagnostic`  | Codegen-detected problems, empty for a clean print   |
-| `map`    | `?SourceMap`    | Source Map V3 when `source_maps` was set, else null  |
+| Field    | Type           | Description                                         |
+| -------- | -------------- | --------------------------------------------------- |
+| `code`   | `[]const u8`   | Generated source                                    |
+| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean print  |
+| `map`    | `?SourceMap`   | Source Map V3 when `source_maps` was set, else null |
 
 The only return-value error from `print` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain `print`, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
 
@@ -81,22 +81,24 @@ const result = try parser.codegen.print(allocator, &tree, .{
     .format = .pretty,
     .indent = 2,
     .quotes = .double,
+    .comments = .some,
     .source_maps = null,
 });
 ```
 
-| Field         | Type                  | Default   | Description                                                  |
-| ------------- | --------------------- | --------- | ------------------------------------------------------------ |
-| `format`      | `Format`              | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)     |
-| `indent`      | `u8`                  | `2`       | Spaces per level when `format == .pretty`                    |
-| `quotes`      | `Quotes`              | `.double` | `.double` or `.single` for emitted string literals           |
-| `source_maps` | `?SourceMapOptions`   | `null`    | Set to emit a Source Map V3 alongside the code               |
+| Field         | Type                | Default   | Description                                                        |
+| ------------- | ------------------- | --------- | ------------------------------------------------------------------ |
+| `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)           |
+| `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                          |
+| `quotes`      | `Quotes`            | `.double` | `.double` or `.single` for emitted string literals                 |
+| `comments`    | `Comments`          | `.some`   | Passthrough filter for `tree.comments`. See [Comments](#comments). |
+| `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code                     |
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
 ## Source maps
 
-Set `source_maps` to emit a Source Map V3 alongside the generated code. The original source text is required, since the AST carries byte offsets only.
+Set `source_maps` to emit a Source Map V3 alongside the generated code.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -104,10 +106,9 @@ defer tree.deinit();
 
 const result = try parser.codegen.print(allocator, &tree, .{
     .source_maps = .{
-        .source = source,
         .file = "out.js",
         .source_file_name = "in.js",
-        .sources_content = true,
+        .sources_content = source,
     },
 });
 defer result.deinit(allocator);
@@ -120,21 +121,19 @@ const map = result.map.?;
 
 ```zig
 pub const SourceMapOptions = struct {
-    source: []const u8,
     file: ?[]const u8 = null,
     source_file_name: ?[]const u8 = null,
     source_root: ?[]const u8 = null,
-    sources_content: bool = false,
+    sources_content: ?[]const u8 = null,
 };
 ```
 
-| Field              | Type           | Required | Description                                                   |
-| ------------------ | -------------- | -------- | ------------------------------------------------------------- |
-| `source`           | `[]const u8`   | yes      | Original source the AST was parsed from                       |
-| `file`             | `?[]const u8`  | no       | Output filename, embedded as the map's `file`                 |
-| `source_file_name` | `?[]const u8`  | no       | Source filename, embedded as the single entry of `sources`    |
-| `source_root`      | `?[]const u8`  | no       | Prefix embedded as `sourceRoot`                               |
-| `sources_content`  | `bool`         | no       | When true, embeds `source` into the map's `sourcesContent`    |
+| Field              | Type          | Description                                                          |
+| ------------------ | ------------- | -------------------------------------------------------------------- |
+| `file`             | `?[]const u8` | Output filename, embedded as the map's `file`                        |
+| `source_file_name` | `?[]const u8` | Source filename, embedded as the single entry of `sources`           |
+| `source_root`      | `?[]const u8` | Prefix embedded as `sourceRoot`                                      |
+| `sources_content`  | `?[]const u8` | When set, embedded as the single entry of the map's `sourcesContent` |
 
 ### Result shape
 
@@ -153,6 +152,20 @@ pub const SourceMap = struct {
 ```
 
 Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome DevTools and consumer-side libraries (`@jridgewell/trace-mapping`, `source-map`, etc.).
+
+## Comments
+
+The `comments` option selects which entries from `tree.comments` are emitted. The default is `.some`, matching the bundler convention of preserving legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
+
+```zig
+pub const Comments = enum {
+    none,    // drop every comment
+    all,     // emit every comment
+    some,    // legal, jsdoc, and tree-shaking annotations
+    line,    // emit `// ...` only
+    block,   // emit `/* ... */` only
+};
+```
 
 ## Type stripping
 

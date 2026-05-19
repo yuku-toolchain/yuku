@@ -190,18 +190,18 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.function, index, flags);
             },
             .block_statement => {
-                // Section 14.15.2 CatchClauseEvaluation creates a single
+                // section 14.15.2 CatchClauseEvaluation creates a single
                 // environment (catchEnv) for both the parameter bindings
-                // and the Block body. The body block reuses the catch scope
+                // and the Block body. the body block reuses the catch scope
                 // so that findInScopeOrHoisted naturally detects conflicts
-                // required by Section 14.15.1 early errors.
+                // required by section 14.15.1 early errors.
                 const current = self.tree.data(self.currentScope().node);
                 if (current != .catch_clause or current.catch_clause.body != index)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
             },
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause,
-            // Section 14.12 switch creates one block scope for all case clauses
+            // section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
             .ts_interface_declaration,
             .ts_type_alias_declaration,
@@ -216,7 +216,7 @@ pub const ScopeTracker = struct {
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             .class => |cls| {
-                // Section 15.7.14: classes are always strict mode.
+                // section 15.7.14: classes are always strict mode.
                 const flags = Scope.Flags{ .strict = true };
 
                 if (isNamedClassExpression(cls))
@@ -229,7 +229,7 @@ pub const ScopeTracker = struct {
         }
     }
 
-    // Section 11.2.2 ...
+    // section 11.2.2 ...
     // checks whether a function body begins with a "use strict" directive
     // by peeking into it before we actually traverse the body.
     //

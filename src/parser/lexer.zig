@@ -803,7 +803,7 @@ pub const Lexer = struct {
             @branchHint(.likely);
 
             if (first_char == '\\') {
-                // JSX tag names don't support escape sequences
+                // jsx tag names don't support escape sequences
                 if (is_jsx_tag) {
                     return error.JsxIdentifierCannotStartWithBackslash;
                 }
@@ -1238,78 +1238,71 @@ pub const Lexer = struct {
 
         const src = self.source;
         var pos = self.cursor;
+        // index of the most recent comment awaiting `followed_by_newline`
+        // back-patching. the first newline observed after the comment
+        // patches the flag and clears the index.
+        var pending: ?usize = null;
 
         while (pos < src.len) {
             switch (ws_class[src[pos]]) {
-                1 => {
-                    pos += 1;
-                },
+                1 => pos += 1,
                 2 => {
                     self.setTokenFlag(.line_terminator_before);
+                    if (pending) |i| {
+                        self.comments.items[i].followed_by_newline = true;
+                        pending = null;
+                    }
                     can_be_html_close_comment = true;
                     pos += 1;
                 },
                 3 => {
                     self.cursor = pos;
-                    const next = self.peek(1);
-                    if (next == '/') {
-                        try self.scanLineComment();
-                        pos = self.cursor;
-                    } else if (next == '*') {
-                        try self.scanBlockComment();
-                        if (self.hasTokenFlag(.line_terminator_before)) can_be_html_close_comment = true;
-                        pos = self.cursor;
-                    } else break;
+                    switch (self.peek(1)) {
+                        '/' => try self.scanLineComment(),
+                        '*' => {
+                            try self.scanBlockComment();
+                            if (self.hasTokenFlag(.line_terminator_before)) can_be_html_close_comment = true;
+                        },
+                        else => break,
+                    }
+                    pos = self.cursor;
+                    pending = self.comments.items.len - 1;
                 },
                 4 => {
-                    // html-style comments (<!-- ... -->) are only valid in script mode
-                    if (self.source_type == .script) {
-                        self.cursor = pos;
-                        const c1 = self.peek(1);
-                        const c2 = self.peek(2);
-                        const c3 = self.peek(3);
-                        if (c1 == '!' and c2 == '-' and c3 == '-') {
-                            try self.scanHtmlComment();
-                            pos = self.cursor;
-                            continue;
-                        }
-                    }
-                    break;
+                    // html-style `<!--` only valid in script mode.
+                    if (self.source_type != .script or pos + 3 >= src.len or
+                        src[pos + 1] != '!' or src[pos + 2] != '-' or src[pos + 3] != '-') break;
+                    self.cursor = pos;
+                    try self.scanHtmlComment();
+                    pos = self.cursor;
+                    pending = self.comments.items.len - 1;
                 },
                 5 => {
-                    // html-style close comment --> is only valid at line start in script mode
-                    if (self.source_type == .script and can_be_html_close_comment) {
-                        self.cursor = pos;
-                        const c1 = self.peek(1);
-                        const c2 = self.peek(2);
-                        if (c1 == '-' and c2 == '>') {
-                            try self.scanHtmlCloseComment();
-                            pos = self.cursor;
-                            continue;
-                        }
-                    }
-                    break;
+                    // html-style `-->` only valid at line start in script mode.
+                    if (self.source_type != .script or !can_be_html_close_comment or pos + 2 >= src.len or
+                        src[pos + 1] != '-' or src[pos + 2] != '>') break;
+                    self.cursor = pos;
+                    try self.scanHtmlCloseComment();
+                    pos = self.cursor;
+                    pending = self.comments.items.len - 1;
                 },
                 6 => {
                     @branchHint(.unlikely);
-
                     const us_len = util.Utf.unicodeSeparatorLen(src, pos);
-
                     if (us_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
+                        if (pending) |i| {
+                            self.comments.items[i].followed_by_newline = true;
+                            pending = null;
+                        }
                         can_be_html_close_comment = true;
                         pos += us_len;
                         continue;
                     }
-
                     self.cursor = pos;
                     const cp = try util.Utf.codePointAt(src, pos);
-
-                    if (util.Utf.isMultiByteSpace(cp.value)) {
-                        pos += cp.len;
-                        continue;
-                    }
-                    break;
+                    if (!util.Utf.isMultiByteSpace(cp.value)) break;
+                    pos += cp.len;
                 },
                 else => break,
             }
@@ -1318,125 +1311,130 @@ pub const Lexer = struct {
         self.cursor = pos;
     }
 
-    /// scans a single-line comment (// ...)
+    /// Appends a comment record. `followed_by_newline` is patched later
+    /// for block comments without an interior newline.
+    fn pushComment(
+        self: *Lexer,
+        @"type": ast.Comment.Type,
+        kind: ast.Comment.Kind,
+        preceded: bool,
+        followed: bool,
+        start: u32,
+        value_start: u32,
+        value_end: u32,
+        end: u32,
+    ) LexicalError!void {
+        self.comments.append(self.allocator, .{
+            .type = @"type",
+            .kind = kind,
+            .preceded_by_newline = preceded,
+            .followed_by_newline = followed,
+            .value = .{ .start = value_start, .end = value_end },
+            .start = start,
+            .end = end,
+        }) catch return error.OutOfMemory;
+    }
+
     fn scanLineComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
+        const preceded = self.hasTokenFlag(.line_terminator_before);
         const src = self.source;
-        var pos = self.cursor + 2; // skip '//'
-
+        var pos = start + 2;
         while (pos < src.len) {
             const c = src[pos];
             if (c == '\n' or c == '\r') break;
             if (c == 0xE2 and util.Utf.unicodeSeparatorLen(src, pos) > 0) break;
             pos += 1;
         }
-
         self.cursor = pos;
-
-        self.comments.append(self.allocator, .{
-            .type = .line,
-            .value = .{ .start = start + 2, .end = pos },
-            .start = start,
-            .end = pos,
-        }) catch return error.OutOfMemory;
+        // line comments carry no special classification.
+        try self.pushComment(.line, .normal, preceded, true, start, start + 2, pos, pos);
     }
 
-    /// scans a multi-line comment (/* ... */)
     fn scanBlockComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
+        const preceded = self.hasTokenFlag(.line_terminator_before);
         const src = self.source;
-        var pos = self.cursor + 2; // skip '/*'
-
+        var pos = start + 2;
+        var saw_newline = false;
         while (pos < src.len) {
             const c = src[pos];
             switch (c) {
                 '*' => {
                     if (pos + 1 < src.len and src[pos + 1] == '/') {
-                        pos += 2; // skip '*/'
+                        pos += 2;
                         self.cursor = pos;
-                        self.comments.append(self.allocator, .{
-                            .type = .block,
-                            .value = .{ .start = start + 2, .end = pos - 2 },
-                            .start = start,
-                            .end = pos,
-                        }) catch return error.OutOfMemory;
+                        const kind = classifyBlockComment(src[start + 2 .. pos - 2]);
+                        try self.pushComment(.block, kind, preceded, saw_newline, start, start + 2, pos - 2, pos);
                         return;
                     }
                     pos += 1;
                 },
                 '\n', '\r' => {
                     self.setTokenFlag(.line_terminator_before);
+                    saw_newline = true;
                     pos += 1;
                 },
                 0x80...0xFF => {
                     const lt_len = util.Utf.unicodeSeparatorLen(src, pos);
-
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
+                        saw_newline = true;
                         pos += lt_len;
-                    } else {
-                        pos += 1;
-                    }
+                    } else pos += 1;
                 },
                 else => pos += 1,
             }
         }
-
         self.cursor = pos;
         return error.UnterminatedMultiLineComment;
     }
 
-    /// scans an HTML-style comment (<!-- ... --> or <!-- ... end of line)
-    fn scanHtmlComment(self: *Lexer) LexicalError!void {
-        const start = self.cursor;
-        self.cursor += 4; // skip '<!--'
-
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-
-            // check for early termination with -->
-            if (c == '-' and self.peek(1) == '-' and self.peek(2) == '>') {
-                self.cursor += 3; // skip '-->'
-                self.comments.append(self.allocator, .{
-                    .type = .line,
-                    .value = .{ .start = start + 2, .end = self.cursor },
-                    .start = start,
-                    .end = self.cursor,
-                }) catch return error.OutOfMemory;
-                return;
-            }
-
-            if (self.isLineTerminator(c)) break;
-
-            self.cursor += 1;
-        }
-
-        // comment ends at end of line
-        self.comments.append(self.allocator, .{
-            .type = .line,
-            .value = .{ .start = start + 2, .end = self.cursor },
-            .start = start,
-            .end = self.cursor,
-        }) catch return error.OutOfMemory;
+    fn classifyBlockComment(value: []const u8) ast.Comment.Kind {
+        if (value.len == 0) return .normal;
+        if (value[0] == '!') return .legal;
+        if (std.mem.indexOf(u8, value, "@license") != null) return .legal;
+        if (std.mem.indexOf(u8, value, "@preserve") != null) return .legal;
+        if (std.mem.indexOf(u8, value, "@cc_on") != null) return .legal;
+        if (matchesAnnotation(value, "__PURE__")) return .pure;
+        if (matchesAnnotation(value, "__NO_SIDE_EFFECTS__")) return .no_side_effects;
+        if (value[0] == '#' or value[0] == '@') return .annotation;
+        if (value[0] == '*') return .jsdoc;
+        return .normal;
     }
 
-    /// scans an HTML-style close comment (--> ... end of line)
-    fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
-        const start = self.cursor;
-        self.cursor += 3; // skip '-->'
+    fn matchesAnnotation(value: []const u8, name: []const u8) bool {
+        if (value[0] != '#' and value[0] != '@') return false;
+        var i: usize = 1;
+        while (i < value.len and (value[i] == ' ' or value[i] == '\t')) : (i += 1) {}
+        return i + name.len <= value.len and std.mem.eql(u8, value[i..][0..name.len], name);
+    }
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
+    fn scanHtmlComment(self: *Lexer) LexicalError!void {
+        const start = self.cursor;
+        const preceded = self.hasTokenFlag(.line_terminator_before);
+        const src = self.source;
+        self.cursor += 4;
+        while (self.cursor < src.len) {
+            const c = src[self.cursor];
+            if (c == '-' and self.peek(1) == '-' and self.peek(2) == '>') {
+                self.cursor += 3;
+                return self.pushComment(.line, .normal, preceded, true, start, start + 2, self.cursor, self.cursor);
+            }
             if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
+        try self.pushComment(.line, .normal, preceded, true, start, start + 2, self.cursor, self.cursor);
+    }
 
-        self.comments.append(self.allocator, .{
-            .type = .line,
-            .value = .{ .start = start + 2, .end = self.cursor },
-            .start = start,
-            .end = self.cursor,
-        }) catch return error.OutOfMemory;
+    fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
+        const start = self.cursor;
+        const preceded = self.hasTokenFlag(.line_terminator_before);
+        self.cursor += 3;
+        while (self.cursor < self.source.len) : (self.cursor += 1) {
+            if (self.isLineTerminator(self.source[self.cursor])) break;
+        }
+        try self.pushComment(.line, .normal, preceded, true, start, start + 2, self.cursor, self.cursor);
     }
 
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {

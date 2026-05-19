@@ -110,7 +110,12 @@ pub const Lang = enum {
 /// ```
 pub const Comment = struct {
     type: Type,
-    /// comment content without the surrounding delimiters
+    kind: Kind,
+    /// True when a line terminator immediately precedes this comment.
+    preceded_by_newline: bool,
+    /// True when a line terminator immediately follows this comment.
+    followed_by_newline: bool,
+    /// Comment content with the surrounding delimiters removed.
     value: String = .empty,
     start: u32,
     end: u32,
@@ -124,6 +129,25 @@ pub const Comment = struct {
                 .line => "Line",
                 .block => "Block",
             };
+        }
+    };
+
+    pub const Kind = enum {
+        /// Plain comment with no special meaning.
+        normal,
+        /// `/*! ... */` or contains `@license`, `@preserve`, or `@cc_on`.
+        legal,
+        /// `/** ... */` block, used for documentation.
+        jsdoc,
+        /// `/*#...*/` or `/*@...*/` other than `pure` and `no_side_effects`.
+        annotation,
+        /// `/*#__PURE__*/` or `/*@__PURE__*/`.
+        pure,
+        /// `/*#__NO_SIDE_EFFECTS__*/` or `/*@__NO_SIDE_EFFECTS__*/`.
+        no_side_effects,
+
+        pub fn toString(self: Kind) []const u8 {
+            return @tagName(self);
         }
     };
 };
@@ -146,6 +170,10 @@ pub const Tree = struct {
     diagnostics: std.ArrayList(Diagnostic) = .empty,
     /// Comments found in the source code.
     comments: []const Comment = &.{},
+    /// Offset where each source line begins. Index 0 is always 0. Powers
+    /// `lineColOf` so consumers resolve positions without rescanning the
+    /// source.
+    line_starts: []const u32 = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
     /// The original source text passed to the parser.
@@ -227,6 +255,45 @@ pub const Tree = struct {
     /// Returns the extra node indices for the given range.
     pub inline fn extra(self: *const Tree, range: IndexRange) []const NodeIndex {
         return self.extras.items[range.start..][0..range.len];
+    }
+
+    /// Resolves an offset to a zero-indexed `(line, col)` pair. Returns
+    /// `(0, 0)` when `line_starts` is empty.
+    pub fn lineColOf(self: *const Tree, pos: u32) struct { line: u32, col: u32 } {
+        const starts = self.line_starts;
+        if (starts.len == 0) return .{ .line = 0, .col = 0 };
+        var lo: u32 = 0;
+        var hi: u32 = @intCast(starts.len);
+        while (lo < hi) {
+            const mid = lo + (hi - lo) / 2;
+            if (starts[mid] <= pos) lo = mid + 1 else hi = mid;
+        }
+        const line = lo - 1;
+        return .{ .line = line, .col = pos - starts[line] };
+    }
+
+    /// Scans `source` once and records the offset of every line start.
+    /// Index 0 is always 0.
+    pub fn buildLineStarts(self: *Tree) error{OutOfMemory}!void {
+        const alloc = self.arena.allocator();
+        var starts: std.ArrayList(u32) = .empty;
+        try starts.ensureTotalCapacity(alloc, @max(8, self.source.len / 32));
+        try starts.append(alloc, 0);
+
+        const src = self.source;
+        const Vec = @Vector(16, u8);
+        const lf: Vec = @splat('\n');
+        var i: usize = 0;
+        while (i + 16 <= src.len) : (i += 16) {
+            const mask = @as(Vec, src[i..][0..16].*) == lf;
+            if (@reduce(.Or, mask)) {
+                inline for (0..16) |k| if (mask[k]) try starts.append(alloc, @intCast(i + k + 1));
+            }
+        }
+        while (i < src.len) : (i += 1) {
+            if (src[i] == '\n') try starts.append(alloc, @intCast(i + 1));
+        }
+        self.line_starts = try starts.toOwnedSlice(alloc);
     }
 
     /// Replaces an existing node's data in-place.
@@ -316,7 +383,7 @@ pub const IndexRange = struct {
     pub const empty: IndexRange = .{ .start = 0, .len = 0 };
 };
 
-// Node definitions follow. See `NodeIndex` for the field-annotation
+// node definitions follow. see `NodeIndex` for the field-annotation
 // conventions used in their doc comments.
 
 /// The `super` keyword used as an expression head.
@@ -1341,7 +1408,7 @@ pub const NumericLiteral = struct {
             .decimal => std.fmt.parseFloat(f64, s) catch 0,
             .hex => parseIntOrFloat(s[2..], 16),
             .octal => blk: {
-                // modern: 0o/0O prefix; legacy: bare 0 prefix
+                // modern: 0o/0O prefix. legacy: bare 0 prefix
                 const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
                 break :blk parseIntOrFloat(digits, 8);
             },
