@@ -168,7 +168,7 @@ interface Comment {
 }
 ```
 
-`precededByNewline` and `followedByNewline` capture line layout, useful for tools that need to reconstruct source positioning. To classify a comment (legal banner, JSDoc, `__PURE__`, etc.), inspect `value` yourself.
+`precededByNewline` and `followedByNewline` capture line layout, useful for tools that need to reconstruct source positioning.
 
 ## License
 
