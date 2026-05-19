@@ -12,7 +12,6 @@ const METHOD_KINDS = ["constructor", "method", "get", "set"];
 const FUNCTION_TYPES = ["FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"];
 const CLASS_TYPES = ["ClassDeclaration", "ClassExpression"];
 const COMMENT_TYPES = ["Line", "Block"];
-const COMMENT_KINDS = ["normal", "legal", "jsdoc", "annotation", "pure", "no_side_effects"];
 const SEVERITY = ["error", "warning", "hint", "info"];
 const IMPORT_EXPORT_KINDS = ["value", "type"];
 const ACCESSIBILITY = [null, "public", "private", "protected"];
@@ -308,10 +307,9 @@ function decode(buffer, source) {
     const out = new Array(commentCount);
     for (let j = 0; j < commentCount; j++) {
       const o = cOff + j * 20;
-      const flags = _u8[o + 2];
+      const flags = _u8[o + 1];
       out[j] = {
         type: COMMENT_TYPES[_u8[o + 0]],
-        kind: COMMENT_KINDS[_u8[o + 1]],
         precededByNewline: (flags & 1) !== 0,
         followedByNewline: (flags & 2) !== 0,
         value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)),

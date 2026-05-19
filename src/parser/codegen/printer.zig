@@ -23,9 +23,7 @@ pub const Format = enum {
 /// Quote style for emitted string literals.
 pub const Quotes = enum { double, single };
 
-/// Filter applied to `tree.comments` when emitting. Consumers walking
-/// `tree.comments` themselves can mirror this by switching on
-/// `Comment.kind` and `Comment.type`.
+/// Filter applied to `tree.comments` when emitting.
 pub const Comments = enum {
     /// Drop all comments.
     none,
@@ -334,7 +332,7 @@ fn Printer(comptime cfg: Config) type {
         return switch (self.options.comments) {
             .none => false,
             .all => true,
-            .some => c.kind != .normal,
+            .some => c.type == .block and isSignificantBlockComment(self.tree.string(c.value)),
             .line => c.type == .line,
             .block => c.type == .block,
         };
@@ -2740,4 +2738,21 @@ fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
     const dot = if (frac_part.len > 0) "." else "";
     const out = std.fmt.bufPrint(scratch, "{s}{s}{s}{s}", .{ int_part, dot, frac_part, exp_suffix }) catch return s;
     return if (out.len < s.len) out else s;
+}
+
+fn isSignificantBlockComment(value: []const u8) bool {
+    if (value.len == 0) return false;
+    switch (value[0]) {
+        '!', '*', '#', '@' => return true,
+        else => {},
+    }
+    var i: usize = 0;
+    while (std.mem.indexOfScalarPos(u8, value, i, '@')) |pos| {
+        const rest = value[pos..];
+        if (std.mem.startsWith(u8, rest, "@license") or
+            std.mem.startsWith(u8, rest, "@preserve") or
+            std.mem.startsWith(u8, rest, "@cc_on")) return true;
+        i = pos + 1;
+    }
+    return false;
 }

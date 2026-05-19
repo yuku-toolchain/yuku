@@ -216,7 +216,6 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArray(w, "FUNCTION_TYPES", &.{ "FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression" });
     try writeArray(w, "CLASS_TYPES", &.{ "ClassDeclaration", "ClassExpression" });
     try writeArray(w, "COMMENT_TYPES", &.{ "Line", "Block" });
-    try writeArray(w, "COMMENT_KINDS", &.{ "normal", "legal", "jsdoc", "annotation", "pure", "no_side_effects" });
     try writeArray(w, "SEVERITY", &.{ "error", "warning", "hint", "info" });
     try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
@@ -620,7 +619,6 @@ fn writeDecodeBody(w: *Writer) !void {
         \\      const flags = _u8[o + {[c_fl]d}];
         \\      out[j] = {{
         \\        type: COMMENT_TYPES[_u8[o + {[c_ty]d}]],
-        \\        kind: COMMENT_KINDS[_u8[o + {[c_kd]d}]],
         \\        precededByNewline: (flags & 1) !== 0,
         \\        followedByNewline: (flags & 2) !== 0,
         \\        value: str(dv.getUint32(o + {[c_vs]d}, true), dv.getUint32(o + {[c_ve]d}, true)),
@@ -679,7 +677,6 @@ fn writeDecodeBody(w: *Writer) !void {
     , .{
         .csize = rt.COMMENT_SIZE,
         .c_ty = rt.COMMENT_TYPE_OFFSET,
-        .c_kd = rt.COMMENT_KIND_OFFSET,
         .c_fl = rt.COMMENT_FLAGS_OFFSET,
         .c_s = rt.COMMENT_START_OFFSET,
         .c_e = rt.COMMENT_END_OFFSET,

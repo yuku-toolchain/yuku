@@ -45,23 +45,9 @@ interface ParseOptions {
 /** Whether a {@link Comment} came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
-/**
- * Semantic classification of a {@link Comment}, computed at parse time so
- * consumers can route comments without rescanning their value.
- *
- * - `"normal"`: plain comment with no special meaning.
- * - `"legal"`: `/*! ... *\/` or contains `@license`, `@preserve`, or `@cc_on`.
- * - `"jsdoc"`: `/** ... *\/` block.
- * - `"annotation"`: `/*# ... *\/` or `/*@ ... *\/` other than tree-shaking.
- * - `"pure"`: `/*#__PURE__*\/` or `/*@__PURE__*\/`.
- * - `"no_side_effects"`: `/*#__NO_SIDE_EFFECTS__*\/` or `/*@__NO_SIDE_EFFECTS__*\/`.
- */
-type CommentKind = "normal" | "legal" | "jsdoc" | "annotation" | "pure" | "no_side_effects";
-
 /** A source code comment. */
 interface Comment {
   type: CommentType;
-  kind: CommentKind;
   /** True when a line terminator immediately precedes this comment. */
   precededByNewline: boolean;
   /** True when a line terminator immediately follows this comment. */
@@ -1763,7 +1749,6 @@ export type {
   ParseResult,
   Comment,
   CommentType,
-  CommentKind,
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,

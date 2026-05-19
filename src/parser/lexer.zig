@@ -1316,7 +1316,6 @@ pub const Lexer = struct {
     fn pushComment(
         self: *Lexer,
         @"type": ast.Comment.Type,
-        kind: ast.Comment.Kind,
         preceded: bool,
         followed: bool,
         start: u32,
@@ -1326,7 +1325,6 @@ pub const Lexer = struct {
     ) LexicalError!void {
         self.comments.append(self.allocator, .{
             .type = @"type",
-            .kind = kind,
             .preceded_by_newline = preceded,
             .followed_by_newline = followed,
             .value = .{ .start = value_start, .end = value_end },
@@ -1348,7 +1346,7 @@ pub const Lexer = struct {
         }
         self.cursor = pos;
         // line comments carry no special classification.
-        try self.pushComment(.line, .normal, preceded, true, start, start + 2, pos, pos);
+        try self.pushComment(.line, preceded, true, start, start + 2, pos, pos);
     }
 
     fn scanBlockComment(self: *Lexer) LexicalError!void {
@@ -1364,8 +1362,7 @@ pub const Lexer = struct {
                     if (pos + 1 < src.len and src[pos + 1] == '/') {
                         pos += 2;
                         self.cursor = pos;
-                        const kind = classifyBlockComment(src[start + 2 .. pos - 2]);
-                        try self.pushComment(.block, kind, preceded, saw_newline, start, start + 2, pos - 2, pos);
+                        try self.pushComment(.block, preceded, saw_newline, start, start + 2, pos - 2, pos);
                         return;
                     }
                     pos += 1;
@@ -1390,34 +1387,6 @@ pub const Lexer = struct {
         return error.UnterminatedMultiLineComment;
     }
 
-    fn classifyBlockComment(value: []const u8) ast.Comment.Kind {
-        if (value.len == 0) return .normal;
-        const first = value[0];
-        if (first == '!') return .legal;
-
-        var i: usize = 0;
-        while (std.mem.findScalarPos(u8, value, i, '@')) |pos| {
-            const rest = value[pos..];
-            if (std.mem.startsWith(u8, rest, "@license") or
-                std.mem.startsWith(u8, rest, "@preserve") or
-                std.mem.startsWith(u8, rest, "@cc_on")) return .legal;
-            i = pos + 1;
-        }
-
-        if (matchesAnnotation(value, "__PURE__")) return .pure;
-        if (matchesAnnotation(value, "__NO_SIDE_EFFECTS__")) return .no_side_effects;
-        if (first == '#' or first == '@') return .annotation;
-        if (first == '*') return .jsdoc;
-        return .normal;
-    }
-
-    fn matchesAnnotation(value: []const u8, name: []const u8) bool {
-        if (value[0] != '#' and value[0] != '@') return false;
-        var i: usize = 1;
-        while (i < value.len and (value[i] == ' ' or value[i] == '\t')) : (i += 1) {}
-        return i + name.len <= value.len and std.mem.eql(u8, value[i..][0..name.len], name);
-    }
-
     fn scanHtmlComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
         const preceded = self.hasTokenFlag(.line_terminator_before);
@@ -1427,12 +1396,12 @@ pub const Lexer = struct {
             const c = src[self.cursor];
             if (c == '-' and self.peek(1) == '-' and self.peek(2) == '>') {
                 self.cursor += 3;
-                return self.pushComment(.line, .normal, preceded, true, start, start + 2, self.cursor, self.cursor);
+                return self.pushComment(.line, preceded, true, start, start + 2, self.cursor, self.cursor);
             }
             if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
-        try self.pushComment(.line, .normal, preceded, true, start, start + 2, self.cursor, self.cursor);
+        try self.pushComment(.line, preceded, true, start, start + 2, self.cursor, self.cursor);
     }
 
     fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
@@ -1442,7 +1411,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) : (self.cursor += 1) {
             if (self.isLineTerminator(self.source[self.cursor])) break;
         }
-        try self.pushComment(.line, .normal, preceded, true, start, start + 2, self.cursor, self.cursor);
+        try self.pushComment(.line, preceded, true, start, start + 2, self.cursor, self.cursor);
     }
 
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {

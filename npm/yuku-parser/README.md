@@ -155,39 +155,20 @@ This incurs a very small performance overhead. If your build pipeline already ha
 
 ### Comments
 
-Every entry in `result.comments` is classified at parse time so consumers can route comments without rescanning the value:
+Every entry in `result.comments` describes one source comment:
 
 ```ts
 interface Comment {
   type: "Line" | "Block";
-  kind: CommentKind;
   precededByNewline: boolean;
   followedByNewline: boolean;
   value: string; // text without the surrounding delimiters
   start: number; // byte offset
   end: number; // byte offset
 }
-
-type CommentKind =
-  | "normal" // plain comment, no special meaning
-  | "legal" // /*! ... */ or contains @license / @preserve / @cc_on
-  | "jsdoc" // /** ... */ block
-  | "annotation" // /*# ... */ or /*@ ... */ other than tree-shaking
-  | "pure" // /*#__PURE__*/ or /*@__PURE__*/
-  | "no_side_effects"; // /*#__NO_SIDE_EFFECTS__*/ or /*@__NO_SIDE_EFFECTS__*/
 ```
 
-Common patterns:
-
-```js
-// Extract legal banners for a sidecar file.
-const banners = result.comments.filter((c) => c.kind === "legal");
-
-// Find tree-shaking annotations.
-const pureMarkers = result.comments.filter((c) => c.kind === "pure");
-```
-
-`precededByNewline` and `followedByNewline` capture line layout, useful for tools that need to reconstruct source positioning.
+`precededByNewline` and `followedByNewline` capture line layout, useful for tools that need to reconstruct source positioning. To classify a comment (legal banner, JSDoc, `__PURE__`, etc.), inspect `value` yourself.
 
 ## License
 

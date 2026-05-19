@@ -110,7 +110,6 @@ pub const Lang = enum {
 /// ```
 pub const Comment = struct {
     type: Type,
-    kind: Kind,
     /// True when a line terminator immediately precedes this comment.
     preceded_by_newline: bool,
     /// True when a line terminator immediately follows this comment.
@@ -129,25 +128,6 @@ pub const Comment = struct {
                 .line => "Line",
                 .block => "Block",
             };
-        }
-    };
-
-    pub const Kind = enum {
-        /// Plain comment with no special meaning.
-        normal,
-        /// `/*! ... */` or contains `@license`, `@preserve`, or `@cc_on`.
-        legal,
-        /// `/** ... */` block, used for documentation.
-        jsdoc,
-        /// `/*#...*/` or `/*@...*/` other than `pure` and `no_side_effects`.
-        annotation,
-        /// `/*#__PURE__*/` or `/*@__PURE__*/`.
-        pure,
-        /// `/*#__NO_SIDE_EFFECTS__*/` or `/*@__NO_SIDE_EFFECTS__*/`.
-        no_side_effects,
-
-        pub fn toString(self: Kind) []const u8 {
-            return @tagName(self);
         }
     };
 };

@@ -12,13 +12,11 @@ const NODE_SPAN_START_U32 = 10;
 const NODE_SPAN_END_U32 = 11;
 const COMMENT_SIZE = 20;
 const COMMENT_TYPE_OFFSET = 0;
-const COMMENT_KIND_OFFSET = 1;
-const COMMENT_FLAGS_OFFSET = 2;
+const COMMENT_FLAGS_OFFSET = 1;
 const COMMENT_START_OFFSET = 4;
 const COMMENT_END_OFFSET = 8;
 const COMMENT_VALUE_START_OFFSET = 12;
 const COMMENT_VALUE_END_OFFSET = 16;
-const COMMENT_KINDS_INV = {"normal": 0, "legal": 1, "jsdoc": 2, "annotation": 3, "pure": 4, "no_side_effects": 5};
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
 const LOGICAL_OPS_INV = {"&&": 0, "||": 1, "??": 2};
 const UNARY_OPS_INV = {"-": 0, "+": 1, "!": 2, "~": 3, "typeof": 4, "void": 5, "delete": 6};
@@ -2065,13 +2063,11 @@ function encode(estree, comments, lineStarts) {
     for (let i = 0; i < commentCount; i++) {
       const c = comments[i];
       const v = encStr(typeof c.value === "string" ? c.value : "");
-      const kind = typeof c.kind === "string" ? (COMMENT_KINDS_INV[c.kind] ?? 0) : 0;
       let flags = 0;
       if (c.precededByNewline) flags |= 1;
       if (c.followedByNewline) flags |= 2;
       const o = i * COMMENT_SIZE;
       cU8[o + COMMENT_TYPE_OFFSET] = c.type === "Block" ? 1 : 0;
-      cU8[o + COMMENT_KIND_OFFSET] = kind;
       cU8[o + COMMENT_FLAGS_OFFSET] = flags;
       cDV.setUint32(o + COMMENT_START_OFFSET, (c.start >>> 0), true);
       cDV.setUint32(o + COMMENT_END_OFFSET, (c.end >>> 0), true);
