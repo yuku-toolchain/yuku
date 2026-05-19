@@ -103,6 +103,17 @@ interface Diagnostic {
   labels: DiagnosticLabel[];
 }
 
+/**
+ * A `(line, column)` pair into the source, matching ESTree's `loc` convention.
+ * Lines are 1-based; columns are 0-based.
+ */
+interface SourceLocation {
+  /** 1-based line number. */
+  line: number;
+  /** 0-based column number within the line. */
+  column: number;
+}
+
 /** The result returned by the parser. */
 interface ParseResult {
   /** Root ESTree/TypeScript-ESTree AST node. */
@@ -138,6 +149,20 @@ export function langFromPath(path: string): SourceLang;
  * - everything else → `"module"`
  */
 export function sourceTypeFromPath(path: string): SourceType;
+
+/**
+ * Resolves a `{ line, column }` {@link SourceLocation} for an offset, using
+ * {@link ParseResult.lineStarts}. Runs in O(log n).
+ *
+ * Lines are 1-based; columns are 0-based. The unit of `offset` (UTF-16 code
+ * units in JS) must match the unit of `lineStarts`. Both come from the same
+ * {@link ParseResult}, so this is automatic.
+ *
+ * @example
+ * const { program, lineStarts } = parse(source);
+ * locOf(lineStarts, program.body[0].start); // => { line, column }
+ */
+export function locOf(lineStarts: number[], offset: number): SourceLocation;
 
 // AST node types
 
@@ -1745,6 +1770,7 @@ export type {
   SourceType,
   ModuleKind,
   SourceLang,
+  SourceLocation,
   BaseNode,
   Span,
   Program,

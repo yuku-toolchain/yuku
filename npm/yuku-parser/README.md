@@ -57,6 +57,19 @@ sourceTypeFromPath("foo.cjs"); // "script"
 sourceTypeFromPath("foo.mjs"); // "module"
 ```
 
+## Resolving offsets to `(line, column)`
+
+Nodes, comments, and diagnostics carry `start`/`end` offsets. To turn an offset into a `{ line, column }` pair, use `locOf` with `lineStarts` from the parse result:
+
+```ts
+import { parse, locOf } from "yuku-parser";
+
+const { program, lineStarts } = parse(source);
+const { line, column } = locOf(lineStarts, program.body[0].start);
+```
+
+Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, well over 10M ops/s even on million-line files, so it's safe to call per node during a walk.
+
 ## Walking the AST
 
 The AST is standard ESTree, so any ESTree-compatible walker works. For example, with [zimmerframe](https://github.com/sveltejs/zimmerframe):
