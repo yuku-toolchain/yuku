@@ -393,7 +393,6 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": false,
       "followedByNewline": true,
       "value": " Valid: function overloads at module scope (TS allows; sloppy JS Annex B",
@@ -402,7 +401,6 @@
     },
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": true,
       "followedByNewline": true,
       "value": " also allows at function/global scope).",
@@ -411,7 +409,6 @@
     },
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": true,
       "followedByNewline": true,
       "value": " Valid: overloads inside a function body.",
