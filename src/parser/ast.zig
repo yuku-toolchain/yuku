@@ -110,7 +110,6 @@ pub const Lang = enum {
 /// ```
 pub const Comment = struct {
     type: Type,
-    kind: Kind,
     /// True when a line terminator immediately precedes this comment.
     preceded_by_newline: bool,
     /// True when a line terminator immediately follows this comment.
@@ -129,25 +128,6 @@ pub const Comment = struct {
                 .line => "Line",
                 .block => "Block",
             };
-        }
-    };
-
-    pub const Kind = enum {
-        /// Plain comment with no special meaning.
-        normal,
-        /// `/*! ... */` or contains `@license`, `@preserve`, or `@cc_on`.
-        legal,
-        /// `/** ... */` block, used for documentation.
-        jsdoc,
-        /// `/*#...*/` or `/*@...*/` other than `pure` and `no_side_effects`.
-        annotation,
-        /// `/*#__PURE__*/` or `/*@__PURE__*/`.
-        pure,
-        /// `/*#__NO_SIDE_EFFECTS__*/` or `/*@__NO_SIDE_EFFECTS__*/`.
-        no_side_effects,
-
-        pub fn toString(self: Kind) []const u8 {
-            return @tagName(self);
         }
     };
 };
@@ -276,18 +256,25 @@ pub const Tree = struct {
     /// Index 0 is always 0.
     pub fn buildLineStarts(self: *Tree) error{OutOfMemory}!void {
         const alloc = self.arena.allocator();
-        var starts: std.ArrayList(u32) = .empty;
-        try starts.ensureTotalCapacity(alloc, @max(8, self.source.len / 32));
-        try starts.append(alloc, 0);
-
         const src = self.source;
-        const Vec = @Vector(16, u8);
+
+        var starts: std.ArrayList(u32) = .empty;
+        try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
+        starts.appendAssumeCapacity(0);
+
+        const N = 64;
+        const Vec = @Vector(N, u8);
+        const Mask = std.meta.Int(.unsigned, N);
         const lf: Vec = @splat('\n');
+
         var i: usize = 0;
-        while (i + 16 <= src.len) : (i += 16) {
-            const mask = @as(Vec, src[i..][0..16].*) == lf;
-            if (@reduce(.Or, mask)) {
-                inline for (0..16) |k| if (mask[k]) try starts.append(alloc, @intCast(i + k + 1));
+        while (i + N <= src.len) : (i += N) {
+            const chunk: Vec = src[i..][0..N].*;
+            var bits: Mask = @bitCast(chunk == lf);
+            while (bits != 0) {
+                const k = @ctz(bits);
+                try starts.append(alloc, @intCast(i + k + 1));
+                bits &= bits - 1;
             }
         }
         while (i < src.len) : (i += 1) {

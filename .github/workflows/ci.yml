@@ -1,40 +1,121 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  ZIG_VERSION: 0.17.0-dev.224+c166c49b1
+
 jobs:
-  build:
-    name: Build & Zig tests on ${{ matrix.os }}
+  tools:
+    name: Tools tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # [windows-latest], bun is crashing on windows
         os: [ubuntu-latest, macos-latest]
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Cache Zig
+        uses: actions/cache@v4
+        with:
+          path: .zig-cache
+          key: zig-tools-${{ runner.os }}-${{ hashFiles('build.zig', 'build.zig.zon', 'tools/**/*.zig', 'src/**/*.zig') }}
+          restore-keys: |
+            zig-tools-${{ runner.os }}-
+
+      - name: Run tools tests
+        run: zig build test-tools
+
+  test:
+    name: Build & test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      # [windows-latest], bun is crashing on windows
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
+      - uses: mlugg/setup-zig@v2
         with:
-          version: 0.17.0-dev.224+c166c49b1
+          version: ${{ env.ZIG_VERSION }}
 
-      - name: Load files
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            docs/node_modules
+            npm/*/node_modules
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Cache Zig
+        uses: actions/cache@v4
+        with:
+          path: .zig-cache
+          key: zig-${{ runner.os }}-${{ hashFiles('build.zig', 'build.zig.zon', 'src/**/*.zig', 'tools/**/*.zig') }}
+          restore-keys: |
+            zig-${{ runner.os }}-
+
+      - name: Cache test data
+        uses: actions/cache@v4
+        with:
+          path: |
+            test/parser/suite
+            profiler/files
+          key: test-data-${{ hashFiles('test/parser/load.ts', 'profiler/load-parser-bench-files.ts') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Load test data
         run: bun run load-files
 
-      - name: Build
+      - name: Build native bindings
+        run: bun run build:npm
+
+      - name: Zig build
         run: zig build
 
-      - name: Run Zig tests
+      - name: Zig tests
         run: zig build test
+
+      - name: Parser conformance
+        if: ${{ !cancelled() }}
+        run: bun run test:parser
+
+      - name: Codegen conformance
+        if: ${{ !cancelled() }}
+        run: bun run test:codegen
+
+      - name: Comments conformance
+        if: ${{ !cancelled() }}
+        run: bun run test:comments
+
+      - name: Sourcemap conformance
+        if: ${{ !cancelled() }}
+        run: bun run test:sourcemap
+
+      - name: Minifier conformance
+        if: ${{ !cancelled() }}
+        run: bun run test:minifier

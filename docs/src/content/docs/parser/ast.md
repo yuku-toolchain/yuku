@@ -644,36 +644,15 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 
 ## Comments
 
-`tree.comments` holds every comment in source order. Each entry is classified at lex time so consumers route comments with a single equality check.
+`tree.comments` holds every comment in source order.
 
 ```zig
 pub const Comment = struct {
     type: Type,                  // .line or .block
-    kind: Kind,                  // semantic classification
     preceded_by_newline: bool,   // line terminator immediately before
     followed_by_newline: bool,   // line terminator immediately after
     value: String,               // text without the surrounding delimiters
     start: u32,                  // byte offset
     end: u32,                    // byte offset
 };
-
-pub const Comment.Kind = enum {
-    normal,            // plain comment with no special meaning
-    legal,             // `/*! ... */` or contains `@license`, `@preserve`, `@cc_on`
-    jsdoc,             // `/** ... */` block
-    annotation,        // `/*# ... */` or `/*@ ... */` other than tree-shaking
-    pure,              // `/*#__PURE__*/` or `/*@__PURE__*/`
-    no_side_effects,   // `/*#__NO_SIDE_EFFECTS__*/` or `/*@__NO_SIDE_EFFECTS__*/`
-};
-```
-
-```zig
-for (tree.comments) |c| {
-    if (c.kind == .legal) {
-        // extract for a sidecar banner file
-    }
-    if (c.kind == .pure) {
-        // tree-shaking annotation for the next call/new expression
-    }
-}
 ```

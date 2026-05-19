@@ -115,9 +115,8 @@ const PackedNode = extern struct {
 ///   bit 1  followed_by_newline
 const CommentEntry = extern struct {
     type: u8,
-    kind: u8,
     flags: u8,
-    _pad: u8 = 0,
+    _pad: u16 = 0,
     start: u32,
     end: u32,
     value_start: u32,
@@ -162,7 +161,6 @@ pub const NODE_FLAG_BITS: u8 = @bitSizeOf(@FieldType(PackedNode, "flags"));
 
 // `CommentEntry` byte offsets for the decoder.
 pub const COMMENT_TYPE_OFFSET: u8 = @offsetOf(CommentEntry, "type");
-pub const COMMENT_KIND_OFFSET: u8 = @offsetOf(CommentEntry, "kind");
 pub const COMMENT_FLAGS_OFFSET: u8 = @offsetOf(CommentEntry, "flags");
 pub const COMMENT_START_OFFSET: u8 = @offsetOf(CommentEntry, "start");
 pub const COMMENT_END_OFFSET: u8 = @offsetOf(CommentEntry, "end");
@@ -337,7 +335,6 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         if (c.followed_by_newline) flags |= COMMENT_FLAG_FOLLOWED_BY_NEWLINE;
         const entry = CommentEntry{
             .type = @intFromEnum(c.type),
-            .kind = @intFromEnum(c.kind),
             .flags = flags,
             .start = c.start,
             .end = c.end,
@@ -546,7 +543,6 @@ pub fn deserializeFromBuf(
             pos += COMMENT_SIZE;
             comments[i] = .{
                 .type = if (ce.type == 0) .line else .block,
-                .kind = @enumFromInt(ce.kind),
                 .preceded_by_newline = (ce.flags & COMMENT_FLAG_PRECEDED_BY_NEWLINE) != 0,
                 .followed_by_newline = (ce.flags & COMMENT_FLAG_FOLLOWED_BY_NEWLINE) != 0,
                 .value = .{ .start = ce.value_start, .end = ce.value_end },

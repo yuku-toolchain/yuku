@@ -45,23 +45,9 @@ interface ParseOptions {
 /** Whether a {@link Comment} came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
-/**
- * Semantic classification of a {@link Comment}, computed at parse time so
- * consumers can route comments without rescanning their value.
- *
- * - `"normal"`: plain comment with no special meaning.
- * - `"legal"`: `/*! ... *\/` or contains `@license`, `@preserve`, or `@cc_on`.
- * - `"jsdoc"`: `/** ... *\/` block.
- * - `"annotation"`: `/*# ... *\/` or `/*@ ... *\/` other than tree-shaking.
- * - `"pure"`: `/*#__PURE__*\/` or `/*@__PURE__*\/`.
- * - `"no_side_effects"`: `/*#__NO_SIDE_EFFECTS__*\/` or `/*@__NO_SIDE_EFFECTS__*\/`.
- */
-type CommentKind = "normal" | "legal" | "jsdoc" | "annotation" | "pure" | "no_side_effects";
-
 /** A source code comment. */
 interface Comment {
   type: CommentType;
-  kind: CommentKind;
   /** True when a line terminator immediately precedes this comment. */
   precededByNewline: boolean;
   /** True when a line terminator immediately follows this comment. */
@@ -103,6 +89,17 @@ interface Diagnostic {
   labels: DiagnosticLabel[];
 }
 
+/**
+ * A `(line, column)` pair into the source, matching ESTree's `loc` convention.
+ * Lines are 1-based; columns are 0-based.
+ */
+interface SourceLocation {
+  /** 1-based line number. */
+  line: number;
+  /** 0-based column number within the line. */
+  column: number;
+}
+
 /** The result returned by the parser. */
 interface ParseResult {
   /** Root ESTree/TypeScript-ESTree AST node. */
@@ -138,6 +135,20 @@ export function langFromPath(path: string): SourceLang;
  * - everything else → `"module"`
  */
 export function sourceTypeFromPath(path: string): SourceType;
+
+/**
+ * Resolves a `{ line, column }` {@link SourceLocation} for an offset, using
+ * {@link ParseResult.lineStarts}. Runs in O(log n).
+ *
+ * Lines are 1-based; columns are 0-based. The unit of `offset` (UTF-16 code
+ * units in JS) must match the unit of `lineStarts`. Both come from the same
+ * {@link ParseResult}, so this is automatic.
+ *
+ * @example
+ * const { program, lineStarts } = parse(source);
+ * locOf(lineStarts, program.body[0].start); // => { line, column }
+ */
+export function locOf(lineStarts: number[], offset: number): SourceLocation;
 
 // AST node types
 
@@ -1738,13 +1749,13 @@ export type {
   ParseResult,
   Comment,
   CommentType,
-  CommentKind,
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,
   SourceType,
   ModuleKind,
   SourceLang,
+  SourceLocation,
   BaseNode,
   Span,
   Program,

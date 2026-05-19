@@ -295,7 +295,6 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": false,
       "followedByNewline": true,
       "value": " Error: enum redeclaration cases.",
@@ -304,7 +303,6 @@
     },
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": true,
       "followedByNewline": true,
       "value": " regular enum + const enum (different constness)",
@@ -313,7 +311,6 @@
     },
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": true,
       "followedByNewline": true,
       "value": " const enum + regular enum (reverse)",
@@ -322,7 +319,6 @@
     },
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": true,
       "followedByNewline": true,
       "value": " const enum + class (both occupy value+type)",
@@ -331,7 +327,6 @@
     },
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": true,
       "followedByNewline": true,
       "value": " regular enum + interface (regular enum occupies type space too)",

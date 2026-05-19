@@ -47,13 +47,11 @@ fn writePrologue(w: *Writer) !void {
         \\const NODE_SPAN_END_U32 = {[se_u32]d};
         \\const COMMENT_SIZE = {[c_size]d};
         \\const COMMENT_TYPE_OFFSET = {[c_ty]d};
-        \\const COMMENT_KIND_OFFSET = {[c_kd]d};
         \\const COMMENT_FLAGS_OFFSET = {[c_fl]d};
         \\const COMMENT_START_OFFSET = {[c_s]d};
         \\const COMMENT_END_OFFSET = {[c_e]d};
         \\const COMMENT_VALUE_START_OFFSET = {[c_vs]d};
         \\const COMMENT_VALUE_END_OFFSET = {[c_ve]d};
-        \\const COMMENT_KINDS_INV = {{"normal": 0, "legal": 1, "jsdoc": 2, "annotation": 3, "pure": 4, "no_side_effects": 5}};
         \\
     , .{
         .node_size = rt.NODE_SIZE,
@@ -65,7 +63,6 @@ fn writePrologue(w: *Writer) !void {
         .se_u32 = rt.NODE_SPAN_END_U32,
         .c_size = rt.COMMENT_SIZE,
         .c_ty = rt.COMMENT_TYPE_OFFSET,
-        .c_kd = rt.COMMENT_KIND_OFFSET,
         .c_fl = rt.COMMENT_FLAGS_OFFSET,
         .c_s = rt.COMMENT_START_OFFSET,
         .c_e = rt.COMMENT_END_OFFSET,
@@ -1305,13 +1302,11 @@ fn writeAssemble(w: *Writer) !void {
         \\    for (let i = 0; i < commentCount; i++) {{
         \\      const c = comments[i];
         \\      const v = encStr(typeof c.value === "string" ? c.value : "");
-        \\      const kind = typeof c.kind === "string" ? (COMMENT_KINDS_INV[c.kind] ?? 0) : 0;
         \\      let flags = 0;
         \\      if (c.precededByNewline) flags |= 1;
         \\      if (c.followedByNewline) flags |= 2;
         \\      const o = i * COMMENT_SIZE;
         \\      cU8[o + COMMENT_TYPE_OFFSET] = c.type === "Block" ? 1 : 0;
-        \\      cU8[o + COMMENT_KIND_OFFSET] = kind;
         \\      cU8[o + COMMENT_FLAGS_OFFSET] = flags;
         \\      cDV.setUint32(o + COMMENT_START_OFFSET, (c.start >>> 0), true);
         \\      cDV.setUint32(o + COMMENT_END_OFFSET, (c.end >>> 0), true);

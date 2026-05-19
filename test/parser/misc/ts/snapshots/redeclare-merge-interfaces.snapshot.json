@@ -170,7 +170,6 @@
   "comments": [
     {
       "type": "Line",
-      "kind": "normal",
       "precededByNewline": false,
       "followedByNewline": true,
       "value": " All valid: interfaces with the same name merge.",

@@ -23,9 +23,7 @@ pub const Format = enum {
 /// Quote style for emitted string literals.
 pub const Quotes = enum { double, single };
 
-/// Filter applied to `tree.comments` when emitting. Consumers walking
-/// `tree.comments` themselves can mirror this by switching on
-/// `Comment.kind` and `Comment.type`.
+/// Filter applied to `tree.comments` when emitting.
 pub const Comments = enum {
     /// Drop all comments.
     none,
@@ -334,7 +332,7 @@ fn Printer(comptime cfg: Config) type {
         return switch (self.options.comments) {
             .none => false,
             .all => true,
-            .some => c.kind != .normal,
+            .some => c.type == .block and isSignificantBlockComment(self.tree.string(c.value)),
             .line => c.type == .line,
             .block => c.type == .block,
         };
@@ -1045,7 +1043,7 @@ fn Printer(comptime cfg: Config) type {
             // `1..toString()` lexes as number-dot-name.
             if (comptime minify_mode) {
                 const head = self.code.items[head_start..];
-                if (head_decimal and !e.optional and std.mem.indexOfAny(u8, head, ".eE") == null)
+                if (head_decimal and !e.optional and std.mem.findAny(u8, head, ".eE") == null)
                     try self.writeByte('.');
             }
             try self.writeStr(if (e.optional) "?." else ".");
@@ -2698,7 +2696,7 @@ fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
 }
 
 fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
-    if (std.mem.indexOfScalar(u8, raw, '_') == null) return raw;
+    if (std.mem.findScalar(u8, raw, '_') == null) return raw;
     if (raw.len > buf.len) return null;
     var len: usize = 0;
     for (raw) |c| if (c != '_') {
@@ -2712,11 +2710,11 @@ fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
 /// falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
 /// not alias each other.
 fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
-    const exp_at = std.mem.indexOfAny(u8, s, "eE") orelse s.len;
+    const exp_at = std.mem.findAny(u8, s, "eE") orelse s.len;
     const mantissa = s[0..exp_at];
     const exp_suffix = s[exp_at..]; // empty or `e<n>` / `E<n>`
 
-    const dot_at = std.mem.indexOfScalar(u8, mantissa, '.') orelse mantissa.len;
+    const dot_at = std.mem.findScalar(u8, mantissa, '.') orelse mantissa.len;
     var int_part = mantissa[0..dot_at];
     const frac_raw = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
     const frac_part = std.mem.trimEnd(u8, frac_raw, "0");
@@ -2740,4 +2738,21 @@ fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
     const dot = if (frac_part.len > 0) "." else "";
     const out = std.fmt.bufPrint(scratch, "{s}{s}{s}{s}", .{ int_part, dot, frac_part, exp_suffix }) catch return s;
     return if (out.len < s.len) out else s;
+}
+
+fn isSignificantBlockComment(value: []const u8) bool {
+    if (value.len == 0) return false;
+    switch (value[0]) {
+        '!', '*', '#', '@' => return true,
+        else => {},
+    }
+    var i: usize = 0;
+    while (std.mem.indexOfScalarPos(u8, value, i, '@')) |pos| {
+        const rest = value[pos..];
+        if (std.mem.startsWith(u8, rest, "@license") or
+            std.mem.startsWith(u8, rest, "@preserve") or
+            std.mem.startsWith(u8, rest, "@cc_on")) return true;
+        i = pos + 1;
+    }
+    return false;
 }
