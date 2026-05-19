@@ -164,6 +164,8 @@ pub const Parser = struct {
         self.tree.diagnostics = self.diagnostics;
 
         self.tree.comments = try self.lexer.comments.toOwnedSlice(alloc);
+
+        try self.tree.buildLineStarts();
     }
 
     const BodyKind = enum {

@@ -1,1 +1,1 @@
-import defer * as moduleExports from "module"
+import * as moduleExports from "module";

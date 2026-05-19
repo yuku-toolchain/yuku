@@ -2,44 +2,44 @@
   "name": "yuku-codegen",
   "version": "0.5.9",
   "description": "High-performance JavaScript/TypeScript code generator written in Zig",
+  "keywords": [
+    "ast",
+    "codegen",
+    "estree",
+    "javascript",
+    "minifier",
+    "napi",
+    "printer",
+    "typescript"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/yuku-toolchain/yuku"
   },
-  "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "index.js",
     "index.d.ts",
     "binding.js",
     "encode.js"
   ],
-  "optionalDependencies": {
-    "@yuku-codegen/binding-linux-x64-gnu": "0.5.9",
-    "@yuku-codegen/binding-linux-arm64-gnu": "0.5.9",
-    "@yuku-codegen/binding-linux-arm-gnu": "0.5.9",
-    "@yuku-codegen/binding-linux-x64-musl": "0.5.9",
-    "@yuku-codegen/binding-linux-arm64-musl": "0.5.9",
-    "@yuku-codegen/binding-linux-arm-musl": "0.5.9",
-    "@yuku-codegen/binding-darwin-x64": "0.5.9",
-    "@yuku-codegen/binding-darwin-arm64": "0.5.9",
-    "@yuku-codegen/binding-win32-x64": "0.5.9",
-    "@yuku-codegen/binding-win32-arm64": "0.5.9",
-    "@yuku-codegen/binding-freebsd-x64": "0.5.9"
-  },
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
   "dependencies": {
     "yuku-parser": "workspace:*"
   },
-  "keywords": [
-    "codegen",
-    "javascript",
-    "typescript",
-    "ast",
-    "estree",
-    "printer",
-    "minifier",
-    "napi"
-  ]
+  "optionalDependencies": {
+    "@yuku-codegen/binding-darwin-arm64": "0.5.9",
+    "@yuku-codegen/binding-darwin-x64": "0.5.9",
+    "@yuku-codegen/binding-freebsd-x64": "0.5.9",
+    "@yuku-codegen/binding-linux-arm-gnu": "0.5.9",
+    "@yuku-codegen/binding-linux-arm-musl": "0.5.9",
+    "@yuku-codegen/binding-linux-arm64-gnu": "0.5.9",
+    "@yuku-codegen/binding-linux-arm64-musl": "0.5.9",
+    "@yuku-codegen/binding-linux-x64-gnu": "0.5.9",
+    "@yuku-codegen/binding-linux-x64-musl": "0.5.9",
+    "@yuku-codegen/binding-win32-arm64": "0.5.9",
+    "@yuku-codegen/binding-win32-x64": "0.5.9"
+  }
 }

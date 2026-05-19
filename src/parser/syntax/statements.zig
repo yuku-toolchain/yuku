@@ -338,8 +338,8 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         if (try parseStatement(parser, .{})) |stmt| {
             const stmt_data = parser.tree.data(stmt);
 
-            // A using declaration can appear in the following contexts:
-            //  - The top level of a Module anywhere a VariableStatement is allowed, as long as it is not
+            // a using declaration can appear in the following contexts:
+            //  - the top level of a Module anywhere a VariableStatement is allowed, as long as it is not
             //    immediately nested inside of a `CaseClause` or `DefaultClause`.
             if (stmt_data == .variable_declaration) {
                 const kind = stmt_data.variable_declaration.kind;

@@ -1,15 +1,10 @@
 import { parse } from "yuku-parser";
-import { minify } from "yuku-codegen";
+import { print } from "yuku-codegen";
 
 const source = await Bun.file("test/fixture.ts").text();
 
 const ast = parse(source, { lang: "ts" });
 
-const result = minify(ast.program, {
-  format: "compact",
-  sourceMaps: {
-    source,
-  },
-});
+const result = print(ast);
 
-console.log(result.map);
+console.log(result.code);

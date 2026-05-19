@@ -1,4 +1,4 @@
-// Yuku AST transfer format v4.
+// yuku ast transfer format v5.
 //
 // serializes the parsed ast into a compact binary buffer for passing to js.
 // the buffer is returned as an arraybuffer from the native napi binding.
@@ -16,6 +16,7 @@
 //   extra        extra_count times 4 bytes, flat u32 array backing IndexRange
 //   strings      string_pool_len bytes of raw utf8 for pooled strings
 //   comments     comment_count times COMMENT_SIZE bytes
+//   line_starts  line_starts_count times 4 bytes, flat u32 array
 //   diagnostics  variable length sequence
 //
 // each AST struct is packed into a PackedNode by iterating its fields in
@@ -70,13 +71,14 @@ const Header = extern struct {
     string_pool_len: u32,
     source_len: u32,
     comment_count: u32,
+    line_starts_count: u32,
     diag_count: u32,
     program_index: u32,
     flags: u32,
     /// byte offset of the first non-ASCII byte in `source`, or
     /// `source_len` if the source is entirely ASCII. the decoder uses
     /// this as the boundary above which UTF-8 byte offsets need a
-    /// `buildPosMap` walk; positions below it are an identity map.
+    /// `buildPosMap` walk. positions below it are an identity map.
     first_non_ascii: u32,
 };
 
@@ -108,15 +110,22 @@ const PackedNode = extern struct {
     span_end: u32,
 };
 
-/// comment entry in the comments section.
+/// Comment entry in the comments section. `flags` packs:
+///   bit 0  preceded_by_newline
+///   bit 1  followed_by_newline
 const CommentEntry = extern struct {
     type: u8,
-    _pad: [3]u8 = [_]u8{0} ** 3,
+    kind: u8,
+    flags: u8,
+    _pad: u8 = 0,
     start: u32,
     end: u32,
     value_start: u32,
     value_end: u32,
 };
+
+pub const COMMENT_FLAG_PRECEDED_BY_NEWLINE: u8 = 1 << 0;
+pub const COMMENT_FLAG_FOLLOWED_BY_NEWLINE: u8 = 1 << 1;
 
 // section sizes.
 pub const HEADER_SIZE: u32 = @sizeOf(Header);
@@ -129,6 +138,7 @@ pub const HDR_EXTRA_COUNT_U32: u32 = @offsetOf(Header, "extra_count") / 4;
 pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 4;
 pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
 pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
+pub const HDR_LINE_STARTS_COUNT_U32: u32 = @offsetOf(Header, "line_starts_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
 pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
@@ -151,6 +161,9 @@ pub const NODE_DATA_SLOTS: u8 = NODE_SPAN_START_U32 - NODE_HEADER_U32S;
 pub const NODE_FLAG_BITS: u8 = @bitSizeOf(@FieldType(PackedNode, "flags"));
 
 // `CommentEntry` byte offsets for the decoder.
+pub const COMMENT_TYPE_OFFSET: u8 = @offsetOf(CommentEntry, "type");
+pub const COMMENT_KIND_OFFSET: u8 = @offsetOf(CommentEntry, "kind");
+pub const COMMENT_FLAGS_OFFSET: u8 = @offsetOf(CommentEntry, "flags");
 pub const COMMENT_START_OFFSET: u8 = @offsetOf(CommentEntry, "start");
 pub const COMMENT_END_OFFSET: u8 = @offsetOf(CommentEntry, "end");
 pub const COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(CommentEntry, "value_start");
@@ -269,7 +282,8 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
         tree.nodes.len * NODE_SIZE +
         tree.extras.items.len * 4 +
         tree.strings.extra.items.len +
-        tree.comments.len * COMMENT_SIZE;
+        tree.comments.len * COMMENT_SIZE +
+        tree.line_starts.len * 4;
 
     for (tree.diagnostics.items) |d| {
         size += diag_fixed + d.message.len;
@@ -289,6 +303,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .string_pool_len = string_pool_len,
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
+        .line_starts_count = @intCast(tree.line_starts.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
         .flags = if (tree.isTs()) FLAG_TS else 0,
@@ -317,8 +332,13 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
 
     // comments
     for (tree.comments) |c| {
+        var flags: u8 = 0;
+        if (c.preceded_by_newline) flags |= COMMENT_FLAG_PRECEDED_BY_NEWLINE;
+        if (c.followed_by_newline) flags |= COMMENT_FLAG_FOLLOWED_BY_NEWLINE;
         const entry = CommentEntry{
             .type = @intFromEnum(c.type),
+            .kind = @intFromEnum(c.kind),
+            .flags = flags,
             .start = c.start,
             .end = c.end,
             .value_start = c.value.start,
@@ -327,6 +347,11 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
         pos += COMMENT_SIZE;
     }
+
+    // line starts
+    const ls_bytes = std.mem.sliceAsBytes(tree.line_starts);
+    @memcpy(buf[pos..][0..ls_bytes.len], ls_bytes);
+    pos += ls_bytes.len;
 
     // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
@@ -450,7 +475,7 @@ fn firstNonAsciiOffset(source: []const u8) usize {
     var i: usize = 0;
     while (i + 16 <= source.len) : (i += 16) {
         if (@reduce(.Or, source[i..][0..16].* & hi) != 0) {
-            // non-ASCII somewhere in this 16-byte block; find it.
+            // non-ASCII somewhere in this 16-byte block. find it.
             for (source[i..][0..16], 0..) |c, k| if (c >= 0x80) return i + k;
             unreachable;
         }
@@ -460,9 +485,9 @@ fn firstNonAsciiOffset(source: []const u8) usize {
 }
 
 // deserialization. reverses `serializeInto`, comptime-driven by the same
-// layout helpers. ignores the comments and diagnostics sections, which the
-// codegen path doesn't need. the caller passes in the source string, which
-// may be empty when every `String` resolves through the pool.
+// layout helpers. ignores the diagnostics section, which the codegen path
+// doesn't need. the caller passes in the source string, which may be
+// empty when every `String` resolves through the pool.
 
 pub const DeserializeError = error{ InvalidBuffer, OutOfMemory };
 
@@ -508,8 +533,41 @@ pub fn deserializeFromBuf(
     if (buf.len < pos + hdr.string_pool_len) return error.InvalidBuffer;
     try tree.strings.extra.resize(tree.allocator(), hdr.string_pool_len);
     @memcpy(tree.strings.extra.items, buf[pos..][0..hdr.string_pool_len]);
+    pos += hdr.string_pool_len;
 
-    // skip comments + diagnostics. codegen doesn't read them.
+    // comments
+    const comments_bytes: usize = @as(usize, hdr.comment_count) * COMMENT_SIZE;
+    if (buf.len < pos + comments_bytes) return error.InvalidBuffer;
+    if (hdr.comment_count > 0) {
+        const comments = try tree.allocator().alloc(ast.Comment, hdr.comment_count);
+        for (0..hdr.comment_count) |i| {
+            var ce: CommentEntry = undefined;
+            @memcpy(std.mem.asBytes(&ce), buf[pos..][0..COMMENT_SIZE]);
+            pos += COMMENT_SIZE;
+            comments[i] = .{
+                .type = if (ce.type == 0) .line else .block,
+                .kind = @enumFromInt(ce.kind),
+                .preceded_by_newline = (ce.flags & COMMENT_FLAG_PRECEDED_BY_NEWLINE) != 0,
+                .followed_by_newline = (ce.flags & COMMENT_FLAG_FOLLOWED_BY_NEWLINE) != 0,
+                .value = .{ .start = ce.value_start, .end = ce.value_end },
+                .start = ce.start,
+                .end = ce.end,
+            };
+        }
+        tree.comments = comments;
+    }
+
+    // line starts
+    const ls_bytes: usize = @as(usize, hdr.line_starts_count) * 4;
+    if (buf.len < pos + ls_bytes) return error.InvalidBuffer;
+    if (hdr.line_starts_count > 0) {
+        const starts = try tree.allocator().alloc(u32, hdr.line_starts_count);
+        @memcpy(std.mem.sliceAsBytes(starts), buf[pos..][0..ls_bytes]);
+        tree.line_starts = starts;
+        pos += ls_bytes;
+    }
+
+    // skip diagnostics. codegen doesn't read them.
 
     tree.root = @enumFromInt(hdr.program_index);
     return tree;

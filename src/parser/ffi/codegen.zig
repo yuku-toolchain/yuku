@@ -8,6 +8,7 @@ const Options = struct {
     indent: u8 = 2,
     quotes: parser.codegen.Quotes = .double,
     source_maps: ?parser.codegen.SourceMapOptions = null,
+    comments: parser.codegen.Comments = .some,
 };
 
 const Result = struct {
@@ -39,6 +40,7 @@ inline fn asCodegenOptions(o: Options) parser.codegen.Options {
         .indent = o.indent,
         .quotes = o.quotes,
         .source_maps = o.source_maps,
+        .comments = o.comments,
     };
 }
 

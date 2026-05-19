@@ -30,8 +30,8 @@
           "value": "module",
           "raw": "\"module\""
         },
-        "phase": "defer",
-        "attributes": []
+        "attributes": [],
+        "phase": "defer"
       }
     ]
   },

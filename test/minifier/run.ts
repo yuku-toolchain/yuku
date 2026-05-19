@@ -85,7 +85,11 @@ async function runCase(file: string) {
   if (expected !== minified) {
     const delta = minBytes - Buffer.byteLength(expected, "utf8");
     const sign = delta > 0 ? "+" : "";
-    return fail(file, "snapshot", `size delta: ${sign}${delta} bytes\n--- expected\n${expected}\n--- actual\n${minified}`);
+    return fail(
+      file,
+      "snapshot",
+      `size delta: ${sign}${delta} bytes\n--- expected\n${expected}\n--- actual\n${minified}`,
+    );
   }
 
   const orig = await tryImport(path.resolve(srcPath));
@@ -110,7 +114,11 @@ async function runCase(file: string) {
 
 async function runCorpus() {
   console.log("\ncorpus");
-  let totalOk = 0, totalAll = 0, totalSkip = 0, totalSrc = 0, totalMin = 0;
+  let totalOk = 0,
+    totalAll = 0,
+    totalSkip = 0,
+    totalSrc = 0,
+    totalMin = 0;
   for (const dir of CORPUS_DIRS) {
     if (!existsSync(dir)) {
       console.log(`  ${dir}: not found (run \`bun load-files\`)`);
@@ -118,19 +126,30 @@ async function runCorpus() {
     }
     const files = [...new Glob("**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}").scanSync({ cwd: dir })];
     const t = performance.now();
-    let ok = 0, bad = 0, skip = 0, src = 0, min = 0;
+    let ok = 0,
+      bad = 0,
+      skip = 0,
+      src = 0,
+      min = 0;
     const errs: string[] = [];
     for (let i = 0; i < files.length; i += 256) {
       const batch = files.slice(i, i + 256);
       const out = await Promise.all(batch.map((f) => corpusFile(path.join(dir, f))));
       for (const r of out) {
-        if (r.status === "pass") { ok++; src += r.src; min += r.min; }
-        else if (r.status === "skip") skip++;
-        else { bad++; errs.push(r.err); }
+        if (r.status === "pass") {
+          ok++;
+          src += r.src;
+          min += r.min;
+        } else if (r.status === "skip") skip++;
+        else {
+          bad++;
+          errs.push(r.err);
+        }
       }
     }
     const ms = Math.round(performance.now() - t);
-    const sizes = ok > 0 ? `, ${formatBytes(src)} → ${formatBytes(min)} (${percent(min, src)})` : "";
+    const sizes =
+      ok > 0 ? `, ${formatBytes(src)} → ${formatBytes(min)} (${percent(min, src)})` : "";
     console.log(`  ${dir}: ${ok}/${ok + bad} (${ms}ms${skip ? `, ${skip} skipped` : ""}${sizes})`);
     for (const e of errs.slice(0, 10)) console.log(`    ✗ ${e}`);
     if (errs.length > 10) console.log(`    ... ${errs.length - 10} more`);
@@ -141,8 +160,13 @@ async function runCorpus() {
     totalSrc += src;
     totalMin += min;
   }
-  const totalSizes = totalOk > 0 ? `, ${formatBytes(totalSrc)} → ${formatBytes(totalMin)} (${percent(totalMin, totalSrc)})` : "";
-  console.log(`  total: ${totalOk}/${totalAll}${totalSkip ? `, ${totalSkip} skipped` : ""}${totalSizes}`);
+  const totalSizes =
+    totalOk > 0
+      ? `, ${formatBytes(totalSrc)} → ${formatBytes(totalMin)} (${percent(totalMin, totalSrc)})`
+      : "";
+  console.log(
+    `  total: ${totalOk}/${totalAll}${totalSkip ? `, ${totalSkip} skipped` : ""}${totalSizes}`,
+  );
 }
 
 type CorpusResult =
@@ -161,7 +185,11 @@ async function corpusFile(file: string): Promise<CorpusResult> {
     return { status: "fail", err: `${file}: minify threw: ${e}` };
   }
   if (parse(minified, { lang, sourceType }).diagnostics.length === 0) {
-    return { status: "pass", src: Buffer.byteLength(source, "utf8"), min: Buffer.byteLength(minified, "utf8") };
+    return {
+      status: "pass",
+      src: Buffer.byteLength(source, "utf8"),
+      min: Buffer.byteLength(minified, "utf8"),
+    };
   }
   // if the input itself doesn't parse under the canonical sourceType, it's a
   // parser-corpus oddity (e.g. `await` as identifier in `.js`), not a regression.
@@ -176,15 +204,28 @@ function pass(file: string, note?: string) {
 function fail(file: string, layer: string, details: string) {
   failed++;
   console.log(`  ✗ ${file} [${layer}]`);
-  console.log(details.split("\n").map((l) => "    " + l).join("\n"));
+  console.log(
+    details
+      .split("\n")
+      .map((l) => "    " + l)
+      .join("\n"),
+  );
 }
 
 async function tryImport(p: string): Promise<Record<string, unknown> | null> {
-  try { return await import(p); } catch { return null; }
+  try {
+    return await import(p);
+  } catch {
+    return null;
+  }
 }
 
 function call(fn: () => unknown): string {
-  try { return JSON.stringify(fn()); } catch (e) { return `THREW: ${e}`; }
+  try {
+    return JSON.stringify(fn());
+  } catch (e) {
+    return `THREW: ${e}`;
+  }
 }
 
 function formatBytes(b: number): string {

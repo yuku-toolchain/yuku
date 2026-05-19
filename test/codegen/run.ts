@@ -1,10 +1,9 @@
-// Runs print / strip / minify against every parseable file in the
-// corpus. Each output is reparsed to verify it is syntactically valid.
 import { Glob } from "bun";
 import {
   parse,
   langFromPath,
   sourceTypeFromPath,
+  type ParseResult,
   type SourceLang,
 } from "yuku-parser";
 import { print, strip, minify, type CodegenResult } from "yuku-codegen";
@@ -17,24 +16,24 @@ const CORPUS_DIRS = [
 
 type Op = {
   name: string;
-  run: (program: any) => CodegenResult;
+  run: (ast: ParseResult) => CodegenResult;
   outLang: (input: SourceLang) => SourceLang;
 };
 
 const ops: Op[] = [
   {
     name: "print",
-    run: (p) => print(p, { format: "pretty" }),
+    run: (ast) => print(ast, { format: "pretty", comments: true }),
     outLang: (l) => l,
   },
   {
     name: "strip",
-    run: (p) => strip(p, { format: "pretty" }),
+    run: (ast) => strip(ast, { format: "pretty", comments: true }),
     outLang: jsLang,
   },
   {
     name: "minify",
-    run: (p) => minify(p, { format: "compact" }),
+    run: (ast) => minify(ast, { format: "compact", comments: true }),
     outLang: (l) => l,
   },
 ];
@@ -48,9 +47,7 @@ let totalFiles = 0;
 let totalSkip = 0;
 
 for (const dir of CORPUS_DIRS) {
-  const files = [
-    ...new Glob("**/*.{ts,tsx,js,jsx}").scanSync({ cwd: dir }),
-  ].sort();
+  const files = [...new Glob("**/*.{ts,tsx,js,jsx}").scanSync({ cwd: dir })].sort();
   const start = performance.now();
   let dirFiles = 0;
   let dirSkip = 0;
@@ -71,7 +68,7 @@ for (const dir of CORPUS_DIRS) {
       const t = tally[op.name];
       let out: string;
       try {
-        out = op.run(ast.program).code;
+        out = op.run(ast).code;
       } catch (e) {
         t.bad++;
         t.errs.push(`${file}: ${op.name} threw: ${e}`);
@@ -88,9 +85,7 @@ for (const dir of CORPUS_DIRS) {
   }
 
   const ms = Math.round(performance.now() - start);
-  console.log(
-    `  ${dir}: ${dirFiles} files (${ms}ms${dirSkip ? `, ${dirSkip} skipped` : ""})`,
-  );
+  console.log(`  ${dir}: ${dirFiles} files (${ms}ms${dirSkip ? `, ${dirSkip} skipped` : ""})`);
   totalFiles += dirFiles;
   totalSkip += dirSkip;
 }
@@ -104,9 +99,7 @@ for (const [op, t] of Object.entries(tally)) {
   if (t.errs.length > 5) console.log(`    ... ${t.errs.length - 5} more`);
   failed += t.bad;
 }
-console.log(
-  `\n  total: ${totalFiles} files${totalSkip ? `, ${totalSkip} skipped` : ""}`,
-);
+console.log(`\n  total: ${totalFiles} files${totalSkip ? `, ${totalSkip} skipped` : ""}`);
 process.exit(failed > 0 ? 1 : 0);
 
 function jsLang(lang: SourceLang): SourceLang {

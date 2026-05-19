@@ -7,25 +7,25 @@
     "type": "git",
     "url": "https://github.com/yuku-toolchain/yuku"
   },
-  "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "index.js",
     "index.d.ts",
     "binding.js"
   ],
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
   "optionalDependencies": {
-    "@yuku-minify/binding-linux-x64-gnu": "0.5.9",
-    "@yuku-minify/binding-linux-arm64-gnu": "0.5.9",
-    "@yuku-minify/binding-linux-arm-gnu": "0.5.9",
-    "@yuku-minify/binding-linux-x64-musl": "0.5.9",
-    "@yuku-minify/binding-linux-arm64-musl": "0.5.9",
-    "@yuku-minify/binding-linux-arm-musl": "0.5.9",
-    "@yuku-minify/binding-darwin-x64": "0.5.9",
     "@yuku-minify/binding-darwin-arm64": "0.5.9",
-    "@yuku-minify/binding-win32-x64": "0.5.9",
+    "@yuku-minify/binding-darwin-x64": "0.5.9",
+    "@yuku-minify/binding-freebsd-x64": "0.5.9",
+    "@yuku-minify/binding-linux-arm-gnu": "0.5.9",
+    "@yuku-minify/binding-linux-arm-musl": "0.5.9",
+    "@yuku-minify/binding-linux-arm64-gnu": "0.5.9",
+    "@yuku-minify/binding-linux-arm64-musl": "0.5.9",
+    "@yuku-minify/binding-linux-x64-gnu": "0.5.9",
+    "@yuku-minify/binding-linux-x64-musl": "0.5.9",
     "@yuku-minify/binding-win32-arm64": "0.5.9",
-    "@yuku-minify/binding-freebsd-x64": "0.5.9"
+    "@yuku-minify/binding-win32-x64": "0.5.9"
   }
 }

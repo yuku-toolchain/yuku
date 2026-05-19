@@ -1,4 +1,4 @@
-import binding from './binding.js';
+import binding from "./binding.js";
 
 export const { minify } = binding;
 

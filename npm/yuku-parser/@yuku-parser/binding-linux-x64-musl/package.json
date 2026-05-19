@@ -1,6 +1,13 @@
 {
   "name": "@yuku-parser/binding-linux-x64-musl",
   "version": "0.5.9",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "files": [
+    "yuku-parser.node"
+  ],
   "os": [
     "linux"
   ],
@@ -10,12 +17,5 @@
   "libc": [
     "musl"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuku-toolchain/yuku"
-  },
-  "main": "yuku-parser.node",
-  "files": [
-    "yuku-parser.node"
-  ]
+  "main": "yuku-parser.node"
 }

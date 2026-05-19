@@ -51,10 +51,10 @@ Two small helpers are exported for resolving the `lang` and `sourceType` options
 ```ts
 import { langFromPath, sourceTypeFromPath } from "yuku-parser";
 
-langFromPath("foo.tsx");        // "tsx"
-langFromPath("types.d.ts");     // "dts"
-sourceTypeFromPath("foo.cjs");  // "script"
-sourceTypeFromPath("foo.mjs");  // "module"
+langFromPath("foo.tsx"); // "tsx"
+langFromPath("types.d.ts"); // "dts"
+sourceTypeFromPath("foo.cjs"); // "script"
+sourceTypeFromPath("foo.mjs"); // "module"
 ```
 
 ## Walking the AST
@@ -94,13 +94,13 @@ const result = parse(source, {
 });
 ```
 
-| Option           | Values                                    | Default    | Description                                                                                                                  |
-| ---------------- | ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `sourceType`     | `"module"`, `"script"`                    | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode.                                    |
-| `lang`           | `"js"`, `"ts"`, `"jsx"`, `"tsx"`, `"dts"` | `"js"`     | Language variant controls which syntax extensions are enabled.                                                               |
-| `preserveParens` | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
-| `allowReturnOutsideFunction` | `true`, `false`              | `false`    | Allow `return` statements outside of functions, at the top level.                                                            |
-| `semanticErrors` | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
+| Option                       | Values                                    | Default    | Description                                                                                                                  |
+| ---------------------------- | ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `sourceType`                 | `"module"`, `"script"`                    | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode.                                    |
+| `lang`                       | `"js"`, `"ts"`, `"jsx"`, `"tsx"`, `"dts"` | `"js"`     | Language variant controls which syntax extensions are enabled.                                                               |
+| `preserveParens`             | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
+| `allowReturnOutsideFunction` | `true`, `false`                           | `false`    | Allow `return` statements outside of functions, at the top level.                                                            |
+| `semanticErrors`             | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
 
 ## Result
 
@@ -110,11 +110,12 @@ const result = parse(source, {
 interface ParseResult {
   program: Program;
   comments: Comment[];
+  lineStarts: number[];
   diagnostics: Diagnostic[];
 }
 ```
 
-The parser is error-tolerant, an AST is always produced even when diagnostics are present.
+The parser is error-tolerant, an AST is always produced even when diagnostics are present. `lineStarts` records the byte offset of every line in the source, useful for resolving spans to `(line, column)` pairs without rescanning.
 
 ### Diagnostics
 
@@ -141,11 +142,39 @@ This incurs a very small performance overhead. If your build pipeline already ha
 
 ### Comments
 
-Each comment includes:
+Every entry in `result.comments` is classified at parse time so consumers can route comments without rescanning the value:
 
-- `type`: `"Line"` or `"Block"`
-- `value`: comment text without delimiters (`//`, `/*`, `*/`)
-- `start` / `end`: byte offsets
+```ts
+interface Comment {
+  type: "Line" | "Block";
+  kind: CommentKind;
+  precededByNewline: boolean;
+  followedByNewline: boolean;
+  value: string; // text without the surrounding delimiters
+  start: number; // byte offset
+  end: number; // byte offset
+}
+
+type CommentKind =
+  | "normal" // plain comment, no special meaning
+  | "legal" // /*! ... */ or contains @license / @preserve / @cc_on
+  | "jsdoc" // /** ... */ block
+  | "annotation" // /*# ... */ or /*@ ... */ other than tree-shaking
+  | "pure" // /*#__PURE__*/ or /*@__PURE__*/
+  | "no_side_effects"; // /*#__NO_SIDE_EFFECTS__*/ or /*@__NO_SIDE_EFFECTS__*/
+```
+
+Common patterns:
+
+```js
+// Extract legal banners for a sidecar file.
+const banners = result.comments.filter((c) => c.kind === "legal");
+
+// Find tree-shaking annotations.
+const pureMarkers = result.comments.filter((c) => c.kind === "pure");
+```
+
+`precededByNewline` and `followedByNewline` capture line layout, useful for tools that need to reconstruct source positioning.
 
 ## License
 

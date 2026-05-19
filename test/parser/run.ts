@@ -46,7 +46,12 @@ const SUITE_DIR = "test/parser/suite";
 const MISC_DIR = "test/parser/misc";
 
 const suites: TestSuite[] = [
-  { path: `${SUITE_DIR}/js/pass`, expect: "snapshot", lang: ["js"], options: { semanticErrors: true } },
+  {
+    path: `${SUITE_DIR}/js/pass`,
+    expect: "snapshot",
+    lang: ["js"],
+    options: { semanticErrors: true },
+  },
   { path: `${SUITE_DIR}/js/fail`, expect: "fail", lang: ["js"] },
   {
     path: `${SUITE_DIR}/js/semantic`,
@@ -54,12 +59,41 @@ const suites: TestSuite[] = [
     lang: ["js"],
     options: { semanticErrors: true },
   },
-  { path: `${SUITE_DIR}/jsx/pass`, expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
+  {
+    path: `${SUITE_DIR}/jsx/pass`,
+    expect: "snapshot",
+    lang: ["jsx"],
+    options: { semanticErrors: true },
+  },
   { path: `${SUITE_DIR}/jsx/fail`, expect: "fail", lang: ["jsx"] },
-  { path: `${SUITE_DIR}/ts/pass`, expect: "snapshot", lang: ["ts", "tsx"], options: { semanticErrors: true } },
-  { path: `${SUITE_DIR}/ts/semantic`, expect: "fail", lang: ["ts", "tsx"], options: { semanticErrors: true } },
-  { path: `${MISC_DIR}/jsx`, expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true, autoSnapshot: true },
-  { path: `${MISC_DIR}/js`, expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true, autoSnapshot: true },
+  {
+    path: `${SUITE_DIR}/ts/pass`,
+    expect: "snapshot",
+    lang: ["ts", "tsx"],
+    options: { semanticErrors: true },
+  },
+  {
+    path: `${SUITE_DIR}/ts/semantic`,
+    expect: "fail",
+    lang: ["ts", "tsx"],
+    options: { semanticErrors: true },
+  },
+  {
+    path: `${MISC_DIR}/jsx`,
+    expect: "snapshot",
+    lang: ["jsx"],
+    recursive: false,
+    allowErrors: true,
+    autoSnapshot: true,
+  },
+  {
+    path: `${MISC_DIR}/js`,
+    expect: "snapshot",
+    lang: ["js"],
+    recursive: false,
+    allowErrors: true,
+    autoSnapshot: true,
+  },
   {
     path: `${MISC_DIR}/ts`,
     expect: "snapshot",
@@ -142,23 +176,28 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
   }
 }
 
-async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
+async function checkSnapshot(
+  file: string,
+  parsed: ParseResult,
+  suite: TestSuite,
+): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
+  const { lineStarts: _drop, ...comparable } = parsed;
 
   if (!(await Bun.file(snapshotFile).exists())) {
     if (!suite.autoSnapshot) return { status: "no_snapshot" };
-    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    await Bun.write(snapshotFile, serializeAstJson(comparable, 2));
     return { status: "match" };
   }
 
   const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
 
-  if (equal(parsed, snapshot)) {
+  if (equal(comparable, snapshot)) {
     return { status: "match" };
   }
 
   if (updateSnapshots) {
-    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    await Bun.write(snapshotFile, serializeAstJson(comparable, 2));
     return { status: "match" };
   }
 
@@ -205,7 +244,9 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
         entry.passed = false;
         entry.reason = "snapshot mismatch";
         clearProgress();
-        console.log(`\nx ${file} (${entry.reason})\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`);
+        console.log(
+          `\nx ${file} (${entry.reason})\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`,
+        );
       }
     }
 
@@ -295,9 +336,7 @@ for (const result of results) {
   const failed = result.files.filter((f) => !f.passed).length;
   totalFailed += failed;
 
-  const name = result.suite.path
-    .replace(/^test\/parser\/suite\//, "")
-    .replace(/\//g, "_");
+  const name = result.suite.path.replace(/^test\/parser\/suite\//, "").replace(/\//g, "_");
   await Bun.write(`${RESULTS_DIR}/${name}.txt`, writeResultFile(result));
 }
 

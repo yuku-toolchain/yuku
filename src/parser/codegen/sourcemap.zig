@@ -23,16 +23,14 @@ pub const SourceMap = struct {
 
 /// Configures source map generation.
 pub const Options = struct {
-    /// Original source text. Required.
-    source: []const u8,
     /// Output filename, embedded as the map's `file`.
     file: ?[]const u8 = null,
     /// Source filename, embedded as the single entry of `sources`.
     source_file_name: ?[]const u8 = null,
     /// Prefix embedded as `sourceRoot`.
     source_root: ?[]const u8 = null,
-    /// When true, embeds `source` into `sourcesContent`.
-    sources_content: bool = false,
+    /// When set, embedded as the single entry of `sourcesContent`.
+    sources_content: ?[]const u8 = null,
 };
 
 /// One V3 segment. Positions are in UTF-16 code units.
@@ -49,11 +47,9 @@ pub const Segment = struct {
 /// every emit, finalized via `build`.
 pub const State = struct {
     options: Options,
-    line_starts: []u32,
     mappings: std.ArrayList(Segment) = .empty,
     names: std.ArrayList([]const u8) = .empty,
     names_dedup: std.StringHashMapUnmanaged(u32) = .empty,
-    cur_orig_line: u32 = 0,
     gen_line: u32 = 0,
     gen_col: u32 = 0,
 
@@ -64,42 +60,14 @@ pub const State = struct {
         gen_col: u32,
     };
 
-    pub fn init(allocator: Allocator, options: Options) Allocator.Error!State {
-        return .{
-            .options = options,
-            .line_starts = try buildLineStarts(allocator, options.source),
-        };
+    pub fn init(_: Allocator, options: Options) Allocator.Error!State {
+        return .{ .options = options };
     }
 
     pub fn deinit(self: *State, allocator: Allocator) void {
-        allocator.free(self.line_starts);
         self.mappings.deinit(allocator);
         self.names.deinit(allocator);
         self.names_dedup.deinit(allocator);
-    }
-
-    /// Resolves `pos` (offset into the source, in the same units the AST
-    /// uses) to a 0-indexed `(line, col)`. The cursor advances forward so
-    /// in-order source walks are O(1) amortized. Back-steps (decorators
-    /// printed after their target's start) fall back to a binary search.
-    pub fn locate(self: *State, pos: u32) struct { line: u32, col: u32 } {
-        const starts = self.line_starts;
-        if (starts.len == 0) return .{ .line = 0, .col = 0 };
-        var line = self.cur_orig_line;
-        if (line >= starts.len) line = @intCast(starts.len - 1);
-        if (pos < starts[line]) {
-            var lo: u32 = 0;
-            var hi: u32 = @intCast(starts.len);
-            while (lo < hi) {
-                const mid = lo + (hi - lo) / 2;
-                if (starts[mid] <= pos) lo = mid + 1 else hi = mid;
-            }
-            line = lo - 1;
-        } else {
-            while (line + 1 < starts.len and starts[line + 1] <= pos) line += 1;
-        }
-        self.cur_orig_line = line;
-        return .{ .line = line, .col = pos - starts[line] };
     }
 
     /// Returns a stable `names` index for `name`, copying the bytes so the
@@ -121,34 +89,21 @@ pub const State = struct {
     /// convention.
     pub fn advance(self: *State, bytes: []const u8) void {
         var i: usize = 0;
-        var last_nl: ?usize = null;
         var col_inc: u32 = 0;
-        while (i < bytes.len) {
-            const c = bytes[i];
-            if (c == '\n') {
+        var saw_nl = false;
+        while (i < bytes.len) : (i += 1) {
+            const b = bytes[i];
+            if (b == '\n') {
                 self.gen_line += 1;
                 col_inc = 0;
-                last_nl = i;
-                i += 1;
-            } else if (c < 0x80) {
-                col_inc += 1;
-                i += 1;
-            } else if (c < 0xC0) {
-                // stray continuation byte
-                i += 1;
-            } else if (c < 0xE0) {
-                col_inc += 1;
-                i += 2;
-            } else if (c < 0xF0) {
-                col_inc += 1;
-                i += 3;
-            } else {
-                // astral plane encoded as a surrogate pair
-                col_inc += 2;
-                i += 4;
+                saw_nl = true;
+                continue;
             }
+            const n = std.unicode.utf8ByteSequenceLength(b) catch continue;
+            col_inc += if (n == 4) @as(u32, 2) else 1;
+            i += n - 1;
         }
-        self.gen_col = if (last_nl == null) self.gen_col + col_inc else col_inc;
+        self.gen_col = if (saw_nl) col_inc else self.gen_col + col_inc;
     }
 
     /// Records a mapping at the current generated position. When the
@@ -213,9 +168,9 @@ pub const State = struct {
         sources[0] = self.options.source_file_name orelse "";
 
         var sources_content: ?[]const ?[]const u8 = null;
-        if (self.options.sources_content) {
+        if (self.options.sources_content) |content| {
             const sc = try allocator.alloc(?[]const u8, 1);
-            sc[0] = self.options.source;
+            sc[0] = content;
             sources_content = sc;
         }
 
@@ -233,61 +188,6 @@ pub const State = struct {
     }
 };
 
-// utf-16 column index at the start of every line in `source` (utf-8).
-// node spans after the v3-style decode live in utf-16 units, so locate's
-// subtraction operates in the same coordinate system.
-fn buildLineStarts(allocator: Allocator, source: []const u8) Allocator.Error![]u32 {
-    var starts: std.ArrayList(u32) = .empty;
-    try starts.ensureTotalCapacity(allocator, @max(8, source.len / 32));
-    try starts.append(allocator, 0);
-
-    var col: u32 = 0;
-    var i: usize = 0;
-    // fast path: while we're inside an ascii run, byte count equals
-    // utf-16 unit count and only newlines matter.
-    const Vec = @Vector(16, u8);
-    const nl: Vec = @splat('\n');
-    const hi: Vec = @splat(0x80);
-    while (i + 16 <= source.len) {
-        const v: Vec = source[i..][0..16].*;
-        if (@reduce(.Or, v & hi) != 0) break;
-        const nl_mask = v == nl;
-        if (@reduce(.Or, nl_mask)) {
-            inline for (0..16) |k| {
-                col += 1;
-                if (nl_mask[k]) try starts.append(allocator, col);
-            }
-        } else {
-            col += 16;
-        }
-        i += 16;
-    }
-    // mixed path: count utf-16 units while walking utf-8.
-    while (i < source.len) {
-        const c = source[i];
-        if (c == '\n') {
-            col += 1;
-            try starts.append(allocator, col);
-            i += 1;
-        } else if (c < 0x80) {
-            col += 1;
-            i += 1;
-        } else if (c < 0xC0) {
-            i += 1;
-        } else if (c < 0xE0) {
-            col += 1;
-            i += 2;
-        } else if (c < 0xF0) {
-            col += 1;
-            i += 3;
-        } else {
-            col += 2;
-            i += 4;
-        }
-    }
-    return starts.toOwnedSlice(allocator);
-}
-
 const VLQ_CHARS: [64]u8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".*;
 
 // writes one signed vlq integer. caller ensures at least 7 bytes of headroom.
@@ -303,10 +203,7 @@ inline fn writeVlq(dst: [*]u8, v: i32) [*]u8 {
     }
 }
 
-// encodes segments to the v3 `mappings` string. budget breakdown:
-//   per-segment fields: 5 vlq fields times 7 chars plus one separator = 40
-//   line gaps: total `;` written equals the final gen_line (telescoping
-//              sum), so we add `max_gen_line` once for the whole loop.
+// encodes segments to the v3 `mappings` string.
 fn encodeMappings(allocator: Allocator, mappings: []const Segment) Allocator.Error![]u8 {
     const max_gen_line: usize = if (mappings.len > 0) mappings[mappings.len - 1].gen_line else 0;
     const buf = try allocator.alloc(u8, mappings.len * 40 + max_gen_line + 64);

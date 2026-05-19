@@ -82,7 +82,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const _src = source;
         \\  const _srcLen = _u32[{[u_src]d}];
         \\  const nodeCount = _u32[{[u_nc]d}], extraCount = _u32[{[u_ec]d}], spLen = _u32[{[u_sp]d}];
-        \\  const commentCount = _u32[{[u_cc]d}], diagCount = _u32[{[u_dc]d}], progIdx = _u32[{[u_pi]d}];
+        \\  const commentCount = _u32[{[u_cc]d}], lineStartsCount = _u32[{[u_ls]d}], diagCount = _u32[{[u_dc]d}], progIdx = _u32[{[u_pi]d}];
         \\  const _isTs = !!(_u32[{[u_fl]d}] & {[ts]d});
         \\  const _firstNa = _u32[{[u_fna]d}];
         \\  const _nodesOff = {[hdr]d};
@@ -150,6 +150,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_ec = rt.HDR_EXTRA_COUNT_U32,
         .u_sp = rt.HDR_STRING_POOL_LEN_U32,
         .u_cc = rt.HDR_COMMENT_COUNT_U32,
+        .u_ls = rt.HDR_LINE_STARTS_COUNT_U32,
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_fl = rt.HDR_FLAGS_U32,
@@ -215,6 +216,7 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArray(w, "FUNCTION_TYPES", &.{ "FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression" });
     try writeArray(w, "CLASS_TYPES", &.{ "ClassDeclaration", "ClassExpression" });
     try writeArray(w, "COMMENT_TYPES", &.{ "Line", "Block" });
+    try writeArray(w, "COMMENT_KINDS", &.{ "normal", "legal", "jsdoc", "annotation", "pure", "no_side_effects" });
     try writeArray(w, "SEVERITY", &.{ "error", "warning", "hint", "info" });
     try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
@@ -291,18 +293,6 @@ fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type
         };
         if (!include) continue;
         const js = comptime estreeField(tag_name, f.name);
-        if (f.type == ast.IndexRange and comptime useAccessor(tag_name, f.name)) {
-            if (sel == .ts_only) {
-                try w.print("Object.defineProperty(r, \"{s}\", {{ configurable: true, enumerable: true, get() {{ const v = ", .{js});
-                try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
-                try w.print("; _def(this, \"{s}\", v); return v; }} }}); ", .{js});
-            } else {
-                try w.print(", get {s}() {{ const v = ", .{js});
-                try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
-                try w.print("; _def(this, \"{s}\", v); return v; }}", .{js});
-            }
-            continue;
-        }
         if (sel == .ts_only) try w.print("r.{s} = ", .{js}) else try w.print(", {s}: ", .{js});
         try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
         if (sel == .ts_only) try w.writeAll("; ");
@@ -396,7 +386,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         // hashbang span includes the leading `#!`. value.start points to the
         // first byte after `#!`, so the node's start is value.start - 2.
         try emit(w,
-            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? {{ type: "Hashbang", start: _p(f{d} - 2), end: _p(f{d}), value: str(f{d}, f{d}) }} : null, get body() {{ const v = nodeArr(f{d}, f0); _def(this, "body", v); return v; }} }};
+            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? {{ type: "Hashbang", start: _p(f{d} - 2), end: _p(f{d}), value: str(f{d}, f{d}) }} : null, body: nodeArr(f{d}, f0) }};
         , .{ tag, comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, hs, hs + 1, sb });
     } else if (comptime eql(u8, name, "directive")) {
         const se = comptime slotOf(ast.Directive, "expression");
@@ -615,18 +605,41 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     }
 }
 
-/// emits the tail of `decode()`, the comments walk, the diagnostics walk,
-/// and the final `return { program, comments, diagnostics }`. runs after
-/// `writeNodeFunction` has closed out the `node()` switch.
+/// Emits the lazy comments/lineStarts/diagnostics decoders and the
+/// final `return { program, comments, lineStarts, diagnostics }`.
 fn writeDecodeBody(w: *Writer) !void {
     try w.print(
-        \\  const cOff = _spOff + spLen, dOff = cOff + commentCount * {[csize]d};
+        \\  const cOff = _spOff + spLen;
+        \\  const lsOff = cOff + commentCount * {[csize]d};
+        \\  const dOff = lsOff + lineStartsCount * 4;
         \\  const dv = new DataView(buffer);
         \\  function _decodeComments() {{
         \\    const out = new Array(commentCount);
         \\    for (let j = 0; j < commentCount; j++) {{
         \\      const o = cOff + j * {[csize]d};
-        \\      out[j] = {{ type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + {[c_vs]d}, true), dv.getUint32(o + {[c_ve]d}, true)), start: _p(dv.getUint32(o + {[c_s]d}, true)), end: _p(dv.getUint32(o + {[c_e]d}, true)) }};
+        \\      const flags = _u8[o + {[c_fl]d}];
+        \\      out[j] = {{
+        \\        type: COMMENT_TYPES[_u8[o + {[c_ty]d}]],
+        \\        kind: COMMENT_KINDS[_u8[o + {[c_kd]d}]],
+        \\        precededByNewline: (flags & 1) !== 0,
+        \\        followedByNewline: (flags & 2) !== 0,
+        \\        value: str(dv.getUint32(o + {[c_vs]d}, true), dv.getUint32(o + {[c_ve]d}, true)),
+        \\        start: _p(dv.getUint32(o + {[c_s]d}, true)),
+        \\        end: _p(dv.getUint32(o + {[c_e]d}, true)),
+        \\      }};
+        \\    }}
+        \\    return out;
+        \\  }}
+        \\  function _decodeLineStarts() {{
+        \\    const out = new Array(lineStartsCount);
+        \\    if (_firstNa >= _srcLen) {{
+        \\      for (let j = 0; j < lineStartsCount; j++) out[j] = dv.getUint32(lsOff + j * 4, true);
+        \\      return out;
+        \\    }}
+        \\    if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
+        \\    for (let j = 0; j < lineStartsCount; j++) {{
+        \\      const v = dv.getUint32(lsOff + j * 4, true);
+        \\      out[j] = v < _firstNa ? v : (v >= _srcLen ? pm[pm.length - 1] : pm[v - _firstNa]);
         \\    }}
         \\    return out;
         \\  }}
@@ -654,17 +667,20 @@ fn writeDecodeBody(w: *Writer) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  function _def(o, k, v) {{ Object.defineProperty(o, k, {{ value: v, writable: true, enumerable: true, configurable: true }}); }}
-        \\  let _program, _comments, _diagnostics;
+        \\  let _program, _comments, _lineStarts, _diagnostics;
         \\  return {{
         \\    get program() {{ return _program !== undefined ? _program : (_program = node(progIdx)); }},
         \\    get comments() {{ return _comments !== undefined ? _comments : (_comments = _decodeComments()); }},
+        \\    get lineStarts() {{ return _lineStarts !== undefined ? _lineStarts : (_lineStarts = _decodeLineStarts()); }},
         \\    get diagnostics() {{ return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); }},
         \\  }};
         \\}}
         \\
     , .{
         .csize = rt.COMMENT_SIZE,
+        .c_ty = rt.COMMENT_TYPE_OFFSET,
+        .c_kd = rt.COMMENT_KIND_OFFSET,
+        .c_fl = rt.COMMENT_FLAGS_OFFSET,
         .c_s = rt.COMMENT_START_OFFSET,
         .c_e = rt.COMMENT_END_OFFSET,
         .c_vs = rt.COMMENT_VALUE_START_OFFSET,
@@ -673,29 +689,6 @@ fn writeDecodeBody(w: *Writer) !void {
 }
 
 // per node metadata.
-
-/// container-style IndexRange fields whose contents are emitted behind an
-/// accessor property rather than a plain data property. only the few
-/// fields that hold the bulk of the tree (statement bodies, top-level
-/// member lists) belong here.
-const ACCESSOR_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{
-    .{ .node = "program", .fields = &.{"body"} },
-    .{ .node = "function_body", .fields = &.{"body"} },
-    .{ .node = "block_statement", .fields = &.{"body"} },
-    .{ .node = "class_body", .fields = &.{"body"} },
-    .{ .node = "static_block", .fields = &.{"body"} },
-    .{ .node = "ts_interface_body", .fields = &.{"body"} },
-    .{ .node = "ts_module_block", .fields = &.{"body"} },
-    .{ .node = "ts_enum_body", .fields = &.{"members"} },
-};
-
-fn useAccessor(comptime tag: []const u8, comptime field: []const u8) bool {
-    for (ACCESSOR_FIELDS) |e| {
-        if (!std.mem.eql(u8, e.node, tag)) continue;
-        for (e.fields) |f| if (std.mem.eql(u8, f, field)) return true;
-    }
-    return false;
-}
 
 /// typescript only fields, grouped by node. emitted only when the source
 /// language is typescript.

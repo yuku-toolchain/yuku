@@ -5,12 +5,12 @@ description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yu
 
 The traverser is how you do real work on a Yuku AST. It walks the tree for you, calls your visitor hooks at every node, and (depending on the mode you pick) hands you the surrounding lexical scopes, the symbol table, or a mutable handle on the tree itself.
 
-| Mode          | What you get                                          | Returns                       |
-| ------------- | ----------------------------------------------------- | ----------------------------- |
-| **Basic**     | Path from root, plus the full immutable tree          | nothing                       |
-| **Scoped**    | Path + lexical scopes (with strict-mode tracking)     | `ScopeTree`                   |
-| **Semantic**  | Path + scopes + symbols and references                | `ScopeTree` + `SymbolTable`   |
-| **Transform** | Path + a mutable `*Tree` for in-place rewrites        | nothing                       |
+| Mode          | What you get                                      | Returns                     |
+| ------------- | ------------------------------------------------- | --------------------------- |
+| **Basic**     | Path from root, plus the full immutable tree      | nothing                     |
+| **Scoped**    | Path + lexical scopes (with strict-mode tracking) | `ScopeTree`                 |
+| **Semantic**  | Path + scopes + symbols and references            | `ScopeTree` + `SymbolTable` |
+| **Transform** | Path + a mutable `*Tree` for in-place rewrites    | nothing                     |
 
 The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional: tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
 
@@ -156,11 +156,11 @@ That ordering lets a catch-all enter "gate" a subtree (return `.skip` to opt out
 
 Every enter hook returns one of three actions:
 
-| Action     | Effect                                                    |
-| ---------- | --------------------------------------------------------- |
-| `.proceed` | Walk into this node's children                            |
-| `.skip`    | Do not descend, move to the next sibling                  |
-| `.stop`    | End the entire traversal immediately                      |
+| Action     | Effect                                   |
+| ---------- | ---------------------------------------- |
+| `.proceed` | Walk into this node's children           |
+| `.skip`    | Do not descend, move to the next sibling |
+| `.stop`    | End the entire traversal immediately     |
 
 `.skip` is what you return after hand-walking a subtree yourself, or after a transform that should not be re-entered. `.stop` is how you implement "find the first X and exit".
 
@@ -264,23 +264,23 @@ const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor);
 
 The tracker recognises every construct in the spec that introduces a new lexical environment, plus the TypeScript-specific ones that scope type parameters and infer bindings.
 
-| Node                                                          | Scope kind                                              |
-| ------------------------------------------------------------- | ------------------------------------------------------- |
-| Program                                                       | `global` (plus a child `module` if `source_type` is `module`) |
-| Function declaration / expression                             | `function`                                              |
-| Arrow function                                                | `function`                                              |
-| Block statement                                               | `block`                                                 |
-| `for` / `for...in` / `for...of`                               | `block`                                                 |
-| `catch` clause                                                | `block` (the body block reuses this scope)              |
-| `switch` statement                                            | `block`                                                 |
-| Class declaration / expression                                | `class` (always strict per spec)                        |
-| Class static block                                            | `static_block`                                          |
-| Named function or class expression                            | `expression_name` wrapping a `function` / `class` scope |
-| TS interface / type alias                                     | `block`                                                 |
-| TS function/constructor type, call/construct/index signature  | `block`                                                 |
-| TS method signature                                           | `block`                                                 |
-| TS mapped / conditional type                                  | `block` (conditional isolates `infer T` per branch)     |
-| TS namespace body                                             | `ts_module` (its own kind, see below)                   |
+| Node                                                         | Scope kind                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------------- |
+| Program                                                      | `global` (plus a child `module` if `source_type` is `module`) |
+| Function declaration / expression                            | `function`                                                    |
+| Arrow function                                               | `function`                                                    |
+| Block statement                                              | `block`                                                       |
+| `for` / `for...in` / `for...of`                              | `block`                                                       |
+| `catch` clause                                               | `block` (the body block reuses this scope)                    |
+| `switch` statement                                           | `block`                                                       |
+| Class declaration / expression                               | `class` (always strict per spec)                              |
+| Class static block                                           | `static_block`                                                |
+| Named function or class expression                           | `expression_name` wrapping a `function` / `class` scope       |
+| TS interface / type alias                                    | `block`                                                       |
+| TS function/constructor type, call/construct/index signature | `block`                                                       |
+| TS method signature                                          | `block`                                                       |
+| TS mapped / conditional type                                 | `block` (conditional isolates `infer T` per branch)           |
+| TS namespace body                                            | `ts_module` (its own kind, see below)                         |
 
 A few details worth pinning down because they trip up first-time readers:
 
@@ -385,14 +385,14 @@ ctx.inTsNamespace()   // true inside a TS `namespace` body
 
 Symbol declaration is split across two phases per node:
 
-1. **Phase 1, on enter**: when entering a parent declaration node (`variable_declaration`, `function`, `class`, `import_declaration`, `formal_parameters`, `catch_clause`, `ts_interface_declaration`, etc.), the tracker records *what kind* of binding the next `binding_identifier` should produce: its flags, its redeclaration excludes, and its target scope. This happens **before** your enter hook runs.
+1. **Phase 1, on enter**: when entering a parent declaration node (`variable_declaration`, `function`, `class`, `import_declaration`, `formal_parameters`, `catch_clause`, `ts_interface_declaration`, etc.), the tracker records _what kind_ of binding the next `binding_identifier` should produce: its flags, its redeclaration excludes, and its target scope. This happens **before** your enter hook runs.
 
 2. **Phase 2, on `post_enter`**: after your enter hook returns, but before the walker descends into children, the tracker materialises the actual symbol or reference. `binding_identifier` becomes a `Symbol`, `identifier_reference` becomes a `Reference`.
 
 Why the split? It guarantees a useful invariant for your visitor:
 
 :::note
-Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is *about to* be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
+Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is _about to_ be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
 :::
 
 ```zig
@@ -545,7 +545,7 @@ pub fn enter_identifier_reference(
 }
 ```
 
-`inTypePosition()` is also what the tracker uses internally to decide that a `binding_identifier` inside a function-type or index signature is a parameter *label* (not a real declaration). Only `type_parameter` bindings are real in type position.
+`inTypePosition()` is also what the tracker uses internally to decide that a `binding_identifier` inside a function-type or index signature is a parameter _label_ (not a real declaration). Only `type_parameter` bindings are real in type position.
 
 ### References and Their Kind
 
@@ -629,7 +629,7 @@ if (table.resolve(result.scope_tree, scope_id, "myVar")) |found| {
 
 ### Single-Scope Lookups
 
-For tools that do *not* want a full chain walk (a minifier checking "is this name shadowed in this exact scope"), both the tracker and the table expose tight single-scope lookups:
+For tools that do _not_ want a full chain walk (a minifier checking "is this name shadowed in this exact scope"), both the tracker and the table expose tight single-scope lookups:
 
 ```zig
 findInScope(scope, name)           // bindings declared directly in `scope`
@@ -857,7 +857,7 @@ That is enough for a tree that any read-only consumer (a printer, an emitter, an
 
 ### Building One Tree While Walking Another
 
-A particularly powerful pattern, central to transpilers and source-to-source compilers, is walking an *input* tree with full semantic context (scopes, symbols, path) while building a completely separate *output* tree:
+A particularly powerful pattern, central to transpilers and source-to-source compilers, is walking an _input_ tree with full semantic context (scopes, symbols, path) while building a completely separate _output_ tree:
 
 ```zig
 const sem = traverser.semantic;

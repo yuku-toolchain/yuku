@@ -1,5 +1,5 @@
 class C {
   accessor = 1;
-  accessor
+  accessor;
   x = 2;
 }

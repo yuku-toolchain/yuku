@@ -30,8 +30,8 @@
           "value": "module",
           "raw": "\"module\""
         },
-        "phase": null,
-        "attributes": []
+        "attributes": [],
+        "phase": null
       }
     ]
   },

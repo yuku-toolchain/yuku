@@ -85,10 +85,7 @@ export function TodoList({ items, onToggle, onRemove, filter = "all" }: TodoList
         );
       })}
       {typeof document !== "undefined" &&
-        createPortal(
-          <div className="todo-count">{visible.length} item(s)</div>,
-          document.body,
-        )}
+        createPortal(<div className="todo-count">{visible.length} item(s)</div>, document.body)}
     </ul>
   );
 }

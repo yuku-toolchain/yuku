@@ -12,9 +12,9 @@
     {
       "severity": "error",
       "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'resource'",
-      "help": "Try inserting a semicolon here",
       "start": 21,
       "end": 29,
+      "help": "Try inserting a semicolon here",
       "labels": []
     }
   ]

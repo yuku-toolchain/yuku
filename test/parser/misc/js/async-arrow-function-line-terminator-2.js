@@ -1,2 +1,2 @@
-const testVariable = async
-param => {}
+const testVariable = async;
+(param) => {};
