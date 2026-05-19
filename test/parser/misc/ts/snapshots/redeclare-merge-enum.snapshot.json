@@ -179,12 +179,18 @@
   "comments": [
     {
       "type": "Line",
+      "kind": "normal",
+      "precededByNewline": false,
+      "followedByNewline": true,
       "value": " Valid: regular enums with the same name merge.",
       "start": 0,
       "end": 49
     },
     {
       "type": "Line",
+      "kind": "normal",
+      "precededByNewline": true,
+      "followedByNewline": true,
       "value": " Valid: const enums with the same name merge.",
       "start": 90,
       "end": 137
