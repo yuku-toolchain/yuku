@@ -410,13 +410,16 @@ fn Printer(comptime cfg: Config) type {
         }
     }
 
-    /// Forced newline plus indent. Newline is always written; indent is
+    /// Forced newline plus indent, Newline is always written, indent is
     /// pretty-mode only.
     fn breakLine(self: *Self) Error!void {
         try self.code.append(self.allocator, '\n');
         const n = if (self.pretty()) self.indent_depth * self.options.indent else 0;
         if (n > 0) try self.code.appendNTimes(self.allocator, ' ', n);
-        if (self.sm) |*sm| sm.gen_col = n;
+        if (self.sm) |*sm| {
+            sm.gen_line += 1;
+            sm.gen_col = n;
+        }
     }
 
     /// Records a source-map segment for `idx`. Skips synthetic spans.
@@ -1563,6 +1566,11 @@ fn Printer(comptime cfg: Config) type {
     fn emit_property_definition(self: *Self, p: ast.PropertyDefinition) Error!void {
         if (comptime strip_ts) if (p.declare or p.abstract) return;
         try self.printDecorators(p.decorators);
+        // flush before any modifier so `/*..*/` can't land between a
+        // restricted-production modifier (`accessor`) and the key.
+        if (self.options.comments != .none) {
+            try self.flushCommentsBefore(self.tree.span(p.key).start);
+        }
         if (comptime !strip_ts) {
             if (p.declare) try self.writeStr("declare ");
             if (p.accessibility != .none) {
