@@ -1,6 +1,6 @@
 {
   "name": "@yuku-minify/binding-darwin-x64",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "os": [
     "darwin"
   ],
