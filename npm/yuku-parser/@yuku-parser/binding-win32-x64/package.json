@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/binding-win32-x64",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "os": [
     "win32"
   ],
