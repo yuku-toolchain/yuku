@@ -3,10 +3,14 @@ import { encode } from "./encode.js";
 
 function normalizeOptions(options) {
   if (options == null) return {};
-  const c = options.comments;
-  if (c === true) return { ...options, comments: "all" };
-  if (c === false) return { ...options, comments: "none" };
-  return options;
+  const next = { ...options };
+  const c = next.comments;
+  if (c === true) next.comments = "all";
+  else if (c === false) next.comments = "none";
+  const s = next.sourceMaps;
+  if (s === true) next.sourceMaps = {};
+  else if (s === false) next.sourceMaps = undefined;
+  return next;
 }
 
 function encodeAst(ast) {

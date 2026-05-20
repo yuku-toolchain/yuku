@@ -42,7 +42,7 @@ interface CodegenResult {
 }
 ```
 
-`errors` is empty on a clean run. `map` is non-null only when `sourceMaps` is set.
+`errors` is empty on a clean run. `map` is non-null only when `sourceMaps` is enabled.
 
 ## Options
 
@@ -52,7 +52,7 @@ const result = print(ast, {
   indent: 2,
   quotes: "double",
   comments: "some",
-  sourceMaps: { sourceFileName: "in.js" },
+  sourceMaps: true,
 });
 ```
 
@@ -62,11 +62,21 @@ const result = print(ast, {
 | `indent`     | `number`                                 | `2`        | Spaces per indentation level. Applies in pretty mode only.                   |
 | `quotes`     | `"double" \| "single"`                   | `"double"` | Quote style for emitted string literals.                                     |
 | `comments`   | `boolean \| "some" \| "line" \| "block"` | `"some"`   | Comment passthrough filter. See [Comments](#comments).                       |
-| `sourceMaps` | `SourceMapOptions`                       | _disabled_ | Pass an object to emit a Source Map V3 alongside the code. Omit to skip.     |
+| `sourceMaps` | `boolean \| SourceMapOptions`            | `false`    | `true` emits a Source Map V3 with default metadata; pass an object for fine-grained control. See [Source maps](#source-maps). |
 
 ## Source maps
 
-Pass `sourceMaps` to emit a Source Map V3 alongside the generated code.
+Set `sourceMaps: true` for a Source Map V3 with default metadata, or pass a `SourceMapOptions` object to fill in `file`, `sources`, `sourcesContent`, and `sourceRoot`. `false` (or omitting the field) disables map output.
+
+```js
+import { parse } from "yuku-parser";
+import { print } from "yuku-codegen";
+
+const ast = parse(`const x = 1;`);
+const { map } = print(ast, { sourceMaps: true });
+```
+
+For a map with embedded source information:
 
 ```js
 import { parse } from "yuku-parser";
