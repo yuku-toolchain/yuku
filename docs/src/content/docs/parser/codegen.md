@@ -86,13 +86,13 @@ const result = try parser.codegen.print(allocator, &tree, .{
 });
 ```
 
-| Field         | Type                | Default   | Description                                                        |
-| ------------- | ------------------- | --------- | ------------------------------------------------------------------ |
-| `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)           |
-| `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                          |
-| `quotes`      | `Quotes`            | `.double` | `.double` or `.single` for emitted string literals                 |
-| `comments`    | `Comments`          | `.some`   | Passthrough filter for `tree.comments`. See [Comments](#comments). |
-| `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code                     |
+| Field         | Type                | Default   | Description                                                |
+| ------------- | ------------------- | --------- | ---------------------------------------------------------- |
+| `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)   |
+| `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                  |
+| `quotes`      | `Quotes`            | `.double` | `.double` or `.single` for emitted string literals         |
+| `comments`    | `Comments`          | `.some`   | Comment passthrough filter. See [Comments](#comments).     |
+| `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code             |
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
@@ -155,17 +155,21 @@ Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome 
 
 ## Comments
 
-The `comments` option selects which entries from `tree.comments` are emitted. The default is `.some`, matching the bundler convention of preserving legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
+Comments live on the AST nodes they were attached to during parsing (see [Comments](/parser/ast#comments) in the AST reference). For codegen to print them, the tree must have been parsed with `attach_comments = true`.
+
+The `comments` option selects which attached comments are emitted. The default is `.some`, matching the bundler convention of preserving legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
 
 ```zig
 pub const Comments = enum {
     none,    // drop every comment
     all,     // emit every comment
-    some,    // legal, jsdoc, and tree-shaking annotations
+    some,    // legal banners, jsdoc, and tree-shaking annotations
     line,    // emit `// ...` only
     block,   // emit `/* ... */` only
 };
 ```
+
+Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it.
 
 ## Type stripping
 

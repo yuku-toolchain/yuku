@@ -140,7 +140,14 @@ Type annotations, type aliases, interfaces, and other type-only constructs are d
 
 ## Comments
 
-The `comments` option selects which entries from `ast.comments` are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
+Comments live on the AST nodes they were attached to during parsing. To preserve them, parse with `attachComments: true`:
+
+```js
+const ast = parse(source, { attachComments: true });
+print(ast).code;
+```
+
+The `comments` option then selects which attached comments are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
 
 | Value     | Behavior                                                        |
 | --------- | --------------------------------------------------------------- |
@@ -151,10 +158,12 @@ The `comments` option selects which entries from `ast.comments` are emitted. The
 | `"block"` | Emit `/* ... */` only.                                          |
 
 ```js
-const ast = parse(`// hello\nconst x = 1;`);
+const ast = parse(`// hello\nconst x = 1;`, { attachComments: true });
 print(ast, { comments: true }).code;
 // "// hello\nconst x = 1;"
 ```
+
+Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it. See the [yuku-parser comments docs](https://www.npmjs.com/package/yuku-parser#comments) for the full design rationale.
 
 ## Minification
 

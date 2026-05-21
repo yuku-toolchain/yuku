@@ -6,6 +6,7 @@ const ast = @import("ast.zig");
 const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
+const comment_attach = @import("comment_attach.zig");
 
 pub const Options = struct {
     /// Source type determines how the code is parsed and evaluated.
@@ -21,6 +22,9 @@ pub const Options = struct {
     /// When true, `return` statements are allowed at the top level,
     /// outside of any function. Defaults to false.
     allow_return_outside_function: bool = false,
+    /// When true, comments are collected and attached to host AST nodes.
+    /// Reachable via `Tree.commentsOf`. Defaults to false.
+    attach_comments: bool = false,
 };
 
 pub const Context = packed struct {
@@ -71,6 +75,7 @@ pub const Parser = struct {
     lang: ast.Lang,
     preserve_parens: bool,
     allow_return_outside_function: bool,
+    attach_comments: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
@@ -105,6 +110,7 @@ pub const Parser = struct {
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
             .allow_return_outside_function = options.allow_return_outside_function,
+            .attach_comments = options.attach_comments,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -127,7 +133,7 @@ pub const Parser = struct {
     fn parseInner(self: *Parser) Error!void {
         const alloc = self.allocator();
 
-        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type);
+        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type, self.attach_comments);
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
@@ -163,9 +169,11 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
 
-        self.tree.comments = try self.lexer.comments.toOwnedSlice(alloc);
-
         try self.tree.buildLineStarts();
+
+        if (self.attach_comments) {
+            try comment_attach.attach(&self.tree, self.lexer.comments.items);
+        }
     }
 
     const BodyKind = enum {

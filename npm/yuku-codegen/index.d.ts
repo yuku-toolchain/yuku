@@ -19,10 +19,7 @@ export type Comments = boolean | "all" | "some" | "line" | "block";
 
 export type { Comment };
 
-/**
- * Fine-grained source-map configuration. Pass to `CodegenOptions.sourceMaps`
- * in place of `true` when you need to embed `file`, `sources`, etc.
- */
+/** Source-map configuration. Pass to `CodegenOptions.sourceMaps` to enable. */
 export interface SourceMapOptions {
   /** Output filename, embedded as the map's `file`. */
   file?: string;
@@ -45,14 +42,8 @@ export interface CodegenOptions {
   indent?: number;
   /** @default "double" */
   quotes?: Quotes;
-  /**
-   * Source-map output.
-   *
-   * - `false` or omitted: no map is produced.
-   * - `true`: emit a map with default metadata.
-   * - `SourceMapOptions`: emit a map with the given fine-grained settings.
-   */
-  sourceMaps?: boolean | SourceMapOptions;
+  /** Pass to enable source maps. Omit to disable. */
+  sourceMaps?: SourceMapOptions;
   /**
    * Comment passthrough filter. Defaults to `"some"`, which preserves
    * legal headers, JSDoc, and tree-shaking annotations.

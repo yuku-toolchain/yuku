@@ -10,7 +10,9 @@ The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/pa
 - **JavaScript / JSX**: fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript**: conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
 
-Beyond the base specs the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`.
+The one intentional difference from Oxc is that comments are attached to the AST nodes they belong to instead of exposed as a flat offset-indexed array. See [Comments](#comments) for why.
+
+On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
 :::tip[Building tools on the AST?]
 The [traverser](/parser/traverse) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
@@ -35,25 +37,25 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the enti
 
 ## The Tree
 
-`Tree` is the root container returned by `parser.parse()`.
+`Tree` is the root container returned by `parser.parse()`. The fields you read directly:
 
-| Field         | Type                    | Description                                                     |
-| ------------- | ----------------------- | --------------------------------------------------------------- |
-| `root`        | `NodeIndex`             | Index of the root node (a `program`)                            |
-| `nodes`       | `NodeList`              | All AST nodes                                                   |
-| `extras`      | `ArrayList(NodeIndex)`  | Variable-length child index lists                               |
-| `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints                                   |
-| `comments`    | `[]const Comment`       | All comments found in source. See [Comments](#comments)         |
-| `line_starts` | `[]const u32`           | Byte offset where each source line begins (index 0 is always 0) |
-| `source`      | `[]const u8`            | Original source text                                            |
-| `source_type` | `SourceType`            | `.script` or `.module`                                          |
-| `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                         |
+| Field         | Type                    | Description                                                |
+| ------------- | ----------------------- | ---------------------------------------------------------- |
+| `root`        | `NodeIndex`             | Index of the root node (a `program`)                       |
+| `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints                              |
+| `source`      | `[]const u8`            | Original source text                                       |
+| `source_type` | `SourceType`            | `.script` or `.module`                                     |
+| `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                    |
+
+Everything else is reached through methods:
 
 ```zig
 tree.data(idx)           // NodeData for the node at idx
 tree.span(idx)           // Span (source byte range) for the node at idx
 tree.extra(range)        // []const NodeIndex for an IndexRange
 tree.string(handle)      // []const u8 for a String handle
+tree.commentsOf(idx)     // []const Comment attached to the node at idx
+tree.commentValue(c)     // []const u8 body of a Comment, without delimiters
 tree.lineColOf(pos)      // zero-indexed { line, col } for a byte offset
 
 tree.isTs()              // language is .ts, .tsx, or .dts
@@ -644,15 +646,49 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 
 ## Comments
 
-`tree.comments` holds every comment in source order.
+Comments are attached to the AST node they sit next to. Enable collection with `attach_comments`, then look up a node's comments with `tree.commentsOf(idx)`.
+
+```zig
+var tree = try parser.parse(allocator, source, .{ .attach_comments = true });
+defer tree.deinit();
+
+for (tree.commentsOf(some_node_idx)) |c| {
+    std.debug.print("{s} {s}\n", .{ @tagName(c.position), tree.commentValue(c) });
+}
+```
+
+Each `Comment` is:
 
 ```zig
 pub const Comment = struct {
-    type: Type,                  // .line or .block
-    preceded_by_newline: bool,   // line terminator immediately before
-    followed_by_newline: bool,   // line terminator immediately after
-    value: String,               // text without the surrounding delimiters
-    start: u32,                  // byte offset
-    end: u32,                    // byte offset
+    type: Type,            // .line or .block
+    position: Position,    // .before, .after, or .inside (relative to host)
+    same_line: bool,       // shares a source line with the host's adjacent edge
+    span: Span,            // byte range including the delimiters
 };
 ```
+
+`commentValue(c)` returns the body of a comment with the delimiters stripped.
+
+### Where the comment lands
+
+The attachment pass assigns each comment to a single host node, using the rule:
+
+- A comment between two siblings A and B attaches as `after A` when it shares a line with A's end, otherwise as `before B`.
+- A comment leading a node attaches as `before`.
+- A comment trailing the last child of a parent attaches as `after`.
+- A comment inside an otherwise empty container (`function f() { /* hi */ }`) attaches as `inside` the container.
+
+`same_line` is true when the comment sits on the same source line as the host's adjacent edge (host's start for `before`, host's end for `after`). For `inside` it is always false.
+
+### Why on the node, not on offsets
+
+The base ESTree spec (and Oxc) exposes comments as a flat array indexed by source offsets. That's fine for read-only analysis but breaks down the moment you transform the tree:
+
+- **Transforms desync the array.** Insert, delete, or move a node and every offset downstream of the edit is wrong. The comment that used to sit between `a` and `b` may now sit inside the inserted node, or hang in empty space. Re-syncing means rewriting offsets across the entire array on every edit.
+- **Codegen can't trust the offsets.** A printer takes whatever AST it's handed. With offset-based comments, a transformed AST will print comments in the wrong places or drop them entirely. With attached comments, when you move a node its comments come with it.
+- **Lookup is annoying.** Finding "the comments belonging to this node" with a flat array is a binary search at best and a full scan at worst. `node.comments` is O(1) and always exact.
+
+Babel landed on this design for the same reason its transform ecosystem (Babel itself, ESLint autofix, codemods) needs comments that survive AST edits. Oxc skipped it because Oxc's targets are linting and type analysis where the tree is read once and discarded. Both are valid choices for their use case. Yuku is a toolchain that includes a codegen and is designed for transforms, so node-attached comments are the right default.
+
+Attachment is opt-in via `attach_comments` (`attachComments` in JS) because users who only care about parsing speed shouldn't pay for it. When off, comments are skipped like whitespace.

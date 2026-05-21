@@ -10,13 +10,11 @@ const NODE_FIELD0_OFFSET = 4;
 const NODE_HEADER_U32S = 2;
 const NODE_SPAN_START_U32 = 10;
 const NODE_SPAN_END_U32 = 11;
-const COMMENT_SIZE = 20;
-const COMMENT_TYPE_OFFSET = 0;
-const COMMENT_FLAGS_OFFSET = 1;
-const COMMENT_START_OFFSET = 4;
-const COMMENT_END_OFFSET = 8;
-const COMMENT_VALUE_START_OFFSET = 12;
-const COMMENT_VALUE_END_OFFSET = 16;
+const COMMENT_SIZE = 12;
+const COMMENT_FLAGS_OFFSET = 0;
+const COMMENT_SPAN_START_OFFSET = 4;
+const COMMENT_SPAN_END_OFFSET = 8;
+const FLAG_ATTACH_COMMENTS = 2;
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
 const LOGICAL_OPS_INV = {"&&": 0, "||": 1, "??": 2};
 const UNARY_OPS_INV = {"-": 0, "+": 1, "!": 2, "~": 3, "typeof": 4, "void": 5, "delete": 6};
@@ -33,7 +31,7 @@ const IMPORT_PHASE_INV = {"source": 0, "defer": 1};
 const ACCESSIBILITY_INV = (v) => v == null ? 0 : v === "public" ? 1 : v === "private" ? 2 : 3;
 const TS_MAPPED_OPTIONAL_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
 const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
-function encode(estree, comments, lineStarts) {
+function encode(estree, lineStarts) {
   let nodeCap = 512;
   let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);
   let nU8 = new Uint8Array(nodeAB);
@@ -1873,7 +1871,18 @@ function encode(estree, comments, lineStarts) {
     spanAt(idx, asStart(n), asEnd(n));
     return idx;
   }
+  // Encoded node index -> its `.comments` array. The final assembly
+  // checks `commentsByIdx.size` to decide whether to emit the offsets
+  // and comment sections (and set FLAG_ATTACH_COMMENTS).
+  const commentsByIdx = new Map();
   function encNode(n) {
+    const idx = _encNodeInner(n);
+    if (idx !== NULL && n && Array.isArray(n.comments) && n.comments.length > 0) {
+      commentsByIdx.set(idx, n.comments);
+    }
+    return idx;
+  }
+  function _encNodeInner(n) {
     if (n == null) return NULL;
     switch (n.type) {
       case "Identifier": return enc_identifier_reference(n);
@@ -2053,26 +2062,42 @@ function encode(estree, comments, lineStarts) {
     }
   }
   const progIdx = encNode(estree);
-  // Comments are encoded after the node walk so string interning lands in the pool first.
-  const commentCount = Array.isArray(comments) ? comments.length : 0;
+  const POSITION_INV = { "before": 0, "after": 1, "inside": 2 };
+  // counting-sort comments by host idx into a prefix-sum offsets
+  // table, then write each comment at its slot in `commentBytes`.
+  const attachComments = commentsByIdx.size > 0;
+  let commentCount = 0;
+  let offsetsBytes = null;
   let commentBytes = null;
-  if (commentCount > 0) {
+  if (attachComments) {
+    for (const arr of commentsByIdx.values()) commentCount += arr.length;
+    const offsets = new Uint32Array(nodeCount + 1);
+    for (const [idx, arr] of commentsByIdx) offsets[idx] = arr.length;
+    let sum = 0;
+    for (let i = 0; i < nodeCount; i++) {
+      const c = offsets[i];
+      offsets[i] = sum;
+      sum += c;
+    }
+    offsets[nodeCount] = sum;
+    offsetsBytes = offsets.buffer;
     commentBytes = new ArrayBuffer(commentCount * COMMENT_SIZE);
     const cU8 = new Uint8Array(commentBytes);
     const cDV = new DataView(commentBytes);
-    for (let i = 0; i < commentCount; i++) {
-      const c = comments[i];
-      const v = encStr(typeof c.value === "string" ? c.value : "");
-      let flags = 0;
-      if (c.precededByNewline) flags |= 1;
-      if (c.followedByNewline) flags |= 2;
-      const o = i * COMMENT_SIZE;
-      cU8[o + COMMENT_TYPE_OFFSET] = c.type === "Block" ? 1 : 0;
-      cU8[o + COMMENT_FLAGS_OFFSET] = flags;
-      cDV.setUint32(o + COMMENT_START_OFFSET, (c.start >>> 0), true);
-      cDV.setUint32(o + COMMENT_END_OFFSET, (c.end >>> 0), true);
-      cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
-      cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
+    const cursor = new Uint32Array(nodeCount);
+    for (const [idx, arr] of commentsByIdx) {
+      for (let j = 0; j < arr.length; j++) {
+        const c = arr[j];
+        const slot = offsets[idx] + cursor[idx]; cursor[idx]++;
+        let f = 0;
+        if (c.type === "Block") f |= 1;
+        f |= ((POSITION_INV[c.position] ?? 0) & 3) << 1;
+        if (c.sameLine) f |= 8;
+        const o = slot * COMMENT_SIZE;
+        cU8[o + COMMENT_FLAGS_OFFSET] = f;
+        cDV.setUint32(o + COMMENT_SPAN_START_OFFSET, (c.start >>> 0), true);
+        cDV.setUint32(o + COMMENT_SPAN_END_OFFSET, (c.end >>> 0), true);
+      }
     }
   }
   const lineStartsCount = Array.isArray(lineStarts) ? lineStarts.length : 0;
@@ -2084,9 +2109,10 @@ function encode(estree, comments, lineStarts) {
   }
   const totalNodeBytes = nodeCount * NODE_SIZE;
   const totalExtraBytes = extraCount * 4;
+  const totalOffsetsBytes = attachComments ? (nodeCount + 1) * 4 : 0;
   const totalCommentBytes = commentCount * COMMENT_SIZE;
   const totalLineStartsBytes = lineStartsCount * 4;
-  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalCommentBytes + totalLineStartsBytes;
+  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
   const out = new ArrayBuffer(finalSize);
   const outU8 = new Uint8Array(out);
   const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));
@@ -2098,16 +2124,18 @@ function encode(estree, comments, lineStarts) {
   outU32[5] = lineStartsCount;
   outU32[6] = 0;
   outU32[7] = progIdx;
-  outU32[8] = 0;
+  outU32[8] = attachComments ? FLAG_ATTACH_COMMENTS : 0;
   outU32[9] = 0;
   const nodesOff = HEADER_SIZE;
   const extrasOff = nodesOff + totalNodeBytes;
   const poolOff = extrasOff + totalExtraBytes;
-  const commentsOff = poolOff + poolLen;
+  const offsetsOff = poolOff + poolLen;
+  const commentsOff = offsetsOff + totalOffsetsBytes;
   const lineStartsOff = commentsOff + totalCommentBytes;
   outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
   outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);
   outU8.set(pool.subarray(0, poolLen), poolOff);
+  if (offsetsBytes !== null) outU8.set(new Uint8Array(offsetsBytes), offsetsOff);
   if (commentBytes !== null) outU8.set(new Uint8Array(commentBytes), commentsOff);
   if (lineStartsBytes !== null) outU8.set(new Uint8Array(lineStartsBytes), lineStartsOff);
   return out;

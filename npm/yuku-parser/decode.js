@@ -13,7 +13,6 @@ const PROPERTY_KINDS = ["init", "get", "set"];
 const METHOD_KINDS = ["constructor", "method", "get", "set"];
 const FUNCTION_TYPES = ["FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"];
 const CLASS_TYPES = ["ClassDeclaration", "ClassExpression"];
-const COMMENT_TYPES = ["Line", "Block"];
 const SEVERITY = ["error", "warning", "hint", "info"];
 const IMPORT_EXPORT_KINDS = ["value", "type"];
 const ACCESSIBILITY = [null, "public", "private", "protected"];
@@ -59,12 +58,16 @@ function decode(buffer, source) {
   const _srcLen = _u32[3];
   const nodeCount = _u32[0], extraCount = _u32[1], spLen = _u32[2];
   const commentCount = _u32[4], lineStartsCount = _u32[5], diagCount = _u32[6], progIdx = _u32[7];
-  const _isTs = !!(_u32[8] & 1);
+  const _flags = _u32[8];
+  const _isTs = !!(_flags & 1);
+  const _attachComments = !!(_flags & 2);
   const _firstNa = _u32[9];
   const _nodesOff = 40;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
+  const _coOff = _spOff + spLen;
+  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
   function _poolDecode(s, e) {
     const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
     let hasEd = false;
@@ -119,7 +122,36 @@ function decode(buffer, source) {
     if (rest !== NULL) p.push(node(rest));
     return p;
   }
+  function _commentsOf(a, e) {
+    const out = new Array(e - a);
+    for (let j = a; j < e; j++) {
+      const o = _cOff + j * 12;
+      const cf = _u8[o + 0];
+      const isBlock = (cf & 1) !== 0;
+      const ss = _u32[(o + 4) >> 2], se = _u32[(o + 8) >> 2];
+      out[j - a] = {
+        type: isBlock ? "Block" : "Line",
+        position: ["before", "after", "inside"][(cf >> 1) & 3],
+        sameLine: (cf & 8) !== 0,
+        value: str(ss + 2, isBlock ? se - 2 : se),
+      };
+    }
+    return out;
+  }
   function node(i) {
+    const r = _decode(i);
+    // skip when `_decode` returned an inner node that already carries
+    // its own comments (e.g. the formal_parameter unwrap case).
+    // omit the `comments` field entirely when the node has none, so the
+    // optional in the type definition stays accurate.
+    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {
+      const b = _coOff >> 2;
+      const a = _u32[b + i], e = _u32[b + i + 1];
+      if (a !== e) r.comments = _commentsOf(a, e);
+    }
+    return r;
+  }
+  function _decode(i) {
     const o = _nodesOff + i * 48;
     const tag = _u8[o];
     const flags = _u8[o + 2] | (_u8[o + 3] << 8);
@@ -301,26 +333,9 @@ function decode(buffer, source) {
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
-  const cOff = _spOff + spLen;
-  const lsOff = cOff + commentCount * 20;
+  const lsOff = _cOff + commentCount * 12;
   const dOff = lsOff + lineStartsCount * 4;
   const dv = new DataView(buffer);
-  function _decodeComments() {
-    const out = new Array(commentCount);
-    for (let j = 0; j < commentCount; j++) {
-      const o = cOff + j * 20;
-      const flags = _u8[o + 1];
-      out[j] = {
-        type: COMMENT_TYPES[_u8[o + 0]],
-        precededByNewline: (flags & 1) !== 0,
-        followedByNewline: (flags & 2) !== 0,
-        value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)),
-        start: _p(dv.getUint32(o + 4, true)),
-        end: _p(dv.getUint32(o + 8, true)),
-      };
-    }
-    return out;
-  }
   function _decodeLineStarts() {
     const out = new Array(lineStartsCount);
     if (_firstNa >= _srcLen) {
@@ -358,10 +373,9 @@ function decode(buffer, source) {
     }
     return out;
   }
-  let _program, _comments, _lineStarts, _diagnostics;
+  let _program, _lineStarts, _diagnostics;
   return {
     get program() { return _program !== undefined ? _program : (_program = node(progIdx)); },
-    get comments() { return _comments !== undefined ? _comments : (_comments = _decodeComments()); },
     get lineStarts() { return _lineStarts !== undefined ? _lineStarts : (_lineStarts = _decodeLineStarts()); },
     get diagnostics() { return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); },
   };

@@ -40,24 +40,39 @@ interface ParseOptions {
    * @default false
    */
   semanticErrors?: boolean;
+  /**
+   * Collect comments and attach them to host AST nodes via
+   * {@link BaseNode.comments}.
+   * @default false
+   */
+  attachComments?: boolean;
 }
 
 /** Whether a {@link Comment} came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
-/** A source code comment. */
+/**
+ * Position of a {@link Comment} relative to its host node.
+ *
+ * - `before`: leading the host.
+ * - `after`: trailing the host.
+ * - `inside`: interior to an otherwise empty host.
+ */
+type CommentPosition = "before" | "after" | "inside";
+
+/**
+ * A source code comment attached to a single host AST node.
+ *
+ * `sameLine` is true when the comment shares a source line with the
+ * host's adjacent edge (host's start for `before`, host's end for
+ * `after`). For `inside` it is always `false`.
+ */
 interface Comment {
   type: CommentType;
-  /** True when a line terminator immediately precedes this comment. */
-  precededByNewline: boolean;
-  /** True when a line terminator immediately follows this comment. */
-  followedByNewline: boolean;
+  position: CommentPosition;
+  sameLine: boolean;
   /** Comment text without the delimiters. */
   value: string;
-  /** Byte offset. */
-  start: number;
-  /** Byte offset. */
-  end: number;
 }
 
 /** A labeled source span attached to a {@link Diagnostic}. */
@@ -104,8 +119,6 @@ interface SourceLocation {
 interface ParseResult {
   /** Root ESTree/TypeScript-ESTree AST node. */
   program: Program;
-  /** All comments in source order. */
-  comments: Comment[];
   /** Byte offset where each source line begins. Index 0 is always 0. */
   lineStarts: number[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
@@ -155,6 +168,11 @@ export function locOf(lineStarts: number[], offset: number): SourceLocation;
 interface BaseNode {
   start: number;
   end: number;
+  /**
+   * Comments attached to this node in source order. Present only when
+   * {@link ParseOptions.attachComments} is enabled.
+   */
+  comments?: Comment[];
 }
 
 type Span = BaseNode;
@@ -1749,6 +1767,7 @@ export type {
   ParseResult,
   Comment,
   CommentType,
+  CommentPosition,
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,

@@ -144,7 +144,11 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
 
 async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
-  const { lineStarts: _drop, ...comparable } = parsed;
+  // `comments` was a top-level array in the pre-v6 shape; it is now
+  // attached per-node and only when `attachComments` is set. Existing
+  // snapshots may still carry the old top-level array — strip it on
+  // both sides before comparing so old snapshots keep matching.
+  const { lineStarts: _l, comments: _c, ...comparable } = parsed as any;
 
   if (!(await Bun.file(snapshotFile).exists())) {
     if (!suite.autoSnapshot) return { status: "no_snapshot" };
@@ -152,7 +156,8 @@ async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite
     return { status: "match" };
   }
 
-  const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
+  const snapshotRaw = deserializeAstJson(await Bun.file(snapshotFile).text());
+  const { comments: _drop, ...snapshot } = snapshotRaw as any;
 
   if (equal(comparable, snapshot)) {
     return { status: "match" };
