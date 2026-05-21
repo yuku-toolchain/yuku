@@ -25,8 +25,7 @@ fn generate(w: *Writer) !void {
         \\// an SMI/int32, avoiding heap-number boxing on every field read in JSC.
         \\const NULL = -1;
         \\const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-        \\// Symbol used to attach line-start info to the Program node. Hidden
-        \\// from JSON/console; the codegen reads it for source maps.
+        \\// non-enumerable Symbol attached to Program for codegen's source-map use
         \\const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
         \\
     );
@@ -646,12 +645,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     }
 }
 
-/// Emits the lazy `diagnostics` decoder and the final
-/// `return { program, diagnostics, locOf }`. The line-starts array is
-/// attached to `program` as a non-enumerable Symbol-keyed property
-/// (see `_kLineStarts`), where the codegen reads it for source maps
-/// without it leaking into the public AST shape. Comments are attached
-/// per-node by `node()`.
+// emits the lazy diagnostics decoder and the returned object
 fn writeDecodeBody(w: *Writer) !void {
     try w.print(
         \\  const lsOff = _cOff + commentCount * {[csize]d};

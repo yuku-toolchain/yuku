@@ -11,5 +11,6 @@ const src = `
 
 const r = parse(src, { attachComments: true });
 console.log(print(r.program, {
-  comments: true
-}).code)
+  comments: true,
+  sourceMaps: {}
+}).map)

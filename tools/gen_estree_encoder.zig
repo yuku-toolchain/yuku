@@ -204,6 +204,12 @@ fn writeRuntime(w: *Writer) !void {
         \\  }
         \\  function asStart(n) { return (n && typeof n.start === "number") ? n.start : 0; }
         \\  function asEnd(n) { return (n && typeof n.end === "number") ? n.end : 0; }
+        \\  // called by every enc_* to register the node's `.comments` array
+        \\  function recordComments(n, idx) {
+        \\    if (idx !== NULL && n && Array.isArray(n.comments) && n.comments.length > 0) {
+        \\      commentsByIdx.set(idx, n.comments);
+        \\    }
+        \\  }
         \\
     );
 }
@@ -214,16 +220,16 @@ fn writeIdentifierHelpers(w: *Writer) !void {
     try w.writeAll(
         \\  function encBindingTarget(n) {
         \\    if (n == null) return NULL;
-        \\    if (n.type === "Identifier") return _record(enc_binding_identifier(n), n);
+        \\    if (n.type === "Identifier") return enc_binding_identifier(n);
         \\    return encNode(n);
         \\  }
         \\  function encLabel(n) {
         \\    if (n == null) return NULL;
-        \\    return _record(enc_label_identifier(n), n);
+        \\    return enc_label_identifier(n);
         \\  }
         \\  function encPropertyKey(n) {
         \\    if (n == null) return NULL;
-        \\    if (n.type === "Identifier") return _record(enc_identifier_name(n), n);
+        \\    if (n.type === "Identifier") return enc_identifier_name(n);
         \\    return encNode(n);
         \\  }
         \\
@@ -261,6 +267,7 @@ fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
             \\    const idx = alloc();
             \\    tagAt(idx, {d});
             \\    spanAt(idx, asStart(n), asEnd(n));
+            \\    recordComments(n, idx);
             \\    return idx;
             \\  }}
             \\
@@ -353,7 +360,7 @@ fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
         try w.writeAll(");\n");
     }
 
-    try w.writeAll("    spanAt(idx, asStart(n), asEnd(n));\n    return idx;\n  }\n");
+    try w.writeAll("    spanAt(idx, asStart(n), asEnd(n));\n    recordComments(n, idx);\n    return idx;\n  }\n");
 }
 
 fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usize) !void {
@@ -436,6 +443,7 @@ fn writeSpecialStringLit(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, s.start); slotAt(idx, {d}, s.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -460,6 +468,7 @@ fn writeSpecialNumericLit(w: *Writer, comptime tag: usize) !void {
         \\    flagsAt(idx, kind);
         \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -476,6 +485,7 @@ fn writeSpecialBigIntLit(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -490,6 +500,7 @@ fn writeSpecialBoolLit(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    flagsAt(idx, n.value ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -502,6 +513,7 @@ fn writeSpecialNullLit(w: *Writer, comptime tag: usize) !void {
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -520,6 +532,7 @@ fn writeSpecialRegExpLit(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, p.start); slotAt(idx, {d}, p.end);
         \\    slotAt(idx, {d}, fl.start); slotAt(idx, {d}, fl.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -540,6 +553,7 @@ fn writeSpecialTemplateElement(w: *Writer, comptime tag: usize) !void {
         \\    flagsAt(idx, (n.tail ? {d} : 0) | (undef ? {d} : 0));
         \\    slotAt(idx, {d}, c.start); slotAt(idx, {d}, c.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -556,6 +570,7 @@ fn writeSpecialUnaryExpr(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, a);
         \\    flagsAt(idx, UNARY_OPS_INV[n.operator] | 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -576,6 +591,7 @@ fn writeSpecialMemberExpr(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, o); slotAt(idx, {d}, p);
         \\    flagsAt(idx, (n.computed ? {d} : 0) | (n.optional ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -609,6 +625,7 @@ fn writeSpecialFunction(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, rt_);
         \\    flagsAt(idx, ((kind & {d}) << {d}) | (n.generator ? {d} : 0) | (n.async ? {d} : 0) | (n.declare ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -636,6 +653,7 @@ fn writeSpecialArrowFn(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, rt_);
         \\    flagsAt(idx, (n.expression ? {d} : 0) | (n.async ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -651,6 +669,7 @@ fn writeSpecialFormalParameter(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, pat);
         \\    spanAt(idx, asStart(p), asEnd(p));
+        \\    recordComments(p, idx);
         \\    return idx;
         \\  }}
         \\
@@ -728,6 +747,7 @@ fn writeSpecialClass(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, imps.len);
         \\    flagsAt(idx, ((kind & {d}) << {d}) | (n.abstract ? {d} : 0) | (n.declare ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -765,6 +785,7 @@ fn writeSpecialMethodDef(w: *Writer, comptime tag: usize) !void {
         \\      (abstract ? {d} : 0) |
         \\      (ACCESSIBILITY_INV(n.accessibility) << {d}));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -811,6 +832,7 @@ fn writeSpecialPropertyDef(w: *Writer, comptime tag: usize) !void {
         \\      (abstract ? {d} : 0) |
         \\      (ACCESSIBILITY_INV(n.accessibility) << {d}));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -834,6 +856,7 @@ fn writeSpecialObjectProperty(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, v);
         \\    flagsAt(idx, ((PROPERTY_KINDS_INV[n.kind] | 0) << {d}) | (n.method ? {d} : 0) | (n.shorthand ? {d} : 0) | (n.computed ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -890,6 +913,7 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -924,6 +948,7 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -947,6 +972,7 @@ fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {
         \\    if (hb) {{ slotAt(idx, {d}, hb.start); slotAt(idx, {d}, hb.end); }}
         \\    flagsAt(idx, (n.sourceType === "script" ? 0 : 1) | (hb ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -965,6 +991,7 @@ fn writeSpecialDirective(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, e);
         \\    slotAt(idx, {d}, dv.start); slotAt(idx, {d}, dv.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -980,6 +1007,7 @@ fn writeSpecialJSXText(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, v.start); slotAt(idx, {d}, v.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -999,6 +1027,7 @@ fn writeSigParams(w: *Writer, comptime label: []const u8, comptime tag: usize, c
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, tp); slotAt(idx, {d}, params); slotAt(idx, {d}, rt_);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1025,6 +1054,7 @@ fn writeSpecialTSConstructorType(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, tp); slotAt(idx, {d}, params); slotAt(idx, {d}, rt_);
         \\    flagsAt(idx, n.abstract ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1051,6 +1081,7 @@ fn writeSpecialTSMethodSig(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, tp); slotAt(idx, {d}, params); slotAt(idx, {d}, rt_);
         \\    flagsAt(idx, (n.computed ? {d} : 0) | (n.optional ? {d} : 0) | ((TS_METHOD_SIGNATURE_KINDS_INV[n.kind] | 0) << {d}));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1084,6 +1115,7 @@ fn writeSpecialTSMappedType(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, c); slotAt(idx, {d}, nt); slotAt(idx, {d}, ta);
         \\    flagsAt(idx, (TS_MAPPED_OPTIONAL_INV(n.optional) << {d}) | (TS_MAPPED_READONLY_INV(n.readonly) << {d}));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1106,6 +1138,7 @@ fn writeSpecialTSModuleDecl(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, body);
         \\    flagsAt(idx, ((TS_MODULE_KINDS_INV[n.kind] | 0) << {d}) | (n.declare ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1127,6 +1160,7 @@ fn writeSpecialTSGlobalDecl(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, body);
         \\    flagsAt(idx, n.declare ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1143,6 +1177,7 @@ fn writeSpecialTSThisParam(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, ta);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1165,6 +1200,7 @@ fn writeSpecialTSPropertySig(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, ta);
         \\    flagsAt(idx, (n.computed ? {d} : 0) | (n.optional ? {d} : 0) | (n.readonly ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1185,6 +1221,7 @@ fn writeSpecialTSEnumMember(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, id); slotAt(idx, {d}, init);
         \\    flagsAt(idx, n.computed ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1209,6 +1246,7 @@ fn writeSpecialTSIndexSig(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, (n.readonly ? {d} : 0) | (n.static ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
+        \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
@@ -1219,20 +1257,9 @@ fn writeSpecialTSIndexSig(w: *Writer, comptime tag: usize) !void {
 
 fn writeDispatcher(w: *Writer) !void {
     try w.writeAll(
-        \\  // encoded node index -> its `.comments` array. populated when
-        \\  // the caller's ast carries attached comments; the final assembly
-        \\  // decides whether to emit the offsets and comments sections.
+        \\  // encoded node index -> its `.comments` array
         \\  const commentsByIdx = new Map();
-        \\  function _record(idx, n) {
-        \\    if (idx !== NULL && n && Array.isArray(n.comments) && n.comments.length > 0) {
-        \\      commentsByIdx.set(idx, n.comments);
-        \\    }
-        \\    return idx;
-        \\  }
         \\  function encNode(n) {
-        \\    return _record(_encNodeInner(n), n);
-        \\  }
-        \\  function _encNodeInner(n) {
         \\    if (n == null) return NULL;
         \\    switch (n.type) {
         \\      case "Identifier": return enc_identifier_reference(n);

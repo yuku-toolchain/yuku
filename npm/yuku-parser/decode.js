@@ -3,8 +3,7 @@
 // an SMI/int32, avoiding heap-number boxing on every field read in JSC.
 const NULL = -1;
 const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-// Symbol used to attach line-start info to the Program node. Hidden
-// from JSON/console; the codegen reads it for source maps.
+// non-enumerable Symbol attached to Program for codegen's source-map use
 const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
 const BINARY_OPS = ["==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof"];
 const LOGICAL_OPS = ["&&", "||", "??"];

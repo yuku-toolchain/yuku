@@ -17,6 +17,7 @@
 // offsets array, producing the public `Comment` shape.
 
 const std = @import("std");
+const util = @import("util");
 const ast = @import("ast.zig");
 
 const Error = error{OutOfMemory};
@@ -195,11 +196,17 @@ const Ctx = struct {
         };
     }
 
-    // a and b are always close, so memchr beats a `line_starts` binary search.
+    // a and b are always close, so a linear byte scan beats a binary search
     inline fn sameLine(self: *const Ctx, a: u32, b: u32) bool {
         const lo = if (a < b) a else b;
         const hi = if (a < b) b else a;
-        return std.mem.indexOfScalar(u8, self.source[lo..hi], '\n') == null;
+        var i: usize = lo;
+        while (i < hi) {
+            const n = util.Utf.lineTerminatorLen(self.source, i);
+            if (n > 0) return false;
+            i += 1;
+        }
+        return true;
     }
 };
 

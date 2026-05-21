@@ -140,9 +140,9 @@ pub const Comment = struct {
     };
 };
 
-/// Lexer-internal comment with the source span used by the attachment
-/// pass to position the comment relative to neighbouring nodes. After
-/// attachment, comments are exposed as the public `Comment` shape.
+// internal: lexer output, consumed by the attachment pass to produce
+// the public `Comment` shape. Carries the source span needed to position
+// the comment relative to neighbouring nodes.
 pub const RawComment = struct {
     type: Comment.Type,
     value: String,
@@ -271,37 +271,6 @@ pub const Tree = struct {
         }
         const line = lo - 1;
         return .{ .line = line, .col = pos - starts[line] };
-    }
-
-    /// Scans `source` once and records the offset of every line start.
-    /// Index 0 is always 0.
-    pub fn buildLineStarts(self: *Tree) error{OutOfMemory}!void {
-        const alloc = self.arena.allocator();
-        const src = self.source;
-
-        var starts: std.ArrayList(u32) = .empty;
-        try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
-        starts.appendAssumeCapacity(0);
-
-        const N = 64;
-        const Vec = @Vector(N, u8);
-        const Mask = std.meta.Int(.unsigned, N);
-        const lf: Vec = @splat('\n');
-
-        var i: usize = 0;
-        while (i + N <= src.len) : (i += N) {
-            const chunk: Vec = src[i..][0..N].*;
-            var bits: Mask = @bitCast(chunk == lf);
-            while (bits != 0) {
-                const k = @ctz(bits);
-                try starts.append(alloc, @intCast(i + k + 1));
-                bits &= bits - 1;
-            }
-        }
-        while (i < src.len) : (i += 1) {
-            if (src[i] == '\n') try starts.append(alloc, @intCast(i + 1));
-        }
-        self.line_starts = try starts.toOwnedSlice(alloc);
     }
 
     /// Replaces an existing node's data in-place.

@@ -33,6 +33,18 @@ pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     return 0;
 }
 
+/// returns the byte length of the ECMAScript line terminator at `source[pos]`,
+/// or 0 if there is none
+pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
+    if (pos >= source.len) return 0;
+    return switch (source[pos]) {
+        '\n' => 1,
+        '\r' => if (pos + 1 < source.len and source[pos + 1] == '\n') 2 else 1,
+        0xE2 => unicodeSeparatorLen(source, pos),
+        else => 0,
+    };
+}
+
 pub fn isMultiByteSpace(cp: u21) bool {
     return switch (cp) {
         '\u{FEFF}',
@@ -362,6 +374,16 @@ test "unicodeSeparatorLen not a separator" {
 test "unicodeSeparatorLen too short" {
     const s = &[_]u8{ 0xE2, 0x80 };
     try testing.expectEqual(@as(u8, 0), unicodeSeparatorLen(s, 0));
+}
+
+test "lineTerminatorLen recognises all four forms" {
+    try testing.expectEqual(@as(u8, 1), lineTerminatorLen("\n", 0));
+    try testing.expectEqual(@as(u8, 1), lineTerminatorLen("\r", 0));
+    try testing.expectEqual(@as(u8, 2), lineTerminatorLen("\r\n", 0));
+    try testing.expectEqual(@as(u8, 3), lineTerminatorLen(&[_]u8{ 0xE2, 0x80, 0xA8 }, 0));
+    try testing.expectEqual(@as(u8, 3), lineTerminatorLen(&[_]u8{ 0xE2, 0x80, 0xA9 }, 0));
+    try testing.expectEqual(@as(u8, 0), lineTerminatorLen("a", 0));
+    try testing.expectEqual(@as(u8, 0), lineTerminatorLen("", 0));
 }
 
 test "isMultiByteSpace" {

@@ -169,7 +169,7 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
 
-        try self.tree.buildLineStarts();
+        try buildLineStarts(&self.tree);
 
         if (self.attach_comments) {
             try comments.attach(&self.tree, self.lexer.comments.items);
@@ -639,4 +639,51 @@ const ScratchBuffer = struct {
 pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.Tree {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
+}
+
+/// Scans `tree.source` once and records the offset of every line start
+/// into `tree.line_starts`.
+fn buildLineStarts(tree: *ast.Tree) Error!void {
+    const alloc = tree.allocator();
+    const src = tree.source;
+
+    var starts: std.ArrayList(u32) = .empty;
+    try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
+    starts.appendAssumeCapacity(0);
+
+    const N = 64;
+    const Vec = @Vector(N, u8);
+    const Mask = std.meta.Int(.unsigned, N);
+    const lf: Vec = @splat('\n');
+    const cr: Vec = @splat('\r');
+    const e2: Vec = @splat(0xE2);
+
+    var i: usize = 0;
+    while (i + N <= src.len) {
+        const chunk: Vec = src[i..][0..N].*;
+        const triggers: @Vector(N, bool) = (chunk == lf) | (chunk == cr) | (chunk == e2);
+        var bits: Mask = @bitCast(triggers);
+        var resume_at = i + N;
+        while (bits != 0) {
+            const k = @ctz(bits);
+            const pos = i + k;
+            bits &= bits - 1;
+            if (pos < resume_at) {
+                const n = util.Utf.lineTerminatorLen(src, pos);
+                if (n > 0) {
+                    try starts.append(alloc, @intCast(pos + n));
+                    if (pos + n > resume_at) resume_at = pos + n;
+                }
+            }
+        }
+        i = resume_at;
+    }
+    while (i < src.len) {
+        const n = util.Utf.lineTerminatorLen(src, i);
+        if (n > 0) {
+            try starts.append(alloc, @intCast(i + n));
+            i += n;
+        } else i += 1;
+    }
+    tree.line_starts = try starts.toOwnedSlice(alloc);
 }
