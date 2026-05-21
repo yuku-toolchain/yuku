@@ -11,6 +11,10 @@ export function serializeAstJson(obj: unknown, space?: string | number): string 
   return JSON.stringify(
     obj,
     (key, value) => {
+      // `locOf` is derived from the source and varies with line-ending
+      // conventions. Omit it so snapshots stay portable.
+      if (key === "locOf") return undefined;
+
       if (typeof value === "bigint") {
         return `${BIG_INT_PREFIX}${value}n`;
       }

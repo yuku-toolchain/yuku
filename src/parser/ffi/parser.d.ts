@@ -248,23 +248,7 @@ type PropertyDefinitionType = "PropertyDefinition" | "TSAbstractPropertyDefiniti
 
 type AccessorPropertyType = "AccessorProperty" | "TSAbstractAccessorProperty";
 
-interface IdentifierName extends BaseNode {
-  type: "Identifier";
-  name: string;
-  decorators?: [];
-  optional?: false;
-  typeAnnotation?: null;
-}
-
-interface IdentifierReference extends BaseNode {
-  type: "Identifier";
-  name: string;
-  decorators?: [];
-  optional?: false;
-  typeAnnotation?: null;
-}
-
-interface BindingIdentifier extends BaseNode {
+interface Identifier extends BaseNode {
   type: "Identifier";
   name: string;
   decorators?: Decorator[];
@@ -272,15 +256,10 @@ interface BindingIdentifier extends BaseNode {
   typeAnnotation?: TSTypeAnnotation | null;
 }
 
-interface LabelIdentifier extends BaseNode {
-  type: "Identifier";
-  name: string;
-  decorators?: [];
-  optional?: false;
-  typeAnnotation?: null;
-}
-
-type Identifier = IdentifierName | IdentifierReference | BindingIdentifier | LabelIdentifier;
+type IdentifierName = Identifier;
+type IdentifierReference = Identifier;
+type BindingIdentifier = Identifier;
+type LabelIdentifier = Identifier;
 
 interface PrivateIdentifier extends BaseNode {
   type: "PrivateIdentifier";
@@ -1711,6 +1690,7 @@ type Node =
   | TSAbstractAccessorProperty
   | StaticBlock
   | Decorator
+  | TSEmptyBodyFunctionExpression
   | ImportSpecifier
   | ImportDefaultSpecifier
   | ImportNamespaceSpecifier
