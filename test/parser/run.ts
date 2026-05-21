@@ -85,6 +85,15 @@ const suites: TestSuite[] = [
     autoSnapshot: true,
     options: { allowReturnOutsideFunction: true },
   },
+  {
+    path: `${MISC_DIR}/comments`,
+    expect: "snapshot",
+    lang: ["js", "ts", "tsx"],
+    recursive: false,
+    allowErrors: true,
+    autoSnapshot: true,
+    options: { attachComments: true },
+  },
 ];
 
 type SnapshotResult =

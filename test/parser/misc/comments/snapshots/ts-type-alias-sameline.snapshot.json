@@ -1,0 +1,41 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 0,
+        "end": 27,
+        "id": {
+          "type": "Identifier",
+          "start": 5,
+          "end": 6,
+          "name": "T",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false,
+          "comments": [
+            {
+              "type": "Block",
+              "position": "after",
+              "sameLine": true,
+              "value": " unit "
+            }
+          ]
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSStringKeyword",
+          "start": 20,
+          "end": 26
+        },
+        "declare": false
+      }
+    ]
+  },
+  "diagnostics": []
+}

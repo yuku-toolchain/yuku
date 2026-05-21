@@ -1,0 +1,55 @@
+test/parser/misc/comments
+=========================
+Passed:       49/49 (100.00%)
+Failed:       0
+AST mismatch: 0/49
+
+✓ test/parser/misc/comments/after-block-not-leaking.js
+✓ test/parser/misc/comments/array-destructure-mid.js
+✓ test/parser/misc/comments/at-file-end.js
+✓ test/parser/misc/comments/at-file-start.js
+✓ test/parser/misc/comments/before-block-start-not-leaking.js
+✓ test/parser/misc/comments/between-class-members.js
+✓ test/parser/misc/comments/between-object-properties.js
+✓ test/parser/misc/comments/between-switch-cases.js
+✓ test/parser/misc/comments/block-then-line-leading.js
+✓ test/parser/misc/comments/catch-block-leading.js
+✓ test/parser/misc/comments/class-property-leading.js
+✓ test/parser/misc/comments/decorator-class-between.js
+✓ test/parser/misc/comments/dense-mixed.module.js
+✓ test/parser/misc/comments/for-loop-init-inline.js
+✓ test/parser/misc/comments/hashbang-not-comment.js
+✓ test/parser/misc/comments/if-else-empty-bodies.js
+✓ test/parser/misc/comments/inside-empty-array.js
+✓ test/parser/misc/comments/inside-empty-class-body.js
+✓ test/parser/misc/comments/inside-empty-else-block.js
+✓ test/parser/misc/comments/inside-empty-function-body.js
+✓ test/parser/misc/comments/inside-empty-object.js
+✓ test/parser/misc/comments/inside-empty-static-block.js
+✓ test/parser/misc/comments/jsx-expression-container.tsx
+✓ test/parser/misc/comments/leading-and-trailing-on-same-stmt.js
+✓ test/parser/misc/comments/leading-block-inline.js
+✓ test/parser/misc/comments/leading-block-ownline.js
+✓ test/parser/misc/comments/leading-line-ownline.js
+✓ test/parser/misc/comments/multiple-leading-line.js
+✓ test/parser/misc/comments/multiple-trailing-line.js
+✓ test/parser/misc/comments/nested-function-body.js
+✓ test/parser/misc/comments/object-destructure-mid.js
+✓ test/parser/misc/comments/only-comments.js
+✓ test/parser/misc/comments/params-leading-line.js
+✓ test/parser/misc/comments/params-trailing-block.js
+✓ test/parser/misc/comments/return-inline-block.js
+✓ test/parser/misc/comments/return-with-leading-and-trailing.js
+✓ test/parser/misc/comments/siblings-inline-block-sameline.js
+✓ test/parser/misc/comments/siblings-multiline-block-in-gap.js
+✓ test/parser/misc/comments/siblings-ownline-before-next.js
+✓ test/parser/misc/comments/siblings-sameline-after-prev.js
+✓ test/parser/misc/comments/three-leading-line.js
+✓ test/parser/misc/comments/three-siblings-mixed.js
+✓ test/parser/misc/comments/trailing-block-sameline.js
+✓ test/parser/misc/comments/trailing-line-ownline.js
+✓ test/parser/misc/comments/trailing-line-sameline.js
+✓ test/parser/misc/comments/ts-interface-member-leading.ts
+✓ test/parser/misc/comments/ts-interface-trailing.ts
+✓ test/parser/misc/comments/ts-type-alias-sameline.ts
+✓ test/parser/misc/comments/ts-type-parameters-mid.ts

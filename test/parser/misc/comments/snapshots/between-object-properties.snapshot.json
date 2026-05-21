@@ -1,0 +1,98 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 54,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 53,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 52,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "o"
+            },
+            "init": {
+              "type": "ObjectExpression",
+              "start": 10,
+              "end": 52,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 14,
+                  "end": 18,
+                  "key": {
+                    "type": "Identifier",
+                    "start": 14,
+                    "end": 15,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 17,
+                    "end": 18,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "kind": "init",
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false,
+                  "comments": [
+                    {
+                      "type": "Line",
+                      "position": "after",
+                      "sameLine": true,
+                      "value": " trail-a"
+                    }
+                  ]
+                },
+                {
+                  "type": "Property",
+                  "start": 45,
+                  "end": 49,
+                  "key": {
+                    "type": "Identifier",
+                    "start": 45,
+                    "end": 46,
+                    "name": "b"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 48,
+                    "end": 49,
+                    "value": 2,
+                    "raw": "2"
+                  },
+                  "kind": "init",
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false,
+                  "comments": [
+                    {
+                      "type": "Line",
+                      "position": "before",
+                      "sameLine": false,
+                      "value": " lead-b"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": []
+}
