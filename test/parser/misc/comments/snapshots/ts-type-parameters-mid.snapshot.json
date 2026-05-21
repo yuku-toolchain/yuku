@@ -51,15 +51,7 @@
               "default": null,
               "in": false,
               "out": false,
-              "const": false,
-              "comments": [
-                {
-                  "type": "Block",
-                  "position": "after",
-                  "sameLine": true,
-                  "value": " mid "
-                }
-              ]
+              "const": false
             },
             {
               "type": "TSTypeParameter",
@@ -78,7 +70,15 @@
               "default": null,
               "in": false,
               "out": false,
-              "const": false
+              "const": false,
+              "comments": [
+                {
+                  "type": "Block",
+                  "position": "before",
+                  "sameLine": true,
+                  "value": " mid "
+                }
+              ]
             }
           ]
         },

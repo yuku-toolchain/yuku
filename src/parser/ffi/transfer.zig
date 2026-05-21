@@ -42,6 +42,8 @@
 //
 // the string pool is a flat utf8 buffer for strings that cannot be sliced
 // directly from the source. it may contain wtf8 encoded lone surrogates.
+// the pool length is arbitrary, so sections that follow may be at any
+// byte offset; the js decoder uses DataView for reads against them.
 //
 // a diagnostic entry is variable length and laid out as
 //
@@ -113,15 +115,16 @@ const PackedNode = extern struct {
 };
 
 /// Comment entry on the wire. `flags` packs:
-///   bit 0     type       (0 = line, 1 = block)
-///   bits 1-2  position   (0 = before, 1 = after, 2 = inside)
+///   bit 0     type       (0 line, 1 block)
+///   bits 1-2  position   (0 before, 1 after, 2 inside)
 ///   bit 3     same_line
-/// The host node is implicit from the entry's index and `comment_offsets`.
+/// `value_start`/`value_end` is a `String` handle into source or pool.
+/// The host node is implicit from the entry's index and the offsets.
 const PackedComment = extern struct {
     flags: u8,
     _pad: [3]u8 = .{ 0, 0, 0 },
-    span_start: u32,
-    span_end: u32,
+    value_start: u32,
+    value_end: u32,
 };
 
 pub const COMMENT_TYPE_BIT: u8 = 0;
@@ -165,8 +168,8 @@ pub const NODE_FLAG_BITS: u8 = @bitSizeOf(@FieldType(PackedNode, "flags"));
 
 // `PackedComment` byte offsets for the decoder.
 pub const COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedComment, "flags");
-pub const COMMENT_SPAN_START_OFFSET: u8 = @offsetOf(PackedComment, "span_start");
-pub const COMMENT_SPAN_END_OFFSET: u8 = @offsetOf(PackedComment, "span_end");
+pub const COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedComment, "value_start");
+pub const COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedComment, "value_end");
 
 comptime {
     validateAllNodeLayouts();
@@ -348,8 +351,8 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         if (c.same_line) flags |= 1 << COMMENT_SAME_LINE_BIT;
         const entry = PackedComment{
             .flags = flags,
-            .span_start = c.span.start,
-            .span_end = c.span.end,
+            .value_start = c.value.start,
+            .value_end = c.value.end,
         };
         @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
         pos += COMMENT_SIZE;
@@ -567,7 +570,7 @@ pub fn deserializeFromBuf(
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
                 .position = @enumFromInt((ce.flags & COMMENT_POSITION_MASK) >> COMMENT_POSITION_SHIFT),
                 .same_line = (ce.flags >> COMMENT_SAME_LINE_BIT) & 1 != 0,
-                .span = .{ .start = ce.span_start, .end = ce.span_end },
+                .value = .{ .start = ce.value_start, .end = ce.value_end },
             };
         }
         tree.comments = comments;

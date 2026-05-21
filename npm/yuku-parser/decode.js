@@ -66,8 +66,10 @@ function decode(buffer, source) {
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
+  // sections after the variable-length string pool may be at any
+  // byte alignment, so reads against them use `dv`, not `_u32`.
+  const dv = new DataView(buffer);
   const _coOff = _spOff + spLen;
-  const _coBase = _coOff >> 2;
   const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
   function _poolDecode(s, e) {
     const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
@@ -128,25 +130,23 @@ function decode(buffer, source) {
     for (let j = a; j < e; j++) {
       const o = _cOff + j * 12;
       const cf = _u8[o + 0];
-      const isBlock = (cf & 1) !== 0;
-      const ss = _u32[(o + 4) >> 2], se = _u32[(o + 8) >> 2];
+      const vs = dv.getUint32(o + 4, true), ve = dv.getUint32(o + 8, true);
       out[j - a] = {
-        type: isBlock ? "Block" : "Line",
+        type: (cf & 1) ? "Block" : "Line",
         position: ["before", "after", "inside"][(cf >> 1) & 3],
         sameLine: (cf & 8) !== 0,
-        value: str(ss + 2, isBlock ? se - 2 : se),
+        value: str(vs, ve),
       };
     }
     return out;
   }
   function node(i) {
     const r = _decode(i);
-    // skip when `_decode` returned an inner node that already carries
-    // its own comments (e.g. the formal_parameter unwrap case).
-    // omit the `comments` field entirely when the node has none, so the
-    // optional in the type definition stays accurate.
+    // skip unwrap cases whose inner node already carries its own
+    // comments (e.g. formal_parameter returning its pattern)
     if (_attachComments && r && r.type !== undefined && r.comments === undefined) {
-      const a = _u32[_coBase + i], e = _u32[_coBase + i + 1];
+      const off = _coOff + i * 4;
+      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
       if (a !== e) r.comments = _commentsOf(a, e);
     }
     return r;
@@ -335,7 +335,6 @@ function decode(buffer, source) {
   }
   const lsOff = _cOff + commentCount * 12;
   const dOff = lsOff + lineStartsCount * 4;
-  const dv = new DataView(buffer);
   function _decodeLineStarts() {
     const out = new Array(lineStartsCount);
     if (_firstNa >= _srcLen) {

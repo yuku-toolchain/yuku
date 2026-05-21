@@ -1,8 +1,8 @@
 test/parser/misc/comments
 =========================
-Passed:       49/49 (100.00%)
+Passed:       51/51 (100.00%)
 Failed:       0
-AST mismatch: 0/49
+AST mismatch: 0/51
 
 ✓ test/parser/misc/comments/after-block-not-leaking.js
 ✓ test/parser/misc/comments/array-destructure-mid.js
@@ -19,6 +19,7 @@ AST mismatch: 0/49
 ✓ test/parser/misc/comments/dense-mixed.module.js
 ✓ test/parser/misc/comments/for-loop-init-inline.js
 ✓ test/parser/misc/comments/hashbang-not-comment.js
+✓ test/parser/misc/comments/html-style-script.js
 ✓ test/parser/misc/comments/if-else-empty-bodies.js
 ✓ test/parser/misc/comments/inside-empty-array.js
 ✓ test/parser/misc/comments/inside-empty-class-body.js
@@ -38,6 +39,7 @@ AST mismatch: 0/49
 ✓ test/parser/misc/comments/only-comments.js
 ✓ test/parser/misc/comments/params-leading-line.js
 ✓ test/parser/misc/comments/params-trailing-block.js
+✓ test/parser/misc/comments/pure-annotation-before-call.js
 ✓ test/parser/misc/comments/return-inline-block.js
 ✓ test/parser/misc/comments/return-with-leading-and-trailing.js
 ✓ test/parser/misc/comments/siblings-inline-block-sameline.js

@@ -103,24 +103,15 @@ pub const Lang = enum {
 
 /// A line or block comment attached to a host AST node.
 ///
-/// `span` covers the comment including its delimiters. The body without
-/// delimiters is recovered on demand via `Tree.commentValue`.
-///
 /// `position` is `before`, `after`, or `inside` relative to the host.
 /// `same_line` is true when the comment shares a source line with the
 /// adjacent host edge (host start for `before`, host end for `after`).
 /// For `inside`, `same_line` is always false.
-///
-/// ## Example
-/// ```js
-/// // line comment
-/// /* block comment */
-/// ```
 pub const Comment = struct {
     type: Type,
     position: Position = .before,
     same_line: bool = false,
-    span: Span,
+    value: String,
 
     pub const Type = enum(u1) {
         line,
@@ -149,6 +140,15 @@ pub const Comment = struct {
     };
 };
 
+/// Lexer-internal comment with the source span used by the attachment
+/// pass to position the comment relative to neighbouring nodes. After
+/// attachment, comments are exposed as the public `Comment` shape.
+pub const RawComment = struct {
+    type: Comment.Type,
+    value: String,
+    span: Span,
+};
+
 /// The AST. Backed by growable arrays and an arena allocator.
 ///
 /// Returned by `parser.parse()`. Readable immediately after parsing.
@@ -165,11 +165,11 @@ pub const Tree = struct {
     extras: std.ArrayList(NodeIndex) = .empty,
     /// Diagnostics (errors, warnings, etc.) collected during parsing and analysis.
     diagnostics: std.ArrayList(Diagnostic) = .empty,
-    /// Comments grouped by host node, source-order within each host.
-    /// Populated only when `Options.attach_comments` is enabled.
+    /// Comments grouped by host node, in source order within each host.
+    /// Resolve a node's slice with `commentsOf`. Populated only when
+    /// `Options.attach_comments` is enabled.
     comments: []const Comment = &.{},
     /// Prefix-sum index into `comments`, of length `nodes.len + 1`.
-    /// Populated only when `Options.attach_comments` is enabled.
     node_comment_offsets: []const u32 = &.{},
     /// Offset where each source line begins. Index 0 is always 0. Powers
     /// `lineColOf` so consumers resolve positions without rescanning the
@@ -384,12 +384,6 @@ pub const Tree = struct {
         const i = @intFromEnum(node);
         if (i + 1 >= offsets.len) return &.{};
         return self.comments[offsets[i]..offsets[i + 1]];
-    }
-
-    /// Returns the body of `c` without its `//` or `/* */` delimiters.
-    pub inline fn commentValue(self: *const Tree, c: Comment) []const u8 {
-        const tail: u32 = if (c.type == .block) 2 else 0;
-        return self.source[c.span.start + 2 .. c.span.end - tail];
     }
 };
 

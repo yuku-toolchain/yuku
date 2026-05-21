@@ -93,8 +93,10 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const eOff = _nodesOff + nodeCount * {[size]d};
         \\  const _extraBase = eOff >> 2;
         \\  const _spOff = eOff + extraCount * 4;
+        \\  // sections after the variable-length string pool may be at any
+        \\  // byte alignment, so reads against them use `dv`, not `_u32`.
+        \\  const dv = new DataView(buffer);
         \\  const _coOff = _spOff + spLen;
-        \\  const _coBase = _coOff >> 2;
         \\  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
         \\  function _poolDecode(s, e) {{
         \\    const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
@@ -180,25 +182,23 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    for (let j = a; j < e; j++) {{
         \\      const o = _cOff + j * {[csize]d};
         \\      const cf = _u8[o + {[c_fl]d}];
-        \\      const isBlock = (cf & 1) !== 0;
-        \\      const ss = _u32[(o + {[c_s]d}) >> 2], se = _u32[(o + {[c_e]d}) >> 2];
+        \\      const vs = dv.getUint32(o + {[c_vs]d}, true), ve = dv.getUint32(o + {[c_ve]d}, true);
         \\      out[j - a] = {{
-        \\        type: isBlock ? "Block" : "Line",
+        \\        type: (cf & 1) ? "Block" : "Line",
         \\        position: ["before", "after", "inside"][(cf >> 1) & 3],
         \\        sameLine: (cf & 8) !== 0,
-        \\        value: str(ss + 2, isBlock ? se - 2 : se),
+        \\        value: str(vs, ve),
         \\      }};
         \\    }}
         \\    return out;
         \\  }}
         \\  function node(i) {{
         \\    const r = _decode(i);
-        \\    // skip when `_decode` returned an inner node that already carries
-        \\    // its own comments (e.g. the formal_parameter unwrap case).
-        \\    // omit the `comments` field entirely when the node has none, so the
-        \\    // optional in the type definition stays accurate.
+        \\    // skip unwrap cases whose inner node already carries its own
+        \\    // comments (e.g. formal_parameter returning its pattern)
         \\    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {{
-        \\      const a = _u32[_coBase + i], e = _u32[_coBase + i + 1];
+        \\      const off = _coOff + i * 4;
+        \\      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
         \\      if (a !== e) r.comments = _commentsOf(a, e);
         \\    }}
         \\    return r;
@@ -217,8 +217,8 @@ fn writeNodeFunction(w: *Writer) !void {
         .size = rt.NODE_SIZE,
         .csize = rt.COMMENT_SIZE,
         .c_fl = rt.COMMENT_FLAGS_OFFSET,
-        .c_s = rt.COMMENT_SPAN_START_OFFSET,
-        .c_e = rt.COMMENT_SPAN_END_OFFSET,
+        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
+        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
         .fl = rt.NODE_FLAGS_OFFSET,
         .fl1 = rt.NODE_FLAGS_OFFSET + 1,
         .f0 = rt.NODE_FIELD0_OFFSET,
@@ -650,7 +650,6 @@ fn writeDecodeBody(w: *Writer) !void {
     try w.print(
         \\  const lsOff = _cOff + commentCount * {[csize]d};
         \\  const dOff = lsOff + lineStartsCount * 4;
-        \\  const dv = new DataView(buffer);
         \\  function _decodeLineStarts() {{
         \\    const out = new Array(lineStartsCount);
         \\    if (_firstNa >= _srcLen) {{

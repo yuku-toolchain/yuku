@@ -55,7 +55,7 @@ pub const LexerState = struct {
 
 pub const Lexer = struct {
     /// comments collected in source order, populated only when `attach_comments` is true
-    comments: std.ArrayList(ast.Comment),
+    comments: std.ArrayList(ast.RawComment),
     attach_comments: bool,
     allocator: std.mem.Allocator,
     state: LexerState,
@@ -1305,8 +1305,17 @@ pub const Lexer = struct {
 
     inline fn recordComment(self: *Lexer, @"type": ast.Comment.Type, start: u32, end: u32) LexicalError!void {
         if (!self.attach_comments) return;
+        // strip delimiters: `//` and `/* */` are 2 each side, legacy script
+        // `<!--` is 4 and `-->` is 3 (line-shaped, no tail).
+        const head: u32 = switch (self.source[start]) {
+            '<' => 4,
+            '-' => 3,
+            else => 2,
+        };
+        const tail: u32 = if (@"type" == .block) 2 else 0;
         self.comments.append(self.allocator, .{
             .type = @"type",
+            .value = .{ .start = start + head, .end = end - tail },
             .span = .{ .start = start, .end = end },
         }) catch return error.OutOfMemory;
     }

@@ -23,21 +23,21 @@
             "type": "Identifier",
             "start": 11,
             "end": 12,
-            "name": "a",
-            "comments": [
-              {
-                "type": "Block",
-                "position": "after",
-                "sameLine": true,
-                "value": " x "
-              }
-            ]
+            "name": "a"
           },
           {
             "type": "Identifier",
             "start": 22,
             "end": 23,
-            "name": "b"
+            "name": "b",
+            "comments": [
+              {
+                "type": "Block",
+                "position": "before",
+                "sameLine": true,
+                "value": " x "
+              }
+            ]
           }
         ],
         "body": {

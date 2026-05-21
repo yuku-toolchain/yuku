@@ -17,21 +17,21 @@
           "name": "T",
           "decorators": [],
           "typeAnnotation": null,
-          "optional": false,
-          "comments": [
-            {
-              "type": "Block",
-              "position": "after",
-              "sameLine": true,
-              "value": " unit "
-            }
-          ]
+          "optional": false
         },
         "typeParameters": null,
         "typeAnnotation": {
           "type": "TSStringKeyword",
           "start": 20,
-          "end": 26
+          "end": 26,
+          "comments": [
+            {
+              "type": "Block",
+              "position": "before",
+              "sameLine": true,
+              "value": " unit "
+            }
+          ]
         },
         "declare": false
       }

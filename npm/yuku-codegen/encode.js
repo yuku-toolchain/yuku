@@ -12,8 +12,8 @@ const NODE_SPAN_START_U32 = 10;
 const NODE_SPAN_END_U32 = 11;
 const COMMENT_SIZE = 12;
 const COMMENT_FLAGS_OFFSET = 0;
-const COMMENT_SPAN_START_OFFSET = 4;
-const COMMENT_SPAN_END_OFFSET = 8;
+const COMMENT_VALUE_START_OFFSET = 4;
+const COMMENT_VALUE_END_OFFSET = 8;
 const FLAG_ATTACH_COMMENTS = 2;
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
 const LOGICAL_OPS_INV = {"&&": 0, "||": 1, "??": 2};
@@ -126,16 +126,16 @@ function encode(estree, lineStarts) {
   function asEnd(n) { return (n && typeof n.end === "number") ? n.end : 0; }
   function encBindingTarget(n) {
     if (n == null) return NULL;
-    if (n.type === "Identifier") return enc_binding_identifier(n);
+    if (n.type === "Identifier") return _record(enc_binding_identifier(n), n);
     return encNode(n);
   }
   function encLabel(n) {
     if (n == null) return NULL;
-    return enc_label_identifier(n);
+    return _record(enc_label_identifier(n), n);
   }
   function encPropertyKey(n) {
     if (n == null) return NULL;
-    if (n.type === "Identifier") return enc_identifier_name(n);
+    if (n.type === "Identifier") return _record(enc_identifier_name(n), n);
     return encNode(n);
   }
   function enc_sequence_expression(n) {
@@ -1871,16 +1871,18 @@ function encode(estree, lineStarts) {
     spanAt(idx, asStart(n), asEnd(n));
     return idx;
   }
-  // Encoded node index -> its `.comments` array. The final assembly
-  // checks `commentsByIdx.size` to decide whether to emit the offsets
-  // and comment sections (and set FLAG_ATTACH_COMMENTS).
+  // encoded node index -> its `.comments` array. populated when
+  // the caller's ast carries attached comments; the final assembly
+  // decides whether to emit the offsets and comments sections.
   const commentsByIdx = new Map();
-  function encNode(n) {
-    const idx = _encNodeInner(n);
+  function _record(idx, n) {
     if (idx !== NULL && n && Array.isArray(n.comments) && n.comments.length > 0) {
       commentsByIdx.set(idx, n.comments);
     }
     return idx;
+  }
+  function encNode(n) {
+    return _record(_encNodeInner(n), n);
   }
   function _encNodeInner(n) {
     if (n == null) return NULL;
@@ -2063,8 +2065,8 @@ function encode(estree, lineStarts) {
   }
   const progIdx = encNode(estree);
   const POSITION_INV = { "before": 0, "after": 1, "inside": 2 };
-  // counting-sort comments by host idx into a prefix-sum offsets
-  // table, then write each comment at its slot in `commentBytes`.
+  // counting-sort comments by host into a prefix-sum offsets table,
+  // then write each comment at its slot in `commentBytes`.
   const attachComments = commentsByIdx.size > 0;
   let commentCount = 0;
   let offsetsBytes = null;
@@ -2093,10 +2095,11 @@ function encode(estree, lineStarts) {
         if (c.type === "Block") f |= 1;
         f |= ((POSITION_INV[c.position] ?? 0) & 3) << 1;
         if (c.sameLine) f |= 8;
+        const v = encStr(typeof c.value === "string" ? c.value : "");
         const o = slot * COMMENT_SIZE;
         cU8[o + COMMENT_FLAGS_OFFSET] = f;
-        cDV.setUint32(o + COMMENT_SPAN_START_OFFSET, (c.start >>> 0), true);
-        cDV.setUint32(o + COMMENT_SPAN_END_OFFSET, (c.end >>> 0), true);
+        cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
+        cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
       }
     }
   }

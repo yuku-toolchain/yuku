@@ -30,14 +30,6 @@
               "raw": "1"
             }
           }
-        ],
-        "comments": [
-          {
-            "type": "Block",
-            "position": "after",
-            "sameLine": true,
-            "value": " mid "
-          }
         ]
       },
       {
@@ -63,6 +55,14 @@
               "value": 2,
               "raw": "2"
             }
+          }
+        ],
+        "comments": [
+          {
+            "type": "Block",
+            "position": "before",
+            "sameLine": true,
+            "value": " mid "
           }
         ]
       }

@@ -40,15 +40,7 @@
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "comments": [
-                    {
-                      "type": "Block",
-                      "position": "after",
-                      "sameLine": true,
-                      "value": " mid "
-                    }
-                  ]
+                  "computed": false
                 },
                 {
                   "type": "Property",
@@ -69,7 +61,15 @@
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false
+                  "computed": false,
+                  "comments": [
+                    {
+                      "type": "Block",
+                      "position": "before",
+                      "sameLine": true,
+                      "value": " mid "
+                    }
+                  ]
                 }
               ]
             },

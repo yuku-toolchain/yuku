@@ -1,20 +1,20 @@
-// Post-parse pass that assigns each lexer-collected comment to a host
-// node and a position (before, after, inside). Only runs when
-// `Options.attach_comments` is true.
+// post-parse pass that assigns each lexer-collected raw comment to a
+// host node and a position. one forward sweep through the comments
+// array driven by a dfs of the tree in source order. at each gap we
+// claim every comment whose start lies in that gap, with this rule:
 //
-// algorithm: one forward sweep through the comments array driven by a
-// dfs of the tree in source order. at each gap (before first child,
-// between two siblings, after last child, or inside a childless node)
-// we claim every comment whose start lies in that gap.
-//
-//   between siblings a and b: `after a` when same-line as a.end,
-//                             else `before b`
+//   between siblings a and b, block comment ending same-line as b.start:
+//     `before b`, sameLine = true (covers `/*#__PURE__*/ foo()`)
+//   between siblings, comment starting same-line as a.end:
+//     `after a`, sameLine = true
+//   between siblings, gap with newlines on both sides:
+//     `before b`, sameLine = false
 //   leading a node:           `before node`
 //   trailing a node:          `after node`
 //   inside a childless host:  `inside host`
 //
-// after assignment we counting-sort the comments by host into a flat
-// prefix-sum offsets array.
+// after assignment we counting-sort by host into a flat prefix-sum
+// offsets array, producing the public `Comment` shape.
 
 const std = @import("std");
 const ast = @import("ast.zig");
@@ -27,7 +27,7 @@ const ChildInfo = struct {
     end: u32,
 };
 
-pub fn attach(tree: *ast.Tree, raw: []ast.Comment) Error!void {
+pub fn attach(tree: *ast.Tree, raw: []const ast.RawComment) Error!void {
     const alloc = tree.allocator();
     const node_count = tree.nodes.len;
     const offsets = try alloc.alloc(u32, node_count + 1);
@@ -41,13 +41,16 @@ pub fn attach(tree: *ast.Tree, raw: []ast.Comment) Error!void {
 
     const host = try alloc.alloc(u32, raw.len);
     defer alloc.free(host);
+    const unsorted = try alloc.alloc(ast.Comment, raw.len);
+    defer alloc.free(unsorted);
 
     var ctx: Ctx = .{
         .spans = tree.nodes.items(.span),
         .data_items = tree.nodes.items(.data),
         .extras = tree.extras.items,
         .source = tree.source,
-        .comments = raw,
+        .raw = raw,
+        .out = unsorted,
         .host = host,
         .cursor = 0,
         .alloc = alloc,
@@ -58,14 +61,11 @@ pub fn attach(tree: *ast.Tree, raw: []ast.Comment) Error!void {
 
     try ctx.walkAt(tree.root, ctx.spans[@intFromEnum(tree.root)]);
 
-    // any leftover comment past the root's last child attaches as inside-root
+    // anything left over attaches as inside-root
     while (ctx.cursor < raw.len) : (ctx.cursor += 1) {
-        host[ctx.cursor] = @intFromEnum(tree.root);
-        raw[ctx.cursor].position = .inside;
-        raw[ctx.cursor].same_line = false;
+        ctx.write(@intFromEnum(tree.root), .inside, false);
     }
 
-    // counting-sort by host into `out`, with `offsets` as the prefix sum
     var counts = try alloc.alloc(u32, node_count);
     defer alloc.free(counts);
     @memset(counts, 0);
@@ -79,14 +79,14 @@ pub fn attach(tree: *ast.Tree, raw: []ast.Comment) Error!void {
     }
     offsets[node_count] = sum;
 
-    const out = try alloc.alloc(ast.Comment, raw.len);
-    for (raw, 0..) |c, i| {
+    const final = try alloc.alloc(ast.Comment, raw.len);
+    for (unsorted, 0..) |c, i| {
         const h = host[i];
-        out[offsets[h] + counts[h]] = c;
+        final[offsets[h] + counts[h]] = c;
         counts[h] += 1;
     }
 
-    tree.comments = out;
+    tree.comments = final;
     tree.node_comment_offsets = offsets;
 }
 
@@ -95,15 +95,16 @@ const Ctx = struct {
     data_items: []const ast.NodeData,
     extras: []const ast.NodeIndex,
     source: []const u8,
-    comments: []ast.Comment,
+    raw: []const ast.RawComment,
+    out: []ast.Comment,
     host: []u32,
     cursor: usize,
     alloc: std.mem.Allocator,
     scratch: std.ArrayList(ChildInfo),
 
     fn walkAt(self: *Ctx, node: ast.NodeIndex, node_span: ast.Span) Error!void {
-        if (self.cursor >= self.comments.len) return;
-        if (self.comments[self.cursor].span.start >= node_span.end) return;
+        if (self.cursor >= self.raw.len) return;
+        if (self.raw[self.cursor].span.start >= node_span.end) return;
 
         const checkpoint = self.scratch.items.len;
         defer self.scratch.shrinkRetainingCapacity(checkpoint);
@@ -157,44 +158,44 @@ const Ctx = struct {
         next_idx: ast.NodeIndex,
         next_start: u32,
     ) Error!void {
-        while (self.cursor < self.comments.len) {
-            const c = &self.comments[self.cursor];
+        while (self.cursor < self.raw.len) {
+            const c = &self.raw[self.cursor];
             if (c.span.start >= next_start) return;
 
             const has_prev = prev_idx != .null;
             const has_next = next_idx != .null;
 
             if (has_prev and has_next) {
-                if (self.sameLine(prev_end, c.span.start)) {
-                    self.assign(c, prev_idx, .after, true);
+                if (self.sameLine(c.span.end, next_start)) {
+                    self.write(@intFromEnum(next_idx), .before, true);
+                } else if (self.sameLine(prev_end, c.span.start)) {
+                    self.write(@intFromEnum(prev_idx), .after, true);
                 } else {
-                    self.assign(c, next_idx, .before, self.sameLine(c.span.end, next_start));
+                    self.write(@intFromEnum(next_idx), .before, false);
                 }
             } else if (has_next) {
-                self.assign(c, next_idx, .before, self.sameLine(c.span.end, next_start));
+                self.write(@intFromEnum(next_idx), .before, self.sameLine(c.span.end, next_start));
             } else if (has_prev) {
-                self.assign(c, prev_idx, .after, self.sameLine(prev_end, c.span.start));
+                self.write(@intFromEnum(prev_idx), .after, self.sameLine(prev_end, c.span.start));
             } else {
-                self.assign(c, host_node, .inside, false);
+                self.write(@intFromEnum(host_node), .inside, false);
             }
             self.cursor += 1;
         }
     }
 
-    inline fn assign(
-        self: *Ctx,
-        c: *ast.Comment,
-        host_node: ast.NodeIndex,
-        position: ast.Comment.Position,
-        same_line: bool,
-    ) void {
-        self.host[self.cursor] = @intFromEnum(host_node);
-        c.position = position;
-        c.same_line = same_line;
+    inline fn write(self: *Ctx, host_idx: u32, position: ast.Comment.Position, same_line: bool) void {
+        const r = self.raw[self.cursor];
+        self.host[self.cursor] = host_idx;
+        self.out[self.cursor] = .{
+            .type = r.type,
+            .position = position,
+            .same_line = same_line,
+            .value = r.value,
+        };
     }
 
-    // a and b are immediate-neighbor node edges across a comment and thus
-    // always close, so a memchr over source beats a line_starts binary search
+    // a and b are always close, so memchr beats a `line_starts` binary search.
     inline fn sameLine(self: *const Ctx, a: u32, b: u32) bool {
         const lo = if (a < b) a else b;
         const hi = if (a < b) b else a;
@@ -202,7 +203,7 @@ const Ctx = struct {
     }
 };
 
-// children are usually <16 and almost always already in source order
+// children are usually <16 and almost always already in source order.
 fn sortByStart(children: []ChildInfo) void {
     var i: usize = 1;
     while (i < children.len) : (i += 1) {

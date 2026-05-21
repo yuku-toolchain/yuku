@@ -328,7 +328,7 @@ fn Printer(comptime cfg: Config) type {
         return switch (self.options.comments) {
             .none => false,
             .all => true,
-            .some => c.type == .block and isSignificantBlockComment(self.tree.commentValue(c)),
+            .some => c.type == .block and isSignificantBlockComment(self.tree.string(c.value)),
             .line => c.type == .line,
             .block => c.type == .block,
         };
@@ -384,7 +384,7 @@ fn Printer(comptime cfg: Config) type {
     }
 
     inline fn writeCommentBody(self: *Self, c: ast.Comment) Error!void {
-        const value = self.tree.commentValue(c);
+        const value = self.tree.string(c.value);
         try self.writeStr(if (c.type == .line) "//" else "/*");
         try self.code.appendSlice(self.allocator, value);
         if (self.sm) |*sm| sm.advance(value);
@@ -394,8 +394,7 @@ fn Printer(comptime cfg: Config) type {
         }
     }
 
-    /// Forced newline plus indent, Newline is always written, indent is
-    /// pretty-mode only.
+    /// Writes a newline and, in pretty mode, the current indent.
     fn breakLine(self: *Self) Error!void {
         try self.code.append(self.allocator, '\n');
         const n = if (self.pretty()) self.indent_depth * self.options.indent else 0;

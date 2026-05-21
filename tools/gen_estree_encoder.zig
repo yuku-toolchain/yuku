@@ -47,8 +47,8 @@ fn writePrologue(w: *Writer) !void {
         \\const NODE_SPAN_END_U32 = {[se_u32]d};
         \\const COMMENT_SIZE = {[c_size]d};
         \\const COMMENT_FLAGS_OFFSET = {[c_fl]d};
-        \\const COMMENT_SPAN_START_OFFSET = {[c_s]d};
-        \\const COMMENT_SPAN_END_OFFSET = {[c_e]d};
+        \\const COMMENT_VALUE_START_OFFSET = {[c_vs]d};
+        \\const COMMENT_VALUE_END_OFFSET = {[c_ve]d};
         \\const FLAG_ATTACH_COMMENTS = {[ac]d};
         \\
     , .{
@@ -61,8 +61,8 @@ fn writePrologue(w: *Writer) !void {
         .se_u32 = rt.NODE_SPAN_END_U32,
         .c_size = rt.COMMENT_SIZE,
         .c_fl = rt.COMMENT_FLAGS_OFFSET,
-        .c_s = rt.COMMENT_SPAN_START_OFFSET,
-        .c_e = rt.COMMENT_SPAN_END_OFFSET,
+        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
+        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
         .ac = rt.FLAG_ATTACH_COMMENTS,
     });
 }
@@ -209,16 +209,16 @@ fn writeIdentifierHelpers(w: *Writer) !void {
     try w.writeAll(
         \\  function encBindingTarget(n) {
         \\    if (n == null) return NULL;
-        \\    if (n.type === "Identifier") return enc_binding_identifier(n);
+        \\    if (n.type === "Identifier") return _record(enc_binding_identifier(n), n);
         \\    return encNode(n);
         \\  }
         \\  function encLabel(n) {
         \\    if (n == null) return NULL;
-        \\    return enc_label_identifier(n);
+        \\    return _record(enc_label_identifier(n), n);
         \\  }
         \\  function encPropertyKey(n) {
         \\    if (n == null) return NULL;
-        \\    if (n.type === "Identifier") return enc_identifier_name(n);
+        \\    if (n.type === "Identifier") return _record(enc_identifier_name(n), n);
         \\    return encNode(n);
         \\  }
         \\
@@ -1214,16 +1214,18 @@ fn writeSpecialTSIndexSig(w: *Writer, comptime tag: usize) !void {
 
 fn writeDispatcher(w: *Writer) !void {
     try w.writeAll(
-        \\  // Encoded node index -> its `.comments` array. The final assembly
-        \\  // checks `commentsByIdx.size` to decide whether to emit the offsets
-        \\  // and comment sections (and set FLAG_ATTACH_COMMENTS).
+        \\  // encoded node index -> its `.comments` array. populated when
+        \\  // the caller's ast carries attached comments; the final assembly
+        \\  // decides whether to emit the offsets and comments sections.
         \\  const commentsByIdx = new Map();
-        \\  function encNode(n) {
-        \\    const idx = _encNodeInner(n);
+        \\  function _record(idx, n) {
         \\    if (idx !== NULL && n && Array.isArray(n.comments) && n.comments.length > 0) {
         \\      commentsByIdx.set(idx, n.comments);
         \\    }
         \\    return idx;
+        \\  }
+        \\  function encNode(n) {
+        \\    return _record(_encNodeInner(n), n);
         \\  }
         \\  function _encNodeInner(n) {
         \\    if (n == null) return NULL;
@@ -1300,8 +1302,8 @@ fn writeAssemble(w: *Writer) !void {
     try w.print(
         \\  const progIdx = encNode(estree);
         \\  const POSITION_INV = {{ "before": 0, "after": 1, "inside": 2 }};
-        \\  // counting-sort comments by host idx into a prefix-sum offsets
-        \\  // table, then write each comment at its slot in `commentBytes`.
+        \\  // counting-sort comments by host into a prefix-sum offsets table,
+        \\  // then write each comment at its slot in `commentBytes`.
         \\  const attachComments = commentsByIdx.size > 0;
         \\  let commentCount = 0;
         \\  let offsetsBytes = null;
@@ -1330,10 +1332,11 @@ fn writeAssemble(w: *Writer) !void {
         \\        if (c.type === "Block") f |= 1;
         \\        f |= ((POSITION_INV[c.position] ?? 0) & 3) << 1;
         \\        if (c.sameLine) f |= 8;
+        \\        const v = encStr(typeof c.value === "string" ? c.value : "");
         \\        const o = slot * COMMENT_SIZE;
         \\        cU8[o + COMMENT_FLAGS_OFFSET] = f;
-        \\        cDV.setUint32(o + COMMENT_SPAN_START_OFFSET, (c.start >>> 0), true);
-        \\        cDV.setUint32(o + COMMENT_SPAN_END_OFFSET, (c.end >>> 0), true);
+        \\        cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
+        \\        cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
         \\      }}
         \\    }}
         \\  }}
