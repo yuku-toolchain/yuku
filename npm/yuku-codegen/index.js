@@ -14,7 +14,7 @@ function normalizeOptions(options) {
 }
 
 function encodeAst(ast) {
-  return encode(ast.program, ast.comments, ast.lineStarts);
+  return encode(ast.program, ast.lineStarts);
 }
 
 export function print(ast, options) {
