@@ -94,6 +94,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const _extraBase = eOff >> 2;
         \\  const _spOff = eOff + extraCount * 4;
         \\  const _coOff = _spOff + spLen;
+        \\  const _coBase = _coOff >> 2;
         \\  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
         \\  function _poolDecode(s, e) {{
         \\    const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
@@ -197,8 +198,7 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    // omit the `comments` field entirely when the node has none, so the
         \\    // optional in the type definition stays accurate.
         \\    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {{
-        \\      const b = _coOff >> 2;
-        \\      const a = _u32[b + i], e = _u32[b + i + 1];
+        \\      const a = _u32[_coBase + i], e = _u32[_coBase + i + 1];
         \\      if (a !== e) r.comments = _commentsOf(a, e);
         \\    }}
         \\    return r;
