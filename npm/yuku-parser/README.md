@@ -202,7 +202,7 @@ The base ESTree spec (and Oxc) exposes comments as a top-level array indexed by 
 - **Codegen can't trust the offsets.** A printer takes whatever AST it's handed. With offset-based comments, a transformed AST will either print comments in the wrong places or drop them entirely. With attached comments, when you move a node its comments come with it. The codegen reads them off `node.comments` and prints them next to the node, no offset reconciliation needed.
 - **Lookup is awkward.** "Give me the comments belonging to this node" with a flat array is a binary search at best and a linear scan at worst. `node.comments` is O(1) and always exact.
 
-The attachment pass is negligible in practice, dwarfed by the AST walk, codegen, and any downstream transform on the same tree. Even with `attachComments` enabled, Yuku still parses the same file roughly 3x faster than Babel does without comments attached at all. When the flag is off, comments are skipped like whitespace and there is no attachment work to begin with.
+The attachment pass is negligible in practice, dwarfed by the AST walk, codegen, and any downstream transform on the same tree. Even with `attachComments` enabled, Yuku still parses the same file roughly 4x faster than Babel does without comments attached at all. When the flag is off, comments are skipped like whitespace and there is no attachment work to begin with.
 
 ## License
 
