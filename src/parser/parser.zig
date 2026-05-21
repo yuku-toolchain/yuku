@@ -6,7 +6,7 @@ const ast = @import("ast.zig");
 const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
-const comment_attach = @import("comment_attach.zig");
+const comments = @import("comments.zig");
 
 pub const Options = struct {
     /// Source type determines how the code is parsed and evaluated.
@@ -172,7 +172,7 @@ pub const Parser = struct {
         try self.tree.buildLineStarts();
 
         if (self.attach_comments) {
-            try comment_attach.attach(&self.tree, self.lexer.comments.items);
+            try comments.attach(&self.tree, self.lexer.comments.items);
         }
     }
 
