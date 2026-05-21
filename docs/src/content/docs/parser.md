@@ -17,7 +17,7 @@ import { parse } from "yuku-parser";
 const { program, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs), differing only in that comments are attached to AST nodes (Babel-style) instead of stored in a flat offset-indexed array. Runs 3-5x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
+Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs), differing only in that comments are attached to AST nodes (Babel-style) instead of stored in a flat offset-indexed array. Runs 4-16x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
 ## Zig
 
