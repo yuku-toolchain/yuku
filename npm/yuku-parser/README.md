@@ -162,7 +162,7 @@ Comments are attached to the AST node they sit next to. Enable collection with `
 ```js
 const { program } = parse(
   `// header\nfunction foo() {} // trailing`,
-  { attachComments: false },
+  { attachComments: true },
 );
 
 const fn = program.body[0];
