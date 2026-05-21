@@ -19,7 +19,7 @@ const ast = parse("const x = 1 + 2;");
 const { code } = print(ast);
 ```
 
-The input is the full `ParseResult` from [yuku-parser](https://www.npmjs.com/package/yuku-parser). See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`print` (and `strip`, `minify`) accepts either the full `ParseResult` from [yuku-parser](https://www.npmjs.com/package/yuku-parser) or its `program` node directly. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
 

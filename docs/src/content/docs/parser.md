@@ -198,5 +198,5 @@ const result = try sem.traverse(@TypeOf(noop), &tree, &noop);
 // result.symbol_table - all symbols and references (no diagnostics emitted)
 ```
 
-`semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic_checker.zig), with a real visitor that emits the early-error diagnostics on top.
+`semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a real visitor that emits the early-error diagnostics on top.
 :::

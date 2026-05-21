@@ -2,7 +2,7 @@
 
 A high-performance JavaScript and TypeScript code generator written in Zig, powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
-Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. The input is exactly the `ParseResult` produced by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser).
+Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. Accepts the `ParseResult` produced by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) or its `program` node directly.
 
 ## Install
 
@@ -24,7 +24,7 @@ console.log(code); // "const x = 1 + 2;"
 
 ## API
 
-Three entry points share the same options and result shape. Each accepts the full `ParseResult` from `yuku-parser`.
+Three entry points share the same options and result shape. Each accepts the `ParseResult` from `yuku-parser` or a `Program` node.
 
 | Function | Behavior                                                                                              |
 | -------- | ----------------------------------------------------------------------------------------------------- |
@@ -67,6 +67,8 @@ const result = print(ast, {
 ## Source maps
 
 Set `sourceMaps: true` for a Source Map V3 with default metadata, or pass a `SourceMapOptions` object to fill in `file`, `sources`, `sourcesContent`, and `sourceRoot`. `false` (or omitting the field) disables map output.
+
+Source maps require an AST produced by `yuku-parser`. Hand-built or third-party ASTs throw a clear error when `sourceMaps` is enabled.
 
 ```js
 import { parse } from "yuku-parser";
