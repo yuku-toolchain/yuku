@@ -25,6 +25,9 @@ fn generate(w: *Writer) !void {
         \\// an SMI/int32, avoiding heap-number boxing on every field read in JSC.
         \\const NULL = -1;
         \\const _td = new TextDecoder("utf-8", { ignoreBOM: true });
+        \\// Symbol used to attach line-start info to the Program node. Hidden
+        \\// from JSON/console; the codegen reads it for source maps.
+        \\const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
         \\
     );
     try writeLookupTables(w);
@@ -643,9 +646,12 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     }
 }
 
-/// Emits the lazy `lineStarts`/`diagnostics` decoders and the final
-/// `return { program, lineStarts, diagnostics }`. Comments are attached
-/// per-node by `node()`, not via a top-level array.
+/// Emits the lazy `diagnostics` decoder and the final
+/// `return { program, diagnostics, locOf }`. The line-starts array is
+/// attached to `program` as a non-enumerable Symbol-keyed property
+/// (see `_kLineStarts`), where the codegen reads it for source maps
+/// without it leaking into the public AST shape. Comments are attached
+/// per-node by `node()`.
 fn writeDecodeBody(w: *Writer) !void {
     try w.print(
         \\  const lsOff = _cOff + commentCount * {[csize]d};
@@ -688,10 +694,25 @@ fn writeDecodeBody(w: *Writer) !void {
         \\    return out;
         \\  }}
         \\  let _program, _lineStarts, _diagnostics;
+        \\  function _getLineStarts() {{
+        \\    if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
+        \\    return _lineStarts;
+        \\  }}
         \\  return {{
-        \\    get program() {{ return _program !== undefined ? _program : (_program = node(progIdx)); }},
-        \\    get lineStarts() {{ return _lineStarts !== undefined ? _lineStarts : (_lineStarts = _decodeLineStarts()); }},
+        \\    get program() {{
+        \\      if (_program !== undefined) return _program;
+        \\      const p = node(progIdx);
+        \\      Object.defineProperty(p, _kLineStarts, {{ get: _getLineStarts, enumerable: false, configurable: false }});
+        \\      _program = p;
+        \\      return _program;
+        \\    }},
         \\    get diagnostics() {{ return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); }},
+        \\    locOf(offset) {{
+        \\      const ls = _getLineStarts();
+        \\      let lo = 0, hi = ls.length;
+        \\      while (lo < hi) {{ const mid = (lo + hi) >>> 1; if (ls[mid] <= offset) lo = mid + 1; else hi = mid; }}
+        \\      return {{ line: lo, column: offset - ls[lo - 1] }};
+        \\    }},
         \\  }};
         \\}}
         \\

@@ -119,10 +119,13 @@ interface SourceLocation {
 interface ParseResult {
   /** Root ESTree/TypeScript-ESTree AST node. */
   program: Program;
-  /** Byte offset where each source line begins. Index 0 is always 0. */
-  lineStarts: number[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
+  /**
+   * Resolves a byte offset to a `{ line, column }` pair. Lines are
+   * 1-based, columns are 0-based, matching ESTree's `loc` convention.
+   */
+  locOf(offset: number): SourceLocation;
 }
 
 /**
@@ -148,20 +151,6 @@ export function langFromPath(path: string): SourceLang;
  * - everything else → `"module"`
  */
 export function sourceTypeFromPath(path: string): SourceType;
-
-/**
- * Resolves a `{ line, column }` {@link SourceLocation} for an offset, using
- * {@link ParseResult.lineStarts}. Runs in O(log n).
- *
- * Lines are 1-based; columns are 0-based. The unit of `offset` (UTF-16 code
- * units in JS) must match the unit of `lineStarts`. Both come from the same
- * {@link ParseResult}, so this is automatic.
- *
- * @example
- * const { program, lineStarts } = parse(source);
- * locOf(lineStarts, program.body[0].start); // => { line, column }
- */
-export function locOf(lineStarts: number[], offset: number): SourceLocation;
 
 // AST node types
 

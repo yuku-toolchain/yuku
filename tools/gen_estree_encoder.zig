@@ -106,7 +106,12 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
 
 fn writeRuntime(w: *Writer) !void {
     try w.writeAll(
-        \\function encode(estree, lineStarts) {
+        \\const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
+        \\function encode(estree) {
+        \\  // Accept either a `ParseResult` or a bare AST node (Program is
+        \\  // the normal case, but any node with the kLineStarts symbol works).
+        \\  const root = estree && estree.type ? estree : estree.program;
+        \\  const lineStarts = root && root[_kLineStarts];
         \\  let nodeCap = 512;
         \\  let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);
         \\  let nU8 = new Uint8Array(nodeAB);
@@ -1300,7 +1305,7 @@ fn skipInDispatcher(comptime name: []const u8) bool {
 
 fn writeAssemble(w: *Writer) !void {
     try w.print(
-        \\  const progIdx = encNode(estree);
+        \\  const progIdx = encNode(root);
         \\  const POSITION_INV = {{ "before": 0, "after": 1, "inside": 2 }};
         \\  // counting-sort comments by host into a prefix-sum offsets table,
         \\  // then write each comment at its slot in `commentBytes`.

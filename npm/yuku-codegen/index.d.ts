@@ -1,4 +1,7 @@
-import type { Comment, ParseResult } from "yuku-parser";
+import type { Comment, ParseResult, Program } from "yuku-parser";
+
+/** Accepted input shapes for `print`, `strip`, and `minify`. */
+export type CodegenInput = ParseResult | Program;
 
 /** Whitespace mode for the generated output. */
 export type Format = "pretty" | "compact";
@@ -83,13 +86,13 @@ export interface CodegenResult {
 }
 
 /** Renders the AST verbatim, preserving TypeScript syntax. */
-export function print(ast: ParseResult, options?: CodegenOptions): CodegenResult;
+export function print(input: CodegenInput, options?: CodegenOptions): CodegenResult;
 
 /** Renders the AST as JavaScript, dropping TypeScript-specific syntax. */
-export function strip(ast: ParseResult, options?: CodegenOptions): CodegenResult;
+export function strip(input: CodegenInput, options?: CodegenOptions): CodegenResult;
 
 /**
  * Renders the AST with size-reducing rewrites. Combine with
  * `format: "compact"` for full minification.
  */
-export function minify(ast: ParseResult, options?: CodegenOptions): CodegenResult;
+export function minify(input: CodegenInput, options?: CodegenOptions): CodegenResult;

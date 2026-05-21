@@ -60,16 +60,16 @@ sourceTypeFromPath("foo.mjs");     // "module"
 
 ## Resolving offsets to `(line, column)`
 
-Nodes and diagnostics carry `start`/`end` offsets. To turn an offset into a `{ line, column }` pair, use `locOf` with `lineStarts` from the parse result:
+Nodes and diagnostics carry `start`/`end` byte offsets. To turn an offset into a `{ line, column }` pair, call `locOf` on the parse result:
 
 ```ts
-import { parse, locOf } from "yuku-parser";
+import { parse } from "yuku-parser";
 
-const { program, lineStarts } = parse(source);
-const { line, column } = locOf(lineStarts, program.body[0].start);
+const result = parse(source);
+const { line, column } = result.locOf(result.program.body[0].start);
 ```
 
-Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, well over 10M ops/s even on million-line files, so it's safe to call per node during a walk.
+Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, safe to invoke per node during a walk.
 
 ## Walking the AST
 
@@ -125,12 +125,12 @@ const result = parse(source, {
 ```ts
 interface ParseResult {
   program: Program;
-  lineStarts: number[];
   diagnostics: Diagnostic[];
+  locOf(offset: number): { line: number; column: number };
 }
 ```
 
-The parser is error-tolerant: an AST is always produced even when diagnostics are present. `lineStarts` records the byte offset of every line in the source, useful for resolving spans to `(line, column)` pairs without rescanning.
+The parser is error-tolerant: an AST is always produced even when diagnostics are present.
 
 ### Diagnostics
 
