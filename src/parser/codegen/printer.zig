@@ -461,8 +461,6 @@ fn Printer(comptime cfg: Config) type {
         if (p.hashbang) |h| {
             try self.writeStr("#!");
             try self.writeString(h.value);
-            // hashbang ends at the line terminator. force `\n` even in
-            // compact mode so the next token doesn't merge into it.
             try self.writeByte('\n');
         }
         try self.printStmtList(p.body);
