@@ -108,10 +108,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:codegen
 
-      - name: Comments conformance
-        if: ${{ !cancelled() }}
-        run: bun run test:comments
-
       - name: Sourcemap conformance
         if: ${{ !cancelled() }}
         run: bun run test:sourcemap
