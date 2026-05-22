@@ -2,7 +2,7 @@
 
 A high-performance JavaScript and TypeScript code generator written in Zig, powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
-Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. Accepts the `ParseResult` produced by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) or its `program` node directly.
+Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. Accepts a `Program` node directly (or the full `ParseResult` from [`yuku-parser`](https://www.npmjs.com/package/yuku-parser)).
 
 ## Install
 
@@ -16,15 +16,15 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const ast = parse("const x = 1 + 2;");
-const { code } = print(ast);
+const { program } = parse("const x = 1 + 2;");
+const { code } = print(program);
 
 console.log(code); // "const x = 1 + 2;"
 ```
 
 ## API
 
-Three entry points share the same options and result shape. Each accepts the `ParseResult` from `yuku-parser` or a `Program` node.
+Three entry points share the same options and result shape. Each accepts a `Program` node (or the full `ParseResult` from `yuku-parser`).
 
 | Function | Behavior                                                                                              |
 | -------- | ----------------------------------------------------------------------------------------------------- |
@@ -47,7 +47,7 @@ interface CodegenResult {
 ## Options
 
 ```js
-const result = print(ast, {
+const result = print(program, {
   format: "pretty",
   indent: 2,
   quotes: "double",
@@ -74,8 +74,8 @@ Source maps require an AST produced by `yuku-parser`. Hand-built or third-party 
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const ast = parse(`const x = 1;`);
-const { map } = print(ast, { sourceMaps: true });
+const { program } = parse(`const x = 1;`);
+const { map } = print(program, { sourceMaps: true });
 ```
 
 For a map with embedded source information:
@@ -85,9 +85,9 @@ import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
 const source = `const greet = (name) => "Hello, " + name;`;
-const ast = parse(source);
+const { program } = parse(source);
 
-const { code, map } = print(ast, {
+const { code, map } = print(program, {
   sourceMaps: {
     file: "out.js",
     sourceFileName: "in.js",
@@ -134,8 +134,8 @@ Columns are 0-indexed UTF-16 code units, matching Chrome DevTools and consumer-s
 import { parse } from "yuku-parser";
 import { strip } from "yuku-codegen";
 
-const ast = parse(`const x: number = 1;`, { lang: "ts" });
-console.log(strip(ast).code); // "const x = 1;"
+const { program } = parse(`const x: number = 1;`, { lang: "ts" });
+console.log(strip(program).code); // "const x = 1;"
 ```
 
 Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that have no clean JavaScript equivalent (`enum`, `namespace`, `import = require()`, `export =`) are reported in `errors` and elided. The output is always syntactically valid JavaScript.
@@ -145,8 +145,8 @@ Type annotations, type aliases, interfaces, and other type-only constructs are d
 Comments live on the AST nodes they were attached to during parsing. To preserve them, parse with `attachComments: true`:
 
 ```js
-const ast = parse(source, { attachComments: true });
-print(ast).code;
+const { program } = parse(source, { attachComments: true });
+print(program).code;
 ```
 
 The `comments` option then selects which attached comments are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
@@ -160,8 +160,8 @@ The `comments` option then selects which attached comments are emitted. The defa
 | `"block"` | Emit `/* ... */` only.                                          |
 
 ```js
-const ast = parse(`// hello\nconst x = 1;`, { attachComments: true });
-print(ast, { comments: true }).code;
+const { program } = parse(`// hello\nconst x = 1;`, { attachComments: true });
+print(program, { comments: true }).code;
 // "// hello\nconst x = 1;"
 ```
 
@@ -183,7 +183,7 @@ Combine with `format: "compact"` for full minification:
 ```js
 import { minify } from "yuku-codegen";
 
-const { code } = minify(ast, { format: "compact" });
+const { code } = minify(program, { format: "compact" });
 ```
 
 ## License
