@@ -14,7 +14,8 @@
         "type": "Identifier",
         "start": 6,
         "end": 7,
-        "name": "C"
+        "name": "C",
+        "kind": "binding"
       },
       "superClass": null,
       "body": {

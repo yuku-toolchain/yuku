@@ -14,6 +14,7 @@
         "start": 55,
         "end": 57,
         "name": "E1",
+        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -32,6 +33,7 @@
               "start": 62,
               "end": 63,
               "name": "A",
+              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -61,6 +63,7 @@
         "start": 72,
         "end": 74,
         "name": "E1",
+        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -79,6 +82,7 @@
               "start": 79,
               "end": 80,
               "name": "B",
+              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -106,6 +110,7 @@
         "start": 149,
         "end": 151,
         "name": "E2",
+        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -124,6 +129,7 @@
               "start": 156,
               "end": 157,
               "name": "X",
+              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -153,6 +159,7 @@
         "start": 172,
         "end": 174,
         "name": "E2",
+        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -171,6 +178,7 @@
               "start": 179,
               "end": 180,
               "name": "Y",
+              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null

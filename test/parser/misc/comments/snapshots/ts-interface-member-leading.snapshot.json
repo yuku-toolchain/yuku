@@ -14,6 +14,7 @@
         "start": 10,
         "end": 11,
         "name": "I",
+        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -34,6 +35,7 @@
               "start": 29,
               "end": 30,
               "name": "x",
+              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null

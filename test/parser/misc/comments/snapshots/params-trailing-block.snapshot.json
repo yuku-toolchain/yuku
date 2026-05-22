@@ -13,7 +13,8 @@
         "type": "Identifier",
         "start": 9,
         "end": 10,
-        "name": "f"
+        "name": "f",
+        "kind": "binding"
       },
       "generator": false,
       "async": false,
@@ -22,13 +23,15 @@
           "type": "Identifier",
           "start": 11,
           "end": 12,
-          "name": "a"
+          "name": "a",
+          "kind": "binding"
         },
         {
           "type": "Identifier",
           "start": 22,
           "end": 23,
           "name": "b",
+          "kind": "binding",
           "comments": [
             {
               "type": "Block",

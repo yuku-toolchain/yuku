@@ -18,7 +18,8 @@
             "type": "Identifier",
             "start": 18,
             "end": 31,
-            "name": "moduleExports"
+            "name": "moduleExports",
+            "kind": "binding"
           }
         }
       ],

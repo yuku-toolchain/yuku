@@ -21,7 +21,8 @@
             "type": "Identifier",
             "start": 6,
             "end": 13,
-            "name": "promise"
+            "name": "promise",
+            "kind": "reference"
           }
         },
         "right": {

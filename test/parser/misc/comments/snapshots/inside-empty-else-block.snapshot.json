@@ -13,7 +13,8 @@
         "type": "Identifier",
         "start": 4,
         "end": 5,
-        "name": "x"
+        "name": "x",
+        "kind": "reference"
       },
       "consequent": {
         "type": "ExpressionStatement",
@@ -23,7 +24,8 @@
           "type": "Identifier",
           "start": 7,
           "end": 8,
-          "name": "y"
+          "name": "y",
+          "kind": "reference"
         }
       },
       "alternate": {

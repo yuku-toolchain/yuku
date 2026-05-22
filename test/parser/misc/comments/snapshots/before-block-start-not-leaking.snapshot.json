@@ -14,6 +14,7 @@
         "start": 4,
         "end": 5,
         "name": "x",
+        "kind": "reference",
         "comments": [
           {
             "type": "Line",
@@ -40,7 +41,8 @@
                 "type": "Identifier",
                 "start": 22,
                 "end": 23,
-                "name": "a"
+                "name": "a",
+                "kind": "reference"
               },
               "arguments": [],
               "optional": false

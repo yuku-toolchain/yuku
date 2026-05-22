@@ -18,13 +18,15 @@
             "type": "Identifier",
             "start": 24,
             "end": 25,
-            "name": "x"
+            "name": "x",
+            "kind": "name"
           },
           "local": {
             "type": "Identifier",
             "start": 24,
             "end": 25,
-            "name": "x"
+            "name": "x",
+            "kind": "binding"
           }
         }
       ],
@@ -61,6 +63,7 @@
         "start": 101,
         "end": 104,
         "name": "foo",
+        "kind": "binding",
         "comments": [
           {
             "type": "Block",
@@ -77,13 +80,15 @@
           "type": "Identifier",
           "start": 105,
           "end": 106,
-          "name": "a"
+          "name": "a",
+          "kind": "binding"
         },
         {
           "type": "Identifier",
           "start": 108,
           "end": 109,
-          "name": "b"
+          "name": "b",
+          "kind": "binding"
         }
       ],
       "body": {
@@ -103,13 +108,15 @@
                 "type": "Identifier",
                 "start": 139,
                 "end": 140,
-                "name": "a"
+                "name": "a",
+                "kind": "reference"
               },
               "right": {
                 "type": "Identifier",
                 "start": 143,
                 "end": 144,
-                "name": "b"
+                "name": "b",
+                "kind": "reference"
               },
               "operator": "+"
             },
@@ -154,7 +161,8 @@
             "type": "Identifier",
             "start": 174,
             "end": 179,
-            "name": "empty"
+            "name": "empty",
+            "kind": "binding"
           },
           "init": {
             "type": "ObjectExpression",

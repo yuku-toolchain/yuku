@@ -13,7 +13,8 @@
         "type": "Identifier",
         "start": 8,
         "end": 9,
-        "name": "x"
+        "name": "x",
+        "kind": "reference"
       },
       "cases": [
         {
@@ -40,7 +41,8 @@
                   "type": "Identifier",
                   "start": 23,
                   "end": 24,
-                  "name": "a"
+                  "name": "a",
+                  "kind": "reference"
                 },
                 "arguments": [],
                 "optional": false
@@ -72,7 +74,8 @@
                   "type": "Identifier",
                   "start": 51,
                   "end": 52,
-                  "name": "b"
+                  "name": "b",
+                  "kind": "reference"
                 },
                 "arguments": [],
                 "optional": false

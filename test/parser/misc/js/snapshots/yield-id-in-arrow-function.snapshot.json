@@ -13,7 +13,8 @@
         "type": "Identifier",
         "start": 11,
         "end": 12,
-        "name": "a"
+        "name": "a",
+        "kind": "binding"
       },
       "generator": true,
       "async": false,
@@ -39,7 +40,8 @@
                   "type": "Identifier",
                   "start": 18,
                   "end": 19,
-                  "name": "b"
+                  "name": "b",
+                  "kind": "binding"
                 }
               ],
               "body": {
@@ -55,7 +57,8 @@
                       "type": "Identifier",
                       "start": 26,
                       "end": 31,
-                      "name": "yield"
+                      "name": "yield",
+                      "kind": "reference"
                     }
                   }
                 ]

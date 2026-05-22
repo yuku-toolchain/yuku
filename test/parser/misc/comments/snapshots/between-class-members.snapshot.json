@@ -14,7 +14,8 @@
         "type": "Identifier",
         "start": 6,
         "end": 7,
-        "name": "C"
+        "name": "C",
+        "kind": "binding"
       },
       "superClass": null,
       "body": {
@@ -31,7 +32,8 @@
               "type": "Identifier",
               "start": 12,
               "end": 13,
-              "name": "a"
+              "name": "a",
+              "kind": "name"
             },
             "value": {
               "type": "Literal",
@@ -60,7 +62,8 @@
               "type": "Identifier",
               "start": 44,
               "end": 45,
-              "name": "b"
+              "name": "b",
+              "kind": "name"
             },
             "value": {
               "type": "Literal",

@@ -25,13 +25,15 @@
               "type": "Identifier",
               "start": 0,
               "end": 11,
-              "name": "tagFunction"
+              "name": "tagFunction",
+              "kind": "reference"
             },
             "property": {
               "type": "Identifier",
               "start": 13,
               "end": 17,
-              "name": "pass"
+              "name": "pass",
+              "kind": "name"
             },
             "computed": false,
             "optional": true

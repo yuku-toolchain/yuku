@@ -19,7 +19,8 @@
             "type": "Identifier",
             "start": 6,
             "end": 7,
-            "name": "x"
+            "name": "x",
+            "kind": "binding"
           },
           "init": {
             "type": "CallExpression",
@@ -29,7 +30,8 @@
               "type": "Identifier",
               "start": 24,
               "end": 27,
-              "name": "foo"
+              "name": "foo",
+              "kind": "reference"
             },
             "arguments": [],
             "optional": false,

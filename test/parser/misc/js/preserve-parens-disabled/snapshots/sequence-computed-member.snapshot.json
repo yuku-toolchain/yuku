@@ -33,13 +33,15 @@
                 "type": "Identifier",
                 "start": 4,
                 "end": 7,
-                "name": "obj"
+                "name": "obj",
+                "kind": "reference"
               },
               "property": {
                 "type": "Identifier",
                 "start": 8,
                 "end": 10,
-                "name": "fn"
+                "name": "fn",
+                "kind": "name"
               },
               "computed": false,
               "optional": false
@@ -50,7 +52,8 @@
           "type": "Identifier",
           "start": 12,
           "end": 15,
-          "name": "key"
+          "name": "key",
+          "kind": "reference"
         },
         "computed": true,
         "optional": false

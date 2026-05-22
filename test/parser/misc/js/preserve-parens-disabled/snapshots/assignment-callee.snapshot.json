@@ -21,13 +21,15 @@
             "type": "Identifier",
             "start": 1,
             "end": 2,
-            "name": "a"
+            "name": "a",
+            "kind": "reference"
           },
           "right": {
             "type": "Identifier",
             "start": 5,
             "end": 7,
-            "name": "fn"
+            "name": "fn",
+            "kind": "reference"
           },
           "operator": "="
         },
@@ -36,7 +38,8 @@
             "type": "Identifier",
             "start": 9,
             "end": 10,
-            "name": "b"
+            "name": "b",
+            "kind": "reference"
           }
         ],
         "optional": false

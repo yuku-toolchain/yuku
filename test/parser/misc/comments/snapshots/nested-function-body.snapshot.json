@@ -13,7 +13,8 @@
         "type": "Identifier",
         "start": 9,
         "end": 14,
-        "name": "outer"
+        "name": "outer",
+        "kind": "binding"
       },
       "generator": false,
       "async": false,
@@ -31,7 +32,8 @@
               "type": "Identifier",
               "start": 30,
               "end": 35,
-              "name": "inner"
+              "name": "inner",
+              "kind": "binding"
             },
             "generator": false,
             "async": false,

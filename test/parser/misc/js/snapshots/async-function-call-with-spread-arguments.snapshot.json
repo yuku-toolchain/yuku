@@ -19,7 +19,8 @@
             "type": "Identifier",
             "start": 6,
             "end": 14,
-            "name": "testCall"
+            "name": "testCall",
+            "kind": "binding"
           },
           "init": {
             "type": "CallExpression",
@@ -29,14 +30,16 @@
               "type": "Identifier",
               "start": 17,
               "end": 22,
-              "name": "async"
+              "name": "async",
+              "kind": "reference"
             },
             "arguments": [
               {
                 "type": "Identifier",
                 "start": 23,
                 "end": 31,
-                "name": "firstArg"
+                "name": "firstArg",
+                "kind": "reference"
               },
               {
                 "type": "SpreadElement",
@@ -46,7 +49,8 @@
                   "type": "Identifier",
                   "start": 36,
                   "end": 48,
-                  "name": "secondSpread"
+                  "name": "secondSpread",
+                  "kind": "reference"
                 }
               },
               {
@@ -57,7 +61,8 @@
                   "type": "Identifier",
                   "start": 53,
                   "end": 64,
-                  "name": "thirdSpread"
+                  "name": "thirdSpread",
+                  "kind": "reference"
                 }
               }
             ],
