@@ -106,12 +106,9 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
 
 fn writeRuntime(w: *Writer) !void {
     try w.writeAll(
-        \\const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
-        \\function encode(estree) {
-        \\  // Accept either a `ParseResult` or a bare AST node (Program is
-        \\  // the normal case, but any node with the kLineStarts symbol works).
-        \\  const root = estree && estree.type ? estree : estree.program;
-        \\  const lineStarts = root && root[_kLineStarts];
+        \\function encode(result) {
+        \\  const root = result.program;
+        \\  const lineStarts = result.lineStarts;
         \\  let nodeCap = 512;
         \\  let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);
         \\  let nU8 = new Uint8Array(nodeAB);

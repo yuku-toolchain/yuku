@@ -1,8 +1,6 @@
 import binding from "./binding.js";
 import { encode } from "./encode.js";
 
-const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
-
 function normalizeOptions(options) {
   if (options == null) return {};
   const next = { ...options };
@@ -15,33 +13,31 @@ function normalizeOptions(options) {
   return next;
 }
 
-function prepare(input, options) {
-  const root = input && input.type ? input : input?.program;
-  if (!root || !root.type) {
+function prepare(result, options) {
+  if (!result || !result.program || !result.program.type) {
     throw new TypeError(
-      "Expected an AST node or `ParseResult`, got " +
-        (input === null ? "null" : typeof input),
+      "Expected a `ParseResult` from yuku-parser, got " +
+        (result === null ? "null" : typeof result),
     );
   }
-  if (options?.sourceMaps && !root[_kLineStarts]) {
+  if (options?.sourceMaps && !result.lineStarts) {
     throw new Error(
-      "Source maps require an AST produced by yuku-parser. " +
-        "The input has no line-start info attached. If this AST was built " +
-        "or transformed outside of yuku-parser, drop `sourceMaps` or " +
-        "re-parse with yuku-parser first.",
+      "Source maps require a `ParseResult` with `lineStarts`. " +
+        "If you built or transformed this result outside of yuku-parser, " +
+        "either drop `sourceMaps` or attach a `lineStarts` array.",
     );
   }
-  return encode(root);
+  return encode(result);
 }
 
-export function print(input, options) {
-  return binding.print(prepare(input, options), normalizeOptions(options));
+export function print(result, options) {
+  return binding.print(prepare(result, options), normalizeOptions(options));
 }
 
-export function strip(input, options) {
-  return binding.strip(prepare(input, options), normalizeOptions(options));
+export function strip(result, options) {
+  return binding.strip(prepare(result, options), normalizeOptions(options));
 }
 
-export function minify(input, options) {
-  return binding.minify(prepare(input, options), normalizeOptions(options));
+export function minify(result, options) {
+  return binding.minify(prepare(result, options), normalizeOptions(options));
 }

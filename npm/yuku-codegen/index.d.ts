@@ -1,7 +1,4 @@
-import type { Comment, ParseResult, Program } from "yuku-parser";
-
-/** Accepted input shapes for `print`, `strip`, and `minify`. */
-export type CodegenInput = ParseResult | Program;
+import type { Comment, ParseResult } from "yuku-parser";
 
 /** Whitespace mode for the generated output. */
 export type Format = "pretty" | "compact";
@@ -45,8 +42,13 @@ export interface CodegenOptions {
   indent?: number;
   /** @default "double" */
   quotes?: Quotes;
-  /** Pass to enable source maps. Omit to disable. */
-  sourceMaps?: SourceMapOptions;
+  /**
+   * Enable Source Map V3 output. `true` uses default metadata; pass a
+   * {@link SourceMapOptions} object to fill in `file`, `sources`,
+   * `sourcesContent`, and `sourceRoot`.
+   * @default false
+   */
+  sourceMaps?: boolean | SourceMapOptions;
   /**
    * Comment passthrough filter. Defaults to `"some"`, which preserves
    * legal headers, JSDoc, and tree-shaking annotations.
@@ -86,13 +88,13 @@ export interface CodegenResult {
 }
 
 /** Renders the AST verbatim, preserving TypeScript syntax. */
-export function print(input: CodegenInput, options?: CodegenOptions): CodegenResult;
+export function print(result: ParseResult, options?: CodegenOptions): CodegenResult;
 
 /** Renders the AST as JavaScript, dropping TypeScript-specific syntax. */
-export function strip(input: CodegenInput, options?: CodegenOptions): CodegenResult;
+export function strip(result: ParseResult, options?: CodegenOptions): CodegenResult;
 
 /**
  * Renders the AST with size-reducing rewrites. Combine with
  * `format: "compact"` for full minification.
  */
-export function minify(input: CodegenInput, options?: CodegenOptions): CodegenResult;
+export function minify(result: ParseResult, options?: CodegenOptions): CodegenResult;

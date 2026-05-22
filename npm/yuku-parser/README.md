@@ -60,7 +60,7 @@ sourceTypeFromPath("foo.mjs");     // "module"
 
 ## Resolving offsets to `(line, column)`
 
-Nodes and diagnostics carry `start`/`end` byte offsets. To turn an offset into a `{ line, column }` pair, call `locOf` on the parse result:
+Nodes and diagnostics carry `start`/`end` offsets (UTF-16 code units). To turn an offset into a `{ line, column }` pair, call `locOf` on the parse result:
 
 ```ts
 import { parse } from "yuku-parser";
@@ -70,6 +70,8 @@ const { line, column } = result.locOf(result.program.body[0].start);
 ```
 
 Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, safe to invoke per node during a walk.
+
+For bulk work — building your own line/column index, integrating with another source-map or diagnostics library, or skipping the per-call binary search — read `result.lineStarts` directly. It's a sorted array of UTF-16 offsets where each line begins: `lineStarts[i]` is the start of line `i + 1`. Decoded lazily on first access and cached.
 
 ## Walking the AST
 
@@ -126,6 +128,7 @@ const result = parse(source, {
 interface ParseResult {
   program: Program;
   diagnostics: Diagnostic[];
+  lineStarts: number[];
   locOf(offset: number): { line: number; column: number };
 }
 ```

@@ -122,7 +122,13 @@ interface ParseResult {
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
   /**
-   * Resolves a byte offset to a `{ line, column }` pair. Lines are
+   * Sorted UTF-16 offsets where each line begins. Index `i` is the start of
+   * line `i + 1`. Used internally by {@link locOf}, and required by
+   * `yuku-codegen` for source maps.
+   */
+  lineStarts: number[];
+  /**
+   * Resolves an offset to a `{ line, column }` pair. Lines are
    * 1-based, columns are 0-based, matching ESTree's `loc` convention.
    */
   locOf(offset: number): SourceLocation;

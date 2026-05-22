@@ -15,11 +15,11 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const { program } = parse("const x = 1 + 2;");
-const { code } = print(program);
+const result = parse("const x = 1 + 2;");
+const { code } = print(result);
 ```
 
-`print` (and `strip`, `minify`) accepts a `Program` node directly, or the full `ParseResult` from [yuku-parser](https://www.npmjs.com/package/yuku-parser). See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`print`, `strip`, and `minify` take the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
 

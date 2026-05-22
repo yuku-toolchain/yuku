@@ -3,8 +3,6 @@
 // an SMI/int32, avoiding heap-number boxing on every field read in JSC.
 const NULL = -1;
 const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-// non-enumerable Symbol attached to Program for codegen's source-map use
-const _kLineStarts = Symbol.for("yuku-parser.lineStarts");
 const BINARY_OPS = ["==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof"];
 const LOGICAL_OPS = ["&&", "||", "??"];
 const UNARY_OPS = ["-", "+", "!", "~", "typeof", "void", "delete"];
@@ -380,14 +378,9 @@ function decode(buffer, source) {
     return _lineStarts;
   }
   return {
-    get program() {
-      if (_program !== undefined) return _program;
-      const p = node(progIdx);
-      Object.defineProperty(p, _kLineStarts, { get: _getLineStarts, enumerable: false, configurable: false });
-      _program = p;
-      return _program;
-    },
+    get program() { return _program !== undefined ? _program : (_program = node(progIdx)); },
     get diagnostics() { return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); },
+    get lineStarts() { return _getLineStarts(); },
     locOf(offset) {
       const ls = _getLineStarts();
       let lo = 0, hi = ls.length;
