@@ -1,97 +1,94 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 58,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "SwitchStatement",
-        "start": 0,
-        "end": 57,
-        "discriminant": {
-          "type": "Identifier",
-          "start": 8,
-          "end": 9,
-          "name": "x"
-        },
-        "cases": [
-          {
-            "type": "SwitchCase",
-            "start": 15,
-            "end": 27,
-            "test": {
-              "type": "Literal",
-              "start": 20,
-              "end": 21,
-              "value": 1,
-              "raw": "1"
-            },
-            "consequent": [
-              {
-                "type": "ExpressionStatement",
-                "start": 23,
-                "end": 27,
-                "expression": {
-                  "type": "CallExpression",
-                  "start": 23,
-                  "end": 26,
-                  "callee": {
-                    "type": "Identifier",
-                    "start": 23,
-                    "end": 24,
-                    "name": "a"
-                  },
-                  "arguments": [],
-                  "optional": false
-                }
-              }
-            ]
+  "type": "Program",
+  "start": 0,
+  "end": 58,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "SwitchStatement",
+      "start": 0,
+      "end": 57,
+      "discriminant": {
+        "type": "Identifier",
+        "start": 8,
+        "end": 9,
+        "name": "x"
+      },
+      "cases": [
+        {
+          "type": "SwitchCase",
+          "start": 15,
+          "end": 27,
+          "test": {
+            "type": "Literal",
+            "start": 20,
+            "end": 21,
+            "value": 1,
+            "raw": "1"
           },
-          {
-            "type": "SwitchCase",
-            "start": 43,
-            "end": 55,
-            "test": {
-              "type": "Literal",
-              "start": 48,
-              "end": 49,
-              "value": 2,
-              "raw": "2"
-            },
-            "consequent": [
-              {
-                "type": "ExpressionStatement",
+          "consequent": [
+            {
+              "type": "ExpressionStatement",
+              "start": 23,
+              "end": 27,
+              "expression": {
+                "type": "CallExpression",
+                "start": 23,
+                "end": 26,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 23,
+                  "end": 24,
+                  "name": "a"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        },
+        {
+          "type": "SwitchCase",
+          "start": 43,
+          "end": 55,
+          "test": {
+            "type": "Literal",
+            "start": 48,
+            "end": 49,
+            "value": 2,
+            "raw": "2"
+          },
+          "consequent": [
+            {
+              "type": "ExpressionStatement",
+              "start": 51,
+              "end": 55,
+              "expression": {
+                "type": "CallExpression",
                 "start": 51,
-                "end": 55,
-                "expression": {
-                  "type": "CallExpression",
+                "end": 54,
+                "callee": {
+                  "type": "Identifier",
                   "start": 51,
-                  "end": 54,
-                  "callee": {
-                    "type": "Identifier",
-                    "start": 51,
-                    "end": 52,
-                    "name": "b"
-                  },
-                  "arguments": [],
-                  "optional": false
-                }
+                  "end": 52,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
               }
-            ],
-            "comments": [
-              {
-                "type": "Line",
-                "position": "before",
-                "sameLine": false,
-                "value": " between"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  "diagnostics": []
+            }
+          ],
+          "comments": [
+            {
+              "type": "Line",
+              "position": "before",
+              "sameLine": false,
+              "value": " between"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -1,90 +1,87 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 53,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "ClassDeclaration",
-        "start": 0,
+  "type": "Program",
+  "start": 0,
+  "end": 53,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "ClassDeclaration",
+      "start": 0,
+      "end": 52,
+      "decorators": [],
+      "id": {
+        "type": "Identifier",
+        "start": 6,
+        "end": 7,
+        "name": "C"
+      },
+      "superClass": null,
+      "body": {
+        "type": "ClassBody",
+        "start": 8,
         "end": 52,
-        "decorators": [],
-        "id": {
-          "type": "Identifier",
-          "start": 6,
-          "end": 7,
-          "name": "C"
-        },
-        "superClass": null,
-        "body": {
-          "type": "ClassBody",
-          "start": 8,
-          "end": 52,
-          "body": [
-            {
-              "type": "PropertyDefinition",
+        "body": [
+          {
+            "type": "PropertyDefinition",
+            "start": 12,
+            "end": 18,
+            "decorators": [],
+            "key": {
+              "type": "Identifier",
               "start": 12,
-              "end": 18,
-              "decorators": [],
-              "key": {
-                "type": "Identifier",
-                "start": 12,
-                "end": 13,
-                "name": "a"
-              },
-              "value": {
-                "type": "Literal",
-                "start": 16,
-                "end": 17,
-                "value": 1,
-                "raw": "1"
-              },
-              "computed": false,
-              "static": false,
-              "comments": [
-                {
-                  "type": "Line",
-                  "position": "after",
-                  "sameLine": true,
-                  "value": " trail-a"
-                }
-              ]
+              "end": 13,
+              "name": "a"
             },
-            {
-              "type": "PropertyDefinition",
+            "value": {
+              "type": "Literal",
+              "start": 16,
+              "end": 17,
+              "value": 1,
+              "raw": "1"
+            },
+            "computed": false,
+            "static": false,
+            "comments": [
+              {
+                "type": "Line",
+                "position": "after",
+                "sameLine": true,
+                "value": " trail-a"
+              }
+            ]
+          },
+          {
+            "type": "PropertyDefinition",
+            "start": 44,
+            "end": 50,
+            "decorators": [],
+            "key": {
+              "type": "Identifier",
               "start": 44,
-              "end": 50,
-              "decorators": [],
-              "key": {
-                "type": "Identifier",
-                "start": 44,
-                "end": 45,
-                "name": "b"
-              },
-              "value": {
-                "type": "Literal",
-                "start": 48,
-                "end": 49,
-                "value": 2,
-                "raw": "2"
-              },
-              "computed": false,
-              "static": false,
-              "comments": [
-                {
-                  "type": "Line",
-                  "position": "before",
-                  "sameLine": false,
-                  "value": " lead-b"
-                }
-              ]
-            }
-          ]
-        }
+              "end": 45,
+              "name": "b"
+            },
+            "value": {
+              "type": "Literal",
+              "start": 48,
+              "end": 49,
+              "value": 2,
+              "raw": "2"
+            },
+            "computed": false,
+            "static": false,
+            "comments": [
+              {
+                "type": "Line",
+                "position": "before",
+                "sameLine": false,
+                "value": " lead-b"
+              }
+            ]
+          }
+        ]
       }
-    ]
-  },
-  "diagnostics": []
+    }
+  ]
 }

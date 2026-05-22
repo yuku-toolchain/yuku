@@ -1,100 +1,97 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 38,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "FunctionDeclaration",
-        "start": 0,
+  "type": "Program",
+  "start": 0,
+  "end": 38,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "start": 0,
+      "end": 37,
+      "id": {
+        "type": "Identifier",
+        "start": 9,
+        "end": 10,
+        "name": "f",
+        "decorators": [],
+        "typeAnnotation": null,
+        "optional": false
+      },
+      "generator": false,
+      "async": false,
+      "params": [],
+      "body": {
+        "type": "BlockStatement",
+        "start": 35,
         "end": 37,
-        "id": {
-          "type": "Identifier",
-          "start": 9,
-          "end": 10,
-          "name": "f",
-          "decorators": [],
-          "typeAnnotation": null,
-          "optional": false
-        },
-        "generator": false,
-        "async": false,
-        "params": [],
-        "body": {
-          "type": "BlockStatement",
-          "start": 35,
-          "end": 37,
-          "body": []
-        },
-        "expression": false,
-        "typeParameters": {
-          "type": "TSTypeParameterDeclaration",
-          "start": 10,
-          "end": 26,
-          "params": [
-            {
-              "type": "TSTypeParameter",
+        "body": []
+      },
+      "expression": false,
+      "typeParameters": {
+        "type": "TSTypeParameterDeclaration",
+        "start": 10,
+        "end": 26,
+        "params": [
+          {
+            "type": "TSTypeParameter",
+            "start": 11,
+            "end": 12,
+            "name": {
+              "type": "Identifier",
               "start": 11,
               "end": 12,
-              "name": {
-                "type": "Identifier",
-                "start": 11,
-                "end": 12,
-                "name": "T",
-                "decorators": [],
-                "typeAnnotation": null,
-                "optional": false
-              },
-              "constraint": null,
-              "default": null,
-              "in": false,
-              "out": false,
-              "const": false
+              "name": "T",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
             },
-            {
-              "type": "TSTypeParameter",
+            "constraint": null,
+            "default": null,
+            "in": false,
+            "out": false,
+            "const": false
+          },
+          {
+            "type": "TSTypeParameter",
+            "start": 24,
+            "end": 25,
+            "name": {
+              "type": "Identifier",
               "start": 24,
               "end": 25,
-              "name": {
-                "type": "Identifier",
-                "start": 24,
-                "end": 25,
-                "name": "U",
-                "decorators": [],
-                "typeAnnotation": null,
-                "optional": false
-              },
-              "constraint": null,
-              "default": null,
-              "in": false,
-              "out": false,
-              "const": false,
-              "comments": [
-                {
-                  "type": "Block",
-                  "position": "before",
-                  "sameLine": true,
-                  "value": " mid "
-                }
-              ]
-            }
-          ]
-        },
-        "returnType": {
-          "type": "TSTypeAnnotation",
-          "start": 28,
-          "end": 34,
-          "typeAnnotation": {
-            "type": "TSVoidKeyword",
-            "start": 30,
-            "end": 34
+              "name": "U",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "constraint": null,
+            "default": null,
+            "in": false,
+            "out": false,
+            "const": false,
+            "comments": [
+              {
+                "type": "Block",
+                "position": "before",
+                "sameLine": true,
+                "value": " mid "
+              }
+            ]
           }
-        },
-        "declare": false
-      }
-    ]
-  },
-  "diagnostics": []
+        ]
+      },
+      "returnType": {
+        "type": "TSTypeAnnotation",
+        "start": 28,
+        "end": 34,
+        "typeAnnotation": {
+          "type": "TSVoidKeyword",
+          "start": 30,
+          "end": 34
+        }
+      },
+      "declare": false
+    }
+  ]
 }

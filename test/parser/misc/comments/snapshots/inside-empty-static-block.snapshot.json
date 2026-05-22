@@ -1,46 +1,43 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 32,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "ClassDeclaration",
-        "start": 0,
+  "type": "Program",
+  "start": 0,
+  "end": 32,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "ClassDeclaration",
+      "start": 0,
+      "end": 31,
+      "decorators": [],
+      "id": {
+        "type": "Identifier",
+        "start": 6,
+        "end": 7,
+        "name": "C"
+      },
+      "superClass": null,
+      "body": {
+        "type": "ClassBody",
+        "start": 8,
         "end": 31,
-        "decorators": [],
-        "id": {
-          "type": "Identifier",
-          "start": 6,
-          "end": 7,
-          "name": "C"
-        },
-        "superClass": null,
-        "body": {
-          "type": "ClassBody",
-          "start": 8,
-          "end": 31,
-          "body": [
-            {
-              "type": "StaticBlock",
-              "start": 10,
-              "end": 29,
-              "body": [],
-              "comments": [
-                {
-                  "type": "Block",
-                  "position": "inside",
-                  "sameLine": false,
-                  "value": " hi "
-                }
-              ]
-            }
-          ]
-        }
+        "body": [
+          {
+            "type": "StaticBlock",
+            "start": 10,
+            "end": 29,
+            "body": [],
+            "comments": [
+              {
+                "type": "Block",
+                "position": "inside",
+                "sameLine": false,
+                "value": " hi "
+              }
+            ]
+          }
+        ]
       }
-    ]
-  },
-  "diagnostics": []
+    }
+  ]
 }

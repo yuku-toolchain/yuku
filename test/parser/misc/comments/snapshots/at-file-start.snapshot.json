@@ -1,46 +1,43 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 29,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "VariableDeclaration",
-        "start": 16,
-        "end": 28,
-        "kind": "const",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
+  "type": "Program",
+  "start": 0,
+  "end": 29,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 16,
+      "end": 28,
+      "kind": "const",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 22,
+          "end": 27,
+          "id": {
+            "type": "Identifier",
             "start": 22,
+            "end": 23,
+            "name": "x"
+          },
+          "init": {
+            "type": "Literal",
+            "start": 26,
             "end": 27,
-            "id": {
-              "type": "Identifier",
-              "start": 22,
-              "end": 23,
-              "name": "x"
-            },
-            "init": {
-              "type": "Literal",
-              "start": 26,
-              "end": 27,
-              "value": 1,
-              "raw": "1"
-            }
+            "value": 1,
+            "raw": "1"
           }
-        ],
-        "comments": [
-          {
-            "type": "Line",
-            "position": "before",
-            "sameLine": false,
-            "value": " only-leading"
-          }
-        ]
-      }
-    ]
-  },
-  "diagnostics": []
+        }
+      ],
+      "comments": [
+        {
+          "type": "Line",
+          "position": "before",
+          "sameLine": false,
+          "value": " only-leading"
+        }
+      ]
+    }
+  ]
 }

@@ -1,41 +1,38 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 26,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "FunctionDeclaration",
-        "start": 0,
+  "type": "Program",
+  "start": 0,
+  "end": 26,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "start": 0,
+      "end": 25,
+      "id": {
+        "type": "Identifier",
+        "start": 9,
+        "end": 10,
+        "name": "f"
+      },
+      "generator": false,
+      "async": false,
+      "params": [],
+      "body": {
+        "type": "BlockStatement",
+        "start": 13,
         "end": 25,
-        "id": {
-          "type": "Identifier",
-          "start": 9,
-          "end": 10,
-          "name": "f"
-        },
-        "generator": false,
-        "async": false,
-        "params": [],
-        "body": {
-          "type": "BlockStatement",
-          "start": 13,
-          "end": 25,
-          "body": [],
-          "comments": [
-            {
-              "type": "Block",
-              "position": "inside",
-              "sameLine": false,
-              "value": " hi "
-            }
-          ]
-        },
-        "expression": false
-      }
-    ]
-  },
-  "diagnostics": []
+        "body": [],
+        "comments": [
+          {
+            "type": "Block",
+            "position": "inside",
+            "sameLine": false,
+            "value": " hi "
+          }
+        ]
+      },
+      "expression": false
+    }
+  ]
 }

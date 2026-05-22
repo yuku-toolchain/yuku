@@ -1,89 +1,86 @@
 {
-  "program": {
-    "type": "Program",
-    "start": 0,
-    "end": 43,
-    "sourceType": "script",
-    "hashbang": null,
-    "body": [
-      {
-        "type": "ForStatement",
-        "start": 0,
-        "end": 42,
-        "init": {
-          "type": "VariableDeclaration",
-          "start": 16,
-          "end": 25,
-          "kind": "let",
-          "declarations": [
-            {
-              "type": "VariableDeclarator",
+  "type": "Program",
+  "start": 0,
+  "end": 43,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "ForStatement",
+      "start": 0,
+      "end": 42,
+      "init": {
+        "type": "VariableDeclaration",
+        "start": 16,
+        "end": 25,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 20,
+            "end": 25,
+            "id": {
+              "type": "Identifier",
               "start": 20,
+              "end": 21,
+              "name": "i"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 24,
               "end": 25,
-              "id": {
-                "type": "Identifier",
-                "start": 20,
-                "end": 21,
-                "name": "i"
-              },
-              "init": {
-                "type": "Literal",
-                "start": 24,
-                "end": 25,
-                "value": 0,
-                "raw": "0"
-              }
+              "value": 0,
+              "raw": "0"
             }
-          ],
-          "comments": [
-            {
-              "type": "Block",
-              "position": "before",
-              "sameLine": true,
-              "value": " init "
-            }
-          ]
-        },
-        "test": {
-          "type": "BinaryExpression",
+          }
+        ],
+        "comments": [
+          {
+            "type": "Block",
+            "position": "before",
+            "sameLine": true,
+            "value": " init "
+          }
+        ]
+      },
+      "test": {
+        "type": "BinaryExpression",
+        "start": 27,
+        "end": 33,
+        "left": {
+          "type": "Identifier",
           "start": 27,
+          "end": 28,
+          "name": "i"
+        },
+        "right": {
+          "type": "Literal",
+          "start": 31,
           "end": 33,
-          "left": {
-            "type": "Identifier",
-            "start": 27,
-            "end": 28,
-            "name": "i"
-          },
-          "right": {
-            "type": "Literal",
-            "start": 31,
-            "end": 33,
-            "value": 10,
-            "raw": "10"
-          },
-          "operator": "<"
+          "value": 10,
+          "raw": "10"
         },
-        "update": {
-          "type": "UpdateExpression",
+        "operator": "<"
+      },
+      "update": {
+        "type": "UpdateExpression",
+        "start": 35,
+        "end": 38,
+        "argument": {
+          "type": "Identifier",
           "start": 35,
-          "end": 38,
-          "argument": {
-            "type": "Identifier",
-            "start": 35,
-            "end": 36,
-            "name": "i"
-          },
-          "operator": "++",
-          "prefix": false
+          "end": 36,
+          "name": "i"
         },
-        "body": {
-          "type": "BlockStatement",
-          "start": 40,
-          "end": 42,
-          "body": []
-        }
+        "operator": "++",
+        "prefix": false
+      },
+      "body": {
+        "type": "BlockStatement",
+        "start": 40,
+        "end": 42,
+        "body": []
       }
-    ]
-  },
-  "diagnostics": []
+    }
+  ]
 }
