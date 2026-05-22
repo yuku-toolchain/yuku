@@ -16,13 +16,3 @@ export function langFromPath(path) {
 export function sourceTypeFromPath(path) {
   return path.endsWith(".cjs") || path.endsWith(".cts") ? "script" : "module";
 }
-
-export function locOf(lineStarts, offset) {
-  let lo = 0, hi = lineStarts.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1;
-    if (lineStarts[mid] <= offset) lo = mid + 1;
-    else hi = mid;
-  }
-  return { line: lo, column: offset - lineStarts[lo - 1] };
-}

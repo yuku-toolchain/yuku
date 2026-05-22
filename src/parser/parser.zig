@@ -6,6 +6,7 @@ const ast = @import("ast.zig");
 const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
+const comments = @import("comments.zig");
 
 pub const Options = struct {
     /// Source type determines how the code is parsed and evaluated.
@@ -21,6 +22,9 @@ pub const Options = struct {
     /// When true, `return` statements are allowed at the top level,
     /// outside of any function. Defaults to false.
     allow_return_outside_function: bool = false,
+    /// When true, comments are collected and attached to host AST nodes.
+    /// Reachable via `Tree.commentsOf`. Defaults to false.
+    attach_comments: bool = false,
 };
 
 pub const Context = packed struct {
@@ -71,6 +75,7 @@ pub const Parser = struct {
     lang: ast.Lang,
     preserve_parens: bool,
     allow_return_outside_function: bool,
+    attach_comments: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
@@ -105,6 +110,7 @@ pub const Parser = struct {
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
             .allow_return_outside_function = options.allow_return_outside_function,
+            .attach_comments = options.attach_comments,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -127,7 +133,7 @@ pub const Parser = struct {
     fn parseInner(self: *Parser) Error!void {
         const alloc = self.allocator();
 
-        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type);
+        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type, self.attach_comments);
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
@@ -163,9 +169,11 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
 
-        self.tree.comments = try self.lexer.comments.toOwnedSlice(alloc);
+        try buildLineStarts(&self.tree);
 
-        try self.tree.buildLineStarts();
+        if (self.attach_comments) {
+            try comments.attach(&self.tree, self.lexer.comments.items);
+        }
     }
 
     const BodyKind = enum {
@@ -631,4 +639,35 @@ const ScratchBuffer = struct {
 pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.Tree {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
+}
+
+/// Scans `tree.source` once and records the offset of every line start
+/// into `tree.line_starts`.
+fn buildLineStarts(tree: *ast.Tree) Error!void {
+    const alloc = tree.allocator();
+    const src = tree.source;
+
+    var starts: std.ArrayList(u32) = .empty;
+    try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
+    starts.appendAssumeCapacity(0);
+
+    const N = 64;
+    const Vec = @Vector(N, u8);
+    const Mask = std.meta.Int(.unsigned, N);
+    const lf: Vec = @splat('\n');
+
+    var i: usize = 0;
+    while (i + N <= src.len) : (i += N) {
+        const chunk: Vec = src[i..][0..N].*;
+        var bits: Mask = @bitCast(chunk == lf);
+        while (bits != 0) {
+            const k = @ctz(bits);
+            try starts.append(alloc, @intCast(i + k + 1));
+            bits &= bits - 1;
+        }
+    }
+    while (i < src.len) : (i += 1) {
+        if (src[i] == '\n') try starts.append(alloc, @intCast(i + 1));
+    }
+    tree.line_starts = try starts.toOwnedSlice(alloc);
 }

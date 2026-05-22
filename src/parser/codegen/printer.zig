@@ -23,14 +23,14 @@ pub const Format = enum {
 /// Quote style for emitted string literals.
 pub const Quotes = enum { double, single };
 
-/// Filter applied to `tree.comments` when emitting.
+/// Comment passthrough filter.
 pub const Comments = enum {
     /// Drop all comments.
     none,
     /// Emit every comment.
     all,
     /// Emit legal headers, JSDoc, and tree-shaking annotations
-    /// (`__PURE__`, `__NO_SIDE_EFFECTS__`, and `@`/`#` annotations).
+    /// (`__PURE__`, `__NO_SIDE_EFFECTS__`, `@`/`#` annotations).
     some,
     /// Emit `// ...` only.
     line,
@@ -138,11 +138,9 @@ fn Printer(comptime cfg: Config) type {
         pending_semi: bool = false,
         /// Source-map state. Present if `options.source_maps != null`.
         sm: ?sourcemap.State = null,
-        /// Next comment to consider for emission.
-        comment_cursor: u32 = 0,
-        /// Source offset where the most recently emitted node ended.
-        /// Anchors trailing-same-line placement decisions.
-        last_emit_end: u32 = 0,
+        /// node currently being emitted, used by container helpers to look
+        /// up inside-comments without threading the index through every call
+        current_idx: NodeIndex = .null,
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
@@ -154,8 +152,6 @@ fn Printer(comptime cfg: Config) type {
         try p.code.ensureTotalCapacity(allocator, tree.source.len);
         if (options.source_maps) |sm_opts| {
             p.sm = try sourcemap.State.init(allocator, sm_opts);
-            // pre-size to roughly one segment per node so the append
-            // loop never reallocates.
             try p.sm.?.mappings.ensureTotalCapacity(allocator, tree.nodes.len);
         }
         return p;
@@ -214,12 +210,10 @@ fn Printer(comptime cfg: Config) type {
         if (self.pretty()) try self.writeByte(' ');
     }
 
+    // pretty-mode-only break with indent (no-op in compact)
     fn newline(self: *Self) Error!void {
         if (!self.pretty()) return;
-        if (self.lastByte() != '\n') try self.writeByte('\n');
-        const n = self.indent_depth * self.options.indent;
-        try self.code.appendNTimes(self.allocator, ' ', n);
-        if (self.sm) |*sm| sm.gen_col = n;
+        try self.breakLine();
     }
 
     inline fn mark(self: *const Self) usize {
@@ -306,11 +300,11 @@ fn Printer(comptime cfg: Config) type {
             }
         }
 
-        const span = self.tree.span(idx);
-        const has_span = !(span.start == 0 and span.end == 0);
-        if (self.options.comments != .none) {
-            if (has_span) try self.flushCommentsBefore(span.start);
-        }
+        const prev_idx = self.current_idx;
+        self.current_idx = idx;
+        defer self.current_idx = prev_idx;
+
+        if (self.options.comments != .none) try self.emitLeadingComments(idx);
 
         if (self.sm != null) try self.recordMapping(idx, data);
 
@@ -325,7 +319,7 @@ fn Printer(comptime cfg: Config) type {
             },
         }
 
-        if (has_span) self.last_emit_end = @max(self.last_emit_end, span.end);
+        if (self.options.comments != .none) try self.emitTrailingComments(idx);
     }
 
     inline fn allowComment(self: *const Self, c: ast.Comment) bool {
@@ -343,58 +337,44 @@ fn Printer(comptime cfg: Config) type {
         return if (items.len == 0) 0 else items[items.len - 1];
     }
 
-    inline fn lineOf(self: *const Self, pos: u32) u32 {
-        return self.tree.lineColOf(pos).line;
-    }
-
-    fn flushCommentsBefore(self: *Self, next_start: u32) Error!void {
-        const next_line = self.lineOf(next_start);
-        while (self.comment_cursor < self.tree.comments.len) {
-            const c = self.tree.comments[self.comment_cursor];
-            if (c.start >= next_start) return;
-            self.comment_cursor += 1;
-            if (self.allowComment(c)) try self.placeComment(c, next_line);
+    fn emitLeadingComments(self: *Self, idx: NodeIndex) Error!void {
+        for (self.tree.commentsOf(idx)) |c| {
+            if (c.position == .before and self.allowComment(c)) try self.writeLeading(c);
         }
     }
 
-    fn flushTrailingComments(self: *Self) Error!void {
-        if (self.last_emit_end == 0) return;
-        const line = self.lineOf(self.last_emit_end);
-        while (self.comment_cursor < self.tree.comments.len) {
-            const c = self.tree.comments[self.comment_cursor];
-            if (c.preceded_by_newline or self.lineOf(c.start) != line) return;
-            self.comment_cursor += 1;
-            if (self.allowComment(c)) try self.emitTrailing(c);
+    fn emitTrailingComments(self: *Self, idx: NodeIndex) Error!void {
+        for (self.tree.commentsOf(idx)) |c| {
+            if (c.position == .after and self.allowComment(c)) try self.writeTrailing(c);
         }
     }
 
-    fn placeComment(self: *Self, c: ast.Comment, next_line: u32) Error!void {
-        const start_line = self.lineOf(c.start);
-        const prev_line = if (self.last_emit_end == 0) start_line else self.lineOf(self.last_emit_end);
-        const last = self.lastByte();
-
-        if (c.type == .block and !c.followed_by_newline and self.lineOf(c.end) == next_line) {
+    fn writeLeading(self: *Self, c: ast.Comment) Error!void {
+        // same-line block (`function /* x */ foo`) stays inline
+        if (c.type == .block and c.same_line) {
+            const last = self.lastByte();
             if (self.pretty() and last != 0 and last != ' ' and last != '\n') try self.writeByte(' ');
             try self.writeCommentBody(c);
             if (self.pretty()) try self.writeByte(' ');
             return;
         }
-
-        if (self.last_emit_end != 0 and !c.preceded_by_newline and start_line == prev_line) {
-            try self.emitTrailing(c);
-            return;
-        }
-
-        if (last != '\n' and last != 0) try self.breakLine();
-        if (self.pretty() and self.last_emit_end != 0 and start_line > prev_line + 1) try self.breakLine();
+        // everything else lands on its own line above the host so jsdoc
+        // stays resolvable by language servers
+        try self.breakLine();
         try self.writeCommentBody(c);
-        if (c.type == .line or c.followed_by_newline) try self.breakLine() else if (self.pretty()) try self.writeByte(' ');
+        try self.breakLine();
     }
 
-    fn emitTrailing(self: *Self, c: ast.Comment) Error!void {
-        try self.writeByte(' ');
+    fn writeTrailing(self: *Self, c: ast.Comment) Error!void {
+        if (c.same_line) {
+            if (self.pretty()) try self.writeByte(' ');
+            try self.writeCommentBody(c);
+            if (c.type == .line) try self.breakLine();
+            return;
+        }
+        try self.breakLine();
         try self.writeCommentBody(c);
-        if (c.type == .line) try self.breakLine();
+        try self.breakLine();
     }
 
     inline fn writeCommentBody(self: *Self, c: ast.Comment) Error!void {
@@ -408,19 +388,25 @@ fn Printer(comptime cfg: Config) type {
         }
     }
 
-    /// Forced newline plus indent, Newline is always written, indent is
-    /// pretty-mode only.
+    // idempotent line break with indent in pretty mode. strips stale
+    // trailing indent so repeated calls collapse, and re-indents at the
+    // current depth. no-op at the very start of the output.
     fn breakLine(self: *Self) Error!void {
-        try self.code.append(self.allocator, '\n');
+        var i = self.code.items.len;
+        while (i > 0 and self.code.items[i - 1] == ' ') i -= 1;
+        if (i == 0) return;
+        if (i < self.code.items.len) self.code.shrinkRetainingCapacity(i);
+
+        if (self.code.items[self.code.items.len - 1] != '\n') {
+            try self.code.append(self.allocator, '\n');
+            if (self.sm) |*sm| sm.gen_line += 1;
+        }
         const n = if (self.pretty()) self.indent_depth * self.options.indent else 0;
         if (n > 0) try self.code.appendNTimes(self.allocator, ' ', n);
-        if (self.sm) |*sm| {
-            sm.gen_line += 1;
-            sm.gen_col = n;
-        }
+        if (self.sm) |*sm| sm.gen_col = n;
     }
 
-    /// Records a source-map segment for `idx`. Skips synthetic spans.
+    // records a source-map segment for idx, skipping synthetic spans
     fn recordMapping(self: *Self, idx: NodeIndex, data: NodeData) Error!void {
         var sm = &self.sm.?;
         const span = self.tree.span(idx);
@@ -476,13 +462,11 @@ fn Printer(comptime cfg: Config) type {
         if (p.hashbang) |h| {
             try self.writeStr("#!");
             try self.writeString(h.value);
-            // hashbang ends at the line terminator. force `\n` even in
-            // compact mode so the next token doesn't merge into it.
             try self.writeByte('\n');
         }
         try self.printStmtList(p.body);
         self.pending_semi = false;
-        if (self.options.comments != .none) try self.flushCommentsBefore(std.math.maxInt(u32));
+        if (self.options.comments != .none) try self.emitInsideComments(self.current_idx);
     }
 
     /// Emits a list of statements, flushing the deferred `;` between each.
@@ -497,7 +481,6 @@ fn Printer(comptime cfg: Config) type {
             try self.flushSemi();
             if (try self.tryEmit(s)) {
                 first = false;
-                if (self.options.comments != .none) try self.flushTrailingComments();
             } else {
                 self.restore(cur);
                 self.pending_semi = saved_semi;
@@ -520,8 +503,28 @@ fn Printer(comptime cfg: Config) type {
                 self.pending_semi = false;
                 try self.newline();
             }
+        } else if (self.options.comments != .none) {
+            try self.emitInsideComments(self.current_idx);
         }
         try self.writeByte('}');
+    }
+
+    // emits inside-host comments between an empty container's delimiters
+    fn emitInsideComments(self: *Self, idx: NodeIndex) Error!void {
+        var any = false;
+        for (self.tree.commentsOf(idx)) |c| {
+            if (c.position != .inside or !self.allowComment(c)) continue;
+            if (!any) {
+                any = true;
+                self.indent_depth += 1;
+            }
+            try self.breakLine();
+            try self.writeCommentBody(c);
+        }
+        if (any) {
+            self.indent_depth -= 1;
+            try self.breakLine();
+        }
     }
 
     /// Statement-terminator `;`. In compact mode, defers via `pending_semi`
@@ -1564,11 +1567,6 @@ fn Printer(comptime cfg: Config) type {
     fn emit_property_definition(self: *Self, p: ast.PropertyDefinition) Error!void {
         if (comptime strip_ts) if (p.declare or p.abstract) return;
         try self.printDecorators(p.decorators);
-        // flush before any modifier so `/*..*/` can't land between a
-        // restricted-production modifier (`accessor`) and the key.
-        if (self.options.comments != .none) {
-            try self.flushCommentsBefore(self.tree.span(p.key).start);
-        }
         if (comptime !strip_ts) {
             if (p.declare) try self.writeStr("declare ");
             if (p.accessibility != .none) {
@@ -2747,7 +2745,7 @@ fn isSignificantBlockComment(value: []const u8) bool {
         else => {},
     }
     var i: usize = 0;
-    while (std.mem.indexOfScalarPos(u8, value, i, '@')) |pos| {
+    while (std.mem.findScalarPos(u8, value, i, '@')) |pos| {
         const rest = value[pos..];
         if (std.mem.startsWith(u8, rest, "@license") or
             std.mem.startsWith(u8, rest, "@preserve") or

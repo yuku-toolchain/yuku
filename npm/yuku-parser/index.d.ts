@@ -40,24 +40,39 @@ interface ParseOptions {
    * @default false
    */
   semanticErrors?: boolean;
+  /**
+   * Collect comments and attach them to host AST nodes via
+   * {@link BaseNode.comments}.
+   * @default false
+   */
+  attachComments?: boolean;
 }
 
 /** Whether a {@link Comment} came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
-/** A source code comment. */
+/**
+ * Position of a {@link Comment} relative to its host node.
+ *
+ * - `before`: leading the host.
+ * - `after`: trailing the host.
+ * - `inside`: interior to an otherwise empty host.
+ */
+type CommentPosition = "before" | "after" | "inside";
+
+/**
+ * A source code comment attached to a single host AST node.
+ *
+ * `sameLine` is true when the comment shares a source line with the
+ * host's adjacent edge (host's start for `before`, host's end for
+ * `after`). For `inside` it is always `false`.
+ */
 interface Comment {
   type: CommentType;
-  /** True when a line terminator immediately precedes this comment. */
-  precededByNewline: boolean;
-  /** True when a line terminator immediately follows this comment. */
-  followedByNewline: boolean;
+  position: CommentPosition;
+  sameLine: boolean;
   /** Comment text without the delimiters. */
   value: string;
-  /** Byte offset. */
-  start: number;
-  /** Byte offset. */
-  end: number;
 }
 
 /** A labeled source span attached to a {@link Diagnostic}. */
@@ -104,12 +119,19 @@ interface SourceLocation {
 interface ParseResult {
   /** Root ESTree/TypeScript-ESTree AST node. */
   program: Program;
-  /** All comments in source order. */
-  comments: Comment[];
-  /** Byte offset where each source line begins. Index 0 is always 0. */
-  lineStarts: number[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
+  /**
+   * Sorted UTF-16 offsets where each line begins. Index `i` is the start of
+   * line `i + 1`. Used internally by {@link locOf}, and required by
+   * `yuku-codegen` for source maps.
+   */
+  lineStarts: number[];
+  /**
+   * Resolves an offset to a `{ line, column }` pair. Lines are
+   * 1-based, columns are 0-based, matching ESTree's `loc` convention.
+   */
+  locOf(offset: number): SourceLocation;
 }
 
 /**
@@ -136,25 +158,16 @@ export function langFromPath(path: string): SourceLang;
  */
 export function sourceTypeFromPath(path: string): SourceType;
 
-/**
- * Resolves a `{ line, column }` {@link SourceLocation} for an offset, using
- * {@link ParseResult.lineStarts}. Runs in O(log n).
- *
- * Lines are 1-based; columns are 0-based. The unit of `offset` (UTF-16 code
- * units in JS) must match the unit of `lineStarts`. Both come from the same
- * {@link ParseResult}, so this is automatic.
- *
- * @example
- * const { program, lineStarts } = parse(source);
- * locOf(lineStarts, program.body[0].start); // => { line, column }
- */
-export function locOf(lineStarts: number[], offset: number): SourceLocation;
-
 // AST node types
 
 interface BaseNode {
   start: number;
   end: number;
+  /**
+   * Comments attached to this node in source order. Present only when
+   * {@link ParseOptions.attachComments} is enabled.
+   */
+  comments?: Comment[];
 }
 
 type Span = BaseNode;
@@ -241,39 +254,37 @@ type PropertyDefinitionType = "PropertyDefinition" | "TSAbstractPropertyDefiniti
 
 type AccessorPropertyType = "AccessorProperty" | "TSAbstractAccessorProperty";
 
-interface IdentifierName extends BaseNode {
-  type: "Identifier";
-  name: string;
-  decorators?: [];
-  optional?: false;
-  typeAnnotation?: null;
-}
+/**
+ * Role of an `Identifier` within the AST. Yuku exposes the four ESTree-collapsed
+ * identifier flavors as a discriminator, plus `"this"` for a TS `this`-parameter
+ * (which TS-ESTree also encodes as an `Identifier` with `name: "this"`).
+ *
+ * - `"reference"`: identifier read as a value (`x` in `x + 1`, `console`).
+ * - `"binding"`: identifier being declared (parameters, `let x`, function/class names).
+ * - `"name"`: identifier in a non-binding name slot (property/method names like `log` in `console.log`).
+ * - `"label"`: loop label (`outer` in `outer: for (...) {}`).
+ * - `"this"`: the TS `this`-parameter (`function f(this: T)`).
+ */
+type IdentifierKind = "reference" | "binding" | "name" | "label" | "this";
 
-interface IdentifierReference extends BaseNode {
+interface Identifier extends BaseNode {
   type: "Identifier";
   name: string;
-  decorators?: [];
-  optional?: false;
-  typeAnnotation?: null;
-}
-
-interface BindingIdentifier extends BaseNode {
-  type: "Identifier";
-  name: string;
+  /**
+   * ESTree collapses several distinct identifier
+   * roles onto one `Identifier` node, `kind` lets you tell them apart without
+   * walking the parent context. See {@link IdentifierKind}.
+   */
+  kind: IdentifierKind;
   decorators?: Decorator[];
   optional?: boolean;
   typeAnnotation?: TSTypeAnnotation | null;
 }
 
-interface LabelIdentifier extends BaseNode {
-  type: "Identifier";
-  name: string;
-  decorators?: [];
-  optional?: false;
-  typeAnnotation?: null;
-}
-
-type Identifier = IdentifierName | IdentifierReference | BindingIdentifier | LabelIdentifier;
+type IdentifierName = Identifier;
+type IdentifierReference = Identifier;
+type BindingIdentifier = Identifier;
+type LabelIdentifier = Identifier;
 
 interface PrivateIdentifier extends BaseNode {
   type: "PrivateIdentifier";
@@ -1704,6 +1715,7 @@ type Node =
   | TSAbstractAccessorProperty
   | StaticBlock
   | Decorator
+  | TSEmptyBodyFunctionExpression
   | ImportSpecifier
   | ImportDefaultSpecifier
   | ImportNamespaceSpecifier
@@ -1749,6 +1761,7 @@ export type {
   ParseResult,
   Comment,
   CommentType,
+  CommentPosition,
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,
@@ -1780,6 +1793,7 @@ export type {
   ModuleExportName,
   PropertyKey,
   Identifier,
+  IdentifierKind,
   IdentifierName,
   IdentifierReference,
   BindingIdentifier,

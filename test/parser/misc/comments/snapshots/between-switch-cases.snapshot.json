@@ -1,0 +1,97 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 58,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "SwitchStatement",
+      "start": 0,
+      "end": 57,
+      "discriminant": {
+        "type": "Identifier",
+        "start": 8,
+        "end": 9,
+        "name": "x",
+        "kind": "reference"
+      },
+      "cases": [
+        {
+          "type": "SwitchCase",
+          "start": 15,
+          "end": 27,
+          "test": {
+            "type": "Literal",
+            "start": 20,
+            "end": 21,
+            "value": 1,
+            "raw": "1"
+          },
+          "consequent": [
+            {
+              "type": "ExpressionStatement",
+              "start": 23,
+              "end": 27,
+              "expression": {
+                "type": "CallExpression",
+                "start": 23,
+                "end": 26,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 23,
+                  "end": 24,
+                  "name": "a",
+                  "kind": "reference"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        },
+        {
+          "type": "SwitchCase",
+          "start": 43,
+          "end": 55,
+          "test": {
+            "type": "Literal",
+            "start": 48,
+            "end": 49,
+            "value": 2,
+            "raw": "2"
+          },
+          "consequent": [
+            {
+              "type": "ExpressionStatement",
+              "start": 51,
+              "end": 55,
+              "expression": {
+                "type": "CallExpression",
+                "start": 51,
+                "end": 54,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 51,
+                  "end": 52,
+                  "name": "b",
+                  "kind": "reference"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ],
+          "comments": [
+            {
+              "type": "Line",
+              "position": "before",
+              "sameLine": false,
+              "value": " between"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

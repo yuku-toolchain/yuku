@@ -1,5 +1,5 @@
 const std = @import("std");
-const ast = @import("ast.zig");
+const ast = @import("../ast.zig");
 const sc = @import("scope.zig");
 const String = ast.String;
 

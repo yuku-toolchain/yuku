@@ -85,12 +85,19 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const _srcLen = _u32[{[u_src]d}];
         \\  const nodeCount = _u32[{[u_nc]d}], extraCount = _u32[{[u_ec]d}], spLen = _u32[{[u_sp]d}];
         \\  const commentCount = _u32[{[u_cc]d}], lineStartsCount = _u32[{[u_ls]d}], diagCount = _u32[{[u_dc]d}], progIdx = _u32[{[u_pi]d}];
-        \\  const _isTs = !!(_u32[{[u_fl]d}] & {[ts]d});
+        \\  const _flags = _u32[{[u_fl]d}];
+        \\  const _isTs = !!(_flags & {[ts]d});
+        \\  const _attachComments = !!(_flags & {[ac]d});
         \\  const _firstNa = _u32[{[u_fna]d}];
         \\  const _nodesOff = {[hdr]d};
         \\  const eOff = _nodesOff + nodeCount * {[size]d};
         \\  const _extraBase = eOff >> 2;
         \\  const _spOff = eOff + extraCount * 4;
+        \\  // sections after the variable-length string pool may be at any
+        \\  // byte alignment, so reads against them use `dv`, not `_u32`.
+        \\  const dv = new DataView(buffer);
+        \\  const _coOff = _spOff + spLen;
+        \\  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
         \\  function _poolDecode(s, e) {{
         \\    const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
         \\    let hasEd = false;
@@ -158,6 +165,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_fl = rt.HDR_FLAGS_U32,
         .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
         .ts = rt.FLAG_TS,
+        .ac = rt.FLAG_ATTACH_COMMENTS,
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
         .f0 = rt.NODE_FIELD0_OFFSET,
@@ -169,7 +177,33 @@ fn writeDecodeOpen(w: *Writer) !void {
 
 fn writeNodeFunction(w: *Writer) !void {
     try w.print(
+        \\  function _commentsOf(a, e) {{
+        \\    const out = new Array(e - a);
+        \\    for (let j = a; j < e; j++) {{
+        \\      const o = _cOff + j * {[csize]d};
+        \\      const cf = _u8[o + {[c_fl]d}];
+        \\      const vs = dv.getUint32(o + {[c_vs]d}, true), ve = dv.getUint32(o + {[c_ve]d}, true);
+        \\      out[j - a] = {{
+        \\        type: (cf & 1) ? "Block" : "Line",
+        \\        position: ["before", "after", "inside"][(cf >> 1) & 3],
+        \\        sameLine: (cf & 8) !== 0,
+        \\        value: str(vs, ve),
+        \\      }};
+        \\    }}
+        \\    return out;
+        \\  }}
         \\  function node(i) {{
+        \\    const r = _decode(i);
+        \\    // skip unwrap cases whose inner node already carries its own
+        \\    // comments (e.g. formal_parameter returning its pattern)
+        \\    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {{
+        \\      const off = _coOff + i * 4;
+        \\      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
+        \\      if (a !== e) r.comments = _commentsOf(a, e);
+        \\    }}
+        \\    return r;
+        \\  }}
+        \\  function _decode(i) {{
         \\    const o = _nodesOff + i * {[size]d};
         \\    const tag = _u8[o];
         \\    const flags = _u8[o + {[fl]d}] | (_u8[o + {[fl1]d}] << 8);
@@ -181,6 +215,10 @@ fn writeNodeFunction(w: *Writer) !void {
         \\
     , .{
         .size = rt.NODE_SIZE,
+        .csize = rt.COMMENT_SIZE,
+        .c_fl = rt.COMMENT_FLAGS_OFFSET,
+        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
+        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
         .fl = rt.NODE_FLAGS_OFFSET,
         .fl1 = rt.NODE_FLAGS_OFFSET + 1,
         .f0 = rt.NODE_FIELD0_OFFSET,
@@ -217,7 +255,6 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArray(w, "METHOD_KINDS", &.{ "constructor", "method", "get", "set" });
     try writeArray(w, "FUNCTION_TYPES", &.{ "FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression" });
     try writeArray(w, "CLASS_TYPES", &.{ "ClassDeclaration", "ClassExpression" });
-    try writeArray(w, "COMMENT_TYPES", &.{ "Line", "Block" });
     try writeArray(w, "SEVERITY", &.{ "error", "warning", "hint", "info" });
     try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
@@ -270,11 +307,13 @@ fn writeGenericCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
     if (!has_ts) {
         try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
         try writeStructFields(w, name, T, .all);
+        try writeConstFields(w, name);
         try w.writeAll(" };\n");
         return;
     }
     try w.print("    case {d}: {{ const r = {{ type: \"{s}\", start, end", .{ tag, etype });
     try writeStructFields(w, name, T, .non_ts);
+    try writeConstFields(w, name);
     try w.writeAll(" }; if (_isTs) { ");
     try writeStructFields(w, name, T, .ts_only);
     try writeTsExtras(w, name);
@@ -598,38 +637,21 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     } else if (comptime eql(u8, name, "ts_this_parameter")) {
         // renders as an `Identifier` with the fixed name `this`, matching
         // the @typescript-eslint/typescript-estree convention and the
-        // target AST reference.
+        // target AST reference. `kind: "this"` is the yuku-specific
+        // discriminator that lets consumers and the encoder tell this
+        // `this`-parameter Identifier apart from a regular one.
         const sta = comptime slotOf(ast.TSThisParameter, "type_annotation");
         try emit(w,
-            \\    case {d}: return {{ type: "Identifier", start, end, decorators: [], name: "this", optional: false, typeAnnotation: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{ type: "Identifier", start, end, decorators: [], name: "this", kind: "this", optional: false, typeAnnotation: f{d} !== NULL ? node(f{d}) : null }};
         , .{ tag, sta, sta });
     }
 }
 
-/// Emits the lazy comments/lineStarts/diagnostics decoders and the
-/// final `return { program, comments, lineStarts, diagnostics }`.
+// emits the lazy diagnostics decoder and the returned object
 fn writeDecodeBody(w: *Writer) !void {
     try w.print(
-        \\  const cOff = _spOff + spLen;
-        \\  const lsOff = cOff + commentCount * {[csize]d};
+        \\  const lsOff = _cOff + commentCount * {[csize]d};
         \\  const dOff = lsOff + lineStartsCount * 4;
-        \\  const dv = new DataView(buffer);
-        \\  function _decodeComments() {{
-        \\    const out = new Array(commentCount);
-        \\    for (let j = 0; j < commentCount; j++) {{
-        \\      const o = cOff + j * {[csize]d};
-        \\      const flags = _u8[o + {[c_fl]d}];
-        \\      out[j] = {{
-        \\        type: COMMENT_TYPES[_u8[o + {[c_ty]d}]],
-        \\        precededByNewline: (flags & 1) !== 0,
-        \\        followedByNewline: (flags & 2) !== 0,
-        \\        value: str(dv.getUint32(o + {[c_vs]d}, true), dv.getUint32(o + {[c_ve]d}, true)),
-        \\        start: _p(dv.getUint32(o + {[c_s]d}, true)),
-        \\        end: _p(dv.getUint32(o + {[c_e]d}, true)),
-        \\      }};
-        \\    }}
-        \\    return out;
-        \\  }}
         \\  function _decodeLineStarts() {{
         \\    const out = new Array(lineStartsCount);
         \\    if (_firstNa >= _srcLen) {{
@@ -667,23 +689,26 @@ fn writeDecodeBody(w: *Writer) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  let _program, _comments, _lineStarts, _diagnostics;
+        \\  let _program, _lineStarts, _diagnostics;
+        \\  function _getLineStarts() {{
+        \\    if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
+        \\    return _lineStarts;
+        \\  }}
         \\  return {{
         \\    get program() {{ return _program !== undefined ? _program : (_program = node(progIdx)); }},
-        \\    get comments() {{ return _comments !== undefined ? _comments : (_comments = _decodeComments()); }},
-        \\    get lineStarts() {{ return _lineStarts !== undefined ? _lineStarts : (_lineStarts = _decodeLineStarts()); }},
         \\    get diagnostics() {{ return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); }},
+        \\    get lineStarts() {{ return _getLineStarts(); }},
+        \\    locOf(offset) {{
+        \\      const ls = _getLineStarts();
+        \\      let lo = 0, hi = ls.length;
+        \\      while (lo < hi) {{ const mid = (lo + hi) >>> 1; if (ls[mid] <= offset) lo = mid + 1; else hi = mid; }}
+        \\      return {{ line: lo, column: offset - ls[lo - 1] }};
+        \\    }},
         \\  }};
         \\}}
         \\
     , .{
         .csize = rt.COMMENT_SIZE,
-        .c_ty = rt.COMMENT_TYPE_OFFSET,
-        .c_fl = rt.COMMENT_FLAGS_OFFSET,
-        .c_s = rt.COMMENT_START_OFFSET,
-        .c_e = rt.COMMENT_END_OFFSET,
-        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
-        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
     });
 }
 
@@ -775,6 +800,25 @@ fn tsExtrasOf(comptime name: []const u8) []const Extra {
 fn writeTsExtras(w: *Writer, comptime name: []const u8) !void {
     inline for (comptime tsExtrasOf(name)) |e| {
         try w.print("r.{s} = {s}; ", .{ e.field, e.value });
+    }
+}
+
+/// estree-side fields emitted unconditionally (not gated on _isTs),
+/// with values that are raw js expressions such as `"\"reference\""`.
+/// used to expose constant discriminators like `Identifier.kind` that
+/// have no backing zig storage.
+const CONST_FIELDS = [_]struct { node: []const u8, field: []const u8, value: []const u8 }{
+    .{ .node = "identifier_reference", .field = "kind", .value = "\"reference\"" },
+    .{ .node = "binding_identifier", .field = "kind", .value = "\"binding\"" },
+    .{ .node = "identifier_name", .field = "kind", .value = "\"name\"" },
+    .{ .node = "label_identifier", .field = "kind", .value = "\"label\"" },
+};
+
+fn writeConstFields(w: *Writer, comptime name: []const u8) !void {
+    inline for (CONST_FIELDS) |e| {
+        if (comptime std.mem.eql(u8, e.node, name)) {
+            try w.print(", {s}: {s}", .{ e.field, e.value });
+        }
     }
 }
 

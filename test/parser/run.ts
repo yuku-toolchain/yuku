@@ -85,6 +85,15 @@ const suites: TestSuite[] = [
     autoSnapshot: true,
     options: { allowReturnOutsideFunction: true },
   },
+  {
+    path: `${MISC_DIR}/comments`,
+    expect: "snapshot",
+    lang: ["js", "ts", "tsx"],
+    recursive: false,
+    allowErrors: true,
+    autoSnapshot: true,
+    options: { attachComments: true },
+  },
 ];
 
 type SnapshotResult =
@@ -122,6 +131,7 @@ function parseFile(content: string, file: string, suite: TestSuite) {
     sourceType: file.includes(".module.") ? "module" : "script",
     lang: langFromPath(file),
     preserveParens: true,
+    attachComments: true,
     ...suite.options,
   });
 }
@@ -144,7 +154,8 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
 
 async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
-  const { lineStarts: _drop, ...comparable } = parsed;
+
+  const comparable = parsed.program;
 
   if (!(await Bun.file(snapshotFile).exists())) {
     if (!suite.autoSnapshot) return { status: "no_snapshot" };

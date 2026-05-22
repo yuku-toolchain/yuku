@@ -1,0 +1,90 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 32,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 31,
+      "kind": "const",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 6,
+          "end": 30,
+          "id": {
+            "type": "ObjectPattern",
+            "start": 6,
+            "end": 24,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 8,
+                "end": 9,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 8,
+                  "end": 9,
+                  "name": "a",
+                  "kind": "name"
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 8,
+                  "end": 9,
+                  "name": "a",
+                  "kind": "binding"
+                },
+                "method": false,
+                "shorthand": true,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 21,
+                "end": 22,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 21,
+                  "end": 22,
+                  "name": "b",
+                  "kind": "name"
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 21,
+                  "end": 22,
+                  "name": "b",
+                  "kind": "binding"
+                },
+                "method": false,
+                "shorthand": true,
+                "computed": false,
+                "comments": [
+                  {
+                    "type": "Block",
+                    "position": "before",
+                    "sameLine": true,
+                    "value": " mid "
+                  }
+                ]
+              }
+            ]
+          },
+          "init": {
+            "type": "Identifier",
+            "start": 27,
+            "end": 30,
+            "name": "obj",
+            "kind": "reference"
+          }
+        }
+      ]
+    }
+  ]
+}

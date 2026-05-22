@@ -1,8 +1,8 @@
 const std = @import("std");
 const util = @import("util");
-const traverser = @import("traverser/root.zig");
-const ast = @import("ast.zig");
-const ecmascript = @import("ecmascript.zig");
+const traverser = @import("../traverser/root.zig");
+const ast = @import("../ast.zig");
+const ecmascript = @import("../ecmascript.zig");
 
 const Allocator = std.mem.Allocator;
 

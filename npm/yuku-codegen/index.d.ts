@@ -19,10 +19,7 @@ export type Comments = boolean | "all" | "some" | "line" | "block";
 
 export type { Comment };
 
-/**
- * Fine-grained source-map configuration. Pass to `CodegenOptions.sourceMaps`
- * in place of `true` when you need to embed `file`, `sources`, etc.
- */
+/** Source-map configuration. Pass to `CodegenOptions.sourceMaps` to enable. */
 export interface SourceMapOptions {
   /** Output filename, embedded as the map's `file`. */
   file?: string;
@@ -46,11 +43,10 @@ export interface CodegenOptions {
   /** @default "double" */
   quotes?: Quotes;
   /**
-   * Source-map output.
-   *
-   * - `false` or omitted: no map is produced.
-   * - `true`: emit a map with default metadata.
-   * - `SourceMapOptions`: emit a map with the given fine-grained settings.
+   * Enable Source Map V3 output. `true` uses default metadata; pass a
+   * {@link SourceMapOptions} object to fill in `file`, `sources`,
+   * `sourcesContent`, and `sourceRoot`.
+   * @default false
    */
   sourceMaps?: boolean | SourceMapOptions;
   /**
@@ -92,13 +88,13 @@ export interface CodegenResult {
 }
 
 /** Renders the AST verbatim, preserving TypeScript syntax. */
-export function print(ast: ParseResult, options?: CodegenOptions): CodegenResult;
+export function print(result: ParseResult, options?: CodegenOptions): CodegenResult;
 
 /** Renders the AST as JavaScript, dropping TypeScript-specific syntax. */
-export function strip(ast: ParseResult, options?: CodegenOptions): CodegenResult;
+export function strip(result: ParseResult, options?: CodegenOptions): CodegenResult;
 
 /**
  * Renders the AST with size-reducing rewrites. Combine with
  * `format: "compact"` for full minification.
  */
-export function minify(ast: ParseResult, options?: CodegenOptions): CodegenResult;
+export function minify(result: ParseResult, options?: CodegenOptions): CodegenResult;

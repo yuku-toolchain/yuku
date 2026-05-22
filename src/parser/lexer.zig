@@ -54,25 +54,32 @@ pub const LexerState = struct {
 };
 
 pub const Lexer = struct {
-    comments: std.ArrayList(ast.Comment),
+    /// raw comments in source order, populated only when `attach_comments` is true
+    comments: std.ArrayList(ast.RawComment),
+    attach_comments: bool,
     allocator: std.mem.Allocator,
     state: LexerState,
     mode: LexerMode = .normal,
 
     source: []const u8,
-
     /// current byte index being scanned in the source
     cursor: u32,
 
     source_type: ast.SourceType,
     hashbang: ?struct { start: u32, len: u16 } = null,
 
-    pub fn init(source: []const u8, allocator: std.mem.Allocator, source_type: ast.SourceType) error{OutOfMemory}!Lexer {
+    pub fn init(
+        source: []const u8,
+        allocator: std.mem.Allocator,
+        source_type: ast.SourceType,
+        attach_comments: bool,
+    ) error{OutOfMemory}!Lexer {
         var self: Lexer = .{
             .source = source,
             .state = .{},
             .cursor = 0,
             .comments = .empty,
+            .attach_comments = attach_comments,
             .allocator = allocator,
             .source_type = source_type,
         };
@@ -1238,20 +1245,12 @@ pub const Lexer = struct {
 
         const src = self.source;
         var pos = self.cursor;
-        // index of the most recent comment awaiting `followed_by_newline`
-        // back-patching. the first newline observed after the comment
-        // patches the flag and clears the index.
-        var pending: ?usize = null;
 
         while (pos < src.len) {
             switch (ws_class[src[pos]]) {
                 1 => pos += 1,
                 2 => {
                     self.setTokenFlag(.line_terminator_before);
-                    if (pending) |i| {
-                        self.comments.items[i].followed_by_newline = true;
-                        pending = null;
-                    }
                     can_be_html_close_comment = true;
                     pos += 1;
                 },
@@ -1266,35 +1265,28 @@ pub const Lexer = struct {
                         else => break,
                     }
                     pos = self.cursor;
-                    pending = self.comments.items.len - 1;
                 },
                 4 => {
-                    // html-style `<!--` only valid in script mode.
+                    // html-style `<!--` only valid in script mode
                     if (self.source_type != .script or pos + 3 >= src.len or
                         src[pos + 1] != '!' or src[pos + 2] != '-' or src[pos + 3] != '-') break;
                     self.cursor = pos;
                     try self.scanHtmlComment();
                     pos = self.cursor;
-                    pending = self.comments.items.len - 1;
                 },
                 5 => {
-                    // html-style `-->` only valid at line start in script mode.
+                    // html-style `-->` only valid at line start in script mode
                     if (self.source_type != .script or !can_be_html_close_comment or pos + 2 >= src.len or
                         src[pos + 1] != '-' or src[pos + 2] != '>') break;
                     self.cursor = pos;
                     try self.scanHtmlCloseComment();
                     pos = self.cursor;
-                    pending = self.comments.items.len - 1;
                 },
                 6 => {
                     @branchHint(.unlikely);
                     const us_len = util.Utf.unicodeSeparatorLen(src, pos);
                     if (us_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
-                        if (pending) |i| {
-                            self.comments.items[i].followed_by_newline = true;
-                            pending = null;
-                        }
                         can_be_html_close_comment = true;
                         pos += us_len;
                         continue;
@@ -1311,31 +1303,24 @@ pub const Lexer = struct {
         self.cursor = pos;
     }
 
-    /// Appends a comment record. `followed_by_newline` is patched later
-    /// for block comments without an interior newline.
-    fn pushComment(
-        self: *Lexer,
-        @"type": ast.Comment.Type,
-        preceded: bool,
-        followed: bool,
-        start: u32,
-        value_start: u32,
-        value_end: u32,
-        end: u32,
-    ) LexicalError!void {
+    inline fn recordComment(self: *Lexer, @"type": ast.Comment.Type, start: u32, end: u32) LexicalError!void {
+        if (!self.attach_comments) return;
+        // delimiter widths: `//` `/*` are 2, `<!--` is 4, `-->` is 3 (no tail)
+        const head: u32 = switch (self.source[start]) {
+            '<' => 4,
+            '-' => 3,
+            else => 2,
+        };
+        const tail: u32 = if (@"type" == .block) 2 else 0;
         self.comments.append(self.allocator, .{
             .type = @"type",
-            .preceded_by_newline = preceded,
-            .followed_by_newline = followed,
-            .value = .{ .start = value_start, .end = value_end },
-            .start = start,
-            .end = end,
+            .value = .{ .start = start + head, .end = end - tail },
+            .span = .{ .start = start, .end = end },
         }) catch return error.OutOfMemory;
     }
 
     fn scanLineComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
-        const preceded = self.hasTokenFlag(.line_terminator_before);
         const src = self.source;
         var pos = start + 2;
         while (pos < src.len) {
@@ -1345,16 +1330,13 @@ pub const Lexer = struct {
             pos += 1;
         }
         self.cursor = pos;
-        // line comments carry no special classification.
-        try self.pushComment(.line, preceded, true, start, start + 2, pos, pos);
+        try self.recordComment(.line, start, pos);
     }
 
     fn scanBlockComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
-        const preceded = self.hasTokenFlag(.line_terminator_before);
         const src = self.source;
         var pos = start + 2;
-        var saw_newline = false;
         while (pos < src.len) {
             const c = src[pos];
             switch (c) {
@@ -1362,21 +1344,19 @@ pub const Lexer = struct {
                     if (pos + 1 < src.len and src[pos + 1] == '/') {
                         pos += 2;
                         self.cursor = pos;
-                        try self.pushComment(.block, preceded, saw_newline, start, start + 2, pos - 2, pos);
+                        try self.recordComment(.block, start, pos);
                         return;
                     }
                     pos += 1;
                 },
                 '\n', '\r' => {
                     self.setTokenFlag(.line_terminator_before);
-                    saw_newline = true;
                     pos += 1;
                 },
                 0x80...0xFF => {
                     const lt_len = util.Utf.unicodeSeparatorLen(src, pos);
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
-                        saw_newline = true;
                         pos += lt_len;
                     } else pos += 1;
                 },
@@ -1389,29 +1369,27 @@ pub const Lexer = struct {
 
     fn scanHtmlComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
-        const preceded = self.hasTokenFlag(.line_terminator_before);
         const src = self.source;
         self.cursor += 4;
         while (self.cursor < src.len) {
             const c = src[self.cursor];
             if (c == '-' and self.peek(1) == '-' and self.peek(2) == '>') {
                 self.cursor += 3;
-                return self.pushComment(.line, preceded, true, start, start + 2, self.cursor, self.cursor);
+                return self.recordComment(.line, start, self.cursor);
             }
             if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
-        try self.pushComment(.line, preceded, true, start, start + 2, self.cursor, self.cursor);
+        try self.recordComment(.line, start, self.cursor);
     }
 
     fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
-        const preceded = self.hasTokenFlag(.line_terminator_before);
         self.cursor += 3;
         while (self.cursor < self.source.len) : (self.cursor += 1) {
             if (self.isLineTerminator(self.source[self.cursor])) break;
         }
-        try self.pushComment(.line, preceded, true, start, start + 2, self.cursor, self.cursor);
+        try self.recordComment(.line, start, self.cursor);
     }
 
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {

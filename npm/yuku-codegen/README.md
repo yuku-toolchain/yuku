@@ -2,7 +2,7 @@
 
 A high-performance JavaScript and TypeScript code generator written in Zig, powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
-Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output. The input is exactly the `ParseResult` produced by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser).
+Renders an ESTree / TypeScript-ESTree AST back to source code, with optional Source Map V3 output.
 
 ## Install
 
@@ -16,15 +16,15 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const ast = parse("const x = 1 + 2;");
-const { code } = print(ast);
+const result = parse("const x = 1 + 2;");
+const { code } = print(result);
 
 console.log(code); // "const x = 1 + 2;"
 ```
 
 ## API
 
-Three entry points share the same options and result shape. Each accepts the full `ParseResult` from `yuku-parser`.
+All three entry points take the `ParseResult` returned by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) and share the same options and result shape.
 
 | Function | Behavior                                                                                              |
 | -------- | ----------------------------------------------------------------------------------------------------- |
@@ -47,7 +47,7 @@ interface CodegenResult {
 ## Options
 
 ```js
-const result = print(ast, {
+const out = print(result, {
   format: "pretty",
   indent: 2,
   quotes: "double",
@@ -66,26 +66,16 @@ const result = print(ast, {
 
 ## Source maps
 
-Set `sourceMaps: true` for a Source Map V3 with default metadata, or pass a `SourceMapOptions` object to fill in `file`, `sources`, `sourcesContent`, and `sourceRoot`. `false` (or omitting the field) disables map output.
-
-```js
-import { parse } from "yuku-parser";
-import { print } from "yuku-codegen";
-
-const ast = parse(`const x = 1;`);
-const { map } = print(ast, { sourceMaps: true });
-```
-
-For a map with embedded source information:
+Set `sourceMaps: true` for a Source Map V3 with default metadata, or pass a `SourceMapOptions` object to fill in `file`, `sources`, `sourcesContent`, and `sourceRoot`. Source maps are read off `result.lineStarts`, so the `ParseResult` must come from `yuku-parser`.
 
 ```js
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
 const source = `const greet = (name) => "Hello, " + name;`;
-const ast = parse(source);
+const result = parse(source);
 
-const { code, map } = print(ast, {
+const { code, map } = print(result, {
   sourceMaps: {
     file: "out.js",
     sourceFileName: "in.js",
@@ -132,15 +122,22 @@ Columns are 0-indexed UTF-16 code units, matching Chrome DevTools and consumer-s
 import { parse } from "yuku-parser";
 import { strip } from "yuku-codegen";
 
-const ast = parse(`const x: number = 1;`, { lang: "ts" });
-console.log(strip(ast).code); // "const x = 1;"
+const result = parse(`const x: number = 1;`, { lang: "ts" });
+console.log(strip(result).code); // "const x = 1;"
 ```
 
 Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that have no clean JavaScript equivalent (`enum`, `namespace`, `import = require()`, `export =`) are reported in `errors` and elided. The output is always syntactically valid JavaScript.
 
 ## Comments
 
-The `comments` option selects which entries from `ast.comments` are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
+Comments live on the AST nodes they were attached to during parsing. To preserve them, parse with `attachComments: true`:
+
+```js
+const result = parse(source, { attachComments: true });
+print(result).code;
+```
+
+The `comments` option then selects which attached comments are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
 
 | Value     | Behavior                                                        |
 | --------- | --------------------------------------------------------------- |
@@ -151,10 +148,12 @@ The `comments` option selects which entries from `ast.comments` are emitted. The
 | `"block"` | Emit `/* ... */` only.                                          |
 
 ```js
-const ast = parse(`// hello\nconst x = 1;`);
-print(ast, { comments: true }).code;
+const result = parse(`// hello\nconst x = 1;`, { attachComments: true });
+print(result, { comments: true }).code;
 // "// hello\nconst x = 1;"
 ```
+
+Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it. See the [yuku-parser comments docs](https://www.npmjs.com/package/yuku-parser#comments) for the full design rationale.
 
 ## Minification
 
@@ -172,7 +171,7 @@ Combine with `format: "compact"` for full minification:
 ```js
 import { minify } from "yuku-codegen";
 
-const { code } = minify(ast, { format: "compact" });
+const { code } = minify(result, { format: "compact" });
 ```
 
 ## License

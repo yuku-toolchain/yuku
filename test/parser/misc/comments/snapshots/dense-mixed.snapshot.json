@@ -1,0 +1,191 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 221,
+  "sourceType": "module",
+  "hashbang": null,
+  "body": [
+    {
+      "type": "ImportDeclaration",
+      "start": 15,
+      "end": 39,
+      "specifiers": [
+        {
+          "type": "ImportSpecifier",
+          "start": 24,
+          "end": 25,
+          "imported": {
+            "type": "Identifier",
+            "start": 24,
+            "end": 25,
+            "name": "x",
+            "kind": "name"
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 24,
+            "end": 25,
+            "name": "x",
+            "kind": "binding"
+          }
+        }
+      ],
+      "source": {
+        "type": "Literal",
+        "start": 33,
+        "end": 38,
+        "value": "mod",
+        "raw": "\"mod\""
+      },
+      "attributes": [],
+      "phase": null,
+      "comments": [
+        {
+          "type": "Line",
+          "position": "before",
+          "sameLine": false,
+          "value": " file header"
+        },
+        {
+          "type": "Line",
+          "position": "after",
+          "sameLine": true,
+          "value": " trail import"
+        }
+      ]
+    },
+    {
+      "type": "FunctionDeclaration",
+      "start": 74,
+      "end": 166,
+      "id": {
+        "type": "Identifier",
+        "start": 101,
+        "end": 104,
+        "name": "foo",
+        "kind": "binding",
+        "comments": [
+          {
+            "type": "Block",
+            "position": "before",
+            "sameLine": true,
+            "value": " inline name "
+          }
+        ]
+      },
+      "generator": false,
+      "async": false,
+      "params": [
+        {
+          "type": "Identifier",
+          "start": 105,
+          "end": 106,
+          "name": "a",
+          "kind": "binding"
+        },
+        {
+          "type": "Identifier",
+          "start": 108,
+          "end": 109,
+          "name": "b",
+          "kind": "binding"
+        }
+      ],
+      "body": {
+        "type": "BlockStatement",
+        "start": 111,
+        "end": 166,
+        "body": [
+          {
+            "type": "ReturnStatement",
+            "start": 132,
+            "end": 145,
+            "argument": {
+              "type": "BinaryExpression",
+              "start": 139,
+              "end": 144,
+              "left": {
+                "type": "Identifier",
+                "start": 139,
+                "end": 140,
+                "name": "a",
+                "kind": "reference"
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 143,
+                "end": 144,
+                "name": "b",
+                "kind": "reference"
+              },
+              "operator": "+"
+            },
+            "comments": [
+              {
+                "type": "Line",
+                "position": "before",
+                "sameLine": false,
+                "value": " lead-return"
+              },
+              {
+                "type": "Block",
+                "position": "after",
+                "sameLine": true,
+                "value": " trail-return "
+              }
+            ]
+          }
+        ]
+      },
+      "expression": false,
+      "comments": [
+        {
+          "type": "Block",
+          "position": "before",
+          "sameLine": false,
+          "value": "*\n * jsdoc\n "
+        }
+      ]
+    },
+    {
+      "type": "VariableDeclaration",
+      "start": 168,
+      "end": 185,
+      "kind": "const",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 174,
+          "end": 184,
+          "id": {
+            "type": "Identifier",
+            "start": 174,
+            "end": 179,
+            "name": "empty",
+            "kind": "binding"
+          },
+          "init": {
+            "type": "ObjectExpression",
+            "start": 182,
+            "end": 184,
+            "properties": []
+          }
+        }
+      ],
+      "comments": [
+        {
+          "type": "Line",
+          "position": "after",
+          "sameLine": true,
+          "value": " trail decl"
+        },
+        {
+          "type": "Line",
+          "position": "after",
+          "sameLine": false,
+          "value": " dangling-trailing"
+        }
+      ]
+    }
+  ]
+}

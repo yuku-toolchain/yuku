@@ -10,11 +10,7 @@ const REGEXP_LITERAL = /^\/(.+)\/([dgimsuyv]*)$/;
 export function serializeAstJson(obj: unknown, space?: string | number): string {
   return JSON.stringify(
     obj,
-    (key, value) => {
-      // `lineStarts` is derived from the source and varies with line-ending
-      // conventions. Omit it so snapshots stay portable.
-      if (key === "lineStarts") return undefined;
-
+    (_, value) => {
       if (typeof value === "bigint") {
         return `${BIG_INT_PREFIX}${value}n`;
       }

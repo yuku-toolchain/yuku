@@ -1,0 +1,4 @@
+foo();
+
+// after blank
+bar();

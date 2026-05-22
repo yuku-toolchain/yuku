@@ -13,18 +13,31 @@ function normalizeOptions(options) {
   return next;
 }
 
-function encodeAst(ast) {
-  return encode(ast.program, ast.comments, ast.lineStarts);
+function prepare(result, options) {
+  if (!result || !result.program || !result.program.type) {
+    throw new TypeError(
+      "Expected a `ParseResult` from yuku-parser, got " +
+        (result === null ? "null" : typeof result),
+    );
+  }
+  if (options?.sourceMaps && !result.lineStarts) {
+    throw new Error(
+      "Source maps require a `ParseResult` with `lineStarts`. " +
+        "If you built or transformed this result outside of yuku-parser, " +
+        "either drop `sourceMaps` or attach a `lineStarts` array.",
+    );
+  }
+  return encode(result);
 }
 
-export function print(ast, options) {
-  return binding.print(encodeAst(ast), normalizeOptions(options));
+export function print(result, options) {
+  return binding.print(prepare(result, options), normalizeOptions(options));
 }
 
-export function strip(ast, options) {
-  return binding.strip(encodeAst(ast), normalizeOptions(options));
+export function strip(result, options) {
+  return binding.strip(prepare(result, options), normalizeOptions(options));
 }
 
-export function minify(ast, options) {
-  return binding.minify(encodeAst(ast), normalizeOptions(options));
+export function minify(result, options) {
+  return binding.minify(prepare(result, options), normalizeOptions(options));
 }

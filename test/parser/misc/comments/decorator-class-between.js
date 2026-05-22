@@ -1,0 +1,3 @@
+@dec
+// between
+class C {}

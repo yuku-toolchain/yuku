@@ -101,25 +101,19 @@ pub const Lang = enum {
     }
 };
 
-/// A line or block comment from the source.
+/// A line or block comment attached to a host AST node.
 ///
-/// ## Example
-/// ```js
-/// // line comment
-/// /* block comment */
-/// ```
+/// `position` is `before`, `after`, or `inside` relative to the host.
+/// `same_line` is true when the comment shares a source line with the
+/// adjacent host edge (host start for `before`, host end for `after`).
+/// For `inside`, `same_line` is always false.
 pub const Comment = struct {
     type: Type,
-    /// True when a line terminator immediately precedes this comment.
-    preceded_by_newline: bool,
-    /// True when a line terminator immediately follows this comment.
-    followed_by_newline: bool,
-    /// Comment content with the surrounding delimiters removed.
-    value: String = .empty,
-    start: u32,
-    end: u32,
+    position: Position = .before,
+    same_line: bool = false,
+    value: String,
 
-    pub const Type = enum {
+    pub const Type = enum(u1) {
         line,
         block,
 
@@ -130,6 +124,29 @@ pub const Comment = struct {
             };
         }
     };
+
+    pub const Position = enum(u2) {
+        before,
+        after,
+        inside,
+
+        pub fn toString(self: Position) []const u8 {
+            return switch (self) {
+                .before => "before",
+                .after => "after",
+                .inside => "inside",
+            };
+        }
+    };
+};
+
+// internal: lexer output, consumed by the attachment pass to produce
+// the public `Comment` shape. Carries the source span needed to position
+// the comment relative to neighbouring nodes.
+pub const RawComment = struct {
+    type: Comment.Type,
+    value: String,
+    span: Span,
 };
 
 /// The AST. Backed by growable arrays and an arena allocator.
@@ -148,8 +165,12 @@ pub const Tree = struct {
     extras: std.ArrayList(NodeIndex) = .empty,
     /// Diagnostics (errors, warnings, etc.) collected during parsing and analysis.
     diagnostics: std.ArrayList(Diagnostic) = .empty,
-    /// Comments found in the source code.
+    /// Comments grouped by host node, in source order within each host.
+    /// Resolve a node's slice with `commentsOf`. Populated only when
+    /// `Options.attach_comments` is enabled.
     comments: []const Comment = &.{},
+    /// Prefix-sum index into `comments`, of length `nodes.len + 1`.
+    node_comment_offsets: []const u32 = &.{},
     /// Offset where each source line begins. Index 0 is always 0. Powers
     /// `lineColOf` so consumers resolve positions without rescanning the
     /// source.
@@ -252,37 +273,6 @@ pub const Tree = struct {
         return .{ .line = line, .col = pos - starts[line] };
     }
 
-    /// Scans `source` once and records the offset of every line start.
-    /// Index 0 is always 0.
-    pub fn buildLineStarts(self: *Tree) error{OutOfMemory}!void {
-        const alloc = self.arena.allocator();
-        const src = self.source;
-
-        var starts: std.ArrayList(u32) = .empty;
-        try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
-        starts.appendAssumeCapacity(0);
-
-        const N = 64;
-        const Vec = @Vector(N, u8);
-        const Mask = std.meta.Int(.unsigned, N);
-        const lf: Vec = @splat('\n');
-
-        var i: usize = 0;
-        while (i + N <= src.len) : (i += N) {
-            const chunk: Vec = src[i..][0..N].*;
-            var bits: Mask = @bitCast(chunk == lf);
-            while (bits != 0) {
-                const k = @ctz(bits);
-                try starts.append(alloc, @intCast(i + k + 1));
-                bits &= bits - 1;
-            }
-        }
-        while (i < src.len) : (i += 1) {
-            if (src[i] == '\n') try starts.append(alloc, @intCast(i + 1));
-        }
-        self.line_starts = try starts.toOwnedSlice(alloc);
-    }
-
     /// Replaces an existing node's data in-place.
     pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
         self.nodes.items(.data)[@intFromEnum(index)] = new_data;
@@ -354,6 +344,15 @@ pub const Tree = struct {
     /// Returns the string content for a `String`.
     pub inline fn string(self: *const Tree, id: String) []const u8 {
         return self.strings.get(id);
+    }
+
+    /// Returns the comments attached to `node`, in source order. Empty
+    /// when `attach_comments` was not enabled or the node has none.
+    pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const Comment {
+        const offsets = self.node_comment_offsets;
+        const i = @intFromEnum(node);
+        if (i + 1 >= offsets.len) return &.{};
+        return self.comments[offsets[i]..offsets[i + 1]];
     }
 };
 

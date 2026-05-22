@@ -13,7 +13,6 @@ const PROPERTY_KINDS = ["init", "get", "set"];
 const METHOD_KINDS = ["constructor", "method", "get", "set"];
 const FUNCTION_TYPES = ["FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"];
 const CLASS_TYPES = ["ClassDeclaration", "ClassExpression"];
-const COMMENT_TYPES = ["Line", "Block"];
 const SEVERITY = ["error", "warning", "hint", "info"];
 const IMPORT_EXPORT_KINDS = ["value", "type"];
 const ACCESSIBILITY = [null, "public", "private", "protected"];
@@ -59,12 +58,19 @@ function decode(buffer, source) {
   const _srcLen = _u32[3];
   const nodeCount = _u32[0], extraCount = _u32[1], spLen = _u32[2];
   const commentCount = _u32[4], lineStartsCount = _u32[5], diagCount = _u32[6], progIdx = _u32[7];
-  const _isTs = !!(_u32[8] & 1);
+  const _flags = _u32[8];
+  const _isTs = !!(_flags & 1);
+  const _attachComments = !!(_flags & 2);
   const _firstNa = _u32[9];
   const _nodesOff = 40;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
+  // sections after the variable-length string pool may be at any
+  // byte alignment, so reads against them use `dv`, not `_u32`.
+  const dv = new DataView(buffer);
+  const _coOff = _spOff + spLen;
+  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
   function _poolDecode(s, e) {
     const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
     let hasEd = false;
@@ -119,7 +125,33 @@ function decode(buffer, source) {
     if (rest !== NULL) p.push(node(rest));
     return p;
   }
+  function _commentsOf(a, e) {
+    const out = new Array(e - a);
+    for (let j = a; j < e; j++) {
+      const o = _cOff + j * 12;
+      const cf = _u8[o + 0];
+      const vs = dv.getUint32(o + 4, true), ve = dv.getUint32(o + 8, true);
+      out[j - a] = {
+        type: (cf & 1) ? "Block" : "Line",
+        position: ["before", "after", "inside"][(cf >> 1) & 3],
+        sameLine: (cf & 8) !== 0,
+        value: str(vs, ve),
+      };
+    }
+    return out;
+  }
   function node(i) {
+    const r = _decode(i);
+    // skip unwrap cases whose inner node already carries its own
+    // comments (e.g. formal_parameter returning its pattern)
+    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {
+      const off = _coOff + i * 4;
+      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
+      if (a !== e) r.comments = _commentsOf(a, e);
+    }
+    return r;
+  }
+  function _decode(i) {
     const o = _nodesOff + i * 48;
     const tag = _u8[o];
     const flags = _u8[o + 2] | (_u8[o + 3] << 8);
@@ -170,11 +202,11 @@ function decode(buffer, source) {
     case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
     case 41: { const raw = _src.slice(start, end).replace(/\r\n?/g, "\n"); const tl = !!(flags & 1); const s = _isTs ? start - 1 : start; const e = _isTs ? (tl ? end + 1 : end + 2) : end; return { type: "TemplateElement", start: s, end: e, value: { raw, cooked: (flags & 2) ? null : str(f1, f2) }, tail: tl }; }
-    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "reference" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
-    case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
-    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
-    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "binding" }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "name" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "label" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 47: { const r = { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.directive = null; } return r; }
     case 48: return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
     case 49: return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) };
@@ -274,7 +306,7 @@ function decode(buffer, source) {
     case 143: return { type: "TSModuleBlock", start, end, body: nodeArr(f1, f0) };
     case 144: return { type: "TSModuleDeclaration", start, end, id: node(f1), body: node(f2), kind: "global", declare: !!(flags & 1), global: true };
     case 145: { const r = { type: "TSParameterProperty", start, end, decorators: nodeArr(f1, f0), parameter: f2 !== NULL ? node(f2) : null, override: !!(flags & 1), readonly: !!(flags & 2), accessibility: ACCESSIBILITY[(flags >> 2) & 3] }; if (_isTs) { r.static = false; } return r; }
-    case 146: return { type: "Identifier", start, end, decorators: [], name: "this", optional: false, typeAnnotation: f1 !== NULL ? node(f1) : null };
+    case 146: return { type: "Identifier", start, end, decorators: [], name: "this", kind: "this", optional: false, typeAnnotation: f1 !== NULL ? node(f1) : null };
     case 147: return { type: "TSAsExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
     case 148: return { type: "TSSatisfiesExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
     case 149: return { type: "TSTypeAssertion", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, expression: f2 !== NULL ? node(f2) : null };
@@ -301,26 +333,8 @@ function decode(buffer, source) {
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
-  const cOff = _spOff + spLen;
-  const lsOff = cOff + commentCount * 20;
+  const lsOff = _cOff + commentCount * 12;
   const dOff = lsOff + lineStartsCount * 4;
-  const dv = new DataView(buffer);
-  function _decodeComments() {
-    const out = new Array(commentCount);
-    for (let j = 0; j < commentCount; j++) {
-      const o = cOff + j * 20;
-      const flags = _u8[o + 1];
-      out[j] = {
-        type: COMMENT_TYPES[_u8[o + 0]],
-        precededByNewline: (flags & 1) !== 0,
-        followedByNewline: (flags & 2) !== 0,
-        value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)),
-        start: _p(dv.getUint32(o + 4, true)),
-        end: _p(dv.getUint32(o + 8, true)),
-      };
-    }
-    return out;
-  }
   function _decodeLineStarts() {
     const out = new Array(lineStartsCount);
     if (_firstNa >= _srcLen) {
@@ -358,12 +372,21 @@ function decode(buffer, source) {
     }
     return out;
   }
-  let _program, _comments, _lineStarts, _diagnostics;
+  let _program, _lineStarts, _diagnostics;
+  function _getLineStarts() {
+    if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
+    return _lineStarts;
+  }
   return {
     get program() { return _program !== undefined ? _program : (_program = node(progIdx)); },
-    get comments() { return _comments !== undefined ? _comments : (_comments = _decodeComments()); },
-    get lineStarts() { return _lineStarts !== undefined ? _lineStarts : (_lineStarts = _decodeLineStarts()); },
     get diagnostics() { return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); },
+    get lineStarts() { return _getLineStarts(); },
+    locOf(offset) {
+      const ls = _getLineStarts();
+      let lo = 0, hi = ls.length;
+      while (lo < hi) { const mid = (lo + hi) >>> 1; if (ls[mid] <= offset) lo = mid + 1; else hi = mid; }
+      return { line: lo, column: offset - ls[lo - 1] };
+    },
   };
 }
 export { decode };

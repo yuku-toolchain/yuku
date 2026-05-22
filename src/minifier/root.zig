@@ -1,4 +1,4 @@
-// this is wip, not yet final
+// minifier is wip, just started
 
 const std = @import("std");
 const parser = @import("parser");

@@ -1,0 +1,22 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 13,
+  "sourceType": "script",
+  "hashbang": null,
+  "body": [],
+  "comments": [
+    {
+      "type": "Line",
+      "position": "inside",
+      "sameLine": false,
+      "value": " a"
+    },
+    {
+      "type": "Block",
+      "position": "inside",
+      "sameLine": false,
+      "value": " b "
+    }
+  ]
+}

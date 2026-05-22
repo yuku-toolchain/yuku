@@ -2,8 +2,6 @@
 
 Yuku is pure Zig with no external dependencies.
 
-For internal design notes, see [ARCHITECTURE.md](./ARCHITECTURE.md).
-
 ## Prerequisites
 
 - [Zig](https://ziglang.org/) **nightly/development build** (build + compile). Yuku always keeps up to date with the latest Zig development version.

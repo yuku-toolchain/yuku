@@ -10,13 +10,11 @@ const NODE_FIELD0_OFFSET = 4;
 const NODE_HEADER_U32S = 2;
 const NODE_SPAN_START_U32 = 10;
 const NODE_SPAN_END_U32 = 11;
-const COMMENT_SIZE = 20;
-const COMMENT_TYPE_OFFSET = 0;
-const COMMENT_FLAGS_OFFSET = 1;
-const COMMENT_START_OFFSET = 4;
-const COMMENT_END_OFFSET = 8;
-const COMMENT_VALUE_START_OFFSET = 12;
-const COMMENT_VALUE_END_OFFSET = 16;
+const COMMENT_SIZE = 12;
+const COMMENT_FLAGS_OFFSET = 0;
+const COMMENT_VALUE_START_OFFSET = 4;
+const COMMENT_VALUE_END_OFFSET = 8;
+const FLAG_ATTACH_COMMENTS = 2;
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
 const LOGICAL_OPS_INV = {"&&": 0, "||": 1, "??": 2};
 const UNARY_OPS_INV = {"-": 0, "+": 1, "!": 2, "~": 3, "typeof": 4, "void": 5, "delete": 6};
@@ -33,7 +31,9 @@ const IMPORT_PHASE_INV = {"source": 0, "defer": 1};
 const ACCESSIBILITY_INV = (v) => v == null ? 0 : v === "public" ? 1 : v === "private" ? 2 : 3;
 const TS_MAPPED_OPTIONAL_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
 const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
-function encode(estree, comments, lineStarts) {
+function encode(result) {
+  const root = result.program;
+  const lineStarts = result.lineStarts;
   let nodeCap = 512;
   let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);
   let nU8 = new Uint8Array(nodeAB);
@@ -126,6 +126,12 @@ function encode(estree, comments, lineStarts) {
   }
   function asStart(n) { return (n && typeof n.start === "number") ? n.start : 0; }
   function asEnd(n) { return (n && typeof n.end === "number") ? n.end : 0; }
+  // called by every enc_* to register the node's `.comments` array
+  function recordComments(n, idx) {
+    if (idx !== NULL && n && Array.isArray(n.comments) && n.comments.length > 0) {
+      commentsByIdx.set(idx, n.comments);
+    }
+  }
   function encBindingTarget(n) {
     if (n == null) return NULL;
     if (n.type === "Identifier") return enc_binding_identifier(n);
@@ -147,6 +153,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_expressions.len);
     slotAt(idx, 0, c_expressions.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_parenthesized_expression(n) {
@@ -155,6 +162,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 1);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_arrow_function_expression(n) {
@@ -170,6 +178,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 3, rt_);
     flagsAt(idx, (n.expression ? 1 : 0) | (n.async ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_function(n, kind) {
@@ -187,6 +196,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 4, rt_);
     flagsAt(idx, ((kind & 3) << 0) | (n.generator ? 4 : 0) | (n.async ? 8 : 0) | (n.declare ? 16 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_block_statement(n) {
@@ -196,6 +206,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function encFormalParameters(params) {
@@ -231,6 +242,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 7);
     slotAt(idx, 0, pat);
     spanAt(idx, asStart(p), asEnd(p));
+    recordComments(p, idx);
     return idx;
   }
   function enc_binary_expression(n) {
@@ -242,6 +254,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_right);
     flagsAt(idx, 0 | (BINARY_OPS_INV[n.operator] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_logical_expression(n) {
@@ -253,6 +266,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_right);
     flagsAt(idx, 0 | (LOGICAL_OPS_INV[n.operator] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_conditional_expression(n) {
@@ -265,6 +279,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_consequent);
     slotAt(idx, 2, c_alternate);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_unary_expression(n) {
@@ -274,6 +289,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, a);
     flagsAt(idx, UNARY_OPS_INV[n.operator] | 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_update_expression(n) {
@@ -283,6 +299,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_argument);
     flagsAt(idx, 0 | (UPDATE_OPS_INV[n.operator] | 0) | (n.prefix ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_assignment_expression(n) {
@@ -294,6 +311,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_right);
     flagsAt(idx, 0 | (ASSIGNMENT_OPS_INV[n.operator] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_array_expression(n) {
@@ -303,6 +321,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_elements.len);
     slotAt(idx, 0, c_elements.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_object_expression(n) {
@@ -312,6 +331,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_properties.len);
     slotAt(idx, 0, c_properties.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_spread_element(n) {
@@ -320,6 +340,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 16);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_object_property(n) {
@@ -330,6 +351,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, k); slotAt(idx, 1, v);
     flagsAt(idx, ((PROPERTY_KINDS_INV[n.kind] | 0) << 0) | (n.method ? 4 : 0) | (n.shorthand ? 8 : 0) | (n.computed ? 16 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_member_expression(n) {
@@ -340,6 +362,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, o); slotAt(idx, 1, p);
     flagsAt(idx, (n.computed ? 1 : 0) | (n.optional ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_call_expression(n) {
@@ -354,6 +377,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_type_arguments);
     flagsAt(idx, 0 | (n.optional ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_chain_expression(n) {
@@ -362,6 +386,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 20);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_tagged_template_expression(n) {
@@ -374,6 +399,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_quasi);
     slotAt(idx, 2, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_new_expression(n) {
@@ -387,6 +413,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_arguments.start);
     slotAt(idx, 2, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_await_expression(n) {
@@ -395,6 +422,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 23);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_yield_expression(n) {
@@ -404,6 +432,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_argument);
     flagsAt(idx, 0 | (n.delegate ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_meta_property(n) {
@@ -414,6 +443,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_meta);
     slotAt(idx, 1, c_property);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_decorator(n) {
@@ -422,6 +452,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 26);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_class(n, kind) {
@@ -445,6 +476,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 7, imps.len);
     flagsAt(idx, ((kind & 1) << 0) | (n.abstract ? 2 : 0) | (n.declare ? 4 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_class_body(n) {
@@ -454,6 +486,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_method_definition(n, abstract) {
@@ -475,6 +508,7 @@ function encode(estree, comments, lineStarts) {
       (abstract ? 64 : 0) |
       (ACCESSIBILITY_INV(n.accessibility) << 7));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_property_definition(n, accessor, abstract) {
@@ -501,6 +535,7 @@ function encode(estree, comments, lineStarts) {
       (abstract ? 256 : 0) |
       (ACCESSIBILITY_INV(n.accessibility) << 9));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_static_block(n) {
@@ -510,12 +545,14 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_super(n) {
     const idx = alloc();
     tagAt(idx, 32);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_string_literal(n) {
@@ -524,6 +561,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 33);
     slotAt(idx, 0, s.start); slotAt(idx, 1, s.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_numeric_literal(n) {
@@ -541,6 +579,7 @@ function encode(estree, comments, lineStarts) {
     flagsAt(idx, kind);
     slotAt(idx, 0, r.start); slotAt(idx, 1, r.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_bigint_literal(n) {
@@ -550,6 +589,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 35);
     slotAt(idx, 0, r.start); slotAt(idx, 1, r.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_boolean_literal(n) {
@@ -557,18 +597,21 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 36);
     flagsAt(idx, n.value ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_null_literal(n) {
     const idx = alloc();
     tagAt(idx, 37);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_this_expression(n) {
     const idx = alloc();
     tagAt(idx, 38);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_regexp_literal(n) {
@@ -579,6 +622,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, p.start); slotAt(idx, 1, p.end);
     slotAt(idx, 2, fl.start); slotAt(idx, 3, fl.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_template_literal(n) {
@@ -591,6 +635,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_expressions.start);
     slotAt(idx, 2, c_expressions.len);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_template_element(n) {
@@ -602,6 +647,7 @@ function encode(estree, comments, lineStarts) {
     flagsAt(idx, (n.tail ? 1 : 0) | (undef ? 2 : 0));
     slotAt(idx, 0, c.start); slotAt(idx, 1, c.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_identifier_reference(n) {
@@ -611,6 +657,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_private_identifier(n) {
@@ -620,6 +667,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_binding_identifier(n) {
@@ -635,6 +683,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 3, c_type_annotation);
     flagsAt(idx, 0 | (n.optional ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_identifier_name(n) {
@@ -644,6 +693,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_label_identifier(n) {
@@ -653,6 +703,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_expression_statement(n) {
@@ -661,6 +712,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 47);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_if_statement(n) {
@@ -673,6 +725,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_consequent);
     slotAt(idx, 2, c_alternate);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_switch_statement(n) {
@@ -684,6 +737,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_cases.len);
     slotAt(idx, 1, c_cases.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_switch_case(n) {
@@ -695,6 +749,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_consequent.len);
     slotAt(idx, 1, c_consequent.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_for_statement(n) {
@@ -709,6 +764,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_update);
     slotAt(idx, 3, c_body);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_for_in_statement(n) {
@@ -721,6 +777,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_right);
     slotAt(idx, 2, c_body);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_for_of_statement(n) {
@@ -734,6 +791,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_body);
     flagsAt(idx, 0 | (n.await ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_while_statement(n) {
@@ -744,6 +802,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_test);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_do_while_statement(n) {
@@ -754,6 +813,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_body);
     slotAt(idx, 1, c_test);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_break_statement(n) {
@@ -762,6 +822,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 56);
     slotAt(idx, 0, c_label);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_continue_statement(n) {
@@ -770,6 +831,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 57);
     slotAt(idx, 0, c_label);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_labeled_statement(n) {
@@ -780,6 +842,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_label);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_with_statement(n) {
@@ -790,6 +853,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_object);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_return_statement(n) {
@@ -798,6 +862,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 60);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_throw_statement(n) {
@@ -806,6 +871,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 61);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_try_statement(n) {
@@ -818,6 +884,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_handler);
     slotAt(idx, 2, c_finalizer);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_catch_clause(n) {
@@ -828,18 +895,21 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_param);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_debugger_statement(n) {
     const idx = alloc();
     tagAt(idx, 64);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_empty_statement(n) {
     const idx = alloc();
     tagAt(idx, 65);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_variable_declaration(n) {
@@ -850,6 +920,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_declarators.start);
     flagsAt(idx, 0 | (VAR_KINDS_INV[n.kind] | 0) | (n.declare ? 8 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_variable_declarator(n) {
@@ -861,6 +932,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_init);
     flagsAt(idx, 0 | (n.definite ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_directive(n) {
@@ -871,6 +943,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, e);
     slotAt(idx, 1, dv.start); slotAt(idx, 2, dv.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_assignment_pattern(n) {
@@ -887,6 +960,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 3, c_type_annotation);
     flagsAt(idx, 0 | (n.optional ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_binding_rest_element(n) {
@@ -901,6 +975,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_type_annotation);
     flagsAt(idx, 0 | (n.optional ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_array_pattern(n) {
@@ -925,6 +1000,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 4, ta);
     flagsAt(idx, n.optional ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_object_pattern(n) {
@@ -948,6 +1024,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 4, ta);
     flagsAt(idx, n.optional ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_binding_property(p) {
@@ -970,6 +1047,7 @@ function encode(estree, comments, lineStarts) {
     if (hb) { slotAt(idx, 1, hb.start); slotAt(idx, 2, hb.end); }
     flagsAt(idx, (n.sourceType === "script" ? 0 : 1) | (hb ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_import_expression(n) {
@@ -981,6 +1059,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_options);
     flagsAt(idx, 0 | (n.phase != null ? 1 | ((IMPORT_PHASE_INV[n.phase] | 0) << 1) : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_import_declaration(n) {
@@ -996,6 +1075,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 3, c_attributes.len);
     flagsAt(idx, 0 | (n.phase != null ? 1 | ((IMPORT_PHASE_INV[n.phase] | 0) << 1) : 0) | ((IMPORT_EXPORT_KINDS_INV[n.importKind] | 0) << 2));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_import_specifier(n) {
@@ -1007,6 +1087,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_local);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.importKind] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_import_default_specifier(n) {
@@ -1015,6 +1096,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 78);
     slotAt(idx, 0, c_local);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_import_namespace_specifier(n) {
@@ -1023,6 +1105,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 79);
     slotAt(idx, 0, c_local);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_import_attribute(n) {
@@ -1033,6 +1116,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_key);
     slotAt(idx, 1, c_value);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_export_named_declaration(n) {
@@ -1050,6 +1134,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 4, c_attributes.len);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.exportKind] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_export_default_declaration(n) {
@@ -1058,6 +1143,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 82);
     slotAt(idx, 0, c_declaration);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_export_all_declaration(n) {
@@ -1072,6 +1158,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_attributes.start);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.exportKind] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_export_specifier(n) {
@@ -1083,6 +1170,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_exported);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.exportKind] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_annotation(n) {
@@ -1091,90 +1179,105 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 85);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_any_keyword(n) {
     const idx = alloc();
     tagAt(idx, 86);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_unknown_keyword(n) {
     const idx = alloc();
     tagAt(idx, 87);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_never_keyword(n) {
     const idx = alloc();
     tagAt(idx, 88);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_void_keyword(n) {
     const idx = alloc();
     tagAt(idx, 89);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_null_keyword(n) {
     const idx = alloc();
     tagAt(idx, 90);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_undefined_keyword(n) {
     const idx = alloc();
     tagAt(idx, 91);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_string_keyword(n) {
     const idx = alloc();
     tagAt(idx, 92);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_number_keyword(n) {
     const idx = alloc();
     tagAt(idx, 93);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_bigint_keyword(n) {
     const idx = alloc();
     tagAt(idx, 94);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_boolean_keyword(n) {
     const idx = alloc();
     tagAt(idx, 95);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_symbol_keyword(n) {
     const idx = alloc();
     tagAt(idx, 96);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_object_keyword(n) {
     const idx = alloc();
     tagAt(idx, 97);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_intrinsic_keyword(n) {
     const idx = alloc();
     tagAt(idx, 98);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_this_type(n) {
     const idx = alloc();
     tagAt(idx, 99);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_reference(n) {
@@ -1185,6 +1288,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_type_name);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_qualified_name(n) {
@@ -1195,6 +1299,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_query(n) {
@@ -1205,6 +1310,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_expr_name);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_import_type(n) {
@@ -1219,6 +1325,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_qualifier);
     slotAt(idx, 3, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_parameter(n) {
@@ -1232,6 +1339,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_default);
     flagsAt(idx, 0 | (n.in ? 1 : 0) | (n.out ? 2 : 0) | (n.const ? 4 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_parameter_declaration(n) {
@@ -1241,6 +1349,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_params.len);
     slotAt(idx, 0, c_params.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_parameter_instantiation(n) {
@@ -1250,6 +1359,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_params.len);
     slotAt(idx, 0, c_params.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_literal_type(n) {
@@ -1258,6 +1368,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 107);
     slotAt(idx, 0, c_literal);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_template_literal_type(n) {
@@ -1270,6 +1381,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_types.start);
     slotAt(idx, 2, c_types.len);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_array_type(n) {
@@ -1278,6 +1390,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 109);
     slotAt(idx, 0, c_element_type);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_indexed_access_type(n) {
@@ -1288,6 +1401,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_object_type);
     slotAt(idx, 1, c_index_type);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_tuple_type(n) {
@@ -1297,6 +1411,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_element_types.len);
     slotAt(idx, 0, c_element_types.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_named_tuple_member(n) {
@@ -1308,6 +1423,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_element_type);
     flagsAt(idx, 0 | (n.optional ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_optional_type(n) {
@@ -1316,6 +1432,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 113);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_rest_type(n) {
@@ -1324,6 +1441,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 114);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_jsdoc_nullable_type(n) {
@@ -1333,6 +1451,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_type_annotation);
     flagsAt(idx, 0 | (n.postfix ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_jsdoc_non_nullable_type(n) {
@@ -1342,12 +1461,14 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_type_annotation);
     flagsAt(idx, 0 | (n.postfix ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_jsdoc_unknown_type(n) {
     const idx = alloc();
     tagAt(idx, 117);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_union_type(n) {
@@ -1357,6 +1478,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_types.len);
     slotAt(idx, 0, c_types.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_intersection_type(n) {
@@ -1366,6 +1488,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_types.len);
     slotAt(idx, 0, c_types.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_conditional_type(n) {
@@ -1380,6 +1503,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_true_type);
     slotAt(idx, 3, c_false_type);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_infer_type(n) {
@@ -1388,6 +1512,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 121);
     slotAt(idx, 0, c_type_parameter);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_operator(n) {
@@ -1397,6 +1522,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_type_annotation);
     flagsAt(idx, 0 | (TS_TYPE_OPERATORS_INV[n.operator] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_parenthesized_type(n) {
@@ -1405,6 +1531,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 123);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_function_type(n) {
@@ -1415,6 +1542,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 124);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_constructor_type(n) {
@@ -1426,6 +1554,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     flagsAt(idx, n.abstract ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_predicate(n) {
@@ -1437,6 +1566,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_type_annotation);
     flagsAt(idx, 0 | (n.asserts ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_literal(n) {
@@ -1446,6 +1576,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_members.len);
     slotAt(idx, 0, c_members.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_mapped_type(n) {
@@ -1458,6 +1589,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, k); slotAt(idx, 1, c); slotAt(idx, 2, nt); slotAt(idx, 3, ta);
     flagsAt(idx, (TS_MAPPED_OPTIONAL_INV(n.optional) << 0) | (TS_MAPPED_READONLY_INV(n.readonly) << 2));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_property_signature(n) {
@@ -1468,6 +1600,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, k); slotAt(idx, 1, ta);
     flagsAt(idx, (n.computed ? 1 : 0) | (n.optional ? 2 : 0) | (n.readonly ? 4 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_method_signature(n) {
@@ -1480,6 +1613,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, k); slotAt(idx, 1, tp); slotAt(idx, 2, params); slotAt(idx, 3, rt_);
     flagsAt(idx, (n.computed ? 4 : 0) | (n.optional ? 8 : 0) | ((TS_METHOD_SIGNATURE_KINDS_INV[n.kind] | 0) << 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_call_signature_declaration(n) {
@@ -1490,6 +1624,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 131);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_construct_signature_declaration(n) {
@@ -1500,6 +1635,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 132);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_index_signature(n) {
@@ -1512,6 +1648,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, ta);
     flagsAt(idx, (n.readonly ? 1 : 0) | (n.static ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_alias_declaration(n) {
@@ -1525,6 +1662,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_type_annotation);
     flagsAt(idx, 0 | (n.declare ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_interface_declaration(n) {
@@ -1541,6 +1679,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 3, c_body);
     flagsAt(idx, 0 | (n.declare ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_interface_body(n) {
@@ -1550,6 +1689,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_interface_heritage(n) {
@@ -1560,6 +1700,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_class_implements(n) {
@@ -1570,6 +1711,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_enum_declaration(n) {
@@ -1581,6 +1723,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_body);
     flagsAt(idx, 0 | (n.const ? 1 : 0) | (n.declare ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_enum_body(n) {
@@ -1590,6 +1733,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_members.len);
     slotAt(idx, 0, c_members.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_enum_member(n) {
@@ -1600,6 +1744,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, id); slotAt(idx, 1, init);
     flagsAt(idx, n.computed ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_module_declaration(n) {
@@ -1611,6 +1756,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, body);
     flagsAt(idx, ((TS_MODULE_KINDS_INV[n.kind] | 0) << 0) | (n.declare ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_module_block(n) {
@@ -1620,6 +1766,7 @@ function encode(estree, comments, lineStarts) {
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_global_declaration(n) {
@@ -1631,6 +1778,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, body);
     flagsAt(idx, n.declare ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_parameter_property(n) {
@@ -1643,6 +1791,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_parameter);
     flagsAt(idx, 0 | (n.override ? 1 : 0) | (n.readonly ? 2 : 0) | (ACCESSIBILITY_INV(n.accessibility) << 2));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_this_parameter(n) {
@@ -1651,6 +1800,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 146);
     slotAt(idx, 0, ta);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_as_expression(n) {
@@ -1661,6 +1811,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_satisfies_expression(n) {
@@ -1671,6 +1822,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_type_assertion(n) {
@@ -1681,6 +1833,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_type_annotation);
     slotAt(idx, 1, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_non_null_expression(n) {
@@ -1689,6 +1842,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 150);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_instantiation_expression(n) {
@@ -1699,6 +1853,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_export_assignment(n) {
@@ -1707,6 +1862,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 152);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_namespace_export_declaration(n) {
@@ -1715,6 +1871,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 153);
     slotAt(idx, 0, c_id);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_import_equals_declaration(n) {
@@ -1726,6 +1883,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_module_reference);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.importKind] | 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_ts_external_module_reference(n) {
@@ -1734,6 +1892,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 155);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_element(n) {
@@ -1747,6 +1906,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_children.start);
     slotAt(idx, 2, c_closing_element);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_opening_element(n) {
@@ -1761,6 +1921,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 2, c_type_arguments);
     flagsAt(idx, 0 | (n.selfClosing ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_closing_element(n) {
@@ -1769,6 +1930,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 158);
     slotAt(idx, 0, c_name);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_fragment(n) {
@@ -1782,18 +1944,21 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 1, c_children.start);
     slotAt(idx, 2, c_closing_fragment);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_opening_fragment(n) {
     const idx = alloc();
     tagAt(idx, 160);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_closing_fragment(n) {
     const idx = alloc();
     tagAt(idx, 161);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_identifier(n) {
@@ -1803,6 +1968,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_namespaced_name(n) {
@@ -1813,6 +1979,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_namespace);
     slotAt(idx, 1, c_name);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_member_expression(n) {
@@ -1823,6 +1990,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_object);
     slotAt(idx, 1, c_property);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_attribute(n) {
@@ -1833,6 +2001,7 @@ function encode(estree, comments, lineStarts) {
     slotAt(idx, 0, c_name);
     slotAt(idx, 1, c_value);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_spread_attribute(n) {
@@ -1841,6 +2010,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 166);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_expression_container(n) {
@@ -1849,12 +2019,14 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 167);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_empty_expression(n) {
     const idx = alloc();
     tagAt(idx, 168);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_text(n) {
@@ -1863,6 +2035,7 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 169);
     slotAt(idx, 0, v.start); slotAt(idx, 1, v.end);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
   function enc_jsx_spread_child(n) {
@@ -1871,12 +2044,22 @@ function encode(estree, comments, lineStarts) {
     tagAt(idx, 170);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
     return idx;
   }
+  // encoded node index -> its `.comments` array
+  const commentsByIdx = new Map();
   function encNode(n) {
     if (n == null) return NULL;
     switch (n.type) {
-      case "Identifier": return enc_identifier_reference(n);
+      case "Identifier": {
+        switch (n.kind) {
+          case "binding": return enc_binding_identifier(n);
+          case "name": return enc_identifier_name(n);
+          case "label": return enc_label_identifier(n);
+          default: return enc_identifier_reference(n);
+        }
+      }
       case "PrivateIdentifier": return enc_private_identifier(n);
       case "Literal": {
         if (n.regex) return enc_regexp_literal(n);
@@ -2052,27 +2235,44 @@ function encode(estree, comments, lineStarts) {
       default: throw new Error("yuku-codegen: unsupported ESTree node type: " + n.type);
     }
   }
-  const progIdx = encNode(estree);
-  // Comments are encoded after the node walk so string interning lands in the pool first.
-  const commentCount = Array.isArray(comments) ? comments.length : 0;
+  const progIdx = encNode(root);
+  const POSITION_INV = { "before": 0, "after": 1, "inside": 2 };
+  // counting-sort comments by host into a prefix-sum offsets table,
+  // then write each comment at its slot in `commentBytes`.
+  const attachComments = commentsByIdx.size > 0;
+  let commentCount = 0;
+  let offsetsBytes = null;
   let commentBytes = null;
-  if (commentCount > 0) {
+  if (attachComments) {
+    for (const arr of commentsByIdx.values()) commentCount += arr.length;
+    const offsets = new Uint32Array(nodeCount + 1);
+    for (const [idx, arr] of commentsByIdx) offsets[idx] = arr.length;
+    let sum = 0;
+    for (let i = 0; i < nodeCount; i++) {
+      const c = offsets[i];
+      offsets[i] = sum;
+      sum += c;
+    }
+    offsets[nodeCount] = sum;
+    offsetsBytes = offsets.buffer;
     commentBytes = new ArrayBuffer(commentCount * COMMENT_SIZE);
     const cU8 = new Uint8Array(commentBytes);
     const cDV = new DataView(commentBytes);
-    for (let i = 0; i < commentCount; i++) {
-      const c = comments[i];
-      const v = encStr(typeof c.value === "string" ? c.value : "");
-      let flags = 0;
-      if (c.precededByNewline) flags |= 1;
-      if (c.followedByNewline) flags |= 2;
-      const o = i * COMMENT_SIZE;
-      cU8[o + COMMENT_TYPE_OFFSET] = c.type === "Block" ? 1 : 0;
-      cU8[o + COMMENT_FLAGS_OFFSET] = flags;
-      cDV.setUint32(o + COMMENT_START_OFFSET, (c.start >>> 0), true);
-      cDV.setUint32(o + COMMENT_END_OFFSET, (c.end >>> 0), true);
-      cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
-      cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
+    const cursor = new Uint32Array(nodeCount);
+    for (const [idx, arr] of commentsByIdx) {
+      for (let j = 0; j < arr.length; j++) {
+        const c = arr[j];
+        const slot = offsets[idx] + cursor[idx]; cursor[idx]++;
+        let f = 0;
+        if (c.type === "Block") f |= 1;
+        f |= ((POSITION_INV[c.position] ?? 0) & 3) << 1;
+        if (c.sameLine) f |= 8;
+        const v = encStr(typeof c.value === "string" ? c.value : "");
+        const o = slot * COMMENT_SIZE;
+        cU8[o + COMMENT_FLAGS_OFFSET] = f;
+        cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
+        cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
+      }
     }
   }
   const lineStartsCount = Array.isArray(lineStarts) ? lineStarts.length : 0;
@@ -2084,9 +2284,10 @@ function encode(estree, comments, lineStarts) {
   }
   const totalNodeBytes = nodeCount * NODE_SIZE;
   const totalExtraBytes = extraCount * 4;
+  const totalOffsetsBytes = attachComments ? (nodeCount + 1) * 4 : 0;
   const totalCommentBytes = commentCount * COMMENT_SIZE;
   const totalLineStartsBytes = lineStartsCount * 4;
-  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalCommentBytes + totalLineStartsBytes;
+  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
   const out = new ArrayBuffer(finalSize);
   const outU8 = new Uint8Array(out);
   const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));
@@ -2098,16 +2299,18 @@ function encode(estree, comments, lineStarts) {
   outU32[5] = lineStartsCount;
   outU32[6] = 0;
   outU32[7] = progIdx;
-  outU32[8] = 0;
+  outU32[8] = attachComments ? FLAG_ATTACH_COMMENTS : 0;
   outU32[9] = 0;
   const nodesOff = HEADER_SIZE;
   const extrasOff = nodesOff + totalNodeBytes;
   const poolOff = extrasOff + totalExtraBytes;
-  const commentsOff = poolOff + poolLen;
+  const offsetsOff = poolOff + poolLen;
+  const commentsOff = offsetsOff + totalOffsetsBytes;
   const lineStartsOff = commentsOff + totalCommentBytes;
   outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
   outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);
   outU8.set(pool.subarray(0, poolLen), poolOff);
+  if (offsetsBytes !== null) outU8.set(new Uint8Array(offsetsBytes), offsetsOff);
   if (commentBytes !== null) outU8.set(new Uint8Array(commentBytes), commentsOff);
   if (lineStartsBytes !== null) outU8.set(new Uint8Array(lineStartsBytes), lineStartsOff);
   return out;
