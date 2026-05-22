@@ -202,11 +202,11 @@ function decode(buffer, source) {
     case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
     case 41: { const raw = _src.slice(start, end).replace(/\r\n?/g, "\n"); const tl = !!(flags & 1); const s = _isTs ? start - 1 : start; const e = _isTs ? (tl ? end + 1 : end + 2) : end; return { type: "TemplateElement", start: s, end: e, value: { raw, cooked: (flags & 2) ? null : str(f1, f2) }, tail: tl }; }
-    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "reference" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
-    case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
-    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
-    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "binding" }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "name" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "label" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 47: { const r = { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.directive = null; } return r; }
     case 48: return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
     case 49: return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) };
@@ -306,7 +306,7 @@ function decode(buffer, source) {
     case 143: return { type: "TSModuleBlock", start, end, body: nodeArr(f1, f0) };
     case 144: return { type: "TSModuleDeclaration", start, end, id: node(f1), body: node(f2), kind: "global", declare: !!(flags & 1), global: true };
     case 145: { const r = { type: "TSParameterProperty", start, end, decorators: nodeArr(f1, f0), parameter: f2 !== NULL ? node(f2) : null, override: !!(flags & 1), readonly: !!(flags & 2), accessibility: ACCESSIBILITY[(flags >> 2) & 3] }; if (_isTs) { r.static = false; } return r; }
-    case 146: return { type: "Identifier", start, end, decorators: [], name: "this", optional: false, typeAnnotation: f1 !== NULL ? node(f1) : null };
+    case 146: return { type: "Identifier", start, end, decorators: [], name: "this", kind: "this", optional: false, typeAnnotation: f1 !== NULL ? node(f1) : null };
     case 147: return { type: "TSAsExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
     case 148: return { type: "TSSatisfiesExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
     case 149: return { type: "TSTypeAssertion", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, expression: f2 !== NULL ? node(f2) : null };

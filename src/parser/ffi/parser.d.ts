@@ -254,9 +254,28 @@ type PropertyDefinitionType = "PropertyDefinition" | "TSAbstractPropertyDefiniti
 
 type AccessorPropertyType = "AccessorProperty" | "TSAbstractAccessorProperty";
 
+/**
+ * Role of an `Identifier` within the AST. Yuku exposes the four ESTree-collapsed
+ * identifier flavors as a discriminator, plus `"this"` for a TS `this`-parameter
+ * (which TS-ESTree also encodes as an `Identifier` with `name: "this"`).
+ *
+ * - `"reference"`: identifier read as a value (`x` in `x + 1`, `console`).
+ * - `"binding"`: identifier being declared (parameters, `let x`, function/class names).
+ * - `"name"`: identifier in a non-binding name slot (property/method names like `log` in `console.log`).
+ * - `"label"`: loop label (`outer` in `outer: for (...) {}`).
+ * - `"this"`: the TS `this`-parameter (`function f(this: T)`).
+ */
+type IdentifierKind = "reference" | "binding" | "name" | "label" | "this";
+
 interface Identifier extends BaseNode {
   type: "Identifier";
   name: string;
+  /**
+   * ESTree collapses several distinct identifier
+   * roles onto one `Identifier` node, `kind` lets you tell them apart without
+   * walking the parent context. See {@link IdentifierKind}.
+   */
+  kind: IdentifierKind;
   decorators?: Decorator[];
   optional?: boolean;
   typeAnnotation?: TSTypeAnnotation | null;
@@ -1774,6 +1793,7 @@ export type {
   ModuleExportName,
   PropertyKey,
   Identifier,
+  IdentifierKind,
   IdentifierName,
   IdentifierReference,
   BindingIdentifier,

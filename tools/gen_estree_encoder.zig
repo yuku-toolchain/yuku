@@ -1259,7 +1259,14 @@ fn writeDispatcher(w: *Writer) !void {
         \\  function encNode(n) {
         \\    if (n == null) return NULL;
         \\    switch (n.type) {
-        \\      case "Identifier": return enc_identifier_reference(n);
+        \\      case "Identifier": {
+        \\        switch (n.kind) {
+        \\          case "binding": return enc_binding_identifier(n);
+        \\          case "name": return enc_identifier_name(n);
+        \\          case "label": return enc_label_identifier(n);
+        \\          default: return enc_identifier_reference(n);
+        \\        }
+        \\      }
         \\      case "PrivateIdentifier": return enc_private_identifier(n);
         \\      case "Literal": {
         \\        if (n.regex) return enc_regexp_literal(n);
