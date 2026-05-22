@@ -271,8 +271,8 @@ interface Identifier extends BaseNode {
   type: "Identifier";
   name: string;
   /**
-   * Yuku-specific discriminator. ESTree collapses several distinct identifier
-   * roles onto one `Identifier` node; `kind` lets you tell them apart without
+   * ESTree collapses several distinct identifier
+   * roles onto one `Identifier` node, `kind` lets you tell them apart without
    * walking the parent context. See {@link IdentifierKind}.
    */
   kind: IdentifierKind;
