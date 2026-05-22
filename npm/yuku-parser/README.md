@@ -33,7 +33,7 @@ On top of the base specs, the AST also carries:
 - Stage 3 [import defer](https://github.com/tc39/proposal-defer-import-eval) and [import source](https://github.com/tc39/proposal-source-phase-imports). Dynamic forms (`import.defer(...)`, `import.source(...)`) are represented as an `ImportExpression` with a `phase` field set to `"defer"` or `"source"`, following the ESTree convention.
 - A non-standard `hashbang` field on `Program` for `#!/usr/bin/env node` lines.
 
-These extensions are present in Oxc as well. Any other deviation from Acorn's ESTree or `@typescript-eslint`'s TypeScript-ESTree would be considered a bug.
+Any other deviation from Acorn's ESTree or `@typescript-eslint`'s TypeScript-ESTree would be considered a bug.
 
 ## AST Types
 
@@ -197,15 +197,26 @@ interface Comment {
 
 When `attachComments` is disabled (the default), comments are skipped like whitespace and no `comments` field appears on any node.
 
-### Why on the node, not as a flat offset array
+### Why comments are attached to nodes
 
-The base ESTree spec (and Oxc) exposes comments as a top-level array indexed by source offsets. That works fine for read-only analysis. It falls apart the moment you transform the tree:
+Comments are part of the source. Any tool that reads or rewrites code needs to know which comments belong with which node, and that link has to survive AST transforms. Yuku puts a single `comments` array on each node, with a `position` field on each comment (`"before"`, `"after"`, `"inside"`). It is the simplest shape that holds up under transforms and stays cheap to decode. Every other approach trades away one of those properties.
 
-- **Transforms desync the array.** Insert, delete, or move a node and every offset downstream of the edit is now wrong. The comment that used to sit between `a` and `b` may now sit inside something else entirely, or hang in empty space between two unrelated nodes. Re-syncing means walking the entire array and rewriting offsets on every edit, and even then the meaning of "the comment between these two things" is something a flat offset array can't really preserve.
-- **Codegen can't trust the offsets.** A printer takes whatever AST it's handed. With offset-based comments, a transformed AST will either print comments in the wrong places or drop them entirely. With attached comments, when you move a node its comments come with it. The codegen reads them off `node.comments` and prints them next to the node, no offset reconciliation needed.
-- **Lookup is awkward.** "Give me the comments belonging to this node" with a flat array is a binary search at best and a linear scan at worst. `node.comments` is O(1) and always exact.
+**Flat offset-indexed array (ESTree default, Oxc).** A separate `comments: [...]` array on the parse result, sibling to the program, each entry pointing at a source range. Fine for read-only analysis. It falls apart the moment you transform the tree.
 
-The attachment pass is negligible in practice, dwarfed by the AST walk, codegen, and any downstream transform on the same tree. Even with `attachComments` enabled, Yuku still parses the same file roughly 4x faster than Babel does without comments attached at all. When the flag is off, comments are skipped like whitespace and there is no attachment work to begin with.
+- *Transforms desync the array.* Insert, delete, or move a node and every offset downstream of the edit is wrong. The comment that used to sit between `a` and `b` may now sit inside something unrelated, or hang in empty space between two nodes. Re-syncing means walking the entire array and rewriting offsets on every edit, and even then the meaning of "the comment between these two things" cannot really be preserved by offsets alone.
+- *Codegen cannot trust the offsets.* A printer takes whatever AST it is handed. With offset-based comments, a transformed AST will either print comments in the wrong places or drop them entirely. With attached comments, when you move a node its comments come with it. The printer reads them off `node.comments` and emits them next to the node, no reconciliation needed.
+- *Lookup is awkward.* "Give me the comments belonging to this node" with a flat array is a binary search at best and a linear scan at worst. `node.comments` is O(1) and always exact.
+
+**Parser returns a flat list, you attach on the JS side (Acorn).** Acorn's `onComment` option pushes every comment into an array you provide, and that is all it does. To get them onto AST nodes you have to run a separate JS pass like `escodegen.attachComments`, which walks the tree, scans the comment list alongside it, and tags each comment as leading or trailing on the nearest node. That work is unavoidable if you want to transform the tree, and doing it in JavaScript is slow. Yuku does the same attachment in Zig as part of the parse. On the 7.8 MB `typescript.js` (30k+ comments), turning `attachComments` on adds only around 4ms.
+
+**Three separate fields per node (Babel).** `leadingComments`, `trailingComments`, and `innerComments`. Same idea as Yuku, but split across three arrays. Two costs come with the split.
+
+- *Decode work.* Three fields per node means three slots to check, three potential array allocations, and roughly 3x the work on the JS side for the same information.
+- *Duplication.* A comment that sits between two nodes is the `trailingComments` of one and the `leadingComments` of the other. Transforms have to track both copies and keep them in sync.
+
+A single `comments` array with a `position` field carries the same meaning, with one entry per comment and one place to look.
+
+Even with `attachComments` enabled, Yuku still parses the same file roughly 4x faster than Babel does without comments attached at all. When the flag is off (the default), comments are skipped like whitespace and there is no attachment work at all.
 
 ## License
 
