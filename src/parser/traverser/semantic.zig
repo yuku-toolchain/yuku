@@ -103,7 +103,11 @@ pub const Ctx = struct {
         try self.symbols.setBindingContext(data, &self.scope);
     }
 
-    pub inline fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub inline fn post_enter(
+        self: *Ctx,
+        index: ast.NodeIndex,
+        data: ast.NodeData,
+    ) Allocator.Error!void {
         _ = try self.symbols.declareBindings(index, data, &self.scope, self.inTypePosition());
     }
 

@@ -43,7 +43,12 @@ pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     if (!try isIdentifierPredicateStart(parser)) return core.parseType(parser);
 
     const parameter_name = try literals.parseIdentifierName(parser) orelse return null;
-    return finishTypePredicate(parser, parser.tree.span(parameter_name).start, parameter_name, false);
+    return finishTypePredicate(
+        parser,
+        parser.tree.span(parameter_name).start,
+        parameter_name,
+        false,
+    );
 }
 
 // this   this is T
@@ -126,17 +131,27 @@ pub fn isAssertsPredicateStart(parser: *Parser) Error!bool {
 // `id is T` same line. `this is T` lives in primary type path already
 fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     const current = parser.current_token;
-    if (current.isEscaped() or current.tag == .this or !current.tag.isIdentifierLike()) return false;
+    if (current.isEscaped() or current.tag == .this or !current.tag.isIdentifierLike()) {
+        return false;
+    }
 
     const next = parser.peekAhead() orelse return false;
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
 // write type annotation into pattern node and grow span, noop if no field for it
-pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, annotation: ast.NodeIndex) void {
+pub fn applyTypeAnnotationToPattern(
+    parser: *Parser,
+    pattern: ast.NodeIndex,
+    annotation: ast.NodeIndex,
+) void {
     var data = parser.tree.data(pattern);
     switch (data) {
-        inline .binding_identifier, .object_pattern, .array_pattern, .assignment_pattern => |*v| v.type_annotation = annotation,
+        inline .binding_identifier,
+        .object_pattern,
+        .array_pattern,
+        .assignment_pattern,
+        => |*v| v.type_annotation = annotation,
         else => return,
     }
     parser.tree.setData(pattern, data);
@@ -144,7 +159,11 @@ pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, ann
 }
 
 // decorators hang on pattern node, span unchanged, empty range noop
-pub fn applyDecoratorsToPattern(parser: *Parser, pattern: ast.NodeIndex, decorators: ast.IndexRange) void {
+pub fn applyDecoratorsToPattern(
+    parser: *Parser,
+    pattern: ast.NodeIndex,
+    decorators: ast.IndexRange,
+) void {
     if (decorators.len == 0) return;
     var data = parser.tree.data(pattern);
     switch (data) {
@@ -163,7 +182,11 @@ pub fn applyDecoratorsToPattern(parser: *Parser, pattern: ast.NodeIndex, decorat
 pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) void {
     var data = parser.tree.data(pattern);
     switch (data) {
-        inline .binding_identifier, .object_pattern, .array_pattern, .assignment_pattern => |*v| v.optional = true,
+        inline .binding_identifier,
+        .object_pattern,
+        .array_pattern,
+        .assignment_pattern,
+        => |*v| v.optional = true,
         else => return,
     }
     parser.tree.setData(pattern, data);

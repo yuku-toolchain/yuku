@@ -35,7 +35,10 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
-            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
+            const argument = try grammar.parseExpressionInCover(
+                parser,
+                Precedence.Assignment,
+            ) orelse return null;
             const spread_end = parser.tree.span(argument).end;
             const spread = try parser.tree.addNode(
                 .{ .spread_element = .{ .argument = argument } },
@@ -45,7 +48,8 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             end = spread_end;
         } else {
             // regular element, parse as cover element
-            const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
+            const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse
+                return null;
             try parser.scratch_cover.append(parser.allocator(), element);
             end = parser.tree.span(element).end;
         }
@@ -73,7 +77,9 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             "Unterminated array",
             .{
                 .help = "Add a closing ']' to complete the array.",
-                .labels = try parser.labels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
+                .labels = try parser.labels(&.{
+                    parser.label(.{ .start = start, .end = start + 1 }, "Opened here"),
+                }),
             },
         );
         return null;
@@ -105,16 +111,38 @@ pub fn coverToExpression(parser: *Parser, cover: ArrayCover, validate: bool) Err
 }
 
 /// convert array cover to ArrayPattern.
-pub fn coverToPattern(parser: *Parser, cover: ArrayCover, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
-    return toArrayPatternImpl(parser, null, cover.elements, .{ .start = cover.start, .end = cover.end }, context);
+pub fn coverToPattern(
+    parser: *Parser,
+    cover: ArrayCover,
+    comptime context: grammar.PatternContext,
+) Error!ast.NodeIndex {
+    return toArrayPatternImpl(
+        parser,
+        null,
+        cover.elements,
+        .{ .start = cover.start, .end = cover.end },
+        context,
+    );
 }
 
 /// convert ArrayExpression to ArrayPattern (mutates in-place).
-pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!void {
+pub fn toArrayPattern(
+    parser: *Parser,
+    expr_node: ast.NodeIndex,
+    elements_range: ast.IndexRange,
+    span: ast.Span,
+    comptime context: grammar.PatternContext,
+) Error!void {
     _ = try toArrayPatternImpl(parser, expr_node, elements_range, span, context);
 }
 
-fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
+fn toArrayPatternImpl(
+    parser: *Parser,
+    mutate_node: ?ast.NodeIndex,
+    elements_range: ast.IndexRange,
+    span: ast.Span,
+    comptime context: grammar.PatternContext,
+) Error!ast.NodeIndex {
     const elements = parser.tree.extra(elements_range);
 
     var rest: ast.NodeIndex = .null;
@@ -127,17 +155,22 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
 
         if (elem_data == .spread_element) {
             if (parser.state.cover_has_trailing_comma == span.start) {
-                try parser.report(span, "Rest element cannot have a trailing comma in array destructuring.", .{
-                    .help = "Remove the trailing comma after the rest element",
-                });
+                try parser.report(
+                    span,
+                    "Rest element cannot have a trailing comma in array destructuring.",
+                    .{ .help = "Remove the trailing comma after the rest element" },
+                );
 
                 parser.state.cover_has_trailing_comma = null;
             }
 
             if (i != elements_len - 1) {
-                try parser.report(parser.tree.span(elem), "Rest element must be the last element", .{
-                    .help = "No elements can follow the rest element in a destructuring pattern.",
-                });
+                try parser.report(
+                    parser.tree.span(elem),
+                    "Rest element must be the last element",
+                    .{ .help = "No elements can follow the rest element in a destructuring" ++
+                        " pattern." },
+                );
             }
 
             // spread_element to binding_rest_element

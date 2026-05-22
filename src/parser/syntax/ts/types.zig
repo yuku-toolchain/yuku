@@ -39,7 +39,8 @@ pub const tryParseGenericArrow = arrows.tryParseGenericArrow;
 pub const parseTypeAssertion = ts_expressions.parseTypeAssertion;
 pub const parseAsOrSatisfiesExpression = ts_expressions.parseAsOrSatisfiesExpression;
 pub const parseNonNullExpression = ts_expressions.parseNonNullExpression;
-pub const parseTypeArgumentedCallOrInstantiation = ts_expressions.parseTypeArgumentedCallOrInstantiation;
+pub const parseTypeArgumentedCallOrInstantiation =
+    ts_expressions.parseTypeArgumentedCallOrInstantiation;
 pub const tryParseTypeArgumentsInExpression = ts_expressions.tryParseTypeArgumentsInExpression;
 
 pub const parseLiteralType = literal.parseLiteralType;

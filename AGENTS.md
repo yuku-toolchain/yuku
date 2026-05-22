@@ -33,7 +33,7 @@ Do not allow potential latency spikes, exponential-complexity algorithms, or oth
 - Use only very simple, explicit control flow. Avoid recursion where iteration suffices; when recursion is unavoidable, give it a bounded depth and assert that bound. Bounded execution must be guaranteed.
 - Use only a minimum of excellent abstractions, and only when they make the best sense of the domain. Abstractions are never zero cost, and every abstraction introduces the risk of leaking.
 - **Put a limit on everything.** All loops and all queues must have a fixed upper bound to prevent infinite loops or tail-latency spikes. Where a loop cannot terminate (e.g. an event loop), assert this.
-- Use explicitly-sized integer types like `u32`. Avoid architecture-specific types like `usize`.
+- Use explicitly-sized integer types like `u32`. Avoid architecture-specific types like `usize`. The one accepted exception is the seam with the Zig standard library: `std.ArrayList.len`, slice indices into `[]const u8`, and similar interop are typed `usize` by the language. Keep `u32` everywhere we own the type, and limit `usize` to those boundaries (no `@intCast` chains that just propagate the boundary outward).
 
 ### Assertions
 
@@ -148,6 +148,7 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 - **Say why.** Code alone is not documentation. Comments explain why you wrote what you wrote. Show your workings.
 - **Say how.** Tests need a description at the top explaining goal and methodology so readers can get up to speed (or skip past).
 - **Comments are sentences:** space after the slash, capital letter, full stop (or colon if introducing what follows). Trailing-line comments may be phrases without punctuation.
+- **No em dashes and no semicolons in comments.** Split into separate sentences instead. Both invite run-on prose that obscures the point.
 
 ### Cache Invalidation
 

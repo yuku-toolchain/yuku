@@ -11,8 +11,10 @@ pub fn codePointAt(str: []const u8, i: usize) Utf8Error!CodePoint {
     const codepoint: u21 = switch (len) {
         1 => str[i],
         2 => std.unicode.utf8Decode2(.{ str[i], str[i + 1] }) catch return error.InvalidUtf8,
-        3 => std.unicode.utf8Decode3(.{ str[i], str[i + 1], str[i + 2] }) catch return error.InvalidUtf8,
-        4 => std.unicode.utf8Decode4(.{ str[i], str[i + 1], str[i + 2], str[i + 3] }) catch return error.InvalidUtf8,
+        3 => std.unicode.utf8Decode3(.{ str[i], str[i + 1], str[i + 2] }) catch
+            return error.InvalidUtf8,
+        4 => std.unicode.utf8Decode4(.{ str[i], str[i + 1], str[i + 2], str[i + 3] }) catch
+            return error.InvalidUtf8,
         else => unreachable,
     };
 
@@ -86,7 +88,11 @@ pub inline fn parseHex4(input: []const u8, start: usize) ?struct { value: u21, e
 }
 
 /// validates the value is <= 0x10FFFF
-pub fn parseHexVariable(input: []const u8, start: usize, max_digits: usize) ?struct { value: u21, end: usize } {
+pub fn parseHexVariable(
+    input: []const u8,
+    start: usize,
+    max_digits: usize,
+) ?struct { value: u21, end: usize } {
     var value: u32 = 0;
     var i = start;
     var count: usize = 0;
@@ -140,7 +146,8 @@ pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
                 buf[out] = @intCast(parsed.value);
                 out += 1;
             } else {
-                const n = std.unicode.utf8Encode(@intCast(parsed.value), buf[out..]) catch return raw;
+                const n = std.unicode.utf8Encode(@intCast(parsed.value), buf[out..]) catch
+                    return raw;
                 out += n;
             }
             i = parsed.end;
@@ -157,7 +164,11 @@ pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
 /// decodes all JavaScript string escape sequences from `raw` into `out`.
 /// handles standard escapes (\n, \t, etc.), hex (\xHH), unicode (\uHHHH, \u{H}),
 /// octal, line continuations, and CR normalization for template values.
-pub fn decodeStringEscapes(raw: []const u8, out: *std.ArrayList(u8), alloc: std.mem.Allocator) error{OutOfMemory}!void {
+pub fn decodeStringEscapes(
+    raw: []const u8,
+    out: *std.ArrayList(u8),
+    alloc: std.mem.Allocator,
+) error{OutOfMemory}!void {
     var i: usize = 0;
     while (i < raw.len) {
         const run_start = i;
@@ -178,12 +189,30 @@ pub fn decodeStringEscapes(raw: []const u8, out: *std.ArrayList(u8), alloc: std.
         i += 1; // skip backslash
         if (i >= raw.len) break;
         switch (raw[i]) {
-            'n' => { try out.append(alloc, '\n'); i += 1; },
-            'r' => { try out.append(alloc, '\r'); i += 1; },
-            't' => { try out.append(alloc, '\t'); i += 1; },
-            'b' => { try out.append(alloc, 0x08); i += 1; },
-            'f' => { try out.append(alloc, 0x0C); i += 1; },
-            'v' => { try out.append(alloc, 0x0B); i += 1; },
+            'n' => {
+                try out.append(alloc, '\n');
+                i += 1;
+            },
+            'r' => {
+                try out.append(alloc, '\r');
+                i += 1;
+            },
+            't' => {
+                try out.append(alloc, '\t');
+                i += 1;
+            },
+            'b' => {
+                try out.append(alloc, 0x08);
+                i += 1;
+            },
+            'f' => {
+                try out.append(alloc, 0x0C);
+                i += 1;
+            },
+            'v' => {
+                try out.append(alloc, 0x0B);
+                i += 1;
+            },
             '0' => {
                 if (i + 1 < raw.len and std.ascii.isDigit(raw[i + 1])) {
                     const r = parseOctal(raw, i);
@@ -218,8 +247,11 @@ pub fn decodeStringEscapes(raw: []const u8, out: *std.ArrayList(u8), alloc: std.
                     {
                         if (parseUnicodeEscape(raw, end + 2)) |r2| {
                             if (r2.value >= 0xDC00 and r2.value <= 0xDFFF) {
-                                // decode surrogate pair: U+10000 + (high - 0xD800) * 0x400 + (low - 0xDC00)
-                                cp = 0x10000 + (@as(u21, cp) - 0xD800) * 0x400 + (@as(u21, r2.value) - 0xDC00);
+                                // decode surrogate pair:
+                                //   U+10000 + (high - 0xD800) * 0x400 + (low - 0xDC00)
+                                cp = 0x10000 +
+                                    (@as(u21, cp) - 0xD800) * 0x400 +
+                                    (@as(u21, r2.value) - 0xDC00);
                                 end = r2.end;
                             }
                         }
@@ -250,7 +282,11 @@ pub fn decodeStringEscapes(raw: []const u8, out: *std.ArrayList(u8), alloc: std.
 }
 
 /// writes a Unicode code point as UTF-8. lone surrogates use WTF-8 encoding.
-fn appendCodePoint(out: *std.ArrayList(u8), alloc: std.mem.Allocator, cp: u21) error{OutOfMemory}!void {
+fn appendCodePoint(
+    out: *std.ArrayList(u8),
+    alloc: std.mem.Allocator,
+    cp: u21,
+) error{OutOfMemory}!void {
     if (cp >= 0xD800 and cp <= 0xDFFF) {
         try out.appendSlice(alloc, &[3]u8{
             0xE0 | @as(u8, @intCast(cp >> 12)),
@@ -273,7 +309,9 @@ pub fn hasOctalEscape(str: []const u8) bool {
         if (next >= str.len) break;
         switch (str[next]) {
             '1'...'9' => return true,
-            '0' => if (next + 1 < str.len and str[next + 1] >= '0' and str[next + 1] <= '9') return true,
+            '0' => if (next + 1 < str.len and
+                str[next + 1] >= '0' and
+                str[next + 1] <= '9') return true,
             else => {},
         }
         pos = next + 1;
@@ -282,7 +320,10 @@ pub fn hasOctalEscape(str: []const u8) bool {
 }
 
 inline fn hexVal(c: u8) ?u8 {
-    return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
+    if (c >= '0' and c <= '9') return c - '0';
+    if (c >= 'a' and c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' and c <= 'F') return c - 'A' + 10;
+    return null;
 }
 
 const testing = std.testing;

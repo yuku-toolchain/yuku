@@ -27,7 +27,13 @@ pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.
     _ = try walkNode(C, V, visitor, ctx.tree.root, ctx);
 }
 
-fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
+fn walkNode(
+    comptime C: type,
+    comptime V: type,
+    visitor: *V,
+    index: ast.NodeIndex,
+    ctx: *C,
+) Allocator.Error!Action {
     if (index == .null) return .proceed;
 
     const data = ctx.tree.data(index);
@@ -57,7 +63,13 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
 
 // walks all child nodes by iterating over the struct fields of the
 // node payload.
-fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Allocator.Error!Action {
+fn walkChildren(
+    comptime C: type,
+    comptime V: type,
+    visitor: *V,
+    data: ast.NodeData,
+    ctx: *C,
+) Allocator.Error!Action {
     switch (data) {
         inline else => |node| {
             const T = @TypeOf(node);
@@ -69,12 +81,20 @@ fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeD
     }
 }
 
-fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T: type, payload: T, ctx: *C) Allocator.Error!Action {
+fn walkStructFields(
+    comptime C: type,
+    comptime V: type,
+    visitor: *V,
+    comptime T: type,
+    payload: T,
+    ctx: *C,
+) Allocator.Error!Action {
     const fields = @typeInfo(T).@"struct".fields;
 
     inline for (fields) |field| {
         if (field.type == ast.NodeIndex) {
-            if ((try walkNode(C, V, visitor, @field(payload, field.name), ctx)) == .stop) return .stop;
+            const child = @field(payload, field.name);
+            if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
         } else if (field.type == ast.IndexRange) {
             const range = @field(payload, field.name);
             for (0..range.len) |i| {
@@ -108,14 +128,24 @@ pub fn Layer(comptime C: type, comptime V: type) type {
     return struct {
         inner: *V,
 
-        pub fn enter_node(self: *@This(), data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
+        pub fn enter_node(
+            self: *@This(),
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+            ctx: *C,
+        ) Allocator.Error!Action {
             try ctx.enter(index, data);
             const action = try dispatch.enter(C, V, self.inner, data, index, ctx);
             if (comptime @hasDecl(C, "post_enter")) try ctx.post_enter(index, data);
             return action;
         }
 
-        pub fn exit_node(self: *@This(), data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
+        pub fn exit_node(
+            self: *@This(),
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+            ctx: *C,
+        ) void {
             dispatch.exit(C, V, self.inner, data, index, ctx);
             ctx.exit(data);
         }
@@ -125,7 +155,14 @@ pub fn Layer(comptime C: type, comptime V: type) type {
 /// Dispatch helpers for calling visitor hooks.
 pub const dispatch = struct {
     /// Dispatches the enter phase, calls `enter_node` first, then the typed hook.
-    pub fn enter(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
+    pub fn enter(
+        comptime C: type,
+        comptime V: type,
+        visitor: *V,
+        data: ast.NodeData,
+        index: ast.NodeIndex,
+        ctx: *C,
+    ) Allocator.Error!Action {
         if (comptime @hasDecl(V, "enter_node")) {
             switch (try unwrapAction(visitor.enter_node(data, index, ctx))) {
                 .skip => return .skip,
@@ -137,11 +174,19 @@ pub const dispatch = struct {
     }
 
     /// Dispatches only the typed enter hook (e.g. `enter_function`), skipping `enter_node`.
-    pub fn enterTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
+    pub fn enterTyped(
+        comptime C: type,
+        comptime V: type,
+        visitor: *V,
+        data: ast.NodeData,
+        index: ast.NodeIndex,
+        ctx: *C,
+    ) Allocator.Error!Action {
         switch (data) {
             inline else => |node, tag| {
                 if (comptime @hasDecl(V, "enter_" ++ @tagName(tag))) {
-                    return unwrapAction(@field(V, "enter_" ++ @tagName(tag))(visitor, node, index, ctx));
+                    const hook = @field(V, "enter_" ++ @tagName(tag));
+                    return unwrapAction(hook(visitor, node, index, ctx));
                 }
                 return .proceed;
             },
@@ -149,7 +194,14 @@ pub const dispatch = struct {
     }
 
     /// Dispatches the exit phase, calls the typed hook first, then `exit_node`.
-    pub fn exit(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
+    pub fn exit(
+        comptime C: type,
+        comptime V: type,
+        visitor: *V,
+        data: ast.NodeData,
+        index: ast.NodeIndex,
+        ctx: *C,
+    ) void {
         exitTyped(C, V, visitor, data, index, ctx);
         if (comptime @hasDecl(V, "exit_node")) {
             visitor.exit_node(data, index, ctx);
@@ -157,7 +209,14 @@ pub const dispatch = struct {
     }
 
     /// Dispatches only the typed exit hook (e.g. `exit_function`), skipping `exit_node`.
-    pub fn exitTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
+    pub fn exitTyped(
+        comptime C: type,
+        comptime V: type,
+        visitor: *V,
+        data: ast.NodeData,
+        index: ast.NodeIndex,
+        ctx: *C,
+    ) void {
         switch (data) {
             inline else => |node, tag| {
                 if (comptime @hasDecl(V, "exit_" ++ @tagName(tag))) {
@@ -193,7 +252,8 @@ fn validateHooks(comptime V: type) void {
             continue;
 
         if (!@hasField(ast.NodeData, node_name)) {
-            @compileError("Invalid visitor hook '" ++ name ++ "': no field '" ++ node_name ++ "' exists in ast.NodeData");
+            @compileError("Invalid visitor hook '" ++ name ++
+                "': no field '" ++ node_name ++ "' exists in ast.NodeData");
         }
 
         const expected = @FieldType(ast.NodeData, node_name);
@@ -202,7 +262,9 @@ fn validateHooks(comptime V: type) void {
         if (hook_fn_params.len >= 3) {
             if (hook_fn_params[1].type) |actual| {
                 if (actual != expected) {
-                    @compileError("Visitor hook '" ++ name ++ "': expected payload type '" ++ @typeName(expected) ++ "', found '" ++ @typeName(actual) ++ "'");
+                    @compileError("Visitor hook '" ++ name ++
+                        "': expected payload type '" ++ @typeName(expected) ++
+                        "', found '" ++ @typeName(actual) ++ "'");
                 }
             }
         }

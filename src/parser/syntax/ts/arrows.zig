@@ -68,7 +68,11 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
 
     if (parser.current_token.tag != .left_paren) return null;
 
-    const params = try functions.parseFormalParameters(parser, .arrow_formal_parameters, false) orelse return null;
+    const params = try functions.parseFormalParameters(
+        parser,
+        .arrow_formal_parameters,
+        false,
+    ) orelse return null;
 
     const return_type: ast.NodeIndex = if (parser.current_token.tag == .colon)
         try predicate.parseReturnTypeAnnotation(parser) orelse return null
@@ -79,7 +83,14 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
         return null;
     }
 
-    return parenthesized.buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
+    return parenthesized.buildArrowFunction(
+        parser,
+        params,
+        is_async,
+        arrow_start,
+        type_parameters,
+        return_type,
+    );
 }
 
 // rewind on fail so cover grammar jsx or `<T>` assertion wins. also when return type
@@ -106,7 +117,11 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
 }
 
 // fast path, skip checkpoint when jsx or type assertion likely
-pub fn tryParseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+pub fn tryParseGenericArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
     const next = parser.peekAhead() orelse return null;

@@ -383,7 +383,12 @@ pub const SymbolTable = struct {
 
     /// Walks up the scope chain from `scope` to find the nearest binding
     /// of `name`, including hoisted vars in any visited scope.
-    pub fn resolve(self: SymbolTable, scope_tree: sc.ScopeTree, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+    pub fn resolve(
+        self: SymbolTable,
+        scope_tree: sc.ScopeTree,
+        scope: sc.ScopeId,
+        name: []const u8,
+    ) ?SymbolId {
         var it = scope_tree.ancestors(scope);
         while (it.next()) |ancestor| {
             if (self.findInScopeOrHoisted(ancestor, name)) |id| return id;
@@ -567,7 +572,11 @@ pub const SymbolTracker = struct {
     /// Called from `Ctx.enter` for every node so parent declaration
     /// nodes can configure flags, excludes, target scope, and export
     /// state before the child binding identifier fires.
-    pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
+    pub fn setBindingContext(
+        self: *SymbolTracker,
+        data: ast.NodeData,
+        scope: *const sc.ScopeTracker,
+    ) Allocator.Error!void {
         switch (data) {
             .export_named_declaration => |decl| {
                 // declaration form (`export type X = Y`, `export const x = 1`,
@@ -612,14 +621,21 @@ pub const SymbolTracker = struct {
                     func.type == .ts_declare_function or
                     func.type == .ts_empty_body_function_expression;
                 self.binding_flags = .{ .function = true, .ambient = ambient };
-                const is_decl = func.type == .function_declaration or func.type == .ts_declare_function;
+                const is_decl = func.type == .function_declaration or
+                    func.type == .ts_declare_function;
                 self.target = if (is_decl) scope.currentScope().parent else exprNameScope(scope);
 
                 // ts overloads, sloppy js annex b 3.2, and global merge
                 // with var. lexical scopes (block/module) are not.
                 const k = scope.getScope(self.target).kind;
-                const allow_overload = self.tree.isTs() or k == .function or k == .global or k == .static_block;
-                self.binding_excludes = if (allow_overload) Symbol.Excludes.function else Symbol.Excludes.block_var;
+                const allow_overload = self.tree.isTs() or
+                    k == .function or
+                    k == .global or
+                    k == .static_block;
+                self.binding_excludes = if (allow_overload)
+                    Symbol.Excludes.function
+                else
+                    Symbol.Excludes.block_var;
 
                 // expression names are local
                 if (!is_decl) self.export_state = .none;
@@ -772,7 +788,13 @@ pub const SymbolTracker = struct {
                 // real declarations here.
                 if (in_type_position and !self.binding_flags.type_parameter) return;
 
-                const sym_id = try self.declare(id.name, self.binding_flags, self.binding_excludes, self.target, index);
+                const sym_id = try self.declare(
+                    id.name,
+                    self.binding_flags,
+                    self.binding_excludes,
+                    self.target,
+                    index,
+                );
 
                 // register the hoisting var in each block it passes
                 // through so block-scoped redeclarations see it
@@ -780,7 +802,8 @@ pub const SymbolTracker = struct {
                     var iter = scope.ancestors(scope.currentScopeId());
                     while (iter.next()) |s| {
                         if (s == self.target) break;
-                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, self.tree.string(id.name));
+                        const table = &self.hoisting_variables.items[@intFromEnum(s)];
+                        const gop = try table.getOrPut(self.allocator, self.tree.string(id.name));
                         if (!gop.found_existing) gop.value_ptr.* = sym_id;
                     }
                 }
@@ -816,7 +839,12 @@ pub const SymbolTracker = struct {
                     const id = self.tree.data(root_idx).jsx_identifier;
                     const text = self.tree.string(id.name);
                     if (text.len > 0 and text[0] >= 'A' and text[0] <= 'Z') {
-                        _ = try self.addReference(id.name, scope.currentScopeId(), root_idx, .value);
+                        _ = try self.addReference(
+                            id.name,
+                            scope.currentScopeId(),
+                            root_idx,
+                            .value,
+                        );
                     }
                 }
             },
@@ -988,10 +1016,16 @@ pub const SymbolTracker = struct {
 
     /// Like `findInScope`, but also matches a hoisting `var` passing
     /// through `scope` on its way to its target.
-    pub fn findInScopeOrHoisted(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+    pub fn findInScopeOrHoisted(
+        self: *const SymbolTracker,
+        scope: sc.ScopeId,
+        name: []const u8,
+    ) ?SymbolId {
         if (self.findInScope(scope, name)) |id| return id;
         const idx = @intFromEnum(scope);
-        if (idx < self.hoisting_variables.items.len) return self.hoisting_variables.items[idx].get(name);
+        if (idx < self.hoisting_variables.items.len) {
+            return self.hoisting_variables.items[idx].get(name);
+        }
         return null;
     }
 
@@ -1000,7 +1034,9 @@ pub const SymbolTracker = struct {
         try self.scope_maps.ensureTotalCapacity(self.allocator, n);
         while (self.scope_maps.items.len < n) self.scope_maps.appendAssumeCapacity(.empty);
         try self.hoisting_variables.ensureTotalCapacity(self.allocator, n);
-        while (self.hoisting_variables.items.len < n) self.hoisting_variables.appendAssumeCapacity(.empty);
+        while (self.hoisting_variables.items.len < n) {
+            self.hoisting_variables.appendAssumeCapacity(.empty);
+        }
     }
 
     /// Finalizes the tracker into an immutable `SymbolTable`. The

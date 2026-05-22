@@ -14,7 +14,6 @@ const expressions = @import("../expressions.zig");
 const variables = @import("../variables.zig");
 const class = @import("../class.zig");
 
-
 // `is_const` only matters on enums
 pub const Modifiers = struct {
     declare: bool = false,
@@ -189,7 +188,8 @@ pub fn parseImportEqualsBody(
     if (!try parser.expect(
         .assign,
         "Expected '=' in import equals declaration",
-        "An import equals declaration is written 'import x = Foo.Bar' or 'import x = require(\"m\")'",
+        "An import equals declaration is written 'import x = Foo.Bar'" ++
+            " or 'import x = require(\"m\")'",
     )) return null;
 
     const module_reference = try parseModuleReference(parser) orelse return null;
@@ -236,7 +236,11 @@ fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // type Foo<T> = Bar<T>
-pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+pub fn parseTypeAliasDeclaration(
+    parser: *Parser,
+    mods: Modifiers,
+    start: u32,
+) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .type);
     try parser.advance() orelse return null;
 
@@ -264,7 +268,11 @@ pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
 }
 
 // interface Foo<T> extends Bar, Baz<U> { ... }
-pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+pub fn parseInterfaceDeclaration(
+    parser: *Parser,
+    mods: Modifiers,
+    start: u32,
+) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .interface);
     try parser.advance() orelse return null;
 
@@ -430,7 +438,8 @@ fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
     var initializer: ast.NodeIndex = .null;
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
-        initializer = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        initializer = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+            return null;
         end = parser.tree.span(initializer).end;
     }
 
@@ -455,7 +464,8 @@ fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
 
     if (tag == .left_bracket) {
         try parser.advance() orelse return null;
-        const inner = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        const inner = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+            return null;
         if (!try parser.expect(
             .right_bracket,
             "Expected ']' to close a computed enum member name",
@@ -473,8 +483,12 @@ fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
     else {
         try parser.report(
             parser.current_token.span,
-            try parser.fmt("Unexpected token '{s}' as enum member name", .{parser.describeToken(parser.current_token)}),
-            .{ .help = "Enum member names must be identifiers, string literals, or computed expressions '[name]'." },
+            try parser.fmt(
+                "Unexpected token '{s}' as enum member name",
+                .{parser.describeToken(parser.current_token)},
+            ),
+            .{ .help = "Enum member names must be identifiers, string literals, or" ++
+                " computed expressions '[name]'." },
         );
         return null;
     };

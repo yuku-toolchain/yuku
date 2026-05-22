@@ -21,7 +21,8 @@ pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(.at, "Expected '@' to start a decorator", null)) return null;
 
-    const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse return null;
+    const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse
+        return null;
 
     return try parser.tree.addNode(.{
         .decorator = .{ .expression = expression },

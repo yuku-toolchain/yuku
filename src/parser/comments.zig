@@ -184,7 +184,12 @@ const Ctx = struct {
         }
     }
 
-    inline fn write(self: *Ctx, host_idx: u32, position: ast.Comment.Position, same_line: bool) void {
+    inline fn write(
+        self: *Ctx,
+        host_idx: u32,
+        position: ast.Comment.Position,
+        same_line: bool,
+    ) void {
         const r = self.raw[self.cursor];
         self.host[self.cursor] = host_idx;
         self.out[self.cursor] = .{

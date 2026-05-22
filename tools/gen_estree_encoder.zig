@@ -86,7 +86,11 @@ fn writeInverseMaps(w: *Writer) !void {
 
     // Mixed-typed enums need inverse functions, not object maps.
     try w.writeAll(
-        \\const ACCESSIBILITY_INV = (v) => v == null ? 0 : v === "public" ? 1 : v === "private" ? 2 : 3;
+        \\const ACCESSIBILITY_INV = (v) =>
+        \\  v == null ? 0
+        \\  : v === "public" ? 1
+        \\  : v === "private" ? 2
+        \\  : 3;
         \\const TS_MAPPED_OPTIONAL_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
         \\const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
         \\
@@ -178,7 +182,10 @@ fn writeRuntime(w: *Writer) !void {
         \\    if (!arr || arr.length === 0) return { start: 0, len: 0 };
         \\    const len = arr.length;
         \\    const ids = new Array(len);
-        \\    for (let i = 0; i < len; i++) { const e = arr[i]; ids[i] = e == null ? NULL : encEach(e); }
+        \\    for (let i = 0; i < len; i++) {
+        \\      const e = arr[i];
+        \\      ids[i] = e == null ? NULL : encEach(e);
+        \\    }
         \\    const start = extraCount;
         \\    for (let i = 0; i < len; i++) pushExtra(ids[i]);
         \\    return { start, len };
@@ -256,7 +263,12 @@ fn skipGeneration(comptime name: []const u8) bool {
     return std.mem.eql(u8, name, "function_body");
 }
 
-fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usize, comptime T: type) !void {
+fn writeGenericEncoder(
+    w: *Writer,
+    comptime name: []const u8,
+    comptime tag: usize,
+    comptime T: type,
+) !void {
     try w.print("  function enc_{s}(n) {{\n", .{name});
 
     if (@typeInfo(T) != .@"struct" or @typeInfo(T).@"struct".fields.len == 0) {
@@ -283,9 +295,15 @@ fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
                 .label => "encLabel",
                 .auto => "encNode",
             };
-            try w.print("    const c_{s} = n.{s} == null ? NULL : {s}(n.{s});\n", .{ f.name, jsf, helper, jsf });
+            try w.print(
+                "    const c_{s} = n.{s} == null ? NULL : {s}(n.{s});\n",
+                .{ f.name, jsf, helper, jsf },
+            );
         } else if (f.type == ast.IndexRange) {
-            const fn_name = if (comptime meta.isHoleyArray(name, f.name)) "encArrHoles" else "encArr";
+            const fn_name = if (comptime meta.isHoleyArray(name, f.name))
+                "encArrHoles"
+            else
+                "encArr";
             try w.print("    const c_{s} = {s}(n.{s}, encNode);\n", .{ f.name, fn_name, jsf });
         } else if (f.type == ast.String) {
             try w.print("    const c_{s} = encStr(n.{s});\n", .{ f.name, jsf });
@@ -303,14 +321,30 @@ fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
             try w.print("    slotAt(idx, {d}, c_{s});\n", .{ slot, f.name });
         } else if (f.type == ast.IndexRange) {
             if (comptime rt.isFirstRange(T, i)) {
-                try w.print("    f0At(idx, c_{s}.len);\n    slotAt(idx, {d}, c_{s}.start);\n", .{ f.name, slot, f.name });
+                try w.print(
+                    "    f0At(idx, c_{s}.len);\n    slotAt(idx, {d}, c_{s}.start);\n",
+                    .{ f.name, slot, f.name },
+                );
             } else {
-                try w.print("    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.len);\n", .{ slot, f.name, slot + 1, f.name });
+                try w.print(
+                    "    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.len);\n",
+                    .{ slot, f.name, slot + 1, f.name },
+                );
             }
         } else if (f.type == ast.String) {
-            try w.print("    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.end);\n", .{ slot, f.name, slot + 1, f.name });
+            try w.print(
+                "    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.end);\n",
+                .{ slot, f.name, slot + 1, f.name },
+            );
         } else if (f.type == ?ast.Hashbang) {
-            try w.print("    if (n.{s} != null) {{ const _hb = encStr(n.{s}.value); slotAt(idx, {d}, _hb.start); slotAt(idx, {d}, _hb.end); }}\n", .{ jsf, jsf, slot, slot + 1 });
+            try w.print(
+                "    if (n.{s} != null) {{" ++
+                    " const _hb = encStr(n.{s}.value);" ++
+                    " slotAt(idx, {d}, _hb.start);" ++
+                    " slotAt(idx, {d}, _hb.end);" ++
+                    " }}\n",
+                .{ jsf, jsf, slot, slot + 1 },
+            );
         }
     }
 
@@ -348,7 +382,10 @@ fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
                 }
             } else if (f.type == ?ast.ImportPhase) {
                 const pres_mask: u32 = @as(u32, 1) << @intCast(bit);
-                try w.print(" | (n.{s} != null ? {d} | ((IMPORT_PHASE_INV[n.{s}] | 0) << {d}) : 0)", .{ jsf, pres_mask, jsf, bit + 1 });
+                try w.print(
+                    " | (n.{s} != null ? {d} | ((IMPORT_PHASE_INV[n.{s}] | 0) << {d}) : 0)",
+                    .{ jsf, pres_mask, jsf, bit + 1 },
+                );
             } else if (f.type == ?ast.Hashbang) {
                 const mask: u32 = @as(u32, 1) << @intCast(bit);
                 try w.print(" | (n.{s} != null ? {d} : 0)", .{ jsf, mask });
@@ -357,7 +394,11 @@ fn writeGenericEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
         try w.writeAll(");\n");
     }
 
-    try w.writeAll("    spanAt(idx, asStart(n), asEnd(n));\n    recordComments(n, idx);\n    return idx;\n  }\n");
+    try w.writeAll(
+        "    spanAt(idx, asStart(n), asEnd(n));\n" ++
+            "    recordComments(n, idx);\n" ++
+            "    return idx;\n  }\n",
+    );
 }
 
 fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usize) !void {
@@ -376,7 +417,8 @@ fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
     else if (comptime eql(u8, name, "function")) try writeSpecialFunction(w, tag) //
     else if (comptime eql(u8, name, "arrow_function_expression")) try writeSpecialArrowFn(w, tag) //
     else if (comptime eql(u8, name, "formal_parameter")) try writeSpecialFormalParameter(w, tag) //
-    else if (comptime eql(u8, name, "formal_parameters")) try writeSpecialFormalParameters(w, tag) //
+    else if (comptime eql(u8, name, "formal_parameters"))
+        try writeSpecialFormalParameters(w, tag) //
     else if (comptime eql(u8, name, "class")) try writeSpecialClass(w, tag) //
     else if (comptime eql(u8, name, "method_definition")) try writeSpecialMethodDef(w, tag) //
     else if (comptime eql(u8, name, "property_definition")) try writeSpecialPropertyDef(w, tag) //
@@ -386,15 +428,21 @@ fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
     else if (comptime eql(u8, name, "object_pattern")) try writeSpecialObjectPattern(w, tag) //
     else if (comptime eql(u8, name, "jsx_text")) try writeSpecialJSXText(w, tag) //
     else if (comptime eql(u8, name, "ts_function_type")) try writeSpecialTSFunctionType(w, tag) //
-    else if (comptime eql(u8, name, "ts_constructor_type")) try writeSpecialTSConstructorType(w, tag) //
+    else if (comptime eql(u8, name, "ts_constructor_type"))
+        try writeSpecialTSConstructorType(w, tag) //
     else if (comptime eql(u8, name, "ts_method_signature")) try writeSpecialTSMethodSig(w, tag) //
-    else if (comptime eql(u8, name, "ts_call_signature_declaration")) try writeSpecialTSCallSig(w, tag) //
-    else if (comptime eql(u8, name, "ts_construct_signature_declaration")) try writeSpecialTSConstructSig(w, tag) //
+    else if (comptime eql(u8, name, "ts_call_signature_declaration"))
+        try writeSpecialTSCallSig(w, tag) //
+    else if (comptime eql(u8, name, "ts_construct_signature_declaration"))
+        try writeSpecialTSConstructSig(w, tag) //
     else if (comptime eql(u8, name, "ts_mapped_type")) try writeSpecialTSMappedType(w, tag) //
-    else if (comptime eql(u8, name, "ts_module_declaration")) try writeSpecialTSModuleDecl(w, tag) //
-    else if (comptime eql(u8, name, "ts_global_declaration")) try writeSpecialTSGlobalDecl(w, tag) //
+    else if (comptime eql(u8, name, "ts_module_declaration"))
+        try writeSpecialTSModuleDecl(w, tag) //
+    else if (comptime eql(u8, name, "ts_global_declaration"))
+        try writeSpecialTSGlobalDecl(w, tag) //
     else if (comptime eql(u8, name, "ts_this_parameter")) try writeSpecialTSThisParam(w, tag) //
-    else if (comptime eql(u8, name, "ts_property_signature")) try writeSpecialTSPropertySig(w, tag) //
+    else if (comptime eql(u8, name, "ts_property_signature"))
+        try writeSpecialTSPropertySig(w, tag) //
     else if (comptime eql(u8, name, "ts_enum_member")) try writeSpecialTSEnumMember(w, tag) //
     else if (comptime eql(u8, name, "ts_index_signature")) try writeSpecialTSIndexSig(w, tag) //
     else @compileError("missing special encoder for: " ++ name);
@@ -419,10 +467,12 @@ fn isEnumFlag(comptime F: type) bool {
 }
 
 fn slotOf(comptime T: type, comptime field: []const u8) u32 {
-    return rt.u32SlotForField(T, std.meta.fieldIndex(T, field) orelse @compileError("no field " ++ field));
+    return rt.u32SlotForField(T, std.meta.fieldIndex(T, field) orelse
+        @compileError("no field " ++ field));
 }
 fn flagBit(comptime T: type, comptime field: []const u8) u32 {
-    return rt.flagBitForField(T, std.meta.fieldIndex(T, field) orelse @compileError("no field " ++ field));
+    return rt.flagBitForField(T, std.meta.fieldIndex(T, field) orelse
+        @compileError("no field " ++ field));
 }
 fn flagMask(comptime T: type, comptime field: []const u8) u32 {
     return @as(u32, 1) << @intCast(flagBit(T, field));
@@ -582,7 +632,9 @@ fn writeSpecialMemberExpr(w: *Writer, comptime tag: usize) !void {
     try w.print(
         \\  function enc_member_expression(n) {{
         \\    const o = n.object == null ? NULL : encNode(n.object);
-        \\    const p = n.property == null ? NULL : (n.computed ? encNode(n.property) : encPropertyKey(n.property));
+        \\    const p = n.property == null
+        \\      ? NULL
+        \\      : (n.computed ? encNode(n.property) : encPropertyKey(n.property));
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, o); slotAt(idx, {d}, p);
@@ -620,7 +672,11 @@ fn writeSpecialFunction(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, body);
         \\    slotAt(idx, {d}, tp);
         \\    slotAt(idx, {d}, rt_);
-        \\    flagsAt(idx, ((kind & {d}) << {d}) | (n.generator ? {d} : 0) | (n.async ? {d} : 0) | (n.declare ? {d} : 0));
+        \\    flagsAt(idx,
+        \\      ((kind & {d}) << {d})
+        \\      | (n.generator ? {d} : 0)
+        \\      | (n.async ? {d} : 0)
+        \\      | (n.declare ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
@@ -690,7 +746,8 @@ fn writeSpecialFormalParameters(w: *Writer, comptime tag: usize) !void {
         \\      const p = params[i];
         \\      if (p && p.type === "RestElement") rest = enc_binding_rest_element(p);
         \\      else if (p && p.type === "TSParameterProperty") items.push(encNode(p));
-        \\      else if (p && p.type === "Identifier" && p.name === "this") items.push(enc_ts_this_parameter(p));
+        \\      else if (p && p.type === "Identifier" && p.name === "this")
+        \\        items.push(enc_ts_this_parameter(p));
         \\      else items.push(enc_formal_parameter(p));
         \\    }}
         \\    const ids = items;
@@ -846,12 +903,18 @@ fn writeSpecialObjectProperty(w: *Writer, comptime tag: usize) !void {
     const mc = comptime flagMask(T, "computed");
     try w.print(
         \\  function enc_object_property(n) {{
-        \\    const k = n.key == null ? NULL : (n.computed ? encNode(n.key) : encPropertyKey(n.key));
+        \\    const k = n.key == null
+        \\      ? NULL
+        \\      : (n.computed ? encNode(n.key) : encPropertyKey(n.key));
         \\    const v = n.value == null ? NULL : encNode(n.value);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, v);
-        \\    flagsAt(idx, ((PROPERTY_KINDS_INV[n.kind] | 0) << {d}) | (n.method ? {d} : 0) | (n.shorthand ? {d} : 0) | (n.computed ? {d} : 0));
+        \\    flagsAt(idx,
+        \\      ((PROPERTY_KINDS_INV[n.kind] | 0) << {d})
+        \\      | (n.method ? {d} : 0)
+        \\      | (n.shorthand ? {d} : 0)
+        \\      | (n.computed ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
@@ -868,7 +931,9 @@ fn writeSpecialBindingProperty(w: *Writer, comptime tag: usize) !void {
     const mc = comptime flagMask(T, "computed");
     try w.print(
         \\  function enc_binding_property(p) {{
-        \\    const k = p.key == null ? NULL : (p.computed ? encNode(p.key) : encPropertyKey(p.key));
+        \\    const k = p.key == null
+        \\      ? NULL
+        \\      : (p.computed ? encNode(p.key) : encPropertyKey(p.key));
         \\    const v = p.value == null ? NULL : encBindingTarget(p.value);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
@@ -961,7 +1026,9 @@ fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {
     try w.print(
         \\  function enc_program(n) {{
         \\    const body = encArr(n.body, encNode);
-        \\    const hb = n.hashbang && typeof n.hashbang.value === "string" ? encStr(n.hashbang.value) : null;
+        \\    const hb = n.hashbang && typeof n.hashbang.value === "string"
+        \\      ? encStr(n.hashbang.value)
+        \\      : null;
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    f0At(idx, body.len);
@@ -1011,7 +1078,12 @@ fn writeSpecialJSXText(w: *Writer, comptime tag: usize) !void {
     , .{ tag, sv, sv + 1 });
 }
 
-fn writeSigParams(w: *Writer, comptime label: []const u8, comptime tag: usize, comptime T: type) !void {
+fn writeSigParams(
+    w: *Writer,
+    comptime label: []const u8,
+    comptime tag: usize,
+    comptime T: type,
+) !void {
     const stp = comptime slotOf(T, "type_parameters");
     const sp = comptime slotOf(T, "params");
     const srt = comptime slotOf(T, "return_type");
@@ -1075,8 +1147,14 @@ fn writeSpecialTSMethodSig(w: *Writer, comptime tag: usize) !void {
         \\    const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    slotAt(idx, {d}, k); slotAt(idx, {d}, tp); slotAt(idx, {d}, params); slotAt(idx, {d}, rt_);
-        \\    flagsAt(idx, (n.computed ? {d} : 0) | (n.optional ? {d} : 0) | ((TS_METHOD_SIGNATURE_KINDS_INV[n.kind] | 0) << {d}));
+        \\    slotAt(idx, {d}, k);
+        \\    slotAt(idx, {d}, tp);
+        \\    slotAt(idx, {d}, params);
+        \\    slotAt(idx, {d}, rt_);
+        \\    flagsAt(idx,
+        \\      (n.computed ? {d} : 0)
+        \\      | (n.optional ? {d} : 0)
+        \\      | ((TS_METHOD_SIGNATURE_KINDS_INV[n.kind] | 0) << {d}));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
@@ -1090,7 +1168,12 @@ fn writeSpecialTSCallSig(w: *Writer, comptime tag: usize) !void {
 }
 
 fn writeSpecialTSConstructSig(w: *Writer, comptime tag: usize) !void {
-    try writeSigParams(w, "ts_construct_signature_declaration", tag, ast.TSConstructSignatureDeclaration);
+    try writeSigParams(
+        w,
+        "ts_construct_signature_declaration",
+        tag,
+        ast.TSConstructSignatureDeclaration,
+    );
 }
 
 fn writeSpecialTSMappedType(w: *Writer, comptime tag: usize) !void {
@@ -1110,7 +1193,9 @@ fn writeSpecialTSMappedType(w: *Writer, comptime tag: usize) !void {
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, c); slotAt(idx, {d}, nt); slotAt(idx, {d}, ta);
-        \\    flagsAt(idx, (TS_MAPPED_OPTIONAL_INV(n.optional) << {d}) | (TS_MAPPED_READONLY_INV(n.readonly) << {d}));
+        \\    flagsAt(idx,
+        \\      (TS_MAPPED_OPTIONAL_INV(n.optional) << {d})
+        \\      | (TS_MAPPED_READONLY_INV(n.readonly) << {d}));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
@@ -1195,7 +1280,10 @@ fn writeSpecialTSPropertySig(w: *Writer, comptime tag: usize) !void {
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, k); slotAt(idx, {d}, ta);
-        \\    flagsAt(idx, (n.computed ? {d} : 0) | (n.optional ? {d} : 0) | (n.readonly ? {d} : 0));
+        \\    flagsAt(idx,
+        \\      (n.computed ? {d} : 0)
+        \\      | (n.optional ? {d} : 0)
+        \\      | (n.readonly ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
@@ -1272,7 +1360,9 @@ fn writeDispatcher(w: *Writer) !void {
         \\        if (n.regex) return enc_regexp_literal(n);
         \\        if (typeof n.bigint === "string") return enc_bigint_literal(n);
         \\        const v = n.value;
-        \\        if (v === null) return typeof n.raw === "string" && n.raw !== "null" ? enc_numeric_literal(n) : enc_null_literal(n);
+        \\        if (v === null) return typeof n.raw === "string" && n.raw !== "null"
+        \\          ? enc_numeric_literal(n)
+        \\          : enc_null_literal(n);
         \\        if (typeof v === "boolean") return enc_boolean_literal(n);
         \\        if (typeof v === "string") return enc_string_literal(n);
         \\        if (typeof v === "number") return enc_numeric_literal(n);
@@ -1291,8 +1381,12 @@ fn writeDispatcher(w: *Writer) !void {
         \\      case "AccessorProperty": return enc_property_definition(n, true, false);
         \\      case "TSAbstractAccessorProperty": return enc_property_definition(n, true, true);
         \\      case "RestElement": return enc_binding_rest_element(n);
-        \\      case "TSModuleDeclaration": return n.global ? enc_ts_global_declaration(n) : enc_ts_module_declaration(n);
-        \\      case "ExpressionStatement": return n.directive != null ? enc_directive(n) : enc_expression_statement(n);
+        \\      case "TSModuleDeclaration": return n.global
+        \\        ? enc_ts_global_declaration(n)
+        \\        : enc_ts_module_declaration(n);
+        \\      case "ExpressionStatement": return n.directive != null
+        \\        ? enc_directive(n)
+        \\        : enc_expression_statement(n);
         \\
     );
     inline for (@typeInfo(ast.NodeData).@"union".fields) |field| {
@@ -1381,14 +1475,18 @@ fn writeAssemble(w: *Writer) !void {
         \\  if (lineStartsCount > 0) {{
         \\    lineStartsBytes = new ArrayBuffer(lineStartsCount * 4);
         \\    const lsDV = new DataView(lineStartsBytes);
-        \\    for (let i = 0; i < lineStartsCount; i++) lsDV.setUint32(i * 4, lineStarts[i] >>> 0, true);
+        \\    for (let i = 0; i < lineStartsCount; i++) {{
+        \\      lsDV.setUint32(i * 4, lineStarts[i] >>> 0, true);
+        \\    }}
         \\  }}
         \\  const totalNodeBytes = nodeCount * NODE_SIZE;
         \\  const totalExtraBytes = extraCount * 4;
         \\  const totalOffsetsBytes = attachComments ? (nodeCount + 1) * 4 : 0;
         \\  const totalCommentBytes = commentCount * COMMENT_SIZE;
         \\  const totalLineStartsBytes = lineStartsCount * 4;
-        \\  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
+        \\  const finalSize =
+        \\    HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen +
+        \\    totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
         \\  const out = new ArrayBuffer(finalSize);
         \\  const outU8 = new Uint8Array(out);
         \\  const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));

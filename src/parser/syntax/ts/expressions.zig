@@ -70,16 +70,27 @@ pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     );
 }
 
-// `<>` after callee becomes call template tag or `InstantiationExpression`, else null if `<` is compare
-pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeIndex) Error!?ast.NodeIndex {
+// `<>` after callee becomes call template tag or `InstantiationExpression`, else null
+// if `<` is compare
+pub fn parseTypeArgumentedCallOrInstantiation(
+    parser: *Parser,
+    callee: ast.NodeIndex,
+) Error!?ast.NodeIndex {
     const type_arguments = try tryParseTypeArgumentsInExpression(parser);
     if (type_arguments == .null) return null;
 
     return switch (parser.current_token.tag) {
         .left_paren => expressions.parseCallExpression(parser, callee, false, type_arguments),
-        .no_substitution_template, .template_head => expressions.parseTaggedTemplateExpression(parser, callee, type_arguments),
+        .no_substitution_template, .template_head => expressions.parseTaggedTemplateExpression(
+            parser,
+            callee,
+            type_arguments,
+        ),
         else => try parser.tree.addNode(
-            .{ .ts_instantiation_expression = .{ .expression = callee, .type_arguments = type_arguments } },
+            .{ .ts_instantiation_expression = .{
+                .expression = callee,
+                .type_arguments = type_arguments,
+            } },
             .{
                 .start = parser.tree.span(callee).start,
                 .end = parser.tree.span(type_arguments).end,

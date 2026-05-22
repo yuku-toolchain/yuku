@@ -20,8 +20,12 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
         else => {
             try parser.report(
                 parser.current_token.span,
-                try parser.fmt("Unexpected token '{s}' in binding pattern", .{parser.describeToken(parser.current_token)}),
-                .{ .help = "Expected an identifier, array pattern ([a, b]), or object pattern ({a, b})." },
+                try parser.fmt(
+                    "Unexpected token '{s}' in binding pattern",
+                    .{parser.describeToken(parser.current_token)},
+                ),
+                .{ .help = "Expected an identifier, array pattern ([a, b])," ++
+                    " or object pattern ({a, b})." },
             );
             return null;
         },
@@ -45,7 +49,8 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     try parser.advance() orelse return null;
 
-    const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+    const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+        return null;
 
     return try parser.tree.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },

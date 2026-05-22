@@ -67,7 +67,11 @@ pub fn main(init: std.process.Init) !void {
         \\const bits_per_word = 32;
         \\const leaf_chunk_width = 16;
         \\
-        \\inline fn queryBitTable(cp: u32, comptime root: []const u8, comptime leaf: []const u64) bool {
+        \\inline fn queryBitTable(
+        \\    cp: u32,
+        \\    comptime root: []const u8,
+        \\    comptime leaf: []const u64,
+        \\) bool {
         \\    const chunk_idx = cp / chunk_size;
         \\    const leaf_base = @as(u32, root[chunk_idx]) * leaf_chunk_width;
         \\    const offset_in_chunk = cp - (chunk_idx * chunk_size);
@@ -114,7 +118,11 @@ fn buildLookupTables(alloc: std.mem.Allocator, codepoints: CodepointSet) !TableD
             var bit_idx: u32 = 0;
             while (bit_idx < bits_per_element) : (bit_idx += 1) {
                 // calculate the actual codepoint this bit represents
-                const cp: u32 = @intCast(chunk_idx * elements_per_chunk + elem_idx * bits_per_element + bit_idx);
+                const cp: u32 = @intCast(
+                    chunk_idx * elements_per_chunk +
+                        elem_idx * bits_per_element +
+                        bit_idx,
+                );
 
                 // set the bit if this codepoint has the property
                 const is_set: u32 = if (codepoints.contains(cp)) 1 else 0;
@@ -171,7 +179,10 @@ fn buildLookupTables(alloc: std.mem.Allocator, codepoints: CodepointSet) !TableD
 ///
 /// this function extracts both ID_Start and ID_Continue properties and returns them
 /// as separate sets of codepoints.
-pub fn parseUnicodeProperties(io: std.Io, alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
+pub fn parseUnicodeProperties(
+    io: std.Io,
+    alloc: std.mem.Allocator,
+) !struct { CodepointSet, CodepointSet } {
     const target_file = "DerivedCoreProperties.txt";
 
     var data_dir = try std.Io.Dir.cwd().openDir(io, extraction_path, .{});
@@ -332,7 +343,10 @@ fn emitTableStructure(data: TableData, writer: *std.Io.Writer, table_name: []con
     std.log.info("Successfully wrote {s} to {s}", .{ table_name, output_table_path });
 }
 
-pub fn downloadAndParseProperties(io: std.Io, alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
+pub fn downloadAndParseProperties(
+    io: std.Io,
+    alloc: std.mem.Allocator,
+) !struct { CodepointSet, CodepointSet } {
     if (!pathExists(io, derived_core_properties_path)) {
         try fetchUnicodeData(io, alloc);
     }

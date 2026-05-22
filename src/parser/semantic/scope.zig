@@ -142,7 +142,12 @@ pub const ScopeTracker = struct {
         }
     }
 
-    pub fn pushScope(self: *ScopeTracker, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
+    pub fn pushScope(
+        self: *ScopeTracker,
+        kind: Scope.Kind,
+        node: ast.NodeIndex,
+        flags: Scope.Flags,
+    ) Allocator.Error!void {
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
         const parent = self.currentScope();
 
@@ -160,7 +165,11 @@ pub const ScopeTracker = struct {
         self.current = self.scopes.items[@intFromEnum(self.current)].parent;
     }
 
-    pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub fn enter(
+        self: *ScopeTracker,
+        index: ast.NodeIndex,
+        data: ast.NodeData,
+    ) Allocator.Error!void {
         switch (data) {
             .directive => |d| {
                 if (std.mem.eql(u8, self.tree.string(d.value), "use strict")) {
@@ -171,7 +180,8 @@ pub const ScopeTracker = struct {
                 const flags: Scope.Flags =
                     if (self.hasRetroActiveUseStrict(func.body))
                         .{ .strict = true }
-                    else self.inheritStrictFlag();
+                    else
+                        self.inheritStrictFlag();
 
                 // named function expressions get an extra scope for the
                 // name, pushed before the function scope so it sits
@@ -185,7 +195,8 @@ pub const ScopeTracker = struct {
                 const flags: Scope.Flags =
                     if (self.hasRetroActiveUseStrict(expr.body))
                         .{ .strict = true }
-                    else self.inheritStrictFlag();
+                    else
+                        self.inheritStrictFlag();
 
                 try self.pushScope(.function, index, flags);
             },
@@ -199,7 +210,9 @@ pub const ScopeTracker = struct {
                 if (current != .catch_clause or current.catch_clause.body != index)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
             },
-            .for_statement, .for_in_statement, .for_of_statement,
+            .for_statement,
+            .for_in_statement,
+            .for_of_statement,
             .catch_clause,
             // section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
@@ -283,8 +296,11 @@ pub const ScopeTracker = struct {
                 if (isNamedFunctionExpression(func)) self.popScope();
             },
             .arrow_function_expression,
-            .for_statement, .for_in_statement, .for_of_statement,
-            .catch_clause, .switch_statement,
+            .for_statement,
+            .for_in_statement,
+            .for_of_statement,
+            .catch_clause,
+            .switch_statement,
             .static_block,
             .ts_module_block,
             .ts_interface_declaration,

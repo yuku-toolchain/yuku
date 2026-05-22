@@ -33,7 +33,9 @@ function buildPosMap(src, byteLen, startByte) {
   while (i < len) {
     if (i + 16 <= len) {
       let allAscii = true;
-      for (let k = 0; k < 16; k++) if (src.charCodeAt(i + k) >= 0x80) { allAscii = false; break; }
+      for (let k = 0; k < 16; k++) {
+        if (src.charCodeAt(i + k) >= 0x80) { allAscii = false; break; }
+      }
       if (allAscii) {
         for (let k = 0; k < 16; k++) m[bp + k] = u16p + k;
         bp += 16; u16p += 16; i += 16;
@@ -44,8 +46,14 @@ function buildPosMap(src, byteLen, startByte) {
     m[bp] = u16p;
     if (cu < 0x80) { bp++; u16p++; i++; }
     else if (cu < 0x800) { m[bp + 1] = u16p + 1; bp += 2; u16p++; i++; }
-    else if (cu < 0xD800 || cu >= 0xE000) { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1; bp += 3; u16p++; i++; }
-    else { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2; bp += 4; u16p += 2; i += 2; }
+    else if (cu < 0xD800 || cu >= 0xE000) {
+      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1;
+      bp += 3; u16p++; i++;
+    }
+    else {
+      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2;
+      bp += 4; u16p += 2; i += 2;
+    }
   }
   m[byteLen - startByte] = u16p;
   return m;
@@ -56,8 +64,13 @@ function decode(buffer, source) {
   const _u32 = new Int32Array(buffer, 0, aLen >> 2);
   const _src = source;
   const _srcLen = _u32[3];
-  const nodeCount = _u32[0], extraCount = _u32[1], spLen = _u32[2];
-  const commentCount = _u32[4], lineStartsCount = _u32[5], diagCount = _u32[6], progIdx = _u32[7];
+  const nodeCount = _u32[0],
+        extraCount = _u32[1],
+        spLen = _u32[2];
+  const commentCount = _u32[4],
+        lineStartsCount = _u32[5],
+        diagCount = _u32[6],
+        progIdx = _u32[7];
   const _flags = _u32[8];
   const _isTs = !!(_flags & 1);
   const _attachComments = !!(_flags & 2);
@@ -80,9 +93,23 @@ function decode(buffer, source) {
     for (let i = a; i < b; ) {
       const c = _u8[i];
       if (c < 0x80) { r += String.fromCharCode(c); i++; }
-      else if (c < 0xE0) { r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F)); i += 2; }
-      else if (c < 0xF0) { r += String.fromCharCode(((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)); i += 3; }
-      else { r += String.fromCodePoint(((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) | ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)); i += 4; }
+      else if (c < 0xE0) {
+        r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F));
+        i += 2;
+      }
+      else if (c < 0xF0) {
+        r += String.fromCharCode(
+          ((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)
+        );
+        i += 3;
+      }
+      else {
+        r += String.fromCodePoint(
+          ((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) |
+            ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)
+        );
+        i += 4;
+      }
     }
     return r;
   }
@@ -112,7 +139,10 @@ function decode(buffer, source) {
   }
   function nodeArrHoles(s, len) {
     const r = new Array(len);
-    for (let j = 0; j < len; j++) { const x = _u32[_extraBase + s + j]; r[j] = x !== NULL ? node(x) : null; }
+    for (let j = 0; j < len; j++) {
+      const x = _u32[_extraBase + s + j];
+      r[j] = x !== NULL ? node(x) : null;
+    }
     return r;
   }
   function fnParams(idx) {
@@ -130,7 +160,8 @@ function decode(buffer, source) {
     for (let j = a; j < e; j++) {
       const o = _cOff + j * 12;
       const cf = _u8[o + 0];
-      const vs = dv.getUint32(o + 4, true), ve = dv.getUint32(o + 8, true);
+      const vs = dv.getUint32(o + 4, true),
+            ve = dv.getUint32(o + 8, true);
       out[j - a] = {
         type: (cf & 1) ? "Block" : "Line",
         position: ["before", "after", "inside"][(cf >> 1) & 3],
@@ -157,13 +188,44 @@ function decode(buffer, source) {
     const flags = _u8[o + 2] | (_u8[o + 3] << 8);
     const f0 = _u8[o + 4] | (_u8[o + 5] << 8);
     const b = o >> 2;
-    const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8], f8 = _u32[b + 9];
+    const f1 = _u32[b + 2], f2 = _u32[b + 3],
+          f3 = _u32[b + 4], f4 = _u32[b + 5],
+          f5 = _u32[b + 6], f6 = _u32[b + 7],
+          f7 = _u32[b + 8], f8 = _u32[b + 9];
     const start = _p(_u32[b + 10]), end = _p(_u32[b + 11]);
     switch (tag) {
     case 0: return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) };
     case 1: return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 2: { const r = { type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & 2), params: f1 !== NULL ? fnParams(f1) : [], body: node(f2), expression: !!(flags & 1) }; if (_isTs) { r.typeParameters = f3 !== NULL ? node(f3) : null; r.returnType = f4 !== NULL ? node(f4) : null; } return r; }
-    case 3: { const ft = flags & 3; const r = { type: FUNCTION_TYPES[ft], start, end, id: f1 !== NULL ? node(f1) : null, generator: !!(flags & 4), async: !!(flags & 8), params: f2 !== NULL ? fnParams(f2) : [], body: f3 !== NULL ? node(f3) : null, expression: false }; if (_isTs) { r.typeParameters = f4 !== NULL ? node(f4) : null; r.returnType = f5 !== NULL ? node(f5) : null; r.declare = !!(flags & 16); } return r; }
+    case 2: {
+      const r = {
+        type: "ArrowFunctionExpression", start, end,
+        id: null, generator: false, async: !!(flags & 2),
+        params: f1 !== NULL ? fnParams(f1) : [],
+        body: node(f2), expression: !!(flags & 1),
+      };
+      if (_isTs) {
+        r.typeParameters = f3 !== NULL ? node(f3) : null;
+        r.returnType = f4 !== NULL ? node(f4) : null;
+      }
+      return r;
+    }
+    case 3: {
+      const ft = flags & 3;
+      const r = {
+        type: FUNCTION_TYPES[ft], start, end,
+        id: f1 !== NULL ? node(f1) : null,
+        generator: !!(flags & 4), async: !!(flags & 8),
+        params: f2 !== NULL ? fnParams(f2) : [],
+        body: f3 !== NULL ? node(f3) : null,
+        expression: false,
+      };
+      if (_isTs) {
+        r.typeParameters = f4 !== NULL ? node(f4) : null;
+        r.returnType = f5 !== NULL ? node(f5) : null;
+        r.declare = !!(flags & 16);
+      }
+      return r;
+    }
     case 4: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
     case 5: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
     case 6: return { params: fnParams(i) };
@@ -171,7 +233,11 @@ function decode(buffer, source) {
     case 8: return { type: "BinaryExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: BINARY_OPS[flags & 31] };
     case 9: return { type: "LogicalExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: LOGICAL_OPS[flags & 3] };
     case 10: return { type: "ConditionalExpression", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
-    case 11: return { type: "UnaryExpression", start, end, operator: UNARY_OPS[flags & 7], prefix: true, argument: f1 !== NULL ? node(f1) : null };
+    case 11: return {
+      type: "UnaryExpression", start, end,
+      operator: UNARY_OPS[flags & 7], prefix: true,
+      argument: f1 !== NULL ? node(f1) : null,
+    };
     case 12: return { type: "UpdateExpression", start, end, argument: f1 !== NULL ? node(f1) : null, operator: UPDATE_OPS[flags & 1], prefix: !!(flags & 2) };
     case 13: return { type: "AssignmentExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: ASSIGNMENT_OPS[flags & 15] };
     case 14: return { type: "ArrayExpression", start, end, elements: nodeArrHoles(f1, f0) };
@@ -187,21 +253,128 @@ function decode(buffer, source) {
     case 24: return { type: "YieldExpression", start, end, argument: f1 !== NULL ? node(f1) : null, delegate: !!(flags & 1) };
     case 25: return { type: "MetaProperty", start, end, meta: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
     case 26: return { type: "Decorator", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 27: { const r = { type: CLASS_TYPES[flags & 1], start, end, decorators: nodeArr(f1, f0), id: f2 !== NULL ? node(f2) : null, superClass: f3 !== NULL ? node(f3) : null, body: node(f4) }; if (_isTs) { r.typeParameters = f5 !== NULL ? node(f5) : null; r.superTypeArguments = f6 !== NULL ? node(f6) : null; r.implements = nodeArr(f7, f8); r.abstract = !!(flags & 2); r.declare = !!(flags & 4); } return r; }
+    case 27: {
+      const r = {
+        type: CLASS_TYPES[flags & 1], start, end,
+        decorators: nodeArr(f1, f0),
+        id: f2 !== NULL ? node(f2) : null,
+        superClass: f3 !== NULL ? node(f3) : null,
+        body: node(f4),
+      };
+      if (_isTs) {
+        r.typeParameters = f5 !== NULL ? node(f5) : null;
+        r.superTypeArguments = f6 !== NULL ? node(f6) : null;
+        r.implements = nodeArr(f7, f8);
+        r.abstract = !!(flags & 2);
+        r.declare = !!(flags & 4);
+      }
+      return r;
+    }
     case 28: return { type: "ClassBody", start, end, body: nodeArr(f1, f0) };
-    case 29: { const r = { type: "MethodDefinition", start, end, decorators: nodeArr(f1, f0), key: node(f2), value: node(f3), kind: METHOD_KINDS[flags & 3], computed: !!(flags & 4), static: !!(flags & 8) }; if (_isTs) { r.override = !!(flags & 16); r.optional = !!(flags & 32); const _abs = !!(flags & 64); r.accessibility = ACCESSIBILITY[(flags >> 7) & 3]; if (_abs) r.type = "TSAbstractMethodDefinition"; } return r; }
-    case 30: { const _acc = !!(flags & 4); const r = { type: _acc ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f1, f0), key: node(f2), value: f3 !== NULL ? node(f3) : null, computed: !!(flags & 1), static: !!(flags & 2) }; if (_isTs) { r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.declare = !!(flags & 8); r.override = !!(flags & 16); r.optional = !!(flags & 32); r.definite = !!(flags & 64); r.readonly = !!(flags & 128); const _abs = !!(flags & 256); r.accessibility = ACCESSIBILITY[(flags >> 9) & 3]; if (_abs) r.type = _acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition"; } return r; }
+    case 29: {
+      const r = {
+        type: "MethodDefinition", start, end,
+        decorators: nodeArr(f1, f0),
+        key: node(f2), value: node(f3),
+        kind: METHOD_KINDS[flags & 3],
+        computed: !!(flags & 4), static: !!(flags & 8),
+      };
+      if (_isTs) {
+        r.override = !!(flags & 16);
+        r.optional = !!(flags & 32);
+        const _abs = !!(flags & 64);
+        r.accessibility = ACCESSIBILITY[(flags >> 7) & 3];
+        if (_abs) r.type = "TSAbstractMethodDefinition";
+      }
+      return r;
+    }
+    case 30: {
+      const _acc = !!(flags & 4);
+      const r = {
+        type: _acc ? "AccessorProperty" : "PropertyDefinition",
+        start, end,
+        decorators: nodeArr(f1, f0),
+        key: node(f2),
+        value: f3 !== NULL ? node(f3) : null,
+        computed: !!(flags & 1), static: !!(flags & 2),
+      };
+      if (_isTs) {
+        r.typeAnnotation = f4 !== NULL ? node(f4) : null;
+        r.declare = !!(flags & 8);
+        r.override = !!(flags & 16);
+        r.optional = !!(flags & 32);
+        r.definite = !!(flags & 64);
+        r.readonly = !!(flags & 128);
+        const _abs = !!(flags & 256);
+        r.accessibility = ACCESSIBILITY[(flags >> 9) & 3];
+        if (_abs)
+          r.type = _acc
+            ? "TSAbstractAccessorProperty"
+            : "TSAbstractPropertyDefinition";
+      }
+      return r;
+    }
     case 31: return { type: "StaticBlock", start, end, body: nodeArr(f1, f0) };
     case 32: return { type: "Super", start, end };
-    case 33: return { type: "Literal", start, end, value: str(f1, f2), raw: _src.slice(start, end) };
-    case 34: { const r = _src.slice(start, end); const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, ""); const v = (flags & 3) === 2 && s[1] !== "o" && s[1] !== "O" ? parseInt(s.slice(1), 8) : +s; return { type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }; }
-    case 35: { const r = _src.slice(start, end); const d = str(f1, f2).replace(/_/g, ""); const v = BigInt(d); return { type: "Literal", start, end, value: v, raw: r, bigint: v.toString() }; }
-    case 36: { const v = !!(flags & 1); return { type: "Literal", start, end, value: v, raw: v ? "true" : "false" }; }
+    case 33: return {
+      type: "Literal", start, end,
+      value: str(f1, f2), raw: _src.slice(start, end),
+    };
+    case 34: {
+      const r = _src.slice(start, end);
+      const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, "");
+      const v = (flags & 3) === 2 && s[1] !== "o" && s[1] !== "O"
+        ? parseInt(s.slice(1), 8)
+        : +s;
+      return {
+        type: "Literal", start, end,
+        value: v === v && isFinite(v) ? v : null,
+        raw: r,
+      };
+    }
+    case 35: {
+      const r = _src.slice(start, end);
+      const d = str(f1, f2).replace(/_/g, "");
+      const v = BigInt(d);
+      return {
+        type: "Literal", start, end,
+        value: v, raw: r, bigint: v.toString(),
+      };
+    }
+    case 36: {
+      const v = !!(flags & 1);
+      return {
+        type: "Literal", start, end,
+        value: v, raw: v ? "true" : "false",
+      };
+    }
     case 37: return { type: "Literal", start, end, value: null, raw: "null" };
     case 38: return { type: "ThisExpression", start, end };
-    case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
+    case 39: {
+      const p = str(f1, f2), fl = str(f3, f4);
+      let v = null;
+      try { v = new RegExp(p, fl); } catch {}
+      return {
+        type: "Literal", start, end,
+        value: v, raw: "/" + p + "/" + fl,
+        regex: { pattern: p, flags: fl.split("").sort().join("") },
+      };
+    }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
-    case 41: { const raw = _src.slice(start, end).replace(/\r\n?/g, "\n"); const tl = !!(flags & 1); const s = _isTs ? start - 1 : start; const e = _isTs ? (tl ? end + 1 : end + 2) : end; return { type: "TemplateElement", start: s, end: e, value: { raw, cooked: (flags & 2) ? null : str(f1, f2) }, tail: tl }; }
+    case 41: {
+      const raw = _src.slice(start, end).replace(/\r\n?/g, "\n");
+      const tl = !!(flags & 1);
+      const s = _isTs ? start - 1 : start;
+      const e = _isTs ? (tl ? end + 1 : end + 2) : end;
+      return {
+        type: "TemplateElement", start: s, end: e,
+        value: {
+          raw,
+          cooked: (flags & 2) ? null : str(f1, f2),
+        },
+        tail: tl,
+      };
+    }
     case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "reference" }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
     case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2), kind: "binding" }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
@@ -228,13 +401,53 @@ function decode(buffer, source) {
     case 65: return { type: "EmptyStatement", start, end };
     case 66: { const r = { type: "VariableDeclaration", start, end, kind: VAR_KINDS[flags & 7], declarations: nodeArr(f1, f0) }; if (_isTs) { r.declare = !!(flags & 8); } return r; }
     case 67: { const r = { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.definite = !!(flags & 1); } return r; }
-    case 68: return { type: "ExpressionStatement", start, end, expression: node(f1), directive: str(f2, f3) };
+    case 68: return {
+      type: "ExpressionStatement", start, end,
+      expression: node(f1), directive: str(f2, f3),
+    };
     case 69: { const r = { type: "AssignmentPattern", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
     case 70: { const r = { type: "RestElement", start, end, argument: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.decorators = nodeArr(f2, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
-    case 71: { const el = nodeArrHoles(f1, f0); if (f2 !== NULL) el.push(node(f2)); const r = { type: "ArrayPattern", start, end, elements: el }; if (_isTs) { r.decorators = nodeArr(f3, f4); r.optional = !!(flags & 1); r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
-    case 72: { const pr = nodeArr(f1, f0); if (f2 !== NULL) pr.push(node(f2)); const r = { type: "ObjectPattern", start, end, properties: pr }; if (_isTs) { r.decorators = nodeArr(f3, f4); r.optional = !!(flags & 1); r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
-    case 73: { const r = { type: "Property", start, end, kind: "init", key: node(f1), value: node(f2), method: false, shorthand: !!(flags & 1), computed: !!(flags & 2) }; if (_isTs) { r.optional = false; } return r; }
-    case 74: return { type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & 2) ? { type: "Hashbang", start: _p(f2 - 2), end: _p(f3), value: str(f2, f3) } : null, body: nodeArr(f1, f0) };
+    case 71: {
+      const el = nodeArrHoles(f1, f0);
+      if (f2 !== NULL) el.push(node(f2));
+      const r = { type: "ArrayPattern", start, end, elements: el };
+      if (_isTs) {
+        r.decorators = nodeArr(f3, f4);
+        r.optional = !!(flags & 1);
+        r.typeAnnotation = f5 !== NULL ? node(f5) : null;
+      }
+      return r;
+    }
+    case 72: {
+      const pr = nodeArr(f1, f0);
+      if (f2 !== NULL) pr.push(node(f2));
+      const r = { type: "ObjectPattern", start, end, properties: pr };
+      if (_isTs) {
+        r.decorators = nodeArr(f3, f4);
+        r.optional = !!(flags & 1);
+        r.typeAnnotation = f5 !== NULL ? node(f5) : null;
+      }
+      return r;
+    }
+    case 73: {
+      const r = {
+        type: "Property", start, end,
+        kind: "init",
+        key: node(f1), value: node(f2),
+        method: false,
+        shorthand: !!(flags & 1),
+        computed: !!(flags & 2),
+      }; if (_isTs) { r.optional = false; } return r; }
+    case 74: return {
+      type: "Program", start, end,
+      sourceType: (flags & 1) ? "module" : "script",
+      hashbang: (flags & 2) ? {
+        type: "Hashbang",
+        start: _p(f2 - 2), end: _p(f3),
+        value: str(f2, f3),
+      } : null,
+      body: nodeArr(f1, f0),
+    };
     case 75: return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
     case 76: { const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
     case 77: { const r = { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
@@ -284,15 +497,54 @@ function decode(buffer, source) {
     case 121: return { type: "TSInferType", start, end, typeParameter: f1 !== NULL ? node(f1) : null };
     case 122: return { type: "TSTypeOperator", start, end, operator: TS_TYPE_OPERATORS[flags & 3], typeAnnotation: f1 !== NULL ? node(f1) : null };
     case 123: return { type: "TSParenthesizedType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 124: return { type: "TSFunctionType", start, end, typeParameters: f1 !== NULL ? node(f1) : null, params: f2 !== NULL ? fnParams(f2) : [], returnType: f3 !== NULL ? node(f3) : null };
-    case 125: return { type: "TSConstructorType", start, end, abstract: !!(flags & 1), typeParameters: f1 !== NULL ? node(f1) : null, params: f2 !== NULL ? fnParams(f2) : [], returnType: f3 !== NULL ? node(f3) : null };
+    case 124: return {
+      type: "TSFunctionType", start, end,
+      typeParameters: f1 !== NULL ? node(f1) : null,
+      params: f2 !== NULL ? fnParams(f2) : [],
+      returnType: f3 !== NULL ? node(f3) : null,
+    };
+    case 125: return {
+      type: "TSConstructorType", start, end,
+      abstract: !!(flags & 1),
+      typeParameters: f1 !== NULL ? node(f1) : null,
+      params: f2 !== NULL ? fnParams(f2) : [],
+      returnType: f3 !== NULL ? node(f3) : null,
+    };
     case 126: return { type: "TSTypePredicate", start, end, parameterName: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null, asserts: !!(flags & 1) };
     case 127: return { type: "TSTypeLiteral", start, end, members: nodeArr(f1, f0) };
-    case 128: return { type: "TSMappedType", start, end, key: node(f1), constraint: node(f2), nameType: f3 !== NULL ? node(f3) : null, typeAnnotation: f4 !== NULL ? node(f4) : null, optional: TS_MAPPED_OPTIONAL[(flags >> 0) & 3], readonly: TS_MAPPED_READONLY[(flags >> 2) & 3] };
+    case 128: return {
+      type: "TSMappedType", start, end,
+      key: node(f1),
+      constraint: node(f2),
+      nameType: f3 !== NULL ? node(f3) : null,
+      typeAnnotation: f4 !== NULL ? node(f4) : null,
+      optional: TS_MAPPED_OPTIONAL[(flags >> 0) & 3],
+      readonly: TS_MAPPED_READONLY[(flags >> 2) & 3],
+    };
     case 129: { const r = { type: "TSPropertySignature", start, end, key: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2), readonly: !!(flags & 4) }; if (_isTs) { r.accessibility = null; r.static = false; } return r; }
-    case 130: return { type: "TSMethodSignature", start, end, key: node(f1), computed: !!(flags & 4), optional: !!(flags & 8), kind: TS_METHOD_SIGNATURE_KINDS[(flags >> 0) & 3], typeParameters: f2 !== NULL ? node(f2) : null, params: f3 !== NULL ? fnParams(f3) : [], returnType: f4 !== NULL ? node(f4) : null, accessibility: null, readonly: false, static: false };
-    case 131: return { type: "TSCallSignatureDeclaration", start, end, typeParameters: f1 !== NULL ? node(f1) : null, params: f2 !== NULL ? fnParams(f2) : [], returnType: f3 !== NULL ? node(f3) : null };
-    case 132: return { type: "TSConstructSignatureDeclaration", start, end, typeParameters: f1 !== NULL ? node(f1) : null, params: f2 !== NULL ? fnParams(f2) : [], returnType: f3 !== NULL ? node(f3) : null };
+    case 130: return {
+      type: "TSMethodSignature", start, end,
+      key: node(f1),
+      computed: !!(flags & 4),
+      optional: !!(flags & 8),
+      kind: TS_METHOD_SIGNATURE_KINDS[(flags >> 0) & 3],
+      typeParameters: f2 !== NULL ? node(f2) : null,
+      params: f3 !== NULL ? fnParams(f3) : [],
+      returnType: f4 !== NULL ? node(f4) : null,
+      accessibility: null, readonly: false, static: false,
+    };
+    case 131: return {
+      type: "TSCallSignatureDeclaration", start, end,
+      typeParameters: f1 !== NULL ? node(f1) : null,
+      params: f2 !== NULL ? fnParams(f2) : [],
+      returnType: f3 !== NULL ? node(f3) : null,
+    };
+    case 132: return {
+      type: "TSConstructSignatureDeclaration", start, end,
+      typeParameters: f1 !== NULL ? node(f1) : null,
+      params: f2 !== NULL ? fnParams(f2) : [],
+      returnType: f3 !== NULL ? node(f3) : null,
+    };
     case 133: { const r = { type: "TSIndexSignature", start, end, parameters: nodeArr(f1, f0), typeAnnotation: f2 !== NULL ? node(f2) : null, readonly: !!(flags & 1) }; if (_isTs) { r.static = !!(flags & 2); r.accessibility = null; } return r; }
     case 134: return { type: "TSTypeAliasDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, typeParameters: f2 !== NULL ? node(f2) : null, typeAnnotation: f3 !== NULL ? node(f3) : null, declare: !!(flags & 1) };
     case 135: return { type: "TSInterfaceDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, typeParameters: f2 !== NULL ? node(f2) : null, extends: nodeArr(f3, f0), body: f4 !== NULL ? node(f4) : null, declare: !!(flags & 1) };
@@ -302,11 +554,32 @@ function decode(buffer, source) {
     case 139: return { type: "TSEnumDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null, const: !!(flags & 1), declare: !!(flags & 2) };
     case 140: return { type: "TSEnumBody", start, end, members: nodeArr(f1, f0) };
     case 141: return { type: "TSEnumMember", start, end, id: f1 !== NULL ? node(f1) : null, initializer: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1) };
-    case 142: { const r = { type: "TSModuleDeclaration", start, end, id: node(f1), kind: TS_MODULE_KINDS[(flags >> 0) & 1], declare: !!(flags & 2), global: false }; if (f2 !== NULL) r.body = node(f2); return r; }
+    case 142: {
+      const r = {
+        type: "TSModuleDeclaration", start, end,
+        id: node(f1),
+        kind: TS_MODULE_KINDS[(flags >> 0) & 1],
+        declare: !!(flags & 2),
+        global: false,
+      };
+      if (f2 !== NULL) r.body = node(f2);
+      return r;
+    }
     case 143: return { type: "TSModuleBlock", start, end, body: nodeArr(f1, f0) };
-    case 144: return { type: "TSModuleDeclaration", start, end, id: node(f1), body: node(f2), kind: "global", declare: !!(flags & 1), global: true };
+    case 144: return {
+      type: "TSModuleDeclaration", start, end,
+      id: node(f1), body: node(f2),
+      kind: "global",
+      declare: !!(flags & 1),
+      global: true,
+    };
     case 145: { const r = { type: "TSParameterProperty", start, end, decorators: nodeArr(f1, f0), parameter: f2 !== NULL ? node(f2) : null, override: !!(flags & 1), readonly: !!(flags & 2), accessibility: ACCESSIBILITY[(flags >> 2) & 3] }; if (_isTs) { r.static = false; } return r; }
-    case 146: return { type: "Identifier", start, end, decorators: [], name: "this", kind: "this", optional: false, typeAnnotation: f1 !== NULL ? node(f1) : null };
+    case 146: return {
+      type: "Identifier", start, end,
+      decorators: [],
+      name: "this", kind: "this", optional: false,
+      typeAnnotation: f1 !== NULL ? node(f1) : null,
+    };
     case 147: return { type: "TSAsExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
     case 148: return { type: "TSSatisfiesExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
     case 149: return { type: "TSTypeAssertion", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, expression: f2 !== NULL ? node(f2) : null };
@@ -329,7 +602,10 @@ function decode(buffer, source) {
     case 166: return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null };
     case 167: return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 168: return { type: "JSXEmptyExpression", start, end };
-    case 169: { const t = str(f1, f2); return { type: "JSXText", start, end, value: t, raw: t }; }
+    case 169: {
+      const t = str(f1, f2);
+      return { type: "JSXText", start, end, value: t, raw: t };
+    }
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
@@ -338,7 +614,9 @@ function decode(buffer, source) {
   function _decodeLineStarts() {
     const out = new Array(lineStartsCount);
     if (_firstNa >= _srcLen) {
-      for (let j = 0; j < lineStartsCount; j++) out[j] = dv.getUint32(lsOff + j * 4, true);
+      for (let j = 0; j < lineStartsCount; j++) {
+        out[j] = dv.getUint32(lsOff + j * 4, true);
+      }
       return out;
     }
     if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
@@ -359,14 +637,22 @@ function decode(buffer, source) {
       const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
       const hh = _u8[dp]; dp++;
       let help = null;
-      if (hh) { const hl = dv.getUint32(dp, true); dp += 4; help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl; }
+      if (hh) {
+        const hl = dv.getUint32(dp, true); dp += 4;
+        help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
+      }
       const lc = dv.getUint32(dp, true); dp += 4;
       const labels = new Array(lc);
       for (let k = 0; k < lc; k++) {
         const ls = _p(dv.getUint32(dp, true)); dp += 4;
         const le = _p(dv.getUint32(dp, true)); dp += 4;
         const lml = dv.getUint32(dp, true); dp += 4;
-        labels[k] = { start: ls, end: le, message: _td.decode(_u8.subarray(dp, dp + lml)) }; dp += lml;
+        labels[k] = {
+          start: ls,
+          end: le,
+          message: _td.decode(_u8.subarray(dp, dp + lml)),
+        };
+        dp += lml;
       }
       out[j] = { severity: sev, message: msg, start: ds, end: de, help, labels };
     }
@@ -378,13 +664,22 @@ function decode(buffer, source) {
     return _lineStarts;
   }
   return {
-    get program() { return _program !== undefined ? _program : (_program = node(progIdx)); },
-    get diagnostics() { return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); },
+    get program() {
+      return _program !== undefined ? _program : (_program = node(progIdx));
+    },
+    get diagnostics() {
+      return _diagnostics !== undefined
+        ? _diagnostics
+        : (_diagnostics = _decodeDiagnostics());
+    },
     get lineStarts() { return _getLineStarts(); },
     locOf(offset) {
       const ls = _getLineStarts();
       let lo = 0, hi = ls.length;
-      while (lo < hi) { const mid = (lo + hi) >>> 1; if (ls[mid] <= offset) lo = mid + 1; else hi = mid; }
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (ls[mid] <= offset) lo = mid + 1; else hi = mid;
+      }
       return { line: lo, column: offset - ls[lo - 1] };
     },
   };

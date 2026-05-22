@@ -54,7 +54,9 @@ fn writeBuildPosMap(w: *Writer) !void {
         \\  while (i < len) {
         \\    if (i + 16 <= len) {
         \\      let allAscii = true;
-        \\      for (let k = 0; k < 16; k++) if (src.charCodeAt(i + k) >= 0x80) { allAscii = false; break; }
+        \\      for (let k = 0; k < 16; k++) {
+        \\        if (src.charCodeAt(i + k) >= 0x80) { allAscii = false; break; }
+        \\      }
         \\      if (allAscii) {
         \\        for (let k = 0; k < 16; k++) m[bp + k] = u16p + k;
         \\        bp += 16; u16p += 16; i += 16;
@@ -65,8 +67,14 @@ fn writeBuildPosMap(w: *Writer) !void {
         \\    m[bp] = u16p;
         \\    if (cu < 0x80) { bp++; u16p++; i++; }
         \\    else if (cu < 0x800) { m[bp + 1] = u16p + 1; bp += 2; u16p++; i++; }
-        \\    else if (cu < 0xD800 || cu >= 0xE000) { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1; bp += 3; u16p++; i++; }
-        \\    else { m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2; bp += 4; u16p += 2; i += 2; }
+        \\    else if (cu < 0xD800 || cu >= 0xE000) {
+        \\      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1;
+        \\      bp += 3; u16p++; i++;
+        \\    }
+        \\    else {
+        \\      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2;
+        \\      bp += 4; u16p += 2; i += 2;
+        \\    }
         \\  }
         \\  m[byteLen - startByte] = u16p;
         \\  return m;
@@ -83,8 +91,13 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const _u32 = new Int32Array(buffer, 0, aLen >> 2);
         \\  const _src = source;
         \\  const _srcLen = _u32[{[u_src]d}];
-        \\  const nodeCount = _u32[{[u_nc]d}], extraCount = _u32[{[u_ec]d}], spLen = _u32[{[u_sp]d}];
-        \\  const commentCount = _u32[{[u_cc]d}], lineStartsCount = _u32[{[u_ls]d}], diagCount = _u32[{[u_dc]d}], progIdx = _u32[{[u_pi]d}];
+        \\  const nodeCount = _u32[{[u_nc]d}],
+        \\        extraCount = _u32[{[u_ec]d}],
+        \\        spLen = _u32[{[u_sp]d}];
+        \\  const commentCount = _u32[{[u_cc]d}],
+        \\        lineStartsCount = _u32[{[u_ls]d}],
+        \\        diagCount = _u32[{[u_dc]d}],
+        \\        progIdx = _u32[{[u_pi]d}];
         \\  const _flags = _u32[{[u_fl]d}];
         \\  const _isTs = !!(_flags & {[ts]d});
         \\  const _attachComments = !!(_flags & {[ac]d});
@@ -107,9 +120,23 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    for (let i = a; i < b; ) {{
         \\      const c = _u8[i];
         \\      if (c < 0x80) {{ r += String.fromCharCode(c); i++; }}
-        \\      else if (c < 0xE0) {{ r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F)); i += 2; }}
-        \\      else if (c < 0xF0) {{ r += String.fromCharCode(((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)); i += 3; }}
-        \\      else {{ r += String.fromCodePoint(((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) | ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)); i += 4; }}
+        \\      else if (c < 0xE0) {{
+        \\        r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F));
+        \\        i += 2;
+        \\      }}
+        \\      else if (c < 0xF0) {{
+        \\        r += String.fromCharCode(
+        \\          ((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)
+        \\        );
+        \\        i += 3;
+        \\      }}
+        \\      else {{
+        \\        r += String.fromCodePoint(
+        \\          ((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) |
+        \\            ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)
+        \\        );
+        \\        i += 4;
+        \\      }}
         \\    }}
         \\    return r;
         \\  }}
@@ -139,7 +166,10 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  }}
         \\  function nodeArrHoles(s, len) {{
         \\    const r = new Array(len);
-        \\    for (let j = 0; j < len; j++) {{ const x = _u32[_extraBase + s + j]; r[j] = x !== NULL ? node(x) : null; }}
+        \\    for (let j = 0; j < len; j++) {{
+        \\      const x = _u32[_extraBase + s + j];
+        \\      r[j] = x !== NULL ? node(x) : null;
+        \\    }}
         \\    return r;
         \\  }}
         \\  function fnParams(idx) {{
@@ -182,7 +212,8 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    for (let j = a; j < e; j++) {{
         \\      const o = _cOff + j * {[csize]d};
         \\      const cf = _u8[o + {[c_fl]d}];
-        \\      const vs = dv.getUint32(o + {[c_vs]d}, true), ve = dv.getUint32(o + {[c_ve]d}, true);
+        \\      const vs = dv.getUint32(o + {[c_vs]d}, true),
+        \\            ve = dv.getUint32(o + {[c_ve]d}, true);
         \\      out[j - a] = {{
         \\        type: (cf & 1) ? "Block" : "Line",
         \\        position: ["before", "after", "inside"][(cf >> 1) & 3],
@@ -209,7 +240,10 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    const flags = _u8[o + {[fl]d}] | (_u8[o + {[fl1]d}] << 8);
         \\    const f0 = _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8);
         \\    const b = o >> 2;
-        \\    const f1 = _u32[b + {[d0]d}], f2 = _u32[b + {[d1]d}], f3 = _u32[b + {[d2]d}], f4 = _u32[b + {[d3]d}], f5 = _u32[b + {[d4]d}], f6 = _u32[b + {[d5]d}], f7 = _u32[b + {[d6]d}], f8 = _u32[b + {[d7]d}];
+        \\    const f1 = _u32[b + {[d0]d}], f2 = _u32[b + {[d1]d}],
+        \\          f3 = _u32[b + {[d2]d}], f4 = _u32[b + {[d3]d}],
+        \\          f5 = _u32[b + {[d4]d}], f6 = _u32[b + {[d5]d}],
+        \\          f7 = _u32[b + {[d6]d}], f8 = _u32[b + {[d7]d}];
         \\    const start = _p(_u32[b + {[ss]d}]), end = _p(_u32[b + {[se]d}]);
         \\    switch (tag) {{
         \\
@@ -245,21 +279,40 @@ fn writeNodeFunction(w: *Writer) !void {
 // lookup tables
 
 fn writeLookupTables(w: *Writer) !void {
-    try writeArray(w, "BINARY_OPS", &.{ "==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof" });
+    try writeArray(w, "BINARY_OPS", &.{
+        "==", "!=", "===", "!==", "<",  "<=",         ">", ">=",
+        "+",  "-",  "*",   "/",   "%",  "**",         "|", "^",
+        "&",  "<<", ">>",  ">>>", "in", "instanceof",
+    });
     try writeArray(w, "LOGICAL_OPS", &.{ "&&", "||", "??" });
     try writeArray(w, "UNARY_OPS", &.{ "-", "+", "!", "~", "typeof", "void", "delete" });
     try writeArray(w, "UPDATE_OPS", &.{ "++", "--" });
-    try writeArray(w, "ASSIGNMENT_OPS", &.{ "=", "+=", "-=", "*=", "/=", "%=", "**=", "<<=", ">>=", ">>>=", "|=", "^=", "&=", "||=", "&&=", "??=" });
+    try writeArray(w, "ASSIGNMENT_OPS", &.{
+        "=",   "+=",   "-=", "*=", "/=", "%=",  "**=", "<<=",
+        ">>=", ">>>=", "|=", "^=", "&=", "||=", "&&=", "??=",
+    });
     try writeArray(w, "VAR_KINDS", &.{ "var", "let", "const", "using", "await using" });
     try writeArray(w, "PROPERTY_KINDS", &.{ "init", "get", "set" });
     try writeArray(w, "METHOD_KINDS", &.{ "constructor", "method", "get", "set" });
-    try writeArray(w, "FUNCTION_TYPES", &.{ "FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression" });
+    try writeArray(w, "FUNCTION_TYPES", &.{
+        "FunctionDeclaration",
+        "FunctionExpression",
+        "TSDeclareFunction",
+        "TSEmptyBodyFunctionExpression",
+    });
     try writeArray(w, "CLASS_TYPES", &.{ "ClassDeclaration", "ClassExpression" });
     try writeArray(w, "SEVERITY", &.{ "error", "warning", "hint", "info" });
     try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
-    try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
-    try writeArrayRaw(w, "TS_TYPE_OPERATORS", &.{ "\"keyof\"", "\"unique\"", "\"readonly\"" });
-    try writeArrayRaw(w, "TS_METHOD_SIGNATURE_KINDS", &.{ "\"method\"", "\"get\"", "\"set\"" });
+    try writeArrayRaw(w, "ACCESSIBILITY", &.{
+        "null",        "\"public\"",
+        "\"private\"", "\"protected\"",
+    });
+    try writeArrayRaw(w, "TS_TYPE_OPERATORS", &.{
+        "\"keyof\"", "\"unique\"", "\"readonly\"",
+    });
+    try writeArrayRaw(w, "TS_METHOD_SIGNATURE_KINDS", &.{
+        "\"method\"", "\"get\"", "\"set\"",
+    });
     try writeArrayRaw(w, "TS_MODULE_KINDS", &.{ "\"namespace\"", "\"module\"" });
     // mapped type `?` modifier: absent decodes to `false`.
     try writeArrayRaw(w, "TS_MAPPED_OPTIONAL", &.{ "false", "true", "\"+\"", "\"-\"" });
@@ -301,7 +354,12 @@ fn writeNodeCases(w: *Writer) !void {
     }
 }
 
-fn writeGenericCase(w: *Writer, comptime name: []const u8, comptime tag: usize, comptime T: type) !void {
+fn writeGenericCase(
+    w: *Writer,
+    comptime name: []const u8,
+    comptime tag: usize,
+    comptime T: type,
+) !void {
     const etype = comptime estreeType(name);
     const has_ts = comptime hasAnyTsField(name, T) or tsExtrasOf(name).len > 0;
     if (!has_ts) {
@@ -322,7 +380,12 @@ fn writeGenericCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
 
 const FieldSelection = enum { all, non_ts, ts_only };
 
-fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type, comptime sel: FieldSelection) !void {
+fn writeStructFields(
+    w: *Writer,
+    comptime tag_name: []const u8,
+    comptime T: type,
+    comptime sel: FieldSelection,
+) !void {
     if (@typeInfo(T) != .@"struct") return;
     inline for (std.meta.fields(T), 0..) |f, i| {
         const is_ts = comptime isTsField(tag_name, f.name);
@@ -339,7 +402,14 @@ fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type
     }
 }
 
-fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name: []const u8, comptime T: type, comptime i: usize, comptime F: type) !void {
+fn writeFieldExpr(
+    w: *Writer,
+    comptime tag_name: []const u8,
+    comptime field_name: []const u8,
+    comptime T: type,
+    comptime i: usize,
+    comptime F: type,
+) !void {
     const s = comptime rt.u32SlotForField(T, i) + 1;
     if (F == ast.NodeIndex) {
         try w.print("f{d} !== NULL ? node(f{d}) : null", .{ s, s });
@@ -365,10 +435,16 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
         }
     } else if (F == ?ast.ImportPhase) {
         const bit = comptime rt.flagBitForField(T, i);
-        try w.print("(flags & {d}) ? [\"source\", \"defer\"][(flags >> {d}) & 1] : null", .{ @as(u32, 1) << @intCast(bit), bit + 1 });
+        try w.print(
+            "(flags & {d}) ? [\"source\", \"defer\"][(flags >> {d}) & 1] : null",
+            .{ @as(u32, 1) << @intCast(bit), bit + 1 },
+        );
     } else if (F == ?ast.Hashbang) {
         const bit = comptime rt.flagBitForField(T, i);
-        try w.print("(flags & {d}) ? str(f{d}, f{d}) : null", .{ @as(u32, 1) << @intCast(bit), s, s + 1 });
+        try w.print(
+            "(flags & {d}) ? str(f{d}, f{d}) : null",
+            .{ @as(u32, 1) << @intCast(bit), s, s + 1 },
+        );
     } else {
         @compileError("unsupported field type in decoder: " ++ @typeName(F));
     }
@@ -379,14 +455,36 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter",              "formal_parameters",                  "function",            "arrow_function_expression",
-        "program",                       "directive",                          "string_literal",      "numeric_literal",
-        "bigint_literal",                "boolean_literal",                    "null_literal",        "regexp_literal",
-        "template_element",              "class",                              "method_definition",   "property_definition",
-        "unary_expression",              "binding_property",                   "array_pattern",       "object_pattern",
-        "jsx_text",                      "ts_function_type",                   "ts_constructor_type", "ts_method_signature",
-        "ts_call_signature_declaration", "ts_construct_signature_declaration", "ts_mapped_type",      "ts_module_declaration",
-        "ts_global_declaration",         "ts_this_parameter",
+        "formal_parameter",
+        "formal_parameters",
+        "function",
+        "arrow_function_expression",
+        "program",
+        "directive",
+        "string_literal",
+        "numeric_literal",
+        "bigint_literal",
+        "boolean_literal",
+        "null_literal",
+        "regexp_literal",
+        "template_element",
+        "class",
+        "method_definition",
+        "property_definition",
+        "unary_expression",
+        "binding_property",
+        "array_pattern",
+        "object_pattern",
+        "jsx_text",
+        "ts_function_type",
+        "ts_constructor_type",
+        "ts_method_signature",
+        "ts_call_signature_declaration",
+        "ts_construct_signature_declaration",
+        "ts_mapped_type",
+        "ts_module_declaration",
+        "ts_global_declaration",
+        "ts_this_parameter",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -408,8 +506,33 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const ba = comptime flagMask(ast.Function, "async");
         const bd = comptime flagMask(ast.Function, "declare");
         try emit(w,
-            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; r.declare = !!(flags & {d}); }} return r; }}
-        , .{ tag, comptime enumMask(ast.FunctionType), sid, sid, bg, ba, sp, sp, sb, sb, stp, stp, srt, srt, bd });
+            \\    case {d}: {{
+            \\      const ft = flags & {d};
+            \\      const r = {{
+            \\        type: FUNCTION_TYPES[ft], start, end,
+            \\        id: f{d} !== NULL ? node(f{d}) : null,
+            \\        generator: !!(flags & {d}), async: !!(flags & {d}),
+            \\        params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\        body: f{d} !== NULL ? node(f{d}) : null,
+            \\        expression: false,
+            \\      }};
+            \\      if (_isTs) {{
+            \\        r.typeParameters = f{d} !== NULL ? node(f{d}) : null;
+            \\        r.returnType = f{d} !== NULL ? node(f{d}) : null;
+            \\        r.declare = !!(flags & {d});
+            \\      }}
+            \\      return r;
+            \\    }}
+        , .{
+            tag, comptime enumMask(ast.FunctionType),
+            sid, sid,
+            bg,  ba,
+            sp,  sp,
+            sb,  sb,
+            stp, stp,
+            srt, srt,
+            bd,
+        });
     } else if (comptime eql(u8, name, "arrow_function_expression")) {
         const sp = comptime slotOf(ast.ArrowFunctionExpression, "params");
         const sb = comptime slotOf(ast.ArrowFunctionExpression, "body");
@@ -418,7 +541,19 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const be = comptime flagMask(ast.ArrowFunctionExpression, "expression");
         const ba = comptime flagMask(ast.ArrowFunctionExpression, "async");
         try emit(w,
-            \\    case {d}: {{ const r = {{ type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: node(f{d}), expression: !!(flags & {d}) }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
+            \\    case {d}: {{
+            \\      const r = {{
+            \\        type: "ArrowFunctionExpression", start, end,
+            \\        id: null, generator: false, async: !!(flags & {d}),
+            \\        params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\        body: node(f{d}), expression: !!(flags & {d}),
+            \\      }};
+            \\      if (_isTs) {{
+            \\        r.typeParameters = f{d} !== NULL ? node(f{d}) : null;
+            \\        r.returnType = f{d} !== NULL ? node(f{d}) : null;
+            \\      }}
+            \\      return r;
+            \\    }}
         , .{ tag, ba, sp, sp, sb, be, stp, stp, srt, srt });
     } else if (comptime eql(u8, name, "program")) {
         const sb = comptime slotOf(ast.Program, "body");
@@ -426,31 +561,71 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         // hashbang span includes the leading `#!`. value.start points to the
         // first byte after `#!`, so the node's start is value.start - 2.
         try emit(w,
-            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? {{ type: "Hashbang", start: _p(f{d} - 2), end: _p(f{d}), value: str(f{d}, f{d}) }} : null, body: nodeArr(f{d}, f0) }};
+            \\    case {d}: return {{
+            \\      type: "Program", start, end,
+            \\      sourceType: (flags & 1) ? "module" : "script",
+            \\      hashbang: (flags & {d}) ? {{
+            \\        type: "Hashbang",
+            \\        start: _p(f{d} - 2), end: _p(f{d}),
+            \\        value: str(f{d}, f{d}),
+            \\      }} : null,
+            \\      body: nodeArr(f{d}, f0),
+            \\    }};
         , .{ tag, comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, hs, hs + 1, sb });
     } else if (comptime eql(u8, name, "directive")) {
         const se = comptime slotOf(ast.Directive, "expression");
         const sv = comptime slotOf(ast.Directive, "value");
         try emit(w,
-            \\    case {d}: return {{ type: "ExpressionStatement", start, end, expression: node(f{d}), directive: str(f{d}, f{d}) }};
+            \\    case {d}: return {{
+            \\      type: "ExpressionStatement", start, end,
+            \\      expression: node(f{d}), directive: str(f{d}, f{d}),
+            \\    }};
         , .{ tag, se, sv, sv + 1 });
     } else if (comptime eql(u8, name, "string_literal")) {
         const sv = comptime slotOf(ast.StringLiteral, "value");
         try emit(w,
-            \\    case {d}: return {{ type: "Literal", start, end, value: str(f{d}, f{d}), raw: _src.slice(start, end) }};
+            \\    case {d}: return {{
+            \\      type: "Literal", start, end,
+            \\      value: str(f{d}, f{d}), raw: _src.slice(start, end),
+            \\    }};
         , .{ tag, sv, sv + 1 });
     } else if (comptime eql(u8, name, "numeric_literal")) {
         try emit(w,
-            \\    case {d}: {{ const r = _src.slice(start, end); const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, ""); const v = (flags & {d}) === 2 && s[1] !== "o" && s[1] !== "O" ? parseInt(s.slice(1), 8) : +s; return {{ type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }}; }}
+            \\    case {d}: {{
+            \\      const r = _src.slice(start, end);
+            \\      const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, "");
+            \\      const v = (flags & {d}) === 2 && s[1] !== "o" && s[1] !== "O"
+            \\        ? parseInt(s.slice(1), 8)
+            \\        : +s;
+            \\      return {{
+            \\        type: "Literal", start, end,
+            \\        value: v === v && isFinite(v) ? v : null,
+            \\        raw: r,
+            \\      }};
+            \\    }}
         , .{ tag, comptime enumMask(ast.NumericLiteral.Kind) });
     } else if (comptime eql(u8, name, "bigint_literal")) {
         const sr = comptime slotOf(ast.BigIntLiteral, "raw");
         try emit(w,
-            \\    case {d}: {{ const r = _src.slice(start, end); const d = str(f{d}, f{d}).replace(/_/g, ""); const v = BigInt(d); return {{ type: "Literal", start, end, value: v, raw: r, bigint: v.toString() }}; }}
+            \\    case {d}: {{
+            \\      const r = _src.slice(start, end);
+            \\      const d = str(f{d}, f{d}).replace(/_/g, "");
+            \\      const v = BigInt(d);
+            \\      return {{
+            \\        type: "Literal", start, end,
+            \\        value: v, raw: r, bigint: v.toString(),
+            \\      }};
+            \\    }}
         , .{ tag, sr, sr + 1 });
     } else if (comptime eql(u8, name, "boolean_literal")) {
         try emit(w,
-            \\    case {d}: {{ const v = !!(flags & {d}); return {{ type: "Literal", start, end, value: v, raw: v ? "true" : "false" }}; }}
+            \\    case {d}: {{
+            \\      const v = !!(flags & {d});
+            \\      return {{
+            \\        type: "Literal", start, end,
+            \\        value: v, raw: v ? "true" : "false",
+            \\      }};
+            \\    }}
         , .{ tag, comptime flagMaskAt(ast.BooleanLiteral, 0) });
     } else if (comptime eql(u8, name, "null_literal")) {
         try emit(w,
@@ -460,13 +635,41 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sp = comptime slotOf(ast.RegExpLiteral, "pattern");
         const sf = comptime slotOf(ast.RegExpLiteral, "flags");
         try emit(w,
-            \\    case {d}: {{ const p = str(f{d}, f{d}), fl = str(f{d}, f{d}); let v = null; try {{ v = new RegExp(p, fl); }} catch {{}} return {{ type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: {{ pattern: p, flags: fl.split("").sort().join("") }} }}; }}
+            \\    case {d}: {{
+            \\      const p = str(f{d}, f{d}), fl = str(f{d}, f{d});
+            \\      let v = null;
+            \\      try {{ v = new RegExp(p, fl); }} catch {{}}
+            \\      return {{
+            \\        type: "Literal", start, end,
+            \\        value: v, raw: "/" + p + "/" + fl,
+            \\        regex: {{ pattern: p, flags: fl.split("").sort().join("") }},
+            \\      }};
+            \\    }}
         , .{ tag, sp, sp + 1, sf, sf + 1 });
     } else if (comptime eql(u8, name, "template_element")) {
         const sc = comptime slotOf(ast.TemplateElement, "cooked");
         try emit(w,
-            \\    case {d}: {{ const raw = _src.slice(start, end).replace(/\r\n?/g, "\n"); const tl = !!(flags & {d}); const s = _isTs ? start - 1 : start; const e = _isTs ? (tl ? end + 1 : end + 2) : end; return {{ type: "TemplateElement", start: s, end: e, value: {{ raw, cooked: (flags & {d}) ? null : str(f{d}, f{d}) }}, tail: tl }}; }}
-        , .{ tag, comptime flagMask(ast.TemplateElement, "tail"), comptime flagMask(ast.TemplateElement, "is_cooked_undefined"), sc, sc + 1 });
+            \\    case {d}: {{
+            \\      const raw = _src.slice(start, end).replace(/\r\n?/g, "\n");
+            \\      const tl = !!(flags & {d});
+            \\      const s = _isTs ? start - 1 : start;
+            \\      const e = _isTs ? (tl ? end + 1 : end + 2) : end;
+            \\      return {{
+            \\        type: "TemplateElement", start: s, end: e,
+            \\        value: {{
+            \\          raw,
+            \\          cooked: (flags & {d}) ? null : str(f{d}, f{d}),
+            \\        }},
+            \\        tail: tl,
+            \\      }};
+            \\    }}
+        , .{
+            tag,
+            comptime flagMask(ast.TemplateElement, "tail"),
+            comptime flagMask(ast.TemplateElement, "is_cooked_undefined"),
+            sc,
+            sc + 1,
+        });
     } else if (comptime eql(u8, name, "class")) {
         const sd = comptime slotOf(ast.Class, "decorators");
         const si = comptime slotOf(ast.Class, "id");
@@ -476,15 +679,56 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const ssta = comptime slotOf(ast.Class, "super_type_arguments");
         const simp = comptime slotOf(ast.Class, "implements");
         try emit(w,
-            \\    case {d}: {{ const r = {{ type: CLASS_TYPES[flags & {d}], start, end, decorators: nodeArr(f{d}, f0), id: f{d} !== NULL ? node(f{d}) : null, superClass: f{d} !== NULL ? node(f{d}) : null, body: node(f{d}) }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.superTypeArguments = f{d} !== NULL ? node(f{d}) : null; r.implements = nodeArr(f{d}, f{d}); r.abstract = !!(flags & {d}); r.declare = !!(flags & {d}); }} return r; }}
-        , .{ tag, comptime enumMask(ast.ClassType), sd, si, si, ss, ss, sb, stp, stp, ssta, ssta, simp, simp + 1, comptime flagMask(ast.Class, "abstract"), comptime flagMask(ast.Class, "declare") });
+            \\    case {d}: {{
+            \\      const r = {{
+            \\        type: CLASS_TYPES[flags & {d}], start, end,
+            \\        decorators: nodeArr(f{d}, f0),
+            \\        id: f{d} !== NULL ? node(f{d}) : null,
+            \\        superClass: f{d} !== NULL ? node(f{d}) : null,
+            \\        body: node(f{d}),
+            \\      }};
+            \\      if (_isTs) {{
+            \\        r.typeParameters = f{d} !== NULL ? node(f{d}) : null;
+            \\        r.superTypeArguments = f{d} !== NULL ? node(f{d}) : null;
+            \\        r.implements = nodeArr(f{d}, f{d});
+            \\        r.abstract = !!(flags & {d});
+            \\        r.declare = !!(flags & {d});
+            \\      }}
+            \\      return r;
+            \\    }}
+        , .{
+            tag,                                      comptime enumMask(ast.ClassType),
+            sd,                                       si,
+            si,                                       ss,
+            ss,                                       sb,
+            stp,                                      stp,
+            ssta,                                     ssta,
+            simp,                                     simp + 1,
+            comptime flagMask(ast.Class, "abstract"), comptime flagMask(ast.Class, "declare"),
+        });
     } else if (comptime eql(u8, name, "method_definition")) {
         const M = ast.MethodDefinition;
         const sd = comptime slotOf(M, "decorators");
         const sk = comptime slotOf(M, "key");
         const sv = comptime slotOf(M, "value");
         try emit(w,
-            \\    case {d}: {{ const r = {{ type: "MethodDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: node(f{d}), kind: METHOD_KINDS[flags & {d}], computed: !!(flags & {d}), static: !!(flags & {d}) }}; if (_isTs) {{ r.override = !!(flags & {d}); r.optional = !!(flags & {d}); const _abs = !!(flags & {d}); r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}]; if (_abs) r.type = "TSAbstractMethodDefinition"; }} return r; }}
+            \\    case {d}: {{
+            \\      const r = {{
+            \\        type: "MethodDefinition", start, end,
+            \\        decorators: nodeArr(f{d}, f0),
+            \\        key: node(f{d}), value: node(f{d}),
+            \\        kind: METHOD_KINDS[flags & {d}],
+            \\        computed: !!(flags & {d}), static: !!(flags & {d}),
+            \\      }};
+            \\      if (_isTs) {{
+            \\        r.override = !!(flags & {d});
+            \\        r.optional = !!(flags & {d});
+            \\        const _abs = !!(flags & {d});
+            \\        r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}];
+            \\        if (_abs) r.type = "TSAbstractMethodDefinition";
+            \\      }}
+            \\      return r;
+            \\    }}
         , .{
             tag,
             sd,
@@ -506,7 +750,32 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sv = comptime slotOf(P, "value");
         const sta = comptime slotOf(P, "type_annotation");
         try emit(w,
-            \\    case {d}: {{ const _acc = !!(flags & {d}); const r = {{ type: _acc ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: f{d} !== NULL ? node(f{d}) : null, computed: !!(flags & {d}), static: !!(flags & {d}) }}; if (_isTs) {{ r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; r.declare = !!(flags & {d}); r.override = !!(flags & {d}); r.optional = !!(flags & {d}); r.definite = !!(flags & {d}); r.readonly = !!(flags & {d}); const _abs = !!(flags & {d}); r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}]; if (_abs) r.type = _acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition"; }} return r; }}
+            \\    case {d}: {{
+            \\      const _acc = !!(flags & {d});
+            \\      const r = {{
+            \\        type: _acc ? "AccessorProperty" : "PropertyDefinition",
+            \\        start, end,
+            \\        decorators: nodeArr(f{d}, f0),
+            \\        key: node(f{d}),
+            \\        value: f{d} !== NULL ? node(f{d}) : null,
+            \\        computed: !!(flags & {d}), static: !!(flags & {d}),
+            \\      }};
+            \\      if (_isTs) {{
+            \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
+            \\        r.declare = !!(flags & {d});
+            \\        r.override = !!(flags & {d});
+            \\        r.optional = !!(flags & {d});
+            \\        r.definite = !!(flags & {d});
+            \\        r.readonly = !!(flags & {d});
+            \\        const _abs = !!(flags & {d});
+            \\        r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}];
+            \\        if (_abs)
+            \\          r.type = _acc
+            \\            ? "TSAbstractAccessorProperty"
+            \\            : "TSAbstractPropertyDefinition";
+            \\      }}
+            \\      return r;
+            \\    }}
         , .{
             tag,
             comptime flagMask(P, "accessor"),
@@ -530,14 +799,32 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     } else if (comptime eql(u8, name, "unary_expression")) {
         const sa = comptime slotOf(ast.UnaryExpression, "argument");
         try emit(w,
-            \\    case {d}: return {{ type: "UnaryExpression", start, end, operator: UNARY_OPS[flags & {d}], prefix: true, argument: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{
+            \\      type: "UnaryExpression", start, end,
+            \\      operator: UNARY_OPS[flags & {d}], prefix: true,
+            \\      argument: f{d} !== NULL ? node(f{d}) : null,
+            \\    }};
         , .{ tag, comptime enumMask(ast.UnaryOperator), sa, sa });
     } else if (comptime eql(u8, name, "binding_property")) {
         const sk = comptime slotOf(ast.BindingProperty, "key");
         const sv = comptime slotOf(ast.BindingProperty, "value");
         try w.print(
-            \\    case {d}: {{ const r = {{ type: "Property", start, end, kind: "init", key: node(f{d}), value: node(f{d}), method: false, shorthand: !!(flags & {d}), computed: !!(flags & {d}) }};
-        , .{ tag, sk, sv, comptime flagMask(ast.BindingProperty, "shorthand"), comptime flagMask(ast.BindingProperty, "computed") });
+            \\    case {d}: {{
+            \\      const r = {{
+            \\        type: "Property", start, end,
+            \\        kind: "init",
+            \\        key: node(f{d}), value: node(f{d}),
+            \\        method: false,
+            \\        shorthand: !!(flags & {d}),
+            \\        computed: !!(flags & {d}),
+            \\      }};
+        , .{
+            tag,
+            sk,
+            sv,
+            comptime flagMask(ast.BindingProperty, "shorthand"),
+            comptime flagMask(ast.BindingProperty, "computed"),
+        });
         try w.writeAll(" if (_isTs) { ");
         try writeTsExtras(w, "binding_property");
         try w.writeAll("} return r; }\n");
@@ -547,27 +834,63 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sdec = comptime slotOf(ast.ArrayPattern, "decorators");
         const sta = comptime slotOf(ast.ArrayPattern, "type_annotation");
         try emit(w,
-            \\    case {d}: {{ const el = nodeArrHoles(f{d}, f0); if (f{d} !== NULL) el.push(node(f{d})); const r = {{ type: "ArrayPattern", start, end, elements: el }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); r.optional = !!(flags & {d}); r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
-        , .{ tag, se, sr, sr, sdec, sdec + 1, comptime flagMask(ast.ArrayPattern, "optional"), sta, sta });
+            \\    case {d}: {{
+            \\      const el = nodeArrHoles(f{d}, f0);
+            \\      if (f{d} !== NULL) el.push(node(f{d}));
+            \\      const r = {{ type: "ArrayPattern", start, end, elements: el }};
+            \\      if (_isTs) {{
+            \\        r.decorators = nodeArr(f{d}, f{d});
+            \\        r.optional = !!(flags & {d});
+            \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
+            \\      }}
+            \\      return r;
+            \\    }}
+        , .{
+            tag,  se,       sr,                                              sr,
+            sdec, sdec + 1, comptime flagMask(ast.ArrayPattern, "optional"), sta,
+            sta,
+        });
     } else if (comptime eql(u8, name, "object_pattern")) {
         const sp = comptime slotOf(ast.ObjectPattern, "properties");
         const sr = comptime slotOf(ast.ObjectPattern, "rest");
         const sdec = comptime slotOf(ast.ObjectPattern, "decorators");
         const sta = comptime slotOf(ast.ObjectPattern, "type_annotation");
         try emit(w,
-            \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); const r = {{ type: "ObjectPattern", start, end, properties: pr }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); r.optional = !!(flags & {d}); r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
-        , .{ tag, sp, sr, sr, sdec, sdec + 1, comptime flagMask(ast.ObjectPattern, "optional"), sta, sta });
+            \\    case {d}: {{
+            \\      const pr = nodeArr(f{d}, f0);
+            \\      if (f{d} !== NULL) pr.push(node(f{d}));
+            \\      const r = {{ type: "ObjectPattern", start, end, properties: pr }};
+            \\      if (_isTs) {{
+            \\        r.decorators = nodeArr(f{d}, f{d});
+            \\        r.optional = !!(flags & {d});
+            \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
+            \\      }}
+            \\      return r;
+            \\    }}
+        , .{
+            tag,  sp,       sr,                                               sr,
+            sdec, sdec + 1, comptime flagMask(ast.ObjectPattern, "optional"), sta,
+            sta,
+        });
     } else if (comptime eql(u8, name, "jsx_text")) {
         const sv = comptime slotOf(ast.JSXText, "value");
         try emit(w,
-            \\    case {d}: {{ const t = str(f{d}, f{d}); return {{ type: "JSXText", start, end, value: t, raw: t }}; }}
+            \\    case {d}: {{
+            \\      const t = str(f{d}, f{d});
+            \\      return {{ type: "JSXText", start, end, value: t, raw: t }};
+            \\    }}
         , .{ tag, sv, sv + 1 });
     } else if (comptime eql(u8, name, "ts_function_type")) {
         const stp = comptime slotOf(ast.TSFunctionType, "type_parameters");
         const sp = comptime slotOf(ast.TSFunctionType, "params");
         const srt = comptime slotOf(ast.TSFunctionType, "return_type");
         try emit(w,
-            \\    case {d}: return {{ type: "TSFunctionType", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{
+            \\      type: "TSFunctionType", start, end,
+            \\      typeParameters: f{d} !== NULL ? node(f{d}) : null,
+            \\      params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\      returnType: f{d} !== NULL ? node(f{d}) : null,
+            \\    }};
         , .{ tag, stp, stp, sp, sp, srt, srt });
     } else if (comptime eql(u8, name, "ts_constructor_type")) {
         const stp = comptime slotOf(ast.TSConstructorType, "type_parameters");
@@ -575,26 +898,50 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const srt = comptime slotOf(ast.TSConstructorType, "return_type");
         const ba = comptime flagMask(ast.TSConstructorType, "abstract");
         try emit(w,
-            \\    case {d}: return {{ type: "TSConstructorType", start, end, abstract: !!(flags & {d}), typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{
+            \\      type: "TSConstructorType", start, end,
+            \\      abstract: !!(flags & {d}),
+            \\      typeParameters: f{d} !== NULL ? node(f{d}) : null,
+            \\      params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\      returnType: f{d} !== NULL ? node(f{d}) : null,
+            \\    }};
         , .{ tag, ba, stp, stp, sp, sp, srt, srt });
     } else if (comptime eql(u8, name, "ts_method_signature")) {
         const sk = comptime slotOf(ast.TSMethodSignature, "key");
         const stp = comptime slotOf(ast.TSMethodSignature, "type_parameters");
         const sp = comptime slotOf(ast.TSMethodSignature, "params");
         const srt = comptime slotOf(ast.TSMethodSignature, "return_type");
-        const kbit = comptime rt.flagBitForField(ast.TSMethodSignature, fieldIdx(ast.TSMethodSignature, "kind"));
+        const kbit = comptime rt.flagBitForField(
+            ast.TSMethodSignature,
+            fieldIdx(ast.TSMethodSignature, "kind"),
+        );
         const kmask = comptime enumMask(ast.TSMethodSignatureKind);
         const bc = comptime flagMask(ast.TSMethodSignature, "computed");
         const bo = comptime flagMask(ast.TSMethodSignature, "optional");
         try emit(w,
-            \\    case {d}: return {{ type: "TSMethodSignature", start, end, key: node(f{d}), computed: !!(flags & {d}), optional: !!(flags & {d}), kind: TS_METHOD_SIGNATURE_KINDS[(flags >> {d}) & {d}], typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null, accessibility: null, readonly: false, static: false }};
+            \\    case {d}: return {{
+            \\      type: "TSMethodSignature", start, end,
+            \\      key: node(f{d}),
+            \\      computed: !!(flags & {d}),
+            \\      optional: !!(flags & {d}),
+            \\      kind: TS_METHOD_SIGNATURE_KINDS[(flags >> {d}) & {d}],
+            \\      typeParameters: f{d} !== NULL ? node(f{d}) : null,
+            \\      params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\      returnType: f{d} !== NULL ? node(f{d}) : null,
+            \\      accessibility: null, readonly: false, static: false,
+            \\    }};
         , .{ tag, sk, bc, bo, kbit, kmask, stp, stp, sp, sp, srt, srt });
     } else if (comptime eql(u8, name, "ts_call_signature_declaration")) {
         const stp = comptime slotOf(ast.TSCallSignatureDeclaration, "type_parameters");
         const sp = comptime slotOf(ast.TSCallSignatureDeclaration, "params");
         const srt = comptime slotOf(ast.TSCallSignatureDeclaration, "return_type");
         try emit(w,
-            \\    case {d}: return {{ type: "TSCallSignatureDeclaration", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{
+            \\      type: "TSCallSignatureDeclaration", start, end,
+            \\      typeParameters: f{d} !== NULL ? node(f{d}) : null,
+            \\      params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\      returnType: f{d} !== NULL ? node(f{d}) : null,
+            \\    }};
         , .{ tag, stp, stp, sp, sp, srt, srt });
     } else if (comptime eql(u8, name, "ts_mapped_type")) {
         const sk = comptime slotOf(ast.TSMappedType, "key");
@@ -605,14 +952,27 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const br = comptime flagBit(ast.TSMappedType, "readonly");
         const mo = comptime enumMask(ast.TSMappedTypeModifier);
         try emit(w,
-            \\    case {d}: return {{ type: "TSMappedType", start, end, key: node(f{d}), constraint: node(f{d}), nameType: f{d} !== NULL ? node(f{d}) : null, typeAnnotation: f{d} !== NULL ? node(f{d}) : null, optional: TS_MAPPED_OPTIONAL[(flags >> {d}) & {d}], readonly: TS_MAPPED_READONLY[(flags >> {d}) & {d}] }};
+            \\    case {d}: return {{
+            \\      type: "TSMappedType", start, end,
+            \\      key: node(f{d}),
+            \\      constraint: node(f{d}),
+            \\      nameType: f{d} !== NULL ? node(f{d}) : null,
+            \\      typeAnnotation: f{d} !== NULL ? node(f{d}) : null,
+            \\      optional: TS_MAPPED_OPTIONAL[(flags >> {d}) & {d}],
+            \\      readonly: TS_MAPPED_READONLY[(flags >> {d}) & {d}],
+            \\    }};
         , .{ tag, sk, sc, snt, snt, sta, sta, bo, mo, br, mo });
     } else if (comptime eql(u8, name, "ts_construct_signature_declaration")) {
         const stp = comptime slotOf(ast.TSConstructSignatureDeclaration, "type_parameters");
         const sp = comptime slotOf(ast.TSConstructSignatureDeclaration, "params");
         const srt = comptime slotOf(ast.TSConstructSignatureDeclaration, "return_type");
         try emit(w,
-            \\    case {d}: return {{ type: "TSConstructSignatureDeclaration", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{
+            \\      type: "TSConstructSignatureDeclaration", start, end,
+            \\      typeParameters: f{d} !== NULL ? node(f{d}) : null,
+            \\      params: f{d} !== NULL ? fnParams(f{d}) : [],
+            \\      returnType: f{d} !== NULL ? node(f{d}) : null,
+            \\    }};
         , .{ tag, stp, stp, sp, sp, srt, srt });
     } else if (comptime eql(u8, name, "ts_module_declaration")) {
         const sid = comptime slotOf(ast.TSModuleDeclaration, "id");
@@ -625,14 +985,30 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         // babel, and @typescript-eslint/typescript-estree all drop the
         // key instead of emitting `body: null`.
         try emit(w,
-            \\    case {d}: {{ const r = {{ type: "TSModuleDeclaration", start, end, id: node(f{d}), kind: TS_MODULE_KINDS[(flags >> {d}) & {d}], declare: !!(flags & {d}), global: false }}; if (f{d} !== NULL) r.body = node(f{d}); return r; }}
+            \\    case {d}: {{
+            \\      const r = {{
+            \\        type: "TSModuleDeclaration", start, end,
+            \\        id: node(f{d}),
+            \\        kind: TS_MODULE_KINDS[(flags >> {d}) & {d}],
+            \\        declare: !!(flags & {d}),
+            \\        global: false,
+            \\      }};
+            \\      if (f{d} !== NULL) r.body = node(f{d});
+            \\      return r;
+            \\    }}
         , .{ tag, sid, kbit, kmask, db, sb, sb });
     } else if (comptime eql(u8, name, "ts_global_declaration")) {
         const sid = comptime slotOf(ast.TSGlobalDeclaration, "id");
         const sb = comptime slotOf(ast.TSGlobalDeclaration, "body");
         const db = comptime flagMask(ast.TSGlobalDeclaration, "declare");
         try emit(w,
-            \\    case {d}: return {{ type: "TSModuleDeclaration", start, end, id: node(f{d}), body: node(f{d}), kind: "global", declare: !!(flags & {d}), global: true }};
+            \\    case {d}: return {{
+            \\      type: "TSModuleDeclaration", start, end,
+            \\      id: node(f{d}), body: node(f{d}),
+            \\      kind: "global",
+            \\      declare: !!(flags & {d}),
+            \\      global: true,
+            \\    }};
         , .{ tag, sid, sb, db });
     } else if (comptime eql(u8, name, "ts_this_parameter")) {
         // renders as an `Identifier` with the fixed name `this`, matching
@@ -642,7 +1018,12 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         // `this`-parameter Identifier apart from a regular one.
         const sta = comptime slotOf(ast.TSThisParameter, "type_annotation");
         try emit(w,
-            \\    case {d}: return {{ type: "Identifier", start, end, decorators: [], name: "this", kind: "this", optional: false, typeAnnotation: f{d} !== NULL ? node(f{d}) : null }};
+            \\    case {d}: return {{
+            \\      type: "Identifier", start, end,
+            \\      decorators: [],
+            \\      name: "this", kind: "this", optional: false,
+            \\      typeAnnotation: f{d} !== NULL ? node(f{d}) : null,
+            \\    }};
         , .{ tag, sta, sta });
     }
 }
@@ -655,7 +1036,9 @@ fn writeDecodeBody(w: *Writer) !void {
         \\  function _decodeLineStarts() {{
         \\    const out = new Array(lineStartsCount);
         \\    if (_firstNa >= _srcLen) {{
-        \\      for (let j = 0; j < lineStartsCount; j++) out[j] = dv.getUint32(lsOff + j * 4, true);
+        \\      for (let j = 0; j < lineStartsCount; j++) {{
+        \\        out[j] = dv.getUint32(lsOff + j * 4, true);
+        \\      }}
         \\      return out;
         \\    }}
         \\    if (pm === null) pm = buildPosMap(_src, _srcLen, _firstNa);
@@ -676,14 +1059,22 @@ fn writeDecodeBody(w: *Writer) !void {
         \\      const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
         \\      const hh = _u8[dp]; dp++;
         \\      let help = null;
-        \\      if (hh) {{ const hl = dv.getUint32(dp, true); dp += 4; help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl; }}
+        \\      if (hh) {{
+        \\        const hl = dv.getUint32(dp, true); dp += 4;
+        \\        help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
+        \\      }}
         \\      const lc = dv.getUint32(dp, true); dp += 4;
         \\      const labels = new Array(lc);
         \\      for (let k = 0; k < lc; k++) {{
         \\        const ls = _p(dv.getUint32(dp, true)); dp += 4;
         \\        const le = _p(dv.getUint32(dp, true)); dp += 4;
         \\        const lml = dv.getUint32(dp, true); dp += 4;
-        \\        labels[k] = {{ start: ls, end: le, message: _td.decode(_u8.subarray(dp, dp + lml)) }}; dp += lml;
+        \\        labels[k] = {{
+        \\          start: ls,
+        \\          end: le,
+        \\          message: _td.decode(_u8.subarray(dp, dp + lml)),
+        \\        }};
+        \\        dp += lml;
         \\      }}
         \\      out[j] = {{ severity: sev, message: msg, start: ds, end: de, help, labels }};
         \\    }}
@@ -695,13 +1086,22 @@ fn writeDecodeBody(w: *Writer) !void {
         \\    return _lineStarts;
         \\  }}
         \\  return {{
-        \\    get program() {{ return _program !== undefined ? _program : (_program = node(progIdx)); }},
-        \\    get diagnostics() {{ return _diagnostics !== undefined ? _diagnostics : (_diagnostics = _decodeDiagnostics()); }},
+        \\    get program() {{
+        \\      return _program !== undefined ? _program : (_program = node(progIdx));
+        \\    }},
+        \\    get diagnostics() {{
+        \\      return _diagnostics !== undefined
+        \\        ? _diagnostics
+        \\        : (_diagnostics = _decodeDiagnostics());
+        \\    }},
         \\    get lineStarts() {{ return _getLineStarts(); }},
         \\    locOf(offset) {{
         \\      const ls = _getLineStarts();
         \\      let lo = 0, hi = ls.length;
-        \\      while (lo < hi) {{ const mid = (lo + hi) >>> 1; if (ls[mid] <= offset) lo = mid + 1; else hi = mid; }}
+        \\      while (lo < hi) {{
+        \\        const mid = (lo + hi) >>> 1;
+        \\        if (ls[mid] <= offset) lo = mid + 1; else hi = mid;
+        \\      }}
         \\      return {{ line: lo, column: offset - ls[lo - 1] }};
         \\    }},
         \\  }};
@@ -721,9 +1121,29 @@ const TS_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{
     .{ .node = "variable_declarator", .fields = &.{"definite"} },
     .{ .node = "function", .fields = &.{ "type_parameters", "return_type" } },
     .{ .node = "arrow_function_expression", .fields = &.{ "type_parameters", "return_type" } },
-    .{ .node = "class", .fields = &.{ "type_parameters", "super_type_arguments", "implements", "abstract", "declare" } },
-    .{ .node = "method_definition", .fields = &.{ "override", "optional", "abstract", "accessibility" } },
-    .{ .node = "property_definition", .fields = &.{ "type_annotation", "declare", "override", "optional", "definite", "readonly", "abstract", "accessibility" } },
+    .{ .node = "class", .fields = &.{
+        "type_parameters",
+        "super_type_arguments",
+        "implements",
+        "abstract",
+        "declare",
+    } },
+    .{ .node = "method_definition", .fields = &.{
+        "override",
+        "optional",
+        "abstract",
+        "accessibility",
+    } },
+    .{ .node = "property_definition", .fields = &.{
+        "type_annotation",
+        "declare",
+        "override",
+        "optional",
+        "definite",
+        "readonly",
+        "abstract",
+        "accessibility",
+    } },
     .{ .node = "call_expression", .fields = &.{"type_arguments"} },
     .{ .node = "new_expression", .fields = &.{"type_arguments"} },
     .{ .node = "tagged_template_expression", .fields = &.{"type_arguments"} },
@@ -733,7 +1153,11 @@ const TS_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{
     .{ .node = "export_named_declaration", .fields = &.{"export_kind"} },
     .{ .node = "export_all_declaration", .fields = &.{"export_kind"} },
     .{ .node = "export_specifier", .fields = &.{"export_kind"} },
-    .{ .node = "binding_rest_element", .fields = &.{ "decorators", "optional", "type_annotation" } },
+    .{ .node = "binding_rest_element", .fields = &.{
+        "decorators",
+        "optional",
+        "type_annotation",
+    } },
     .{ .node = "binding_identifier", .fields = &.{ "decorators", "optional", "type_annotation" } },
     .{ .node = "assignment_pattern", .fields = &.{ "decorators", "optional", "type_annotation" } },
     .{ .node = "object_pattern", .fields = &.{ "decorators", "optional", "type_annotation" } },
@@ -776,7 +1200,9 @@ const TS_EXTRAS = [_]struct { node: []const u8, extras: []const Extra }{
     .{ .node = "object_property", .extras = &.{.{ .field = "optional", .value = "false" }} },
     .{ .node = "expression_statement", .extras = &.{.{ .field = "directive", .value = "null" }} },
     .{ .node = "binding_rest_element", .extras = &.{.{ .field = "value", .value = "null" }} },
-    .{ .node = "export_default_declaration", .extras = &.{.{ .field = "exportKind", .value = "\"value\"" }} },
+    .{ .node = "export_default_declaration", .extras = &.{
+        .{ .field = "exportKind", .value = "\"value\"" },
+    } },
     // ts signature nodes carry constant estree fields with no backing zig storage.
     .{ .node = "ts_property_signature", .extras = &.{
         .{ .field = "accessibility", .value = "null" },
@@ -839,16 +1265,20 @@ fn estreeType(comptime name: []const u8) []const u8 {
         .{ "ts_jsdoc_unknown_type", "TSJSDocUnknownType" },
     };
     inline for (overrides) |o| if (comptime std.mem.eql(u8, name, o[0])) return o[1];
-    if (comptime std.mem.startsWith(u8, name, "jsx_")) return "JSX" ++ snakeConvert(name[4..], true);
+    if (comptime std.mem.startsWith(u8, name, "jsx_")) {
+        return "JSX" ++ snakeConvert(name[4..], true);
+    }
     if (comptime std.mem.startsWith(u8, name, "ts_")) return "TS" ++ snakeConvert(name[3..], true);
     return snakeConvert(name, true);
 }
 
 fn estreeField(comptime tag: []const u8, comptime field: []const u8) []const u8 {
-    if (comptime std.mem.eql(u8, tag, "variable_declaration") and std.mem.eql(u8, field, "declarators")) return "declarations";
+    if (comptime std.mem.eql(u8, tag, "variable_declaration") and
+        std.mem.eql(u8, field, "declarators")) return "declarations";
     // `const` is a zig keyword, so the TSEnumDeclaration field is named
     // `is_const` in the ast. estree renders it as the bare `const` key.
-    if (comptime std.mem.eql(u8, tag, "ts_enum_declaration") and std.mem.eql(u8, field, "is_const")) return "const";
+    if (comptime std.mem.eql(u8, tag, "ts_enum_declaration") and
+        std.mem.eql(u8, field, "is_const")) return "const";
     return snakeConvert(field, false);
 }
 
@@ -865,7 +1295,8 @@ fn emit(w: *Writer, comptime fmt: []const u8, args: anytype) !void {
 }
 
 fn fieldIdx(comptime T: type, comptime name: []const u8) comptime_int {
-    return std.meta.fieldIndex(T, name) orelse @compileError("field '" ++ name ++ "' not found in " ++ @typeName(T));
+    return std.meta.fieldIndex(T, name) orelse
+        @compileError("field '" ++ name ++ "' not found in " ++ @typeName(T));
 }
 
 /// u32 slot number for use as `f{N}` in the generated js. slot 0 is the

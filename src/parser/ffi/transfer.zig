@@ -455,7 +455,8 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
                 setSlot(n, slot + 1, h.value.end);
             }
         } else {
-            @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
+            @compileError("unsupported field type '" ++ @typeName(f.type) ++
+                "' in " ++ @typeName(T));
         }
     }
 }
@@ -566,9 +567,10 @@ pub fn deserializeFromBuf(
             var ce: PackedComment = undefined;
             @memcpy(std.mem.asBytes(&ce), buf[pos..][0..COMMENT_SIZE]);
             pos += COMMENT_SIZE;
+            const pos_bits = (ce.flags & COMMENT_POSITION_MASK) >> COMMENT_POSITION_SHIFT;
             comments[i] = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
-                .position = @enumFromInt((ce.flags & COMMENT_POSITION_MASK) >> COMMENT_POSITION_SHIFT),
+                .position = @enumFromInt(pos_bits),
                 .same_line = (ce.flags >> COMMENT_SAME_LINE_BIT) & 1 != 0,
                 .value = .{ .start = ce.value_start, .end = ce.value_end },
             };
@@ -622,7 +624,10 @@ fn unpackPayload(comptime T: type, n: PackedNode, payload: *T) void {
             const start: u32 = if (len == 0) 0 else readSlot(n, slot);
             @field(payload.*, f.name) = .{ .start = start, .len = len };
         } else if (f.type == ast.String) {
-            @field(payload.*, f.name) = .{ .start = readSlot(n, slot), .end = readSlot(n, slot + 1) };
+            @field(payload.*, f.name) = .{
+                .start = readSlot(n, slot),
+                .end = readSlot(n, slot + 1),
+            };
         } else if (comptime isEnumType(f.type)) {
             const bits = comptime enumBitWidth(f.type);
             const mask: u16 = (@as(u16, 1) << @intCast(bits)) - 1;
@@ -648,7 +653,8 @@ fn unpackPayload(comptime T: type, n: PackedNode, payload: *T) void {
                 @field(payload.*, f.name) = null;
             }
         } else {
-            @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
+            @compileError("unsupported field type '" ++ @typeName(f.type) ++
+                "' in " ++ @typeName(T));
         }
     }
 }

@@ -111,7 +111,10 @@ pub fn main(init: std.process.Init) !void {
 
     const before = source.len;
     const after = last_after;
-    const ratio = if (before == 0) 0.0 else @as(f64, @floatFromInt(after)) / @as(f64, @floatFromInt(before)) * 100.0;
+    const ratio = if (before == 0)
+        0.0
+    else
+        @as(f64, @floatFromInt(after)) / @as(f64, @floatFromInt(before)) * 100.0;
     const saved = if (before >= after) before - after else 0;
 
     std.debug.print("nodes: {d}  symbols: {d}  refs: {d}  scopes: {d}\n\n", .{
@@ -141,15 +144,27 @@ pub fn main(init: std.process.Init) !void {
     }
 
     var min_total: u64 = 0;
-    for (0..Iters) |k| min_total += samples.parse[k] + samples.walk[k] + samples.resolve[k] + samples.mangle[k] + samples.print[k];
-    std.debug.print("  {s:<8} {d:>7.3} ms  (avg)\n", .{ "total", ms(min_total) / @as(f64, @floatFromInt(Iters)) });
+    for (0..Iters) |k| {
+        min_total += samples.parse[k] +
+            samples.walk[k] +
+            samples.resolve[k] +
+            samples.mangle[k] +
+            samples.print[k];
+    }
+    std.debug.print(
+        "  {s:<8} {d:>7.3} ms  (avg)\n",
+        .{ "total", ms(min_total) / @as(f64, @floatFromInt(Iters)) },
+    );
 
     var min_pipeline: u64 = std.math.maxInt(u64);
     for (0..Iters) |k| {
         const v = samples.walk[k] + samples.resolve[k] + samples.mangle[k];
         if (v < min_pipeline) min_pipeline = v;
     }
-    std.debug.print("  {s:<8} {d:>7.3} ms  (min, walk+resolve+mangle)\n", .{ "mangle-pipeline", ms(min_pipeline) });
+    std.debug.print(
+        "  {s:<8} {d:>7.3} ms  (min, walk+resolve+mangle)\n",
+        .{ "mangle-pipeline", ms(min_pipeline) },
+    );
 }
 
 const NoopVisitor = struct {};

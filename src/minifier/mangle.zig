@@ -212,14 +212,14 @@ fn moreUsedFirst(_: void, x: Local, y: Local) bool {
 }
 
 const reserved_words = [_][]const u8{
-    "as",         "async",  "await",      "break",      "case",      "catch",
-    "class",      "const",  "continue",   "debugger",   "default",   "delete",
-    "do",         "else",   "enum",       "export",     "extends",   "false",
-    "finally",    "for",    "from",       "function",   "get",       "if",
-    "implements", "import", "in",         "instanceof", "interface", "is",
-    "let",        "new",    "null",       "of",         "package",   "private",
-    "protected",  "public", "return",     "satisfies",  "set",       "static",
-    "super",      "switch", "this",       "throw",      "true",      "try",
-    "type",       "typeof", "var",        "void",       "while",     "with",
+    "as",         "async",  "await",    "break",      "case",      "catch",
+    "class",      "const",  "continue", "debugger",   "default",   "delete",
+    "do",         "else",   "enum",     "export",     "extends",   "false",
+    "finally",    "for",    "from",     "function",   "get",       "if",
+    "implements", "import", "in",       "instanceof", "interface", "is",
+    "let",        "new",    "null",     "of",         "package",   "private",
+    "protected",  "public", "return",   "satisfies",  "set",       "static",
+    "super",      "switch", "this",     "throw",      "true",      "try",
+    "type",       "typeof", "var",      "void",       "while",     "with",
     "yield",
 };

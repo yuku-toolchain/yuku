@@ -28,7 +28,11 @@ pub const DeclaratorCtx = enum {
     for_loop,
 };
 
-pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
+pub fn parseVariableDeclaration(
+    parser: *Parser,
+    opts: ParseVariableDeclarationOpts,
+    start_from_param: ?u32,
+) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
     const kind = try parseVariableKind(parser, opts.await_using) orelse return null;
 
@@ -51,13 +55,12 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
         end = parser.tree.span(declarator).end;
     }
 
-    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
+    const semi_end = try parser.eatSemicolon(end) orelse return null;
+    const span: ast.Span = .{ .start = start, .end = semi_end };
 
     // lexical declarations are only allowed inside block statements
-    if (
-        parser.context.single_statement and
-        (kind == .let or kind == .@"const" or kind == .using or kind == .await_using)
-    )
+    if (parser.context.single_statement and
+        (kind == .let or kind == .@"const" or kind == .using or kind == .await_using))
     {
         @branchHint(.unlikely);
 
@@ -99,7 +102,11 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
     };
 }
 
-pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: DeclaratorCtx) Error!?ast.NodeIndex {
+pub fn parseVariableDeclarator(
+    parser: *Parser,
+    kind: ast.VariableKind,
+    ctx: DeclaratorCtx,
+) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
@@ -140,7 +147,11 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
 
         // honor `allow_in` so for-loop init Annex B 3.5 (`for (var x = 0 in obj)`)
         // stops at `in`. outside for-loop init, `allow_in` is true so this is a no-op.
-        init = try expressions.parseExpression(parser, Precedence.Assignment, .{ .respect_allow_in = true }) orelse return null;
+        init = try expressions.parseExpression(
+            parser,
+            Precedence.Assignment,
+            .{ .respect_allow_in = true },
+        ) orelse return null;
 
         end = parser.tree.span(init).end;
     } else switch (ctx) {
@@ -153,19 +164,22 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
                 try parser.report(
                     id_span,
                     "Destructuring declaration must have an initializer",
-                    .{ .help = "Add '= value' to provide the object or array to destructure from." },
+                    .{ .help = "Add '= value' to provide the object or array to" ++
+                        " destructure from." },
                 );
             } else if (kind == .@"const") {
                 try parser.report(
                     id_span,
                     "'const' declarations must be initialized",
-                    .{ .help = "Add '= value' to initialize the constant, or use 'let' if you need to assign it later." },
+                    .{ .help = "Add '= value' to initialize the constant, or use 'let' if" ++
+                        " you need to assign it later." },
                 );
             } else if (is_using) {
                 try parser.report(
                     id_span,
                     try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
-                    .{ .help = "Disposable resources require an initial value that implements the dispose protocol." },
+                    .{ .help = "Disposable resources require an initial value that" ++
+                        " implements the dispose protocol." },
                 );
             }
         },
@@ -183,7 +197,8 @@ pub fn canStartBinding(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
-/// determines if 'let' should be parsed as an identifier rather than a variable declaration keyword.
+/// Determines if 'let' should be parsed as an identifier rather than a variable
+/// declaration keyword.
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .let);
 
