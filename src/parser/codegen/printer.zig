@@ -2745,7 +2745,7 @@ fn isSignificantBlockComment(value: []const u8) bool {
         else => {},
     }
     var i: usize = 0;
-    while (std.mem.indexOfScalarPos(u8, value, i, '@')) |pos| {
+    while (std.mem.findScalarPos(u8, value, i, '@')) |pos| {
         const rest = value[pos..];
         if (std.mem.startsWith(u8, rest, "@license") or
             std.mem.startsWith(u8, rest, "@preserve") or

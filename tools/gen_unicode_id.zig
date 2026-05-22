@@ -190,9 +190,9 @@ pub fn parseUnicodeProperties(io: std.Io, alloc: std.mem.Allocator) !struct { Co
         if (line.len == 0 or std.mem.startsWith(u8, line, "#")) continue;
 
         // determine which property this line describes
-        const prop_type: PropertyType = if (std.mem.indexOf(u8, line, "ID_Start")) |_|
+        const prop_type: PropertyType = if (std.mem.find(u8, line, "ID_Start")) |_|
             .Start
-        else if (std.mem.indexOf(u8, line, "ID_Continue")) |_|
+        else if (std.mem.find(u8, line, "ID_Continue")) |_|
             .Continue
         else
             continue; // line doesn't contain a property we care about
@@ -220,7 +220,7 @@ fn extractCodepointRange(line: []const u8) !?CodepointRange {
     const hex_part = line[0..sep_pos];
 
     // check if this is a range (contains "..")
-    if (std.mem.indexOf(u8, hex_part, "..")) |range_sep| {
+    if (std.mem.find(u8, hex_part, "..")) |range_sep| {
         const low = try std.fmt.parseInt(u32, hex_part[0..range_sep], 16);
         const high = try std.fmt.parseInt(u32, hex_part[range_sep + 2 ..], 16);
 
