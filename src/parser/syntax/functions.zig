@@ -228,7 +228,6 @@ pub fn parseFormalParameters(
     kind: ast.FormalParameterKind,
     allow_parameter_properties: bool,
 ) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .left_paren);
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;
