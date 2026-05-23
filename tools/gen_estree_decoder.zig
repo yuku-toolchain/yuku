@@ -223,11 +223,14 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  function node(i) {{
+        \\  // only used when _attachComments is set. the common no-comment path
+        \\  // binds `node` straight to `_decode` (see below), so child recursion
+        \\  // never pays for this wrapper frame or the comment check.
+        \\  function nodeWithComments(i) {{
         \\    const r = _decode(i);
         \\    // skip unwrap cases whose inner node already carries its own
         \\    // comments (e.g. formal_parameter returning its pattern)
-        \\    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {{
+        \\    if (r && r.type !== undefined && r.comments === undefined) {{
         \\      const off = _coOff + i * 4;
         \\      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
         \\      if (a !== e) r.comments = _commentsOf(a, e);
@@ -272,6 +275,7 @@ fn writeNodeFunction(w: *Writer) !void {
     try w.writeAll(
         \\    }
         \\  }
+        \\  const node = _attachComments ? nodeWithComments : _decode;
         \\
     );
 }

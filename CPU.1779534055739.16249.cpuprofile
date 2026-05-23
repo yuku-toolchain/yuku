@@ -1,0 +1,5661 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "callFrame": {
+        "functionName": "(root)",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 0,
+      "children": [
+        2,
+        3,
+        4,
+        7,
+        17,
+        22,
+        23,
+        111
+      ]
+    },
+    {
+      "id": 2,
+      "callFrame": {
+        "functionName": "(idle)",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 2
+    },
+    {
+      "id": 3,
+      "callFrame": {
+        "functionName": "(program)",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 7
+    },
+    {
+      "id": 4,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "279",
+        "url": "node:fs",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        5
+      ]
+    },
+    {
+      "id": 5,
+      "callFrame": {
+        "functionName": "get createReadStream",
+        "scriptId": "207",
+        "url": "ext:deno_node/fs.ts",
+        "lineNumber": 2278,
+        "columnNumber": 25
+      },
+      "hitCount": 0,
+      "children": [
+        6
+      ]
+    },
+    {
+      "id": 6,
+      "callFrame": {
+        "functionName": "lazyLoad",
+        "scriptId": "6",
+        "url": "ext:core/01_core.js",
+        "lineNumber": 893,
+        "columnNumber": 28
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 896,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "280",
+        "url": "node:child_process",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        8
+      ]
+    },
+    {
+      "id": 8,
+      "callFrame": {
+        "functionName": "loadExtScript",
+        "scriptId": "6",
+        "url": "ext:core/01_core.js",
+        "lineNumber": 918,
+        "columnNumber": 24
+      },
+      "hitCount": 0,
+      "children": [
+        9
+      ]
+    },
+    {
+      "id": 9,
+      "callFrame": {
+        "functionName": "op_load_ext_script",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 0,
+      "children": [
+        10
+      ]
+    },
+    {
+      "id": 10,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "285",
+        "url": "ext:deno_node/child_process.ts",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        11
+      ]
+    },
+    {
+      "id": 11,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "285",
+        "url": "ext:deno_node/child_process.ts",
+        "lineNumber": 0,
+        "columnNumber": 31
+      },
+      "hitCount": 0,
+      "children": [
+        12
+      ]
+    },
+    {
+      "id": 12,
+      "callFrame": {
+        "functionName": "loadExtScript",
+        "scriptId": "6",
+        "url": "ext:core/01_core.js",
+        "lineNumber": 918,
+        "columnNumber": 24
+      },
+      "hitCount": 0,
+      "children": [
+        13
+      ]
+    },
+    {
+      "id": 13,
+      "callFrame": {
+        "functionName": "op_load_ext_script",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 0,
+      "children": [
+        14
+      ]
+    },
+    {
+      "id": 14,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "286",
+        "url": "ext:deno_node/internal/child_process.ts",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        15
+      ]
+    },
+    {
+      "id": 15,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "286",
+        "url": "ext:deno_node/internal/child_process.ts",
+        "lineNumber": 0,
+        "columnNumber": 31
+      },
+      "hitCount": 0,
+      "children": [
+        16
+      ]
+    },
+    {
+      "id": 16,
+      "callFrame": {
+        "functionName": "loadExtScript",
+        "scriptId": "6",
+        "url": "ext:core/01_core.js",
+        "lineNumber": 918,
+        "columnNumber": 24
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 923,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "276",
+        "url": "node:fs/promises",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        18
+      ]
+    },
+    {
+      "id": 18,
+      "callFrame": {
+        "functionName": "loadExtScript",
+        "scriptId": "6",
+        "url": "ext:core/01_core.js",
+        "lineNumber": 918,
+        "columnNumber": 24
+      },
+      "hitCount": 0,
+      "children": [
+        19
+      ]
+    },
+    {
+      "id": 19,
+      "callFrame": {
+        "functionName": "op_load_ext_script",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 0,
+      "children": [
+        20
+      ]
+    },
+    {
+      "id": 20,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "289",
+        "url": "ext:deno_node/fs/promises.ts",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        21
+      ]
+    },
+    {
+      "id": 21,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "289",
+        "url": "ext:deno_node/fs/promises.ts",
+        "lineNumber": 0,
+        "columnNumber": 31
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 4,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "callFrame": {
+        "functionName": "fsCall",
+        "scriptId": "283",
+        "url": "ext:deno_node/internal/fs/handle.ts",
+        "lineNumber": 362,
+        "columnNumber": 21
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 370,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "callFrame": {
+        "functionName": "",
+        "scriptId": "274",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/test/playground.ts",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 0,
+      "children": [
+        24,
+        25
+      ]
+    },
+    {
+      "id": 24,
+      "callFrame": {
+        "functionName": "parse",
+        "scriptId": "275",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/index.js",
+        "lineNumber": 3,
+        "columnNumber": 21
+      },
+      "hitCount": 41,
+      "positionTicks": [
+        {
+          "line": 5,
+          "ticks": 41
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "callFrame": {
+        "functionName": "get program",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 666,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        26
+      ]
+    },
+    {
+      "id": 26,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        27
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        28
+      ]
+    },
+    {
+      "id": 28,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        29
+      ]
+    },
+    {
+      "id": 29,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        30
+      ]
+    },
+    {
+      "id": 30,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        31
+      ]
+    },
+    {
+      "id": 31,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        32
+      ]
+    },
+    {
+      "id": 32,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        33
+      ]
+    },
+    {
+      "id": 33,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        34
+      ]
+    },
+    {
+      "id": 34,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        35
+      ]
+    },
+    {
+      "id": 35,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        36
+      ]
+    },
+    {
+      "id": 36,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        37
+      ]
+    },
+    {
+      "id": 37,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        38
+      ]
+    },
+    {
+      "id": 38,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        39
+      ]
+    },
+    {
+      "id": 39,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        40
+      ]
+    },
+    {
+      "id": 40,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        41
+      ]
+    },
+    {
+      "id": 41,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        42
+      ]
+    },
+    {
+      "id": 42,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        43
+      ]
+    },
+    {
+      "id": 43,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        44
+      ]
+    },
+    {
+      "id": 44,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 2,
+      "children": [
+        45,
+        68,
+        330
+      ],
+      "positionTicks": [
+        {
+          "line": 187,
+          "ticks": 2
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        46
+      ]
+    },
+    {
+      "id": 46,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        47
+      ]
+    },
+    {
+      "id": 47,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        48
+      ]
+    },
+    {
+      "id": 48,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        49
+      ]
+    },
+    {
+      "id": 49,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 2,
+      "children": [
+        50,
+        146,
+        213
+      ],
+      "positionTicks": [
+        {
+          "line": 191,
+          "ticks": 1
+        },
+        {
+          "line": 189,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        51
+      ]
+    },
+    {
+      "id": 51,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        52,
+        56
+      ]
+    },
+    {
+      "id": 52,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        53
+      ]
+    },
+    {
+      "id": 53,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        54,
+        325
+      ]
+    },
+    {
+      "id": 54,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        55
+      ]
+    },
+    {
+      "id": 55,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 2,
+      "children": [
+        312
+      ],
+      "positionTicks": [
+        {
+          "line": 196,
+          "ticks": 1
+        },
+        {
+          "line": 381,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 312,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        313
+      ]
+    },
+    {
+      "id": 313,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        314
+      ]
+    },
+    {
+      "id": 314,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 325,
+      "callFrame": {
+        "functionName": "str",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 126,
+        "columnNumber": 14
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 130,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        57
+      ],
+      "positionTicks": [
+        {
+          "line": 136,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        58
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        59,
+        154
+      ],
+      "positionTicks": [
+        {
+          "line": 187,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        60
+      ]
+    },
+    {
+      "id": 60,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        61,
+        142
+      ]
+    },
+    {
+      "id": 61,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        62
+      ],
+      "positionTicks": [
+        {
+          "line": 136,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        63
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 2,
+      "children": [
+        64,
+        181,
+        208
+      ],
+      "positionTicks": [
+        {
+          "line": 356,
+          "ticks": 1
+        },
+        {
+          "line": 396,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        65
+      ]
+    },
+    {
+      "id": 65,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        66,
+        134
+      ]
+    },
+    {
+      "id": 66,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        67
+      ]
+    },
+    {
+      "id": 67,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        231
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 231,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        232
+      ]
+    },
+    {
+      "id": 232,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        233
+      ]
+    },
+    {
+      "id": 233,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        234
+      ]
+    },
+    {
+      "id": 234,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        235
+      ]
+    },
+    {
+      "id": 235,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        236
+      ]
+    },
+    {
+      "id": 236,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        237,
+        309
+      ]
+    },
+    {
+      "id": 237,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        238
+      ]
+    },
+    {
+      "id": 238,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        239,
+        250
+      ]
+    },
+    {
+      "id": 239,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        240
+      ]
+    },
+    {
+      "id": 240,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        241
+      ]
+    },
+    {
+      "id": 241,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        242
+      ]
+    },
+    {
+      "id": 242,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        243
+      ]
+    },
+    {
+      "id": 243,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        244
+      ]
+    },
+    {
+      "id": 244,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        245
+      ]
+    },
+    {
+      "id": 245,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        246
+      ]
+    },
+    {
+      "id": 246,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        247,
+        266
+      ]
+    },
+    {
+      "id": 247,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        248
+      ]
+    },
+    {
+      "id": 248,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        249
+      ]
+    },
+    {
+      "id": 249,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 191,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 266,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        267
+      ]
+    },
+    {
+      "id": 267,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        268
+      ]
+    },
+    {
+      "id": 268,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        269
+      ]
+    },
+    {
+      "id": 269,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        270
+      ]
+    },
+    {
+      "id": 270,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        271
+      ]
+    },
+    {
+      "id": 271,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        272
+      ]
+    },
+    {
+      "id": 272,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        273
+      ]
+    },
+    {
+      "id": 273,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 378,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 250,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        251
+      ]
+    },
+    {
+      "id": 251,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        252
+      ]
+    },
+    {
+      "id": 252,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        253
+      ]
+    },
+    {
+      "id": 253,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        254
+      ]
+    },
+    {
+      "id": 254,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 191,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 309,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        310
+      ]
+    },
+    {
+      "id": 310,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        311
+      ]
+    },
+    {
+      "id": 311,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0
+    },
+    {
+      "id": 134,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        135
+      ]
+    },
+    {
+      "id": 135,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        136,
+        189
+      ],
+      "positionTicks": [
+        {
+          "line": 188,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 136,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        137
+      ]
+    },
+    {
+      "id": 137,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 378,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 189,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        190
+      ]
+    },
+    {
+      "id": 190,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        191
+      ]
+    },
+    {
+      "id": 191,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        192
+      ]
+    },
+    {
+      "id": 192,
+      "callFrame": {
+        "functionName": "fnParams",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 147,
+        "columnNumber": 19
+      },
+      "hitCount": 0,
+      "children": [
+        193
+      ]
+    },
+    {
+      "id": 193,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        194
+      ]
+    },
+    {
+      "id": 194,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        195
+      ]
+    },
+    {
+      "id": 195,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        196
+      ]
+    },
+    {
+      "id": 196,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 380,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 181,
+      "callFrame": {
+        "functionName": "fnParams",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 147,
+        "columnNumber": 19
+      },
+      "hitCount": 0,
+      "children": [
+        182
+      ]
+    },
+    {
+      "id": 182,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        183
+      ]
+    },
+    {
+      "id": 183,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        184
+      ]
+    },
+    {
+      "id": 184,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 208,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        209
+      ]
+    },
+    {
+      "id": 209,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        210
+      ]
+    },
+    {
+      "id": 210,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        211,
+        304
+      ]
+    },
+    {
+      "id": 211,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        212
+      ]
+    },
+    {
+      "id": 212,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 2,
+      "children": [
+        255
+      ],
+      "positionTicks": [
+        {
+          "line": 196,
+          "ticks": 1
+        },
+        {
+          "line": 194,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 255,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        260
+      ],
+      "positionTicks": [
+        {
+          "line": 135,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 260,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        261
+      ]
+    },
+    {
+      "id": 261,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        262
+      ]
+    },
+    {
+      "id": 262,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        263
+      ]
+    },
+    {
+      "id": 263,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        264
+      ]
+    },
+    {
+      "id": 264,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        265
+      ]
+    },
+    {
+      "id": 265,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 189,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 304,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        305
+      ]
+    },
+    {
+      "id": 305,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        306
+      ]
+    },
+    {
+      "id": 306,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 189,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 142,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        143
+      ]
+    },
+    {
+      "id": 143,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        144,
+        197
+      ]
+    },
+    {
+      "id": 144,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        145
+      ]
+    },
+    {
+      "id": 145,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        200
+      ],
+      "positionTicks": [
+        {
+          "line": 246,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        201
+      ]
+    },
+    {
+      "id": 201,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        202
+      ]
+    },
+    {
+      "id": 202,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        203
+      ]
+    },
+    {
+      "id": 203,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        204
+      ],
+      "positionTicks": [
+        {
+          "line": 189,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 204,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        205
+      ]
+    },
+    {
+      "id": 205,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        206
+      ]
+    },
+    {
+      "id": 206,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        207
+      ]
+    },
+    {
+      "id": 207,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 195,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 197,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        198
+      ]
+    },
+    {
+      "id": 198,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        199
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 199,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0
+    },
+    {
+      "id": 154,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        155
+      ]
+    },
+    {
+      "id": 155,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        156
+      ]
+    },
+    {
+      "id": 156,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        157,
+        217
+      ]
+    },
+    {
+      "id": 157,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        158
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 158,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        159,
+        285
+      ],
+      "positionTicks": [
+        {
+          "line": 380,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 159,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        277
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 277,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        278,
+        307
+      ]
+    },
+    {
+      "id": 278,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        279
+      ]
+    },
+    {
+      "id": 279,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        280
+      ]
+    },
+    {
+      "id": 280,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        281
+      ]
+    },
+    {
+      "id": 281,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        282
+      ]
+    },
+    {
+      "id": 282,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        283
+      ]
+    },
+    {
+      "id": 283,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        284
+      ]
+    },
+    {
+      "id": 284,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 609,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 307,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        308
+      ]
+    },
+    {
+      "id": 308,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 356,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 285,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        286
+      ]
+    },
+    {
+      "id": 286,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        287
+      ]
+    },
+    {
+      "id": 287,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        288
+      ]
+    },
+    {
+      "id": 288,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        289
+      ]
+    },
+    {
+      "id": 289,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        290
+      ]
+    },
+    {
+      "id": 290,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        291
+      ]
+    },
+    {
+      "id": 291,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        292
+      ]
+    },
+    {
+      "id": 292,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        293
+      ]
+    },
+    {
+      "id": 293,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        294
+      ]
+    },
+    {
+      "id": 294,
+      "callFrame": {
+        "functionName": "nodeArrHoles",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 139,
+        "columnNumber": 23
+      },
+      "hitCount": 0,
+      "children": [
+        295
+      ]
+    },
+    {
+      "id": 295,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        296
+      ]
+    },
+    {
+      "id": 296,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        297
+      ]
+    },
+    {
+      "id": 297,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        298
+      ]
+    },
+    {
+      "id": 298,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        299
+      ]
+    },
+    {
+      "id": 299,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        300
+      ]
+    },
+    {
+      "id": 300,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        301
+      ]
+    },
+    {
+      "id": 301,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        302
+      ]
+    },
+    {
+      "id": 302,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        303
+      ]
+    },
+    {
+      "id": 303,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 378,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 217,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        218
+      ]
+    },
+    {
+      "id": 218,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        219
+      ]
+    },
+    {
+      "id": 219,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        220
+      ]
+    },
+    {
+      "id": 220,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        221
+      ]
+    },
+    {
+      "id": 221,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        222,
+        256
+      ]
+    },
+    {
+      "id": 222,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        223
+      ]
+    },
+    {
+      "id": 223,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        224
+      ]
+    },
+    {
+      "id": 224,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        225
+      ]
+    },
+    {
+      "id": 225,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        226
+      ]
+    },
+    {
+      "id": 226,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        227
+      ]
+    },
+    {
+      "id": 227,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        228
+      ]
+    },
+    {
+      "id": 228,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        229
+      ]
+    },
+    {
+      "id": 229,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        230
+      ]
+    },
+    {
+      "id": 230,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 188,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 256,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        257
+      ]
+    },
+    {
+      "id": 257,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        258
+      ]
+    },
+    {
+      "id": 258,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        259
+      ]
+    },
+    {
+      "id": 259,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 186,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 146,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        147
+      ]
+    },
+    {
+      "id": 147,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        148
+      ]
+    },
+    {
+      "id": 148,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        149
+      ]
+    },
+    {
+      "id": 149,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        150
+      ]
+    },
+    {
+      "id": 150,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        151
+      ]
+    },
+    {
+      "id": 151,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        152
+      ]
+    },
+    {
+      "id": 152,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        153
+      ]
+    },
+    {
+      "id": 153,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        274
+      ],
+      "positionTicks": [
+        {
+          "line": 246,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 274,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        275
+      ]
+    },
+    {
+      "id": 275,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        276
+      ]
+    },
+    {
+      "id": 276,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        315
+      ],
+      "positionTicks": [
+        {
+          "line": 136,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 315,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        316
+      ]
+    },
+    {
+      "id": 316,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        317
+      ]
+    },
+    {
+      "id": 317,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        318
+      ]
+    },
+    {
+      "id": 318,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        319
+      ]
+    },
+    {
+      "id": 319,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        320
+      ]
+    },
+    {
+      "id": 320,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        321
+      ]
+    },
+    {
+      "id": 321,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        322
+      ]
+    },
+    {
+      "id": 322,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        323
+      ]
+    },
+    {
+      "id": 323,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        324
+      ]
+    },
+    {
+      "id": 324,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 213,
+      "callFrame": {
+        "functionName": "fnParams",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 147,
+        "columnNumber": 19
+      },
+      "hitCount": 0,
+      "children": [
+        214
+      ]
+    },
+    {
+      "id": 214,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        215
+      ]
+    },
+    {
+      "id": 215,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        216
+      ],
+      "positionTicks": [
+        {
+          "line": 186,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 216,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        69
+      ]
+    },
+    {
+      "id": 69,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        70
+      ]
+    },
+    {
+      "id": 70,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        71
+      ]
+    },
+    {
+      "id": 71,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        72
+      ]
+    },
+    {
+      "id": 72,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        73
+      ]
+    },
+    {
+      "id": 73,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        74
+      ]
+    },
+    {
+      "id": 74,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        75
+      ]
+    },
+    {
+      "id": 75,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        76
+      ]
+    },
+    {
+      "id": 76,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        77
+      ]
+    },
+    {
+      "id": 77,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        78
+      ]
+    },
+    {
+      "id": 78,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        79
+      ]
+    },
+    {
+      "id": 79,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        80
+      ]
+    },
+    {
+      "id": 80,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        81
+      ]
+    },
+    {
+      "id": 81,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        82
+      ]
+    },
+    {
+      "id": 82,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        83
+      ]
+    },
+    {
+      "id": 83,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        84
+      ]
+    },
+    {
+      "id": 84,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        85
+      ]
+    },
+    {
+      "id": 85,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        86
+      ]
+    },
+    {
+      "id": 86,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        87
+      ]
+    },
+    {
+      "id": 87,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        88
+      ]
+    },
+    {
+      "id": 88,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        89
+      ]
+    },
+    {
+      "id": 89,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        90,
+        138
+      ],
+      "positionTicks": [
+        {
+          "line": 356,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        91
+      ]
+    },
+    {
+      "id": 91,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        92,
+        326
+      ]
+    },
+    {
+      "id": 92,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        93
+      ]
+    },
+    {
+      "id": 93,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        94,
+        112
+      ]
+    },
+    {
+      "id": 94,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        95
+      ]
+    },
+    {
+      "id": 95,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        96
+      ]
+    },
+    {
+      "id": 96,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        97
+      ]
+    },
+    {
+      "id": 97,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        98
+      ]
+    },
+    {
+      "id": 98,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        99,
+        160
+      ]
+    },
+    {
+      "id": 99,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        100
+      ]
+    },
+    {
+      "id": 100,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        101
+      ]
+    },
+    {
+      "id": 101,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        102
+      ]
+    },
+    {
+      "id": 102,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        103
+      ]
+    },
+    {
+      "id": 103,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        104,
+        341
+      ]
+    },
+    {
+      "id": 104,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        105
+      ]
+    },
+    {
+      "id": 105,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        106
+      ]
+    },
+    {
+      "id": 106,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        107
+      ],
+      "positionTicks": [
+        {
+          "line": 378,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        108
+      ]
+    },
+    {
+      "id": 108,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        109
+      ]
+    },
+    {
+      "id": 109,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        110
+      ]
+    },
+    {
+      "id": 110,
+      "callFrame": {
+        "functionName": "str",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 126,
+        "columnNumber": 14
+      },
+      "hitCount": 0
+    },
+    {
+      "id": 341,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        342
+      ]
+    },
+    {
+      "id": 342,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        343
+      ]
+    },
+    {
+      "id": 343,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        344
+      ]
+    },
+    {
+      "id": 344,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        345
+      ]
+    },
+    {
+      "id": 345,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 609,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 160,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        161
+      ]
+    },
+    {
+      "id": 161,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        162
+      ]
+    },
+    {
+      "id": 162,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        163
+      ]
+    },
+    {
+      "id": 163,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        164
+      ]
+    },
+    {
+      "id": 164,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        165
+      ]
+    },
+    {
+      "id": 165,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        166
+      ]
+    },
+    {
+      "id": 166,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        167
+      ]
+    },
+    {
+      "id": 167,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        168
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 168,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        169
+      ]
+    },
+    {
+      "id": 169,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        170
+      ]
+    },
+    {
+      "id": 170,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        171
+      ]
+    },
+    {
+      "id": 171,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        172
+      ]
+    },
+    {
+      "id": 172,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        173
+      ]
+    },
+    {
+      "id": 173,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 174,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        175
+      ]
+    },
+    {
+      "id": 175,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        176
+      ]
+    },
+    {
+      "id": 176,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        177
+      ]
+    },
+    {
+      "id": 177,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        178
+      ]
+    },
+    {
+      "id": 178,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        179
+      ]
+    },
+    {
+      "id": 179,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        180
+      ]
+    },
+    {
+      "id": 180,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0
+    },
+    {
+      "id": 112,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        113
+      ]
+    },
+    {
+      "id": 113,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        114
+      ]
+    },
+    {
+      "id": 114,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        115
+      ]
+    },
+    {
+      "id": 115,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        116
+      ]
+    },
+    {
+      "id": 116,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        117
+      ]
+    },
+    {
+      "id": 117,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        118
+      ]
+    },
+    {
+      "id": 118,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        119,
+        126
+      ]
+    },
+    {
+      "id": 119,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        120
+      ]
+    },
+    {
+      "id": 120,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        121
+      ]
+    },
+    {
+      "id": 121,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        122
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 122,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        123
+      ]
+    },
+    {
+      "id": 123,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        124
+      ]
+    },
+    {
+      "id": 124,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "children": [
+        125
+      ],
+      "positionTicks": [
+        {
+          "line": 328,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 125,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 126,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        127
+      ]
+    },
+    {
+      "id": 127,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        128
+      ]
+    },
+    {
+      "id": 128,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        129
+      ]
+    },
+    {
+      "id": 129,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        130
+      ]
+    },
+    {
+      "id": 130,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        131
+      ]
+    },
+    {
+      "id": 131,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        132
+      ]
+    },
+    {
+      "id": 132,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        133
+      ]
+    },
+    {
+      "id": 133,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0
+    },
+    {
+      "id": 326,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        327
+      ]
+    },
+    {
+      "id": 327,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        328
+      ]
+    },
+    {
+      "id": 328,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        329
+      ]
+    },
+    {
+      "id": 329,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "children": [
+        335
+      ],
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 335,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        336
+      ]
+    },
+    {
+      "id": 336,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        337
+      ]
+    },
+    {
+      "id": 337,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        338
+      ]
+    },
+    {
+      "id": 338,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        339
+      ]
+    },
+    {
+      "id": 339,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        340
+      ]
+    },
+    {
+      "id": 340,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 196,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 138,
+      "callFrame": {
+        "functionName": "nodeArrHoles",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 139,
+        "columnNumber": 23
+      },
+      "hitCount": 0,
+      "children": [
+        139
+      ]
+    },
+    {
+      "id": 139,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        140
+      ]
+    },
+    {
+      "id": 140,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        141,
+        185
+      ]
+    },
+    {
+      "id": 141,
+      "callFrame": {
+        "functionName": "_p",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 121,
+        "columnNumber": 13
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 122,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 185,
+      "callFrame": {
+        "functionName": "nodeArr",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 134,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        186
+      ]
+    },
+    {
+      "id": 186,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        187
+      ]
+    },
+    {
+      "id": 187,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        188
+      ]
+    },
+    {
+      "id": 188,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 175,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 330,
+      "callFrame": {
+        "functionName": "fnParams",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 147,
+        "columnNumber": 19
+      },
+      "hitCount": 0,
+      "children": [
+        331
+      ]
+    },
+    {
+      "id": 331,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        332
+      ]
+    },
+    {
+      "id": 332,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 0,
+      "children": [
+        333
+      ]
+    },
+    {
+      "id": 333,
+      "callFrame": {
+        "functionName": "node",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 173,
+        "columnNumber": 15
+      },
+      "hitCount": 0,
+      "children": [
+        334
+      ]
+    },
+    {
+      "id": 334,
+      "callFrame": {
+        "functionName": "_decode",
+        "scriptId": "278",
+        "url": "file:///Users/admin/Desktop/Projects/yuku/yuku/npm/yuku-parser/decode.js",
+        "lineNumber": 184,
+        "columnNumber": 18
+      },
+      "hitCount": 1,
+      "positionTicks": [
+        {
+          "line": 187,
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "callFrame": {
+        "functionName": "(garbage collector)",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 47
+    }
+  ],
+  "startTime": 966163119691,
+  "endTime": 966163355158,
+  "samples": [
+    2,
+    3,
+    6,
+    16,
+    21,
+    2,
+    2,
+    22,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    24,
+    26,
+    55,
+    67,
+    110,
+    111,
+    125,
+    121,
+    124,
+    133,
+    130,
+    128,
+    118,
+    116,
+    113,
+    93,
+    91,
+    89,
+    87,
+    85,
+    82,
+    80,
+    78,
+    75,
+    72,
+    70,
+    44,
+    137,
+    111,
+    111,
+    111,
+    62,
+    141,
+    3,
+    145,
+    111,
+    111,
+    143,
+    60,
+    58,
+    51,
+    49,
+    46,
+    44,
+    153,
+    111,
+    49,
+    135,
+    3,
+    159,
+    106,
+    180,
+    178,
+    175,
+    173,
+    170,
+    167,
+    168,
+    165,
+    163,
+    161,
+    98,
+    96,
+    93,
+    91,
+    89,
+    87,
+    85,
+    82,
+    80,
+    78,
+    75,
+    72,
+    70,
+    44,
+    184,
+    188,
+    63,
+    196,
+    111,
+    111,
+    49,
+    111,
+    111,
+    111,
+    111,
+    199,
+    143,
+    60,
+    58,
+    51,
+    49,
+    207,
+    212,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    3,
+    3,
+    216,
+    230,
+    58,
+    215,
+    249,
+    57,
+    254,
+    212,
+    157,
+    255,
+    259,
+    265,
+    273,
+    46,
+    44,
+    111,
+    276,
+    63,
+    284,
+    303,
+    111,
+    111,
+    65,
+    63,
+    60,
+    58,
+    111,
+    51,
+    49,
+    46,
+    44,
+    203,
+    306,
+    61,
+    56,
+    55,
+    231,
+    65,
+    63,
+    60,
+    58,
+    51,
+    49,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    46,
+    44,
+    158,
+    308,
+    111,
+    111,
+    111,
+    89,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    111,
+    311,
+    236,
+    233,
+    3,
+    231,
+    65,
+    63,
+    60,
+    58,
+    51,
+    49,
+    46,
+    44,
+    314,
+    324,
+    325,
+    89,
+    87,
+    85,
+    82,
+    80,
+    78,
+    75,
+    72,
+    70,
+    44,
+    89,
+    329,
+    87,
+    85,
+    82,
+    80,
+    78,
+    75,
+    72,
+    70,
+    44,
+    334,
+    44,
+    198,
+    44,
+    3,
+    340,
+    345
+  ],
+  "timeDeltas": [
+    30445,
+    1341,
+    1257,
+    1232,
+    1259,
+    1054,
+    1264,
+    1276,
+    1252,
+    1251,
+    1258,
+    1254,
+    1253,
+    1256,
+    1255,
+    1252,
+    1253,
+    1258,
+    1256,
+    1250,
+    1256,
+    1254,
+    1252,
+    1253,
+    1253,
+    1252,
+    1255,
+    1255,
+    1254,
+    1252,
+    1253,
+    1255,
+    1254,
+    1255,
+    1252,
+    1253,
+    1253,
+    1253,
+    1254,
+    1254,
+    1258,
+    1250,
+    1257,
+    1249,
+    1253,
+    1254,
+    1253,
+    1261,
+    1715,
+    793,
+    1256,
+    1243,
+    219,
+    1037,
+    1243,
+    1258,
+    1251,
+    516,
+    40,
+    25,
+    89,
+    26,
+    27,
+    25,
+    26,
+    27,
+    31,
+    27,
+    33,
+    26,
+    27,
+    25,
+    25,
+    27,
+    31,
+    200,
+    1305,
+    1247,
+    1255,
+    1262,
+    1257,
+    1248,
+    1259,
+    1264,
+    1255,
+    177,
+    42,
+    29,
+    49,
+    28,
+    27,
+    25,
+    890,
+    1252,
+    1262,
+    1256,
+    1250,
+    1257,
+    1254,
+    539,
+    50,
+    80,
+    26,
+    526,
+    29,
+    9,
+    41,
+    29,
+    29,
+    31,
+    40,
+    31,
+    35,
+    30,
+    29,
+    35,
+    300,
+    31,
+    27,
+    27,
+    27,
+    30,
+    29,
+    427,
+    1238,
+    1255,
+    1254,
+    2855,
+    2845,
+    580,
+    1281,
+    1263,
+    1268,
+    1258,
+    237,
+    69,
+    35,
+    30,
+    27,
+    25,
+    832,
+    1241,
+    1274,
+    1401,
+    2365,
+    150,
+    1539,
+    1946,
+    279,
+    1119,
+    1069,
+    1254,
+    1260,
+    1255,
+    1242,
+    1258,
+    1253,
+    1255,
+    1248,
+    1256,
+    1250,
+    1256,
+    1247,
+    1257,
+    1260,
+    249,
+    35,
+    1953,
+    262,
+    1256,
+    1251,
+    1255,
+    3384,
+    1044,
+    185,
+    55,
+    29,
+    30,
+    943,
+    197,
+    31,
+    118,
+    32,
+    216,
+    1249,
+    1254,
+    1250,
+    1256,
+    866,
+    50,
+    27,
+    27,
+    27,
+    52,
+    26,
+    198,
+    1257,
+    1280,
+    1281,
+    1333,
+    1252,
+    1277,
+    1381,
+    1260,
+    487,
+    39,
+    730,
+    1252,
+    3062,
+    733,
+    2005,
+    395,
+    1249,
+    1266,
+    1280,
+    1267,
+    1109,
+    1343,
+    1181,
+    1690,
+    828,
+    1250,
+    1161,
+    49,
+    42,
+    3,
+    31,
+    30,
+    29,
+    27,
+    29,
+    28,
+    30,
+    28,
+    28,
+    1013,
+    1243,
+    1255,
+    378,
+    51,
+    27,
+    271,
+    28,
+    28,
+    28,
+    27,
+    29,
+    31,
+    242,
+    107,
+    172,
+    29,
+    154,
+    24,
+    26,
+    26,
+    27,
+    28,
+    30,
+    727,
+    1245,
+    1253,
+    1253,
+    1253,
+    1254,
+    1258
+  ]
+}
