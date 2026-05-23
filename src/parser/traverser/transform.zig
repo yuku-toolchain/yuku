@@ -99,6 +99,7 @@ pub const Ctx = struct {
 
 /// Walks the tree with path tracking and mutation support.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!void {
+    std.debug.assert(tree.root != .null);
     var ctx = Ctx{ .tree = tree };
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };

@@ -28,8 +28,10 @@ const ChildInfo = struct {
 };
 
 pub fn attach(tree: *ast.Tree, raw: []const ast.RawComment) Error!void {
+    std.debug.assert(tree.root != .null);
     const alloc = tree.allocator();
     const node_count = tree.nodes.len;
+    std.debug.assert(node_count > 0);
     const offsets = try alloc.alloc(u32, node_count + 1);
 
     if (raw.len == 0) {
@@ -184,7 +186,12 @@ const Ctx = struct {
         }
     }
 
-    inline fn write(self: *Ctx, host_idx: u32, position: ast.Comment.Position, same_line: bool) void {
+    inline fn write(
+        self: *Ctx,
+        host_idx: u32,
+        position: ast.Comment.Position,
+        same_line: bool,
+    ) void {
         const r = self.raw[self.cursor];
         self.host[self.cursor] = host_idx;
         self.out[self.cursor] = .{

@@ -28,7 +28,12 @@ pub const ASSIGNMENT_OPS = [_][]const u8{
 pub const VAR_KINDS = [_][]const u8{ "var", "let", "const", "using", "await using" };
 pub const PROPERTY_KINDS = [_][]const u8{ "init", "get", "set" };
 pub const METHOD_KINDS = [_][]const u8{ "constructor", "method", "get", "set" };
-pub const FUNCTION_TYPES = [_][]const u8{ "FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression" };
+pub const FUNCTION_TYPES = [_][]const u8{
+    "FunctionDeclaration",
+    "FunctionExpression",
+    "TSDeclareFunction",
+    "TSEmptyBodyFunctionExpression",
+};
 pub const CLASS_TYPES = [_][]const u8{ "ClassDeclaration", "ClassExpression" };
 pub const COMMENT_TYPES = [_][]const u8{ "Line", "Block" };
 pub const SEVERITY = [_][]const u8{ "error", "warning", "hint", "info" };
@@ -93,16 +98,20 @@ const NAME_OVERRIDES = [_]struct { z: []const u8, e: []const u8 }{
 
 pub fn estreeType(comptime name: []const u8) []const u8 {
     inline for (NAME_OVERRIDES) |o| if (comptime std.mem.eql(u8, name, o.z)) return o.e;
-    if (comptime std.mem.startsWith(u8, name, "jsx_")) return "JSX" ++ snakeConvert(name[4..], true);
+    if (comptime std.mem.startsWith(u8, name, "jsx_")) {
+        return "JSX" ++ snakeConvert(name[4..], true);
+    }
     if (comptime std.mem.startsWith(u8, name, "ts_")) return "TS" ++ snakeConvert(name[3..], true);
     return snakeConvert(name, true);
 }
 
 pub fn estreeField(comptime tag: []const u8, comptime field: []const u8) []const u8 {
-    if (comptime std.mem.eql(u8, tag, "variable_declaration") and std.mem.eql(u8, field, "declarators")) return "declarations";
+    if (comptime std.mem.eql(u8, tag, "variable_declaration") and
+        std.mem.eql(u8, field, "declarators")) return "declarations";
     // `const` is a zig keyword, so the TSEnumDeclaration field is named
     // `is_const` in the AST. ESTree renders it as the bare `const` key.
-    if (comptime std.mem.eql(u8, tag, "ts_enum_declaration") and std.mem.eql(u8, field, "is_const")) return "const";
+    if (comptime std.mem.eql(u8, tag, "ts_enum_declaration") and
+        std.mem.eql(u8, field, "is_const")) return "const";
     return snakeConvert(field, false);
 }
 
@@ -171,7 +180,8 @@ const ROLES = [_]struct { node: []const u8, field: []const u8, role: Role }{
 
 pub fn fieldRole(comptime tag: []const u8, comptime field: []const u8) Role {
     inline for (ROLES) |r| {
-        if (comptime std.mem.eql(u8, r.node, tag) and std.mem.eql(u8, r.field, field)) return r.role;
+        if (comptime std.mem.eql(u8, r.node, tag) and
+            std.mem.eql(u8, r.field, field)) return r.role;
     }
     return .auto;
 }

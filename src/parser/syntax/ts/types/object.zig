@@ -65,7 +65,8 @@ fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ';', ',', or newline between type members",
-                .{ .help = "Separate type members with ';', ',', or a newline, or close the block with '}'" },
+                .{ .help = "Separate type members with ';', ',', or a newline," ++
+                    " or close the block with '}'" },
             );
             return false;
         },
@@ -167,7 +168,10 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // optional explicit plus or minus before readonly or optional marker in mapped type
-fn parseMappedModifier(parser: *Parser, comptime terminator: TokenTag) Error!?ast.TSMappedTypeModifier {
+fn parseMappedModifier(
+    parser: *Parser,
+    comptime terminator: TokenTag,
+) Error!?ast.TSMappedTypeModifier {
     const tag = parser.current_token.tag;
 
     if (tag == terminator) {
@@ -196,7 +200,9 @@ fn parseMappedModifier(parser: *Parser, comptime terminator: TokenTag) Error!?as
 fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
-    if (tag == .left_paren or tag == .less_than) return parseCallOrConstructSignature(parser, false);
+    if (tag == .left_paren or tag == .less_than) {
+        return parseCallOrConstructSignature(parser, false);
+    }
 
     if (tag == .new) {
         const next = parser.peekAhead() orelse return null;
@@ -259,7 +265,10 @@ inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
 
 // (params): R    <T>(params): R    new (params): R    new <T>(params): R
 // ^^^^^^^^^^^    ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
-fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) Error!?ast.NodeIndex {
+fn parseCallOrConstructSignature(
+    parser: *Parser,
+    comptime is_construct: bool,
+) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     if (is_construct) {
@@ -268,7 +277,8 @@ fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) E
     }
 
     const type_parameters = try generics.parseTypeParameters(parser);
-    const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .signature, false) orelse
+        return null;
 
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
@@ -297,7 +307,11 @@ pub const IndexSignatureModifiers = struct {
 
 // [k: T]: V    readonly [k: T]: V
 // ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
-pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModifiers) Error!?ast.NodeIndex {
+pub fn parseIndexSignature(
+    parser: *Parser,
+    start: u32,
+    mods: IndexSignatureModifiers,
+) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     try parser.advance() orelse return null;
 
@@ -359,7 +373,11 @@ fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // optional accessor keyword, key, optional `?`, callish tail or `: T` field
-fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?ast.NodeIndex {
+fn parsePropertyOrMethodSignature(
+    parser: *Parser,
+    start: u32,
+    is_readonly: bool,
+) Error!?ast.NodeIndex {
     var kind: ast.TSMethodSignatureKind = .method;
     const head_tag = parser.current_token.tag;
     if (head_tag == .get or head_tag == .set) {
@@ -384,7 +402,10 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
     }
 
     // accessors need method path so bad `(` is an error not a prop
-    if (kind != .method or parser.current_token.tag == .left_paren or parser.current_token.tag == .less_than) {
+    const enter_method = kind != .method or
+        parser.current_token.tag == .left_paren or
+        parser.current_token.tag == .less_than;
+    if (enter_method) {
         return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
     }
 
@@ -416,7 +437,8 @@ fn parseMethodSignatureBody(
     is_optional: bool,
 ) Error!?ast.NodeIndex {
     const type_parameters = try generics.parseTypeParameters(parser);
-    const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .signature, false) orelse
+        return null;
 
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
@@ -458,7 +480,8 @@ fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
 
     if (tag == .left_bracket) {
         try parser.advance() orelse return null;
-        const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+            return null;
         if (!try parser.expect(
             .right_bracket,
             "Expected ']' to close a computed property key",
@@ -476,8 +499,12 @@ fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
     else {
         try parser.report(
             parser.current_token.span,
-            try parser.fmt("Unexpected token '{s}' as signature key", .{parser.describeToken(parser.current_token)}),
-            .{ .help = "Signature keys must be identifiers, strings, numbers, or computed expressions [expr]." },
+            try parser.fmt(
+                "Unexpected token '{s}' as signature key",
+                .{parser.describeToken(parser.current_token)},
+            ),
+            .{ .help = "Signature keys must be identifiers, strings, numbers," ++
+                " or computed expressions [expr]." },
         );
         return null;
     };

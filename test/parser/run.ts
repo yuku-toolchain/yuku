@@ -180,12 +180,22 @@ async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite
 let progressCurrent = 0;
 let progressTotal = 0;
 
-function showProgress(file: string, passed: boolean) {
+function progressLabel(file: string): string {
+  return file.length > 60 ? `...${file.slice(-57)}` : file;
+}
+
+function progressStart(file: string) {
+  if (isCI) return;
+  process.stdout.write(
+    `\r\x1b[K  \x1b[33m·\x1b[0m ${progressCurrent + 1}/${progressTotal}  ${progressLabel(file)}`,
+  );
+}
+
+function progressEnd(file: string, passed: boolean) {
   if (isCI) return;
   progressCurrent++;
   const icon = passed ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
-  const label = file.length > 60 ? `...${file.slice(-57)}` : file;
-  process.stdout.write(`\r\x1b[K  ${icon} ${progressCurrent}/${progressTotal}  ${label}`);
+  process.stdout.write(`\r\x1b[K  ${icon} ${progressCurrent}/${progressTotal}  ${progressLabel(file)}`);
 }
 
 function clearProgress() {
@@ -196,6 +206,7 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
   const result: SuiteResult = { suite, files: [] };
 
   for (const file of files) {
+    progressStart(file);
     const content = await Bun.file(file).text();
     const parsed = parseFile(content, file, suite);
     let passed = runTest(file, content, parsed, suite);
@@ -237,7 +248,7 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
     }
 
     result.files.push(entry);
-    showProgress(file, passed);
+    progressEnd(file, passed);
   }
 
   return result;

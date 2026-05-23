@@ -32,7 +32,11 @@ pub const ParseClassOpts = struct {
     is_abstract: bool = false,
 };
 
-pub fn parseClass(parser: *Parser, opts: ParseClassOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
+pub fn parseClass(
+    parser: *Parser,
+    opts: ParseClassOpts,
+    start_from_param: ?u32,
+) Error!?ast.NodeIndex {
     return parseClassDecorated(parser, opts, start_from_param, ast.IndexRange.empty);
 }
 
@@ -42,6 +46,9 @@ pub fn parseClassDecorated(
     start_from_param: ?u32,
     decorators: ast.IndexRange,
 ) Error!?ast.NodeIndex {
+    // entry is either `class` directly, or a modifier (`abstract`/`declare`) the
+    // caller consumed before passing `start_from_param`
+    std.debug.assert(start_from_param != null or parser.current_token.tag == .class);
     const start = start_from_param orelse parser.current_token.span.start;
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 
@@ -89,7 +96,8 @@ pub fn parseClassDecorated(
 
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
-        super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse return null;
+        super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse
+            return null;
 
         if (is_ts) switch (parser.tree.data(super_class)) {
             .ts_instantiation_expression => |inst| {
@@ -270,12 +278,22 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected '(' for getter/setter definition",
-            .{ .help = "Getters and setters require parentheses. Use 'get prop() {}' or 'set prop(value) {}' syntax." },
+            .{ .help = "Getters and setters require parentheses." ++
+                " Use 'get prop() {}' or 'set prop(value) {}' syntax." },
         );
         return null;
     }
 
-    return parsePropertyDefinition(parser, elem_start, decorators, key, computed, mods, optional, definite);
+    return parsePropertyDefinition(
+        parser,
+        elem_start,
+        decorators,
+        key,
+        computed,
+        mods,
+        optional,
+        definite,
+    );
 }
 
 fn parseIndexSignatureElement(
@@ -475,8 +493,14 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
 
     if (token.tag == .left_bracket) {
         try parser.advance() orelse return null;
-        const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) return null;
+        const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+            return null;
+        const ok = try parser.expect(
+            .right_bracket,
+            "Expected ']' after computed property key",
+            null,
+        );
+        if (!ok) return null;
         return .{ .key = key, .computed = true };
     }
 
@@ -495,8 +519,12 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     } else {
         try parser.report(
             token.span,
-            try parser.fmt("Unexpected token '{s}' as class element key", .{parser.describeToken(token)}),
-            .{ .help = "Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr]." },
+            try parser.fmt(
+                "Unexpected token '{s}' as class element key",
+                .{parser.describeToken(token)},
+            ),
+            .{ .help = "Class element keys must be identifiers, strings, numbers," ++
+                " private identifiers (#name), or computed expressions [expr]." },
         );
         return null;
     };
@@ -516,7 +544,9 @@ fn parseMethodDefinition(
     mods: Modifiers,
     optional: bool,
 ) Error!?ast.NodeIndex {
-    if (mods.is_static and !computed) try validateStaticPrototypeOrConstructor(parser, key, .method);
+    if (mods.is_static and !computed) {
+        try validateStaticPrototypeOrConstructor(parser, key, .method);
+    }
     try validateMethodModifiers(parser, key, mods);
 
     const saved_await = parser.context.await;
@@ -537,7 +567,11 @@ fn parseMethodDefinition(
     else
         .null;
 
-    const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
+    const params = try functions.parseFormalParameters(
+        parser,
+        .unique_formal_parameters,
+        mods.kind == .constructor,
+    ) orelse return null;
     _ = try functions.checkAccessorArity(parser, mods.kind, params);
 
     // optional `: ReturnType` annotation.
@@ -561,7 +595,11 @@ fn parseMethodDefinition(
         function_type = .ts_empty_body_function_expression;
         end = try parser.eatSemicolon(return_type_end) orelse return null;
     } else {
-        try parser.reportExpected(parser.current_token.span, "Expected '{' to start method body", .{});
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '{' to start method body",
+            .{},
+        );
         return null;
     }
 
@@ -622,7 +660,8 @@ fn parsePropertyDefinition(
     var value: ast.NodeIndex = .null;
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
-        value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+            return null;
         end = parser.tree.span(value).end;
     }
 
@@ -702,7 +741,12 @@ fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: boo
 
 // detects an unqualified `constructor` name and promotes `kind` from
 // `.method` to `.constructor`. `static` and computed keys never count
-fn detectConstructorKind(parser: *Parser, key: ast.NodeIndex, mods: *Modifiers, computed: bool) Error!void {
+fn detectConstructorKind(
+    parser: *Parser,
+    key: ast.NodeIndex,
+    mods: *Modifiers,
+    computed: bool,
+) Error!void {
     if (mods.is_static or computed) return;
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
     if (!prop.eql("constructor")) return;

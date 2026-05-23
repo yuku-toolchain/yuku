@@ -153,7 +153,8 @@ fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
                 if (!try isPostfixNullable(parser)) return ty;
                 ty = try parseJSDocPostfix(parser, ty, .nullable) orelse return null;
             },
-            .logical_not => ty = try parseJSDocPostfix(parser, ty, .non_nullable) orelse return null,
+            .logical_not => ty = try parseJSDocPostfix(parser, ty, .non_nullable) orelse
+                return null,
             else => return ty,
         }
     }
@@ -192,7 +193,11 @@ fn parseArrayOrIndexedAccessType(parser: *Parser, element: ast.NodeIndex) Error!
 
 // T?   T!
 // ^^   ^^
-fn parseJSDocPostfix(parser: *Parser, inner: ast.NodeIndex, comptime kind: JSDocKind) Error!?ast.NodeIndex {
+fn parseJSDocPostfix(
+    parser: *Parser,
+    inner: ast.NodeIndex,
+    comptime kind: JSDocKind,
+) Error!?ast.NodeIndex {
     const start = parser.tree.span(inner).start;
     const end = parser.current_token.span.end;
     try parser.advance() orelse return null;
@@ -246,7 +251,9 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             => if (!try isQualifiedTypeContinuation(parser)) return parseTypeKeyword(parser),
             .this => return predicate.parseThisTypeOrPredicate(parser),
             .asserts => {
-                if (try predicate.isAssertsPredicateStart(parser)) return predicate.parseAssertsTypePredicate(parser);
+                if (try predicate.isAssertsPredicateStart(parser)) {
+                    return predicate.parseAssertsTypePredicate(parser);
+                }
                 return parseTypeReference(parser);
             },
             .left_paren => return parseParenthesizedType(parser),
@@ -267,7 +274,10 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // only `const` bypasses reserved guard, `as const`
-    if ((token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) or token.tag == .@"const") {
+    const is_type_ref_start =
+        (token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) or
+        token.tag == .@"const";
+    if (is_type_ref_start) {
         return parseTypeReference(parser);
     }
 
@@ -377,8 +387,14 @@ const JSDocKind = enum { nullable, non_nullable };
 
 fn jsdocNodeData(inner: ast.NodeIndex, comptime kind: JSDocKind, postfix: bool) ast.NodeData {
     return switch (kind) {
-        .nullable => .{ .ts_jsdoc_nullable_type = .{ .type_annotation = inner, .postfix = postfix } },
-        .non_nullable => .{ .ts_jsdoc_non_nullable_type = .{ .type_annotation = inner, .postfix = postfix } },
+        .nullable => .{ .ts_jsdoc_nullable_type = .{
+            .type_annotation = inner,
+            .postfix = postfix,
+        } },
+        .non_nullable => .{ .ts_jsdoc_non_nullable_type = .{
+            .type_annotation = inner,
+            .postfix = postfix,
+        } },
     };
 }
 
@@ -490,7 +506,8 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// `extends` bound after `infer Name`. parsed with conditionals off. may rewind when outer needs `? :`
+// `extends` bound after `infer Name`. parsed with conditionals off. may rewind when outer
+// needs `? :`
 fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .extends) return .null;
 
@@ -599,7 +616,8 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     if (is_constructor) try parser.advance() orelse return null;
 
     const type_parameters = try generics.parseTypeParameters(parser);
-    const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .signature, false) orelse
+        return null;
 
     if (parser.current_token.tag != .arrow) {
         try parser.reportExpected(
@@ -750,7 +768,9 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
     const is_optional = parser.current_token.tag == .question;
     if (is_optional) try parser.advance() orelse return null;
 
-    if (!try parser.expect(.colon, "Expected ':' after named tuple element label", null)) return null;
+    if (!try parser.expect(.colon, "Expected ':' after named tuple element label", null)) {
+        return null;
+    }
 
     const element_type = try parseType(parser) orelse return null;
 
@@ -770,7 +790,10 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     const type_name = try parseEntityName(parser) orelse return null;
     const name_span = parser.tree.span(type_name);
     const type_arguments = try generics.parseTypeArgumentsAfterEntityName(parser);
-    const end = if (type_arguments != .null) parser.tree.span(type_arguments).end else name_span.end;
+    const end = if (type_arguments != .null)
+        parser.tree.span(type_arguments).end
+    else
+        name_span.end;
 
     return try parser.tree.addNode(
         .{ .ts_type_reference = .{
@@ -866,7 +889,8 @@ fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
 
     if (parser.current_token.tag == .right_paren) return ast.NodeIndex.null;
 
-    const options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+    const options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+        return null;
 
     if (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;

@@ -245,16 +245,21 @@ pub const Tree = struct {
 
     /// Returns the data for the node at the given index.
     pub inline fn data(self: *const Tree, index: NodeIndex) NodeData {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
         return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
     /// Returns the span for the node at the given index.
     pub inline fn span(self: *const Tree, index: NodeIndex) Span {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
         return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
     /// Returns the extra node indices for the given range.
     pub inline fn extra(self: *const Tree, range: IndexRange) []const NodeIndex {
+        std.debug.assert(range.start + range.len <= self.extras.items.len);
         return self.extras.items[range.start..][0..range.len];
     }
 
@@ -275,16 +280,22 @@ pub const Tree = struct {
 
     /// Replaces an existing node's data in-place.
     pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
         self.nodes.items(.data)[@intFromEnum(index)] = new_data;
     }
 
     /// Replaces an existing node's span in-place.
     pub inline fn setSpan(self: *Tree, index: NodeIndex, new_span: Span) void {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
+        std.debug.assert(new_span.start <= new_span.end);
         self.nodes.items(.span)[@intFromEnum(index)] = new_span;
     }
 
     /// Updates the name of an identifier-shaped node in place.
     pub fn setIdentifierName(self: *Tree, index: NodeIndex, name: String) void {
+        std.debug.assert(index != .null);
         switch (self.data(index)) {
             .binding_identifier => |bid| {
                 var n = bid;
@@ -302,18 +313,26 @@ pub const Tree = struct {
     }
 
     /// Creates a new node. Returns its index.
-    pub inline fn addNode(self: *Tree, node_data: NodeData, node_span: Span) error{OutOfMemory}!NodeIndex {
+    pub inline fn addNode(
+        self: *Tree,
+        node_data: NodeData,
+        node_span: Span,
+    ) error{OutOfMemory}!NodeIndex {
+        std.debug.assert(self.nodes.len < std.math.maxInt(u32));
+        std.debug.assert(node_span.start <= node_span.end);
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
+        const entry: Node = .{ .data = node_data, .span = node_span };
         if (self.nodes.len < self.nodes.capacity) {
-            self.nodes.appendAssumeCapacity(.{ .data = node_data, .span = node_span });
+            self.nodes.appendAssumeCapacity(entry);
         } else {
-            try self.nodes.append(self.arena.allocator(), .{ .data = node_data, .span = node_span });
+            try self.nodes.append(self.arena.allocator(), entry);
         }
         return index;
     }
 
     /// Creates a new child list. Returns its range.
     pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+        std.debug.assert(self.extras.items.len + children.len <= std.math.maxInt(u32));
         const start: u32 = @intCast(self.extras.items.len);
         if (self.extras.items.len + children.len <= self.extras.capacity) {
             self.extras.appendSliceAssumeCapacity(children);
@@ -326,7 +345,11 @@ pub const Tree = struct {
     /// Reserves headroom for `entries` more strings totalling at most
     /// `bytes`. Call before bulk `addString()` operations to avoid
     /// repeated reallocations.
-    pub fn ensureUnusedStringCapacity(self: *Tree, bytes: u32, entries: u32) error{OutOfMemory}!void {
+    pub fn ensureUnusedStringCapacity(
+        self: *Tree,
+        bytes: u32,
+        entries: u32,
+    ) error{OutOfMemory}!void {
         return self.strings.ensureUnusedCapacity(self.arena.allocator(), bytes, entries);
     }
 
@@ -349,9 +372,12 @@ pub const Tree = struct {
     /// Returns the comments attached to `node`, in source order. Empty
     /// when `attach_comments` was not enabled or the node has none.
     pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const Comment {
+        std.debug.assert(node != .null);
         const offsets = self.node_comment_offsets;
         const i = @intFromEnum(node);
         if (i + 1 >= offsets.len) return &.{};
+        std.debug.assert(offsets[i] <= offsets[i + 1]);
+        std.debug.assert(offsets[i + 1] <= self.comments.len);
         return self.comments[offsets[i]..offsets[i + 1]];
     }
 };
@@ -556,7 +582,8 @@ pub const Accessibility = enum {
 pub const MethodDefinition = struct {
     /// `decorator[]`
     decorators: IndexRange,
-    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`,
+    /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
     /// `function`
     value: NodeIndex,
@@ -590,7 +617,8 @@ pub const MethodDefinition = struct {
 pub const PropertyDefinition = struct {
     /// `decorator[]`
     decorators: IndexRange,
-    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`,
+    /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
     /// any expression. `.null` when the field has no initializer.
     value: NodeIndex,
@@ -620,7 +648,8 @@ pub const PropertyDefinition = struct {
 
 /// A `static { ... }` block inside a class body.
 ///
-/// See: [MDN Static initialization blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks)
+/// See: MDN Static initialization blocks
+/// developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks
 ///
 /// ## Example
 /// ```js
@@ -1407,7 +1436,8 @@ pub const NumericLiteral = struct {
             var val: f64 = 0;
             const fbase: f64 = @floatFromInt(base);
             for (digits) |d| {
-                val = val * fbase + @as(f64, @floatFromInt(std.fmt.charToDigit(d, base) catch unreachable));
+                const digit_value = std.fmt.charToDigit(d, base) catch unreachable;
+                val = val * fbase + @as(f64, @floatFromInt(digit_value));
             }
             return val;
         };
@@ -1434,7 +1464,8 @@ pub const NumericLiteral = struct {
 
 /// A BigInt literal (a numeric literal with a trailing `n`).
 ///
-/// See: [MDN BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+/// See: MDN BigInt
+/// developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt
 ///
 /// ## Example
 /// ```js
@@ -1526,7 +1557,8 @@ pub const IdentifierReference = struct {
 ///
 /// The stored `name` does not include the leading `#`.
 ///
-/// See: [MDN Private class fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties)
+/// See: MDN Private class fields
+/// developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties
 ///
 /// ## Example
 /// ```js
@@ -1683,7 +1715,8 @@ pub const ObjectPattern = struct {
 /// //               ^^^^^^ computed key
 /// ```
 pub const BindingProperty = struct {
-    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`,
+    /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
     /// any binding pattern
     value: NodeIndex,
@@ -1772,7 +1805,8 @@ pub const PropertyKind = enum {
 /// })
 /// ```
 pub const ObjectProperty = struct {
-    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`,
+    /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
     /// any expression for `init` properties. `function` for methods, getters,
     /// and setters.
@@ -2052,7 +2086,8 @@ pub const CallExpression = struct {
 /// Wraps an optional chain so that short-circuiting applies to the whole
 /// chain.
 ///
-/// See: [MDN Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+/// See: MDN Optional chaining
+/// developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
 ///
 /// ## Example
 /// ```js
@@ -2398,7 +2433,8 @@ pub const TSTypeAnnotation = struct {
 /// The `any` primitive type. Disables all type checking for the annotated
 /// value.
 ///
-/// See: [TypeScript Handbook any](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any)
+/// See: TypeScript Handbook any
+/// www.typescriptlang.org/docs/handbook/2/everyday-types.html#any
 ///
 /// ## Example
 /// ```ts
@@ -2409,7 +2445,8 @@ pub const TSAnyKeyword = struct {};
 
 /// The `unknown` primitive type. The type-safe counterpart of `any`.
 ///
-/// See: [TypeScript 3.0 Release Notes unknown](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html#new-unknown-top-type)
+/// See: TypeScript 3.0 Release Notes unknown
+/// www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html#new-unknown-top-type
 ///
 /// ## Example
 /// ```ts
@@ -2421,7 +2458,8 @@ pub const TSUnknownKeyword = struct {};
 /// The `never` primitive type. Represents values that never occur, for
 /// example the return type of a function that always throws.
 ///
-/// See: [TypeScript Handbook never](https://www.typescriptlang.org/docs/handbook/2/functions.html#never)
+/// See: TypeScript Handbook never
+/// www.typescriptlang.org/docs/handbook/2/functions.html#never
 ///
 /// ## Example
 /// ```ts
@@ -2965,7 +3003,8 @@ pub const TSIntersectionType = struct {
 /// A conditional type. Selects between two branches based on whether
 /// `check_type` is assignable to `extends_type`.
 ///
-/// See: [TypeScript Handbook Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html)
+/// See: TypeScript Handbook Conditional Types
+/// www.typescriptlang.org/docs/handbook/2/conditional-types.html
 ///
 /// ## Example
 /// ```ts
@@ -3114,7 +3153,8 @@ pub const TSConstructorType = struct {
 /// position and narrows the type of a parameter (or `this`) in the call
 /// site's control-flow analysis.
 ///
-/// See: [TypeScript Handbook Type Predicates](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)
+/// See: TypeScript Handbook Type Predicates
+/// www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
 ///
 /// ## Example
 /// ```ts
@@ -3149,7 +3189,9 @@ pub const TSTypePredicate = struct {
 /// //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTypeLiteral
 /// ```
 pub const TSTypeLiteral = struct {
-    /// `ts_property_signature`, `ts_method_signature`, `ts_call_signature_declaration`, `ts_construct_signature_declaration`, or `ts_index_signature`
+    /// `ts_property_signature`, `ts_method_signature`,
+    /// `ts_call_signature_declaration`, `ts_construct_signature_declaration`,
+    /// or `ts_index_signature`
     members: IndexRange,
 };
 
@@ -3171,7 +3213,8 @@ pub const TSMappedTypeModifier = enum(u2) {
 /// clause, the `?` / `+?` / `-?` optionality modifiers, and the
 /// `readonly` / `+readonly` / `-readonly` mutability modifiers.
 ///
-/// See: [TypeScript Handbook Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html)
+/// See: TypeScript Handbook Mapped Types
+/// www.typescriptlang.org/docs/handbook/2/mapped-types.html
 ///
 /// ## Example
 /// ```ts
@@ -3219,7 +3262,8 @@ pub const TSMappedType = struct {
 /// //                      ^^^^^^^^ type_annotation
 /// ```
 pub const TSPropertySignature = struct {
-    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`,
+    /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
     /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
@@ -3269,7 +3313,8 @@ pub const TSMethodSignatureKind = enum(u2) {
 /// };
 /// ```
 pub const TSMethodSignature = struct {
-    /// `identifier_name`, `string_literal`, `numeric_literal`, `private_identifier` (class members only), or any expression when `computed = true`
+    /// `identifier_name`, `string_literal`, `numeric_literal`,
+    /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
     /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
@@ -3352,7 +3397,8 @@ pub const TSIndexSignature = struct {
 /// optionally parameterized by one or more type parameters, and optionally
 /// prefixed by the `declare` modifier for ambient contexts.
 ///
-/// See: [TypeScript Handbook Type Aliases](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases)
+/// See: TypeScript Handbook Type Aliases
+/// www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases
 ///
 /// ## Example
 /// ```ts
@@ -3381,7 +3427,8 @@ pub const TSTypeAliasDeclaration = struct {
 /// signatures. May be prefixed by the `declare` modifier for ambient
 /// contexts.
 ///
-/// See: [TypeScript Handbook Interfaces](https://www.typescriptlang.org/docs/handbook/2/objects.html#interfaces)
+/// See: TypeScript Handbook Interfaces
+/// www.typescriptlang.org/docs/handbook/2/objects.html#interfaces
 ///
 /// ## Example
 /// ```ts
@@ -3418,7 +3465,9 @@ pub const TSInterfaceDeclaration = struct {
 /// //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSInterfaceBody
 /// ```
 pub const TSInterfaceBody = struct {
-    /// `ts_property_signature`, `ts_method_signature`, `ts_call_signature_declaration`, `ts_construct_signature_declaration`, or `ts_index_signature`
+    /// `ts_property_signature`, `ts_method_signature`,
+    /// `ts_call_signature_declaration`, `ts_construct_signature_declaration`,
+    /// or `ts_index_signature`
     body: IndexRange,
 };
 
@@ -3430,7 +3479,8 @@ pub const TSInterfaceBody = struct {
 /// ```ts
 /// interface Foo extends Bar, Base.Thing<T> {}
 /// //                    ^^^ TSInterfaceHeritage (expression = IdentifierReference "Bar")
-/// //                         ^^^^^^^^^^^^^^^ TSInterfaceHeritage (expression = MemberExpression, type_arguments = <T>)
+/// //                         ^^^^^^^^^^^^^^^ TSInterfaceHeritage
+/// //                         (expression = MemberExpression, type_arguments = <T>)
 /// ```
 pub const TSInterfaceHeritage = struct {
     /// `identifier_reference` or a left-associative `member_expression`
@@ -3450,7 +3500,8 @@ pub const TSInterfaceHeritage = struct {
 /// ```ts
 /// class Foo implements Bar, Base.Thing<T> {}
 /// //                   ^^^ TSClassImplements (expression = IdentifierReference "Bar")
-/// //                        ^^^^^^^^^^^^^^^ TSClassImplements (expression = MemberExpression, type_arguments = <T>)
+/// //                        ^^^^^^^^^^^^^^^ TSClassImplements
+/// //                        (expression = MemberExpression, type_arguments = <T>)
 /// ```
 pub const TSClassImplements = struct {
     /// `identifier_reference` or a left-associative `member_expression`
@@ -3540,7 +3591,8 @@ pub const TSModuleDeclarationKind = enum(u1) {
 
 /// A TypeScript `namespace` or `module` declaration.
 ///
-/// See: [TypeScript Handbook Namespaces](https://www.typescriptlang.org/docs/handbook/namespaces.html)
+/// See: TypeScript Handbook Namespaces
+/// www.typescriptlang.org/docs/handbook/namespaces.html
 ///
 /// ## Example
 /// ```ts
@@ -3600,7 +3652,8 @@ pub const TSGlobalDeclaration = struct {
 /// an accessibility, `readonly`, or `override` modifier and therefore
 /// implicitly declares a class field of the same name and initial value.
 ///
-/// See: [TypeScript Handbook Parameter Properties](https://www.typescriptlang.org/docs/handbook/2/classes.html#parameter-properties)
+/// See: TypeScript Handbook Parameter Properties
+/// www.typescriptlang.org/docs/handbook/2/classes.html#parameter-properties
 ///
 /// ## Example
 /// ```ts
@@ -3631,7 +3684,8 @@ pub const TSParameterProperty = struct {
 /// emit time. TypeScript requires `this` to be the first parameter when
 /// present.
 ///
-/// See: [TypeScript Handbook this parameters](https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function)
+/// See: TypeScript Handbook this parameters
+/// www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function
 ///
 /// ## Example
 /// ```ts
@@ -3650,7 +3704,8 @@ pub const TSThisParameter = struct {
 
 /// TypeScript `expr as Type` postfix assertion.
 ///
-/// See: [TypeScript Handbook Type Assertions](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions)
+/// See: TypeScript Handbook Type Assertions
+/// www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions
 ///
 /// ## Example
 /// ```ts
@@ -3724,7 +3779,8 @@ pub const TSInstantiationExpression = struct {
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
 ///
-/// See: [TypeScript Handbook export =](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
+/// See: TypeScript Handbook export =
+/// www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require
 ///
 /// ## Example
 /// ```ts
@@ -3752,7 +3808,8 @@ pub const TSNamespaceExportDeclaration = struct {
 /// name `id` to either an external module (`require("m")`) or an entity
 /// name path (`Foo.Bar`).
 ///
-/// See: [TypeScript Handbook import = and export =](https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require)
+/// See: TypeScript Handbook import = and export =
+/// www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require
 ///
 /// ## Example
 /// ```ts
@@ -4203,7 +4260,8 @@ pub const NodeData = union(enum) {
             .jsx_element,
             .jsx_fragment,
             => true,
-            .function => |f| f.type == .function_expression or f.type == .ts_empty_body_function_expression,
+            .function => |f| f.type == .function_expression or
+                f.type == .ts_empty_body_function_expression,
             .class => |c| c.type == .class_expression,
             else => false,
         };

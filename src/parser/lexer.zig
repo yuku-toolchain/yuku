@@ -74,6 +74,9 @@ pub const Lexer = struct {
         source_type: ast.SourceType,
         attach_comments: bool,
     ) error{OutOfMemory}!Lexer {
+        // span positions are u32
+        std.debug.assert(source.len <= std.math.maxInt(u32));
+
         var self: Lexer = .{
             .source = source,
             .state = .{},
@@ -86,24 +89,37 @@ pub const Lexer = struct {
 
         self.skipHashbang();
 
+        std.debug.assert(self.cursor <= self.source.len);
         return self;
     }
 
     fn skipHashbang(self: *Lexer) void {
+        // hashbang only legal at byte 0
+        std.debug.assert(self.cursor == 0);
+
         if (self.source.len >= 2 and self.source[0] == '#' and self.source[1] == '!') {
             var end: u32 = 2;
-            while (end < self.source.len and self.source[end] != '\n' and self.source[end] != '\r') {
+            while (end < self.source.len and
+                self.source[end] != '\n' and
+                self.source[end] != '\r')
+            {
                 end += 1;
             }
+            std.debug.assert(end >= 2);
+            std.debug.assert(end <= self.source.len);
             self.hashbang = .{ .start = 2, .len = @intCast(end - 2) };
             self.cursor = end;
         }
     }
 
     pub fn nextToken(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor <= self.source.len);
+
         self.clearTokenFlags();
 
         try self.skipWsAndComments();
+
+        std.debug.assert(self.cursor <= self.source.len);
 
         if (self.cursor >= self.source.len) {
             return self.createToken(.eof, self.cursor, self.cursor);
@@ -127,7 +143,20 @@ pub const Lexer = struct {
         }
 
         return switch (current_char) {
-            '+', '*', '-', '!', '<', '>', '=', '|', '&', '^', '%', '/', '?' => self.scanPunctuation(),
+            '+',
+            '*',
+            '-',
+            '!',
+            '<',
+            '>',
+            '=',
+            '|',
+            '&',
+            '^',
+            '%',
+            '/',
+            '?',
+            => self.scanPunctuation(),
             '.' => self.scanDot(),
             '0'...'9' => try self.scanNumber(),
             '"', '\'' => self.scanString(),
@@ -139,6 +168,8 @@ pub const Lexer = struct {
     }
 
     inline fn scanSimplePunctuation(self: *Lexer) Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
         const c = self.source[self.cursor];
         self.cursor += 1;
@@ -157,20 +188,33 @@ pub const Lexer = struct {
             else => unreachable,
         };
 
+        std.debug.assert(self.cursor == start + 1);
         return self.createToken(tag, start, self.cursor);
     }
 
     inline fn puncToken(self: *Lexer, len: u32, tag: TokenTag, start: u32) Token {
+        std.debug.assert(len > 0);
+        std.debug.assert(start == self.cursor);
+        std.debug.assert(start + len <= self.source.len);
+
         self.cursor += len;
         return self.createToken(tag, start, self.cursor);
     }
 
     fn scanPunctuation(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
         const c0 = self.source[self.cursor];
         const c1 = self.peek(1);
         const c2 = self.peek(2);
         const c3 = self.peek(3);
+
+        // dispatched from nextToken's punctuation lead-char set
+        std.debug.assert(switch (c0) {
+            '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '^', '?' => true,
+            else => false,
+        });
 
         return switch (c0) {
             '+' => switch (c1) {
@@ -190,7 +234,10 @@ pub const Lexer = struct {
                 '=' => self.puncToken(2, .star_assign, start),
                 else => self.puncToken(1, .star, start),
             },
-            '/' => if (c1 == '=') self.puncToken(2, .slash_assign, start) else self.puncToken(1, .slash, start),
+            '/' => if (c1 == '=')
+                self.puncToken(2, .slash_assign, start)
+            else
+                self.puncToken(1, .slash, start),
             '%' => switch (c1) {
                 '=' => self.puncToken(2, .percent_assign, start),
                 else => self.puncToken(1, .percent, start),
@@ -205,12 +252,14 @@ pub const Lexer = struct {
             '>' => if (c1 == '>' and c2 == '=')
                 self.puncToken(3, .right_shift_assign, start)
             else if (c1 == '>' and c2 == '>')
-                if (c3 == '=') self.puncToken(4, .unsigned_right_shift_assign, start) else self.puncToken(3, .unsigned_right_shift, start)
+                if (c3 == '=')
+                    self.puncToken(4, .unsigned_right_shift_assign, start)
+                else
+                    self.puncToken(3, .unsigned_right_shift, start)
             else switch (c1) {
                 '>' => {
-                    // in jsx, <div attr=<elem></elem>></div>
-                    //                               ~~
-                    //                               this should be interepted as separate '>' tokens for ease of parsing
+                    // in jsx, the trailing `>>` of `<div attr=<elem></elem>></div>` must lex
+                    // as two separate `>` tokens so the parser can balance the inner element
                     if (self.mode == .jsx_tag) {
                         return self.puncToken(1, .greater_than, start);
                     } else {
@@ -273,7 +322,6 @@ pub const Lexer = struct {
         return self.source[idx];
     }
 
-
     inline fn setTokenFlag(self: *Lexer, comptime flag: TokenFlag) void {
         self.state.token_flags |= flagMask(flag);
     }
@@ -293,12 +341,15 @@ pub const Lexer = struct {
     }
 
     pub inline fn rewindTo(self: *Lexer, position: u32) void {
+        std.debug.assert(position <= self.source.len);
         self.cursor = position;
         self.clearTokenFlags();
     }
 
     inline fn isLineTerminator(self: *const Lexer, c: u8) bool {
-        return c == '\n' or c == '\r' or (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0);
+        std.debug.assert(self.cursor <= self.source.len);
+        return c == '\n' or c == '\r' or
+            (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0);
     }
 
     // functions exclusively called by the parser for context-specific lexing
@@ -307,6 +358,9 @@ pub const Lexer = struct {
     /// called by the parser when it expects a template continuation after parsing
     /// an expression inside ${}.
     pub fn reScanTemplateContinuation(self: *Lexer, right_brace_start: u32) LexicalError!Token {
+        std.debug.assert(right_brace_start < self.source.len);
+        std.debug.assert(self.source[right_brace_start] == '}');
+
         self.rewindTo(right_brace_start);
 
         const start = self.cursor;
@@ -338,6 +392,8 @@ pub const Lexer = struct {
     /// splits `>>`, `>>>`, `>=`, `>>=`, `>>>=` into a leading `>` so
     /// nested type argument lists like `Foo<Bar<T>>` can close.
     pub fn reScanGreaterThan(self: *Lexer, token_start: u32) Token {
+        std.debug.assert(token_start < self.source.len);
+        std.debug.assert(self.source[token_start] == '>');
         self.rewindTo(token_start + 1);
         return self.createToken(.greater_than, token_start, token_start + 1);
     }
@@ -345,6 +401,8 @@ pub const Lexer = struct {
     /// splits `<<` into a leading `<` so nested generics like
     /// `Foo<<T>(x: T) => R>` can open.
     pub fn reScanLessThan(self: *Lexer, token_start: u32) Token {
+        std.debug.assert(token_start < self.source.len);
+        std.debug.assert(self.source[token_start] == '<');
         self.rewindTo(token_start + 1);
         return self.createToken(.less_than, token_start, token_start + 1);
     }
@@ -352,6 +410,7 @@ pub const Lexer = struct {
     /// scans JSX text content between '<' and '{' in JSX children.
     /// called by the parser when parsing JSX element children.
     pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
+        std.debug.assert(initial_cursor <= self.source.len);
         self.rewindTo(initial_cursor);
 
         const start = self.cursor;
@@ -365,6 +424,7 @@ pub const Lexer = struct {
             }
         }
 
+        std.debug.assert(self.cursor >= start);
         return self.createToken(.jsx_text, start, self.cursor);
     }
 
@@ -378,6 +438,9 @@ pub const Lexer = struct {
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
     pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult {
+        std.debug.assert(slash_token_start < self.source.len);
+        std.debug.assert(self.source[slash_token_start] == '/');
+
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
@@ -463,7 +526,11 @@ pub const Lexer = struct {
 
                 const flags = self.source[closing_delimeter_pos..end];
 
-                return .{ .span = .{ .start = start, .end = end }, .pattern = pattern, .flags = flags };
+                return .{
+                    .span = .{ .start = start, .end = end },
+                    .pattern = pattern,
+                    .flags = flags,
+                };
             }
 
             self.cursor += 1;
@@ -474,9 +541,12 @@ pub const Lexer = struct {
     //
 
     fn scanString(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
         const src = self.source;
         const quote = src[start];
+        std.debug.assert(quote == '"' or quote == '\'');
         var pos = self.cursor + 1;
 
         if (self.mode == .normal) {
@@ -520,6 +590,9 @@ pub const Lexer = struct {
     }
 
     fn scanTemplateLiteral(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '`');
+
         const start = self.cursor;
         self.cursor += 1;
 
@@ -555,14 +628,9 @@ pub const Lexer = struct {
         template,
     };
 
-    // in string literals, escape errors are fatal and propagate immediately.
-    // in template literals, escape errors are non-fatal: we set
-    // `invalid_escape` on the current token and continue lexing.
-    // this flag can exist on any token type, though template literals are the
-    // current parser use case.
-    // the parser then checks this flag:
-    // - tagged templates: no diagnostic (cooked becomes null/undefined)
-    // - untagged templates: report "Bad escape sequence in untagged template literal"
+    // string escapes are fatal; template escapes set `.invalid_escape` and keep lexing
+    // so tagged templates can still produce a token (cooked becomes null/undefined,
+    // untagged templates get a diagnostic later)
     fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         if (context == .template) {
             self.consumeEscapeImpl(context) catch |err| {
@@ -578,6 +646,9 @@ pub const Lexer = struct {
     }
 
     fn consumeEscapeImpl(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '\\');
+
         self.cursor += 1; // skip backslash
         self.setTokenFlag(.escaped);
 
@@ -607,10 +678,10 @@ pub const Lexer = struct {
 
                 // check for lone surrogates
                 if (std.unicode.isSurrogateCodepoint(cp)) {
-                    if (std.unicode.utf16IsHighSurrogate(@intCast(cp))
-                        and self.source[self.cursor] == '\\'
-                        and self.peek(1) == 'u')
-                    {
+                    const is_high_paired = std.unicode.utf16IsHighSurrogate(@intCast(cp)) and
+                        self.source[self.cursor] == '\\' and
+                        self.peek(1) == 'u';
+                    if (is_high_paired) {
                         self.cursor += 1; // skip backslash
                         const next_cp = try self.consumeUnicodeEscape(.normal);
                         if (!std.unicode.utf16IsLowSurrogate(@intCast(next_cp))) {
@@ -630,7 +701,9 @@ pub const Lexer = struct {
             '\n' => self.cursor += 1,
             '\r' => {
                 self.cursor += 1;
-                if (self.cursor < self.source.len and self.source[self.cursor] == '\n') self.cursor += 1;
+                if (self.cursor < self.source.len and self.source[self.cursor] == '\n') {
+                    self.cursor += 1;
+                }
             },
             else => {
                 const us_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
@@ -646,15 +719,19 @@ pub const Lexer = struct {
     }
 
     fn consumeOctal(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
         const result = util.Utf.parseOctal(self.source, self.cursor);
         if (result.end == self.cursor) {
             return error.InvalidOctalEscape;
         }
+        std.debug.assert(result.end > self.cursor);
         self.cursor = @intCast(result.end);
     }
 
     fn consumeHex(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
         if (util.Utf.parseHex2(self.source, self.cursor + 1)) |r| {
+            std.debug.assert(r.end >= self.cursor + 1);
             self.cursor = @intCast(r.end);
         } else {
             return error.InvalidHexEscape;
@@ -667,12 +744,18 @@ pub const Lexer = struct {
         normal,
     };
 
-    fn consumeUnicodeEscape(self: *Lexer, comptime context: ConsumeUnicodeContext) LexicalError!u21 {
-        // set the current token is escaped
-        // used by parser to check whether a reserved keyword is ecaped to throw error
+    fn consumeUnicodeEscape(
+        self: *Lexer,
+        comptime context: ConsumeUnicodeContext,
+    ) LexicalError!u21 {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == 'u');
+
+        // marks the token so the parser can reject escaped reserved keywords
         self.setTokenFlag(.escaped);
 
-        const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse return error.InvalidUnicodeEscape;
+        const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse
+            return error.InvalidUnicodeEscape;
 
         switch (context) {
             .identifier_start => {
@@ -694,12 +777,17 @@ pub const Lexer = struct {
     }
 
     fn handleRightBrace(self: *Lexer) Token {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '}');
         const start = self.cursor;
         self.cursor += 1;
         return self.createToken(.right_brace, start, self.cursor);
     }
 
     fn scanDot(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '.');
+
         const start = self.cursor;
         const c1 = self.peek(1);
         const c2 = self.peek(2);
@@ -739,12 +827,18 @@ pub const Lexer = struct {
     };
 
     fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
+        std.debug.assert(self.cursor <= self.source.len);
+
         var has_escape = false;
 
-        const table = if (is_jsx_tag) &ident_continue_jsx_table_ascii else &ident_continue_table_ascii;
+        const table = if (is_jsx_tag)
+            &ident_continue_jsx_table_ascii
+        else
+            &ident_continue_table_ascii;
 
         const src = self.source;
         var pos = self.cursor;
+        const entry_pos = pos;
 
         while (true) {
             while (pos < src.len and table[src[pos]]) {
@@ -787,11 +881,14 @@ pub const Lexer = struct {
             break;
         }
 
+        std.debug.assert(pos >= entry_pos);
         self.cursor = pos;
         return has_escape;
     }
 
     fn scanIdentifierOrKeyword(self: *Lexer) !Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
 
         const is_jsx_tag = self.mode == .jsx_tag;
@@ -844,13 +941,17 @@ pub const Lexer = struct {
             has_escape = try self.scanIdentifierBody(is_jsx_tag);
         }
 
+        std.debug.assert(self.cursor > start);
         const lexeme = self.source[start..self.cursor];
 
-        const tag: TokenTag =
-            if (is_jsx_tag) .jsx_identifier
-            else if (is_private) .private_identifier
-            else if (has_escape) self.getEscapedKeywordType(lexeme)
-            else self.getKeywordType(lexeme);
+        const tag: TokenTag = if (is_jsx_tag)
+            .jsx_identifier
+        else if (is_private)
+            .private_identifier
+        else if (has_escape)
+            self.getEscapedKeywordType(lexeme)
+        else
+            self.getKeywordType(lexeme);
 
         return self.createToken(tag, start, self.cursor);
     }
@@ -858,6 +959,7 @@ pub const Lexer = struct {
     /// determines keyword type for an identifier that contains unicode escapes.
     fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
         @branchHint(.cold);
+        std.debug.assert(lexeme.len > 0);
         var buf: [11]u8 = undefined; // max keyword length
         var out: usize = 0;
         var i: usize = 0;
@@ -879,200 +981,149 @@ pub const Lexer = struct {
         return self.getKeywordType(buf[0..out]);
     }
 
+    // keyword lookup dispatched first by length and then by the most discriminating byte.
+    // each candidate matches its full lexeme via `std.mem.eql`; the compiler folds the
+    // length check (the outer switch already pinned `lexeme.len`). the switch shape is
+    // preserved so dispatch stays a jump table
     fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
+        const eql = std.mem.eql;
         switch (lexeme.len) {
-            2 => {
-                switch (lexeme[1]) {
-                    'f' => {
-                        return switch (lexeme[0]) {
-                            'i' => .@"if",
-                            'o' => .of,
-                            else => .identifier,
-                        };
-                    },
-                    'n' => if (lexeme[0] == 'i') return .in,
-                    'o' => if (lexeme[0] == 'd') return .do,
-                    's' => {
-                        if (lexeme[0] == 'a') return .as;
-                        if (lexeme[0] == 'i') return .@"is";
-                    },
-                    else => {},
-                }
+            2 => switch (lexeme[1]) {
+                'f' => return switch (lexeme[0]) {
+                    'i' => .@"if",
+                    'o' => .of,
+                    else => .identifier,
+                },
+                'n' => if (lexeme[0] == 'i') return .in,
+                'o' => if (lexeme[0] == 'd') return .do,
+                's' => {
+                    if (lexeme[0] == 'a') return .as;
+                    if (lexeme[0] == 'i') return .is;
+                },
+                else => {},
             },
-            3 => {
-                switch (lexeme[0]) {
-                    'a' => if (lexeme[1] == 'n' and lexeme[2] == 'y') return .any,
-                    'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .@"for",
-                    'g' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .get,
-                    'l' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .let,
-                    'n' => if (lexeme[1] == 'e' and lexeme[2] == 'w') return .new,
-                    'o' => if (lexeme[1] == 'u' and lexeme[2] == 't') return .out,
-                    's' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .set,
-                    't' => if (lexeme[1] == 'r' and lexeme[2] == 'y') return .@"try",
-                    'v' => if (lexeme[1] == 'a' and lexeme[2] == 'r') return .@"var",
-                    else => {},
-                }
+            3 => switch (lexeme[0]) {
+                'a' => if (eql(u8, lexeme, "any")) return .any,
+                'f' => if (eql(u8, lexeme, "for")) return .@"for",
+                'g' => if (eql(u8, lexeme, "get")) return .get,
+                'l' => if (eql(u8, lexeme, "let")) return .let,
+                'n' => if (eql(u8, lexeme, "new")) return .new,
+                'o' => if (eql(u8, lexeme, "out")) return .out,
+                's' => if (eql(u8, lexeme, "set")) return .set,
+                't' => if (eql(u8, lexeme, "try")) return .@"try",
+                'v' => if (eql(u8, lexeme, "var")) return .@"var",
+                else => {},
             },
-            4 => {
-                switch (lexeme[1]) {
-                    'a' => if (lexeme[0] == 'c' and lexeme[2] == 's' and lexeme[3] == 'e') return .case,
-                    'h' => if (lexeme[0] == 't' and lexeme[2] == 'i' and lexeme[3] == 's') return .this,
-                    'l' => if (lexeme[0] == 'e' and lexeme[2] == 's' and lexeme[3] == 'e') return .@"else",
-                    'n' => if (lexeme[0] == 'e' and lexeme[2] == 'u' and lexeme[3] == 'm') return .@"enum",
-                    'o' => if (lexeme[0] == 'v' and lexeme[2] == 'i' and lexeme[3] == 'd') return .void,
-                    'i' => if (lexeme[0] == 'w' and lexeme[2] == 't' and lexeme[3] == 'h') return .with,
-                    'u' => if (lexeme[0] == 'n' and lexeme[2] == 'l' and lexeme[3] == 'l') return .null_literal,
-                    'y' => if (lexeme[0] == 't' and lexeme[2] == 'p' and lexeme[3] == 'e') return .type,
-                    'r' => {
-                        if (lexeme[0] == 't' and lexeme[2] == 'u' and lexeme[3] == 'e') return .true;
-                        if (lexeme[0] == 'f' and lexeme[2] == 'o' and lexeme[3] == 'm') return .from;
-                    },
-                    else => {},
-                }
+            4 => switch (lexeme[1]) {
+                'a' => if (eql(u8, lexeme, "case")) return .case,
+                'h' => if (eql(u8, lexeme, "this")) return .this,
+                'l' => if (eql(u8, lexeme, "else")) return .@"else",
+                'n' => if (eql(u8, lexeme, "enum")) return .@"enum",
+                'o' => if (eql(u8, lexeme, "void")) return .void,
+                'i' => if (eql(u8, lexeme, "with")) return .with,
+                'u' => if (eql(u8, lexeme, "null")) return .null_literal,
+                'y' => if (eql(u8, lexeme, "type")) return .type,
+                'r' => {
+                    if (eql(u8, lexeme, "true")) return .true;
+                    if (eql(u8, lexeme, "from")) return .from;
+                },
+                else => {},
             },
-            5 => {
-                switch (lexeme[0]) {
-                    'a' => {
-                        if (lexeme[1] == 'w' and lexeme[2] == 'a' and lexeme[3] == 'i' and lexeme[4] == 't')
-                            return .await;
-                        if (lexeme[1] == 's' and lexeme[2] == 'y' and lexeme[3] == 'n' and lexeme[4] == 'c')
-                            return .async;
-                    },
-                    'b' => if (lexeme[1] == 'r' and lexeme[2] == 'e' and lexeme[3] == 'a' and lexeme[4] == 'k')
-                        return .@"break",
-                    'c' => {
-                        if (lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 's' and lexeme[4] == 't')
-                            return .@"const";
-                        if (lexeme[1] == 'l' and lexeme[2] == 'a' and lexeme[3] == 's' and lexeme[4] == 's')
-                            return .class;
-                        if (lexeme[1] == 'a' and lexeme[2] == 't' and lexeme[3] == 'c' and lexeme[4] == 'h')
-                            return .@"catch";
-                    },
-                    'd' => if (lexeme[1] == 'e' and lexeme[2] == 'f' and lexeme[3] == 'e' and lexeme[4] == 'r')
-                        return .@"defer",
-                    'f' => if (lexeme[1] == 'a' and lexeme[2] == 'l' and lexeme[3] == 's' and lexeme[4] == 'e')
-                        return .false,
-                    'i' => if (lexeme[1] == 'n' and lexeme[2] == 'f' and lexeme[3] == 'e' and lexeme[4] == 'r')
-                        return .infer,
-                    'k' => if (lexeme[1] == 'e' and lexeme[2] == 'y' and lexeme[3] == 'o' and lexeme[4] == 'f')
-                        return .keyof,
-                    'n' => if (lexeme[1] == 'e' and lexeme[2] == 'v' and lexeme[3] == 'e' and lexeme[4] == 'r')
-                        return .never,
-                    's' => if (lexeme[1] == 'u' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'r')
-                        return .super,
-                    't' => if (lexeme[1] == 'h' and lexeme[2] == 'r' and lexeme[3] == 'o' and lexeme[4] == 'w')
-                        return .throw,
-                    'u' => if (lexeme[1] == 's' and lexeme[2] == 'i' and lexeme[3] == 'n' and lexeme[4] == 'g')
-                        return .using,
-                    'w' => if (lexeme[1] == 'h' and lexeme[2] == 'i' and lexeme[3] == 'l' and lexeme[4] == 'e')
-                        return .@"while",
-                    'y' => if (lexeme[1] == 'i' and lexeme[2] == 'e' and lexeme[3] == 'l' and lexeme[4] == 'd')
-                        return .yield,
-                    else => {},
-                }
+            5 => switch (lexeme[0]) {
+                'a' => {
+                    if (eql(u8, lexeme, "await")) return .await;
+                    if (eql(u8, lexeme, "async")) return .async;
+                },
+                'b' => if (eql(u8, lexeme, "break")) return .@"break",
+                'c' => {
+                    if (eql(u8, lexeme, "const")) return .@"const";
+                    if (eql(u8, lexeme, "class")) return .class;
+                    if (eql(u8, lexeme, "catch")) return .@"catch";
+                },
+                'd' => if (eql(u8, lexeme, "defer")) return .@"defer",
+                'f' => if (eql(u8, lexeme, "false")) return .false,
+                'i' => if (eql(u8, lexeme, "infer")) return .infer,
+                'k' => if (eql(u8, lexeme, "keyof")) return .keyof,
+                'n' => if (eql(u8, lexeme, "never")) return .never,
+                's' => if (eql(u8, lexeme, "super")) return .super,
+                't' => if (eql(u8, lexeme, "throw")) return .throw,
+                'u' => if (eql(u8, lexeme, "using")) return .using,
+                'w' => if (eql(u8, lexeme, "while")) return .@"while",
+                'y' => if (eql(u8, lexeme, "yield")) return .yield,
+                else => {},
             },
-            6 => {
-                switch (lexeme[0]) {
-                    'a' => if (lexeme[1] == 's' and lexeme[2] == 's' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 't')
-                        return .assert,
-                    'b' => if (lexeme[1] == 'i' and lexeme[2] == 'g' and lexeme[3] == 'i' and lexeme[4] == 'n' and lexeme[5] == 't')
-                        return .bigint,
-                    'd' => if (lexeme[1] == 'e' and lexeme[2] == 'l' and lexeme[3] == 'e' and lexeme[4] == 't' and lexeme[5] == 'e')
-                        return .delete,
-                    'e' => if (lexeme[1] == 'x' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
-                        return .@"export",
-                    'g' => if (lexeme[1] == 'l' and lexeme[2] == 'o' and lexeme[3] == 'b' and lexeme[4] == 'a' and lexeme[5] == 'l')
-                        return .global,
-                    'i' => if (lexeme[1] == 'm' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
-                        return .import,
-                    'm' => if (lexeme[1] == 'o' and lexeme[2] == 'd' and lexeme[3] == 'u' and lexeme[4] == 'l' and lexeme[5] == 'e')
-                        return .module,
-                    'n' => if (lexeme[1] == 'u' and lexeme[2] == 'm' and lexeme[3] == 'b' and lexeme[4] == 'e' and lexeme[5] == 'r')
-                        return .number,
-                    'o' => if (lexeme[1] == 'b' and lexeme[2] == 'j' and lexeme[3] == 'e' and lexeme[4] == 'c' and lexeme[5] == 't')
-                        return .object,
-                    'p' => if (lexeme[1] == 'u' and lexeme[2] == 'b' and lexeme[3] == 'l' and lexeme[4] == 'i' and lexeme[5] == 'c')
-                        return .public,
-                    'r' => if (lexeme[1] == 'e' and lexeme[2] == 't' and lexeme[3] == 'u' and lexeme[4] == 'r' and lexeme[5] == 'n')
-                        return .@"return",
-                    's' => {
-                        if (lexeme[1] == 't' and lexeme[2] == 'r' and lexeme[3] == 'i' and lexeme[4] == 'n' and lexeme[5] == 'g')
-                            return .string;
-                        if (lexeme[1] == 'y' and lexeme[2] == 'm' and lexeme[3] == 'b' and lexeme[4] == 'o' and lexeme[5] == 'l')
-                            return .symbol;
-                        if (lexeme[1] == 'w' and lexeme[2] == 'i' and lexeme[3] == 't' and lexeme[4] == 'c' and lexeme[5] == 'h')
-                            return .@"switch";
-                        if (lexeme[1] == 't' and lexeme[2] == 'a' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'c')
-                            return .static;
-                        if (lexeme[1] == 'o' and lexeme[2] == 'u' and lexeme[3] == 'r' and lexeme[4] == 'c' and lexeme[5] == 'e')
-                            return .source;
-                    },
-                    't' => if (lexeme[1] == 'y' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'o' and lexeme[5] == 'f')
-                        return .typeof,
-                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'i' and lexeme[3] == 'q' and lexeme[4] == 'u' and lexeme[5] == 'e')
-                        return .unique,
-                    else => {},
-                }
+            6 => switch (lexeme[0]) {
+                'a' => if (eql(u8, lexeme, "assert")) return .assert,
+                'b' => if (eql(u8, lexeme, "bigint")) return .bigint,
+                'd' => if (eql(u8, lexeme, "delete")) return .delete,
+                'e' => if (eql(u8, lexeme, "export")) return .@"export",
+                'g' => if (eql(u8, lexeme, "global")) return .global,
+                'i' => if (eql(u8, lexeme, "import")) return .import,
+                'm' => if (eql(u8, lexeme, "module")) return .module,
+                'n' => if (eql(u8, lexeme, "number")) return .number,
+                'o' => if (eql(u8, lexeme, "object")) return .object,
+                'p' => if (eql(u8, lexeme, "public")) return .public,
+                'r' => if (eql(u8, lexeme, "return")) return .@"return",
+                's' => {
+                    if (eql(u8, lexeme, "string")) return .string;
+                    if (eql(u8, lexeme, "symbol")) return .symbol;
+                    if (eql(u8, lexeme, "switch")) return .@"switch";
+                    if (eql(u8, lexeme, "static")) return .static;
+                    if (eql(u8, lexeme, "source")) return .source;
+                },
+                't' => if (eql(u8, lexeme, "typeof")) return .typeof,
+                'u' => if (eql(u8, lexeme, "unique")) return .unique,
+                else => {},
             },
-            7 => {
-                switch (lexeme[0]) {
-                    'a' => if (lexeme[1] == 's' and lexeme[2] == 's' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 't' and lexeme[6] == 's') return .asserts,
-                    'b' => if (lexeme[1] == 'o' and lexeme[2] == 'o' and lexeme[3] == 'l' and lexeme[4] == 'e' and lexeme[5] == 'a' and lexeme[6] == 'n') return .boolean,
-                    'd' => {
-                        if (lexeme[1] == 'e') {
-                            if (lexeme[2] == 'f' and lexeme[3] == 'a' and lexeme[4] == 'u' and lexeme[5] == 'l' and lexeme[6] == 't') return .default;
-                            if (lexeme[2] == 'c' and lexeme[3] == 'l' and lexeme[4] == 'a' and lexeme[5] == 'r' and lexeme[6] == 'e') return .declare;
-                        }
-                    },
-                    'e' => if (lexeme[1] == 'x' and lexeme[2] == 't' and lexeme[3] == 'e' and lexeme[4] == 'n' and lexeme[5] == 'd' and lexeme[6] == 's') return .extends,
-                    'f' => if (lexeme[1] == 'i' and lexeme[2] == 'n' and lexeme[3] == 'a' and lexeme[4] == 'l' and lexeme[5] == 'l' and lexeme[6] == 'y') return .finally,
-                    'p' => {
-                        if (lexeme[1] == 'r' and lexeme[2] == 'i' and lexeme[3] == 'v' and lexeme[4] == 'a' and lexeme[5] == 't' and lexeme[6] == 'e') return .private;
-                        if (lexeme[1] == 'a' and lexeme[2] == 'c' and lexeme[3] == 'k' and lexeme[4] == 'a' and lexeme[5] == 'g' and lexeme[6] == 'e') return .package;
-                    },
-                    'r' => if (lexeme[1] == 'e' and lexeme[2] == 'q' and lexeme[3] == 'u' and lexeme[4] == 'i' and lexeme[5] == 'r' and lexeme[6] == 'e') return .require,
-                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'k' and lexeme[3] == 'n' and lexeme[4] == 'o' and lexeme[5] == 'w' and lexeme[6] == 'n') return .unknown,
-                    else => {},
-                }
+            7 => switch (lexeme[0]) {
+                'a' => if (eql(u8, lexeme, "asserts")) return .asserts,
+                'b' => if (eql(u8, lexeme, "boolean")) return .boolean,
+                'd' => {
+                    if (eql(u8, lexeme, "default")) return .default;
+                    if (eql(u8, lexeme, "declare")) return .declare;
+                },
+                'e' => if (eql(u8, lexeme, "extends")) return .extends,
+                'f' => if (eql(u8, lexeme, "finally")) return .finally,
+                'p' => {
+                    if (eql(u8, lexeme, "private")) return .private;
+                    if (eql(u8, lexeme, "package")) return .package;
+                },
+                'r' => if (eql(u8, lexeme, "require")) return .require,
+                'u' => if (eql(u8, lexeme, "unknown")) return .unknown,
+                else => {},
             },
-            8 => {
-                switch (lexeme[0]) {
-                    'a' => {
-                        if (lexeme[1] == 'c' and lexeme[2] == 'c' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 's' and lexeme[6] == 'o' and lexeme[7] == 'r') return .accessor;
-                        if (lexeme[1] == 'b' and lexeme[2] == 's' and lexeme[3] == 't' and lexeme[4] == 'r' and lexeme[5] == 'a' and lexeme[6] == 'c' and lexeme[7] == 't') return .abstract;
-                    },
-                    'c' => if (lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'n' and lexeme[6] == 'u' and lexeme[7] == 'e') return .@"continue",
-                    'd' => if (lexeme[1] == 'e' and lexeme[2] == 'b' and lexeme[3] == 'u' and lexeme[4] == 'g' and lexeme[5] == 'g' and lexeme[6] == 'e' and lexeme[7] == 'r') return .debugger,
-                    'f' => if (lexeme[1] == 'u' and lexeme[2] == 'n' and lexeme[3] == 'c' and lexeme[4] == 't' and lexeme[5] == 'i' and lexeme[6] == 'o' and lexeme[7] == 'n') return .function,
-                    'o' => if (lexeme[1] == 'v' and lexeme[2] == 'e' and lexeme[3] == 'r' and lexeme[4] == 'r' and lexeme[5] == 'i' and lexeme[6] == 'd' and lexeme[7] == 'e') return .override,
-                    'r' => if (lexeme[1] == 'e' and lexeme[2] == 'a' and lexeme[3] == 'd' and lexeme[4] == 'o' and lexeme[5] == 'n' and lexeme[6] == 'l' and lexeme[7] == 'y') return .readonly,
-                    else => {},
-                }
+            8 => switch (lexeme[0]) {
+                'a' => {
+                    if (eql(u8, lexeme, "accessor")) return .accessor;
+                    if (eql(u8, lexeme, "abstract")) return .abstract;
+                },
+                'c' => if (eql(u8, lexeme, "continue")) return .@"continue",
+                'd' => if (eql(u8, lexeme, "debugger")) return .debugger,
+                'f' => if (eql(u8, lexeme, "function")) return .function,
+                'o' => if (eql(u8, lexeme, "override")) return .override,
+                'r' => if (eql(u8, lexeme, "readonly")) return .readonly,
+                else => {},
             },
-            9 => {
-                switch (lexeme[0]) {
-                    'i' => {
-                        if (lexeme[1] == 'n' and lexeme[2] == 't' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 'f' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .interface;
-                        if (lexeme[1] == 'n' and lexeme[2] == 't' and lexeme[3] == 'r' and lexeme[4] == 'i' and lexeme[5] == 'n' and lexeme[6] == 's' and lexeme[7] == 'i' and lexeme[8] == 'c') return .intrinsic;
-                    },
-                    'n' => if (lexeme[1] == 'a' and lexeme[2] == 'm' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 'p' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .namespace,
-                    'p' => if (lexeme[1] == 'r' and lexeme[2] == 'o' and lexeme[3] == 't' and lexeme[4] == 'e' and lexeme[5] == 'c' and lexeme[6] == 't' and lexeme[7] == 'e' and lexeme[8] == 'd') return .protected,
-                    's' => if (lexeme[1] == 'a' and lexeme[2] == 't' and lexeme[3] == 'i' and lexeme[4] == 's' and lexeme[5] == 'f' and lexeme[6] == 'i' and lexeme[7] == 'e' and lexeme[8] == 's') return .satisfies,
-                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'd' and lexeme[3] == 'e' and lexeme[4] == 'f' and lexeme[5] == 'i' and lexeme[6] == 'n' and lexeme[7] == 'e' and lexeme[8] == 'd') return .@"undefined",
-                    else => {},
-                }
+            9 => switch (lexeme[0]) {
+                'i' => {
+                    if (eql(u8, lexeme, "interface")) return .interface;
+                    if (eql(u8, lexeme, "intrinsic")) return .intrinsic;
+                },
+                'n' => if (eql(u8, lexeme, "namespace")) return .namespace,
+                'p' => if (eql(u8, lexeme, "protected")) return .protected,
+                's' => if (eql(u8, lexeme, "satisfies")) return .satisfies,
+                'u' => if (eql(u8, lexeme, "undefined")) return .undefined,
+                else => {},
             },
-            10 => {
-                switch (lexeme[0]) {
-                    'i' => {
-                        if (lexeme[1] == 'n' and lexeme[2] == 's' and lexeme[3] == 't' and lexeme[4] == 'a' and lexeme[5] == 'n' and lexeme[6] == 'c' and lexeme[7] == 'e' and lexeme[8] == 'o' and lexeme[9] == 'f') return .instanceof;
-                        if (lexeme[1] == 'm' and lexeme[2] == 'p' and lexeme[3] == 'l' and lexeme[4] == 'e' and lexeme[5] == 'm' and lexeme[6] == 'e' and lexeme[7] == 'n' and lexeme[8] == 't' and lexeme[9] == 's') return .implements;
-                    },
-                    else => {},
-                }
+            10 => switch (lexeme[0]) {
+                'i' => {
+                    if (eql(u8, lexeme, "instanceof")) return .instanceof;
+                    if (eql(u8, lexeme, "implements")) return .implements;
+                },
+                else => {},
             },
             11 => {
-                if (lexeme[0] == 'c' and lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 's' and lexeme[4] == 't' and lexeme[5] == 'r' and lexeme[6] == 'u' and lexeme[7] == 'c' and lexeme[8] == 't' and lexeme[9] == 'o' and lexeme[10] == 'r') return .constructor;
+                if (eql(u8, lexeme, "constructor")) return .constructor;
             },
             else => {},
         }
@@ -1080,6 +1131,11 @@ pub const Lexer = struct {
     }
 
     fn scanNumber(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+        // dispatched from nextToken or scanDot, both gate on a digit (or `.<digit>`)
+        const lead = self.source[self.cursor];
+        std.debug.assert(lead == '.' or std.ascii.isDigit(lead));
+
         const start = self.cursor;
         var tag: TokenTag = .numeric_literal;
         var has_decimal_or_exponent = false;
@@ -1154,12 +1210,17 @@ pub const Lexer = struct {
 
         const c = self.peek(0);
         if (ident_start_table_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
+        std.debug.assert(self.cursor > start);
         return self.createToken(tag, start, self.cursor);
     }
 
     inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
-        // separator cannot start a digit sequence
-        if (self.cursor < self.source.len and self.source[self.cursor] == '_') return error.NumericSeparatorMisuse;
+        std.debug.assert(self.cursor <= self.source.len);
+
+        // a separator cannot start a digit sequence
+        if (self.cursor < self.source.len and self.source[self.cursor] == '_') {
+            return error.NumericSeparatorMisuse;
+        }
 
         var last_was_separator = false;
 
@@ -1207,6 +1268,9 @@ pub const Lexer = struct {
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == 'e' or self.source[self.cursor] == 'E');
+
         self.cursor += 1; // skip 'e' or 'E'
 
         // handle optional sign: + or -
@@ -1241,10 +1305,14 @@ pub const Lexer = struct {
     };
 
     inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
-        var can_be_html_close_comment = self.cursor == 0 or self.hasTokenFlag(.line_terminator_before);
+        std.debug.assert(self.cursor <= self.source.len);
+
+        var can_be_html_close_comment =
+            self.cursor == 0 or self.hasTokenFlag(.line_terminator_before);
 
         const src = self.source;
         var pos = self.cursor;
+        const entry_pos = pos;
 
         while (pos < src.len) {
             switch (ws_class[src[pos]]) {
@@ -1260,7 +1328,9 @@ pub const Lexer = struct {
                         '/' => try self.scanLineComment(),
                         '*' => {
                             try self.scanBlockComment();
-                            if (self.hasTokenFlag(.line_terminator_before)) can_be_html_close_comment = true;
+                            if (self.hasTokenFlag(.line_terminator_before)) {
+                                can_be_html_close_comment = true;
+                            }
                         },
                         else => break,
                     }
@@ -1276,8 +1346,11 @@ pub const Lexer = struct {
                 },
                 5 => {
                     // html-style `-->` only valid at line start in script mode
-                    if (self.source_type != .script or !can_be_html_close_comment or pos + 2 >= src.len or
-                        src[pos + 1] != '-' or src[pos + 2] != '>') break;
+                    if (self.source_type != .script or
+                        !can_be_html_close_comment or
+                        pos + 2 >= src.len or
+                        src[pos + 1] != '-' or
+                        src[pos + 2] != '>') break;
                     self.cursor = pos;
                     try self.scanHtmlCloseComment();
                     pos = self.cursor;
@@ -1300,10 +1373,19 @@ pub const Lexer = struct {
             }
         }
 
+        std.debug.assert(pos >= entry_pos);
+        std.debug.assert(pos <= src.len);
         self.cursor = pos;
     }
 
-    inline fn recordComment(self: *Lexer, @"type": ast.Comment.Type, start: u32, end: u32) LexicalError!void {
+    inline fn recordComment(
+        self: *Lexer,
+        @"type": ast.Comment.Type,
+        start: u32,
+        end: u32,
+    ) LexicalError!void {
+        std.debug.assert(start < end);
+        std.debug.assert(end <= self.source.len);
         if (!self.attach_comments) return;
         // delimiter widths: `//` `/*` are 2, `<!--` is 4, `-->` is 3 (no tail)
         const head: u32 = switch (self.source[start]) {
@@ -1320,6 +1402,9 @@ pub const Lexer = struct {
     }
 
     fn scanLineComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor + 1 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '/');
+        std.debug.assert(self.source[self.cursor + 1] == '/');
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
@@ -1334,6 +1419,9 @@ pub const Lexer = struct {
     }
 
     fn scanBlockComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor + 1 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '/');
+        std.debug.assert(self.source[self.cursor + 1] == '*');
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
@@ -1368,6 +1456,10 @@ pub const Lexer = struct {
     }
 
     fn scanHtmlComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.source_type == .script);
+        std.debug.assert(self.cursor + 3 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '<');
+        std.debug.assert(self.source[self.cursor + 1] == '!');
         const start = self.cursor;
         const src = self.source;
         self.cursor += 4;
@@ -1384,6 +1476,11 @@ pub const Lexer = struct {
     }
 
     fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.source_type == .script);
+        std.debug.assert(self.cursor + 2 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '-');
+        std.debug.assert(self.source[self.cursor + 1] == '-');
+        std.debug.assert(self.source[self.cursor + 2] == '>');
         const start = self.cursor;
         self.cursor += 3;
         while (self.cursor < self.source.len) : (self.cursor += 1) {
@@ -1393,6 +1490,8 @@ pub const Lexer = struct {
     }
 
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {
+        std.debug.assert(start <= end);
+        std.debug.assert(end <= self.source.len);
         return .{
             .tag = tag,
             .span = .{ .start = start, .end = end },
@@ -1408,11 +1507,13 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.UnterminatedRegex => "Unterminated regular expression",
         error.NonTerminatedTemplateLiteral => "Unterminated template literal",
         error.UnterminatedRegexLiteral => "Unterminated regular expression literal",
-        error.InvalidRegexLineTerminator => "Line terminator not allowed in regular expression literal",
+        error.InvalidRegexLineTerminator => "Line terminator not allowed in regular expression" ++
+            " literal",
         error.InvalidRegex => "Invalid regular expression",
         error.InvalidRegexFlag => "Invalid regular expression flag",
         error.DuplicateRegexFlag => "Duplicate regular expression flag",
-        error.IncompatibleRegexFlags => "The 'u' and 'v' regular expression flags cannot be used together",
+        error.IncompatibleRegexFlags => "The 'u' and 'v' regular expression flags cannot be" ++
+            " used together",
         error.InvalidIdentifierStart => "Invalid character at start of identifier",
         error.InvalidIdentifierContinue => "Invalid character in identifier",
         error.UnterminatedMultiLineComment => "Unterminated multi-line comment",
@@ -1422,15 +1523,20 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.InvalidBinaryLiteral => "Binary literal must contain at least one binary digit",
         error.InvalidHexLiteral => "Hexadecimal literal must contain at least one hex digit",
         error.InvalidExponentPart => "Exponent part is missing a number",
-        error.NumericSeparatorMisuse => "Numeric separator cannot appear at the end of a numeric literal",
-        error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive separators",
+        error.NumericSeparatorMisuse => "Numeric separator cannot appear at the end of a" ++
+            " numeric literal",
+        error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive" ++
+            " separators",
         error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
         error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
-        error.IdentifierAfterNumericLiteral => "Identifier cannot immediately follow a numeric literal",
+        error.IdentifierAfterNumericLiteral => "Identifier cannot immediately follow a" ++
+            " numeric literal",
         error.InvalidUtf8 => "Invalid UTF-8 byte sequence",
         error.OutOfMemory => "Out of memory",
-        error.JsxIdentifierCannotContainEscapes => "JSX tag names cannot contain escape sequences",
-        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names cannot start with a backslash",
+        error.JsxIdentifierCannotContainEscapes => "JSX tag names cannot contain escape" ++
+            " sequences",
+        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names cannot start with a" ++
+            " backslash",
     };
 }
 
@@ -1439,30 +1545,53 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.InvalidHexEscape => "Try adding two hexadecimal digits here (e.g., \\x41 for 'A')",
         error.UnterminatedString => "Try adding a closing quote here to complete the string",
         error.UnterminatedRegex => "Try adding a closing slash (/) here to complete the regex",
-        error.NonTerminatedTemplateLiteral => "Try adding a closing backtick (`) here to complete the template",
-        error.UnterminatedRegexLiteral => "Try adding a closing slash (/) here, optionally followed by flags (g, i, m, etc.)",
-        error.InvalidRegexLineTerminator => "Try removing the line break here or escaping it within the regex pattern",
-        error.InvalidRegex => "Try checking the regex syntax here for unclosed groups, invalid escapes, or malformed patterns",
-        error.InvalidRegexFlag => "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)",
+        error.NonTerminatedTemplateLiteral => "Try adding a closing backtick (`) here to" ++
+            " complete the template",
+        error.UnterminatedRegexLiteral => "Try adding a closing slash (/) here, optionally" ++
+            " followed by flags (g, i, m, etc.)",
+        error.InvalidRegexLineTerminator => "Try removing the line break here or escaping" ++
+            " it within the regex pattern",
+        error.InvalidRegex => "Try checking the regex syntax here for unclosed groups," ++
+            " invalid escapes, or malformed patterns",
+        error.InvalidRegexFlag => "Valid regex flags are: `g` (global), `i` (ignoreCase)," ++
+            " `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices)," ++
+            " `v` (setNotation)",
         error.DuplicateRegexFlag => "Remove the duplicate flag; each flag can only appear once",
-        error.IncompatibleRegexFlags => "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other",
-        error.InvalidIdentifierStart => "Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)",
-        error.InvalidIdentifierContinue => "Try using a valid identifier character here (letters, digits, underscore, or dollar sign)",
-        error.UnterminatedMultiLineComment => "Try adding the closing delimiter (*/) here to complete the comment",
-        error.InvalidUnicodeEscape => "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH} (1-6 hex digits) here",
-        error.InvalidOctalEscape => "Try using a valid octal sequence here (\\0-7, \\00-77, or \\000-377)",
-        error.InvalidOctalLiteralDigit => "Try adding at least one octal digit (0-7) here after '0o'",
-        error.InvalidBinaryLiteral => "Try adding at least one binary digit (0 or 1) here after '0b'",
-        error.InvalidHexLiteral => "Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'",
-        error.InvalidExponentPart => "Try adding digits here after the exponent (e.g., e10, e-5, E+2)",
-        error.NumericSeparatorMisuse => "Try removing the trailing underscore here or adding more digits after it",
-        error.ConsecutiveNumericSeparators => "Try removing one of the consecutive underscores here",
+        error.IncompatibleRegexFlags => "The 'u' (unicode) and 'v' (unicodeSets) flags are" ++
+            " mutually exclusive; use one or the other",
+        error.InvalidIdentifierStart => "Try starting the identifier here with a letter" ++
+            " (a-z, A-Z), underscore (_), or dollar sign ($)",
+        error.InvalidIdentifierContinue => "Try using a valid identifier character here" ++
+            " (letters, digits, underscore, or dollar sign)",
+        error.UnterminatedMultiLineComment => "Try adding the closing delimiter (*/) here" ++
+            " to complete the comment",
+        error.InvalidUnicodeEscape => "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH}" ++
+            " (1-6 hex digits) here",
+        error.InvalidOctalEscape => "Try using a valid octal sequence here (\\0-7, \\00-77," ++
+            " or \\000-377)",
+        error.InvalidOctalLiteralDigit => "Try adding at least one octal digit (0-7) here" ++
+            " after '0o'",
+        error.InvalidBinaryLiteral => "Try adding at least one binary digit (0 or 1) here" ++
+            " after '0b'",
+        error.InvalidHexLiteral => "Try adding at least one hex digit (0-9, a-f, A-F) here" ++
+            " after '0x'",
+        error.InvalidExponentPart => "Try adding digits here after the exponent" ++
+            " (e.g., e10, e-5, E+2)",
+        error.NumericSeparatorMisuse => "Try removing the trailing underscore here or" ++
+            " adding more digits after it",
+        error.ConsecutiveNumericSeparators => "Try removing one of the consecutive underscores" ++
+            " here",
         error.MultipleDecimalPoints => "Try removing the extra decimal point here",
-        error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal point/exponent from the number",
-        error.IdentifierAfterNumericLiteral => "Try adding whitespace here between the number and identifier",
-        error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the file is saved with valid UTF-8 encoding",
+        error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal" ++
+            " point/exponent from the number",
+        error.IdentifierAfterNumericLiteral => "Try adding whitespace here between the number" ++
+            " and identifier",
+        error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the" ++
+            " file is saved with valid UTF-8 encoding",
         error.OutOfMemory => "The system ran out of memory while parsing",
-        error.JsxIdentifierCannotContainEscapes => "Remove the escape sequence and use the literal character instead",
-        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names must be plain identifiers without escape sequences",
+        error.JsxIdentifierCannotContainEscapes => "Remove the escape sequence and use the" ++
+            " literal character instead",
+        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names must be plain" ++
+            " identifiers without escape sequences",
     };
 }

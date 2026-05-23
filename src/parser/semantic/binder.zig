@@ -338,11 +338,14 @@ pub const SymbolTable = struct {
 
     /// Returns the symbol for the given id.
     pub inline fn getSymbol(self: SymbolTable, id: SymbolId) Symbol {
+        std.debug.assert(id != .none);
+        std.debug.assert(@intFromEnum(id) < self.symbols.len);
         return self.symbols[@intFromEnum(id)];
     }
 
     /// Returns the reference for the given id.
     pub inline fn getReference(self: SymbolTable, id: ReferenceId) Reference {
+        std.debug.assert(@intFromEnum(id) < self.references.len);
         return self.references[@intFromEnum(id)];
     }
 
@@ -365,25 +368,35 @@ pub const SymbolTable = struct {
     /// Iterator over symbol ids declared directly in `scope` (excluding
     /// hoisted vars passing through).
     pub fn scopeSymbols(self: SymbolTable, scope: sc.ScopeId) ScopeMap.ValueIterator {
+        std.debug.assert(scope != .none);
+        std.debug.assert(@intFromEnum(scope) < self.scope_maps.len);
         return self.scope_maps[@intFromEnum(scope)].valueIterator();
     }
 
     /// Looks up `name` declared directly in `scope`. Returns `null` if
     /// not found.
     pub fn findInScope(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+        std.debug.assert(scope != .none);
+        std.debug.assert(@intFromEnum(scope) < self.scope_maps.len);
         return self.scope_maps[@intFromEnum(scope)].get(name);
     }
 
     /// Like `findInScope`, but also matches a hoisting `var` passing
     /// through `scope` on its way to its target.
     pub fn findInScopeOrHoisted(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+        std.debug.assert(scope != .none);
         return self.findInScope(scope, name) orelse
             self.hoisting_variables[@intFromEnum(scope)].get(name);
     }
 
     /// Walks up the scope chain from `scope` to find the nearest binding
     /// of `name`, including hoisted vars in any visited scope.
-    pub fn resolve(self: SymbolTable, scope_tree: sc.ScopeTree, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+    pub fn resolve(
+        self: SymbolTable,
+        scope_tree: sc.ScopeTree,
+        scope: sc.ScopeId,
+        name: []const u8,
+    ) ?SymbolId {
         var it = scope_tree.ancestors(scope);
         while (it.next()) |ancestor| {
             if (self.findInScopeOrHoisted(ancestor, name)) |id| return id;
@@ -399,6 +412,10 @@ pub const SymbolTable = struct {
     ///   - `iterUnresolved()` walks references that did not resolve.
     /// `symbolDecls` is available without calling `resolveAll`.
     pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) Allocator.Error!void {
+        // single-shot, must not have run before
+        std.debug.assert(self.resolutions.len == 0);
+        std.debug.assert(self.symbol_refs.len == 0);
+
         const allocator = self.allocator;
         const ref_count: u32 = @intCast(self.references.len);
         const sym_count: u32 = @intCast(self.symbols.len);
@@ -453,6 +470,9 @@ pub const SymbolTable = struct {
         self.symbol_refs = symbol_refs;
         self.symbol_ref_ranges = ranges;
         self.unresolved_refs = unresolved;
+
+        // every reference accounted for: either resolved or in `unresolved`
+        std.debug.assert(self.unresolved_refs.len + offset == ref_count);
     }
 
     /// The symbol a reference resolves to, or `.none` if the reference
@@ -465,7 +485,10 @@ pub const SymbolTable = struct {
 
     /// Every declaration site of `id`, in declaration order.
     pub fn symbolDecls(self: SymbolTable, id: SymbolId) []const ast.NodeIndex {
+        std.debug.assert(id != .none);
+        std.debug.assert(@intFromEnum(id) < self.symbols.len);
         const range = self.symbols[@intFromEnum(id)].decls;
+        std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
         return self.decl_nodes[range.start..][0..range.len];
     }
 
@@ -550,6 +573,8 @@ pub const SymbolTracker = struct {
     };
 
     pub fn init(tree: *ast.Tree) Allocator.Error!SymbolTracker {
+        std.debug.assert(tree.root != .null);
+
         const alloc = tree.allocator();
         var self = SymbolTracker{ .tree = tree, .allocator = alloc };
 
@@ -567,7 +592,11 @@ pub const SymbolTracker = struct {
     /// Called from `Ctx.enter` for every node so parent declaration
     /// nodes can configure flags, excludes, target scope, and export
     /// state before the child binding identifier fires.
-    pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
+    pub fn setBindingContext(
+        self: *SymbolTracker,
+        data: ast.NodeData,
+        scope: *const sc.ScopeTracker,
+    ) Allocator.Error!void {
         switch (data) {
             .export_named_declaration => |decl| {
                 // declaration form (`export type X = Y`, `export const x = 1`,
@@ -612,14 +641,21 @@ pub const SymbolTracker = struct {
                     func.type == .ts_declare_function or
                     func.type == .ts_empty_body_function_expression;
                 self.binding_flags = .{ .function = true, .ambient = ambient };
-                const is_decl = func.type == .function_declaration or func.type == .ts_declare_function;
+                const is_decl = func.type == .function_declaration or
+                    func.type == .ts_declare_function;
                 self.target = if (is_decl) scope.currentScope().parent else exprNameScope(scope);
 
                 // ts overloads, sloppy js annex b 3.2, and global merge
                 // with var. lexical scopes (block/module) are not.
                 const k = scope.getScope(self.target).kind;
-                const allow_overload = self.tree.isTs() or k == .function or k == .global or k == .static_block;
-                self.binding_excludes = if (allow_overload) Symbol.Excludes.function else Symbol.Excludes.block_var;
+                const allow_overload = self.tree.isTs() or
+                    k == .function or
+                    k == .global or
+                    k == .static_block;
+                self.binding_excludes = if (allow_overload)
+                    Symbol.Excludes.function
+                else
+                    Symbol.Excludes.block_var;
 
                 // expression names are local
                 if (!is_decl) self.export_state = .none;
@@ -772,7 +808,13 @@ pub const SymbolTracker = struct {
                 // real declarations here.
                 if (in_type_position and !self.binding_flags.type_parameter) return;
 
-                const sym_id = try self.declare(id.name, self.binding_flags, self.binding_excludes, self.target, index);
+                const sym_id = try self.declare(
+                    id.name,
+                    self.binding_flags,
+                    self.binding_excludes,
+                    self.target,
+                    index,
+                );
 
                 // register the hoisting var in each block it passes
                 // through so block-scoped redeclarations see it
@@ -780,7 +822,8 @@ pub const SymbolTracker = struct {
                     var iter = scope.ancestors(scope.currentScopeId());
                     while (iter.next()) |s| {
                         if (s == self.target) break;
-                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, self.tree.string(id.name));
+                        const table = &self.hoisting_variables.items[@intFromEnum(s)];
+                        const gop = try table.getOrPut(self.allocator, self.tree.string(id.name));
                         if (!gop.found_existing) gop.value_ptr.* = sym_id;
                     }
                 }
@@ -816,7 +859,12 @@ pub const SymbolTracker = struct {
                     const id = self.tree.data(root_idx).jsx_identifier;
                     const text = self.tree.string(id.name);
                     if (text.len > 0 and text[0] >= 'A' and text[0] <= 'Z') {
-                        _ = try self.addReference(id.name, scope.currentScopeId(), root_idx, .value);
+                        _ = try self.addReference(
+                            id.name,
+                            scope.currentScopeId(),
+                            root_idx,
+                            .value,
+                        );
                     }
                 }
             },
@@ -879,6 +927,10 @@ pub const SymbolTracker = struct {
         target: sc.ScopeId,
         node: ast.NodeIndex,
     ) Allocator.Error!SymbolId {
+        std.debug.assert(target != .none);
+        std.debug.assert(@intFromEnum(target) < self.scope_maps.items.len);
+        std.debug.assert(node != .null);
+
         const name_str = self.tree.string(name);
         const target_idx = @intFromEnum(target);
 
@@ -915,6 +967,10 @@ pub const SymbolTracker = struct {
         node: ast.NodeIndex,
         kind: Reference.Kind,
     ) Allocator.Error!ReferenceId {
+        std.debug.assert(scope != .none);
+        std.debug.assert(node != .null);
+        std.debug.assert(self.references.items.len < std.math.maxInt(u32));
+
         const id: ReferenceId = @enumFromInt(@as(u32, @intCast(self.references.items.len)));
         try self.references.append(self.allocator, .{
             .name = name,
@@ -931,6 +987,9 @@ pub const SymbolTracker = struct {
         flags: Symbol.Flags,
         target: sc.ScopeId,
     ) Allocator.Error!SymbolId {
+        std.debug.assert(target != .none);
+        std.debug.assert(self.symbols.items.len < std.math.maxInt(u32));
+
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
         var stored = flags;
         stored.exported = self.export_state != .none;
@@ -961,6 +1020,8 @@ pub const SymbolTracker = struct {
 
     /// Returns the symbol for the given id.
     pub inline fn getSymbol(self: *const SymbolTracker, id: SymbolId) Symbol {
+        std.debug.assert(id != .none);
+        std.debug.assert(@intFromEnum(id) < self.symbols.items.len);
         return self.symbols.items[@intFromEnum(id)];
     }
 
@@ -975,6 +1036,8 @@ pub const SymbolTracker = struct {
 
     /// Iterator over symbol ids declared directly in `scope`.
     pub fn scopeSymbols(self: *const SymbolTracker, scope: sc.ScopeId) ScopeMap.ValueIterator {
+        std.debug.assert(scope != .none);
+        std.debug.assert(@intFromEnum(scope) < self.scope_maps.items.len);
         return self.scope_maps.items[@intFromEnum(scope)].valueIterator();
     }
 
@@ -988,10 +1051,16 @@ pub const SymbolTracker = struct {
 
     /// Like `findInScope`, but also matches a hoisting `var` passing
     /// through `scope` on its way to its target.
-    pub fn findInScopeOrHoisted(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+    pub fn findInScopeOrHoisted(
+        self: *const SymbolTracker,
+        scope: sc.ScopeId,
+        name: []const u8,
+    ) ?SymbolId {
         if (self.findInScope(scope, name)) |id| return id;
         const idx = @intFromEnum(scope);
-        if (idx < self.hoisting_variables.items.len) return self.hoisting_variables.items[idx].get(name);
+        if (idx < self.hoisting_variables.items.len) {
+            return self.hoisting_variables.items[idx].get(name);
+        }
         return null;
     }
 
@@ -1000,13 +1069,19 @@ pub const SymbolTracker = struct {
         try self.scope_maps.ensureTotalCapacity(self.allocator, n);
         while (self.scope_maps.items.len < n) self.scope_maps.appendAssumeCapacity(.empty);
         try self.hoisting_variables.ensureTotalCapacity(self.allocator, n);
-        while (self.hoisting_variables.items.len < n) self.hoisting_variables.appendAssumeCapacity(.empty);
+        while (self.hoisting_variables.items.len < n) {
+            self.hoisting_variables.appendAssumeCapacity(.empty);
+        }
     }
 
     /// Finalizes the tracker into an immutable `SymbolTable`. The
     /// table aliases the tracker's storage and stays valid for the
     /// lifetime of the source tree.
     pub fn toSymbolTable(self: *SymbolTracker) Allocator.Error!SymbolTable {
+        // finalize is single-shot, so the stack invariants must hold
+        std.debug.assert(self.saved_stack.items.len == 0);
+        std.debug.assert(self.export_state == .none);
+
         const decl_nodes = try self.allocator.alloc(ast.NodeIndex, self.decl_pairs.items.len);
 
         // count per symbol
@@ -1023,6 +1098,7 @@ pub const SymbolTracker = struct {
             s.decls.len = 0;
             offset += count;
         }
+        std.debug.assert(offset == self.decl_pairs.items.len);
 
         // fill
         for (self.decl_pairs.items) |pair| {

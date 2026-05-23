@@ -103,7 +103,11 @@ pub const Ctx = struct {
         try self.symbols.setBindingContext(data, &self.scope);
     }
 
-    pub inline fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub inline fn post_enter(
+        self: *Ctx,
+        index: ast.NodeIndex,
+        data: ast.NodeData,
+    ) Allocator.Error!void {
         _ = try self.symbols.declareBindings(index, data, &self.scope, self.inTypePosition());
     }
 
@@ -171,6 +175,7 @@ pub const Result = struct {
 /// the scope tree and the unresolved symbol table. Call
 /// `SymbolTable.resolveAll` to build the reference cross-index.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Result {
+    std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree);
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);

@@ -152,6 +152,7 @@ pub const State = struct {
     }
 
     pub fn restore(self: *State, s: Snapshot) void {
+        std.debug.assert(s.mappings_len <= self.mappings.items.len);
         self.mappings.shrinkRetainingCapacity(s.mappings_len);
         self.gen_line = s.gen_line;
         self.gen_col = s.gen_col;
@@ -255,5 +256,7 @@ fn encodeMappings(allocator: Allocator, mappings: []const Segment) Allocator.Err
         }
     }
 
-    return buf[0 .. @intFromPtr(dst) - @intFromPtr(buf.ptr)];
+    const written = @intFromPtr(dst) - @intFromPtr(buf.ptr);
+    std.debug.assert(written <= buf.len);
+    return buf[0..written];
 }

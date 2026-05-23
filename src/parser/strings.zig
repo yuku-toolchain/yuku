@@ -8,6 +8,7 @@ pub const String = struct {
     pub const empty: String = .{};
 
     pub fn len(self: String) u32 {
+        std.debug.assert(self.end >= self.start);
         return self.end - self.start;
     }
 };
@@ -21,18 +22,29 @@ pub const ASTStringPool = struct {
 
     /// Returns the string content for a `String`.
     pub fn get(self: *const ASTStringPool, id: String) []const u8 {
+        std.debug.assert(id.end >= id.start);
         if (id.start == id.end) return "";
         const src_len: u32 = @intCast(self.source.len);
-        if (id.start < src_len) return self.source[id.start..id.end];
+        if (id.start < src_len) {
+            std.debug.assert(id.end <= src_len);
+            return self.source[id.start..id.end];
+        }
         return self.extra.items[id.start - src_len .. id.end - src_len];
     }
 
     /// Returns a `String` referencing a range in the original source.
-    pub inline fn sourceSlice(_: *const ASTStringPool, start: u32, end: u32) String {
+    pub inline fn sourceSlice(self: *const ASTStringPool, start: u32, end: u32) String {
+        std.debug.assert(start <= end);
+        std.debug.assert(end <= self.source.len);
         return .{ .start = start, .end = end };
     }
 
-    pub fn ensureUnusedCapacity(self: *ASTStringPool, alloc: std.mem.Allocator, bytes: u32, entries: u32) error{OutOfMemory}!void {
+    pub fn ensureUnusedCapacity(
+        self: *ASTStringPool,
+        alloc: std.mem.Allocator,
+        bytes: u32,
+        entries: u32,
+    ) error{OutOfMemory}!void {
         try self.extra.ensureUnusedCapacity(alloc, bytes);
         try self.dedup.ensureUnusedCapacityContext(alloc, entries, MapCtx{
             .extra = self.extra.items,
@@ -42,13 +54,19 @@ pub const ASTStringPool = struct {
 
     /// Interns a string into the extra buffer with deduplication.
     /// Used for programmatic AST building.
-    pub fn addString(self: *ASTStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!String {
+    pub fn addString(
+        self: *ASTStringPool,
+        alloc: std.mem.Allocator,
+        str: []const u8,
+    ) error{OutOfMemory}!String {
         if (str.len == 0) return .empty;
+        std.debug.assert(self.source.len + self.extra.items.len + str.len <= std.math.maxInt(u32));
 
         const extra = self.extra.items;
         const src_len: u32 = @intCast(self.source.len);
         const gop = try self.dedup.getOrPutContextAdapted(
-            alloc, str,
+            alloc,
+            str,
             AdaptedCtx{ .extra = extra, .src_len = src_len },
             MapCtx{ .extra = extra, .src_len = src_len },
         );
@@ -56,7 +74,10 @@ pub const ASTStringPool = struct {
 
         const start: u32 = src_len + @as(u32, @intCast(extra.len));
         try self.extra.appendSlice(alloc, str);
-        const id = String{ .start = start, .end = src_len + @as(u32, @intCast(self.extra.items.len)) };
+        const id = String{
+            .start = start,
+            .end = src_len + @as(u32, @intCast(self.extra.items.len)),
+        };
         gop.key_ptr.* = id;
         return id;
     }
@@ -74,7 +95,11 @@ pub const ASTStringPool = struct {
             return std.hash.Wyhash.hash(0, resolve(ctx.extra, ctx.src_len, id));
         }
         pub fn eql(ctx: @This(), a: String, b: String) bool {
-            return std.mem.eql(u8, resolve(ctx.extra, ctx.src_len, a), resolve(ctx.extra, ctx.src_len, b));
+            return std.mem.eql(
+                u8,
+                resolve(ctx.extra, ctx.src_len, a),
+                resolve(ctx.extra, ctx.src_len, b),
+            );
         }
     };
 

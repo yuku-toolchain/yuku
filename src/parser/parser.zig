@@ -33,7 +33,7 @@ pub const Context = packed struct {
     /// `[Yield]`
     yield: bool = false,
     /// `[Await]`
-    @"await": bool = false,
+    await: bool = false,
     /// `[Return]`
     @"return": bool = false,
     /// body of `if`, `while`, `for`, `with`, or a labelled statement,
@@ -133,12 +133,17 @@ pub const Parser = struct {
     fn parseInner(self: *Parser) Error!void {
         const alloc = self.allocator();
 
-        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type, self.attach_comments);
+        self.lexer = try lexer.Lexer.init(
+            self.source,
+            alloc,
+            self.source_type,
+            self.attach_comments,
+        );
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
         self.context.yield = false;
-        self.context.@"await" = self.tree.isModule();
+        self.context.await = self.tree.isModule();
         self.context.@"return" = self.allow_return_outside_function;
 
         // let's begin
@@ -184,7 +189,8 @@ pub const Parser = struct {
     };
 
     pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
-        self.context.directive_prologue = kind == .program or kind == .function or kind == .module_block;
+        self.context.directive_prologue =
+            kind == .program or kind == .function or kind == .module_block;
 
         defer self.context.directive_prologue = false;
 
@@ -225,7 +231,11 @@ pub const Parser = struct {
     }
 
     /// returns the decoded content of a template quasi span.
-    pub inline fn templateElementValue(self: *Parser, token: Token, span: ast.Span) Error!ast.String {
+    pub inline fn templateElementValue(
+        self: *Parser,
+        token: Token,
+        span: ast.Span,
+    ) Error!ast.String {
         if (!token.isEscaped()) {
             return self.tree.sourceSlice(span.start, span.end);
         }
@@ -235,7 +245,9 @@ pub const Parser = struct {
     fn decodeEscapedIdentifier(self: *Parser, start: u32, end: u32) Error!ast.String {
         @branchHint(.cold);
         var buf: [256]u8 = undefined;
-        return try self.tree.addString(util.Utf.decodeIdentifierEscapes(self.source[start..end], &buf));
+        return try self.tree.addString(
+            util.Utf.decodeIdentifierEscapes(self.source[start..end], &buf),
+        );
     }
 
     fn decodeEscapedString(self: *Parser, start: u32, end: u32) Error!ast.String {
@@ -258,7 +270,11 @@ pub const Parser = struct {
         self.lexer.mode = mode;
     }
 
-    pub fn addExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, scratch_checkpoint: usize) Error!ast.IndexRange {
+    pub fn addExtraFromScratch(
+        self: *Parser,
+        scratch: *ScratchBuffer,
+        scratch_checkpoint: usize,
+    ) Error!ast.IndexRange {
         const start: u32 = @intCast(self.tree.extras.items.len);
         const slice = scratch.items.items[scratch_checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
@@ -273,7 +289,6 @@ pub const Parser = struct {
 
         return .{ .start = start, .len = len };
     }
-
 
     pub inline fn spanText(self: *const Parser, span: ast.Span) []const u8 {
         return self.source[span.start..span.end];
@@ -416,7 +431,12 @@ pub const Parser = struct {
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    pub fn expect(self: *Parser, comptime tag: TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
+    pub fn expect(
+        self: *Parser,
+        comptime tag: TokenTag,
+        message: []const u8,
+        help: ?[]const u8,
+    ) Error!bool {
         if (self.current_token.tag == tag) {
             try self.advance() orelse return false;
             return true;
@@ -496,7 +516,12 @@ pub const Parser = struct {
         labels: []const ast.Label = &.{},
     };
 
-    pub fn report(self: *Parser, span: ast.Span, message: []const u8, opts: ReportOptions) Error!void {
+    pub fn report(
+        self: *Parser,
+        span: ast.Span,
+        message: []const u8,
+        opts: ReportOptions,
+    ) Error!void {
         try self.diagnostics.append(self.allocator(), .{
             .severity = opts.severity,
             .message = message,
@@ -506,7 +531,12 @@ pub const Parser = struct {
         });
     }
 
-    pub fn reportExpected(self: *Parser, span: ast.Span, message: []const u8, opts: ReportOptions) Error!void {
+    pub fn reportExpected(
+        self: *Parser,
+        span: ast.Span,
+        message: []const u8,
+        opts: ReportOptions,
+    ) Error!void {
         const expected_message = try std.fmt.allocPrint(self.allocator(), "{s}, but found '{s}'", .{
             message,
             self.describeToken(self.current_token),
@@ -537,28 +567,27 @@ pub const Parser = struct {
                 if (self.current_token.tag == t) break;
             }
 
-            if (
-                self.current_token.hasLineTerminatorBefore() and
-                self.current_token.tag.isKeyword()
-            ) break;
+            if (self.current_token.hasLineTerminatorBefore() and
+                self.current_token.tag.isKeyword()) break;
         }
     }
 
-      /// advances to the next token during error recovery, skipping characters that cause lexical errors.
-      fn recoverNextToken(self: *Parser) Error!Token {
-          while (true) {
-              return self.lexer.nextToken() catch |e| {
-                  if (e == error.OutOfMemory) return error.OutOfMemory;
+    /// Advances to the next token during error recovery, skipping characters that
+    /// cause lexical errors.
+    fn recoverNextToken(self: *Parser) Error!Token {
+        while (true) {
+            return self.lexer.nextToken() catch |e| {
+                if (e == error.OutOfMemory) return error.OutOfMemory;
 
-                  if (self.lexer.cursor < self.source.len) {
-                      self.lexer.cursor += 1;
-                  } else {
-                      return Token.eof(@intCast(self.source.len));
-                  }
+                if (self.lexer.cursor < self.source.len) {
+                    self.lexer.cursor += 1;
+                } else {
+                    return Token.eof(@intCast(self.source.len));
+                }
 
-                  continue;
-              };
-          }
+                continue;
+            };
+        }
     }
 
     fn ensureCapacity(self: *Parser) Error!void {
@@ -591,7 +620,6 @@ pub const Parser = struct {
     }
 };
 
-
 pub const Checkpoint = struct {
     // lexer state
     lexer_cursor: u32,
@@ -621,7 +649,11 @@ const ScratchBuffer = struct {
         return self.items.items.len;
     }
 
-    pub inline fn append(self: *ScratchBuffer, alloc: std.mem.Allocator, index: ast.NodeIndex) Error!void {
+    pub inline fn append(
+        self: *ScratchBuffer,
+        alloc: std.mem.Allocator,
+        index: ast.NodeIndex,
+    ) Error!void {
         if (self.items.items.len < self.items.capacity) {
             self.items.appendAssumeCapacity(index);
         } else {
@@ -636,7 +668,11 @@ const ScratchBuffer = struct {
 
 /// Parses JavaScript/TypeScript source into a `Tree`.
 /// Call `deinit()` when done to free all memory.
-pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.Tree {
+pub fn parse(
+    child_allocator: std.mem.Allocator,
+    source: []const u8,
+    options: Options,
+) Error!ast.Tree {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
 }

@@ -33,6 +33,7 @@ pub const Ctx = struct {
 
 /// Walks the tree with path and scope tracking. Returns a `ScopeTree`.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!ScopeTree {
+    std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree);
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };

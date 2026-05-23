@@ -1,3 +1,4 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
@@ -19,7 +20,15 @@ const ParseFunctionOpts = struct {
     is_default_export: bool = false,
 };
 
-pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
+pub fn parseFunction(
+    parser: *Parser,
+    opts: ParseFunctionOpts,
+    start_from_param: ?u32,
+) Error!?ast.NodeIndex {
+    // entry token is either `function` directly, or one of the modifiers
+    // (`async`/`declare`/...) that the caller consumed before passing `start_from_param`
+    std.debug.assert(start_from_param != null or parser.current_token.tag == .function);
+
     const start = start_from_param orelse parser.current_token.span.start;
 
     if (!try parser.expect(
@@ -38,11 +47,11 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     }
 
     const outer_yield_is_keyword = parser.context.yield;
-    const outer_await_is_keyword = parser.context.@"await";
+    const outer_await_is_keyword = parser.context.await;
 
     defer {
         parser.context.yield = outer_yield_is_keyword;
-        parser.context.@"await" = outer_await_is_keyword;
+        parser.context.await = outer_await_is_keyword;
     }
 
     // yield rules differ for declarations vs expressions. inside a
@@ -60,7 +69,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     //   (async function await(){})   expression. invalid.
     // declarations inherit the outer Await context. async expressions
     // force Await for their own name.
-    parser.context.@"await" = if (is_function_expression)
+    parser.context.await = if (is_function_expression)
         opts.is_async
     else
         outer_await_is_keyword;
@@ -73,7 +82,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     // params and body run under the function's own generator context.
     // `function* yield(){}` is fine but `function* f(yield){}` is not.
     parser.context.yield = is_generator;
-    parser.context.@"await" = opts.is_async;
+    parser.context.await = opts.is_async;
 
     // name is required for plain declarations. optional for function
     // expressions and `export default function`.
@@ -143,7 +152,11 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         @branchHint(.unlikely);
 
         if (opts.is_async) {
-            try parser.report(parser.current_token.span, "Async functions can only be declared at the top level or inside a block", .{});
+            try parser.report(
+                parser.current_token.span,
+                "Async functions can only be declared at the top level or inside a block",
+                .{},
+            );
         }
 
         if (is_generator) {
@@ -174,6 +187,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 }
 
 pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(
@@ -200,13 +214,20 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.tree.addNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .function_body = .{ .body = body } },
+        .{ .start = start, .end = end },
+    );
 }
 
 /// parses a parenthesised parameter list. `allow_parameter_properties` is
 /// set only for class constructor parameters and enables ts parameter
 /// property shorthand (`constructor(public x: T)`).
-pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, allow_parameter_properties: bool) Error!?ast.NodeIndex {
+pub fn parseFormalParameters(
+    parser: *Parser,
+    kind: ast.FormalParameterKind,
+    allow_parameter_properties: bool,
+) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;
@@ -230,14 +251,23 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
 
             if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
-                    .{ .start = parser.tree.span(rest).start, .end = parser.current_token.span.end },
+                    .{
+                        .start = parser.tree.span(rest).start,
+                        .end = parser.current_token.span.end,
+                    },
                     "Rest parameter must be the last parameter",
-                    .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
+                    .{ .help = "Move the '...rest' parameter to the end of the parameter" ++
+                        " list, or remove trailing parameters." },
                 );
                 return null;
             }
         } else {
-            const param = try parseFormalParameter(parser, allow_parameter_properties, decorators, param_start) orelse break;
+            const param = try parseFormalParameter(
+                parser,
+                allow_parameter_properties,
+                decorators,
+                param_start,
+            ) orelse break;
             try parser.scratch_a.append(parser.allocator(), param);
         }
 
@@ -313,7 +343,10 @@ pub fn parseFormalParameter(
 
     ts.applyDecoratorsToPattern(parser, pattern, decorators);
 
-    return try parser.tree.addNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.span(pattern));
+    return try parser.tree.addNode(
+        .{ .formal_parameter = .{ .pattern = pattern } },
+        parser.tree.span(pattern),
+    );
 }
 
 fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModifiers {
@@ -342,8 +375,16 @@ const AccessorSpec = struct { arity: u32, msg: []const u8, help: []const u8 };
 /// `MethodDefinitionKind` and object `PropertyKind` share one helper.
 pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex) Error!bool {
     const spec: AccessorSpec = switch (kind) {
-        .get => .{ .arity = 0, .msg = "Getter must have no parameters", .help = "Remove all parameters from the getter." },
-        .set => .{ .arity = 1, .msg = "Setter must have exactly one parameter", .help = "Setters accept exactly one argument." },
+        .get => .{
+            .arity = 0,
+            .msg = "Getter must have no parameters",
+            .help = "Remove all parameters from the getter.",
+        },
+        .set => .{
+            .arity = 1,
+            .msg = "Setter must have exactly one parameter",
+            .help = "Setters accept exactly one argument.",
+        },
         else => return true,
     };
 

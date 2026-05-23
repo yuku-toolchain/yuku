@@ -101,7 +101,7 @@ pub fn expressionToPattern(
 
     switch (data) {
         .identifier_reference => |id| {
-            if(context == .binding) {
+            if (context == .binding) {
                 parser.tree.setData(expr, .{ .binding_identifier = .{
                     .name = id.name,
                 } });
@@ -116,7 +116,8 @@ pub fn expressionToPattern(
                         "Invalid assignment operator in binding pattern"
                     else
                         "Invalid assignment operator in assignment pattern",
-                    .{ .help = "Only '=' is allowed in destructuring defaults, not compound operators like '+='." },
+                    .{ .help = "Only '=' is allowed in destructuring defaults, not" ++
+                        " compound operators like '+='." },
                 );
                 return;
             }
@@ -134,7 +135,13 @@ pub fn expressionToPattern(
         },
 
         .object_expression => |obj| {
-            try object.toObjectPattern(parser, expr, obj.properties, parser.tree.span(expr), context);
+            try object.toObjectPattern(
+                parser,
+                expr,
+                obj.properties,
+                parser.tree.span(expr),
+                context,
+            );
         },
 
         .spread_element => |spread| {
@@ -159,7 +166,8 @@ pub fn expressionToPattern(
                     "Optional chaining is not allowed in binding pattern"
                 else
                     "Optional chaining is not allowed in assignment pattern",
-                .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
+                .{ .help = "Optional chaining ('?.') cannot be used as an assignment target" ++
+                    " in destructuring patterns." },
             );
         },
 
@@ -168,7 +176,9 @@ pub fn expressionToPattern(
                 try parser.report(
                     parser.tree.span(expr),
                     "Member expression is not allowed in binding pattern",
-                    .{ .help = "Function parameters and variable declarations can only bind to identifiers, not member expressions like 'obj.prop' or 'obj[key]'. Use a simple identifier instead." },
+                    .{ .help = "Function parameters and variable declarations can only bind" ++
+                        " to identifiers, not member expressions like 'obj.prop' or" ++
+                        " 'obj[key]'. Use a simple identifier instead." },
                 );
             }
         },
@@ -178,7 +188,9 @@ pub fn expressionToPattern(
                 try parser.report(
                     parser.tree.span(expr),
                     "Parentheses are not allowed in this binding pattern",
-                    .{ .help = "Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions." },
+                    .{ .help = "Remove the extra parentheses. Binding patterns can only be" ++
+                        " identifiers, destructuring patterns, or assignment patterns, not" ++
+                        " parenthesized expressions." },
                 );
                 return;
             }
@@ -186,8 +198,10 @@ pub fn expressionToPattern(
             if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
                     parser.tree.span(paren.expression),
-                    "Parenthesized expression in assignment pattern must be a simple assignment target",
-                    .{ .help = "Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns." },
+                    "Parenthesized expression in assignment pattern must be a simple" ++
+                        " assignment target",
+                    .{ .help = "Only identifiers or member expressions (without optional" ++
+                        " chaining) are allowed inside parentheses in assignment patterns." },
                 );
 
                 return;
@@ -218,7 +232,8 @@ pub fn expressionToPattern(
                     "Invalid element in binding pattern"
                 else
                     "Invalid element in assignment pattern",
-                .{ .help = "Expected an identifier, array pattern, object pattern, or assignment pattern." },
+                .{ .help = "Expected an identifier, array pattern, object pattern," ++
+                    " or assignment pattern." },
             );
         },
     }

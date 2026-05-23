@@ -13,9 +13,11 @@ pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .arguments);
 }
 
-// `<>` after name in ref or typeof. newline before `<` keeps `typeof a` away from a generic fn type that follows
+// `<>` after name in ref or typeof. newline before `<` keeps `typeof a` away from a
+// generic fn type that follows
 pub inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
-    if (!isAngleOpen(parser.current_token.tag) or parser.current_token.hasLineTerminatorBefore()) return .null;
+    if (!isAngleOpen(parser.current_token.tag) or
+        parser.current_token.hasLineTerminatorBefore()) return .null;
     return parseAngleList(parser, .arguments);
 }
 
@@ -86,7 +88,12 @@ fn consumeAngleClose(parser: *Parser, comptime kind: AngleListKind) Error!?u32 {
             try parser.advance() orelse return null;
             return end;
         },
-        .right_shift, .unsigned_right_shift, .greater_than_equal, .right_shift_assign, .unsigned_right_shift_assign => {
+        .right_shift,
+        .unsigned_right_shift,
+        .greater_than_equal,
+        .right_shift_assign,
+        .unsigned_right_shift_assign,
+        => {
             const gt = parser.lexer.reScanGreaterThan(parser.current_token.span.start);
             try parser.advanceWithRescannedToken(gt) orelse return null;
             return gt.span.end;
@@ -130,7 +137,10 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
         if (seen_ptr.*) {
             try parser.report(
                 token.span,
-                try parser.fmt("Duplicate '{s}' modifier on type parameter", .{token.tag.toString().?}),
+                try parser.fmt(
+                    "Duplicate '{s}' modifier on type parameter",
+                    .{token.tag.toString().?},
+                ),
                 .{},
             );
         } else if (this_step < step) {

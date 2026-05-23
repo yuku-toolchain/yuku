@@ -16,8 +16,14 @@ pub fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const literal: ast.NodeIndex = switch (token.tag) {
         .true, .false => try literals.parseBooleanLiteral(parser) orelse return null,
         .string_literal => try literals.parseStringLiteral(parser) orelse return null,
-        .numeric_literal, .hex_literal, .octal_literal, .binary_literal, .bigint_literal => try literals.parseNumericLiteral(parser) orelse return null,
-        .no_substitution_template => try literals.parseNoSubstitutionTemplate(parser, false) orelse return null,
+        .numeric_literal,
+        .hex_literal,
+        .octal_literal,
+        .binary_literal,
+        .bigint_literal,
+        => try literals.parseNumericLiteral(parser) orelse return null,
+        .no_substitution_template => try literals.parseNoSubstitutionTemplate(parser, false) orelse
+            return null,
         .minus, .plus => try parseSignedNumericLiteralType(parser) orelse return null,
         else => unreachable,
     };
@@ -82,7 +88,8 @@ pub fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         const right_brace = parser.current_token;
-        const template_token = parser.lexer.reScanTemplateContinuation(right_brace.span.start) catch |e| {
+        const rescan = parser.lexer.reScanTemplateContinuation(right_brace.span.start);
+        const template_token = rescan catch |e| {
             try parser.report(
                 right_brace.span,
                 lexer.getLexicalErrorMessage(e),

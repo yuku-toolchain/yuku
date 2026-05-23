@@ -28,7 +28,11 @@ const TS_TYPE_OPERATORS_INV = {"keyof": 0, "unique": 1, "readonly": 2};
 const TS_METHOD_SIGNATURE_KINDS_INV = {"method": 0, "get": 1, "set": 2};
 const TS_MODULE_KINDS_INV = {"namespace": 0, "module": 1};
 const IMPORT_PHASE_INV = {"source": 0, "defer": 1};
-const ACCESSIBILITY_INV = (v) => v == null ? 0 : v === "public" ? 1 : v === "private" ? 2 : 3;
+const ACCESSIBILITY_INV = (v) =>
+  v == null ? 0
+  : v === "public" ? 1
+  : v === "private" ? 2
+  : 3;
 const TS_MAPPED_OPTIONAL_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
 const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
 function encode(result) {
@@ -103,7 +107,10 @@ function encode(result) {
     if (!arr || arr.length === 0) return { start: 0, len: 0 };
     const len = arr.length;
     const ids = new Array(len);
-    for (let i = 0; i < len; i++) { const e = arr[i]; ids[i] = e == null ? NULL : encEach(e); }
+    for (let i = 0; i < len; i++) {
+      const e = arr[i];
+      ids[i] = e == null ? NULL : encEach(e);
+    }
     const start = extraCount;
     for (let i = 0; i < len; i++) pushExtra(ids[i]);
     return { start, len };
@@ -194,7 +201,11 @@ function encode(result) {
     slotAt(idx, 2, body);
     slotAt(idx, 3, tp);
     slotAt(idx, 4, rt_);
-    flagsAt(idx, ((kind & 3) << 0) | (n.generator ? 4 : 0) | (n.async ? 8 : 0) | (n.declare ? 16 : 0));
+    flagsAt(idx,
+      ((kind & 3) << 0)
+      | (n.generator ? 4 : 0)
+      | (n.async ? 8 : 0)
+      | (n.declare ? 16 : 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -222,7 +233,8 @@ function encode(result) {
       const p = params[i];
       if (p && p.type === "RestElement") rest = enc_binding_rest_element(p);
       else if (p && p.type === "TSParameterProperty") items.push(encNode(p));
-      else if (p && p.type === "Identifier" && p.name === "this") items.push(enc_ts_this_parameter(p));
+      else if (p && p.type === "Identifier" && p.name === "this")
+        items.push(enc_ts_this_parameter(p));
       else items.push(enc_formal_parameter(p));
     }
     const ids = items;
@@ -344,19 +356,27 @@ function encode(result) {
     return idx;
   }
   function enc_object_property(n) {
-    const k = n.key == null ? NULL : (n.computed ? encNode(n.key) : encPropertyKey(n.key));
+    const k = n.key == null
+      ? NULL
+      : (n.computed ? encNode(n.key) : encPropertyKey(n.key));
     const v = n.value == null ? NULL : encNode(n.value);
     const idx = alloc();
     tagAt(idx, 17);
     slotAt(idx, 0, k); slotAt(idx, 1, v);
-    flagsAt(idx, ((PROPERTY_KINDS_INV[n.kind] | 0) << 0) | (n.method ? 4 : 0) | (n.shorthand ? 8 : 0) | (n.computed ? 16 : 0));
+    flagsAt(idx,
+      ((PROPERTY_KINDS_INV[n.kind] | 0) << 0)
+      | (n.method ? 4 : 0)
+      | (n.shorthand ? 8 : 0)
+      | (n.computed ? 16 : 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_member_expression(n) {
     const o = n.object == null ? NULL : encNode(n.object);
-    const p = n.property == null ? NULL : (n.computed ? encNode(n.property) : encPropertyKey(n.property));
+    const p = n.property == null
+      ? NULL
+      : (n.computed ? encNode(n.property) : encPropertyKey(n.property));
     const idx = alloc();
     tagAt(idx, 18);
     slotAt(idx, 0, o); slotAt(idx, 1, p);
@@ -1028,7 +1048,9 @@ function encode(result) {
     return idx;
   }
   function enc_binding_property(p) {
-    const k = p.key == null ? NULL : (p.computed ? encNode(p.key) : encPropertyKey(p.key));
+    const k = p.key == null
+      ? NULL
+      : (p.computed ? encNode(p.key) : encPropertyKey(p.key));
     const v = p.value == null ? NULL : encBindingTarget(p.value);
     const idx = alloc();
     tagAt(idx, 73);
@@ -1039,7 +1061,9 @@ function encode(result) {
   }
   function enc_program(n) {
     const body = encArr(n.body, encNode);
-    const hb = n.hashbang && typeof n.hashbang.value === "string" ? encStr(n.hashbang.value) : null;
+    const hb = n.hashbang && typeof n.hashbang.value === "string"
+      ? encStr(n.hashbang.value)
+      : null;
     const idx = alloc();
     tagAt(idx, 74);
     f0At(idx, body.len);
@@ -1587,7 +1611,9 @@ function encode(result) {
     const idx = alloc();
     tagAt(idx, 128);
     slotAt(idx, 0, k); slotAt(idx, 1, c); slotAt(idx, 2, nt); slotAt(idx, 3, ta);
-    flagsAt(idx, (TS_MAPPED_OPTIONAL_INV(n.optional) << 0) | (TS_MAPPED_READONLY_INV(n.readonly) << 2));
+    flagsAt(idx,
+      (TS_MAPPED_OPTIONAL_INV(n.optional) << 0)
+      | (TS_MAPPED_READONLY_INV(n.readonly) << 2));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -1598,7 +1624,10 @@ function encode(result) {
     const idx = alloc();
     tagAt(idx, 129);
     slotAt(idx, 0, k); slotAt(idx, 1, ta);
-    flagsAt(idx, (n.computed ? 1 : 0) | (n.optional ? 2 : 0) | (n.readonly ? 4 : 0));
+    flagsAt(idx,
+      (n.computed ? 1 : 0)
+      | (n.optional ? 2 : 0)
+      | (n.readonly ? 4 : 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -1610,8 +1639,14 @@ function encode(result) {
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
     const idx = alloc();
     tagAt(idx, 130);
-    slotAt(idx, 0, k); slotAt(idx, 1, tp); slotAt(idx, 2, params); slotAt(idx, 3, rt_);
-    flagsAt(idx, (n.computed ? 4 : 0) | (n.optional ? 8 : 0) | ((TS_METHOD_SIGNATURE_KINDS_INV[n.kind] | 0) << 0));
+    slotAt(idx, 0, k);
+    slotAt(idx, 1, tp);
+    slotAt(idx, 2, params);
+    slotAt(idx, 3, rt_);
+    flagsAt(idx,
+      (n.computed ? 4 : 0)
+      | (n.optional ? 8 : 0)
+      | ((TS_METHOD_SIGNATURE_KINDS_INV[n.kind] | 0) << 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -2065,7 +2100,9 @@ function encode(result) {
         if (n.regex) return enc_regexp_literal(n);
         if (typeof n.bigint === "string") return enc_bigint_literal(n);
         const v = n.value;
-        if (v === null) return typeof n.raw === "string" && n.raw !== "null" ? enc_numeric_literal(n) : enc_null_literal(n);
+        if (v === null) return typeof n.raw === "string" && n.raw !== "null"
+          ? enc_numeric_literal(n)
+          : enc_null_literal(n);
         if (typeof v === "boolean") return enc_boolean_literal(n);
         if (typeof v === "string") return enc_string_literal(n);
         if (typeof v === "number") return enc_numeric_literal(n);
@@ -2084,8 +2121,12 @@ function encode(result) {
       case "AccessorProperty": return enc_property_definition(n, true, false);
       case "TSAbstractAccessorProperty": return enc_property_definition(n, true, true);
       case "RestElement": return enc_binding_rest_element(n);
-      case "TSModuleDeclaration": return n.global ? enc_ts_global_declaration(n) : enc_ts_module_declaration(n);
-      case "ExpressionStatement": return n.directive != null ? enc_directive(n) : enc_expression_statement(n);
+      case "TSModuleDeclaration": return n.global
+        ? enc_ts_global_declaration(n)
+        : enc_ts_module_declaration(n);
+      case "ExpressionStatement": return n.directive != null
+        ? enc_directive(n)
+        : enc_expression_statement(n);
       case "SequenceExpression": return enc_sequence_expression(n);
       case "ParenthesizedExpression": return enc_parenthesized_expression(n);
       case "ArrowFunctionExpression": return enc_arrow_function_expression(n);
@@ -2280,14 +2321,18 @@ function encode(result) {
   if (lineStartsCount > 0) {
     lineStartsBytes = new ArrayBuffer(lineStartsCount * 4);
     const lsDV = new DataView(lineStartsBytes);
-    for (let i = 0; i < lineStartsCount; i++) lsDV.setUint32(i * 4, lineStarts[i] >>> 0, true);
+    for (let i = 0; i < lineStartsCount; i++) {
+      lsDV.setUint32(i * 4, lineStarts[i] >>> 0, true);
+    }
   }
   const totalNodeBytes = nodeCount * NODE_SIZE;
   const totalExtraBytes = extraCount * 4;
   const totalOffsetsBytes = attachComments ? (nodeCount + 1) * 4 : 0;
   const totalCommentBytes = commentCount * COMMENT_SIZE;
   const totalLineStartsBytes = lineStartsCount * 4;
-  const finalSize = HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen + totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
+  const finalSize =
+    HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen +
+    totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
   const out = new ArrayBuffer(finalSize);
   const outU8 = new Uint8Array(out);
   const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));

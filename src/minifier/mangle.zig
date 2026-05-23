@@ -27,7 +27,9 @@ pub fn run(
     table: sem.SymbolTable,
     opts: MangleOptions,
 ) Allocator.Error!void {
+    std.debug.assert(tree.root != .null);
     if (table.symbols.len == 0) return;
+    std.debug.assert(scope_tree.scopes.len > 0);
 
     var arena = std.heap.ArenaAllocator.init(allocator);
     defer arena.deinit();
@@ -114,7 +116,9 @@ const Mangler = struct {
     ///   2. Hands out the lowest free slot to each local in use-count order.
     ///   3. Rolls back its scope-local reservations via `defer`.
     fn assignAndRewrite(m: *Mangler) !void {
+        std.debug.assert(m.outer_refs.len == m.scope_tree.scopes.len);
         const sym_count: u32 = @intCast(m.table.symbols.len);
+        std.debug.assert(sym_count > 0);
 
         // bitmap of forbidden + scope-local reservations. forbidden bits set
         // once and never cleared.
@@ -173,6 +177,8 @@ const Mangler = struct {
     }
 
     fn rewriteSites(m: *Mangler, sid: sem.SymbolId, slot: u32) !void {
+        std.debug.assert(sid != .none);
+        std.debug.assert(slot != NO_SLOT);
         const gop = try m.slot_cache.getOrPut(m.a, slot);
         if (!gop.found_existing)
             gop.value_ptr.* = try m.tree.addString(NameSeq.nameAt(slot, &m.name_buf));
@@ -212,14 +218,14 @@ fn moreUsedFirst(_: void, x: Local, y: Local) bool {
 }
 
 const reserved_words = [_][]const u8{
-    "as",         "async",  "await",      "break",      "case",      "catch",
-    "class",      "const",  "continue",   "debugger",   "default",   "delete",
-    "do",         "else",   "enum",       "export",     "extends",   "false",
-    "finally",    "for",    "from",       "function",   "get",       "if",
-    "implements", "import", "in",         "instanceof", "interface", "is",
-    "let",        "new",    "null",       "of",         "package",   "private",
-    "protected",  "public", "return",     "satisfies",  "set",       "static",
-    "super",      "switch", "this",       "throw",      "true",      "try",
-    "type",       "typeof", "var",        "void",       "while",     "with",
+    "as",         "async",  "await",    "break",      "case",      "catch",
+    "class",      "const",  "continue", "debugger",   "default",   "delete",
+    "do",         "else",   "enum",     "export",     "extends",   "false",
+    "finally",    "for",    "from",     "function",   "get",       "if",
+    "implements", "import", "in",       "instanceof", "interface", "is",
+    "let",        "new",    "null",     "of",         "package",   "private",
+    "protected",  "public", "return",   "satisfies",  "set",       "static",
+    "super",      "switch", "this",     "throw",      "true",      "try",
+    "type",       "typeof", "var",      "void",       "while",     "with",
     "yield",
 };

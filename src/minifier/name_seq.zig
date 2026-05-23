@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub const NameSeq = struct {
     counter: usize = 0,
     buf: [16]u8 = undefined,
@@ -17,6 +19,7 @@ pub const NameSeq = struct {
     /// (e.g. when advancing a per-scope cursor) without disturbing
     /// the running sequence.
     pub fn nameAt(counter: usize, buf: []u8) []const u8 {
+        std.debug.assert(buf.len > 0);
         var n = counter;
         var len: usize = 0;
 
@@ -25,12 +28,14 @@ pub const NameSeq = struct {
         n /= FIRST_BASE;
 
         while (n > 0) {
+            std.debug.assert(len < buf.len);
             n -= 1;
             buf[len] = BASE_CHARS[n % REST_BASE];
             len += 1;
             n /= REST_BASE;
         }
 
+        std.debug.assert(len > 0 and len <= buf.len);
         return buf[0..len];
     }
 };

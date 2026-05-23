@@ -1,3 +1,4 @@
+const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
@@ -21,6 +22,7 @@ pub const ObjectCover = struct {
 /// returns raw properties for later conversion to ObjectExpression or ObjectPattern.
 /// https://tc39.es/ecma262/#sec-object-initializer (covers ObjectAssignmentPattern)
 pub fn parseCover(parser: *Parser) Error!?ObjectCover {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume {
 
@@ -34,7 +36,11 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
         if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
-            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
+            const argument = try grammar.parseExpressionInCover(
+                parser,
+                Precedence.Assignment,
+            ) orelse
+                return null;
             const spread_end = parser.tree.span(argument).end;
             const spread = try parser.tree.addNode(
                 .{ .spread_element = .{ .argument = argument } },
@@ -72,7 +78,9 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
             "Unterminated object",
             .{
                 .help = "Add a closing '}' to complete the object.",
-                .labels = try parser.labels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
+                .labels = try parser.labels(&.{
+                    parser.label(.{ .start = start, .end = start + 1 }, "Opened here"),
+                }),
             },
         );
         return null;
@@ -108,7 +116,9 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         // async [no LineTerminator here] MethodDefinition
-        if (isPropertyKeyStart(parser.current_token.tag) and !parser.current_token.hasLineTerminatorBefore()) {
+        const starts_method = isPropertyKeyStart(parser.current_token.tag) and
+            !parser.current_token.hasLineTerminatorBefore();
+        if (starts_method) {
             try parser.reportIfEscapedKeyword(async_token);
             is_async = true;
         } else {
@@ -151,10 +161,17 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         if (parser.current_token.tag == .left_bracket) {
             computed = true;
             try parser.advance() orelse return null;
-            key = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
-            if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
+            key = try grammar.parseExpressionInCover(
+                parser,
+                Precedence.Assignment,
+            ) orelse
                 return null;
-            }
+            const ok = try parser.expect(
+                .right_bracket,
+                "Expected ']' after computed property key",
+                null,
+            );
+            if (!ok) return null;
         } else if (parser.current_token.tag.isIdentifierLike()) {
             key_identifier_token = parser.current_token;
             key = try literals.parseIdentifierName(parser) orelse return null;
@@ -165,8 +182,12 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         } else {
             try parser.report(
                 parser.current_token.span,
-                try parser.fmt("Unexpected token '{s}' as property key", .{parser.describeToken(parser.current_token)}),
-                .{ .help = "Property keys must be identifiers, strings, numbers, or computed expressions [expr]." },
+                try parser.fmt(
+                    "Unexpected token '{s}' as property key",
+                    .{parser.describeToken(parser.current_token)},
+                ),
+                .{ .help = "Property keys must be identifiers, strings, numbers, or" ++
+                    " computed expressions [expr]." },
             );
             return null;
         }
@@ -178,7 +199,15 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         (parser.tree.isTs() and parser.current_token.tag == .less_than);
 
     if (is_method_start) {
-        return parseObjectMethodProperty(parser, prop_start, key, computed, kind, is_async, is_generator);
+        return parseObjectMethodProperty(
+            parser,
+            prop_start,
+            key,
+            computed,
+            kind,
+            is_async,
+            is_generator,
+        );
     }
 
     // if we had async, generator, or get/set prefix but no (, it's an error
@@ -194,9 +223,20 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     // regular property: key: value
     if (parser.current_token.tag == .colon) {
         try parser.advance() orelse return null;
-        const value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
+        const value = try grammar.parseExpressionInCover(
+            parser,
+            Precedence.Assignment,
+        ) orelse
+            return null;
         return try parser.tree.addNode(
-            .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = false, .computed = computed } },
+            .{ .object_property = .{
+                .key = key,
+                .value = value,
+                .kind = .init,
+                .method = false,
+                .shorthand = false,
+                .computed = computed,
+            } },
             .{ .start = prop_start, .end = parser.tree.span(value).end },
         );
     }
@@ -217,13 +257,18 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             try parser.report(
                 key_span,
                 "Invalid shorthand property initializer",
-                .{ .help = "Only identifier keys can have default values. Use 'key: value = default' syntax." },
+                .{ .help = "Only identifier keys can have default values." ++
+                    " Use 'key: value = default' syntax." },
             );
             return null;
         }
 
         try parser.advance() orelse return null;
-        const default_value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
+        const default_value = try grammar.parseExpressionInCover(
+            parser,
+            Precedence.Assignment,
+        ) orelse
+            return null;
 
         const id_ref = try parser.tree.addNode(
             .{ .identifier_reference = .{ .name = key_data.identifier_name.name } },
@@ -231,14 +276,25 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         );
 
         const assign_expr = try parser.tree.addNode(
-            .{ .assignment_expression = .{ .left = id_ref, .right = default_value, .operator = .assign } },
+            .{ .assignment_expression = .{
+                .left = id_ref,
+                .right = default_value,
+                .operator = .assign,
+            } },
             .{ .start = key_span.start, .end = parser.tree.span(default_value).end },
         );
 
         parser.state.cover_has_init_name = true;
 
         return try parser.tree.addNode(
-            .{ .object_property = .{ .key = key, .value = assign_expr, .kind = .init, .method = false, .shorthand = true, .computed = false } },
+            .{ .object_property = .{
+                .key = key,
+                .value = assign_expr,
+                .kind = .init,
+                .method = false,
+                .shorthand = true,
+                .computed = false,
+            } },
             .{ .start = prop_start, .end = parser.tree.span(default_value).end },
         );
     }
@@ -275,7 +331,14 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     );
 
     return try parser.tree.addNode(
-        .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = true, .computed = false } },
+        .{ .object_property = .{
+            .key = key,
+            .value = value,
+            .kind = .init,
+            .method = false,
+            .shorthand = true,
+            .computed = false,
+        } },
         .{ .start = prop_start, .end = key_span.end },
     );
 }
@@ -316,14 +379,14 @@ fn parseObjectMethodProperty(
         }
     }
 
-    const saved_await_is_keyword = parser.context.@"await";
+    const saved_await_is_keyword = parser.context.await;
     const saved_yield_is_keyword = parser.context.yield;
 
-    parser.context.@"await" = is_async;
+    parser.context.await = is_async;
     parser.context.yield = is_generator;
 
     defer {
-        parser.context.@"await" = saved_await_is_keyword;
+        parser.context.await = saved_await_is_keyword;
         parser.context.yield = saved_yield_is_keyword;
     }
 
@@ -336,7 +399,11 @@ fn parseObjectMethodProperty(
     else
         .null;
 
-    const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, false) orelse return null;
+    const params = try functions.parseFormalParameters(
+        parser,
+        .unique_formal_parameters,
+        false,
+    ) orelse return null;
     if (!try functions.checkAccessorArity(parser, kind, params)) return null;
 
     // `: ReturnType`
@@ -389,16 +456,38 @@ pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Er
 }
 
 /// convert object cover to ObjectPattern.
-pub fn coverToPattern(parser: *Parser, cover: ObjectCover, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
-    return toObjectPatternImpl(parser, null, cover.properties, .{ .start = cover.start, .end = cover.end }, context);
+pub fn coverToPattern(
+    parser: *Parser,
+    cover: ObjectCover,
+    comptime context: grammar.PatternContext,
+) Error!ast.NodeIndex {
+    return toObjectPatternImpl(
+        parser,
+        null,
+        cover.properties,
+        .{ .start = cover.start, .end = cover.end },
+        context,
+    );
 }
 
 /// convert ObjectExpression to ObjectPattern (mutates in-place).
-pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!void {
+pub fn toObjectPattern(
+    parser: *Parser,
+    expr_node: ast.NodeIndex,
+    properties_range: ast.IndexRange,
+    span: ast.Span,
+    comptime context: grammar.PatternContext,
+) Error!void {
     _ = try toObjectPatternImpl(parser, expr_node, properties_range, span, context);
 }
 
-fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
+fn toObjectPatternImpl(
+    parser: *Parser,
+    mutate_node: ?ast.NodeIndex,
+    properties_range: ast.IndexRange,
+    span: ast.Span,
+    comptime context: grammar.PatternContext,
+) Error!ast.NodeIndex {
     const properties = parser.tree.extra(properties_range);
 
     var rest: ast.NodeIndex = .null;
@@ -409,17 +498,22 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
 
         if (prop_data == .spread_element) {
             if (parser.state.cover_has_trailing_comma == span.start) {
-                try parser.report(span, "Rest element cannot have a trailing comma in object destructuring.", .{
-                    .help = "Remove the trailing comma after the rest element",
-                });
+                try parser.report(
+                    span,
+                    "Rest element cannot have a trailing comma in object destructuring.",
+                    .{ .help = "Remove the trailing comma after the rest element" },
+                );
 
                 parser.state.cover_has_trailing_comma = null;
             }
 
             if (i != properties.len - 1) {
-                try parser.report(parser.tree.span(prop), "Rest element must be the last property", .{
-                    .help = "No properties can follow the rest element in a destructuring pattern.",
-                });
+                try parser.report(
+                    parser.tree.span(prop),
+                    "Rest element must be the last property",
+                    .{ .help = "No properties can follow the rest element in a" ++
+                        " destructuring pattern." },
+                );
             }
 
             // spread_element to binding_rest_element
@@ -438,16 +532,20 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
         const obj_prop = prop_data.object_property;
 
         if (obj_prop.method) {
-            try parser.report(parser.tree.span(prop), "Method cannot appear in destructuring pattern", .{
-                .help = "Use a regular property instead of a method definition.",
-            });
+            try parser.report(
+                parser.tree.span(prop),
+                "Method cannot appear in destructuring pattern",
+                .{ .help = "Use a regular property instead of a method definition." },
+            );
             continue;
         }
 
         if (obj_prop.kind != .init) {
-            try parser.report(parser.tree.span(prop), "Getter/setter cannot appear in destructuring pattern", .{
-                .help = "Use a regular property instead of a getter or setter.",
-            });
+            try parser.report(
+                parser.tree.span(prop),
+                "Getter/setter cannot appear in destructuring pattern",
+                .{ .help = "Use a regular property instead of a getter or setter." },
+            );
             continue;
         }
 

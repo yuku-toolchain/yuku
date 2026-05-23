@@ -1,3 +1,4 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
@@ -18,10 +19,12 @@ pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
 }
 
 pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .at);
     const start = parser.current_token.span.start;
     if (!try parser.expect(.at, "Expected '@' to start a decorator", null)) return null;
 
-    const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse return null;
+    const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse
+        return null;
 
     return try parser.tree.addNode(.{
         .decorator = .{ .expression = expression },

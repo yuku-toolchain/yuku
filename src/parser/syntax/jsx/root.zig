@@ -28,6 +28,7 @@ inline fn exitJsxTag(parser: *Parser) void {
 
 // https://facebook.github.io/jsx/#prod-JSXElement
 pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
     return parseJsxElement(parser, .top_level);
 }
 
@@ -58,7 +59,11 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
     // element with children: <elem>...</elem>
     const children = try parseJsxChildren(parser, opening_end) orelse return null;
 
-    const closing = try parseJsxClosingElement(parser, opening_data.name, context) orelse return null;
+    const closing = try parseJsxClosingElement(
+        parser,
+        opening_data.name,
+        context,
+    ) orelse return null;
 
     return try parser.tree.addNode(.{
         .jsx_element = .{
@@ -76,11 +81,18 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
     // parse <>
     try parser.advance() orelse return null; // consume '<'
     if (parser.current_token.tag != .greater_than) {
-        try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX opening fragment", .{ .help = "Add '>' to complete the fragment opening tag" });
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '>' to close JSX opening fragment",
+            .{ .help = "Add '>' to complete the fragment opening tag" },
+        );
         return null;
     }
     const opening_end = parser.current_token.span.end;
-    const opening = try parser.tree.addNode(.{ .jsx_opening_fragment = .{} }, .{ .start = start, .end = opening_end });
+    const opening = try parser.tree.addNode(
+        .{ .jsx_opening_fragment = .{} },
+        .{ .start = start, .end = opening_end },
+    );
 
     // parse children (don't advance past '>', parseJsxChildren scans from there)
     const children = try parseJsxChildren(parser, opening_end) orelse return null;
@@ -90,13 +102,24 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume '<'
 
-    if (!try parser.expect(.slash, "Expected '/' in JSX closing fragment", "Add '/' to close the fragment")) return null;
+    if (!try parser.expect(
+        .slash,
+        "Expected '/' in JSX closing fragment",
+        "Add '/' to close the fragment",
+    )) return null;
 
     const closing_end = parser.current_token.span.end;
 
-    if (!try parser.expect(.greater_than, "Expected '>' to close JSX closing fragment", "Add '>' to complete the fragment closing tag")) return null;
+    if (!try parser.expect(
+        .greater_than,
+        "Expected '>' to close JSX closing fragment",
+        "Add '>' to complete the fragment closing tag",
+    )) return null;
 
-    const closing = try parser.tree.addNode(.{ .jsx_closing_fragment = .{} }, .{ .start = closing_start, .end = closing_end });
+    const closing = try parser.tree.addNode(
+        .{ .jsx_closing_fragment = .{} },
+        .{ .start = closing_start, .end = closing_end },
+    );
 
     return try parser.tree.addNode(.{
         .jsx_fragment = .{
@@ -109,7 +132,11 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
 
 // https://facebook.github.io/jsx/#prod-JSXSelfClosingElement
 // https://facebook.github.io/jsx/#prod-JSXOpeningElement
-fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) Error!?ast.NodeIndex {
+fn parseJsxOpeningElement(
+    parser: *Parser,
+    comptime context: JsxElementContext,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
     const start = parser.current_token.span.start;
 
     enterJsxTag(parser);
@@ -117,7 +144,8 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
 
     const name = try parseJsxElementName(parser) orelse return null;
 
-    const type_arguments = if (parser.tree.isTs() and ts.isAngleOpen(parser.current_token.tag)) blk: {
+    const is_ts_generic = parser.tree.isTs() and ts.isAngleOpen(parser.current_token.tag);
+    const type_arguments = if (is_ts_generic) blk: {
         exitJsxTag(parser);
         const args = try ts.parseTypeArguments(parser);
         enterJsxTag(parser);
@@ -133,7 +161,11 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
     }
 
     if (parser.current_token.tag != .greater_than) {
-        try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX opening element", .{ .help = "Add '>' to close the JSX tag" });
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '>' to close JSX opening element",
+            .{ .help = "Add '>' to close the JSX tag" },
+        );
         return null;
     }
     const end = parser.current_token.span.end;
@@ -141,7 +173,8 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
     // mode and advance handling depends on context and self-closing status:
     // - self-closing attribute: switch to jsx_tag (resume attribute parsing), advance past '>'
     // - self-closing top-level: switch to normal (expression complete), advance past '>'
-    // - self-closing child: switch to normal (resume children parsing), don't advance (parseJsxChildren continues)
+    // - self-closing child: switch to normal (resume children parsing), don't advance
+    //   (parseJsxChildren continues)
     // - non-self-closing: stay in current mode (will switch in parseJsxChildren), don't advance
     if (self_closing) {
         if (context == .attribute) {
@@ -166,19 +199,33 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
 }
 
 // https://facebook.github.io/jsx/#prod-JSXClosingElement
-fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex, comptime context: JsxElementContext) Error!?ast.NodeIndex {
+fn parseJsxClosingElement(
+    parser: *Parser,
+    opening_name: ast.NodeIndex,
+    comptime context: JsxElementContext,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
     const start = parser.current_token.span.start;
 
     enterJsxTag(parser);
 
     try parser.advance() orelse return null; // consume '<'
 
-    if (!try parser.expect(.slash, "Expected '/' in JSX closing element", "Add '/' after '<' to close the element")) return null;
+    const slash_ok = try parser.expect(
+        .slash,
+        "Expected '/' in JSX closing element",
+        "Add '/' after '<' to close the element",
+    );
+    if (!slash_ok) return null;
 
     const name = try parseJsxElementName(parser) orelse return null;
 
     if (parser.current_token.tag != .greater_than) {
-        try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX closing element", .{ .help = "Add '>' to complete the closing tag" });
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '>' to close JSX closing element",
+            .{ .help = "Add '>' to complete the closing tag" },
+        );
         return null;
     }
     const end = parser.current_token.span.end;
@@ -212,7 +259,10 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex, comptime
         return null;
     }
 
-    return try parser.tree.addNode(.{ .jsx_closing_element = .{ .name = name } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .jsx_closing_element = .{ .name = name } },
+        .{ .start = start, .end = end },
+    );
 }
 
 fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool {
@@ -281,6 +331,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
 }
 
 fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     // already in normal mode from parseJsxChildren
@@ -289,23 +340,37 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .spread) {
         try parser.advance() orelse return null; // consume '...'
 
-        const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+        const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+            return null;
         const end = try expectJsxChildRightBrace(parser, "JSX spread") orelse return null;
 
-        return try parser.tree.addNode(.{ .jsx_spread_child = .{ .expression = expression } }, .{ .start = start, .end = end });
+        return try parser.tree.addNode(
+            .{ .jsx_spread_child = .{ .expression = expression } },
+            .{ .start = start, .end = end },
+        );
     }
 
     // empty expression: {}
     if (parser.current_token.tag == .right_brace) {
         const end = parser.current_token.span.end;
-        const empty = try parser.tree.addNode(.{ .jsx_empty_expression = .{} }, .{ .start = start + 1, .end = end - 1 });
-        return try parser.tree.addNode(.{ .jsx_expression_container = .{ .expression = empty } }, .{ .start = start, .end = end });
+        const empty = try parser.tree.addNode(
+            .{ .jsx_empty_expression = .{} },
+            .{ .start = start + 1, .end = end - 1 },
+        );
+        return try parser.tree.addNode(
+            .{ .jsx_expression_container = .{ .expression = empty } },
+            .{ .start = start, .end = end },
+        );
     }
 
-    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        return null;
     const end = try expectJsxChildRightBrace(parser, "JSX expression") orelse return null;
 
-    return try parser.tree.addNode(.{ .jsx_expression_container = .{ .expression = expression } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .jsx_expression_container = .{ .expression = expression } },
+        .{ .start = start, .end = end },
+    );
 }
 
 fn expectJsxChildRightBrace(parser: *Parser, comptime what: []const u8) Error!?u32 {
@@ -416,7 +481,8 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
                 try parser.report(
                     parser.tree.span(container),
                     "JSX attribute value cannot be an empty expression",
-                    .{ .help = "Replace {} with a valid expression or remove the braces to use a string literal" },
+                    .{ .help = "Replace {} with a valid expression or remove the braces" ++
+                        " to use a string literal" },
                 );
                 return null;
             }
@@ -431,7 +497,8 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected string literal or JSX expression for attribute value",
-                .{ .help = "JSX attribute values must be either a string literal (e.g. \"value\") or an expression in braces (e.g. {expression})" },
+                .{ .help = "JSX attribute values must be either a string literal" ++
+                    " (e.g. \"value\") or an expression in braces (e.g. {expression})" },
             );
             return null;
         },
@@ -446,7 +513,11 @@ const JsxExprContext = enum {
 };
 
 // parses {expr} in children context
-fn parseJsxExpressionContainer(parser: *Parser, comptime context: JsxExprContext) Error!?ast.NodeIndex {
+fn parseJsxExpressionContainer(
+    parser: *Parser,
+    comptime context: JsxExprContext,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     // switch to normal mode for JS expression parsing
@@ -465,11 +536,18 @@ fn parseJsxExpressionContainer(parser: *Parser, comptime context: JsxExprContext
         }
         try parser.advance() orelse return null;
 
-        const empty = try parser.tree.addNode(.{ .jsx_empty_expression = .{} }, .{ .start = start + 1, .end = end - 1 });
-        return try parser.tree.addNode(.{ .jsx_expression_container = .{ .expression = empty } }, .{ .start = start, .end = end });
+        const empty = try parser.tree.addNode(
+            .{ .jsx_empty_expression = .{} },
+            .{ .start = start + 1, .end = end - 1 },
+        );
+        return try parser.tree.addNode(
+            .{ .jsx_expression_container = .{ .expression = empty } },
+            .{ .start = start, .end = end },
+        );
     }
 
-    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        return null;
     const end = parser.current_token.span.end;
 
     // restore mode before consuming '}'
@@ -477,29 +555,52 @@ fn parseJsxExpressionContainer(parser: *Parser, comptime context: JsxExprContext
         enterJsxTag(parser);
     }
 
-    if (!try parser.expect(.right_brace, "Expected '}' to close JSX expression", "Add '}' to close the expression")) return null;
+    const brace_ok = try parser.expect(
+        .right_brace,
+        "Expected '}' to close JSX expression",
+        "Add '}' to close the expression",
+    );
+    if (!brace_ok) return null;
 
-    return try parser.tree.addNode(.{ .jsx_expression_container = .{ .expression = expression } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .jsx_expression_container = .{ .expression = expression } },
+        .{ .start = start, .end = end },
+    );
 }
 
 // parses {...expr} as spread attribute
 fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     exitJsxTag(parser);
 
     try parser.advance() orelse return null; // consume '{'
 
-    if (!try parser.expect(.spread, "Expected '...' after '{' in JSX spread", "Add '...' to spread the expression")) return null;
+    const spread_ok = try parser.expect(
+        .spread,
+        "Expected '...' after '{' in JSX spread",
+        "Add '...' to spread the expression",
+    );
+    if (!spread_ok) return null;
 
-    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        return null;
     const end = parser.current_token.span.end;
 
     enterJsxTag(parser);
 
-    if (!try parser.expect(.right_brace, "Expected '}' to close JSX spread", "Add '}' to close the spread expression")) return null;
+    const brace_ok = try parser.expect(
+        .right_brace,
+        "Expected '}' to close JSX spread",
+        "Add '}' to close the spread expression",
+    );
+    if (!brace_ok) return null;
 
-    return try parser.tree.addNode(.{ .jsx_spread_attribute = .{ .argument = expression } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .jsx_spread_attribute = .{ .argument = expression } },
+        .{ .start = start, .end = end },
+    );
 }
 
 // https://facebook.github.io/jsx/#prod-JSXElementName
