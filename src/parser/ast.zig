@@ -245,16 +245,21 @@ pub const Tree = struct {
 
     /// Returns the data for the node at the given index.
     pub inline fn data(self: *const Tree, index: NodeIndex) NodeData {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
         return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
     /// Returns the span for the node at the given index.
     pub inline fn span(self: *const Tree, index: NodeIndex) Span {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
         return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
     /// Returns the extra node indices for the given range.
     pub inline fn extra(self: *const Tree, range: IndexRange) []const NodeIndex {
+        std.debug.assert(range.start + range.len <= self.extras.items.len);
         return self.extras.items[range.start..][0..range.len];
     }
 
@@ -275,16 +280,22 @@ pub const Tree = struct {
 
     /// Replaces an existing node's data in-place.
     pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
         self.nodes.items(.data)[@intFromEnum(index)] = new_data;
     }
 
     /// Replaces an existing node's span in-place.
     pub inline fn setSpan(self: *Tree, index: NodeIndex, new_span: Span) void {
+        std.debug.assert(index != .null);
+        std.debug.assert(@intFromEnum(index) < self.nodes.len);
+        std.debug.assert(new_span.start <= new_span.end);
         self.nodes.items(.span)[@intFromEnum(index)] = new_span;
     }
 
     /// Updates the name of an identifier-shaped node in place.
     pub fn setIdentifierName(self: *Tree, index: NodeIndex, name: String) void {
+        std.debug.assert(index != .null);
         switch (self.data(index)) {
             .binding_identifier => |bid| {
                 var n = bid;
@@ -307,6 +318,8 @@ pub const Tree = struct {
         node_data: NodeData,
         node_span: Span,
     ) error{OutOfMemory}!NodeIndex {
+        std.debug.assert(self.nodes.len < std.math.maxInt(u32));
+        std.debug.assert(node_span.start <= node_span.end);
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
         const entry: Node = .{ .data = node_data, .span = node_span };
         if (self.nodes.len < self.nodes.capacity) {
@@ -319,6 +332,7 @@ pub const Tree = struct {
 
     /// Creates a new child list. Returns its range.
     pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+        std.debug.assert(self.extras.items.len + children.len <= std.math.maxInt(u32));
         const start: u32 = @intCast(self.extras.items.len);
         if (self.extras.items.len + children.len <= self.extras.capacity) {
             self.extras.appendSliceAssumeCapacity(children);
@@ -358,9 +372,12 @@ pub const Tree = struct {
     /// Returns the comments attached to `node`, in source order. Empty
     /// when `attach_comments` was not enabled or the node has none.
     pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const Comment {
+        std.debug.assert(node != .null);
         const offsets = self.node_comment_offsets;
         const i = @intFromEnum(node);
         if (i + 1 >= offsets.len) return &.{};
+        std.debug.assert(offsets[i] <= offsets[i + 1]);
+        std.debug.assert(offsets[i + 1] <= self.comments.len);
         return self.comments[offsets[i]..offsets[i + 1]];
     }
 };

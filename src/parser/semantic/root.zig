@@ -22,6 +22,8 @@ pub const AnalysisError = Allocator.Error;
 /// All allocations use the tree's arena, so the returned scope tree
 /// and symbol table are valid as long as the tree is alive.
 pub fn analyze(tree: *ast.Tree) AnalysisError!semantic.Result {
+    std.debug.assert(tree.root != .null);
+
     var visitor = SemanticVisit{
         .tree = tree,
         .allocator = tree.allocator(),
@@ -104,6 +106,8 @@ const SemanticVisit = struct {
         ctx: *SemanticCtx,
         existing_id: ?semantic.SymbolId,
     ) AnalysisError!void {
+        std.debug.assert(node_index != .null);
+        std.debug.assert(name.len > 0);
         const target = ctx.symbols.currentTarget();
         const excludes = ctx.symbols.currentBindingExcludes();
 
@@ -1158,8 +1162,13 @@ const SemanticVisit = struct {
     }
 
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
+        std.debug.assert(node != .null);
         var current = node;
-        while (true) {
+        // parser builds at most one paren per syntactic level, so the chain
+        // is bounded by source nesting depth
+        var depth: u32 = 0;
+        while (true) : (depth += 1) {
+            std.debug.assert(depth < 1_000_000);
             switch (tree.data(current)) {
                 .parenthesized_expression => |p| current = p.expression,
                 else => return current,
@@ -1280,6 +1289,7 @@ const SemanticVisit = struct {
     const LabelSearch = enum { found, not_found, crossed_boundary };
 
     fn findLabel(ctx: *SemanticCtx, name: []const u8) LabelSearch {
+        std.debug.assert(name.len > 0);
         var crossed_boundary = false;
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1298,6 +1308,7 @@ const SemanticVisit = struct {
     const ContinueLabelSearch = enum { found, not_found, crossed_boundary, not_iteration };
 
     fn findLabelForContinue(ctx: *SemanticCtx, name: []const u8) ContinueLabelSearch {
+        std.debug.assert(name.len > 0);
         var crossed_boundary = false;
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1406,6 +1417,8 @@ const SemanticVisit = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!void {
+        std.debug.assert(name.len > 0);
+        std.debug.assert(node_index != .null);
         if (!ctx.tree.isModule()) return;
         // exports inside a TS namespace are namespace-scoped, not module-scoped
         if (ctx.inTsNamespace()) return;
@@ -1445,10 +1458,13 @@ const SemanticVisit = struct {
         existing: Symbol,
         ctx: *SemanticCtx,
     ) Allocator.Error!void {
+        std.debug.assert(existing_id != .none);
+        std.debug.assert(node_index != .null);
         const name = ctx.tree.string(id.name);
         const current_span = ctx.tree.span(node_index);
         const existing_span = ctx.tree.span(ctx.symbols.firstDeclOf(existing_id));
         const kind = existing.flags.toString();
+        std.debug.assert(kind.len > 0);
         const article: []const u8 = switch (kind[0]) {
             'a', 'e', 'i', 'o', 'u' => "an",
             else => "a",
@@ -1485,6 +1501,8 @@ const SemanticVisit = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Allocator.Error!void {
+        std.debug.assert(span.start <= span.end);
+        std.debug.assert(message.len > 0);
         try self.tree.addDiagnostic(.{
             .severity = opts.severity,
             .message = message,

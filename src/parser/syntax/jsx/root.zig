@@ -28,6 +28,7 @@ inline fn exitJsxTag(parser: *Parser) void {
 
 // https://facebook.github.io/jsx/#prod-JSXElement
 pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
     return parseJsxElement(parser, .top_level);
 }
 
@@ -135,6 +136,7 @@ fn parseJsxOpeningElement(
     parser: *Parser,
     comptime context: JsxElementContext,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
     const start = parser.current_token.span.start;
 
     enterJsxTag(parser);
@@ -202,6 +204,7 @@ fn parseJsxClosingElement(
     opening_name: ast.NodeIndex,
     comptime context: JsxElementContext,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
     const start = parser.current_token.span.start;
 
     enterJsxTag(parser);
@@ -328,6 +331,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
 }
 
 fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     // already in normal mode from parseJsxChildren
@@ -513,6 +517,7 @@ fn parseJsxExpressionContainer(
     parser: *Parser,
     comptime context: JsxExprContext,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     // switch to normal mode for JS expression parsing
@@ -565,6 +570,7 @@ fn parseJsxExpressionContainer(
 
 // parses {...expr} as spread attribute
 fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     exitJsxTag(parser);

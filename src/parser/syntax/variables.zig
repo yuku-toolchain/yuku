@@ -33,6 +33,12 @@ pub fn parseVariableDeclaration(
     opts: ParseVariableDeclarationOpts,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
+    // entry is on `var`/`let`/`const`/`using` directly (or the caller already
+    // consumed an `await` and passed `start_from_param`)
+    std.debug.assert(start_from_param != null or switch (parser.current_token.tag) {
+        .@"var", .let, .@"const", .using => true,
+        else => false,
+    });
     const start = start_from_param orelse parser.current_token.span.start;
     const kind = try parseVariableKind(parser, opts.await_using) orelse return null;
 

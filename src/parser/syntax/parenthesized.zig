@@ -1,3 +1,4 @@
+const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
@@ -24,6 +25,7 @@ pub const ParenthesizedCover = struct {
 /// parse CoverParenthesizedExpressionAndArrowParameterList.
 /// returns the cover which can be converted to either parenthesized expression or arrow params.
 pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
+    std.debug.assert(parser.current_token.tag == .left_paren);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume (
 

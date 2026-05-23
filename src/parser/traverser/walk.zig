@@ -24,6 +24,7 @@ pub const Action = enum {
 /// `exit_block_statement`, or the catch-all `enter_node`/`exit_node`.
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
+    std.debug.assert(ctx.tree.root != .null);
     _ = try walkNode(C, V, visitor, ctx.tree.root, ctx);
 }
 
@@ -315,6 +316,7 @@ pub const NodePath = struct {
 
     /// Adds a node to the path when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
+        std.debug.assert(index != .null);
         if (self.len < capacity) {
             self.buf[self.len] = index;
         }
@@ -323,6 +325,7 @@ pub const NodePath = struct {
 
     /// Removes the current node from the path when exiting it.
     pub fn pop(self: *NodePath) void {
+        std.debug.assert(self.len > 0);
         self.len -= 1;
     }
 };

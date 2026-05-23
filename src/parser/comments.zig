@@ -28,8 +28,10 @@ const ChildInfo = struct {
 };
 
 pub fn attach(tree: *ast.Tree, raw: []const ast.RawComment) Error!void {
+    std.debug.assert(tree.root != .null);
     const alloc = tree.allocator();
     const node_count = tree.nodes.len;
+    std.debug.assert(node_count > 0);
     const offsets = try alloc.alloc(u32, node_count + 1);
 
     if (raw.len == 0) {

@@ -79,11 +79,14 @@ pub const ScopeTree = struct {
 
     /// Returns the scope for the given ID.
     pub inline fn getScope(self: ScopeTree, id: ScopeId) Scope {
+        std.debug.assert(id != .none);
+        std.debug.assert(@intFromEnum(id) < self.scopes.len);
         return self.scopes[@intFromEnum(id)];
     }
 
     /// Returns an iterator that walks from `start` up to the root scope.
     pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
+        std.debug.assert(start == .none or @intFromEnum(start) < self.scopes.len);
         return .{ .scopes = self.scopes, .current = start };
     }
 
@@ -96,6 +99,7 @@ pub const ScopeTree = struct {
         pub fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
+            std.debug.assert(@intFromEnum(id) < self.scopes.len);
             self.current = self.scopes[@intFromEnum(id)].parent;
             return id;
         }
@@ -110,6 +114,8 @@ pub const ScopeTracker = struct {
     current: ScopeId = .root,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
+        std.debug.assert(tree.root != .null);
+
         const alloc = tree.allocator();
         var self = ScopeTracker{ .tree = tree, .allocator = alloc };
 
@@ -117,10 +123,18 @@ pub const ScopeTracker = struct {
         try self.scopes.ensureTotalCapacity(alloc, estimated_scopes);
 
         self.pushRoot();
+
+        // exactly one root scope, plus the module wrapper when applicable
+        std.debug.assert(self.scopes.items.len == if (tree.source_type == .module)
+            @as(usize, 2)
+        else
+            1);
         return self;
     }
 
     fn pushRoot(self: *ScopeTracker) void {
+        std.debug.assert(self.scopes.items.len == 0);
+
         self.scopes.appendAssumeCapacity(.{
             .node = self.tree.root,
             .parent = .none,
@@ -148,6 +162,9 @@ pub const ScopeTracker = struct {
         node: ast.NodeIndex,
         flags: Scope.Flags,
     ) Allocator.Error!void {
+        // scopes.len is the about-to-be-assigned id and must fit in u32
+        std.debug.assert(self.scopes.items.len < std.math.maxInt(u32));
+
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
         const parent = self.currentScope();
 
@@ -162,6 +179,11 @@ pub const ScopeTracker = struct {
     }
 
     fn popScope(self: *ScopeTracker) void {
+        // root and module have no further parent, so popping them would
+        // unbalance the stack
+        std.debug.assert(self.current != .none);
+        std.debug.assert(self.current != .root);
+
         self.current = self.scopes.items[@intFromEnum(self.current)].parent;
     }
 
@@ -242,25 +264,12 @@ pub const ScopeTracker = struct {
         }
     }
 
-    // section 11.2.2 ...
-    // checks whether a function body begins with a "use strict" directive
-    // by peeking into it before we actually traverse the body.
-    //
-    // we need this because "use strict" applies to the entire function,
-    // including its parameters. but in a tree walk, we create the function
-    // scope when we enter the function node, which is before we visit
-    // any statements in the body. so the strict flag has to be set on
-    // the scope at creation time, not later when we encounter the directive.
-    //
-    // example of why this matters:
-    //
-    //   function foo(a, a) {   // duplicate param, only illegal in strict mode
-    //     "use strict";        // makes the whole function strict, retroactively
-    //   }
-    //
-    // by the time we'd normally see the directive during traversal, we've
-    // already processed the parameters under a non-strict scope. looking
-    // ahead here avoids that.
+    // "use strict" applies to the whole function including its parameters,
+    // but the tree walk creates the function scope at the function node,
+    // before any body statement is visited. peek into the body so the
+    // strict flag can be set when the scope is created, catching cases
+    // like `function foo(a, a) { "use strict"; }` where the duplicate
+    // params are illegal once the retroactive directive applies
     fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
         if (body_index == .null) return false;
 
@@ -350,21 +359,27 @@ pub const ScopeTracker = struct {
 
     /// Returns the current scope.
     pub inline fn currentScope(self: *const ScopeTracker) Scope {
+        std.debug.assert(self.current != .none);
         return self.getScope(self.currentScopeId());
     }
 
     /// Returns a mutable pointer to the current scope.
     pub inline fn currentScopeMut(self: *ScopeTracker) *Scope {
+        std.debug.assert(self.current != .none);
         return &self.scopes.items[@intFromEnum(self.currentScopeId())];
     }
 
     /// Returns the scope for the given ID.
     pub inline fn getScope(self: *const ScopeTracker, id: ScopeId) Scope {
+        std.debug.assert(id != .none);
+        std.debug.assert(@intFromEnum(id) < self.scopes.items.len);
         return self.scopes.items[@intFromEnum(id)];
     }
 
     /// Returns a mutable pointer to the scope for the given ID.
     pub inline fn getScopeMut(self: *ScopeTracker, id: ScopeId) *Scope {
+        std.debug.assert(id != .none);
+        std.debug.assert(@intFromEnum(id) < self.scopes.items.len);
         return &self.scopes.items[@intFromEnum(id)];
     }
 
@@ -375,6 +390,7 @@ pub const ScopeTracker = struct {
 
     /// Returns an iterator that walks from `start` up to the root scope.
     pub fn ancestors(self: *const ScopeTracker, start: ScopeId) ScopeTree.AncestorIterator {
+        std.debug.assert(start == .none or @intFromEnum(start) < self.scopes.items.len);
         return .{ .scopes = self.scopes.items, .current = start };
     }
 

@@ -5,6 +5,7 @@ pub const CodePoint = struct { len: u3, value: u21 };
 pub const Utf8Error = error{InvalidUtf8};
 
 pub fn codePointAt(str: []const u8, i: usize) Utf8Error!CodePoint {
+    std.debug.assert(i < str.len);
     const len = std.unicode.utf8ByteSequenceLength(str[i]) catch return error.InvalidUtf8;
     if (str.len - i < len) return error.InvalidUtf8;
 
@@ -51,6 +52,7 @@ pub fn isMultiByteSpace(cp: u21) bool {
 }
 
 pub fn parseOctal(input: []const u8, start: usize) struct { value: u21, end: usize } {
+    std.debug.assert(start < input.len);
     var value: u21 = 0;
     var i = start;
     const max: usize = if (input[start] <= '3') 3 else 2;
@@ -287,6 +289,7 @@ fn appendCodePoint(
     alloc: std.mem.Allocator,
     cp: u21,
 ) error{OutOfMemory}!void {
+    std.debug.assert(cp <= 0x10FFFF);
     if (cp >= 0xD800 and cp <= 0xDFFF) {
         try out.appendSlice(alloc, &[3]u8{
             0xE0 | @as(u8, @intCast(cp >> 12)),

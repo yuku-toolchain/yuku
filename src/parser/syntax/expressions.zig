@@ -425,6 +425,7 @@ fn parseAsyncArrowFunctionOrCall(
 }
 
 fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag.isUnaryOperator());
     const operator_token = parser.current_token;
     try parser.advance() orelse return null;
 
@@ -476,6 +477,7 @@ pub fn parseAwaitExpression(parser: *Parser, await_start: u32) Error!?ast.NodeIn
 /// yield [no `LineTerminator` here] `AssignmentExpression`
 /// yield [no `LineTerminator` here] * `AssignmentExpression`
 fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .yield);
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null;
@@ -527,6 +529,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `this`
 fn parseThisExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .this);
     const this_token = parser.current_token;
     try parser.advance() orelse return null; // consume 'this'
     return try parser.tree.addNode(.{ .this_expression = .{} }, this_token.span);
@@ -534,6 +537,7 @@ fn parseThisExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `super`
 fn parseSuperExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .super);
     const super_token = parser.current_token;
     try parser.advance() orelse return null; // consume 'super'
     const next_tag = parser.current_token.tag;
@@ -641,6 +645,7 @@ fn parseNewTarget(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
 
 /// `new Callee`, `new Callee(args)`, or `new.target`
 fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .new);
     const start = parser.current_token.span.start;
     try parser.checkEscapedKeyword();
     const new = try literals.parseIdentifierName(parser) orelse return null; // consume 'new'
@@ -990,6 +995,7 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
 }
 
 pub fn parseArrayExpression(parser: *Parser, in_cover: bool) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_bracket);
     const cover = try array.parseCover(parser) orelse return null;
 
     const needs_validation =
@@ -1009,6 +1015,7 @@ pub fn parseArrayExpression(parser: *Parser, in_cover: bool) Error!?ast.NodeInde
 }
 
 pub fn parseObjectExpression(parser: *Parser, in_cover: bool) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const cover = try object.parseCover(parser) orelse return null;
 
     const needs_validation =
@@ -1040,6 +1047,7 @@ fn parseStaticMemberExpression(
     object_node: ast.NodeIndex,
     optional: bool,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .dot);
     try parser.advance() orelse return null; // consume '.'
     return parseMemberProperty(parser, object_node, optional);
 }
@@ -1083,6 +1091,7 @@ fn parseComputedMemberExpression(
     object_node: ast.NodeIndex,
     optional: bool,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_bracket);
     const open_bracket_span = parser.current_token.span;
     try parser.advance() orelse return null; // consume '['
 
@@ -1126,6 +1135,7 @@ pub fn parseCallExpression(
     optional: bool,
     type_arguments: ast.NodeIndex,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_paren);
     const start = parser.tree.span(callee_node).start;
     const open_paren_span = parser.current_token.span;
     try parser.advance() orelse return null; // consume '('

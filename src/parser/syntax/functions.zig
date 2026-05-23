@@ -1,3 +1,4 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
@@ -24,6 +25,10 @@ pub fn parseFunction(
     opts: ParseFunctionOpts,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
+    // entry token is either `function` directly, or one of the modifiers
+    // (`async`/`declare`/...) that the caller consumed before passing `start_from_param`
+    std.debug.assert(start_from_param != null or parser.current_token.tag == .function);
+
     const start = start_from_param orelse parser.current_token.span.start;
 
     if (!try parser.expect(
@@ -182,6 +187,7 @@ pub fn parseFunction(
 }
 
 pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(
@@ -222,6 +228,7 @@ pub fn parseFormalParameters(
     kind: ast.FormalParameterKind,
     allow_parameter_properties: bool,
 ) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_paren);
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;

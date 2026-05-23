@@ -108,6 +108,7 @@ pub fn printImpl(
     tree: *Tree,
     options: Options,
 ) Error!Result {
+    std.debug.assert(tree.root != .null);
     var p = try Printer(cfg).init(allocator, tree, options);
     defer p.deinit();
     try p.printRoot();
@@ -226,6 +227,7 @@ fn Printer(comptime cfg: Config) type {
         }
 
         inline fn rewindTo(self: *Self, pos: usize) void {
+            std.debug.assert(pos <= self.code.items.len);
             self.code.shrinkRetainingCapacity(pos);
         }
 
@@ -243,6 +245,7 @@ fn Printer(comptime cfg: Config) type {
         }
 
         inline fn restore(self: *Self, c: Cursor) void {
+            std.debug.assert(c.code <= self.code.items.len);
             self.code.shrinkRetainingCapacity(c.code);
             if (c.sm) |snap| if (self.sm) |*sm| sm.restore(snap);
         }

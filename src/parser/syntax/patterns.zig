@@ -1,3 +1,4 @@
+const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
@@ -33,16 +34,19 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseArrayPattern(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_bracket);
     const cover = try array.parseCover(parser) orelse return null;
     return try array.coverToPattern(parser, cover, .binding);
 }
 
 fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const cover = try object.parseCover(parser) orelse return null;
     return try object.coverToPattern(parser, cover, .binding);
 }
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    std.debug.assert(left != .null);
     const start = parser.tree.span(left).start;
 
     if (parser.current_token.tag != .assign) return left;
@@ -59,6 +63,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 }
 
 pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .spread);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume ...
 

@@ -8,6 +8,7 @@ pub const String = struct {
     pub const empty: String = .{};
 
     pub fn len(self: String) u32 {
+        std.debug.assert(self.end >= self.start);
         return self.end - self.start;
     }
 };
@@ -21,14 +22,20 @@ pub const ASTStringPool = struct {
 
     /// Returns the string content for a `String`.
     pub fn get(self: *const ASTStringPool, id: String) []const u8 {
+        std.debug.assert(id.end >= id.start);
         if (id.start == id.end) return "";
         const src_len: u32 = @intCast(self.source.len);
-        if (id.start < src_len) return self.source[id.start..id.end];
+        if (id.start < src_len) {
+            std.debug.assert(id.end <= src_len);
+            return self.source[id.start..id.end];
+        }
         return self.extra.items[id.start - src_len .. id.end - src_len];
     }
 
     /// Returns a `String` referencing a range in the original source.
-    pub inline fn sourceSlice(_: *const ASTStringPool, start: u32, end: u32) String {
+    pub inline fn sourceSlice(self: *const ASTStringPool, start: u32, end: u32) String {
+        std.debug.assert(start <= end);
+        std.debug.assert(end <= self.source.len);
         return .{ .start = start, .end = end };
     }
 
@@ -53,6 +60,7 @@ pub const ASTStringPool = struct {
         str: []const u8,
     ) error{OutOfMemory}!String {
         if (str.len == 0) return .empty;
+        std.debug.assert(self.source.len + self.extra.items.len + str.len <= std.math.maxInt(u32));
 
         const extra = self.extra.items;
         const src_len: u32 = @intCast(self.source.len);

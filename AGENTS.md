@@ -59,13 +59,12 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 - **Reuse, don't reallocate.** Scratch buffers used during a single pass should be reset between iterations, not freed and re-grown. Hold them on a parent struct so reuse is the default.
 - Long-lived caches and pools must have an explicit upper bound. Unbounded growth is a latency bug waiting to happen.
 
-### Scope and Function Size
+### Scope and Function Shape
 
 - Declare variables at the **smallest possible scope**. **Minimize the number of variables in scope** to reduce the probability of misuse.
-- **Hard limit: 70 lines per function.** Art is born of constraints. There are many ways to cut a wall of code into chunks of 70 lines, but only a few will feel right:
-  - Good function shape is the inverse of an hourglass: a few parameters, a simple return type, and meaty logic between the braces.
-  - **Centralize control flow.** When splitting a large function, keep all `switch`/`if` statements in the parent and move non-branchy logic to helpers. *Push `if`s up and `for`s down.*
-  - **Centralize state manipulation.** Let the parent function hold state in local variables and use helpers to compute what should change, rather than mutate directly. Keep leaf functions pure.
+- Good function shape is the inverse of an hourglass: a few parameters, a simple return type, and meaty logic between the braces.
+- **Centralize control flow.** Keep `switch`/`if` decisions in the parent and move non-branchy logic to helpers. *Push `if`s up and `for`s down.*
+- **Centralize state manipulation.** Let the parent function hold state in local variables and use helpers to compute what should change, rather than mutate directly. Keep leaf functions pure.
 
 ### Compiler
 
@@ -145,9 +144,11 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 - **Use named arguments** (options structs) when arguments can be mixed up. A function taking two `u64`s must use an options struct. If an argument can be `null`, name it so that `null` is meaningful at the call site.
 - Singleton dependencies (allocator, logger) have unique types and should be threaded through constructors *positionally*, from most general to most specific.
 - **Write descriptive commit messages** that inform and delight the reader. A pull-request description is not stored in the repository and is invisible in `git blame`, so it is not a replacement for a commit message.
-- **Say why.** Code alone is not documentation. Comments explain why you wrote what you wrote. Show your workings.
-- **Say how.** Tests need a description at the top explaining goal and methodology so readers can get up to speed (or skip past).
-- **Comments are sentences:** space after the slash, capital letter, full stop (or colon if introducing what follows). Trailing-line comments may be phrases without punctuation.
+- **Say why.** Code alone is not documentation. Comments explain *why*, not *what* (the code already says what). Show your workings only when the next reader would otherwise guess wrong.
+- **Don't bloat with comments.** Default to no comment. Only add one when the reason behind the code is genuinely non-obvious: a hidden constraint, a subtle invariant, a workaround for a real bug. If removing the comment wouldn't confuse a future reader, don't write it. Never restate the line below.
+- **Internal comments are terse phrases, all lowercase.** No leading capital, no trailing full stop. Keep proper casing only for things that need it (identifier names, proper nouns: `Lexer`, `JSX`, `ECMAScript`). A trailing-line note like `// caller already consumed the `(`` is the target shape, not a multi-sentence paragraph.
+- **Public doc comments (`///`) are professional prose.** Proper casing, full sentences, real punctuation. They describe what a name means and how a user is meant to use it. Never leak implementation hand-offs, ticket numbers, TODO chatter, or step-by-step rationale that belongs in the commit message.
+- **Tests need a header.** A short comment at the top of a non-trivial test states the goal and methodology so a reader can get up to speed or skip past.
 - **No em dashes and no semicolons in comments.** Split into separate sentences instead. Both invite run-on prose that obscures the point.
 
 ### Cache Invalidation
@@ -206,7 +207,7 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 - **4 spaces of indentation**, not 2. More obvious at a distance.
 - **Hard limit: 100 columns per line.** No exceptions. Nothing should hide behind a horizontal scrollbar. Set a column ruler in your editor. To wrap a signature, call, or data structure, add a trailing comma and let the formatter do the rest.
 
-  The motivation, like the 70-line function limit, is physical: 100 columns lets two copies of the code fit side-by-side on a screen.
+  The motivation is physical: 100 columns lets two copies of the code fit side-by-side on a screen.
 
 - Always brace `if` statements unless they fit on a single line. This is defense in depth against "goto fail;" bugs.
 

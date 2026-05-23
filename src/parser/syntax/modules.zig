@@ -1,3 +1,4 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
@@ -16,12 +17,14 @@ const variables = @import("variables.zig");
 const ts = @import("ts/statements.zig");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .import);
     return parseImportDeclarationFrom(parser, parser.current_token.span.start);
 }
 
 // explicit start for `export` wrapped import equals so span includes the legacy
 // modifier not only `import`
 pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .import);
     const is_ts = parser.tree.isTs();
     try parser.advance() orelse return null;
 
@@ -399,6 +402,7 @@ fn parseImportedBinding(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .@"export");
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;

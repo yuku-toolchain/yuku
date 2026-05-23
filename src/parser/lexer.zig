@@ -74,6 +74,9 @@ pub const Lexer = struct {
         source_type: ast.SourceType,
         attach_comments: bool,
     ) error{OutOfMemory}!Lexer {
+        // span positions are u32
+        std.debug.assert(source.len <= std.math.maxInt(u32));
+
         var self: Lexer = .{
             .source = source,
             .state = .{},
@@ -86,10 +89,14 @@ pub const Lexer = struct {
 
         self.skipHashbang();
 
+        std.debug.assert(self.cursor <= self.source.len);
         return self;
     }
 
     fn skipHashbang(self: *Lexer) void {
+        // hashbang only legal at byte 0
+        std.debug.assert(self.cursor == 0);
+
         if (self.source.len >= 2 and self.source[0] == '#' and self.source[1] == '!') {
             var end: u32 = 2;
             while (end < self.source.len and
@@ -98,15 +105,21 @@ pub const Lexer = struct {
             {
                 end += 1;
             }
+            std.debug.assert(end >= 2);
+            std.debug.assert(end <= self.source.len);
             self.hashbang = .{ .start = 2, .len = @intCast(end - 2) };
             self.cursor = end;
         }
     }
 
     pub fn nextToken(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor <= self.source.len);
+
         self.clearTokenFlags();
 
         try self.skipWsAndComments();
+
+        std.debug.assert(self.cursor <= self.source.len);
 
         if (self.cursor >= self.source.len) {
             return self.createToken(.eof, self.cursor, self.cursor);
@@ -155,6 +168,8 @@ pub const Lexer = struct {
     }
 
     inline fn scanSimplePunctuation(self: *Lexer) Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
         const c = self.source[self.cursor];
         self.cursor += 1;
@@ -173,20 +188,33 @@ pub const Lexer = struct {
             else => unreachable,
         };
 
+        std.debug.assert(self.cursor == start + 1);
         return self.createToken(tag, start, self.cursor);
     }
 
     inline fn puncToken(self: *Lexer, len: u32, tag: TokenTag, start: u32) Token {
+        std.debug.assert(len > 0);
+        std.debug.assert(start == self.cursor);
+        std.debug.assert(start + len <= self.source.len);
+
         self.cursor += len;
         return self.createToken(tag, start, self.cursor);
     }
 
     fn scanPunctuation(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
         const c0 = self.source[self.cursor];
         const c1 = self.peek(1);
         const c2 = self.peek(2);
         const c3 = self.peek(3);
+
+        // dispatched from nextToken's punctuation lead-char set
+        std.debug.assert(switch (c0) {
+            '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '^', '?' => true,
+            else => false,
+        });
 
         return switch (c0) {
             '+' => switch (c1) {
@@ -230,8 +258,8 @@ pub const Lexer = struct {
                     self.puncToken(3, .unsigned_right_shift, start)
             else switch (c1) {
                 '>' => {
-                    // In jsx, the trailing `>>` of `<div attr=<elem></elem>></div>` must lex
-                    // as two separate `>` tokens so the parser can balance the inner element.
+                    // in jsx, the trailing `>>` of `<div attr=<elem></elem>></div>` must lex
+                    // as two separate `>` tokens so the parser can balance the inner element
                     if (self.mode == .jsx_tag) {
                         return self.puncToken(1, .greater_than, start);
                     } else {
@@ -313,11 +341,13 @@ pub const Lexer = struct {
     }
 
     pub inline fn rewindTo(self: *Lexer, position: u32) void {
+        std.debug.assert(position <= self.source.len);
         self.cursor = position;
         self.clearTokenFlags();
     }
 
     inline fn isLineTerminator(self: *const Lexer, c: u8) bool {
+        std.debug.assert(self.cursor <= self.source.len);
         return c == '\n' or c == '\r' or
             (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0);
     }
@@ -328,6 +358,9 @@ pub const Lexer = struct {
     /// called by the parser when it expects a template continuation after parsing
     /// an expression inside ${}.
     pub fn reScanTemplateContinuation(self: *Lexer, right_brace_start: u32) LexicalError!Token {
+        std.debug.assert(right_brace_start < self.source.len);
+        std.debug.assert(self.source[right_brace_start] == '}');
+
         self.rewindTo(right_brace_start);
 
         const start = self.cursor;
@@ -359,6 +392,8 @@ pub const Lexer = struct {
     /// splits `>>`, `>>>`, `>=`, `>>=`, `>>>=` into a leading `>` so
     /// nested type argument lists like `Foo<Bar<T>>` can close.
     pub fn reScanGreaterThan(self: *Lexer, token_start: u32) Token {
+        std.debug.assert(token_start < self.source.len);
+        std.debug.assert(self.source[token_start] == '>');
         self.rewindTo(token_start + 1);
         return self.createToken(.greater_than, token_start, token_start + 1);
     }
@@ -366,6 +401,8 @@ pub const Lexer = struct {
     /// splits `<<` into a leading `<` so nested generics like
     /// `Foo<<T>(x: T) => R>` can open.
     pub fn reScanLessThan(self: *Lexer, token_start: u32) Token {
+        std.debug.assert(token_start < self.source.len);
+        std.debug.assert(self.source[token_start] == '<');
         self.rewindTo(token_start + 1);
         return self.createToken(.less_than, token_start, token_start + 1);
     }
@@ -373,6 +410,7 @@ pub const Lexer = struct {
     /// scans JSX text content between '<' and '{' in JSX children.
     /// called by the parser when parsing JSX element children.
     pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
+        std.debug.assert(initial_cursor <= self.source.len);
         self.rewindTo(initial_cursor);
 
         const start = self.cursor;
@@ -386,6 +424,7 @@ pub const Lexer = struct {
             }
         }
 
+        std.debug.assert(self.cursor >= start);
         return self.createToken(.jsx_text, start, self.cursor);
     }
 
@@ -399,6 +438,9 @@ pub const Lexer = struct {
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
     pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult {
+        std.debug.assert(slash_token_start < self.source.len);
+        std.debug.assert(self.source[slash_token_start] == '/');
+
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
@@ -499,9 +541,12 @@ pub const Lexer = struct {
     //
 
     fn scanString(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
         const src = self.source;
         const quote = src[start];
+        std.debug.assert(quote == '"' or quote == '\'');
         var pos = self.cursor + 1;
 
         if (self.mode == .normal) {
@@ -545,6 +590,9 @@ pub const Lexer = struct {
     }
 
     fn scanTemplateLiteral(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '`');
+
         const start = self.cursor;
         self.cursor += 1;
 
@@ -580,14 +628,9 @@ pub const Lexer = struct {
         template,
     };
 
-    // in string literals, escape errors are fatal and propagate immediately.
-    // in template literals, escape errors are non-fatal: we set
-    // `invalid_escape` on the current token and continue lexing.
-    // this flag can exist on any token type, though template literals are the
-    // current parser use case.
-    // the parser then checks this flag:
-    // - tagged templates: no diagnostic (cooked becomes null/undefined)
-    // - untagged templates: report "Bad escape sequence in untagged template literal"
+    // string escapes are fatal; template escapes set `.invalid_escape` and keep lexing
+    // so tagged templates can still produce a token (cooked becomes null/undefined,
+    // untagged templates get a diagnostic later)
     fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         if (context == .template) {
             self.consumeEscapeImpl(context) catch |err| {
@@ -603,6 +646,9 @@ pub const Lexer = struct {
     }
 
     fn consumeEscapeImpl(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '\\');
+
         self.cursor += 1; // skip backslash
         self.setTokenFlag(.escaped);
 
@@ -673,15 +719,19 @@ pub const Lexer = struct {
     }
 
     fn consumeOctal(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
         const result = util.Utf.parseOctal(self.source, self.cursor);
         if (result.end == self.cursor) {
             return error.InvalidOctalEscape;
         }
+        std.debug.assert(result.end > self.cursor);
         self.cursor = @intCast(result.end);
     }
 
     fn consumeHex(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
         if (util.Utf.parseHex2(self.source, self.cursor + 1)) |r| {
+            std.debug.assert(r.end >= self.cursor + 1);
             self.cursor = @intCast(r.end);
         } else {
             return error.InvalidHexEscape;
@@ -698,8 +748,10 @@ pub const Lexer = struct {
         self: *Lexer,
         comptime context: ConsumeUnicodeContext,
     ) LexicalError!u21 {
-        // Mark the current token as escaped so the parser can later reject escaped reserved
-        // keywords.
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == 'u');
+
+        // marks the token so the parser can reject escaped reserved keywords
         self.setTokenFlag(.escaped);
 
         const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse
@@ -725,12 +777,17 @@ pub const Lexer = struct {
     }
 
     fn handleRightBrace(self: *Lexer) Token {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '}');
         const start = self.cursor;
         self.cursor += 1;
         return self.createToken(.right_brace, start, self.cursor);
     }
 
     fn scanDot(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '.');
+
         const start = self.cursor;
         const c1 = self.peek(1);
         const c2 = self.peek(2);
@@ -770,6 +827,8 @@ pub const Lexer = struct {
     };
 
     fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
+        std.debug.assert(self.cursor <= self.source.len);
+
         var has_escape = false;
 
         const table = if (is_jsx_tag)
@@ -779,6 +838,7 @@ pub const Lexer = struct {
 
         const src = self.source;
         var pos = self.cursor;
+        const entry_pos = pos;
 
         while (true) {
             while (pos < src.len and table[src[pos]]) {
@@ -821,11 +881,14 @@ pub const Lexer = struct {
             break;
         }
 
+        std.debug.assert(pos >= entry_pos);
         self.cursor = pos;
         return has_escape;
     }
 
     fn scanIdentifierOrKeyword(self: *Lexer) !Token {
+        std.debug.assert(self.cursor < self.source.len);
+
         const start = self.cursor;
 
         const is_jsx_tag = self.mode == .jsx_tag;
@@ -878,6 +941,7 @@ pub const Lexer = struct {
             has_escape = try self.scanIdentifierBody(is_jsx_tag);
         }
 
+        std.debug.assert(self.cursor > start);
         const lexeme = self.source[start..self.cursor];
 
         const tag: TokenTag = if (is_jsx_tag)
@@ -895,6 +959,7 @@ pub const Lexer = struct {
     /// determines keyword type for an identifier that contains unicode escapes.
     fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
         @branchHint(.cold);
+        std.debug.assert(lexeme.len > 0);
         var buf: [11]u8 = undefined; // max keyword length
         var out: usize = 0;
         var i: usize = 0;
@@ -916,11 +981,10 @@ pub const Lexer = struct {
         return self.getKeywordType(buf[0..out]);
     }
 
-    // Keyword lookup dispatched first by length and then by the most discriminating byte.
-    // Each candidate is matched against its full lexeme via `std.mem.eql`, which the
-    // compiler folds into a tight per-byte compare (the length check is dead since the
-    // outer switch already pinned `lexeme.len`). The shape is preserved so the dispatch
-    // remains a jump table.
+    // keyword lookup dispatched first by length and then by the most discriminating byte.
+    // each candidate matches its full lexeme via `std.mem.eql`; the compiler folds the
+    // length check (the outer switch already pinned `lexeme.len`). the switch shape is
+    // preserved so dispatch stays a jump table
     fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
         const eql = std.mem.eql;
         switch (lexeme.len) {
@@ -1067,6 +1131,11 @@ pub const Lexer = struct {
     }
 
     fn scanNumber(self: *Lexer) LexicalError!Token {
+        std.debug.assert(self.cursor < self.source.len);
+        // dispatched from nextToken or scanDot, both gate on a digit (or `.<digit>`)
+        const lead = self.source[self.cursor];
+        std.debug.assert(lead == '.' or std.ascii.isDigit(lead));
+
         const start = self.cursor;
         var tag: TokenTag = .numeric_literal;
         var has_decimal_or_exponent = false;
@@ -1141,11 +1210,14 @@ pub const Lexer = struct {
 
         const c = self.peek(0);
         if (ident_start_table_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
+        std.debug.assert(self.cursor > start);
         return self.createToken(tag, start, self.cursor);
     }
 
     inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
-        // A separator cannot start a digit sequence.
+        std.debug.assert(self.cursor <= self.source.len);
+
+        // a separator cannot start a digit sequence
         if (self.cursor < self.source.len and self.source[self.cursor] == '_') {
             return error.NumericSeparatorMisuse;
         }
@@ -1196,6 +1268,9 @@ pub const Lexer = struct {
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == 'e' or self.source[self.cursor] == 'E');
+
         self.cursor += 1; // skip 'e' or 'E'
 
         // handle optional sign: + or -
@@ -1230,11 +1305,14 @@ pub const Lexer = struct {
     };
 
     inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor <= self.source.len);
+
         var can_be_html_close_comment =
             self.cursor == 0 or self.hasTokenFlag(.line_terminator_before);
 
         const src = self.source;
         var pos = self.cursor;
+        const entry_pos = pos;
 
         while (pos < src.len) {
             switch (ws_class[src[pos]]) {
@@ -1295,6 +1373,8 @@ pub const Lexer = struct {
             }
         }
 
+        std.debug.assert(pos >= entry_pos);
+        std.debug.assert(pos <= src.len);
         self.cursor = pos;
     }
 
@@ -1304,6 +1384,8 @@ pub const Lexer = struct {
         start: u32,
         end: u32,
     ) LexicalError!void {
+        std.debug.assert(start < end);
+        std.debug.assert(end <= self.source.len);
         if (!self.attach_comments) return;
         // delimiter widths: `//` `/*` are 2, `<!--` is 4, `-->` is 3 (no tail)
         const head: u32 = switch (self.source[start]) {
@@ -1320,6 +1402,9 @@ pub const Lexer = struct {
     }
 
     fn scanLineComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor + 1 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '/');
+        std.debug.assert(self.source[self.cursor + 1] == '/');
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
@@ -1334,6 +1419,9 @@ pub const Lexer = struct {
     }
 
     fn scanBlockComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.cursor + 1 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '/');
+        std.debug.assert(self.source[self.cursor + 1] == '*');
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
@@ -1368,6 +1456,10 @@ pub const Lexer = struct {
     }
 
     fn scanHtmlComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.source_type == .script);
+        std.debug.assert(self.cursor + 3 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '<');
+        std.debug.assert(self.source[self.cursor + 1] == '!');
         const start = self.cursor;
         const src = self.source;
         self.cursor += 4;
@@ -1384,6 +1476,11 @@ pub const Lexer = struct {
     }
 
     fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
+        std.debug.assert(self.source_type == .script);
+        std.debug.assert(self.cursor + 2 < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '-');
+        std.debug.assert(self.source[self.cursor + 1] == '-');
+        std.debug.assert(self.source[self.cursor + 2] == '>');
         const start = self.cursor;
         self.cursor += 3;
         while (self.cursor < self.source.len) : (self.cursor += 1) {
@@ -1393,6 +1490,8 @@ pub const Lexer = struct {
     }
 
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {
+        std.debug.assert(start <= end);
+        std.debug.assert(end <= self.source.len);
         return .{
             .tag = tag,
             .span = .{ .start = start, .end = end },

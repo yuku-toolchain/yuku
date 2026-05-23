@@ -46,6 +46,9 @@ pub fn parseClassDecorated(
     start_from_param: ?u32,
     decorators: ast.IndexRange,
 ) Error!?ast.NodeIndex {
+    // entry is either `class` directly, or a modifier (`abstract`/`declare`) the
+    // caller consumed before passing `start_from_param`
+    std.debug.assert(start_from_param != null or parser.current_token.tag == .class);
     const start = start_from_param orelse parser.current_token.span.start;
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 

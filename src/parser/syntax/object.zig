@@ -1,3 +1,4 @@
+const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
@@ -21,6 +22,7 @@ pub const ObjectCover = struct {
 /// returns raw properties for later conversion to ObjectExpression or ObjectPattern.
 /// https://tc39.es/ecma262/#sec-object-initializer (covers ObjectAssignmentPattern)
 pub fn parseCover(parser: *Parser) Error!?ObjectCover {
+    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume {
 
