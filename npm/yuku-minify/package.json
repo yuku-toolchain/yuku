@@ -1,6 +1,6 @@
 {
   "name": "yuku-minify",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "description": "High-performance JavaScript/TypeScript minifier written in Zig",
   "license": "MIT",
   "repository": {
@@ -16,16 +16,16 @@
     "binding.js"
   ],
   "optionalDependencies": {
-    "@yuku-minify/binding-linux-x64-gnu": "0.5.15",
-    "@yuku-minify/binding-linux-arm64-gnu": "0.5.15",
-    "@yuku-minify/binding-linux-arm-gnu": "0.5.15",
-    "@yuku-minify/binding-linux-x64-musl": "0.5.15",
-    "@yuku-minify/binding-linux-arm64-musl": "0.5.15",
-    "@yuku-minify/binding-linux-arm-musl": "0.5.15",
-    "@yuku-minify/binding-darwin-x64": "0.5.15",
-    "@yuku-minify/binding-darwin-arm64": "0.5.15",
-    "@yuku-minify/binding-win32-x64": "0.5.15",
-    "@yuku-minify/binding-win32-arm64": "0.5.15",
-    "@yuku-minify/binding-freebsd-x64": "0.5.15"
+    "@yuku-minify/binding-linux-x64-gnu": "0.5.16",
+    "@yuku-minify/binding-linux-arm64-gnu": "0.5.16",
+    "@yuku-minify/binding-linux-arm-gnu": "0.5.16",
+    "@yuku-minify/binding-linux-x64-musl": "0.5.16",
+    "@yuku-minify/binding-linux-arm64-musl": "0.5.16",
+    "@yuku-minify/binding-linux-arm-musl": "0.5.16",
+    "@yuku-minify/binding-darwin-x64": "0.5.16",
+    "@yuku-minify/binding-darwin-arm64": "0.5.16",
+    "@yuku-minify/binding-win32-x64": "0.5.16",
+    "@yuku-minify/binding-win32-arm64": "0.5.16",
+    "@yuku-minify/binding-freebsd-x64": "0.5.16"
   }
 }
