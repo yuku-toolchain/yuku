@@ -223,9 +223,6 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  // only used when _attachComments is set. the common no-comment path
-        \\  // binds `node` straight to `_decode` (see below), so child recursion
-        \\  // never pays for this wrapper frame or the comment check.
         \\  function nodeWithComments(i) {{
         \\    const r = _decode(i);
         \\    // skip unwrap cases whose inner node already carries its own
