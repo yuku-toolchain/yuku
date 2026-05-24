@@ -1,12 +1,10 @@
-import { parse } from "yuku-parser";
+import { parse } from "yuku-parser"
+import { print } from "yuku-codegen"
 
-const src = `
-  function f() {
-    const x = 42;
-    return x;
-  }
-`;
+const result = parse("const nice = -1.0\nnice-=10 // cool", {
+  attachComments: true
+});
 
-const r = parse(src, { attachComments: true });
-
-console.log(r.program)
+console.log(print(result, {
+  format: "compact",
+}).code);

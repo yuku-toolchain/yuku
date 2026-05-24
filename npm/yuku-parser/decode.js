@@ -171,11 +171,11 @@ function decode(buffer, source) {
     }
     return out;
   }
-  function node(i) {
+  function nodeWithComments(i) {
     const r = _decode(i);
     // skip unwrap cases whose inner node already carries its own
     // comments (e.g. formal_parameter returning its pattern)
-    if (_attachComments && r && r.type !== undefined && r.comments === undefined) {
+    if (r && r.type !== undefined && r.comments === undefined) {
       const off = _coOff + i * 4;
       const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
       if (a !== e) r.comments = _commentsOf(a, e);
@@ -609,6 +609,7 @@ function decode(buffer, source) {
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
+  const node = _attachComments ? nodeWithComments : _decode;
   const lsOff = _cOff + commentCount * 12;
   const dOff = lsOff + lineStartsCount * 4;
   function _decodeLineStarts() {
