@@ -38,15 +38,16 @@ const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-"
 function encode(result) {
   const root = result.program;
   const lineStarts = result.lineStarts;
-  let nodeCap = 512;
+  const sizeHint = root.end || 0;
+  let nodeCap = Math.max(512, (sizeHint / 7) | 0);
   let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);
   let nU8 = new Uint8Array(nodeAB);
   let nU32 = new Uint32Array(nodeAB);
   let nodeCount = 0;
-  let extraCap = 512;
+  let extraCap = Math.max(512, (sizeHint / 20) | 0);
   let extras = new Uint32Array(extraCap);
   let extraCount = 0;
-  let poolCap = 4096;
+  let poolCap = Math.max(4096, (sizeHint / 8) | 0);
   let pool = new Uint8Array(poolCap);
   let poolLen = 0;
   const strMap = new Map();
@@ -119,15 +120,29 @@ function encode(result) {
     if (s == null || s === "") return { start: 0, end: 0 };
     const hit = strMap.get(s);
     if (hit !== undefined) return hit;
-    const bytes = _enc.encode(s);
-    while (poolLen + bytes.length > poolCap) {
-      poolCap *= 2;
+    const n = s.length;
+    if (poolLen + n * 3 > poolCap) {
+      do { poolCap *= 2; } while (poolLen + n * 3 > poolCap);
       const np = new Uint8Array(poolCap);
       np.set(pool); pool = np;
     }
-    pool.set(bytes, poolLen);
-    const r = { start: poolLen, end: poolLen + bytes.length };
-    poolLen += bytes.length;
+    const start = poolLen;
+    let p = start;
+    let ascii = true;
+    for (let i = 0; i < n; i++) {
+      const c = s.charCodeAt(i);
+      if (c < 0x80) { pool[p++] = c; } else { ascii = false; break; }
+    }
+    let r;
+    if (ascii) {
+      r = { start, end: p };
+      poolLen = p;
+    } else {
+      const bytes = _enc.encode(s);
+      pool.set(bytes, start);
+      r = { start, end: start + bytes.length };
+      poolLen = start + bytes.length;
+    }
     strMap.set(s, r);
     return r;
   }
