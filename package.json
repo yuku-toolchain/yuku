@@ -5,6 +5,14 @@
     "npm/**/*",
     "docs"
   ],
+  "homepage": "https://yuku.fyi",
+  "license": "MIT",
+  "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuku-toolchain/yuku.git"
+  },
+  "funding": "https://github.com/sponsors/arshad-yaseen",
   "scripts": {
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
