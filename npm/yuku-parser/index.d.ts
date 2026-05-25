@@ -1697,6 +1697,7 @@ type Node =
   | Directive
   | ObjectProperty
   | BindingProperty
+  | SpreadElement
   | PrivateIdentifier
   | TemplateElement
   | VariableDeclarator

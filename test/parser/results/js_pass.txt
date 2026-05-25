@@ -1,6 +1,6 @@
 test/parser/suite/js/pass
 =========================
-Passed:       37584/37584 (100.00%)
+Passed:       37587/37587 (100.00%)
 Failed:       0
 AST mismatch: 0/37479
 
@@ -5599,6 +5599,7 @@ AST mismatch: 0/37479
 ✓ test/parser/suite/js/pass/2625c0bbe98848ef.js
 ✓ test/parser/suite/js/pass/26277775277f9af5.js
 ✓ test/parser/suite/js/pass/26279c0440d89491.js
+✓ test/parser/suite/js/pass/262a7f1476e6ce7d.module.js
 ✓ test/parser/suite/js/pass/262aa1cad370dafc.js
 ✓ test/parser/suite/js/pass/262c7716a379c1b2.js
 ✓ test/parser/suite/js/pass/262d2838a51f46d7.js
@@ -25332,6 +25333,7 @@ AST mismatch: 0/37479
 ✓ test/parser/suite/js/pass/ad763a449f10fb2e.js
 ✓ test/parser/suite/js/pass/ad78b9cdf146af75.js
 ✓ test/parser/suite/js/pass/ad7ae7c1825cbfaf.js
+✓ test/parser/suite/js/pass/ad7aef88754ae79b.module.js
 ✓ test/parser/suite/js/pass/ad7c3e8de26258ed.js
 ✓ test/parser/suite/js/pass/ad7d61a732903cd8.js
 ✓ test/parser/suite/js/pass/ad7ef9827655d07f.js
@@ -32205,6 +32207,7 @@ AST mismatch: 0/37479
 ✓ test/parser/suite/js/pass/db7ddf5581b2a715.js
 ✓ test/parser/suite/js/pass/db7f2e40a0d72237.js
 ✓ test/parser/suite/js/pass/db7fe2013518bcca.js
+✓ test/parser/suite/js/pass/db820f1911787bb7.module.js
 ✓ test/parser/suite/js/pass/db8221f1c706e896.js
 ✓ test/parser/suite/js/pass/db82c920535a3a27.js
 ✓ test/parser/suite/js/pass/db83f506aa6f8246.js

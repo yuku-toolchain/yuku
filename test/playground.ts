@@ -1,10 +1,7 @@
 import { parse } from "yuku-parser"
-import { print } from "yuku-codegen"
 
-const result = parse("const nice = -1.0\nnice-=10 // cool", {
-  attachComments: true
-});
+const source = await Bun.file("test/fixture.ts").text()
 
-console.log(print(result, {
-  format: "compact",
-}).code);
+console.time('stringify')
+parse(source);
+console.timeEnd('stringify')

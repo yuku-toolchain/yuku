@@ -8,6 +8,7 @@ import {
   langFromPath,
   sourceTypeFromPath,
   type ParseOptions,
+  type Program,
   type SourceLang,
 } from "yuku-parser";
 import {
@@ -20,7 +21,7 @@ import {
 
 type Op = "print" | "strip" | "minify";
 
-const OPS: Record<Op, (ast: ReturnType<typeof parse>, o: CodegenOptions) => CodegenResult> = {
+const OPS: Record<Op, (program: Program, o: CodegenOptions) => CodegenResult> = {
   print,
   strip,
   minify,
@@ -86,7 +87,7 @@ async function runCase(suite: Suite, file: string): Promise<boolean> {
 
   let got: string;
   try {
-    got = OPS[suite.op](ast, suite.options ?? {}).code;
+    got = OPS[suite.op](ast.program, suite.options ?? {}).code;
   } catch (e) {
     console.log(`    ✗ ${file}: ${suite.op} threw: ${e}`);
     return false;
@@ -186,7 +187,7 @@ async function corpusFile(file: string): Promise<Record<Op, OpStatus>> {
   for (const op of CORPUS_OPS) {
     let code: string;
     try {
-      code = OPS[op.op](ast, op.options).code;
+      code = OPS[op.op](ast.program, op.options).code;
     } catch (e) {
       out[op.op] = { status: "fail", file, err: `threw: ${e}` };
       continue;
