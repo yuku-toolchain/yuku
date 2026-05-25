@@ -35,9 +35,8 @@ const ACCESSIBILITY_INV = (v) =>
   : 3;
 const TS_MAPPED_OPTIONAL_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
 const TS_MAPPED_READONLY_INV = (v) => v === true ? 1 : v === "+" ? 2 : v === "-" ? 3 : 0;
-function encode(result) {
-  const root = result.program;
-  const lineStarts = result.lineStarts;
+function encode(program, lineStarts) {
+  const root = program;
   const sizeHint = root.end || 0;
   let nodeCap = Math.max(512, (sizeHint / 7) | 0);
   let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);

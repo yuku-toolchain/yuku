@@ -15,11 +15,11 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const result = parse("const x = 1 + 2;");
-const { code } = print(result);
+const { program } = parse("const x = 1 + 2;");
+const { code } = print(program);
 ```
 
-`print`, `strip`, and `minify` take the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the parser's `lineStarts` via `sourceMaps: { lineStarts }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
 

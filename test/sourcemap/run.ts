@@ -44,9 +44,10 @@ for (const dir of CORPUS_DIRS) {
     }
     dirFiles++;
 
-    const result = print(input, {
+    const result = print(input.program, {
       comments: true,
       sourceMaps: {
+        lineStarts: input.lineStarts,
         file: "out.js",
         sourceFileName: f,
         sourcesContent: source,

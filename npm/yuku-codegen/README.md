@@ -16,15 +16,15 @@ npm install yuku-codegen
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
-const result = parse("const x = 1 + 2;");
-const { code } = print(result);
+const { program } = parse("const x = 1 + 2;");
+const { code } = print(program);
 
 console.log(code); // "const x = 1 + 2;"
 ```
 
 ## API
 
-All three entry points take the `ParseResult` returned by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) and share the same options and result shape.
+All three entry points take the `Program` node off the `ParseResult` returned by [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) and share the same options and result shape.
 
 | Function | Behavior                                                                                              |
 | -------- | ----------------------------------------------------------------------------------------------------- |
@@ -47,12 +47,12 @@ interface CodegenResult {
 ## Options
 
 ```js
-const out = print(result, {
+const out = print(program, {
   format: "pretty",
   indent: 2,
   quotes: "double",
   comments: "some",
-  sourceMaps: true,
+  sourceMaps: { lineStarts },
 });
 ```
 
@@ -62,21 +62,22 @@ const out = print(result, {
 | `indent`     | `number`                                 | `2`        | Spaces per indentation level. Applies in pretty mode only.                   |
 | `quotes`     | `"double" \| "single"`                   | `"double"` | Quote style for emitted string literals.                                     |
 | `comments`   | `boolean \| "some" \| "line" \| "block"` | `"some"`   | Comment passthrough filter. See [Comments](#comments).                       |
-| `sourceMaps` | `boolean \| SourceMapOptions`            | `false`    | `true` emits a Source Map V3 with default metadata; pass an object for fine-grained control. See [Source maps](#source-maps). |
+| `sourceMaps` | `SourceMapOptions`                       | `undefined` | Pass an object to emit a Source Map V3. Its `lineStarts` is required, the rest of the metadata is optional. See [Source maps](#source-maps). |
 
 ## Source maps
 
-Set `sourceMaps: true` for a Source Map V3 with default metadata, or pass a `SourceMapOptions` object to fill in `file`, `sources`, `sourcesContent`, and `sourceRoot`. Source maps are read off `result.lineStarts`, so the `ParseResult` must come from `yuku-parser`.
+Pass a `SourceMapOptions` object to emit a Source Map V3. Its `lineStarts` field is required: feed it the `lineStarts` array from the parser's `ParseResult` (this is what maps generated positions back to the source). The remaining fields (`file`, `sources`, `sourcesContent`, `sourceRoot`) are optional metadata.
 
 ```js
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
 const source = `const greet = (name) => "Hello, " + name;`;
-const result = parse(source);
+const { program, lineStarts } = parse(source);
 
-const { code, map } = print(result, {
+const { code, map } = print(program, {
   sourceMaps: {
+    lineStarts,
     file: "out.js",
     sourceFileName: "in.js",
     sourcesContent: source,
@@ -89,9 +90,10 @@ await Bun.write("out.js.map", JSON.stringify(map));
 
 ### `SourceMapOptions`
 
-| Field            | Type     | Description                                                                         |
-| ---------------- | -------- | ----------------------------------------------------------------------------------- |
-| `file`           | `string` | Output filename, embedded as the map's `file`.                                      |
+| Field            | Type       | Description                                                                       |
+| ---------------- | ---------- | --------------------------------------------------------------------------------- |
+| `lineStarts`     | `number[]` | **Required.** The parser's `ParseResult.lineStarts`, used to map positions to the source. |
+| `file`           | `string`   | Output filename, embedded as the map's `file`.                                    |
 | `sourceFileName` | `string` | Source filename, embedded as the single entry of `sources`.                         |
 | `sourceRoot`     | `string` | Prefix embedded as `sourceRoot`.                                                    |
 | `sourcesContent` | `string` | When set, embedded as the single entry of the map's `sourcesContent`. Omit to skip. |
@@ -122,8 +124,8 @@ Columns are 0-indexed UTF-16 code units, matching Chrome DevTools and consumer-s
 import { parse } from "yuku-parser";
 import { strip } from "yuku-codegen";
 
-const result = parse(`const x: number = 1;`, { lang: "ts" });
-console.log(strip(result).code); // "const x = 1;"
+const { program } = parse(`const x: number = 1;`, { lang: "ts" });
+console.log(strip(program).code); // "const x = 1;"
 ```
 
 Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that have no clean JavaScript equivalent (`enum`, `namespace`, `import = require()`, `export =`) are reported in `errors` and elided. The output is always syntactically valid JavaScript.
@@ -133,8 +135,8 @@ Type annotations, type aliases, interfaces, and other type-only constructs are d
 Comments live on the AST nodes they were attached to during parsing. To preserve them, parse with `attachComments: true`:
 
 ```js
-const result = parse(source, { attachComments: true });
-print(result).code;
+const { program } = parse(source, { attachComments: true });
+print(program).code;
 ```
 
 The `comments` option then selects which attached comments are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
@@ -148,8 +150,8 @@ The `comments` option then selects which attached comments are emitted. The defa
 | `"block"` | Emit `/* ... */` only.                                          |
 
 ```js
-const result = parse(`// hello\nconst x = 1;`, { attachComments: true });
-print(result, { comments: true }).code;
+const { program } = parse(`// hello\nconst x = 1;`, { attachComments: true });
+print(program, { comments: true }).code;
 // "// hello\nconst x = 1;"
 ```
 
@@ -171,7 +173,7 @@ Combine with `format: "compact"` for full minification:
 ```js
 import { minify } from "yuku-codegen";
 
-const { code } = minify(result, { format: "compact" });
+const { code } = minify(program, { format: "compact" });
 ```
 
 ## License

@@ -110,9 +110,8 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
 
 fn writeRuntime(w: *Writer) !void {
     try w.writeAll(
-        \\function encode(result) {
-        \\  const root = result.program;
-        \\  const lineStarts = result.lineStarts;
+        \\function encode(program, lineStarts) {
+        \\  const root = program;
         \\  const sizeHint = root.end || 0;
         \\  let nodeCap = Math.max(512, (sizeHint / 7) | 0);
         \\  let nodeAB = new ArrayBuffer(nodeCap * NODE_SIZE);

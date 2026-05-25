@@ -1,4 +1,4 @@
-import type { Comment, ParseResult } from "yuku-parser";
+import type { Comment, Program } from "yuku-parser";
 
 /** Whitespace mode for the generated output. */
 export type Format = "pretty" | "compact";
@@ -21,6 +21,12 @@ export type { Comment };
 
 /** Source-map configuration. Pass to `CodegenOptions.sourceMaps` to enable. */
 export interface SourceMapOptions {
+  /**
+   * UTF-16 line-start offsets, taken straight from the parser's
+   * `ParseResult.lineStarts`. Required: this is what maps generated positions
+   * back to the original source.
+   */
+  lineStarts: number[];
   /** Output filename, embedded as the map's `file`. */
   file?: string;
   /** Source filename, embedded as the single entry of `sources`. */
@@ -43,12 +49,13 @@ export interface CodegenOptions {
   /** @default "double" */
   quotes?: Quotes;
   /**
-   * Enable Source Map V3 output. `true` uses default metadata; pass a
-   * {@link SourceMapOptions} object to fill in `file`, `sources`,
-   * `sourcesContent`, and `sourceRoot`.
-   * @default false
+   * Enable Source Map V3 output. Pass a {@link SourceMapOptions} object. Its
+   * `lineStarts` (from the parser) is required. The rest of the metadata
+   * (`file`, `sources`, `sourcesContent`, `sourceRoot`) is optional. Omit to
+   * disable.
+   * @default undefined
    */
-  sourceMaps?: boolean | SourceMapOptions;
+  sourceMaps?: SourceMapOptions;
   /**
    * Comment passthrough filter. Defaults to `"some"`, which preserves
    * legal headers, JSDoc, and tree-shaking annotations.
@@ -88,13 +95,13 @@ export interface CodegenResult {
 }
 
 /** Renders the AST verbatim, preserving TypeScript syntax. */
-export function print(result: ParseResult, options?: CodegenOptions): CodegenResult;
+export function print(program: Program, options?: CodegenOptions): CodegenResult;
 
 /** Renders the AST as JavaScript, dropping TypeScript-specific syntax. */
-export function strip(result: ParseResult, options?: CodegenOptions): CodegenResult;
+export function strip(program: Program, options?: CodegenOptions): CodegenResult;
 
 /**
  * Renders the AST with size-reducing rewrites. Combine with
  * `format: "compact"` for full minification.
  */
-export function minify(result: ParseResult, options?: CodegenOptions): CodegenResult;
+export function minify(program: Program, options?: CodegenOptions): CodegenResult;

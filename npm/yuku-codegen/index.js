@@ -7,37 +7,44 @@ function normalizeOptions(options) {
   const c = next.comments;
   if (c === true) next.comments = "all";
   else if (c === false) next.comments = "none";
+  // `lineStarts` is consumed by the encoder, not the native binding, so strip
+  // it from the source-map options. Only V3 metadata reaches the binding.
   const s = next.sourceMaps;
-  if (s === true) next.sourceMaps = {};
-  else if (s === false) next.sourceMaps = undefined;
+  if (s) {
+    const { lineStarts, ...meta } = s;
+    next.sourceMaps = meta;
+  } else {
+    next.sourceMaps = undefined;
+  }
   return next;
 }
 
-function prepare(result, options) {
-  if (!result || !result.program || !result.program.type) {
+function run(method, program, options) {
+  if (!program || !program.type) {
     throw new TypeError(
-      "Expected a `ParseResult` from yuku-parser, got " +
-        (result === null ? "null" : typeof result),
+      "Expected a `Program` node from yuku-parser, got " +
+        (program === null ? "null" : typeof program),
     );
   }
-  if (options?.sourceMaps && !result.lineStarts) {
+  const sourceMaps = options?.sourceMaps;
+  const lineStarts = sourceMaps ? sourceMaps.lineStarts : null;
+  if (sourceMaps && !Array.isArray(lineStarts)) {
     throw new Error(
-      "Source maps require a `ParseResult` with `lineStarts`. " +
-        "If you built or transformed this result outside of yuku-parser, " +
-        "either drop `sourceMaps` or attach a `lineStarts` array.",
+      "`sourceMaps` requires a `lineStarts` array. Pass the parser's " +
+        "`ParseResult.lineStarts`, e.g. `{ sourceMaps: { lineStarts } }`.",
     );
   }
-  return encode(result);
+  return binding[method](encode(program, lineStarts), normalizeOptions(options));
 }
 
-export function print(result, options) {
-  return binding.print(prepare(result, options), normalizeOptions(options));
+export function print(program, options) {
+  return run("print", program, options);
 }
 
-export function strip(result, options) {
-  return binding.strip(prepare(result, options), normalizeOptions(options));
+export function strip(program, options) {
+  return run("strip", program, options);
 }
 
-export function minify(result, options) {
-  return binding.minify(prepare(result, options), normalizeOptions(options));
+export function minify(program, options) {
+  return run("minify", program, options);
 }
