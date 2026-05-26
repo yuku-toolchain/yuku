@@ -345,7 +345,7 @@ fn Printer(comptime cfg: Config) type {
             if (self.options.comments != .none) try self.emitTrailingComments(idx);
         }
 
-        inline fn allowComment(self: *const Self, c: ast.Comment) bool {
+        inline fn allowComment(self: *const Self, c: ast.AttachedComment) bool {
             return switch (self.options.comments) {
                 .none => false,
                 .all => true,
@@ -372,7 +372,7 @@ fn Printer(comptime cfg: Config) type {
             }
         }
 
-        fn writeLeading(self: *Self, c: ast.Comment) Error!void {
+        fn writeLeading(self: *Self, c: ast.AttachedComment) Error!void {
             // same-line block (`function /* x */ foo`) stays inline
             if (c.type == .block and c.same_line) {
                 const last = self.lastByte();
@@ -390,7 +390,7 @@ fn Printer(comptime cfg: Config) type {
             try self.breakLine();
         }
 
-        fn writeTrailing(self: *Self, c: ast.Comment) Error!void {
+        fn writeTrailing(self: *Self, c: ast.AttachedComment) Error!void {
             if (c.same_line) {
                 if (self.pretty()) try self.writeByte(' ');
                 try self.writeCommentBody(c);
@@ -402,7 +402,7 @@ fn Printer(comptime cfg: Config) type {
             try self.breakLine();
         }
 
-        inline fn writeCommentBody(self: *Self, c: ast.Comment) Error!void {
+        inline fn writeCommentBody(self: *Self, c: ast.AttachedComment) Error!void {
             const value = self.tree.string(c.value);
             try self.writeStr(if (c.type == .line) "//" else "/*");
             try self.code.appendSlice(self.allocator, value);

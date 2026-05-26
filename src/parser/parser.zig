@@ -8,6 +8,25 @@ const util = @import("util");
 const statements = @import("syntax/statements.zig");
 const comments = @import("comments.zig");
 
+/// How comments are collected: not at all, as a flat list (`Tree.comments`),
+/// attached to host nodes (`Tree.commentsOf`), or both.
+pub const CommentMode = enum {
+    none,
+    flat,
+    attached,
+    both,
+
+    pub inline fn collects(self: CommentMode) bool {
+        return self != .none;
+    }
+    pub inline fn attaches(self: CommentMode) bool {
+        return self == .attached or self == .both;
+    }
+    pub inline fn isFlat(self: CommentMode) bool {
+        return self == .flat or self == .both;
+    }
+};
+
 pub const Options = struct {
     /// Source type determines how the code is parsed and evaluated.
     /// Defaults to `.module` (ES module semantics, strict mode enabled).
@@ -22,9 +41,9 @@ pub const Options = struct {
     /// When true, `return` statements are allowed at the top level,
     /// outside of any function. Defaults to false.
     allow_return_outside_function: bool = false,
-    /// When true, comments are collected and attached to host AST nodes.
-    /// Reachable via `Tree.commentsOf`. Defaults to false.
-    attach_comments: bool = false,
+    /// Whether and how comments are collected. Defaults to `.flat`: comments
+    /// land in the flat `tree.comments` list with no per-node attachment.
+    comments: CommentMode = .flat,
 };
 
 pub const Context = packed struct {
@@ -75,7 +94,7 @@ pub const Parser = struct {
     lang: ast.Lang,
     preserve_parens: bool,
     allow_return_outside_function: bool,
-    attach_comments: bool,
+    comment_mode: CommentMode,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
@@ -110,7 +129,7 @@ pub const Parser = struct {
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
             .allow_return_outside_function = options.allow_return_outside_function,
-            .attach_comments = options.attach_comments,
+            .comment_mode = options.comments,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -137,7 +156,7 @@ pub const Parser = struct {
             self.source,
             alloc,
             self.source_type,
-            self.attach_comments,
+            self.comment_mode.collects(),
         );
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
@@ -176,8 +195,11 @@ pub const Parser = struct {
 
         try buildLineStarts(&self.tree);
 
-        if (self.attach_comments) {
+        if (self.comment_mode.attaches()) {
             try comments.attach(&self.tree, self.lexer.comments.items);
+        }
+        if (self.comment_mode.isFlat()) {
+            self.tree.comments = self.lexer.comments.items;
         }
     }
 

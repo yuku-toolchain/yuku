@@ -155,7 +155,7 @@ Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome 
 
 ## Comments
 
-Comments live on the AST nodes they were attached to during parsing (see [Comments](/parser/ast#comments) in the AST reference). For codegen to print them, the tree must have been parsed with `attach_comments = true`.
+Comments live on the AST nodes they were attached to during parsing (see [Comments](/parser/ast#comments) in the AST reference). For codegen to print them, the tree must have been parsed with `comments = .attached` (or `.both`).
 
 The `comments` option selects which attached comments are emitted. The default is `.some`, matching the bundler convention of preserving legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
 

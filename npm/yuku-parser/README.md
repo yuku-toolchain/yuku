@@ -74,8 +74,6 @@ const { line, column } = result.locOf(result.program.body[0].start);
 
 Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, safe to invoke per node during a walk.
 
-For bulk work — building your own line/column index, integrating with another source-map or diagnostics library, or skipping the per-call binary search — read `result.lineStarts` directly. It's a sorted array of UTF-16 offsets where each line begins: `lineStarts[i]` is the start of line `i + 1`. Decoded lazily on first access and cached.
-
 ## Walking the AST
 
 The AST is standard ESTree, so any ESTree-compatible walker works. For example, with [zimmerframe](https://github.com/sveltejs/zimmerframe):
@@ -121,7 +119,7 @@ const result = parse(source, {
 | `preserveParens`             | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
 | `allowReturnOutsideFunction` | `true`, `false`                           | `false`    | Allow `return` statements outside of functions, at the top level.                                                            |
 | `semanticErrors`             | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
-| `attachComments`             | `true`, `false`                           | `false`    | Collect comments and attach them to host AST nodes. See [Comments](#comments).                                               |
+| `attachComments`             | `true`, `false`                           | `false`    | Also attach each comment to its host AST node. The flat `result.comments` list is always present. See [Comments](#comments). |
 
 ## Result
 
@@ -130,6 +128,7 @@ const result = parse(source, {
 ```ts
 interface ParseResult {
   program: Program;
+  comments: Comment[]; // every comment in source order
   diagnostics: Diagnostic[];
   lineStarts: number[];
   locOf(offset: number): { line: number; column: number };
@@ -163,13 +162,37 @@ This incurs a very small performance overhead. If your build pipeline already ha
 
 ## Comments
 
-Comments are attached to the AST node they sit next to. Enable collection with `attachComments`, then read them off any node:
+Every comment is always in `result.comments`, a flat list in source order with each comment's source span:
 
 ```js
-const { program } = parse(
-  `// header\nfunction foo() {} // trailing`,
-  { attachComments: true },
-);
+const { comments } = parse(`// a line comment\nconst x = 1; /* a block comment */`);
+
+for (const c of comments) {
+  console.log(c.type, JSON.stringify(c.value), c.start, c.end);
+}
+// Line " a line comment" 0 17
+// Block " a block comment " 31 52
+```
+
+Each entry is:
+
+```ts
+interface Comment {
+  type: "Line" | "Block";
+  value: string; // body without delimiters
+  start: number; // byte offset, delimiter included
+  end: number;   // byte offset, delimiter included
+}
+```
+
+The span (`start`/`end`) covers the whole comment, delimiters included, so `source.slice(c.start, c.end)` returns the raw text.
+
+### Attaching comments to nodes
+
+Set `attachComments: true` to also hang each comment on the AST node it sits next to, read off `node.comments`. This is what a codegen pass needs, since attached comments move with their node through transforms.
+
+```js
+const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
 
 const fn = program.body[0];
 for (const c of fn.comments ?? []) {
@@ -179,10 +202,10 @@ for (const c of fn.comments ?? []) {
 // after  Line " trailing"
 ```
 
-Each comment is:
+Each attached comment is:
 
 ```ts
-interface Comment {
+interface AttachedComment {
   type: "Line" | "Block";
   position: "before" | "after" | "inside";
   sameLine: boolean;
@@ -190,36 +213,7 @@ interface Comment {
 }
 ```
 
-`position` tells you where the comment sits relative to its host:
-
-- `"before"`: leading the host node.
-- `"after"`: trailing the host node.
-- `"inside"`: interior to an otherwise empty host, like `function f() { /* hi */ }`.
-
-`sameLine` is `true` when the comment shares a source line with the host's adjacent edge (host's start for `before`, host's end for `after`). For `inside` it is always `false`.
-
-When `attachComments` is disabled (the default), comments are skipped like whitespace and no `comments` field appears on any node.
-
-### Why comments are attached to nodes
-
-Comments are part of the source. Any tool that reads or rewrites code needs to know which comments belong with which node, and that link has to survive AST transforms. Yuku puts a single `comments` array on each node, with a `position` field on each comment (`"before"`, `"after"`, `"inside"`). It is the simplest shape that holds up under transforms and stays cheap to decode. Every other approach trades away one of those properties.
-
-**Flat offset-indexed array (ESTree default, Oxc).** A separate `comments: [...]` array on the parse result, sibling to the program, each entry pointing at a source range. Fine for read-only analysis. It falls apart the moment you transform the tree.
-
-- *Transforms desync the array.* Insert, delete, or move a node and every offset downstream of the edit is wrong. The comment that used to sit between `a` and `b` may now sit inside something unrelated, or hang in empty space between two nodes. Re-syncing means walking the entire array and rewriting offsets on every edit, and even then the meaning of "the comment between these two things" cannot really be preserved by offsets alone.
-- *Codegen cannot trust the offsets.* A printer takes whatever AST it is handed. With offset-based comments, a transformed AST will either print comments in the wrong places or drop them entirely. With attached comments, when you move a node its comments come with it. The printer reads them off `node.comments` and emits them next to the node, no reconciliation needed.
-- *Lookup is awkward.* "Give me the comments belonging to this node" with a flat array is a binary search at best and a linear scan at worst. `node.comments` is O(1) and always exact.
-
-**Parser returns a flat list, you attach on the JS side (Acorn).** Acorn's `onComment` option pushes every comment into an array you provide, and that is all it does. To get them onto AST nodes you have to run a separate JS pass like `escodegen.attachComments`, which walks the tree, scans the comment list alongside it, and tags each comment as leading or trailing on the nearest node. That work is unavoidable if you want to transform the tree, and doing it in JavaScript is slow. Yuku does the same attachment in Zig as part of the parse. On the 7.8 MB `typescript.js` (30k+ comments), turning `attachComments` on adds only around 4ms.
-
-**Three separate fields per node (Babel).** `leadingComments`, `trailingComments`, and `innerComments`. Same idea as Yuku, but split across three arrays. Two costs come with the split.
-
-- *Decode work.* Three fields per node means three slots to check, three potential array allocations, and roughly 3x the work on the JS side for the same information.
-- *Duplication.* A comment that sits between two nodes is the `trailingComments` of one and the `leadingComments` of the other. Transforms have to track both copies and keep them in sync.
-
-A single `comments` array with a `position` field carries the same meaning, with one entry per comment and one place to look.
-
-Even with `attachComments` enabled, Yuku still parses the same file roughly 4x faster than Babel does without comments attached at all. When the flag is off (the default), comments are skipped like whitespace and there is no attachment work at all.
+`position` is where the comment sits relative to its host: `"before"` (leading), `"after"` (trailing), or `"inside"` (interior to an otherwise empty host like `function f() { /* hi */ }`). `sameLine` is `true` when the comment shares a source line with the host's adjacent edge.
 
 ## License
 

@@ -18,7 +18,7 @@ pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,
         .allow_return_outside_function = options.allow_return_outside_function,
-        .attach_comments = options.attach_comments,
+        .comments = if (options.attach_comments) .both else .flat,
     }) catch return error.ParseFailed;
     defer tree.deinit();
 

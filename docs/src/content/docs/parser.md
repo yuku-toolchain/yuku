@@ -14,10 +14,10 @@ npm install yuku-parser
 ```js
 import { parse } from "yuku-parser";
 
-const { program, diagnostics } = parse("const x = 1 + 2;");
+const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs), differing only in that comments are attached to AST nodes (Babel-style) instead of stored in a flat offset-indexed array. Runs 4-16x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
+Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 4-16x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
 ## Zig
 
@@ -73,7 +73,7 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `allow_return_outside_function` | `true`, `false`                      | `false`   | Allow `return` statements at the top level                                        |
-| `attach_comments`               | `true`, `false`                      | `false`   | Collect comments and attach them to host nodes. See [Comments](/parser/ast#comments) |
+| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat`   | Collect comments: as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast#comments) |
 
 Both fields can be inferred from a file path:
 

@@ -32,7 +32,7 @@ npm install yuku-parser
 ```js
 import { parse } from "yuku-parser";
 
-const { program, diagnostics } = parse("const x = 1 + 2;");
+const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
 Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 4-16x faster than alternatives on npm.

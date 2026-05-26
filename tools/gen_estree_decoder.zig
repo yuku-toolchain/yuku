@@ -98,9 +98,10 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\        lineStartsCount = _u32[{[u_ls]d}],
         \\        diagCount = _u32[{[u_dc]d}],
         \\        progIdx = _u32[{[u_pi]d}];
+        \\  const attachedCommentCount = _u32[{[u_acc]d}];
         \\  const _flags = _u32[{[u_fl]d}];
         \\  const _isTs = !!(_flags & {[ts]d});
-        \\  const _attachComments = !!(_flags & {[ac]d});
+        \\  const _attached = !!(_flags & {[ac]d});
         \\  const _firstNa = _u32[{[u_fna]d}];
         \\  const _nodesOff = {[hdr]d};
         \\  const eOff = _nodesOff + nodeCount * {[size]d};
@@ -109,8 +110,9 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  // sections after the variable-length string pool may be at any
         \\  // byte alignment, so reads against them use `dv`, not `_u32`.
         \\  const dv = new DataView(buffer);
-        \\  const _coOff = _spOff + spLen;
-        \\  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
+        \\  const _aoOff = _spOff + spLen;
+        \\  const _acOff = _attached ? _aoOff + (nodeCount + 1) * 4 : _aoOff;
+        \\  const _cOff = _acOff + attachedCommentCount * {[acsize]d};
         \\  function _poolDecode(s, e) {{
         \\    const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
         \\    let hasEd = false;
@@ -192,12 +194,14 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_ls = rt.HDR_LINE_STARTS_COUNT_U32,
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
+        .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
         .u_fl = rt.HDR_FLAGS_U32,
         .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
         .ts = rt.FLAG_TS,
-        .ac = rt.FLAG_ATTACH_COMMENTS,
+        .ac = rt.FLAG_ATTACHED_COMMENTS,
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
+        .acsize = rt.ATTACHED_COMMENT_SIZE,
         .f0 = rt.NODE_FIELD0_OFFSET,
         .f01 = rt.NODE_FIELD0_OFFSET + 1,
         .items = comptime u32IndexOf(ast.FormalParameters, "items"),
@@ -207,13 +211,13 @@ fn writeDecodeOpen(w: *Writer) !void {
 
 fn writeNodeFunction(w: *Writer) !void {
     try w.print(
-        \\  function _commentsOf(a, e) {{
+        \\  function _attachedCommentsOf(a, e) {{
         \\    const out = new Array(e - a);
         \\    for (let j = a; j < e; j++) {{
-        \\      const o = _cOff + j * {[csize]d};
-        \\      const cf = _u8[o + {[c_fl]d}];
-        \\      const vs = dv.getUint32(o + {[c_vs]d}, true),
-        \\            ve = dv.getUint32(o + {[c_ve]d}, true);
+        \\      const o = _acOff + j * {[acsize]d};
+        \\      const cf = _u8[o + {[ac_fl]d}];
+        \\      const vs = dv.getUint32(o + {[ac_vs]d}, true),
+        \\            ve = dv.getUint32(o + {[ac_ve]d}, true);
         \\      out[j - a] = {{
         \\        type: (cf & 1) ? "Block" : "Line",
         \\        position: ["before", "after", "inside"][(cf >> 1) & 3],
@@ -228,9 +232,9 @@ fn writeNodeFunction(w: *Writer) !void {
         \\    // skip unwrap cases whose inner node already carries its own
         \\    // comments (e.g. formal_parameter returning its pattern)
         \\    if (r && r.type !== undefined && r.comments === undefined) {{
-        \\      const off = _coOff + i * 4;
+        \\      const off = _aoOff + i * 4;
         \\      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
-        \\      if (a !== e) r.comments = _commentsOf(a, e);
+        \\      if (a !== e) r.comments = _attachedCommentsOf(a, e);
         \\    }}
         \\    return r;
         \\  }}
@@ -249,10 +253,10 @@ fn writeNodeFunction(w: *Writer) !void {
         \\
     , .{
         .size = rt.NODE_SIZE,
-        .csize = rt.COMMENT_SIZE,
-        .c_fl = rt.COMMENT_FLAGS_OFFSET,
-        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
-        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
+        .acsize = rt.ATTACHED_COMMENT_SIZE,
+        .ac_fl = rt.ATTACHED_COMMENT_FLAGS_OFFSET,
+        .ac_vs = rt.ATTACHED_COMMENT_VALUE_START_OFFSET,
+        .ac_ve = rt.ATTACHED_COMMENT_VALUE_END_OFFSET,
         .fl = rt.NODE_FLAGS_OFFSET,
         .fl1 = rt.NODE_FLAGS_OFFSET + 1,
         .f0 = rt.NODE_FIELD0_OFFSET,
@@ -272,7 +276,7 @@ fn writeNodeFunction(w: *Writer) !void {
     try w.writeAll(
         \\    }
         \\  }
-        \\  const node = _attachComments ? nodeWithComments : _decode;
+        \\  const node = _attached ? nodeWithComments : _decode;
         \\
     );
 }
@@ -1034,6 +1038,24 @@ fn writeDecodeBody(w: *Writer) !void {
     try w.print(
         \\  const lsOff = _cOff + commentCount * {[csize]d};
         \\  const dOff = lsOff + lineStartsCount * 4;
+        \\  function _decodeComments() {{
+        \\    const out = new Array(commentCount);
+        \\    for (let j = 0; j < commentCount; j++) {{
+        \\      const o = _cOff + j * {[csize]d};
+        \\      const cf = _u8[o + {[c_fl]d}];
+        \\      const vs = dv.getUint32(o + {[c_vs]d}, true),
+        \\            ve = dv.getUint32(o + {[c_ve]d}, true);
+        \\      const ss = dv.getUint32(o + {[c_ss]d}, true),
+        \\            se = dv.getUint32(o + {[c_se]d}, true);
+        \\      out[j] = {{
+        \\        type: (cf & 1) ? "Block" : "Line",
+        \\        value: str(vs, ve),
+        \\        start: _p(ss),
+        \\        end: _p(se),
+        \\      }};
+        \\    }}
+        \\    return out;
+        \\  }}
         \\  function _decodeLineStarts() {{
         \\    const out = new Array(lineStartsCount);
         \\    if (_firstNa >= _srcLen) {{
@@ -1081,7 +1103,7 @@ fn writeDecodeBody(w: *Writer) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  let _program, _lineStarts, _diagnostics;
+        \\  let _program, _lineStarts, _diagnostics, _comments;
         \\  function _getLineStarts() {{
         \\    if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
         \\    return _lineStarts;
@@ -1089,6 +1111,11 @@ fn writeDecodeBody(w: *Writer) !void {
         \\  return {{
         \\    get program() {{
         \\      return _program !== undefined ? _program : (_program = node(progIdx));
+        \\    }},
+        \\    get comments() {{
+        \\      return _comments !== undefined
+        \\        ? _comments
+        \\        : (_comments = _decodeComments());
         \\    }},
         \\    get diagnostics() {{
         \\      return _diagnostics !== undefined
@@ -1110,6 +1137,11 @@ fn writeDecodeBody(w: *Writer) !void {
         \\
     , .{
         .csize = rt.COMMENT_SIZE,
+        .c_fl = rt.COMMENT_FLAGS_OFFSET,
+        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
+        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
+        .c_ss = rt.COMMENT_SPAN_START_OFFSET,
+        .c_se = rt.COMMENT_SPAN_END_OFFSET,
     });
 }
 
