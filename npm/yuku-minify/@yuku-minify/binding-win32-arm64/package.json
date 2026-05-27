@@ -1,6 +1,6 @@
 {
   "name": "@yuku-minify/binding-win32-arm64",
-  "version": "0.5.18",
+  "version": "0.5.19",
   "os": [
     "win32"
   ],
