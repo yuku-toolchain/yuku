@@ -80,7 +80,7 @@ Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. T
 
 ```ts
 import { parse } from "yuku-parser";
-import { walk } from "yuku-ast/walk";
+import { walk } from "yuku-ast";
 
 const { program } = parse(`
   const message = "hello";
