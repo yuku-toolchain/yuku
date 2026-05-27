@@ -6,7 +6,7 @@ const transfer = @import("transfer.zig");
 const Options = struct {
     format: parser.codegen.Format = .pretty,
     indent: u8 = 2,
-    quotes: parser.codegen.Quotes = .double,
+    quotes: parser.codegen.Quotes = .preserve,
     source_maps: ?parser.codegen.SourceMapOptions = null,
     comments: parser.codegen.Comments = .some,
 };

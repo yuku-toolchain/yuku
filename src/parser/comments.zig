@@ -27,7 +27,7 @@ const ChildInfo = struct {
     end: u32,
 };
 
-pub fn attach(tree: *ast.Tree, raw: []const ast.RawComment) Error!void {
+pub fn attach(tree: *ast.Tree, raw: []const ast.Comment) Error!void {
     std.debug.assert(tree.root != .null);
     const alloc = tree.allocator();
     const node_count = tree.nodes.len;
@@ -36,14 +36,14 @@ pub fn attach(tree: *ast.Tree, raw: []const ast.RawComment) Error!void {
 
     if (raw.len == 0) {
         @memset(offsets, 0);
-        tree.node_comment_offsets = offsets;
-        tree.comments = &.{};
+        tree.attached_comment_offsets = offsets;
+        tree.attached_comments = &.{};
         return;
     }
 
     const host = try alloc.alloc(u32, raw.len);
     defer alloc.free(host);
-    const unsorted = try alloc.alloc(ast.Comment, raw.len);
+    const unsorted = try alloc.alloc(ast.AttachedComment, raw.len);
     defer alloc.free(unsorted);
 
     var ctx: Ctx = .{
@@ -81,15 +81,15 @@ pub fn attach(tree: *ast.Tree, raw: []const ast.RawComment) Error!void {
     }
     offsets[node_count] = sum;
 
-    const final = try alloc.alloc(ast.Comment, raw.len);
+    const final = try alloc.alloc(ast.AttachedComment, raw.len);
     for (unsorted, 0..) |c, i| {
         const h = host[i];
         final[offsets[h] + counts[h]] = c;
         counts[h] += 1;
     }
 
-    tree.comments = final;
-    tree.node_comment_offsets = offsets;
+    tree.attached_comments = final;
+    tree.attached_comment_offsets = offsets;
 }
 
 const Ctx = struct {
@@ -97,8 +97,8 @@ const Ctx = struct {
     data_items: []const ast.NodeData,
     extras: []const ast.NodeIndex,
     source: []const u8,
-    raw: []const ast.RawComment,
-    out: []ast.Comment,
+    raw: []const ast.Comment,
+    out: []ast.AttachedComment,
     host: []u32,
     cursor: usize,
     alloc: std.mem.Allocator,
@@ -189,7 +189,7 @@ const Ctx = struct {
     inline fn write(
         self: *Ctx,
         host_idx: u32,
-        position: ast.Comment.Position,
+        position: ast.AttachedComment.Position,
         same_line: bool,
     ) void {
         const r = self.raw[self.cursor];

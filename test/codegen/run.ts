@@ -42,6 +42,8 @@ const SUITES: Suite[] = [
   { path: "test/codegen/cases/print-none", op: "print", options: { comments: false } },
   { path: "test/codegen/cases/strip", op: "strip", options: { comments: true } },
   { path: "test/codegen/cases/minify", op: "minify", options: { format: "compact" } },
+  { path: "test/codegen/cases/quotes-preserve", op: "print", options: { quotes: "preserve" } },
+  { path: "test/codegen/cases/quotes-single", op: "print", options: { quotes: "single" } },
 ];
 
 const CORPUS_DIRS = [

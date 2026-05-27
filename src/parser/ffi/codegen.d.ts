@@ -3,8 +3,14 @@ import type { Comment, Program } from "yuku-parser";
 /** Whitespace mode for the generated output. */
 export type Format = "pretty" | "compact";
 
-/** Quote style for emitted string literals. */
-export type Quotes = "double" | "single";
+/**
+ * Quote style for emitted string literals.
+ *
+ * - `"preserve"`: reuse each literal's raw source text verbatim (quotes and
+ *   escapes exactly as written).
+ * - `"double"` / `"single"`: re-escape from the decoded value using that quote.
+ */
+export type Quotes = "preserve" | "double" | "single";
 
 /**
  * Comment passthrough filter.
@@ -46,7 +52,7 @@ export interface CodegenOptions {
    * @default 2
    */
   indent?: number;
-  /** @default "double" */
+  /** @default "preserve" */
   quotes?: Quotes;
   /**
    * Enable Source Map V3 output. Pass a {@link SourceMapOptions} object. Its

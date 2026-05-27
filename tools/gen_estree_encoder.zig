@@ -1,5 +1,5 @@
 // generates encode.js, the inverse of decode.js: walks an ESTree object
-// and writes a binary AST buffer in the v6 wire format that
+// and writes a binary AST buffer in the v7 wire format that
 // `transfer.deserializeFromBuf` reads back into an `ast.Tree`.
 const std = @import("std");
 const parser = @import("parser");
@@ -45,11 +45,11 @@ fn writePrologue(w: *Writer) !void {
         \\const NODE_HEADER_U32S = {[hdr_u32s]d};
         \\const NODE_SPAN_START_U32 = {[ss_u32]d};
         \\const NODE_SPAN_END_U32 = {[se_u32]d};
-        \\const COMMENT_SIZE = {[c_size]d};
-        \\const COMMENT_FLAGS_OFFSET = {[c_fl]d};
-        \\const COMMENT_VALUE_START_OFFSET = {[c_vs]d};
-        \\const COMMENT_VALUE_END_OFFSET = {[c_ve]d};
-        \\const FLAG_ATTACH_COMMENTS = {[ac]d};
+        \\const ATTACHED_COMMENT_SIZE = {[c_size]d};
+        \\const ATTACHED_COMMENT_FLAGS_OFFSET = {[c_fl]d};
+        \\const ATTACHED_COMMENT_VALUE_START_OFFSET = {[c_vs]d};
+        \\const ATTACHED_COMMENT_VALUE_END_OFFSET = {[c_ve]d};
+        \\const FLAG_ATTACHED_COMMENTS = {[ac]d};
         \\
     , .{
         .node_size = rt.NODE_SIZE,
@@ -59,11 +59,11 @@ fn writePrologue(w: *Writer) !void {
         .hdr_u32s = rt.NODE_HEADER_U32S,
         .ss_u32 = rt.NODE_SPAN_START_U32,
         .se_u32 = rt.NODE_SPAN_END_U32,
-        .c_size = rt.COMMENT_SIZE,
-        .c_fl = rt.COMMENT_FLAGS_OFFSET,
-        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
-        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
-        .ac = rt.FLAG_ATTACH_COMMENTS,
+        .c_size = rt.ATTACHED_COMMENT_SIZE,
+        .c_fl = rt.ATTACHED_COMMENT_FLAGS_OFFSET,
+        .c_vs = rt.ATTACHED_COMMENT_VALUE_START_OFFSET,
+        .c_ve = rt.ATTACHED_COMMENT_VALUE_END_OFFSET,
+        .ac = rt.FLAG_ATTACHED_COMMENTS,
     });
 }
 
@@ -497,18 +497,21 @@ fn enumMask(comptime E: type) u32 {
 
 fn writeSpecialStringLit(w: *Writer, comptime tag: usize) !void {
     const sv = comptime slotOf(ast.StringLiteral, "value");
+    const sr = comptime slotOf(ast.StringLiteral, "raw");
     try w.print(
         \\  function enc_string_literal(n) {{
         \\    const s = encStr(typeof n.value === "string" ? n.value : "");
+        \\    const r = encStr(typeof n.raw === "string" ? n.raw : "");
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, s.start); slotAt(idx, {d}, s.end);
+        \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sv, sv + 1 });
+    , .{ tag, sv, sv + 1, sr, sr + 1 });
 }
 
 fn writeSpecialNumericLit(w: *Writer, comptime tag: usize) !void {
@@ -1446,14 +1449,14 @@ fn writeAssemble(w: *Writer) !void {
     try w.print(
         \\  const progIdx = encNode(root);
         \\  const POSITION_INV = {{ "before": 0, "after": 1, "inside": 2 }};
-        \\  // counting-sort comments by host into a prefix-sum offsets table,
-        \\  // then write each comment at its slot in `commentBytes`.
-        \\  const attachComments = commentsByIdx.size > 0;
-        \\  let commentCount = 0;
+        \\  // counting-sort attached comments by host into a prefix-sum offsets
+        \\  // table, then write each at its slot in `attachedBytes`.
+        \\  const attached = commentsByIdx.size > 0;
+        \\  let attachedCount = 0;
         \\  let offsetsBytes = null;
-        \\  let commentBytes = null;
-        \\  if (attachComments) {{
-        \\    for (const arr of commentsByIdx.values()) commentCount += arr.length;
+        \\  let attachedBytes = null;
+        \\  if (attached) {{
+        \\    for (const arr of commentsByIdx.values()) attachedCount += arr.length;
         \\    const offsets = new Uint32Array(nodeCount + 1);
         \\    for (const [idx, arr] of commentsByIdx) offsets[idx] = arr.length;
         \\    let sum = 0;
@@ -1464,9 +1467,9 @@ fn writeAssemble(w: *Writer) !void {
         \\    }}
         \\    offsets[nodeCount] = sum;
         \\    offsetsBytes = offsets.buffer;
-        \\    commentBytes = new ArrayBuffer(commentCount * COMMENT_SIZE);
-        \\    const cU8 = new Uint8Array(commentBytes);
-        \\    const cDV = new DataView(commentBytes);
+        \\    attachedBytes = new ArrayBuffer(attachedCount * ATTACHED_COMMENT_SIZE);
+        \\    const cU8 = new Uint8Array(attachedBytes);
+        \\    const cDV = new DataView(attachedBytes);
         \\    const cursor = new Uint32Array(nodeCount);
         \\    for (const [idx, arr] of commentsByIdx) {{
         \\      for (let j = 0; j < arr.length; j++) {{
@@ -1477,10 +1480,10 @@ fn writeAssemble(w: *Writer) !void {
         \\        f |= ((POSITION_INV[c.position] ?? 0) & 3) << 1;
         \\        if (c.sameLine) f |= 8;
         \\        const v = encStr(typeof c.value === "string" ? c.value : "");
-        \\        const o = slot * COMMENT_SIZE;
-        \\        cU8[o + COMMENT_FLAGS_OFFSET] = f;
-        \\        cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
-        \\        cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
+        \\        const o = slot * ATTACHED_COMMENT_SIZE;
+        \\        cU8[o + ATTACHED_COMMENT_FLAGS_OFFSET] = f;
+        \\        cDV.setUint32(o + ATTACHED_COMMENT_VALUE_START_OFFSET, v.start, true);
+        \\        cDV.setUint32(o + ATTACHED_COMMENT_VALUE_END_OFFSET, v.end, true);
         \\      }}
         \\    }}
         \\  }}
@@ -1495,12 +1498,12 @@ fn writeAssemble(w: *Writer) !void {
         \\  }}
         \\  const totalNodeBytes = nodeCount * NODE_SIZE;
         \\  const totalExtraBytes = extraCount * 4;
-        \\  const totalOffsetsBytes = attachComments ? (nodeCount + 1) * 4 : 0;
-        \\  const totalCommentBytes = commentCount * COMMENT_SIZE;
+        \\  const totalOffsetsBytes = attached ? (nodeCount + 1) * 4 : 0;
+        \\  const totalAttachedBytes = attachedCount * ATTACHED_COMMENT_SIZE;
         \\  const totalLineStartsBytes = lineStartsCount * 4;
         \\  const finalSize =
         \\    HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen +
-        \\    totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
+        \\    totalOffsetsBytes + totalAttachedBytes + totalLineStartsBytes;
         \\  const out = new ArrayBuffer(finalSize);
         \\  const outU8 = new Uint8Array(out);
         \\  const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));
@@ -1508,23 +1511,24 @@ fn writeAssemble(w: *Writer) !void {
         \\  outU32[{[u_ec]d}] = extraCount;
         \\  outU32[{[u_sp]d}] = poolLen;
         \\  outU32[{[u_src]d}] = 0;
-        \\  outU32[{[u_cc]d}] = commentCount;
+        \\  outU32[{[u_cc]d}] = 0;
+        \\  outU32[{[u_acc]d}] = attachedCount;
         \\  outU32[{[u_ls]d}] = lineStartsCount;
         \\  outU32[{[u_dc]d}] = 0;
         \\  outU32[{[u_pi]d}] = progIdx;
-        \\  outU32[{[u_fl]d}] = attachComments ? FLAG_ATTACH_COMMENTS : 0;
+        \\  outU32[{[u_fl]d}] = attached ? FLAG_ATTACHED_COMMENTS : 0;
         \\  outU32[{[u_fna]d}] = 0;
         \\  const nodesOff = HEADER_SIZE;
         \\  const extrasOff = nodesOff + totalNodeBytes;
         \\  const poolOff = extrasOff + totalExtraBytes;
         \\  const offsetsOff = poolOff + poolLen;
-        \\  const commentsOff = offsetsOff + totalOffsetsBytes;
-        \\  const lineStartsOff = commentsOff + totalCommentBytes;
+        \\  const attachedOff = offsetsOff + totalOffsetsBytes;
+        \\  const lineStartsOff = attachedOff + totalAttachedBytes;
         \\  outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
         \\  outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);
         \\  outU8.set(pool.subarray(0, poolLen), poolOff);
         \\  if (offsetsBytes !== null) outU8.set(new Uint8Array(offsetsBytes), offsetsOff);
-        \\  if (commentBytes !== null) outU8.set(new Uint8Array(commentBytes), commentsOff);
+        \\  if (attachedBytes !== null) outU8.set(new Uint8Array(attachedBytes), attachedOff);
         \\  if (lineStartsBytes !== null) outU8.set(new Uint8Array(lineStartsBytes), lineStartsOff);
         \\  return out;
         \\}}
@@ -1535,6 +1539,7 @@ fn writeAssemble(w: *Writer) !void {
         .u_sp = rt.HDR_STRING_POOL_LEN_U32,
         .u_src = rt.HDR_SOURCE_LEN_U32,
         .u_cc = rt.HDR_COMMENT_COUNT_U32,
+        .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
         .u_ls = rt.HDR_LINE_STARTS_COUNT_U32,
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,

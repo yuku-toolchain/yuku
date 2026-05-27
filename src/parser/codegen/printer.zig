@@ -21,7 +21,14 @@ pub const Format = enum {
 };
 
 /// Quote style for emitted string literals.
-pub const Quotes = enum { double, single };
+///
+/// - `preserve`: reuse each literal's raw source lexeme verbatim (quotes and
+///   escapes exactly as written).
+/// - `double` / `single`: re-escape from the decoded value using that quote.
+///
+/// Minify mode ignores this and always picks whichever quote needs fewer
+/// escapes.
+pub const Quotes = enum { preserve, double, single };
 
 /// Comment passthrough filter.
 pub const Comments = enum {
@@ -43,7 +50,7 @@ pub const Options = struct {
     format: Format = .pretty,
     /// Spaces per indentation level. Used only when `format = .pretty`.
     indent: u8 = 2,
-    quotes: Quotes = .double,
+    quotes: Quotes = .preserve,
     /// Set to enable Source Map V3 output alongside the code.
     source_maps: ?SourceMapOptions = null,
     /// Comment passthrough filter. Defaults to `.some`, which preserves
@@ -345,7 +352,7 @@ fn Printer(comptime cfg: Config) type {
             if (self.options.comments != .none) try self.emitTrailingComments(idx);
         }
 
-        inline fn allowComment(self: *const Self, c: ast.Comment) bool {
+        inline fn allowComment(self: *const Self, c: ast.AttachedComment) bool {
             return switch (self.options.comments) {
                 .none => false,
                 .all => true,
@@ -372,7 +379,7 @@ fn Printer(comptime cfg: Config) type {
             }
         }
 
-        fn writeLeading(self: *Self, c: ast.Comment) Error!void {
+        fn writeLeading(self: *Self, c: ast.AttachedComment) Error!void {
             // same-line block (`function /* x */ foo`) stays inline
             if (c.type == .block and c.same_line) {
                 const last = self.lastByte();
@@ -390,7 +397,7 @@ fn Printer(comptime cfg: Config) type {
             try self.breakLine();
         }
 
-        fn writeTrailing(self: *Self, c: ast.Comment) Error!void {
+        fn writeTrailing(self: *Self, c: ast.AttachedComment) Error!void {
             if (c.same_line) {
                 if (self.pretty()) try self.writeByte(' ');
                 try self.writeCommentBody(c);
@@ -402,7 +409,7 @@ fn Printer(comptime cfg: Config) type {
             try self.breakLine();
         }
 
-        inline fn writeCommentBody(self: *Self, c: ast.Comment) Error!void {
+        inline fn writeCommentBody(self: *Self, c: ast.AttachedComment) Error!void {
             const value = self.tree.string(c.value);
             try self.writeStr(if (c.type == .line) "//" else "/*");
             try self.code.appendSlice(self.allocator, value);
@@ -1172,6 +1179,12 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_string_literal(self: *Self, lit: ast.StringLiteral) Error!void {
+            if (comptime !minify_mode) {
+                if (self.options.quotes == .preserve) {
+                    const raw = self.tree.string(lit.raw);
+                    if (raw.len != 0) return self.writeStr(raw);
+                }
+            }
             try self.emitStringLit(lit.value);
         }
 
@@ -1183,8 +1196,6 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte(q);
         }
 
-        /// in minify mode, picks the quote character that needs fewer escapes
-        /// for `s`. outside minify mode, always honors `Options.quotes`.
         inline fn pickQuote(self: *const Self, s: []const u8) u8 {
             const default: u8 = if (self.options.quotes == .single) '\'' else '"';
             if (comptime !minify_mode) return default;

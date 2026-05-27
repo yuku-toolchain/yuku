@@ -54,9 +54,9 @@ pub const LexerState = struct {
 };
 
 pub const Lexer = struct {
-    /// raw comments in source order, populated only when `attach_comments` is true
-    comments: std.ArrayList(ast.RawComment),
-    attach_comments: bool,
+    /// comments in source order, populated only when `collect_comments` is true
+    comments: std.ArrayList(ast.Comment),
+    collect_comments: bool,
     allocator: std.mem.Allocator,
     state: LexerState,
     mode: LexerMode = .normal,
@@ -72,7 +72,7 @@ pub const Lexer = struct {
         source: []const u8,
         allocator: std.mem.Allocator,
         source_type: ast.SourceType,
-        attach_comments: bool,
+        collect_comments: bool,
     ) error{OutOfMemory}!Lexer {
         // span positions are u32
         std.debug.assert(source.len <= std.math.maxInt(u32));
@@ -82,7 +82,7 @@ pub const Lexer = struct {
             .state = .{},
             .cursor = 0,
             .comments = .empty,
-            .attach_comments = attach_comments,
+            .collect_comments = collect_comments,
             .allocator = allocator,
             .source_type = source_type,
         };
@@ -1386,7 +1386,7 @@ pub const Lexer = struct {
     ) LexicalError!void {
         std.debug.assert(start < end);
         std.debug.assert(end <= self.source.len);
-        if (!self.attach_comments) return;
+        if (!self.collect_comments) return;
         // delimiter widths: `//` `/*` are 2, `<!--` is 4, `-->` is 3 (no tail)
         const head: u32 = switch (self.source[start]) {
             '<' => 4,

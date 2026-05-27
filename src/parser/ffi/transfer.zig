@@ -1,4 +1,4 @@
-// Yuku ast transfer format v6.
+// Yuku ast transfer format v7.
 //
 // serializes the parsed ast into a compact binary buffer for passing to js.
 // the buffer is returned as an arraybuffer from the native napi binding.
@@ -15,9 +15,11 @@
 //   nodes              node_count times NODE_SIZE bytes
 //   extra              extra_count times 4 bytes, flat u32 array backing IndexRange
 //   strings            string_pool_len bytes of raw utf8 for pooled strings
-//   comment_offsets    (node_count+1) u32s when FLAG_ATTACH_COMMENTS is set,
-//                      empty otherwise. prefix-sum index into `comments`.
-//   comments           comment_count times COMMENT_SIZE bytes
+//   attached_offsets   (node_count+1) u32s when FLAG_ATTACHED_COMMENTS is set,
+//                      empty otherwise. prefix-sum index into attached_comments.
+//   attached_comments  attached_comment_count times ATTACHED_COMMENT_SIZE bytes
+//   comments           comment_count times COMMENT_SIZE bytes, source order,
+//                      each carrying its span. present when FLAG_COMMENTS is set.
 //   line_starts        line_starts_count times 4 bytes, flat u32 array
 //   diagnostics        variable length sequence
 //
@@ -74,7 +76,10 @@ const Header = extern struct {
     extra_count: u32,
     string_pool_len: u32,
     source_len: u32,
+    /// entries in the flat comments section.
     comment_count: u32,
+    /// entries in the attached comments section.
+    attached_comment_count: u32,
     line_starts_count: u32,
     diag_count: u32,
     program_index: u32,
@@ -114,28 +119,42 @@ const PackedNode = extern struct {
     span_end: u32,
 };
 
-/// Comment entry on the wire. `flags` packs:
+/// Comment entry on the wire, in source order. `flags` bit 0 is the type
+/// (0 line, 1 block). `value_start`/`value_end` is a `String` handle into
+/// source or pool, `span_start`/`span_end` is the full comment span.
+const PackedComment = extern struct {
+    flags: u8,
+    _pad: [3]u8 = .{ 0, 0, 0 },
+    value_start: u32,
+    value_end: u32,
+    span_start: u32,
+    span_end: u32,
+};
+
+pub const COMMENT_TYPE_BIT: u8 = 0;
+
+/// Attached comment entry on the wire. `flags` packs:
 ///   bit 0     type       (0 line, 1 block)
 ///   bits 1-2  position   (0 before, 1 after, 2 inside)
 ///   bit 3     same_line
 /// `value_start`/`value_end` is a `String` handle into source or pool.
 /// The host node is implicit from the entry's index and the offsets.
-const PackedComment = extern struct {
+const PackedAttachedComment = extern struct {
     flags: u8,
     _pad: [3]u8 = .{ 0, 0, 0 },
     value_start: u32,
     value_end: u32,
 };
 
-pub const COMMENT_TYPE_BIT: u8 = 0;
-pub const COMMENT_POSITION_SHIFT: u8 = 1;
-pub const COMMENT_POSITION_MASK: u8 = 0b11 << COMMENT_POSITION_SHIFT;
-pub const COMMENT_SAME_LINE_BIT: u8 = 3;
+pub const ATTACHED_COMMENT_POSITION_SHIFT: u8 = 1;
+pub const ATTACHED_COMMENT_POSITION_MASK: u8 = 0b11 << ATTACHED_COMMENT_POSITION_SHIFT;
+pub const ATTACHED_COMMENT_SAME_LINE_BIT: u8 = 3;
 
 // section sizes.
 pub const HEADER_SIZE: u32 = @sizeOf(Header);
 pub const NODE_SIZE: u32 = @sizeOf(PackedNode);
 pub const COMMENT_SIZE: u32 = @sizeOf(PackedComment);
+pub const ATTACHED_COMMENT_SIZE: u32 = @sizeOf(PackedAttachedComment);
 
 // `Header` field u32 indices for the decoder.
 pub const HDR_NODE_COUNT_U32: u32 = @offsetOf(Header, "node_count") / 4;
@@ -143,6 +162,7 @@ pub const HDR_EXTRA_COUNT_U32: u32 = @offsetOf(Header, "extra_count") / 4;
 pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 4;
 pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
 pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
+pub const HDR_ATTACHED_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "attached_comment_count") / 4;
 pub const HDR_LINE_STARTS_COUNT_U32: u32 = @offsetOf(Header, "line_starts_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
@@ -151,7 +171,8 @@ pub const HDR_FIRST_NON_ASCII_U32: u32 = @offsetOf(Header, "first_non_ascii") / 
 
 // `Header.flags` bit positions.
 pub const FLAG_TS: u32 = 1 << 0;
-pub const FLAG_ATTACH_COMMENTS: u32 = 1 << 1;
+pub const FLAG_ATTACHED_COMMENTS: u32 = 1 << 1;
+pub const FLAG_COMMENTS: u32 = 1 << 2;
 
 // `PackedNode` byte offsets and u32 indices.
 pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
@@ -170,6 +191,13 @@ pub const NODE_FLAG_BITS: u8 = @bitSizeOf(@FieldType(PackedNode, "flags"));
 pub const COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedComment, "flags");
 pub const COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedComment, "value_start");
 pub const COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedComment, "value_end");
+pub const COMMENT_SPAN_START_OFFSET: u8 = @offsetOf(PackedComment, "span_start");
+pub const COMMENT_SPAN_END_OFFSET: u8 = @offsetOf(PackedComment, "span_end");
+
+// `PackedAttachedComment` byte offsets for the decoder.
+pub const ATTACHED_COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedAttachedComment, "flags");
+pub const ATTACHED_COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_start");
+pub const ATTACHED_COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_end");
 
 comptime {
     validateAllNodeLayouts();
@@ -287,7 +315,8 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
         tree.nodes.len * NODE_SIZE +
         tree.extras.items.len * 4 +
         tree.strings.extra.items.len +
-        tree.node_comment_offsets.len * 4 +
+        tree.attached_comment_offsets.len * 4 +
+        tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
         tree.comments.len * COMMENT_SIZE +
         tree.line_starts.len * 4;
 
@@ -304,14 +333,16 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     std.debug.assert(tree.root != .null);
 
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
-    const has_attach = tree.node_comment_offsets.len != 0;
-    // comment offsets table is sized `node_count + 1` when present
-    std.debug.assert(!has_attach or tree.node_comment_offsets.len == tree.nodes.len + 1);
+    const has_attached = tree.attached_comment_offsets.len != 0;
+    const has_comments = tree.comments.len != 0;
+    // attached offsets table is sized `node_count + 1` when present
+    std.debug.assert(!has_attached or tree.attached_comment_offsets.len == tree.nodes.len + 1);
 
     // header
     var hdr_flags: u32 = 0;
     if (tree.isTs()) hdr_flags |= FLAG_TS;
-    if (has_attach) hdr_flags |= FLAG_ATTACH_COMMENTS;
+    if (has_attached) hdr_flags |= FLAG_ATTACHED_COMMENTS;
+    if (has_comments) hdr_flags |= FLAG_COMMENTS;
 
     const hdr = Header{
         .node_count = @intCast(tree.nodes.len),
@@ -319,6 +350,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .string_pool_len = string_pool_len,
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
+        .attached_comment_count = @intCast(tree.attached_comments.len),
         .line_starts_count = @intCast(tree.line_starts.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
@@ -346,21 +378,36 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     @memcpy(buf[pos..][0..string_pool_len], tree.strings.extra.items);
     pos += string_pool_len;
 
-    // comment offsets (present only when FLAG_ATTACH_COMMENTS is set)
-    const offsets_bytes = std.mem.sliceAsBytes(tree.node_comment_offsets);
+    // attached comment offsets (present only when FLAG_ATTACHED_COMMENTS is set)
+    const offsets_bytes = std.mem.sliceAsBytes(tree.attached_comment_offsets);
     @memcpy(buf[pos..][0..offsets_bytes.len], offsets_bytes);
     pos += offsets_bytes.len;
+
+    // attached comments
+    for (tree.attached_comments) |c| {
+        var flags: u8 = 0;
+        if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
+        flags |= @as(u8, @intFromEnum(c.position)) << ATTACHED_COMMENT_POSITION_SHIFT;
+        if (c.same_line) flags |= 1 << ATTACHED_COMMENT_SAME_LINE_BIT;
+        const entry = PackedAttachedComment{
+            .flags = flags,
+            .value_start = c.value.start,
+            .value_end = c.value.end,
+        };
+        @memcpy(buf[pos..][0..ATTACHED_COMMENT_SIZE], std.mem.asBytes(&entry));
+        pos += ATTACHED_COMMENT_SIZE;
+    }
 
     // comments
     for (tree.comments) |c| {
         var flags: u8 = 0;
         if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
-        flags |= @as(u8, @intFromEnum(c.position)) << COMMENT_POSITION_SHIFT;
-        if (c.same_line) flags |= 1 << COMMENT_SAME_LINE_BIT;
         const entry = PackedComment{
             .flags = flags,
             .value_start = c.value.start,
             .value_end = c.value.end,
+            .span_start = c.span.start,
+            .span_end = c.span.end,
         };
         @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
         pos += COMMENT_SIZE;
@@ -563,16 +610,36 @@ pub fn deserializeFromBuf(
     @memcpy(tree.strings.extra.items, buf[pos..][0..hdr.string_pool_len]);
     pos += hdr.string_pool_len;
 
-    // comment offsets (present only when FLAG_ATTACH_COMMENTS is set)
-    const has_attach = (hdr.flags & FLAG_ATTACH_COMMENTS) != 0;
-    if (has_attach) {
+    // attached comment offsets (present only when FLAG_ATTACHED_COMMENTS is set)
+    const has_attached = (hdr.flags & FLAG_ATTACHED_COMMENTS) != 0;
+    if (has_attached) {
         const offsets_count: usize = @as(usize, hdr.node_count) + 1;
         const offsets_bytes = offsets_count * 4;
         if (buf.len < pos + offsets_bytes) return error.InvalidBuffer;
         const offsets = try tree.allocator().alloc(u32, offsets_count);
         @memcpy(std.mem.sliceAsBytes(offsets), buf[pos..][0..offsets_bytes]);
-        tree.node_comment_offsets = offsets;
+        tree.attached_comment_offsets = offsets;
         pos += offsets_bytes;
+    }
+
+    // attached comments
+    const attached_bytes: usize = @as(usize, hdr.attached_comment_count) * ATTACHED_COMMENT_SIZE;
+    if (buf.len < pos + attached_bytes) return error.InvalidBuffer;
+    if (hdr.attached_comment_count > 0) {
+        const attached = try tree.allocator().alloc(ast.AttachedComment, hdr.attached_comment_count);
+        for (0..hdr.attached_comment_count) |i| {
+            var ce: PackedAttachedComment = undefined;
+            @memcpy(std.mem.asBytes(&ce), buf[pos..][0..ATTACHED_COMMENT_SIZE]);
+            pos += ATTACHED_COMMENT_SIZE;
+            const pos_bits = (ce.flags & ATTACHED_COMMENT_POSITION_MASK) >> ATTACHED_COMMENT_POSITION_SHIFT;
+            attached[i] = .{
+                .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
+                .position = @enumFromInt(pos_bits),
+                .same_line = (ce.flags >> ATTACHED_COMMENT_SAME_LINE_BIT) & 1 != 0,
+                .value = .{ .start = ce.value_start, .end = ce.value_end },
+            };
+        }
+        tree.attached_comments = attached;
     }
 
     // comments
@@ -584,12 +651,10 @@ pub fn deserializeFromBuf(
             var ce: PackedComment = undefined;
             @memcpy(std.mem.asBytes(&ce), buf[pos..][0..COMMENT_SIZE]);
             pos += COMMENT_SIZE;
-            const pos_bits = (ce.flags & COMMENT_POSITION_MASK) >> COMMENT_POSITION_SHIFT;
             comments[i] = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
-                .position = @enumFromInt(pos_bits),
-                .same_line = (ce.flags >> COMMENT_SAME_LINE_BIT) & 1 != 0,
                 .value = .{ .start = ce.value_start, .end = ce.value_end },
+                .span = .{ .start = ce.span_start, .end = ce.span_end },
             };
         }
         tree.comments = comments;

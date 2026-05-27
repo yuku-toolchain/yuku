@@ -4,17 +4,17 @@
 const NULL = 0xFFFFFFFF;
 const _enc = new TextEncoder();
 const NODE_SIZE = 48;
-const HEADER_SIZE = 40;
+const HEADER_SIZE = 44;
 const NODE_FLAGS_OFFSET = 2;
 const NODE_FIELD0_OFFSET = 4;
 const NODE_HEADER_U32S = 2;
 const NODE_SPAN_START_U32 = 10;
 const NODE_SPAN_END_U32 = 11;
-const COMMENT_SIZE = 12;
-const COMMENT_FLAGS_OFFSET = 0;
-const COMMENT_VALUE_START_OFFSET = 4;
-const COMMENT_VALUE_END_OFFSET = 8;
-const FLAG_ATTACH_COMMENTS = 2;
+const ATTACHED_COMMENT_SIZE = 12;
+const ATTACHED_COMMENT_FLAGS_OFFSET = 0;
+const ATTACHED_COMMENT_VALUE_START_OFFSET = 4;
+const ATTACHED_COMMENT_VALUE_END_OFFSET = 8;
+const FLAG_ATTACHED_COMMENTS = 2;
 const BINARY_OPS_INV = {"==": 0, "!=": 1, "===": 2, "!==": 3, "<": 4, "<=": 5, ">": 6, ">=": 7, "+": 8, "-": 9, "*": 10, "/": 11, "%": 12, "**": 13, "|": 14, "^": 15, "&": 16, "<<": 17, ">>": 18, ">>>": 19, "in": 20, "instanceof": 21};
 const LOGICAL_OPS_INV = {"&&": 0, "||": 1, "??": 2};
 const UNARY_OPS_INV = {"-": 0, "+": 1, "!": 2, "~": 3, "typeof": 4, "void": 5, "delete": 6};
@@ -591,9 +591,11 @@ function encode(program, lineStarts) {
   }
   function enc_string_literal(n) {
     const s = encStr(typeof n.value === "string" ? n.value : "");
+    const r = encStr(typeof n.raw === "string" ? n.raw : "");
     const idx = alloc();
     tagAt(idx, 33);
     slotAt(idx, 0, s.start); slotAt(idx, 1, s.end);
+    slotAt(idx, 2, r.start); slotAt(idx, 3, r.end);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -2292,14 +2294,14 @@ function encode(program, lineStarts) {
   }
   const progIdx = encNode(root);
   const POSITION_INV = { "before": 0, "after": 1, "inside": 2 };
-  // counting-sort comments by host into a prefix-sum offsets table,
-  // then write each comment at its slot in `commentBytes`.
-  const attachComments = commentsByIdx.size > 0;
-  let commentCount = 0;
+  // counting-sort attached comments by host into a prefix-sum offsets
+  // table, then write each at its slot in `attachedBytes`.
+  const attached = commentsByIdx.size > 0;
+  let attachedCount = 0;
   let offsetsBytes = null;
-  let commentBytes = null;
-  if (attachComments) {
-    for (const arr of commentsByIdx.values()) commentCount += arr.length;
+  let attachedBytes = null;
+  if (attached) {
+    for (const arr of commentsByIdx.values()) attachedCount += arr.length;
     const offsets = new Uint32Array(nodeCount + 1);
     for (const [idx, arr] of commentsByIdx) offsets[idx] = arr.length;
     let sum = 0;
@@ -2310,9 +2312,9 @@ function encode(program, lineStarts) {
     }
     offsets[nodeCount] = sum;
     offsetsBytes = offsets.buffer;
-    commentBytes = new ArrayBuffer(commentCount * COMMENT_SIZE);
-    const cU8 = new Uint8Array(commentBytes);
-    const cDV = new DataView(commentBytes);
+    attachedBytes = new ArrayBuffer(attachedCount * ATTACHED_COMMENT_SIZE);
+    const cU8 = new Uint8Array(attachedBytes);
+    const cDV = new DataView(attachedBytes);
     const cursor = new Uint32Array(nodeCount);
     for (const [idx, arr] of commentsByIdx) {
       for (let j = 0; j < arr.length; j++) {
@@ -2323,10 +2325,10 @@ function encode(program, lineStarts) {
         f |= ((POSITION_INV[c.position] ?? 0) & 3) << 1;
         if (c.sameLine) f |= 8;
         const v = encStr(typeof c.value === "string" ? c.value : "");
-        const o = slot * COMMENT_SIZE;
-        cU8[o + COMMENT_FLAGS_OFFSET] = f;
-        cDV.setUint32(o + COMMENT_VALUE_START_OFFSET, v.start, true);
-        cDV.setUint32(o + COMMENT_VALUE_END_OFFSET, v.end, true);
+        const o = slot * ATTACHED_COMMENT_SIZE;
+        cU8[o + ATTACHED_COMMENT_FLAGS_OFFSET] = f;
+        cDV.setUint32(o + ATTACHED_COMMENT_VALUE_START_OFFSET, v.start, true);
+        cDV.setUint32(o + ATTACHED_COMMENT_VALUE_END_OFFSET, v.end, true);
       }
     }
   }
@@ -2341,12 +2343,12 @@ function encode(program, lineStarts) {
   }
   const totalNodeBytes = nodeCount * NODE_SIZE;
   const totalExtraBytes = extraCount * 4;
-  const totalOffsetsBytes = attachComments ? (nodeCount + 1) * 4 : 0;
-  const totalCommentBytes = commentCount * COMMENT_SIZE;
+  const totalOffsetsBytes = attached ? (nodeCount + 1) * 4 : 0;
+  const totalAttachedBytes = attachedCount * ATTACHED_COMMENT_SIZE;
   const totalLineStartsBytes = lineStartsCount * 4;
   const finalSize =
     HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen +
-    totalOffsetsBytes + totalCommentBytes + totalLineStartsBytes;
+    totalOffsetsBytes + totalAttachedBytes + totalLineStartsBytes;
   const out = new ArrayBuffer(finalSize);
   const outU8 = new Uint8Array(out);
   const outU32 = new Uint32Array(out, 0, (finalSize >>> 2));
@@ -2354,23 +2356,24 @@ function encode(program, lineStarts) {
   outU32[1] = extraCount;
   outU32[2] = poolLen;
   outU32[3] = 0;
-  outU32[4] = commentCount;
-  outU32[5] = lineStartsCount;
-  outU32[6] = 0;
-  outU32[7] = progIdx;
-  outU32[8] = attachComments ? FLAG_ATTACH_COMMENTS : 0;
-  outU32[9] = 0;
+  outU32[4] = 0;
+  outU32[5] = attachedCount;
+  outU32[6] = lineStartsCount;
+  outU32[7] = 0;
+  outU32[8] = progIdx;
+  outU32[9] = attached ? FLAG_ATTACHED_COMMENTS : 0;
+  outU32[10] = 0;
   const nodesOff = HEADER_SIZE;
   const extrasOff = nodesOff + totalNodeBytes;
   const poolOff = extrasOff + totalExtraBytes;
   const offsetsOff = poolOff + poolLen;
-  const commentsOff = offsetsOff + totalOffsetsBytes;
-  const lineStartsOff = commentsOff + totalCommentBytes;
+  const attachedOff = offsetsOff + totalOffsetsBytes;
+  const lineStartsOff = attachedOff + totalAttachedBytes;
   outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
   outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);
   outU8.set(pool.subarray(0, poolLen), poolOff);
   if (offsetsBytes !== null) outU8.set(new Uint8Array(offsetsBytes), offsetsOff);
-  if (commentBytes !== null) outU8.set(new Uint8Array(commentBytes), commentsOff);
+  if (attachedBytes !== null) outU8.set(new Uint8Array(attachedBytes), attachedOff);
   if (lineStartsBytes !== null) outU8.set(new Uint8Array(lineStartsBytes), lineStartsOff);
   return out;
 }

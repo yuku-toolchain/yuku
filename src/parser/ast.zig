@@ -101,17 +101,14 @@ pub const Lang = enum {
     }
 };
 
-/// A line or block comment attached to a host AST node.
-///
-/// `position` is `before`, `after`, or `inside` relative to the host.
-/// `same_line` is true when the comment shares a source line with the
-/// adjacent host edge (host start for `before`, host end for `after`).
-/// For `inside`, `same_line` is always false.
+/// A line or block comment with its text and full source span. The lexer's
+/// output, exposed directly as `Tree.comments` and consumed by attachment to
+/// build `AttachedComment`s. `value` is the text without delimiters, `span`
+/// covers the whole comment.
 pub const Comment = struct {
     type: Type,
-    position: Position = .before,
-    same_line: bool = false,
     value: String,
+    span: Span,
 
     pub const Type = enum(u1) {
         line,
@@ -124,6 +121,19 @@ pub const Comment = struct {
             };
         }
     };
+};
+
+/// A comment bound to a host AST node, reachable via `Tree.commentsOf`.
+///
+/// `position` is `before`, `after`, or `inside` relative to the host.
+/// `same_line` is true when the comment shares a source line with the
+/// adjacent host edge (host start for `before`, host end for `after`).
+/// For `inside`, `same_line` is always false.
+pub const AttachedComment = struct {
+    type: Comment.Type,
+    position: Position = .before,
+    same_line: bool = false,
+    value: String,
 
     pub const Position = enum(u2) {
         before,
@@ -138,15 +148,6 @@ pub const Comment = struct {
             };
         }
     };
-};
-
-// internal: lexer output, consumed by the attachment pass to produce
-// the public `Comment` shape. Carries the source span needed to position
-// the comment relative to neighbouring nodes.
-pub const RawComment = struct {
-    type: Comment.Type,
-    value: String,
-    span: Span,
 };
 
 /// The AST. Backed by growable arrays and an arena allocator.
@@ -165,12 +166,15 @@ pub const Tree = struct {
     extras: std.ArrayList(NodeIndex) = .empty,
     /// Diagnostics (errors, warnings, etc.) collected during parsing and analysis.
     diagnostics: std.ArrayList(Diagnostic) = .empty,
-    /// Comments grouped by host node, in source order within each host.
-    /// Resolve a node's slice with `commentsOf`. Populated only when
-    /// `Options.attach_comments` is enabled.
+    /// Every comment in source order, each with its source span. Populated
+    /// when the comment mode collects the flat list (`.flat` or `.both`).
     comments: []const Comment = &.{},
-    /// Prefix-sum index into `comments`, of length `nodes.len + 1`.
-    node_comment_offsets: []const u32 = &.{},
+    /// Comments grouped by host node, in source order within each host.
+    /// Resolve a node's slice with `commentsOf`. Populated only when the
+    /// comment mode attaches comments (`.attached` or `.both`).
+    attached_comments: []const AttachedComment = &.{},
+    /// Prefix-sum index into `attached_comments`, of length `nodes.len + 1`.
+    attached_comment_offsets: []const u32 = &.{},
     /// Offset where each source line begins. Index 0 is always 0. Powers
     /// `lineColOf` so consumers resolve positions without rescanning the
     /// source.
@@ -370,15 +374,15 @@ pub const Tree = struct {
     }
 
     /// Returns the comments attached to `node`, in source order. Empty
-    /// when `attach_comments` was not enabled or the node has none.
-    pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const Comment {
+    /// when the comment mode did not attach comments, or the node has none.
+    pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const AttachedComment {
         std.debug.assert(node != .null);
-        const offsets = self.node_comment_offsets;
+        const offsets = self.attached_comment_offsets;
         const i = @intFromEnum(node);
         if (i + 1 >= offsets.len) return &.{};
         std.debug.assert(offsets[i] <= offsets[i + 1]);
-        std.debug.assert(offsets[i + 1] <= self.comments.len);
-        return self.comments[offsets[i]..offsets[i + 1]];
+        std.debug.assert(offsets[i + 1] <= self.attached_comments.len);
+        return self.attached_comments[offsets[i]..offsets[i + 1]];
     }
 };
 
@@ -1386,6 +1390,9 @@ pub const WithStatement = struct {
 pub const StringLiteral = struct {
     /// decoded content with escape sequences resolved and quotes stripped
     value: String = .empty,
+    /// raw source lexeme including the surrounding quotes, exactly as written.
+    /// `.empty` for synthetic nodes`.
+    raw: String = .empty,
 };
 
 /// A numeric literal in one of four bases.

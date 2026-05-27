@@ -41,18 +41,33 @@ interface ParseOptions {
    */
   semanticErrors?: boolean;
   /**
-   * Collect comments and attach them to host AST nodes via
-   * {@link BaseNode.comments}.
+   * Also attach each comment to the AST node it sits next to, via
+   * {@link BaseNode.comments}. The flat {@link ParseResult.comments} list is
+   * always present regardless.
    * @default false
    */
   attachComments?: boolean;
 }
 
-/** Whether a {@link Comment} came from a line or block source comment. */
+/** Whether a comment came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
 /**
- * Position of a {@link Comment} relative to its host node.
+ * A source comment in the flat {@link ParseResult.comments} list, carrying its
+ * source span.
+ */
+interface Comment {
+  type: CommentType;
+  /** Comment text without the delimiters. */
+  value: string;
+  /** Byte offset of the comment start (delimiter included). */
+  start: number;
+  /** Byte offset of the comment end (delimiter included). */
+  end: number;
+}
+
+/**
+ * Position of an {@link AttachedComment} relative to its host node.
  *
  * - `before`: leading the host.
  * - `after`: trailing the host.
@@ -61,13 +76,13 @@ type CommentType = "Line" | "Block";
 type CommentPosition = "before" | "after" | "inside";
 
 /**
- * A source code comment attached to a single host AST node.
+ * A comment attached to a single host AST node, via {@link BaseNode.comments}.
  *
  * `sameLine` is true when the comment shares a source line with the
  * host's adjacent edge (host's start for `before`, host's end for
  * `after`). For `inside` it is always `false`.
  */
-interface Comment {
+interface AttachedComment {
   type: CommentType;
   position: CommentPosition;
   sameLine: boolean;
@@ -119,6 +134,8 @@ interface SourceLocation {
 interface ParseResult {
   /** Root ESTree/TypeScript-ESTree AST node. */
   program: Program;
+  /** Every comment in source order, each with its source span. */
+  comments: Comment[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
   /**
@@ -165,9 +182,9 @@ interface BaseNode {
   end: number;
   /**
    * Comments attached to this node in source order. Present only when
-   * {@link ParseOptions.attachComments} is enabled.
+   * {@link ParseOptions.attachComments} is true.
    */
-  comments?: Comment[];
+  comments?: AttachedComment[];
 }
 
 type Span = BaseNode;
@@ -605,7 +622,7 @@ interface Directive extends BaseNode {
 
 interface BlockStatement extends BaseNode {
   type: "BlockStatement";
-  body: Statement[];
+  body: (Statement | Directive)[];
 }
 
 interface IfStatement extends BaseNode {
@@ -1495,7 +1512,7 @@ interface TSModuleDeclaration extends BaseNode {
 
 interface TSModuleBlock extends BaseNode {
   type: "TSModuleBlock";
-  body: Statement[];
+  body: ProgramStatement[];
 }
 
 interface TSParameterProperty extends BaseNode {
@@ -1609,8 +1626,16 @@ interface Program extends BaseNode {
   type: "Program";
   sourceType: ModuleKind;
   hashbang: Hashbang | null;
-  body: Array<Statement | ModuleDeclaration | Directive>;
+  body: ProgramStatement[];
 }
+
+/**
+ * An element of `Program.body`. Unlike {@link Statement}, this also includes
+ * {@link ModuleDeclaration} (`import`/`export`) and {@link Directive}, which
+ * are only valid at the top level of a program, never in nested statement
+ * positions such as a block, loop, or `if` body.
+ */
+type ProgramStatement = Statement | ModuleDeclaration | Directive;
 
 type Declaration =
   | FunctionDeclaration
@@ -1761,6 +1786,7 @@ export type {
   ParseOptions,
   ParseResult,
   Comment,
+  AttachedComment,
   CommentType,
   CommentPosition,
   Diagnostic,
@@ -1773,6 +1799,7 @@ export type {
   BaseNode,
   Span,
   Program,
+  ProgramStatement,
   Statement,
   Expression,
   Declaration,

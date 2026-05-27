@@ -1,0 +1,6 @@
+const single = 'hi';
+const double = "hi";
+const escaped = "esc\u0041pe";
+const quoteInside = 'say "hi"';
+const apostrophe = "it's";
+const obj = { 'key': 1, "other": 2 };

@@ -68,22 +68,24 @@ function decode(buffer, source) {
         extraCount = _u32[1],
         spLen = _u32[2];
   const commentCount = _u32[4],
-        lineStartsCount = _u32[5],
-        diagCount = _u32[6],
-        progIdx = _u32[7];
-  const _flags = _u32[8];
+        lineStartsCount = _u32[6],
+        diagCount = _u32[7],
+        progIdx = _u32[8];
+  const attachedCommentCount = _u32[5];
+  const _flags = _u32[9];
   const _isTs = !!(_flags & 1);
-  const _attachComments = !!(_flags & 2);
-  const _firstNa = _u32[9];
-  const _nodesOff = 40;
+  const _attached = !!(_flags & 2);
+  const _firstNa = _u32[10];
+  const _nodesOff = 44;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
   // sections after the variable-length string pool may be at any
   // byte alignment, so reads against them use `dv`, not `_u32`.
   const dv = new DataView(buffer);
-  const _coOff = _spOff + spLen;
-  const _cOff = _attachComments ? _coOff + (nodeCount + 1) * 4 : _coOff;
+  const _aoOff = _spOff + spLen;
+  const _acOff = _attached ? _aoOff + (nodeCount + 1) * 4 : _aoOff;
+  const _cOff = _acOff + attachedCommentCount * 12;
   function _poolDecode(s, e) {
     const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
     let hasEd = false;
@@ -155,10 +157,10 @@ function decode(buffer, source) {
     if (rest !== NULL) p.push(node(rest));
     return p;
   }
-  function _commentsOf(a, e) {
+  function _attachedCommentsOf(a, e) {
     const out = new Array(e - a);
     for (let j = a; j < e; j++) {
-      const o = _cOff + j * 12;
+      const o = _acOff + j * 12;
       const cf = _u8[o + 0];
       const vs = dv.getUint32(o + 4, true),
             ve = dv.getUint32(o + 8, true);
@@ -176,9 +178,9 @@ function decode(buffer, source) {
     // skip unwrap cases whose inner node already carries its own
     // comments (e.g. formal_parameter returning its pattern)
     if (r && r.type !== undefined && r.comments === undefined) {
-      const off = _coOff + i * 4;
+      const off = _aoOff + i * 4;
       const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
-      if (a !== e) r.comments = _commentsOf(a, e);
+      if (a !== e) r.comments = _attachedCommentsOf(a, e);
     }
     return r;
   }
@@ -609,9 +611,27 @@ function decode(buffer, source) {
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
-  const node = _attachComments ? nodeWithComments : _decode;
-  const lsOff = _cOff + commentCount * 12;
+  const node = _attached ? nodeWithComments : _decode;
+  const lsOff = _cOff + commentCount * 20;
   const dOff = lsOff + lineStartsCount * 4;
+  function _decodeComments() {
+    const out = new Array(commentCount);
+    for (let j = 0; j < commentCount; j++) {
+      const o = _cOff + j * 20;
+      const cf = _u8[o + 0];
+      const vs = dv.getUint32(o + 4, true),
+            ve = dv.getUint32(o + 8, true);
+      const ss = dv.getUint32(o + 12, true),
+            se = dv.getUint32(o + 16, true);
+      out[j] = {
+        type: (cf & 1) ? "Block" : "Line",
+        value: str(vs, ve),
+        start: _p(ss),
+        end: _p(se),
+      };
+    }
+    return out;
+  }
   function _decodeLineStarts() {
     const out = new Array(lineStartsCount);
     if (_firstNa >= _srcLen) {
@@ -659,7 +679,7 @@ function decode(buffer, source) {
     }
     return out;
   }
-  let _program, _lineStarts, _diagnostics;
+  let _program, _lineStarts, _diagnostics, _comments;
   function _getLineStarts() {
     if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
     return _lineStarts;
@@ -667,6 +687,11 @@ function decode(buffer, source) {
   return {
     get program() {
       return _program !== undefined ? _program : (_program = node(progIdx));
+    },
+    get comments() {
+      return _comments !== undefined
+        ? _comments
+        : (_comments = _decodeComments());
     },
     get diagnostics() {
       return _diagnostics !== undefined

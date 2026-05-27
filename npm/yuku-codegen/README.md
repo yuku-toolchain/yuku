@@ -155,7 +155,7 @@ print(program, { comments: true }).code;
 // "// hello\nconst x = 1;"
 ```
 
-Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it. See the [yuku-parser comments docs](https://www.npmjs.com/package/yuku-parser#comments) for the full design rationale.
+Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it. See the [yuku-parser comments docs](https://www.npmjs.com/package/yuku-parser#comments) for the comment options.
 
 ## Minification
 
