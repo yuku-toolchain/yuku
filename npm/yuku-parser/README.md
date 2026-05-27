@@ -76,18 +76,18 @@ Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. T
 
 ## Walking the AST
 
-The AST is standard ESTree, so any ESTree-compatible walker works. For example, with [zimmerframe](https://github.com/sveltejs/zimmerframe):
+[`yuku-ast`](https://www.npmjs.com/package/yuku-ast) is the companion toolkit built for this AST: a typed walker, node builders (`b`), type guards (`is`), and identifier validators.
 
 ```ts
-import { parse, type Node } from "yuku-parser";
-import { walk } from "zimmerframe";
+import { parse } from "yuku-parser";
+import { walk } from "yuku-ast/walk";
 
 const { program } = parse(`
   const message = "hello";
   console.log(message);
 `);
 
-walk(program as Node, null, {
+walk(program, {
   Identifier(node) {
     console.log(node.name);
   },
@@ -96,6 +96,8 @@ walk(program as Node, null, {
   },
 });
 ```
+
+The AST is also standard ESTree, so any ESTree-compatible walker (e.g. [zimmerframe](https://github.com/sveltejs/zimmerframe)) works just as well.
 
 ## Options
 

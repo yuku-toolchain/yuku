@@ -1626,8 +1626,16 @@ interface Program extends BaseNode {
   type: "Program";
   sourceType: ModuleKind;
   hashbang: Hashbang | null;
-  body: Array<Statement | ModuleDeclaration | Directive>;
+  body: ProgramStatement[];
 }
+
+/**
+ * An element of `Program.body`. Unlike {@link Statement}, this also includes
+ * {@link ModuleDeclaration} (`import`/`export`) and {@link Directive}, which
+ * are only valid at the top level of a program, never in nested statement
+ * positions such as a block, loop, or `if` body.
+ */
+type ProgramStatement = Statement | ModuleDeclaration | Directive;
 
 type Declaration =
   | FunctionDeclaration
@@ -1791,6 +1799,7 @@ export type {
   BaseNode,
   Span,
   Program,
+  ProgramStatement,
   Statement,
   Expression,
   Declaration,
