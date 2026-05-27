@@ -6,9 +6,9 @@ export type Format = "pretty" | "compact";
 /**
  * Quote style for emitted string literals.
  *
- * - `"preserve"`: reuse each literal's raw source text verbatim (quotes and
- *   escapes exactly as written).
- * - `"double"` / `"single"`: re-escape from the decoded value using that quote.
+ * - `"preserve"`: keep each literal's original quote style (single vs double);
+ *   synthetic nodes default to double.
+ * - `"double"` / `"single"`: force that quote.
  */
 export type Quotes = "preserve" | "double" | "single";
 

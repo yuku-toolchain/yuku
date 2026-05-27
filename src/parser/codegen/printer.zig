@@ -22,9 +22,9 @@ pub const Format = enum {
 
 /// Quote style for emitted string literals.
 ///
-/// - `preserve`: reuse each literal's raw source lexeme verbatim (quotes and
-///   escapes exactly as written).
-/// - `double` / `single`: re-escape from the decoded value using that quote.
+/// - `preserve`: keep each literal's original quote style (single vs double);
+///   synthetic nodes default to double.
+/// - `double` / `single`: force that quote.
 ///
 /// Minify mode ignores this and always picks whichever quote needs fewer
 /// escapes.
@@ -1179,30 +1179,37 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_string_literal(self: *Self, lit: ast.StringLiteral) Error!void {
-            if (comptime !minify_mode) {
-                if (self.options.quotes == .preserve) {
-                    const raw = self.tree.string(lit.raw);
-                    if (raw.len != 0) return self.writeStr(raw);
-                }
-            }
-            try self.emitStringLit(lit.value);
+            const raw = self.tree.string(lit.raw);
+            const single_quoted = raw.len != 0 and raw[0] == '\'';
+            try self.emitQuoted(self.tree.string(lit.value), single_quoted);
         }
 
         fn emitStringLit(self: *Self, value: ast.String) Error!void {
-            const s = self.tree.string(value);
-            const q = self.pickQuote(s);
+            try self.emitQuoted(self.tree.string(value), false);
+        }
+
+        fn emitQuoted(self: *Self, s: []const u8, single_quoted: bool) Error!void {
+            const q = self.pickQuote(s, single_quoted);
             try self.writeByte(q);
             try self.writeEscapedString(s, q);
             try self.writeByte(q);
         }
 
-        inline fn pickQuote(self: *const Self, s: []const u8) u8 {
-            const default: u8 = if (self.options.quotes == .single) '\'' else '"';
-            if (comptime !minify_mode) return default;
-            const single = std.mem.count(u8, s, "'");
-            const double = std.mem.count(u8, s, "\"");
-            if (single == double) return default;
-            return if (double < single) '"' else '\'';
+        /// In minify mode, picks the quote that needs fewer escapes for `s`.
+        /// Otherwise `.preserve` keeps the source's quote style (`single_quoted`)
+        /// and `.single` / `.double` force that quote.
+        inline fn pickQuote(self: *const Self, s: []const u8, single_quoted: bool) u8 {
+            if (comptime minify_mode) {
+                const single = std.mem.count(u8, s, "'");
+                const double = std.mem.count(u8, s, "\"");
+                if (single == double) return if (self.options.quotes == .single) '\'' else '"';
+                return if (double < single) '"' else '\'';
+            }
+            return switch (self.options.quotes) {
+                .preserve => if (single_quoted) '\'' else '"',
+                .single => '\'',
+                .double => '"',
+            };
         }
 
         fn writeEscapedString(self: *Self, s: []const u8, quote: u8) Error!void {

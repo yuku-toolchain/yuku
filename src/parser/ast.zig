@@ -1391,7 +1391,6 @@ pub const StringLiteral = struct {
     /// decoded content with escape sequences resolved and quotes stripped
     value: String = .empty,
     /// raw source lexeme including the surrounding quotes, exactly as written.
-    /// `.empty` for synthetic nodes`.
     raw: String = .empty,
 };
 
