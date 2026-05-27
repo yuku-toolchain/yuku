@@ -591,9 +591,11 @@ function encode(program, lineStarts) {
   }
   function enc_string_literal(n) {
     const s = encStr(typeof n.value === "string" ? n.value : "");
+    const r = encStr(typeof n.raw === "string" ? n.raw : "");
     const idx = alloc();
     tagAt(idx, 33);
     slotAt(idx, 0, s.start); slotAt(idx, 1, s.end);
+    slotAt(idx, 2, r.start); slotAt(idx, 3, r.end);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;

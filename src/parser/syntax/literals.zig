@@ -14,6 +14,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.addNode(.{
         .string_literal = .{
             .value = try parser.stringValue(token),
+            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }

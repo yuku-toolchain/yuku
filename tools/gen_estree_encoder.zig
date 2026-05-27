@@ -497,18 +497,21 @@ fn enumMask(comptime E: type) u32 {
 
 fn writeSpecialStringLit(w: *Writer, comptime tag: usize) !void {
     const sv = comptime slotOf(ast.StringLiteral, "value");
+    const sr = comptime slotOf(ast.StringLiteral, "raw");
     try w.print(
         \\  function enc_string_literal(n) {{
         \\    const s = encStr(typeof n.value === "string" ? n.value : "");
+        \\    const r = encStr(typeof n.raw === "string" ? n.raw : "");
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, s.start); slotAt(idx, {d}, s.end);
+        \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.end);
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sv, sv + 1 });
+    , .{ tag, sv, sv + 1, sr, sr + 1 });
 }
 
 fn writeSpecialNumericLit(w: *Writer, comptime tag: usize) !void {

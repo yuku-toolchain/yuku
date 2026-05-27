@@ -1390,6 +1390,9 @@ pub const WithStatement = struct {
 pub const StringLiteral = struct {
     /// decoded content with escape sequences resolved and quotes stripped
     value: String = .empty,
+    /// raw source lexeme including the surrounding quotes, exactly as written.
+    /// `.empty` for synthetic nodes`.
+    raw: String = .empty,
 };
 
 /// A numeric literal in one of four bases.
