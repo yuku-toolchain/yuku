@@ -90,7 +90,7 @@ const result = try parser.codegen.print(allocator, &tree, .{
 | ------------- | ------------------- | --------- | ---------------------------------------------------------- |
 | `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)   |
 | `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                  |
-| `quotes`      | `Quotes`            | `.preserve` | `.preserve` (reuse the raw source lexeme), or `.double` / `.single` to re-escape |
+| `quotes`      | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style; `.double` / `.single` force one (content always re-escaped) |
 | `comments`    | `Comments`          | `.some`   | Comment passthrough filter. See [Comments](#comments).     |
 | `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code             |
 

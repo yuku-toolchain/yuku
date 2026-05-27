@@ -50,7 +50,7 @@ interface CodegenResult {
 const out = print(program, {
   format: "pretty",
   indent: 2,
-  quotes: "double",
+  quotes: "preserve",
   comments: "some",
   sourceMaps: { lineStarts },
 });
@@ -60,7 +60,7 @@ const out = print(program, {
 | ------------ | ---------------------------------------- | ---------- | ---------------------------------------------------------------------------- |
 | `format`     | `"pretty" \| "compact"`                  | `"pretty"` | Whitespace mode. `"compact"` emits only the separators the grammar requires. |
 | `indent`     | `number`                                 | `2`        | Spaces per indentation level. Applies in pretty mode only.                   |
-| `quotes`     | `"double" \| "single"`                   | `"double"` | Quote style for emitted string literals.                                     |
+| `quotes`     | `"preserve" \| "double" \| "single"`     | `"preserve"` | Quote style for string literals. `"preserve"` keeps each literal's source quote style (re-escaping the content); `"double"` / `"single"` force one. |
 | `comments`   | `boolean \| "some" \| "line" \| "block"` | `"some"`   | Comment passthrough filter. See [Comments](#comments).                       |
 | `sourceMaps` | `SourceMapOptions`                       | `undefined` | Pass an object to emit a Source Map V3. Its `lineStarts` is required, the rest of the metadata is optional. See [Source maps](#source-maps). |
 
