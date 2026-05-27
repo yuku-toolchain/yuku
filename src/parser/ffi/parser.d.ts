@@ -622,7 +622,7 @@ interface Directive extends BaseNode {
 
 interface BlockStatement extends BaseNode {
   type: "BlockStatement";
-  body: Statement[];
+  body: (Statement | Directive)[];
 }
 
 interface IfStatement extends BaseNode {
@@ -1512,7 +1512,7 @@ interface TSModuleDeclaration extends BaseNode {
 
 interface TSModuleBlock extends BaseNode {
   type: "TSModuleBlock";
-  body: Statement[];
+  body: ProgramStatement[];
 }
 
 interface TSParameterProperty extends BaseNode {
