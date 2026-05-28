@@ -29,8 +29,7 @@
               "type": "Identifier",
               "start": 4,
               "end": 7,
-              "name": "foo",
-              "kind": "reference"
+              "name": "foo"
             }
           ]
         },
@@ -39,8 +38,7 @@
             "type": "Identifier",
             "start": 9,
             "end": 12,
-            "name": "bar",
-            "kind": "reference"
+            "name": "bar"
           }
         ],
         "optional": false

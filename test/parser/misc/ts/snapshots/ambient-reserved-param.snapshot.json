@@ -15,7 +15,6 @@
         "start": 14,
         "end": 21,
         "name": "Ambient",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -36,7 +35,6 @@
               "start": 26,
               "end": 37,
               "name": "constructor",
-              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -54,7 +52,6 @@
                   "start": 38,
                   "end": 55,
                   "name": "arguments",
-                  "kind": "binding",
                   "decorators": [],
                   "typeAnnotation": {
                     "type": "TSTypeAnnotation",
@@ -92,7 +89,6 @@
               "start": 60,
               "end": 66,
               "name": "method",
-              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -110,7 +106,6 @@
                   "start": 67,
                   "end": 84,
                   "name": "arguments",
-                  "kind": "binding",
                   "decorators": [],
                   "typeAnnotation": {
                     "type": "TSTypeAnnotation",
@@ -164,7 +159,6 @@
         "start": 113,
         "end": 119,
         "name": "legacy",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -177,7 +171,6 @@
           "start": 120,
           "end": 140,
           "name": "arguments",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",

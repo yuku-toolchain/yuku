@@ -13,8 +13,7 @@
         "type": "Identifier",
         "start": 9,
         "end": 10,
-        "name": "f",
-        "kind": "binding"
+        "name": "f"
       },
       "generator": false,
       "async": false,

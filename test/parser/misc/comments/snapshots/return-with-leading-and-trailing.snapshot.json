@@ -13,8 +13,7 @@
         "type": "Identifier",
         "start": 9,
         "end": 10,
-        "name": "f",
-        "kind": "binding"
+        "name": "f"
       },
       "generator": false,
       "async": false,
@@ -23,15 +22,13 @@
           "type": "Identifier",
           "start": 11,
           "end": 12,
-          "name": "a",
-          "kind": "binding"
+          "name": "a"
         },
         {
           "type": "Identifier",
           "start": 14,
           "end": 15,
-          "name": "b",
-          "kind": "binding"
+          "name": "b"
         }
       ],
       "body": {
@@ -51,15 +48,13 @@
                 "type": "Identifier",
                 "start": 47,
                 "end": 48,
-                "name": "a",
-                "kind": "reference"
+                "name": "a"
               },
               "right": {
                 "type": "Identifier",
                 "start": 51,
                 "end": 52,
-                "name": "b",
-                "kind": "reference"
+                "name": "b"
               },
               "operator": "+"
             },

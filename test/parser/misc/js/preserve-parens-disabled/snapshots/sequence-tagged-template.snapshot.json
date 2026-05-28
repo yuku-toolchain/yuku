@@ -29,8 +29,7 @@
               "type": "Identifier",
               "start": 4,
               "end": 7,
-              "name": "tag",
-              "kind": "reference"
+              "name": "tag"
             }
           ]
         },

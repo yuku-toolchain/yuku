@@ -19,15 +19,13 @@
             "type": "Identifier",
             "start": 12,
             "end": 20,
-            "name": "resource",
-            "kind": "binding"
+            "name": "resource"
           },
           "init": {
             "type": "Identifier",
             "start": 23,
             "end": 26,
-            "name": "Bun",
-            "kind": "reference"
+            "name": "Bun"
           }
         }
       ]

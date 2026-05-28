@@ -13,8 +13,7 @@
         "type": "Identifier",
         "start": 4,
         "end": 5,
-        "name": "x",
-        "kind": "reference"
+        "name": "x"
       },
       "consequent": {
         "type": "BlockStatement",

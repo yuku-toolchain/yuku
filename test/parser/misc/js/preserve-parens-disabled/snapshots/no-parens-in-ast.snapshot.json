@@ -17,15 +17,13 @@
           "type": "Identifier",
           "start": 0,
           "end": 1,
-          "name": "a",
-          "kind": "reference"
+          "name": "a"
         },
         "right": {
           "type": "Identifier",
           "start": 4,
           "end": 5,
-          "name": "b",
-          "kind": "reference"
+          "name": "b"
         },
         "operator": "+"
       }

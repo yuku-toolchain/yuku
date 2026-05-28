@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 6,
             "end": 7,
-            "name": "a",
-            "kind": "binding"
+            "name": "a"
           },
           "init": {
             "type": "ArrayExpression",

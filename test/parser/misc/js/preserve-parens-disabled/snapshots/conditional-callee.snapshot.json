@@ -21,22 +21,19 @@
             "type": "Identifier",
             "start": 1,
             "end": 2,
-            "name": "a",
-            "kind": "reference"
+            "name": "a"
           },
           "consequent": {
             "type": "Identifier",
             "start": 5,
             "end": 6,
-            "name": "b",
-            "kind": "reference"
+            "name": "b"
           },
           "alternate": {
             "type": "Identifier",
             "start": 9,
             "end": 10,
-            "name": "c",
-            "kind": "reference"
+            "name": "c"
           }
         },
         "arguments": [
@@ -44,8 +41,7 @@
             "type": "Identifier",
             "start": 12,
             "end": 13,
-            "name": "d",
-            "kind": "reference"
+            "name": "d"
           }
         ],
         "optional": false

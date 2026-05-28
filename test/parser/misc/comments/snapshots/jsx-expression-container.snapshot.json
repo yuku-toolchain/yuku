@@ -20,7 +20,6 @@
             "start": 6,
             "end": 7,
             "name": "x",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -53,7 +52,6 @@
                   "start": 29,
                   "end": 30,
                   "name": "y",
-                  "kind": "reference",
                   "decorators": [],
                   "optional": false,
                   "typeAnnotation": null,

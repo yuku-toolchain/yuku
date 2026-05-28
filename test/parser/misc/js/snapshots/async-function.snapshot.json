@@ -13,8 +13,7 @@
         "type": "Identifier",
         "start": 15,
         "end": 27,
-        "name": "testFunction",
-        "kind": "binding"
+        "name": "testFunction"
       },
       "generator": false,
       "async": true,
@@ -40,15 +39,13 @@
                   "type": "Identifier",
                   "start": 36,
                   "end": 43,
-                  "name": "console",
-                  "kind": "reference"
+                  "name": "console"
                 },
                 "property": {
                   "type": "Identifier",
                   "start": 44,
                   "end": 47,
-                  "name": "log",
-                  "kind": "name"
+                  "name": "log"
                 },
                 "computed": false,
                 "optional": false

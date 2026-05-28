@@ -14,8 +14,7 @@
         "type": "Identifier",
         "start": 6,
         "end": 7,
-        "name": "C",
-        "kind": "binding"
+        "name": "C"
       },
       "superClass": null,
       "body": {
@@ -32,8 +31,7 @@
               "type": "Identifier",
               "start": 12,
               "end": 20,
-              "name": "accessor",
-              "kind": "name"
+              "name": "accessor"
             },
             "value": {
               "type": "Literal",
@@ -54,8 +52,7 @@
               "type": "Identifier",
               "start": 28,
               "end": 36,
-              "name": "accessor",
-              "kind": "name"
+              "name": "accessor"
             },
             "value": null,
             "computed": false,
@@ -70,8 +67,7 @@
               "type": "Identifier",
               "start": 39,
               "end": 40,
-              "name": "x",
-              "kind": "name"
+              "name": "x"
             },
             "value": {
               "type": "Literal",

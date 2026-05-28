@@ -14,7 +14,6 @@
         "start": 17,
         "end": 26,
         "name": "configure",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -27,7 +26,6 @@
           "start": 27,
           "end": 49,
           "name": "opts",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -47,7 +45,6 @@
                     "start": 35,
                     "end": 39,
                     "name": "mode",
-                    "kind": "name",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null
@@ -105,7 +102,6 @@
         "start": 75,
         "end": 84,
         "name": "configure",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -118,7 +114,6 @@
           "start": 85,
           "end": 107,
           "name": "opts",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -138,7 +133,6 @@
                     "start": 93,
                     "end": 97,
                     "name": "mode",
-                    "kind": "name",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null

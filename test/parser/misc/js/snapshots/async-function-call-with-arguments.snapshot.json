@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 6,
             "end": 14,
-            "name": "testCall",
-            "kind": "binding"
+            "name": "testCall"
           },
           "init": {
             "type": "CallExpression",
@@ -30,16 +29,14 @@
               "type": "Identifier",
               "start": 17,
               "end": 22,
-              "name": "async",
-              "kind": "reference"
+              "name": "async"
             },
             "arguments": [
               {
                 "type": "Identifier",
                 "start": 23,
                 "end": 31,
-                "name": "argument",
-                "kind": "reference"
+                "name": "argument"
               }
             ],
             "optional": false

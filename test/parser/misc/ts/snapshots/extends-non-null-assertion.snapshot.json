@@ -20,7 +20,6 @@
             "start": 14,
             "end": 41,
             "name": "Base",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": {
               "type": "TSTypeAnnotation",
@@ -82,7 +81,6 @@
         "start": 50,
         "end": 51,
         "name": "C",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -96,7 +94,6 @@
           "start": 60,
           "end": 64,
           "name": "Base",
-          "kind": "reference",
           "decorators": [],
           "optional": false,
           "typeAnnotation": null

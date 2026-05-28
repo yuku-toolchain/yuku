@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 6,
             "end": 13,
-            "name": "_object",
-            "kind": "binding"
+            "name": "_object"
           },
           "init": {
             "type": "ObjectExpression",
@@ -43,8 +42,7 @@
                   "type": "Identifier",
                   "start": 25,
                   "end": 30,
-                  "name": "value",
-                  "kind": "reference"
+                  "name": "value"
                 },
                 "kind": "init",
                 "method": false,

@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 6,
             "end": 7,
-            "name": "o",
-            "kind": "binding"
+            "name": "o"
           },
           "init": {
             "type": "ObjectExpression",
@@ -35,8 +34,7 @@
                   "type": "Identifier",
                   "start": 14,
                   "end": 15,
-                  "name": "a",
-                  "kind": "name"
+                  "name": "a"
                 },
                 "value": {
                   "type": "Literal",
@@ -66,8 +64,7 @@
                   "type": "Identifier",
                   "start": 45,
                   "end": 46,
-                  "name": "b",
-                  "kind": "name"
+                  "name": "b"
                 },
                 "value": {
                   "type": "Literal",

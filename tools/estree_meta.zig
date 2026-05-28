@@ -154,6 +154,11 @@ pub const Role = enum {
     binding,
     /// `break foo`/`continue foo`/`foo:` label slot.
     label,
+    /// non-binding name slot (import/export specifier names, dotted type
+    /// segments): `Identifier` becomes `identifier_name`. Without this the
+    /// generic dispatcher would treat the name as a reference and the
+    /// minifier's `undefined`/`Infinity` rewrites would corrupt it.
+    name,
 };
 
 const ROLES = [_]struct { node: []const u8, field: []const u8, role: Role }{
@@ -176,6 +181,13 @@ const ROLES = [_]struct { node: []const u8, field: []const u8, role: Role }{
     .{ .node = "break_statement", .field = "label", .role = .label },
     .{ .node = "continue_statement", .field = "label", .role = .label },
     .{ .node = "labeled_statement", .field = "label", .role = .label },
+    // names (non-binding identifier slots that are never references)
+    .{ .node = "import_specifier", .field = "imported", .role = .name },
+    .{ .node = "import_attribute", .field = "key", .role = .name },
+    .{ .node = "export_all_declaration", .field = "exported", .role = .name },
+    .{ .node = "export_specifier", .field = "exported", .role = .name },
+    .{ .node = "ts_qualified_name", .field = "right", .role = .name },
+    .{ .node = "ts_import_type", .field = "qualifier", .role = .name },
 };
 
 pub fn fieldRole(comptime tag: []const u8, comptime field: []const u8) Role {

@@ -27,7 +27,6 @@
                 "start": 8,
                 "end": 19,
                 "name": "doSomething",
-                "kind": "reference",
                 "decorators": [],
                 "optional": false,
                 "typeAnnotation": null
@@ -49,7 +48,6 @@
           "start": 32,
           "end": 42,
           "name": "e",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -85,7 +83,6 @@
                     "start": 48,
                     "end": 55,
                     "name": "console",
-                    "kind": "reference",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null
@@ -95,7 +92,6 @@
                     "start": 56,
                     "end": 59,
                     "name": "log",
-                    "kind": "name",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null
@@ -109,7 +105,6 @@
                     "start": 60,
                     "end": 61,
                     "name": "e",
-                    "kind": "reference",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null

@@ -14,7 +14,6 @@
         "start": 102,
         "end": 104,
         "name": "A1",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -50,7 +49,6 @@
         "start": 120,
         "end": 122,
         "name": "A1",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -72,7 +70,6 @@
         "start": 165,
         "end": 167,
         "name": "A2",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -102,7 +99,6 @@
         "start": 188,
         "end": 190,
         "name": "A2",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -123,7 +119,6 @@
               "start": 195,
               "end": 196,
               "name": "x",
-              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -157,7 +152,6 @@
         "start": 261,
         "end": 263,
         "name": "A3",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -178,7 +172,6 @@
               "start": 268,
               "end": 269,
               "name": "x",
-              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -220,7 +213,6 @@
         "start": 286,
         "end": 288,
         "name": "A3",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -242,7 +234,6 @@
         "start": 327,
         "end": 329,
         "name": "A4",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -273,7 +264,6 @@
         "start": 346,
         "end": 348,
         "name": "A4",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false

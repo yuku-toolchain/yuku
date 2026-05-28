@@ -20,7 +20,6 @@
             "start": 14,
             "end": 20,
             "name": "a",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": {
               "type": "TSTypeAnnotation",
@@ -61,7 +60,6 @@
               "start": 23,
               "end": 24,
               "name": "a",
-              "kind": "reference",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -71,7 +69,6 @@
               "start": 26,
               "end": 27,
               "name": "b",
-              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -112,7 +109,6 @@
                         "start": 29,
                         "end": 30,
                         "name": "T",
-                        "kind": "binding",
                         "decorators": [],
                         "typeAnnotation": null,
                         "optional": false
@@ -131,7 +127,6 @@
                     "start": 32,
                     "end": 36,
                     "name": "x",
-                    "kind": "binding",
                     "decorators": [],
                     "typeAnnotation": {
                       "type": "TSTypeAnnotation",
@@ -146,7 +141,6 @@
                           "start": 35,
                           "end": 36,
                           "name": "T",
-                          "kind": "reference",
                           "decorators": [],
                           "optional": false,
                           "typeAnnotation": null
@@ -170,7 +164,6 @@
                       "start": 41,
                       "end": 42,
                       "name": "T",
-                      "kind": "reference",
                       "decorators": [],
                       "optional": false,
                       "typeAnnotation": null

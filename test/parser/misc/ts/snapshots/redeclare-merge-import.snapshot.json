@@ -19,7 +19,6 @@
             "start": 261,
             "end": 265,
             "name": "nice",
-            "kind": "name",
             "decorators": [],
             "optional": false,
             "typeAnnotation": null
@@ -29,7 +28,6 @@
             "start": 261,
             "end": 265,
             "name": "nice",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -89,7 +87,6 @@
             "start": 287,
             "end": 291,
             "name": "nice",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -116,7 +113,6 @@
                     "start": 328,
                     "end": 345,
                     "name": "_symbolLinksBrand",
-                    "kind": "name",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null
@@ -155,7 +151,6 @@
                   "start": 311,
                   "end": 315,
                   "name": "nice",
-                  "kind": "reference",
                   "decorators": [],
                   "optional": false,
                   "typeAnnotation": null
@@ -185,7 +180,6 @@
             "start": 413,
             "end": 415,
             "name": "T1",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -221,7 +215,6 @@
         "start": 436,
         "end": 438,
         "name": "T1",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -253,7 +246,6 @@
             "start": 468,
             "end": 470,
             "name": "T2",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -294,7 +286,6 @@
             "start": 491,
             "end": 493,
             "name": "T2",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -325,7 +316,6 @@
             "start": 530,
             "end": 532,
             "name": "T3",
-            "kind": "name",
             "decorators": [],
             "optional": false,
             "typeAnnotation": null
@@ -335,7 +325,6 @@
             "start": 530,
             "end": 532,
             "name": "T3",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -371,7 +360,6 @@
         "start": 558,
         "end": 560,
         "name": "T3",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -404,7 +392,6 @@
             "start": 614,
             "end": 616,
             "name": "T4",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -445,7 +432,6 @@
             "start": 635,
             "end": 637,
             "name": "T4",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -476,7 +462,6 @@
             "start": 712,
             "end": 714,
             "name": "T5",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -511,7 +496,6 @@
         "start": 739,
         "end": 741,
         "name": "T5",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -532,7 +516,6 @@
               "start": 746,
               "end": 747,
               "name": "x",
-              "kind": "name",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -571,7 +554,6 @@
             "start": 790,
             "end": 792,
             "name": "T6",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -606,7 +588,6 @@
         "start": 812,
         "end": 814,
         "name": "T6",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -633,7 +614,6 @@
             "start": 902,
             "end": 904,
             "name": "T7",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -673,7 +653,6 @@
             "start": 924,
             "end": 926,
             "name": "T7",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false

@@ -17,16 +17,14 @@
           "type": "Identifier",
           "start": 0,
           "end": 1,
-          "name": "a",
-          "kind": "reference"
+          "name": "a"
         },
         "arguments": [
           {
             "type": "Identifier",
             "start": 2,
             "end": 3,
-            "name": "b",
-            "kind": "reference"
+            "name": "b"
           }
         ],
         "optional": false

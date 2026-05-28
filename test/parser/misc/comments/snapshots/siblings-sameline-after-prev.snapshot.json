@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 6,
             "end": 7,
-            "name": "a",
-            "kind": "binding"
+            "name": "a"
           },
           "init": {
             "type": "Literal",
@@ -54,8 +53,7 @@
             "type": "Identifier",
             "start": 26,
             "end": 27,
-            "name": "b",
-            "kind": "binding"
+            "name": "b"
           },
           "init": {
             "type": "Literal",

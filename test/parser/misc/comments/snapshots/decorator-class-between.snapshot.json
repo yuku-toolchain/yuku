@@ -18,8 +18,7 @@
             "type": "Identifier",
             "start": 1,
             "end": 4,
-            "name": "dec",
-            "kind": "reference"
+            "name": "dec"
           }
         }
       ],
@@ -28,7 +27,6 @@
         "start": 22,
         "end": 23,
         "name": "C",
-        "kind": "binding",
         "comments": [
           {
             "type": "Line",

@@ -13,8 +13,7 @@
         "type": "Identifier",
         "start": 4,
         "end": 13,
-        "name": "condition",
-        "kind": "reference"
+        "name": "condition"
       },
       "consequent": {
         "type": "ReturnStatement",
@@ -24,8 +23,7 @@
           "type": "Identifier",
           "start": 22,
           "end": 23,
-          "name": "x",
-          "kind": "reference"
+          "name": "x"
         }
       },
       "alternate": null

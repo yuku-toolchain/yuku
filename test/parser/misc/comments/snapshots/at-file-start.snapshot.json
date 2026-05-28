@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 22,
             "end": 23,
-            "name": "x",
-            "kind": "binding"
+            "name": "x"
           },
           "init": {
             "type": "Literal",

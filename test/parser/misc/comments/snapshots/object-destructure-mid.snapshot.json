@@ -29,15 +29,13 @@
                   "type": "Identifier",
                   "start": 8,
                   "end": 9,
-                  "name": "a",
-                  "kind": "name"
+                  "name": "a"
                 },
                 "value": {
                   "type": "Identifier",
                   "start": 8,
                   "end": 9,
-                  "name": "a",
-                  "kind": "binding"
+                  "name": "a"
                 },
                 "method": false,
                 "shorthand": true,
@@ -52,15 +50,13 @@
                   "type": "Identifier",
                   "start": 21,
                   "end": 22,
-                  "name": "b",
-                  "kind": "name"
+                  "name": "b"
                 },
                 "value": {
                   "type": "Identifier",
                   "start": 21,
                   "end": 22,
-                  "name": "b",
-                  "kind": "binding"
+                  "name": "b"
                 },
                 "method": false,
                 "shorthand": true,
@@ -80,8 +76,7 @@
             "type": "Identifier",
             "start": 27,
             "end": 30,
-            "name": "obj",
-            "kind": "reference"
+            "name": "obj"
           }
         }
       ]

@@ -19,15 +19,13 @@
             "type": "Identifier",
             "start": 6,
             "end": 18,
-            "name": "testVariable",
-            "kind": "binding"
+            "name": "testVariable"
           },
           "init": {
             "type": "Identifier",
             "start": 21,
             "end": 26,
-            "name": "async",
-            "kind": "reference"
+            "name": "async"
           }
         }
       ]
@@ -40,8 +38,7 @@
         "type": "Identifier",
         "start": 36,
         "end": 48,
-        "name": "testFunction",
-        "kind": "binding"
+        "name": "testFunction"
       },
       "generator": false,
       "async": false,
@@ -67,15 +64,13 @@
                   "type": "Identifier",
                   "start": 57,
                   "end": 64,
-                  "name": "console",
-                  "kind": "reference"
+                  "name": "console"
                 },
                 "property": {
                   "type": "Identifier",
                   "start": 65,
                   "end": 68,
-                  "name": "log",
-                  "kind": "name"
+                  "name": "log"
                 },
                 "computed": false,
                 "optional": false

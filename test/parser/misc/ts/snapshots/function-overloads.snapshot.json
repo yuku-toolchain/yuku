@@ -14,7 +14,6 @@
         "start": 9,
         "end": 16,
         "name": "process",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -27,7 +26,6 @@
           "start": 17,
           "end": 26,
           "name": "x",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -66,7 +64,6 @@
         "start": 46,
         "end": 53,
         "name": "process",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -79,7 +76,6 @@
           "start": 54,
           "end": 63,
           "name": "x",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -118,7 +114,6 @@
         "start": 83,
         "end": 90,
         "name": "process",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -131,7 +126,6 @@
           "start": 91,
           "end": 97,
           "name": "x",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -160,7 +154,6 @@
               "start": 115,
               "end": 116,
               "name": "x",
-              "kind": "reference",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null

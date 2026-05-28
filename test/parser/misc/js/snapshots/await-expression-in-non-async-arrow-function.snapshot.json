@@ -19,8 +19,7 @@
             "type": "Identifier",
             "start": 6,
             "end": 13,
-            "name": "execute",
-            "kind": "binding"
+            "name": "execute"
           },
           "init": {
             "type": "ArrowFunctionExpression",
@@ -34,8 +33,7 @@
                 "type": "Identifier",
                 "start": 17,
                 "end": 24,
-                "name": "promise",
-                "kind": "binding"
+                "name": "promise"
               }
             ],
             "body": {

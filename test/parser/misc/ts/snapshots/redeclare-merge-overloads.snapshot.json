@@ -14,7 +14,6 @@
         "start": 126,
         "end": 134,
         "name": "overload",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -27,7 +26,6 @@
           "start": 135,
           "end": 144,
           "name": "x",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -80,7 +78,6 @@
         "start": 164,
         "end": 172,
         "name": "overload",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -93,7 +90,6 @@
           "start": 173,
           "end": 182,
           "name": "x",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -132,7 +128,6 @@
         "start": 202,
         "end": 210,
         "name": "overload",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -145,7 +140,6 @@
           "start": 211,
           "end": 217,
           "name": "x",
-          "kind": "binding",
           "decorators": [],
           "typeAnnotation": {
             "type": "TSTypeAnnotation",
@@ -174,7 +168,6 @@
               "start": 235,
               "end": 236,
               "name": "x",
-              "kind": "reference",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null
@@ -205,7 +198,6 @@
         "start": 294,
         "end": 299,
         "name": "outer",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -227,7 +219,6 @@
               "start": 315,
               "end": 320,
               "name": "inner",
-              "kind": "binding",
               "decorators": [],
               "typeAnnotation": null,
               "optional": false
@@ -240,7 +231,6 @@
                 "start": 321,
                 "end": 330,
                 "name": "x",
-                "kind": "binding",
                 "decorators": [],
                 "typeAnnotation": {
                   "type": "TSTypeAnnotation",
@@ -279,7 +269,6 @@
               "start": 352,
               "end": 357,
               "name": "inner",
-              "kind": "binding",
               "decorators": [],
               "typeAnnotation": null,
               "optional": false
@@ -292,7 +281,6 @@
                 "start": 358,
                 "end": 367,
                 "name": "x",
-                "kind": "binding",
                 "decorators": [],
                 "typeAnnotation": {
                   "type": "TSTypeAnnotation",
@@ -331,7 +319,6 @@
               "start": 389,
               "end": 394,
               "name": "inner",
-              "kind": "binding",
               "decorators": [],
               "typeAnnotation": null,
               "optional": false
@@ -344,7 +331,6 @@
                 "start": 395,
                 "end": 401,
                 "name": "x",
-                "kind": "binding",
                 "decorators": [],
                 "typeAnnotation": {
                   "type": "TSTypeAnnotation",
@@ -373,7 +359,6 @@
                     "start": 421,
                     "end": 422,
                     "name": "x",
-                    "kind": "reference",
                     "decorators": [],
                     "optional": false,
                     "typeAnnotation": null
@@ -404,7 +389,6 @@
               "start": 437,
               "end": 442,
               "name": "inner",
-              "kind": "reference",
               "decorators": [],
               "optional": false,
               "typeAnnotation": null

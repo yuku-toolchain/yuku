@@ -22,8 +22,7 @@
               "type": "Identifier",
               "start": 2,
               "end": 5,
-              "name": "res",
-              "kind": "reference"
+              "name": "res"
             },
             "right": {
               "type": "CallExpression",
@@ -49,8 +48,7 @@
                       "type": "Identifier",
                       "start": 12,
                       "end": 14,
-                      "name": "fn",
-                      "kind": "reference"
+                      "name": "fn"
                     },
                     "property": {
                       "type": "MemberExpression",
@@ -64,16 +62,14 @@
                           "type": "Identifier",
                           "start": 15,
                           "end": 32,
-                          "name": "__getOwnPropNames",
-                          "kind": "reference"
+                          "name": "__getOwnPropNames"
                         },
                         "arguments": [
                           {
                             "type": "Identifier",
                             "start": 33,
                             "end": 35,
-                            "name": "fn",
-                            "kind": "reference"
+                            "name": "fn"
                           }
                         ],
                         "optional": false
@@ -102,8 +98,7 @@
                     "type": "Identifier",
                     "start": 43,
                     "end": 45,
-                    "name": "fn",
-                    "kind": "reference"
+                    "name": "fn"
                   },
                   "right": {
                     "type": "Literal",
@@ -123,8 +118,7 @@
             "type": "Identifier",
             "start": 54,
             "end": 57,
-            "name": "res",
-            "kind": "reference"
+            "name": "res"
           }
         ]
       }

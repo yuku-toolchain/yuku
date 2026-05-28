@@ -14,7 +14,6 @@
         "start": 120,
         "end": 122,
         "name": "D1",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -46,7 +45,6 @@
                     "start": 140,
                     "end": 141,
                     "name": "a",
-                    "kind": "binding",
                     "decorators": [],
                     "typeAnnotation": null,
                     "optional": false
@@ -100,7 +98,6 @@
             "start": 153,
             "end": 155,
             "name": "D1",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -132,7 +129,6 @@
             "start": 198,
             "end": 200,
             "name": "D2",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -166,7 +162,6 @@
         "start": 216,
         "end": 218,
         "name": "D2",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -198,7 +193,6 @@
                     "start": 236,
                     "end": 237,
                     "name": "a",
-                    "kind": "binding",
                     "decorators": [],
                     "typeAnnotation": null,
                     "optional": false
@@ -232,7 +226,6 @@
         "start": 288,
         "end": 290,
         "name": "D3",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -264,7 +257,6 @@
                     "start": 308,
                     "end": 309,
                     "name": "a",
-                    "kind": "binding",
                     "decorators": [],
                     "typeAnnotation": null,
                     "optional": false
@@ -312,7 +304,6 @@
             "start": 321,
             "end": 323,
             "name": "D3",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -338,7 +329,6 @@
         "start": 374,
         "end": 376,
         "name": "D4",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -370,7 +360,6 @@
                     "start": 394,
                     "end": 395,
                     "name": "a",
-                    "kind": "binding",
                     "decorators": [],
                     "typeAnnotation": null,
                     "optional": false
@@ -418,7 +407,6 @@
             "start": 409,
             "end": 411,
             "name": "D4",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false

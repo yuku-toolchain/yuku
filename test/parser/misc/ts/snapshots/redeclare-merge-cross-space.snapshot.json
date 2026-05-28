@@ -14,7 +14,6 @@
         "start": 111,
         "end": 113,
         "name": "T1",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -56,7 +55,6 @@
             "start": 128,
             "end": 130,
             "name": "t1",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -82,7 +80,6 @@
         "start": 183,
         "end": 185,
         "name": "T2",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -120,7 +117,6 @@
             "start": 195,
             "end": 197,
             "name": "t2",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -146,7 +142,6 @@
         "start": 248,
         "end": 250,
         "name": "T3",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -184,7 +179,6 @@
             "start": 258,
             "end": 260,
             "name": "t3",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -210,7 +204,6 @@
         "start": 316,
         "end": 318,
         "name": "T4",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -242,7 +235,6 @@
         "start": 331,
         "end": 333,
         "name": "t4",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -270,7 +262,6 @@
         "start": 421,
         "end": 423,
         "name": "T5",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -296,7 +287,6 @@
                 "start": 440,
                 "end": 446,
                 "name": "Member",
-                "kind": "binding",
                 "decorators": [],
                 "typeAnnotation": null,
                 "optional": false
@@ -340,7 +330,6 @@
             "start": 463,
             "end": 465,
             "name": "t5",
-            "kind": "binding",
             "decorators": [],
             "typeAnnotation": null,
             "optional": false
@@ -366,7 +355,6 @@
         "start": 525,
         "end": 527,
         "name": "T6",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -396,7 +384,6 @@
         "start": 548,
         "end": 550,
         "name": "T6",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -422,7 +409,6 @@
                 "start": 567,
                 "end": 572,
                 "name": "Inner",
-                "kind": "binding",
                 "decorators": [],
                 "typeAnnotation": null,
                 "optional": false

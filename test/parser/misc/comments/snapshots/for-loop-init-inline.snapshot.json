@@ -23,8 +23,7 @@
               "type": "Identifier",
               "start": 20,
               "end": 21,
-              "name": "i",
-              "kind": "binding"
+              "name": "i"
             },
             "init": {
               "type": "Literal",
@@ -52,8 +51,7 @@
           "type": "Identifier",
           "start": 27,
           "end": 28,
-          "name": "i",
-          "kind": "reference"
+          "name": "i"
         },
         "right": {
           "type": "Literal",
@@ -72,8 +70,7 @@
           "type": "Identifier",
           "start": 35,
           "end": 36,
-          "name": "i",
-          "kind": "reference"
+          "name": "i"
         },
         "operator": "++",
         "prefix": false

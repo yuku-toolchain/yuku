@@ -162,7 +162,7 @@ function encode(program, lineStarts) {
     if (n == null) return NULL;
     return enc_label_identifier(n);
   }
-  function encPropertyKey(n) {
+  function encName(n) {
     if (n == null) return NULL;
     if (n.type === "Identifier") return enc_identifier_name(n);
     return encNode(n);
@@ -372,7 +372,7 @@ function encode(program, lineStarts) {
   function enc_object_property(n) {
     const k = n.key == null
       ? NULL
-      : (n.computed ? encNode(n.key) : encPropertyKey(n.key));
+      : (n.computed ? encNode(n.key) : encName(n.key));
     const v = n.value == null ? NULL : encNode(n.value);
     const idx = alloc();
     tagAt(idx, 17);
@@ -390,7 +390,7 @@ function encode(program, lineStarts) {
     const o = n.object == null ? NULL : encNode(n.object);
     const p = n.property == null
       ? NULL
-      : (n.computed ? encNode(n.property) : encPropertyKey(n.property));
+      : (n.computed ? encNode(n.property) : encName(n.property));
     const idx = alloc();
     tagAt(idx, 18);
     slotAt(idx, 0, o); slotAt(idx, 1, p);
@@ -525,7 +525,7 @@ function encode(program, lineStarts) {
   }
   function enc_method_definition(n, abstract) {
     const decs = encArr(n.decorators, encNode);
-    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+    const k = n.computed ? encNode(n.key) : encName(n.key);
     const v = encNode(n.value);
     const idx = alloc();
     tagAt(idx, 29);
@@ -547,7 +547,7 @@ function encode(program, lineStarts) {
   }
   function enc_property_definition(n, accessor, abstract) {
     const decs = encArr(n.decorators, encNode);
-    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+    const k = n.computed ? encNode(n.key) : encName(n.key);
     const v = n.value == null ? NULL : encNode(n.value);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
@@ -1066,7 +1066,7 @@ function encode(program, lineStarts) {
   function enc_binding_property(p) {
     const k = p.key == null
       ? NULL
-      : (p.computed ? encNode(p.key) : encPropertyKey(p.key));
+      : (p.computed ? encNode(p.key) : encName(p.key));
     const v = p.value == null ? NULL : encBindingTarget(p.value);
     const idx = alloc();
     tagAt(idx, 73);
@@ -1119,7 +1119,7 @@ function encode(program, lineStarts) {
     return idx;
   }
   function enc_import_specifier(n) {
-    const c_imported = n.imported == null ? NULL : encNode(n.imported);
+    const c_imported = n.imported == null ? NULL : encName(n.imported);
     const c_local = n.local == null ? NULL : encBindingTarget(n.local);
     const idx = alloc();
     tagAt(idx, 77);
@@ -1149,7 +1149,7 @@ function encode(program, lineStarts) {
     return idx;
   }
   function enc_import_attribute(n) {
-    const c_key = n.key == null ? NULL : encNode(n.key);
+    const c_key = n.key == null ? NULL : encName(n.key);
     const c_value = n.value == null ? NULL : encNode(n.value);
     const idx = alloc();
     tagAt(idx, 80);
@@ -1187,7 +1187,7 @@ function encode(program, lineStarts) {
     return idx;
   }
   function enc_export_all_declaration(n) {
-    const c_exported = n.exported == null ? NULL : encNode(n.exported);
+    const c_exported = n.exported == null ? NULL : encName(n.exported);
     const c_source = n.source == null ? NULL : encNode(n.source);
     const c_attributes = encArr(n.attributes, encNode);
     const idx = alloc();
@@ -1203,7 +1203,7 @@ function encode(program, lineStarts) {
   }
   function enc_export_specifier(n) {
     const c_local = n.local == null ? NULL : encNode(n.local);
-    const c_exported = n.exported == null ? NULL : encNode(n.exported);
+    const c_exported = n.exported == null ? NULL : encName(n.exported);
     const idx = alloc();
     tagAt(idx, 84);
     slotAt(idx, 0, c_local);
@@ -1333,7 +1333,7 @@ function encode(program, lineStarts) {
   }
   function enc_ts_qualified_name(n) {
     const c_left = n.left == null ? NULL : encNode(n.left);
-    const c_right = n.right == null ? NULL : encNode(n.right);
+    const c_right = n.right == null ? NULL : encName(n.right);
     const idx = alloc();
     tagAt(idx, 101);
     slotAt(idx, 0, c_left);
@@ -1356,7 +1356,7 @@ function encode(program, lineStarts) {
   function enc_ts_import_type(n) {
     const c_source = n.source == null ? NULL : encNode(n.source);
     const c_options = n.options == null ? NULL : encNode(n.options);
-    const c_qualifier = n.qualifier == null ? NULL : encNode(n.qualifier);
+    const c_qualifier = n.qualifier == null ? NULL : encName(n.qualifier);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
     tagAt(idx, 103);
@@ -1635,7 +1635,7 @@ function encode(program, lineStarts) {
     return idx;
   }
   function enc_ts_property_signature(n) {
-    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+    const k = n.computed ? encNode(n.key) : encName(n.key);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
     tagAt(idx, 129);
@@ -1649,7 +1649,7 @@ function encode(program, lineStarts) {
     return idx;
   }
   function enc_ts_method_signature(n) {
-    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+    const k = n.computed ? encNode(n.key) : encName(n.key);
     const tp = n.typeParameters == null ? NULL : encNode(n.typeParameters);
     const params = encFormalParameters(n.params);
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
@@ -1788,7 +1788,7 @@ function encode(program, lineStarts) {
     return idx;
   }
   function enc_ts_enum_member(n) {
-    const id = n.computed ? encNode(n.id) : encPropertyKey(n.id);
+    const id = n.computed ? encNode(n.id) : encName(n.id);
     const init = n.initializer == null ? NULL : encNode(n.initializer);
     const idx = alloc();
     tagAt(idx, 141);
@@ -2103,14 +2103,7 @@ function encode(program, lineStarts) {
   function encNode(n) {
     if (n == null) return NULL;
     switch (n.type) {
-      case "Identifier": {
-        switch (n.kind) {
-          case "binding": return enc_binding_identifier(n);
-          case "name": return enc_identifier_name(n);
-          case "label": return enc_label_identifier(n);
-          default: return enc_identifier_reference(n);
-        }
-      }
+      case "Identifier": return enc_identifier_reference(n);
       case "PrivateIdentifier": return enc_private_identifier(n);
       case "Literal": {
         if (n.regex) return enc_regexp_literal(n);

@@ -24,15 +24,13 @@
                 "type": "Identifier",
                 "start": 7,
                 "end": 8,
-                "name": "a",
-                "kind": "binding"
+                "name": "a"
               },
               {
                 "type": "Identifier",
                 "start": 18,
                 "end": 19,
                 "name": "b",
-                "kind": "binding",
                 "comments": [
                   {
                     "type": "Block",
@@ -48,8 +46,7 @@
             "type": "Identifier",
             "start": 23,
             "end": 26,
-            "name": "arr",
-            "kind": "reference"
+            "name": "arr"
           }
         }
       ]

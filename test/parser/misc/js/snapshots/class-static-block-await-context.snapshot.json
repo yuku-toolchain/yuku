@@ -14,8 +14,7 @@
         "type": "Identifier",
         "start": 6,
         "end": 7,
-        "name": "C",
-        "kind": "binding"
+        "name": "C"
       },
       "superClass": null,
       "body": {
@@ -44,8 +43,7 @@
                       "type": "Identifier",
                       "start": 31,
                       "end": 34,
-                      "name": "foo",
-                      "kind": "reference"
+                      "name": "foo"
                     },
                     "arguments": [],
                     "optional": false

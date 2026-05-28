@@ -14,7 +14,6 @@
         "start": 20,
         "end": 23,
         "name": "foo",
-        "kind": "binding",
         "comments": [
           {
             "type": "Block",

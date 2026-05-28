@@ -18,8 +18,7 @@
             "type": "Identifier",
             "start": 7,
             "end": 12,
-            "name": "defer",
-            "kind": "binding"
+            "name": "defer"
           }
         }
       ],

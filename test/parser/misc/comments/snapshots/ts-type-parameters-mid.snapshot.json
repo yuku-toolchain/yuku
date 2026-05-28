@@ -14,7 +14,6 @@
         "start": 9,
         "end": 10,
         "name": "f",
-        "kind": "binding",
         "decorators": [],
         "typeAnnotation": null,
         "optional": false
@@ -43,7 +42,6 @@
               "start": 11,
               "end": 12,
               "name": "T",
-              "kind": "binding",
               "decorators": [],
               "typeAnnotation": null,
               "optional": false
@@ -63,7 +61,6 @@
               "start": 24,
               "end": 25,
               "name": "U",
-              "kind": "binding",
               "decorators": [],
               "typeAnnotation": null,
               "optional": false
