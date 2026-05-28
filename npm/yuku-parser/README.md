@@ -25,9 +25,7 @@ For JavaScript and JSX, the AST is fully conformant with the [ESTree](https://gi
 
 For TypeScript, the AST conforms to the [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) format used by `@typescript-eslint`.
 
-Yuku also matches [Oxc](https://oxc.rs) for both JS and TS, with one intentional deviation from the base specs:
-
-- **Comments are attached to the AST nodes they belong to** rather than exposed as a separate offset-indexed array. See [Comments](#comments) for why.
+Yuku produces exactly the AST that [Oxc](https://oxc.rs) produces, for both JS and TS.
 
 On top of the base specs, the AST also carries:
 
