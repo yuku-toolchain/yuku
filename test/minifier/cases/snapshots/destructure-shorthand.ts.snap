@@ -1,1 +1,0 @@
-interface e{name:string;age:number;role:string}function t({name:t,age:n,role:r="guest"}:e):string{return`${t}:${n}:${r}`}const n={name:"alice",age:30} as e;export function run(){return{explicit:t({name:"bob",age:5,role:"admin"}),defaulted:t(n),objectLiteralShorthand:(():unknown=>{const e="carol";const t=7;return{name:e,age:t}})()}}
