@@ -1,81 +1,98 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 75,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "FunctionDeclaration",
-      "start": 0,
-      "end": 74,
-      "id": {
-        "type": "Identifier",
-        "start": 9,
-        "end": 10,
-        "name": "f"
-      },
-      "generator": false,
-      "async": false,
-      "params": [
-        {
-          "type": "Identifier",
-          "start": 11,
-          "end": 12,
-          "name": "a"
-        },
-        {
-          "type": "Identifier",
-          "start": 14,
-          "end": 15,
-          "name": "b"
-        }
-      ],
-      "body": {
-        "type": "BlockStatement",
-        "start": 17,
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 75,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
         "end": 74,
-        "body": [
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "f"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
           {
-            "type": "ReturnStatement",
-            "start": 40,
-            "end": 53,
-            "argument": {
-              "type": "BinaryExpression",
-              "start": 47,
-              "end": 52,
-              "left": {
-                "type": "Identifier",
-                "start": 47,
-                "end": 48,
-                "name": "a"
-              },
-              "right": {
-                "type": "Identifier",
-                "start": 51,
-                "end": 52,
-                "name": "b"
-              },
-              "operator": "+"
-            },
-            "comments": [
-              {
-                "type": "Line",
-                "position": "before",
-                "sameLine": false,
-                "value": " before-return"
-              },
-              {
-                "type": "Block",
-                "position": "after",
-                "sameLine": true,
-                "value": " after-return "
-              }
-            ]
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "a"
+          },
+          {
+            "type": "Identifier",
+            "start": 14,
+            "end": 15,
+            "name": "b"
           }
-        ]
-      },
-      "expression": false
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 17,
+          "end": 74,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 40,
+              "end": 53,
+              "argument": {
+                "type": "BinaryExpression",
+                "start": 47,
+                "end": 52,
+                "left": {
+                  "type": "Identifier",
+                  "start": 47,
+                  "end": 48,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "Identifier",
+                  "start": 51,
+                  "end": 52,
+                  "name": "b"
+                },
+                "operator": "+"
+              },
+              "comments": [
+                {
+                  "type": "Line",
+                  "position": "before",
+                  "sameLine": false,
+                  "value": " before-return"
+                },
+                {
+                  "type": "Block",
+                  "position": "after",
+                  "sameLine": true,
+                  "value": " after-return "
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " before-return",
+      "start": 21,
+      "end": 37
+    },
+    {
+      "type": "Block",
+      "value": " after-return ",
+      "start": 54,
+      "end": 72
     }
-  ]
+  ],
+  "diagnostics": []
 }

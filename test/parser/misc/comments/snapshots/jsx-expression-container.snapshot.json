@@ -1,87 +1,98 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 39,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 38,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 6,
-          "end": 37,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 38,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 6,
-            "end": 7,
-            "name": "x",
-            "decorators": [],
-            "typeAnnotation": null,
-            "optional": false
-          },
-          "init": {
-            "type": "JSXElement",
-            "start": 10,
             "end": 37,
-            "openingElement": {
-              "type": "JSXOpeningElement",
-              "start": 10,
-              "end": 15,
-              "name": {
-                "type": "JSXIdentifier",
-                "start": 11,
-                "end": 14,
-                "name": "div"
-              },
-              "attributes": [],
-              "selfClosing": false,
-              "typeArguments": null
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "x",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
             },
-            "children": [
-              {
-                "type": "JSXExpressionContainer",
-                "start": 15,
-                "end": 31,
-                "expression": {
-                  "type": "Identifier",
-                  "start": 29,
-                  "end": 30,
-                  "name": "y",
-                  "decorators": [],
-                  "optional": false,
-                  "typeAnnotation": null,
-                  "comments": [
-                    {
-                      "type": "Block",
-                      "position": "before",
-                      "sameLine": true,
-                      "value": " inline "
-                    }
-                  ]
+            "init": {
+              "type": "JSXElement",
+              "start": 10,
+              "end": 37,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 10,
+                "end": 15,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 11,
+                  "end": 14,
+                  "name": "div"
+                },
+                "attributes": [],
+                "selfClosing": false,
+                "typeArguments": null
+              },
+              "children": [
+                {
+                  "type": "JSXExpressionContainer",
+                  "start": 15,
+                  "end": 31,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 29,
+                    "end": 30,
+                    "name": "y",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null,
+                    "comments": [
+                      {
+                        "type": "Block",
+                        "position": "before",
+                        "sameLine": true,
+                        "value": " inline "
+                      }
+                    ]
+                  }
+                }
+              ],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 31,
+                "end": 37,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 33,
+                  "end": 36,
+                  "name": "div"
                 }
               }
-            ],
-            "closingElement": {
-              "type": "JSXClosingElement",
-              "start": 31,
-              "end": 37,
-              "name": {
-                "type": "JSXIdentifier",
-                "start": 33,
-                "end": 36,
-                "name": "div"
-              }
-            }
-          },
-          "definite": false
-        }
-      ],
-      "declare": false
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " inline ",
+      "start": 16,
+      "end": 28
     }
-  ]
+  ],
+  "diagnostics": []
 }

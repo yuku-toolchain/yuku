@@ -1,48 +1,65 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 52,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "IfStatement",
-      "start": 0,
-      "end": 51,
-      "test": {
-        "type": "Identifier",
-        "start": 4,
-        "end": 5,
-        "name": "x"
-      },
-      "consequent": {
-        "type": "BlockStatement",
-        "start": 7,
-        "end": 26,
-        "body": [],
-        "comments": [
-          {
-            "type": "Block",
-            "position": "inside",
-            "sameLine": false,
-            "value": " in-then "
-          }
-        ]
-      },
-      "alternate": {
-        "type": "BlockStatement",
-        "start": 32,
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 52,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
         "end": 51,
-        "body": [],
-        "comments": [
-          {
-            "type": "Block",
-            "position": "inside",
-            "sameLine": false,
-            "value": " in-else "
-          }
-        ]
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "x"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 26,
+          "body": [],
+          "comments": [
+            {
+              "type": "Block",
+              "position": "inside",
+              "sameLine": false,
+              "value": " in-then "
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 32,
+          "end": 51,
+          "body": [],
+          "comments": [
+            {
+              "type": "Block",
+              "position": "inside",
+              "sameLine": false,
+              "value": " in-else "
+            }
+          ]
+        }
       }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " in-then ",
+      "start": 11,
+      "end": 24
+    },
+    {
+      "type": "Block",
+      "value": " in-else ",
+      "start": 36,
+      "end": 49
     }
-  ]
+  ],
+  "diagnostics": []
 }

@@ -1,43 +1,54 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 25,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 12,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 6,
-          "end": 11,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 12,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 6,
-            "end": 7,
-            "name": "x"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 10,
             "end": 11,
-            "value": 1,
-            "raw": "1"
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "x"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 10,
+              "end": 11,
+              "value": 1,
+              "raw": "1"
+            }
           }
-        }
-      ],
-      "comments": [
-        {
-          "type": "Block",
-          "position": "after",
-          "sameLine": true,
-          "value": " trail "
-        }
-      ]
+        ],
+        "comments": [
+          {
+            "type": "Block",
+            "position": "after",
+            "sameLine": true,
+            "value": " trail "
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " trail ",
+      "start": 13,
+      "end": 24
     }
-  ]
+  ],
+  "diagnostics": []
 }

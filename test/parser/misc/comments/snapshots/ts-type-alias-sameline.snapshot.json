@@ -1,38 +1,49 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 28,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 0,
+        "end": 27,
+        "id": {
+          "type": "Identifier",
+          "start": 5,
+          "end": 6,
+          "name": "T",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSStringKeyword",
+          "start": 20,
+          "end": 26,
+          "comments": [
+            {
+              "type": "Block",
+              "position": "before",
+              "sameLine": true,
+              "value": " unit "
+            }
+          ]
+        },
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
     {
-      "type": "TSTypeAliasDeclaration",
-      "start": 0,
-      "end": 27,
-      "id": {
-        "type": "Identifier",
-        "start": 5,
-        "end": 6,
-        "name": "T",
-        "decorators": [],
-        "typeAnnotation": null,
-        "optional": false
-      },
-      "typeParameters": null,
-      "typeAnnotation": {
-        "type": "TSStringKeyword",
-        "start": 20,
-        "end": 26,
-        "comments": [
-          {
-            "type": "Block",
-            "position": "before",
-            "sameLine": true,
-            "value": " unit "
-          }
-        ]
-      },
-      "declare": false
+      "type": "Block",
+      "value": " unit ",
+      "start": 9,
+      "end": 19
     }
-  ]
+  ],
+  "diagnostics": []
 }

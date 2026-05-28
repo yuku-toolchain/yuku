@@ -1,42 +1,53 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 26,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 25,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 6,
-          "end": 24,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 25,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 6,
-            "end": 7,
-            "name": "a"
-          },
-          "init": {
-            "type": "ArrayExpression",
-            "start": 10,
             "end": 24,
-            "elements": [],
-            "comments": [
-              {
-                "type": "Block",
-                "position": "inside",
-                "sameLine": false,
-                "value": " none "
-              }
-            ]
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "a"
+            },
+            "init": {
+              "type": "ArrayExpression",
+              "start": 10,
+              "end": 24,
+              "elements": [],
+              "comments": [
+                {
+                  "type": "Block",
+                  "position": "inside",
+                  "sameLine": false,
+                  "value": " none "
+                }
+              ]
+            }
           }
-        }
-      ]
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " none ",
+      "start": 12,
+      "end": 22
     }
-  ]
+  ],
+  "diagnostics": []
 }

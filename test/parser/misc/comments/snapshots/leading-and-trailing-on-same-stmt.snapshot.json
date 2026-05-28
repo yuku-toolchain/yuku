@@ -1,49 +1,66 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 30,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 8,
-      "end": 20,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 14,
-          "end": 19,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 30,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 8,
+        "end": 20,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 14,
-            "end": 15,
-            "name": "x"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 18,
             "end": 19,
-            "value": 1,
-            "raw": "1"
+            "id": {
+              "type": "Identifier",
+              "start": 14,
+              "end": 15,
+              "name": "x"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 18,
+              "end": 19,
+              "value": 1,
+              "raw": "1"
+            }
           }
-        }
-      ],
-      "comments": [
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " lead"
-        },
-        {
-          "type": "Line",
-          "position": "after",
-          "sameLine": true,
-          "value": " trail"
-        }
-      ]
+        ],
+        "comments": [
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " lead"
+          },
+          {
+            "type": "Line",
+            "position": "after",
+            "sameLine": true,
+            "value": " trail"
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " lead",
+      "start": 0,
+      "end": 7
+    },
+    {
+      "type": "Line",
+      "value": " trail",
+      "start": 21,
+      "end": 29
     }
-  ]
+  ],
+  "diagnostics": []
 }

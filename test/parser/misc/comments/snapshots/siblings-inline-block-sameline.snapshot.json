@@ -1,69 +1,80 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 36,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 12,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 6,
-          "end": 11,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 36,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 12,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 6,
-            "end": 7,
-            "name": "a"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 10,
             "end": 11,
-            "value": 1,
-            "raw": "1"
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "a"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 10,
+              "end": 11,
+              "value": 1,
+              "raw": "1"
+            }
           }
-        }
-      ]
-    },
-    {
-      "type": "VariableDeclaration",
-      "start": 23,
-      "end": 35,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 29,
-          "end": 34,
-          "id": {
-            "type": "Identifier",
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 23,
+        "end": 35,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 29,
-            "end": 30,
-            "name": "b"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 33,
             "end": 34,
-            "value": 2,
-            "raw": "2"
+            "id": {
+              "type": "Identifier",
+              "start": 29,
+              "end": 30,
+              "name": "b"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 33,
+              "end": 34,
+              "value": 2,
+              "raw": "2"
+            }
           }
-        }
-      ],
-      "comments": [
-        {
-          "type": "Block",
-          "position": "before",
-          "sameLine": true,
-          "value": " mid "
-        }
-      ]
+        ],
+        "comments": [
+          {
+            "type": "Block",
+            "position": "before",
+            "sameLine": true,
+            "value": " mid "
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " mid ",
+      "start": 13,
+      "end": 22
     }
-  ]
+  ],
+  "diagnostics": []
 }
