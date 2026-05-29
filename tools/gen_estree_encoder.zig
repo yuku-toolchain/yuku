@@ -245,7 +245,7 @@ fn writeIdentifierHelpers(w: *Writer) !void {
         \\    if (n == null) return NULL;
         \\    return enc_label_identifier(n);
         \\  }
-        \\  function encPropertyKey(n) {
+        \\  function encName(n) {
         \\    if (n == null) return NULL;
         \\    if (n.type === "Identifier") return enc_identifier_name(n);
         \\    return encNode(n);
@@ -307,6 +307,7 @@ fn writeGenericEncoder(
             const helper = switch (role) {
                 .binding => "encBindingTarget",
                 .label => "encLabel",
+                .name => "encName",
                 .auto => "encNode",
             };
             try w.print(
@@ -651,7 +652,7 @@ fn writeSpecialMemberExpr(w: *Writer, comptime tag: usize) !void {
         \\    const o = n.object == null ? NULL : encNode(n.object);
         \\    const p = n.property == null
         \\      ? NULL
-        \\      : (n.computed ? encNode(n.property) : encPropertyKey(n.property));
+        \\      : (n.computed ? encNode(n.property) : encName(n.property));
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
         \\    slotAt(idx, {d}, o); slotAt(idx, {d}, p);
@@ -839,7 +840,7 @@ fn writeSpecialMethodDef(w: *Writer, comptime tag: usize) !void {
     try w.print(
         \\  function enc_method_definition(n, abstract) {{
         \\    const decs = encArr(n.decorators, encNode);
-        \\    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+        \\    const k = n.computed ? encNode(n.key) : encName(n.key);
         \\    const v = encNode(n.value);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
@@ -881,7 +882,7 @@ fn writeSpecialPropertyDef(w: *Writer, comptime tag: usize) !void {
     try w.print(
         \\  function enc_property_definition(n, accessor, abstract) {{
         \\    const decs = encArr(n.decorators, encNode);
-        \\    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+        \\    const k = n.computed ? encNode(n.key) : encName(n.key);
         \\    const v = n.value == null ? NULL : encNode(n.value);
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
@@ -922,7 +923,7 @@ fn writeSpecialObjectProperty(w: *Writer, comptime tag: usize) !void {
         \\  function enc_object_property(n) {{
         \\    const k = n.key == null
         \\      ? NULL
-        \\      : (n.computed ? encNode(n.key) : encPropertyKey(n.key));
+        \\      : (n.computed ? encNode(n.key) : encName(n.key));
         \\    const v = n.value == null ? NULL : encNode(n.value);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
@@ -950,7 +951,7 @@ fn writeSpecialBindingProperty(w: *Writer, comptime tag: usize) !void {
         \\  function enc_binding_property(p) {{
         \\    const k = p.key == null
         \\      ? NULL
-        \\      : (p.computed ? encNode(p.key) : encPropertyKey(p.key));
+        \\      : (p.computed ? encNode(p.key) : encName(p.key));
         \\    const v = p.value == null ? NULL : encBindingTarget(p.value);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
@@ -1158,7 +1159,7 @@ fn writeSpecialTSMethodSig(w: *Writer, comptime tag: usize) !void {
     const bk = comptime flagBit(T, "kind");
     try w.print(
         \\  function enc_ts_method_signature(n) {{
-        \\    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+        \\    const k = n.computed ? encNode(n.key) : encName(n.key);
         \\    const tp = n.typeParameters == null ? NULL : encNode(n.typeParameters);
         \\    const params = encFormalParameters(n.params);
         \\    const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
@@ -1292,7 +1293,7 @@ fn writeSpecialTSPropertySig(w: *Writer, comptime tag: usize) !void {
     const mr = comptime flagMask(T, "readonly");
     try w.print(
         \\  function enc_ts_property_signature(n) {{
-        \\    const k = n.computed ? encNode(n.key) : encPropertyKey(n.key);
+        \\    const k = n.computed ? encNode(n.key) : encName(n.key);
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
@@ -1316,7 +1317,7 @@ fn writeSpecialTSEnumMember(w: *Writer, comptime tag: usize) !void {
     const mc = comptime flagMask(T, "computed");
     try w.print(
         \\  function enc_ts_enum_member(n) {{
-        \\    const id = n.computed ? encNode(n.id) : encPropertyKey(n.id);
+        \\    const id = n.computed ? encNode(n.id) : encName(n.id);
         \\    const init = n.initializer == null ? NULL : encNode(n.initializer);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
@@ -1364,14 +1365,7 @@ fn writeDispatcher(w: *Writer) !void {
         \\  function encNode(n) {
         \\    if (n == null) return NULL;
         \\    switch (n.type) {
-        \\      case "Identifier": {
-        \\        switch (n.kind) {
-        \\          case "binding": return enc_binding_identifier(n);
-        \\          case "name": return enc_identifier_name(n);
-        \\          case "label": return enc_label_identifier(n);
-        \\          default: return enc_identifier_reference(n);
-        \\        }
-        \\      }
+        \\      case "Identifier": return enc_identifier_reference(n);
         \\      case "PrivateIdentifier": return enc_private_identifier(n);
         \\      case "Literal": {
         \\        if (n.regex) return enc_regexp_literal(n);

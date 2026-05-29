@@ -10,9 +10,9 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: "High-performance JavaScript/TypeScript parser and toolchain in Zig 🦎",
+      title: "High-performance JavaScript/TypeScript compiler toolchain in Zig 🦎",
       description:
-        "The fastest JavaScript and TypeScript parser and toolchain, faster than Oxc, SWC, Babel, and Acorn. Written in Zig. 100% spec-compliant, zero dependencies.",
+        "The fastest JavaScript and TypeScript compiler toolchain, faster than Oxc, SWC, Babel, and Acorn. Written in Zig. 100% spec-compliant, zero dependencies.",
       favicon: "/favicon.svg",
       logo: { src: "./public/logo.svg", alt: "Yuku logo" },
       social: [
@@ -68,7 +68,7 @@ export default defineConfig({
             operatingSystem: "macOS, Linux, Windows",
             url: SITE,
             description:
-              "The fastest JavaScript and TypeScript parser and toolchain, written in Zig. Faster than Oxc on native parsing and 3–5× faster than Oxc, SWC, Babel, and Acorn on the npm side. 100% ECMAScript spec compliant.",
+              "The fastest JavaScript and TypeScript compiler toolchain, written in Zig. Faster than Oxc on native parsing and 3–5× faster than Oxc, SWC, Babel, and Acorn on the npm side. 100% ECMAScript spec compliant.",
             programmingLanguage: ["Zig", "JavaScript", "TypeScript"],
             license: "https://github.com/yuku-toolchain/yuku/blob/main/LICENSE",
             codeRepository: "https://github.com/yuku-toolchain/yuku",

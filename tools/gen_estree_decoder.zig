@@ -370,13 +370,11 @@ fn writeGenericCase(
     if (!has_ts) {
         try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
         try writeStructFields(w, name, T, .all);
-        try writeConstFields(w, name);
         try w.writeAll(" };\n");
         return;
     }
     try w.print("    case {d}: {{ const r = {{ type: \"{s}\", start, end", .{ tag, etype });
     try writeStructFields(w, name, T, .non_ts);
-    try writeConstFields(w, name);
     try w.writeAll(" }; if (_isTs) { ");
     try writeStructFields(w, name, T, .ts_only);
     try writeTsExtras(w, name);
@@ -1017,16 +1015,15 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         , .{ tag, sid, sb, db });
     } else if (comptime eql(u8, name, "ts_this_parameter")) {
         // renders as an `Identifier` with the fixed name `this`, matching
-        // the @typescript-eslint/typescript-estree convention and the
-        // target AST reference. `kind: "this"` is the yuku-specific
-        // discriminator that lets consumers and the encoder tell this
-        // `this`-parameter Identifier apart from a regular one.
+        // the @typescript-eslint/typescript-estree convention and the target
+        // AST reference. The fixed `name: "this"` is what the encoder keys on
+        // to tell a `this`-parameter Identifier apart from a regular one.
         const sta = comptime slotOf(ast.TSThisParameter, "type_annotation");
         try emit(w,
             \\    case {d}: return {{
             \\      type: "Identifier", start, end,
             \\      decorators: [],
-            \\      name: "this", kind: "this", optional: false,
+            \\      name: "this", optional: false,
             \\      typeAnnotation: f{d} !== NULL ? node(f{d}) : null,
             \\    }};
         , .{ tag, sta, sta });
@@ -1259,25 +1256,6 @@ fn tsExtrasOf(comptime name: []const u8) []const Extra {
 fn writeTsExtras(w: *Writer, comptime name: []const u8) !void {
     inline for (comptime tsExtrasOf(name)) |e| {
         try w.print("r.{s} = {s}; ", .{ e.field, e.value });
-    }
-}
-
-/// estree-side fields emitted unconditionally (not gated on _isTs),
-/// with values that are raw js expressions such as `"\"reference\""`.
-/// used to expose constant discriminators like `Identifier.kind` that
-/// have no backing zig storage.
-const CONST_FIELDS = [_]struct { node: []const u8, field: []const u8, value: []const u8 }{
-    .{ .node = "identifier_reference", .field = "kind", .value = "\"reference\"" },
-    .{ .node = "binding_identifier", .field = "kind", .value = "\"binding\"" },
-    .{ .node = "identifier_name", .field = "kind", .value = "\"name\"" },
-    .{ .node = "label_identifier", .field = "kind", .value = "\"label\"" },
-};
-
-fn writeConstFields(w: *Writer, comptime name: []const u8) !void {
-    inline for (CONST_FIELDS) |e| {
-        if (comptime std.mem.eql(u8, e.node, name)) {
-            try w.print(", {s}: {s}", .{ e.field, e.value });
-        }
     }
 }
 

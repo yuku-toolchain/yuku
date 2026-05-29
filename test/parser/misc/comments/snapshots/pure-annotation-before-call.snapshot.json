@@ -1,51 +1,60 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 31,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 30,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 6,
-          "end": 29,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 31,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 30,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 6,
-            "end": 7,
-            "name": "x",
-            "kind": "binding"
-          },
-          "init": {
-            "type": "CallExpression",
-            "start": 24,
             "end": 29,
-            "callee": {
+            "id": {
               "type": "Identifier",
-              "start": 24,
-              "end": 27,
-              "name": "foo",
-              "kind": "reference"
+              "start": 6,
+              "end": 7,
+              "name": "x"
             },
-            "arguments": [],
-            "optional": false,
-            "comments": [
-              {
-                "type": "Block",
-                "position": "before",
-                "sameLine": true,
-                "value": "#__PURE__"
-              }
-            ]
+            "init": {
+              "type": "CallExpression",
+              "start": 24,
+              "end": 29,
+              "callee": {
+                "type": "Identifier",
+                "start": 24,
+                "end": 27,
+                "name": "foo"
+              },
+              "arguments": [],
+              "optional": false,
+              "comments": [
+                {
+                  "type": "Block",
+                  "position": "before",
+                  "sameLine": true,
+                  "value": "#__PURE__"
+                }
+              ]
+            }
           }
-        }
-      ]
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": "#__PURE__",
+      "start": 10,
+      "end": 23
     }
-  ]
+  ],
+  "diagnostics": []
 }

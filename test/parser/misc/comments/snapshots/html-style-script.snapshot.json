@@ -1,50 +1,66 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 38,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 12,
-      "end": 24,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 18,
-          "end": 23,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 12,
+        "end": 24,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 18,
-            "end": 19,
-            "name": "x",
-            "kind": "binding"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 22,
             "end": 23,
-            "value": 1,
-            "raw": "1"
+            "id": {
+              "type": "Identifier",
+              "start": 18,
+              "end": 19,
+              "name": "x"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 22,
+              "end": 23,
+              "value": 1,
+              "raw": "1"
+            }
           }
-        }
-      ],
-      "comments": [
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " header"
-        },
-        {
-          "type": "Line",
-          "position": "after",
-          "sameLine": false,
-          "value": " trailing"
-        }
-      ]
+        ],
+        "comments": [
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " header"
+          },
+          {
+            "type": "Line",
+            "position": "after",
+            "sameLine": false,
+            "value": " trailing"
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " header",
+      "start": 0,
+      "end": 11
+    },
+    {
+      "type": "Line",
+      "value": " trailing",
+      "start": 25,
+      "end": 37
     }
-  ]
+  ],
+  "diagnostics": []
 }

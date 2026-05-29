@@ -1,56 +1,78 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 36,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 23,
-      "end": 35,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 29,
-          "end": 34,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 36,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 23,
+        "end": 35,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 29,
-            "end": 30,
-            "name": "x",
-            "kind": "binding"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 33,
             "end": 34,
-            "value": 1,
-            "raw": "1"
+            "id": {
+              "type": "Identifier",
+              "start": 29,
+              "end": 30,
+              "name": "x"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 33,
+              "end": 34,
+              "value": 1,
+              "raw": "1"
+            }
           }
-        }
-      ],
-      "comments": [
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " one"
-        },
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " two"
-        },
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " three"
-        }
-      ]
+        ],
+        "comments": [
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " one"
+          },
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " two"
+          },
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " three"
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " one",
+      "start": 0,
+      "end": 6
+    },
+    {
+      "type": "Line",
+      "value": " two",
+      "start": 7,
+      "end": 13
+    },
+    {
+      "type": "Line",
+      "value": " three",
+      "start": 14,
+      "end": 22
     }
-  ]
+  ],
+  "diagnostics": []
 }

@@ -131,7 +131,6 @@ function parseFile(content: string, file: string, suite: TestSuite) {
     sourceType: file.includes(".module.") ? "module" : "script",
     lang: langFromPath(file),
     preserveParens: true,
-    attachComments: true,
     ...suite.options,
   });
 }
@@ -149,13 +148,20 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
     case "snapshot":
       if (hasErrors && !suite.allowErrors) return false;
       return true;
+
+    default:
+      return false;
   }
 }
 
 async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
 
-  const comparable = parsed.program;
+  const comparable = {
+    program: parsed.program,
+    comments: parsed.comments,
+    diagnostics: parsed.diagnostics,
+  };
 
   if (!(await Bun.file(snapshotFile).exists())) {
     if (!suite.autoSnapshot) return { status: "no_snapshot" };

@@ -1,50 +1,66 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 27,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 14,
-      "end": 26,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 20,
-          "end": 25,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 14,
+        "end": 26,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 20,
-            "end": 21,
-            "name": "x",
-            "kind": "binding"
-          },
-          "init": {
-            "type": "Literal",
-            "start": 24,
             "end": 25,
-            "value": 1,
-            "raw": "1"
+            "id": {
+              "type": "Identifier",
+              "start": 20,
+              "end": 21,
+              "name": "x"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 24,
+              "end": 25,
+              "value": 1,
+              "raw": "1"
+            }
           }
-        }
-      ],
-      "comments": [
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " one"
-        },
-        {
-          "type": "Line",
-          "position": "before",
-          "sameLine": false,
-          "value": " two"
-        }
-      ]
+        ],
+        "comments": [
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " one"
+          },
+          {
+            "type": "Line",
+            "position": "before",
+            "sameLine": false,
+            "value": " two"
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " one",
+      "start": 0,
+      "end": 6
+    },
+    {
+      "type": "Line",
+      "value": " two",
+      "start": 7,
+      "end": 13
     }
-  ]
+  ],
+  "diagnostics": []
 }

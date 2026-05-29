@@ -1,75 +1,84 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 72,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "FunctionDeclaration",
-      "start": 0,
-      "end": 71,
-      "id": {
-        "type": "Identifier",
-        "start": 9,
-        "end": 14,
-        "name": "outer",
-        "kind": "binding"
-      },
-      "generator": false,
-      "async": false,
-      "params": [],
-      "body": {
-        "type": "BlockStatement",
-        "start": 17,
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 72,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
         "end": 71,
-        "body": [
-          {
-            "type": "FunctionDeclaration",
-            "start": 21,
-            "end": 69,
-            "id": {
-              "type": "Identifier",
-              "start": 30,
-              "end": 35,
-              "name": "inner",
-              "kind": "binding"
-            },
-            "generator": false,
-            "async": false,
-            "params": [],
-            "body": {
-              "type": "BlockStatement",
-              "start": 38,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 14,
+          "name": "outer"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 17,
+          "end": 71,
+          "body": [
+            {
+              "type": "FunctionDeclaration",
+              "start": 21,
               "end": 69,
-              "body": [
-                {
-                  "type": "ReturnStatement",
-                  "start": 56,
-                  "end": 65,
-                  "argument": {
-                    "type": "Literal",
-                    "start": 63,
-                    "end": 64,
-                    "value": 1,
-                    "raw": "1"
-                  },
-                  "comments": [
-                    {
-                      "type": "Line",
-                      "position": "before",
-                      "sameLine": false,
-                      "value": " deep"
-                    }
-                  ]
-                }
-              ]
-            },
-            "expression": false
-          }
-        ]
-      },
-      "expression": false
+              "id": {
+                "type": "Identifier",
+                "start": 30,
+                "end": 35,
+                "name": "inner"
+              },
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 38,
+                "end": 69,
+                "body": [
+                  {
+                    "type": "ReturnStatement",
+                    "start": 56,
+                    "end": 65,
+                    "argument": {
+                      "type": "Literal",
+                      "start": 63,
+                      "end": 64,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "comments": [
+                      {
+                        "type": "Line",
+                        "position": "before",
+                        "sameLine": false,
+                        "value": " deep"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "expression": false
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " deep",
+      "start": 44,
+      "end": 51
     }
-  ]
+  ],
+  "diagnostics": []
 }

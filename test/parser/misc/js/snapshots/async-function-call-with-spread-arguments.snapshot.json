@@ -1,75 +1,74 @@
 {
-  "type": "Program",
-  "start": 0,
-  "end": 66,
-  "sourceType": "script",
-  "hashbang": null,
-  "body": [
-    {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 65,
-      "kind": "const",
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 6,
-          "end": 65,
-          "id": {
-            "type": "Identifier",
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 66,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 65,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
             "start": 6,
-            "end": 14,
-            "name": "testCall",
-            "kind": "binding"
-          },
-          "init": {
-            "type": "CallExpression",
-            "start": 17,
             "end": 65,
-            "callee": {
+            "id": {
               "type": "Identifier",
-              "start": 17,
-              "end": 22,
-              "name": "async",
-              "kind": "reference"
+              "start": 6,
+              "end": 14,
+              "name": "testCall"
             },
-            "arguments": [
-              {
+            "init": {
+              "type": "CallExpression",
+              "start": 17,
+              "end": 65,
+              "callee": {
                 "type": "Identifier",
-                "start": 23,
-                "end": 31,
-                "name": "firstArg",
-                "kind": "reference"
+                "start": 17,
+                "end": 22,
+                "name": "async"
               },
-              {
-                "type": "SpreadElement",
-                "start": 33,
-                "end": 48,
-                "argument": {
+              "arguments": [
+                {
                   "type": "Identifier",
-                  "start": 36,
+                  "start": 23,
+                  "end": 31,
+                  "name": "firstArg"
+                },
+                {
+                  "type": "SpreadElement",
+                  "start": 33,
                   "end": 48,
-                  "name": "secondSpread",
-                  "kind": "reference"
-                }
-              },
-              {
-                "type": "SpreadElement",
-                "start": 50,
-                "end": 64,
-                "argument": {
-                  "type": "Identifier",
-                  "start": 53,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 36,
+                    "end": 48,
+                    "name": "secondSpread"
+                  }
+                },
+                {
+                  "type": "SpreadElement",
+                  "start": 50,
                   "end": 64,
-                  "name": "thirdSpread",
-                  "kind": "reference"
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 53,
+                    "end": 64,
+                    "name": "thirdSpread"
+                  }
                 }
-              }
-            ],
-            "optional": false
+              ],
+              "optional": false
+            }
           }
-        }
-      ]
-    }
-  ]
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
 }

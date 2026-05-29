@@ -25,10 +25,7 @@ For JavaScript and JSX, the AST is fully conformant with the [ESTree](https://gi
 
 For TypeScript, the AST conforms to the [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) format used by `@typescript-eslint`.
 
-Yuku also matches [Oxc](https://oxc.rs) for both JS and TS, with two intentional deviations from the base specs:
-
-- **Comments are attached to the AST nodes they belong to** rather than exposed as a separate offset-indexed array. See [Comments](#comments) for why.
-- **`Identifier` carries a `kind` field** (`"reference" | "binding" | "name" | "label" | "this"`) naming its role in the tree. ESTree collapses these distinct roles onto one `Identifier` type, so consumers normally have to walk the parent context to tell them apart. The parser already knows which is which, so it surfaces the answer as a free field.
+Yuku produces exactly the AST that [Oxc](https://oxc.rs) produces, for both JS and TS.
 
 On top of the base specs, the AST also carries:
 
