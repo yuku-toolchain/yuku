@@ -1,14 +1,14 @@
 test/parser/suite/jsx/pass
 ==========================
-Passed:       54/55 (98.18%)
-Failed:       1
-AST mismatch: 1/55
+Passed:       55/55 (100.00%)
+Failed:       0
+AST mismatch: 0/55
 
 ✓ test/parser/suite/jsx/pass/09e94bc7badc2295.jsx
 ✓ test/parser/suite/jsx/pass/1274dd5b5e0d3c51.jsx
 ✓ test/parser/suite/jsx/pass/189d7f916cbe92f6.jsx
 ✓ test/parser/suite/jsx/pass/1ee3c81ab812806a.jsx
-✗ test/parser/suite/jsx/pass/2577591d02114569.jsx (snapshot mismatch)
+✓ test/parser/suite/jsx/pass/2577591d02114569.jsx
 ✓ test/parser/suite/jsx/pass/2a36903c42321144.jsx
 ✓ test/parser/suite/jsx/pass/2d5a1dfa451f768c.jsx
 ✓ test/parser/suite/jsx/pass/30901901b663e881.jsx
