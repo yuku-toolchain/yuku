@@ -164,8 +164,9 @@ fn Printer(comptime cfg: Config) type {
             };
             try p.code.ensureTotalCapacity(allocator, tree.source.len);
             if (options.source_maps) |sm_opts| {
-                p.sm = try sourcemap.State.init(allocator, sm_opts);
-                try p.sm.?.mappings.ensureTotalCapacity(allocator, tree.nodes.len);
+                p.sm = sourcemap.State.init(sm_opts);
+                // preallocate the mappings buffer to limit regrowth
+                try p.sm.?.out.ensureTotalCapacity(allocator, tree.nodes.len * 8 + 64);
             }
             return p;
         }
@@ -336,7 +337,7 @@ fn Printer(comptime cfg: Config) type {
 
             if (self.options.comments != .none) try self.emitLeadingComments(idx);
 
-            if (self.sm != null) try self.recordMapping(idx, data);
+            if (self.sm != null) try self.recordMapping(idx);
 
             switch (data) {
                 inline else => |node, tag| {
@@ -439,32 +440,13 @@ fn Printer(comptime cfg: Config) type {
         }
 
         // records a source-map segment for idx, skipping synthetic spans
-        fn recordMapping(self: *Self, idx: NodeIndex, data: NodeData) Error!void {
-            var sm = &self.sm.?;
+        fn recordMapping(self: *Self, idx: NodeIndex) Error!void {
+            const sm = &self.sm.?;
             const span = self.tree.span(idx);
             if (span.start == 0 and span.end == 0) return;
 
-            const orig = self.tree.lineColOf(span.start);
-            const name_idx: i32 = switch (data) {
-                inline .identifier_reference,
-                .identifier_name,
-                .binding_identifier,
-                .label_identifier,
-                .jsx_identifier,
-                => |id| @intCast(try sm.intern(self.allocator, self.tree.string(id.name))),
-                // a private field's span includes the leading `#`, so we
-                // record the name with the sigil to match the source token.
-                .private_identifier => |id| blk: {
-                    const raw = self.tree.string(id.name);
-                    var buf: [256]u8 = undefined;
-                    if (raw.len + 1 > buf.len) break :blk -1;
-                    buf[0] = '#';
-                    @memcpy(buf[1..][0..raw.len], raw);
-                    break :blk @intCast(try sm.intern(self.allocator, buf[0 .. raw.len + 1]));
-                },
-                else => -1,
-            };
-            try sm.record(self.allocator, orig.line, orig.col, name_idx);
+            const orig = sm.lineCol(self.tree.line_starts, span.start);
+            try sm.record(self.allocator, orig.line, orig.col);
         }
 
         fn diagnose(self: *Self, idx: NodeIndex, message: []const u8) Error!void {
@@ -1683,7 +1665,7 @@ fn Printer(comptime cfg: Config) type {
                 }
             }
             if (carry) |c| if (self.sm) |*sm| {
-                try sm.record(self.allocator, c.orig_line, c.orig_col, c.name_idx);
+                try sm.record(self.allocator, c.orig_line, c.orig_col);
             };
         }
 
@@ -1974,7 +1956,7 @@ fn Printer(comptime cfg: Config) type {
             const data = self.tree.data(idx);
             switch (data) {
                 .identifier_reference => |id| {
-                    if (self.sm != null) try self.recordMapping(idx, data);
+                    if (self.sm != null) try self.recordMapping(idx);
                     try self.writeString(id.name);
                 },
                 else => try self.emit(idx),
