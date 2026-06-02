@@ -87,7 +87,6 @@ export interface SourceMap {
   sources: string[];
   sourcesContent: (string | null)[] | null;
   names: string[];
-  /** VLQ-encoded mappings string. */
   mappings: string;
 }
 
