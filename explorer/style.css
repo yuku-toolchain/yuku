@@ -18,6 +18,21 @@
   --fg: #1a1a1d;
   --dim: #76767e;
   --accent: #2f6fed;
+  --ok: #1f8a3b;
+  --warn: #b5710c;
+  --err: #d12d2d;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d0d0f;
+  --panel: #141417;
+  --line: #26262b;
+  --fg: #e6e6e6;
+  --dim: #8a8a93;
+  --accent: #7aa2f7;
+  --ok: #6bbf73;
+  --warn: #d8a657;
+  --err: #e06c75;
 }
 
 * {
@@ -81,6 +96,24 @@ header {
 
 .opts input[type="checkbox"] {
   accent-color: var(--accent);
+}
+
+.theme {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 11px;
+  cursor: pointer;
+}
+
+.theme:hover {
+  color: var(--fg);
+  border-color: var(--accent);
 }
 
 main {
@@ -165,13 +198,13 @@ textarea,
 }
 
 #status.ok {
-  color: #1f8a3b;
+  color: var(--ok);
 }
 
 #status.warn {
-  color: #b5710c;
+  color: var(--warn);
 }
 
 #status.err {
-  color: #d12d2d;
+  color: var(--err);
 }

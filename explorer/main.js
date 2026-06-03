@@ -70,6 +70,18 @@ function render() {
   }
 }
 
+const themeBtn = $("theme");
+function labelTheme() {
+  themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+}
+themeBtn.addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem("yuku-theme", next);
+  labelTheme();
+});
+labelTheme();
+
 let timer;
 code.addEventListener("input", () => {
   clearTimeout(timer);

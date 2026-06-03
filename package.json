@@ -27,7 +27,8 @@
     "release:npm": "napi bump",
     "debug:npm": "napi build",
     "build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-estree-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen",
-    "build:wasm": "zig build wasm && zig build gen-estree-decoder && zig build gen-estree-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/"
+    "build:wasm": "zig build wasm && zig build gen-estree-decoder && zig build gen-estree-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/",
+    "explore": "bun explorer/server.ts"
   },
   "devDependencies": {
     "@jridgewell/trace-mapping": "^0.3.31",

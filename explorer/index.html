@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>yuku playground</title>
     <link rel="stylesheet" href="/style.css" />
+    <script>
+      document.documentElement.dataset.theme = localStorage.getItem("yuku-theme") || "light";
+    </script>
   </head>
   <body>
     <header>
@@ -32,6 +35,7 @@
         <label class="chk"><input type="checkbox" id="semanticErrors" /> semanticErrors</label>
         <label class="chk"><input type="checkbox" id="attachComments" /> attachComments</label>
       </div>
+      <button id="theme" class="theme">dark</button>
     </header>
     <main>
       <section class="pane">
