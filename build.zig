@@ -157,6 +157,20 @@ pub fn build(b: *std.Build) void {
         wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
     }
 
+    const main_module = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    main_module.addImport("parser", parser_module);
+
+    const main_exe = b.addExecutable(.{ .name = "yuku", .root_module = main_module });
+    b.installArtifact(main_exe);
+
+    const run_cmd = b.addRunArtifact(main_exe);
+    const run_step = b.step("run", "Parse a sample, walk the AST, and print");
+    run_step.dependOn(&run_cmd.step);
+
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{
         .root_source_file = b.path("src/parser/ffi/transfer.zig"),
