@@ -46,7 +46,7 @@ pub const State = struct {
     out: std.ArrayList(u8) = .empty,
     gen_line: u32 = 0,
     gen_col: u32 = 0,
-    // last line_starts index resolved by lineCol, reused as the next hint
+    // last line resolved by Tree.lineColNear, reused as the next search hint
     line_cursor: u32 = 0,
 
     // most recent segment, held until one at a different generated position
@@ -81,22 +81,6 @@ pub const State = struct {
 
     pub fn deinit(self: *State, allocator: Allocator) void {
         self.out.deinit(allocator);
-    }
-
-    /// Resolves a source byte offset to a zero-based `(line, col)` pair, where
-    /// `col` is a byte offset into the line.
-    pub fn lineCol(self: *State, starts: []const u32, pos: u32) struct { line: u32, col: u32 } {
-        if (starts.len == 0) return .{ .line = 0, .col = 0 };
-        var line = self.line_cursor;
-        if (line >= starts.len) line = @intCast(starts.len - 1);
-        if (starts[line] <= pos) {
-            while (line + 1 < starts.len and starts[line + 1] <= pos) : (line += 1) {}
-        } else {
-            // starts[0] is 0, so this stops at line 0 at worst
-            while (line > 0 and starts[line] > pos) : (line -= 1) {}
-        }
-        self.line_cursor = line;
-        return .{ .line = line, .col = pos - starts[line] };
     }
 
     /// Advances the generated position over `bytes` just written, counting

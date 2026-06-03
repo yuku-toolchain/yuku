@@ -282,6 +282,25 @@ pub const Tree = struct {
         return .{ .line = line, .col = pos - starts[line] };
     }
 
+    /// Resolves an offset to a zero-indexed `(line, col)` pair, starting the
+    /// search at `hint_line` and scanning toward the target line. For offsets
+    /// queried in roughly source order, passing the previously returned `line`
+    /// as `hint_line` keeps lookups near-constant time, avoiding the binary
+    /// search in `lineColOf`. Returns `(0, 0)` when `line_starts` is empty.
+    pub fn lineColNear(self: *const Tree, pos: u32, hint_line: u32) struct { line: u32, col: u32 } {
+        const starts = self.line_starts;
+        if (starts.len == 0) return .{ .line = 0, .col = 0 };
+        var line = hint_line;
+        if (line >= starts.len) line = @intCast(starts.len - 1);
+        if (starts[line] <= pos) {
+            while (line + 1 < starts.len and starts[line + 1] <= pos) : (line += 1) {}
+        } else {
+            // starts[0] is 0, so this stops at line 0 at worst
+            while (line > 0 and starts[line] > pos) : (line -= 1) {}
+        }
+        return .{ .line = line, .col = pos - starts[line] };
+    }
+
     /// Replaces an existing node's data in-place.
     pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
         std.debug.assert(index != .null);

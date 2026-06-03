@@ -402,7 +402,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     const data_items = tree.nodes.items(.data);
     const span_items = tree.nodes.items(.span);
     for (0..hdr.node_count) |i| {
-        const n = packNode(data_items[i], span_items[i]);
+        const n = packNode(&data_items[i], span_items[i]);
         @memcpy(buf[pos..][0..NODE_SIZE], std.mem.asBytes(&n));
         pos += NODE_SIZE;
     }
@@ -498,13 +498,14 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     return pos;
 }
 
-fn packNode(data: ast.NodeData, span: ast.Span) PackedNode {
+fn packNode(data: *const ast.NodeData, span: ast.Span) PackedNode {
     std.debug.assert(span.start <= span.end);
     var n: PackedNode = std.mem.zeroes(PackedNode);
     n.span_start = span.start;
     n.span_end = span.end;
-    switch (data) {
-        inline else => |payload, tag| {
+    // by pointer to avoid copying the 44-byte `ast.NodeData` union per node.
+    switch (data.*) {
+        inline else => |*payload, tag| {
             n.tag = @intFromEnum(tag);
             packPayload(&n, payload);
         },
@@ -513,7 +514,7 @@ fn packNode(data: ast.NodeData, span: ast.Span) PackedNode {
 }
 
 fn packPayload(n: *PackedNode, payload: anytype) void {
-    const T = @TypeOf(payload);
+    const T = @typeInfo(@TypeOf(payload)).pointer.child;
     if (@typeInfo(T) != .@"struct") return;
     if (@typeInfo(T).@"struct".fields.len == 0) return;
 
