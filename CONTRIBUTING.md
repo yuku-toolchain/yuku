@@ -34,7 +34,7 @@ The first run will download the test suite (wait for it to finish). After the ru
 zig build run
 ```
 
-It parses an inline source string, prints any diagnostics, walks the AST with the basic traverser, and prints the generated code. Edit it however you want. Change the source, swap parse options, log different parts of the tree.
+Edit it however you want. Change the source, swap parse options, log different parts of the tree, etc.
 
 For a fast edit-run loop, use Zig's watch mode with incremental compilation:
 
