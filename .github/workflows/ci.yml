@@ -97,6 +97,9 @@ jobs:
       - name: Zig build
         run: zig build
 
+      - name: Build playground
+        run: bun run build:playground
+
       - name: Zig tests
         run: zig build test
 

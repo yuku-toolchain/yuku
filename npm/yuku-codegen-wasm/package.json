@@ -1,0 +1,31 @@
+{
+  "name": "yuku-codegen-wasm",
+  "version": "0.5.21",
+  "description": "JavaScript/TypeScript code generator as a WebAssembly module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "encode.js",
+    "yuku-codegen.wasm"
+  ],
+  "keywords": [
+    "ast",
+    "codegen",
+    "estree",
+    "javascript",
+    "minifier",
+    "printer",
+    "typescript",
+    "wasm",
+    "webassembly",
+    "zig"
+  ]
+}

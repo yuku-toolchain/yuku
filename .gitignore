@@ -6,6 +6,7 @@ ast-reference.ts
 operator-precedence.md
 jsx-roadmap.md
 **/dist
+!playground/dist
 .astro/
 test/**/suite
 profiler/files

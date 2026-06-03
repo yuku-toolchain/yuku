@@ -5,7 +5,7 @@ Yuku is pure Zig with no external dependencies.
 ## Prerequisites
 
 - [Zig](https://ziglang.org/) **nightly/development build** (build + compile). Yuku always keeps up to date with the latest Zig development version.
-- [Bun](https://bun.sh/) (test runner, playground, workspace dependencies)
+- [Bun](https://bun.sh/) (test runner, workspace dependencies)
 
 ## Setup
 
@@ -28,10 +28,18 @@ The first run will download the test suite (wait for it to finish). After the ru
 
 ## Playground
 
-A scratch space for quickly testing the parser:
+`src/main.zig` is a scratch space for quickly testing the toolchain from Zig:
 
 ```bash
-bun play
+zig build run
 ```
 
-This recompiles the project and rebuilds the npm package before running `test/playground.ts`, so any changes you make to the source (e.g. the parser) will be reflected immediately. Edit it however you want. Change the input file, swap parser options, log different parts of the AST. By default it parses `test/index.js`, but nothing is fixed.
+Edit it however you want. Change the source, swap parse options, log different parts of the tree, etc.
+
+For a fast edit-run loop, use Zig's watch mode with incremental compilation:
+
+```bash
+zig build run --watch -fincremental
+```
+
+Prefer a browser-based playground? Run `bun run playground` to build and serve it locally.

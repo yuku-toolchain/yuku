@@ -39,7 +39,6 @@ pub fn build(b: *std.Build) void {
         .root_module = profiler_module,
     });
 
-
     b.installArtifact(profiler_exe);
 
     const profile_cmd = b.addRunArtifact(profiler_exe);
@@ -127,6 +126,50 @@ pub fn build(b: *std.Build) void {
             .repository = "https://github.com/yuku-toolchain/yuku",
         },
     });
+
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .freestanding,
+        .cpu_features_add = std.Target.wasm.featureSet(&.{
+            .bulk_memory,
+            .nontrapping_fptoint,
+            .sign_ext,
+            .simd128,
+        }),
+    });
+    const wasm_step = b.step("wasm", "Build the WebAssembly modules");
+
+    inline for ([_]struct { name: []const u8, root: []const u8 }{
+        .{ .name = "yuku-parser", .root = "src/parser/ffi/parser_wasm.zig" },
+        .{ .name = "yuku-codegen", .root = "src/parser/ffi/codegen_wasm.zig" },
+    }) |cfg| {
+        const wasm_module = b.createModule(.{
+            .root_source_file = b.path(cfg.root),
+            .target = wasm_target,
+            .optimize = .ReleaseSmall,
+            .strip = true,
+        });
+        wasm_module.addImport("parser", parser_module);
+
+        const wasm = b.addExecutable(.{ .name = cfg.name, .root_module = wasm_module });
+        wasm.entry = .disabled;
+        wasm.rdynamic = true;
+        wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
+    }
+
+    const main_module = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    main_module.addImport("parser", parser_module);
+
+    const main_exe = b.addExecutable(.{ .name = "yuku", .root_module = main_module });
+    b.installArtifact(main_exe);
+
+    const run_cmd = b.addRunArtifact(main_exe);
+    const run_step = b.step("run", "Parse a sample, walk the AST, and print");
+    run_step.dependOn(&run_cmd.step);
 
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{

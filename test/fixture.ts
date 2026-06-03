@@ -1,3 +1,0 @@
-// cool
-
-console.log()
