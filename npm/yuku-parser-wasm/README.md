@@ -1,4 +1,4 @@
-# yuku-parser-wasm
+# @yuku-parser/wasm
 
 The [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) JavaScript/TypeScript
 parser as a single WebAssembly module. Runs anywhere: browsers, bundlers, Deno,
@@ -7,13 +7,13 @@ Bun and Node. Same API and same AST as `yuku-parser`.
 ## Install
 
 ```sh
-npm install yuku-parser-wasm
+npm install @yuku-parser/wasm
 ```
 
 ## Usage
 
 ```js
-import { parse } from "yuku-parser-wasm";
+import { parse } from "@yuku-parser/wasm";
 
 const { program, comments, diagnostics } = parse("const x: number = 1", {
   lang: "ts",
