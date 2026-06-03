@@ -15,6 +15,8 @@
 
 Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
+[Try it in the playground →](https://playground.yuku.fyi)
+
 </div>
 
 ## 📖 Documentation
