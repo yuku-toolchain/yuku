@@ -127,33 +127,35 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    // WebAssembly build: a freestanding "reactor" (exports only, no entry
-    // point) for browsers, Deno, Bun and bundlers. Reuses the same parser and
-    // AST transfer buffer as the native binding; the v7 buffer is decoded by
-    // the shared decode.js on the JS side. `zig build wasm` -> zig-out/bin.
-    const wasm_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/ffi/wasm.zig"),
-        .target = b.resolveTargetQuery(.{
-            .cpu_arch = .wasm32,
-            .os_tag = .freestanding,
-            .cpu_features_add = std.Target.wasm.featureSet(&.{
-                .bulk_memory,
-                .nontrapping_fptoint,
-                .sign_ext,
-                .simd128,
-            }),
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .freestanding,
+        .cpu_features_add = std.Target.wasm.featureSet(&.{
+            .bulk_memory,
+            .nontrapping_fptoint,
+            .sign_ext,
+            .simd128,
         }),
-        .optimize = .ReleaseSmall,
-        .strip = true,
     });
-    wasm_module.addImport("parser", parser_module);
+    const wasm_step = b.step("wasm", "Build the WebAssembly modules");
 
-    const wasm = b.addExecutable(.{ .name = "yuku-parser", .root_module = wasm_module });
-    wasm.entry = .disabled;
-    wasm.rdynamic = true;
+    inline for ([_]struct { name: []const u8, root: []const u8 }{
+        .{ .name = "yuku-parser", .root = "src/parser/ffi/parser_wasm.zig" },
+        .{ .name = "yuku-codegen", .root = "src/parser/ffi/codegen_wasm.zig" },
+    }) |cfg| {
+        const wasm_module = b.createModule(.{
+            .root_source_file = b.path(cfg.root),
+            .target = wasm_target,
+            .optimize = .ReleaseSmall,
+            .strip = true,
+        });
+        wasm_module.addImport("parser", parser_module);
 
-    const wasm_step = b.step("wasm", "Build the WebAssembly module");
-    wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
+        const wasm = b.addExecutable(.{ .name = cfg.name, .root_module = wasm_module });
+        wasm.entry = .disabled;
+        wasm.rdynamic = true;
+        wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
+    }
 
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{
