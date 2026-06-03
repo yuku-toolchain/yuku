@@ -105,8 +105,7 @@ header {
 
 .brand {
   font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 0.5px;
+  font-size: 18px;
   color: var(--accent);
 }
 
