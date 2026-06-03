@@ -165,10 +165,10 @@ themeBtn.addEventListener("click", () => {
 });
 labelTheme();
 
-let timer;
+let frame;
 jar.onUpdate(() => {
-  clearTimeout(timer);
-  timer = setTimeout(render, 150);
+  cancelAnimationFrame(frame);
+  frame = requestAnimationFrame(render);
 });
 
 for (const control of document.querySelectorAll("header select, header input")) {
