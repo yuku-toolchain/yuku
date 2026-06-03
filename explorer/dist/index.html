@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>yuku playground</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script>
+      document.documentElement.dataset.theme = localStorage.getItem("yuku-theme") || "dark";
+    </script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">yuku</div>
+      <div class="opts">
+        <label>
+          lang
+          <select id="lang">
+            <option>js</option>
+            <option selected>ts</option>
+            <option>jsx</option>
+            <option>tsx</option>
+            <option>dts</option>
+          </select>
+        </label>
+        <label>
+          source
+          <select id="sourceType">
+            <option value="module">module</option>
+            <option value="script">script</option>
+          </select>
+        </label>
+        <label class="chk"><input type="checkbox" id="preserveParens" checked /> preserveParens</label>
+        <label class="chk"><input type="checkbox" id="allowReturnOutsideFunction" /> allowReturn</label>
+        <label class="chk"><input type="checkbox" id="semanticErrors" /> semanticErrors</label>
+        <label class="chk"><input type="checkbox" id="attachComments" /> attachComments</label>
+      </div>
+      <button id="theme" class="theme">dark</button>
+    </header>
+    <main>
+      <section class="pane">
+        <div class="pane-head">source</div>
+        <div id="code" class="view editor" spellcheck="false"></div>
+      </section>
+      <section class="pane">
+        <div class="pane-head">ast</div>
+        <div id="ast" class="view tree"></div>
+      </section>
+      <section class="pane">
+        <div class="pane-head">
+          output
+          <div class="tabs">
+            <button data-op="print" class="active">print</button>
+            <button data-op="strip">strip</button>
+            <button data-op="minify">minify</button>
+          </div>
+        </div>
+        <pre id="out" class="view"></pre>
+      </section>
+    </main>
+    <div id="status">ok</div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
