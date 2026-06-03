@@ -1,17 +1,23 @@
 import { parse } from "/pkg/yuku-parser-wasm/index.js";
 import { print, strip, minify } from "/pkg/yuku-codegen-wasm/index.js";
+import { CodeJar } from "https://esm.sh/codejar@4.2.0";
+import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
+import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
+import json from "https://esm.sh/highlight.js@11.10.0/lib/languages/json";
+
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("json", json);
 
 const codegen = { print, strip, minify };
 const $ = (id) => document.getElementById(id);
 
-const code = $("code");
 const astView = $("ast");
 const outView = $("out");
 const status = $("status");
 
 let op = "print";
 
-code.value = [
+const SAMPLE = [
   "interface User {",
   "  id: number",
   "  name: string",
@@ -22,6 +28,18 @@ code.value = [
   "}",
   "",
 ].join("\n");
+
+function hl(text, lang) {
+  return hljs.highlight(text, { language: lang }).value;
+}
+
+const jar = CodeJar(
+  $("code"),
+  (el) => {
+    el.innerHTML = hl(el.textContent, "typescript");
+  },
+  { tab: "  ", spellcheck: false },
+);
 
 function options() {
   return {
@@ -47,7 +65,7 @@ function render() {
   let result;
   const t0 = performance.now();
   try {
-    result = parse(code.value, options());
+    result = parse(jar.toString(), options());
   } catch (e) {
     astView.textContent = "";
     outView.textContent = "";
@@ -56,11 +74,11 @@ function render() {
   }
   const t1 = performance.now();
 
-  astView.textContent = JSON.stringify(result.program, replacer, 2);
+  astView.innerHTML = hl(JSON.stringify(result.program, replacer, 2), "json");
 
   const t2 = performance.now();
   try {
-    outView.textContent = codegen[op](result.program);
+    outView.innerHTML = hl(codegen[op](result.program), "typescript");
   } catch (e) {
     outView.textContent = String(e);
   }
@@ -88,7 +106,7 @@ themeBtn.addEventListener("click", () => {
 labelTheme();
 
 let timer;
-code.addEventListener("input", () => {
+jar.onUpdate(() => {
   clearTimeout(timer);
   timer = setTimeout(render, 150);
 });
@@ -107,4 +125,5 @@ for (const btn of document.querySelectorAll(".tabs button")) {
   });
 }
 
+jar.updateCode(SAMPLE);
 render();
