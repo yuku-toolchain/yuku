@@ -20,12 +20,12 @@ const decoder = new TextDecoder();
 
 function run(op, program) {
   const ast = new Uint8Array(encode(program, null));
-  const inPtr = alloc(ast.length);
+  const inPtr = alloc(ast.length || 1);
   // Growing wasm memory detaches memory.buffer, so re-view after every call.
   new Uint8Array(memory.buffer, inPtr, ast.length).set(ast);
 
   const ptr = codegen(inPtr, ast.length, op);
-  free(inPtr, ast.length);
+  free(inPtr, ast.length || 1);
   if (ptr === 0) throw new Error("yuku-codegen-wasm: failed to generate code");
 
   const len = new DataView(memory.buffer).getUint32(ptr, true);

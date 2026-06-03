@@ -14,5 +14,5 @@ const { program } = parse("const x: number = 1", { lang: "ts" });
 
 print(program); // formatted source
 strip(program); // TypeScript stripped to JavaScript
-minify(program); // compact, comments dropped
+minify(program); // compact
 ```

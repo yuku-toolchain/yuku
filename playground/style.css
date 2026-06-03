@@ -212,16 +212,21 @@ main {
   caret-color: var(--fg);
 }
 
+::highlight(yuku-src) {
+  background-color: var(--sel);
+}
+
 .tree {
   white-space: normal;
-  line-height: 1.5;
+  line-height: 1.75;
 }
 
 .tree summary {
   list-style: none;
   cursor: pointer;
   white-space: pre;
-  border-radius: 3px;
+  border-radius: 4px;
+  padding-block: 1px;
 }
 
 .tree summary::-webkit-details-marker {
@@ -244,15 +249,25 @@ main {
   background: var(--panel);
 }
 
+.tree details.ast-hit {
+  background: color-mix(in srgb, var(--sel) 32%, transparent);
+  border-radius: 4px;
+}
+
+.tree details.ast-hit > summary {
+  background: var(--sel);
+}
+
 .tree .ast-body {
-  margin-left: 0.5em;
-  padding-left: 0.6em;
+  margin-left: 0.65em;
+  padding-left: 0.95em;
   border-left: 1px solid var(--line);
 }
 
 .tree .ast-row {
   white-space: pre;
   padding-left: 1.1em;
+  padding-block: 1px;
 }
 
 .ast-type {

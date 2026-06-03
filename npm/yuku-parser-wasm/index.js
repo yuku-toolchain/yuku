@@ -32,12 +32,13 @@ function packFlags(o = {}) {
 
 export function parse(source, options) {
   const bytes = encoder.encode(source);
-  const srcPtr = alloc(bytes.length);
+  const srcLen = bytes.length;
+  const srcPtr = alloc(srcLen || 1);
   // Growing wasm memory detaches memory.buffer, so re-view after every call.
-  new Uint8Array(memory.buffer, srcPtr, bytes.length).set(bytes);
+  new Uint8Array(memory.buffer, srcPtr, srcLen).set(bytes);
 
-  const ptr = wasmParse(srcPtr, bytes.length, packFlags(options));
-  free(srcPtr, bytes.length);
+  const ptr = wasmParse(srcPtr, srcLen, packFlags(options));
+  free(srcPtr, srcLen || 1);
   if (ptr === 0) throw new Error("yuku-parser-wasm: failed to parse source");
 
   const len = new DataView(memory.buffer).getUint32(ptr, true);

@@ -31,7 +31,7 @@ fn run(buf: []const u8, op: u32) ![]u8 {
 
     const result = switch (op) {
         1 => try parser.codegen.strip(gpa, &tree, .{}),
-        2 => try parser.codegen.minify(gpa, &tree, .{ .format = .compact, .comments = .none }),
+        2 => try parser.codegen.minify(gpa, &tree, .{ .format = .compact }),
         else => try parser.codegen.print(gpa, &tree, .{}),
     };
     defer result.deinit(gpa);
