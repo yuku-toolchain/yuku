@@ -67,7 +67,8 @@ header {
 
 .brand {
   font-weight: 700;
-  letter-spacing: 2px;
+  font-size: 17px;
+  letter-spacing: 0.5px;
   color: var(--accent);
 }
 
@@ -139,7 +140,8 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 12px;
+  height: 34px;
+  padding: 0 12px;
   color: var(--dim);
   border-bottom: 1px solid var(--line);
   text-transform: uppercase;

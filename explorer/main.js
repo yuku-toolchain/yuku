@@ -45,6 +45,7 @@ function setStatus(text, kind) {
 
 function render() {
   let result;
+  const t0 = performance.now();
   try {
     result = parse(code.value, options());
   } catch (e) {
@@ -53,20 +54,24 @@ function render() {
     setStatus(String(e), "err");
     return;
   }
+  const t1 = performance.now();
 
   astView.textContent = JSON.stringify(result.program, replacer, 2);
 
+  const t2 = performance.now();
   try {
     outView.textContent = codegen[op](result.program);
   } catch (e) {
     outView.textContent = String(e);
   }
+  const t3 = performance.now();
 
+  const times = `parse ${(t1 - t0).toFixed(2)}ms · ${op} ${(t3 - t2).toFixed(2)}ms`;
   const diags = result.diagnostics;
   if (diags.length) {
-    setStatus(`${diags.length} diagnostic${diags.length > 1 ? "s" : ""}: ${diags.map((d) => d.message).join("  |  ")}`, "warn");
+    setStatus(`${diags.length} diagnostic${diags.length > 1 ? "s" : ""} · ${times} · ${diags.map((d) => d.message).join("  |  ")}`, "warn");
   } else {
-    setStatus("ok", "ok");
+    setStatus(`ok · ${times}`, "ok");
   }
 }
 
