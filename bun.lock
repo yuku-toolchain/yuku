@@ -27,136 +27,136 @@
     },
     "npm/yuku-codegen": {
       "name": "yuku-codegen",
-      "version": "0.5.21",
+      "version": "0.5.22",
       "optionalDependencies": {
-        "@yuku-codegen/binding-darwin-arm64": "0.5.21",
-        "@yuku-codegen/binding-darwin-x64": "0.5.21",
-        "@yuku-codegen/binding-freebsd-x64": "0.5.21",
-        "@yuku-codegen/binding-linux-arm-gnu": "0.5.21",
-        "@yuku-codegen/binding-linux-arm-musl": "0.5.21",
-        "@yuku-codegen/binding-linux-arm64-gnu": "0.5.21",
-        "@yuku-codegen/binding-linux-arm64-musl": "0.5.21",
-        "@yuku-codegen/binding-linux-x64-gnu": "0.5.21",
-        "@yuku-codegen/binding-linux-x64-musl": "0.5.21",
-        "@yuku-codegen/binding-win32-arm64": "0.5.21",
-        "@yuku-codegen/binding-win32-x64": "0.5.21",
+        "@yuku-codegen/binding-darwin-arm64": "0.5.22",
+        "@yuku-codegen/binding-darwin-x64": "0.5.22",
+        "@yuku-codegen/binding-freebsd-x64": "0.5.22",
+        "@yuku-codegen/binding-linux-arm-gnu": "0.5.22",
+        "@yuku-codegen/binding-linux-arm-musl": "0.5.22",
+        "@yuku-codegen/binding-linux-arm64-gnu": "0.5.22",
+        "@yuku-codegen/binding-linux-arm64-musl": "0.5.22",
+        "@yuku-codegen/binding-linux-x64-gnu": "0.5.22",
+        "@yuku-codegen/binding-linux-x64-musl": "0.5.22",
+        "@yuku-codegen/binding-win32-arm64": "0.5.22",
+        "@yuku-codegen/binding-win32-x64": "0.5.22",
       },
       "peerDependencies": {
         "yuku-parser": "workspace:*",
       },
     },
     "npm/yuku-codegen-wasm": {
-      "name": "yuku-codegen-wasm",
-      "version": "0.5.21",
+      "name": "@yuku-codegen/wasm",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-darwin-arm64": {
       "name": "@yuku-codegen/binding-darwin-arm64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-darwin-x64": {
       "name": "@yuku-codegen/binding-darwin-x64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-freebsd-x64": {
       "name": "@yuku-codegen/binding-freebsd-x64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm-gnu": {
       "name": "@yuku-codegen/binding-linux-arm-gnu",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm-musl": {
       "name": "@yuku-codegen/binding-linux-arm-musl",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-gnu": {
       "name": "@yuku-codegen/binding-linux-arm64-gnu",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-musl": {
       "name": "@yuku-codegen/binding-linux-arm64-musl",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-x64-gnu": {
       "name": "@yuku-codegen/binding-linux-x64-gnu",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-x64-musl": {
       "name": "@yuku-codegen/binding-linux-x64-musl",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-win32-arm64": {
       "name": "@yuku-codegen/binding-win32-arm64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-win32-x64": {
       "name": "@yuku-codegen/binding-win32-x64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser": {
       "name": "yuku-parser",
-      "version": "0.5.21",
+      "version": "0.5.22",
       "optionalDependencies": {
-        "@yuku-parser/binding-darwin-arm64": "0.5.21",
-        "@yuku-parser/binding-darwin-x64": "0.5.21",
-        "@yuku-parser/binding-freebsd-x64": "0.5.21",
-        "@yuku-parser/binding-linux-arm-gnu": "0.5.21",
-        "@yuku-parser/binding-linux-arm-musl": "0.5.21",
-        "@yuku-parser/binding-linux-arm64-gnu": "0.5.21",
-        "@yuku-parser/binding-linux-arm64-musl": "0.5.21",
-        "@yuku-parser/binding-linux-x64-gnu": "0.5.21",
-        "@yuku-parser/binding-linux-x64-musl": "0.5.21",
-        "@yuku-parser/binding-win32-arm64": "0.5.21",
-        "@yuku-parser/binding-win32-x64": "0.5.21",
+        "@yuku-parser/binding-darwin-arm64": "0.5.22",
+        "@yuku-parser/binding-darwin-x64": "0.5.22",
+        "@yuku-parser/binding-freebsd-x64": "0.5.22",
+        "@yuku-parser/binding-linux-arm-gnu": "0.5.22",
+        "@yuku-parser/binding-linux-arm-musl": "0.5.22",
+        "@yuku-parser/binding-linux-arm64-gnu": "0.5.22",
+        "@yuku-parser/binding-linux-arm64-musl": "0.5.22",
+        "@yuku-parser/binding-linux-x64-gnu": "0.5.22",
+        "@yuku-parser/binding-linux-x64-musl": "0.5.22",
+        "@yuku-parser/binding-win32-arm64": "0.5.22",
+        "@yuku-parser/binding-win32-x64": "0.5.22",
       },
     },
     "npm/yuku-parser-wasm": {
-      "name": "yuku-parser-wasm",
-      "version": "0.5.21",
+      "name": "@yuku-parser/wasm",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-arm64": {
       "name": "@yuku-parser/binding-darwin-arm64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-x64": {
       "name": "@yuku-parser/binding-darwin-x64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-freebsd-x64": {
       "name": "@yuku-parser/binding-freebsd-x64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-gnu": {
       "name": "@yuku-parser/binding-linux-arm-gnu",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-musl": {
       "name": "@yuku-parser/binding-linux-arm-musl",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-gnu": {
       "name": "@yuku-parser/binding-linux-arm64-gnu",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-musl": {
       "name": "@yuku-parser/binding-linux-arm64-musl",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-gnu": {
       "name": "@yuku-parser/binding-linux-x64-gnu",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-musl": {
       "name": "@yuku-parser/binding-linux-x64-musl",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-arm64": {
       "name": "@yuku-parser/binding-win32-arm64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-x64": {
       "name": "@yuku-parser/binding-win32-x64",
-      "version": "0.5.21",
+      "version": "0.5.22",
     },
   },
   "packages": {
@@ -458,6 +458,8 @@
 
     "@yuku-codegen/binding-win32-x64": ["@yuku-codegen/binding-win32-x64@workspace:npm/yuku-codegen/@yuku-codegen/binding-win32-x64"],
 
+    "@yuku-codegen/wasm": ["@yuku-codegen/wasm@workspace:npm/yuku-codegen-wasm"],
+
     "@yuku-parser/binding-darwin-arm64": ["@yuku-parser/binding-darwin-arm64@workspace:npm/yuku-parser/@yuku-parser/binding-darwin-arm64"],
 
     "@yuku-parser/binding-darwin-x64": ["@yuku-parser/binding-darwin-x64@workspace:npm/yuku-parser/@yuku-parser/binding-darwin-x64"],
@@ -479,6 +481,8 @@
     "@yuku-parser/binding-win32-arm64": ["@yuku-parser/binding-win32-arm64@workspace:npm/yuku-parser/@yuku-parser/binding-win32-arm64"],
 
     "@yuku-parser/binding-win32-x64": ["@yuku-parser/binding-win32-x64@workspace:npm/yuku-parser/@yuku-parser/binding-win32-x64"],
+
+    "@yuku-parser/wasm": ["@yuku-parser/wasm@workspace:npm/yuku-parser-wasm"],
 
     "acorn": ["acorn@8.16.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw=="],
 
@@ -1088,13 +1092,9 @@
 
     "yuku-codegen": ["yuku-codegen@workspace:npm/yuku-codegen"],
 
-    "yuku-codegen-wasm": ["yuku-codegen-wasm@workspace:npm/yuku-codegen-wasm"],
-
     "yuku-docs": ["yuku-docs@workspace:docs"],
 
     "yuku-parser": ["yuku-parser@workspace:npm/yuku-parser"],
-
-    "yuku-parser-wasm": ["yuku-parser-wasm@workspace:npm/yuku-parser-wasm"],
 
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 
