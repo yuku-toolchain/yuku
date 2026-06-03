@@ -77,22 +77,6 @@ body {
   background: var(--sel);
 }
 
-body,
-header,
-.brand,
-.pane,
-.pane-head,
-.view,
-#status,
-.tabs button,
-.opts select,
-.theme {
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-
 header {
   display: flex;
   align-items: center;
@@ -212,6 +196,11 @@ main {
   caret-color: var(--fg);
 }
 
+#out {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 ::highlight(yuku-src) {
   background-color: var(--sel);
 }
@@ -219,6 +208,11 @@ main {
 .tree {
   white-space: normal;
   line-height: 1.75;
+}
+
+.tree details {
+  width: max-content;
+  min-width: 100%;
 }
 
 .tree summary {
