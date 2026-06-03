@@ -12,41 +12,45 @@
 }
 
 :root {
-  --bg: #ffffff;
-  --panel: #f7f7f8;
-  --line: #e3e3e6;
-  --fg: #1a1a1d;
-  --dim: #76767e;
-  --accent: #2f6fed;
-  --ok: #1f8a3b;
-  --warn: #b5710c;
-  --err: #d12d2d;
-  --tok-keyword: #d73a49;
-  --tok-type: #e36209;
-  --tok-string: #22863a;
-  --tok-number: #005cc5;
-  --tok-comment: #6a737d;
-  --tok-func: #6f42c1;
-  --tok-attr: #005cc5;
+  --bg: #faf9f5;
+  --panel: #f4f2eb;
+  --line: #ece8df;
+  --fg: #2c271e;
+  --dim: #9a9285;
+  --accent: #bf982f;
+  --accent-ink: #2c271e;
+  --sel: #ecddb0;
+  --ok: #589a64;
+  --warn: #c0822f;
+  --err: #c2605a;
+  --tok-keyword: #9d0006;
+  --tok-type: #b57614;
+  --tok-string: #79740e;
+  --tok-number: #8f3f71;
+  --tok-comment: #a89984;
+  --tok-func: #af3a03;
+  --tok-attr: #427b58;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0d0d0f;
-  --panel: #141417;
-  --line: #26262b;
-  --fg: #e6e6e6;
-  --dim: #8a8a93;
-  --accent: #7aa2f7;
-  --ok: #6bbf73;
-  --warn: #d8a657;
-  --err: #e06c75;
-  --tok-keyword: #c678dd;
-  --tok-type: #e5c07b;
-  --tok-string: #98c379;
-  --tok-number: #d19a66;
-  --tok-comment: #7f848e;
-  --tok-func: #61afef;
-  --tok-attr: #e06c75;
+  --bg: #1b1813;
+  --panel: #232019;
+  --line: #2c2820;
+  --fg: #e9e4d8;
+  --dim: #968e7d;
+  --accent: #ddb454;
+  --accent-ink: #1b1813;
+  --sel: #463c22;
+  --ok: #80bd88;
+  --warn: #d6a559;
+  --err: #dd8b85;
+  --tok-keyword: #fb4934;
+  --tok-type: #fabd2f;
+  --tok-string: #b8bb26;
+  --tok-number: #d3869b;
+  --tok-comment: #928374;
+  --tok-func: #fe8019;
+  --tok-attr: #8ec07c;
 }
 
 * {
@@ -69,6 +73,26 @@ body {
   flex-direction: column;
 }
 
+::selection {
+  background: var(--sel);
+}
+
+body,
+header,
+.brand,
+.pane,
+.pane-head,
+.view,
+#status,
+.tabs button,
+.opts select,
+.theme {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
 header {
   display: flex;
   align-items: center;
@@ -81,7 +105,7 @@ header {
 
 .brand {
   font-weight: 700;
-  font-size: 17px;
+  font-size: 20px;
   letter-spacing: 0.5px;
   color: var(--accent);
 }
@@ -148,6 +172,11 @@ main {
 
 .pane:last-child {
   border-right: none;
+}
+
+.pane:first-child .pane-head,
+.pane:first-child .view {
+  padding-left: 16px;
 }
 
 .pane-head {
@@ -239,7 +268,7 @@ main {
 }
 
 .tabs button.active {
-  color: var(--bg);
+  color: var(--accent-ink);
   background: var(--accent);
   border-color: var(--accent);
 }
