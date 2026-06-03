@@ -212,6 +212,75 @@ main {
   caret-color: var(--fg);
 }
 
+.tree {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.tree summary {
+  list-style: none;
+  cursor: pointer;
+  white-space: pre;
+  border-radius: 3px;
+}
+
+.tree summary::-webkit-details-marker {
+  display: none;
+}
+
+.tree summary::before {
+  content: "\25B8";
+  display: inline-block;
+  width: 1.1em;
+  color: var(--dim);
+  transition: transform 0.15s ease;
+}
+
+.tree details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.tree summary:hover {
+  background: var(--panel);
+}
+
+.tree .ast-body {
+  margin-left: 0.5em;
+  padding-left: 0.6em;
+  border-left: 1px solid var(--line);
+}
+
+.tree .ast-row {
+  white-space: pre;
+  padding-left: 1.1em;
+}
+
+.ast-type {
+  color: var(--accent);
+}
+
+.ast-key {
+  color: var(--tok-attr);
+}
+
+.ast-str {
+  color: var(--tok-string);
+}
+
+.ast-num {
+  color: var(--tok-number);
+}
+
+.ast-bool,
+.ast-null {
+  color: var(--tok-keyword);
+}
+
+.ast-span,
+.ast-meta {
+  color: var(--dim);
+}
+
 .hljs-keyword,
 .hljs-literal {
   color: var(--tok-keyword);

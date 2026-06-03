@@ -3,10 +3,8 @@ import { print, strip, minify } from "/pkg/yuku-codegen-wasm/index.js";
 import { CodeJar } from "https://esm.sh/codejar@4.2.0";
 import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
 import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
-import json from "https://esm.sh/highlight.js@11.10.0/lib/languages/json";
 
 hljs.registerLanguage("typescript", typescript);
-hljs.registerLanguage("json", json);
 
 const codegen = { print, strip, minify };
 const $ = (id) => document.getElementById(id);
@@ -16,6 +14,8 @@ const outView = $("out");
 const status = $("status");
 
 let op = "print";
+
+const OPEN_DEPTH = 4;
 
 const SAMPLE = [
   "interface User {",
@@ -41,6 +41,70 @@ const jar = CodeJar(
   { tab: "  ", spellcheck: false },
 );
 
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function isNode(value) {
+  return value !== null && typeof value === "object" && typeof value.type === "string";
+}
+
+function leafSpan(value) {
+  if (typeof value === "string") return el("span", "ast-str", JSON.stringify(value));
+  if (typeof value === "number") return el("span", "ast-num", String(value));
+  if (typeof value === "bigint") return el("span", "ast-num", `${value}n`);
+  if (typeof value === "boolean") return el("span", "ast-bool", String(value));
+  return el("span", "ast-null", "null");
+}
+
+function row(key, valueNode) {
+  const r = el("div", "ast-row");
+  if (key !== null) r.append(el("span", "ast-key", `${key}: `));
+  r.append(valueNode);
+  return r;
+}
+
+function branch(key, value, depth) {
+  const details = el("details");
+  details.open = depth < OPEN_DEPTH;
+  const summary = el("summary");
+  if (key !== null) summary.append(el("span", "ast-key", `${key}: `));
+
+  let entries;
+  if (Array.isArray(value)) {
+    summary.append(el("span", "ast-meta", `[${value.length}]`));
+    entries = value.map((item, i) => [String(i), item]);
+  } else if (isNode(value)) {
+    summary.append(el("span", "ast-type", value.type));
+    if (typeof value.start === "number" && typeof value.end === "number") {
+      summary.append(el("span", "ast-span", ` ${value.start}:${value.end}`));
+    }
+    entries = Object.entries(value).filter(([k]) => k !== "type" && k !== "start" && k !== "end");
+  } else {
+    summary.append(el("span", "ast-meta", "{}"));
+    entries = Object.entries(value);
+  }
+
+  details.append(summary);
+  const body = el("div", "ast-body");
+  for (const [k, v] of entries) body.append(value_(k, v, depth + 1));
+  details.append(body);
+  return details;
+}
+
+function value_(key, value, depth) {
+  if (Array.isArray(value)) {
+    return value.length === 0 ? row(key, el("span", "ast-meta", "[]")) : branch(key, value, depth);
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.keys(value).length === 0 ? row(key, el("span", "ast-meta", "{}")) : branch(key, value, depth);
+  }
+  return row(key, leafSpan(value));
+}
+
 function options() {
   return {
     lang: $("lang").value,
@@ -50,10 +114,6 @@ function options() {
     semanticErrors: $("semanticErrors").checked,
     attachComments: $("attachComments").checked,
   };
-}
-
-function replacer(_key, value) {
-  return typeof value === "bigint" ? `${value}n` : value;
 }
 
 function setStatus(text, kind) {
@@ -67,14 +127,14 @@ function render() {
   try {
     result = parse(jar.toString(), options());
   } catch (e) {
-    astView.textContent = "";
+    astView.replaceChildren();
     outView.textContent = "";
     setStatus(String(e), "err");
     return;
   }
   const t1 = performance.now();
 
-  astView.innerHTML = hl(JSON.stringify(result.program, replacer, 2), "json");
+  astView.replaceChildren(value_(null, result.program, 0));
 
   const t2 = performance.now();
   try {
@@ -111,8 +171,8 @@ jar.onUpdate(() => {
   timer = setTimeout(render, 150);
 });
 
-for (const el of document.querySelectorAll("header select, header input")) {
-  el.addEventListener("change", render);
+for (const control of document.querySelectorAll("header select, header input")) {
+  control.addEventListener("change", render);
 }
 
 for (const btn of document.querySelectorAll(".tabs button")) {
