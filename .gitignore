@@ -6,7 +6,6 @@ ast-reference.ts
 operator-precedence.md
 jsx-roadmap.md
 **/dist
-!explorer/dist
 !playground/dist
 .astro/
 test/**/suite
