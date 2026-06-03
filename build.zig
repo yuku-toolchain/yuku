@@ -39,7 +39,6 @@ pub fn build(b: *std.Build) void {
         .root_module = profiler_module,
     });
 
-
     b.installArtifact(profiler_exe);
 
     const profile_cmd = b.addRunArtifact(profiler_exe);
@@ -127,6 +126,34 @@ pub fn build(b: *std.Build) void {
             .repository = "https://github.com/yuku-toolchain/yuku",
         },
     });
+
+    // WebAssembly build: a freestanding "reactor" (exports only, no entry
+    // point) for browsers, Deno, Bun and bundlers. Reuses the same parser and
+    // AST transfer buffer as the native binding; the v7 buffer is decoded by
+    // the shared decode.js on the JS side. `zig build wasm` -> zig-out/bin.
+    const wasm_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/ffi/wasm.zig"),
+        .target = b.resolveTargetQuery(.{
+            .cpu_arch = .wasm32,
+            .os_tag = .freestanding,
+            .cpu_features_add = std.Target.wasm.featureSet(&.{
+                .bulk_memory,
+                .nontrapping_fptoint,
+                .sign_ext,
+                .simd128,
+            }),
+        }),
+        .optimize = .ReleaseSmall,
+        .strip = true,
+    });
+    wasm_module.addImport("parser", parser_module);
+
+    const wasm = b.addExecutable(.{ .name = "yuku-parser", .root_module = wasm_module });
+    wasm.entry = .disabled;
+    wasm.rdynamic = true;
+
+    const wasm_step = b.step("wasm", "Build the WebAssembly module");
+    wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
 
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{

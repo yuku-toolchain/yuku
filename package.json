@@ -26,7 +26,8 @@
     "play": "bun build:npm && bun --console-depth=20 test/playground.ts",
     "release:npm": "napi bump",
     "debug:npm": "napi build",
-    "build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-estree-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen"
+    "build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-estree-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen",
+    "build:wasm": "zig build wasm && cp ./zig-out/bin/yuku-parser.wasm ./npm/yuku-parser-wasm/ && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/"
   },
   "devDependencies": {
     "@jridgewell/trace-mapping": "^0.3.31",
