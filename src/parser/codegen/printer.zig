@@ -413,11 +413,32 @@ fn Printer(comptime cfg: Config) type {
         inline fn writeCommentBody(self: *Self, c: ast.AttachedComment) Error!void {
             const value = self.tree.string(c.value);
             try self.writeStr(if (c.type == .line) "//" else "/*");
-            try self.code.appendSlice(self.allocator, value);
-            if (self.sm) |*sm| sm.advance(value);
             if (c.type == .block) {
+                try self.writeBlockBody(value);
                 try self.code.appendSlice(self.allocator, "*/");
                 if (self.sm) |*sm| sm.advance("*/");
+            } else {
+                try self.code.appendSlice(self.allocator, value);
+                if (self.sm) |*sm| sm.advance(value);
+            }
+        }
+
+        // writes a block comment's interior. jsdoc-shaped bodies have their
+        // continuation lines re-indented under the reformatted `/*`, so the
+        // star column survives a change of nesting depth. anything else is
+        // emitted verbatim.
+        fn writeBlockBody(self: *Self, value: []const u8) Error!void {
+            if (!self.pretty() or !isJsdocBody(value)) {
+                try self.code.appendSlice(self.allocator, value);
+                if (self.sm) |*sm| sm.advance(value);
+                return;
+            }
+            var it = std.mem.splitScalar(u8, value, '\n');
+            try self.writeStr(it.first()); // first line follows `/*`
+            while (it.next()) |line| {
+                try self.breakLine(); // newline at the current indent
+                try self.writeByte(' '); // align the star under the opener
+                try self.writeStr(std.mem.trimStart(u8, line, " \t"));
             }
         }
 
@@ -2862,6 +2883,20 @@ fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
         .{ int_part, dot, frac_part, exp_suffix },
     ) catch return s;
     return if (out.len < s.len) out else s;
+}
+
+// true when a block comment has continuation lines that are all blank or
+// `*`-prefixed (jsdoc shape), so re-indenting them cannot disturb their content.
+fn isJsdocBody(value: []const u8) bool {
+    var it = std.mem.splitScalar(u8, value, '\n');
+    _ = it.next(); // first line follows `/*` and is never re-indented
+    var multi = false;
+    while (it.next()) |line| {
+        multi = true;
+        const t = std.mem.trimStart(u8, line, " \t");
+        if (t.len != 0 and t[0] != '*') return false;
+    }
+    return multi;
 }
 
 fn isSignificantBlockComment(value: []const u8) bool {
