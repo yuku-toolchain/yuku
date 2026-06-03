@@ -466,7 +466,8 @@ fn Printer(comptime cfg: Config) type {
             const span = self.tree.span(idx);
             if (span.start == 0 and span.end == 0) return;
 
-            const orig = sm.lineCol(self.tree.line_starts, span.start);
+            const orig = self.tree.lineColNear(span.start, sm.line_cursor);
+            sm.line_cursor = orig.line;
             try sm.record(self.allocator, orig.line, orig.col);
         }
 

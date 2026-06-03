@@ -7,11 +7,9 @@ function normalizeOptions(options) {
   const c = next.comments;
   if (c === true) next.comments = "all";
   else if (c === false) next.comments = "none";
-  // `lineStarts` is consumed by the encoder, not the native binding, so strip
-  // it from the source-map options. Only V3 metadata reaches the binding.
   const s = next.sourceMaps;
   if (s) {
-    const { lineStarts, ...meta } = s;
+    const { lineStarts: _, ...meta } = s;
     next.sourceMaps = meta;
   } else {
     next.sourceMaps = undefined;

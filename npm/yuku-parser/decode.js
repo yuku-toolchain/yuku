@@ -688,6 +688,19 @@ function decode(buffer, source) {
       }
       return { line: lo, column: offset - ls[lo - 1] };
     },
+    locNear(offset, hintLine) {
+      const ls = _getLineStarts();
+      let line = hintLine - 1;
+      if (line < 0) line = 0;
+      else if (line >= ls.length) line = ls.length - 1;
+      if (ls[line] <= offset) {
+        while (line + 1 < ls.length && ls[line + 1] <= offset) line++;
+      } else {
+        // ls[0] is 0, so this stops at line 0 at worst
+        while (line > 0 && ls[line] > offset) line--;
+      }
+      return { line: line + 1, column: offset - ls[line] };
+    },
   };
 }
 export { decode };
