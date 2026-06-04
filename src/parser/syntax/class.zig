@@ -660,6 +660,18 @@ fn parsePropertyDefinition(
     var value: ast.NodeIndex = .null;
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
+
+        // https://github.com/tc39/ecma262/issues/3333
+        // https://github.com/tc39/ecma262/issues/2437
+        const saved_await = parser.context.await;
+        const saved_yield = parser.context.yield;
+        parser.context.await = false;
+        parser.context.yield = false;
+        defer {
+            parser.context.await = saved_await;
+            parser.context.yield = saved_yield;
+        }
+
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
             return null;
         end = parser.tree.span(value).end;

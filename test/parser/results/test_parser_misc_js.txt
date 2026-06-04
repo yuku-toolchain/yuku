@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       37/37 (100.00%)
+Passed:       41/41 (100.00%)
 Failed:       0
-AST mismatch: 0/37
+AST mismatch: 0/41
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -61,6 +61,18 @@ error: Expected '{' to start class body, but found '=>'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
+✓ test/parser/misc/js/class-field-await-allowed-positions.module.js
+✓ test/parser/misc/js/class-field-await-module.module.js
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
+   |
+ 1 | export default class C {
+ 2 |   x = await + 1;
+   |       ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/misc/js/class-field-await.js
+✓ test/parser/misc/js/class-field-yield.js
 ✓ test/parser/misc/js/class-static-block-await-context.js
 ✓ test/parser/misc/js/dynamic-import-in-script.js
 ✓ test/parser/misc/js/dynamic-import.module.js
