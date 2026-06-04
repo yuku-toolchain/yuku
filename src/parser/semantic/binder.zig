@@ -578,12 +578,12 @@ pub const SymbolTracker = struct {
         const alloc = tree.allocator();
         var self = SymbolTracker{ .tree = tree, .allocator = alloc };
 
-        const estimated: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 32)));
-        try self.symbols.ensureTotalCapacity(alloc, estimated);
-        try self.references.ensureTotalCapacity(alloc, estimated);
-        try self.decl_pairs.ensureTotalCapacity(alloc, estimated);
-        try self.scope_maps.ensureTotalCapacity(alloc, estimated / 2);
-        try self.hoisting_variables.ensureTotalCapacity(alloc, estimated / 2);
+        const nodes: u32 = @intCast(tree.nodes.len);
+        try self.symbols.ensureTotalCapacity(alloc, @max(16, nodes / 12));
+        try self.references.ensureTotalCapacity(alloc, @max(16, nodes / 4));
+        try self.decl_pairs.ensureTotalCapacity(alloc, @max(16, nodes / 12));
+        try self.scope_maps.ensureTotalCapacity(alloc, @max(8, nodes / 16));
+        try self.hoisting_variables.ensureTotalCapacity(alloc, @max(8, nodes / 16));
         try self.saved_stack.ensureTotalCapacity(alloc, 32);
         return self;
     }
