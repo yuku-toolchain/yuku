@@ -149,15 +149,6 @@ interface ParseResult {
    * 1-based, columns are 0-based, matching ESTree's `loc` convention.
    */
   locOf(offset: number): SourceLocation;
-  /**
-   * Resolves an offset to a `{ line, column }` pair, starting the search at
-   * `hintLine` and scanning toward the target line. For offsets resolved in
-   * roughly source order, pass the previously returned `line` as `hintLine`
-   * to keep lookups near-constant time, avoiding the binary search in
-   * {@link locOf}. `hintLine` is 1-based, like the returned `line`. Lines are
-   * 1-based, columns are 0-based, matching ESTree's `loc` convention.
-   */
-  locNear(offset: number, hintLine: number): SourceLocation;
 }
 
 /**
