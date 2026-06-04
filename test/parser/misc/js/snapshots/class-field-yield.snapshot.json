@@ -1,0 +1,160 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 95,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 65,
+        "id": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 11,
+          "name": "g"
+        },
+        "generator": true,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 14,
+          "end": 65,
+          "body": [
+            {
+              "type": "ClassDeclaration",
+              "start": 18,
+              "end": 63,
+              "decorators": [],
+              "id": {
+                "type": "Identifier",
+                "start": 24,
+                "end": 25,
+                "name": "C"
+              },
+              "superClass": null,
+              "body": {
+                "type": "ClassBody",
+                "start": 26,
+                "end": 63,
+                "body": [
+                  {
+                    "type": "PropertyDefinition",
+                    "start": 32,
+                    "end": 42,
+                    "decorators": [],
+                    "key": {
+                      "type": "Identifier",
+                      "start": 32,
+                      "end": 33,
+                      "name": "x"
+                    },
+                    "value": {
+                      "type": "Identifier",
+                      "start": 36,
+                      "end": 41,
+                      "name": "yield"
+                    },
+                    "computed": false,
+                    "static": false
+                  },
+                  {
+                    "type": "MethodDefinition",
+                    "start": 47,
+                    "end": 59,
+                    "decorators": [],
+                    "key": {
+                      "type": "YieldExpression",
+                      "start": 48,
+                      "end": 53,
+                      "argument": null,
+                      "delegate": false
+                    },
+                    "value": {
+                      "type": "FunctionExpression",
+                      "start": 54,
+                      "end": 59,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [],
+                      "body": {
+                        "type": "BlockStatement",
+                        "start": 57,
+                        "end": 59,
+                        "body": []
+                      },
+                      "expression": false
+                    },
+                    "kind": "method",
+                    "computed": true,
+                    "static": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 66,
+        "end": 94,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 73,
+          "name": "D"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 74,
+          "end": 94,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 78,
+              "end": 92,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 78,
+                "end": 79,
+                "name": "y"
+              },
+              "value": {
+                "type": "BinaryExpression",
+                "start": 82,
+                "end": 91,
+                "left": {
+                  "type": "Identifier",
+                  "start": 82,
+                  "end": 87,
+                  "name": "yield"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 90,
+                  "end": 91,
+                  "value": 1,
+                  "raw": "1"
+                },
+                "operator": "+"
+              },
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

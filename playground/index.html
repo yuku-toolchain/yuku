@@ -8,6 +8,14 @@
     <script>
       document.documentElement.dataset.theme = localStorage.getItem("yuku-theme") || "dark";
     </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@yuku-parser/wasm": "https://esm.sh/@yuku-parser/wasm",
+          "@yuku-codegen/wasm": "https://esm.sh/@yuku-codegen/wasm"
+        }
+      }
+    </script>
   </head>
   <body>
     <header>

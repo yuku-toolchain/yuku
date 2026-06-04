@@ -1,5 +1,5 @@
-import { parse } from "/pkg/yuku-parser-wasm/index.js";
-import { print, strip, minify } from "/pkg/yuku-codegen-wasm/index.js";
+import { parse } from "@yuku-parser/wasm";
+import { print, strip, minify } from "@yuku-codegen/wasm";
 import { CodeJar } from "https://esm.sh/codejar@4.2.0";
 import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
 import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
