@@ -97,8 +97,8 @@ jobs:
       - name: Zig build
         run: zig build
 
-      - name: Build playground
-        run: bun run build:playground
+      - name: Build wasm packages
+        run: bun run build:wasm
 
       - name: Zig tests
         run: zig build test

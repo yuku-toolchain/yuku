@@ -1,10 +1,26 @@
-const dist = `${import.meta.dir}/dist`;
+const dir = import.meta.dir;
+const npm = `${dir}/../npm`;
+
+// the import map in index.html points at esm.sh so the deployed playground
+// always loads the latest published packages. locally, rewrite it to the
+// wasm packages built from the working tree.
+const local: Record<string, string> = {
+  "https://esm.sh/@yuku-parser/wasm": "/pkg/yuku-parser-wasm/index.js",
+  "https://esm.sh/@yuku-codegen/wasm": "/pkg/yuku-codegen-wasm/index.js",
+};
 
 const server = Bun.serve({
   port: Number(Bun.env.PORT) || 3000,
   async fetch(req) {
     const { pathname } = new URL(req.url);
-    const file = Bun.file(dist + (pathname === "/" ? "/index.html" : pathname));
+    if (pathname === "/" || pathname === "/index.html") {
+      let html = await Bun.file(`${dir}/index.html`).text();
+      for (const [cdn, path] of Object.entries(local)) html = html.replace(cdn, path);
+      return new Response(html, { headers: { "content-type": "text/html" } });
+    }
+    const file = pathname.startsWith("/pkg/")
+      ? Bun.file(npm + pathname.slice("/pkg".length))
+      : Bun.file(dir + pathname);
     if (await file.exists()) return new Response(file);
     return new Response("not found", { status: 404 });
   },
