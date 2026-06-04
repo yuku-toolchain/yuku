@@ -4,7 +4,7 @@ Yuku is pure Zig with no external dependencies.
 
 ## Prerequisites
 
-- [Zig](https://ziglang.org/) **nightly/development build** (build + compile). Yuku always keeps up to date with the latest Zig development version.
+- [Zig](https://ziglang.org/) **0.16.0 or later** (build + compile). Yuku always keeps up to date with the latest stable Zig version.
 - [Bun](https://bun.sh/) (test runner, workspace dependencies)
 
 ## Setup

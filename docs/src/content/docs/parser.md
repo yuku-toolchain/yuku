@@ -36,7 +36,7 @@ my_module.addImport("parser", yuku_dep.module("parser"));
 ```
 
 :::note
-Yuku requires the latest Zig nightly build.
+Yuku requires Zig 0.16.0 or later.
 :::
 
 ## Quick Start
