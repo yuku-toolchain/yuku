@@ -42,9 +42,6 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(profiler_exe);
 
     const profile_cmd = b.addRunArtifact(profiler_exe);
-    if (b.args) |args| {
-        profile_cmd.addArgs(args);
-    }
 
     const profile_step = b.step("profile", "Run profiler");
     profile_step.dependOn(&profile_cmd.step);

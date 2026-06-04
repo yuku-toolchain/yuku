@@ -98,9 +98,18 @@ fn walkStructFields(
             if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
         } else if (field.type == ast.IndexRange) {
             const range = @field(payload, field.name);
-            for (0..range.len) |i| {
-                const child = ctx.tree.extra(range)[i];
-                if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
+            if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const) {
+                // const tree: extras cannot move, iterate the slice directly
+                for (ctx.tree.extra(range)) |child| {
+                    if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
+                }
+            } else {
+                // mutable tree: a visitor may append extras and move the
+                // backing array, so re-read the slice every iteration
+                for (0..range.len) |i| {
+                    const child = ctx.tree.extra(range)[i];
+                    if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
+                }
             }
         }
     }

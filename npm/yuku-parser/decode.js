@@ -690,16 +690,15 @@ function decode(buffer, source) {
     },
     locNear(offset, hintLine) {
       const ls = _getLineStarts();
-      let line = hintLine - 1;
-      if (line < 0) line = 0;
-      else if (line >= ls.length) line = ls.length - 1;
-      if (ls[line] <= offset) {
-        while (line + 1 < ls.length && ls[line + 1] <= offset) line++;
+      let i = hintLine - 1;
+      if (i < 0) i = 0;
+      if (i >= ls.length) i = ls.length - 1;
+      if (ls[i] <= offset) {
+        while (i + 1 < ls.length && ls[i + 1] <= offset) i++;
       } else {
-        // ls[0] is 0, so this stops at line 0 at worst
-        while (line > 0 && ls[line] > offset) line--;
+        while (i > 0 && ls[i] > offset) i--;
       }
-      return { line: line + 1, column: offset - ls[line] };
+      return { line: i + 1, column: offset - ls[i] };
     },
   };
 }
