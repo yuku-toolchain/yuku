@@ -197,8 +197,6 @@ A few TypeScript features (`enum`, `namespace`, `module`, `export =`, `import = 
 
 The ambient forms of these constructs (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime, and are stripped silently along with the rest of the type system.
 
-A future Yuku transpiler will fill that role. It will lower runtime-emitting constructs to JavaScript and drive the codegen with stripping enabled in the same pass, giving fast, clean TypeScript-to-JavaScript output in a single pipeline.
-
 All other TypeScript syntax (types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, `abstract`) strips cleanly today.
 
 ## Minification
