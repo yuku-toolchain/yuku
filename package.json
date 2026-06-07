@@ -20,8 +20,9 @@
     "test:parser": "bun test/parser/run.ts",
     "test:codegen": "bun test/codegen/run.ts",
     "test:sourcemap": "bun test/sourcemap/run.ts",
+    "test:minifier": "bun test/minifier/run.ts",
     "format": "zig fmt **/*.zig",
-    "test": "bun load-files && bun build:npm && bun test:parser && bun test:codegen && bun test:sourcemap",
+    "test": "bun load-files && bun build:npm && bun test:parser && bun test:codegen && bun test:sourcemap && bun test:minifier",
     "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
     "release:npm": "napi bump",
     "debug:npm": "napi build",
@@ -38,6 +39,7 @@
     "napi-zig": "^0.1.41",
     "typescript": "^6.0.2",
     "yuku-codegen": "workspace:*",
+    "yuku-minify": "workspace:*",
     "yuku-parser": "workspace:*"
   },
   "version": ""

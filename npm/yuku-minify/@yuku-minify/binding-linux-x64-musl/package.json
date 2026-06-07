@@ -1,0 +1,21 @@
+{
+  "name": "@yuku-minify/binding-linux-x64-musl",
+  "version": "0.5.28",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "libc": [
+    "musl"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "main": "yuku-minify.node",
+  "files": [
+    "yuku-minify.node"
+  ]
+}

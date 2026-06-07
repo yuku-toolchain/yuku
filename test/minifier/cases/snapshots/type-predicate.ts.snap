@@ -1,0 +1,1 @@
+function e(e:unknown):e is string{return typeof e==="string"}export function run(){return[e("hi"),e(42),e(null)]}
