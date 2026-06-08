@@ -139,7 +139,6 @@ fn Printer(comptime cfg: Config) type {
         code: std.ArrayList(u8) = .empty,
         errors: std.ArrayList(Diagnostic) = .empty,
         options: Options,
-        arena: std.heap.ArenaAllocator,
         allocator: Allocator,
         indent_depth: u32 = 0,
         /// set while emitting a destructuring/assignment target so nested
@@ -159,14 +158,14 @@ fn Printer(comptime cfg: Config) type {
         /// before its nested type annotation. consumed by `takeDefinite`
         definite_pending: bool = false,
         /// a key whose leading comments `hoistKeyComments` already emitted, so
-        /// `emitLeadingComments` skips them once
+        /// `emitLeadingComments` skips them. set and `defer`-cleared by the member
+        /// emitter, so it can't dangle if the key's emit is bypassed (minify).
         skip_leading_of: NodeIndex = .null,
 
         fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
             var p = Self{
                 .tree = tree,
                 .options = options,
-                .arena = std.heap.ArenaAllocator.init(allocator),
                 .allocator = allocator,
             };
             try p.code.ensureTotalCapacity(allocator, tree.source.len);
@@ -179,7 +178,6 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn deinit(self: *Self) void {
-            self.arena.deinit();
             self.code.deinit(self.allocator);
             self.errors.deinit(self.allocator);
             if (self.sm) |*sm| sm.deinit(self.allocator);
@@ -385,10 +383,7 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emitLeadingComments(self: *Self, idx: NodeIndex) Error!void {
-            if (idx == self.skip_leading_of) {
-                self.skip_leading_of = .null;
-                return;
-            }
+            if (idx == self.skip_leading_of) return; // already hoisted, see hoistKeyComments
             for (self.tree.commentsOf(idx)) |c| {
                 if (c.position == .before and self.allowComment(c)) try self.writeLeading(c);
             }
@@ -882,10 +877,11 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_variable_declarator(self: *Self, d: ast.VariableDeclarator) Error!void {
-            // park `!` so the binding emits it as `let x!: T`, not `let x: T!`
+            // park `!` so the binding emits it as `let x!: T`, not `let x: T!`.
+            // `d.id` is always a binding pattern, whose takeDefinite() consumes it.
             if (comptime !strip_ts) self.definite_pending = d.definite;
             try self.emit(d.id);
-            self.definite_pending = false;
+            std.debug.assert(!self.definite_pending);
             if (d.init != .null) {
                 try self.separateBangFromAssign();
                 try self.space();
@@ -1715,6 +1711,7 @@ fn Printer(comptime cfg: Config) type {
             if (comptime strip_ts) if (m.abstract or fn_data.body == .null) return;
             try self.printDecorators(m.decorators);
             try self.hoistKeyComments(m.key);
+            defer self.skip_leading_of = .null;
             if (comptime !strip_ts) if (m.accessibility != .none) {
                 try self.writeStr(m.accessibility.toString());
                 try self.writeByte(' ');
@@ -1741,6 +1738,7 @@ fn Printer(comptime cfg: Config) type {
             if (comptime strip_ts) if (p.declare or p.abstract) return;
             try self.printDecorators(p.decorators);
             try self.hoistKeyComments(p.key);
+            defer self.skip_leading_of = .null;
             if (comptime !strip_ts) {
                 if (p.declare) try self.writeStr("declare ");
                 if (p.accessibility != .none) {
