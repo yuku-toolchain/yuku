@@ -129,6 +129,10 @@ const Ctx = struct {
 
     fn collectChildren(self: *Ctx, node: ast.NodeIndex) Error!void {
         switch (self.data_items[@intFromEnum(node)]) {
+            // quasis are literal text, never comment hosts. a comment inside a
+            // `${ }` belongs to the interpolated expression or type.
+            .template_literal => |t| try self.pushRange(t.expressions),
+            .ts_template_literal_type => |t| try self.pushRange(t.types),
             inline else => |payload| {
                 const T = @TypeOf(payload);
                 if (@typeInfo(T) != .@"struct") return;
@@ -137,13 +141,16 @@ const Ctx = struct {
                         const child = @field(payload, f.name);
                         if (child != .null) try self.pushChild(child);
                     } else if (f.type == ast.IndexRange) {
-                        const range = @field(payload, f.name);
-                        for (self.extras[range.start..][0..range.len]) |child| {
-                            if (child != .null) try self.pushChild(child);
-                        }
+                        try self.pushRange(@field(payload, f.name));
                     }
                 }
             },
+        }
+    }
+
+    fn pushRange(self: *Ctx, range: ast.IndexRange) Error!void {
+        for (self.extras[range.start..][0..range.len]) |child| {
+            if (child != .null) try self.pushChild(child);
         }
     }
 

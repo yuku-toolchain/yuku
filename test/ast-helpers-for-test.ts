@@ -58,23 +58,10 @@ export function deserializeAstJson<T = unknown>(jsonString: string): T {
   }) as T;
 }
 
-//
-
-// Structural AST comparison that ignores everything codegen legitimately
-// normalizes, keeping only what is semantically meaningful:
-//
-// - `start`/`end`: source positions always shift after printing.
-// - `comments`: trivia; attachment hosts shift with formatting.
-// - `raw` on string literals (re-emitted from the cooked `value` with
-//   normalized quotes/escapes), bigint literals (separators stripped, radix
-//   normalized — `value`/`bigint` still compared), and regexp literals (flags
-//   emitted in canonical order — `regex.pattern`/`regex.flags` still compared).
-//
-// Numeric literal `raw`, template element `value.raw` (observable via tagged
-// templates), and JSX text `raw` are emitted verbatim and stay compared.
-//
-// Returns `null` when the trees are equivalent, otherwise the path of the
-// first mismatch, e.g. `program.body[3].declarations[0].init: "a" != "b"`.
+// compares two asts, ignoring what codegen legitimately normalizes: `start`,
+// `end`, `comments`, and `raw` on string/bigint/regexp literals (their cooked
+// value/flags are still compared). returns null when equivalent, else the path
+// of the first mismatch, e.g. `program.body[3].declarations[0].init: "a" != "b"`.
 export function astDiffPath(a: unknown, b: unknown, path = "program"): string | null {
   if (a === b) return null;
   if (typeof a === "number" && Number.isNaN(a) && typeof b === "number" && Number.isNaN(b)) {

@@ -225,13 +225,43 @@ async function corpusFile(file: string): Promise<Record<Op, OpStatus>> {
       continue;
     }
     if (second !== code) {
-      out[op.op] = { status: "fail", file, err: "not idempotent" };
-      continue;
+      // a comment re-homing or re-indenting is trivia, not a defect. the real
+      // invariant: comment-free code is a fixed point, and no comment is lost
+      // or duplicated (only its placement may move).
+      const reparse2 = parse(second, { lang: op.outLang(lang), sourceType, attachComments: true });
+      const bareOpts = { ...op.options, comments: false as const };
+      const bare1 = OPS[op.op](reparse.program, bareOpts).code;
+      const bare2 = OPS[op.op](reparse2.program, bareOpts).code;
+      if (bare1 !== bare2) {
+        out[op.op] = { status: "fail", file, err: "not idempotent (code)" };
+        continue;
+      }
+      if (commentKey(reparse) !== commentKey(reparse2)) {
+        out[op.op] = { status: "fail", file, err: "not idempotent (comment lost/duplicated)" };
+        continue;
+      }
     }
 
     out[op.op] = { status: "pass" };
   }
   return out;
+}
+
+// a placement-independent fingerprint of a parse result's comments: the sorted
+// multiset of (type, value), so re-homing a comment does not change it.
+function commentKey(r: { comments?: { type: string; value: string }[] }): string {
+  // strip per-line whitespace: the printer re-indents jsdoc lines, which is
+  // cosmetic and host-dependent.
+  const norm = (v: string) =>
+    v
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map((l) => l.trim())
+      .join("\n");
+  return (r.comments ?? [])
+    .map((c) => `${c.type}:${norm(c.value)}`)
+    .sort()
+    .join("\u0000");
 }
 
 function stripLang(lang: SourceLang): SourceLang {

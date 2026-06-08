@@ -283,6 +283,15 @@ pub fn decodeStringEscapes(
     }
 }
 
+/// if a wtf-8 lone surrogate (`ED A0..BF 80..BF`) starts at `s[i]`, returns its
+/// code unit, else null. these are the only sequences `codePointAt` rejects.
+pub fn loneSurrogateAt(s: []const u8, i: usize) ?u21 {
+    if (s[i] != 0xED or i + 2 >= s.len or s[i + 1] < 0xA0) return null;
+    return (@as(u21, s[i] & 0x0F) << 12) |
+        (@as(u21, s[i + 1] & 0x3F) << 6) |
+        @as(u21, s[i + 2] & 0x3F);
+}
+
 /// writes a Unicode code point as UTF-8. lone surrogates use WTF-8 encoding.
 fn appendCodePoint(
     out: *std.ArrayList(u8),
