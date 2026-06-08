@@ -18,6 +18,7 @@ import {
   type CodegenOptions,
   type CodegenResult,
 } from "yuku-codegen";
+import { astDiffPath } from "../ast-helpers-for-test";
 
 type Op = "print" | "strip" | "minify";
 
@@ -194,10 +195,41 @@ async function corpusFile(file: string): Promise<Record<Op, OpStatus>> {
       out[op.op] = { status: "fail", file, err: `threw: ${e}` };
       continue;
     }
-    const reparse = parse(code, { lang: op.outLang(lang), sourceType });
-    out[op.op] = reparse.diagnostics.length === 0
-      ? { status: "pass" }
-      : { status: "fail", file, err: "reparse failed" };
+    const reparse = parse(code, {
+      lang: op.outLang(lang),
+      sourceType,
+      attachComments: true,
+    });
+    if (reparse.diagnostics.length > 0) {
+      out[op.op] = { status: "fail", file, err: "reparse failed" };
+      continue;
+    }
+
+    // print preserves semantics: reparsing its output must yield the same AST
+    // modulo source positions. strip/minify rewrite the tree by design.
+    if (op.op === "print") {
+      const diff = astDiffPath(ast.program, reparse.program);
+      if (diff) {
+        out[op.op] = { status: "fail", file, err: `ast roundtrip: ${diff}` };
+        continue;
+      }
+    }
+
+    // every op is a fixed point on its own output: running it again on the
+    // reparsed AST must reproduce the exact same bytes.
+    let second: string;
+    try {
+      second = OPS[op.op](reparse.program, op.options).code;
+    } catch (e) {
+      out[op.op] = { status: "fail", file, err: `second pass threw: ${e}` };
+      continue;
+    }
+    if (second !== code) {
+      out[op.op] = { status: "fail", file, err: "not idempotent" };
+      continue;
+    }
+
+    out[op.op] = { status: "pass" };
   }
   return out;
 }

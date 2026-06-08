@@ -60,6 +60,87 @@ export function deserializeAstJson<T = unknown>(jsonString: string): T {
 
 //
 
+// Structural AST comparison that ignores everything codegen legitimately
+// normalizes, keeping only what is semantically meaningful:
+//
+// - `start`/`end`: source positions always shift after printing.
+// - `comments`: trivia; attachment hosts shift with formatting.
+// - `raw` on string literals (re-emitted from the cooked `value` with
+//   normalized quotes/escapes), bigint literals (separators stripped, radix
+//   normalized — `value`/`bigint` still compared), and regexp literals (flags
+//   emitted in canonical order — `regex.pattern`/`regex.flags` still compared).
+//
+// Numeric literal `raw`, template element `value.raw` (observable via tagged
+// templates), and JSX text `raw` are emitted verbatim and stay compared.
+//
+// Returns `null` when the trees are equivalent, otherwise the path of the
+// first mismatch, e.g. `program.body[3].declarations[0].init: "a" != "b"`.
+export function astDiffPath(a: unknown, b: unknown, path = "program"): string | null {
+  if (a === b) return null;
+  if (typeof a === "number" && Number.isNaN(a) && typeof b === "number" && Number.isNaN(b)) {
+    return null;
+  }
+  if (a === null || b === null || typeof a !== "object" || typeof b !== "object") {
+    return `${path}: ${showValue(a)} != ${showValue(b)}`;
+  }
+
+  if (a instanceof RegExp || b instanceof RegExp) {
+    return a instanceof RegExp &&
+      b instanceof RegExp &&
+      a.source === b.source &&
+      a.flags === b.flags
+      ? null
+      : `${path}: ${showValue(a)} != ${showValue(b)}`;
+  }
+
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b)) {
+      return `${path}: ${showValue(a)} != ${showValue(b)}`;
+    }
+    if (a.length !== b.length) {
+      return `${path}: array length ${a.length} != ${b.length}`;
+    }
+    for (let i = 0; i < a.length; i++) {
+      const d = astDiffPath(a[i], b[i], `${path}[${i}]`);
+      if (d) return d;
+    }
+    return null;
+  }
+
+  const aKeys = comparableKeys(a);
+  const bKeys = comparableKeys(b);
+  if (aKeys.length !== bKeys.length || aKeys.some((k, i) => k !== bKeys[i])) {
+    return `${path}: keys [${aKeys.join(", ")}] != [${bKeys.join(", ")}]`;
+  }
+  for (const key of aKeys) {
+    const d = astDiffPath(
+      (a as Record<string, unknown>)[key],
+      (b as Record<string, unknown>)[key],
+      `${path}.${key}`,
+    );
+    if (d) return d;
+  }
+  return null;
+}
+
+function comparableKeys(node: object): string[] {
+  const n = node as { type?: unknown; value?: unknown };
+  const skipRaw =
+    n.type === "Literal" &&
+    (typeof n.value === "string" || typeof n.value === "bigint" || "regex" in n);
+  return Object.keys(node)
+    .filter(
+      (k) =>
+        k !== "start" && k !== "end" && k !== "comments" && !(skipRaw && k === "raw"),
+    )
+    .sort();
+}
+
+function showValue(v: unknown): string {
+  const s = v === undefined ? "undefined" : serializeAstJson(v);
+  return s.length > 80 ? `${s.slice(0, 77)}...` : s;
+}
+
 interface Pos {
   line: number;
   col: number;
