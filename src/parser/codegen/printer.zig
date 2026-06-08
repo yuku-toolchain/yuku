@@ -1273,16 +1273,22 @@ fn Printer(comptime cfg: Config) type {
                     start = i + 1;
                     continue;
                 }
-                const esc: ?[]const u8 = switch (c) {
-                    '\\' => "\\\\",
-                    '\n' => "\\n",
-                    '\r' => "\\r",
-                    '\t' => "\\t",
-                    0x08 => "\\b",
-                    0x0C => "\\f",
-                    0x0B => "\\v",
-                    0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                    else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
+                const esc: ?[]const u8 = blk: {
+                    // keep minified output safe to inline in a `<script>` tag
+                    if (comptime minify_mode) {
+                        if (utils.scriptEscape(s, i)) |e| break :blk e;
+                    }
+                    break :blk switch (c) {
+                        '\\' => "\\\\",
+                        '\n' => "\\n",
+                        '\r' => "\\r",
+                        '\t' => "\\t",
+                        0x08 => "\\b",
+                        0x0C => "\\f",
+                        0x0B => "\\v",
+                        0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
+                        else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
+                    };
                 };
                 if (esc) |e| {
                     if (i > start) try self.writeStr(s[start..i]);
@@ -1381,13 +1387,19 @@ fn Printer(comptime cfg: Config) type {
                     start = i + 1;
                     continue;
                 }
-                const esc: ?[]const u8 = switch (c) {
-                    '\\' => "\\\\",
-                    '`' => "\\`",
-                    '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
-                    '\r' => "\\r",
-                    0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                    else => null,
+                const esc: ?[]const u8 = blk: {
+                    // keep minified output safe to inline in a `<script>` tag
+                    if (comptime minify_mode) {
+                        if (utils.scriptEscape(s, i)) |e| break :blk e;
+                    }
+                    break :blk switch (c) {
+                        '\\' => "\\\\",
+                        '`' => "\\`",
+                        '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
+                        '\r' => "\\r",
+                        0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
+                        else => null,
+                    };
                 };
                 if (esc) |e| {
                     if (i > start) try self.writeStr(s[start..i]);

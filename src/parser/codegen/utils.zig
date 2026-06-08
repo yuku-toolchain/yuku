@@ -30,6 +30,27 @@ pub fn isIdentifierName(s: []const u8) bool {
     return true;
 }
 
+/// escape for the character at `s[i]` when it would otherwise let minified
+/// output break out of an inline `<script>`, or null when none is needed.
+/// neutralizes `</script`, `<!--`, and `-->` by inserting a backslash the value
+/// ignores (`<\/script`, `<\!--`, `--\>`).
+pub fn scriptEscape(s: []const u8, i: usize) ?[]const u8 {
+    return switch (s[i]) {
+        '<' => if (scriptOpenAt(s, i)) "<\\" else null,
+        '>' => if (i >= 2 and s[i - 1] == '-' and s[i - 2] == '-') "\\>" else null,
+        else => null,
+    };
+}
+
+fn scriptOpenAt(s: []const u8, i: usize) bool {
+    const rest = s[i + 1 ..];
+    if (std.mem.startsWith(u8, rest, "!--")) return true; // `<!--`
+    if (rest.len < 7 or rest[0] != '/' or !std.ascii.eqlIgnoreCase(rest[1..7], "script"))
+        return false;
+    // `</script` ends the tag only when whitespace, `/`, `>`, or eof follows
+    return rest.len == 7 or std.ascii.isWhitespace(rest[7]) or rest[7] == '/' or rest[7] == '>';
+}
+
 /// removes numeric separators (`_`), returning `raw` unchanged when it has none
 /// and `null` when the result would not fit in `buf`.
 pub fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
@@ -91,18 +112,12 @@ pub fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
         return if (d.len <= s.len) scratch[0..d.len] else s;
     }
 
-    const exp_len = d.len + 1 + numLen(exp);
+    const exp_len = d.len + 1 + std.fmt.count("{d}", .{exp});
     const out = if (exp_len < fixedLen(d.len, exp, scratch.len))
         (std.fmt.bufPrint(scratch, "{s}e{d}", .{ d, exp }) catch return s)
     else
         writeFixed(scratch, d, exp) orelse return s;
     return if (out.len <= s.len) out else s;
-}
-
-/// printed length of `x` as a signed decimal.
-fn numLen(x: i64) usize {
-    var buf: [24]u8 = undefined;
-    return (std.fmt.bufPrint(&buf, "{d}", .{x}) catch unreachable).len;
 }
 
 /// length of the fixed-point rendering of `d * 10^exp`, or `maxInt` if it would
