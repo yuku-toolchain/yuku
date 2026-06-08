@@ -1555,6 +1555,9 @@ pub const TemplateLiteral = struct {
 pub const TemplateElement = struct {
     /// escape-decoded content, empty when `is_cooked_undefined`
     cooked: String = .empty,
+    /// verbatim source text, line endings normalized to `\n`. empty for
+    /// synthetic nodes
+    raw: String = .empty,
     /// true for the final element (after the last interpolation)
     tail: bool,
     /// true when the cooked value is undefined per ECMAScript TV semantics

@@ -2,6 +2,7 @@ const std = @import("std");
 const util = @import("util");
 const ast = @import("../ast.zig");
 const sourcemap = @import("sourcemap.zig");
+const utils = @import("utils.zig");
 
 const Allocator = std.mem.Allocator;
 const Tree = ast.Tree;
@@ -138,7 +139,6 @@ fn Printer(comptime cfg: Config) type {
         code: std.ArrayList(u8) = .empty,
         errors: std.ArrayList(Diagnostic) = .empty,
         options: Options,
-        arena: std.heap.ArenaAllocator,
         allocator: Allocator,
         indent_depth: u32 = 0,
         /// set while emitting a destructuring/assignment target so nested
@@ -154,12 +154,18 @@ fn Printer(comptime cfg: Config) type {
         /// node currently being emitted, used by container helpers to look
         /// up inside-comments without threading the index through every call
         current_idx: NodeIndex = .null,
+        /// a declarator's `!` parked so the binding target emits it next to `?`,
+        /// before its nested type annotation. consumed by `takeDefinite`
+        definite_pending: bool = false,
+        /// a key whose leading comments `hoistKeyComments` already emitted, so
+        /// `emitLeadingComments` skips them. set and `defer`-cleared by the member
+        /// emitter, so it can't dangle if the key's emit is bypassed (minify).
+        skip_leading_of: NodeIndex = .null,
 
         fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
             var p = Self{
                 .tree = tree,
                 .options = options,
-                .arena = std.heap.ArenaAllocator.init(allocator),
                 .allocator = allocator,
             };
             try p.code.ensureTotalCapacity(allocator, tree.source.len);
@@ -172,7 +178,6 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn deinit(self: *Self) void {
-            self.arena.deinit();
             self.code.deinit(self.allocator);
             self.errors.deinit(self.allocator);
             if (self.sm) |*sm| sm.deinit(self.allocator);
@@ -208,7 +213,7 @@ fn Printer(comptime cfg: Config) type {
             if (self.pretty()) return;
             const items = self.code.items;
             if (items.len < 2 or items[items.len - 1] != ' ') return;
-            if (isIdCont(items[items.len - 2]) and !isIdCont(next)) {
+            if (utils.isIdCont(items[items.len - 2]) and !utils.isIdCont(next)) {
                 _ = self.code.pop();
                 if (self.sm) |*sm| if (sm.gen_col > 0) {
                     sm.gen_col -= 1;
@@ -222,6 +227,15 @@ fn Printer(comptime cfg: Config) type {
 
         inline fn space(self: *Self) Error!void {
             if (self.pretty()) try self.writeByte(' ');
+        }
+
+        /// takes the parked `!`, clearing it so it never leaks into a nested
+        /// binding (`let {x}!` keeps `!` after `}`)
+        inline fn takeDefinite(self: *Self) bool {
+            if (comptime strip_ts) return false;
+            const d = self.definite_pending;
+            self.definite_pending = false;
+            return d;
         }
 
         // pretty-mode-only break with indent (no-op in compact)
@@ -357,7 +371,7 @@ fn Printer(comptime cfg: Config) type {
             return switch (self.options.comments) {
                 .none => false,
                 .all => true,
-                .some => c.type == .block and isSignificantBlockComment(self.tree.string(c.value)),
+                .some => c.type == .block and utils.isSignificantBlockComment(self.tree.string(c.value)),
                 .line => c.type == .line,
                 .block => c.type == .block,
             };
@@ -369,14 +383,29 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emitLeadingComments(self: *Self, idx: NodeIndex) Error!void {
+            if (idx == self.skip_leading_of) return; // already hoisted, see hoistKeyComments
             for (self.tree.commentsOf(idx)) |c| {
                 if (c.position == .before and self.allowComment(c)) try self.writeLeading(c);
             }
         }
 
+        /// emits a class-member key's leading comments before the member's
+        /// modifiers, so a comment cannot land between a no-line-terminator
+        /// modifier (`get`/`set`/`async`/`accessor`) and the key and split it
+        fn hoistKeyComments(self: *Self, key: NodeIndex) Error!void {
+            if (self.options.comments == .none or key == .null) return;
+            try self.emitLeadingComments(key);
+            self.skip_leading_of = key;
+        }
+
         fn emitTrailingComments(self: *Self, idx: NodeIndex) Error!void {
             for (self.tree.commentsOf(idx)) |c| {
-                if (c.position == .after and self.allowComment(c)) try self.writeTrailing(c);
+                if (c.position == .after and self.allowComment(c)) {
+                    // flush a deferred `;` first, so it lands before the comment
+                    // rather than after it where a reparse would re-home it
+                    try self.flushSemi();
+                    try self.writeTrailing(c);
+                }
             }
         }
 
@@ -428,7 +457,7 @@ fn Printer(comptime cfg: Config) type {
         // star column survives a change of nesting depth. anything else is
         // emitted verbatim.
         fn writeBlockBody(self: *Self, value: []const u8) Error!void {
-            if (!self.pretty() or !isJsdocBody(value)) {
+            if (!self.pretty() or !utils.isJsdocBody(value)) {
                 try self.code.appendSlice(self.allocator, value);
                 if (self.sm) |*sm| sm.advance(value);
                 return;
@@ -592,7 +621,12 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_directive(self: *Self, d: ast.Directive) Error!void {
-            try self.emitStringLit(d.value);
+            // a directive's meaning depends on its exact code units (an escaped
+            // `"use strict"` is not one), so emit the original lexeme verbatim
+            switch (self.tree.data(d.expression)) {
+                .string_literal => |lit| try self.writeString(lit.raw),
+                else => try self.emit(d.expression),
+            }
             try self.softSemi();
         }
 
@@ -843,8 +877,11 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_variable_declarator(self: *Self, d: ast.VariableDeclarator) Error!void {
+            // park `!` so the binding emits it as `let x!: T`, not `let x: T!`.
+            // `d.id` is always a binding pattern, whose takeDefinite() consumes it.
+            if (comptime !strip_ts) self.definite_pending = d.definite;
             try self.emit(d.id);
-            if (comptime !strip_ts) if (d.definite) try self.writeByte('!');
+            std.debug.assert(!self.definite_pending);
             if (d.init != .null) {
                 try self.separateBangFromAssign();
                 try self.space();
@@ -888,7 +925,7 @@ fn Printer(comptime cfg: Config) type {
             } else {
                 try self.emit(e.left);
             }
-            if (isWordOp(op)) {
+            if (utils.isWordOp(op)) {
                 try self.writeByte(' ');
                 try self.writeStr(op);
                 try self.writeByte(' ');
@@ -938,7 +975,7 @@ fn Printer(comptime cfg: Config) type {
         fn emit_unary_expression(self: *Self, e: ast.UnaryExpression) Error!void {
             const op = e.operator.toString();
             try self.writeStr(op);
-            if (isWordOp(op)) try self.writeByte(' ');
+            if (utils.isWordOp(op)) try self.writeByte(' ');
             // `+ +x` would print as `++x` and re-lex as a prefix update.
             if (op.len == 1 and (op[0] == '+' or op[0] == '-')) {
                 if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
@@ -1003,13 +1040,16 @@ fn Printer(comptime cfg: Config) type {
             defer self.in_assign_target = in_target;
 
             try self.writeByte('[');
-            for (self.tree.extra(e.elements), 0..) |x, i| {
+            const list = self.tree.extra(e.elements);
+            for (list, 0..) |x, i| {
                 if (i > 0) {
                     try self.writeByte(',');
                     try self.space();
                 }
                 if (in_target) try self.emitAssignTarget(x) else try self.emit(x);
             }
+            // a trailing hole needs its own comma, else `[a,]` is one element
+            if (list.len > 0 and list[list.len - 1] == .null) try self.writeByte(',');
             try self.writeByte(']');
         }
 
@@ -1218,17 +1258,33 @@ fn Printer(comptime cfg: Config) type {
 
         fn writeEscapedString(self: *Self, s: []const u8, quote: u8) Error!void {
             var start: usize = 0;
-            for (s, 0..) |c, i| {
-                const esc: ?[]const u8 = switch (c) {
-                    '\\' => "\\\\",
-                    '\n' => "\\n",
-                    '\r' => "\\r",
-                    '\t' => "\\t",
-                    0x08 => "\\b",
-                    0x0C => "\\f",
-                    0x0B => "\\v",
-                    0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                    else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
+            var i: usize = 0;
+            while (i < s.len) : (i += 1) {
+                const c = s[i];
+                // escape a wtf-8 lone surrogate so the output stays valid utf-8
+                if (util.Utf.loneSurrogateAt(s, i)) |cp| {
+                    if (i > start) try self.writeStr(s[start..i]);
+                    try self.writeUnicodeEscape(cp);
+                    i += 2;
+                    start = i + 1;
+                    continue;
+                }
+                const esc: ?[]const u8 = blk: {
+                    // keep minified output safe to inline in a `<script>` tag
+                    if (comptime minify_mode) {
+                        if (utils.scriptEscape(s, i)) |e| break :blk e;
+                    }
+                    break :blk switch (c) {
+                        '\\' => "\\\\",
+                        '\n' => "\\n",
+                        '\r' => "\\r",
+                        '\t' => "\\t",
+                        0x08 => "\\b",
+                        0x0C => "\\f",
+                        0x0B => "\\v",
+                        0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
+                        else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
+                    };
                 };
                 if (esc) |e| {
                     if (i > start) try self.writeStr(s[start..i]);
@@ -1237,6 +1293,17 @@ fn Printer(comptime cfg: Config) type {
                 }
             }
             if (start < s.len) try self.writeStr(s[start..]);
+        }
+
+        /// writes `\uXXXX` for a 16-bit code unit
+        fn writeUnicodeEscape(self: *Self, cp: u32) Error!void {
+            const hex = "0123456789abcdef";
+            const buf = [_]u8{
+                '\\',                  'u',
+                hex[(cp >> 12) & 0xF], hex[(cp >> 8) & 0xF],
+                hex[(cp >> 4) & 0xF],  hex[cp & 0xF],
+            };
+            try self.writeStr(&buf);
         }
 
         fn emit_numeric_literal(self: *Self, lit: ast.NumericLiteral) Error!void {
@@ -1250,11 +1317,11 @@ fn Printer(comptime cfg: Config) type {
         fn writeShortestNumber(self: *Self, lit: ast.NumericLiteral) Error!void {
             const raw = self.tree.string(lit.raw);
             var src_buf: [128]u8 = undefined;
-            const cleaned = stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
+            const cleaned = utils.stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
             if (lit.kind != .decimal) return self.writeStr(cleaned);
 
             var dst_buf: [128]u8 = undefined;
-            try self.writeStr(shortestDecimal(cleaned, &dst_buf));
+            try self.writeStr(utils.shortestDecimal(cleaned, &dst_buf));
         }
 
         fn emit_bigint_literal(self: *Self, lit: ast.BigIntLiteral) Error!void {
@@ -1297,18 +1364,38 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_template_element(self: *Self, el: ast.TemplateElement) Error!void {
+            // print/strip emit the raw verbatim to keep the exact escapes (the
+            // tag of a tagged template sees them). minify recomputes from cooked,
+            // as do synthetic nodes with no raw.
+            if (comptime !minify_mode) {
+                const raw = self.tree.string(el.raw);
+                if (raw.len != 0) return self.writeStr(raw);
+            }
             const s = self.tree.string(el.cooked);
             var i: usize = 0;
             var start: usize = 0;
             while (i < s.len) : (i += 1) {
                 const c = s[i];
-                const esc: ?[]const u8 = switch (c) {
-                    '\\' => "\\\\",
-                    '`' => "\\`",
-                    '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
-                    '\r' => "\\r",
-                    0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                    else => null,
+                if (util.Utf.loneSurrogateAt(s, i)) |cp| {
+                    if (i > start) try self.writeStr(s[start..i]);
+                    try self.writeUnicodeEscape(cp);
+                    i += 2;
+                    start = i + 1;
+                    continue;
+                }
+                const esc: ?[]const u8 = blk: {
+                    // keep minified output safe to inline in a `<script>` tag
+                    if (comptime minify_mode) {
+                        if (utils.scriptEscape(s, i)) |e| break :blk e;
+                    }
+                    break :blk switch (c) {
+                        '\\' => "\\\\",
+                        '`' => "\\`",
+                        '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
+                        '\r' => "\\r",
+                        0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
+                        else => null,
+                    };
                 };
                 if (esc) |e| {
                     if (i > start) try self.writeStr(s[start..i]);
@@ -1335,9 +1422,11 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_binding_identifier(self: *Self, id: ast.BindingIdentifier) Error!void {
+            const definite = self.takeDefinite();
             if (comptime !strip_ts) try self.printDecorators(id.decorators);
             try self.writeString(id.name);
             if (comptime !strip_ts) if (id.optional) try self.writeByte('?');
+            if (definite) try self.writeByte('!');
             try self.emit(id.type_annotation);
         }
 
@@ -1371,6 +1460,7 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_array_pattern(self: *Self, p: ast.ArrayPattern) Error!void {
+            const definite = self.takeDefinite();
             if (comptime !strip_ts) try self.printDecorators(p.decorators);
             try self.writeByte('[');
             const list = self.tree.extra(p.elements);
@@ -1387,13 +1477,18 @@ fn Printer(comptime cfg: Config) type {
                     try self.space();
                 }
                 try self.emit(p.rest);
+            } else if (list.len > 0 and list[list.len - 1] == .null) {
+                // a trailing hole needs its own comma, else `[a,]` is one element
+                try self.writeByte(',');
             }
             try self.writeByte(']');
             if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
+            if (definite) try self.writeByte('!');
             try self.emit(p.type_annotation);
         }
 
         fn emit_object_pattern(self: *Self, p: ast.ObjectPattern) Error!void {
+            const definite = self.takeDefinite();
             if (comptime !strip_ts) try self.printDecorators(p.decorators);
             try self.writeByte('{');
             const list = self.tree.extra(p.properties);
@@ -1416,6 +1511,7 @@ fn Printer(comptime cfg: Config) type {
             if (has_any) try self.space();
             try self.writeByte('}');
             if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
+            if (definite) try self.writeByte('!');
             try self.emit(p.type_annotation);
         }
 
@@ -1603,6 +1699,9 @@ fn Printer(comptime cfg: Config) type {
             if (any) {
                 self.pending_semi = false;
                 try self.newline();
+            } else if (self.options.comments != .none) {
+                // no member emitted, but the empty body may still hold comments
+                try self.emitInsideComments(self.current_idx);
             }
             try self.writeByte('}');
         }
@@ -1611,6 +1710,8 @@ fn Printer(comptime cfg: Config) type {
             const fn_data = self.tree.data(m.value).function;
             if (comptime strip_ts) if (m.abstract or fn_data.body == .null) return;
             try self.printDecorators(m.decorators);
+            try self.hoistKeyComments(m.key);
+            defer self.skip_leading_of = .null;
             if (comptime !strip_ts) if (m.accessibility != .none) {
                 try self.writeStr(m.accessibility.toString());
                 try self.writeByte(' ');
@@ -1636,6 +1737,8 @@ fn Printer(comptime cfg: Config) type {
         fn emit_property_definition(self: *Self, p: ast.PropertyDefinition) Error!void {
             if (comptime strip_ts) if (p.declare or p.abstract) return;
             try self.printDecorators(p.decorators);
+            try self.hoistKeyComments(p.key);
+            defer self.skip_leading_of = .null;
             if (comptime !strip_ts) {
                 if (p.declare) try self.writeStr("declare ");
                 if (p.accessibility != .none) {
@@ -2128,23 +2231,26 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_ts_union_type(self: *Self, t: ast.TSUnionType) Error!void {
-            const list = self.tree.extra(t.types);
-            for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.space();
-                    try self.writeByte('|');
-                    try self.space();
-                }
-                try self.emit(x);
-            }
+            try self.emitTypeList(t.types, '|');
         }
 
         fn emit_ts_intersection_type(self: *Self, t: ast.TSIntersectionType) Error!void {
-            const list = self.tree.extra(t.types);
+            try self.emitTypeList(t.types, '&');
+        }
+
+        /// emits a `|`- or `&`-separated type list. a single-member list only
+        /// comes from a leading operator (`type X = | A`), re-emitted so reparse
+        /// keeps the union/intersection wrapper instead of collapsing to `A`
+        fn emitTypeList(self: *Self, types: IndexRange, comptime op: u8) Error!void {
+            const list = self.tree.extra(types);
+            if (list.len == 1) {
+                try self.writeByte(op);
+                try self.space();
+            }
             for (list, 0..) |x, i| {
                 if (i > 0) {
                     try self.space();
-                    try self.writeByte('&');
+                    try self.writeByte(op);
                     try self.space();
                 }
                 try self.emit(x);
@@ -2629,7 +2735,12 @@ fn Printer(comptime cfg: Config) type {
             try self.emit(a.name);
             if (a.value != .null) {
                 try self.writeByte('=');
-                try self.emit(a.value);
+                // jsx attribute strings have no escape processing, so emit the
+                // raw lexeme verbatim rather than re-escaping the cooked value
+                switch (self.tree.data(a.value)) {
+                    .string_literal => |lit| try self.writeString(lit.raw),
+                    else => try self.emit(a.value),
+                }
             }
         }
 
@@ -2659,12 +2770,6 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte('}');
         }
     };
-}
-
-fn isWordOp(op: []const u8) bool {
-    return std.mem.eql(u8, op, "in") or std.mem.eql(u8, op, "instanceof") or
-        std.mem.eql(u8, op, "typeof") or std.mem.eql(u8, op, "void") or
-        std.mem.eql(u8, op, "delete");
 }
 
 fn leftmostByteIs(tree: *const Tree, idx: NodeIndex, byte: u8) bool {
@@ -2808,26 +2913,7 @@ fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
         else => return null,
     };
     const s = tree.string(lit.value);
-    return if (isIdentifierName(s)) s else null;
-}
-
-inline fn isIdCont(c: u8) bool {
-    return c == '$' or c >= 0x80 or util.UnicodeId.canContinueId(c);
-}
-
-fn isIdentifierName(s: []const u8) bool {
-    if (s.len == 0) return false;
-    var i: usize = 0;
-    while (i < s.len) {
-        const cp = util.Utf.codePointAt(s, i) catch return false;
-        const ok = if (i == 0)
-            util.UnicodeId.canStartId(cp.value)
-        else
-            util.UnicodeId.canContinueId(cp.value);
-        if (!ok) return false;
-        i += cp.len;
-    }
-    return true;
+    return if (utils.isIdentifierName(s)) s else null;
 }
 
 fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
@@ -2835,84 +2921,4 @@ fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
         .numeric_literal => |lit| lit.kind == .decimal,
         else => false,
     };
-}
-
-fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
-    if (std.mem.findScalar(u8, raw, '_') == null) return raw;
-    if (raw.len > buf.len) return null;
-    var len: usize = 0;
-    for (raw) |c| if (c != '_') {
-        buf[len] = c;
-        len += 1;
-    };
-    return buf[0..len];
-}
-
-/// returns the shortest semantically-equivalent spelling of decimal `s`.
-/// falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
-/// not alias each other.
-fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
-    const exp_at = std.mem.findAny(u8, s, "eE") orelse s.len;
-    const mantissa = s[0..exp_at];
-    const exp_suffix = s[exp_at..]; // empty or `e<n>` / `E<n>`
-
-    const dot_at = std.mem.findScalar(u8, mantissa, '.') orelse mantissa.len;
-    var int_part = mantissa[0..dot_at];
-    const frac_raw = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
-    const frac_part = std.mem.trimEnd(u8, frac_raw, "0");
-
-    // `0.5` shortens to `.5` once the leading zero is bare.
-    if (frac_part.len > 0 and std.mem.eql(u8, int_part, "0")) int_part = "";
-
-    // `0.0`, `.0`, `0e10`, and similar all collapse to `0`.
-    if (int_part.len == 0 and frac_part.len == 0) return "0";
-
-    // pure integer with three or more trailing zeros, the `Ne<k>` form shortens.
-    if (frac_part.len == 0 and exp_suffix.len == 0) {
-        const head = std.mem.trimEnd(u8, int_part, "0");
-        const trail = int_part.len - head.len;
-        if (trail >= 3 and head.len > 0) {
-            const out = std.fmt.bufPrint(scratch, "{s}e{d}", .{ head, trail }) catch return s;
-            if (out.len < s.len) return out;
-        }
-    }
-
-    const dot = if (frac_part.len > 0) "." else "";
-    const out = std.fmt.bufPrint(
-        scratch,
-        "{s}{s}{s}{s}",
-        .{ int_part, dot, frac_part, exp_suffix },
-    ) catch return s;
-    return if (out.len < s.len) out else s;
-}
-
-// true when a block comment has continuation lines that are all blank or
-// `*`-prefixed (jsdoc shape), so re-indenting them cannot disturb their content.
-fn isJsdocBody(value: []const u8) bool {
-    var it = std.mem.splitScalar(u8, value, '\n');
-    _ = it.next(); // first line follows `/*` and is never re-indented
-    var multi = false;
-    while (it.next()) |line| {
-        multi = true;
-        const t = std.mem.trimStart(u8, line, " \t");
-        if (t.len != 0 and t[0] != '*') return false;
-    }
-    return multi;
-}
-
-fn isSignificantBlockComment(value: []const u8) bool {
-    if (value.len == 0) return false;
-    switch (value[0]) {
-        '!', '*', '#', '@' => return true,
-        else => {},
-    }
-    var i: usize = 0;
-    while (std.mem.findScalarPos(u8, value, i, '@')) |pos| {
-        const rest = value[pos..];
-        if (std.mem.startsWith(u8, rest, "@license") or
-            std.mem.startsWith(u8, rest, "@preserve") or
-            std.mem.startsWith(u8, rest, "@cc_on")) return true;
-        i = pos + 1;
-    }
-    return false;
 }

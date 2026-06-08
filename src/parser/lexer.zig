@@ -748,8 +748,9 @@ pub const Lexer = struct {
         self: *Lexer,
         comptime context: ConsumeUnicodeContext,
     ) LexicalError!u21 {
-        std.debug.assert(self.cursor < self.source.len);
-        std.debug.assert(self.source[self.cursor] == 'u');
+        if (self.cursor >= self.source.len or self.source[self.cursor] != 'u') {
+            return error.InvalidUnicodeEscape;
+        }
 
         // marks the token so the parser can reject escaped reserved keywords
         self.setTokenFlag(.escaped);

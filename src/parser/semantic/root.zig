@@ -1417,7 +1417,6 @@ const SemanticVisit = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!void {
-        std.debug.assert(name.len > 0);
         std.debug.assert(node_index != .null);
         if (!ctx.tree.isModule()) return;
         // exports inside a TS namespace are namespace-scoped, not module-scoped

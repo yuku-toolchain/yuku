@@ -196,6 +196,7 @@ pub inline fn addTemplateElement(
     return parser.tree.addNode(.{
         .template_element = .{
             .cooked = cooked,
+            .raw = parser.tree.sourceSlice(span.start, span.end),
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },

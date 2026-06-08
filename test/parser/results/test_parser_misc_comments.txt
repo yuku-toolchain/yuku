@@ -1,8 +1,8 @@
 test/parser/misc/comments
 =========================
-Passed:       51/51 (100.00%)
+Passed:       52/52 (100.00%)
 Failed:       0
-AST mismatch: 0/51
+AST mismatch: 0/52
 
 ✓ test/parser/misc/comments/after-block-not-leaking.js
 ✓ test/parser/misc/comments/array-destructure-mid.js
@@ -46,6 +46,7 @@ AST mismatch: 0/51
 ✓ test/parser/misc/comments/siblings-multiline-block-in-gap.js
 ✓ test/parser/misc/comments/siblings-ownline-before-next.js
 ✓ test/parser/misc/comments/siblings-sameline-after-prev.js
+✓ test/parser/misc/comments/template-interior.js
 ✓ test/parser/misc/comments/three-leading-line.js
 ✓ test/parser/misc/comments/three-siblings-mixed.js
 ✓ test/parser/misc/comments/trailing-block-sameline.js

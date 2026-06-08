@@ -187,7 +187,6 @@ pub fn parseFunction(
 }
 
 pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(

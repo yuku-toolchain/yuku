@@ -85,13 +85,13 @@ error: Expected '/' in JSX closing fragment, but found 'end of file'
 
 
 ✓ test/parser/suite/jsx/fail/94783750f32a8832.jsx
-error: Expected '/' in JSX closing element, but found 'end of file'
+error: Expected '</' to close the JSX element, but found 'end of file'
    |
  1 | <foo>yes
  2 | 
    | ^
    |
-   = help: Add '/' after '<' to close the element
+   = help: Add a closing tag to match the opening element
 
 
 ✓ test/parser/suite/jsx/fail/b226f7bb3b73ae99.jsx

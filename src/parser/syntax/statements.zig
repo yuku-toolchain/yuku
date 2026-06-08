@@ -269,7 +269,6 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
 
 /// https://tc39.es/ecma262/#prod-BlockStatement
 pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(

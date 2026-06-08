@@ -18,6 +18,7 @@ import {
   type CodegenOptions,
   type CodegenResult,
 } from "yuku-codegen";
+import { astDiffPath } from "../ast-helpers-for-test";
 
 type Op = "print" | "strip" | "minify";
 
@@ -194,12 +195,73 @@ async function corpusFile(file: string): Promise<Record<Op, OpStatus>> {
       out[op.op] = { status: "fail", file, err: `threw: ${e}` };
       continue;
     }
-    const reparse = parse(code, { lang: op.outLang(lang), sourceType });
-    out[op.op] = reparse.diagnostics.length === 0
-      ? { status: "pass" }
-      : { status: "fail", file, err: "reparse failed" };
+    const reparse = parse(code, {
+      lang: op.outLang(lang),
+      sourceType,
+      attachComments: true,
+    });
+    if (reparse.diagnostics.length > 0) {
+      out[op.op] = { status: "fail", file, err: "reparse failed" };
+      continue;
+    }
+
+    // print preserves semantics: reparsing its output must yield the same AST
+    // modulo source positions. strip/minify rewrite the tree by design.
+    if (op.op === "print") {
+      const diff = astDiffPath(ast.program, reparse.program);
+      if (diff) {
+        out[op.op] = { status: "fail", file, err: `ast roundtrip: ${diff}` };
+        continue;
+      }
+    }
+
+    // every op is a fixed point on its own output: running it again on the
+    // reparsed AST must reproduce the exact same bytes.
+    let second: string;
+    try {
+      second = OPS[op.op](reparse.program, op.options).code;
+    } catch (e) {
+      out[op.op] = { status: "fail", file, err: `second pass threw: ${e}` };
+      continue;
+    }
+    if (second !== code) {
+      // a comment re-homing or re-indenting is trivia, not a defect. the real
+      // invariant: comment-free code is a fixed point, and no comment is lost
+      // or duplicated (only its placement may move).
+      const reparse2 = parse(second, { lang: op.outLang(lang), sourceType, attachComments: true });
+      const bareOpts = { ...op.options, comments: false as const };
+      const bare1 = OPS[op.op](reparse.program, bareOpts).code;
+      const bare2 = OPS[op.op](reparse2.program, bareOpts).code;
+      if (bare1 !== bare2) {
+        out[op.op] = { status: "fail", file, err: "not idempotent (code)" };
+        continue;
+      }
+      if (commentKey(reparse) !== commentKey(reparse2)) {
+        out[op.op] = { status: "fail", file, err: "not idempotent (comment lost/duplicated)" };
+        continue;
+      }
+    }
+
+    out[op.op] = { status: "pass" };
   }
   return out;
+}
+
+// a placement-independent fingerprint of a parse result's comments: the sorted
+// multiset of (type, value), so re-homing a comment does not change it.
+function commentKey(r: { comments?: { type: string; value: string }[] }): string {
+  // strip per-line whitespace: the printer re-indents jsdoc lines, which is
+  // cosmetic and host-dependent.
+  const norm = (v: string) =>
+    v
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map((l) => l.trim())
+      .join("\n");
+  return (r.comments ?? [])
+    .map((c) => `${c.type}:${norm(c.value)}`)
+    .sort()
+    .join("\u0000");
 }
 
 function stripLang(lang: SourceLang): SourceLang {
