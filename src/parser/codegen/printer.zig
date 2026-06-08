@@ -2,6 +2,7 @@ const std = @import("std");
 const util = @import("util");
 const ast = @import("../ast.zig");
 const sourcemap = @import("sourcemap.zig");
+const utils = @import("utils.zig");
 
 const Allocator = std.mem.Allocator;
 const Tree = ast.Tree;
@@ -214,7 +215,7 @@ fn Printer(comptime cfg: Config) type {
             if (self.pretty()) return;
             const items = self.code.items;
             if (items.len < 2 or items[items.len - 1] != ' ') return;
-            if (isIdCont(items[items.len - 2]) and !isIdCont(next)) {
+            if (utils.isIdCont(items[items.len - 2]) and !utils.isIdCont(next)) {
                 _ = self.code.pop();
                 if (self.sm) |*sm| if (sm.gen_col > 0) {
                     sm.gen_col -= 1;
@@ -372,7 +373,7 @@ fn Printer(comptime cfg: Config) type {
             return switch (self.options.comments) {
                 .none => false,
                 .all => true,
-                .some => c.type == .block and isSignificantBlockComment(self.tree.string(c.value)),
+                .some => c.type == .block and utils.isSignificantBlockComment(self.tree.string(c.value)),
                 .line => c.type == .line,
                 .block => c.type == .block,
             };
@@ -461,7 +462,7 @@ fn Printer(comptime cfg: Config) type {
         // star column survives a change of nesting depth. anything else is
         // emitted verbatim.
         fn writeBlockBody(self: *Self, value: []const u8) Error!void {
-            if (!self.pretty() or !isJsdocBody(value)) {
+            if (!self.pretty() or !utils.isJsdocBody(value)) {
                 try self.code.appendSlice(self.allocator, value);
                 if (self.sm) |*sm| sm.advance(value);
                 return;
@@ -928,7 +929,7 @@ fn Printer(comptime cfg: Config) type {
             } else {
                 try self.emit(e.left);
             }
-            if (isWordOp(op)) {
+            if (utils.isWordOp(op)) {
                 try self.writeByte(' ');
                 try self.writeStr(op);
                 try self.writeByte(' ');
@@ -978,7 +979,7 @@ fn Printer(comptime cfg: Config) type {
         fn emit_unary_expression(self: *Self, e: ast.UnaryExpression) Error!void {
             const op = e.operator.toString();
             try self.writeStr(op);
-            if (isWordOp(op)) try self.writeByte(' ');
+            if (utils.isWordOp(op)) try self.writeByte(' ');
             // `+ +x` would print as `++x` and re-lex as a prefix update.
             if (op.len == 1 and (op[0] == '+' or op[0] == '-')) {
                 if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
@@ -1314,11 +1315,11 @@ fn Printer(comptime cfg: Config) type {
         fn writeShortestNumber(self: *Self, lit: ast.NumericLiteral) Error!void {
             const raw = self.tree.string(lit.raw);
             var src_buf: [128]u8 = undefined;
-            const cleaned = stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
+            const cleaned = utils.stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
             if (lit.kind != .decimal) return self.writeStr(cleaned);
 
             var dst_buf: [128]u8 = undefined;
-            try self.writeStr(shortestDecimal(cleaned, &dst_buf));
+            try self.writeStr(utils.shortestDecimal(cleaned, &dst_buf));
         }
 
         fn emit_bigint_literal(self: *Self, lit: ast.BigIntLiteral) Error!void {
@@ -2761,12 +2762,6 @@ fn Printer(comptime cfg: Config) type {
     };
 }
 
-fn isWordOp(op: []const u8) bool {
-    return std.mem.eql(u8, op, "in") or std.mem.eql(u8, op, "instanceof") or
-        std.mem.eql(u8, op, "typeof") or std.mem.eql(u8, op, "void") or
-        std.mem.eql(u8, op, "delete");
-}
-
 fn leftmostByteIs(tree: *const Tree, idx: NodeIndex, byte: u8) bool {
     if (idx == .null) return false;
     return switch (tree.data(idx)) {
@@ -2908,26 +2903,7 @@ fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
         else => return null,
     };
     const s = tree.string(lit.value);
-    return if (isIdentifierName(s)) s else null;
-}
-
-inline fn isIdCont(c: u8) bool {
-    return c == '$' or c >= 0x80 or util.UnicodeId.canContinueId(c);
-}
-
-fn isIdentifierName(s: []const u8) bool {
-    if (s.len == 0) return false;
-    var i: usize = 0;
-    while (i < s.len) {
-        const cp = util.Utf.codePointAt(s, i) catch return false;
-        const ok = if (i == 0)
-            util.UnicodeId.canStartId(cp.value)
-        else
-            util.UnicodeId.canContinueId(cp.value);
-        if (!ok) return false;
-        i += cp.len;
-    }
-    return true;
+    return if (utils.isIdentifierName(s)) s else null;
 }
 
 fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
@@ -2935,84 +2911,4 @@ fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
         .numeric_literal => |lit| lit.kind == .decimal,
         else => false,
     };
-}
-
-fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
-    if (std.mem.findScalar(u8, raw, '_') == null) return raw;
-    if (raw.len > buf.len) return null;
-    var len: usize = 0;
-    for (raw) |c| if (c != '_') {
-        buf[len] = c;
-        len += 1;
-    };
-    return buf[0..len];
-}
-
-/// returns the shortest semantically-equivalent spelling of decimal `s`.
-/// falls back to `s` whenever no rewrite is shorter. `scratch` and `s` must
-/// not alias each other.
-fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
-    const exp_at = std.mem.findAny(u8, s, "eE") orelse s.len;
-    const mantissa = s[0..exp_at];
-    const exp_suffix = s[exp_at..]; // empty or `e<n>` / `E<n>`
-
-    const dot_at = std.mem.findScalar(u8, mantissa, '.') orelse mantissa.len;
-    var int_part = mantissa[0..dot_at];
-    const frac_raw = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
-    const frac_part = std.mem.trimEnd(u8, frac_raw, "0");
-
-    // `0.5` shortens to `.5` once the leading zero is bare.
-    if (frac_part.len > 0 and std.mem.eql(u8, int_part, "0")) int_part = "";
-
-    // `0.0`, `.0`, `0e10`, and similar all collapse to `0`.
-    if (int_part.len == 0 and frac_part.len == 0) return "0";
-
-    // pure integer with three or more trailing zeros, the `Ne<k>` form shortens.
-    if (frac_part.len == 0 and exp_suffix.len == 0) {
-        const head = std.mem.trimEnd(u8, int_part, "0");
-        const trail = int_part.len - head.len;
-        if (trail >= 3 and head.len > 0) {
-            const out = std.fmt.bufPrint(scratch, "{s}e{d}", .{ head, trail }) catch return s;
-            if (out.len < s.len) return out;
-        }
-    }
-
-    const dot = if (frac_part.len > 0) "." else "";
-    const out = std.fmt.bufPrint(
-        scratch,
-        "{s}{s}{s}{s}",
-        .{ int_part, dot, frac_part, exp_suffix },
-    ) catch return s;
-    return if (out.len < s.len) out else s;
-}
-
-// true when a block comment has continuation lines that are all blank or
-// `*`-prefixed (jsdoc shape), so re-indenting them cannot disturb their content.
-fn isJsdocBody(value: []const u8) bool {
-    var it = std.mem.splitScalar(u8, value, '\n');
-    _ = it.next(); // first line follows `/*` and is never re-indented
-    var multi = false;
-    while (it.next()) |line| {
-        multi = true;
-        const t = std.mem.trimStart(u8, line, " \t");
-        if (t.len != 0 and t[0] != '*') return false;
-    }
-    return multi;
-}
-
-fn isSignificantBlockComment(value: []const u8) bool {
-    if (value.len == 0) return false;
-    switch (value[0]) {
-        '!', '*', '#', '@' => return true,
-        else => {},
-    }
-    var i: usize = 0;
-    while (std.mem.findScalarPos(u8, value, i, '@')) |pos| {
-        const rest = value[pos..];
-        if (std.mem.startsWith(u8, rest, "@license") or
-            std.mem.startsWith(u8, rest, "@preserve") or
-            std.mem.startsWith(u8, rest, "@cc_on")) return true;
-        i = pos + 1;
-    }
-    return false;
 }
