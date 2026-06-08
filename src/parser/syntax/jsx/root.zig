@@ -204,7 +204,14 @@ fn parseJsxClosingElement(
     opening_name: ast.NodeIndex,
     comptime context: JsxElementContext,
 ) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .less_than);
+    if (parser.current_token.tag != .less_than) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '</' to close the JSX element",
+            .{ .help = "Add a closing tag to match the opening element" },
+        );
+        return null;
+    }
     const start = parser.current_token.span.start;
 
     enterJsxTag(parser);
