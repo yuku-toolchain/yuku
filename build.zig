@@ -24,14 +24,6 @@ pub fn build(b: *std.Build) void {
 
     parser_module.addImport("util", util_module);
 
-    const minifier_module = b.addModule("minifier", .{
-        .root_source_file = b.path("src/minifier/root.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    minifier_module.addImport("parser", parser_module);
-
     const profiler_module = b.createModule(.{
         .root_source_file = b.path("profiler/profile.zig"),
         .target = target,
@@ -93,7 +85,6 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = fuzz_module })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser_module })).step);
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = minifier_module })).step);
 
     const napi_dep = b.dependency("napi_zig", .{});
 
@@ -110,25 +101,6 @@ pub fn build(b: *std.Build) void {
             .description = "High-performance JavaScript/TypeScript parser written in Zig",
             .dts = .{
                 .file = b.path("src/parser/ffi/parser.d.ts"),
-            },
-            .repository = "https://github.com/yuku-toolchain/yuku",
-        },
-    });
-
-    napi_zig.addLib(b, napi_dep, .{
-        .name = "yuku-minify",
-        .root = b.path("src/minifier/ffi/minify.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "parser", .module = parser_module },
-            .{ .name = "minifier", .module = minifier_module },
-        },
-        .npm = .{
-            .scope = "@yuku-minify",
-            .description = "High-performance JavaScript/TypeScript minifier written in Zig",
-            .dts = .{
-                .file = b.path("src/minifier/ffi/minify.d.ts"),
             },
             .repository = "https://github.com/yuku-toolchain/yuku",
         },
