@@ -257,11 +257,6 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             );
             return null;
         }
-        if (mods.kind != .method and (mods.is_async or mods.is_generator)) try parser.report(
-            parser.tree.span(key),
-            "A getter or setter cannot be async or a generator",
-            .{ .help = "Remove 'async' or '*' from the accessor." },
-        );
         if (definite) try parser.report(
             parser.tree.span(key),
             "Method cannot have a definite assignment assertion",

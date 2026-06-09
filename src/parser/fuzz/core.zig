@@ -156,7 +156,18 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
 
     checkSpans(&tree, src);
 
-    if (!tree.hasErrors()) checkRoundTrip(a, &tree, mode, src);
+    // round-trip only the syntactically valid programs, captured before
+    // semantic analysis folds its early-error diagnostics into the tree.
+    const parse_clean = !tree.hasErrors();
+
+    // exercise semantic analysis on every parse: it must never panic, and the
+    // diagnostics it appends must stay within the source bounds.
+    _ = parser.semantic.analyze(&tree) catch |e| switch (e) {
+        error.OutOfMemory => return,
+    };
+    checkSpans(&tree, src);
+
+    if (parse_clean) checkRoundTrip(a, &tree, mode, src);
 }
 
 fn checkSpans(tree: *const ast.Tree, src: []const u8) void {
@@ -213,9 +224,16 @@ pub fn oomSweep(src: []const u8, mode: Mode) void {
             .source_type = mode.source_type,
         })) |tree| {
             var t = tree;
-            t.deinit();
-            // failure was past the last allocation, so every point is covered.
-            if (!failing.has_induced_failure) break;
+            defer t.deinit();
+            // semantic analysis allocates too; it must also yield OOM or
+            // success at every failure point, never a panic.
+            if (parser.semantic.analyze(&t)) |_| {
+                // neither parse nor analysis induced a failure, so the fail
+                // index is past the last allocation: every point is covered.
+                if (!failing.has_induced_failure) break;
+            } else |e| switch (e) {
+                error.OutOfMemory => {},
+            }
         } else |e| switch (e) {
             error.OutOfMemory => {},
         }
