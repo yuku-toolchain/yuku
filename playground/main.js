@@ -429,6 +429,18 @@ function applyState(s) {
   }
 }
 
+async function showVersion() {
+  const el = $("version");
+  try {
+    const res = await fetch(el.dataset.pkg);
+    if (!res.ok) return;
+    const { version } = await res.json();
+    if (version) el.textContent = version;
+  } catch {}
+}
+
+showVersion();
+
 const themeBtn = $("theme");
 function labelTheme() {
   themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "light" : "dark";

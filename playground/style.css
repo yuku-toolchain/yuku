@@ -81,6 +81,19 @@ header {
   color: var(--accent);
 }
 
+.version {
+  margin-left: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--dim);
+}
+
+.version:not(:empty)::before {
+  content: "v";
+}
+
 .opts {
   display: flex;
   align-items: center;

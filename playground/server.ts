@@ -1,10 +1,8 @@
 const dir = import.meta.dir;
 const npm = `${dir}/../npm`;
 
-// the import map in index.html points at esm.sh so the deployed playground
-// always loads the latest published packages. locally, rewrite it to the
-// wasm packages built from the working tree.
 const local: Record<string, string> = {
+  "https://esm.sh/@yuku-parser/wasm/package.json": "/pkg/yuku-parser-wasm/package.json",
   "https://esm.sh/@yuku-parser/wasm": "/pkg/yuku-parser-wasm/index.js",
   "https://esm.sh/@yuku-codegen/wasm": "/pkg/yuku-codegen-wasm/index.js",
 };
