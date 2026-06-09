@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/wasm",
-  "version": "0.5.30",
+  "version": "0.5.31",
   "description": "JavaScript/TypeScript code generator as a WebAssembly module",
   "license": "MIT",
   "repository": {
