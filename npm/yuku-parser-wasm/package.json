@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/wasm",
-  "version": "0.5.29",
+  "version": "0.5.30",
   "description": "High-performance JavaScript/TypeScript parser, compiled to WebAssembly",
   "license": "MIT",
   "repository": {
