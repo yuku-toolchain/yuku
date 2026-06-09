@@ -1,0 +1,52 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 168,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": []
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " getters and setters cannot carry an `async` or generator (`*`) modifier.",
+      "start": 0,
+      "end": 75
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "A getter or setter cannot be async or a generator",
+      "start": 99,
+      "end": 100,
+      "help": "Remove 'async' or '*' from the accessor.",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "A getter or setter cannot be async or a generator",
+      "start": 118,
+      "end": 119,
+      "help": "Remove 'async' or '*' from the accessor.",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Expected '(' for method definition, but found 'c'",
+      "start": 133,
+      "end": 134,
+      "help": "Method definitions require a parameter list. Use 'method() {}' syntax.",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'async'",
+      "start": 149,
+      "end": 154,
+      "help": "Try inserting a semicolon here",
+      "labels": []
+    }
+  ]
+}

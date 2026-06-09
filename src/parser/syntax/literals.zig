@@ -8,7 +8,10 @@ const Error = @import("../parser.zig").Error;
 const expressions = @import("expressions.zig");
 
 pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .string_literal);
+    if (parser.current_token.tag != .string_literal) {
+        try parser.reportExpected(parser.current_token.span, "Expected a string literal", .{});
+        return null;
+    }
     const token = parser.current_token;
     try parser.advance() orelse return null;
     return try parser.tree.addNode(.{

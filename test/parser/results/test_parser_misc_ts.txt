@@ -1,13 +1,34 @@
 test/parser/misc/ts
 ===================
-Passed:       22/22 (100.00%)
+Passed:       25/25 (100.00%)
 Failed:       0
-AST mismatch: 0/22
+AST mismatch: 0/25
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
+✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
+✓ test/parser/misc/ts/async-generator-accessor.ts
+error: A getter or setter cannot be async or a generator
+   |
+ 3 | class C {
+ 4 |   async get a() {}
+   |             ^
+ 5 |   async set b(v) {}
+   |
+   = help: Remove 'async' or '*' from the accessor.
+
+
 ✓ test/parser/misc/ts/catch-type-annotation.ts
 ✓ test/parser/misc/ts/constructor-overloads.ts
 ✓ test/parser/misc/ts/declare-function-overloads.ts
+✓ test/parser/misc/ts/empty-type-argument-list.ts
+error: A type argument list cannot be empty
+   |
+ 4 | 
+ 5 | type A = Array<numbe<>>
+   |                      ^^
+ 6 | type B = Array<numbe<> >
+   |
+
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/function-overloads.ts

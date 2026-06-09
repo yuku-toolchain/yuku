@@ -1571,14 +1571,14 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/0baaa3291d6c0e11.js
-error: Constructor cannot be async
+error: A getter or setter cannot be async or a generator
    |
  1 | var C = class {
  2 |   async * constructor() {}
    |           ^^^^^^^^^^^
  3 | };
    |
-   = help: Remove the 'async' modifier from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/0bbbe21d0d5bd53d.js
@@ -4009,14 +4009,14 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
    |
 
 ✓ test/parser/suite/js/fail/1cc9ad8d2ee8c021.js
-error: Constructor cannot be async
+error: A getter or setter cannot be async or a generator
    |
  1 | var C = class {
  2 |   async constructor() {}
    |         ^^^^^^^^^^^
  3 | };
    |
-   = help: Remove the 'async' modifier from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/1cd2343391f416ec.js
@@ -8088,14 +8088,14 @@ error: Invalid assignment target
 
 
 ✓ test/parser/suite/js/fail/39e91fee19020416.js
-error: Constructor cannot be async
+error: A getter or setter cannot be async or a generator
    |
  1 | class C {
  2 |   async constructor() {}
    |         ^^^^^^^^^^^
  3 | }
    |
-   = help: Remove the 'async' modifier from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/3a21f4c7f1607e47.js
@@ -10244,14 +10244,14 @@ error: 'try' is reserved and cannot be used as a binding identifier
    |
 
 ✓ test/parser/suite/js/fail/4af37f8a7b00005d.js
-error: Constructor cannot be async
+error: A getter or setter cannot be async or a generator
    |
  1 | class C {
  2 |   async * constructor() {}
    |           ^^^^^^^^^^^
  3 | }
    |
-   = help: Remove the 'async' modifier from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/4b106388b810de25.js
@@ -11420,12 +11420,12 @@ error: Unexpected token '#x' as property key
 
 
 ✓ test/parser/suite/js/fail/53a86ad112cc6c26.js
-error: Constructor cannot be a generator
+error: A getter or setter cannot be async or a generator
    |
  1 | class a { *constructor() {} }
    |            ^^^^^^^^^^^
    |
-   = help: Remove the '*' from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/53e945aab606353a.js
@@ -15466,14 +15466,14 @@ error: Expected ')' after import(), but found ''''
 
 
 ✓ test/parser/suite/js/fail/7229d0f22bad337d.js
-error: Constructor cannot be a generator
+error: A getter or setter cannot be async or a generator
    |
  1 | class C {
  2 |   * constructor() {}
    |     ^^^^^^^^^^^
  3 | }
    |
-   = help: Remove the '*' from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/7243c5a27c363009.js
@@ -20076,12 +20076,12 @@ error: Invalid hexadecimal escape sequence
 
 
 ✓ test/parser/suite/js/fail/931373070243928b.js
-error: Constructor cannot be a generator
+error: A getter or setter cannot be async or a generator
    |
  1 | class a { *constructor(){} }
    |            ^^^^^^^^^^^
    |
-   = help: Remove the '*' from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/931de969fdd14c9a.js
@@ -22269,14 +22269,14 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/a37f4e66a304be53.js
-error: Constructor cannot be a generator
+error: A getter or setter cannot be async or a generator
    |
  1 | var C = class {
  2 |   * constructor() {}
    |     ^^^^^^^^^^^
  3 | };
    |
-   = help: Remove the '*' from the constructor.
+   = help: Remove 'async' or '*' from the accessor.
 
 
 ✓ test/parser/suite/js/fail/a38011d2c010999e.js

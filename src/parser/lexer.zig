@@ -679,12 +679,12 @@ pub const Lexer = struct {
                 // check for lone surrogates
                 if (std.unicode.isSurrogateCodepoint(cp)) {
                     const is_high_paired = std.unicode.utf16IsHighSurrogate(@intCast(cp)) and
-                        self.source[self.cursor] == '\\' and
+                        self.peek(0) == '\\' and
                         self.peek(1) == 'u';
                     if (is_high_paired) {
                         self.cursor += 1; // skip backslash
                         const next_cp = try self.consumeUnicodeEscape(.normal);
-                        if (!std.unicode.utf16IsLowSurrogate(@intCast(next_cp))) {
+                        if (next_cp < 0xDC00 or next_cp > 0xDFFF) {
                             self.setTokenFlag(.lone_surrogates);
                         }
                     } else self.setTokenFlag(.lone_surrogates);

@@ -74,17 +74,32 @@ pub fn build(b: *std.Build) void {
     const test_tools_step = b.step("test-tools", "Run the tools tests");
     test_tools_step.dependOn(&run_tools_tests.step);
 
-    const fuzz_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/fuzz.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    fuzz_module.addImport("util", util_module);
-
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = fuzz_module })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser_module })).step);
+
+    const fuzz_util = b.createModule(.{
+        .root_source_file = b.path("src/util/root.zig"),
+        .target = b.graph.host,
+        .optimize = .ReleaseSafe,
+    });
+    const fuzz_parser = b.createModule(.{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = b.graph.host,
+        .optimize = .ReleaseSafe,
+    });
+    fuzz_parser.addImport("util", fuzz_util);
+    const fuzz_driver = b.createModule(.{
+        .root_source_file = b.path("src/parser/fuzz/main.zig"),
+        .target = b.graph.host,
+        .optimize = .ReleaseSafe,
+    });
+    fuzz_driver.addImport("parser", fuzz_parser);
+    const fuzz_exe = b.addExecutable(.{ .name = "fuzz", .root_module = fuzz_driver });
+    const run_fuzz = b.addRunArtifact(fuzz_exe);
+    run_fuzz.has_side_effects = true;
+    const fuzz_step = b.step("fuzz", "Fuzz the JS/TS parser for crashes and memory bugs");
+    fuzz_step.dependOn(&run_fuzz.step);
 
     const napi_dep = b.dependency("napi_zig", .{});
 

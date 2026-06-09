@@ -1,0 +1,277 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 306,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 214,
+        "end": 237,
+        "id": {
+          "type": "Identifier",
+          "start": 219,
+          "end": 220,
+          "name": "A",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSTypeReference",
+          "start": 223,
+          "end": 237,
+          "typeName": {
+            "type": "Identifier",
+            "start": 223,
+            "end": 228,
+            "name": "Array",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "typeArguments": {
+            "type": "TSTypeParameterInstantiation",
+            "start": 228,
+            "end": 237,
+            "params": [
+              {
+                "type": "TSTypeReference",
+                "start": 229,
+                "end": 236,
+                "typeName": {
+                  "type": "Identifier",
+                  "start": 229,
+                  "end": 234,
+                  "name": "numbe",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "typeArguments": {
+                  "type": "TSTypeParameterInstantiation",
+                  "start": 234,
+                  "end": 236,
+                  "params": []
+                }
+              }
+            ]
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 238,
+        "end": 262,
+        "id": {
+          "type": "Identifier",
+          "start": 243,
+          "end": 244,
+          "name": "B",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSTypeReference",
+          "start": 247,
+          "end": 262,
+          "typeName": {
+            "type": "Identifier",
+            "start": 247,
+            "end": 252,
+            "name": "Array",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "typeArguments": {
+            "type": "TSTypeParameterInstantiation",
+            "start": 252,
+            "end": 262,
+            "params": [
+              {
+                "type": "TSTypeReference",
+                "start": 253,
+                "end": 260,
+                "typeName": {
+                  "type": "Identifier",
+                  "start": 253,
+                  "end": 258,
+                  "name": "numbe",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "typeArguments": {
+                  "type": "TSTypeParameterInstantiation",
+                  "start": 258,
+                  "end": 260,
+                  "params": []
+                }
+              }
+            ]
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 263,
+        "end": 281,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 267,
+            "end": 281,
+            "id": {
+              "type": "Identifier",
+              "start": 267,
+              "end": 277,
+              "name": "c",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 268,
+                "end": 277,
+                "typeAnnotation": {
+                  "type": "TSTypeReference",
+                  "start": 270,
+                  "end": 277,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 270,
+                    "end": 275,
+                    "name": "numbe",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": {
+                    "type": "TSTypeParameterInstantiation",
+                    "start": 275,
+                    "end": 277,
+                    "params": []
+                  }
+                }
+              },
+              "optional": false
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 280,
+              "end": 281,
+              "name": "d",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 282,
+        "end": 305,
+        "id": {
+          "type": "Identifier",
+          "start": 291,
+          "end": 292,
+          "name": "f",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 303,
+          "end": 305,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": {
+          "type": "TSTypeParameterDeclaration",
+          "start": 292,
+          "end": 294,
+          "params": []
+        },
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 296,
+          "end": 302,
+          "typeAnnotation": {
+            "type": "TSVoidKeyword",
+            "start": 298,
+            "end": 302
+          }
+        },
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " empty type-argument and type-parameter lists are syntax errors. the `<>>`",
+      "start": 0,
+      "end": 76
+    },
+    {
+      "type": "Line",
+      "value": " form, where the two closing `>` fuse into a single `>>` token, must error the",
+      "start": 77,
+      "end": 157
+    },
+    {
+      "type": "Line",
+      "value": " same as the spaced `<> >` and the plain `<>` forms.",
+      "start": 158,
+      "end": 212
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "A type argument list cannot be empty",
+      "start": 235,
+      "end": 237,
+      "help": null,
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "A type argument list cannot be empty",
+      "start": 259,
+      "end": 260,
+      "help": null,
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "A type argument list cannot be empty",
+      "start": 276,
+      "end": 277,
+      "help": null,
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "A type parameter list cannot be empty",
+      "start": 293,
+      "end": 294,
+      "help": null,
+      "labels": []
+    }
+  ]
+}

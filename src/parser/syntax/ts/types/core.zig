@@ -446,6 +446,9 @@ pub fn isStartOfType(tag: TokenTag) bool {
         .question,
         .logical_not,
         .spread,
+        // leading separator of an intersection/union type: `& A & B`, `| A | B`
+        .bitwise_and,
+        .bitwise_or,
         => true,
         else => tag.isIdentifierLike(),
     };

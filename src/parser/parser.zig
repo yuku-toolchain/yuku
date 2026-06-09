@@ -322,9 +322,11 @@ pub const Parser = struct {
 
             const lex_err: lexer.LexicalError = @errorCast(e);
 
+            const a = self.current_token.span.end;
+            const b = self.lexer.cursor;
             try self.diagnostics.append(self.allocator(), .{
                 .message = lexer.getLexicalErrorMessage(lex_err),
-                .span = .{ .start = self.current_token.span.end, .end = self.lexer.cursor },
+                .span = .{ .start = @min(a, b), .end = @max(a, b) },
                 .help = lexer.getLexicalErrorHelp(lex_err),
             });
 
@@ -579,7 +581,7 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
+    pub fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
         while (self.current_token.tag != .eof) {
             self.current_token = try self.recoverNextToken();
 
