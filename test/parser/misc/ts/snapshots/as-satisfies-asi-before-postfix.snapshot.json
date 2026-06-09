@@ -1,0 +1,227 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 361,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 238,
+        "end": 244,
+        "expression": {
+          "type": "TSAsExpression",
+          "start": 238,
+          "end": 244,
+          "expression": {
+            "type": "Identifier",
+            "start": 238,
+            "end": 239,
+            "name": "x",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "typeAnnotation": {
+            "type": "TSTypeReference",
+            "start": 243,
+            "end": 244,
+            "typeName": {
+              "type": "Identifier",
+              "start": 243,
+              "end": 244,
+              "name": "T",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeArguments": null
+          }
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 245,
+        "end": 251,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 245,
+          "end": 251,
+          "elements": [
+            {
+              "type": "Literal",
+              "start": 246,
+              "end": 247,
+              "value": 1,
+              "raw": "1"
+            },
+            {
+              "type": "Literal",
+              "start": 249,
+              "end": 250,
+              "value": 2,
+              "raw": "2"
+            }
+          ]
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 253,
+        "end": 266,
+        "expression": {
+          "type": "TSSatisfiesExpression",
+          "start": 253,
+          "end": 266,
+          "expression": {
+            "type": "Identifier",
+            "start": 253,
+            "end": 254,
+            "name": "x",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "typeAnnotation": {
+            "type": "TSTypeReference",
+            "start": 265,
+            "end": 266,
+            "typeName": {
+              "type": "Identifier",
+              "start": 265,
+              "end": 266,
+              "name": "T",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeArguments": null
+          }
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 267,
+        "end": 270,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 267,
+          "end": 270,
+          "elements": [
+            {
+              "type": "Literal",
+              "start": 268,
+              "end": 269,
+              "value": 3,
+              "raw": "3"
+            }
+          ]
+        },
+        "directive": null
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 334,
+        "end": 360,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 340,
+            "end": 360,
+            "id": {
+              "type": "Identifier",
+              "start": 340,
+              "end": 346,
+              "name": "member",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "MemberExpression",
+              "start": 349,
+              "end": 360,
+              "object": {
+                "type": "ParenthesizedExpression",
+                "start": 349,
+                "end": 357,
+                "expression": {
+                  "type": "TSAsExpression",
+                  "start": 350,
+                  "end": 356,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 350,
+                    "end": 351,
+                    "name": "x",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeAnnotation": {
+                    "type": "TSTypeReference",
+                    "start": 355,
+                    "end": 356,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 355,
+                      "end": 356,
+                      "name": "T",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                }
+              },
+              "property": {
+                "type": "Literal",
+                "start": 358,
+                "end": 359,
+                "value": 0,
+                "raw": "0"
+              },
+              "computed": true,
+              "optional": false
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " `as`/`satisfies` sit at the relational level, so a `[`, `.`, or call on the",
+      "start": 0,
+      "end": 78
+    },
+    {
+      "type": "Line",
+      "value": " next line starts a new statement under ASI instead of binding as a member",
+      "start": 79,
+      "end": 155
+    },
+    {
+      "type": "Line",
+      "value": " access on the cast. these are two statements each, not one member expression.",
+      "start": 156,
+      "end": 236
+    },
+    {
+      "type": "Line",
+      "value": " parenthesize the cast to apply member access on its result",
+      "start": 272,
+      "end": 333
+    }
+  ],
+  "diagnostics": []
+}

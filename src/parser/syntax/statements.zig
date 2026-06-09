@@ -329,8 +329,13 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
     defer parser.scratch_a.reset(checkpoint);
 
     while (parser.current_token.tag == .case or parser.current_token.tag == .default) {
-        const case_node = try parseSwitchCase(parser) orelse continue;
-        try parser.scratch_a.append(parser.allocator(), case_node);
+        if (try parseSwitchCase(parser)) |case_node| {
+            try parser.scratch_a.append(parser.allocator(), case_node);
+        } else {
+            // a failed case leaves the cursor parked on a lexical error, resync
+            // to the next case or the closing brace so the loop can't spin.
+            try parser.recover(.right_brace);
+        }
     }
 
     return parser.addExtraFromScratch(&parser.scratch_a, checkpoint);

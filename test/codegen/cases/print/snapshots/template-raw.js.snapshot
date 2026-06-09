@@ -1,0 +1,3 @@
+const a = `A\t\n`;
+const b = `head${1}tail`;
+const c = String.raw`\d+\n${2}`;

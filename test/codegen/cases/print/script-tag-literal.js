@@ -1,0 +1,2 @@
+const a = "</script>";
+const b = "<!-- c -->";

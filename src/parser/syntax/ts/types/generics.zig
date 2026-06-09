@@ -41,15 +41,23 @@ fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeI
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    while (parser.current_token.tag != .greater_than and parser.current_token.tag != .eof) {
+    var parsed_any = false;
+    while (!isAngleClose(parser.current_token.tag) and parser.current_token.tag != .eof) {
         const elem = switch (kind) {
             .arguments => try core.parseType(parser) orelse return .null,
             .parameters => try parseTypeParameter(parser) orelse return .null,
         };
         try parser.scratch_a.append(parser.allocator(), elem);
+        parsed_any = true;
         if (parser.current_token.tag != .comma) break;
         try parser.advance() orelse return .null;
     }
+
+    // `<>` is a syntax error in typescript, in either close form (`<>` or `<>>`).
+    if (!parsed_any) try parser.report(parser.current_token.span, switch (kind) {
+        .arguments => "A type argument list cannot be empty",
+        .parameters => "A type parameter list cannot be empty",
+    }, .{});
 
     const end = try consumeAngleClose(parser, kind) orelse return .null;
     const params = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
@@ -64,6 +72,21 @@ fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeI
 // `<` or fused `<<` for nested instantiations eg `Foo<<T>(x: T) => R>`
 pub inline fn isAngleOpen(tag: TokenTag) bool {
     return tag == .less_than or tag == .left_shift;
+}
+
+// `>` or any token that begins with one (`>>`, `>=`, ...), since nested closers
+// fuse into a single token that consumeAngleClose later peels apart.
+inline fn isAngleClose(tag: TokenTag) bool {
+    return switch (tag) {
+        .greater_than,
+        .right_shift,
+        .unsigned_right_shift,
+        .greater_than_equal,
+        .right_shift_assign,
+        .unsigned_right_shift_assign,
+        => true,
+        else => false,
+    };
 }
 
 // `<` pos or null. peel fused `<<`

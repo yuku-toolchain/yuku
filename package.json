@@ -16,7 +16,7 @@
   "scripts": {
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
-    "test:fuzz": "zig build test --fuzz=200K",
+    "test:fuzz": "zig build fuzz",
     "test:parser": "bun test/parser/run.ts",
     "test:codegen": "bun test/codegen/run.ts",
     "test:sourcemap": "bun test/sourcemap/run.ts",

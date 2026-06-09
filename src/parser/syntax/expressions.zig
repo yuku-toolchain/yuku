@@ -1404,6 +1404,8 @@ inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
         .conditional_expression,
         .assignment_expression,
         .sequence_expression,
+        .ts_as_expression,
+        .ts_satisfies_expression,
         => Precedence.Unary,
         else => std.math.maxInt(u8),
     };

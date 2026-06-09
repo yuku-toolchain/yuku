@@ -910,18 +910,25 @@ fn Printer(comptime cfg: Config) type {
 
         fn emit_binary_expression(self: *Self, e: ast.BinaryExpression) Error!void {
             const op = e.operator.toString();
-            if (comptime minify_mode) {
-                // `**` requires its left operand to be an UpdateExpression, an
-                // unparenthesized unary is a SyntaxError. our minify substitutions
-                // (`true`/`false`/`undefined` -> unary) can produce such a left.
-                const is_pow = op.len == 2 and op[0] == '*' and op[1] == '*';
-                if (is_pow and minifiesToUnary(self.tree, e.left)) {
-                    try self.writeByte('(');
-                    try self.emit(e.left);
-                    try self.writeByte(')');
-                } else {
-                    try self.emit(e.left);
+            const wrap_left = blk: {
+                // `x as T < y` is relational only when a newline sits before the
+                // `<`, the one disambiguator the parser accepts. printing folds
+                // that newline into a space, so a bare `<` would instead bind as
+                // `T`'s type-argument list (`T<y>`). parenthesize to keep `<` a
+                // comparison and round-trip the cast.
+                if (op[0] == '<' and endsWithTsCast(self.tree, e.left)) break :blk true;
+                // `**` needs an UpdateExpression left, but a minify substitution
+                // (`true`/`false`/`undefined` -> unary) can produce a unary there.
+                if (comptime minify_mode) {
+                    const is_pow = op.len == 2 and op[0] == '*' and op[1] == '*';
+                    break :blk is_pow and minifiesToUnary(self.tree, e.left);
                 }
+                break :blk false;
+            };
+            if (wrap_left) {
+                try self.writeByte('(');
+                try self.emit(e.left);
+                try self.writeByte(')');
             } else {
                 try self.emit(e.left);
             }
@@ -1125,14 +1132,13 @@ fn Printer(comptime cfg: Config) type {
                 try self.emit(e.property);
                 try self.writeByte(']');
             } else {
-                // `1.0` shortens to `1`, the member `.` would then be absorbed
-                // as the literal's trailing dot. close the number with `.` so
-                // `1..toString()` lexes as number-dot-name.
-                if (comptime minify_mode) {
-                    const head = self.code.items[head_start..];
-                    if (head_decimal and !e.optional and std.mem.findAny(u8, head, ".eE") == null)
-                        try self.writeByte('.');
-                }
+                // a bare decimal integer head (`1`, or `1.0` shortened to `1`)
+                // would swallow the member `.` as its own fraction dot. close
+                // the number with an extra `.` so `1..toString()` lexes as
+                // number-dot-name. hex and bigint heads aren't decimal literals.
+                const head = self.code.items[head_start..];
+                if (head_decimal and !e.optional and std.mem.findAny(u8, head, ".eE") == null)
+                    try self.writeByte('.');
                 try self.writeStr(if (e.optional) "?." else ".");
                 if (static_key) |k| try self.writeStr(k) else try self.emit(e.property);
             }
@@ -2919,6 +2925,20 @@ fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
 fn isDecimalLiteral(tree: *const Tree, idx: NodeIndex) bool {
     return switch (tree.data(idx)) {
         .numeric_literal => |lit| lit.kind == .decimal,
+        else => false,
+    };
+}
+
+// true when the last token emitted for `idx` closes a `as`/`satisfies` type. a
+// following `<` would then bind as that type's argument list, so the caller
+// must parenthesize. recurses down the right edge since the cast can be nested.
+fn endsWithTsCast(tree: *const Tree, idx: NodeIndex) bool {
+    return switch (tree.data(idx)) {
+        .ts_as_expression, .ts_satisfies_expression => true,
+        .binary_expression => |b| endsWithTsCast(tree, b.right),
+        .logical_expression => |b| endsWithTsCast(tree, b.right),
+        .assignment_expression => |a| endsWithTsCast(tree, a.right),
+        .conditional_expression => |c| endsWithTsCast(tree, c.alternate),
         else => false,
     };
 }

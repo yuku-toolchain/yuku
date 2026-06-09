@@ -1,0 +1,4 @@
+"\x75se strict";
+function f() {
+  "use asm";
+}

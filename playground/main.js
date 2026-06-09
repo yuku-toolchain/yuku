@@ -429,6 +429,23 @@ function applyState(s) {
   }
 }
 
+async function showVersion() {
+  const el = $("version");
+  try {
+    const res = await fetch(el.dataset.pkg);
+    const match = res.headers.get("x-esm-path")?.match(/@(\d[^/]*)/);
+    if (match) {
+      el.textContent = match[1];
+      return;
+    }
+    const pkgUrl = new URL("./package.json", new URL(el.dataset.pkg, location.href));
+    const { version } = await (await fetch(pkgUrl)).json();
+    if (version) el.textContent = version;
+  } catch {}
+}
+
+showVersion();
+
 const themeBtn = $("theme");
 function labelTheme() {
   themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
