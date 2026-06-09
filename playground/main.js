@@ -256,6 +256,7 @@ function focusCode(start, end, scroll) {
   if (scroll) scrollCodeIntoView(start);
 }
 
+let focused = null;
 let lastHit = null;
 
 function setOpen(details, open) {
