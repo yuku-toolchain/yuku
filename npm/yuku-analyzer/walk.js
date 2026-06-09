@@ -1,15 +1,14 @@
-// semantic walk over a module's decoded AST. scopes are not tracked,
-// they are replayed from the native scope table: a WeakMap from
-// scope-creating node to Scope, gated by a Set of node types so
-// non-scope nodes pay one string lookup and nothing else.
-
 class WalkContext {
   #module;
   #scopes;
   #ancestors;
   _node = null;
+  _key = null;
+  _list = null;
+  _frame = null;
   _skip = false;
   _stopped = false;
+  _removed = false;
   _replacement = null;
 
   constructor(module, scopes, ancestors) {
@@ -20,12 +19,21 @@ class WalkContext {
   get module() {
     return this.#module;
   }
+  get node() {
+    return this._node;
+  }
   get scope() {
     return this.#scopes[this.#scopes.length - 1];
   }
   get parent() {
     const a = this.#ancestors;
     return a.length === 0 ? null : a[a.length - 1];
+  }
+  get key() {
+    return this._key;
+  }
+  get index() {
+    return this._list === null ? null : this._frame.i;
   }
   get symbol() {
     return this.#module.symbolOf(this._node);
@@ -46,7 +54,32 @@ class WalkContext {
     if (node === null || typeof node !== "object" || typeof node.type !== "string") {
       throw new TypeError("replace: expected an AST node");
     }
+    if (this.parent === null) {
+      throw new TypeError("replace: cannot replace the walk root");
+    }
     this._replacement = node;
+  }
+  remove() {
+    if (this.parent === null) {
+      throw new TypeError("remove: cannot remove the walk root");
+    }
+    this._removed = true;
+  }
+  insertBefore(node) {
+    // shift the cursor so the current node keeps its position and the
+    // inserted sibling is not visited
+    this.#insert(node, 0);
+    this._frame.i++;
+  }
+  insertAfter(node) {
+    // lands at the next cursor position, so the walk visits it
+    this.#insert(node, 1);
+  }
+  #insert(node, offset) {
+    if (this._list === null) {
+      throw new TypeError("insertBefore/insertAfter require a node in an array field");
+    }
+    this._list.splice(this._frame.i + offset, 0, node);
   }
 }
 
@@ -72,22 +105,42 @@ export function walkModule(module, visitor, root) {
   const ancestors = [];
   const ctx = new WalkContext(module, scopes, ancestors);
 
-  function swap(container, key, replacement) {
-    if (container === null) {
-      throw new TypeError("replace: cannot replace the walk root");
-    }
-    container[key] = replacement;
-    return replacement;
+  function position(node, key, list, frame) {
+    ctx._node = node;
+    ctx._key = key;
+    ctx._list = list;
+    ctx._frame = frame;
   }
 
-  (function visit(node, container, key) {
+  // swaps the current node in its parent slot and continues the walk on
+  // the replacement
+  function applyReplace(parent, key, list, frame) {
+    const next = ctx._replacement;
+    ctx._replacement = null;
+    if (list !== null) list[frame.i] = next;
+    else parent[key] = next;
+    return next;
+  }
+
+  function applyRemove(parent, key, list, frame) {
+    ctx._removed = false;
+    if (list !== null) {
+      list.splice(frame.i, 1);
+      frame.i--;
+    } else {
+      parent[key] = null;
+    }
+  }
+
+  (function visit(node, key, list, frame) {
     let typed = handlers.size === 0 ? undefined : handlers.get(node.type);
     // the scope was created for the original node, a replacement keeps
     // the same lexical position, so push/pop stays balanced on it
     const scope = types.has(node.type) ? byNode.get(node) : undefined;
     if (scope !== undefined) scopes.push(scope);
+    const parent = ctx.parent;
 
-    ctx._node = node;
+    position(node, key, list, frame);
     if (enter !== null) {
       enter(node, ctx);
       if (ctx._stopped) return false;
@@ -96,10 +149,13 @@ export function walkModule(module, visitor, root) {
       typed.enter(node, ctx);
       if (ctx._stopped) return false;
     }
+    if (ctx._removed) {
+      applyRemove(parent, key, list, frame);
+      if (scope !== undefined) scopes.pop();
+      return true;
+    }
     if (ctx._replacement !== null) {
-      node = swap(container, key, ctx._replacement);
-      ctx._replacement = null;
-      ctx._node = node;
+      node = applyReplace(parent, key, list, frame);
       typed = handlers.size === 0 ? undefined : handlers.get(node.type);
     }
 
@@ -114,20 +170,21 @@ export function walkModule(module, visitor, root) {
         const value = node[k];
         if (value === null || typeof value !== "object") continue;
         if (Array.isArray(value)) {
-          for (let i = 0; i < value.length; i++) {
-            const item = value[i];
+          const childFrame = { i: 0 };
+          for (; childFrame.i < value.length; childFrame.i++) {
+            const item = value[childFrame.i];
             if (item !== null && typeof item === "object" && typeof item.type === "string") {
-              if (!visit(item, value, i)) return false;
+              if (!visit(item, k, value, childFrame)) return false;
             }
           }
         } else if (typeof value.type === "string") {
-          if (!visit(value, node, k)) return false;
+          if (!visit(value, k, null, null)) return false;
         }
       }
       ancestors.pop();
     }
 
-    ctx._node = node;
+    position(node, key, list, frame);
     if (typed !== undefined && typed.leave !== null) {
       typed.leave(node, ctx);
       if (ctx._stopped) return false;
@@ -136,12 +193,10 @@ export function walkModule(module, visitor, root) {
       leave(node, ctx);
       if (ctx._stopped) return false;
     }
-    if (ctx._replacement !== null) {
-      swap(container, key, ctx._replacement);
-      ctx._replacement = null;
-    }
+    if (ctx._removed) applyRemove(parent, key, list, frame);
+    else if (ctx._replacement !== null) applyReplace(parent, key, list, frame);
 
     if (scope !== undefined) scopes.pop();
     return true;
-  })(start, null, null);
+  })(start, null, null, null);
 }

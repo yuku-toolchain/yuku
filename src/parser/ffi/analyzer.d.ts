@@ -1,58 +1,21 @@
-/**
- * yuku-analyzer: semantic analysis for JavaScript and TypeScript.
- *
- * One native call per file produces the AST plus the full semantic
- * model: scopes, symbols, resolved references, and module records.
- * Every query after that is local JS over compact tables, and every
- * node returned by a semantic query is the same object you reach by
- * walking `module.ast`.
- */
+import type {
+  Comment,
+  Diagnostic,
+  DiagnosticSeverity,
+  Identifier,
+  JSXIdentifier,
+  Node,
+  Program,
+  SourceLang,
+  SourceLocation,
+  SourceType,
+} from "yuku-parser";
 
-/** How the source code should be parsed. */
-type SourceType = "script" | "module";
+/** Discriminant `type` string of every AST node. */
+type NodeType = Node["type"];
 
-/** Language variant of the source code. */
-type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
-
-/**
- * An ESTree / TypeScript-ESTree AST node as produced by yuku-parser.
- * Nodes carry byte spans as `start`/`end`. For fully typed AST shapes,
- * use the node types from the `yuku-parser` package; the objects are
- * identical.
- */
-interface AstNode {
-  type: string;
-  start: number;
-  end: number;
-  [key: string]: unknown;
-}
-
-/** The root AST node of a module. */
-interface Program extends AstNode {
-  type: "Program";
-  body: AstNode[];
-  sourceType: SourceType;
-}
-
-/** Severity level of a {@link Diagnostic}. */
-type DiagnosticSeverity = "error" | "warning" | "hint" | "info";
-
-/** A labeled source span attached to a {@link Diagnostic}. */
-interface DiagnosticLabel {
-  start: number;
-  end: number;
-  message: string;
-}
-
-/** A diagnostic produced during parsing or semantic analysis. */
-interface Diagnostic {
-  severity: DiagnosticSeverity;
-  message: string;
-  help: string | null;
-  start: number;
-  end: number;
-  labels: DiagnosticLabel[];
-}
+/** The node, or union of nodes, carrying a given `type`. */
+type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
 
 /** A diagnostic produced by {@link Analyzer.link}. */
 interface LinkDiagnostic {
@@ -62,20 +25,6 @@ interface LinkDiagnostic {
   module: string;
   start: number;
   end: number;
-}
-
-/** A source comment with its span. */
-interface Comment {
-  type: "Line" | "Block";
-  value: string;
-  start: number;
-  end: number;
-}
-
-/** A `(line, column)` pair. Lines are 1-based, columns 0-based. */
-interface SourceLocation {
-  line: number;
-  column: number;
 }
 
 /** Options for {@link Analyzer.addFile}. */
@@ -122,11 +71,7 @@ interface AnalyzerOptions {
 /**
  * Bit flags describing a {@link Symbol}: which declaration kinds it
  * carries (one symbol can merge several under TS declaration merging)
- * and its modifiers. Combine with `&`/`|`.
- *
- * ```ts
- * if (sym.flags & SymbolFlags.Import) { ... }
- * ```
+ * and its modifiers. Combine with `&`/`|`, or use {@link Symbol.has}.
  */
 declare const SymbolFlags: {
   /** `var`, parameter, or catch variable. */
@@ -190,7 +135,7 @@ interface Scope {
   /** Whether this scope is in strict mode. */
   readonly strict: boolean;
   /** The AST node that created this scope. */
-  readonly node: AstNode;
+  readonly node: Node;
   /** The parent scope, or null for the global scope. */
   readonly parent: Scope | null;
   /** The nearest scope (or self) where `var` declarations land. */
@@ -224,7 +169,7 @@ interface Symbol {
   /** The scope this symbol is declared in. */
   readonly scope: Scope;
   /** Every declarator node, in source order. */
-  readonly declarations: AstNode[];
+  readonly declarations: Node[];
   /** Every resolved use site within this module, in source order. */
   readonly references: Reference[];
   /** True when any flag in `mask` is set. */
@@ -265,7 +210,7 @@ interface Reference {
   /** The scope the reference occurs in. */
   readonly scope: Scope;
   /** The identifier node, the same object as in the walked AST. */
-  readonly node: AstNode;
+  readonly node: Identifier | JSXIdentifier;
   /** `"value"` for runtime uses, `"type"` for TS type-position uses. */
   readonly kind: "value" | "type";
   /**
@@ -283,7 +228,9 @@ interface Reference {
  * Per-node context handed to walk handlers. One object is reused across
  * the whole walk; do not hold onto it across nodes.
  */
-interface WalkContext {
+interface WalkContext<T extends Node = Node> {
+  /** The node being visited. */
+  readonly node: T;
   /** The module being walked. Every semantic query is in reach. */
   readonly module: Module;
   /**
@@ -293,13 +240,17 @@ interface WalkContext {
    */
   readonly scope: Scope;
   /** The parent node, or null at the walk root. */
-  readonly parent: AstNode | null;
+  readonly parent: Node | null;
+  /** The field on {@link parent} holding this node, or null at the root. */
+  readonly key: string | null;
+  /** Position within an array field, or null in a plain field. */
+  readonly index: number | null;
   /** Shorthand for `module.symbolOf(node)`. */
   readonly symbol: Symbol | null;
   /** Shorthand for `module.referenceOf(node)`. */
   readonly reference: Reference | null;
   /** A copy of the ancestor chain, walk root first. */
-  ancestors(): AstNode[];
+  ancestors(): Node[];
   /** Do not descend into this node's children. `leave` still fires. */
   skip(): void;
   /** End the walk immediately. No further handlers fire. */
@@ -313,24 +264,45 @@ interface WalkContext {
    * no symbols, references, or spans of their own. Analyze, transform,
    * then print (or re-analyze the printed output for fresh semantics).
    */
-  replace(node: AstNode): void;
+  replace(node: Node): void;
+  /**
+   * Removes the current node: spliced out of an array field, nulled in
+   * a plain field. Children are not walked and `leave` does not fire.
+   * The walk root cannot be removed.
+   */
+  remove(): void;
+  /**
+   * Inserts a sibling before the current node. Array fields only. The
+   * inserted node is not visited.
+   */
+  insertBefore(node: Node): void;
+  /**
+   * Inserts a sibling after the current node. Array fields only. The
+   * walk visits the inserted node.
+   */
+  insertAfter(node: Node): void;
 }
 
-type WalkHandler = (node: AstNode, ctx: WalkContext) => void;
+/** Handler invoked with the precisely-typed node and the walk context. */
+type WalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext<T>) => void;
 
-interface WalkHooks {
-  enter?: WalkHandler;
-  leave?: WalkHandler;
+/** Enter/leave pair for one node type. */
+interface WalkHooks<T extends Node = Node> {
+  enter?: WalkHandler<T>;
+  leave?: WalkHandler<T>;
 }
 
 /**
- * A walk visitor: type-keyed handlers (a function is an enter handler,
- * an object provides enter and/or leave) plus optional catch-alls.
- * Order per node: catch-all `enter`, typed enter, children, typed
- * leave, catch-all `leave`.
+ * Visitors passed to {@link Module.walk}: keys are node `type` strings
+ * (handlers receive the matching node type), plus optional `enter` /
+ * `leave` catch-alls. Order per node: catch-all `enter`, typed enter,
+ * children, typed leave, catch-all `leave`.
  */
-type Visitor = WalkHooks & {
-  [nodeType: string]: WalkHandler | WalkHooks | undefined;
+type Visitors = {
+  [K in NodeType]?: WalkHandler<NodeOfType<K>> | WalkHooks<NodeOfType<K>>;
+} & {
+  enter?: WalkHandler;
+  leave?: WalkHandler;
 };
 
 /** A free variable of a function, as reported by {@link Module.capturesOf}. */
@@ -365,8 +337,8 @@ interface Import {
   readonly phase: "source" | "defer" | null;
   readonly specifier: string;
   /** The specifier node (the declaration for side-effect imports). */
-  readonly node: AstNode;
-  /** The source module after {@link Analyzer.link}, or null when external. */
+  readonly node: Node;
+  /** The defining module, or null when external. Links on demand. */
   readonly resolvedModule: Module | null;
 }
 
@@ -387,7 +359,7 @@ interface Export {
   readonly fromName: string | null;
   /** True for `export *` and `export * as ns from "m"`. */
   readonly isNamespaceReexport: boolean;
-  readonly node: AstNode;
+  readonly node: Node;
   /** The re-export source module, or null. Links on demand. */
   readonly resolvedModule: Module | null;
 }
@@ -406,10 +378,10 @@ interface Module {
    * The ESTree / TypeScript-ESTree program. Lazily decoded. Nodes are
    * identity-shared with every semantic query result.
    *
-   * Nodes are plain mutable objects: edit them in place, replace them
-   * during a walk with {@link WalkContext.replace}, and print the
-   * result with `yuku-codegen`. Semantic tables stay a snapshot of the
-   * parsed source and do not track mutations.
+   * Nodes are plain mutable objects: edit them in place, mutate them
+   * during a walk with {@link WalkContext.replace} and friends, and
+   * print the result with `yuku-codegen`. Semantic tables stay a
+   * snapshot of the parsed source and do not track mutations.
    */
   readonly ast: Program;
   /** Syntax and semantic diagnostics for this file. */
@@ -439,11 +411,11 @@ interface Module {
    * identifier, the resolved symbol for a reference identifier. Null
    * for nodes that are neither, or for unresolved references.
    */
-  symbolOf(node: AstNode): Symbol | null;
+  symbolOf(node: Node): Symbol | null;
   /** The reference recorded for an identifier node, or null. */
-  referenceOf(node: AstNode): Reference | null;
+  referenceOf(node: Node): Reference | null;
   /** The innermost scope whose extent contains `node`. */
-  scopeOf(node: AstNode): Scope;
+  scopeOf(node: Node): Scope;
   /**
    * Walks the scope chain from `from` (default: the root scope) to
    * find the nearest binding of `name`.
@@ -457,16 +429,17 @@ interface Module {
    *
    * Throws when `node` is not a function of this module's AST.
    */
-  capturesOf(node: AstNode): Capture[];
+  capturesOf(node: Node): Capture[];
 
   /**
    * Walks the AST (or the subtree under `root`) with semantic context.
    * Scope information is replayed from the native scope tree, so
    * non-scope nodes pay a single type lookup and nothing else.
    */
-  walk(visitor: Visitor, root?: AstNode): void;
+  walk(visitors: Visitors, root?: Node): void;
   /** Collects every node of the given type(s), in source order. */
-  findAll(types: string | string[]): AstNode[];
+  findAll<K extends NodeType>(type: K): NodeOfType<K>[];
+  findAll<K extends NodeType>(types: readonly K[]): NodeOfType<K>[];
 
   /** Import records, in source order. */
   readonly imports: Import[];
@@ -500,9 +473,8 @@ interface ModuleReference {
  * ```ts
  * const analyzer = new Analyzer();
  * analyzer.addFile("src/app.tsx", source);
- * analyzer.link();
- * const sym = analyzer.module("src/app.tsx").symbolOf(node);
- * const def = analyzer.definitionOf(sym);
+ * const sym = analyzer.module("src/app.tsx")!.symbolOf(node);
+ * const def = sym?.definition();
  * ```
  */
 declare class Analyzer {
@@ -563,27 +535,20 @@ export {
   sourceTypeFromPath,
   type AddFileOptions,
   type AnalyzerOptions,
-  type AstNode,
   type Capture,
-  type Comment,
   type Definition,
-  type Diagnostic,
-  type DiagnosticLabel,
-  type DiagnosticSeverity,
   type Export,
   type Import,
   type LinkDiagnostic,
   type Module,
   type ModuleReference,
-  type Program,
+  type NodeOfType,
+  type NodeType,
   type Reference,
   type Scope,
   type ScopeKind,
-  type SourceLang,
-  type SourceLocation,
-  type SourceType,
   type Symbol,
-  type Visitor,
+  type Visitors,
   type WalkContext,
   type WalkHandler,
   type WalkHooks,

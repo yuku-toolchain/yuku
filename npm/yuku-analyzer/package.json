@@ -19,6 +19,9 @@
     "binding.js",
     "decode.js"
   ],
+  "peerDependencies": {
+    "yuku-parser": ">=0.5.31"
+  },
   "optionalDependencies": {
     "@yuku-analyzer/binding-linux-x64-gnu": "0.1.0",
     "@yuku-analyzer/binding-linux-arm64-gnu": "0.1.0",
