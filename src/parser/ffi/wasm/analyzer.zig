@@ -1,25 +1,27 @@
-//! Freestanding WebAssembly entry point:
+//! Freestanding WebAssembly entry point for the analyzer:
 //!
-//!   alloc(len)             -> ptr   buffer for the source bytes
-//!   parse(ptr, len, flags) -> ptr   length-prefixed result `[u32 N][N bytes]`
-//!                                   (the v7 AST buffer decode.js reads), or 0
-//!   free(ptr, len)         -> void
+//!   alloc(len)               -> ptr   buffer for the source bytes
+//!   analyze(ptr, len, flags) -> ptr   length-prefixed result
+//!                                     `[u32 N][N bytes]` (the analyzer
+//!                                     buffer: AST + semantic sections),
+//!                                     or 0
+//!   free(ptr, len)           -> void
 //!
-//! The buffer format and decode.js are shared with the native binding.
+//! The buffer format and decoder are shared with the native binding.
 
 const std = @import("std");
 const parser = @import("parser");
-const transfer = @import("transfer.zig");
+const transfer = @import("transfer").semantic;
 
 const gpa = std.heap.wasm_allocator;
 
-// Option bits packed by index.js `packFlags`.
+// Option bits packed by index.js `packFlags`. Mirrors wasm/parser.zig
+// minus the semantic bit, which is implied here.
 const flag = struct {
     const script = 1 << 0;
     const lang_shift = 1; // bits 1..3: ast.Lang index
     const preserve_parens = 1 << 4;
     const allow_return = 1 << 5;
-    const semantic = 1 << 6;
     const attach_comments = 1 << 7;
 };
 
@@ -31,7 +33,7 @@ export fn free(ptr: [*]u8, len: usize) void {
     gpa.free(ptr[0..len]);
 }
 
-export fn parse(ptr: [*]const u8, len: usize, flags: u32) usize {
+export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
     const out = run(ptr[0..len], flags) catch return 0;
     return @intFromPtr(out.ptr);
 }
@@ -46,11 +48,15 @@ fn run(source: []const u8, flags: u32) ![]u8 {
     });
     defer tree.deinit();
 
-    if (flags & flag.semantic != 0) _ = parser.semantic.analyze(&tree) catch {};
+    var result = try parser.semantic.analyze(&tree);
+    try result.symbol_table.resolveAll(result.scope_tree);
 
-    const size = transfer.bufferSize(&tree);
+    // collect before sizing: records may intern "default" into the pool
+    const records = try parser.semantic.module_record.collect(&tree, &result.symbol_table);
+
+    const size = transfer.bufferSize(&tree, &result, records);
     const out = try gpa.alloc(u8, 4 + size);
     std.mem.writeInt(u32, out[0..4], @intCast(size), .little);
-    _ = transfer.serializeInto(&tree, out[4..]);
+    _ = transfer.serializeInto(&tree, &result, records, out[4..]);
     return out;
 }

@@ -3,6 +3,7 @@ const ast = @import("../ast.zig");
 const wk = @import("walk.zig");
 const sc = @import("../semantic/scope.zig");
 const bi = @import("../semantic/binder.zig");
+const ecmascript = @import("../ecmascript.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -66,7 +67,12 @@ pub const Ctx = struct {
         index: ast.NodeIndex,
         data: ast.NodeData,
     ) Allocator.Error!void {
-        try self.symbols.declareBindings(index, data, &self.scope, self.inTypePosition());
+        const is_write = data == .identifier_reference and
+            ecmascript.isWriteTarget(self.tree, &self.path);
+        try self.symbols.declareBindings(index, data, &self.scope, .{
+            .in_type_position = self.inTypePosition(),
+            .is_write = is_write,
+        });
     }
 
     pub inline fn exit(self: *Ctx, data: ast.NodeData) void {

@@ -1,5 +1,5 @@
 // Shared metadata for the ESTree decoder and encoder generators.
-// Both `gen_estree_decoder.zig` and `gen_estree_encoder.zig` pull operator
+// Both `decoder.zig` and `encoder.zig` pull operator
 // arrays, enum table names, ESTree name/field overrides, and the
 // identifier-position role table from this module so they cannot disagree
 // about wire format details.

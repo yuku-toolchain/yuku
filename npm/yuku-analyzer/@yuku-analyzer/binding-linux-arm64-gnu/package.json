@@ -1,0 +1,21 @@
+{
+  "name": "@yuku-analyzer/binding-linux-arm64-gnu",
+  "version": "0.1.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "main": "yuku-analyzer.node",
+  "files": [
+    "yuku-analyzer.node"
+  ]
+}

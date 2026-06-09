@@ -229,6 +229,11 @@ pub const Reference = struct {
     /// `.value` for runtime uses, `.type` for type-position uses
     /// (annotations, `extends`, `implements`, type arguments).
     kind: Kind = .value,
+    /// True when this reference (re)assigns its binding: the target of an
+    /// assignment, the operand of `++`/`--`, the iteration variable of
+    /// for-in/for-of, or a destructuring assignment leaf. Compound targets
+    /// (`+=`, `++`) both read and write.
+    is_write: bool = false,
 
     pub const Kind = enum(u1) { value, type };
 };
@@ -787,6 +792,17 @@ pub const SymbolTracker = struct {
         });
     }
 
+    /// Per-node facts computed by the walker for `declareBindings`. The
+    /// walker owns the path stack, so position-dependent classification
+    /// (type position, assignment-target position) happens there and
+    /// arrives here as plain flags.
+    pub const RefContext = struct {
+        /// inside a TS type-only subtree
+        in_type_position: bool,
+        /// the node is an identifier in assignment-target position
+        is_write: bool,
+    };
+
     /// Materializes the pending binding context into a symbol (for
     /// `binding_identifier`) or records a reference (for
     /// `identifier_reference`). Called from `Ctx.post_enter` for every
@@ -796,7 +812,7 @@ pub const SymbolTracker = struct {
         index: ast.NodeIndex,
         data: ast.NodeData,
         scope: *const sc.ScopeTracker,
-        in_type_position: bool,
+        ref_ctx: RefContext,
     ) Allocator.Error!void {
         if (self.scope_maps.items.len < scope.scopes.items.len)
             try self.syncScopeMaps(scope);
@@ -806,7 +822,7 @@ pub const SymbolTracker = struct {
                 // type-position identifiers are parameter labels (function
                 // type, index signature, etc.). only type parameters are
                 // real declarations here.
-                if (in_type_position and !self.binding_flags.type_parameter) return;
+                if (ref_ctx.in_type_position and !self.binding_flags.type_parameter) return;
 
                 const sym_id = try self.declare(
                     id.name,
@@ -829,8 +845,16 @@ pub const SymbolTracker = struct {
                 }
             },
             .identifier_reference => |id| {
-                const kind: Reference.Kind = if (in_type_position) .type else .value;
-                _ = try self.addReference(id.name, scope.currentScopeId(), index, kind);
+                // ts namespace bodies count as type position wholesale,
+                // so a `.type` reference can still be a write there
+                const kind: Reference.Kind = if (ref_ctx.in_type_position) .type else .value;
+                _ = try self.addReference(
+                    id.name,
+                    scope.currentScopeId(),
+                    index,
+                    kind,
+                    ref_ctx.is_write,
+                );
             },
             // `param is T` / `asserts param is T`: the `param` is parsed as
             // an `identifier_name` (the AST shape downstream FFI consumers
@@ -841,12 +865,13 @@ pub const SymbolTracker = struct {
                 if (pred.parameter_name == .null) return;
                 const pname = self.tree.data(pred.parameter_name);
                 if (pname != .identifier_name) return;
-                const kind: Reference.Kind = if (in_type_position) .type else .value;
+                const kind: Reference.Kind = if (ref_ctx.in_type_position) .type else .value;
                 _ = try self.addReference(
                     pname.identifier_name.name,
                     scope.currentScopeId(),
                     pred.parameter_name,
                     kind,
+                    false,
                 );
             },
             // jsx tag names: `<Foo>`, `<Foo.Bar>`, `</Foo>`. the leftmost
@@ -864,6 +889,7 @@ pub const SymbolTracker = struct {
                             scope.currentScopeId(),
                             root_idx,
                             .value,
+                            false,
                         );
                     }
                 }
@@ -959,13 +985,15 @@ pub const SymbolTracker = struct {
     }
 
     /// Records an identifier reference in `scope`. The kind tags it as
-    /// value-position or type-position for rename-aware tooling.
+    /// value-position or type-position, `is_write` as assignment-target
+    /// position, both for rename-aware and data-flow tooling.
     pub fn addReference(
         self: *SymbolTracker,
         name: String,
         scope: sc.ScopeId,
         node: ast.NodeIndex,
         kind: Reference.Kind,
+        is_write: bool,
     ) Allocator.Error!ReferenceId {
         std.debug.assert(scope != .none);
         std.debug.assert(node != .null);
@@ -977,6 +1005,7 @@ pub const SymbolTracker = struct {
             .scope = scope,
             .node = node,
             .kind = kind,
+            .is_write = is_write,
         });
         return id;
     }

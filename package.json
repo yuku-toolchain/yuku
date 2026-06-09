@@ -1,10 +1,7 @@
 {
   "name": "yuku-root",
+  "version": "",
   "private": true,
-  "workspaces": [
-    "npm/**/*",
-    "docs"
-  ],
   "homepage": "https://yuku.fyi",
   "license": "MIT",
   "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
@@ -13,6 +10,10 @@
     "url": "git+https://github.com/yuku-toolchain/yuku.git"
   },
   "funding": "https://github.com/sponsors/arshad-yaseen",
+  "workspaces": [
+    "npm/**/*",
+    "docs"
+  ],
   "scripts": {
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
@@ -25,8 +26,8 @@
     "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
     "release:npm": "napi bump",
     "debug:npm": "napi build",
-    "build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-estree-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen",
-    "build:wasm": "zig build wasm && zig build gen-estree-decoder && zig build gen-estree-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/",
+    "build:npm": "napi build --release && zig build gen-parser-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-codegen-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen && zig build gen-analyzer-decoder && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./src/parser/ffi/analyzer.d.ts ./npm/yuku-analyzer/index.d.ts",
+    "build:wasm": "zig build wasm && zig build gen-parser-decoder && zig build gen-codegen-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/",
     "playground": "bun build:wasm && bun playground/server.ts"
   },
   "devDependencies": {
@@ -37,8 +38,8 @@
     "jest-diff": "^30.3.0",
     "napi-zig": "^0.1.41",
     "typescript": "^6.0.2",
+    "yuku-analyzer": "workspace:*",
     "yuku-codegen": "workspace:*",
     "yuku-parser": "workspace:*"
-  },
-  "version": ""
+  }
 }

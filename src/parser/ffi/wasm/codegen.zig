@@ -8,7 +8,7 @@
 
 const std = @import("std");
 const parser = @import("parser");
-const transfer = @import("transfer.zig");
+const transfer = @import("transfer");
 
 const gpa = std.heap.wasm_allocator;
 

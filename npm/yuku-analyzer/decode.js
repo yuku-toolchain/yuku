@@ -19,6 +19,37 @@ const TS_METHOD_SIGNATURE_KINDS = ["method", "get", "set"];
 const TS_MODULE_KINDS = ["namespace", "module"];
 const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
+const SCOPE_KINDS = ["global", "module", "function", "block", "class", "staticBlock", "expressionName", "tsModule"];
+const NAME_KINDS = ["named", "star", "none"];
+const IMPORT_PHASES = ["source", "defer"];
+const SymbolFlags = Object.freeze({
+  FunctionScopedVariable: 1 << 0,
+  BlockScopedVariable: 1 << 1,
+  Function: 1 << 2,
+  Class: 1 << 3,
+  RegularEnum: 1 << 4,
+  ConstEnum: 1 << 5,
+  ValueModule: 1 << 6,
+  Interface: 1 << 7,
+  TypeAlias: 1 << 8,
+  TypeParameter: 1 << 9,
+  NamespaceModule: 1 << 10,
+  Import: 1 << 11,
+  TypeImport: 1 << 12,
+  Const: 1 << 13,
+  Ambient: 1 << 14,
+  Parameter: 1 << 15,
+  CatchVariable: 1 << 16,
+  Exported: 1 << 17,
+  Default: 1 << 18,
+});
+const SEM = Object.freeze({
+  scope: Object.freeze({ stride: 4, node: 0, parent: 1, hoistTarget: 2, bits: 3, kindMask: 255, strictBit: 8 }),
+  symbol: Object.freeze({ stride: 6, nameStart: 0, nameEnd: 1, flags: 2, scope: 3, declsStart: 4, declsLen: 5 }),
+  reference: Object.freeze({ stride: 6, nameStart: 0, nameEnd: 1, scope: 2, node: 3, bits: 4, symbol: 5, typeBit: 0, writeBit: 1 }),
+  import: Object.freeze({ stride: 8, symbol: 0, bits: 1, nameStart: 2, nameEnd: 3, specifierStart: 4, specifierEnd: 5, node: 6, nameKindMask: 3, typeBit: 2, hasPhaseBit: 3, phaseBit: 4 }),
+  export: Object.freeze({ stride: 10, bits: 0, nameStart: 1, nameEnd: 2, symbol: 3, fromNameStart: 4, fromNameEnd: 5, specifierStart: 6, specifierEnd: 7, node: 8, nameKindMask: 3, fromKindShift: 2, typeBit: 4 }),
+});
 function buildPosMap(src, byteLen, startByte) {
   const m = new Uint32Array(byteLen - startByte + 1);
   const len = src.length;
@@ -592,7 +623,17 @@ function decode(buffer, source) {
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
-  const node = _attached ? nodeWithComments : _decode;
+  const _inner = _attached ? nodeWithComments : _decode;
+  const _nodes = new Array(nodeCount);
+  const _nodeIndexes = new WeakMap();
+  function node(i) {
+    const m = _nodes[i];
+    if (m !== undefined) return m;
+    const r = _inner(i);
+    _nodes[i] = r;
+    if (r !== null && typeof r === "object") _nodeIndexes.set(r, i);
+    return r;
+  }
   const lsOff = _cOff + commentCount * 20;
   const dOff = lsOff + lineStartsCount * 4;
   function _decodeComments() {
@@ -659,6 +700,47 @@ function decode(buffer, source) {
     }
     return out;
   }
+  const _nodesU32 = _nodesOff >> 2;
+  function startOf(i) { return _p(_u32[_nodesU32 + i * 12 + 10]); }
+  function endOf(i) { return _p(_u32[_nodesU32 + i * 12 + 11]); }
+  let _semView;
+  function _semantic() {
+    if (_semView !== undefined) return _semView;
+    if (!(_flags & 8)) return (_semView = null);
+    let dp = dOff;
+    for (let j = 0; j < diagCount; j++) {
+      dp += 9;
+      const ml = dv.getUint32(dp, true); dp += 4 + ml;
+      if (_u8[dp++]) { const hl = dv.getUint32(dp, true); dp += 4 + hl; }
+      const lc = dv.getUint32(dp, true); dp += 4;
+      for (let k = 0; k < lc; k++) {
+        dp += 8;
+        const lml = dv.getUint32(dp, true); dp += 4 + lml;
+      }
+    }
+    let o = ((dp + 3) & ~3) >> 2;
+    const scopeCount = _u32[o], symbolCount = _u32[o + 1],
+          referenceCount = _u32[o + 2], declNodeCount = _u32[o + 3],
+          importCount = _u32[o + 4], exportCount = _u32[o + 5];
+    o += 8;
+    const scopes = _u32.subarray(o, o + scopeCount * 4);
+    o += scopeCount * 4;
+    const symbols = _u32.subarray(o, o + symbolCount * 6);
+    o += symbolCount * 6;
+    const declNodes = _u32.subarray(o, o + declNodeCount);
+    o += declNodeCount;
+    const references = _u32.subarray(o, o + referenceCount * 6);
+    o += referenceCount * 6;
+    const imports = _u32.subarray(o, o + importCount * 8);
+    o += importCount * 8;
+    const exports = _u32.subarray(o, o + exportCount * 10);
+    o += exportCount * 10;
+    return (_semView = {
+      scopeCount, symbolCount, referenceCount, declNodeCount,
+      importCount, exportCount,
+      scopes, symbols, declNodes, references, imports, exports,
+    });
+  }
   let _program, _lineStarts, _diagnostics, _comments;
   function _getLineStarts() {
     if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
@@ -700,6 +782,10 @@ function decode(buffer, source) {
       }
       return { line: i + 1, column: offset - ls[i] };
     },
+    nodeOf: node,
+    indexOf: (n) => _nodeIndexes.get(n),
+    startOf, endOf, str,
+    get semantic() { return _semantic(); },
   };
 }
-export { decode };
+export { decode, SEM, SymbolFlags, SCOPE_KINDS, NAME_KINDS, IMPORT_PHASES };
