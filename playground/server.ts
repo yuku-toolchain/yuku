@@ -2,7 +2,6 @@ const dir = import.meta.dir;
 const npm = `${dir}/../npm`;
 
 const local: Record<string, string> = {
-  "https://esm.sh/@yuku-parser/wasm/package.json": "/pkg/yuku-parser-wasm/package.json",
   "https://esm.sh/@yuku-parser/wasm": "/pkg/yuku-parser-wasm/index.js",
   "https://esm.sh/@yuku-codegen/wasm": "/pkg/yuku-codegen-wasm/index.js",
 };
@@ -13,7 +12,8 @@ const server = Bun.serve({
     const { pathname } = new URL(req.url);
     if (pathname === "/" || pathname === "/index.html") {
       let html = await Bun.file(`${dir}/index.html`).text();
-      for (const [cdn, path] of Object.entries(local)) html = html.replace(cdn, path);
+      // replaceAll: the parser url appears twice (import map + version badge).
+      for (const [cdn, path] of Object.entries(local)) html = html.replaceAll(cdn, path);
       return new Response(html, { headers: { "content-type": "text/html" } });
     }
     const file = pathname.startsWith("/pkg/")

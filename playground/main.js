@@ -256,7 +256,6 @@ function focusCode(start, end, scroll) {
   if (scroll) scrollCodeIntoView(start);
 }
 
-let focused = null;
 let lastHit = null;
 
 function setOpen(details, open) {
@@ -433,8 +432,13 @@ async function showVersion() {
   const el = $("version");
   try {
     const res = await fetch(el.dataset.pkg);
-    if (!res.ok) return;
-    const { version } = await res.json();
+    const match = res.headers.get("x-esm-path")?.match(/@(\d[^/]*)/);
+    if (match) {
+      el.textContent = match[1];
+      return;
+    }
+    const pkgUrl = new URL("./package.json", new URL(el.dataset.pkg, location.href));
+    const { version } = await (await fetch(pkgUrl)).json();
     if (version) el.textContent = version;
   } catch {}
 }
