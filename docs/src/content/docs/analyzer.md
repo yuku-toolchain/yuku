@@ -504,14 +504,7 @@ The full bitset, generated from the native binder's layout:
 
 ## Performance
 
-Numbers from an Apple M-series machine, release builds:
-
-- Parsing plus complete semantic analysis of a typical source file lands well under a millisecond. The semantic pass adds roughly half of parse time on top of the parse itself.
-- The walk sustains tens of millions of nodes per second. For semantic queries, scanning runs about 4x faster than walking and allocates nothing.
-- Linking a 2,000-module graph takes about a millisecond. `capturesOf` on a typical function takes tens of microseconds.
-- The implementation is validated against 45,000+ real-world files with zero failures.
-
-The structural reasons: one FFI crossing per file, zero-copy typed-array reads, lazy materialization with index memoization, and cross-indexes that build once and amortize.
+Analysis runs at native speed, because it runs in Zig as part of the parse and crosses to JavaScript once per file as a compact buffer. A typical file parses and fully analyzes in well under a millisecond, walks at tens of millions of nodes per second (and scans semantic queries about 4x faster than that), and links thousands of modules in roughly a millisecond. It is validated against 45,000+ real-world files with zero failures.
 
 ## TypeScript types
 
