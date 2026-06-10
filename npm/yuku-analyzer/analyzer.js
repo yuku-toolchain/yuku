@@ -2,6 +2,11 @@ import { Module, IMPORT_FLAGS } from "./module.js";
 
 const RESOLVE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mts", ".mjs", ".cts", ".cjs"];
 
+// the third resolution outcome of ResolveExport (16.2.1.7.2.2): more
+// than one `export *` declaration supplies the name through different
+// bindings. distinct from null (not found / circular).
+const AMBIGUOUS = Symbol("ambiguous");
+
 export class Analyzer {
   #modules = new Map();
   #resolve;
@@ -39,6 +44,15 @@ export class Analyzer {
     return this.#diagnostics;
   }
 
+  // the static half of module linking. resolves every module request
+  // (spec ModuleRequests, 16.2.1.4) to an added module, wires the
+  // dependency graph, and performs the binding validation that
+  // InitializeEnvironment (16.2.1.7.3.1) specifies as SyntaxError
+  // throws, surfaced as diagnostics instead: step 7.c.iii for imported
+  // names and step 1.c for indirect re-exports. requests the resolver
+  // cannot map to an added module are skipped, so partial graphs link
+  // cleanly. evaluation (cycle ordering, TLA) is out of scope: this
+  // analyzer never runs modules.
   link() {
     this.#dirty = false;
     this.#linking = true;
@@ -46,18 +60,33 @@ export class Analyzer {
     for (const module of this.#modules.values()) {
       module._deps = [];
       module._dependents = [];
+      // clear resolutions from earlier links so removed modules cannot
+      // leak through a stale record._resolved
+      for (const record of module.imports) record._resolved = null;
+      for (const record of module.exports) record._resolved = null;
     }
     for (const module of this.#modules.values()) {
       for (const record of module.imports) {
         record._resolved = this.#resolveModule(record.specifier, module, false);
         if (record._resolved !== null) {
           this.#wire(module, record._resolved);
+          // namespace and side-effect imports name nothing to validate
+          // (InitializeEnvironment step 7.b binds the namespace object
+          // directly, without ResolveExport)
           if (record.name !== null) {
-            const found = this.#findExport(record._resolved, record.name, new Set());
-            if (found === null) {
+            const resolution = this.#resolveExport(record._resolved, record.name, []);
+            if (resolution === null) {
               this.#diagnostics.push({
                 severity: "error",
                 message: `Module '${record.specifier}' has no export '${record.name}'`,
+                module: module.path,
+                start: record.node.start,
+                end: record.node.end,
+              });
+            } else if (resolution === AMBIGUOUS) {
+              this.#diagnostics.push({
+                severity: "error",
+                message: `Import '${record.name}' of module '${record.specifier}' is ambiguous: multiple 'export *' declarations supply it`,
                 module: module.path,
                 start: record.node.start,
                 end: record.node.end,
@@ -69,12 +98,45 @@ export class Analyzer {
       for (const record of module.exports) {
         if (record.specifier === null) continue;
         record._resolved = this.#resolveModule(record.specifier, module, false);
-        if (record._resolved !== null) this.#wire(module, record._resolved);
+        if (record._resolved === null) continue;
+        this.#wire(module, record._resolved);
+        // InitializeEnvironment step 1: indirect named re-exports must
+        // resolve. resolving fromName against the source module is the
+        // entry's own first ResolveExport step, skipping the self
+        // lookup. `export * as ns` (fromName null) trivially resolves
+        // to the namespace, and `export *` entries are not validated
+        // (the spec defers their conflicts to use sites).
+        if (record.fromName !== null) {
+          const resolution = this.#resolveExport(record._resolved, record.fromName, []);
+          if (resolution === null) {
+            this.#diagnostics.push({
+              severity: "error",
+              message: `Module '${record.specifier}' has no export '${record.fromName}'`,
+              module: module.path,
+              start: record.node.start,
+              end: record.node.end,
+            });
+          } else if (resolution === AMBIGUOUS) {
+            this.#diagnostics.push({
+              severity: "error",
+              message: `Re-export '${record.fromName}' of module '${record.specifier}' is ambiguous: multiple 'export *' declarations supply it`,
+              module: module.path,
+              start: record.node.start,
+              end: record.node.end,
+            });
+          }
+        }
       }
     }
     this.#linking = false;
   }
 
+  // follows an import binding to the module and symbol that define it,
+  // the analyzer counterpart of InitializeEnvironment step 7.c
+  // (16.2.1.7.3.1): the import name is resolved with ResolveExport and
+  // the local binding aliases the resulting binding. namespace
+  // resolutions yield { module, symbol: null }, like the spec's
+  // namespace [[BindingName]]. null when unresolved or ambiguous.
   definitionOf(symbol) {
     this._ensureLinked();
     let module = symbol.module;
@@ -89,12 +151,12 @@ export class Analyzer {
       if (record.isNamespace || record.name === null) {
         return { module: record._resolved, symbol: null };
       }
-      const found = this.#findExport(record._resolved, record.name, new Set());
-      if (found === null) return null;
-      if (found.namespace) return { module: found.module, symbol: null };
-      if (found.export.local === null) return null;
-      module = found.module;
-      current = found.export.local;
+      const resolution = this.#resolveExport(record._resolved, record.name, []);
+      if (resolution === null || resolution === AMBIGUOUS) return null;
+      if (resolution.namespace) return { module: resolution.module, symbol: null };
+      if (resolution.symbol === null) return null;
+      module = resolution.module;
+      current = resolution.symbol;
     }
     return { module, symbol: current };
   }
@@ -154,28 +216,88 @@ export class Analyzer {
     if (!to._dependents.includes(from)) to._dependents.push(from);
   }
 
-  // resolves `name` among `module`'s exports, following named
-  // re-exports and `export *` chains. `default` is never satisfied
-  // through `export *`, per spec. first match wins on ambiguous stars.
-  #findExport(module, name, seen) {
-    if (seen.has(module.path)) return null;
-    seen.add(module.path);
-    const direct = module._exportMap().get(name);
+  // ResolveExport(exportName, resolveSet) of Source Text Module Records
+  // (16.2.1.7.2.2), over this analyzer's records. resolves `exportName`
+  // to the module and binding that define it, following named re-export
+  // and `export *` chains. returns a resolved binding
+  // { module, symbol, namespace }, null when the name cannot be
+  // resolved or the request is circular, or AMBIGUOUS when multiple
+  // `export *` declarations supply different bindings for the name.
+  // [[BindingName]] is the `symbol` (`null` plus `namespace: true` for
+  // the spec's namespace value).
+  //
+  // two record-shape adaptations, neither observable in valid graphs:
+  //  - [[LocalExportEntries]] and [[IndirectExportEntries]] (steps 5-6)
+  //    are one name-keyed map here (_exportMap). duplicate export names
+  //    are an early error (16.2.1.1), so partition order cannot matter.
+  //  - ParseModule step 10.a.ii rewrites an export of an imported
+  //    binding into an indirect entry through the original module, so
+  //    the same origin reached via two `export *` paths is not falsely
+  //    ambiguous. our records keep such exports local (symbol = the
+  //    import binding); the rewrite is applied below at resolution time.
+  #resolveExport(module, exportName, resolveSet) {
+    // step 3: a (module, exportName) pair already in resolveSet is a
+    // circular import request. the pair key permits re-entering the
+    // same module for a different name, which renaming re-export
+    // chains legitimately do.
+    for (const entry of resolveSet) {
+      if (entry.module === module && entry.exportName === exportName) return null;
+    }
+    resolveSet.push({ module, exportName });
+
+    // steps 5-6: local and indirect entries
+    const direct = module._exportMap().get(exportName);
     if (direct !== undefined) {
-      if (direct.specifier === null) return { module, export: direct, namespace: false };
+      if (direct.specifier === null) {
+        const local = direct.local;
+        if (local !== null && (local.flags & IMPORT_FLAGS) !== 0) {
+          // export of an imported binding: the ParseModule rewrite,
+          // resolve through the original module
+          const record = module._importOfSymbol(local.id);
+          if (record !== undefined) {
+            const imported =
+              record._resolved ?? this.#resolveModule(record.specifier, module, true);
+            if (imported === null) return null;
+            if (record.isNamespace) return { module: imported, symbol: null, namespace: true };
+            return this.#resolveExport(imported, record.name, resolveSet);
+          }
+        }
+        // step 5.a.ii: the module provides the direct binding
+        return { module, symbol: local, namespace: false };
+      }
       const next = direct._resolved ?? this.#resolveModule(direct.specifier, module, true);
       if (next === null) return null;
-      if (direct.isNamespaceReexport) return { module: next, export: direct, namespace: true };
-      return this.#findExport(next, direct.fromName, seen);
+      if (direct.isNamespaceReexport) {
+        // step 6.a.iii: `export * as ns from "m"` binds m's namespace
+        return { module: next, symbol: null, namespace: true };
+      }
+      // step 6.a.vi: follow the renaming re-export
+      return this.#resolveExport(next, direct.fromName, resolveSet);
     }
-    if (name === "default") return null;
+
+    // step 7: "default" is never satisfied through `export *`
+    if (exportName === "default") return null;
+
+    // steps 8-9: star entries. identical bindings reached through
+    // different paths collapse; different bindings are ambiguous.
+    let starResolution = null;
     for (const star of module._starExports()) {
       const next = star._resolved ?? this.#resolveModule(star.specifier, module, true);
       if (next === null) continue;
-      const found = this.#findExport(next, name, seen);
-      if (found !== null) return found;
+      const resolution = this.#resolveExport(next, exportName, resolveSet);
+      if (resolution === AMBIGUOUS) return AMBIGUOUS;
+      if (resolution === null) continue;
+      if (starResolution === null) {
+        starResolution = resolution;
+      } else if (
+        resolution.module !== starResolution.module ||
+        resolution.namespace !== starResolution.namespace ||
+        resolution.symbol !== starResolution.symbol
+      ) {
+        return AMBIGUOUS;
+      }
     }
-    return null;
+    return starResolution;
   }
 }
 

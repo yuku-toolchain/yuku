@@ -439,9 +439,27 @@ interface Module {
    * declared outside it. Shadowing- and alias-correct, because it rides
    * the resolved reference table.
    *
+   * The contract, since closures have no spec-level enumeration:
+   * - Only bindings count: `this`, `super`, `arguments`, `import.meta`,
+   *   and unresolved/global names resolve to no symbol and never
+   *   appear, so an arrow closing over lexical `this` is not reported.
+   * - Module-scope bindings and import bindings count like any other
+   *   outer binding; filter on the symbol's scope to narrow.
+   * - Type-position references (annotations, `typeof` queries) are
+   *   excluded: captures describe runtime closure state.
+   * - Computed method keys evaluate in the enclosing scope and are not
+   *   captures of the method.
+   *
    * Throws when `node` is not a function of this module's AST.
    */
   capturesOf(node: Node): Capture[];
+  /**
+   * Every name this module exports, directly or through `export *`
+   * chains: the spec's GetExportedNames. Per its note, names with
+   * ambiguous `export *` bindings are included, and `"default"` never
+   * crosses an `export *` boundary. Links on demand.
+   */
+  exportedNames(): string[];
 
   /**
    * Walks the AST (or the subtree under `root`) with semantic context.
@@ -520,7 +538,14 @@ declare class Analyzer {
    * Joins imports to exports across every added module: resolves
    * specifiers through the host resolver, populates
    * {@link Import.resolvedModule}, {@link Module.dependencies} /
-   * {@link Module.dependents}, and reports missing exports.
+   * {@link Module.dependents}, and reports unresolvable or ambiguous
+   * bindings.
+   *
+   * Names are resolved with the spec's ResolveExport semantics:
+   * renaming re-export chains are followed per-name, `"default"` is
+   * never satisfied by `export *`, and a name supplied by multiple
+   * `export *` declarations through different bindings is ambiguous
+   * (an error diagnostic, as in spec linking).
    *
    * Calling this is optional: every cross-file surface links on demand
    * after files change. Call it explicitly to control when the work
@@ -529,10 +554,11 @@ declare class Analyzer {
   link(): void;
 
   /**
-   * Follows import -> export -> re-export chains to the symbol that
-   * actually defines `symbol`. A null `symbol` in the result means a
-   * module namespace. Returns null when the chain leaves the added
-   * file set (external modules).
+   * Follows import -> export -> re-export chains, with the spec's
+   * ResolveExport semantics, to the symbol that actually defines
+   * `symbol`. A null `symbol` in the result means a module namespace.
+   * Returns null when the chain leaves the added file set (external
+   * modules), cannot be resolved, or is ambiguous.
    */
   definitionOf(symbol: Symbol): Definition | null;
 

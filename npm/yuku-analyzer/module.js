@@ -436,6 +436,45 @@ export class Module {
     return null;
   }
 
+  // GetExportedNames(exportStarSet) of Source Text Module Records
+  // (16.2.1.7.2.1): every name this module exports, directly or through
+  // `export *` chains. per the spec note, names with ambiguous star
+  // bindings are not filtered out, and "default" never crosses an
+  // `export *` boundary (step 8.d.i). `export *` circularities
+  // terminate via exportStarSet (step 3). TS `export =` and `export as
+  // namespace` are not ESM export names and do not appear.
+  exportedNames(exportStarSet = new Set()) {
+    if (exportStarSet.has(this)) return [];
+    exportStarSet.add(this);
+    this.analyzer._ensureLinked();
+    const names = new Set(this._exportMap().keys());
+    for (const star of this._starExports()) {
+      if (star._resolved === null) continue;
+      for (const name of star._resolved.exportedNames(exportStarSet)) {
+        if (name !== "default") names.add(name);
+      }
+    }
+    return [...names];
+  }
+
+  // the free variables of a function: every binding referenced inside
+  // `fn` (transitively, nested functions included) that is declared
+  // outside its scope subtree, deduplicated by symbol with the
+  // references collected and `isWritten` OR-ed across them.
+  //
+  // the contract:
+  //  - only bindings count. `this`, `super`, `arguments`,
+  //    `import.meta`, and unresolved/global names resolve to no symbol
+  //    and never appear, so an arrow closing over lexical `this` is not
+  //    reported.
+  //  - module-scope bindings and import bindings count like any other
+  //    outer binding; callers wanting only function-scope captures can
+  //    filter on symbol scope.
+  //  - type-position references (annotations, `typeof` queries) are
+  //    excluded: captures describe runtime closure state.
+  //  - computed method keys (`{ [outer]() {} }`) are evaluated in the
+  //    enclosing scope and lie outside the function node's span, so
+  //    they are correctly not captures of the method.
   capturesOf(fn) {
     const index = this.#r.indexOf(fn);
     if (index === undefined) {
@@ -555,14 +594,20 @@ export class Module {
     return this.#scopeMap;
   }
 
+  // the spec's export-entry partition (ParseModule, 16.2.1.7.1), in two
+  // pieces: a name-keyed map of [[LocalExportEntries]] plus
+  // [[IndirectExportEntries]] (including `export * as ns`), and the
+  // [[StarExportEntries]] list (`export *` only). name-less records
+  // (`export *`, TS `export =` / `export as namespace`) stay out of the
+  // map. duplicate export names are an early error (16.2.1.1); for
+  // error-recovery trees the first record wins.
   _exportMap() {
     if (this.#exportMap === null) {
       const map = new Map();
       const stars = [];
       for (const record of this.exports) {
         if (record.isStar) stars.push(record);
-        else if (record.name !== null && !map.has(record.name))
-          map.set(record.name, record);
+        else if (record.name !== null && !map.has(record.name)) map.set(record.name, record);
       }
       this.#exportMap = map;
       this.#starExports = stars;
