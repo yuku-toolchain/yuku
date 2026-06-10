@@ -161,7 +161,7 @@ fn writeRuntime(w: *Writer) !void {
         \\  function encArr(arr, encEach) {
         \\    if (!arr || arr.length === 0) return { start: 0, len: 0 };
         \\    const len = arr.length;
-        \\    const ids = new Array(len);
+        \\    const ids = Array.from({ length: len });
         \\    for (let i = 0; i < len; i++) ids[i] = encEach(arr[i]);
         \\    const start = extraCount;
         \\    for (let i = 0; i < len; i++) pushExtra(ids[i]);
@@ -170,7 +170,7 @@ fn writeRuntime(w: *Writer) !void {
         \\  function encArrHoles(arr, encEach) {
         \\    if (!arr || arr.length === 0) return { start: 0, len: 0 };
         \\    const len = arr.length;
-        \\    const ids = new Array(len);
+        \\    const ids = Array.from({ length: len });
         \\    for (let i = 0; i < len; i++) {
         \\      const e = arr[i];
         \\      ids[i] = e == null ? NULL : encEach(e);

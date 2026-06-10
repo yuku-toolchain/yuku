@@ -116,12 +116,12 @@ function decode(buffer, source) {
     return _src.slice(ss, pm[e - _firstNa]);
   };
   function nodeArr(s, len) {
-    const r = new Array(len);
+    const r = Array.from({ length: len });
     for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
     return r;
   }
   function nodeArrHoles(s, len) {
-    const r = new Array(len);
+    const r = Array.from({ length: len });
     for (let j = 0; j < len; j++) {
       const x = _u32[_extraBase + s + j];
       r[j] = x !== NULL ? node(x) : null;
@@ -139,7 +139,7 @@ function decode(buffer, source) {
     return p;
   }
   function _attachedCommentsOf(a, e) {
-    const out = new Array(e - a);
+    const out = Array.from({ length: e - a });
     for (let j = a; j < e; j++) {
       const o = _acOff + j * 12;
       const cf = _u8[o + 0];
@@ -596,7 +596,7 @@ function decode(buffer, source) {
   const lsOff = _cOff + commentCount * 20;
   const dOff = lsOff + lineStartsCount * 4;
   function _decodeComments() {
-    const out = new Array(commentCount);
+    const out = Array.from({ length: commentCount });
     for (let j = 0; j < commentCount; j++) {
       const o = _cOff + j * 20;
       const cf = _u8[o + 0];
@@ -614,7 +614,7 @@ function decode(buffer, source) {
     return out;
   }
   function _decodeLineStarts() {
-    const out = new Array(lineStartsCount);
+    const out = Array.from({ length: lineStartsCount });
     if (_firstNa >= _srcLen) {
       for (let j = 0; j < lineStartsCount; j++) {
         out[j] = dv.getUint32(lsOff + j * 4, true);
@@ -628,7 +628,7 @@ function decode(buffer, source) {
     return out;
   }
   function _decodeDiagnostics() {
-    const out = new Array(diagCount);
+    const out = Array.from({ length: diagCount });
     let dp = dOff;
     for (let j = 0; j < diagCount; j++) {
       const sev = SEVERITY[_u8[dp]]; dp++;
@@ -643,7 +643,7 @@ function decode(buffer, source) {
         help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
       }
       const lc = dv.getUint32(dp, true); dp += 4;
-      const labels = new Array(lc);
+      const labels = Array.from({ length: lc });
       for (let k = 0; k < lc; k++) {
         const ls = _p(dv.getUint32(dp, true)); dp += 4;
         const le = _p(dv.getUint32(dp, true)); dp += 4;

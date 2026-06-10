@@ -44,8 +44,8 @@ export class Analyzer {
     this.#linking = true;
     this.#diagnostics = [];
     for (const module of this.#modules.values()) {
-      module._.deps = [];
-      module._.dependents = [];
+      module._deps = [];
+      module._dependents = [];
     }
     for (const module of this.#modules.values()) {
       for (const record of module.imports) {
@@ -150,8 +150,8 @@ export class Analyzer {
   }
 
   #wire(from, to) {
-    if (!from._.deps.includes(to)) from._.deps.push(to);
-    if (!to._.dependents.includes(from)) to._.dependents.push(from);
+    if (!from._deps.includes(to)) from._deps.push(to);
+    if (!to._dependents.includes(from)) to._dependents.push(from);
   }
 
   // resolves `name` among `module`'s exports, following named

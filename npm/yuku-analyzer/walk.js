@@ -133,7 +133,7 @@ export function walkModule(module, visitor, root) {
   }
 
   (function visit(node, key, list, frame) {
-    let typed = handlers.size === 0 ? undefined : handlers.get(node.type);
+    let typed = handlers.get(node.type);
     // the scope was created for the original node, a replacement keeps
     // the same lexical position, so push/pop stays balanced on it
     const scope = types.has(node.type) ? byNode.get(node) : undefined;
@@ -156,7 +156,7 @@ export function walkModule(module, visitor, root) {
     }
     if (ctx._replacement !== null) {
       node = applyReplace(parent, key, list, frame);
-      typed = handlers.size === 0 ? undefined : handlers.get(node.type);
+      typed = handlers.get(node.type);
     }
 
     const skipped = ctx._skip;

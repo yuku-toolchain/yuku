@@ -332,6 +332,8 @@ interface Capture {
 interface Import {
   /** The importing module. */
   readonly module: Module;
+  /** Stable id, the index into {@link Module.imports}. */
+  readonly id: number;
   /** The local binding symbol, or null for side-effect imports. */
   readonly local: Symbol | null;
   /**
@@ -359,6 +361,8 @@ interface Import {
 interface Export {
   /** The exporting module. */
   readonly module: Module;
+  /** Stable id, the index into {@link Module.exports}. */
+  readonly id: number;
   /** The exported name (`"default"` included), or null for `export *`. */
   readonly name: string | null;
   /** True for `export * from "m"` without an alias. */

@@ -9,7 +9,9 @@
 //              (semantic queries and the walked AST share object
 //              identity), spans are readable without materializing
 //              nodes, and the semantic sections written by
-//              transfer_semantic.zig decode into typed-array views.
+//              transfer/semantic.zig are exposed as generated per-field
+//              accessors, so the wire layout never leaks into
+//              hand-written js.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -38,9 +40,7 @@ pub fn generate(w: *Writer, mode: Mode) !void {
     try writeDecodeBody(w, mode);
     switch (mode) {
         .parser => try w.writeAll("export { decode };\n"),
-        .analyzer => try w.writeAll(
-            "export { decode, SEM, SymbolFlags, SCOPE_KINDS, NAME_KINDS, IMPORT_PHASES };\n",
-        ),
+        .analyzer => try w.writeAll("export { decode, SymbolFlags };\n"),
     }
 }
 
@@ -77,58 +77,39 @@ fn jsFlagName(comptime zig_name: []const u8) []const u8 {
         "' has no js name in symbol_flag_names");
 }
 
-// comptime snake_case to camelCase for generated js field names.
-fn jsFieldName(comptime input: []const u8) []const u8 {
-    comptime {
-        var out: []const u8 = "";
-        var upper = false;
-        for (input) |c| {
-            if (c == '_') {
-                upper = true;
-            } else if (upper) {
-                out = out ++ &[_]u8{std.ascii.toUpper(c)};
-                upper = false;
-            } else {
-                out = out ++ &[_]u8{c};
-            }
-        }
-        return out;
-    }
+/// `view[i * stride + column]` js expression for one field of a packed
+/// semantic wire struct, rendered at comptime. stride and column come
+/// from `@sizeOf`/`@offsetOf`, so the generated index can never drift
+/// from the format.
+fn cell(
+    comptime view: []const u8,
+    comptime Packed: type,
+    comptime field: []const u8,
+) []const u8 {
+    return std.fmt.comptimePrint("{s}[i * {d} + {d}]", .{
+        view, @sizeOf(Packed) / 4, @offsetOf(Packed, field) / 4,
+    });
 }
 
-/// A `bits`-word constant of a semantic section, appended after the
-/// reflected field offsets.
-const BitConstant = struct { name: []const u8, value: u32 };
-
-// emits one semantic section layout: the stride and every u32 field
-// offset reflected from the packed wire struct, plus its bit constants.
-// every number the js side indexes with comes from here, so reordering
-// a wire struct field regenerates the offsets instead of corrupting
-// reads.
-fn writeSectionLayout(
-    w: *Writer,
-    comptime js_name: []const u8,
+/// `str(start, end)` js expression for a wire string handle stored as
+/// adjacent (start, end) columns.
+fn strCell(
+    comptime view: []const u8,
     comptime Packed: type,
-    comptime bit_constants: []const BitConstant,
-) !void {
-    try w.print("  {s}: Object.freeze({{ stride: {d}", .{ js_name, @sizeOf(Packed) / 4 });
-    inline for (@typeInfo(Packed).@"struct".fields) |field| {
-        if (comptime std.mem.startsWith(u8, field.name, "reserved")) continue;
-        try w.print(", {s}: {d}", .{
-            comptime jsFieldName(field.name),
-            @offsetOf(Packed, field.name) / 4,
-        });
+    comptime start_field: []const u8,
+    comptime end_field: []const u8,
+) []const u8 {
+    if (@offsetOf(Packed, end_field) != @offsetOf(Packed, start_field) + 4) {
+        @compileError("string handle columns must be adjacent: " ++ start_field);
     }
-    inline for (bit_constants) |constant| {
-        try w.print(", {s}: {d}", .{ constant.name, constant.value });
-    }
-    try w.writeAll(" }),\n");
+    return std.fmt.comptimePrint("str({s}, {s})", .{
+        cell(view, Packed, start_field), cell(view, Packed, end_field),
+    });
 }
 
 // emits the shared wire constants for the semantic sections: enum name
-// tables, the SymbolFlags bitset, and the per-section layouts. all
-// positions are reflected from the zig wire structs, so they cannot
-// drift.
+// tables and the SymbolFlags bitset, all reflected from the zig types,
+// so they cannot drift.
 fn writeSemanticConstants(w: *Writer) !void {
     try writeArray(w, "SCOPE_KINDS", &.{
         "global", "module",      "function",       "block",
@@ -145,29 +126,6 @@ fn writeSemanticConstants(w: *Writer) !void {
             @bitOffsetOf(Symbol.Flags, field.name),
         });
     }
-    try w.writeAll("});\n");
-
-    try w.writeAll("const SEM = Object.freeze({\n");
-    try writeSectionLayout(w, "scope", sem_rt.PackedScope, &.{
-        .{ .name = "kindMask", .value = sem_rt.SCOPE_KIND_MASK },
-        .{ .name = "strictBit", .value = sem_rt.SCOPE_STRICT_BIT },
-    });
-    try writeSectionLayout(w, "symbol", sem_rt.PackedSymbol, &.{});
-    try writeSectionLayout(w, "reference", sem_rt.PackedReference, &.{
-        .{ .name = "typeBit", .value = sem_rt.REFERENCE_TYPE_BIT },
-        .{ .name = "writeBit", .value = sem_rt.REFERENCE_WRITE_BIT },
-    });
-    try writeSectionLayout(w, "import", sem_rt.PackedImport, &.{
-        .{ .name = "nameKindMask", .value = sem_rt.IMPORT_NAME_KIND_MASK },
-        .{ .name = "typeBit", .value = sem_rt.IMPORT_TYPE_BIT },
-        .{ .name = "hasPhaseBit", .value = sem_rt.IMPORT_HAS_PHASE_BIT },
-        .{ .name = "phaseBit", .value = sem_rt.IMPORT_PHASE_BIT },
-    });
-    try writeSectionLayout(w, "export", sem_rt.PackedExport, &.{
-        .{ .name = "nameKindMask", .value = sem_rt.EXPORT_NAME_KIND_MASK },
-        .{ .name = "fromKindShift", .value = sem_rt.EXPORT_FROM_KIND_SHIFT },
-        .{ .name = "typeBit", .value = sem_rt.EXPORT_TYPE_BIT },
-    });
     try w.writeAll("});\n");
 }
 
@@ -281,12 +239,12 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    return _src.slice(ss, pm[e - _firstNa]);
         \\  }};
         \\  function nodeArr(s, len) {{
-        \\    const r = new Array(len);
+        \\    const r = Array.from({{ length: len }});
         \\    for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
         \\    return r;
         \\  }}
         \\  function nodeArrHoles(s, len) {{
-        \\    const r = new Array(len);
+        \\    const r = Array.from({{ length: len }});
         \\    for (let j = 0; j < len; j++) {{
         \\      const x = _u32[_extraBase + s + j];
         \\      r[j] = x !== NULL ? node(x) : null;
@@ -331,7 +289,7 @@ fn writeDecodeOpen(w: *Writer) !void {
 fn writeNodeFunction(w: *Writer, mode: Mode) !void {
     try w.print(
         \\  function _attachedCommentsOf(a, e) {{
-        \\    const out = new Array(e - a);
+        \\    const out = Array.from({{ length: e - a }});
         \\    for (let j = a; j < e; j++) {{
         \\      const o = _acOff + j * {[acsize]d};
         \\      const cf = _u8[o + {[ac_fl]d}];
@@ -406,7 +364,7 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
             \\    }
             \\  }
             \\  const _inner = _attached ? nodeWithComments : _decode;
-            \\  const _nodes = new Array(nodeCount);
+            \\  const _nodes = Array.from({ length: nodeCount });
             \\  const _nodeIndexes = new WeakMap();
             \\  function node(i) {
             \\    const m = _nodes[i];
@@ -1176,7 +1134,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\  const lsOff = _cOff + commentCount * {[csize]d};
         \\  const dOff = lsOff + lineStartsCount * 4;
         \\  function _decodeComments() {{
-        \\    const out = new Array(commentCount);
+        \\    const out = Array.from({{ length: commentCount }});
         \\    for (let j = 0; j < commentCount; j++) {{
         \\      const o = _cOff + j * {[csize]d};
         \\      const cf = _u8[o + {[c_fl]d}];
@@ -1194,7 +1152,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\    return out;
         \\  }}
         \\  function _decodeLineStarts() {{
-        \\    const out = new Array(lineStartsCount);
+        \\    const out = Array.from({{ length: lineStartsCount }});
         \\    if (_firstNa >= _srcLen) {{
         \\      for (let j = 0; j < lineStartsCount; j++) {{
         \\        out[j] = dv.getUint32(lsOff + j * 4, true);
@@ -1208,7 +1166,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\    return out;
         \\  }}
         \\  function _decodeDiagnostics() {{
-        \\    const out = new Array(diagCount);
+        \\    const out = Array.from({{ length: diagCount }});
         \\    let dp = dOff;
         \\    for (let j = 0; j < diagCount; j++) {{
         \\      const sev = SEVERITY[_u8[dp]]; dp++;
@@ -1223,7 +1181,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\        help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
         \\      }}
         \\      const lc = dv.getUint32(dp, true); dp += 4;
-        \\      const labels = new Array(lc);
+        \\      const labels = Array.from({{ length: lc }});
         \\      for (let k = 0; k < lc; k++) {{
         \\        const ls = _p(dv.getUint32(dp, true)); dp += 4;
         \\        const le = _p(dv.getUint32(dp, true)); dp += 4;
@@ -1312,9 +1270,9 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
 }
 
 // emits the analyzer-only decode internals: direct span reads (no node
-// materialization) and the lazy semantic-section views. the section
-// offset is found by skipping the variable-length diagnostics, then
-// rounding up to the 4-byte alignment the serializer padded to.
+// materialization) and the lazy `_semantic()` accessor object. the
+// section offset is found by skipping the variable-length diagnostics,
+// then rounding up to the 4-byte alignment the serializer padded to.
 fn writeSemanticBody(w: *Writer) !void {
     try w.print(
         \\  const _nodesU32 = _nodesOff >> 2;
@@ -1352,12 +1310,6 @@ fn writeSemanticBody(w: *Writer) !void {
         \\    o += importCount * {[import]d};
         \\    const exports = _u32.subarray(o, o + exportCount * {[expt]d});
         \\    o += exportCount * {[expt]d};
-        \\    return (_semView = {{
-        \\      scopeCount, symbolCount, referenceCount, declNodeCount,
-        \\      importCount, exportCount,
-        \\      scopes, symbols, declNodes, references, imports, exports,
-        \\    }});
-        \\  }}
         \\
     , .{
         .stride = rt.NODE_SIZE / 4,
@@ -1370,6 +1322,142 @@ fn writeSemanticBody(w: *Writer) !void {
         .reference = sem_rt.REFERENCE_SIZE / 4,
         .import = sem_rt.IMPORT_SIZE / 4,
         .expt = sem_rt.EXPORT_SIZE / 4,
+    });
+    try writeSemanticAccessors(w);
+    try w.writeAll(
+        \\  }
+        \\
+    );
+}
+
+// emits the accessor groups returned by `_semantic()`: one function per
+// wire field, every stride, column, and bit position folded in from the
+// packed structs at generation time. the hand-written js layer reads
+// semantics exclusively through these, so it never sees the layout.
+// `*Id` accessors return row ids with the none sentinel mapped to null.
+fn writeSemanticAccessors(w: *Writer) !void {
+    const Scope = sem_rt.PackedScope;
+    const Sym = sem_rt.PackedSymbol;
+    const Ref = sem_rt.PackedReference;
+    const Imp = sem_rt.PackedImport;
+    const Exp = sem_rt.PackedExport;
+    try w.writeAll(
+        \\    const _id = (v) => v === NULL ? null : v;
+        \\    return (_semView = {
+        \\
+    );
+    try w.print(
+        \\      scope: {{
+        \\        count: scopeCount,
+        \\        kind: (i) => SCOPE_KINDS[{[bits]s} & {[kmask]d}],
+        \\        strict: (i) => (({[bits]s} >> {[strict]d}) & 1) !== 0,
+        \\        node: (i) => node({[n]s}),
+        \\        nodeIndex: (i) => {[n]s},
+        \\        parentId: (i) => _id({[p]s}),
+        \\        hoistTargetId: (i) => {[h]s},
+        \\        start: (i) => startOf({[n]s}),
+        \\        end: (i) => endOf({[n]s}),
+        \\      }},
+        \\
+    , .{
+        .bits = comptime cell("scopes", Scope, "bits"),
+        .kmask = sem_rt.SCOPE_KIND_MASK,
+        .strict = sem_rt.SCOPE_STRICT_BIT,
+        .n = comptime cell("scopes", Scope, "node"),
+        .p = comptime cell("scopes", Scope, "parent"),
+        .h = comptime cell("scopes", Scope, "hoist_target"),
+    });
+    try w.print(
+        \\      symbol: {{
+        \\        count: symbolCount,
+        \\        name: (i) => {[name]s},
+        \\        flags: (i) => {[flags]s},
+        \\        scopeId: (i) => {[scope]s},
+        \\        declCount: (i) => {[dlen]s},
+        \\        declNode: (i, j) => node(declNodes[{[dstart]s} + j]),
+        \\        declNodeIndex: (i, j) => declNodes[{[dstart]s} + j],
+        \\      }},
+        \\
+    , .{
+        .name = comptime strCell("symbols", Sym, "name_start", "name_end"),
+        .flags = comptime cell("symbols", Sym, "flags"),
+        .scope = comptime cell("symbols", Sym, "scope"),
+        .dlen = comptime cell("symbols", Sym, "decls_len"),
+        .dstart = comptime cell("symbols", Sym, "decls_start"),
+    });
+    try w.print(
+        \\      reference: {{
+        \\        count: referenceCount,
+        \\        name: (i) => {[name]s},
+        \\        scopeId: (i) => {[scope]s},
+        \\        node: (i) => node({[n]s}),
+        \\        nodeIndex: (i) => {[n]s},
+        \\        kind: (i) => IMPORT_EXPORT_KINDS[({[bits]s} >> {[tbit]d}) & 1],
+        \\        isWrite: (i) => (({[bits]s} >> {[wbit]d}) & 1) !== 0,
+        \\        symbolId: (i) => _id({[sym]s}),
+        \\        start: (i) => startOf({[n]s}),
+        \\        end: (i) => endOf({[n]s}),
+        \\      }},
+        \\
+    , .{
+        .name = comptime strCell("references", Ref, "name_start", "name_end"),
+        .scope = comptime cell("references", Ref, "scope"),
+        .n = comptime cell("references", Ref, "node"),
+        .bits = comptime cell("references", Ref, "bits"),
+        .tbit = sem_rt.REFERENCE_TYPE_BIT,
+        .wbit = sem_rt.REFERENCE_WRITE_BIT,
+        .sym = comptime cell("references", Ref, "symbol"),
+    });
+    try w.print(
+        \\      import: {{
+        \\        count: importCount,
+        \\        symbolId: (i) => _id({[sym]s}),
+        \\        nameKind: (i) => NAME_KINDS[{[bits]s} & {[nkmask]d}],
+        \\        name: (i) => {[name]s},
+        \\        specifier: (i) => {[spec]s},
+        \\        typeOnly: (i) => (({[bits]s} >> {[tbit]d}) & 1) !== 0,
+        \\        phase: (i) =>
+        \\          ({[bits]s} >> {[hpbit]d}) & 1
+        \\            ? IMPORT_PHASES[({[bits]s} >> {[pbit]d}) & 1]
+        \\            : null,
+        \\        node: (i) => node({[n]s}),
+        \\      }},
+        \\
+    , .{
+        .sym = comptime cell("imports", Imp, "symbol"),
+        .bits = comptime cell("imports", Imp, "bits"),
+        .nkmask = sem_rt.IMPORT_NAME_KIND_MASK,
+        .name = comptime strCell("imports", Imp, "name_start", "name_end"),
+        .spec = comptime strCell("imports", Imp, "specifier_start", "specifier_end"),
+        .tbit = sem_rt.IMPORT_TYPE_BIT,
+        .hpbit = sem_rt.IMPORT_HAS_PHASE_BIT,
+        .pbit = sem_rt.IMPORT_PHASE_BIT,
+        .n = comptime cell("imports", Imp, "node"),
+    });
+    try w.print(
+        \\      export: {{
+        \\        count: exportCount,
+        \\        nameKind: (i) => NAME_KINDS[{[bits]s} & {[nkmask]d}],
+        \\        fromKind: (i) => NAME_KINDS[({[bits]s} >> {[fkshift]d}) & {[nkmask]d}],
+        \\        typeOnly: (i) => (({[bits]s} >> {[tbit]d}) & 1) !== 0,
+        \\        name: (i) => {[name]s},
+        \\        fromName: (i) => {[fname]s},
+        \\        specifier: (i) => {[spec]s},
+        \\        symbolId: (i) => _id({[sym]s}),
+        \\        node: (i) => node({[n]s}),
+        \\      }},
+        \\    }});
+        \\
+    , .{
+        .bits = comptime cell("exports", Exp, "bits"),
+        .nkmask = sem_rt.EXPORT_NAME_KIND_MASK,
+        .fkshift = sem_rt.EXPORT_FROM_KIND_SHIFT,
+        .tbit = sem_rt.EXPORT_TYPE_BIT,
+        .name = comptime strCell("exports", Exp, "name_start", "name_end"),
+        .fname = comptime strCell("exports", Exp, "from_name_start", "from_name_end"),
+        .spec = comptime strCell("exports", Exp, "specifier_start", "specifier_end"),
+        .sym = comptime cell("exports", Exp, "symbol"),
+        .n = comptime cell("exports", Exp, "node"),
     });
 }
 

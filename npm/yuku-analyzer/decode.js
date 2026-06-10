@@ -43,13 +43,6 @@ const SymbolFlags = Object.freeze({
   Exported: 1 << 17,
   Default: 1 << 18,
 });
-const SEM = Object.freeze({
-  scope: Object.freeze({ stride: 4, node: 0, parent: 1, hoistTarget: 2, bits: 3, kindMask: 255, strictBit: 8 }),
-  symbol: Object.freeze({ stride: 6, nameStart: 0, nameEnd: 1, flags: 2, scope: 3, declsStart: 4, declsLen: 5 }),
-  reference: Object.freeze({ stride: 6, nameStart: 0, nameEnd: 1, scope: 2, node: 3, bits: 4, symbol: 5, typeBit: 0, writeBit: 1 }),
-  import: Object.freeze({ stride: 8, symbol: 0, bits: 1, nameStart: 2, nameEnd: 3, specifierStart: 4, specifierEnd: 5, node: 6, nameKindMask: 3, typeBit: 2, hasPhaseBit: 3, phaseBit: 4 }),
-  export: Object.freeze({ stride: 10, bits: 0, nameStart: 1, nameEnd: 2, symbol: 3, fromNameStart: 4, fromNameEnd: 5, specifierStart: 6, specifierEnd: 7, node: 8, nameKindMask: 3, fromKindShift: 2, typeBit: 4 }),
-});
 function buildPosMap(src, byteLen, startByte) {
   const m = new Uint32Array(byteLen - startByte + 1);
   const len = src.length;
@@ -147,12 +140,12 @@ function decode(buffer, source) {
     return _src.slice(ss, pm[e - _firstNa]);
   };
   function nodeArr(s, len) {
-    const r = new Array(len);
+    const r = Array.from({ length: len });
     for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
     return r;
   }
   function nodeArrHoles(s, len) {
-    const r = new Array(len);
+    const r = Array.from({ length: len });
     for (let j = 0; j < len; j++) {
       const x = _u32[_extraBase + s + j];
       r[j] = x !== NULL ? node(x) : null;
@@ -170,7 +163,7 @@ function decode(buffer, source) {
     return p;
   }
   function _attachedCommentsOf(a, e) {
-    const out = new Array(e - a);
+    const out = Array.from({ length: e - a });
     for (let j = a; j < e; j++) {
       const o = _acOff + j * 12;
       const cf = _u8[o + 0];
@@ -624,7 +617,7 @@ function decode(buffer, source) {
     }
   }
   const _inner = _attached ? nodeWithComments : _decode;
-  const _nodes = new Array(nodeCount);
+  const _nodes = Array.from({ length: nodeCount });
   const _nodeIndexes = new WeakMap();
   function node(i) {
     const m = _nodes[i];
@@ -637,7 +630,7 @@ function decode(buffer, source) {
   const lsOff = _cOff + commentCount * 20;
   const dOff = lsOff + lineStartsCount * 4;
   function _decodeComments() {
-    const out = new Array(commentCount);
+    const out = Array.from({ length: commentCount });
     for (let j = 0; j < commentCount; j++) {
       const o = _cOff + j * 20;
       const cf = _u8[o + 0];
@@ -655,7 +648,7 @@ function decode(buffer, source) {
     return out;
   }
   function _decodeLineStarts() {
-    const out = new Array(lineStartsCount);
+    const out = Array.from({ length: lineStartsCount });
     if (_firstNa >= _srcLen) {
       for (let j = 0; j < lineStartsCount; j++) {
         out[j] = dv.getUint32(lsOff + j * 4, true);
@@ -669,7 +662,7 @@ function decode(buffer, source) {
     return out;
   }
   function _decodeDiagnostics() {
-    const out = new Array(diagCount);
+    const out = Array.from({ length: diagCount });
     let dp = dOff;
     for (let j = 0; j < diagCount; j++) {
       const sev = SEVERITY[_u8[dp]]; dp++;
@@ -684,7 +677,7 @@ function decode(buffer, source) {
         help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
       }
       const lc = dv.getUint32(dp, true); dp += 4;
-      const labels = new Array(lc);
+      const labels = Array.from({ length: lc });
       for (let k = 0; k < lc; k++) {
         const ls = _p(dv.getUint32(dp, true)); dp += 4;
         const le = _p(dv.getUint32(dp, true)); dp += 4;
@@ -735,10 +728,64 @@ function decode(buffer, source) {
     o += importCount * 8;
     const exports = _u32.subarray(o, o + exportCount * 10);
     o += exportCount * 10;
+    const _id = (v) => v === NULL ? null : v;
     return (_semView = {
-      scopeCount, symbolCount, referenceCount, declNodeCount,
-      importCount, exportCount,
-      scopes, symbols, declNodes, references, imports, exports,
+      scope: {
+        count: scopeCount,
+        kind: (i) => SCOPE_KINDS[scopes[i * 4 + 3] & 255],
+        strict: (i) => ((scopes[i * 4 + 3] >> 8) & 1) !== 0,
+        node: (i) => node(scopes[i * 4 + 0]),
+        nodeIndex: (i) => scopes[i * 4 + 0],
+        parentId: (i) => _id(scopes[i * 4 + 1]),
+        hoistTargetId: (i) => scopes[i * 4 + 2],
+        start: (i) => startOf(scopes[i * 4 + 0]),
+        end: (i) => endOf(scopes[i * 4 + 0]),
+      },
+      symbol: {
+        count: symbolCount,
+        name: (i) => str(symbols[i * 6 + 0], symbols[i * 6 + 1]),
+        flags: (i) => symbols[i * 6 + 2],
+        scopeId: (i) => symbols[i * 6 + 3],
+        declCount: (i) => symbols[i * 6 + 5],
+        declNode: (i, j) => node(declNodes[symbols[i * 6 + 4] + j]),
+        declNodeIndex: (i, j) => declNodes[symbols[i * 6 + 4] + j],
+      },
+      reference: {
+        count: referenceCount,
+        name: (i) => str(references[i * 6 + 0], references[i * 6 + 1]),
+        scopeId: (i) => references[i * 6 + 2],
+        node: (i) => node(references[i * 6 + 3]),
+        nodeIndex: (i) => references[i * 6 + 3],
+        kind: (i) => IMPORT_EXPORT_KINDS[(references[i * 6 + 4] >> 0) & 1],
+        isWrite: (i) => ((references[i * 6 + 4] >> 1) & 1) !== 0,
+        symbolId: (i) => _id(references[i * 6 + 5]),
+        start: (i) => startOf(references[i * 6 + 3]),
+        end: (i) => endOf(references[i * 6 + 3]),
+      },
+      import: {
+        count: importCount,
+        symbolId: (i) => _id(imports[i * 8 + 0]),
+        nameKind: (i) => NAME_KINDS[imports[i * 8 + 1] & 3],
+        name: (i) => str(imports[i * 8 + 2], imports[i * 8 + 3]),
+        specifier: (i) => str(imports[i * 8 + 4], imports[i * 8 + 5]),
+        typeOnly: (i) => ((imports[i * 8 + 1] >> 2) & 1) !== 0,
+        phase: (i) =>
+          (imports[i * 8 + 1] >> 3) & 1
+            ? IMPORT_PHASES[(imports[i * 8 + 1] >> 4) & 1]
+            : null,
+        node: (i) => node(imports[i * 8 + 6]),
+      },
+      export: {
+        count: exportCount,
+        nameKind: (i) => NAME_KINDS[exports[i * 10 + 0] & 3],
+        fromKind: (i) => NAME_KINDS[(exports[i * 10 + 0] >> 2) & 3],
+        typeOnly: (i) => ((exports[i * 10 + 0] >> 4) & 1) !== 0,
+        name: (i) => str(exports[i * 10 + 1], exports[i * 10 + 2]),
+        fromName: (i) => str(exports[i * 10 + 4], exports[i * 10 + 5]),
+        specifier: (i) => str(exports[i * 10 + 6], exports[i * 10 + 7]),
+        symbolId: (i) => _id(exports[i * 10 + 3]),
+        node: (i) => node(exports[i * 10 + 8]),
+      },
     });
   }
   let _program, _lineStarts, _diagnostics, _comments;
@@ -788,4 +835,4 @@ function decode(buffer, source) {
     get semantic() { return _semantic(); },
   };
 }
-export { decode, SEM, SymbolFlags, SCOPE_KINDS, NAME_KINDS, IMPORT_PHASES };
+export { decode, SymbolFlags };

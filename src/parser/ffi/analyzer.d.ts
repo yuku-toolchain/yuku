@@ -1,3 +1,16 @@
+/**
+ * yuku-analyzer: semantic analysis for JavaScript and TypeScript.
+ *
+ * One native call per file produces the AST plus the full semantic
+ * model: scopes, symbols, resolved references, and module records.
+ * Every query after that is local JS over compact tables, and every
+ * node returned by a semantic query is the same object you reach by
+ * walking `module.ast`.
+ *
+ * AST node types come from `yuku-parser` (a peer dependency); the
+ * objects are identical to the ones it produces.
+ */
+
 import type {
   Comment,
   Diagnostic,
@@ -319,6 +332,8 @@ interface Capture {
 interface Import {
   /** The importing module. */
   readonly module: Module;
+  /** Stable id, the index into {@link Module.imports}. */
+  readonly id: number;
   /** The local binding symbol, or null for side-effect imports. */
   readonly local: Symbol | null;
   /**
@@ -346,6 +361,8 @@ interface Import {
 interface Export {
   /** The exporting module. */
   readonly module: Module;
+  /** Stable id, the index into {@link Module.exports}. */
+  readonly id: number;
   /** The exported name (`"default"` included), or null for `export *`. */
   readonly name: string | null;
   /** True for `export * from "m"` without an alias. */
