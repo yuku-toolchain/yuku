@@ -504,7 +504,7 @@ The full bitset, generated from the native binder's layout:
 
 ## Performance
 
-Analysis runs at native speed, because it runs in Zig as part of the parse and crosses to JavaScript once per file as a compact buffer. A typical file parses and fully analyzes in well under a millisecond, walks at tens of millions of nodes per second (and scans semantic queries about 4x faster than that), and links thousands of modules in roughly a millisecond. It is validated against 45,000+ real-world files with zero failures.
+Analysis runs at native speed. Every scope, symbol, reference, flag, and piece of metadata is computed in Zig during the parse and crosses to JavaScript once per file as a compact buffer, all in well under a millisecond for a typical file. After that, nothing is recomputed. Each access to a scope, symbol, reference, or flag is a constant-time read straight off that buffer, and the cross-indexes behind queries like `symbolOf` and a symbol's references build once and answer in O(1) thereafter, so the whole pipeline stays exceptionally fast. Walking runs at tens of millions of nodes per second, semantic scans about 4x faster than that, and linking thousands of modules takes roughly a millisecond. The implementation is validated against 45,000+ real-world files with zero failures.
 
 ## TypeScript types
 
