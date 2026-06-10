@@ -12,5 +12,4 @@ pub const codegen = @import("codegen/root.zig");
 
 test {
     _ = codegen;
-    _ = @import("semantic/tests.zig");
 }

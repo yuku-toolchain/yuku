@@ -239,6 +239,12 @@ class Export {
   get isStar() {
     return this.#nameKind === "star";
   }
+  get isExportEquals() {
+    return this.#nameKind === "equals";
+  }
+  get globalName() {
+    return this.#nameKind === "global" ? this.#sem.export.name(this.id) : null;
+  }
   get typeOnly() {
     return this.#sem.export.typeOnly(this.id);
   }
@@ -555,7 +561,8 @@ export class Module {
       const stars = [];
       for (const record of this.exports) {
         if (record.isStar) stars.push(record);
-        else if (!map.has(record.name)) map.set(record.name, record);
+        else if (record.name !== null && !map.has(record.name))
+          map.set(record.name, record);
       }
       this.#exportMap = map;
       this.#starExports = stars;

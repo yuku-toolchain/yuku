@@ -106,7 +106,7 @@ fn writeSemanticConstants(w: *Writer) !void {
         "global", "module",      "function",       "block",
         "class",  "staticBlock", "expressionName", "tsModule",
     });
-    try writeArray(w, "NAME_KINDS", &.{ "named", "star", "none" });
+    try writeArray(w, "NAME_KINDS", &.{ "named", "star", "none", "equals", "global" });
     try writeArray(w, "IMPORT_PHASES", &.{ "source", "defer" });
 
     try w.writeAll("const SymbolFlags = Object.freeze({\n");

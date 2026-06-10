@@ -348,10 +348,17 @@ interface Export {
   readonly module: Module;
   /** Stable id, the index into {@link Module.exports}. */
   readonly id: number;
-  /** The exported name (`"default"` included), or null for `export *`. */
+  /**
+   * The exported name (`"default"` included), or null for `export *`,
+   * `export =`, and `export as namespace`.
+   */
   readonly name: string | null;
   /** True for `export * from "m"` without an alias. */
   readonly isStar: boolean;
+  /** True for TS `export = expr` (the module's entire export value). */
+  readonly isExportEquals: boolean;
+  /** The TS `export as namespace N` global name, or null. */
+  readonly globalName: string | null;
   readonly typeOnly: boolean;
   /** The backing local symbol, or null (re-exports, anonymous defaults). */
   readonly local: Symbol | null;

@@ -82,8 +82,8 @@ pub const PackedReference = extern struct {
     symbol: u32,
 };
 
-/// `bits` packs name_kind (bits 0-1), kind (bit 2: 0 value, 1 type),
-/// has_phase (bit 3), and phase (bit 4: 0 source, 1 defer).
+/// `bits` packs name_kind (bits 0-2), kind (bit 3: 0 value, 1 type),
+/// has_phase (bit 4), and phase (bit 5: 0 source, 1 defer).
 pub const PackedImport = extern struct {
     symbol: u32,
     bits: u32,
@@ -95,8 +95,8 @@ pub const PackedImport = extern struct {
     reserved: u32 = 0,
 };
 
-/// `bits` packs name_kind (bits 0-1), from_kind (bits 2-3), and kind
-/// (bit 4: 0 value, 1 type).
+/// `bits` packs name_kind (bits 0-2), from_kind (bits 3-5), and kind
+/// (bit 6: 0 value, 1 type).
 pub const PackedExport = extern struct {
     bits: u32,
     name_start: u32,
@@ -123,13 +123,13 @@ pub const SCOPE_KIND_MASK: u32 = 0xFF;
 pub const SCOPE_STRICT_BIT: u5 = 8;
 pub const REFERENCE_TYPE_BIT: u5 = 0;
 pub const REFERENCE_WRITE_BIT: u5 = 1;
-pub const IMPORT_NAME_KIND_MASK: u32 = 0b11;
-pub const IMPORT_TYPE_BIT: u5 = 2;
-pub const IMPORT_HAS_PHASE_BIT: u5 = 3;
-pub const IMPORT_PHASE_BIT: u5 = 4;
-pub const EXPORT_NAME_KIND_MASK: u32 = 0b11;
-pub const EXPORT_FROM_KIND_SHIFT: u5 = 2;
-pub const EXPORT_TYPE_BIT: u5 = 4;
+pub const IMPORT_NAME_KIND_MASK: u32 = 0b111;
+pub const IMPORT_TYPE_BIT: u5 = 3;
+pub const IMPORT_HAS_PHASE_BIT: u5 = 4;
+pub const IMPORT_PHASE_BIT: u5 = 5;
+pub const EXPORT_NAME_KIND_MASK: u32 = 0b111;
+pub const EXPORT_FROM_KIND_SHIFT: u5 = 3;
+pub const EXPORT_TYPE_BIT: u5 = 6;
 
 comptime {
     // every entry is whole u32s, no padding to leak
@@ -172,6 +172,14 @@ comptime {
     std.debug.assert(@intFromEnum(Scope.Kind.static_block) == 5);
     std.debug.assert(@intFromEnum(Scope.Kind.expression_name) == 6);
     std.debug.assert(@intFromEnum(Scope.Kind.ts_module) == 7);
+
+    // name kinds cross as raw bits inside the import/export `bits`
+    // words, a contract with the JS NAME_KINDS table. freeze the order.
+    std.debug.assert(@intFromEnum(module_record.NameKind.named) == 0);
+    std.debug.assert(@intFromEnum(module_record.NameKind.star) == 1);
+    std.debug.assert(@intFromEnum(module_record.NameKind.none) == 2);
+    std.debug.assert(@intFromEnum(module_record.NameKind.equals) == 3);
+    std.debug.assert(@intFromEnum(module_record.NameKind.global) == 4);
 }
 
 /// Total buffer size for the core AST sections plus the semantic

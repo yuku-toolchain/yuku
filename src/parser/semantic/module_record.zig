@@ -21,7 +21,7 @@ const SymbolTable = binder.SymbolTable;
 
 /// What an import or re-export takes from a module, or what an export
 /// exposes.
-pub const NameKind = enum(u2) {
+pub const NameKind = enum(u3) {
     /// A specific export name. Default imports/exports use the name
     /// "default", exactly as the spec models them.
     named,
@@ -29,6 +29,13 @@ pub const NameKind = enum(u2) {
     star,
     /// No binding at all: a side-effect import (`import "m"`).
     none,
+    /// The module's entire export value: TS `export = expr`. Exports
+    /// only; consumed by `import x = require("m")`.
+    equals,
+    /// A UMD global alias: TS `export as namespace N` exposes the
+    /// module under the global name `N`. Exports only; not reachable
+    /// from the import graph.
+    global,
 };
 
 /// One imported binding (or a side-effect import) of this module.
@@ -54,14 +61,15 @@ pub const ImportRecord = struct {
 /// One exported name of this module.
 pub const ExportRecord = struct {
     /// `.named` for every named export including "default". `.star`
-    /// only for `export * from "m"` without an alias.
+    /// only for `export * from "m"` without an alias. `.equals` for
+    /// `export =` and `.global` for `export as namespace`.
     name_kind: NameKind,
-    /// The exported name when `name_kind` is `.named`. `.empty` for
-    /// `export *`.
+    /// The exported name when `name_kind` is `.named`, or the global
+    /// name when `.global`. `.empty` for `export *` and `export =`.
     name: ast.String,
     /// The local symbol backing the export. `.none` for re-exports,
-    /// anonymous default exports, and expression default exports that
-    /// do not resolve to a module-scope binding.
+    /// anonymous default exports, and expression default or `export =`
+    /// exports that do not resolve to a module-scope binding.
     symbol: SymbolId,
     /// What a re-export takes from its source module. `.none` when the
     /// export is local (no `from` clause).
@@ -128,8 +136,8 @@ const Collector = struct {
             .export_named_declaration => |decl| try self.exportNamed(decl, index),
             .export_default_declaration => |decl| try self.exportDefault(decl, index),
             .export_all_declaration => |decl| try self.exportAll(decl, index),
-            // `export =` and `export as namespace` are legacy TS module
-            // forms outside the ESM graph model. not recorded.
+            .ts_export_assignment => |decl| try self.exportAssignment(decl, index),
+            .ts_namespace_export_declaration => |decl| try self.namespaceExport(decl, index),
             else => {},
         }
     }
@@ -426,6 +434,51 @@ const Collector = struct {
                 .node = index,
             });
         }
+    }
+
+    /// `export = expr` (legacy TS, CommonJS-style): the expression is
+    /// the module's entire export value. Like default exports, only an
+    /// identifier expression resolves to a module-scope binding.
+    fn exportAssignment(
+        self: *Collector,
+        decl: ast.TSExportAssignment,
+        index: ast.NodeIndex,
+    ) Allocator.Error!void {
+        const symbol: SymbolId = switch (self.tree.data(decl.expression)) {
+            .identifier_reference => |id| self.moduleBinding(id.name),
+            else => .none,
+        };
+
+        try self.exports.append(self.allocator, .{
+            .name_kind = .equals,
+            .name = .empty,
+            .symbol = symbol,
+            .from_kind = .none,
+            .from_name = .empty,
+            .specifier = .empty,
+            .kind = .value,
+            .node = index,
+        });
+    }
+
+    /// `export as namespace N` (legacy TS, UMD): exposes the module
+    /// under the global name `N`. The name is a global alias, not a
+    /// local binding, so no symbol backs it.
+    fn namespaceExport(
+        self: *Collector,
+        decl: ast.TSNamespaceExportDeclaration,
+        index: ast.NodeIndex,
+    ) Allocator.Error!void {
+        try self.exports.append(self.allocator, .{
+            .name_kind = .global,
+            .name = self.stringOf(decl.id),
+            .symbol = .none,
+            .from_kind = .none,
+            .from_name = .empty,
+            .specifier = .empty,
+            .kind = .value,
+            .node = index,
+        });
     }
 
     /// the symbol bound by a specifier's local `binding_identifier`.
