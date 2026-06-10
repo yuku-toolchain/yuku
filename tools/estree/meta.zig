@@ -1,17 +1,13 @@
-// Shared metadata for the ESTree decoder and encoder generators.
-// Both `decoder.zig` and `encoder.zig` pull operator
-// arrays, enum table names, ESTree name/field overrides, and the
-// identifier-position role table from this module so they cannot disagree
-// about wire format details.
+// Shared metadata for the ESTree decoder and encoder generators: operator
+// arrays, enum table names, ESTree name/field overrides, and the identifier
+// role table. One source so the two generators can't disagree.
 
 const std = @import("std");
 const parser = @import("parser");
 const ast = parser.ast;
 
-// String-only enum tables. The decoder emits a JS array (`const X = [...]`)
-// and the encoder emits an inverse object map (`const X_INV = {...}`).
-// Order must match the underlying zig enum variant order so the indices
-// line up with what `transfer.zig` packs.
+// String-only enum tables, in zig enum-variant order (the wire indices).
+// Decoder emits `const X = [...]`, encoder the inverse `X_INV = {...}`.
 
 pub const BINARY_OPS = [_][]const u8{
     "==", "!=",         "===", "!==", "<", "<=", ">", ">=", "+",  "-",
@@ -38,9 +34,8 @@ pub const CLASS_TYPES = [_][]const u8{ "ClassDeclaration", "ClassExpression" };
 pub const COMMENT_TYPES = [_][]const u8{ "Line", "Block" };
 pub const SEVERITY = [_][]const u8{ "error", "warning", "hint", "info" };
 
-// Tables whose elements aren't all plain strings (null, booleans, `+`/`-`).
-// The decoder writes these as raw JS expressions; the encoder builds an
-// inverse function from the raw form.
+// Tables with non-string elements (null, booleans, `+`/`-`), written as raw
+// JS by the decoder; the encoder builds the inverse from the raw form.
 
 pub const IMPORT_EXPORT_KINDS_RAW = [_][]const u8{ "\"value\"", "\"type\"" };
 pub const ACCESSIBILITY_RAW = [_][]const u8{ "null", "\"public\"", "\"private\"", "\"protected\"" };
@@ -50,10 +45,8 @@ pub const TS_MODULE_KINDS_RAW = [_][]const u8{ "\"namespace\"", "\"module\"" };
 pub const TS_MAPPED_OPTIONAL_RAW = [_][]const u8{ "false", "true", "\"+\"", "\"-\"" };
 pub const TS_MAPPED_READONLY_RAW = [_][]const u8{ "null", "true", "\"+\"", "\"-\"" };
 
-// Enum → JS table name. The decoder emits `TABLE[bits]` reads; the encoder
-// emits `TABLE_INV(value)` writes (function for the raw tables, object
-// indexer for the plain-string tables).
-
+// Enum -> JS table name (decoder reads `TABLE[bits]`, encoder writes via
+// `TABLE_INV`).
 pub fn enumTableName(comptime E: type) []const u8 {
     if (E == ast.BinaryOperator) return "BINARY_OPS";
     if (E == ast.LogicalOperator) return "LOGICAL_OPS";
@@ -79,9 +72,8 @@ pub fn enumNeedsInverseFn(comptime E: type) bool {
     return E == ast.Accessibility or E == ast.TSMappedTypeModifier;
 }
 
-// ESTree name overrides. Snake-to-pascal would produce the wrong name for
-// some variants (e.g. ts_jsdoc_* should be TSJSDoc*, not TSJsdoc*).
-
+// ESTree name overrides, where snake-to-pascal is wrong (e.g. ts_jsdoc_* ->
+// TSJSDoc*, not TSJsdoc*).
 const NAME_OVERRIDES = [_]struct { z: []const u8, e: []const u8 }{
     .{ .z = "function_body", .e = "BlockStatement" },
     .{ .z = "binding_rest_element", .e = "RestElement" },
@@ -140,12 +132,9 @@ pub fn snakeConvert(comptime name: []const u8, comptime pascal: bool) []const u8
     }
 }
 
-// Identifier dispatch role. ESTree always uses `type: "Identifier"`, but
-// Yuku has five variants. The role table records, per (parent tag, field
-// name), which Yuku variant the encoder must produce. The generic encoder
-// uses this to pick `encBindingTarget` / `encLabel` instead of the
-// default `encNode` when recursing into a NodeIndex child.
-
+// Identifier dispatch role. ESTree uses one `Identifier` type, but yuku has
+// five variants; this records, per (parent tag, field), which one the
+// encoder must produce when recursing into a NodeIndex child.
 pub const Role = enum {
     /// default: ESTree `Identifier` becomes `identifier_reference`.
     auto,
@@ -198,10 +187,8 @@ pub fn fieldRole(comptime tag: []const u8, comptime field: []const u8) Role {
     return .auto;
 }
 
-// Special-case set. Nodes whose ESTree shape can't be expressed by the
-// generic struct-to-object mapping. Mirrors the set in the decoder
-// generator so we don't drift between the two.
-
+// Encoder special-case set: nodes the generic struct-to-object mapping
+// can't express. (Superset of the decoder's; the encoder needs more.)
 const SPECIAL = [_][]const u8{
     "formal_parameter",              "formal_parameters",                  "function",
     "arrow_function_expression",     "program",                            "directive",

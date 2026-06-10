@@ -12,23 +12,23 @@
  */
 
 import type {
+  AliasName,
+  AliasNodes,
   Comment,
   Diagnostic,
   DiagnosticSeverity,
   Identifier,
   JSXIdentifier,
   Node,
+  NodeOfType,
+  NodeType,
   Program,
+  ScanCursor as BaseScanCursor,
   SourceLang,
   SourceLocation,
   SourceType,
+  WalkContext as BaseWalkContext,
 } from "yuku-parser";
-
-/** Discriminant `type` string of every AST node. */
-type NodeType = Node["type"];
-
-/** The node, or union of nodes, carrying a given `type`. */
-type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
 
 /** A diagnostic produced by {@link Analyzer.link}. */
 interface LinkDiagnostic {
@@ -238,12 +238,17 @@ interface Reference {
 }
 
 /**
- * Per-node context handed to walk handlers. One object is reused across
- * the whole walk; do not hold onto it across nodes.
+ * The semantic walk context: yuku-parser's {@link BaseWalkContext} (the
+ * same position info and mutation operations, exact same semantics)
+ * plus the module's semantic surface. One object is reused across the
+ * whole walk; do not hold onto it across nodes.
+ *
+ * On mutation: semantic tables are a snapshot of the parsed source, so
+ * new nodes have no symbols, references, or spans of their own.
+ * Analyze, transform, then print (or re-analyze the printed output for
+ * fresh semantics).
  */
-interface WalkContext<T extends Node = Node> {
-  /** The node being visited. */
-  readonly node: T;
+declare class WalkContext<T extends Node = Node> extends BaseWalkContext<T> {
   /** The module being walked. Every semantic query is in reach. */
   readonly module: Module;
   /**
@@ -252,48 +257,10 @@ interface WalkContext<T extends Node = Node> {
    * hoist targets are all exact).
    */
   readonly scope: Scope;
-  /** The parent node, or null at the walk root. */
-  readonly parent: Node | null;
-  /** The field on {@link parent} holding this node, or null at the root. */
-  readonly key: string | null;
-  /** Position within an array field, or null in a plain field. */
-  readonly index: number | null;
   /** Shorthand for `module.symbolOf(node)`. */
   readonly symbol: Symbol | null;
   /** Shorthand for `module.referenceOf(node)`. */
   readonly reference: Reference | null;
-  /** A copy of the ancestor chain, walk root first. */
-  ancestors(): Node[];
-  /** Do not descend into this node's children. `leave` still fires. */
-  skip(): void;
-  /** End the walk immediately. No further handlers fire. */
-  stop(): void;
-  /**
-   * Replaces the current node in its parent. In `enter`, the walk
-   * continues into the replacement's children and `leave` fires on the
-   * replacement. The walk root cannot be replaced.
-   *
-   * Semantic tables are a snapshot of the parsed source: new nodes have
-   * no symbols, references, or spans of their own. Analyze, transform,
-   * then print (or re-analyze the printed output for fresh semantics).
-   */
-  replace(node: Node): void;
-  /**
-   * Removes the current node: spliced out of an array field, nulled in
-   * a plain field. Children are not walked and `leave` does not fire.
-   * The walk root cannot be removed.
-   */
-  remove(): void;
-  /**
-   * Inserts a sibling before the current node. Array fields only. The
-   * inserted node is not visited.
-   */
-  insertBefore(node: Node): void;
-  /**
-   * Inserts a sibling after the current node. Array fields only. The
-   * walk visits the inserted node.
-   */
-  insertAfter(node: Node): void;
 }
 
 /** Handler invoked with the precisely-typed node and the walk context. */
@@ -307,15 +274,39 @@ interface WalkHooks<T extends Node = Node> {
 
 /**
  * Visitors passed to {@link Module.walk}: keys are node `type` strings
- * (handlers receive the matching node type), plus optional `enter` /
- * `leave` catch-alls. Order per node: catch-all `enter`, typed enter,
- * children, typed leave, catch-all `leave`.
+ * or alias group names (handlers receive the matching node type), plus
+ * optional `enter` / `leave` catch-alls. Order per node: catch-all
+ * `enter`, alias enters, typed enter, children, typed leave, alias
+ * leaves, catch-all `leave`.
  */
 type Visitors = {
   [K in NodeType]?: WalkHandler<NodeOfType<K>> | WalkHooks<NodeOfType<K>>;
 } & {
+  [A in AliasName]?: WalkHandler<AliasNodes<A>> | WalkHooks<AliasNodes<A>>;
+} & {
   enter?: WalkHandler;
   leave?: WalkHandler;
+};
+
+/**
+ * The semantic scan cursor: yuku-parser's {@link BaseScanCursor} plus
+ * symbol and reference lookups. Both are index-keyed, so a scan can
+ * resolve semantics without materializing any AST nodes.
+ */
+interface ScanCursor<T extends Node = Node> extends BaseScanCursor<T> {
+  /** The module being scanned. */
+  readonly module: Module;
+  /** Shorthand for `module.symbolOf(node)`, without materializing. */
+  readonly symbol: Symbol | null;
+  /** Shorthand for `module.referenceOf(node)`, without materializing. */
+  readonly reference: Reference | null;
+}
+
+/** Scan handlers keyed by node `type`, plus the universal `enter`. */
+type ScanVisitors = {
+  [K in NodeType]?: (cursor: ScanCursor<NodeOfType<K>>) => void;
+} & {
+  enter?: (cursor: ScanCursor) => void;
 };
 
 /** A free variable of a function, as reported by {@link Module.capturesOf}. */
@@ -454,6 +445,15 @@ interface Module {
    * non-scope nodes pay a single type lookup and nothing else.
    */
   walk(visitors: Visitors, root?: Node): void;
+
+  /**
+   * Readonly buffer scan with semantic context: visits the parsed node
+   * records directly without materializing AST objects, and resolves
+   * symbols and references in index space. Many times faster than
+   * {@link walk} for sparse queries; call {@link ScanCursor.node} to
+   * materialize a matched node (identity-shared with the walked AST).
+   */
+  scan(visitors: ScanVisitors): void;
   /** Collects every node of the given type(s), in source order. */
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
   findAll<K extends NodeType>(types: readonly K[]): NodeOfType<K>[];
@@ -562,6 +562,8 @@ export {
   type NodeOfType,
   type NodeType,
   type Reference,
+  type ScanCursor,
+  type ScanVisitors,
   type Scope,
   type ScopeKind,
   type Symbol,

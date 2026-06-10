@@ -1,0 +1,254 @@
+// The AST walker: typed visitors with alias groups, in-place mutation, and
+// table-driven descent. CHILD_KEYS and ALIAS_GROUPS are generated from the
+// Zig AST, so traversal can't drift. Mutation semantics are documented on
+// WalkContext in index.d.ts.
+import { ALIAS_GROUPS, CHILD_KEYS } from "./decode.js";
+
+export class WalkContext {
+  _ancestors = [];
+  _node = null;
+  _key = null;
+  _list = null;
+  _frame = null;
+  _skip = false;
+  _stopped = false;
+  _removed = false;
+  _replacement = null;
+  state;
+
+  get node() {
+    return this._node;
+  }
+  get parent() {
+    const a = this._ancestors;
+    return a.length === 0 ? null : a[a.length - 1];
+  }
+  get key() {
+    return this._key;
+  }
+  get index() {
+    return this._list === null ? null : this._frame.i;
+  }
+  ancestors() {
+    return [...this._ancestors];
+  }
+  skip() {
+    this._skip = true;
+  }
+  stop() {
+    this._stopped = true;
+  }
+  replace(node) {
+    if (node === null || typeof node !== "object" || typeof node.type !== "string") {
+      throw new TypeError("replace: expected an AST node");
+    }
+    if (this.parent === null) {
+      throw new TypeError("replace: cannot replace the walk root");
+    }
+    // synthetic nodes inherit the original span, for source maps
+    if (node.start === 0 && node.end === 0) {
+      node.start = this._node.start;
+      node.end = this._node.end;
+    }
+    this._replacement = node;
+  }
+  remove() {
+    if (this.parent === null) {
+      throw new TypeError("remove: cannot remove the walk root");
+    }
+    this._removed = true;
+  }
+  insertBefore(node) {
+    // advance past the insert so the current node keeps its turn and the
+    // new sibling is not visited
+    this.#insert(node, 0);
+    this._frame.i++;
+  }
+  insertAfter(node) {
+    // lands at the next slot, so the walk visits it
+    this.#insert(node, 1);
+  }
+  #insert(node, offset) {
+    if (this._list === null) {
+      throw new TypeError("insertBefore/insertAfter require a node in an array field");
+    }
+    this._list.splice(this._frame.i + offset, 0, node);
+  }
+}
+
+// folds a handler chain into one function. chains only exist when alias
+// handlers overlap a type, so the common case stays a direct call.
+function fold(fns) {
+  if (fns.length === 0) return null;
+  if (fns.length === 1) return fns[0];
+  return (node, ctx) => {
+    for (const fn of fns) {
+      fn(node, ctx);
+      if (ctx._stopped || ctx._removed) return;
+    }
+  };
+}
+
+function createDispatch(visitors) {
+  let enter = null;
+  let leave = null;
+  const concrete = new Map();
+  const aliased = [];
+  for (const [name, value] of Object.entries(visitors)) {
+    if (value == null) continue;
+    if (name === "enter") {
+      enter = value;
+      continue;
+    }
+    if (name === "leave") {
+      leave = value;
+      continue;
+    }
+    const e = typeof value === "function" ? value : (value.enter ?? null);
+    const l = typeof value === "function" ? null : (value.leave ?? null);
+    const group = ALIAS_GROUPS[name];
+    if (group !== undefined) aliased.push({ types: group, enter: e, leave: l });
+    else concrete.set(name, { enter: e, leave: l });
+  }
+  if (aliased.length === 0) {
+    return { enter, leave, typed: (type) => concrete.get(type) };
+  }
+  // per-type entries fold alias and concrete handlers: enter runs
+  // aliases in registration order then the concrete handler, leave
+  // mirrors it
+  const cache = new Map();
+  return {
+    enter,
+    leave,
+    typed(type) {
+      let entry = cache.get(type);
+      if (entry === undefined) {
+        const enters = [];
+        const leaves = [];
+        for (const a of aliased) {
+          if (a.enter !== null && a.types.has(type)) enters.push(a.enter);
+        }
+        const c = concrete.get(type);
+        if (c !== undefined && c.enter !== null) enters.push(c.enter);
+        if (c !== undefined && c.leave !== null) leaves.push(c.leave);
+        for (let i = aliased.length - 1; i >= 0; i--) {
+          const a = aliased[i];
+          if (a.leave !== null && a.types.has(type)) leaves.push(a.leave);
+        }
+        entry = { enter: fold(enters), leave: fold(leaves) };
+        cache.set(type, entry);
+      }
+      return entry;
+    },
+  };
+}
+
+/**
+ * Walk an AST depth-first, dispatching to typed visitors and mutating
+ * in place. Returns the root.
+ */
+export function walk(root, visitors, state) {
+  _walk(root, visitors, state, null, new WalkContext());
+  return root;
+}
+
+// internal: yuku-analyzer layers scope replay via `hooks` (enter returns a
+// token passed to exit, which runs after the node is handled, removal
+// included) and a WalkContext subclass. exits are skipped once stopped.
+export function _walk(root, visitors, state, hooks, ctx) {
+  const d = createDispatch(visitors);
+  ctx.state = state;
+  const ancestors = ctx._ancestors;
+
+  function position(node, key, list, frame) {
+    ctx._node = node;
+    ctx._key = key;
+    ctx._list = list;
+    ctx._frame = frame;
+  }
+
+  // swaps the current node in its parent slot and continues the walk on
+  // the replacement
+  function applyReplace(parent, key, list, frame) {
+    const next = ctx._replacement;
+    ctx._replacement = null;
+    if (list !== null) list[frame.i] = next;
+    else parent[key] = next;
+    return next;
+  }
+
+  function applyRemove(parent, key, list, frame) {
+    ctx._removed = false;
+    if (list !== null) {
+      list.splice(frame.i, 1);
+      frame.i--;
+    } else {
+      parent[key] = null;
+    }
+  }
+
+  (function visit(node, key, list, frame) {
+    let typed = d.typed(node.type);
+    const token = hooks === null ? undefined : hooks.enter(node);
+    const parent = ctx.parent;
+
+    position(node, key, list, frame);
+    if (d.enter !== null) {
+      d.enter(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (typed !== undefined && typed.enter !== null) {
+      typed.enter(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (ctx._removed) {
+      applyRemove(parent, key, list, frame);
+      if (hooks !== null) hooks.exit(token);
+      return true;
+    }
+    if (ctx._replacement !== null) {
+      node = applyReplace(parent, key, list, frame);
+      typed = d.typed(node.type);
+    }
+
+    const skipped = ctx._skip;
+    ctx._skip = false;
+    if (!skipped) {
+      const keys = CHILD_KEYS[node.type];
+      if (keys !== undefined && keys.length > 0) {
+        ancestors.push(node);
+        for (let k = 0; k < keys.length; k++) {
+          const key2 = keys[k];
+          const value = node[key2];
+          if (value === null || value === undefined || typeof value !== "object") continue;
+          if (Array.isArray(value)) {
+            const childFrame = { i: 0 };
+            for (; childFrame.i < value.length; childFrame.i++) {
+              const item = value[childFrame.i];
+              // pattern element holes are null
+              if (item !== null && !visit(item, key2, value, childFrame)) return false;
+            }
+          } else if (!visit(value, key2, null, null)) {
+            return false;
+          }
+        }
+        ancestors.pop();
+      }
+    }
+
+    position(node, key, list, frame);
+    if (typed !== undefined && typed.leave !== null) {
+      typed.leave(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (d.leave !== null) {
+      d.leave(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (ctx._removed) applyRemove(parent, key, list, frame);
+    else if (ctx._replacement !== null) applyReplace(parent, key, list, frame);
+
+    if (hooks !== null) hooks.exit(token);
+    return true;
+  })(root, null, null, null);
+}

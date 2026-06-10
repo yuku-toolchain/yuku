@@ -14,7 +14,8 @@
     "index.js",
     "index.d.ts",
     "binding.js",
-    "decode.js"
+    "decode.js",
+    "walk.js"
   ],
   "optionalDependencies": {
     "@yuku-parser/binding-linux-x64-gnu": "0.5.31",

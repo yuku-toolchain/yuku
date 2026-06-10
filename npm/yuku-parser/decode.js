@@ -19,6 +19,555 @@ const TS_METHOD_SIGNATURE_KINDS = ["method", "get", "set"];
 const TS_MODULE_KINDS = ["namespace", "module"];
 const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
+const CHILD_KEYS = Object.create(null);
+function _ck(type, keys) {
+  const prev = CHILD_KEYS[type];
+  if (prev === undefined) CHILD_KEYS[type] = keys;
+  else for (const k of keys) if (!prev.includes(k)) prev.push(k);
+}
+_ck("SequenceExpression", ["expressions"]);
+_ck("ParenthesizedExpression", ["expression"]);
+_ck("ArrowFunctionExpression", ["params", "body", "typeParameters", "returnType"]);
+_ck("FunctionDeclaration", ["id", "params", "body", "typeParameters", "returnType"]);
+_ck("FunctionExpression", ["id", "params", "body", "typeParameters", "returnType"]);
+_ck("TSDeclareFunction", ["id", "params", "body", "typeParameters", "returnType"]);
+_ck("TSEmptyBodyFunctionExpression", ["id", "params", "body", "typeParameters", "returnType"]);
+_ck("BlockStatement", ["body"]);
+_ck("BlockStatement", ["body"]);
+_ck("BinaryExpression", ["left", "right"]);
+_ck("LogicalExpression", ["left", "right"]);
+_ck("ConditionalExpression", ["test", "consequent", "alternate"]);
+_ck("UnaryExpression", ["argument"]);
+_ck("UpdateExpression", ["argument"]);
+_ck("AssignmentExpression", ["left", "right"]);
+_ck("ArrayExpression", ["elements"]);
+_ck("ObjectExpression", ["properties"]);
+_ck("SpreadElement", ["argument"]);
+_ck("Property", ["key", "value"]);
+_ck("MemberExpression", ["object", "property"]);
+_ck("CallExpression", ["callee", "arguments", "typeArguments"]);
+_ck("ChainExpression", ["expression"]);
+_ck("TaggedTemplateExpression", ["tag", "quasi", "typeArguments"]);
+_ck("NewExpression", ["callee", "arguments", "typeArguments"]);
+_ck("AwaitExpression", ["argument"]);
+_ck("YieldExpression", ["argument"]);
+_ck("MetaProperty", ["meta", "property"]);
+_ck("Decorator", ["expression"]);
+_ck("ClassDeclaration", ["decorators", "id", "superClass", "body", "typeParameters", "superTypeArguments", "implements"]);
+_ck("ClassExpression", ["decorators", "id", "superClass", "body", "typeParameters", "superTypeArguments", "implements"]);
+_ck("ClassBody", ["body"]);
+_ck("MethodDefinition", ["decorators", "key", "value"]);
+_ck("TSAbstractMethodDefinition", ["decorators", "key", "value"]);
+_ck("PropertyDefinition", ["decorators", "key", "value", "typeAnnotation"]);
+_ck("AccessorProperty", ["decorators", "key", "value", "typeAnnotation"]);
+_ck("TSAbstractPropertyDefinition", ["decorators", "key", "value", "typeAnnotation"]);
+_ck("TSAbstractAccessorProperty", ["decorators", "key", "value", "typeAnnotation"]);
+_ck("StaticBlock", ["body"]);
+_ck("Super", []);
+_ck("Literal", []);
+_ck("Literal", []);
+_ck("Literal", []);
+_ck("Literal", []);
+_ck("Literal", []);
+_ck("ThisExpression", []);
+_ck("Literal", []);
+_ck("TemplateLiteral", ["quasis", "expressions"]);
+_ck("TemplateElement", []);
+_ck("Identifier", []);
+_ck("PrivateIdentifier", []);
+_ck("Identifier", ["decorators", "typeAnnotation"]);
+_ck("Identifier", []);
+_ck("Identifier", []);
+_ck("ExpressionStatement", ["expression"]);
+_ck("IfStatement", ["test", "consequent", "alternate"]);
+_ck("SwitchStatement", ["discriminant", "cases"]);
+_ck("SwitchCase", ["test", "consequent"]);
+_ck("ForStatement", ["init", "test", "update", "body"]);
+_ck("ForInStatement", ["left", "right", "body"]);
+_ck("ForOfStatement", ["left", "right", "body"]);
+_ck("WhileStatement", ["test", "body"]);
+_ck("DoWhileStatement", ["body", "test"]);
+_ck("BreakStatement", ["label"]);
+_ck("ContinueStatement", ["label"]);
+_ck("LabeledStatement", ["label", "body"]);
+_ck("WithStatement", ["object", "body"]);
+_ck("ReturnStatement", ["argument"]);
+_ck("ThrowStatement", ["argument"]);
+_ck("TryStatement", ["block", "handler", "finalizer"]);
+_ck("CatchClause", ["param", "body"]);
+_ck("DebuggerStatement", []);
+_ck("EmptyStatement", []);
+_ck("VariableDeclaration", ["declarations"]);
+_ck("VariableDeclarator", ["id", "init"]);
+_ck("ExpressionStatement", ["expression"]);
+_ck("AssignmentPattern", ["left", "right", "decorators", "typeAnnotation"]);
+_ck("RestElement", ["argument", "decorators", "typeAnnotation"]);
+_ck("ArrayPattern", ["decorators", "elements", "typeAnnotation"]);
+_ck("ObjectPattern", ["decorators", "properties", "typeAnnotation"]);
+_ck("Property", ["key", "value"]);
+_ck("Program", ["hashbang", "body"]);
+_ck("ImportExpression", ["source", "options"]);
+_ck("ImportDeclaration", ["specifiers", "source", "attributes"]);
+_ck("ImportSpecifier", ["imported", "local"]);
+_ck("ImportDefaultSpecifier", ["local"]);
+_ck("ImportNamespaceSpecifier", ["local"]);
+_ck("ImportAttribute", ["key", "value"]);
+_ck("ExportNamedDeclaration", ["declaration", "specifiers", "source", "attributes"]);
+_ck("ExportDefaultDeclaration", ["declaration"]);
+_ck("ExportAllDeclaration", ["exported", "source", "attributes"]);
+_ck("ExportSpecifier", ["local", "exported"]);
+_ck("TSTypeAnnotation", ["typeAnnotation"]);
+_ck("TSAnyKeyword", []);
+_ck("TSUnknownKeyword", []);
+_ck("TSNeverKeyword", []);
+_ck("TSVoidKeyword", []);
+_ck("TSNullKeyword", []);
+_ck("TSUndefinedKeyword", []);
+_ck("TSStringKeyword", []);
+_ck("TSNumberKeyword", []);
+_ck("TSBigIntKeyword", []);
+_ck("TSBooleanKeyword", []);
+_ck("TSSymbolKeyword", []);
+_ck("TSObjectKeyword", []);
+_ck("TSIntrinsicKeyword", []);
+_ck("TSThisType", []);
+_ck("TSTypeReference", ["typeName", "typeArguments"]);
+_ck("TSQualifiedName", ["left", "right"]);
+_ck("TSTypeQuery", ["exprName", "typeArguments"]);
+_ck("TSImportType", ["source", "options", "qualifier", "typeArguments"]);
+_ck("TSTypeParameter", ["name", "constraint", "default"]);
+_ck("TSTypeParameterDeclaration", ["params"]);
+_ck("TSTypeParameterInstantiation", ["params"]);
+_ck("TSLiteralType", ["literal"]);
+_ck("TSTemplateLiteralType", ["quasis", "types"]);
+_ck("TSArrayType", ["elementType"]);
+_ck("TSIndexedAccessType", ["objectType", "indexType"]);
+_ck("TSTupleType", ["elementTypes"]);
+_ck("TSNamedTupleMember", ["label", "elementType"]);
+_ck("TSOptionalType", ["typeAnnotation"]);
+_ck("TSRestType", ["typeAnnotation"]);
+_ck("TSJSDocNullableType", ["typeAnnotation"]);
+_ck("TSJSDocNonNullableType", ["typeAnnotation"]);
+_ck("TSJSDocUnknownType", []);
+_ck("TSUnionType", ["types"]);
+_ck("TSIntersectionType", ["types"]);
+_ck("TSConditionalType", ["checkType", "extendsType", "trueType", "falseType"]);
+_ck("TSInferType", ["typeParameter"]);
+_ck("TSTypeOperator", ["typeAnnotation"]);
+_ck("TSParenthesizedType", ["typeAnnotation"]);
+_ck("TSFunctionType", ["typeParameters", "params", "returnType"]);
+_ck("TSConstructorType", ["typeParameters", "params", "returnType"]);
+_ck("TSTypePredicate", ["parameterName", "typeAnnotation"]);
+_ck("TSTypeLiteral", ["members"]);
+_ck("TSMappedType", ["key", "constraint", "nameType", "typeAnnotation"]);
+_ck("TSPropertySignature", ["key", "typeAnnotation"]);
+_ck("TSMethodSignature", ["key", "typeParameters", "params", "returnType"]);
+_ck("TSCallSignatureDeclaration", ["typeParameters", "params", "returnType"]);
+_ck("TSConstructSignatureDeclaration", ["typeParameters", "params", "returnType"]);
+_ck("TSIndexSignature", ["parameters", "typeAnnotation"]);
+_ck("TSTypeAliasDeclaration", ["id", "typeParameters", "typeAnnotation"]);
+_ck("TSInterfaceDeclaration", ["id", "typeParameters", "extends", "body"]);
+_ck("TSInterfaceBody", ["body"]);
+_ck("TSInterfaceHeritage", ["expression", "typeArguments"]);
+_ck("TSClassImplements", ["expression", "typeArguments"]);
+_ck("TSEnumDeclaration", ["id", "body"]);
+_ck("TSEnumBody", ["members"]);
+_ck("TSEnumMember", ["id", "initializer"]);
+_ck("TSModuleDeclaration", ["id", "body"]);
+_ck("TSModuleBlock", ["body"]);
+_ck("TSModuleDeclaration", ["id", "body"]);
+_ck("TSParameterProperty", ["decorators", "parameter"]);
+_ck("Identifier", ["typeAnnotation"]);
+_ck("TSAsExpression", ["expression", "typeAnnotation"]);
+_ck("TSSatisfiesExpression", ["expression", "typeAnnotation"]);
+_ck("TSTypeAssertion", ["typeAnnotation", "expression"]);
+_ck("TSNonNullExpression", ["expression"]);
+_ck("TSInstantiationExpression", ["expression", "typeArguments"]);
+_ck("TSExportAssignment", ["expression"]);
+_ck("TSNamespaceExportDeclaration", ["id"]);
+_ck("TSImportEqualsDeclaration", ["id", "moduleReference"]);
+_ck("TSExternalModuleReference", ["expression"]);
+_ck("JSXElement", ["openingElement", "children", "closingElement"]);
+_ck("JSXOpeningElement", ["name", "attributes", "typeArguments"]);
+_ck("JSXClosingElement", ["name"]);
+_ck("JSXFragment", ["openingFragment", "children", "closingFragment"]);
+_ck("JSXOpeningFragment", []);
+_ck("JSXClosingFragment", []);
+_ck("JSXIdentifier", []);
+_ck("JSXNamespacedName", ["namespace", "name"]);
+_ck("JSXMemberExpression", ["object", "property"]);
+_ck("JSXAttribute", ["name", "value"]);
+_ck("JSXSpreadAttribute", ["argument"]);
+_ck("JSXExpressionContainer", ["expression"]);
+_ck("JSXEmptyExpression", []);
+_ck("JSXText", []);
+_ck("JSXSpreadChild", ["expression"]);
+_ck("Hashbang", []);
+const ALIAS_GROUPS = {
+  Expression: new Set(["Identifier", "Literal", "ThisExpression", "Super", "ArrayExpression", "ObjectExpression", "FunctionExpression", "ArrowFunctionExpression", "ClassExpression", "TaggedTemplateExpression", "TemplateLiteral", "MemberExpression", "CallExpression", "NewExpression", "ChainExpression", "SequenceExpression", "ParenthesizedExpression", "BinaryExpression", "LogicalExpression", "ConditionalExpression", "UnaryExpression", "UpdateExpression", "AssignmentExpression", "YieldExpression", "AwaitExpression", "ImportExpression", "MetaProperty", "TSAsExpression", "TSSatisfiesExpression", "TSTypeAssertion", "TSNonNullExpression", "TSInstantiationExpression", "JSXElement", "JSXFragment"]),
+  Statement: new Set(["ExpressionStatement", "BlockStatement", "EmptyStatement", "DebuggerStatement", "ReturnStatement", "LabeledStatement", "BreakStatement", "ContinueStatement", "IfStatement", "SwitchStatement", "ThrowStatement", "TryStatement", "WhileStatement", "DoWhileStatement", "ForStatement", "ForInStatement", "ForOfStatement", "WithStatement", "FunctionDeclaration", "ClassDeclaration", "VariableDeclaration", "TSDeclareFunction", "TSTypeAliasDeclaration", "TSInterfaceDeclaration", "TSEnumDeclaration", "TSModuleDeclaration", "TSImportEqualsDeclaration"]),
+  Declaration: new Set(["FunctionDeclaration", "ClassDeclaration", "VariableDeclaration", "TSDeclareFunction", "TSTypeAliasDeclaration", "TSInterfaceDeclaration", "TSEnumDeclaration", "TSModuleDeclaration", "TSImportEqualsDeclaration"]),
+  ModuleDeclaration: new Set(["ImportDeclaration", "ExportNamedDeclaration", "ExportDefaultDeclaration", "ExportAllDeclaration", "TSExportAssignment", "TSNamespaceExportDeclaration"]),
+  Function: new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"]),
+  Class: new Set(["ClassDeclaration", "ClassExpression"]),
+  Method: new Set(["MethodDefinition", "TSAbstractMethodDefinition"]),
+  Loop: new Set(["ForStatement", "ForInStatement", "ForOfStatement", "WhileStatement", "DoWhileStatement"]),
+  Pattern: new Set(["Identifier", "ArrayPattern", "ObjectPattern", "AssignmentPattern", "RestElement"]),
+  JSX: new Set(["JSXElement", "JSXOpeningElement", "JSXClosingElement", "JSXFragment", "JSXOpeningFragment", "JSXClosingFragment", "JSXIdentifier", "JSXNamespacedName", "JSXMemberExpression", "JSXAttribute", "JSXSpreadAttribute", "JSXExpressionContainer", "JSXEmptyExpression", "JSXText", "JSXSpreadChild"]),
+  TSType: new Set(["TSAnyKeyword", "TSUnknownKeyword", "TSNeverKeyword", "TSVoidKeyword", "TSNullKeyword", "TSUndefinedKeyword", "TSStringKeyword", "TSNumberKeyword", "TSBigIntKeyword", "TSBooleanKeyword", "TSSymbolKeyword", "TSObjectKeyword", "TSIntrinsicKeyword", "TSThisType", "TSTypeReference", "TSTypeQuery", "TSImportType", "TSLiteralType", "TSTemplateLiteralType", "TSArrayType", "TSIndexedAccessType", "TSTupleType", "TSNamedTupleMember", "TSJSDocNullableType", "TSJSDocNonNullableType", "TSJSDocUnknownType", "TSUnionType", "TSIntersectionType", "TSConditionalType", "TSInferType", "TSTypeOperator", "TSParenthesizedType", "TSFunctionType", "TSConstructorType", "TSTypePredicate", "TSTypeLiteral", "TSMappedType"]),
+};
+const SCAN_CHILDREN = [
+  [2, 2],
+  [0, 2],
+  [0, 2, 0, 3, 0, 4, 0, 5],
+  [0, 2, 0, 3, 0, 4, 0, 5, 0, 6],
+  [2, 2],
+  [2, 2],
+  [2, 2, 0, 3],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3],
+  [2, 2],
+  [2, 2],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 2, 3, 0, 4],
+  [0, 2],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 2, 3, 0, 4],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2],
+  [2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 1, 8],
+  [2, 2],
+  [2, 2, 0, 3, 0, 4],
+  [2, 2, 0, 3, 0, 4, 0, 5],
+  [2, 2],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [2, 2, 1, 3],
+  [],
+  [],
+  [],
+  [2, 4, 0, 5],
+  [],
+  [],
+  [0, 2],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 2, 3],
+  [0, 2, 2, 3],
+  [0, 2, 0, 3, 0, 4, 0, 5],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3],
+  [],
+  [],
+  [2, 2],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2, 0, 3, 2, 4, 0, 5],
+  [0, 2, 2, 3, 0, 4],
+  [2, 2, 0, 3, 1, 4, 0, 6],
+  [2, 2, 0, 3, 1, 4, 0, 6],
+  [0, 2, 0, 3],
+  [2, 2],
+  [0, 2, 0, 3],
+  [2, 2, 0, 3, 1, 4],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2, 2, 3, 0, 4, 1, 5],
+  [0, 2],
+  [0, 2, 0, 3, 2, 4],
+  [0, 2, 0, 3],
+  [0, 2],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3, 0, 4, 0, 5],
+  [0, 2, 0, 3, 0, 4],
+  [2, 2],
+  [2, 2],
+  [0, 2],
+  [2, 2, 1, 3],
+  [0, 2],
+  [0, 2, 0, 3],
+  [2, 2],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2],
+  [0, 2],
+  [0, 2],
+  [],
+  [2, 2],
+  [2, 2],
+  [0, 2, 0, 3, 0, 4, 0, 5],
+  [0, 2],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3],
+  [2, 2],
+  [0, 2, 0, 3, 0, 4, 0, 5],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3, 0, 4, 0, 5],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3, 0, 4],
+  [2, 2, 0, 3],
+  [0, 2, 0, 3, 0, 4],
+  [0, 2, 0, 3, 2, 4, 0, 5],
+  [2, 2],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [2, 2],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [2, 2],
+  [0, 2, 0, 3],
+  [2, 2, 0, 3],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2, 2, 3, 0, 4],
+  [0, 2, 2, 3, 0, 4],
+  [0, 2],
+  [0, 2, 2, 3, 0, 4],
+  [],
+  [],
+  [],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2, 0, 3],
+  [0, 2],
+  [0, 2],
+  [],
+  [],
+  [0, 2],
+];
+const TAG_TYPES = [
+  "SequenceExpression",
+  "ParenthesizedExpression",
+  "ArrowFunctionExpression",
+  0,
+  "BlockStatement",
+  "BlockStatement",
+  null,
+  null,
+  "BinaryExpression",
+  "LogicalExpression",
+  "ConditionalExpression",
+  "UnaryExpression",
+  "UpdateExpression",
+  "AssignmentExpression",
+  "ArrayExpression",
+  "ObjectExpression",
+  "SpreadElement",
+  "Property",
+  "MemberExpression",
+  "CallExpression",
+  "ChainExpression",
+  "TaggedTemplateExpression",
+  "NewExpression",
+  "AwaitExpression",
+  "YieldExpression",
+  "MetaProperty",
+  "Decorator",
+  0,
+  "ClassBody",
+  0,
+  0,
+  "StaticBlock",
+  "Super",
+  "Literal",
+  "Literal",
+  "Literal",
+  "Literal",
+  "Literal",
+  "ThisExpression",
+  "Literal",
+  "TemplateLiteral",
+  "TemplateElement",
+  "Identifier",
+  "PrivateIdentifier",
+  "Identifier",
+  "Identifier",
+  "Identifier",
+  "ExpressionStatement",
+  "IfStatement",
+  "SwitchStatement",
+  "SwitchCase",
+  "ForStatement",
+  "ForInStatement",
+  "ForOfStatement",
+  "WhileStatement",
+  "DoWhileStatement",
+  "BreakStatement",
+  "ContinueStatement",
+  "LabeledStatement",
+  "WithStatement",
+  "ReturnStatement",
+  "ThrowStatement",
+  "TryStatement",
+  "CatchClause",
+  "DebuggerStatement",
+  "EmptyStatement",
+  "VariableDeclaration",
+  "VariableDeclarator",
+  "ExpressionStatement",
+  "AssignmentPattern",
+  "RestElement",
+  "ArrayPattern",
+  "ObjectPattern",
+  "Property",
+  "Program",
+  "ImportExpression",
+  "ImportDeclaration",
+  "ImportSpecifier",
+  "ImportDefaultSpecifier",
+  "ImportNamespaceSpecifier",
+  "ImportAttribute",
+  "ExportNamedDeclaration",
+  "ExportDefaultDeclaration",
+  "ExportAllDeclaration",
+  "ExportSpecifier",
+  "TSTypeAnnotation",
+  "TSAnyKeyword",
+  "TSUnknownKeyword",
+  "TSNeverKeyword",
+  "TSVoidKeyword",
+  "TSNullKeyword",
+  "TSUndefinedKeyword",
+  "TSStringKeyword",
+  "TSNumberKeyword",
+  "TSBigIntKeyword",
+  "TSBooleanKeyword",
+  "TSSymbolKeyword",
+  "TSObjectKeyword",
+  "TSIntrinsicKeyword",
+  "TSThisType",
+  "TSTypeReference",
+  "TSQualifiedName",
+  "TSTypeQuery",
+  "TSImportType",
+  "TSTypeParameter",
+  "TSTypeParameterDeclaration",
+  "TSTypeParameterInstantiation",
+  "TSLiteralType",
+  "TSTemplateLiteralType",
+  "TSArrayType",
+  "TSIndexedAccessType",
+  "TSTupleType",
+  "TSNamedTupleMember",
+  "TSOptionalType",
+  "TSRestType",
+  "TSJSDocNullableType",
+  "TSJSDocNonNullableType",
+  "TSJSDocUnknownType",
+  "TSUnionType",
+  "TSIntersectionType",
+  "TSConditionalType",
+  "TSInferType",
+  "TSTypeOperator",
+  "TSParenthesizedType",
+  "TSFunctionType",
+  "TSConstructorType",
+  "TSTypePredicate",
+  "TSTypeLiteral",
+  "TSMappedType",
+  "TSPropertySignature",
+  "TSMethodSignature",
+  "TSCallSignatureDeclaration",
+  "TSConstructSignatureDeclaration",
+  "TSIndexSignature",
+  "TSTypeAliasDeclaration",
+  "TSInterfaceDeclaration",
+  "TSInterfaceBody",
+  "TSInterfaceHeritage",
+  "TSClassImplements",
+  "TSEnumDeclaration",
+  "TSEnumBody",
+  "TSEnumMember",
+  "TSModuleDeclaration",
+  "TSModuleBlock",
+  "TSModuleDeclaration",
+  "TSParameterProperty",
+  "Identifier",
+  "TSAsExpression",
+  "TSSatisfiesExpression",
+  "TSTypeAssertion",
+  "TSNonNullExpression",
+  "TSInstantiationExpression",
+  "TSExportAssignment",
+  "TSNamespaceExportDeclaration",
+  "TSImportEqualsDeclaration",
+  "TSExternalModuleReference",
+  "JSXElement",
+  "JSXOpeningElement",
+  "JSXClosingElement",
+  "JSXFragment",
+  "JSXOpeningFragment",
+  "JSXClosingFragment",
+  "JSXIdentifier",
+  "JSXNamespacedName",
+  "JSXMemberExpression",
+  "JSXAttribute",
+  "JSXSpreadAttribute",
+  "JSXExpressionContainer",
+  "JSXEmptyExpression",
+  "JSXText",
+  "JSXSpreadChild",
+];
+const TAG_CHOICES = new Map([
+  [3, ["FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"]],
+  [27, ["ClassDeclaration", "ClassExpression"]],
+  [29, ["MethodDefinition", "TSAbstractMethodDefinition"]],
+  [30, ["PropertyDefinition", "AccessorProperty", "TSAbstractPropertyDefinition", "TSAbstractAccessorProperty"]],
+]);
 function buildPosMap(src, byteLen, startByte) {
   const m = new Uint32Array(byteLen - startByte + 1);
   const len = src.length;
@@ -593,6 +1142,9 @@ function decode(buffer, source) {
     }
   }
   const node = _attached ? nodeWithComments : _decode;
+  const _nodesU32 = _nodesOff >> 2;
+  function startOf(i) { return _p(_u32[_nodesU32 + i * 12 + 10]); }
+  function endOf(i) { return _p(_u32[_nodesU32 + i * 12 + 11]); }
   const lsOff = _cOff + commentCount * 20;
   const dOff = lsOff + lineStartsCount * 4;
   function _decodeComments() {
@@ -659,6 +1211,104 @@ function decode(buffer, source) {
     }
     return out;
   }
+  function _scanType(tag, flags) {
+    switch (tag) {
+      case 3: return FUNCTION_TYPES[flags & 3];
+      case 27: return CLASS_TYPES[flags & 1];
+      case 29:
+        return _isTs && (flags & 64)
+          ? "TSAbstractMethodDefinition"
+          : "MethodDefinition";
+      default: {
+        const acc = (flags & 4) !== 0;
+        if (_isTs && (flags & 256)) {
+          return acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition";
+        }
+        return acc ? "AccessorProperty" : "PropertyDefinition";
+      }
+    }
+  }
+  function scan(visitors) {
+    const handlers = new Map();
+    let every = null;
+    for (const k of Object.keys(visitors)) {
+      const v = visitors[k];
+      if (typeof v !== "function") continue;
+      if (k === "enter") every = v;
+      else handlers.set(k, v);
+    }
+    const wanted = new Array(TAG_TYPES.length).fill(null);
+    for (let t = 0; t < TAG_TYPES.length; t++) {
+      const tt = TAG_TYPES[t];
+      if (tt === null) continue;
+      if (tt === 0) {
+        for (const c of TAG_CHOICES.get(t)) {
+          if (handlers.has(c)) { wanted[t] = 0; break; }
+        }
+      } else {
+        const h = handlers.get(tt);
+        if (h !== undefined) wanted[t] = h;
+      }
+    }
+    let stopFlag = false, skipFlag = false;
+    let curIndex = 0, curO = 0, curTag = 0;
+    const cursor = {
+      get index() { return curIndex; },
+      get type() {
+        const t = TAG_TYPES[curTag];
+        return t !== 0 ? t : _scanType(curTag, _u8[curO + 2] | (_u8[curO + 3] << 8));
+      },
+      get start() { return startOf(curIndex); },
+      get end() { return endOf(curIndex); },
+      node() { return node(curIndex); },
+      skip() { skipFlag = true; },
+      stop() { stopFlag = true; },
+    };
+    (function visit(i) {
+      const o = _nodesOff + i * 48;
+      const tag = _u8[o];
+      let h = wanted[tag];
+      if (h !== null || every !== null) {
+        curIndex = i; curO = o; curTag = tag;
+        if (h === 0) {
+          h = handlers.get(_scanType(tag, _u8[o + 2] | (_u8[o + 3] << 8))) ?? null;
+        }
+        if (every !== null && TAG_TYPES[tag] !== null) {
+          every(cursor);
+          if (stopFlag) return;
+        }
+        if (h !== null) {
+          h(cursor);
+          if (stopFlag) return;
+        }
+        if (skipFlag) { skipFlag = false; return; }
+      }
+      const ops = SCAN_CHILDREN[tag];
+      const b = o >> 2;
+      for (let p = 0; p < ops.length; p += 2) {
+        const slot = ops[p + 1];
+        if (ops[p] === 0) {
+          const c = _u32[b + slot];
+          if (c !== NULL) {
+            visit(c);
+            if (stopFlag) return;
+          }
+        } else {
+          const s = _u32[b + slot];
+          const len = ops[p] === 1
+            ? _u32[b + slot + 1]
+            : _u8[o + 4] | (_u8[o + 5] << 8);
+          for (let j = 0; j < len; j++) {
+            const c = _u32[_extraBase + s + j];
+            if (c !== NULL) {
+              visit(c);
+              if (stopFlag) return;
+            }
+          }
+        }
+      }
+    })(progIdx);
+  }
   let _program, _lineStarts, _diagnostics, _comments;
   function _getLineStarts() {
     if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
@@ -700,6 +1350,7 @@ function decode(buffer, source) {
       }
       return { line: i + 1, column: offset - ls[i] };
     },
+    scan,
   };
 }
-export { decode };
+export { decode, CHILD_KEYS, ALIAS_GROUPS };

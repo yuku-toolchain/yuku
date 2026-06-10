@@ -267,6 +267,46 @@ class Export {
   }
 }
 
+// The semantic scan cursor: the generated buffer cursor plus symbol and
+// reference lookups, which are index-keyed and so need no AST nodes.
+class ScanCursor {
+  _raw = null;
+  #module;
+  constructor(module) {
+    this.#module = module;
+  }
+  get module() {
+    return this.#module;
+  }
+  get index() {
+    return this._raw.index;
+  }
+  get type() {
+    return this._raw.type;
+  }
+  get start() {
+    return this._raw.start;
+  }
+  get end() {
+    return this._raw.end;
+  }
+  get symbol() {
+    return this.#module._symbolByIndex(this._raw.index);
+  }
+  get reference() {
+    return this.#module._referenceByIndex(this._raw.index);
+  }
+  node() {
+    return this._raw.node();
+  }
+  skip() {
+    this._raw.skip();
+  }
+  stop() {
+    this._raw.stop();
+  }
+}
+
 export class Module {
   #r;
   #sem;
@@ -360,18 +400,12 @@ export class Module {
 
   symbolOf(node) {
     const index = this.#r.indexOf(node);
-    if (index === undefined) return null;
-    const declared = this.#declMap().get(index);
-    if (declared !== undefined) return this.symbols[declared];
-    const ref = this.#refMap().get(index);
-    return ref !== undefined ? this.references[ref].symbol : null;
+    return index === undefined ? null : this._symbolByIndex(index);
   }
 
   referenceOf(node) {
     const index = this.#r.indexOf(node);
-    if (index === undefined) return null;
-    const ref = this.#refMap().get(index);
-    return ref !== undefined ? this.references[ref] : null;
+    return index === undefined ? null : this._referenceByIndex(index);
   }
 
   scopeOf(node) {
@@ -442,6 +476,22 @@ export class Module {
     walkModule(this, visitor, root);
   }
 
+  // readonly buffer scan with a semantic cursor; resolves symbols and
+  // references in index space, materializing no AST nodes.
+  scan(visitors) {
+    const cursor = new ScanCursor(this);
+    const wrapped = {};
+    for (const key of Object.keys(visitors)) {
+      const fn = visitors[key];
+      if (typeof fn !== "function") continue;
+      wrapped[key] = (raw) => {
+        cursor._raw = raw;
+        fn(cursor);
+      };
+    }
+    this.#r.scan(wrapped);
+  }
+
   findAll(types) {
     const single = typeof types === "string" ? types : null;
     const set = single === null ? new Set(types) : null;
@@ -452,6 +502,18 @@ export class Module {
       },
     });
     return out;
+  }
+
+  _symbolByIndex(index) {
+    const declared = this.#declMap().get(index);
+    if (declared !== undefined) return this.symbols[declared];
+    const ref = this.#refMap().get(index);
+    return ref !== undefined ? this.references[ref].symbol : null;
+  }
+
+  _referenceByIndex(index) {
+    const ref = this.#refMap().get(index);
+    return ref !== undefined ? this.references[ref] : null;
   }
 
   _scopeBindings(scopeId) {

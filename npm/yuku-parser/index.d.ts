@@ -158,12 +158,308 @@ interface ParseResult {
    * 1-based, columns are 0-based, matching ESTree's `loc` convention.
    */
   locNear(offset: number, hintLine: number): SourceLocation;
+  /**
+   * Readonly buffer scan: visits the parsed node records directly,
+   * dispatching only to registered types, without materializing AST
+   * objects. Many times faster than {@link walk} for sparse queries;
+   * call {@link ScanCursor.node} to materialize the matched node on
+   * demand. The synthesized `Hashbang` node is not visited.
+   */
+  scan(visitors: ScanVisitors): void;
 }
 
 /**
  * Parse JS/TS source code and return an ESTree / TypeScript-ESTree compatible AST.
  */
 export function parse(source: string, options?: ParseOptions): ParseResult;
+
+// Walking
+
+/** Discriminant `type` string of every AST node. */
+type NodeType = Node["type"];
+
+/** The node, or union of nodes, carrying a given `type`. */
+type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
+
+/**
+ * Node types grouped under each alias name. A visitor registered under
+ * an alias runs for every member type. Mirrors the generated runtime
+ * table, which is validated against the AST at build time.
+ */
+interface AliasTypeMap {
+  Expression:
+    | "Identifier"
+    | "Literal"
+    | "ThisExpression"
+    | "Super"
+    | "ArrayExpression"
+    | "ObjectExpression"
+    | "FunctionExpression"
+    | "ArrowFunctionExpression"
+    | "ClassExpression"
+    | "TaggedTemplateExpression"
+    | "TemplateLiteral"
+    | "MemberExpression"
+    | "CallExpression"
+    | "NewExpression"
+    | "ChainExpression"
+    | "SequenceExpression"
+    | "ParenthesizedExpression"
+    | "BinaryExpression"
+    | "LogicalExpression"
+    | "ConditionalExpression"
+    | "UnaryExpression"
+    | "UpdateExpression"
+    | "AssignmentExpression"
+    | "YieldExpression"
+    | "AwaitExpression"
+    | "ImportExpression"
+    | "MetaProperty"
+    | "TSAsExpression"
+    | "TSSatisfiesExpression"
+    | "TSTypeAssertion"
+    | "TSNonNullExpression"
+    | "TSInstantiationExpression"
+    | "JSXElement"
+    | "JSXFragment";
+  Statement:
+    | "ExpressionStatement"
+    | "BlockStatement"
+    | "EmptyStatement"
+    | "DebuggerStatement"
+    | "ReturnStatement"
+    | "LabeledStatement"
+    | "BreakStatement"
+    | "ContinueStatement"
+    | "IfStatement"
+    | "SwitchStatement"
+    | "ThrowStatement"
+    | "TryStatement"
+    | "WhileStatement"
+    | "DoWhileStatement"
+    | "ForStatement"
+    | "ForInStatement"
+    | "ForOfStatement"
+    | "WithStatement"
+    | "FunctionDeclaration"
+    | "ClassDeclaration"
+    | "VariableDeclaration"
+    | "TSDeclareFunction"
+    | "TSTypeAliasDeclaration"
+    | "TSInterfaceDeclaration"
+    | "TSEnumDeclaration"
+    | "TSModuleDeclaration"
+    | "TSImportEqualsDeclaration";
+  Declaration:
+    | "FunctionDeclaration"
+    | "ClassDeclaration"
+    | "VariableDeclaration"
+    | "TSDeclareFunction"
+    | "TSTypeAliasDeclaration"
+    | "TSInterfaceDeclaration"
+    | "TSEnumDeclaration"
+    | "TSModuleDeclaration"
+    | "TSImportEqualsDeclaration";
+  ModuleDeclaration:
+    | "ImportDeclaration"
+    | "ExportNamedDeclaration"
+    | "ExportDefaultDeclaration"
+    | "ExportAllDeclaration"
+    | "TSExportAssignment"
+    | "TSNamespaceExportDeclaration";
+  /** Includes arrow functions, unlike the narrower ESTree `Function`. */
+  Function:
+    | "FunctionDeclaration"
+    | "FunctionExpression"
+    | "ArrowFunctionExpression"
+    | "TSDeclareFunction"
+    | "TSEmptyBodyFunctionExpression";
+  Class: "ClassDeclaration" | "ClassExpression";
+  Method: "MethodDefinition" | "TSAbstractMethodDefinition";
+  Loop:
+    | "ForStatement"
+    | "ForInStatement"
+    | "ForOfStatement"
+    | "WhileStatement"
+    | "DoWhileStatement";
+  Pattern: "Identifier" | "ArrayPattern" | "ObjectPattern" | "AssignmentPattern" | "RestElement";
+  JSX:
+    | "JSXElement"
+    | "JSXOpeningElement"
+    | "JSXClosingElement"
+    | "JSXFragment"
+    | "JSXOpeningFragment"
+    | "JSXClosingFragment"
+    | "JSXIdentifier"
+    | "JSXNamespacedName"
+    | "JSXMemberExpression"
+    | "JSXAttribute"
+    | "JSXSpreadAttribute"
+    | "JSXExpressionContainer"
+    | "JSXEmptyExpression"
+    | "JSXText"
+    | "JSXSpreadChild";
+  TSType:
+    | "TSAnyKeyword"
+    | "TSUnknownKeyword"
+    | "TSNeverKeyword"
+    | "TSVoidKeyword"
+    | "TSNullKeyword"
+    | "TSUndefinedKeyword"
+    | "TSStringKeyword"
+    | "TSNumberKeyword"
+    | "TSBigIntKeyword"
+    | "TSBooleanKeyword"
+    | "TSSymbolKeyword"
+    | "TSObjectKeyword"
+    | "TSIntrinsicKeyword"
+    | "TSThisType"
+    | "TSTypeReference"
+    | "TSTypeQuery"
+    | "TSImportType"
+    | "TSLiteralType"
+    | "TSTemplateLiteralType"
+    | "TSArrayType"
+    | "TSIndexedAccessType"
+    | "TSTupleType"
+    | "TSNamedTupleMember"
+    | "TSJSDocNullableType"
+    | "TSJSDocNonNullableType"
+    | "TSJSDocUnknownType"
+    | "TSUnionType"
+    | "TSIntersectionType"
+    | "TSConditionalType"
+    | "TSInferType"
+    | "TSTypeOperator"
+    | "TSParenthesizedType"
+    | "TSFunctionType"
+    | "TSConstructorType"
+    | "TSTypePredicate"
+    | "TSTypeLiteral"
+    | "TSMappedType";
+}
+
+/** Name of an alias group. */
+type AliasName = keyof AliasTypeMap;
+
+/** Node union matched by an alias group. */
+type AliasNodes<A extends AliasName> = NodeOfType<AliasTypeMap[A]>;
+
+/**
+ * The walk context: one reused object exposing the current position and
+ * the tree mutation operations. Valid only during the visit that
+ * receives it; do not store it.
+ */
+declare class WalkContext<T extends Node = Node, S = unknown> {
+  /** The node being visited. */
+  readonly node: T;
+  /** The node that holds {@link node}, or null at the walk root. */
+  readonly parent: Node | null;
+  /**
+   * The field on {@link parent} holding {@link node} (or its array),
+   * or null at the walk root.
+   */
+  readonly key: string | null;
+  /** Index within an array field, or null in a plain field. */
+  readonly index: number | null;
+  /** State threaded through the walk (the third {@link walk} argument). */
+  state: S;
+  /** Ancestors from the walk root down to {@link parent}. */
+  ancestors(): Node[];
+  /** Do not descend into the current node's children. */
+  skip(): void;
+  /** Stop the walk entirely. */
+  stop(): void;
+  /**
+   * Replace the current node. The walk continues into the replacement's
+   * children, and `leave` fires for the replacement's type. A synthetic
+   * node with `start === 0 && end === 0` inherits the original span,
+   * for source maps. Throws at the walk root.
+   */
+  replace(node: Node): void;
+  /**
+   * Remove the current node from its parent: spliced from array fields,
+   * nulled in plain fields. Children are not walked and `leave` does
+   * not fire. Throws at the walk root.
+   */
+  remove(): void;
+  /**
+   * Insert a sibling before the current node. The inserted node is NOT
+   * visited. Only valid inside an array field.
+   */
+  insertBefore(node: Node): void;
+  /**
+   * Insert a sibling after the current node. The inserted node IS
+   * visited. Only valid inside an array field.
+   */
+  insertAfter(node: Node): void;
+}
+
+/** A visitor function for one node type. */
+type WalkHandler<T extends Node = Node, S = unknown> = (node: T, ctx: WalkContext<T, S>) => void;
+
+/** Enter/leave hooks for one node type. */
+interface WalkHooks<T extends Node = Node, S = unknown> {
+  enter?: WalkHandler<T, S>;
+  leave?: WalkHandler<T, S>;
+}
+
+/**
+ * Handlers keyed by node `type`, alias group name, or the universal
+ * `enter`/`leave`. A bare function is an enter handler. Per node, enter
+ * order is universal, alias (registration order), concrete; leave
+ * mirrors it.
+ */
+type Visitors<S = unknown> = {
+  [K in NodeType]?: WalkHandler<NodeOfType<K>, S> | WalkHooks<NodeOfType<K>, S>;
+} & {
+  [A in AliasName]?: WalkHandler<AliasNodes<A>, S> | WalkHooks<AliasNodes<A>, S>;
+} & {
+  enter?: WalkHandler<Node, S>;
+  leave?: WalkHandler<Node, S>;
+};
+
+/**
+ * Walk an AST depth-first, dispatching to typed visitors and mutating
+ * in place. Traversal order is driven by tables generated from the
+ * parser's AST definition, so it can never drift. Returns the root.
+ */
+export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T;
+
+// Scanning
+
+/**
+ * The scan cursor: one reused object pointing at the current node
+ * record in the parse buffer. Valid only during the visit that receives
+ * it; do not store it.
+ */
+interface ScanCursor<T extends Node = Node> {
+  /** The node's `type`. */
+  readonly type: T["type"];
+  /** Span start, same as the materialized node's `start`. */
+  readonly start: number;
+  /** Span end, same as the materialized node's `end`. */
+  readonly end: number;
+  /** The node's index in the parse buffer, stable per parse. */
+  readonly index: number;
+  /** Materializes the node on demand. */
+  node(): T;
+  /** Do not descend into the current node's children. */
+  skip(): void;
+  /** Stop the scan entirely. */
+  stop(): void;
+}
+
+/**
+ * Scan handlers keyed by node `type`, plus the universal `enter` which
+ * runs for every node. Scanning is readonly: to mutate, find with
+ * {@link ParseResult.scan} and change with {@link walk}.
+ */
+type ScanVisitors = {
+  [K in NodeType]?: (cursor: ScanCursor<NodeOfType<K>>) => void;
+} & {
+  enter?: (cursor: ScanCursor) => void;
+};
 
 /**
  * Resolves a {@link SourceLang} from a file path's extension.
@@ -1772,7 +2068,18 @@ type Node =
   | TSOptionalType
   | TSRestType;
 
+export { WalkContext };
 export type {
+  AliasName,
+  AliasNodes,
+  AliasTypeMap,
+  NodeOfType,
+  NodeType,
+  ScanCursor,
+  ScanVisitors,
+  Visitors,
+  WalkHandler,
+  WalkHooks,
   ParseOptions,
   ParseResult,
   Comment,
