@@ -114,8 +114,6 @@ for (const capture of main.capturesOf(fn)) {
 }
 ```
 
-This is the primitive that compilers extracting functions out of their original context (serialization, code splitting, island architectures) are built on.
-
 ## Cross-file analysis
 
 The analyzer joins imports to exports across every added file, following re-export and `export *` chains with spec semantics (`default` is an export name and never travels through `export *`):

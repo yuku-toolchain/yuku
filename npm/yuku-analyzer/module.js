@@ -2,9 +2,6 @@
 // export object graph, built lazily over the decoded analyzer buffer.
 // All wire reads go through the generated `semantic` accessors from
 // decode.js. Nothing in this file knows the buffer layout.
-//
-// `_name` members are package-internal, shared with analyzer.js and
-// walk.js. `#name` members are private to their class.
 import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
 import { walkModule } from "./walk.js";

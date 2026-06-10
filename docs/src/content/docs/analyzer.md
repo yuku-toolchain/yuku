@@ -34,8 +34,6 @@ The design rests on one observation: a semantic model is mostly integers. Scopes
 
 **Zero-copy decode.** On the JavaScript side, the semantic sections are read through typed-array views directly over the transferred buffer. Nothing is parsed, nothing is copied. A symbol's name, flags, scope, and declaration list are reads at computed offsets.
 
-**A generated decoder.** The JavaScript decoder is not written by hand. A Zig build step reflects over the actual wire structs with `@sizeOf`, `@offsetOf`, and `@bitOffsetOf` and emits the decoder, including one accessor function per wire field with every stride, column, and bit position folded in as a literal. The hand-written JavaScript layer never sees the buffer layout. Reorder a struct field in Zig, regenerate, and every offset is correct again. The two sides cannot drift, by construction.
-
 **Lazy objects, eager answers.** `Scope`, `Symbol`, `Reference`, `Import`, and `Export` are flyweight objects over the tables: tiny, allocated once per row on first access, with getters that read the buffer. Cross-indexes (which references belong to which symbol, which symbols belong to which scope) build lazily on first use and amortize across every later query.
 
 **Node identity.** AST nodes decode lazily and are memoized by node index. The node you reach by walking `module.ast` and the node a semantic query hands back are the same JavaScript object. `symbol.declarations[0] === someNodeYouWalkedTo` is a meaningful comparison, and a `WeakMap` resolves any node back to its index, which is what makes `symbolOf(node)` a lookup instead of a search.
@@ -136,12 +134,7 @@ scope.contains(other);    // is `other` this scope or a descendant?
 for (const s of scope.ancestors()) { /* this scope up to global */ }
 ```
 
-The scope tree is the native binder's exact output, so the spec subtleties are already right:
-
-- A `catch` clause and its body share one scope, per spec, so `catch (e) { var e; }` resolves the way engines resolve it.
-- A named function expression gets an extra `expressionName` scope holding the immutable binding for its own name.
-- `hoistTarget` answers "where does a `var` here actually land" without you re-implementing hoisting. Inside a TS namespace it points at the namespace, not the file.
-- Module and class scopes are strict, `"use strict"` directives propagate, and function scopes pick up a body directive before their parameters are processed.
+The scope tree is the native binder's exact output, so the spec subtleties are already right.
 
 ## Symbols
 
@@ -206,7 +199,7 @@ ref.kind;    // "value" for runtime uses, "type" for TS type positions
 ref.isWrite; // true when this use (re)assigns the binding
 ```
 
-`kind` lets rename and dead-code tools treat a value and a same-named type independently. `isWrite` is computed structurally in the native pass: assignment targets, `++`/`--` operands, for-in/of iteration variables, and destructuring assignment leaves, through arbitrarily nested patterns. Compound assignments (`+=`) both read and write.
+`kind` lets rename and dead-code tools treat a value and a same-named type independently. `isWrite` is computed structurally in the native pass.
 
 `module.unresolvedReferences` is the complement: every name that resolves to no local binding. That list is precisely what a no-undef lint rule or a globals collector wants.
 
@@ -301,10 +294,6 @@ module.walk({
 
 One rule to remember: the semantic tables are a snapshot of the parsed source. Nodes you create have no symbols or references of their own. Analyze, transform, print, and re-analyze the output if you need fresh semantics for the transformed code.
 
-### Traversal cannot drift
-
-Which fields of each node type contain children, and in what order, is not hand-maintained. The same Zig build step that generates the decoder reflects over the AST definition and emits the traversal table. A new node type or a renamed field in the parser regenerates the walker's knowledge automatically. The classic walker failure mode, a visitor silently skipping a field added last release, is structurally impossible.
-
 ## Scanning
 
 `module.scan` is the second traversal tier: a readonly pass over the parsed node records in the binary buffer, without materializing AST objects at all.
@@ -393,8 +382,6 @@ for (const capture of module.capturesOf(tick)) {
 Each `Capture` carries the outer `symbol`, the capturing `references` inside the function, and `isWritten`. Type-only references are excluded, since they do not exist at runtime.
 
 Because the computation rides the resolved reference table, it is shadowing-correct and alias-correct by construction. A local `count` declared inside the function does not produce a false capture, and a reference is attributed to the binding it actually resolves to, not to the nearest matching name.
-
-This is the primitive for compilers that move functions out of their lexical context: serialization boundaries, code splitting, island and resumability architectures. The question those compilers ask, "what does this function need from its environment, and does it mutate any of it", is exactly the returned value.
 
 ## Cross-file analysis
 
@@ -525,14 +512,6 @@ Numbers from an Apple M-series machine, release builds:
 - The implementation is validated against 45,000+ real-world files with zero failures.
 
 The structural reasons: one FFI crossing per file, zero-copy typed-array reads, lazy materialization with index memoization, and cross-indexes that build once and amortize.
-
-## Limitations
-
-Honest edges of the current model:
-
-- TypeScript namespace interiors are treated as type position by the binder, so bindings declared inside a `namespace` body are not yet in the symbol table.
-- `export =` and `export as namespace` (TS legacy module forms) are not recorded as export records.
-- Ambiguous names reachable through multiple `export *` chains resolve to the first match rather than being flagged as ambiguous.
 
 ## TypeScript types
 
