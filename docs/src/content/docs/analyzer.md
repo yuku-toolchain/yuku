@@ -24,7 +24,7 @@ module.rootScope.find("config")?.references; // every use of `config`
 
 Tools that need real semantics on the JavaScript side have always faced a bad trade. Walk-and-track libraries give you a scope stack, but you maintain the binding rules yourself: hoisting, catch clauses, named function expressions, TypeScript declaration merging, type space versus value space. Each tool re-implements a subset, each subset has different bugs. The alternative, embedding a full language service, costs hundreds of milliseconds per file and a dependency the size of a compiler.
 
-`yuku-analyzer` takes a third path. The semantics are computed by the same native binder that powers Yuku's ECMAScript spec-compliance checker, validated against the full Test262 corpus and 45,000+ real-world files. JavaScript receives the finished model: not events to track, but answers to query.
+`yuku-analyzer` takes a third path: nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and JavaScript receives the finished model: not events to track, but answers to query.
 
 ## Architecture
 
@@ -264,7 +264,7 @@ ctx.reference; // shorthand for module.referenceOf(node)
 ctx.module;    // the module being walked
 ```
 
-`ctx.scope` is not tracked during the walk. It is replayed from the native scope tree: when the walk enters a node that created a scope, that exact scope is pushed. Non-scope nodes pay a single set-membership test. There is no re-implementation of scoping rules in JavaScript anywhere in the package, which is the point.
+`ctx.scope` is not tracked during the walk. It is replayed from the native scope tree: when the walk enters a node that created a scope, that exact scope is pushed. Non-scope nodes pay a single set-membership test, and no scoping rule is evaluated in JavaScript.
 
 ### Mutation
 
