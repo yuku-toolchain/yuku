@@ -386,7 +386,12 @@ interface Module {
    * snapshot of the parsed source and do not track mutations.
    */
   readonly ast: Program;
-  /** Syntax and semantic diagnostics for this file. */
+  /**
+   * Syntax diagnostics for this file. The analyzer runs the binder but
+   * not the early-error checker, so semantic checks (duplicate
+   * declarations and the like) are opt-in through yuku-parser's
+   * `semanticErrors` option.
+   */
   readonly diagnostics: Diagnostic[];
   /** Every comment in source order. */
   readonly comments: Comment[];

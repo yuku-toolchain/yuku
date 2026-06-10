@@ -1,14 +1,5 @@
 /**
  * yuku-analyzer: semantic analysis for JavaScript and TypeScript.
- *
- * One native call per file produces the AST plus the full semantic
- * model: scopes, symbols, resolved references, and module records.
- * Every query after that is local JS over compact tables, and every
- * node returned by a semantic query is the same object you reach by
- * walking `module.ast`.
- *
- * AST node types come from `yuku-parser` (a peer dependency); the
- * objects are identical to the ones it produces.
  */
 
 import type {

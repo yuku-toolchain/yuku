@@ -73,11 +73,10 @@ Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. T
 
 ## Walking the AST
 
-[`yuku-ast`](https://www.npmjs.com/package/yuku-ast) is the companion toolkit built for this AST: a typed walker, node builders (`b`), type guards (`is`), and identifier validators.
+A typed, mutating walker is built in. Handlers are keyed by node type and receive the exact node type, as a bare enter function or an enter/leave pair:
 
 ```ts
-import { parse } from "yuku-parser";
-import { walk } from "yuku-ast";
+import { parse, walk } from "yuku-parser";
 
 const { program } = parse(`
   const message = "hello";
@@ -88,13 +87,51 @@ walk(program, {
   Identifier(node) {
     console.log(node.name);
   },
-  VariableDeclaration(node) {
-    console.log(node.kind);
+  CallExpression: {
+    enter(node, ctx) { /* before children */ },
+    leave(node, ctx) { /* after children */ },
+  },
+  enter(node) { /* every node */ },
+});
+```
+
+The context exposes the position (`ctx.parent`, `ctx.key`, `ctx.index`, `ctx.ancestors()`), flow control (`ctx.skip()`, `ctx.stop()`), and in-place mutation:
+
+```ts
+walk(program, {
+  DebuggerStatement(node, ctx) {
+    ctx.remove();
+  },
+  Literal(node, ctx) {
+    if (node.value === 1) ctx.replace({ type: "Identifier", start: 0, end: 0, name: "ONE" });
   },
 });
 ```
 
-The AST is also standard ESTree, so any ESTree-compatible walker (e.g. [zimmerframe](https://github.com/sveltejs/zimmerframe)) works just as well.
+`ctx.replace(node)` continues the walk into the replacement, `ctx.remove()` skips the removed subtree, `ctx.insertBefore(node)` inserts a sibling without visiting it, and `ctx.insertAfter(node)` inserts one the walk will visit. A replacement created with `start: 0, end: 0` inherits the original span, which keeps source maps meaningful through [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen). An optional third argument threads state to every handler as `ctx.state`.
+
+The AST is also standard ESTree, so any ESTree-compatible walker works as well.
+
+## Scanning without building the AST
+
+`result.scan` visits the parsed node records directly in the binary buffer, before any AST objects exist. It is readonly and built for find-style passes:
+
+```ts
+const result = parse(source);
+
+result.scan({
+  CallExpression(cursor) {
+    console.log(cursor.start, cursor.end); // spans, straight off the buffer
+    const node = cursor.node();            // materialize this one node on demand
+  },
+});
+```
+
+The cursor exposes `type`, `start`, `end`, `index`, `node()`, `skip()`, and `stop()`. Because it never builds the AST, scanning is two to three times faster than walking for find-style passes, and allocates nothing. The rule of thumb: scan to find, walk to change.
+
+## Semantic analysis
+
+[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) builds on this parser and adds full semantics: scopes, symbols, resolved references, closure analysis, and cross-file module linking, computed natively in the same pass. Its walk and scan carry the semantic model in context (`ctx.scope`, `ctx.symbol`, `ctx.reference`). See the [analyzer documentation](https://yuku.fyi/analyzer).
 
 ## Options
 

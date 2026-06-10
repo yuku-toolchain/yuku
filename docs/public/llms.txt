@@ -23,6 +23,7 @@ Yuku passes 55,000+ tests from Test262, Babel, TypeScript, and others with full 
 - [Parser](https://yuku.dev/parser/): install, quick start, options, diagnostics, traversal, semantic analysis
 - [AST reference](https://yuku.dev/parser/ast/): memory model, core types, full node catalog
 - [Traverse](https://yuku.dev/parser/traverse/): basic, scoped, semantic, transform traversers
+- [Analyzer](https://yuku.dev/analyzer/): JavaScript-side semantic analysis, scopes, symbols, resolved references, closures, typed walk and buffer scan, cross-file module linking
 
 ## Repository
 

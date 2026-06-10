@@ -87,6 +87,7 @@ export default defineConfig({
             { label: "Codegen", slug: "parser/codegen" },
           ],
         },
+        { label: "Analyzer", slug: "analyzer" },
       ],
     }),
   ],
