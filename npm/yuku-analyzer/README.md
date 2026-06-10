@@ -39,7 +39,7 @@ console.log(def.symbol.isConst); // true
 
 JavaScript tooling that needs real semantics has had two options: track scopes by hand during a walk (fragile, incomplete, and re-implemented in every tool), or embed a full language service (heavy). `yuku-analyzer` is the missing middle: the exact scope and binding model of a production compiler, exposed to JavaScript as a small, fast object graph.
 
-The semantics are computed by the same native binder that powers Yuku's spec-compliance checker, so the corner cases are already correct: catch-clause scope sharing, named function expression scopes, `var` hoist targets, TS declaration merging, value space versus type space, and write detection through destructuring patterns.
+Nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and the corner cases arrive already correct: catch-clause scope sharing, named function expression scopes, `var` hoist targets, TS declaration merging, value space versus type space, and write detection through destructuring patterns.
 
 ## What one `addFile` gives you
 
@@ -143,7 +143,7 @@ const analyzer = new Analyzer({
 
 ## Performance
 
-Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. The whole semantic model crosses the FFI boundary in a single buffer, decoded lazily through zero-copy typed-array views. Validated against 45,000+ real-world files.
+Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against 45,000+ real-world files.
 
 Concretely, on an Apple M-series machine: parsing plus complete semantic analysis of a typical source file lands well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
 

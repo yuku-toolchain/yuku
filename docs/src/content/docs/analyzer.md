@@ -379,7 +379,7 @@ for (const capture of module.capturesOf(tick)) {
 // step  false    (read only)
 ```
 
-Each `Capture` carries the outer `symbol`, the capturing `references` inside the function, and `isWritten`. Type-only references are excluded, since they do not exist at runtime.
+Each `Capture` carries the outer `symbol`, the capturing `references` inside the function, and `isWritten`. Type-only references are excluded, since they do not exist at runtime. Only bindings appear: `this`, `arguments`, and unresolved globals carry no symbol and are never reported, while module-scope and imported bindings count like any other outer binding.
 
 Because the computation rides the resolved reference table, it is shadowing-correct and alias-correct by construction. A local `count` declared inside the function does not produce a false capture, and a reference is attributed to the binding it actually resolves to, not to the nearest matching name.
 
@@ -409,16 +409,20 @@ for (const exp of module.exports) {
   exp.specifier;           // re-export source, or null for local exports
   exp.fromName;            // the name taken from the source module
   exp.isNamespaceReexport; // export * as ns from "m"
+  exp.isExportEquals;      // TS export = expr (the module's entire value)
+  exp.globalName;          // TS export as namespace N, else null
   exp.typeOnly;            // export type
   exp.resolvedModule;      // the source Module for re-exports
 }
 ```
 
-Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. Tools built on these records inherit the spec behavior instead of approximating it.
+Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. TypeScript's legacy module forms (`export =`, `export as namespace`) are recorded with their own kinds, so ESM tooling never mistakes them for named exports. Tools built on these records inherit the spec behavior instead of approximating it.
 
 ### Linking
 
-`analyzer.link()` joins the graph: resolves every specifier through the resolver, populates `resolvedModule` on imports and re-exports, builds `dependencies` / `dependents`, and reports missing exports as diagnostics.
+`analyzer.link()` joins the graph: resolves every specifier through the resolver, populates `resolvedModule` on imports and re-exports, builds `dependencies` / `dependents`, and validates every imported name and named re-export.
+
+Name resolution implements the spec's `ResolveExport`: renaming re-export chains are followed per name, `default` is never satisfied by `export *`, and a name supplied by multiple `export *` declarations through different bindings is reported as ambiguous, the same conditions an engine raises at link time.
 
 Calling it is optional. Every cross-file surface links on demand after files change, so reading `import.resolvedModule` or `module.dependencies` is always correct. Call `link()` explicitly when you want to control when the work happens and collect the diagnostics at a known point:
 
@@ -448,9 +452,9 @@ def.module.path;  // "a.ts"
 def.symbol.name;  // "value"
 ```
 
-`symbol.definition()` is the instance-method shorthand. A result with `symbol: null` means the definition is a whole module namespace (`import * as ns`). A `null` result means the chain leaves the added file set: an external package, by design not an error.
+`symbol.definition()` is the instance-method shorthand. A result with `symbol: null` means the definition is a whole module namespace (`import * as ns`). A `null` result means the chain leaves the added file set (an external package, by design not an error), cannot be resolved, or is ambiguous.
 
-Chains with cycles terminate safely, and ambiguous `export *` names resolve first-match in declaration order.
+Chains with cycles terminate safely: a circular request is detected per (module, name) pair, so a chain may legitimately pass through the same module twice under different names.
 
 ### References across modules
 
@@ -475,6 +479,20 @@ for (const module of analyzer.modules.values()) {
   }
 }
 ```
+
+### Exported names
+
+`module.exportedNames()` lists everything a module exports with `export *` chains followed, the spec's `GetExportedNames`. Per the spec, ambiguous star names are included (ambiguity is a resolution error, not an enumeration one) and `default` never arrives through a star:
+
+```js
+// a.ts:   export const one = 1;
+// lib.ts: export const two = 2; export default x; export * from "./a.ts";
+
+analyzer.module("lib.ts").exportedNames(); // ["two", "default", "one"]
+analyzer.module("a.ts").exportedNames();   // ["one"]
+```
+
+This is what namespace-member completion and re-export expansion build on.
 
 ## SymbolFlags reference
 
