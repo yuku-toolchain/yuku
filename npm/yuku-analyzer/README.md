@@ -116,7 +116,7 @@ for (const capture of main.capturesOf(fn)) {
 
 ## Cross-file analysis
 
-The analyzer joins imports to exports across every added file, following re-export and `export *` chains with spec semantics (`default` is an export name and never travels through `export *`):
+The analyzer joins imports to exports across every added file with the spec's ResolveExport semantics: re-export and `export *` chains are followed per name, `default` never travels through `export *`, and a name supplied by multiple `export *` declarations through different bindings is reported as ambiguous.
 
 ```js
 // where is this binding actually defined?
@@ -125,9 +125,10 @@ analyzer.definitionOf(symbol); // { module, symbol } or null for external module
 // every use across the whole graph, imports followed back
 analyzer.referencesOf(symbol); // [{ module, reference }, ...]
 
-module.dependencies; // modules this file imports from
-module.dependents;   // modules that import this file
-analyzer.diagnostics; // e.g. "Module './lib.ts' has no export 'helpr'"
+module.exportedNames(); // every exported name, `export *` chains included
+module.dependencies;    // modules this file imports from
+module.dependents;      // modules that import this file
+analyzer.diagnostics;   // e.g. "Module './lib.ts' has no export 'helpr'"
 ```
 
 Linking is automatic: every cross-file surface relinks on demand after files change. Call `analyzer.link()` explicitly if you want to control when the work happens.

@@ -3,9 +3,9 @@
 //! Walks the top level of an analyzed module and produces the flat
 //! records a cross-file linker consumes: which names this module pulls
 //! in from which specifiers, and which names it exposes. The shapes
-//! mirror the spec's ImportEntry/ExportEntry model
-//! (https://tc39.es/ecma262/#table-importentry-record-fields):
-//! `default` is not a special kind, it is the export *name* "default".
+//! mirror the spec's ImportEntry/ExportEntry model (ImportEntries,
+//! 16.2.2.2, and ExportEntries, 16.2.3.4): `default` is not a special
+//! kind, it is the export *name* "default".
 //!
 //! Records reference local bindings by `SymbolId`, so a linker joins an
 //! importing module's record to the defining module's record and lands

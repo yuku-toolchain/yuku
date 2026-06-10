@@ -1,14 +1,5 @@
 /**
  * yuku-analyzer: semantic analysis for JavaScript and TypeScript.
- *
- * One native call per file produces the AST plus the full semantic
- * model: scopes, symbols, resolved references, and module records.
- * Every query after that is local JS over compact tables, and every
- * node returned by a semantic query is the same object you reach by
- * walking `module.ast`.
- *
- * AST node types come from `yuku-parser` (a peer dependency); the
- * objects are identical to the ones it produces.
  */
 
 import type {
@@ -393,12 +384,7 @@ interface Module {
    * snapshot of the parsed source and do not track mutations.
    */
   readonly ast: Program;
-  /**
-   * Syntax diagnostics for this file. The analyzer runs the binder but
-   * not the early-error checker, so semantic checks (duplicate
-   * declarations and the like) are opt-in through yuku-parser's
-   * `semanticErrors` option.
-   */
+  /** Syntax and semantic diagnostics for this file. */
   readonly diagnostics: Diagnostic[];
   /** Every comment in source order. */
   readonly comments: Comment[];
@@ -439,25 +425,19 @@ interface Module {
    * declared outside it. Shadowing- and alias-correct, because it rides
    * the resolved reference table.
    *
-   * The contract, since closures have no spec-level enumeration:
-   * - Only bindings count: `this`, `super`, `arguments`, `import.meta`,
-   *   and unresolved/global names resolve to no symbol and never
-   *   appear, so an arrow closing over lexical `this` is not reported.
-   * - Module-scope bindings and import bindings count like any other
-   *   outer binding; filter on the symbol's scope to narrow.
-   * - Type-position references (annotations, `typeof` queries) are
-   *   excluded: captures describe runtime closure state.
-   * - Computed method keys evaluate in the enclosing scope and are not
-   *   captures of the method.
+   * Only bindings count: `this`, `arguments`, and unresolved/global
+   * names carry no symbol and never appear. Module-scope and import
+   * bindings count like any other outer binding; filter on the
+   * symbol's scope to narrow.
    *
    * Throws when `node` is not a function of this module's AST.
    */
   capturesOf(node: Node): Capture[];
   /**
    * Every name this module exports, directly or through `export *`
-   * chains: the spec's GetExportedNames. Per its note, names with
-   * ambiguous `export *` bindings are included, and `"default"` never
-   * crosses an `export *` boundary. Links on demand.
+   * chains (the spec's GetExportedNames). Ambiguous star names are
+   * included; `"default"` never crosses an `export *` boundary. Links
+   * on demand.
    */
   exportedNames(): string[];
 
@@ -539,13 +519,10 @@ declare class Analyzer {
    * specifiers through the host resolver, populates
    * {@link Import.resolvedModule}, {@link Module.dependencies} /
    * {@link Module.dependents}, and reports unresolvable or ambiguous
-   * bindings.
-   *
-   * Names are resolved with the spec's ResolveExport semantics:
-   * renaming re-export chains are followed per-name, `"default"` is
-   * never satisfied by `export *`, and a name supplied by multiple
-   * `export *` declarations through different bindings is ambiguous
-   * (an error diagnostic, as in spec linking).
+   * names. Resolution follows the spec's ResolveExport semantics: a
+   * name supplied by multiple `export *` declarations through
+   * different bindings is an error, and `"default"` is never satisfied
+   * by `export *`.
    *
    * Calling this is optional: every cross-file surface links on demand
    * after files change. Call it explicitly to control when the work
@@ -554,11 +531,10 @@ declare class Analyzer {
   link(): void;
 
   /**
-   * Follows import -> export -> re-export chains, with the spec's
-   * ResolveExport semantics, to the symbol that actually defines
-   * `symbol`. A null `symbol` in the result means a module namespace.
-   * Returns null when the chain leaves the added file set (external
-   * modules), cannot be resolved, or is ambiguous.
+   * Follows import -> export -> re-export chains to the symbol that
+   * actually defines `symbol`. A null `symbol` in the result means a
+   * module namespace. Returns null when the chain leaves the added
+   * file set (external modules), does not resolve, or is ambiguous.
    */
   definitionOf(symbol: Symbol): Definition | null;
 

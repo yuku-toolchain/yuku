@@ -339,10 +339,17 @@ interface Export {
   readonly module: Module;
   /** Stable id, the index into {@link Module.exports}. */
   readonly id: number;
-  /** The exported name (`"default"` included), or null for `export *`. */
+  /**
+   * The exported name (`"default"` included), or null for `export *`,
+   * `export =`, and `export as namespace`.
+   */
   readonly name: string | null;
   /** True for `export * from "m"` without an alias. */
   readonly isStar: boolean;
+  /** True for TS `export = expr` (the module's entire export value). */
+  readonly isExportEquals: boolean;
+  /** The TS `export as namespace N` global name, or null. */
+  readonly globalName: string | null;
   readonly typeOnly: boolean;
   /** The backing local symbol, or null (re-exports, anonymous defaults). */
   readonly local: Symbol | null;
@@ -418,9 +425,21 @@ interface Module {
    * declared outside it. Shadowing- and alias-correct, because it rides
    * the resolved reference table.
    *
+   * Only bindings count: `this`, `arguments`, and unresolved/global
+   * names carry no symbol and never appear. Module-scope and import
+   * bindings count like any other outer binding; filter on the
+   * symbol's scope to narrow.
+   *
    * Throws when `node` is not a function of this module's AST.
    */
   capturesOf(node: Node): Capture[];
+  /**
+   * Every name this module exports, directly or through `export *`
+   * chains (the spec's GetExportedNames). Ambiguous star names are
+   * included; `"default"` never crosses an `export *` boundary. Links
+   * on demand.
+   */
+  exportedNames(): string[];
 
   /**
    * Walks the AST (or the subtree under `root`) with semantic context.
@@ -499,7 +518,11 @@ declare class Analyzer {
    * Joins imports to exports across every added module: resolves
    * specifiers through the host resolver, populates
    * {@link Import.resolvedModule}, {@link Module.dependencies} /
-   * {@link Module.dependents}, and reports missing exports.
+   * {@link Module.dependents}, and reports unresolvable or ambiguous
+   * names. Resolution follows the spec's ResolveExport semantics: a
+   * name supplied by multiple `export *` declarations through
+   * different bindings is an error, and `"default"` is never satisfied
+   * by `export *`.
    *
    * Calling this is optional: every cross-file surface links on demand
    * after files change. Call it explicitly to control when the work
@@ -511,7 +534,7 @@ declare class Analyzer {
    * Follows import -> export -> re-export chains to the symbol that
    * actually defines `symbol`. A null `symbol` in the result means a
    * module namespace. Returns null when the chain leaves the added
-   * file set (external modules).
+   * file set (external modules), does not resolve, or is ambiguous.
    */
   definitionOf(symbol: Symbol): Definition | null;
 
