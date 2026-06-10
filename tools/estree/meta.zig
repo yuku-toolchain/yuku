@@ -1,6 +1,6 @@
-// Shared metadata for the ESTree decoder and encoder generators: operator
-// arrays, enum table names, ESTree name/field overrides, and the identifier
-// role table. One source so the two generators can't disagree.
+// Shared metadata for the ESTree decoder and encoder generators. Holds
+// operator arrays, enum table names, ESTree name/field overrides, and the
+// identifier role table. One source so the two generators can't disagree.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -35,7 +35,7 @@ pub const COMMENT_TYPES = [_][]const u8{ "Line", "Block" };
 pub const SEVERITY = [_][]const u8{ "error", "warning", "hint", "info" };
 
 // Tables with non-string elements (null, booleans, `+`/`-`), written as raw
-// JS by the decoder; the encoder builds the inverse from the raw form.
+// JS by the decoder. The encoder builds the inverse from the raw form.
 
 pub const IMPORT_EXPORT_KINDS_RAW = [_][]const u8{ "\"value\"", "\"type\"" };
 pub const ACCESSIBILITY_RAW = [_][]const u8{ "null", "\"public\"", "\"private\"", "\"protected\"" };
@@ -133,18 +133,18 @@ pub fn snakeConvert(comptime name: []const u8, comptime pascal: bool) []const u8
 }
 
 // Identifier dispatch role. ESTree uses one `Identifier` type, but yuku has
-// five variants; this records, per (parent tag, field), which one the
+// five variants. This records, per (parent tag, field), which one the
 // encoder must produce when recursing into a NodeIndex child.
 pub const Role = enum {
-    /// default: ESTree `Identifier` becomes `identifier_reference`.
+    /// the default. ESTree `Identifier` becomes `identifier_reference`.
     auto,
-    /// binding position: `Identifier` becomes `binding_identifier`,
+    /// binding position. `Identifier` becomes `binding_identifier`,
     /// carrying decorators / optional / type_annotation in TS.
     binding,
-    /// `break foo`/`continue foo`/`foo:` label slot.
+    /// label slot for `break foo`, `continue foo`, or a `foo` label.
     label,
     /// non-binding name slot (import/export specifier names, dotted type
-    /// segments): `Identifier` becomes `identifier_name`. Without this the
+    /// segments). `Identifier` becomes `identifier_name`. Without this the
     /// generic dispatcher would treat the name as a reference and the
     /// minifier's `undefined`/`Infinity` rewrites would corrupt it.
     name,
@@ -187,8 +187,8 @@ pub fn fieldRole(comptime tag: []const u8, comptime field: []const u8) Role {
     return .auto;
 }
 
-// Encoder special-case set: nodes the generic struct-to-object mapping
-// can't express. (Superset of the decoder's; the encoder needs more.)
+// Encoder special-case set, nodes the generic struct-to-object mapping
+// can't express. (Superset of the decoder's, the encoder needs more.)
 const SPECIAL = [_][]const u8{
     "formal_parameter",              "formal_parameters",                  "function",
     "arrow_function_expression",     "program",                            "directive",

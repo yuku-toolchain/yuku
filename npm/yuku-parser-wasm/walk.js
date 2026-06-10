@@ -1,12 +1,4 @@
-// The AST walker: typed visitors with alias groups, in-place mutation,
-// and table-driven descent. CHILD_KEYS and ALIAS_GROUPS are generated
-// from the Zig AST, so traversal can never drift from the parser.
-//
-// Mutation contract (shared with yuku-analyzer's semantic walk):
-// replace() re-dispatches typed handlers on the new type and continues
-// into the replacement's children; remove() skips children and leave;
-// insertBefore() siblings are not visited, insertAfter() siblings are.
-import { ALIAS_GROUPS, CHILD_KEYS } from "./decode.js";
+import { CHILD_KEYS } from "./decode.js";
 
 export class WalkContext {
   _ancestors = [];
@@ -63,13 +55,13 @@ export class WalkContext {
     this._removed = true;
   }
   insertBefore(node) {
-    // shift the cursor so the current node keeps its position and the
-    // inserted sibling is not visited
+    // advance past the insert so the current node keeps its turn and the
+    // new sibling is not visited
     this.#insert(node, 0);
     this._frame.i++;
   }
   insertAfter(node) {
-    // lands at the next cursor position, so the walk visits it
+    // lands at the next slot, so the walk visits it
     this.#insert(node, 1);
   }
   #insert(node, offset) {
@@ -80,71 +72,18 @@ export class WalkContext {
   }
 }
 
-// folds a handler chain into one function. chains only exist when alias
-// handlers overlap a type, so the common case stays a direct call.
-function fold(fns) {
-  if (fns.length === 0) return null;
-  if (fns.length === 1) return fns[0];
-  return (node, ctx) => {
-    for (const fn of fns) {
-      fn(node, ctx);
-      if (ctx._stopped || ctx._removed) return;
-    }
-  };
-}
-
 function createDispatch(visitors) {
   let enter = null;
   let leave = null;
   const concrete = new Map();
-  const aliased = [];
   for (const [name, value] of Object.entries(visitors)) {
     if (value == null) continue;
-    if (name === "enter") {
-      enter = value;
-      continue;
-    }
-    if (name === "leave") {
-      leave = value;
-      continue;
-    }
-    const e = typeof value === "function" ? value : (value.enter ?? null);
-    const l = typeof value === "function" ? null : (value.leave ?? null);
-    const group = ALIAS_GROUPS[name];
-    if (group !== undefined) aliased.push({ types: group, enter: e, leave: l });
-    else concrete.set(name, { enter: e, leave: l });
+    if (name === "enter") enter = value;
+    else if (name === "leave") leave = value;
+    else if (typeof value === "function") concrete.set(name, { enter: value, leave: null });
+    else concrete.set(name, { enter: value.enter ?? null, leave: value.leave ?? null });
   }
-  if (aliased.length === 0) {
-    return { enter, leave, typed: (type) => concrete.get(type) };
-  }
-  // per-type entries fold alias and concrete handlers: enter runs
-  // aliases in registration order then the concrete handler, leave
-  // mirrors it
-  const cache = new Map();
-  return {
-    enter,
-    leave,
-    typed(type) {
-      let entry = cache.get(type);
-      if (entry === undefined) {
-        const enters = [];
-        const leaves = [];
-        for (const a of aliased) {
-          if (a.enter !== null && a.types.has(type)) enters.push(a.enter);
-        }
-        const c = concrete.get(type);
-        if (c !== undefined && c.enter !== null) enters.push(c.enter);
-        if (c !== undefined && c.leave !== null) leaves.push(c.leave);
-        for (let i = aliased.length - 1; i >= 0; i--) {
-          const a = aliased[i];
-          if (a.leave !== null && a.types.has(type)) leaves.push(a.leave);
-        }
-        entry = { enter: fold(enters), leave: fold(leaves) };
-        cache.set(type, entry);
-      }
-      return entry;
-    },
-  };
+  return { enter, leave, typed: (type) => concrete.get(type) };
 }
 
 /**
@@ -156,11 +95,10 @@ export function walk(root, visitors, state) {
   return root;
 }
 
-// internal: yuku-analyzer layers scope replay through `hooks` and a
-// WalkContext subclass. hooks.enter runs before any handler and its
-// return value is passed to hooks.exit, which runs after the node is
-// fully handled, removal included. exits are skipped when the walk
-// stops, since the walk (and its context) ends there.
+// internal entry point. yuku-analyzer layers scope replay via `hooks`
+// (enter returns a token passed to exit, which runs after the node is
+// handled, removal included) and a WalkContext subclass. exits are
+// skipped once stopped.
 export function _walk(root, visitors, state, hooks, ctx) {
   const d = createDispatch(visitors);
   ctx.state = state;

@@ -150,15 +150,6 @@ interface ParseResult {
    */
   locOf(offset: number): SourceLocation;
   /**
-   * Resolves an offset to a `{ line, column }` pair, starting the search at
-   * `hintLine` and scanning toward the target line. For offsets resolved in
-   * roughly source order, pass the previously returned `line` as `hintLine`
-   * to keep lookups near-constant time, avoiding the binary search in
-   * {@link locOf}. `hintLine` is 1-based, like the returned `line`. Lines are
-   * 1-based, columns are 0-based, matching ESTree's `loc` convention.
-   */
-  locNear(offset: number, hintLine: number): SourceLocation;
-  /**
    * Readonly buffer scan: visits the parsed node records directly,
    * dispatching only to registered types, without materializing AST
    * objects. Many times faster than {@link walk} for sparse queries;
@@ -180,170 +171,6 @@ type NodeType = Node["type"];
 
 /** The node, or union of nodes, carrying a given `type`. */
 type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
-
-/**
- * Node types grouped under each alias name. A visitor registered under
- * an alias runs for every member type. Mirrors the generated runtime
- * table, which is validated against the AST at build time.
- */
-interface AliasTypeMap {
-  Expression:
-    | "Identifier"
-    | "Literal"
-    | "ThisExpression"
-    | "Super"
-    | "ArrayExpression"
-    | "ObjectExpression"
-    | "FunctionExpression"
-    | "ArrowFunctionExpression"
-    | "ClassExpression"
-    | "TaggedTemplateExpression"
-    | "TemplateLiteral"
-    | "MemberExpression"
-    | "CallExpression"
-    | "NewExpression"
-    | "ChainExpression"
-    | "SequenceExpression"
-    | "ParenthesizedExpression"
-    | "BinaryExpression"
-    | "LogicalExpression"
-    | "ConditionalExpression"
-    | "UnaryExpression"
-    | "UpdateExpression"
-    | "AssignmentExpression"
-    | "YieldExpression"
-    | "AwaitExpression"
-    | "ImportExpression"
-    | "MetaProperty"
-    | "TSAsExpression"
-    | "TSSatisfiesExpression"
-    | "TSTypeAssertion"
-    | "TSNonNullExpression"
-    | "TSInstantiationExpression"
-    | "JSXElement"
-    | "JSXFragment";
-  Statement:
-    | "ExpressionStatement"
-    | "BlockStatement"
-    | "EmptyStatement"
-    | "DebuggerStatement"
-    | "ReturnStatement"
-    | "LabeledStatement"
-    | "BreakStatement"
-    | "ContinueStatement"
-    | "IfStatement"
-    | "SwitchStatement"
-    | "ThrowStatement"
-    | "TryStatement"
-    | "WhileStatement"
-    | "DoWhileStatement"
-    | "ForStatement"
-    | "ForInStatement"
-    | "ForOfStatement"
-    | "WithStatement"
-    | "FunctionDeclaration"
-    | "ClassDeclaration"
-    | "VariableDeclaration"
-    | "TSDeclareFunction"
-    | "TSTypeAliasDeclaration"
-    | "TSInterfaceDeclaration"
-    | "TSEnumDeclaration"
-    | "TSModuleDeclaration"
-    | "TSImportEqualsDeclaration";
-  Declaration:
-    | "FunctionDeclaration"
-    | "ClassDeclaration"
-    | "VariableDeclaration"
-    | "TSDeclareFunction"
-    | "TSTypeAliasDeclaration"
-    | "TSInterfaceDeclaration"
-    | "TSEnumDeclaration"
-    | "TSModuleDeclaration"
-    | "TSImportEqualsDeclaration";
-  ModuleDeclaration:
-    | "ImportDeclaration"
-    | "ExportNamedDeclaration"
-    | "ExportDefaultDeclaration"
-    | "ExportAllDeclaration"
-    | "TSExportAssignment"
-    | "TSNamespaceExportDeclaration";
-  /** Includes arrow functions, unlike the narrower ESTree `Function`. */
-  Function:
-    | "FunctionDeclaration"
-    | "FunctionExpression"
-    | "ArrowFunctionExpression"
-    | "TSDeclareFunction"
-    | "TSEmptyBodyFunctionExpression";
-  Class: "ClassDeclaration" | "ClassExpression";
-  Method: "MethodDefinition" | "TSAbstractMethodDefinition";
-  Loop:
-    | "ForStatement"
-    | "ForInStatement"
-    | "ForOfStatement"
-    | "WhileStatement"
-    | "DoWhileStatement";
-  Pattern: "Identifier" | "ArrayPattern" | "ObjectPattern" | "AssignmentPattern" | "RestElement";
-  JSX:
-    | "JSXElement"
-    | "JSXOpeningElement"
-    | "JSXClosingElement"
-    | "JSXFragment"
-    | "JSXOpeningFragment"
-    | "JSXClosingFragment"
-    | "JSXIdentifier"
-    | "JSXNamespacedName"
-    | "JSXMemberExpression"
-    | "JSXAttribute"
-    | "JSXSpreadAttribute"
-    | "JSXExpressionContainer"
-    | "JSXEmptyExpression"
-    | "JSXText"
-    | "JSXSpreadChild";
-  TSType:
-    | "TSAnyKeyword"
-    | "TSUnknownKeyword"
-    | "TSNeverKeyword"
-    | "TSVoidKeyword"
-    | "TSNullKeyword"
-    | "TSUndefinedKeyword"
-    | "TSStringKeyword"
-    | "TSNumberKeyword"
-    | "TSBigIntKeyword"
-    | "TSBooleanKeyword"
-    | "TSSymbolKeyword"
-    | "TSObjectKeyword"
-    | "TSIntrinsicKeyword"
-    | "TSThisType"
-    | "TSTypeReference"
-    | "TSTypeQuery"
-    | "TSImportType"
-    | "TSLiteralType"
-    | "TSTemplateLiteralType"
-    | "TSArrayType"
-    | "TSIndexedAccessType"
-    | "TSTupleType"
-    | "TSNamedTupleMember"
-    | "TSJSDocNullableType"
-    | "TSJSDocNonNullableType"
-    | "TSJSDocUnknownType"
-    | "TSUnionType"
-    | "TSIntersectionType"
-    | "TSConditionalType"
-    | "TSInferType"
-    | "TSTypeOperator"
-    | "TSParenthesizedType"
-    | "TSFunctionType"
-    | "TSConstructorType"
-    | "TSTypePredicate"
-    | "TSTypeLiteral"
-    | "TSMappedType";
-}
-
-/** Name of an alias group. */
-type AliasName = keyof AliasTypeMap;
-
-/** Node union matched by an alias group. */
-type AliasNodes<A extends AliasName> = NodeOfType<AliasTypeMap[A]>;
 
 /**
  * The walk context: one reused object exposing the current position and
@@ -405,15 +232,12 @@ interface WalkHooks<T extends Node = Node, S = unknown> {
 }
 
 /**
- * Handlers keyed by node `type`, alias group name, or the universal
- * `enter`/`leave`. A bare function is an enter handler. Per node, enter
- * order is universal, alias (registration order), concrete; leave
- * mirrors it.
+ * Handlers keyed by node `type`, or the universal `enter`/`leave`. A bare
+ * function is an enter handler; per node `enter` runs before children and
+ * `leave` after.
  */
 type Visitors<S = unknown> = {
   [K in NodeType]?: WalkHandler<NodeOfType<K>, S> | WalkHooks<NodeOfType<K>, S>;
-} & {
-  [A in AliasName]?: WalkHandler<AliasNodes<A>, S> | WalkHooks<AliasNodes<A>, S>;
 } & {
   enter?: WalkHandler<Node, S>;
   leave?: WalkHandler<Node, S>;
@@ -2070,9 +1894,6 @@ type Node =
 
 export { WalkContext };
 export type {
-  AliasName,
-  AliasNodes,
-  AliasTypeMap,
   NodeOfType,
   NodeType,
   ScanCursor,

@@ -12,8 +12,6 @@
  */
 
 import type {
-  AliasName,
-  AliasNodes,
   Comment,
   Diagnostic,
   DiagnosticSeverity,
@@ -273,16 +271,12 @@ interface WalkHooks<T extends Node = Node> {
 }
 
 /**
- * Visitors passed to {@link Module.walk}: keys are node `type` strings
- * or alias group names (handlers receive the matching node type), plus
- * optional `enter` / `leave` catch-alls. Order per node: catch-all
- * `enter`, alias enters, typed enter, children, typed leave, alias
- * leaves, catch-all `leave`.
+ * Visitors passed to {@link Module.walk}: keys are node `type` strings, plus optional `enter` /
+ * `leave` catch-alls. Order per node: catch-all `enter`, typed enter,
+ * children, typed leave, catch-all `leave`.
  */
 type Visitors = {
   [K in NodeType]?: WalkHandler<NodeOfType<K>> | WalkHooks<NodeOfType<K>>;
-} & {
-  [A in AliasName]?: WalkHandler<AliasNodes<A>> | WalkHooks<AliasNodes<A>>;
 } & {
   enter?: WalkHandler;
   leave?: WalkHandler;
@@ -400,8 +394,6 @@ interface Module {
   readonly lineStarts: number[];
   /** Resolves an offset to a `(line, column)` pair. */
   locOf(offset: number): SourceLocation;
-  /** Like {@link locOf} with a hint line for near-constant lookups. */
-  locNear(offset: number, hintLine: number): SourceLocation;
 
   /** Every lexical scope; index is the scope id. `scopes[0]` is global. */
   readonly scopes: Scope[];

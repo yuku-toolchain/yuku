@@ -1,7 +1,7 @@
-// One analyzed file: the AST plus the scope/symbol/reference/import/
+// One analyzed file, the AST plus the scope/symbol/reference/import/
 // export object graph, built lazily over the decoded analyzer buffer.
 // All wire reads go through the generated `semantic` accessors from
-// decode.js; nothing in this file knows the buffer layout.
+// decode.js. Nothing in this file knows the buffer layout.
 //
 // `_name` members are package-internal, shared with analyzer.js and
 // walk.js. `#name` members are private to their class.
@@ -267,7 +267,7 @@ class Export {
   }
 }
 
-// The semantic scan cursor: the generated buffer cursor plus symbol and
+// The semantic scan cursor, the generated buffer cursor plus symbol and
 // reference lookups, which are index-keyed and so need no AST nodes.
 class ScanCursor {
   _raw = null;
@@ -359,9 +359,6 @@ export class Module {
   }
   locOf(offset) {
     return this.#r.locOf(offset);
-  }
-  locNear(offset, hintLine) {
-    return this.#r.locNear(offset, hintLine);
   }
 
   get scopes() {
@@ -476,7 +473,7 @@ export class Module {
     walkModule(this, visitor, root);
   }
 
-  // readonly buffer scan with a semantic cursor; resolves symbols and
+  // readonly buffer scan with a semantic cursor, resolving symbols and
   // references in index space, materializing no AST nodes.
   scan(visitors) {
     const cursor = new ScanCursor(this);
@@ -540,7 +537,7 @@ export class Module {
   }
 
   // scope-creating node object -> innermost Scope (keep-last covers
-  // shared nodes: global/module on program, expression_name/function).
+  // shared nodes, global/module on program, expression_name/function).
   _scopeMap() {
     if (this.#scopeMap === null) {
       const byNode = new WeakMap();
@@ -616,7 +613,7 @@ export class Module {
   }
 
   // node index -> the function scope it creates. named function
-  // expressions share the node with their expression_name scope; the
+  // expressions share the node with their expression_name scope. the
   // function scope has the higher id, so keep-last wins.
   #functionScopeOf(nodeIndex) {
     if (this.#functionScopes === null) {

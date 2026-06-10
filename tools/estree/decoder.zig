@@ -1,6 +1,6 @@
-// generates decode.js: reads the binary ast buffer from zig into an estree
+// generates decode.js, reading the binary ast buffer from zig into an estree
 // object, using the same comptime layout helpers as the serializer so it
-// can't drift. two modes: .parser (lean) and .analyzer (index-memoized
+// can't drift. two modes, .parser (lean) and .analyzer (index-memoized
 // nodes, raw spans, generated semantic-section accessors).
 
 const std = @import("std");
@@ -26,7 +26,6 @@ pub fn generate(w: *Writer, mode: Mode) !void {
     try writeLookupTables(w);
     if (mode == .parser) {
         try writeChildKeys(w);
-        try writeAliasGroups(w);
     }
     if (mode == .analyzer) try writeSemanticConstants(w);
     try writeScanTables(w);
@@ -35,12 +34,12 @@ pub fn generate(w: *Writer, mode: Mode) !void {
     try writeNodeFunction(w, mode);
     try writeDecodeBody(w, mode);
     switch (mode) {
-        .parser => try w.writeAll("export { decode, CHILD_KEYS, ALIAS_GROUPS };\n"),
+        .parser => try w.writeAll("export { decode, CHILD_KEYS };\n"),
         .analyzer => try w.writeAll("export { decode, SymbolFlags };\n"),
     }
 }
 
-// js names for the `Symbol.Flags` bits; a flag with no entry fails the build.
+// js names for the `Symbol.Flags` bits. a flag with no entry fails the build.
 const symbol_flag_names = [_]struct { zig: []const u8, js: []const u8 }{
     .{ .zig = "function_scoped_var", .js = "FunctionScopedVariable" },
     .{ .zig = "block_scoped_var", .js = "BlockScopedVariable" },
@@ -99,9 +98,9 @@ fn strCell(
     });
 }
 
-// emits the shared wire constants for the semantic sections: enum name
-// tables and the SymbolFlags bitset, all reflected from the zig types,
-// so they cannot drift.
+// emits the shared wire constants for the semantic sections, the enum
+// name tables and the SymbolFlags bitset, all reflected from the zig
+// types so they cannot drift.
 fn writeSemanticConstants(w: *Writer) !void {
     try writeArray(w, "SCOPE_KINDS", &.{
         "global", "module",      "function",       "block",
@@ -121,8 +120,8 @@ fn writeSemanticConstants(w: *Writer) !void {
     try w.writeAll("});\n");
 }
 
-// utf-16 position map: byte offset -> source string index, for spans that
-// fall after the first non-ascii byte.
+// utf-16 position map from byte offset to source string index, for spans
+// that fall after the first non-ascii byte.
 fn writeBuildPosMap(w: *Writer) !void {
     try w.writeAll(
         \\function buildPosMap(src, byteLen, startByte) {
@@ -161,7 +160,7 @@ fn writeBuildPosMap(w: *Writer) !void {
     );
 }
 
-// the whole decoder is one reentrant `decode(buffer, source)`: every
+// the whole decoder is one reentrant `decode(buffer, source)`. every
 // per-call value (the typed-array views, offsets, the pos map) is a local
 // const, and the inner helpers close over them. no module state, no cleanup.
 fn writeDecodeOpen(w: *Writer) !void {
@@ -350,7 +349,7 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
             \\
         ),
         // memoize by index so the AST node and a semantic query's node are
-        // one object; the WeakMap is the reverse (node -> index).
+        // one object. the WeakMap is the reverse (node -> index).
         .analyzer => try w.writeAll(
             \\    }
             \\  }
@@ -381,7 +380,7 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
     });
 }
 
-// enum lookup tables: each JS name paired with its element data from meta,
+// enum lookup tables, each JS name paired with its element data from meta,
 // shared with the encoder (which emits the inverse). raw tables hold
 // non-string elements (null, booleans, `+`/`-`) written verbatim.
 fn writeLookupTables(w: *Writer) !void {
@@ -424,13 +423,13 @@ fn writeArrayRaw(w: *Writer, name: []const u8, items: []const []const u8) !void 
     try w.writeAll("];\n");
 }
 
-// `special_child_keys`: the registry of every special-shaped variant, its
+// `special_child_keys`, the registry of every special-shaped variant, its
 // ESTree types and traversal-order child keys. generic variants reflect
 // their structs (every NodeIndex/IndexRange field is a child). this one
 // table also defines `isSpecial`, `TAG_TYPES`, and `TAG_CHOICES`.
 
 /// Child keys of a special-shaped variant. `types` lists every ESTree
-/// `type` it can render as; empty means transparent (never a node itself).
+/// `type` it can render as, empty meaning transparent (never a node itself).
 const SpecialChildKeys = struct {
     variant: []const u8,
     types: []const []const u8,
@@ -507,7 +506,7 @@ fn specialChildKeysOf(comptime name: []const u8) ?SpecialChildKeys {
 }
 
 // emits CHILD_KEYS. multiple variants can render as the same ESTree
-// type (identifiers, literals, function forms), so entries merge:
+// type (identifiers, literals, function forms), so entries merge.
 // first-seen order wins, unseen keys append.
 fn writeChildKeys(w: *Writer) !void {
     @setEvalBranchQuota(1_000_000);
@@ -549,117 +548,8 @@ fn writeChildKeys(w: *Writer) !void {
     try w.writeAll("_ck(\"Hashbang\", []);\n");
 }
 
-// alias groups: a visitor registered under an alias name runs for every
-// member type. names are authored; membership is validated at comptime,
-// so a typo or a renamed node type fails the build.
-const alias_groups = [_]struct { name: []const u8, types: []const []const u8 }{
-    .{ .name = "Expression", .types = &.{
-        "Identifier",               "Literal",                   "ThisExpression",
-        "Super",                    "ArrayExpression",           "ObjectExpression",
-        "FunctionExpression",       "ArrowFunctionExpression",   "ClassExpression",
-        "TaggedTemplateExpression", "TemplateLiteral",           "MemberExpression",
-        "CallExpression",           "NewExpression",             "ChainExpression",
-        "SequenceExpression",       "ParenthesizedExpression",   "BinaryExpression",
-        "LogicalExpression",        "ConditionalExpression",     "UnaryExpression",
-        "UpdateExpression",         "AssignmentExpression",      "YieldExpression",
-        "AwaitExpression",          "ImportExpression",          "MetaProperty",
-        "TSAsExpression",           "TSSatisfiesExpression",     "TSTypeAssertion",
-        "TSNonNullExpression",      "TSInstantiationExpression", "JSXElement",
-        "JSXFragment",
-    } },
-    .{ .name = "Statement", .types = &.{
-        "ExpressionStatement", "BlockStatement",         "EmptyStatement",
-        "DebuggerStatement",   "ReturnStatement",        "LabeledStatement",
-        "BreakStatement",      "ContinueStatement",      "IfStatement",
-        "SwitchStatement",     "ThrowStatement",         "TryStatement",
-        "WhileStatement",      "DoWhileStatement",       "ForStatement",
-        "ForInStatement",      "ForOfStatement",         "WithStatement",
-        "FunctionDeclaration", "ClassDeclaration",       "VariableDeclaration",
-        "TSDeclareFunction",   "TSTypeAliasDeclaration", "TSInterfaceDeclaration",
-        "TSEnumDeclaration",   "TSModuleDeclaration",    "TSImportEqualsDeclaration",
-    } },
-    .{ .name = "Declaration", .types = &.{
-        "FunctionDeclaration", "ClassDeclaration",       "VariableDeclaration",
-        "TSDeclareFunction",   "TSTypeAliasDeclaration", "TSInterfaceDeclaration",
-        "TSEnumDeclaration",   "TSModuleDeclaration",    "TSImportEqualsDeclaration",
-    } },
-    .{ .name = "ModuleDeclaration", .types = &.{
-        "ImportDeclaration",    "ExportNamedDeclaration", "ExportDefaultDeclaration",
-        "ExportAllDeclaration", "TSExportAssignment",     "TSNamespaceExportDeclaration",
-    } },
-    // includes arrow functions, unlike the narrower estree Function type
-    .{ .name = "Function", .types = &.{
-        "FunctionDeclaration", "FunctionExpression",            "ArrowFunctionExpression",
-        "TSDeclareFunction",   "TSEmptyBodyFunctionExpression",
-    } },
-    .{ .name = "Class", .types = &.{ "ClassDeclaration", "ClassExpression" } },
-    .{ .name = "Method", .types = &.{ "MethodDefinition", "TSAbstractMethodDefinition" } },
-    .{ .name = "Loop", .types = &.{
-        "ForStatement", "ForInStatement", "ForOfStatement", "WhileStatement", "DoWhileStatement",
-    } },
-    .{ .name = "Pattern", .types = &.{
-        "Identifier", "ArrayPattern", "ObjectPattern", "AssignmentPattern", "RestElement",
-    } },
-    .{ .name = "JSX", .types = &.{
-        "JSXElement",         "JSXOpeningElement",  "JSXClosingElement",
-        "JSXFragment",        "JSXOpeningFragment", "JSXClosingFragment",
-        "JSXIdentifier",      "JSXNamespacedName",  "JSXMemberExpression",
-        "JSXAttribute",       "JSXSpreadAttribute", "JSXExpressionContainer",
-        "JSXEmptyExpression", "JSXText",            "JSXSpreadChild",
-    } },
-    .{ .name = "TSType", .types = &.{
-        "TSAnyKeyword",           "TSUnknownKeyword",    "TSNeverKeyword",
-        "TSVoidKeyword",          "TSNullKeyword",       "TSUndefinedKeyword",
-        "TSStringKeyword",        "TSNumberKeyword",     "TSBigIntKeyword",
-        "TSBooleanKeyword",       "TSSymbolKeyword",     "TSObjectKeyword",
-        "TSIntrinsicKeyword",     "TSThisType",          "TSTypeReference",
-        "TSTypeQuery",            "TSImportType",        "TSLiteralType",
-        "TSTemplateLiteralType",  "TSArrayType",         "TSIndexedAccessType",
-        "TSTupleType",            "TSNamedTupleMember",  "TSJSDocNullableType",
-        "TSJSDocNonNullableType", "TSJSDocUnknownType",  "TSUnionType",
-        "TSIntersectionType",     "TSConditionalType",   "TSInferType",
-        "TSTypeOperator",         "TSParenthesizedType", "TSFunctionType",
-        "TSConstructorType",      "TSTypePredicate",     "TSTypeLiteral",
-        "TSMappedType",
-    } },
-};
-
-/// True when some variant renders as ESTree type `t`.
-fn typeIsKnown(comptime t: []const u8) bool {
-    comptime {
-        if (std.mem.eql(u8, t, "Hashbang")) return true;
-        for (@typeInfo(ast.NodeData).@"union".fields) |field| {
-            if (specialChildKeysOf(field.name)) |entry| {
-                for (entry.types) |st| if (std.mem.eql(u8, st, t)) return true;
-            } else if (std.mem.eql(u8, meta.estreeType(field.name), t)) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
-
-fn writeAliasGroups(w: *Writer) !void {
-    @setEvalBranchQuota(4_000_000);
-    try w.writeAll("const ALIAS_GROUPS = {\n");
-    inline for (alias_groups) |group| {
-        inline for (group.types) |t| {
-            if (comptime !typeIsKnown(t)) {
-                @compileError("alias '" ++ group.name ++ "' references unknown node type '" ++ t ++ "'");
-            }
-        }
-        try w.print("  {s}: new Set([", .{group.name});
-        inline for (group.types, 0..) |t, i| {
-            if (i > 0) try w.writeAll(", ");
-            try w.print("\"{s}\"", .{t});
-        }
-        try w.writeAll("]),\n");
-    }
-    try w.writeAll("};\n");
-}
-
 // scan tables, fully reflected. SCAN_CHILDREN[tag] = flat (kind, slot)
-// pairs: kind 0 single NodeIndex, 1 range (len in next slot), 2 first
+// pairs. kind 0 single NodeIndex, 1 range (len in next slot), 2 first
 // range (len in f0). TAG_TYPES[tag] = ESTree type string, `0` if flag-
 // dependent (see `_scanType`), `null` if transparent.
 
@@ -713,7 +603,7 @@ fn writeScanTables(w: *Writer) !void {
     try w.writeAll("];\n");
 
     // flag-dependent tags (TAG_TYPES === 0) map to their possible types,
-    // straight from special_child_keys: every multi-type special variant.
+    // straight from special_child_keys, every multi-type special variant.
     try w.writeAll("const TAG_CHOICES = new Map([\n");
     inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, tag| {
         if (comptime specialChildKeysOf(field.name)) |entry| {
@@ -839,7 +729,7 @@ fn writeFieldExpr(
     }
 }
 
-// special cases: nodes whose estree shape does not reduce to a struct-to-
+// special cases, nodes whose estree shape does not reduce to a struct-to-
 // object mapping. the special set is exactly `special_child_keys`, which
 // also carries each variant's estree types and child keys.
 fn isSpecial(comptime name: []const u8) bool {
@@ -1337,7 +1227,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const kbit = comptime flagBit(ast.TSModuleDeclaration, "kind");
         const kmask = comptime enumMask(ast.TSModuleDeclarationKind);
         const db = comptime flagMask(ast.TSModuleDeclaration, "declare");
-        // bodyless forms (`declare module "foo";`) drop the `body` key
+        // bodyless forms (`declare module "foo"`) drop the `body` key
         // entirely, matching oxc/babel/typescript-estree.
         try emit(w,
             \\    case {d}: {{
@@ -1367,7 +1257,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         , .{ tag, sid, sb, db });
     } else if (comptime eql(u8, name, "ts_this_parameter")) {
         // an `Identifier` with the fixed name `this` (typescript-estree
-        // convention); that fixed name is also how the encoder recognizes it.
+        // convention). that fixed name is also how the encoder recognizes it.
         const sta = comptime slotOf(ast.TSThisParameter, "type_annotation");
         try emit(w,
             \\    case {d}: return {{
@@ -1492,18 +1382,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\      }
         \\      return { line: lo, column: offset - ls[lo - 1] };
         \\    },
-        \\    locNear(offset, hintLine) {
-        \\      const ls = _getLineStarts();
-        \\      let i = hintLine - 1;
-        \\      if (i < 0) i = 0;
-        \\      if (i >= ls.length) i = ls.length - 1;
-        \\      if (ls[i] <= offset) {
-        \\        while (i + 1 < ls.length && ls[i + 1] <= offset) i++;
-        \\      } else {
-        \\        while (i > 0 && ls[i] > offset) i--;
-        \\      }
-        \\      return { line: i + 1, column: offset - ls[i] };
-        \\    },
         \\    scan,
         \\
     );
@@ -1523,7 +1401,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     );
 }
 
-// the readonly buffer scan: depth-first over node records, dispatching
+// the readonly buffer scan, depth-first over node records, dispatching
 // only registered types via a dense per-tag handler array. nothing is
 // materialized unless a handler calls cursor.node(). `0` in `wanted`
 // marks a flag-dependent tag, resolved per node by `_scanType`.
@@ -1698,7 +1576,7 @@ fn writeSemanticBody(w: *Writer) !void {
     );
 }
 
-// the accessor groups `_semantic()` returns: one function per wire field,
+// the accessor groups `_semantic()` returns, one function per wire field,
 // strides/columns/bits folded in from the packed structs so the js layer
 // never sees the layout. `*Id` accessors map the none sentinel to null.
 fn writeSemanticAccessors(w: *Writer) !void {
@@ -1920,7 +1798,7 @@ const TS_EXTRAS = [_]struct { node: []const u8, extras: []const Extra }{
         .{ .field = "static", .value = "false" },
     } },
     .{ .node = "ts_index_signature", .extras = &.{.{ .field = "accessibility", .value = "null" }} },
-    // parameter properties are never static; fixed estree convention.
+    // parameter properties are never static, a fixed estree convention.
     .{ .node = "ts_parameter_property", .extras = &.{
         .{ .field = "static", .value = "false" },
     } },

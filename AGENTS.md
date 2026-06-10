@@ -149,7 +149,7 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 - **Internal comments are terse phrases, all lowercase.** No leading capital, no trailing full stop. Keep proper casing only for things that need it (identifier names, proper nouns: `Lexer`, `JSX`, `ECMAScript`). A trailing-line note like `// caller already consumed the `(`` is the target shape, not a multi-sentence paragraph.
 - **Public doc comments (`///`) are professional prose.** Proper casing, full sentences, real punctuation. They describe what a name means and how a user is meant to use it. Never leak implementation hand-offs, ticket numbers, TODO chatter, or step-by-step rationale that belongs in the commit message.
 - **Tests need a header.** A short comment at the top of a non-trivial test states the goal and methodology so a reader can get up to speed or skip past.
-- **No em dashes and no semicolons in comments.** Split into separate sentences instead. Both invite run-on prose that obscures the point.
+- **No em dashes, semicolons, or colons in comments.** Split into separate sentences instead. They invite run-on prose that obscures the point.
 
 ### Cache Invalidation
 

@@ -1,4 +1,4 @@
-// Semantic walk: yuku-parser's walk engine plus a scope stack replayed from
+// Semantic walk, yuku-parser's walk engine plus a scope stack replayed from
 // the native scope table through the engine's lifecycle hooks.
 import { WalkContext, _walk } from "yuku-parser";
 
@@ -29,7 +29,7 @@ export function walkModule(module, visitors, root) {
   const start = root ?? module.ast;
   const scopes = [module.scopeOf(start)];
   const hooks = {
-    // the scope was created for the original node; a replacement keeps
+    // the scope was created for the original node. a replacement keeps
     // the same lexical position, so push/pop stays balanced on it
     enter(node) {
       const scope = types.has(node.type) ? byNode.get(node) : undefined;

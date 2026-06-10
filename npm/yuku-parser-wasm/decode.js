@@ -203,19 +203,6 @@ _ck("JSXEmptyExpression", []);
 _ck("JSXText", []);
 _ck("JSXSpreadChild", ["expression"]);
 _ck("Hashbang", []);
-const ALIAS_GROUPS = {
-  Expression: new Set(["Identifier", "Literal", "ThisExpression", "Super", "ArrayExpression", "ObjectExpression", "FunctionExpression", "ArrowFunctionExpression", "ClassExpression", "TaggedTemplateExpression", "TemplateLiteral", "MemberExpression", "CallExpression", "NewExpression", "ChainExpression", "SequenceExpression", "ParenthesizedExpression", "BinaryExpression", "LogicalExpression", "ConditionalExpression", "UnaryExpression", "UpdateExpression", "AssignmentExpression", "YieldExpression", "AwaitExpression", "ImportExpression", "MetaProperty", "TSAsExpression", "TSSatisfiesExpression", "TSTypeAssertion", "TSNonNullExpression", "TSInstantiationExpression", "JSXElement", "JSXFragment"]),
-  Statement: new Set(["ExpressionStatement", "BlockStatement", "EmptyStatement", "DebuggerStatement", "ReturnStatement", "LabeledStatement", "BreakStatement", "ContinueStatement", "IfStatement", "SwitchStatement", "ThrowStatement", "TryStatement", "WhileStatement", "DoWhileStatement", "ForStatement", "ForInStatement", "ForOfStatement", "WithStatement", "FunctionDeclaration", "ClassDeclaration", "VariableDeclaration", "TSDeclareFunction", "TSTypeAliasDeclaration", "TSInterfaceDeclaration", "TSEnumDeclaration", "TSModuleDeclaration", "TSImportEqualsDeclaration"]),
-  Declaration: new Set(["FunctionDeclaration", "ClassDeclaration", "VariableDeclaration", "TSDeclareFunction", "TSTypeAliasDeclaration", "TSInterfaceDeclaration", "TSEnumDeclaration", "TSModuleDeclaration", "TSImportEqualsDeclaration"]),
-  ModuleDeclaration: new Set(["ImportDeclaration", "ExportNamedDeclaration", "ExportDefaultDeclaration", "ExportAllDeclaration", "TSExportAssignment", "TSNamespaceExportDeclaration"]),
-  Function: new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"]),
-  Class: new Set(["ClassDeclaration", "ClassExpression"]),
-  Method: new Set(["MethodDefinition", "TSAbstractMethodDefinition"]),
-  Loop: new Set(["ForStatement", "ForInStatement", "ForOfStatement", "WhileStatement", "DoWhileStatement"]),
-  Pattern: new Set(["Identifier", "ArrayPattern", "ObjectPattern", "AssignmentPattern", "RestElement"]),
-  JSX: new Set(["JSXElement", "JSXOpeningElement", "JSXClosingElement", "JSXFragment", "JSXOpeningFragment", "JSXClosingFragment", "JSXIdentifier", "JSXNamespacedName", "JSXMemberExpression", "JSXAttribute", "JSXSpreadAttribute", "JSXExpressionContainer", "JSXEmptyExpression", "JSXText", "JSXSpreadChild"]),
-  TSType: new Set(["TSAnyKeyword", "TSUnknownKeyword", "TSNeverKeyword", "TSVoidKeyword", "TSNullKeyword", "TSUndefinedKeyword", "TSStringKeyword", "TSNumberKeyword", "TSBigIntKeyword", "TSBooleanKeyword", "TSSymbolKeyword", "TSObjectKeyword", "TSIntrinsicKeyword", "TSThisType", "TSTypeReference", "TSTypeQuery", "TSImportType", "TSLiteralType", "TSTemplateLiteralType", "TSArrayType", "TSIndexedAccessType", "TSTupleType", "TSNamedTupleMember", "TSJSDocNullableType", "TSJSDocNonNullableType", "TSJSDocUnknownType", "TSUnionType", "TSIntersectionType", "TSConditionalType", "TSInferType", "TSTypeOperator", "TSParenthesizedType", "TSFunctionType", "TSConstructorType", "TSTypePredicate", "TSTypeLiteral", "TSMappedType"]),
-};
 const SCAN_CHILDREN = [
   [2, 2],
   [0, 2],
@@ -1338,19 +1325,7 @@ function decode(buffer, source) {
       }
       return { line: lo, column: offset - ls[lo - 1] };
     },
-    locNear(offset, hintLine) {
-      const ls = _getLineStarts();
-      let i = hintLine - 1;
-      if (i < 0) i = 0;
-      if (i >= ls.length) i = ls.length - 1;
-      if (ls[i] <= offset) {
-        while (i + 1 < ls.length && ls[i + 1] <= offset) i++;
-      } else {
-        while (i > 0 && ls[i] > offset) i--;
-      }
-      return { line: i + 1, column: offset - ls[i] };
-    },
     scan,
   };
 }
-export { decode, CHILD_KEYS, ALIAS_GROUPS };
+export { decode, CHILD_KEYS };
