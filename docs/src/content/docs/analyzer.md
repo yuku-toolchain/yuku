@@ -9,16 +9,22 @@ description: Full JavaScript and TypeScript semantic analysis for Node.js. Scope
 npm install yuku-analyzer yuku-parser
 ```
 
-`yuku-parser` is a peer dependency: it provides the AST node types and the shared walk engine.
+`yuku-parser` is a peer dependency.
 
 ```js
 import { Analyzer } from "yuku-analyzer";
 
 const analyzer = new Analyzer();
-const module = analyzer.addFile("app.ts", source);
+analyzer.addFile("config.ts", `export const flags = { debug: true };`);
+const app = analyzer.addFile("app.ts", `import { flags } from "./config.ts";`);
 
-module.rootScope.find("config")?.references; // every use of `config`
+const def = app.rootScope.find("flags").definition();
+
+def.module.path; // "config.ts"
+def.symbol.name; // "flags"
 ```
+
+That is real cross-file resolution, not a string search: it follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
 
 ## The problem it solves
 
