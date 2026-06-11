@@ -1,5 +1,5 @@
 // yuku-parser's public type surface. The AST, diagnostic, and traversal type
-// model lives in @yuku/types and is re-exported here for backward
+// model lives in @yuku-toolchain/types and is re-exported here for backward
 // compatibility; this file adds only the parser's own parse/walk/scan API.
 
 import type {
@@ -14,9 +14,9 @@ import type {
   SourceLocation,
   SourceType,
   WalkContext,
-} from "@yuku/types";
+} from "@yuku-toolchain/types";
 
-export * from "@yuku/types";
+export * from "@yuku-toolchain/types";
 
 // Parsing
 

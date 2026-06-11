@@ -17,7 +17,7 @@ import type {
   SourceLocation,
   SourceType,
   WalkContext as BaseWalkContext,
-} from "@yuku/types";
+} from "@yuku-toolchain/types";
 
 /** A diagnostic produced by {@link Analyzer.link}. */
 interface LinkDiagnostic {

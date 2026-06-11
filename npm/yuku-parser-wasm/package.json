@@ -18,7 +18,7 @@
     "yuku-parser.wasm"
   ],
   "dependencies": {
-    "@yuku/types": "workspace:*"
+    "@yuku-toolchain/types": "workspace:*"
   },
   "keywords": [
     "acorn",

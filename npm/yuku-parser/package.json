@@ -31,7 +31,7 @@
     "@yuku-parser/binding-freebsd-x64": "0.5.32"
   },
   "dependencies": {
-    "@yuku/types": "workspace:*"
+    "@yuku-toolchain/types": "workspace:*"
   },
   "keywords": [
     "acorn",
