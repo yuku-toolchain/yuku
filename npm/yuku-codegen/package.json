@@ -39,7 +39,7 @@
     "printer",
     "typescript"
   ],
-  "peerDependencies": {
-    "yuku-parser": "workspace:*"
+  "dependencies": {
+    "@yuku/types": "workspace:*"
   }
 }

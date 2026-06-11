@@ -17,6 +17,9 @@
     "walk.js",
     "yuku-parser.wasm"
   ],
+  "dependencies": {
+    "@yuku/types": "workspace:*"
+  },
   "keywords": [
     "acorn",
     "ast",

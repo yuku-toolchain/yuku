@@ -1,7 +1,4 @@
-// Semantic walk, yuku-parser's walk engine plus a scope stack replayed from
-// the native scope table through the engine's lifecycle hooks.
-
-import { WalkContext, _walk } from "yuku-parser";
+import { WalkContext, _walk } from "./engine.js";
 
 class SemanticWalkContext extends WalkContext {
   #module;

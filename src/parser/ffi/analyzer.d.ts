@@ -17,7 +17,7 @@ import type {
   SourceLocation,
   SourceType,
   WalkContext as BaseWalkContext,
-} from "yuku-parser";
+} from "@yuku/types";
 
 /** A diagnostic produced by {@link Analyzer.link}. */
 interface LinkDiagnostic {
@@ -225,7 +225,7 @@ interface Reference {
 }
 
 /**
- * The semantic walk context: yuku-parser's {@link BaseWalkContext} (the
+ * The semantic walk context: the toolchain's {@link BaseWalkContext} (the
  * same position info and mutation operations, exact same semantics)
  * plus the module's semantic surface. One object is reused across the
  * whole walk; do not hold onto it across nodes.
@@ -272,7 +272,7 @@ type Visitors = {
 };
 
 /**
- * The semantic scan cursor: yuku-parser's {@link BaseScanCursor} plus
+ * The semantic scan cursor: the toolchain's {@link BaseScanCursor} plus
  * symbol and reference lookups. Both are index-keyed, so a scan can
  * resolve semantics without materializing any AST nodes.
  */

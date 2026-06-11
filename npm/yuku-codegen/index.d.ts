@@ -1,4 +1,4 @@
-import type { Comment, Program } from "yuku-parser";
+import type { Comment, Program } from "@yuku/types";
 
 /** Whitespace mode for the generated output. */
 export type Format = "pretty" | "compact";

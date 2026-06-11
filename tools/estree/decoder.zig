@@ -24,9 +24,9 @@ pub fn generate(w: *Writer, mode: Mode) !void {
         \\
     );
     try writeLookupTables(w);
-    if (mode == .parser) {
-        try writeChildKeys(w);
-    }
+    // CHILD_KEYS drives the traversal order for the walk engine, which the
+    // analyzer vendors; emit it in both modes so neither has to import it.
+    try writeChildKeys(w);
     if (mode == .analyzer) try writeSemanticConstants(w);
     try writeScanTables(w);
     try writeBuildPosMap(w);
@@ -35,7 +35,7 @@ pub fn generate(w: *Writer, mode: Mode) !void {
     try writeDecodeBody(w, mode);
     switch (mode) {
         .parser => try w.writeAll("export { decode, CHILD_KEYS };\n"),
-        .analyzer => try w.writeAll("export { decode, SymbolFlags };\n"),
+        .analyzer => try w.writeAll("export { decode, SymbolFlags, CHILD_KEYS };\n"),
     }
 }
 

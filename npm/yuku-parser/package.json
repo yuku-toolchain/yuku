@@ -30,6 +30,9 @@
     "@yuku-parser/binding-win32-arm64": "0.5.31",
     "@yuku-parser/binding-freebsd-x64": "0.5.31"
   },
+  "dependencies": {
+    "@yuku/types": "workspace:*"
+  },
   "keywords": [
     "acorn",
     "ast",
