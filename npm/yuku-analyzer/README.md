@@ -8,7 +8,7 @@ One native call per file computes everything. Every query after that is plain Ja
 npm install yuku-analyzer yuku-parser
 ```
 
-`yuku-parser` is a peer dependency. It provides the AST types and the shared walk engine.
+`yuku-parser` is a peer dependency.
 
 ## Quick start
 
