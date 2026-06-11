@@ -2,7 +2,7 @@
 
 Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking. Powered by [Yuku](https://github.com/yuku-toolchain/yuku), written in Zig.
 
-One native call per file computes everything. Every query after that is plain JavaScript over compact in-memory tables, with zero per-query FFI cost.
+The usual options are a hand-rolled scope tracker (fragile, per-file, re-bugged in every tool) or the TypeScript compiler (correct, but hundreds of milliseconds per file and a compiler-sized dependency). This is the fast path between them. One native call per file, then every query is plain JavaScript with zero per-query FFI cost, sub-millisecond on a typical file.
 
 ```bash
 npm install yuku-analyzer yuku-parser

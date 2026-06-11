@@ -3,7 +3,9 @@ title: Analyzer
 description: Full JavaScript and TypeScript semantic analysis for Node.js. Scopes, symbols, resolved references, closures, and cross-file module linking, computed natively and queried as plain JavaScript objects.
 ---
 
-`yuku-analyzer` brings full compiler-grade semantic analysis to JavaScript: per-file scopes, symbols, resolved references, closure analysis, and cross-file module linking. One native call per file computes everything. Every query after that is plain JavaScript over compact in-memory tables, with zero per-query FFI cost.
+`yuku-analyzer` is full semantic analysis for JavaScript and TypeScript, computed natively and queried as plain JavaScript objects. It gives you scopes, symbols, resolved references, closures, and cross-file module linking.
+
+Today you get this two ways, and both hurt. You hand-track scopes during a walk, which is fragile, per-file, and re-bugged in every tool. Or you embed the TypeScript compiler, which is correct but costs hundreds of milliseconds per file and a compiler-sized dependency. `yuku-analyzer` is the fast path in between. One native pass per file, then every query is plain JavaScript with zero per-query cost, sub-millisecond on a typical file.
 
 ```bash
 npm install yuku-analyzer yuku-parser
