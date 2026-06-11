@@ -1,6 +1,6 @@
 {
   "name": "@yuku-analyzer/binding-freebsd-x64",
-  "version": "0.1.0",
+  "version": "0.5.32",
   "os": [
     "freebsd"
   ],

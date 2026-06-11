@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/binding-darwin-arm64",
-  "version": "0.5.31",
+  "version": "0.5.32",
   "os": [
     "darwin"
   ],

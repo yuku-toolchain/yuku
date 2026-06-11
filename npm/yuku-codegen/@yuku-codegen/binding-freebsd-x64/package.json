@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-freebsd-x64",
-  "version": "0.5.31",
+  "version": "0.5.32",
   "os": [
     "freebsd"
   ],
