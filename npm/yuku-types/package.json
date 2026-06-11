@@ -1,28 +1,28 @@
 {
   "name": "@yuku/types",
-  "version": "0.1.0",
+  "version": "0.5.31",
   "description": "Shared AST, diagnostic, and traversal type definitions for the yuku toolchain",
+  "keywords": [
+    "ast",
+    "estree",
+    "javascript",
+    "types",
+    "typescript"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/yuku-toolchain/yuku"
   },
+  "files": [
+    "index.d.ts"
+  ],
   "type": "module",
+  "sideEffects": false,
   "types": "index.d.ts",
   "exports": {
     ".": {
       "types": "./index.d.ts"
     }
-  },
-  "files": [
-    "index.d.ts"
-  ],
-  "sideEffects": false,
-  "keywords": [
-    "ast",
-    "estree",
-    "javascript",
-    "typescript",
-    "types"
-  ]
+  }
 }
