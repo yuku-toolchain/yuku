@@ -2,22 +2,17 @@ import { Analyzer } from "yuku-analyzer";
 
 const analyzer = new Analyzer();
 
-const source = `
+const counter = `
   import {step} from "./utils.ts"
   let count = 0;
   export function tick() {
     count += step;
+    step;
     return () => count;
   }
 `;
 
-const source2 = `const count = 2; export { count }`;
+const utils = `const step = 2; export { step }`;
 
-analyzer.addFile("utils.ts", source2);
-const module = analyzer.addFile("counter.ts", source);
-
-const [tick] = module.findAll("FunctionDeclaration");
-
-for (const capture of module.capturesOf(tick!)) {
-  console.log(capture.symbol.name, capture.isWritten, capture.symbol.definition()?.module.path);
-}
+analyzer.addFile("utils.ts", utils);
+analyzer.addFile("counter.ts", counter);
