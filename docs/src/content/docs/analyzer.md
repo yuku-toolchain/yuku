@@ -152,37 +152,28 @@ sym.id;           // stable index into module.symbols
 
 One symbol can have several declarations when the language merges them: TypeScript function overloads, `class` + `interface` merging, `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need.
 
-### Flags and predicates
+### Flags
 
-What a symbol is lives in a bitset, with named predicates for every common question:
-
-```js
-sym.isVariable;      // var / let / const, parameters and catch bindings included
-sym.isFunction;
-sym.isClass;
-sym.isImported;
-sym.isExported;
-sym.isConst;         // const or using
-sym.isParameter;
-sym.isCatchParam;
-sym.isTypeOnly;      // import type / import { type x }
-sym.isDefaultExport;
-sym.inValueSpace;    // visible at runtime
-sym.inTypeSpace;     // referencable from TS type positions
-```
-
-A `class` satisfies both `inValueSpace` and `inTypeSpace`, which is what makes "use a class as a type" work without special cases.
-
-For anything the predicates do not cover, the raw bitset and the `SymbolFlags` constants are exported:
+What a symbol is lives in a bitset. There is exactly one way to query it: `has` (any of the given flags) and `hasAll` (all of them), against the exported `SymbolFlags` constants. No parallel boolean getters, so the API stays small and predictable.
 
 ```js
 import { SymbolFlags } from "yuku-analyzer";
 
-sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface); // any of these
-sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // all of these
+sym.has(SymbolFlags.Function);                           // is it a function?
+sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
+sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // an exported function?
 ```
 
-The flag values are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
+Alongside the single-bit flags, four **composites** answer the common categorical questions directly:
+
+```js
+sym.has(SymbolFlags.Variable);   // var / let / const, parameters and catch bindings included
+sym.has(SymbolFlags.Import);  // any import binding, value or `import type`
+sym.has(SymbolFlags.ValueSpace); // visible at runtime
+sym.has(SymbolFlags.TypeSpace);  // referencable from a TS type position
+```
+
+A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
 
 ## References
 
@@ -227,7 +218,7 @@ module.walk({
   CallExpression(node, ctx) {
     if (node.callee.type === "Identifier") {
       const target = ctx.module.symbolOf(node.callee);
-      if (target?.isImported) {
+      if (target?.has(SymbolFlags.Import)) {
         console.log(`calls imported ${node.callee.name}`);
       }
     }
@@ -332,7 +323,7 @@ for (const module of analyzer.modules.values()) {
   module.scan({
     Identifier(cursor) {
       const ref = cursor.reference;
-      if (ref?.isWrite && ref.symbol?.isImported) {
+      if (ref?.isWrite && ref.symbol?.has(SymbolFlags.Import)) {
         console.log(module.path, module.locOf(cursor.start));
       }
     },
@@ -511,7 +502,7 @@ The full bitset, generated from the native binder's layout:
 | `TypeAlias`             | TS `type` alias                                  |
 | `TypeParameter`         | TS `<T>`, `infer T`, mapped-type key             |
 | `NamespaceModule`       | TS namespace of any kind                         |
-| `Import`                | value (or unspecified-kind) import binding       |
+| `ValueImport`           | a value import binding (`import x` / `import { x }`) |
 | `TypeImport`            | `import type` / `import { type x }` binding      |
 | `Const`                 | `const` or `using` binding                       |
 | `Ambient`               | TS `declare`                                     |
@@ -520,9 +511,18 @@ The full bitset, generated from the native binder's layout:
 | `Exported`              | exported from its module                         |
 | `Default`               | the default export                               |
 
+Plus four composites (unions of the above), for the common categorical questions:
+
+| Composite     | Matches                                                            |
+| ------------- | ----------------------------------------------------------------- |
+| `Variable`    | `var` / `let` / `const`, parameters and catch bindings included   |
+| `Import`      | any import binding, value or `import type`                        |
+| `ValueSpace`  | visible at runtime (var, function, class, enum, value namespace)  |
+| `TypeSpace`   | referencable from a type position (class, enum, interface, alias, type param) |
+
 ## Performance
 
-Analysis runs at native speed. Every scope, symbol, reference, flag, and piece of metadata is computed in Zig during the parse and crosses to JavaScript once per file as a compact buffer, all in well under a millisecond for a typical file. After that, nothing is recomputed. Each access to a scope, symbol, reference, or flag is a constant-time read straight off that buffer, and the cross-indexes behind queries like `symbolOf` and a symbol's references build once and answer in O(1) thereafter, so the whole pipeline stays exceptionally fast. Walking runs at tens of millions of nodes per second, semantic scans about 4x faster than that, and linking thousands of modules takes roughly a millisecond. The implementation is validated against 45,000+ real-world files with zero failures.
+Analysis runs at native speed. Every scope, symbol, reference, flag, and piece of metadata is computed in Zig during the parse and crosses to JavaScript once per file as a compact buffer, all in well under a millisecond for a typical file. After that, nothing is recomputed. Each access to a scope, symbol, reference, or flag is a constant-time read straight off that buffer, and the cross-indexes behind queries like `symbolOf` and a symbol's references build once and answer in O(1) thereafter, so the whole pipeline stays exceptionally fast. Walking runs at tens of millions of nodes per second, semantic scans about 4x faster than that, and linking thousands of modules takes roughly a millisecond. The implementation is validated against 55,000+ real-world files with zero failures.
 
 ## TypeScript types
 

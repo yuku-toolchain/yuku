@@ -1,4 +1,4 @@
-import { Module, IMPORT_FLAGS } from "./module.js";
+import { Module, SymbolFlags } from "./module.js";
 
 const RESOLVE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mts", ".mjs", ".cts", ".cjs"];
 
@@ -44,13 +44,10 @@ export class Analyzer {
     return this.#diagnostics;
   }
 
-  // the static half of spec linking: resolves every module request to
-  // an added module, wires the dependency graph, and surfaces the
-  // binding validation of InitializeEnvironment (16.2.1.7.3.1) as
-  // diagnostics instead of throws — step 7.c.iii for imported names,
-  // step 1.c for indirect re-exports. unresolvable specifiers are
-  // skipped so partial graphs link cleanly; evaluation order is out of
-  // scope, this analyzer never runs modules.
+  // the static half of spec linking. resolves every module request to an
+  // added module, wires the dependency graph, and reports binding
+  // validation failures as diagnostics rather than throwing. unresolvable
+  // specifiers are skipped so a partial graph still links.
   link() {
     this.#dirty = false;
     this.#linking = true;
@@ -114,7 +111,7 @@ export class Analyzer {
     let module = symbol.module;
     let current = symbol;
     const seen = new Set();
-    while ((current.flags & IMPORT_FLAGS) !== 0) {
+    while ((current.flags & SymbolFlags.Import) !== 0) {
       const key = `${module.path}:${current.id}`;
       if (seen.has(key)) return null;
       seen.add(key);
@@ -212,7 +209,7 @@ export class Analyzer {
     if (direct !== undefined) {
       if (direct.specifier === null) {
         const local = direct.local;
-        if (local !== null && (local.flags & IMPORT_FLAGS) !== 0) {
+        if (local !== null && (local.flags & SymbolFlags.Import) !== 0) {
           // export of an imported binding: resolve through the original
           // module (the ParseModule rewrite)
           const record = module._importOfSymbol(local.id);

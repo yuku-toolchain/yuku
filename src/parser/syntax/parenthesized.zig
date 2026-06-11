@@ -236,8 +236,7 @@ pub fn identifierToArrowFunction(
 
     const id_span = parser.tree.span(id);
 
-    const param = try parser.tree.addNode(.{ .formal_parameter = .{ .pattern = id } }, id_span);
-    const items = try parser.tree.addExtra(&.{param});
+    const items = try parser.tree.addExtra(&.{id});
     const params = try parser.tree.addNode(
         .{ .formal_parameters = .{
             .items = items,
@@ -337,9 +336,10 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             continue;
         }
 
-        const param = try convertToFormalParameter(parser, elem) orelse return null;
+        // a parameter is its binding pattern directly
+        try grammar.expressionToPattern(parser, elem, .binding);
 
-        try parser.scratch_cover.append(parser.allocator(), param);
+        try parser.scratch_cover.append(parser.allocator(), elem);
     }
 
     const items = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
@@ -351,18 +351,6 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             .kind = .arrow_formal_parameters,
         } },
         .{ .start = cover.start, .end = cover.end },
-    );
-}
-
-fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.NodeIndex {
-    // convert expression to binding pattern
-    try grammar.expressionToPattern(parser, expr, .binding);
-
-    // expr is now pattern
-
-    return try parser.tree.addNode(
-        .{ .formal_parameter = .{ .pattern = expr } },
-        parser.tree.span(expr),
     );
 }
 

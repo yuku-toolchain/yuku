@@ -259,7 +259,7 @@ function encode(program, lineStarts) {
       else if (p && p.type === "TSParameterProperty") items.push(encNode(p));
       else if (p && p.type === "Identifier" && p.name === "this")
         items.push(enc_ts_this_parameter(p));
-      else items.push(enc_formal_parameter(p));
+      else items.push(encBindingTarget(p));
     }
     const ids = items;
     const start = extraCount;
@@ -272,19 +272,11 @@ function encode(program, lineStarts) {
     spanAt(idx, 0, 0);
     return idx;
   }
-  function enc_formal_parameter(p) {
-    const pat = encBindingTarget(p);
-    const idx = alloc();
-    tagAt(idx, 7);
-    slotAt(idx, 0, pat);
-    spanAt(idx, asStart(p), asEnd(p));
-    return idx;
-  }
   function enc_binary_expression(n) {
     const c_left = n.left == null ? NULL : encNode(n.left);
     const c_right = n.right == null ? NULL : encNode(n.right);
     const idx = alloc();
-    tagAt(idx, 8);
+    tagAt(idx, 7);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     flagsAt(idx, 0 | (BINARY_OPS_INV[n.operator] | 0));
@@ -296,7 +288,7 @@ function encode(program, lineStarts) {
     const c_left = n.left == null ? NULL : encNode(n.left);
     const c_right = n.right == null ? NULL : encNode(n.right);
     const idx = alloc();
-    tagAt(idx, 9);
+    tagAt(idx, 8);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     flagsAt(idx, 0 | (LOGICAL_OPS_INV[n.operator] | 0));
@@ -309,7 +301,7 @@ function encode(program, lineStarts) {
     const c_consequent = n.consequent == null ? NULL : encNode(n.consequent);
     const c_alternate = n.alternate == null ? NULL : encNode(n.alternate);
     const idx = alloc();
-    tagAt(idx, 10);
+    tagAt(idx, 9);
     slotAt(idx, 0, c_test);
     slotAt(idx, 1, c_consequent);
     slotAt(idx, 2, c_alternate);
@@ -320,7 +312,7 @@ function encode(program, lineStarts) {
   function enc_unary_expression(n) {
     const a = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 11);
+    tagAt(idx, 10);
     slotAt(idx, 0, a);
     flagsAt(idx, UNARY_OPS_INV[n.operator] | 0);
     spanAt(idx, asStart(n), asEnd(n));
@@ -330,7 +322,7 @@ function encode(program, lineStarts) {
   function enc_update_expression(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 12);
+    tagAt(idx, 11);
     slotAt(idx, 0, c_argument);
     flagsAt(idx, 0 | (UPDATE_OPS_INV[n.operator] | 0) | (n.prefix ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
@@ -341,7 +333,7 @@ function encode(program, lineStarts) {
     const c_left = n.left == null ? NULL : encNode(n.left);
     const c_right = n.right == null ? NULL : encNode(n.right);
     const idx = alloc();
-    tagAt(idx, 13);
+    tagAt(idx, 12);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     flagsAt(idx, 0 | (ASSIGNMENT_OPS_INV[n.operator] | 0));
@@ -352,7 +344,7 @@ function encode(program, lineStarts) {
   function enc_array_expression(n) {
     const c_elements = encArrHoles(n.elements, encNode);
     const idx = alloc();
-    tagAt(idx, 14);
+    tagAt(idx, 13);
     f0At(idx, c_elements.len);
     slotAt(idx, 0, c_elements.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -362,7 +354,7 @@ function encode(program, lineStarts) {
   function enc_object_expression(n) {
     const c_properties = encArr(n.properties, encNode);
     const idx = alloc();
-    tagAt(idx, 15);
+    tagAt(idx, 14);
     f0At(idx, c_properties.len);
     slotAt(idx, 0, c_properties.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -372,7 +364,7 @@ function encode(program, lineStarts) {
   function enc_spread_element(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 16);
+    tagAt(idx, 15);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -384,7 +376,7 @@ function encode(program, lineStarts) {
       : (n.computed ? encNode(n.key) : encName(n.key));
     const v = n.value == null ? NULL : encNode(n.value);
     const idx = alloc();
-    tagAt(idx, 17);
+    tagAt(idx, 16);
     slotAt(idx, 0, k); slotAt(idx, 1, v);
     flagsAt(idx,
       ((PROPERTY_KINDS_INV[n.kind] | 0) << 0)
@@ -401,7 +393,7 @@ function encode(program, lineStarts) {
       ? NULL
       : (n.computed ? encNode(n.property) : encName(n.property));
     const idx = alloc();
-    tagAt(idx, 18);
+    tagAt(idx, 17);
     slotAt(idx, 0, o); slotAt(idx, 1, p);
     flagsAt(idx, (n.computed ? 1 : 0) | (n.optional ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
@@ -413,7 +405,7 @@ function encode(program, lineStarts) {
     const c_arguments = encArr(n.arguments, encNode);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 19);
+    tagAt(idx, 18);
     slotAt(idx, 0, c_callee);
     f0At(idx, c_arguments.len);
     slotAt(idx, 1, c_arguments.start);
@@ -426,7 +418,7 @@ function encode(program, lineStarts) {
   function enc_chain_expression(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 20);
+    tagAt(idx, 19);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -437,7 +429,7 @@ function encode(program, lineStarts) {
     const c_quasi = n.quasi == null ? NULL : encNode(n.quasi);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 21);
+    tagAt(idx, 20);
     slotAt(idx, 0, c_tag);
     slotAt(idx, 1, c_quasi);
     slotAt(idx, 2, c_type_arguments);
@@ -450,7 +442,7 @@ function encode(program, lineStarts) {
     const c_arguments = encArr(n.arguments, encNode);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 22);
+    tagAt(idx, 21);
     slotAt(idx, 0, c_callee);
     f0At(idx, c_arguments.len);
     slotAt(idx, 1, c_arguments.start);
@@ -462,7 +454,7 @@ function encode(program, lineStarts) {
   function enc_await_expression(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 23);
+    tagAt(idx, 22);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -471,7 +463,7 @@ function encode(program, lineStarts) {
   function enc_yield_expression(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 24);
+    tagAt(idx, 23);
     slotAt(idx, 0, c_argument);
     flagsAt(idx, 0 | (n.delegate ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
@@ -482,7 +474,7 @@ function encode(program, lineStarts) {
     const c_meta = n.meta == null ? NULL : encNode(n.meta);
     const c_property = n.property == null ? NULL : encNode(n.property);
     const idx = alloc();
-    tagAt(idx, 25);
+    tagAt(idx, 24);
     slotAt(idx, 0, c_meta);
     slotAt(idx, 1, c_property);
     spanAt(idx, asStart(n), asEnd(n));
@@ -492,7 +484,7 @@ function encode(program, lineStarts) {
   function enc_decorator(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 26);
+    tagAt(idx, 25);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -507,7 +499,7 @@ function encode(program, lineStarts) {
     const sta = n.superTypeArguments == null ? NULL : encNode(n.superTypeArguments);
     const imps = encArr(n.implements, encNode);
     const idx = alloc();
-    tagAt(idx, 27);
+    tagAt(idx, 26);
     f0At(idx, decs.len);
     slotAt(idx, 0, decs.start);
     slotAt(idx, 1, id);
@@ -525,7 +517,7 @@ function encode(program, lineStarts) {
   function enc_class_body(n) {
     const c_body = encArr(n.body, encNode);
     const idx = alloc();
-    tagAt(idx, 28);
+    tagAt(idx, 27);
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -537,7 +529,7 @@ function encode(program, lineStarts) {
     const k = n.computed ? encNode(n.key) : encName(n.key);
     const v = encNode(n.value);
     const idx = alloc();
-    tagAt(idx, 29);
+    tagAt(idx, 28);
     f0At(idx, decs.len);
     slotAt(idx, 0, decs.start);
     slotAt(idx, 1, k);
@@ -560,7 +552,7 @@ function encode(program, lineStarts) {
     const v = n.value == null ? NULL : encNode(n.value);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 30);
+    tagAt(idx, 29);
     f0At(idx, decs.len);
     slotAt(idx, 0, decs.start);
     slotAt(idx, 1, k);
@@ -584,7 +576,7 @@ function encode(program, lineStarts) {
   function enc_static_block(n) {
     const c_body = encArr(n.body, encNode);
     const idx = alloc();
-    tagAt(idx, 31);
+    tagAt(idx, 30);
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -593,7 +585,7 @@ function encode(program, lineStarts) {
   }
   function enc_super(n) {
     const idx = alloc();
-    tagAt(idx, 32);
+    tagAt(idx, 31);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -602,7 +594,7 @@ function encode(program, lineStarts) {
     const s = encStr(typeof n.value === "string" ? n.value : "");
     const r = encStr(typeof n.raw === "string" ? n.raw : "");
     const idx = alloc();
-    tagAt(idx, 33);
+    tagAt(idx, 32);
     slotAt(idx, 0, s.start); slotAt(idx, 1, s.end);
     slotAt(idx, 2, r.start); slotAt(idx, 3, r.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -620,7 +612,7 @@ function encode(program, lineStarts) {
     }
     const r = encStr(raw);
     const idx = alloc();
-    tagAt(idx, 34);
+    tagAt(idx, 33);
     flagsAt(idx, kind);
     slotAt(idx, 0, r.start); slotAt(idx, 1, r.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -631,7 +623,7 @@ function encode(program, lineStarts) {
     const raw = typeof n.bigint === "string" ? n.bigint : String(n.value);
     const r = encStr(raw);
     const idx = alloc();
-    tagAt(idx, 35);
+    tagAt(idx, 34);
     slotAt(idx, 0, r.start); slotAt(idx, 1, r.end);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -639,7 +631,7 @@ function encode(program, lineStarts) {
   }
   function enc_boolean_literal(n) {
     const idx = alloc();
-    tagAt(idx, 36);
+    tagAt(idx, 35);
     flagsAt(idx, n.value ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -647,14 +639,14 @@ function encode(program, lineStarts) {
   }
   function enc_null_literal(n) {
     const idx = alloc();
-    tagAt(idx, 37);
+    tagAt(idx, 36);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_this_expression(n) {
     const idx = alloc();
-    tagAt(idx, 38);
+    tagAt(idx, 37);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -663,7 +655,7 @@ function encode(program, lineStarts) {
     const p = encStr(n.regex && n.regex.pattern || "");
     const fl = encStr(n.regex && n.regex.flags || "");
     const idx = alloc();
-    tagAt(idx, 39);
+    tagAt(idx, 38);
     slotAt(idx, 0, p.start); slotAt(idx, 1, p.end);
     slotAt(idx, 2, fl.start); slotAt(idx, 3, fl.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -674,7 +666,7 @@ function encode(program, lineStarts) {
     const c_quasis = encArr(n.quasis, encNode);
     const c_expressions = encArr(n.expressions, encNode);
     const idx = alloc();
-    tagAt(idx, 40);
+    tagAt(idx, 39);
     f0At(idx, c_quasis.len);
     slotAt(idx, 0, c_quasis.start);
     slotAt(idx, 1, c_expressions.start);
@@ -689,7 +681,7 @@ function encode(program, lineStarts) {
     const c = encStr(undef ? "" : v.cooked);
     const r = encStr(v.raw);
     const idx = alloc();
-    tagAt(idx, 41);
+    tagAt(idx, 40);
     flagsAt(idx, (n.tail ? 1 : 0) | (undef ? 2 : 0));
     slotAt(idx, 0, c.start); slotAt(idx, 1, c.end);
     slotAt(idx, 2, r.start); slotAt(idx, 3, r.end);
@@ -700,7 +692,7 @@ function encode(program, lineStarts) {
   function enc_identifier_reference(n) {
     const c_name = encStr(n.name);
     const idx = alloc();
-    tagAt(idx, 42);
+    tagAt(idx, 41);
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -710,7 +702,7 @@ function encode(program, lineStarts) {
   function enc_private_identifier(n) {
     const c_name = encStr(n.name);
     const idx = alloc();
-    tagAt(idx, 43);
+    tagAt(idx, 42);
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -722,7 +714,7 @@ function encode(program, lineStarts) {
     const c_decorators = encArr(n.decorators, encNode);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 44);
+    tagAt(idx, 43);
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     f0At(idx, c_decorators.len);
@@ -736,7 +728,7 @@ function encode(program, lineStarts) {
   function enc_identifier_name(n) {
     const c_name = encStr(n.name);
     const idx = alloc();
-    tagAt(idx, 45);
+    tagAt(idx, 44);
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -746,7 +738,7 @@ function encode(program, lineStarts) {
   function enc_label_identifier(n) {
     const c_name = encStr(n.name);
     const idx = alloc();
-    tagAt(idx, 46);
+    tagAt(idx, 45);
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -756,7 +748,7 @@ function encode(program, lineStarts) {
   function enc_expression_statement(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 47);
+    tagAt(idx, 46);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -767,7 +759,7 @@ function encode(program, lineStarts) {
     const c_consequent = n.consequent == null ? NULL : encNode(n.consequent);
     const c_alternate = n.alternate == null ? NULL : encNode(n.alternate);
     const idx = alloc();
-    tagAt(idx, 48);
+    tagAt(idx, 47);
     slotAt(idx, 0, c_test);
     slotAt(idx, 1, c_consequent);
     slotAt(idx, 2, c_alternate);
@@ -779,7 +771,7 @@ function encode(program, lineStarts) {
     const c_discriminant = n.discriminant == null ? NULL : encNode(n.discriminant);
     const c_cases = encArr(n.cases, encNode);
     const idx = alloc();
-    tagAt(idx, 49);
+    tagAt(idx, 48);
     slotAt(idx, 0, c_discriminant);
     f0At(idx, c_cases.len);
     slotAt(idx, 1, c_cases.start);
@@ -791,7 +783,7 @@ function encode(program, lineStarts) {
     const c_test = n.test == null ? NULL : encNode(n.test);
     const c_consequent = encArr(n.consequent, encNode);
     const idx = alloc();
-    tagAt(idx, 50);
+    tagAt(idx, 49);
     slotAt(idx, 0, c_test);
     f0At(idx, c_consequent.len);
     slotAt(idx, 1, c_consequent.start);
@@ -805,7 +797,7 @@ function encode(program, lineStarts) {
     const c_update = n.update == null ? NULL : encNode(n.update);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 51);
+    tagAt(idx, 50);
     slotAt(idx, 0, c_init);
     slotAt(idx, 1, c_test);
     slotAt(idx, 2, c_update);
@@ -819,7 +811,7 @@ function encode(program, lineStarts) {
     const c_right = n.right == null ? NULL : encNode(n.right);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 52);
+    tagAt(idx, 51);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     slotAt(idx, 2, c_body);
@@ -832,7 +824,7 @@ function encode(program, lineStarts) {
     const c_right = n.right == null ? NULL : encNode(n.right);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 53);
+    tagAt(idx, 52);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     slotAt(idx, 2, c_body);
@@ -845,7 +837,7 @@ function encode(program, lineStarts) {
     const c_test = n.test == null ? NULL : encNode(n.test);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 54);
+    tagAt(idx, 53);
     slotAt(idx, 0, c_test);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
@@ -856,7 +848,7 @@ function encode(program, lineStarts) {
     const c_body = n.body == null ? NULL : encNode(n.body);
     const c_test = n.test == null ? NULL : encNode(n.test);
     const idx = alloc();
-    tagAt(idx, 55);
+    tagAt(idx, 54);
     slotAt(idx, 0, c_body);
     slotAt(idx, 1, c_test);
     spanAt(idx, asStart(n), asEnd(n));
@@ -866,7 +858,7 @@ function encode(program, lineStarts) {
   function enc_break_statement(n) {
     const c_label = n.label == null ? NULL : encLabel(n.label);
     const idx = alloc();
-    tagAt(idx, 56);
+    tagAt(idx, 55);
     slotAt(idx, 0, c_label);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -875,7 +867,7 @@ function encode(program, lineStarts) {
   function enc_continue_statement(n) {
     const c_label = n.label == null ? NULL : encLabel(n.label);
     const idx = alloc();
-    tagAt(idx, 57);
+    tagAt(idx, 56);
     slotAt(idx, 0, c_label);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -885,7 +877,7 @@ function encode(program, lineStarts) {
     const c_label = n.label == null ? NULL : encLabel(n.label);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 58);
+    tagAt(idx, 57);
     slotAt(idx, 0, c_label);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
@@ -896,7 +888,7 @@ function encode(program, lineStarts) {
     const c_object = n.object == null ? NULL : encNode(n.object);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 59);
+    tagAt(idx, 58);
     slotAt(idx, 0, c_object);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
@@ -906,7 +898,7 @@ function encode(program, lineStarts) {
   function enc_return_statement(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 60);
+    tagAt(idx, 59);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -915,7 +907,7 @@ function encode(program, lineStarts) {
   function enc_throw_statement(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 61);
+    tagAt(idx, 60);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -926,7 +918,7 @@ function encode(program, lineStarts) {
     const c_handler = n.handler == null ? NULL : encNode(n.handler);
     const c_finalizer = n.finalizer == null ? NULL : encNode(n.finalizer);
     const idx = alloc();
-    tagAt(idx, 62);
+    tagAt(idx, 61);
     slotAt(idx, 0, c_block);
     slotAt(idx, 1, c_handler);
     slotAt(idx, 2, c_finalizer);
@@ -938,7 +930,7 @@ function encode(program, lineStarts) {
     const c_param = n.param == null ? NULL : encBindingTarget(n.param);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 63);
+    tagAt(idx, 62);
     slotAt(idx, 0, c_param);
     slotAt(idx, 1, c_body);
     spanAt(idx, asStart(n), asEnd(n));
@@ -947,14 +939,14 @@ function encode(program, lineStarts) {
   }
   function enc_debugger_statement(n) {
     const idx = alloc();
-    tagAt(idx, 64);
+    tagAt(idx, 63);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_empty_statement(n) {
     const idx = alloc();
-    tagAt(idx, 65);
+    tagAt(idx, 64);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -962,7 +954,7 @@ function encode(program, lineStarts) {
   function enc_variable_declaration(n) {
     const c_declarators = encArr(n.declarations, encNode);
     const idx = alloc();
-    tagAt(idx, 66);
+    tagAt(idx, 65);
     f0At(idx, c_declarators.len);
     slotAt(idx, 0, c_declarators.start);
     flagsAt(idx, 0 | (VAR_KINDS_INV[n.kind] | 0) | (n.declare ? 8 : 0));
@@ -974,7 +966,7 @@ function encode(program, lineStarts) {
     const c_id = n.id == null ? NULL : encBindingTarget(n.id);
     const c_init = n.init == null ? NULL : encNode(n.init);
     const idx = alloc();
-    tagAt(idx, 67);
+    tagAt(idx, 66);
     slotAt(idx, 0, c_id);
     slotAt(idx, 1, c_init);
     flagsAt(idx, 0 | (n.definite ? 1 : 0));
@@ -986,7 +978,7 @@ function encode(program, lineStarts) {
     const e = encNode(n.expression);
     const dv = encStr(n.directive);
     const idx = alloc();
-    tagAt(idx, 68);
+    tagAt(idx, 67);
     slotAt(idx, 0, e);
     slotAt(idx, 1, dv.start); slotAt(idx, 2, dv.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -999,7 +991,7 @@ function encode(program, lineStarts) {
     const c_decorators = encArr(n.decorators, encNode);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 69);
+    tagAt(idx, 68);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     f0At(idx, c_decorators.len);
@@ -1015,7 +1007,7 @@ function encode(program, lineStarts) {
     const c_decorators = encArr(n.decorators, encNode);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 70);
+    tagAt(idx, 69);
     slotAt(idx, 0, c_argument);
     f0At(idx, c_decorators.len);
     slotAt(idx, 1, c_decorators.start);
@@ -1039,7 +1031,7 @@ function encode(program, lineStarts) {
     const decs = encArr(n.decorators, encNode);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 71);
+    tagAt(idx, 70);
     f0At(idx, r.len);
     slotAt(idx, 0, r.start);
     slotAt(idx, 1, rest);
@@ -1063,7 +1055,7 @@ function encode(program, lineStarts) {
     const decs = encArr(n.decorators, encNode);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 72);
+    tagAt(idx, 71);
     f0At(idx, r.len);
     slotAt(idx, 0, r.start);
     slotAt(idx, 1, rest);
@@ -1080,7 +1072,7 @@ function encode(program, lineStarts) {
       : (p.computed ? encNode(p.key) : encName(p.key));
     const v = p.value == null ? NULL : encBindingTarget(p.value);
     const idx = alloc();
-    tagAt(idx, 73);
+    tagAt(idx, 72);
     slotAt(idx, 0, k); slotAt(idx, 1, v);
     flagsAt(idx, (p.shorthand ? 1 : 0) | (p.computed ? 2 : 0));
     spanAt(idx, asStart(p), asEnd(p));
@@ -1092,7 +1084,7 @@ function encode(program, lineStarts) {
       ? encStr(n.hashbang.value)
       : null;
     const idx = alloc();
-    tagAt(idx, 74);
+    tagAt(idx, 73);
     f0At(idx, body.len);
     slotAt(idx, 0, body.start);
     if (hb) { slotAt(idx, 1, hb.start); slotAt(idx, 2, hb.end); }
@@ -1105,7 +1097,7 @@ function encode(program, lineStarts) {
     const c_source = n.source == null ? NULL : encNode(n.source);
     const c_options = n.options == null ? NULL : encNode(n.options);
     const idx = alloc();
-    tagAt(idx, 75);
+    tagAt(idx, 74);
     slotAt(idx, 0, c_source);
     slotAt(idx, 1, c_options);
     flagsAt(idx, 0 | (n.phase != null ? 1 | ((IMPORT_PHASE_INV[n.phase] | 0) << 1) : 0));
@@ -1118,7 +1110,7 @@ function encode(program, lineStarts) {
     const c_source = n.source == null ? NULL : encNode(n.source);
     const c_attributes = encArr(n.attributes, encNode);
     const idx = alloc();
-    tagAt(idx, 76);
+    tagAt(idx, 75);
     f0At(idx, c_specifiers.len);
     slotAt(idx, 0, c_specifiers.start);
     slotAt(idx, 1, c_source);
@@ -1133,7 +1125,7 @@ function encode(program, lineStarts) {
     const c_imported = n.imported == null ? NULL : encName(n.imported);
     const c_local = n.local == null ? NULL : encBindingTarget(n.local);
     const idx = alloc();
-    tagAt(idx, 77);
+    tagAt(idx, 76);
     slotAt(idx, 0, c_imported);
     slotAt(idx, 1, c_local);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.importKind] | 0));
@@ -1144,7 +1136,7 @@ function encode(program, lineStarts) {
   function enc_import_default_specifier(n) {
     const c_local = n.local == null ? NULL : encBindingTarget(n.local);
     const idx = alloc();
-    tagAt(idx, 78);
+    tagAt(idx, 77);
     slotAt(idx, 0, c_local);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1153,7 +1145,7 @@ function encode(program, lineStarts) {
   function enc_import_namespace_specifier(n) {
     const c_local = n.local == null ? NULL : encBindingTarget(n.local);
     const idx = alloc();
-    tagAt(idx, 79);
+    tagAt(idx, 78);
     slotAt(idx, 0, c_local);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1163,7 +1155,7 @@ function encode(program, lineStarts) {
     const c_key = n.key == null ? NULL : encName(n.key);
     const c_value = n.value == null ? NULL : encNode(n.value);
     const idx = alloc();
-    tagAt(idx, 80);
+    tagAt(idx, 79);
     slotAt(idx, 0, c_key);
     slotAt(idx, 1, c_value);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1176,7 +1168,7 @@ function encode(program, lineStarts) {
     const c_source = n.source == null ? NULL : encNode(n.source);
     const c_attributes = encArr(n.attributes, encNode);
     const idx = alloc();
-    tagAt(idx, 81);
+    tagAt(idx, 80);
     slotAt(idx, 0, c_declaration);
     f0At(idx, c_specifiers.len);
     slotAt(idx, 1, c_specifiers.start);
@@ -1191,7 +1183,7 @@ function encode(program, lineStarts) {
   function enc_export_default_declaration(n) {
     const c_declaration = n.declaration == null ? NULL : encNode(n.declaration);
     const idx = alloc();
-    tagAt(idx, 82);
+    tagAt(idx, 81);
     slotAt(idx, 0, c_declaration);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1202,7 +1194,7 @@ function encode(program, lineStarts) {
     const c_source = n.source == null ? NULL : encNode(n.source);
     const c_attributes = encArr(n.attributes, encNode);
     const idx = alloc();
-    tagAt(idx, 83);
+    tagAt(idx, 82);
     slotAt(idx, 0, c_exported);
     slotAt(idx, 1, c_source);
     f0At(idx, c_attributes.len);
@@ -1216,7 +1208,7 @@ function encode(program, lineStarts) {
     const c_local = n.local == null ? NULL : encNode(n.local);
     const c_exported = n.exported == null ? NULL : encName(n.exported);
     const idx = alloc();
-    tagAt(idx, 84);
+    tagAt(idx, 83);
     slotAt(idx, 0, c_local);
     slotAt(idx, 1, c_exported);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.exportKind] | 0));
@@ -1227,7 +1219,7 @@ function encode(program, lineStarts) {
   function enc_ts_type_annotation(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 85);
+    tagAt(idx, 84);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1235,98 +1227,98 @@ function encode(program, lineStarts) {
   }
   function enc_ts_any_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 86);
+    tagAt(idx, 85);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_unknown_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 87);
+    tagAt(idx, 86);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_never_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 88);
+    tagAt(idx, 87);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_void_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 89);
+    tagAt(idx, 88);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_null_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 90);
+    tagAt(idx, 89);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_undefined_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 91);
+    tagAt(idx, 90);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_string_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 92);
+    tagAt(idx, 91);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_number_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 93);
+    tagAt(idx, 92);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_bigint_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 94);
+    tagAt(idx, 93);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_boolean_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 95);
+    tagAt(idx, 94);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_symbol_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 96);
+    tagAt(idx, 95);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_object_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 97);
+    tagAt(idx, 96);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_intrinsic_keyword(n) {
     const idx = alloc();
-    tagAt(idx, 98);
+    tagAt(idx, 97);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_ts_this_type(n) {
     const idx = alloc();
-    tagAt(idx, 99);
+    tagAt(idx, 98);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -1335,7 +1327,7 @@ function encode(program, lineStarts) {
     const c_type_name = n.typeName == null ? NULL : encNode(n.typeName);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 100);
+    tagAt(idx, 99);
     slotAt(idx, 0, c_type_name);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1346,7 +1338,7 @@ function encode(program, lineStarts) {
     const c_left = n.left == null ? NULL : encNode(n.left);
     const c_right = n.right == null ? NULL : encName(n.right);
     const idx = alloc();
-    tagAt(idx, 101);
+    tagAt(idx, 100);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1357,7 +1349,7 @@ function encode(program, lineStarts) {
     const c_expr_name = n.exprName == null ? NULL : encNode(n.exprName);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 102);
+    tagAt(idx, 101);
     slotAt(idx, 0, c_expr_name);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1370,7 +1362,7 @@ function encode(program, lineStarts) {
     const c_qualifier = n.qualifier == null ? NULL : encName(n.qualifier);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 103);
+    tagAt(idx, 102);
     slotAt(idx, 0, c_source);
     slotAt(idx, 1, c_options);
     slotAt(idx, 2, c_qualifier);
@@ -1384,7 +1376,7 @@ function encode(program, lineStarts) {
     const c_constraint = n.constraint == null ? NULL : encNode(n.constraint);
     const c_default = n.default == null ? NULL : encNode(n.default);
     const idx = alloc();
-    tagAt(idx, 104);
+    tagAt(idx, 103);
     slotAt(idx, 0, c_name);
     slotAt(idx, 1, c_constraint);
     slotAt(idx, 2, c_default);
@@ -1396,7 +1388,7 @@ function encode(program, lineStarts) {
   function enc_ts_type_parameter_declaration(n) {
     const c_params = encArr(n.params, encNode);
     const idx = alloc();
-    tagAt(idx, 105);
+    tagAt(idx, 104);
     f0At(idx, c_params.len);
     slotAt(idx, 0, c_params.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1406,7 +1398,7 @@ function encode(program, lineStarts) {
   function enc_ts_type_parameter_instantiation(n) {
     const c_params = encArr(n.params, encNode);
     const idx = alloc();
-    tagAt(idx, 106);
+    tagAt(idx, 105);
     f0At(idx, c_params.len);
     slotAt(idx, 0, c_params.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1416,7 +1408,7 @@ function encode(program, lineStarts) {
   function enc_ts_literal_type(n) {
     const c_literal = n.literal == null ? NULL : encNode(n.literal);
     const idx = alloc();
-    tagAt(idx, 107);
+    tagAt(idx, 106);
     slotAt(idx, 0, c_literal);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1426,7 +1418,7 @@ function encode(program, lineStarts) {
     const c_quasis = encArr(n.quasis, encNode);
     const c_types = encArr(n.types, encNode);
     const idx = alloc();
-    tagAt(idx, 108);
+    tagAt(idx, 107);
     f0At(idx, c_quasis.len);
     slotAt(idx, 0, c_quasis.start);
     slotAt(idx, 1, c_types.start);
@@ -1438,7 +1430,7 @@ function encode(program, lineStarts) {
   function enc_ts_array_type(n) {
     const c_element_type = n.elementType == null ? NULL : encNode(n.elementType);
     const idx = alloc();
-    tagAt(idx, 109);
+    tagAt(idx, 108);
     slotAt(idx, 0, c_element_type);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1448,7 +1440,7 @@ function encode(program, lineStarts) {
     const c_object_type = n.objectType == null ? NULL : encNode(n.objectType);
     const c_index_type = n.indexType == null ? NULL : encNode(n.indexType);
     const idx = alloc();
-    tagAt(idx, 110);
+    tagAt(idx, 109);
     slotAt(idx, 0, c_object_type);
     slotAt(idx, 1, c_index_type);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1458,7 +1450,7 @@ function encode(program, lineStarts) {
   function enc_ts_tuple_type(n) {
     const c_element_types = encArr(n.elementTypes, encNode);
     const idx = alloc();
-    tagAt(idx, 111);
+    tagAt(idx, 110);
     f0At(idx, c_element_types.len);
     slotAt(idx, 0, c_element_types.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1469,7 +1461,7 @@ function encode(program, lineStarts) {
     const c_label = n.label == null ? NULL : encNode(n.label);
     const c_element_type = n.elementType == null ? NULL : encNode(n.elementType);
     const idx = alloc();
-    tagAt(idx, 112);
+    tagAt(idx, 111);
     slotAt(idx, 0, c_label);
     slotAt(idx, 1, c_element_type);
     flagsAt(idx, 0 | (n.optional ? 1 : 0));
@@ -1480,7 +1472,7 @@ function encode(program, lineStarts) {
   function enc_ts_optional_type(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 113);
+    tagAt(idx, 112);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1489,7 +1481,7 @@ function encode(program, lineStarts) {
   function enc_ts_rest_type(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 114);
+    tagAt(idx, 113);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1498,7 +1490,7 @@ function encode(program, lineStarts) {
   function enc_ts_jsdoc_nullable_type(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 115);
+    tagAt(idx, 114);
     slotAt(idx, 0, c_type_annotation);
     flagsAt(idx, 0 | (n.postfix ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
@@ -1508,7 +1500,7 @@ function encode(program, lineStarts) {
   function enc_ts_jsdoc_non_nullable_type(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 116);
+    tagAt(idx, 115);
     slotAt(idx, 0, c_type_annotation);
     flagsAt(idx, 0 | (n.postfix ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
@@ -1517,7 +1509,7 @@ function encode(program, lineStarts) {
   }
   function enc_ts_jsdoc_unknown_type(n) {
     const idx = alloc();
-    tagAt(idx, 117);
+    tagAt(idx, 116);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -1525,7 +1517,7 @@ function encode(program, lineStarts) {
   function enc_ts_union_type(n) {
     const c_types = encArr(n.types, encNode);
     const idx = alloc();
-    tagAt(idx, 118);
+    tagAt(idx, 117);
     f0At(idx, c_types.len);
     slotAt(idx, 0, c_types.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1535,7 +1527,7 @@ function encode(program, lineStarts) {
   function enc_ts_intersection_type(n) {
     const c_types = encArr(n.types, encNode);
     const idx = alloc();
-    tagAt(idx, 119);
+    tagAt(idx, 118);
     f0At(idx, c_types.len);
     slotAt(idx, 0, c_types.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1548,7 +1540,7 @@ function encode(program, lineStarts) {
     const c_true_type = n.trueType == null ? NULL : encNode(n.trueType);
     const c_false_type = n.falseType == null ? NULL : encNode(n.falseType);
     const idx = alloc();
-    tagAt(idx, 120);
+    tagAt(idx, 119);
     slotAt(idx, 0, c_check_type);
     slotAt(idx, 1, c_extends_type);
     slotAt(idx, 2, c_true_type);
@@ -1560,7 +1552,7 @@ function encode(program, lineStarts) {
   function enc_ts_infer_type(n) {
     const c_type_parameter = n.typeParameter == null ? NULL : encNode(n.typeParameter);
     const idx = alloc();
-    tagAt(idx, 121);
+    tagAt(idx, 120);
     slotAt(idx, 0, c_type_parameter);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1569,7 +1561,7 @@ function encode(program, lineStarts) {
   function enc_ts_type_operator(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 122);
+    tagAt(idx, 121);
     slotAt(idx, 0, c_type_annotation);
     flagsAt(idx, 0 | (TS_TYPE_OPERATORS_INV[n.operator] | 0));
     spanAt(idx, asStart(n), asEnd(n));
@@ -1579,7 +1571,7 @@ function encode(program, lineStarts) {
   function enc_ts_parenthesized_type(n) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 123);
+    tagAt(idx, 122);
     slotAt(idx, 0, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1590,7 +1582,7 @@ function encode(program, lineStarts) {
     const params = encFormalParameters(n.params);
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
     const idx = alloc();
-    tagAt(idx, 124);
+    tagAt(idx, 123);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1601,7 +1593,7 @@ function encode(program, lineStarts) {
     const params = encFormalParameters(n.params);
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
     const idx = alloc();
-    tagAt(idx, 125);
+    tagAt(idx, 124);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     flagsAt(idx, n.abstract ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1612,7 +1604,7 @@ function encode(program, lineStarts) {
     const c_parameter_name = n.parameterName == null ? NULL : encNode(n.parameterName);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 126);
+    tagAt(idx, 125);
     slotAt(idx, 0, c_parameter_name);
     slotAt(idx, 1, c_type_annotation);
     flagsAt(idx, 0 | (n.asserts ? 1 : 0));
@@ -1623,7 +1615,7 @@ function encode(program, lineStarts) {
   function enc_ts_type_literal(n) {
     const c_members = encArr(n.members, encNode);
     const idx = alloc();
-    tagAt(idx, 127);
+    tagAt(idx, 126);
     f0At(idx, c_members.len);
     slotAt(idx, 0, c_members.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1636,7 +1628,7 @@ function encode(program, lineStarts) {
     const nt = n.nameType == null ? NULL : encNode(n.nameType);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 128);
+    tagAt(idx, 127);
     slotAt(idx, 0, k); slotAt(idx, 1, c); slotAt(idx, 2, nt); slotAt(idx, 3, ta);
     flagsAt(idx,
       (TS_MAPPED_OPTIONAL_INV(n.optional) << 0)
@@ -1649,7 +1641,7 @@ function encode(program, lineStarts) {
     const k = n.computed ? encNode(n.key) : encName(n.key);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 129);
+    tagAt(idx, 128);
     slotAt(idx, 0, k); slotAt(idx, 1, ta);
     flagsAt(idx,
       (n.computed ? 1 : 0)
@@ -1665,7 +1657,7 @@ function encode(program, lineStarts) {
     const params = encFormalParameters(n.params);
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
     const idx = alloc();
-    tagAt(idx, 130);
+    tagAt(idx, 129);
     slotAt(idx, 0, k);
     slotAt(idx, 1, tp);
     slotAt(idx, 2, params);
@@ -1683,7 +1675,7 @@ function encode(program, lineStarts) {
     const params = encFormalParameters(n.params);
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
     const idx = alloc();
-    tagAt(idx, 131);
+    tagAt(idx, 130);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1694,7 +1686,7 @@ function encode(program, lineStarts) {
     const params = encFormalParameters(n.params);
     const rt_ = n.returnType == null ? NULL : encNode(n.returnType);
     const idx = alloc();
-    tagAt(idx, 132);
+    tagAt(idx, 131);
     slotAt(idx, 0, tp); slotAt(idx, 1, params); slotAt(idx, 2, rt_);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1704,7 +1696,7 @@ function encode(program, lineStarts) {
     const ps = encArr(n.parameters, encBindingTarget);
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 133);
+    tagAt(idx, 132);
     f0At(idx, ps.len);
     slotAt(idx, 0, ps.start);
     slotAt(idx, 1, ta);
@@ -1718,7 +1710,7 @@ function encode(program, lineStarts) {
     const c_type_parameters = n.typeParameters == null ? NULL : encNode(n.typeParameters);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 134);
+    tagAt(idx, 133);
     slotAt(idx, 0, c_id);
     slotAt(idx, 1, c_type_parameters);
     slotAt(idx, 2, c_type_annotation);
@@ -1733,7 +1725,7 @@ function encode(program, lineStarts) {
     const c_extends = encArr(n.extends, encNode);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 135);
+    tagAt(idx, 134);
     slotAt(idx, 0, c_id);
     slotAt(idx, 1, c_type_parameters);
     f0At(idx, c_extends.len);
@@ -1747,7 +1739,7 @@ function encode(program, lineStarts) {
   function enc_ts_interface_body(n) {
     const c_body = encArr(n.body, encNode);
     const idx = alloc();
-    tagAt(idx, 136);
+    tagAt(idx, 135);
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1758,7 +1750,7 @@ function encode(program, lineStarts) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 137);
+    tagAt(idx, 136);
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1769,7 +1761,7 @@ function encode(program, lineStarts) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 138);
+    tagAt(idx, 137);
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1780,7 +1772,7 @@ function encode(program, lineStarts) {
     const c_id = n.id == null ? NULL : encBindingTarget(n.id);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 139);
+    tagAt(idx, 138);
     slotAt(idx, 0, c_id);
     slotAt(idx, 1, c_body);
     flagsAt(idx, 0 | (n.const ? 1 : 0) | (n.declare ? 2 : 0));
@@ -1791,7 +1783,7 @@ function encode(program, lineStarts) {
   function enc_ts_enum_body(n) {
     const c_members = encArr(n.members, encNode);
     const idx = alloc();
-    tagAt(idx, 140);
+    tagAt(idx, 139);
     f0At(idx, c_members.len);
     slotAt(idx, 0, c_members.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1802,7 +1794,7 @@ function encode(program, lineStarts) {
     const id = n.computed ? encNode(n.id) : encName(n.id);
     const init = n.initializer == null ? NULL : encNode(n.initializer);
     const idx = alloc();
-    tagAt(idx, 141);
+    tagAt(idx, 140);
     slotAt(idx, 0, id); slotAt(idx, 1, init);
     flagsAt(idx, n.computed ? 1 : 0);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1813,7 +1805,7 @@ function encode(program, lineStarts) {
     const id = encNode(n.id);
     const body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 142);
+    tagAt(idx, 141);
     slotAt(idx, 0, id);
     slotAt(idx, 1, body);
     flagsAt(idx, ((TS_MODULE_KINDS_INV[n.kind] | 0) << 0) | (n.declare ? 2 : 0));
@@ -1824,7 +1816,7 @@ function encode(program, lineStarts) {
   function enc_ts_module_block(n) {
     const c_body = encArr(n.body, encNode);
     const idx = alloc();
-    tagAt(idx, 143);
+    tagAt(idx, 142);
     f0At(idx, c_body.len);
     slotAt(idx, 0, c_body.start);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1835,7 +1827,7 @@ function encode(program, lineStarts) {
     const id = encNode(n.id);
     const body = encNode(n.body);
     const idx = alloc();
-    tagAt(idx, 144);
+    tagAt(idx, 143);
     slotAt(idx, 0, id);
     slotAt(idx, 1, body);
     flagsAt(idx, n.declare ? 1 : 0);
@@ -1847,7 +1839,7 @@ function encode(program, lineStarts) {
     const c_decorators = encArr(n.decorators, encNode);
     const c_parameter = n.parameter == null ? NULL : encBindingTarget(n.parameter);
     const idx = alloc();
-    tagAt(idx, 145);
+    tagAt(idx, 144);
     f0At(idx, c_decorators.len);
     slotAt(idx, 0, c_decorators.start);
     slotAt(idx, 1, c_parameter);
@@ -1859,7 +1851,7 @@ function encode(program, lineStarts) {
   function enc_ts_this_parameter(n) {
     const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 146);
+    tagAt(idx, 145);
     slotAt(idx, 0, ta);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1869,7 +1861,7 @@ function encode(program, lineStarts) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 147);
+    tagAt(idx, 146);
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1880,7 +1872,7 @@ function encode(program, lineStarts) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const idx = alloc();
-    tagAt(idx, 148);
+    tagAt(idx, 147);
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_annotation);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1891,7 +1883,7 @@ function encode(program, lineStarts) {
     const c_type_annotation = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 149);
+    tagAt(idx, 148);
     slotAt(idx, 0, c_type_annotation);
     slotAt(idx, 1, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1901,7 +1893,7 @@ function encode(program, lineStarts) {
   function enc_ts_non_null_expression(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 150);
+    tagAt(idx, 149);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1911,7 +1903,7 @@ function encode(program, lineStarts) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 151);
+    tagAt(idx, 150);
     slotAt(idx, 0, c_expression);
     slotAt(idx, 1, c_type_arguments);
     spanAt(idx, asStart(n), asEnd(n));
@@ -1921,7 +1913,7 @@ function encode(program, lineStarts) {
   function enc_ts_export_assignment(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 152);
+    tagAt(idx, 151);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1930,7 +1922,7 @@ function encode(program, lineStarts) {
   function enc_ts_namespace_export_declaration(n) {
     const c_id = n.id == null ? NULL : encNode(n.id);
     const idx = alloc();
-    tagAt(idx, 153);
+    tagAt(idx, 152);
     slotAt(idx, 0, c_id);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1940,7 +1932,7 @@ function encode(program, lineStarts) {
     const c_id = n.id == null ? NULL : encBindingTarget(n.id);
     const c_module_reference = n.moduleReference == null ? NULL : encNode(n.moduleReference);
     const idx = alloc();
-    tagAt(idx, 154);
+    tagAt(idx, 153);
     slotAt(idx, 0, c_id);
     slotAt(idx, 1, c_module_reference);
     flagsAt(idx, 0 | (IMPORT_EXPORT_KINDS_INV[n.importKind] | 0));
@@ -1951,7 +1943,7 @@ function encode(program, lineStarts) {
   function enc_ts_external_module_reference(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 155);
+    tagAt(idx, 154);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -1962,7 +1954,7 @@ function encode(program, lineStarts) {
     const c_children = encArr(n.children, encNode);
     const c_closing_element = n.closingElement == null ? NULL : encNode(n.closingElement);
     const idx = alloc();
-    tagAt(idx, 156);
+    tagAt(idx, 155);
     slotAt(idx, 0, c_opening_element);
     f0At(idx, c_children.len);
     slotAt(idx, 1, c_children.start);
@@ -1976,7 +1968,7 @@ function encode(program, lineStarts) {
     const c_attributes = encArr(n.attributes, encNode);
     const c_type_arguments = n.typeArguments == null ? NULL : encNode(n.typeArguments);
     const idx = alloc();
-    tagAt(idx, 157);
+    tagAt(idx, 156);
     slotAt(idx, 0, c_name);
     f0At(idx, c_attributes.len);
     slotAt(idx, 1, c_attributes.start);
@@ -1989,7 +1981,7 @@ function encode(program, lineStarts) {
   function enc_jsx_closing_element(n) {
     const c_name = n.name == null ? NULL : encNode(n.name);
     const idx = alloc();
-    tagAt(idx, 158);
+    tagAt(idx, 157);
     slotAt(idx, 0, c_name);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -2000,7 +1992,7 @@ function encode(program, lineStarts) {
     const c_children = encArr(n.children, encNode);
     const c_closing_fragment = n.closingFragment == null ? NULL : encNode(n.closingFragment);
     const idx = alloc();
-    tagAt(idx, 159);
+    tagAt(idx, 158);
     slotAt(idx, 0, c_opening_fragment);
     f0At(idx, c_children.len);
     slotAt(idx, 1, c_children.start);
@@ -2011,14 +2003,14 @@ function encode(program, lineStarts) {
   }
   function enc_jsx_opening_fragment(n) {
     const idx = alloc();
-    tagAt(idx, 160);
+    tagAt(idx, 159);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
   }
   function enc_jsx_closing_fragment(n) {
     const idx = alloc();
-    tagAt(idx, 161);
+    tagAt(idx, 160);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -2026,7 +2018,7 @@ function encode(program, lineStarts) {
   function enc_jsx_identifier(n) {
     const c_name = encStr(n.name);
     const idx = alloc();
-    tagAt(idx, 162);
+    tagAt(idx, 161);
     slotAt(idx, 0, c_name.start);
     slotAt(idx, 1, c_name.end);
     spanAt(idx, asStart(n), asEnd(n));
@@ -2037,7 +2029,7 @@ function encode(program, lineStarts) {
     const c_namespace = n.namespace == null ? NULL : encNode(n.namespace);
     const c_name = n.name == null ? NULL : encNode(n.name);
     const idx = alloc();
-    tagAt(idx, 163);
+    tagAt(idx, 162);
     slotAt(idx, 0, c_namespace);
     slotAt(idx, 1, c_name);
     spanAt(idx, asStart(n), asEnd(n));
@@ -2048,7 +2040,7 @@ function encode(program, lineStarts) {
     const c_object = n.object == null ? NULL : encNode(n.object);
     const c_property = n.property == null ? NULL : encNode(n.property);
     const idx = alloc();
-    tagAt(idx, 164);
+    tagAt(idx, 163);
     slotAt(idx, 0, c_object);
     slotAt(idx, 1, c_property);
     spanAt(idx, asStart(n), asEnd(n));
@@ -2059,7 +2051,7 @@ function encode(program, lineStarts) {
     const c_name = n.name == null ? NULL : encNode(n.name);
     const c_value = n.value == null ? NULL : encNode(n.value);
     const idx = alloc();
-    tagAt(idx, 165);
+    tagAt(idx, 164);
     slotAt(idx, 0, c_name);
     slotAt(idx, 1, c_value);
     spanAt(idx, asStart(n), asEnd(n));
@@ -2069,7 +2061,7 @@ function encode(program, lineStarts) {
   function enc_jsx_spread_attribute(n) {
     const c_argument = n.argument == null ? NULL : encNode(n.argument);
     const idx = alloc();
-    tagAt(idx, 166);
+    tagAt(idx, 165);
     slotAt(idx, 0, c_argument);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -2078,7 +2070,7 @@ function encode(program, lineStarts) {
   function enc_jsx_expression_container(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 167);
+    tagAt(idx, 166);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -2086,7 +2078,7 @@ function encode(program, lineStarts) {
   }
   function enc_jsx_empty_expression(n) {
     const idx = alloc();
-    tagAt(idx, 168);
+    tagAt(idx, 167);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -2094,7 +2086,7 @@ function encode(program, lineStarts) {
   function enc_jsx_text(n) {
     const v = encStr(n.value || "");
     const idx = alloc();
-    tagAt(idx, 169);
+    tagAt(idx, 168);
     slotAt(idx, 0, v.start); slotAt(idx, 1, v.end);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -2103,7 +2095,7 @@ function encode(program, lineStarts) {
   function enc_jsx_spread_child(n) {
     const c_expression = n.expression == null ? NULL : encNode(n.expression);
     const idx = alloc();
-    tagAt(idx, 170);
+    tagAt(idx, 169);
     slotAt(idx, 0, c_expression);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);

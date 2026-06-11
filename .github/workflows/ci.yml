@@ -111,6 +111,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:codegen
 
+      - name: Analyzer conformance
+        if: ${{ !cancelled() }}
+        run: bun run test:analyzer
+
       - name: Sourcemap conformance
         if: ${{ !cancelled() }}
         run: bun run test:sourcemap

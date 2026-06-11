@@ -14,6 +14,7 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const binder = @import("binder.zig");
+const sc = @import("scope.zig");
 
 const Allocator = std.mem.Allocator;
 const SymbolId = binder.SymbolId;
@@ -93,13 +94,8 @@ pub const ModuleRecords = struct {
 };
 
 /// Collects import/export records from the top level of `tree`.
-///
-/// Requires semantic analysis to have run so the symbol table holds the
-/// module-scope bindings the records point at. Returns empty records
-/// for scripts, which cannot contain imports or exports.
 pub fn collect(tree: *ast.Tree, table: *const SymbolTable) Allocator.Error!ModuleRecords {
     std.debug.assert(tree.root != .null);
-    if (!tree.isModule()) return .empty;
 
     var collector = Collector{
         .tree = tree,
@@ -108,6 +104,8 @@ pub fn collect(tree: *ast.Tree, table: *const SymbolTable) Allocator.Error!Modul
         // spec-true name for default imports/exports. the pool dedups,
         // so repeated analyses cost nothing.
         .default_name = try tree.addString("default"),
+        // scripts have no module scope, their top level is the global
+        .top_scope = if (tree.isModule()) .module else .root,
     };
 
     const program = tree.data(tree.root).program;
@@ -126,6 +124,9 @@ const Collector = struct {
     table: *const SymbolTable,
     allocator: Allocator,
     default_name: ast.String,
+    /// The scope top-level bindings live in: `.module` for modules,
+    /// `.root` (global) for scripts.
+    top_scope: sc.ScopeId,
     imports: std.ArrayList(ImportRecord) = .empty,
     exports: std.ArrayList(ExportRecord) = .empty,
 
@@ -490,11 +491,11 @@ const Collector = struct {
         return self.moduleBinding(self.tree.data(binding).binding_identifier.name);
     }
 
-    /// looks up `name` in the module scope, including hoisted vars.
+    /// looks up `name` in the top-level scope, including hoisted vars.
     fn moduleBinding(self: *const Collector, name: ast.String) SymbolId {
         const text = self.tree.string(name);
         // error-recovery trees can reference names that never bound
-        return self.table.findInScopeOrHoisted(.module, text) orelse .none;
+        return self.table.findInScopeOrHoisted(self.top_scope, text) orelse .none;
     }
 
     /// name text handle of a ModuleExportName-shaped node: an

@@ -342,10 +342,7 @@ pub fn parseFormalParameter(
 
     ts.applyDecoratorsToPattern(parser, pattern, decorators);
 
-    return try parser.tree.addNode(
-        .{ .formal_parameter = .{ .pattern = pattern } },
-        parser.tree.span(pattern),
-    );
+    return pattern;
 }
 
 fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModifiers {
@@ -389,8 +386,7 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
 
     const data = parser.tree.data(params).formal_parameters;
     const items = parser.tree.extra(data.items);
-    const has_this = items.len > 0 and
-        parser.tree.data(parser.tree.data(items[0]).formal_parameter.pattern) == .ts_this_parameter;
+    const has_this = items.len > 0 and parser.tree.data(items[0]) == .ts_this_parameter;
     const arity = data.items.len - @intFromBool(has_this);
     if (arity == spec.arity and data.rest == .null) return true;
 
@@ -398,11 +394,6 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
     return false;
 }
 
-/// parses `this` or `this: Type` as a parameter. emitted inside the
-/// regular `FormalParameter` wrapper so signature walks, span tracking,
-/// and the decoder's `formal_parameter` unwrap rule keep working. the
-/// inner `TSThisParameter` renders in ESTree as an `Identifier` named
-/// `this`, matching the @typescript-eslint/typescript-estree convention.
 fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
@@ -414,14 +405,9 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.tree.span(type_annotation).end;
     }
 
-    const span: ast.Span = .{ .start = start, .end = end };
-    const this_param = try parser.tree.addNode(
-        .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
-        span,
-    );
     return try parser.tree.addNode(
-        .{ .formal_parameter = .{ .pattern = this_param } },
-        span,
+        .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
+        .{ .start = start, .end = end },
     );
 }
 

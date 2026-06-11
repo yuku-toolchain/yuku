@@ -52,7 +52,9 @@ const symbol_flag_names = [_]struct { zig: []const u8, js: []const u8 }{
     .{ .zig = "type_alias", .js = "TypeAlias" },
     .{ .zig = "type_parameter", .js = "TypeParameter" },
     .{ .zig = "namespace_module", .js = "NamespaceModule" },
-    .{ .zig = "import", .js = "Import" },
+    // bare `Import` is the composite below (any import). the two specific
+    // bits are ValueImport and TypeImport.
+    .{ .zig = "import", .js = "ValueImport" },
     .{ .zig = "type_import", .js = "TypeImport" },
     .{ .zig = "const_var", .js = "Const" },
     .{ .zig = "ambient", .js = "Ambient" },
@@ -117,6 +119,12 @@ fn writeSemanticConstants(w: *Writer) !void {
             @bitOffsetOf(Symbol.Flags, field.name),
         });
     }
+    // composite categories (unions of the bits above), reflected from the
+    // binder so they can never drift from its value-space / import logic.
+    try w.print("  Variable: {d},\n", .{@as(u32, @bitCast(Symbol.variable))});
+    try w.print("  Import: {d},\n", .{@as(u32, @bitCast(Symbol.any_import))});
+    try w.print("  ValueSpace: {d},\n", .{@as(u32, @bitCast(Symbol.value_space))});
+    try w.print("  TypeSpace: {d},\n", .{@as(u32, @bitCast(Symbol.type_space))});
     try w.writeAll("});\n");
 }
 
@@ -437,7 +445,6 @@ const SpecialChildKeys = struct {
 };
 
 const special_child_keys = [_]SpecialChildKeys{
-    .{ .variant = "formal_parameter", .types = &.{}, .keys = &.{} },
     .{ .variant = "formal_parameters", .types = &.{}, .keys = &.{} },
     .{ .variant = "function", .types = &.{
         "FunctionDeclaration", "FunctionExpression",
@@ -738,10 +745,7 @@ fn isSpecial(comptime name: []const u8) bool {
 
 fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) !void {
     const eql = std.mem.eql;
-    if (comptime eql(u8, name, "formal_parameter")) {
-        const sp = comptime slotOf(ast.FormalParameter, "pattern");
-        try emit(w, "    case {d}: return node(f{d});", .{ tag, sp });
-    } else if (comptime eql(u8, name, "formal_parameters")) {
+    if (comptime eql(u8, name, "formal_parameters")) {
         try emit(w, "    case {d}: return {{ params: fnParams(i) }};", .{tag});
     } else if (comptime eql(u8, name, "function")) {
         const sid = comptime slotOf(ast.Function, "id");

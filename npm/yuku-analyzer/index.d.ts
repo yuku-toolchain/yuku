@@ -73,7 +73,9 @@ interface AnalyzerOptions {
 /**
  * Bit flags describing a {@link Symbol}: which declaration kinds it
  * carries (one symbol can merge several under TS declaration merging)
- * and its modifiers. Combine with `&`/`|`, or use {@link Symbol.has}.
+ * and its modifiers, plus a few composite categories. Every categorical
+ * question about a symbol is `symbol.has(SymbolFlags.X)` (any of the
+ * bits) or `symbol.hasAll(...)` (all of them); there is one way to ask.
  */
 declare const SymbolFlags: {
   /** `var`, parameter, or catch variable. */
@@ -98,8 +100,8 @@ declare const SymbolFlags: {
   readonly TypeParameter: number;
   /** TS namespace of any kind. */
   readonly NamespaceModule: number;
-  /** Value (or unspecified-kind) import binding. */
-  readonly Import: number;
+  /** A value import binding (`import x` / `import { x }`). */
+  readonly ValueImport: number;
   /** `import type` / `import { type x }` binding. */
   readonly TypeImport: number;
   /** `const` or `using` binding. */
@@ -114,6 +116,15 @@ declare const SymbolFlags: {
   readonly Exported: number;
   /** The default export. */
   readonly Default: number;
+
+  /** Composite: any variable (`var` / `let` / `const`, params, catch). */
+  readonly Variable: number;
+  /** Composite: any import binding, value or `import type`. */
+  readonly Import: number;
+  /** Composite: visible at runtime (var, function, class, enum, value namespace). */
+  readonly ValueSpace: number;
+  /** Composite: referencable from a type position (class, enum, interface, alias, type param). */
+  readonly TypeSpace: number;
 };
 
 /** What kind of construct created a {@link Scope}. */
@@ -174,27 +185,14 @@ interface Symbol {
   readonly declarations: Node[];
   /** Every resolved use site within this module, in source order. */
   readonly references: Reference[];
-  /** True when any flag in `mask` is set. */
+  /**
+   * True when any flag in `mask` is set. The single way to ask what a
+   * symbol is: `symbol.has(SymbolFlags.Function)`, or a composite like
+   * `symbol.has(SymbolFlags.ValueSpace)`.
+   */
   has(mask: number): boolean;
   /** True when every flag in `mask` is set. */
   hasAll(mask: number): boolean;
-  /** `var`/`let`/`const` bindings, parameters and catch bindings included. */
-  readonly isVariable: boolean;
-  readonly isFunction: boolean;
-  readonly isClass: boolean;
-  readonly isImported: boolean;
-  readonly isExported: boolean;
-  /** True for `const` and `using` bindings. */
-  readonly isConst: boolean;
-  readonly isParameter: boolean;
-  readonly isCatchParam: boolean;
-  /** True for `import type` / `import { type x }` bindings. */
-  readonly isTypeOnly: boolean;
-  readonly isDefaultExport: boolean;
-  /** Visible at runtime: variables, functions, classes, enums, value namespaces. */
-  readonly inValueSpace: boolean;
-  /** Referencable from TS type positions: classes, enums, interfaces, aliases. */
-  readonly inTypeSpace: boolean;
   /**
    * The defining site of this symbol, following import/re-export chains
    * across modules. Shorthand for {@link Analyzer.definitionOf}.

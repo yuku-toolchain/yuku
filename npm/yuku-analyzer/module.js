@@ -6,26 +6,6 @@ import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
 import { walkModule } from "./walk.js";
 
-const VALUE_SPACE =
-  SymbolFlags.FunctionScopedVariable |
-  SymbolFlags.BlockScopedVariable |
-  SymbolFlags.Function |
-  SymbolFlags.Class |
-  SymbolFlags.RegularEnum |
-  SymbolFlags.ConstEnum |
-  SymbolFlags.ValueModule;
-
-const TYPE_SPACE =
-  SymbolFlags.Class |
-  SymbolFlags.RegularEnum |
-  SymbolFlags.ConstEnum |
-  SymbolFlags.Interface |
-  SymbolFlags.TypeAlias |
-  SymbolFlags.TypeParameter;
-
-const VARIABLE = SymbolFlags.FunctionScopedVariable | SymbolFlags.BlockScopedVariable;
-const IMPORT_FLAGS = SymbolFlags.Import | SymbolFlags.TypeImport;
-
 export function langFromPath(path) {
   if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";
   if (path.endsWith(".tsx")) return "tsx";
@@ -107,42 +87,6 @@ class Symbol {
   }
   hasAll(mask) {
     return (this.flags & mask) === mask;
-  }
-  get isVariable() {
-    return this.has(VARIABLE);
-  }
-  get isFunction() {
-    return this.has(SymbolFlags.Function);
-  }
-  get isClass() {
-    return this.has(SymbolFlags.Class);
-  }
-  get isImported() {
-    return this.has(IMPORT_FLAGS);
-  }
-  get isExported() {
-    return this.has(SymbolFlags.Exported);
-  }
-  get isConst() {
-    return this.has(SymbolFlags.Const);
-  }
-  get isParameter() {
-    return this.has(SymbolFlags.Parameter);
-  }
-  get isCatchParam() {
-    return this.has(SymbolFlags.CatchVariable);
-  }
-  get isTypeOnly() {
-    return this.has(SymbolFlags.TypeImport);
-  }
-  get isDefaultExport() {
-    return this.has(SymbolFlags.Default);
-  }
-  get inValueSpace() {
-    return this.has(VALUE_SPACE);
-  }
-  get inTypeSpace() {
-    return this.has(TYPE_SPACE);
   }
   definition() {
     return this.module.analyzer.definitionOf(this);
@@ -663,4 +607,4 @@ export class Module {
   }
 }
 
-export { SymbolFlags, IMPORT_FLAGS };
+export { SymbolFlags };

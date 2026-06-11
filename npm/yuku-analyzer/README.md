@@ -13,7 +13,7 @@ npm install yuku-analyzer yuku-parser
 ## Quick start
 
 ```js
-import { Analyzer } from "yuku-analyzer";
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
 
 const analyzer = new Analyzer();
 
@@ -26,13 +26,13 @@ const main = analyzer.addFile(
 
 // per-file semantics
 const helperSym = main.rootScope.find("helper");
-console.log(helperSym.isImported); // true
+console.log(helperSym.has(SymbolFlags.Import)); // true
 console.log(helperSym.references.length); // 1, the call site
 
 // cross-file: follow the import to where helper is actually defined
 const def = helperSym.definition();
 console.log(def.module.path); // "lib.ts"
-console.log(def.symbol.isConst); // true
+console.log(def.symbol.has(SymbolFlags.Const)); // true
 ```
 
 ## Why this exists
@@ -74,7 +74,7 @@ Node identity is exact: the node you reach by walking `module.ast` and the node 
 ```js
 module.walk({
   Identifier(node, ctx) {
-    if (ctx.reference?.isWrite && ctx.symbol?.isImported) {
+    if (ctx.reference?.isWrite && ctx.symbol?.has(SymbolFlags.Import)) {
       console.log(`${node.name} assigns to an import`);
     }
   },
@@ -143,7 +143,7 @@ const analyzer = new Analyzer({
 
 ## Performance
 
-Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against 45,000+ real-world files.
+Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against 55,000+ real-world files.
 
 Concretely, on an Apple M-series machine: parsing plus complete semantic analysis of a typical source file lands well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
 

@@ -1,3 +1,0 @@
-const high = "\ud800";
-const low = "\udc00";
-const mixed = "a\ud834b\udd1ec";

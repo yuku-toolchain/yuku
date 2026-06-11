@@ -29,8 +29,6 @@ pub const Ctx = struct {
     symbols: SymbolTracker,
     // depth of ts type-only context. inspect via `inTypePosition()`.
     type_position_depth: u32 = 0,
-    // depth of ts namespace bodies. inspect via `inTsNamespace()`.
-    ts_namespace_depth: u32 = 0,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
         return .{
@@ -47,17 +45,18 @@ pub const Ctx = struct {
 
     /// True when the walker is currently inside a TS namespace body.
     pub inline fn inTsNamespace(self: *const Ctx) bool {
-        return self.ts_namespace_depth > 0;
+        var it = self.scope.ancestors(self.scope.currentScopeId());
+        while (it.next()) |id| {
+            if (self.scope.getScope(id).kind == .ts_module) return true;
+        }
+        return false;
     }
 
     pub inline fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
         try self.scope.enter(index, data);
 
-        // namespace bodies count as type position so their type-only
-        // members bind correctly
-        if (data == .ts_module_block) self.ts_namespace_depth += 1;
-        if (data.isTypeContext() or data == .ts_module_block) self.type_position_depth += 1;
+        if (data.isTypeContext()) self.type_position_depth += 1;
 
         try self.symbols.setBindingContext(data, &self.scope);
     }
@@ -78,11 +77,7 @@ pub const Ctx = struct {
     pub inline fn exit(self: *Ctx, data: ast.NodeData) void {
         self.symbols.exit(data);
         self.scope.exit(data);
-        if (data == .ts_module_block) {
-            std.debug.assert(self.ts_namespace_depth > 0);
-            self.ts_namespace_depth -= 1;
-        }
-        if (data.isTypeContext() or data == .ts_module_block) {
+        if (data.isTypeContext()) {
             std.debug.assert(self.type_position_depth > 0);
             self.type_position_depth -= 1;
         }

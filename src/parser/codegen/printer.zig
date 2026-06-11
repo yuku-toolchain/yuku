@@ -1646,10 +1646,6 @@ fn Printer(comptime cfg: Config) type {
             return first;
         }
 
-        fn emit_formal_parameter(self: *Self, p: ast.FormalParameter) Error!void {
-            try self.emit(p.pattern);
-        }
-
         fn emit_class(self: *Self, c: ast.Class) Error!void {
             if (comptime strip_ts) if (c.declare) return;
             try self.printDecorators(c.decorators);

@@ -112,6 +112,9 @@ pub const ScopeTracker = struct {
     scopes: std.ArrayList(Scope) = .empty,
     // active scope. follow the parent chain to walk the path.
     current: ScopeId = .root,
+    // scopes saved while a decorator subtree retargets `current`,
+    // one entry per nested decorator. see `enter` on `.decorator`.
+    decorator_saved: std.ArrayList(ScopeId) = .empty,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
         std.debug.assert(tree.root != .null);
@@ -260,8 +263,34 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.class, index, flags);
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
+            .decorator => {
+                // decorator expressions evaluate in the
+                // scope enclosing the class. neither the class's type
+                // parameters nor a class expression's own name are
+                // visible, so retarget `current` for the subtree.
+                try self.decorator_saved.append(self.allocator, self.current);
+                self.current = self.decoratorEvalScope();
+            },
             else => {},
         }
+    }
+
+    // a decorator evaluates in the scope enclosing its class. that is the
+    // parent of the nearest class scope, past a named class expression's
+    // name scope. member and parameter decorators hang off the same class.
+    fn decoratorEvalScope(self: *const ScopeTracker) ScopeId {
+        var it = self.ancestors(self.current);
+        while (it.next()) |id| {
+            if (self.getScope(id).kind != .class) continue;
+            const parent = self.getScope(id).parent;
+            if (parent == .none) break;
+            if (self.getScope(parent).kind == .expression_name) {
+                return self.getScope(parent).parent;
+            }
+            return parent;
+        }
+
+        return self.current;
     }
 
     // "use strict" applies to the whole function including its parameters,
@@ -331,6 +360,11 @@ pub const ScopeTracker = struct {
             .class => |cls| {
                 self.popScope();
                 if (isNamedClassExpression(cls)) self.popScope();
+            },
+            .decorator => {
+                // every decorator enter saved exactly one scope
+                std.debug.assert(self.decorator_saved.items.len > 0);
+                self.current = self.decorator_saved.pop().?;
             },
             else => {},
         }
