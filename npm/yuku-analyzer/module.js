@@ -2,6 +2,7 @@
 // export object graph, built lazily over the decoded analyzer buffer.
 // All wire reads go through the generated `semantic` accessors from
 // decode.js. Nothing in this file knows the buffer layout.
+
 import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
 import { walkModule } from "./walk.js";
