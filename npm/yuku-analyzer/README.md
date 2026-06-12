@@ -62,6 +62,7 @@ And node-level queries that work directly on AST nodes:
 module.symbolOf(node)    // the symbol a node declares or references
 module.referenceOf(node) // the reference recorded for an identifier
 module.scopeOf(node)     // the innermost scope containing the node
+module.parentOf(node)    // the node that structurally contains it, or null
 module.resolve("name")   // scope-chain lookup, like the engine does at runtime
 ```
 

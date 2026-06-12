@@ -413,6 +413,12 @@ interface Module {
   /** The innermost scope whose extent contains `node`. */
   scopeOf(node: Node): Scope;
   /**
+   * The node that structurally contains `node`. Null at the program
+   * root and for a node not part of this module's AST. Lets you walk
+   * upward from a node you already hold, with no ancestor stack.
+   */
+  parentOf(node: Node): Node | null;
+  /**
    * Walks the scope chain from `from` (default: the root scope) to
    * find the nearest binding of `name`.
    */

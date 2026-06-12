@@ -13,6 +13,7 @@ const violations = {
   nodeIdentity: [] as string[],
   walkScanParity: [] as string[],
   scopeMatch: [] as string[],
+  parentMatch: [] as string[],
   captures: [] as string[],
   determinism: [] as string[],
   records: [] as string[],
@@ -124,6 +125,8 @@ function check(path: string, source: string): void {
   // walk and scan visit the same nodes in the same order. and the per-node
   // scope (ctx.scope) agrees with the per-reference scope at every reference.
   // both come from the binder, so a disagreement means a decode or index bug.
+  // parentOf is a point query; ctx.parent is the live walk stack. they must
+  // name the same node for every node, root included.
   const walked: string[] = [];
   module.walk({
     enter(node, ctx) {
@@ -131,6 +134,9 @@ function check(path: string, source: string): void {
       const reference = ctx.reference;
       if (reference !== null && ctx.scope !== reference.scope) {
         note(violations.scopeMatch, `${path}: ${reference.name} ctx ${ctx.scope.id} vs ref ${reference.scope.id}`);
+      }
+      if (module.parentOf(node) !== (ctx.parent ?? null)) {
+        note(violations.parentMatch, `${path}: ${node.type} parentOf disagrees with ctx.parent`);
       }
     },
   });
@@ -211,6 +217,10 @@ describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
 
   test("the walked scope matches the binder's scope at every reference", () => {
     expect(violations.scopeMatch).toEqual([]);
+  });
+
+  test("parentOf matches the walk's parent at every node", () => {
+    expect(violations.parentMatch).toEqual([]);
   });
 
   test("capturesOf matches an independent oracle", () => {

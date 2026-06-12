@@ -356,6 +356,15 @@ export class Module {
     return this.scopes[this.#sem.nodeScope(index)];
   }
 
+  // the node that structurally contains `node`, or null at the program
+  // root or for a node not part of this module's AST.
+  parentOf(node) {
+    const index = this.#r.indexOf(node);
+    if (index === undefined) return null;
+    const parent = this.#r.parentIndex(index);
+    return parent < 0 ? null : this.#r.nodeOf(parent);
+  }
+
   resolve(name, from = this.rootScope) {
     for (let s = from; s; s = s.parent) {
       const found = s.find(name);

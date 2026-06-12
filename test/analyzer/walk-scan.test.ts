@@ -193,6 +193,33 @@ describe("node queries", () => {
     expect(module.resolve("missing", fnScope)).toBeNull();
   });
 
+  test("parentOf climbs from a node to the structure around it", () => {
+    const module = analyze(
+      `const { onPress: handler } = props; const alias = handler;`,
+      "input.ts",
+    );
+    // a destructured binding climbs to the Property that names the prop
+    const handler = module
+      .findAll("Identifier")
+      .find((n) => n.name === "handler" && module.symbolOf(n))!;
+    const property = module.parentOf(handler)!;
+    expect(property.type).toBe("Property");
+    expect((property as { key: { name: string } }).key.name).toBe("onPress");
+    expect(module.parentOf(property)?.type).toBe("ObjectPattern");
+
+    // a use climbs to the declarator whose init it is
+    const use = module.findAll("Identifier").find((n) => n.name === "handler" && module.referenceOf(n))!;
+    const declarator = module.parentOf(use)!;
+    expect(declarator.type).toBe("VariableDeclarator");
+    expect((declarator as { init: unknown }).init).toBe(use);
+  });
+
+  test("parentOf is null at the root and for a foreign node", () => {
+    const module = analyze(`let x = 1;`);
+    expect(module.parentOf(module.ast)).toBeNull();
+    expect(module.parentOf({ type: "Identifier", name: "x" } as never)).toBeNull();
+  });
+
   test("a parameter declaration resolves back through symbolOf", () => {
     // covers params nested in a decorator expression, where the node index is
     // easy to lose

@@ -1354,7 +1354,10 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     });
 
     try writeScanBody(w);
-    if (mode == .analyzer) try writeSemanticBody(w);
+    if (mode == .analyzer) {
+        try writeParentBody(w);
+        try writeSemanticBody(w);
+    }
 
     try w.writeAll(
         \\  let _program, _lineStarts, _diagnostics, _comments;
@@ -1393,6 +1396,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     if (mode == .analyzer) try w.writeAll(
         \\    nodeOf: node,
         \\    indexOf: (n) => _nodeIndexes.get(n),
+        \\    parentIndex: (i) => _parents()[i],
         \\    startOf, endOf, str,
         \\    get semantic() { return _semantic(); },
         \\
@@ -1524,6 +1528,49 @@ fn writeScanBody(w: *Writer) !void {
         .f0 = rt.NODE_FIELD0_OFFSET,
         .f01 = rt.NODE_FIELD0_OFFSET + 1,
         .size = rt.NODE_SIZE,
+    });
+}
+
+// lazy child to parent index map, derived from the same child traversal the
+// scan uses. parent is pure structure, never shipped over the wire. structural
+// container tags (TAG_TYPES null) are not materialized as ESTree nodes, so a
+// child threads past them to the nearest real ancestor, matching the walk.
+fn writeParentBody(w: *Writer) !void {
+    try w.print(
+        \\  let _parentArr;
+        \\  function _parents() {{
+        \\    if (_parentArr !== undefined) return _parentArr;
+        \\    const p = new Int32Array(nodeCount).fill(-1);
+        \\    (function visit(i, parent) {{
+        \\      const o = _nodesOff + i * {[size]d};
+        \\      const tag = _u8[o];
+        \\      if (TAG_TYPES[tag] !== null) {{ p[i] = parent; parent = i; }}
+        \\      const ops = SCAN_CHILDREN[tag];
+        \\      const b = o >> 2;
+        \\      for (let q = 0; q < ops.length; q += 2) {{
+        \\        const slot = ops[q + 1];
+        \\        if (ops[q] === 0) {{
+        \\          const c = _u32[b + slot];
+        \\          if (c !== NULL) visit(c, parent);
+        \\        }} else {{
+        \\          const s = _u32[b + slot];
+        \\          const len = ops[q] === 1
+        \\            ? _u32[b + slot + 1]
+        \\            : _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8);
+        \\          for (let j = 0; j < len; j++) {{
+        \\            const c = _u32[_extraBase + s + j];
+        \\            if (c !== NULL) visit(c, parent);
+        \\          }}
+        \\        }}
+        \\      }}
+        \\    }})(progIdx, -1);
+        \\    return (_parentArr = p);
+        \\  }}
+        \\
+    , .{
+        .size = rt.NODE_SIZE,
+        .f0 = rt.NODE_FIELD0_OFFSET,
+        .f01 = rt.NODE_FIELD0_OFFSET + 1,
     });
 }
 

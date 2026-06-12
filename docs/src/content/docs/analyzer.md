@@ -204,17 +204,20 @@ ref.isWrite; // true when this use (re)assigns the binding
 
 ## Node queries
 
-Four methods connect AST nodes to the semantic model. All of them work on node object identity, not positions or names:
+These methods connect AST nodes to the semantic model. All of them work on node object identity, not positions or names:
 
 ```js
 module.symbolOf(node);    // the symbol a node declares or references, or null
 module.referenceOf(node); // the Reference for an identifier node, or null
 module.scopeOf(node);     // the innermost scope whose extent contains the node
+module.parentOf(node);    // the node that structurally contains it, or null
 module.resolve("fetch");            // scope-chain lookup from the root scope
 module.resolve("x", someScope);     // or from any scope, like the engine would
 ```
 
 `symbolOf` is the workhorse: hand it a declaration identifier and you get the symbol it declares, hand it a reference identifier and you get the symbol it resolves to.
+
+`parentOf` walks upward from a node you already hold, with no ancestor stack and no full walk. Because nodes are memoized by index, it is the same constant-time lookup as the others. It returns `null` at the program root and for any node that is not part of this module's AST.
 
 ## Walking
 
@@ -263,7 +266,7 @@ ctx.reference; // shorthand for module.referenceOf(node)
 ctx.module;    // the module being walked
 ```
 
-`ctx.scope` is not tracked during the walk. It is replayed from the native scope tree: when the walk enters a node that created a scope, that exact scope is pushed. Non-scope nodes pay a single set-membership test, and no scoping rule is evaluated in JavaScript.
+`ctx.scope` is not tracked during the walk. The binder records the scope at every node and ships it as a per-node table, so `ctx.scope` (like `module.scopeOf`) is a single read off that table. No scoping rule is evaluated in JavaScript, and the answer is exact even where scopes do not nest with spans, such as decorators.
 
 ### Mutation
 

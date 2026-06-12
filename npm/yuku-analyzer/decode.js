@@ -1331,6 +1331,35 @@ function decode(buffer, source) {
       }
     })(progIdx);
   }
+  let _parentArr;
+  function _parents() {
+    if (_parentArr !== undefined) return _parentArr;
+    const p = new Int32Array(nodeCount).fill(-1);
+    (function visit(i, parent) {
+      const o = _nodesOff + i * 48;
+      const tag = _u8[o];
+      if (TAG_TYPES[tag] !== null) { p[i] = parent; parent = i; }
+      const ops = SCAN_CHILDREN[tag];
+      const b = o >> 2;
+      for (let q = 0; q < ops.length; q += 2) {
+        const slot = ops[q + 1];
+        if (ops[q] === 0) {
+          const c = _u32[b + slot];
+          if (c !== NULL) visit(c, parent);
+        } else {
+          const s = _u32[b + slot];
+          const len = ops[q] === 1
+            ? _u32[b + slot + 1]
+            : _u8[o + 4] | (_u8[o + 5] << 8);
+          for (let j = 0; j < len; j++) {
+            const c = _u32[_extraBase + s + j];
+            if (c !== NULL) visit(c, parent);
+          }
+        }
+      }
+    })(progIdx, -1);
+    return (_parentArr = p);
+  }
   let _semView;
   function _semantic() {
     if (_semView !== undefined) return _semView;
@@ -1459,6 +1488,7 @@ function decode(buffer, source) {
     scan,
     nodeOf: node,
     indexOf: (n) => _nodeIndexes.get(n),
+    parentIndex: (i) => _parents()[i],
     startOf, endOf, str,
     get semantic() { return _semantic(); },
   };
