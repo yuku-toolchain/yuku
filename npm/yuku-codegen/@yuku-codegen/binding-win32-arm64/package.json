@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-win32-arm64",
-  "version": "0.5.34",
+  "version": "0.5.35",
   "os": [
     "win32"
   ],
