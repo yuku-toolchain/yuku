@@ -1549,7 +1549,8 @@ fn writeSemanticBody(w: *Writer) !void {
         \\    let o = ((dp + 3) & ~3) >> 2;
         \\    const scopeCount = _u32[o], symbolCount = _u32[o + 1],
         \\          referenceCount = _u32[o + 2], declNodeCount = _u32[o + 3],
-        \\          importCount = _u32[o + 4], exportCount = _u32[o + 5];
+        \\          importCount = _u32[o + 4], exportCount = _u32[o + 5],
+        \\          nodeScopeCount = _u32[o + 6];
         \\    o += {[sub]d};
         \\    const scopes = _u32.subarray(o, o + scopeCount * {[scope]d});
         \\    o += scopeCount * {[scope]d};
@@ -1563,6 +1564,8 @@ fn writeSemanticBody(w: *Writer) !void {
         \\    o += importCount * {[import]d};
         \\    const exports = _u32.subarray(o, o + exportCount * {[expt]d});
         \\    o += exportCount * {[expt]d};
+        \\    const nodeScopes = _u32.subarray(o, o + nodeScopeCount);
+        \\    o += nodeScopeCount;
         \\
     , .{
         .flag = rt.FLAG_SEMANTIC,
@@ -1694,6 +1697,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        symbolId: (i) => _id({[sym]s}),
         \\        node: (i) => node({[n]s}),
         \\      }},
+        \\      nodeScope: (i) => nodeScopes[i],
         \\    }});
         \\
     , .{

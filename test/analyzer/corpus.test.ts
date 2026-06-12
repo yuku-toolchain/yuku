@@ -12,6 +12,7 @@ const violations = {
   resolutionScope: [] as string[],
   nodeIdentity: [] as string[],
   walkScanParity: [] as string[],
+  scopeMatch: [] as string[],
   captures: [] as string[],
   determinism: [] as string[],
   records: [] as string[],
@@ -120,9 +121,19 @@ function check(path: string, source: string): void {
     }
   }
 
-  // the two traversal tiers visit the same nodes in the same order
+  // walk and scan visit the same nodes in the same order. and the per-node
+  // scope (ctx.scope) agrees with the per-reference scope at every reference.
+  // both come from the binder, so a disagreement means a decode or index bug.
   const walked: string[] = [];
-  module.walk({ enter: (node) => walked.push(node.type) });
+  module.walk({
+    enter(node, ctx) {
+      walked.push(node.type);
+      const reference = ctx.reference;
+      if (reference !== null && ctx.scope !== reference.scope) {
+        note(violations.scopeMatch, `${path}: ${reference.name} ctx ${ctx.scope.id} vs ref ${reference.scope.id}`);
+      }
+    },
+  });
   const scanned: string[] = [];
   module.scan({ enter: (cursor) => scanned.push(cursor.type) });
   if (walked.length !== scanned.length || walked.some((t, i) => t !== scanned[i])) {
@@ -196,6 +207,10 @@ describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
 
   test("walk and scan agree node for node", () => {
     expect(violations.walkScanParity).toEqual([]);
+  });
+
+  test("the walked scope matches the binder's scope at every reference", () => {
+    expect(violations.scopeMatch).toEqual([]);
   });
 
   test("capturesOf matches an independent oracle", () => {

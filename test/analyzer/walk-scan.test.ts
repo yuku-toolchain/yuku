@@ -35,7 +35,7 @@ describe("walk", () => {
     `);
   });
 
-  test("ctx.scope is replayed from the native tree", () => {
+  test("ctx.scope is the lexical scope at each node", () => {
     const module = analyze(`function outer() { const inner = () => bound; } let bound = 1;`);
     const seen: Record<string, string> = {};
     module.walk({
@@ -52,6 +52,17 @@ describe("walk", () => {
         "outer": "function",
       }
     `);
+  });
+
+  test("a class decorator's scope is the enclosing scope, not the class", () => {
+    const module = analyze(`let dec = () => {}; @dec class C {}`, "input.ts");
+    let decoratorScope: string | null = null;
+    module.walk({
+      Identifier(node, ctx) {
+        if (node.name === "dec" && ctx.reference) decoratorScope = ctx.scope.kind;
+      },
+    });
+    expect(decoratorScope).toBe("module");
   });
 
   test("ctx.symbol and ctx.reference are the node→model shorthands", () => {

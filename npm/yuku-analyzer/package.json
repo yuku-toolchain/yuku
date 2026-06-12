@@ -2,6 +2,37 @@
   "name": "yuku-analyzer",
   "version": "0.5.32",
   "description": "High-performance JavaScript/TypeScript semantic analyzer: per-file scopes, symbols, references, and cross-file module linking",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "analyzer.js",
+    "module.js",
+    "walk.js",
+    "engine.js",
+    "binding.js",
+    "decode.js"
+  ],
+  "optionalDependencies": {
+    "@yuku-analyzer/binding-linux-x64-gnu": "0.5.32",
+    "@yuku-analyzer/binding-linux-arm64-gnu": "0.5.32",
+    "@yuku-analyzer/binding-linux-arm-gnu": "0.5.32",
+    "@yuku-analyzer/binding-linux-x64-musl": "0.5.32",
+    "@yuku-analyzer/binding-linux-arm64-musl": "0.5.32",
+    "@yuku-analyzer/binding-linux-arm-musl": "0.5.32",
+    "@yuku-analyzer/binding-darwin-x64": "0.5.32",
+    "@yuku-analyzer/binding-darwin-arm64": "0.5.32",
+    "@yuku-analyzer/binding-win32-x64": "0.5.32",
+    "@yuku-analyzer/binding-win32-arm64": "0.5.32",
+    "@yuku-analyzer/binding-freebsd-x64": "0.5.32"
+  },
   "keywords": [
     "analyzer",
     "ast",
@@ -17,38 +48,7 @@
     "symbols",
     "typescript"
   ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yuku-toolchain/yuku"
-  },
-  "files": [
-    "index.js",
-    "index.d.ts",
-    "analyzer.js",
-    "module.js",
-    "walk.js",
-    "engine.js",
-    "binding.js",
-    "decode.js"
-  ],
-  "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
   "dependencies": {
     "@yuku-toolchain/types": "workspace:*"
-  },
-  "optionalDependencies": {
-    "@yuku-analyzer/binding-darwin-arm64": "0.5.32",
-    "@yuku-analyzer/binding-darwin-x64": "0.5.32",
-    "@yuku-analyzer/binding-freebsd-x64": "0.5.32",
-    "@yuku-analyzer/binding-linux-arm-gnu": "0.5.32",
-    "@yuku-analyzer/binding-linux-arm-musl": "0.5.32",
-    "@yuku-analyzer/binding-linux-arm64-gnu": "0.5.32",
-    "@yuku-analyzer/binding-linux-arm64-musl": "0.5.32",
-    "@yuku-analyzer/binding-linux-x64-gnu": "0.5.32",
-    "@yuku-analyzer/binding-linux-x64-musl": "0.5.32",
-    "@yuku-analyzer/binding-win32-arm64": "0.5.32",
-    "@yuku-analyzer/binding-win32-x64": "0.5.32"
   }
 }

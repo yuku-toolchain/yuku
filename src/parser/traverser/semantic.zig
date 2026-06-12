@@ -29,12 +29,17 @@ pub const Ctx = struct {
     symbols: SymbolTracker,
     // depth of ts type-only context. inspect via `inTypePosition()`.
     type_position_depth: u32 = 0,
+    // the lexical scope of every node, indexed by node index.
+    node_scopes: []ScopeId,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
+        const node_scopes = try tree.allocator().alloc(ScopeId, tree.nodes.len);
+        @memset(node_scopes, .root);
         return .{
             .tree = tree,
             .scope = try ScopeTracker.init(tree),
             .symbols = try SymbolTracker.init(tree),
+            .node_scopes = node_scopes,
         };
     }
 
@@ -55,6 +60,8 @@ pub const Ctx = struct {
     pub inline fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
         try self.scope.enter(index, data);
+
+        self.node_scopes[@intFromEnum(index)] = self.scope.currentScopeId();
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 
@@ -90,6 +97,8 @@ pub const Ctx = struct {
 pub const Result = struct {
     scope_tree: ScopeTree,
     symbol_table: SymbolTable,
+    /// Lexical scope of every node, indexed by node index.
+    node_scopes: []const ScopeId,
 };
 
 /// Walks the tree with full path, scope, and symbol tracking. Returns
@@ -103,5 +112,6 @@ pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!
     return .{
         .scope_tree = ctx.scope.toScopeTree(),
         .symbol_table = try ctx.symbols.toSymbolTable(),
+        .node_scopes = ctx.node_scopes,
     };
 }

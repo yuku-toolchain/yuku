@@ -1349,7 +1349,8 @@ function decode(buffer, source) {
     let o = ((dp + 3) & ~3) >> 2;
     const scopeCount = _u32[o], symbolCount = _u32[o + 1],
           referenceCount = _u32[o + 2], declNodeCount = _u32[o + 3],
-          importCount = _u32[o + 4], exportCount = _u32[o + 5];
+          importCount = _u32[o + 4], exportCount = _u32[o + 5],
+          nodeScopeCount = _u32[o + 6];
     o += 8;
     const scopes = _u32.subarray(o, o + scopeCount * 4);
     o += scopeCount * 4;
@@ -1363,6 +1364,8 @@ function decode(buffer, source) {
     o += importCount * 8;
     const exports = _u32.subarray(o, o + exportCount * 10);
     o += exportCount * 10;
+    const nodeScopes = _u32.subarray(o, o + nodeScopeCount);
+    o += nodeScopeCount;
     const _id = (v) => v === NULL ? null : v;
     return (_semView = {
       scope: {
@@ -1421,6 +1424,7 @@ function decode(buffer, source) {
         symbolId: (i) => _id(exports[i * 10 + 3]),
         node: (i) => node(exports[i * 10 + 8]),
       },
+      nodeScope: (i) => nodeScopes[i],
     });
   }
   let _program, _lineStarts, _diagnostics, _comments;

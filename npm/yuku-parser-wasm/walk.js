@@ -91,15 +91,11 @@ function createDispatch(visitors) {
  * in place. Returns the root.
  */
 export function walk(root, visitors, state) {
-  _walk(root, visitors, state, null, new WalkContext());
+  _walk(root, visitors, state, new WalkContext());
   return root;
 }
 
-// internal entry point. yuku-analyzer layers scope replay via `hooks`
-// (enter returns a token passed to exit, which runs after the node is
-// handled, removal included) and a WalkContext subclass. exits are
-// skipped once stopped.
-export function _walk(root, visitors, state, hooks, ctx) {
+export function _walk(root, visitors, state, ctx) {
   const d = createDispatch(visitors);
   ctx.state = state;
   const ancestors = ctx._ancestors;
@@ -133,7 +129,6 @@ export function _walk(root, visitors, state, hooks, ctx) {
 
   (function visit(node, key, list, frame) {
     let typed = d.typed(node.type);
-    const token = hooks === null ? undefined : hooks.enter(node);
     const parent = ctx.parent;
 
     position(node, key, list, frame);
@@ -147,7 +142,6 @@ export function _walk(root, visitors, state, hooks, ctx) {
     }
     if (ctx._removed) {
       applyRemove(parent, key, list, frame);
-      if (hooks !== null) hooks.exit(token);
       return true;
     }
     if (ctx._replacement !== null) {
@@ -192,7 +186,6 @@ export function _walk(root, visitors, state, hooks, ctx) {
     if (ctx._removed) applyRemove(parent, key, list, frame);
     else if (ctx._replacement !== null) applyReplace(parent, key, list, frame);
 
-    if (hooks !== null) hooks.exit(token);
     return true;
   })(root, null, null, null);
 }

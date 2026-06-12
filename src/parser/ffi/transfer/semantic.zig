@@ -18,6 +18,8 @@
 //                each, resolution folded in. Requires `resolveAll`.
 //   imports      import_count * IMPORT_SIZE.     One PackedImport each.
 //   exports      export_count * EXPORT_SIZE.     One PackedExport each.
+//   node_scopes  node_scope_count * 4.           One ScopeId per node,
+//                indexed by node index. The node's lexical scope.
 //
 // Sentinels: ScopeId.none, SymbolId.none, and NodeIndex.null all encode
 // as 0xFFFFFFFF. String handles are (start, end) pairs resolved against
@@ -39,7 +41,7 @@ const Symbol = semantic.Symbol;
 const Result = semantic.Result;
 const ModuleRecords = module_record.ModuleRecords;
 
-/// fixed-size counts block. two reserved slots keep room for future
+/// fixed-size counts block. one reserved slot keeps room for future
 /// sections without a layout break.
 pub const SubHeader = extern struct {
     scope_count: u32,
@@ -48,8 +50,9 @@ pub const SubHeader = extern struct {
     decl_node_count: u32,
     import_count: u32,
     export_count: u32,
+    /// one ScopeId per node, indexed by node index.
+    node_scope_count: u32,
     reserved0: u32 = 0,
-    reserved1: u32 = 0,
 };
 
 /// `bits` packs kind (low 8 bits) and the strict flag (bit 8).
@@ -197,7 +200,8 @@ pub fn bufferSize(
         result.symbol_table.decl_nodes.len * 4 +
         result.symbol_table.references.len * REFERENCE_SIZE +
         records.imports.len * IMPORT_SIZE +
-        records.exports.len * EXPORT_SIZE;
+        records.exports.len * EXPORT_SIZE +
+        result.node_scopes.len * 4;
 }
 
 /// Serializes the core AST buffer followed by the semantic sections.
@@ -231,6 +235,7 @@ pub fn serializeInto(
         .decl_node_count = @intCast(table.decl_nodes.len),
         .import_count = @intCast(records.imports.len),
         .export_count = @intCast(records.exports.len),
+        .node_scope_count = @intCast(result.node_scopes.len),
     };
     @memcpy(buf[pos..][0..SUBHEADER_SIZE], std.mem.asBytes(&sub));
     pos += SUBHEADER_SIZE;
@@ -315,6 +320,10 @@ pub fn serializeInto(
         @memcpy(buf[pos..][0..EXPORT_SIZE], std.mem.asBytes(&entry));
         pos += EXPORT_SIZE;
     }
+
+    const node_scope_bytes = std.mem.sliceAsBytes(result.node_scopes);
+    @memcpy(buf[pos..][0..node_scope_bytes.len], node_scope_bytes);
+    pos += node_scope_bytes.len;
 
     // writer and size calculation must agree exactly
     std.debug.assert(pos == bufferSize(tree, result, records));

@@ -1,7 +1,5 @@
 // One analyzed file, the AST plus the scope/symbol/reference/import/
 // export object graph, built lazily over the decoded analyzer buffer.
-// All wire reads go through the generated `semantic` accessors from
-// decode.js. Nothing in this file knows the buffer layout.
 
 import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
@@ -268,8 +266,6 @@ export class Module {
   #symbolReferences = null;
   #declToSymbol = null;
   #nodeToReference = null;
-  #functionScopes = null;
-  #scopeMap = null;
   #exportMap = null;
   #starExports = null;
   #importBySymbol = null;
@@ -355,22 +351,9 @@ export class Module {
 
   scopeOf(node) {
     const index = this.#r.indexOf(node);
+    // a node inserted after analysis has no recorded scope
     if (index === undefined) return this.rootScope;
-    const start = this.#r.startOf(index);
-    const end = this.#r.endOf(index);
-    const { scope } = this.#sem;
-    let best = this.scopes[0];
-    let bestDepth = 0;
-    for (let i = 1; i < scope.count; i++) {
-      if (scope.start(i) > start || scope.end(i) < end) continue;
-      let depth = 0;
-      for (let p = i; p !== null; p = scope.parentId(p)) depth++;
-      if (depth > bestDepth) {
-        best = this.scopes[i];
-        bestDepth = depth;
-      }
-    }
-    return best;
+    return this.scopes[this.#sem.nodeScope(index)];
   }
 
   resolve(name, from = this.rootScope) {
@@ -403,9 +386,9 @@ export class Module {
   // the free variables of a function: every binding referenced inside
   // `fn` (nested functions included, value positions only) that is
   // declared outside its scope subtree, deduplicated by symbol with
-  // `isWritten` OR-ed across the references. only bindings count:
+  // `isWritten` OR-ed across the references. only bindings count.
   // `this`, `arguments`, and unresolved/global names carry no symbol
-  // and never appear; module-scope and import bindings count like any
+  // and never appear. module-scope and import bindings count like any
   // other outer binding. computed method keys evaluate in the enclosing
   // scope, outside the function node's span, so they are not captures.
   capturesOf(fn) {
@@ -413,13 +396,13 @@ export class Module {
     if (index === undefined) {
       throw new TypeError("capturesOf: node does not belong to this module's AST");
     }
-    const fnScopeId = this.#functionScopeOf(index);
-    if (fnScopeId === undefined) {
+    const { scope, symbol, reference } = this.#sem;
+    const fnScopeId = this.#sem.nodeScope(index);
+    if (scope.kind(fnScopeId) !== "function" || scope.nodeIndex(fnScopeId) !== index) {
       throw new TypeError("capturesOf: node does not create a function scope");
     }
     const start = this.#r.startOf(index);
     const end = this.#r.endOf(index);
-    const { scope, symbol, reference } = this.#sem;
     const captures = new Map();
     for (let i = 0; i < reference.count; i++) {
       const symbolId = reference.symbolId(i);
@@ -511,22 +494,6 @@ export class Module {
     return this.#symbolReferences[symbolId];
   }
 
-  // scope-creating node object -> innermost Scope (keep-last covers
-  // shared nodes, global/module on program, expression_name/function).
-  _scopeMap() {
-    if (this.#scopeMap === null) {
-      const byNode = new WeakMap();
-      const types = new Set();
-      for (const scope of this.scopes) {
-        const node = this.#sem.scope.node(scope.id);
-        byNode.set(node, scope);
-        types.add(node.type);
-      }
-      this.#scopeMap = { byNode, types };
-    }
-    return this.#scopeMap;
-  }
-
   // the spec's export-entry partition (ParseModule, 16.2.1.7.1): a
   // name-keyed map of the local + indirect entries and the star-entry
   // list (`export *` only). name-less records (`export *`, TS
@@ -590,21 +557,6 @@ export class Module {
       this.#nodeToReference = map;
     }
     return this.#nodeToReference;
-  }
-
-  // node index -> the function scope it creates. named function
-  // expressions share the node with their expression_name scope. the
-  // function scope has the higher id, so keep-last wins.
-  #functionScopeOf(nodeIndex) {
-    if (this.#functionScopes === null) {
-      const map = new Map();
-      const { scope } = this.#sem;
-      for (let i = 0; i < scope.count; i++) {
-        if (scope.kind(i) === "function") map.set(scope.nodeIndex(i), i);
-      }
-      this.#functionScopes = map;
-    }
-    return this.#functionScopes.get(nodeIndex);
   }
 }
 
