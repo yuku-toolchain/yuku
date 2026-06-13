@@ -19,10 +19,12 @@ pub fn main() !void {
     const allocator = arena.allocator();
 
     const source =
-        \\const greet = (name: string): string => {
-        \\  return `hello ${name}`;
-        \\};
-        \\greet("world");
+        \\class C {
+        \\  get async() { return 1; }
+        \\  set get(v) {}
+        \\  async get() { return 2; }
+        \\  static async *gen() {}
+        \\}
     ;
 
     var tree = try parser.parse(allocator, source, .{ .lang = .ts });
