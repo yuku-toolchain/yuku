@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/wasm",
-  "version": "0.5.31",
+  "version": "0.5.37",
   "description": "High-performance JavaScript/TypeScript parser, compiled to WebAssembly",
   "license": "MIT",
   "repository": {
@@ -14,8 +14,12 @@
     "index.js",
     "index.d.ts",
     "decode.js",
+    "walk.js",
     "yuku-parser.wasm"
   ],
+  "dependencies": {
+    "@yuku-toolchain/types": "workspace:*"
+  },
   "keywords": [
     "acorn",
     "ast",

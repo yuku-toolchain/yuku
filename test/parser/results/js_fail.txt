@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       3635/3635 (100.00%)
+Passed:       3698/3698 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -81,6 +81,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    |
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
+
+✓ test/parser/suite/js/fail/00993ba910ec513e.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | label: {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | };
+   |
 
 ✓ test/parser/suite/js/fail/00c6cc33ea8161a2.js
 error: Lexical declaration cannot appear in a single-statement context
@@ -489,6 +498,15 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
+✓ test/parser/suite/js/fail/03407c350257d500.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function * f() {
+43 |   await new import.defer('./empty_FIXTURE.js').prop
+   |             ^^^^^^
+44 | }
+   |
+
 ✓ test/parser/suite/js/fail/03417e244f61ad3f.js
 error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
@@ -522,6 +540,15 @@ error: Expected ',' or '}' in object, but found 'end of file'
    |
    = help: Add a comma between properties or close the object with '}'.
 
+
+✓ test/parser/suite/js/fail/037bb41066d4f7c2.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | if (true) {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | }
+   |
 
 ✓ test/parser/suite/js/fail/037e879478f2d690.js
 error: 'try' is reserved and cannot be used as an identifier
@@ -616,6 +643,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
+✓ test/parser/suite/js/fail/03e7c7951f14f3d9.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function f() {
+43 |   return await new import.defer('./empty_FIXTURE.js').prop;
+   |                    ^^^^^^
+44 | }
+   |
+
 ✓ test/parser/suite/js/fail/03e871d83ec865dd.js
 error: Identifier cannot immediately follow a numeric literal
    |
@@ -664,6 +700,15 @@ error: A rest element cannot have an initializer
    |
    = help: Remove the '= ...' from the rest element.
 
+
+✓ test/parser/suite/js/fail/0443646909094226.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | let f = () => {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | };
+   |
 
 ✓ test/parser/suite/js/fail/044c5bf67cc5c3b7.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -1610,6 +1655,15 @@ error: Invalid element in binding pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/0bf3892498ad4bc8.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | if (true) new import.source('<module source>').prop;
+   |               ^^^^^^
+43 | 
+   |
+
 ✓ test/parser/suite/js/fail/0bfc57a1bfd35ed6.js
 error: 'this' is reserved and cannot be used as a binding identifier
    |
@@ -1636,6 +1690,15 @@ error: Expected ',' or ')' in parenthesized expression, but found 'x'
    |
    = help: Add a comma between elements or close with ')'.
 
+
+✓ test/parser/suite/js/fail/0c19cb2e9eadb5c6.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | if (true) new import.defer('./empty_FIXTURE.js').prop;
+   |               ^^^^^^
+43 | 
+   |
 
 ✓ test/parser/suite/js/fail/0c23334134e7ee1f.js
 error: Generators can only be declared at the top level or inside a block
@@ -2301,6 +2364,15 @@ error: 'with' is reserved and cannot be used as an identifier
    |
  1 | var x = { w\u0069th } = { with: 42 };
    |           ^^^^^^^^^
+   |
+
+✓ test/parser/suite/js/fail/1127ab14556efcd0.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | (async () => await new import.source('<module source>').prop)
+   |                        ^^^^^^
+43 | 
    |
 
 ✓ test/parser/suite/js/fail/113749707e7c3519.js
@@ -4126,6 +4198,15 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/1e00acb9974f2d8e.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | (async () => {
+42 |   await new import('').prop
+   |             ^^^^^^
+43 | });
+   |
+
 ✓ test/parser/suite/js/fail/1e15c7654d5ca22f.js
 error: Keywords cannot contain escape characters
    |
@@ -4186,6 +4267,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
    = help: Try inserting a semicolon here
 
+
+✓ test/parser/suite/js/fail/1e58ebac9d9c57cd.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function f() {
+43 |   return await new import.source('<module source>').prop;
+   |                    ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/1e5ab7e0695abf73.js
 error: Class declarations are not allowed in single-statement contexts
@@ -4898,6 +4988,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
+✓ test/parser/suite/js/fail/23cfdb981427a6fa.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+43 |   x++;
+44 |   new import('').prop;
+   |       ^^^^^^
+45 | };
+   |
+
 ✓ test/parser/suite/js/fail/240350780ac77c74.module.js
 error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
@@ -5211,6 +5310,15 @@ error: Invalid element in assignment pattern
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
+
+✓ test/parser/suite/js/fail/25c8c68f96aeea26.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | if (true) {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/26031afc9eaef976.js
 error: Invalid Unicode escape sequence
@@ -6412,6 +6520,15 @@ error: Numeric literal cannot contain consecutive separators
    = help: Try removing one of the consecutive underscores here
 
 
+✓ test/parser/suite/js/fail/2da7acbd59e4e03f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+40 | 
+41 | let f = () => new import('').prop;
+   |                   ^^^^^^
+42 | 
+   |
+
 ✓ test/parser/suite/js/fail/2daf9186793aa37c.js
 error: Unterminated string literal
    |
@@ -6499,6 +6616,15 @@ error: Hexadecimal literal must contain at least one hex digit
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
+
+✓ test/parser/suite/js/fail/2e6ccfaf05ff508d.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | 
+43 | } else new import('').prop;
+   |            ^^^^^^
+44 | 
+   |
 
 ✓ test/parser/suite/js/fail/2e719439e300e362.js
 error: Rest element must be the last element
@@ -6846,6 +6972,15 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
  4 |   }
    |
 
+✓ test/parser/suite/js/fail/30c49369866e3128.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | label: {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | };
+   |
+
 ✓ test/parser/suite/js/fail/30c64f944edc4987.js
 error: 'do' is reserved and cannot be used as a binding identifier
    |
@@ -6881,6 +7016,15 @@ error: Invalid Unicode escape sequence
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
+
+✓ test/parser/suite/js/fail/30e0740a7fb6610e.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | let f = () => {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | };
+   |
 
 ✓ test/parser/suite/js/fail/30f6acf0bf2f7f06.js
 error: Invalid element in binding pattern
@@ -7856,6 +8000,15 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/3833c5942da58f7b.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | with (new import.defer('./empty_FIXTURE.js').prop) {}
+   |           ^^^^^^
+43 | 
+   |
+
 ✓ test/parser/suite/js/fail/383b04bbef94592a.js
 error: Rest parameter must be the last parameter
    |
@@ -7895,6 +8048,15 @@ error: Invalid assignment target
    |
    = help: The left-hand side of a compound assignment must be a variable or property access
 
+
+✓ test/parser/suite/js/fail/3888eca72d5b650f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function f() {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/388a93112187f2c7.js
 error: Invalid assignment target
@@ -8078,6 +8240,15 @@ error: Expected ';' after for-loop init, but found 'await'
  2 |   await await await await await await await await await await await await await await await 'await';
    |
 
+✓ test/parser/suite/js/fail/39ccca865eb73756.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | };
+   |
+
 ✓ test/parser/suite/js/fail/39cd1a4cc6026c7e.js
 error: Invalid assignment target
    |
@@ -8243,6 +8414,15 @@ error: Rest element must be the last element
    |
    = help: No elements can follow the rest element in a destructuring pattern.
 
+
+✓ test/parser/suite/js/fail/3b13e71cb509612b.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function f() {
+43 |   await new import.source('<module source>').prop;
+   |             ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/3b14577ef0f16b6e.js
 error: Unterminated string literal
@@ -8467,6 +8647,15 @@ error: Keywords cannot contain escape characters
    |
    = help: Remove the escape characters
 
+
+✓ test/parser/suite/js/fail/3d3bec0ccdcc261c.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | with ({}) {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/3d3e6ce2b81a224d.js
 error: Shorthand property cannot have a default value in object expression
@@ -9298,6 +9487,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
+✓ test/parser/suite/js/fail/43d967b11aee3583.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+31 | 
+32 | new import.source('<module source>').prop;
+   |     ^^^^^^
+33 | 
+   |
+
 ✓ test/parser/suite/js/fail/4405b86d3311c06d.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'await'
    |
@@ -9744,6 +9942,15 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/4757f7508740e1ae.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | (async () => {
+43 |   await new import.source('<module source>').prop
+   |             ^^^^^^
+44 | });
+   |
+
 ✓ test/parser/suite/js/fail/4760ade43b8b5eca.js
 error: 'import' is reserved and cannot be used as an identifier
    |
@@ -10114,6 +10321,15 @@ error: 'const' is reserved and cannot be used as a binding identifier
  1 | const const;
    |       ^^^^^
  2 | 
+   |
+
+✓ test/parser/suite/js/fail/49c65df9314b2a95.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+40 | 
+41 | with (new import('').prop) {}
+   |           ^^^^^^
+42 | 
    |
 
 ✓ test/parser/suite/js/fail/49ce9bb15ec3cd50.js
@@ -10961,6 +11177,15 @@ error: Getter/setter cannot appear in destructuring pattern
    |
    = help: Use a regular property instead of a getter or setter.
 
+
+✓ test/parser/suite/js/fail/4fe13555bd8a2e61.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | function fn() {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/4ff265a6d9b73a20.js
 error: Rest element must be the last element
@@ -12180,6 +12405,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
+✓ test/parser/suite/js/fail/58fe8c027eec64dc.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | with (new import.source('<module source>').prop) {}
+   |           ^^^^^^
+43 | 
+   |
+
 ✓ test/parser/suite/js/fail/59119222cbb03f36.js
 error: 'continue' is reserved and cannot be used as an identifier
    |
@@ -12409,6 +12643,15 @@ error: 'in' is reserved and cannot be used as an identifier
    |
  1 | var x = ({ \u0069n }) => {};
    |            ^^^^^^^
+   |
+
+✓ test/parser/suite/js/fail/5b2aac649adc410f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | do {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | } while (false);
    |
 
 ✓ test/parser/suite/js/fail/5b556b6867f65d0a.js
@@ -12765,6 +13008,15 @@ error: Identifier cannot immediately follow a numeric literal
    |
    = help: Try adding whitespace here between the number and identifier
 
+
+✓ test/parser/suite/js/fail/5e28fe5bc560ea46.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+44 |   x++;
+45 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+46 | };
+   |
 
 ✓ test/parser/suite/js/fail/5e466b68c319e1d9.js
 error: 'throw' is reserved and cannot be used as a binding identifier
@@ -13414,6 +13666,15 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/635154eb41bd0e60.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | async function f() {
+42 |   return await new import('').prop;
+   |                    ^^^^^^
+43 | }
+   |
+
 ✓ test/parser/suite/js/fail/6356e44597c1ad96.js
 error: Expected '(' after 'if', but found 'false'
    |
@@ -13601,6 +13862,15 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  2 |   var yield;
    |       ^^^^^
  3 | };
+   |
+
+✓ test/parser/suite/js/fail/64f6956ae098df00.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+44 | } else {
+45 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+46 | }
    |
 
 ✓ test/parser/suite/js/fail/651192e0e2975013.js
@@ -13806,6 +14076,15 @@ error: Expected '(' after 'while', but found '='
    |
  1 | while = 1;
    |       ^
+   |
+
+✓ test/parser/suite/js/fail/667aed91cb97ff5f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | function fn() {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | }
    |
 
 ✓ test/parser/suite/js/fail/6697777e88b64fff.js
@@ -14531,6 +14810,15 @@ error: Shorthand property must be an identifier
    = help: String and numeric keys require explicit ': value' syntax.
 
 
+✓ test/parser/suite/js/fail/6aee9c1696221505.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | function fn() {
+42 |   return new import('').prop;
+   |              ^^^^^^
+43 | }
+   |
+
 ✓ test/parser/suite/js/fail/6aeff33ceda72475.js
 error: Expected '{' to start class body, but found 'B'
    |
@@ -14658,6 +14946,15 @@ error: Member expression is not allowed in binding pattern
    |
    = help: Function parameters and variable declarations can only bind to identifiers, not member expressions like 'obj.prop' or 'obj[key]'. Use a simple identifier instead.
 
+
+✓ test/parser/suite/js/fail/6bc851a2e898684a.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+44 | } else {
+45 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+46 | }
+   |
 
 ✓ test/parser/suite/js/fail/6be6963e9f01e6be.js
 error: Unexpected token ']'
@@ -15514,6 +15811,15 @@ error: Identifier cannot immediately follow a numeric literal
    = help: Try adding whitespace here between the number and identifier
 
 
+✓ test/parser/suite/js/fail/72b3ba3dc5afec13.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+44 |   x++;
+45 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+46 | };
+   |
+
 ✓ test/parser/suite/js/fail/72c150ade8f08912.js
 error: Unexpected token ';'
    |
@@ -16271,6 +16577,15 @@ error: Classes may not have a static property named 'prototype'
    = help: Remove 'static' or rename the property.
 
 
+✓ test/parser/suite/js/fail/7821ee0ae121f302.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+31 | 
+32 | new import.defer('./empty_FIXTURE.js').prop;
+   |     ^^^^^^
+33 | 
+   |
+
 ✓ test/parser/suite/js/fail/782d2b38ac417835.module.js
 error: 'var' is reserved and cannot be used as an identifier
    |
@@ -16513,6 +16828,15 @@ error: Invalid element in assignment pattern
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
+
+✓ test/parser/suite/js/fail/799393681f89fac8.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | with ({}) {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | }
+   |
 
 ✓ test/parser/suite/js/fail/79a98623142e0b24.js
 error: 'yield' is reserved in a generator context and cannot be used as an identifier
@@ -17195,6 +17519,15 @@ error: Shorthand property must be an identifier
    = help: String and numeric keys require explicit ': value' syntax.
 
 
+✓ test/parser/suite/js/fail/7e3dd96a03673ad0.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+43 | 
+44 | } else new import.source('<module source>').prop;
+   |            ^^^^^^
+45 | 
+   |
+
 ✓ test/parser/suite/js/fail/7e3e0e5431cda8a5.js
 error: 'import' is reserved and cannot be used as an identifier
    |
@@ -17429,6 +17762,15 @@ error: Parentheses are not allowed in this binding pattern
    = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
+✓ test/parser/suite/js/fail/7ff2156c9c69c424.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | do {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | } while (false);
+   |
+
 ✓ test/parser/suite/js/fail/800c382ba7e663c4.js
 error: 'else' is reserved and cannot be used as an identifier
    |
@@ -17523,6 +17865,15 @@ error: Expected expression after 'yield*', but found '}'
    |
  1 | function *a(){yield*}
    |                     ^
+   |
+
+✓ test/parser/suite/js/fail/80e88c2b2481833f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | (async () => await new import.defer('./empty_FIXTURE.js').prop)
+   |                        ^^^^^^
+43 | 
    |
 
 ✓ test/parser/suite/js/fail/80ea01a6fbf80920.js
@@ -17963,6 +18314,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
+✓ test/parser/suite/js/fail/844dc47218c9836b.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | (async () => {
+43 |   await new import.defer('./empty_FIXTURE.js').prop
+   |             ^^^^^^
+44 | });
+   |
+
 ✓ test/parser/suite/js/fail/844f808283041d67.js
 error: Rest parameter must be the last parameter
    |
@@ -17992,6 +18352,15 @@ error: Unexpected token '.'
    |
    = help: Expected an expression
 
+
+✓ test/parser/suite/js/fail/8473d554eb14b208.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | async function * f() {
+42 |   await new import('').prop
+   |             ^^^^^^
+43 | }
+   |
 
 ✓ test/parser/suite/js/fail/849f23a6b2a3aff8.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -19295,6 +19664,15 @@ error: 'this' is reserved and cannot be used as a binding identifier
    |     ^^^^
    |
 
+✓ test/parser/suite/js/fail/8d9f6f2c6df045c4.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | let f = () => new import.defer('./empty_FIXTURE.js').prop;
+   |                   ^^^^^^
+43 | 
+   |
+
 ✓ test/parser/suite/js/fail/8da958bcb31b6b6b.js
 error: Invalid character at start of identifier
    |
@@ -20394,6 +20772,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
+✓ test/parser/suite/js/fail/94e8683c91a95228.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | function fn() {
+43 |   return new import.defer('./empty_FIXTURE.js').prop;
+   |              ^^^^^^
+44 | }
+   |
+
 ✓ test/parser/suite/js/fail/94f19b7c0fba1de9.js
 error: Expected 'while' after do statement body, but found ';'
    |
@@ -20506,6 +20893,15 @@ error: Invalid element in assignment pattern
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
+
+✓ test/parser/suite/js/fail/95b6b50993dcb1ed.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | };
+   |
 
 ✓ test/parser/suite/js/fail/95c10472e36270b6.js
 error: Rest element is not allowed in parenthesized expression
@@ -20742,6 +21138,15 @@ error: Rest element cannot have a trailing comma in array destructuring.
    |
    = help: Remove the trailing comma after the rest element
 
+
+✓ test/parser/suite/js/fail/976e4ce6b866ea27.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function f() {
+43 |   await new import.defer('./empty_FIXTURE.js').prop;
+   |             ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/97929642c2b8b9ed.js
 error: Invalid character at start of identifier
@@ -22191,6 +22596,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/a30a47a1e85d12f1.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+40 | 
+41 | (async () => await new import('').prop)
+   |                        ^^^^^^
+42 | 
+   |
+
 ✓ test/parser/suite/js/fail/a3107d539c6e59c5.js
 error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
@@ -23349,6 +23763,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/aa94c4444f754e08.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | label: {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | };
+   |
+
 ✓ test/parser/suite/js/fail/aa970dee493f8b79.js
 error: Expected '(' to start parameter list, but found ','
    |
@@ -23562,6 +23985,15 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/ac0edfa602552ab0.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+43 | } else {
+44 |   new import('').prop;
+   |       ^^^^^^
+45 | }
+   |
+
 ✓ test/parser/suite/js/fail/ac1ee2739ad30d66.js
 error: Unterminated multi-line comment
    |
@@ -23624,6 +24056,15 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
+✓ test/parser/suite/js/fail/ac50c925582c3725.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | do {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | } while (false);
+   |
+
 ✓ test/parser/suite/js/fail/ac58332b8c38b06e.js
 error: Rest element must be the last element
    |
@@ -23634,6 +24075,15 @@ error: Rest element must be the last element
    |
    = help: No elements can follow the rest element in a destructuring pattern.
 
+
+✓ test/parser/suite/js/fail/ac5996422e13ab1a.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | if (true) {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/ac656c995c7dada2.js
 error: Expected ')' after for-of expression, but found ','
@@ -26570,6 +27020,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
+✓ test/parser/suite/js/fail/c480d350f1c26297.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | let f = () => {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | };
+   |
+
 ✓ test/parser/suite/js/fail/c49106fce7ac6b09.js
 error: Unexpected token ']'
    |
@@ -26797,6 +27256,15 @@ error: Numeric separator cannot appear at the end of a numeric literal
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
+
+✓ test/parser/suite/js/fail/c5ca38158adc070c.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | async function f() {
+42 |   new import('').prop;
+   |       ^^^^^^
+43 | }
+   |
 
 ✓ test/parser/suite/js/fail/c5daee5c4ac00848.js
 error: Expected ';' after class field, but found 'method'
@@ -27049,6 +27517,15 @@ error: Rest element must be the last element
    |
    = help: No elements can follow the rest element in a destructuring pattern.
 
+
+✓ test/parser/suite/js/fail/c7a7b55287891eec.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | function fn() {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/c7b154715d5ee14e.js
 error: A rest element cannot have an initializer
@@ -27374,6 +27851,15 @@ error: Unexpected token ')'
    |
    = help: Expected an expression
 
+
+✓ test/parser/suite/js/fail/c9ad8be32b91b8b6.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | function fn() {
+43 |   return new import.source('<module source>').prop;
+   |              ^^^^^^
+44 | }
+   |
 
 ✓ test/parser/suite/js/fail/c9b03eaa51df1613.js
 error: Keywords cannot contain escape characters
@@ -27961,6 +28447,15 @@ error: The left-hand side of '**' cannot be an unparenthesized unary expression
    = help: Add parentheses to make precedence explicit, for example `(-x) ** y` or `-(x ** y)`.
 
 
+✓ test/parser/suite/js/fail/cec4d20450980efd.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function f() {
+43 |   new import.defer('./empty_FIXTURE.js').prop;
+   |       ^^^^^^
+44 | }
+   |
+
 ✓ test/parser/suite/js/fail/cec594b99ab5e725.js
 error: Invalid element in assignment pattern
    |
@@ -28489,6 +28984,15 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/d33d4ddec11664b9.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | async function * f() {
+43 |   await new import.source('<module source>').prop
+   |             ^^^^^^
+44 | }
+   |
+
 ✓ test/parser/suite/js/fail/d3a72669a301908f.js
 error: Rest element must be the last element
    |
@@ -28821,6 +29325,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    |
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
+
+✓ test/parser/suite/js/fail/d5e2ec88bec57b9f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | 
+42 | let f = () => new import.source('<module source>').prop;
+   |                   ^^^^^^
+43 | 
+   |
 
 ✓ test/parser/suite/js/fail/d5e3aad46b771d44.js
 error: Numeric separator cannot appear at the end of a numeric literal
@@ -29504,6 +30017,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/dbf81669bf49c08b.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | };
+   |
+
 ✓ test/parser/suite/js/fail/dbff2aab39d6db29.js
 error: A rest element cannot have an initializer
    |
@@ -29767,6 +30289,15 @@ error: Lexical declaration cannot appear in a single-statement context
    |
    = help: Wrap this declaration in a block statement
 
+
+✓ test/parser/suite/js/fail/dd96e1c3ed6df781.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+40 | 
+41 | if (true) new import('').prop;
+   |               ^^^^^^
+42 | 
+   |
 
 ✓ test/parser/suite/js/fail/dd998e8a2890ab77.js
 error: 'await using' declarations must be initialized
@@ -31136,6 +31667,15 @@ error: Rest parameter must be the last parameter
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
 
 
+✓ test/parser/suite/js/fail/e6f4696d1ee76d6f.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+43 | 
+44 | } else new import.defer('./empty_FIXTURE.js').prop;
+   |            ^^^^^^
+45 | 
+   |
+
 ✓ test/parser/suite/js/fail/e7087ec92f0f3c44.js
 error: Invalid Unicode escape sequence
    |
@@ -31382,6 +31922,15 @@ error: Illegal newline after throw
    = help: The thrown expression must be on the same line as 'throw'
 
 
+✓ test/parser/suite/js/fail/e8d693cfee26e501.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+41 | async function f() {
+42 |   await new import('').prop;
+   |             ^^^^^^
+43 | }
+   |
+
 ✓ test/parser/suite/js/fail/e8ebff9b2321643b.js
 error: Expected '(' after import, but found ';'
    |
@@ -31586,6 +32135,15 @@ error: Rest element must be the last element
    |
    = help: No elements can follow the rest element in a destructuring pattern.
 
+
+✓ test/parser/suite/js/fail/ea33f162547e4571.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+30 | 
+31 | new import('').prop;
+   |     ^^^^^^
+32 | 
+   |
 
 ✓ test/parser/suite/js/fail/ea4d962dac83e2a1.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
@@ -33849,6 +34407,15 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
  2 |     void yi\u0065ld;
    |          ^^^^^^^^^^
  3 | }}
+   |
+
+✓ test/parser/suite/js/fail/fb015f05b65d3478.js
+error: 'import' is reserved and cannot be used as an identifier
+   |
+42 | with ({}) {
+43 |   new import.source('<module source>').prop;
+   |       ^^^^^^
+44 | }
    |
 
 ✓ test/parser/suite/js/fail/fb01888722de5cb6.js

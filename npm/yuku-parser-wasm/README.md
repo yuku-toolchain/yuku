@@ -21,7 +21,7 @@ const { program, comments, diagnostics } = parse("const x: number = 1", {
 ```
 
 `parse(source, options?)` returns `{ program, comments, diagnostics, lineStarts,
-locOf, locNear }`. Options:
+locOf, scan }`. Options:
 
 | Option                       | Default    | Description                               |
 | ---------------------------- | ---------- | ----------------------------------------- |
@@ -31,5 +31,3 @@ locOf, locNear }`. Options:
 | `allowReturnOutsideFunction` | `false`    | Allow top-level `return`                  |
 | `semanticErrors`             | `false`    | Also run semantic analysis                |
 | `attachComments`             | `false`    | Attach comments to their host node        |
-
-`langFromPath(path)` and `sourceTypeFromPath(path)` are also exported.

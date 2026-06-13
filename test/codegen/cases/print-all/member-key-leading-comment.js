@@ -1,6 +1,0 @@
-class C {
-  /* lead */ method() {}
-  /* on get */ get x() {
-    return 1;
-  }
-}

@@ -139,6 +139,24 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-analyzer",
+        .root = b.path("src/parser/ffi/analyzer.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "parser", .module = parser_module },
+        },
+        .npm = .{
+            .scope = "@yuku-analyzer",
+            .description = "High-performance JavaScript/TypeScript semantic analyzer written in Zig",
+            .dts = .{
+                .file = b.path("src/parser/ffi/analyzer.d.ts"),
+            },
+            .repository = "https://github.com/yuku-toolchain/yuku",
+        },
+    });
+
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .freestanding,
@@ -151,9 +169,17 @@ pub fn build(b: *std.Build) void {
     });
     const wasm_step = b.step("wasm", "Build the WebAssembly modules");
 
+    const wasm_transfer_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
+        .target = wasm_target,
+        .optimize = .ReleaseSmall,
+    });
+    wasm_transfer_module.addImport("parser", parser_module);
+
     inline for ([_]struct { name: []const u8, root: []const u8 }{
-        .{ .name = "yuku-parser", .root = "src/parser/ffi/parser_wasm.zig" },
-        .{ .name = "yuku-codegen", .root = "src/parser/ffi/codegen_wasm.zig" },
+        .{ .name = "yuku-parser", .root = "src/parser/ffi/wasm/parser.zig" },
+        .{ .name = "yuku-codegen", .root = "src/parser/ffi/wasm/codegen.zig" },
+        .{ .name = "yuku-analyzer", .root = "src/parser/ffi/wasm/analyzer.zig" },
     }) |cfg| {
         const wasm_module = b.createModule(.{
             .root_source_file = b.path(cfg.root),
@@ -162,6 +188,7 @@ pub fn build(b: *std.Build) void {
             .strip = true,
         });
         wasm_module.addImport("parser", parser_module);
+        wasm_module.addImport("transfer", wasm_transfer_module);
 
         const wasm = b.addExecutable(.{ .name = cfg.name, .root_module = wasm_module });
         wasm.entry = .disabled;
@@ -183,60 +210,58 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Parse a sample, walk the AST, and print");
     run_step.dependOn(&run_cmd.step);
 
-    // estree decoder codegen
+    // js bridge generators. each main in tools/ generates one artifact
+    // for one npm package from the shared engines in tools/estree/,
+    // driven by the wire layouts in src/parser/ffi/transfer/.
     const ast_transfer_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/ffi/transfer.zig"),
+        .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
         .target = b.graph.host,
         .optimize = optimize,
     });
     ast_transfer_module.addImport("parser", parser_module);
 
-    const gen_estree_module = b.createModule(.{
-        .root_source_file = b.path("tools/gen_estree_decoder.zig"),
-        .target = b.graph.host,
-        .optimize = optimize,
-    });
-    gen_estree_module.addImport("parser", parser_module);
-    gen_estree_module.addImport("transfer", ast_transfer_module);
+    inline for ([_]struct {
+        step: []const u8,
+        description: []const u8,
+        root: []const u8,
+        output: []const u8,
+    }{
+        .{
+            .step = "gen-parser-decoder",
+            .description = "Generate decode.js for yuku-parser",
+            .root = "tools/gen_parser_decoder.zig",
+            .output = "decode.js",
+        },
+        .{
+            .step = "gen-analyzer-decoder",
+            .description = "Generate decode-analyzer.js for yuku-analyzer",
+            .root = "tools/gen_analyzer_decoder.zig",
+            .output = "decode-analyzer.js",
+        },
+        .{
+            .step = "gen-codegen-encoder",
+            .description = "Generate encode.js for yuku-codegen",
+            .root = "tools/gen_codegen_encoder.zig",
+            .output = "encode.js",
+        },
+    }) |cfg| {
+        const generator_module = b.createModule(.{
+            .root_source_file = b.path(cfg.root),
+            .target = b.graph.host,
+            .optimize = optimize,
+        });
+        generator_module.addImport("parser", parser_module);
+        generator_module.addImport("transfer", ast_transfer_module);
 
-    const gen_estree_exe = b.addExecutable(.{
-        .name = "gen-estree-decoder",
-        .root_module = gen_estree_module,
-    });
+        const generator_exe = b.addExecutable(.{
+            .name = cfg.step,
+            .root_module = generator_module,
+        });
 
-    const run_gen_estree = b.addRunArtifact(gen_estree_exe);
-    const gen_estree_output = run_gen_estree.captureStdOut(.{});
+        const run_generator = b.addRunArtifact(generator_exe);
+        const generator_output = run_generator.captureStdOut(.{});
 
-    const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
-    gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
-
-    // estree encoder codegen (mirror of the decoder, walks an ESTree AST into a v7 buffer).
-    const estree_meta_module = b.createModule(.{
-        .root_source_file = b.path("tools/estree_meta.zig"),
-        .target = b.graph.host,
-        .optimize = optimize,
-    });
-    estree_meta_module.addImport("parser", parser_module);
-
-    gen_estree_module.addImport("estree_meta", estree_meta_module);
-
-    const gen_estree_encoder_module = b.createModule(.{
-        .root_source_file = b.path("tools/gen_estree_encoder.zig"),
-        .target = b.graph.host,
-        .optimize = optimize,
-    });
-    gen_estree_encoder_module.addImport("parser", parser_module);
-    gen_estree_encoder_module.addImport("transfer", ast_transfer_module);
-    gen_estree_encoder_module.addImport("estree_meta", estree_meta_module);
-
-    const gen_estree_encoder_exe = b.addExecutable(.{
-        .name = "gen-estree-encoder",
-        .root_module = gen_estree_encoder_module,
-    });
-
-    const run_gen_estree_encoder = b.addRunArtifact(gen_estree_encoder_exe);
-    const gen_estree_encoder_output = run_gen_estree_encoder.captureStdOut(.{});
-
-    const gen_estree_encoder_step = b.step("gen-estree-encoder", "Generate encode.js ESTree encoder from AST types");
-    gen_estree_encoder_step.dependOn(&b.addInstallFile(gen_estree_encoder_output, "encode.js").step);
+        const generator_step = b.step(cfg.step, cfg.description);
+        generator_step.dependOn(&b.addInstallFile(generator_output, cfg.output).step);
+    }
 }

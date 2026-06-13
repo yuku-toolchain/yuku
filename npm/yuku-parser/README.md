@@ -71,23 +71,12 @@ const { line, column } = result.locOf(result.program.body[0].start);
 
 Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, safe to invoke per node during a walk.
 
-When resolving many offsets in roughly source order, `locNear` is faster: it scans from a hint line instead of binary searching. Pass the previously returned `line` as the next `hintLine` so each lookup starts near the answer.
-
-```ts
-let hintLine = 1;
-for (const node of nodesInSourceOrder) {
-  const { line, column } = result.locNear(node.start, hintLine);
-  hintLine = line;
-}
-```
-
 ## Walking the AST
 
-[`yuku-ast`](https://www.npmjs.com/package/yuku-ast) is the companion toolkit built for this AST: a typed walker, node builders (`b`), type guards (`is`), and identifier validators.
+A typed, mutating walker is built in:
 
 ```ts
-import { parse } from "yuku-parser";
-import { walk } from "yuku-ast";
+import { parse, walk } from "yuku-parser";
 
 const { program } = parse(`
   const message = "hello";
@@ -98,13 +87,34 @@ walk(program, {
   Identifier(node) {
     console.log(node.name);
   },
-  VariableDeclaration(node) {
-    console.log(node.kind);
+  CallExpression: {
+    enter(node, ctx) { /* before children */ },
+    leave(node, ctx) { /* after children */ },
+  },
+  enter(node) { /* every node */ },
+});
+```
+
+The context exposes the position (`ctx.parent`, `ctx.key`, `ctx.index`, `ctx.ancestors()`), flow control (`ctx.skip()`, `ctx.stop()`), and in-place mutation:
+
+```ts
+walk(program, {
+  DebuggerStatement(node, ctx) {
+    ctx.remove();
+  },
+  Literal(node, ctx) {
+    if (node.value === 1) ctx.replace({ type: "Identifier", start: 0, end: 0, name: "ONE" });
   },
 });
 ```
 
-The AST is also standard ESTree, so any ESTree-compatible walker (e.g. [zimmerframe](https://github.com/sveltejs/zimmerframe)) works just as well.
+`ctx.replace(node)` continues the walk into the replacement, `ctx.remove()` skips the removed subtree, `ctx.insertBefore(node)` inserts a sibling without visiting it, and `ctx.insertAfter(node)` inserts one the walk will visit. An optional third argument threads state to every handler as `ctx.state`.
+
+The AST is also standard ESTree, so any ESTree-compatible walker works as well.
+
+## Semantic analysis
+
+[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) builds on this parser and adds full semantics: scopes, symbols, resolved references, closure analysis, and cross-file module linking, computed natively in the same pass. Its walk carries the semantic model in context (`ctx.scope`, `ctx.symbol`, `ctx.reference`). See the [analyzer documentation](https://yuku.fyi/analyzer).
 
 ## Options
 
@@ -141,7 +151,6 @@ interface ParseResult {
   diagnostics: Diagnostic[];
   lineStarts: number[];
   locOf(offset: number): { line: number; column: number };
-  locNear(offset: number, hintLine: number): { line: number; column: number };
 }
 ```
 

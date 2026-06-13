@@ -1,7 +1,7 @@
 const std = @import("std");
 const napi = @import("napi-zig");
 const parser = @import("parser");
-const transfer = @import("transfer.zig");
+const transfer = @import("transfer/root.zig");
 
 const Options = struct {
     format: parser.codegen.Format = .pretty,

@@ -1,4 +1,0 @@
-const a = "</script>";
-const b = "<!-- c -->";
-const c = `</script>${1}`;
-const d = "x-->y";

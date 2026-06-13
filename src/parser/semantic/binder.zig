@@ -104,8 +104,17 @@ pub const Symbol = struct {
         }
     };
 
-    // declarations that live in js value space (visible at runtime)
-    const value_space: Flags = .{
+    // composite flag sets. the decoder reflects these into the JS
+    // `SymbolFlags` composites, so the two can never drift.
+
+    /// `var` / `let` / `const`, parameters and catch bindings included.
+    pub const variable: Flags = .{ .function_scoped_var = true, .block_scoped_var = true };
+
+    /// any import binding: value (`import x`) or type-only (`import type x`).
+    pub const any_import: Flags = .{ .import = true, .type_import = true };
+
+    /// declarations that live in js value space (visible at runtime).
+    pub const value_space: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
         .function = true,
@@ -115,8 +124,8 @@ pub const Symbol = struct {
         .value_module = true,
     };
 
-    // declarations that live in ts type space
-    const type_space: Flags = .{
+    /// declarations that live in ts type space.
+    pub const type_space: Flags = .{
         .class = true,
         .regular_enum = true,
         .const_enum = true,
@@ -229,6 +238,11 @@ pub const Reference = struct {
     /// `.value` for runtime uses, `.type` for type-position uses
     /// (annotations, `extends`, `implements`, type arguments).
     kind: Kind = .value,
+    /// True when this reference (re)assigns its binding: the target of an
+    /// assignment, the operand of `++`/`--`, the iteration variable of
+    /// for-in/for-of, or a destructuring assignment leaf. Compound targets
+    /// (`+=`, `++`) both read and write.
+    is_write: bool = false,
 
     pub const Kind = enum(u1) { value, type };
 };
@@ -556,6 +570,8 @@ pub const SymbolTracker = struct {
     /// Whether the next `binding_identifier` is the directly-exported
     /// name of an `export` declaration.
     export_state: ExportState = .none,
+    /// True inside an ambient context
+    ambient: bool = false,
 
     saved_stack: std.ArrayList(SavedContext) = .empty,
 
@@ -563,20 +579,26 @@ pub const SymbolTracker = struct {
 
     const DeclPair = struct { sid: SymbolId, node: ast.NodeIndex };
 
-    /// Snapshot of the four context fields, taken before a mutator
-    /// rewrites them so the mutator's exit can restore the prior state.
+    /// Snapshot of the context fields, taken before a mutator rewrites
+    /// them so the mutator's exit can restore the prior state.
     pub const SavedContext = struct {
         flags: Symbol.Flags,
         excludes: Symbol.Flags,
         target: sc.ScopeId,
         export_state: ExportState,
+        ambient: bool,
     };
 
     pub fn init(tree: *ast.Tree) Allocator.Error!SymbolTracker {
         std.debug.assert(tree.root != .null);
 
         const alloc = tree.allocator();
-        var self = SymbolTracker{ .tree = tree, .allocator = alloc };
+        var self = SymbolTracker{
+            .tree = tree,
+            .allocator = alloc,
+            // a declaration file is ambient in its entirety
+            .ambient = tree.lang == .dts,
+        };
 
         const nodes: u32 = @intCast(tree.nodes.len);
         try self.symbols.ensureTotalCapacity(alloc, @max(16, nodes / 12));
@@ -618,17 +640,27 @@ pub const SymbolTracker = struct {
                 try self.pushSavedContext();
                 switch (decl.kind) {
                     .@"var" => {
-                        self.binding_flags = .{ .function_scoped_var = true };
+                        self.binding_flags = .{
+                            .function_scoped_var = true,
+                            .ambient = decl.declare or self.ambient,
+                        };
                         self.binding_excludes = Symbol.Excludes.function_var;
                         self.target = scope.currentHoistScopeId();
                     },
                     .@"const", .using, .await_using => {
-                        self.binding_flags = .{ .block_scoped_var = true, .const_var = true };
+                        self.binding_flags = .{
+                            .block_scoped_var = true,
+                            .const_var = true,
+                            .ambient = decl.declare or self.ambient,
+                        };
                         self.binding_excludes = Symbol.Excludes.block_var;
                         self.target = scope.currentScopeId();
                     },
                     .let => {
-                        self.binding_flags = .{ .block_scoped_var = true };
+                        self.binding_flags = .{
+                            .block_scoped_var = true,
+                            .ambient = decl.declare or self.ambient,
+                        };
                         self.binding_excludes = Symbol.Excludes.block_var;
                         self.target = scope.currentScopeId();
                     },
@@ -639,7 +671,8 @@ pub const SymbolTracker = struct {
                 try self.pushSavedContext();
                 const ambient = func.declare or
                     func.type == .ts_declare_function or
-                    func.type == .ts_empty_body_function_expression;
+                    func.type == .ts_empty_body_function_expression or
+                    self.ambient;
                 self.binding_flags = .{ .function = true, .ambient = ambient };
                 const is_decl = func.type == .function_declaration or
                     func.type == .ts_declare_function;
@@ -663,7 +696,10 @@ pub const SymbolTracker = struct {
 
             .class => |cls| {
                 try self.pushSavedContext();
-                self.binding_flags = .{ .class = true, .ambient = cls.declare };
+                self.binding_flags = .{
+                    .class = true,
+                    .ambient = cls.declare or self.ambient,
+                };
                 self.binding_excludes = Symbol.Excludes.class;
                 const is_decl = cls.type == .class_declaration;
                 self.target = if (is_decl) scope.currentScope().parent else exprNameScope(scope);
@@ -715,14 +751,20 @@ pub const SymbolTracker = struct {
             // and body bindings live in a scope pushed by the tracker.
             .ts_interface_declaration => |decl| {
                 try self.pushSavedContext();
-                self.binding_flags = .{ .interface = true, .ambient = decl.declare };
+                self.binding_flags = .{
+                    .interface = true,
+                    .ambient = decl.declare or self.ambient,
+                };
                 self.binding_excludes = Symbol.Excludes.interface;
                 self.target = scope.currentScope().parent;
             },
 
             .ts_type_alias_declaration => |decl| {
                 try self.pushSavedContext();
-                self.binding_flags = .{ .type_alias = true, .ambient = decl.declare };
+                self.binding_flags = .{
+                    .type_alias = true,
+                    .ambient = decl.declare or self.ambient,
+                };
                 self.binding_excludes = Symbol.Excludes.type_alias;
                 self.target = scope.currentScope().parent;
             },
@@ -730,10 +772,16 @@ pub const SymbolTracker = struct {
             .ts_enum_declaration => |decl| {
                 try self.pushSavedContext();
                 if (decl.is_const) {
-                    self.binding_flags = .{ .const_enum = true, .ambient = decl.declare };
+                    self.binding_flags = .{
+                        .const_enum = true,
+                        .ambient = decl.declare or self.ambient,
+                    };
                     self.binding_excludes = Symbol.Excludes.const_enum;
                 } else {
-                    self.binding_flags = .{ .regular_enum = true, .ambient = decl.declare };
+                    self.binding_flags = .{
+                        .regular_enum = true,
+                        .ambient = decl.declare or self.ambient,
+                    };
                     self.binding_excludes = Symbol.Excludes.regular_enum;
                 }
                 self.target = scope.currentScopeId();
@@ -747,13 +795,16 @@ pub const SymbolTracker = struct {
                 self.binding_flags = .{
                     .value_module = instantiated,
                     .namespace_module = true,
-                    .ambient = decl.declare,
+                    .ambient = decl.declare or self.ambient,
                 };
                 self.binding_excludes = if (instantiated)
                     Symbol.Excludes.value_module
                 else
                     Symbol.Excludes.namespace_module;
                 self.target = scope.currentScopeId();
+                // `declare namespace` / `declare module` make their whole
+                // body ambient, the way ts treats ambient contexts
+                if (decl.declare) self.ambient = true;
             },
 
             .ts_namespace_export_declaration => {
@@ -784,8 +835,20 @@ pub const SymbolTracker = struct {
             .excludes = self.binding_excludes,
             .target = self.target,
             .export_state = self.export_state,
+            .ambient = self.ambient,
         });
     }
+
+    /// Per-node facts computed by the walker for `declareBindings`. The
+    /// walker owns the path stack, so position-dependent classification
+    /// (type position, assignment-target position) happens there and
+    /// arrives here as plain flags.
+    pub const RefContext = struct {
+        /// inside a TS type-only subtree
+        in_type_position: bool,
+        /// the node is an identifier in assignment-target position
+        is_write: bool,
+    };
 
     /// Materializes the pending binding context into a symbol (for
     /// `binding_identifier`) or records a reference (for
@@ -796,7 +859,7 @@ pub const SymbolTracker = struct {
         index: ast.NodeIndex,
         data: ast.NodeData,
         scope: *const sc.ScopeTracker,
-        in_type_position: bool,
+        ref_ctx: RefContext,
     ) Allocator.Error!void {
         if (self.scope_maps.items.len < scope.scopes.items.len)
             try self.syncScopeMaps(scope);
@@ -806,7 +869,7 @@ pub const SymbolTracker = struct {
                 // type-position identifiers are parameter labels (function
                 // type, index signature, etc.). only type parameters are
                 // real declarations here.
-                if (in_type_position and !self.binding_flags.type_parameter) return;
+                if (ref_ctx.in_type_position and !self.binding_flags.type_parameter) return;
 
                 const sym_id = try self.declare(
                     id.name,
@@ -829,8 +892,14 @@ pub const SymbolTracker = struct {
                 }
             },
             .identifier_reference => |id| {
-                const kind: Reference.Kind = if (in_type_position) .type else .value;
-                _ = try self.addReference(id.name, scope.currentScopeId(), index, kind);
+                const kind: Reference.Kind = if (ref_ctx.in_type_position) .type else .value;
+                _ = try self.addReference(
+                    id.name,
+                    scope.currentScopeId(),
+                    index,
+                    kind,
+                    ref_ctx.is_write,
+                );
             },
             // `param is T` / `asserts param is T`: the `param` is parsed as
             // an `identifier_name` (the AST shape downstream FFI consumers
@@ -841,12 +910,13 @@ pub const SymbolTracker = struct {
                 if (pred.parameter_name == .null) return;
                 const pname = self.tree.data(pred.parameter_name);
                 if (pname != .identifier_name) return;
-                const kind: Reference.Kind = if (in_type_position) .type else .value;
+                const kind: Reference.Kind = if (ref_ctx.in_type_position) .type else .value;
                 _ = try self.addReference(
                     pname.identifier_name.name,
                     scope.currentScopeId(),
                     pred.parameter_name,
                     kind,
+                    false,
                 );
             },
             // jsx tag names: `<Foo>`, `<Foo.Bar>`, `</Foo>`. the leftmost
@@ -864,6 +934,7 @@ pub const SymbolTracker = struct {
                             scope.currentScopeId(),
                             root_idx,
                             .value,
+                            false,
                         );
                     }
                 }
@@ -882,6 +953,7 @@ pub const SymbolTracker = struct {
                     self.binding_flags = saved.flags;
                     self.binding_excludes = saved.excludes;
                     self.target = saved.target;
+                    self.ambient = saved.ambient;
                 }
             },
 
@@ -905,6 +977,7 @@ pub const SymbolTracker = struct {
                     self.binding_excludes = saved.excludes;
                     self.target = saved.target;
                     self.export_state = saved.export_state;
+                    self.ambient = saved.ambient;
                 }
             },
 
@@ -959,13 +1032,15 @@ pub const SymbolTracker = struct {
     }
 
     /// Records an identifier reference in `scope`. The kind tags it as
-    /// value-position or type-position for rename-aware tooling.
+    /// value-position or type-position, `is_write` as assignment-target
+    /// position, both for rename-aware and data-flow tooling.
     pub fn addReference(
         self: *SymbolTracker,
         name: String,
         scope: sc.ScopeId,
         node: ast.NodeIndex,
         kind: Reference.Kind,
+        is_write: bool,
     ) Allocator.Error!ReferenceId {
         std.debug.assert(scope != .none);
         std.debug.assert(node != .null);
@@ -977,6 +1052,7 @@ pub const SymbolTracker = struct {
             .scope = scope,
             .node = node,
             .kind = kind,
+            .is_write = is_write,
         });
         return id;
     }

@@ -355,17 +355,11 @@ const Modifiers = struct {
     readonly: bool = false,
     accessibility: ast.Accessibility = .none,
 
-    // whether `tag` would apply a modifier already carried. duplicate
-    // modifiers are reinterpreted as the key name, not flagged as errors.
-    // every tag returned `true` by `isModifier` must be handled here and in
-    // `set`, otherwise this hits `unreachable` on a real input.
-    fn has(m: Modifiers, tag: TokenTag) bool {
+    fn conflicts(m: Modifiers, tag: TokenTag) bool {
         return switch (tag) {
+            .async, .get, .set => m.is_async or m.kind != .method,
             .static => m.is_static,
-            .async => m.is_async,
             .accessor => m.is_accessor,
-            .get => m.kind == .get,
-            .set => m.kind == .set,
             .declare => m.declare,
             .abstract => m.abstract,
             .override => m.override,
@@ -416,7 +410,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
     const is_modifier =
         canStartElementKey(next.tag) and
         !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
-        !mods.has(token.tag);
+        !mods.conflicts(token.tag);
 
     if (!is_modifier) {
         try parser.advanceWithoutEscapeCheck() orelse return .none;

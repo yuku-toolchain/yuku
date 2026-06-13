@@ -1,0 +1,651 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 1055,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 494,
+        "end": 501,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 494,
+          "end": 500,
+          "left": {
+            "type": "TSNonNullExpression",
+            "start": 494,
+            "end": 496,
+            "expression": {
+              "type": "Identifier",
+              "start": 494,
+              "end": 495,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 499,
+            "end": 500,
+            "name": "b",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 502,
+        "end": 512,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 502,
+          "end": 511,
+          "left": {
+            "type": "ArrayPattern",
+            "start": 502,
+            "end": 506,
+            "elements": [
+              {
+                "type": "TSNonNullExpression",
+                "start": 503,
+                "end": 505,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 503,
+                  "end": 504,
+                  "name": "a",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                }
+              }
+            ],
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 509,
+            "end": 511,
+            "name": "xs",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 513,
+        "end": 529,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 513,
+          "end": 528,
+          "expression": {
+            "type": "AssignmentExpression",
+            "start": 514,
+            "end": 527,
+            "left": {
+              "type": "ObjectPattern",
+              "start": 514,
+              "end": 523,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 516,
+                  "end": 521,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 516,
+                    "end": 517,
+                    "name": "p",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "value": {
+                    "type": "TSNonNullExpression",
+                    "start": 519,
+                    "end": 521,
+                    "expression": {
+                      "type": "Identifier",
+                      "start": 519,
+                      "end": 520,
+                      "name": "a",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    }
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false,
+                  "optional": false
+                }
+              ],
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "right": {
+              "type": "Identifier",
+              "start": 526,
+              "end": 527,
+              "name": "o",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "operator": "="
+          }
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 530,
+        "end": 539,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 530,
+          "end": 538,
+          "left": {
+            "type": "TSNonNullExpression",
+            "start": 530,
+            "end": 534,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 530,
+              "end": 533,
+              "object": {
+                "type": "Identifier",
+                "start": 530,
+                "end": 531,
+                "name": "o",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 532,
+                "end": 533,
+                "name": "p",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "computed": false,
+              "optional": false
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 537,
+            "end": 538,
+            "name": "b",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 603,
+        "end": 616,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 603,
+          "end": 615,
+          "left": {
+            "type": "TSAsExpression",
+            "start": 604,
+            "end": 610,
+            "expression": {
+              "type": "Identifier",
+              "start": 604,
+              "end": 605,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeAnnotation": {
+              "type": "TSTypeReference",
+              "start": 609,
+              "end": 610,
+              "typeName": {
+                "type": "Identifier",
+                "start": 609,
+                "end": 610,
+                "name": "T",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeArguments": null
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 614,
+            "end": 615,
+            "name": "b",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 617,
+        "end": 631,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 617,
+          "end": 630,
+          "left": {
+            "type": "ArrayPattern",
+            "start": 617,
+            "end": 625,
+            "elements": [
+              {
+                "type": "TSAsExpression",
+                "start": 618,
+                "end": 624,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 618,
+                  "end": 619,
+                  "name": "a",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "typeAnnotation": {
+                  "type": "TSTypeReference",
+                  "start": 623,
+                  "end": 624,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 623,
+                    "end": 624,
+                    "name": "T",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              }
+            ],
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 628,
+            "end": 630,
+            "name": "xs",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 632,
+        "end": 643,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 632,
+          "end": 642,
+          "left": {
+            "type": "TSTypeAssertion",
+            "start": 633,
+            "end": 637,
+            "typeAnnotation": {
+              "type": "TSTypeReference",
+              "start": 634,
+              "end": 635,
+              "typeName": {
+                "type": "Identifier",
+                "start": 634,
+                "end": 635,
+                "name": "T",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeArguments": null
+            },
+            "expression": {
+              "type": "Identifier",
+              "start": 636,
+              "end": 637,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 641,
+            "end": 642,
+            "name": "c",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 644,
+        "end": 664,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 644,
+          "end": 663,
+          "left": {
+            "type": "TSSatisfiesExpression",
+            "start": 645,
+            "end": 658,
+            "expression": {
+              "type": "Identifier",
+              "start": 645,
+              "end": 646,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeAnnotation": {
+              "type": "TSTypeReference",
+              "start": 657,
+              "end": 658,
+              "typeName": {
+                "type": "Identifier",
+                "start": 657,
+                "end": 658,
+                "name": "T",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeArguments": null
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 662,
+            "end": 663,
+            "name": "b",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 733,
+        "end": 742,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 733,
+          "end": 741,
+          "left": {
+            "type": "TSNonNullExpression",
+            "start": 734,
+            "end": 736,
+            "expression": {
+              "type": "Identifier",
+              "start": 734,
+              "end": 735,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 740,
+            "end": 741,
+            "name": "b",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 890,
+        "end": 899,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 890,
+          "end": 898,
+          "left": {
+            "type": "TSNonNullExpression",
+            "start": 890,
+            "end": 894,
+            "expression": {
+              "type": "CallExpression",
+              "start": 890,
+              "end": 893,
+              "callee": {
+                "type": "Identifier",
+                "start": 890,
+                "end": 891,
+                "name": "f",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "arguments": [],
+              "optional": false,
+              "typeArguments": null
+            }
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 897,
+            "end": 898,
+            "name": "b",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1038,
+        "end": 1054,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1044,
+            "end": 1053,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 1044,
+              "end": 1048,
+              "elements": [
+                {
+                  "type": "TSNonNullExpression",
+                  "start": 1045,
+                  "end": 1047,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 1045,
+                    "end": 1046,
+                    "name": "d",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                }
+              ],
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 1051,
+              "end": 1053,
+              "name": "xs",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " TypeScript assertion wrappers as assignment targets.",
+      "start": 0,
+      "end": 55
+    },
+    {
+      "type": "Line",
+      "value": "",
+      "start": 56,
+      "end": 58
+    },
+    {
+      "type": "Line",
+      "value": " `a!`, `a as T`, `<T>a`, and `a satisfies T` are valid simple assignment",
+      "start": 59,
+      "end": 133
+    },
+    {
+      "type": "Line",
+      "value": " targets so long as what they wrap is itself a simple target (an identifier",
+      "start": 134,
+      "end": 211
+    },
+    {
+      "type": "Line",
+      "value": " or member access). yuku must accept these in assignable position, matching",
+      "start": 212,
+      "end": 289
+    },
+    {
+      "type": "Line",
+      "value": " tsc and oxc. Regression guard for `grammar.expressionToPattern`, which used",
+      "start": 290,
+      "end": 368
+    },
+    {
+      "type": "Line",
+      "value": " to reject every bare assertion in pattern position.",
+      "start": 369,
+      "end": 423
+    },
+    {
+      "type": "Line",
+      "value": " valid: non-null assertion wrapping an identifier or member access",
+      "start": 425,
+      "end": 493
+    },
+    {
+      "type": "Line",
+      "value": " valid: type assertions and `satisfies` behave the same way",
+      "start": 541,
+      "end": 602
+    },
+    {
+      "type": "Line",
+      "value": " valid: a parenthesized assertion is equivalent to the bare form",
+      "start": 666,
+      "end": 732
+    },
+    {
+      "type": "Line",
+      "value": " invalid: the assertion wraps something that is not a simple target, so the",
+      "start": 744,
+      "end": 821
+    },
+    {
+      "type": "Line",
+      "value": " whole expression is still not assignable (oxc rejects this too).",
+      "start": 822,
+      "end": 889
+    },
+    {
+      "type": "Line",
+      "value": " invalid: assertions may only appear in assignment targets, never in a",
+      "start": 901,
+      "end": 973
+    },
+    {
+      "type": "Line",
+      "value": " binding pattern such as a `const` destructuring declaration.",
+      "start": 974,
+      "end": 1037
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Invalid assignment target",
+      "start": 890,
+      "end": 894,
+      "help": "The expression behind a non-null or type assertion must itself be a simple assignment target, like an identifier or member access, not a call or other expression.",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "TypeScript assertion is not allowed in binding pattern",
+      "start": 1045,
+      "end": 1047,
+      "help": "Non-null ('!') and type ('as', 'satisfies', '<T>') assertions can only appear in assignment targets.",
+      "labels": []
+    }
+  ]
+}

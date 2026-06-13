@@ -398,11 +398,6 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
     return false;
 }
 
-/// parses `this` or `this: Type` as a parameter. emitted inside the
-/// regular `FormalParameter` wrapper so signature walks, span tracking,
-/// and the decoder's `formal_parameter` unwrap rule keep working. the
-/// inner `TSThisParameter` renders in ESTree as an `Identifier` named
-/// `this`, matching the @typescript-eslint/typescript-estree convention.
 fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
