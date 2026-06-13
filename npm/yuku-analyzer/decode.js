@@ -231,7 +231,7 @@ const SymbolFlags = Object.freeze({
   ValueSpace: 127,
   TypeSpace: 952,
 });
-const SCAN_CHILDREN = [
+const CHILD_SLOTS = [
   [2, 2],
   [0, 2],
   [0, 2, 0, 3, 0, 4, 0, 5],
@@ -404,185 +404,179 @@ const SCAN_CHILDREN = [
   [],
   [0, 2],
 ];
-const TAG_TYPES = [
-  "SequenceExpression",
-  "ParenthesizedExpression",
-  "ArrowFunctionExpression",
-  0,
-  "BlockStatement",
-  "BlockStatement",
-  null,
-  null,
-  "BinaryExpression",
-  "LogicalExpression",
-  "ConditionalExpression",
-  "UnaryExpression",
-  "UpdateExpression",
-  "AssignmentExpression",
-  "ArrayExpression",
-  "ObjectExpression",
-  "SpreadElement",
-  "Property",
-  "MemberExpression",
-  "CallExpression",
-  "ChainExpression",
-  "TaggedTemplateExpression",
-  "NewExpression",
-  "AwaitExpression",
-  "YieldExpression",
-  "MetaProperty",
-  "Decorator",
-  0,
-  "ClassBody",
-  0,
-  0,
-  "StaticBlock",
-  "Super",
-  "Literal",
-  "Literal",
-  "Literal",
-  "Literal",
-  "Literal",
-  "ThisExpression",
-  "Literal",
-  "TemplateLiteral",
-  "TemplateElement",
-  "Identifier",
-  "PrivateIdentifier",
-  "Identifier",
-  "Identifier",
-  "Identifier",
-  "ExpressionStatement",
-  "IfStatement",
-  "SwitchStatement",
-  "SwitchCase",
-  "ForStatement",
-  "ForInStatement",
-  "ForOfStatement",
-  "WhileStatement",
-  "DoWhileStatement",
-  "BreakStatement",
-  "ContinueStatement",
-  "LabeledStatement",
-  "WithStatement",
-  "ReturnStatement",
-  "ThrowStatement",
-  "TryStatement",
-  "CatchClause",
-  "DebuggerStatement",
-  "EmptyStatement",
-  "VariableDeclaration",
-  "VariableDeclarator",
-  "ExpressionStatement",
-  "AssignmentPattern",
-  "RestElement",
-  "ArrayPattern",
-  "ObjectPattern",
-  "Property",
-  "Program",
-  "ImportExpression",
-  "ImportDeclaration",
-  "ImportSpecifier",
-  "ImportDefaultSpecifier",
-  "ImportNamespaceSpecifier",
-  "ImportAttribute",
-  "ExportNamedDeclaration",
-  "ExportDefaultDeclaration",
-  "ExportAllDeclaration",
-  "ExportSpecifier",
-  "TSTypeAnnotation",
-  "TSAnyKeyword",
-  "TSUnknownKeyword",
-  "TSNeverKeyword",
-  "TSVoidKeyword",
-  "TSNullKeyword",
-  "TSUndefinedKeyword",
-  "TSStringKeyword",
-  "TSNumberKeyword",
-  "TSBigIntKeyword",
-  "TSBooleanKeyword",
-  "TSSymbolKeyword",
-  "TSObjectKeyword",
-  "TSIntrinsicKeyword",
-  "TSThisType",
-  "TSTypeReference",
-  "TSQualifiedName",
-  "TSTypeQuery",
-  "TSImportType",
-  "TSTypeParameter",
-  "TSTypeParameterDeclaration",
-  "TSTypeParameterInstantiation",
-  "TSLiteralType",
-  "TSTemplateLiteralType",
-  "TSArrayType",
-  "TSIndexedAccessType",
-  "TSTupleType",
-  "TSNamedTupleMember",
-  "TSOptionalType",
-  "TSRestType",
-  "TSJSDocNullableType",
-  "TSJSDocNonNullableType",
-  "TSJSDocUnknownType",
-  "TSUnionType",
-  "TSIntersectionType",
-  "TSConditionalType",
-  "TSInferType",
-  "TSTypeOperator",
-  "TSParenthesizedType",
-  "TSFunctionType",
-  "TSConstructorType",
-  "TSTypePredicate",
-  "TSTypeLiteral",
-  "TSMappedType",
-  "TSPropertySignature",
-  "TSMethodSignature",
-  "TSCallSignatureDeclaration",
-  "TSConstructSignatureDeclaration",
-  "TSIndexSignature",
-  "TSTypeAliasDeclaration",
-  "TSInterfaceDeclaration",
-  "TSInterfaceBody",
-  "TSInterfaceHeritage",
-  "TSClassImplements",
-  "TSEnumDeclaration",
-  "TSEnumBody",
-  "TSEnumMember",
-  "TSModuleDeclaration",
-  "TSModuleBlock",
-  "TSModuleDeclaration",
-  "TSParameterProperty",
-  "Identifier",
-  "TSAsExpression",
-  "TSSatisfiesExpression",
-  "TSTypeAssertion",
-  "TSNonNullExpression",
-  "TSInstantiationExpression",
-  "TSExportAssignment",
-  "TSNamespaceExportDeclaration",
-  "TSImportEqualsDeclaration",
-  "TSExternalModuleReference",
-  "JSXElement",
-  "JSXOpeningElement",
-  "JSXClosingElement",
-  "JSXFragment",
-  "JSXOpeningFragment",
-  "JSXClosingFragment",
-  "JSXIdentifier",
-  "JSXNamespacedName",
-  "JSXMemberExpression",
-  "JSXAttribute",
-  "JSXSpreadAttribute",
-  "JSXExpressionContainer",
-  "JSXEmptyExpression",
-  "JSXText",
-  "JSXSpreadChild",
+const IS_NODE = [
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  false,
+  false,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
 ];
-const TAG_CHOICES = new Map([
-  [3, ["FunctionDeclaration", "FunctionExpression", "TSDeclareFunction", "TSEmptyBodyFunctionExpression"]],
-  [27, ["ClassDeclaration", "ClassExpression"]],
-  [29, ["MethodDefinition", "TSAbstractMethodDefinition"]],
-  [30, ["PropertyDefinition", "AccessorProperty", "TSAbstractPropertyDefinition", "TSAbstractAccessorProperty"]],
-]);
 function buildPosMap(src, byteLen, startByte) {
   const m = new Uint32Array(byteLen - startByte + 1);
   const len = src.length;
@@ -1236,104 +1230,6 @@ function decode(buffer, source) {
     }
     return out;
   }
-  function _scanType(tag, flags) {
-    switch (tag) {
-      case 3: return FUNCTION_TYPES[flags & 3];
-      case 27: return CLASS_TYPES[flags & 1];
-      case 29:
-        return _isTs && (flags & 64)
-          ? "TSAbstractMethodDefinition"
-          : "MethodDefinition";
-      default: {
-        const acc = (flags & 4) !== 0;
-        if (_isTs && (flags & 256)) {
-          return acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition";
-        }
-        return acc ? "AccessorProperty" : "PropertyDefinition";
-      }
-    }
-  }
-  function scan(visitors) {
-    const handlers = new Map();
-    let every = null;
-    for (const k of Object.keys(visitors)) {
-      const v = visitors[k];
-      if (typeof v !== "function") continue;
-      if (k === "enter") every = v;
-      else handlers.set(k, v);
-    }
-    const wanted = new Array(TAG_TYPES.length).fill(null);
-    for (let t = 0; t < TAG_TYPES.length; t++) {
-      const tt = TAG_TYPES[t];
-      if (tt === null) continue;
-      if (tt === 0) {
-        for (const c of TAG_CHOICES.get(t)) {
-          if (handlers.has(c)) { wanted[t] = 0; break; }
-        }
-      } else {
-        const h = handlers.get(tt);
-        if (h !== undefined) wanted[t] = h;
-      }
-    }
-    let stopFlag = false, skipFlag = false;
-    let curIndex = 0, curO = 0, curTag = 0;
-    const cursor = {
-      get index() { return curIndex; },
-      get type() {
-        const t = TAG_TYPES[curTag];
-        return t !== 0 ? t : _scanType(curTag, _u8[curO + 2] | (_u8[curO + 3] << 8));
-      },
-      get start() { return startOf(curIndex); },
-      get end() { return endOf(curIndex); },
-      node() { return node(curIndex); },
-      skip() { skipFlag = true; },
-      stop() { stopFlag = true; },
-    };
-    (function visit(i) {
-      const o = _nodesOff + i * 48;
-      const tag = _u8[o];
-      let h = wanted[tag];
-      if (h !== null || every !== null) {
-        curIndex = i; curO = o; curTag = tag;
-        if (h === 0) {
-          h = handlers.get(_scanType(tag, _u8[o + 2] | (_u8[o + 3] << 8))) ?? null;
-        }
-        if (every !== null && TAG_TYPES[tag] !== null) {
-          every(cursor);
-          if (stopFlag) return;
-        }
-        if (h !== null) {
-          h(cursor);
-          if (stopFlag) return;
-        }
-        if (skipFlag) { skipFlag = false; return; }
-      }
-      const ops = SCAN_CHILDREN[tag];
-      const b = o >> 2;
-      for (let p = 0; p < ops.length; p += 2) {
-        const slot = ops[p + 1];
-        if (ops[p] === 0) {
-          const c = _u32[b + slot];
-          if (c !== NULL) {
-            visit(c);
-            if (stopFlag) return;
-          }
-        } else {
-          const s = _u32[b + slot];
-          const len = ops[p] === 1
-            ? _u32[b + slot + 1]
-            : _u8[o + 4] | (_u8[o + 5] << 8);
-          for (let j = 0; j < len; j++) {
-            const c = _u32[_extraBase + s + j];
-            if (c !== NULL) {
-              visit(c);
-              if (stopFlag) return;
-            }
-          }
-        }
-      }
-    })(progIdx);
-  }
   let _parentArr;
   function _parents() {
     if (_parentArr !== undefined) return _parentArr;
@@ -1341,8 +1237,8 @@ function decode(buffer, source) {
     (function visit(i, parent) {
       const o = _nodesOff + i * 48;
       const tag = _u8[o];
-      if (TAG_TYPES[tag] !== null) { p[i] = parent; parent = i; }
-      const ops = SCAN_CHILDREN[tag];
+      if (IS_NODE[tag]) { p[i] = parent; parent = i; }
+      const ops = CHILD_SLOTS[tag];
       const b = o >> 2;
       for (let q = 0; q < ops.length; q += 2) {
         const slot = ops[q + 1];
@@ -1488,7 +1384,6 @@ function decode(buffer, source) {
       }
       return { line: lo, column: offset - ls[lo - 1] };
     },
-    scan,
     nodeOf: node,
     indexOf: (n) => _nodeIndexes.get(n),
     parentIndex: (i) => _parents()[i],

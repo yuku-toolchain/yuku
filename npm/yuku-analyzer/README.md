@@ -89,21 +89,6 @@ module.walk({
 
 The walk mutates in place: `ctx.replace(node)`, `ctx.remove()`, `ctx.insertBefore(node)`, `ctx.insertAfter(node)`, plus `ctx.skip()` and `ctx.stop()`. Transform the AST during the walk and print it with [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen).
 
-## Scanning without building the AST
-
-`module.scan` visits the parsed node records directly in the binary buffer. Nothing is materialized unless you ask for it, and symbols and references resolve in index space:
-
-```js
-const writes = [];
-module.scan({
-  Identifier(cursor) {
-    if (cursor.reference?.isWrite) writes.push(cursor.reference.name);
-  },
-});
-```
-
-This answers questions like "every write to an imported binding across 10,000 files" without constructing a single AST object. For semantic queries like this, scanning runs about 4x faster than the equivalent walk, since it never builds the AST. Scan to find, walk to change.
-
 ## Closure analysis
 
 `capturesOf` reports the free variables of any function: every outer binding it closes over, with the capturing reference sites and whether the function writes to the binding. Shadowing and aliasing are handled by the resolved reference table, not by name matching:

@@ -28,7 +28,7 @@ pub fn generate(w: *Writer, mode: Mode) !void {
     // analyzer vendors; emit it in both modes so neither has to import it.
     try writeChildKeys(w);
     if (mode == .analyzer) try writeSemanticConstants(w);
-    try writeScanTables(w);
+    if (mode == .analyzer) try writeChildTables(w);
     try writeBuildPosMap(w);
     try writeDecodeOpen(w);
     try writeNodeFunction(w, mode);
@@ -433,8 +433,7 @@ fn writeArrayRaw(w: *Writer, name: []const u8, items: []const []const u8) !void 
 
 // `special_child_keys`, the registry of every special-shaped variant, its
 // ESTree types and traversal-order child keys. generic variants reflect
-// their structs (every NodeIndex/IndexRange field is a child). this one
-// table also defines `isSpecial`, `TAG_TYPES`, and `TAG_CHOICES`.
+// their structs (every NodeIndex/IndexRange field is a child).
 
 /// Child keys of a special-shaped variant. `types` lists every ESTree
 /// `type` it can render as, empty meaning transparent (never a node itself).
@@ -556,21 +555,9 @@ fn writeChildKeys(w: *Writer) !void {
     try w.writeAll("_ck(\"Hashbang\", []);\n");
 }
 
-// scan tables, fully reflected. SCAN_CHILDREN[tag] = flat (kind, slot)
-// pairs. kind 0 single NodeIndex, 1 range (len in next slot), 2 first
-// range (len in f0). TAG_TYPES[tag] = ESTree type string, `0` if flag-
-// dependent (see `_scanType`), `null` if transparent.
-
-fn tagOf(comptime name: []const u8) usize {
-    inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, i| {
-        if (comptime std.mem.eql(u8, field.name, name)) return i;
-    }
-    @compileError("unknown variant: " ++ name);
-}
-
-fn writeScanTables(w: *Writer) !void {
+fn writeChildTables(w: *Writer) !void {
     @setEvalBranchQuota(1_000_000);
-    try w.writeAll("const SCAN_CHILDREN = [\n");
+    try w.writeAll("const CHILD_SLOTS = [\n");
     inline for (@typeInfo(ast.NodeData).@"union".fields) |field| {
         try w.writeAll("  [");
         if (@typeInfo(field.type) == .@"struct") {
@@ -596,36 +583,15 @@ fn writeScanTables(w: *Writer) !void {
     }
     try w.writeAll("];\n");
 
-    try w.writeAll("const TAG_TYPES = [\n");
+    try w.writeAll("const IS_NODE = [\n");
     inline for (@typeInfo(ast.NodeData).@"union".fields) |field| {
-        if (comptime specialChildKeysOf(field.name)) |entry| {
-            switch (entry.types.len) {
-                0 => try w.writeAll("  null,\n"),
-                1 => try w.print("  \"{s}\",\n", .{entry.types[0]}),
-                else => try w.writeAll("  0,\n"),
-            }
-        } else {
-            try w.print("  \"{s}\",\n", .{comptime meta.estreeType(field.name)});
-        }
+        const materialized = comptime if (specialChildKeysOf(field.name)) |entry|
+            entry.types.len != 0
+        else
+            true;
+        try w.print("  {},\n", .{materialized});
     }
     try w.writeAll("];\n");
-
-    // flag-dependent tags (TAG_TYPES === 0) map to their possible types,
-    // straight from special_child_keys, every multi-type special variant.
-    try w.writeAll("const TAG_CHOICES = new Map([\n");
-    inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, tag| {
-        if (comptime specialChildKeysOf(field.name)) |entry| {
-            if (entry.types.len > 1) {
-                try w.print("  [{d}, [", .{tag});
-                inline for (entry.types, 0..) |t, i| {
-                    if (i > 0) try w.writeAll(", ");
-                    try w.print("\"{s}\"", .{t});
-                }
-                try w.writeAll("]],\n");
-            }
-        }
-    }
-    try w.writeAll("]);\n");
 }
 
 // node cases. for each union variant the generator emits a `case` body.
@@ -1357,7 +1323,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         .c_se = rt.COMMENT_SPAN_END_OFFSET,
     });
 
-    try writeScanBody(w);
     if (mode == .analyzer) {
         try writeParentBody(w);
         try writeSemanticBody(w);
@@ -1393,7 +1358,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\      }
         \\      return { line: lo, column: offset - ls[lo - 1] };
         \\    },
-        \\    scan,
         \\
     );
 
@@ -1413,132 +1377,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     );
 }
 
-// the readonly buffer scan, depth-first over node records, dispatching
-// only registered types via a dense per-tag handler array. nothing is
-// materialized unless a handler calls cursor.node(). `0` in `wanted`
-// marks a flag-dependent tag, resolved per node by `_scanType`.
-fn writeScanBody(w: *Writer) !void {
-    try w.print(
-        \\  function _scanType(tag, flags) {{
-        \\    switch (tag) {{
-        \\      case {[tfn]d}: return FUNCTION_TYPES[flags & {[mfn]d}];
-        \\      case {[tcl]d}: return CLASS_TYPES[flags & {[mcl]d}];
-        \\      case {[tmd]d}:
-        \\        return _isTs && (flags & {[mab]d})
-        \\          ? "TSAbstractMethodDefinition"
-        \\          : "MethodDefinition";
-        \\      default: {{
-        \\        const acc = (flags & {[mac]d}) !== 0;
-        \\        if (_isTs && (flags & {[mpb]d})) {{
-        \\          return acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition";
-        \\        }}
-        \\        return acc ? "AccessorProperty" : "PropertyDefinition";
-        \\      }}
-        \\    }}
-        \\  }}
-        \\  function scan(visitors) {{
-        \\    const handlers = new Map();
-        \\    let every = null;
-        \\    for (const k of Object.keys(visitors)) {{
-        \\      const v = visitors[k];
-        \\      if (typeof v !== "function") continue;
-        \\      if (k === "enter") every = v;
-        \\      else handlers.set(k, v);
-        \\    }}
-        \\    const wanted = new Array(TAG_TYPES.length).fill(null);
-        \\    for (let t = 0; t < TAG_TYPES.length; t++) {{
-        \\      const tt = TAG_TYPES[t];
-        \\      if (tt === null) continue;
-        \\      if (tt === 0) {{
-        \\        for (const c of TAG_CHOICES.get(t)) {{
-        \\          if (handlers.has(c)) {{ wanted[t] = 0; break; }}
-        \\        }}
-        \\      }} else {{
-        \\        const h = handlers.get(tt);
-        \\        if (h !== undefined) wanted[t] = h;
-        \\      }}
-        \\    }}
-        \\    let stopFlag = false, skipFlag = false;
-        \\    let curIndex = 0, curO = 0, curTag = 0;
-        \\    const cursor = {{
-        \\      get index() {{ return curIndex; }},
-        \\      get type() {{
-        \\        const t = TAG_TYPES[curTag];
-        \\        return t !== 0 ? t : _scanType(curTag, _u8[curO + {[fl]d}] | (_u8[curO + {[fl1]d}] << 8));
-        \\      }},
-        \\      get start() {{ return startOf(curIndex); }},
-        \\      get end() {{ return endOf(curIndex); }},
-        \\      node() {{ return node(curIndex); }},
-        \\      skip() {{ skipFlag = true; }},
-        \\      stop() {{ stopFlag = true; }},
-        \\    }};
-        \\    (function visit(i) {{
-        \\      const o = _nodesOff + i * {[size]d};
-        \\      const tag = _u8[o];
-        \\      let h = wanted[tag];
-        \\      if (h !== null || every !== null) {{
-        \\        curIndex = i; curO = o; curTag = tag;
-        \\        if (h === 0) {{
-        \\          h = handlers.get(_scanType(tag, _u8[o + {[fl]d}] | (_u8[o + {[fl1]d}] << 8))) ?? null;
-        \\        }}
-        \\        if (every !== null && TAG_TYPES[tag] !== null) {{
-        \\          every(cursor);
-        \\          if (stopFlag) return;
-        \\        }}
-        \\        if (h !== null) {{
-        \\          h(cursor);
-        \\          if (stopFlag) return;
-        \\        }}
-        \\        if (skipFlag) {{ skipFlag = false; return; }}
-        \\      }}
-        \\      const ops = SCAN_CHILDREN[tag];
-        \\      const b = o >> 2;
-        \\      for (let p = 0; p < ops.length; p += 2) {{
-        \\        const slot = ops[p + 1];
-        \\        if (ops[p] === 0) {{
-        \\          const c = _u32[b + slot];
-        \\          if (c !== NULL) {{
-        \\            visit(c);
-        \\            if (stopFlag) return;
-        \\          }}
-        \\        }} else {{
-        \\          const s = _u32[b + slot];
-        \\          const len = ops[p] === 1
-        \\            ? _u32[b + slot + 1]
-        \\            : _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8);
-        \\          for (let j = 0; j < len; j++) {{
-        \\            const c = _u32[_extraBase + s + j];
-        \\            if (c !== NULL) {{
-        \\              visit(c);
-        \\              if (stopFlag) return;
-        \\            }}
-        \\          }}
-        \\        }}
-        \\      }}
-        \\    }})(progIdx);
-        \\  }}
-        \\
-    , .{
-        .tfn = comptime tagOf("function"),
-        .mfn = comptime enumMask(ast.FunctionType),
-        .tcl = comptime tagOf("class"),
-        .mcl = comptime enumMask(ast.ClassType),
-        .tmd = comptime tagOf("method_definition"),
-        .mab = comptime flagMask(ast.MethodDefinition, "abstract"),
-        .mac = comptime flagMask(ast.PropertyDefinition, "accessor"),
-        .mpb = comptime flagMask(ast.PropertyDefinition, "abstract"),
-        .fl = rt.NODE_FLAGS_OFFSET,
-        .fl1 = rt.NODE_FLAGS_OFFSET + 1,
-        .f0 = rt.NODE_FIELD0_OFFSET,
-        .f01 = rt.NODE_FIELD0_OFFSET + 1,
-        .size = rt.NODE_SIZE,
-    });
-}
-
-// lazy child to parent index map, derived from the same child traversal the
-// scan uses. parent is pure structure, never shipped over the wire. structural
-// container tags (TAG_TYPES null) are not materialized as ESTree nodes, so a
-// child threads past them to the nearest real ancestor, matching the walk.
 fn writeParentBody(w: *Writer) !void {
     try w.print(
         \\  let _parentArr;
@@ -1548,8 +1386,8 @@ fn writeParentBody(w: *Writer) !void {
         \\    (function visit(i, parent) {{
         \\      const o = _nodesOff + i * {[size]d};
         \\      const tag = _u8[o];
-        \\      if (TAG_TYPES[tag] !== null) {{ p[i] = parent; parent = i; }}
-        \\      const ops = SCAN_CHILDREN[tag];
+        \\      if (IS_NODE[tag]) {{ p[i] = parent; parent = i; }}
+        \\      const ops = CHILD_SLOTS[tag];
         \\      const b = o >> 2;
         \\      for (let q = 0; q < ops.length; q += 2) {{
         \\        const slot = ops[q + 1];

@@ -11,7 +11,6 @@ const violations = {
   crossIndex: [] as string[],
   resolutionScope: [] as string[],
   nodeIdentity: [] as string[],
-  walkScanParity: [] as string[],
   scopeMatch: [] as string[],
   parentMatch: [] as string[],
   captures: [] as string[],
@@ -122,15 +121,8 @@ function check(path: string, source: string): void {
     }
   }
 
-  // walk and scan visit the same nodes in the same order. and the per-node
-  // scope (ctx.scope) agrees with the per-reference scope at every reference.
-  // both come from the binder, so a disagreement means a decode or index bug.
-  // parentOf is a point query; ctx.parent is the live walk stack. they must
-  // name the same node for every node, root included.
-  const walked: string[] = [];
   module.walk({
     enter(node, ctx) {
-      walked.push(node.type);
       const reference = ctx.reference;
       if (reference !== null && ctx.scope !== reference.scope) {
         note(violations.scopeMatch, `${path}: ${reference.name} ctx ${ctx.scope.id} vs ref ${reference.scope.id}`);
@@ -140,11 +132,6 @@ function check(path: string, source: string): void {
       }
     },
   });
-  const scanned: string[] = [];
-  module.scan({ enter: (cursor) => scanned.push(cursor.type) });
-  if (walked.length !== scanned.length || walked.some((t, i) => t !== scanned[i])) {
-    note(violations.walkScanParity, `${path}: walk ${walked.length} vs scan ${scanned.length}`);
-  }
 
   // captures match an independent oracle for every function
   for (const fn of module.findAll([
@@ -209,10 +196,6 @@ describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
 
   test("node-to-model lookups round-trip", () => {
     expect(violations.nodeIdentity).toEqual([]);
-  });
-
-  test("walk and scan agree node for node", () => {
-    expect(violations.walkScanParity).toEqual([]);
   });
 
   test("the walked scope matches the binder's scope at every reference", () => {

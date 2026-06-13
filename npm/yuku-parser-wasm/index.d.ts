@@ -1,6 +1,6 @@
 // yuku-parser's public type surface. The AST, diagnostic, and traversal type
 // model lives in @yuku-toolchain/types and is re-exported here for backward
-// compatibility; this file adds only the parser's own parse/walk/scan API.
+// compatibility; this file adds only the parser's own parse/walk API.
 
 import type {
   Comment,
@@ -9,7 +9,6 @@ import type {
   NodeOfType,
   NodeType,
   Program,
-  ScanCursor,
   SourceLang,
   SourceLocation,
   SourceType,
@@ -82,14 +81,6 @@ interface ParseResult {
    * 1-based, columns are 0-based, matching ESTree's `loc` convention.
    */
   locOf(offset: number): SourceLocation;
-  /**
-   * Readonly buffer scan: visits the parsed node records directly,
-   * dispatching only to registered types, without materializing AST
-   * objects. Many times faster than {@link walk} for sparse queries;
-   * call {@link ScanCursor.node} to materialize the matched node on
-   * demand. The synthesized `Hashbang` node is not visited.
-   */
-  scan(visitors: ScanVisitors): void;
 }
 
 /**
@@ -127,19 +118,6 @@ type Visitors<S = unknown> = {
  */
 export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T;
 
-// Scanning
-
-/**
- * Scan handlers keyed by node `type`, plus the universal `enter` which
- * runs for every node. Scanning is readonly: to mutate, find with
- * {@link ParseResult.scan} and change with {@link walk}.
- */
-type ScanVisitors = {
-  [K in NodeType]?: (cursor: ScanCursor<NodeOfType<K>>) => void;
-} & {
-  enter?: (cursor: ScanCursor) => void;
-};
-
 /**
  * Resolves a {@link SourceLang} from a file path's extension.
  *
@@ -159,4 +137,4 @@ export function langFromPath(path: string): SourceLang;
  */
 export function sourceTypeFromPath(path: string): SourceType;
 
-export type { ParseOptions, ParseResult, Visitors, WalkHandler, WalkHooks, ScanVisitors };
+export type { ParseOptions, ParseResult, Visitors, WalkHandler, WalkHooks };

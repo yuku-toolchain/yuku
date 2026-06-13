@@ -112,26 +112,9 @@ walk(program, {
 
 The AST is also standard ESTree, so any ESTree-compatible walker works as well.
 
-## Scanning without building the AST
-
-`result.scan` visits the parsed node records directly in the binary buffer, before any AST objects exist. It is readonly and built for find-style passes:
-
-```ts
-const result = parse(source);
-
-result.scan({
-  CallExpression(cursor) {
-    console.log(cursor.start, cursor.end); // spans, straight off the buffer
-    const node = cursor.node();            // materialize this one node on demand
-  },
-});
-```
-
-The cursor exposes `type`, `start`, `end`, `index`, `node()`, `skip()`, and `stop()`. Because it never builds the AST, scanning is two to three times faster than walking for find-style passes, and allocates nothing. The rule of thumb: scan to find, walk to change.
-
 ## Semantic analysis
 
-[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) builds on this parser and adds full semantics: scopes, symbols, resolved references, closure analysis, and cross-file module linking, computed natively in the same pass. Its walk and scan carry the semantic model in context (`ctx.scope`, `ctx.symbol`, `ctx.reference`). See the [analyzer documentation](https://yuku.fyi/analyzer).
+[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) builds on this parser and adds full semantics: scopes, symbols, resolved references, closure analysis, and cross-file module linking, computed natively in the same pass. Its walk carries the semantic model in context (`ctx.scope`, `ctx.symbol`, `ctx.reference`). See the [analyzer documentation](https://yuku.fyi/analyzer).
 
 ## Options
 

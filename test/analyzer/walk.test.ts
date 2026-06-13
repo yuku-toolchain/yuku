@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer, SymbolFlags, type Module } from "yuku-analyzer";
+import { Analyzer, type Module } from "yuku-analyzer";
 
 function analyze(source: string, path = "input.js"): Module {
   return new Analyzer().addFile(path, source);
@@ -126,41 +126,6 @@ describe("mutation", () => {
     });
     expect(entered).toEqual([]);
     expect(leftCall).toBe(true);
-  });
-});
-
-describe("scan", () => {
-  test("scan visits the same identifiers as walk and resolves the same symbols", () => {
-    const module = analyze(`let x = 1; function f() { return x; }`);
-
-    const walkHits: string[] = [];
-    module.walk({
-      Identifier: (node, ctx) =>
-        walkHits.push(`${node.name}:${ctx.symbol?.id ?? ctx.reference?.symbol?.id ?? "-"}`),
-    });
-
-    const scanHits: string[] = [];
-    module.scan({
-      Identifier(cursor) {
-        const symbol = cursor.symbol ?? cursor.reference?.symbol ?? null;
-        scanHits.push(`${cursor.node().name}:${symbol?.id ?? "-"}`);
-      },
-    });
-
-    expect(scanHits).toEqual(walkHits);
-  });
-
-  test("a scan resolves references without materializing nodes", () => {
-    const module = analyze(`import { dep } from "./d"; dep(); dep = 1;`, "input.ts");
-    const writes: string[] = [];
-    module.scan({
-      Identifier(cursor) {
-        const reference = cursor.reference;
-        if (reference?.isWrite && reference.symbol?.has(SymbolFlags.Import))
-          writes.push(reference.name);
-      },
-    });
-    expect(writes).toEqual(["dep"]);
   });
 });
 

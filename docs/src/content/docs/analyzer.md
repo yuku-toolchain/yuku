@@ -296,59 +296,7 @@ module.walk({
 
 One rule to remember: the semantic tables are a snapshot of the parsed source. Nodes you create have no symbols or references of their own. Analyze, transform, print, and re-analyze the output if you need fresh semantics for the transformed code.
 
-## Scanning
-
-`module.scan` is the second traversal tier: a readonly pass over the parsed node records in the binary buffer, without materializing AST objects at all.
-
-```js
-module.scan({
-  CallExpression(cursor) {
-    console.log(cursor.start, cursor.end); // spans, straight off the buffer
-  },
-  enter(cursor) {
-    // runs for every node
-  },
-});
-```
-
-The engine iterates fixed-stride records, dispatches on integer tags through a dense per-tag handler table, and calls your handlers only for registered types. The cursor exposes:
-
-```js
-cursor.type;      // the node's type string
-cursor.start;     // span start
-cursor.end;       // span end
-cursor.index;     // the node's index in the buffer, stable per parse
-cursor.node();    // materialize this one node, on demand
-cursor.skip();    // do not descend into children
-cursor.stop();    // end the scan
-
-cursor.module;    // the module being scanned
-cursor.symbol;    // semantic lookup, no node materialization
-cursor.reference; // semantic lookup, no node materialization
-```
-
-The last two are the interesting ones. The semantic tables are keyed by node index, and the scan operates in index space, so `cursor.reference` resolves an identifier to its reference record without ever building a node object. A query like "every write to an imported binding across the project" runs over thousands of files without constructing a single AST node:
-
-```js
-for (const module of analyzer.modules.values()) {
-  module.scan({
-    Identifier(cursor) {
-      const ref = cursor.reference;
-      if (ref?.isWrite && ref.symbol?.has(SymbolFlags.Import)) {
-        console.log(module.path, module.locOf(cursor.start));
-      }
-    },
-  });
-}
-```
-
-When a handler does need the node, `cursor.node()` materializes exactly that one, and it is the same memoized object the walked AST produces.
-
-Scanning is readonly by design. The rule of thumb: scan to find, walk to change. For a semantic query like the one above, scanning runs about 4x faster than the equivalent walk, because it never builds the AST and resolves symbols and references straight from the buffer. The gap widens across many files, since nothing is allocated per node.
-
-`yuku-parser` ships the same two tiers without semantics: `walk(program, visitors, state?)` and `parseResult.scan(visitors)`.
-
-### findAll
+## findAll
 
 For the simplest queries there is a one-liner:
 
@@ -533,7 +481,7 @@ Plus four composites (unions of the above), for the common categorical questions
 
 ## Performance
 
-Analysis runs at native speed. Every scope, symbol, reference, flag, and piece of metadata is computed in Zig during the parse and crosses to JavaScript once per file as a compact buffer, all in well under a millisecond for a typical file. After that, nothing is recomputed. Each access to a scope, symbol, reference, or flag is a constant-time read straight off that buffer, and the cross-indexes behind queries like `symbolOf` and a symbol's references build once and answer in O(1) thereafter, so the whole pipeline stays exceptionally fast. Walking runs at tens of millions of nodes per second, semantic scans about 4x faster than that, and linking thousands of modules takes roughly a millisecond. The implementation is validated against 55,000+ real-world files with zero failures.
+Analysis runs at native speed. Every scope, symbol, reference, flag, and piece of metadata is computed in Zig during the parse and crosses to JavaScript once per file as a compact buffer, all in well under a millisecond for a typical file. After that, nothing is recomputed. Each access to a scope, symbol, reference, or flag is a constant-time read straight off that buffer, and the cross-indexes behind queries like `symbolOf` and a symbol's references build once and answer in O(1) thereafter, so the whole pipeline stays exceptionally fast. Walking runs at tens of millions of nodes per second, and linking thousands of modules takes roughly a millisecond. The implementation is validated against 55,000+ real-world files with zero failures.
 
 ## TypeScript types
 
@@ -543,7 +491,7 @@ Everything is precisely typed against `yuku-parser`'s AST types. Visitor handler
 import type {
   Module, Scope, Symbol, Reference, Import, Export,
   Capture, Definition, ModuleReference,
-  Visitors, WalkContext, ScanCursor, ScanVisitors,
+  Visitors, WalkContext,
 } from "yuku-analyzer";
 ```
 

@@ -140,27 +140,6 @@ declare class WalkContext<T extends Node = Node, S = unknown> {
    */
   insertAfter(node: Node): void;
 }
-/**
- * The scan cursor: one reused object pointing at the current node
- * record in the parse buffer. Valid only during the visit that receives
- * it; do not store it.
- */
-interface ScanCursor<T extends Node = Node> {
-  /** The node's `type`. */
-  readonly type: T["type"];
-  /** Span start, same as the materialized node's `start`. */
-  readonly start: number;
-  /** Span end, same as the materialized node's `end`. */
-  readonly end: number;
-  /** The node's index in the parse buffer, stable per parse. */
-  readonly index: number;
-  /** Materializes the node on demand. */
-  node(): T;
-  /** Do not descend into the current node's children. */
-  skip(): void;
-  /** Stop the scan entirely. */
-  stop(): void;
-}
 // AST node types
 
 interface BaseNode {
@@ -1753,7 +1732,6 @@ export { WalkContext };
 export type {
   NodeOfType,
   NodeType,
-  ScanCursor,
   Comment,
   AttachedComment,
   CommentType,

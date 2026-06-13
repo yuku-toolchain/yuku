@@ -12,7 +12,6 @@ import type {
   NodeOfType,
   NodeType,
   Program,
-  ScanCursor as BaseScanCursor,
   SourceLang,
   SourceLocation,
   SourceType,
@@ -271,27 +270,6 @@ type Visitors = {
   leave?: WalkHandler;
 };
 
-/**
- * The semantic scan cursor: the toolchain's {@link BaseScanCursor} plus
- * symbol and reference lookups. Both are index-keyed, so a scan can
- * resolve semantics without materializing any AST nodes.
- */
-interface ScanCursor<T extends Node = Node> extends BaseScanCursor<T> {
-  /** The module being scanned. */
-  readonly module: Module;
-  /** Shorthand for `module.symbolOf(node)`, without materializing. */
-  readonly symbol: Symbol | null;
-  /** Shorthand for `module.referenceOf(node)`, without materializing. */
-  readonly reference: Reference | null;
-}
-
-/** Scan handlers keyed by node `type`, plus the universal `enter`. */
-type ScanVisitors = {
-  [K in NodeType]?: (cursor: ScanCursor<NodeOfType<K>>) => void;
-} & {
-  enter?: (cursor: ScanCursor) => void;
-};
-
 /** A free variable of a function, as reported by {@link Module.capturesOf}. */
 interface Capture {
   /** The outer binding being closed over. */
@@ -452,14 +430,6 @@ interface Module {
    */
   walk(visitors: Visitors, root?: Node): void;
 
-  /**
-   * Readonly buffer scan with semantic context: visits the parsed node
-   * records directly without materializing AST objects, and resolves
-   * symbols and references in index space. Many times faster than
-   * {@link walk} for sparse queries; call {@link ScanCursor.node} to
-   * materialize a matched node (identity-shared with the walked AST).
-   */
-  scan(visitors: ScanVisitors): void;
   /** Collects every node of the given type(s), in source order. */
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
   findAll<K extends NodeType>(types: readonly K[]): NodeOfType<K>[];
@@ -572,8 +542,6 @@ export {
   type NodeOfType,
   type NodeType,
   type Reference,
-  type ScanCursor,
-  type ScanVisitors,
   type Scope,
   type ScopeKind,
   type Symbol,
