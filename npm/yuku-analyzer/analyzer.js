@@ -2,9 +2,7 @@ import { Module, SymbolFlags } from "./module.js";
 
 const RESOLVE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mts", ".mjs", ".cts", ".cjs"];
 
-// the third resolution outcome of ResolveExport (16.2.1.7.2.2): more
-// than one `export *` declaration supplies the name through different
-// bindings. distinct from null (not found / circular).
+// name supplied ambiguously by multiple export * (ResolveExport, 16.2.1.7.2.2)
 const AMBIGUOUS = Symbol("ambiguous");
 
 export class Analyzer {
@@ -44,10 +42,7 @@ export class Analyzer {
     return this.#diagnostics;
   }
 
-  // the static half of spec linking. resolves every module request to an
-  // added module, wires the dependency graph, and reports binding
-  // validation failures as diagnostics rather than throwing. unresolvable
-  // specifiers are skipped so a partial graph still links.
+  // static spec linking, reports failures as diagnostics rather than throwing
   link() {
     this.#dirty = false;
     this.#linking = true;
@@ -74,8 +69,7 @@ export class Analyzer {
         record._resolved = this.#resolveModule(record.specifier, module, false);
         if (record._resolved === null) continue;
         this.#wire(module, record._resolved);
-        // `export * as ns` (fromName null) trivially resolves and bare
-        // `export *` conflicts are deferred to use sites, per spec
+        // export * as ns resolves trivially, bare export * conflicts deferred to use sites
         if (record.fromName !== null) {
           this.#validate(module, record, record.fromName, "Re-export");
         }
@@ -84,8 +78,7 @@ export class Analyzer {
     this.#linking = false;
   }
 
-  // reports a record whose name does not resolve, or resolves
-  // ambiguously, against its (already resolved) source module
+  // report a record whose name fails to resolve or resolves ambiguously
   #validate(module, record, name, what) {
     const resolution = this.#resolveExport(record._resolved, name, []);
     if (resolution !== null && resolution !== AMBIGUOUS) return;
@@ -102,10 +95,7 @@ export class Analyzer {
     });
   }
 
-  // follows an import binding to its defining module and symbol via
-  // ResolveExport (InitializeEnvironment step 7.c). namespace
-  // resolutions yield { module, symbol: null }; unresolved or ambiguous
-  // chains yield null.
+  // follow an import binding to its defining module and symbol (ResolveExport, InitializeEnvironment 7.c)
   definitionOf(symbol) {
     this._ensureLinked();
     let module = symbol.module;
@@ -185,21 +175,8 @@ export class Analyzer {
     if (!to._dependents.includes(from)) to._dependents.push(from);
   }
 
-  // ResolveExport(exportName, resolveSet), 16.2.1.7.2.2: resolves a
-  // name to the binding that defines it, following named re-export and
-  // `export *` chains. returns { module, symbol, namespace } (the
-  // spec's ResolvedBinding, with namespace: true for its namespace
-  // [[BindingName]]), null when unresolvable or circular, or AMBIGUOUS.
-  //
-  // local and indirect entries live in one name-keyed map (_exportMap);
-  // duplicate export names are an early error, so the spec's step 5/6
-  // partition cannot change the outcome. ParseModule step 10.a.ii
-  // (rewriting an export of an imported binding through its original
-  // module) is applied at resolution time instead of collection time.
+  // ResolveExport, 16.2.1.7.2.2
   #resolveExport(module, exportName, resolveSet) {
-    // step 3: a repeated (module, exportName) pair is a circular import
-    // request. the pair key still permits re-entering a module for a
-    // different name, which renaming re-export chains legitimately do.
     for (const entry of resolveSet) {
       if (entry.module === module && entry.exportName === exportName) return null;
     }
@@ -210,8 +187,7 @@ export class Analyzer {
       if (direct.specifier === null) {
         const local = direct.local;
         if (local !== null && (local.flags & SymbolFlags.Import) !== 0) {
-          // export of an imported binding: resolve through the original
-          // module (the ParseModule rewrite)
+          // export of an imported binding resolves through the original module (ParseModule 10.a.ii)
           const record = module._importOfSymbol(local.id);
           if (record !== undefined) {
             const imported =
@@ -221,22 +197,19 @@ export class Analyzer {
             return this.#resolveExport(imported, record.name, resolveSet);
           }
         }
-        // step 5: the module provides the direct binding
         return { module, symbol: local, namespace: false };
       }
       const next = direct._resolved ?? this.#resolveModule(direct.specifier, module, true);
       if (next === null) return null;
-      // step 6: `export * as ns` binds the namespace, named re-exports
-      // follow the chain under the source name
+      // namespace re-export binds the namespace, named ones follow the chain
       if (direct.isNamespaceReexport) return { module: next, symbol: null, namespace: true };
       return this.#resolveExport(next, direct.fromName, resolveSet);
     }
 
-    // step 7: "default" is never satisfied through `export *`
+    // default never crosses export *
     if (exportName === "default") return null;
 
-    // steps 8-9: identical star bindings collapse, different ones are
-    // ambiguous
+    // identical star bindings collapse, otherwise ambiguous
     let starResolution = null;
     for (const star of module._starExports()) {
       const next = star._resolved ?? this.#resolveModule(star.specifier, module, true);

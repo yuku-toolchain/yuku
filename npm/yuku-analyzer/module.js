@@ -1,6 +1,4 @@
-// One analyzed file, the AST plus the scope/symbol/reference/import/
-// export object graph, built lazily over the decoded analyzer buffer.
-
+// one analyzed file, its AST plus a lazily built semantic graph
 import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
 import { walkModule } from "./walk.js";
@@ -316,8 +314,7 @@ export class Module {
     return this.scopes[this.#sem.nodeScope(index)];
   }
 
-  // the node that structurally contains `node`, or null at the program
-  // root or for a node not part of this module's AST.
+  // structural parent, or null at the root or for a foreign node
   parentOf(node) {
     const index = this.#r.indexOf(node);
     if (index === undefined) return null;
@@ -333,11 +330,7 @@ export class Module {
     return null;
   }
 
-  // GetExportedNames(exportStarSet), 16.2.1.7.2.1: every name exported
-  // directly or through `export *` chains. ambiguous star names are not
-  // filtered (spec note), "default" never crosses a star boundary, and
-  // circular `export *` terminates via exportStarSet. TS `export =` /
-  // `export as namespace` are not ESM export names and do not appear.
+  // GetExportedNames, 16.2.1.7.2.1
   exportedNames(exportStarSet = new Set()) {
     if (exportStarSet.has(this)) return [];
     exportStarSet.add(this);
@@ -352,14 +345,7 @@ export class Module {
     return [...names];
   }
 
-  // the free variables of a function: every binding referenced inside
-  // `fn` (nested functions included, value positions only) that is
-  // declared outside its scope subtree, deduplicated by symbol with
-  // `isWritten` OR-ed across the references. only bindings count.
-  // `this`, `arguments`, and unresolved/global names carry no symbol
-  // and never appear. module-scope and import bindings count like any
-  // other outer binding. computed method keys evaluate in the enclosing
-  // scope, outside the function node's span, so they are not captures.
+  // outer bindings a function closes over, deduped by symbol
   capturesOf(fn) {
     const index = this.#r.indexOf(fn);
     if (index === undefined) {
@@ -447,11 +433,7 @@ export class Module {
     return this.#symbolReferences[symbolId];
   }
 
-  // the spec's export-entry partition (ParseModule, 16.2.1.7.1): a
-  // name-keyed map of the local + indirect entries and the star-entry
-  // list (`export *` only). name-less records (`export *`, TS
-  // `export =` / `export as namespace`) stay out of the map. duplicate
-  // names are an early error; in recovery trees the first record wins.
+  // export-entry partition (ParseModule, 16.2.1.7.1)
   _exportMap() {
     if (this.#exportMap === null) {
       const map = new Map();

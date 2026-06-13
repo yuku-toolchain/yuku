@@ -1,13 +1,9 @@
-// Shared metadata for the ESTree decoder and encoder generators. Holds
-// operator arrays, enum table names, ESTree name/field overrides, and the
-// identifier role table. One source so the two generators can't disagree.
+
+// shared metadata for the decoder and encoder generators, one source so they agree
 
 const std = @import("std");
 const parser = @import("parser");
 const ast = parser.ast;
-
-// String-only enum tables, in zig enum-variant order (the wire indices).
-// Decoder emits `const X = [...]`, encoder the inverse `X_INV = {...}`.
 
 pub const BINARY_OPS = [_][]const u8{
     "==", "!=",         "===", "!==", "<", "<=", ">", ">=", "+",  "-",
@@ -34,9 +30,7 @@ pub const CLASS_TYPES = [_][]const u8{ "ClassDeclaration", "ClassExpression" };
 pub const COMMENT_TYPES = [_][]const u8{ "Line", "Block" };
 pub const SEVERITY = [_][]const u8{ "error", "warning", "hint", "info" };
 
-// Tables with non-string elements (null, booleans, `+`/`-`), written as raw
-// JS by the decoder. The encoder builds the inverse from the raw form.
-
+// tables with non-string elements, decoder writes them raw and the encoder inverts
 pub const IMPORT_EXPORT_KINDS_RAW = [_][]const u8{ "\"value\"", "\"type\"" };
 pub const ACCESSIBILITY_RAW = [_][]const u8{ "null", "\"public\"", "\"private\"", "\"protected\"" };
 pub const TS_TYPE_OPERATORS_RAW = [_][]const u8{ "\"keyof\"", "\"unique\"", "\"readonly\"" };
@@ -45,8 +39,6 @@ pub const TS_MODULE_KINDS_RAW = [_][]const u8{ "\"namespace\"", "\"module\"" };
 pub const TS_MAPPED_OPTIONAL_RAW = [_][]const u8{ "false", "true", "\"+\"", "\"-\"" };
 pub const TS_MAPPED_READONLY_RAW = [_][]const u8{ "null", "true", "\"+\"", "\"-\"" };
 
-// Enum -> JS table name (decoder reads `TABLE[bits]`, encoder writes via
-// `TABLE_INV`).
 pub fn enumTableName(comptime E: type) []const u8 {
     if (E == ast.BinaryOperator) return "BINARY_OPS";
     if (E == ast.LogicalOperator) return "LOGICAL_OPS";
@@ -66,14 +58,12 @@ pub fn enumTableName(comptime E: type) []const u8 {
     @compileError("no lookup table for enum: " ++ @typeName(E));
 }
 
-/// true when an enum's inverse is built as a JS function rather than an
-/// object (i.e. its members include null, booleans, or non-identifier text).
+// true when an enum's inverse must be a JS function rather than an object map
 pub fn enumNeedsInverseFn(comptime E: type) bool {
     return E == ast.Accessibility or E == ast.TSMappedTypeModifier;
 }
 
-// ESTree name overrides, where snake-to-pascal is wrong (e.g. ts_jsdoc_* ->
-// TSJSDoc*, not TSJsdoc*).
+// ESTree name overrides where snake to pascal is wrong (ts_jsdoc_ to TSJSDoc)
 const NAME_OVERRIDES = [_]struct { z: []const u8, e: []const u8 }{
     .{ .z = "function_body", .e = "BlockStatement" },
     .{ .z = "binding_rest_element", .e = "RestElement" },
@@ -100,14 +90,13 @@ pub fn estreeType(comptime name: []const u8) []const u8 {
 pub fn estreeField(comptime tag: []const u8, comptime field: []const u8) []const u8 {
     if (comptime std.mem.eql(u8, tag, "variable_declaration") and
         std.mem.eql(u8, field, "declarators")) return "declarations";
-    // `const` is a zig keyword, so the TSEnumDeclaration field is named
-    // `is_const` in the AST. ESTree renders it as the bare `const` key.
+    // const is a zig keyword so the field is is_const, ESTree renders it as const
     if (comptime std.mem.eql(u8, tag, "ts_enum_declaration") and
         std.mem.eql(u8, field, "is_const")) return "const";
     return snakeConvert(field, false);
 }
 
-/// arrays that allow holes (sparse elements become `null` in ESTree).
+// arrays that allow holes, sparse elements become null in ESTree
 pub fn isHoleyArray(comptime tag: []const u8, comptime field: []const u8) bool {
     return std.mem.eql(u8, tag, "array_expression") and std.mem.eql(u8, field, "elements");
 }
@@ -132,26 +121,19 @@ pub fn snakeConvert(comptime name: []const u8, comptime pascal: bool) []const u8
     }
 }
 
-// Identifier dispatch role. ESTree uses one `Identifier` type, but yuku has
-// five variants. This records, per (parent tag, field), which one the
-// encoder must produce when recursing into a NodeIndex child.
+// identifier dispatch role, ESTree has one Identifier but yuku has five variants
 pub const Role = enum {
-    /// the default. ESTree `Identifier` becomes `identifier_reference`.
+    // ESTree Identifier becomes identifier_reference
     auto,
-    /// binding position. `Identifier` becomes `binding_identifier`,
-    /// carrying decorators / optional / type_annotation in TS.
+    // binding position becomes binding_identifier, carries decorators optional type in TS
     binding,
-    /// label slot for `break foo`, `continue foo`, or a `foo` label.
+    // label slot for break, continue, or a labeled statement
     label,
-    /// non-binding name slot (import/export specifier names, dotted type
-    /// segments). `Identifier` becomes `identifier_name`. Without this the
-    /// generic dispatcher would treat the name as a reference and the
-    /// minifier's `undefined`/`Infinity` rewrites would corrupt it.
+    // non-binding name slot becomes identifier_name, else the minifier corrupts these names
     name,
 };
 
 const ROLES = [_]struct { node: []const u8, field: []const u8, role: Role }{
-    // bindings
     .{ .node = "variable_declarator", .field = "id", .role = .binding },
     .{ .node = "assignment_pattern", .field = "left", .role = .binding },
     .{ .node = "binding_rest_element", .field = "argument", .role = .binding },
@@ -166,11 +148,9 @@ const ROLES = [_]struct { node: []const u8, field: []const u8, role: Role }{
     .{ .node = "ts_enum_declaration", .field = "id", .role = .binding },
     .{ .node = "ts_import_equals_declaration", .field = "id", .role = .binding },
     .{ .node = "ts_parameter_property", .field = "parameter", .role = .binding },
-    // labels
     .{ .node = "break_statement", .field = "label", .role = .label },
     .{ .node = "continue_statement", .field = "label", .role = .label },
     .{ .node = "labeled_statement", .field = "label", .role = .label },
-    // names (non-binding identifier slots that are never references)
     .{ .node = "import_specifier", .field = "imported", .role = .name },
     .{ .node = "import_attribute", .field = "key", .role = .name },
     .{ .node = "export_all_declaration", .field = "exported", .role = .name },
@@ -187,8 +167,7 @@ pub fn fieldRole(comptime tag: []const u8, comptime field: []const u8) Role {
     return .auto;
 }
 
-// Encoder special-case set, nodes the generic struct-to-object mapping
-// can't express. (Superset of the decoder's, the encoder needs more.)
+// encoder special-case set, nodes the generic struct to object mapping can't express
 const SPECIAL = [_][]const u8{
     "formal_parameter",              "formal_parameters",                  "function",
     "arrow_function_expression",     "program",                            "directive",

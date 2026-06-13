@@ -1,6 +1,3 @@
-// generates encode.js, the inverse of decode.js: walks an ESTree object
-// and writes a binary AST buffer in the v7 wire format that
-// `transfer.deserializeFromBuf` reads back into an `ast.Tree`.
 const std = @import("std");
 const parser = @import("parser");
 const ast = parser.ast;
@@ -9,6 +6,7 @@ const meta = @import("meta.zig");
 
 const Writer = std.Io.Writer;
 
+// generates encode.js, the inverse of decode.js, walks ESTree and writes the v7 wire-format buffer
 pub fn generate(w: *Writer) !void {
     @setEvalBranchQuota(500_000);
     try writePrologue(w);
@@ -21,7 +19,6 @@ pub fn generate(w: *Writer) !void {
     try w.writeAll("export { encode };\n");
 }
 
-// Prologue + constants
 
 fn writePrologue(w: *Writer) !void {
     try w.print(
@@ -56,7 +53,6 @@ fn writePrologue(w: *Writer) !void {
     });
 }
 
-// Inverse lookup tables
 
 fn writeInverseMaps(w: *Writer) !void {
     try writeInverseObject(w, "BINARY_OPS_INV", &meta.BINARY_OPS);
@@ -73,7 +69,6 @@ fn writeInverseMaps(w: *Writer) !void {
     try writeInverseObject(w, "TS_MODULE_KINDS_INV", &.{ "namespace", "module" });
     try writeInverseObject(w, "IMPORT_PHASE_INV", &.{ "source", "defer" });
 
-    // Mixed-typed enums need inverse functions, not object maps.
     try w.writeAll(
         \\const ACCESSIBILITY_INV = (v) =>
         \\  v == null ? 0
@@ -95,7 +90,6 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
     try w.writeAll("};\n");
 }
 
-// Runtime: growable buffers, alloc, encStr, encArr
 
 fn writeRuntime(w: *Writer) !void {
     try w.writeAll(
@@ -234,7 +228,6 @@ fn writeRuntime(w: *Writer) !void {
     );
 }
 
-// Contextual Identifier dispatch helpers
 
 fn writeIdentifierHelpers(w: *Writer) !void {
     try w.writeAll(
@@ -256,7 +249,6 @@ fn writeIdentifierHelpers(w: *Writer) !void {
     );
 }
 
-// Per-tag encoders
 
 fn writeNodeEncoders(w: *Writer) !void {
     inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, tag| {
@@ -269,13 +261,9 @@ fn writeNodeEncoders(w: *Writer) !void {
     }
 }
 
-/// Yuku-internal node tags that the JS encoder never produces (so we don't
-/// emit a dead `enc_*` function for them).
+// function_body (tag 5) and block_statement (tag 4) both decode to BlockStatement, the encoder emits block_statement
 fn skipGeneration(comptime name: []const u8) bool {
     @setEvalBranchQuota(20_000);
-    // `function_body` (tag 5) is interchangeable with `block_statement` (tag 4):
-    // both decode to ESTree `BlockStatement` and the printer treats them
-    // identically. The encoder always uses `block_statement`.
     return std.mem.eql(u8, name, "function_body");
 }
 
@@ -300,8 +288,7 @@ fn writeGenericEncoder(
         return;
     }
 
-    // Phase 1: encode children into locals (so realloc during recursion
-    // never affects pointers we hold).
+    // encode children into locals first, so a realloc during recursion can't move held pointers
     inline for (std.meta.fields(T)) |f| {
         const jsf = comptime meta.estreeField(name, f.name);
         if (f.type == ast.NodeIndex) {
@@ -327,10 +314,8 @@ fn writeGenericEncoder(
         }
     }
 
-    // Phase 2: allocate + write tag.
     try w.print("    const idx = alloc();\n    tagAt(idx, {d});\n", .{tag});
 
-    // Phase 3: write slots.
     inline for (std.meta.fields(T), 0..) |f, i| {
         const slot = comptime rt.u32SlotForField(T, i);
         const jsf = comptime meta.estreeField(name, f.name);
@@ -365,7 +350,6 @@ fn writeGenericEncoder(
         }
     }
 
-    // Phase 4: write flags (bools, enums, ?ImportPhase, ?Hashbang presence).
     const any_flag = comptime blk: {
         for (std.meta.fields(T)) |f| {
             if (isFlagField(f.type)) break :blk true;
@@ -465,8 +449,6 @@ fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
     else @compileError("missing special encoder for: " ++ name);
 }
 
-// helpers used inside generic + special encoders
-/// true when the field type contributes flag bits (and only flag bits) to the node.
 fn isFlagField(comptime F: type) bool {
     if (F == bool) return true;
     if (F == ?ast.ImportPhase) return true;
@@ -475,9 +457,6 @@ fn isFlagField(comptime F: type) bool {
     return @typeInfo(F) == .@"enum";
 }
 
-/// true when the field is a plain enum (no presence bit), which the
-/// generic encoder maps through `<TABLE>_INV`. `ast.NodeIndex` is also
-/// an enum at the type level (it's `enum(u32)`), so we exclude it.
 fn isEnumFlag(comptime F: type) bool {
     if (F == ast.NodeIndex or F == ast.IndexRange or F == ast.String) return false;
     return @typeInfo(F) == .@"enum";
@@ -800,7 +779,7 @@ fn writeSpecialClass(w: *Writer, comptime tag: usize) !void {
     const tm = comptime enumMask(ast.ClassType);
     const mab = comptime flagMask(T, "abstract");
     const mdc = comptime flagMask(T, "declare");
-    _ = sd; // first IndexRange in struct
+    _ = sd;
     try w.print(
         \\  function enc_class(n, kind) {{
         \\    const decs = encArr(n.decorators, encNode);
@@ -1360,7 +1339,6 @@ fn writeSpecialTSIndexSig(w: *Writer, comptime tag: usize) !void {
     , .{ tag, sta, mr, ms });
 }
 
-// Dispatcher
 
 fn writeDispatcher(w: *Writer) !void {
     try w.writeAll(
@@ -1418,13 +1396,9 @@ fn writeDispatcher(w: *Writer) !void {
     );
 }
 
-/// nodes that have no direct ESTree dispatcher entry, either because a
-/// hardcoded polymorphism branch above already handles their ESTree type,
-/// or because they're only invoked indirectly through parent helpers.
 fn skipInDispatcher(comptime name: []const u8) bool {
     @setEvalBranchQuota(20_000);
     const skipped = [_][]const u8{
-        // ESTree polymorphism already routes these in the hardcoded prelude.
         "identifier_reference", "binding_identifier",    "identifier_name",
         "label_identifier",     "private_identifier",    "string_literal",
         "numeric_literal",      "bigint_literal",        "boolean_literal",
@@ -1432,7 +1406,6 @@ fn skipInDispatcher(comptime name: []const u8) bool {
         "class",                "method_definition",     "property_definition",
         "binding_rest_element", "ts_module_declaration", "ts_global_declaration",
         "expression_statement", "directive",
-        // not directly addressable by ESTree (no `type:` string for these).
                     "formal_parameter",
         "formal_parameters",    "binding_property",      "ts_this_parameter",
     };
@@ -1440,7 +1413,6 @@ fn skipInDispatcher(comptime name: []const u8) bool {
     return false;
 }
 
-// Final assembly: collect sections into one ArrayBuffer
 
 fn writeAssemble(w: *Writer) !void {
     try w.print(
