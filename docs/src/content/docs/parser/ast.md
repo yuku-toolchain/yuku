@@ -375,7 +375,8 @@ const foo = bar.baz;
 | `binding_property`     | `key: value` or shorthand `key` | A single property inside an object pattern.                                        |
 | `assignment_pattern`   | `x = default`                   | A binding pattern with a default value, used in destructuring and parameter lists. |
 | `binding_rest_element` | `...rest`                       | A `...rest` element inside a binding pattern or parameter list.                    |
-| `formal_parameters`    | `(a, b = 1, ...rest)`           | A function's parameter list. `items` are the parameter patterns directly (plus any `ts_parameter_property` / `ts_this_parameter`); `rest` is the `...rest`. |
+| `formal_parameters`    | `(a, b = 1, ...rest)`           | The parameter list of a function.                                                  |
+| `formal_parameter`     | a single parameter slot         | A single parameter slot wrapping a binding pattern.                                |
 
 ---
 

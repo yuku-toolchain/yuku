@@ -342,7 +342,10 @@ pub fn parseFormalParameter(
 
     ts.applyDecoratorsToPattern(parser, pattern, decorators);
 
-    return pattern;
+    return try parser.tree.addNode(
+        .{ .formal_parameter = .{ .pattern = pattern } },
+        parser.tree.span(pattern),
+    );
 }
 
 fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModifiers {
@@ -386,7 +389,8 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
 
     const data = parser.tree.data(params).formal_parameters;
     const items = parser.tree.extra(data.items);
-    const has_this = items.len > 0 and parser.tree.data(items[0]) == .ts_this_parameter;
+    const has_this = items.len > 0 and
+        parser.tree.data(parser.tree.data(items[0]).formal_parameter.pattern) == .ts_this_parameter;
     const arity = data.items.len - @intFromBool(has_this);
     if (arity == spec.arity and data.rest == .null) return true;
 
@@ -405,9 +409,14 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.tree.span(type_annotation).end;
     }
 
-    return try parser.tree.addNode(
+    const span: ast.Span = .{ .start = start, .end = end };
+    const this_param = try parser.tree.addNode(
         .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
-        .{ .start = start, .end = end },
+        span,
+    );
+    return try parser.tree.addNode(
+        .{ .formal_parameter = .{ .pattern = this_param } },
+        span,
     );
 }
 

@@ -433,6 +433,7 @@ fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
     else if (comptime eql(u8, name, "member_expression")) try writeSpecialMemberExpr(w, tag) //
     else if (comptime eql(u8, name, "function")) try writeSpecialFunction(w, tag) //
     else if (comptime eql(u8, name, "arrow_function_expression")) try writeSpecialArrowFn(w, tag) //
+    else if (comptime eql(u8, name, "formal_parameter")) try writeSpecialFormalParameter(w, tag) //
     else if (comptime eql(u8, name, "formal_parameters"))
         try writeSpecialFormalParameters(w, tag) //
     else if (comptime eql(u8, name, "class")) try writeSpecialClass(w, tag) //
@@ -735,6 +736,21 @@ fn writeSpecialArrowFn(w: *Writer, comptime tag: usize) !void {
     , .{ tag, sp, sb, stp, srt, me, ma });
 }
 
+fn writeSpecialFormalParameter(w: *Writer, comptime tag: usize) !void {
+    const sp = comptime slotOf(ast.FormalParameter, "pattern");
+    try w.print(
+        \\  function enc_formal_parameter(p) {{
+        \\    const pat = encBindingTarget(p);
+        \\    const idx = alloc();
+        \\    tagAt(idx, {d});
+        \\    slotAt(idx, {d}, pat);
+        \\    spanAt(idx, asStart(p), asEnd(p));
+        \\    return idx;
+        \\  }}
+        \\
+    , .{ tag, sp });
+}
+
 fn writeSpecialFormalParameters(w: *Writer, comptime tag: usize) !void {
     const si = comptime slotOf(ast.FormalParameters, "items");
     const sr = comptime slotOf(ast.FormalParameters, "rest");
@@ -754,7 +770,7 @@ fn writeSpecialFormalParameters(w: *Writer, comptime tag: usize) !void {
         \\      else if (p && p.type === "TSParameterProperty") items.push(encNode(p));
         \\      else if (p && p.type === "Identifier" && p.name === "this")
         \\        items.push(enc_ts_this_parameter(p));
-        \\      else items.push(encBindingTarget(p));
+        \\      else items.push(enc_formal_parameter(p));
         \\    }}
         \\    const ids = items;
         \\    const start = extraCount;
@@ -1417,6 +1433,7 @@ fn skipInDispatcher(comptime name: []const u8) bool {
         "binding_rest_element", "ts_module_declaration", "ts_global_declaration",
         "expression_statement", "directive",
         // not directly addressable by ESTree (no `type:` string for these).
+                    "formal_parameter",
         "formal_parameters",    "binding_property",      "ts_this_parameter",
     };
     for (skipped) |s| if (s.len == name.len and std.mem.eql(u8, s, name)) return true;

@@ -102,8 +102,9 @@ pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameter
 
     for (tree.extra(params.items)) |param_idx| {
         const pattern = switch (tree.data(param_idx)) {
+            .formal_parameter => |fp| fp.pattern,
             .ts_parameter_property => |pp| pp.parameter,
-            else => param_idx,
+            else => return param_idx,
         };
         switch (tree.data(pattern)) {
             // `this: T` is not a runtime parameter, erased at emit, so the

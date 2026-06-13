@@ -190,8 +190,8 @@ pub fn fieldRole(comptime tag: []const u8, comptime field: []const u8) Role {
 // Encoder special-case set, nodes the generic struct-to-object mapping
 // can't express. (Superset of the decoder's, the encoder needs more.)
 const SPECIAL = [_][]const u8{
-    "formal_parameters",             "function",                           "directive",
-    "arrow_function_expression",     "program",
+    "formal_parameter",              "formal_parameters",                  "function",
+    "arrow_function_expression",     "program",                            "directive",
     "string_literal",                "numeric_literal",                    "bigint_literal",
     "boolean_literal",               "null_literal",                       "regexp_literal",
     "template_element",              "class",                              "method_definition",

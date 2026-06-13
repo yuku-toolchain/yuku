@@ -1996,11 +1996,21 @@ pub const FormalParameterKind = enum {
 /// //                   ^^^^^^^ rest
 /// ```
 pub const FormalParameters = struct {
-    /// The parameter patterns
+    /// `formal_parameter[]`. May also include `ts_parameter_property` entries
+    /// (constructors only) and a leading `ts_this_parameter` (TypeScript).
     items: IndexRange,
     /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
     kind: FormalParameterKind,
+};
+
+/// A thin wrapper marking a binding pattern as a function parameter.
+///
+/// TypeScript metadata (decorators, type annotation, optional) lives on
+/// the inner pattern.
+pub const FormalParameter = struct {
+    /// any binding pattern or `ts_this_parameter`.
+    pattern: NodeIndex,
 };
 
 /// An expression wrapped in parentheses.
@@ -4063,6 +4073,7 @@ pub const NodeData = union(enum) {
     function_body: FunctionBody,
     block_statement: BlockStatement,
     formal_parameters: FormalParameters,
+    formal_parameter: FormalParameter,
     binary_expression: BinaryExpression,
     logical_expression: LogicalExpression,
     conditional_expression: ConditionalExpression,

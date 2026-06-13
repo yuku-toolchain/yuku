@@ -369,7 +369,7 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
             \\    if (m !== undefined) return m;
             \\    const r = _inner(i);
             \\    _nodes[i] = r;
-            \\    if (r !== null && typeof r === "object") _nodeIndexes.set(r, i);
+            \\    if (r !== null && typeof r === "object" && !_nodeIndexes.has(r)) _nodeIndexes.set(r, i);
             \\    return r;
             \\  }
             \\
@@ -445,6 +445,7 @@ const SpecialChildKeys = struct {
 };
 
 const special_child_keys = [_]SpecialChildKeys{
+    .{ .variant = "formal_parameter", .types = &.{}, .keys = &.{} },
     .{ .variant = "formal_parameters", .types = &.{}, .keys = &.{} },
     .{ .variant = "function", .types = &.{
         "FunctionDeclaration", "FunctionExpression",
@@ -745,7 +746,10 @@ fn isSpecial(comptime name: []const u8) bool {
 
 fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) !void {
     const eql = std.mem.eql;
-    if (comptime eql(u8, name, "formal_parameters")) {
+    if (comptime eql(u8, name, "formal_parameter")) {
+        const sp = comptime slotOf(ast.FormalParameter, "pattern");
+        try emit(w, "    case {d}: return node(f{d});", .{ tag, sp });
+    } else if (comptime eql(u8, name, "formal_parameters")) {
         try emit(w, "    case {d}: return {{ params: fnParams(i) }};", .{tag});
     } else if (comptime eql(u8, name, "function")) {
         const sid = comptime slotOf(ast.Function, "id");
