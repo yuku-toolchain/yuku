@@ -73,7 +73,7 @@ Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. T
 
 ## Walking the AST
 
-A typed, mutating walker is built in. Handlers are keyed by node type and receive the exact node type, as a bare enter function or an enter/leave pair:
+A typed, mutating walker is built in:
 
 ```ts
 import { parse, walk } from "yuku-parser";
@@ -108,7 +108,7 @@ walk(program, {
 });
 ```
 
-`ctx.replace(node)` continues the walk into the replacement, `ctx.remove()` skips the removed subtree, `ctx.insertBefore(node)` inserts a sibling without visiting it, and `ctx.insertAfter(node)` inserts one the walk will visit. A replacement created with `start: 0, end: 0` inherits the original span, which keeps source maps meaningful through [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen). An optional third argument threads state to every handler as `ctx.state`.
+`ctx.replace(node)` continues the walk into the replacement, `ctx.remove()` skips the removed subtree, `ctx.insertBefore(node)` inserts a sibling without visiting it, and `ctx.insertAfter(node)` inserts one the walk will visit. An optional third argument threads state to every handler as `ctx.state`.
 
 The AST is also standard ESTree, so any ESTree-compatible walker works as well.
 
