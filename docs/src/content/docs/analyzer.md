@@ -1,11 +1,13 @@
 ---
 title: Analyzer
-description: Full JavaScript and TypeScript semantic analysis for Node.js. Scopes, symbols, resolved references, closures, and cross-file module linking, computed natively and queried as plain JavaScript objects.
+description: "Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects."
 ---
 
-`yuku-analyzer` is full semantic analysis for JavaScript and TypeScript, computed natively and queried as plain JavaScript objects. It gives you scopes, symbols, resolved references, closures, and cross-file module linking.
+`yuku-analyzer` is full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
-Today you get this two ways, and both hurt. You hand-track scopes during a walk, which is fragile, per-file, and re-bugged in every tool. Or you embed the TypeScript compiler, which is correct but costs hundreds of milliseconds per file and a compiler-sized dependency. `yuku-analyzer` is the fast path in between. One native pass per file, then every query is plain JavaScript with zero per-query cost, sub-millisecond on a typical file.
+**No single library gives you all of this.** Scopes and resolved references mean `eslint-scope` or `@typescript-eslint/scope-manager`. Cross-file go-to-definition means the TypeScript compiler or `ts-morph`. A parser sits underneath both. `yuku-analyzer` is all of them in one native pass behind one API.
+
+**At native speed.** Up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with zero per-query cost after the single native call. Stitch those separate tools together yourself and the gap only widens: each re-walks the AST, you re-parse to resolve across files, and you keep the indexes between them in sync by hand. `yuku-analyzer` pays all of that once, in Zig.
 
 ```bash
 npm install yuku-analyzer yuku-parser
@@ -30,9 +32,9 @@ That is real cross-file resolution, not a string search: it follows import, re-e
 
 ## The problem it solves
 
-Tools that need real semantics on the JavaScript side have always faced a bad trade. Walk-and-track libraries give you a scope stack, but you maintain the binding rules yourself: hoisting, catch clauses, named function expressions, TypeScript declaration merging, type space versus value space. Each tool re-implements a subset, each subset has different bugs. The alternative, embedding a full language service, costs hundreds of milliseconds per file and a dependency the size of a compiler.
+Assembling this yourself is not only slower, it is harder to get right. The lightweight tools give you a scope stack but leave the binding rules to you: hoisting, catch clauses, named function expressions, TypeScript declaration merging, value space versus type space. Each tool implements a subset, and each subset has its own bugs.
 
-`yuku-analyzer` takes a third path: nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and JavaScript receives the finished model: not events to track, but answers to query.
+`yuku-analyzer` computes none of that in JavaScript. The binder, scope tree, reference resolution, and module records all come from the same well-tested native analyzer that powers the rest of Yuku, so there is one implementation to keep correct, not a JavaScript copy that drifts from it. JavaScript receives a finished model to query, not events to track.
 
 ## Architecture
 
@@ -480,28 +482,3 @@ Plus four composites (unions of the above), for the common categorical questions
 | `Import`      | any import binding, value or `import type`                        |
 | `ValueSpace`  | visible at runtime (var, function, class, enum, value namespace)  |
 | `TypeSpace`   | referencable from a type position (class, enum, interface, alias, type param) |
-
-## Performance
-
-Analysis runs at native speed. Every scope, symbol, reference, flag, and piece of metadata is computed in Zig during the parse and crosses to JavaScript once per file as a compact buffer, all in well under a millisecond for a typical file. After that, nothing is recomputed. Each access to a scope, symbol, reference, or flag is a constant-time read straight off that buffer, and the cross-indexes behind queries like `symbolOf` and a symbol's references build once and answer in O(1) thereafter, so the whole pipeline stays exceptionally fast. Walking runs at tens of millions of nodes per second, and linking thousands of modules takes roughly a millisecond. The implementation is validated against 55,000+ real-world files with zero failures.
-
-## TypeScript types
-
-Everything is precisely typed against `yuku-parser`'s AST types. Visitor handlers receive exact node types and the full semantic surface is exported:
-
-```ts
-import type {
-  Module, Scope, Symbol, Reference, Import, Export,
-  Capture, Definition, ModuleReference,
-  Visitors, WalkContext,
-} from "yuku-analyzer";
-```
-
-```ts
-module.walk({
-  ArrowFunctionExpression(node, ctx) {
-    node.params;     // typed as the arrow's params
-    node.superClass; // type error: arrows have no superClass
-  },
-});
-```

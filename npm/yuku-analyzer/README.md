@@ -1,8 +1,10 @@
 # yuku-analyzer
 
-Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking. Powered by [Yuku](https://github.com/yuku-toolchain/yuku), written in Zig.
+Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects. Powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
-The usual options are a hand-rolled scope tracker (fragile, per-file, re-bugged in every tool) or the TypeScript compiler (correct, but hundreds of milliseconds per file and a compiler-sized dependency). This is the fast path between them. One native call per file, then every query is plain JavaScript with zero per-query FFI cost, sub-millisecond on a typical file.
+**No single library gives you all of this.** Scopes and resolved references mean `eslint-scope` or `@typescript-eslint/scope-manager`. Cross-file go-to-definition means the TypeScript compiler or `ts-morph`. A parser sits under both. `yuku-analyzer` is all of them in one native pass behind one API.
+
+**At native speed.** Up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with zero per-query cost after the single native call. Stitch those separate tools together yourself and the gap only widens: each re-walks the AST, you re-parse to resolve across files, and you keep the indexes between them in sync by hand. `yuku-analyzer` pays all of that once, in Zig.
 
 ```bash
 npm install yuku-analyzer yuku-parser
@@ -35,9 +37,7 @@ console.log(def.module.path); // "lib.ts"
 console.log(def.symbol.has(SymbolFlags.Const)); // true
 ```
 
-## Why this exists
-
-JavaScript tooling that needs real semantics has had two options: track scopes by hand during a walk (fragile, incomplete, and re-implemented in every tool), or embed a full language service (heavy). `yuku-analyzer` is the missing middle: the exact scope and binding model of a production compiler, exposed to JavaScript as a small, fast object graph.
+## How it works
 
 Nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and the corner cases arrive already correct: catch-clause scope sharing, named function expression scopes, `var` hoist targets, TS declaration merging, value space versus type space, and write detection through destructuring patterns.
 
