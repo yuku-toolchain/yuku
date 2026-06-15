@@ -441,7 +441,7 @@ fn Printer(comptime cfg: Config) type {
         }
 
         inline fn emitNode(self: *Self, idx: NodeIndex) Error!void {
-            if (self.sm != null) try self.recordMapping(idx);
+            if (comptime source_maps) if (self.sm != null) try self.recordMapping(idx);
 
             switch (self.node_data[@intFromEnum(idx)]) {
                 inline else => |*node, tag| {
@@ -574,7 +574,8 @@ fn Printer(comptime cfg: Config) type {
             if (i < self.code.items.len) self.code.shrinkRetainingCapacity(i);
 
             const n = if (self.pretty()) self.indent_depth * self.options.indent else 0;
-            try self.code.ensureUnusedCapacity(self.allocator, 1 + n);
+            if (self.code.capacity - self.code.items.len < 1 + n)
+                try self.code.ensureUnusedCapacity(self.allocator, 1 + n);
             if (self.code.items[self.code.items.len - 1] != '\n') {
                 self.code.appendAssumeCapacity('\n');
                 if (comptime source_maps) if (self.sm) |*sm| {
@@ -2063,7 +2064,7 @@ fn Printer(comptime cfg: Config) type {
             const data = self.nodeData(idx);
             switch (data) {
                 .identifier_reference => |id| {
-                    if (self.sm != null) try self.recordMapping(idx);
+                    if (comptime source_maps) if (self.sm != null) try self.recordMapping(idx);
                     try self.writeString(id.name);
                 },
                 else => try self.emit(idx),
