@@ -11,7 +11,7 @@ path = "src/main.rs"
 [dependencies]
 oxc_allocator = "0.135.0"
 oxc_parser = "0.135.0"
-oxc_codegen = "0.135.0"
+oxc_codegen = { version = "0.135.0", default-features = false }
 oxc_span = "0.135.0"
 
 # Mirror oxc's own production release profile so the comparison gives

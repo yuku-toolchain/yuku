@@ -16,6 +16,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const enable_source_maps = b.option(
+        bool,
+        "codegen-source-maps",
+        "Compile source-map support into the code generator (default true)",
+    ) orelse true;
+
+    const codegen_options = b.addOptions();
+    codegen_options.addOption(bool, "source_maps", enable_source_maps);
+
     const parser_module = b.addModule("parser", .{
         .root_source_file = b.path("src/parser/root.zig"),
         .target = target,
@@ -23,6 +32,7 @@ pub fn build(b: *std.Build) void {
     });
 
     parser_module.addImport("util", util_module);
+    parser_module.addImport("codegen_options", codegen_options.createModule());
 
     const profiler_module = b.createModule(.{
         .root_source_file = b.path("profiler/profile.zig"),
@@ -48,6 +58,17 @@ pub fn build(b: *std.Build) void {
 
     // Standalone codegen benchmark harness (vs oxc_codegen). Built in
     // ReleaseFast by default; pass a file path at run time. See bench/codegen/.
+    const bench_codegen_options = b.addOptions();
+    bench_codegen_options.addOption(bool, "source_maps", false);
+
+    const bench_parser_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+    bench_parser_module.addImport("util", util_module);
+    bench_parser_module.addImport("codegen_options", bench_codegen_options.createModule());
+
     const codegen_bench_module = b.createModule(.{
         .root_source_file = b.path("bench/codegen/yuku.zig"),
         .target = target,
@@ -55,7 +76,7 @@ pub fn build(b: *std.Build) void {
         // Use system malloc for codegen output, matching oxc's allocator.
         .link_libc = true,
     });
-    codegen_bench_module.addImport("parser", parser_module);
+    codegen_bench_module.addImport("parser", bench_parser_module);
 
     const codegen_bench_exe = b.addExecutable(.{
         .name = "yuku-codegen-bench",

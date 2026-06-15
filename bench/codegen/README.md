@@ -69,22 +69,26 @@ diff /tmp/y.js /tmp/o.js
   allocator choice.
 - Both parse with their own parser into their own AST; only codegen is timed,
   so parser differences don't affect the result.
+- Both are built with source-map support compiled out — yuku via the
+  `codegen-source-maps=false` build option (the bench's parser module sets it),
+  oxc via `default-features = false` on `oxc_codegen`. This isolates code
+  generation from source-map bookkeeping and keeps the two builds equivalent.
 - `best` (min time) is the headline metric: least affected by OS scheduling
   noise, closest to pure compute.
 
 ## Sample results
 
-Apple Silicon (darwin/arm64), oxc_codegen 0.135.0, 3s/case:
+Apple Silicon (darwin/arm64), oxc_codegen 0.135.0, source maps off, 4s/case:
 
 | file          | size  | yuku best | oxc best | yuku MB/s | oxc MB/s | speedup   |
 | ------------- | ----- | --------- | -------- | --------- | -------- | --------- |
-| react.js      | 0.08M | 68.5 µs   | 51.2 µs  | 1144      | 1533     | oxc 1.34x |
-| calcom.tsx    | 1.01M | 1.42 ms   | 0.96 ms  | 712       | 1052     | oxc 1.48x |
-| typescript.js | 8.32M | 11.67 ms  | 10.60 ms | 713       | 785      | oxc 1.10x |
+| react.js      | 0.08M | 67.8 µs   | 48.8 µs  | 1156      | 1608     | oxc 1.39x |
+| calcom.tsx    | 1.01M | 1.41 ms   | 0.96 ms  | 718       | 1057     | oxc 1.47x |
+| typescript.js | 8.32M | 11.08 ms  | 10.31 ms | 751       | 807      | oxc 1.08x |
 
 Numbers are machine-dependent; re-run locally for your hardware.
 
-Both tools keep source-map and comment handling as runtime checks (oxc's
-default build enables the `sourcemap` feature and checks per call), so this is
-a like-for-like comparison — the codegen is a single compiled variant, not
-specialized per option.
+Source-map support is a build-time feature (`-Dcodegen-source-maps`, default
+on, like oxc's `default = ["sourcemap"]`). A source-map-disabled build is a
+single variant that compiles every per-node/per-write map check away, with no
+binary-size cost — the codegen is never specialized per runtime option.

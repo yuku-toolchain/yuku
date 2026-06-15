@@ -4,6 +4,8 @@ const ast = @import("../ast.zig");
 const sourcemap = @import("sourcemap.zig");
 const utils = @import("utils.zig");
 
+const source_maps = @import("codegen_options").source_maps;
+
 const Allocator = std.mem.Allocator;
 const Tree = ast.Tree;
 const NodeIndex = ast.NodeIndex;
@@ -125,7 +127,7 @@ pub fn printImpl(
     errdefer allocator.free(code);
     const errors = try p.errors.toOwnedSlice(allocator);
     errdefer allocator.free(errors);
-    const map = if (p.sm) |*sm| try sm.build(allocator) else null;
+    const map = if (comptime source_maps) (if (p.sm) |*sm| try sm.build(allocator) else null) else null;
     return .{ .code = code, .errors = errors, .map = map };
 }
 
@@ -171,18 +173,18 @@ fn Printer(comptime cfg: Config) type {
                 .allocator = allocator,
             };
             try p.code.ensureTotalCapacity(allocator, tree.source.len);
-            if (options.source_maps) |sm_opts| {
+            if (comptime source_maps) if (options.source_maps) |sm_opts| {
                 p.sm = sourcemap.State.init(sm_opts);
                 // preallocate the mappings buffer to limit regrowth
                 try p.sm.?.out.ensureTotalCapacity(allocator, tree.nodes.len * 8 + 64);
-            }
+            };
             return p;
         }
 
         fn deinit(self: *Self) void {
             self.code.deinit(self.allocator);
             self.errors.deinit(self.allocator);
-            if (self.sm) |*sm| sm.deinit(self.allocator);
+            if (comptime source_maps) if (self.sm) |*sm| sm.deinit(self.allocator);
         }
 
         inline fn pretty(self: *const Self) bool {
@@ -215,19 +217,19 @@ fn Printer(comptime cfg: Config) type {
         inline fn writeByte(self: *Self, b: u8) Error!void {
             self.dropPendingKeywordSpace(b);
             try self.pushByte(b);
-            if (self.sm) |*sm| {
+            if (comptime source_maps) if (self.sm) |*sm| {
                 if (b == '\n') {
                     sm.gen_line += 1;
                     sm.gen_col = 0;
                 } else sm.gen_col += 1;
-            }
+            };
         }
 
         inline fn writeStr(self: *Self, s: []const u8) Error!void {
             if (s.len == 0) return;
             self.dropPendingKeywordSpace(s[0]);
             try self.pushSlice(s);
-            if (self.sm) |*sm| sm.advance(s);
+            if (comptime source_maps) if (self.sm) |*sm| sm.advance(s);
         }
 
         /// In compact mode, drop the trailing ` ` from a just-written `keyword `
@@ -240,7 +242,7 @@ fn Printer(comptime cfg: Config) type {
             if (items.len < 2 or items[items.len - 1] != ' ') return;
             if (utils.isIdCont(items[items.len - 2]) and !utils.isIdCont(next)) {
                 _ = self.code.pop();
-                if (self.sm) |*sm| if (sm.gen_col > 0) {
+                if (comptime source_maps) if (self.sm) |*sm| if (sm.gen_col > 0) {
                     sm.gen_col -= 1;
                 };
             }
@@ -287,14 +289,14 @@ fn Printer(comptime cfg: Config) type {
         inline fn cursor(self: *const Self) Cursor {
             return .{
                 .code = self.code.items.len,
-                .sm = if (self.sm) |sm| sm.snapshot() else null,
+                .sm = if (comptime source_maps) (if (self.sm) |sm| sm.snapshot() else null) else null,
             };
         }
 
         inline fn restore(self: *Self, c: Cursor) void {
             std.debug.assert(c.code <= self.code.items.len);
             self.code.shrinkRetainingCapacity(c.code);
-            if (c.sm) |snap| if (self.sm) |*sm| sm.restore(snap);
+            if (comptime source_maps) if (c.sm) |snap| if (self.sm) |*sm| sm.restore(snap);
         }
 
         fn tryEmit(self: *Self, idx: NodeIndex) Error!bool {
@@ -476,10 +478,10 @@ fn Printer(comptime cfg: Config) type {
             if (c.type == .block) {
                 try self.writeBlockBody(value);
                 try self.pushSlice("*/");
-                if (self.sm) |*sm| sm.advance("*/");
+                if (comptime source_maps) if (self.sm) |*sm| sm.advance("*/");
             } else {
                 try self.pushSlice(value);
-                if (self.sm) |*sm| sm.advance(value);
+                if (comptime source_maps) if (self.sm) |*sm| sm.advance(value);
             }
         }
 
@@ -490,7 +492,7 @@ fn Printer(comptime cfg: Config) type {
         fn writeBlockBody(self: *Self, value: []const u8) Error!void {
             if (!self.pretty() or !utils.isJsdocBody(value)) {
                 try self.pushSlice(value);
-                if (self.sm) |*sm| sm.advance(value);
+                if (comptime source_maps) if (self.sm) |*sm| sm.advance(value);
                 return;
             }
             var it = std.mem.splitScalar(u8, value, '\n');
@@ -515,10 +517,14 @@ fn Printer(comptime cfg: Config) type {
             try self.code.ensureUnusedCapacity(self.allocator, 1 + n);
             if (self.code.items[self.code.items.len - 1] != '\n') {
                 self.code.appendAssumeCapacity('\n');
-                if (self.sm) |*sm| sm.gen_line += 1;
+                if (comptime source_maps) if (self.sm) |*sm| {
+                    sm.gen_line += 1;
+                };
             }
             if (n > 0) self.code.appendNTimesAssumeCapacity(' ', n);
-            if (self.sm) |*sm| sm.gen_col = n;
+            if (comptime source_maps) if (self.sm) |*sm| {
+                sm.gen_col = n;
+            };
         }
 
         // records a source-map segment for idx, skipping synthetic spans
@@ -1820,7 +1826,7 @@ fn Printer(comptime cfg: Config) type {
             // capture the parent node's mapping before decorator content
             // writes its own and re-record it after, so the text that
             // follows the decorators still maps back to the parent.
-            const carry: ?sourcemap.Segment = if (self.sm) |*sm| sm.lastMapping() else null;
+            const carry: ?sourcemap.Segment = if (comptime source_maps) (if (self.sm) |*sm| sm.lastMapping() else null) else null;
             for (list, 0..) |d, i| {
                 try self.emit(d);
                 // `@a.b class` would fuse to `@a.bclass` without a separator.
@@ -1830,7 +1836,7 @@ fn Printer(comptime cfg: Config) type {
                     try self.writeByte(' ');
                 }
             }
-            if (carry) |c| if (self.sm) |*sm| {
+            if (comptime source_maps) if (carry) |c| if (self.sm) |*sm| {
                 try sm.record(self.allocator, c.orig_line, c.orig_col);
             };
         }
