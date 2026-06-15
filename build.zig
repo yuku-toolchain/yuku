@@ -16,15 +16,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const enable_source_maps = b.option(
-        bool,
-        "codegen-source-maps",
-        "Compile source-map support into the code generator (default true)",
-    ) orelse true;
-
-    const codegen_options = b.addOptions();
-    codegen_options.addOption(bool, "source_maps", enable_source_maps);
-
     const parser_module = b.addModule("parser", .{
         .root_source_file = b.path("src/parser/root.zig"),
         .target = target,
@@ -32,7 +23,6 @@ pub fn build(b: *std.Build) void {
     });
 
     parser_module.addImport("util", util_module);
-    parser_module.addImport("codegen_options", codegen_options.createModule());
 
     const profiler_module = b.createModule(.{
         .root_source_file = b.path("profiler/profile.zig"),
