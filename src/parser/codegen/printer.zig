@@ -131,6 +131,33 @@ pub fn printImpl(
     return .{ .code = code, .errors = errors, .map = map };
 }
 
+/// Tags whose emit is a single fixed string. Centralizing these trivial
+/// keyword/punctuation nodes lets `emitNode` handle them in one branch
+/// instead of a per-tag `emit_*` function each.
+fn fixedString(comptime tag: std.meta.Tag(NodeData)) ?[]const u8 {
+    return switch (tag) {
+        .super => "super",
+        .this_expression, .ts_this_type => "this",
+        .null_literal, .ts_null_keyword => "null",
+        .ts_any_keyword => "any",
+        .ts_unknown_keyword => "unknown",
+        .ts_never_keyword => "never",
+        .ts_void_keyword => "void",
+        .ts_undefined_keyword => "undefined",
+        .ts_string_keyword => "string",
+        .ts_number_keyword => "number",
+        .ts_bigint_keyword => "bigint",
+        .ts_boolean_keyword => "boolean",
+        .ts_symbol_keyword => "symbol",
+        .ts_object_keyword => "object",
+        .ts_intrinsic_keyword => "intrinsic",
+        .ts_jsdoc_unknown_type => "?",
+        .jsx_opening_fragment => "<>",
+        .jsx_closing_fragment => "</>",
+        else => null,
+    };
+}
+
 fn Printer(comptime cfg: Config) type {
     return struct {
         const Self = @This();
@@ -254,6 +281,35 @@ fn Printer(comptime cfg: Config) type {
 
         inline fn space(self: *Self) Error!void {
             if (self.pretty()) try self.writeByte(' ');
+        }
+
+        /// `, ` list separator (just `,` in compact mode).
+        inline fn comma(self: *Self) Error!void {
+            try self.writeByte(',');
+            try self.space();
+        }
+
+        /// ` = ` with surrounding spaces (just `=` in compact mode).
+        inline fn printEq(self: *Self) Error!void {
+            try self.space();
+            try self.writeByte('=');
+            try self.space();
+        }
+
+        /// Emits `items` as a `, `-separated list.
+        fn emitList(self: *Self, items: IndexRange) Error!void {
+            for (self.tree.extra(items), 0..) |x, i| {
+                if (i > 0) try self.comma();
+                try self.emit(x);
+            }
+        }
+
+        /// Trailing `?`/`!`/type-annotation shared by binding identifiers and
+        /// array/object patterns.
+        fn printBindingSuffix(self: *Self, optional: bool, definite: bool, annotation: NodeIndex) Error!void {
+            if (comptime !strip_ts) if (optional) try self.writeByte('?');
+            if (definite) try self.writeByte('!');
+            try self.emit(annotation);
         }
 
         /// takes the parked `!`, clearing it so it never leaks into a nested
@@ -389,11 +445,15 @@ fn Printer(comptime cfg: Config) type {
 
             switch (self.node_data[@intFromEnum(idx)]) {
                 inline else => |*node, tag| {
-                    const fn_name = "emit_" ++ @tagName(tag);
-                    if (comptime @hasDecl(Self, fn_name)) {
-                        try @field(Self, fn_name)(self, node);
+                    if (comptime fixedString(tag)) |s| {
+                        try self.writeStr(s);
                     } else {
-                        std.debug.panic("codegen: not implemented for {s}", .{@tagName(tag)});
+                        const fn_name = "emit_" ++ @tagName(tag);
+                        if (comptime @hasDecl(Self, fn_name)) {
+                            try @field(Self, fn_name)(self, node);
+                        } else {
+                            std.debug.panic("codegen: not implemented for {s}", .{@tagName(tag)});
+                        }
                     }
                 },
             }
@@ -903,14 +963,7 @@ fn Printer(comptime cfg: Config) type {
             if (comptime !strip_ts) if (d.declare) try self.writeStr("declare ");
             try self.writeStr(d.kind.toString());
             try self.writeByte(' ');
-            const list = self.tree.extra(d.declarators);
-            for (list, 0..) |dx, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(dx);
-            }
+            try self.emitList(d.declarators);
             if (with_semicolon) try self.softSemi();
         }
 
@@ -922,22 +975,13 @@ fn Printer(comptime cfg: Config) type {
             std.debug.assert(!self.definite_pending);
             if (d.init != .null) {
                 try self.separateBangFromAssign();
-                try self.space();
-                try self.writeByte('=');
-                try self.space();
+                try self.printEq();
                 try self.emit(d.init);
             }
         }
 
         fn emit_sequence_expression(self: *Self, e: *const ast.SequenceExpression) Error!void {
-            const list = self.tree.extra(e.expressions);
-            for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(x);
-            }
+            try self.emitList(e.expressions);
         }
 
         fn emit_parenthesized_expression(self: *Self, e: *const ast.ParenthesizedExpression) Error!void {
@@ -1087,10 +1131,7 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte('[');
             const list = self.tree.extra(e.elements);
             for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
+                if (i > 0) try self.comma();
                 if (in_target) try self.emitAssignTarget(x) else try self.emit(x);
             }
             // a trailing hole needs its own comma, else `[a,]` is one element
@@ -1109,10 +1150,7 @@ fn Printer(comptime cfg: Config) type {
             if (list.len > 0) {
                 try self.space();
                 for (list, 0..) |x, i| {
-                    if (i > 0) {
-                        try self.writeByte(',');
-                        try self.space();
-                    }
+                    if (i > 0) try self.comma();
                     self.in_assign_target = in_target;
                     try self.emit(x);
                 }
@@ -1245,24 +1283,9 @@ fn Printer(comptime cfg: Config) type {
             try self.emit(p.property);
         }
 
-        fn emit_super(self: *Self, _: *const ast.Super) Error!void {
-            try self.writeStr("super");
-        }
-
-        fn emit_this_expression(self: *Self, _: *const ast.ThisExpression) Error!void {
-            try self.writeStr("this");
-        }
-
         fn printArgList(self: *Self, args: IndexRange) Error!void {
             try self.writeByte('(');
-            const list = self.tree.extra(args);
-            for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(x);
-            }
+            try self.emitList(args);
             try self.writeByte(')');
         }
 
@@ -1384,10 +1407,6 @@ fn Printer(comptime cfg: Config) type {
             }
         }
 
-        fn emit_null_literal(self: *Self, _: *const ast.NullLiteral) Error!void {
-            try self.writeStr("null");
-        }
-
         fn emit_regexp_literal(self: *Self, lit: *const ast.RegExpLiteral) Error!void {
             try self.writeByte('/');
             try self.writeString(lit.pattern);
@@ -1396,14 +1415,19 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_template_literal(self: *Self, lit: *const ast.TemplateLiteral) Error!void {
+            try self.printTemplate(lit.quasis, lit.expressions);
+        }
+
+        /// Emits a `` `…${…}…` `` template; `subs` are the expressions (value
+        /// template) or types (type template) interleaved between `quasis`.
+        fn printTemplate(self: *Self, quasis: IndexRange, subs: IndexRange) Error!void {
             try self.writeByte('`');
-            const quasis = self.tree.extra(lit.quasis);
-            const exprs = self.tree.extra(lit.expressions);
-            for (quasis, 0..) |q, i| {
+            const xs = self.tree.extra(subs);
+            for (self.tree.extra(quasis), 0..) |q, i| {
                 try self.emit(q);
-                if (i < exprs.len) {
+                if (i < xs.len) {
                     try self.writeStr("${");
-                    try self.emit(exprs[i]);
+                    try self.emit(xs[i]);
                     try self.writeByte('}');
                 }
             }
@@ -1472,9 +1496,7 @@ fn Printer(comptime cfg: Config) type {
             const definite = self.takeDefinite();
             if (comptime !strip_ts) try self.printDecorators(id.decorators);
             try self.writeString(id.name);
-            if (comptime !strip_ts) if (id.optional) try self.writeByte('?');
-            if (definite) try self.writeByte('!');
-            try self.emit(id.type_annotation);
+            try self.printBindingSuffix(id.optional, definite, id.type_annotation);
         }
 
         fn emit_label_identifier(self: *Self, id: *const ast.LabelIdentifier) Error!void {
@@ -1492,9 +1514,7 @@ fn Printer(comptime cfg: Config) type {
             if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
             try self.emit(p.type_annotation);
             try self.separateBangFromAssign();
-            try self.space();
-            try self.writeByte('=');
-            try self.space();
+            try self.printEq();
             try self.emit(p.right);
         }
 
@@ -1512,26 +1532,18 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte('[');
             const list = self.tree.extra(p.elements);
             for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
+                if (i > 0) try self.comma();
                 try self.emitAssignTarget(x);
             }
             if (p.rest != .null) {
-                if (list.len > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
+                if (list.len > 0) try self.comma();
                 try self.emit(p.rest);
             } else if (list.len > 0 and list[list.len - 1] == .null) {
                 // a trailing hole needs its own comma, else `[a,]` is one element
                 try self.writeByte(',');
             }
             try self.writeByte(']');
-            if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
-            if (definite) try self.writeByte('!');
-            try self.emit(p.type_annotation);
+            try self.printBindingSuffix(p.optional, definite, p.type_annotation);
         }
 
         fn emit_object_pattern(self: *Self, p: *const ast.ObjectPattern) Error!void {
@@ -1542,24 +1554,16 @@ fn Printer(comptime cfg: Config) type {
             const has_any = list.len > 0 or p.rest != .null;
             if (has_any) try self.space();
             for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
+                if (i > 0) try self.comma();
                 try self.emit(x);
             }
             if (p.rest != .null) {
-                if (list.len > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
+                if (list.len > 0) try self.comma();
                 try self.emit(p.rest);
             }
             if (has_any) try self.space();
             try self.writeByte('}');
-            if (comptime !strip_ts) if (p.optional) try self.writeByte('?');
-            if (definite) try self.writeByte('!');
-            try self.emit(p.type_annotation);
+            try self.printBindingSuffix(p.optional, definite, p.type_annotation);
         }
 
         fn emit_binding_property(self: *Self, p: *const ast.BindingProperty) Error!void {
@@ -1631,15 +1635,7 @@ fn Printer(comptime cfg: Config) type {
                 try self.writeByte(' ');
                 try self.emit(f.id);
             }
-            try self.emit(f.type_parameters);
-            try self.emit(f.params);
-            try self.emit(f.return_type);
-            if (f.body != .null) {
-                try self.space();
-                try self.emit(f.body);
-            } else if (comptime !strip_ts) {
-                try self.softSemi();
-            }
+            try self.printFunctionAsMethod(f.*);
         }
 
         fn printFunctionAsMethod(self: *Self, f: ast.Function) Error!void {
@@ -1710,16 +1706,9 @@ fn Printer(comptime cfg: Config) type {
                 try self.emit(c.super_type_arguments);
             }
             if (comptime !strip_ts) {
-                const impl = self.tree.extra(c.implements);
-                if (impl.len > 0) {
+                if (self.tree.extra(c.implements).len > 0) {
                     try self.writeStr(" implements ");
-                    for (impl, 0..) |i, idx| {
-                        if (idx > 0) {
-                            try self.writeByte(',');
-                            try self.space();
-                        }
-                        try self.emit(i);
-                    }
+                    try self.emitList(c.implements);
                 }
             }
             try self.space();
@@ -1807,9 +1796,7 @@ fn Printer(comptime cfg: Config) type {
             }
             try self.emit(p.type_annotation);
             if (p.value != .null) {
-                try self.space();
-                try self.writeByte('=');
-                try self.space();
+                try self.printEq();
                 try self.emit(p.value);
             }
             try self.softSemi();
@@ -1866,10 +1853,7 @@ fn Printer(comptime cfg: Config) type {
                     i = 1;
                 }
                 if (i < list.len) {
-                    if (i > 0) {
-                        try self.writeByte(',');
-                        try self.space();
-                    }
+                    if (i > 0) try self.comma();
                     if (self.nodeData(list[i]) == .import_namespace_specifier) {
                         try self.emit(list[i]);
                     } else {
@@ -2026,13 +2010,7 @@ fn Printer(comptime cfg: Config) type {
             try self.writeStr(" with ");
             try self.writeByte('{');
             try self.space();
-            for (list, 0..) |a, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(a);
-            }
+            try self.emitList(attrs);
             try self.space();
             try self.writeByte('}');
         }
@@ -2041,49 +2019,6 @@ fn Printer(comptime cfg: Config) type {
             try self.writeByte(':');
             try self.space();
             try self.emit(t.type_annotation);
-        }
-
-        fn emit_ts_any_keyword(self: *Self, _: *const ast.TSAnyKeyword) Error!void {
-            try self.writeStr("any");
-        }
-        fn emit_ts_unknown_keyword(self: *Self, _: *const ast.TSUnknownKeyword) Error!void {
-            try self.writeStr("unknown");
-        }
-        fn emit_ts_never_keyword(self: *Self, _: *const ast.TSNeverKeyword) Error!void {
-            try self.writeStr("never");
-        }
-        fn emit_ts_void_keyword(self: *Self, _: *const ast.TSVoidKeyword) Error!void {
-            try self.writeStr("void");
-        }
-        fn emit_ts_null_keyword(self: *Self, _: *const ast.TSNullKeyword) Error!void {
-            try self.writeStr("null");
-        }
-        fn emit_ts_undefined_keyword(self: *Self, _: *const ast.TSUndefinedKeyword) Error!void {
-            try self.writeStr("undefined");
-        }
-        fn emit_ts_string_keyword(self: *Self, _: *const ast.TSStringKeyword) Error!void {
-            try self.writeStr("string");
-        }
-        fn emit_ts_number_keyword(self: *Self, _: *const ast.TSNumberKeyword) Error!void {
-            try self.writeStr("number");
-        }
-        fn emit_ts_bigint_keyword(self: *Self, _: *const ast.TSBigIntKeyword) Error!void {
-            try self.writeStr("bigint");
-        }
-        fn emit_ts_boolean_keyword(self: *Self, _: *const ast.TSBooleanKeyword) Error!void {
-            try self.writeStr("boolean");
-        }
-        fn emit_ts_symbol_keyword(self: *Self, _: *const ast.TSSymbolKeyword) Error!void {
-            try self.writeStr("symbol");
-        }
-        fn emit_ts_object_keyword(self: *Self, _: *const ast.TSObjectKeyword) Error!void {
-            try self.writeStr("object");
-        }
-        fn emit_ts_intrinsic_keyword(self: *Self, _: *const ast.TSIntrinsicKeyword) Error!void {
-            try self.writeStr("intrinsic");
-        }
-        fn emit_ts_this_type(self: *Self, _: *const ast.TSThisType) Error!void {
-            try self.writeStr("this");
         }
 
         fn emit_ts_type_reference(self: *Self, t: *const ast.TSTypeReference) Error!void {
@@ -2145,43 +2080,30 @@ fn Printer(comptime cfg: Config) type {
                 try self.emit(p.constraint);
             }
             if (p.default != .null) {
-                try self.space();
-                try self.writeByte('=');
-                try self.space();
+                try self.printEq();
                 try self.emit(p.default);
             }
+        }
+
+        /// `<…>` comma-separated type parameter/argument list.
+        fn printAngleList(self: *Self, params: IndexRange) Error!void {
+            try self.writeByte('<');
+            try self.emitList(params);
+            try self.writeByte('>');
         }
 
         fn emit_ts_type_parameter_declaration(
             self: *Self,
             d: *const ast.TSTypeParameterDeclaration,
         ) Error!void {
-            try self.writeByte('<');
-            const list = self.tree.extra(d.params);
-            for (list, 0..) |p, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(p);
-            }
-            try self.writeByte('>');
+            try self.printAngleList(d.params);
         }
 
         fn emit_ts_type_parameter_instantiation(
             self: *Self,
             d: *const ast.TSTypeParameterInstantiation,
         ) Error!void {
-            try self.writeByte('<');
-            const list = self.tree.extra(d.params);
-            for (list, 0..) |p, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(p);
-            }
-            try self.writeByte('>');
+            try self.printAngleList(d.params);
         }
 
         fn emit_ts_literal_type(self: *Self, t: *const ast.TSLiteralType) Error!void {
@@ -2196,18 +2118,7 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_ts_template_literal_type(self: *Self, t: *const ast.TSTemplateLiteralType) Error!void {
-            try self.writeByte('`');
-            const quasis = self.tree.extra(t.quasis);
-            const types = self.tree.extra(t.types);
-            for (quasis, 0..) |q, i| {
-                try self.emit(q);
-                if (i < types.len) {
-                    try self.writeStr("${");
-                    try self.emit(types[i]);
-                    try self.writeByte('}');
-                }
-            }
-            try self.writeByte('`');
+            try self.printTemplate(t.quasis, t.types);
         }
 
         fn emit_ts_array_type(self: *Self, t: *const ast.TSArrayType) Error!void {
@@ -2224,14 +2135,7 @@ fn Printer(comptime cfg: Config) type {
 
         fn emit_ts_tuple_type(self: *Self, t: *const ast.TSTupleType) Error!void {
             try self.writeByte('[');
-            const list = self.tree.extra(t.element_types);
-            for (list, 0..) |x, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(x);
-            }
+            try self.emitList(t.element_types);
             try self.writeByte(']');
         }
 
@@ -2271,10 +2175,6 @@ fn Printer(comptime cfg: Config) type {
                 try self.writeByte('!');
                 try self.emit(t.type_annotation);
             }
-        }
-
-        fn emit_ts_jsdoc_unknown_type(self: *Self, _: *const ast.TSJSDocUnknownType) Error!void {
-            try self.writeByte('?');
         }
 
         fn emit_ts_union_type(self: *Self, t: *const ast.TSUnionType) Error!void {
@@ -2336,23 +2236,23 @@ fn Printer(comptime cfg: Config) type {
         }
 
         fn emit_ts_function_type(self: *Self, t: *const ast.TSFunctionType) Error!void {
-            try self.emit(t.type_parameters);
-            try self.emit(t.params);
-            try self.space();
-            try self.writeStr("=>");
-            try self.space();
-            try self.emitUnwrappedType(t.return_type);
+            try self.printArrowType(t.type_parameters, t.params, t.return_type);
         }
 
         fn emit_ts_constructor_type(self: *Self, t: *const ast.TSConstructorType) Error!void {
             if (t.abstract) try self.writeStr("abstract ");
             try self.writeStr("new ");
-            try self.emit(t.type_parameters);
-            try self.emit(t.params);
+            try self.printArrowType(t.type_parameters, t.params, t.return_type);
+        }
+
+        /// `<T>(params) => Return` shared by function and constructor types.
+        fn printArrowType(self: *Self, type_parameters: NodeIndex, params: NodeIndex, return_type: NodeIndex) Error!void {
+            try self.emit(type_parameters);
+            try self.emit(params);
             try self.space();
             try self.writeStr("=>");
             try self.space();
-            try self.emitUnwrappedType(t.return_type);
+            try self.emitUnwrappedType(return_type);
         }
 
         /// strips the `ts_type_annotation` wrapper before emitting. used for
@@ -2455,9 +2355,14 @@ fn Printer(comptime cfg: Config) type {
             }
             try self.printPropertyKey(s.key, s.computed);
             if (s.optional) try self.writeByte('?');
-            try self.emit(s.type_parameters);
-            try self.emit(s.params);
-            if (s.return_type != .null) try self.emit(s.return_type);
+            try self.printSignatureTail(s.type_parameters, s.params, s.return_type);
+        }
+
+        /// `<T>(params): Return;` tail shared by call/construct/method signatures.
+        fn printSignatureTail(self: *Self, type_parameters: NodeIndex, params: NodeIndex, return_type: NodeIndex) Error!void {
+            try self.emit(type_parameters);
+            try self.emit(params);
+            if (return_type != .null) try self.emit(return_type);
             try self.softSemi();
         }
 
@@ -2465,10 +2370,7 @@ fn Printer(comptime cfg: Config) type {
             self: *Self,
             s: *const ast.TSCallSignatureDeclaration,
         ) Error!void {
-            try self.emit(s.type_parameters);
-            try self.emit(s.params);
-            if (s.return_type != .null) try self.emit(s.return_type);
-            try self.softSemi();
+            try self.printSignatureTail(s.type_parameters, s.params, s.return_type);
         }
 
         fn emit_ts_construct_signature_declaration(
@@ -2476,24 +2378,14 @@ fn Printer(comptime cfg: Config) type {
             s: *const ast.TSConstructSignatureDeclaration,
         ) Error!void {
             try self.writeStr("new ");
-            try self.emit(s.type_parameters);
-            try self.emit(s.params);
-            if (s.return_type != .null) try self.emit(s.return_type);
-            try self.softSemi();
+            try self.printSignatureTail(s.type_parameters, s.params, s.return_type);
         }
 
         fn emit_ts_index_signature(self: *Self, s: *const ast.TSIndexSignature) Error!void {
             if (s.static) try self.writeStr("static ");
             if (s.readonly) try self.writeStr("readonly ");
             try self.writeByte('[');
-            const params = self.tree.extra(s.parameters);
-            for (params, 0..) |p, i| {
-                if (i > 0) {
-                    try self.writeByte(',');
-                    try self.space();
-                }
-                try self.emit(p);
-            }
+            try self.emitList(s.parameters);
             try self.writeByte(']');
             try self.emit(s.type_annotation);
             try self.softSemi();
@@ -2521,9 +2413,7 @@ fn Printer(comptime cfg: Config) type {
             try self.writeStr("type ");
             try self.emit(d.id);
             try self.emit(d.type_parameters);
-            try self.space();
-            try self.writeByte('=');
-            try self.space();
+            try self.printEq();
             try self.emit(d.type_annotation);
             try self.softSemi();
         }
@@ -2533,16 +2423,9 @@ fn Printer(comptime cfg: Config) type {
             try self.writeStr("interface ");
             try self.emit(d.id);
             try self.emit(d.type_parameters);
-            const heritage = self.tree.extra(d.extends);
-            if (heritage.len > 0) {
+            if (self.tree.extra(d.extends).len > 0) {
                 try self.writeStr(" extends ");
-                for (heritage, 0..) |h, i| {
-                    if (i > 0) {
-                        try self.writeByte(',');
-                        try self.space();
-                    }
-                    try self.emit(h);
-                }
+                try self.emitList(d.extends);
             }
             try self.space();
             try self.emit(d.body);
@@ -2596,9 +2479,7 @@ fn Printer(comptime cfg: Config) type {
                 try self.emit(m.id);
             }
             if (m.initializer != .null) {
-                try self.space();
-                try self.writeByte('=');
-                try self.space();
+                try self.printEq();
                 try self.emit(m.initializer);
             }
         }
@@ -2665,9 +2546,7 @@ fn Printer(comptime cfg: Config) type {
 
         fn emit_ts_export_assignment(self: *Self, e: *const ast.TSExportAssignment) Error!void {
             try self.writeStr("export");
-            try self.space();
-            try self.writeByte('=');
-            try self.space();
+            try self.printEq();
             try self.emit(e.expression);
             try self.softSemi();
         }
@@ -2688,9 +2567,7 @@ fn Printer(comptime cfg: Config) type {
             try self.writeStr("import ");
             if (d.import_kind == .type) try self.writeStr("type ");
             try self.emit(d.id);
-            try self.space();
-            try self.writeByte('=');
-            try self.space();
+            try self.printEq();
             try self.emit(d.module_reference);
             try self.softSemi();
         }
@@ -2752,14 +2629,6 @@ fn Printer(comptime cfg: Config) type {
             try self.emit(f.opening_fragment);
             for (self.tree.extra(f.children)) |c| try self.emit(c);
             try self.emit(f.closing_fragment);
-        }
-
-        fn emit_jsx_opening_fragment(self: *Self, _: *const ast.JSXOpeningFragment) Error!void {
-            try self.writeStr("<>");
-        }
-
-        fn emit_jsx_closing_fragment(self: *Self, _: *const ast.JSXClosingFragment) Error!void {
-            try self.writeStr("</>");
         }
 
         fn emit_jsx_identifier(self: *Self, id: *const ast.JSXIdentifier) Error!void {
