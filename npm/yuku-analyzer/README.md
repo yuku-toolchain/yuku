@@ -7,10 +7,8 @@ Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved 
 **At native speed.** Up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with zero per-query cost after the single native call. Stitch those separate tools together yourself and the gap only widens: each re-walks the AST, you re-parse to resolve across files, and you keep the indexes between them in sync by hand. `yuku-analyzer` pays all of that once, in Zig.
 
 ```bash
-npm install yuku-analyzer yuku-parser
+npm install yuku-analyzer
 ```
-
-`yuku-parser` is a peer dependency.
 
 ## Quick start
 
@@ -137,7 +135,7 @@ Concretely, on an Apple M-series machine: parsing plus complete semantic analysi
 
 ## TypeScript
 
-Everything is fully typed. Visitor handlers receive exact node types, AST types come from `yuku-parser`, and the semantic surface (`Module`, `Scope`, `Symbol`, `Reference`, `Import`, `Export`, `Capture`) is exported:
+Everything is fully typed. Visitor handlers receive exact node types, and the semantic surface (`Module`, `Scope`, `Symbol`, `Reference`, `Import`, `Export`, `Capture`) is exported:
 
 ```ts
 import type { Module, Symbol, Capture } from "yuku-analyzer";
