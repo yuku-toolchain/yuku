@@ -56,39 +56,6 @@ pub fn build(b: *std.Build) void {
     const profile_step = b.step("profile", "Run profiler");
     profile_step.dependOn(&profile_cmd.step);
 
-    // Standalone codegen benchmark harness (vs oxc_codegen). Built in
-    // ReleaseFast by default; pass a file path at run time. See bench/codegen/.
-    const bench_codegen_options = b.addOptions();
-    bench_codegen_options.addOption(bool, "source_maps", false);
-
-    const bench_parser_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/root.zig"),
-        .target = target,
-        .optimize = .ReleaseFast,
-    });
-    bench_parser_module.addImport("util", util_module);
-    bench_parser_module.addImport("codegen_options", bench_codegen_options.createModule());
-
-    const codegen_bench_module = b.createModule(.{
-        .root_source_file = b.path("bench/codegen/yuku.zig"),
-        .target = target,
-        .optimize = .ReleaseFast,
-        // Use system malloc for codegen output, matching oxc's allocator.
-        .link_libc = true,
-    });
-    codegen_bench_module.addImport("parser", bench_parser_module);
-
-    const codegen_bench_exe = b.addExecutable(.{
-        .name = "yuku-codegen-bench",
-        .root_module = codegen_bench_module,
-    });
-    b.installArtifact(codegen_bench_exe);
-
-    const codegen_bench_run = b.addRunArtifact(codegen_bench_exe);
-    if (b.args) |run_args| codegen_bench_run.addArgs(run_args);
-    const codegen_bench_step = b.step("codegen-bench", "Build/run the yuku codegen benchmark");
-    codegen_bench_step.dependOn(&codegen_bench_run.step);
-
     const gen_unicode_id_table = b.addExecutable(.{
         .name = "gen-unicode-id",
         .root_module = b.createModule(.{
