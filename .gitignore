@@ -16,3 +16,6 @@ yuku-*.*
 typescript
 
 !playground/dist/**
+
+# Rust codegen benchmark build artifacts
+target/

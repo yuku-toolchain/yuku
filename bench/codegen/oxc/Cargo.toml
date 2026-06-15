@@ -1,0 +1,24 @@
+[package]
+name = "oxc-codegen-bench"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "oxc-codegen-bench"
+path = "src/main.rs"
+
+[dependencies]
+oxc_allocator = "0.135.0"
+oxc_parser = "0.135.0"
+oxc_codegen = "0.135.0"
+oxc_span = "0.135.0"
+
+# Mirror oxc's own production release profile so the comparison gives
+# oxc_codegen its best-case performance (a conservative baseline for yuku).
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
