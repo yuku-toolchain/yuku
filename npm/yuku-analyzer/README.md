@@ -117,7 +117,9 @@ module.dependents;      // modules that import this file
 analyzer.diagnostics;   // e.g. "Module './lib.ts' has no export 'helpr'"
 ```
 
-Linking is automatic: every cross-file surface relinks on demand after files change. Call `analyzer.link()` explicitly if you want to control when the work happens.
+Linking is automatic: every cross-file surface relinks on demand after files change. Re-adding a path replaces its module with a new object and relinks, and removing it relinks too. Call `analyzer.link()` explicitly if you want to control when the work happens.
+
+Module records and linking model ECMAScript and TypeScript module syntax, so CommonJS `require` and `module.exports` are ordinary code rather than records and take no part in linking. Per-file scopes, symbols, and references are still computed for CommonJS sources.
 
 Module resolution is pluggable. The default resolves relative specifiers among added files with standard extension and index probing. Pass your own resolver for anything else:
 

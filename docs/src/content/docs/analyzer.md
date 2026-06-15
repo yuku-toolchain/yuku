@@ -75,7 +75,7 @@ analyzer.addFile("legacy.cjs", source, {
 });
 ```
 
-Adding a path that already exists replaces the module and marks the graph for relinking.
+Adding a path that already exists replaces the module and marks the graph for relinking. The call returns a new `Module`, and any scopes, symbols, or nodes you held from the previous version belong to that earlier parse. A change in `analyzer.module(path)` identity is the signal to drop a cache keyed on the old one.
 
 ### Module resolution
 
@@ -120,7 +120,7 @@ module.imports;              // Import[], in source order
 module.exports;              // Export[], in source order
 ```
 
-Ids are stable per parse: `(module.path, symbol.id)` is a persistable key, which matters for caches and incremental tooling.
+Ids are stable within a parse: `(module.path, symbol.id)` is a persistable key for caches and incremental tooling. Re-adding a path reparses it into a new `Module` and can renumber, so pair the key with module identity and invalidate when `analyzer.module(path)` changes.
 
 ## Scopes
 
@@ -367,6 +367,8 @@ for (const exp of module.exports) {
 ```
 
 Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. TypeScript's legacy module forms (`export =`, `export as namespace`) are recorded with their own kinds, so ESM tooling never mistakes them for named exports. Tools built on these records inherit the spec behavior instead of approximating it.
+
+These records cover ECMAScript module syntax and TypeScript's module forms (`import` / `export`, `import type`, `export =`, `export as namespace`). CommonJS is ordinary code rather than module syntax, so `require`, `module.exports`, and `exports.x` produce no import or export records and take no part in linking. Everything per file (scopes, symbols, references, captures) is computed for CommonJS sources the same way.
 
 ### Linking
 
