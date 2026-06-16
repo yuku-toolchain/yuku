@@ -1,6 +1,6 @@
 {
   "name": "@yuku-toolchain/types",
-  "version": "0.5.37",
+  "version": "0.5.38",
   "description": "Shared AST, diagnostic, and traversal type definitions for the yuku toolchain",
   "keywords": [
     "ast",
