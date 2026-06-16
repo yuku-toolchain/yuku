@@ -100,6 +100,20 @@ jobs:
       - name: Build wasm packages
         run: bun run build:wasm
 
+      - name: Check generated files are current
+        run: |
+          git diff --exit-code -- \
+            npm/yuku-parser/decode.js \
+            npm/yuku-codegen/encode.js \
+            npm/yuku-analyzer/decode.js \
+            npm/yuku-analyzer/index.d.ts \
+            npm/yuku-analyzer/engine.js \
+            npm/yuku-parser-wasm/decode.js \
+            npm/yuku-parser-wasm/walk.js \
+            npm/yuku-parser-wasm/index.d.ts \
+            npm/yuku-codegen-wasm/encode.js \
+          || { echo "::error::Generated files are out of date. Run 'bun run build:npm && bun run build:wasm' and commit the result."; exit 1; }
+
       - name: Zig tests
         run: zig build test
 

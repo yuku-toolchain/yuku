@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       41/41 (100.00%)
+Passed:       42/42 (100.00%)
 Failed:       0
-AST mismatch: 0/41
+AST mismatch: 0/42
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -51,6 +51,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/misc/js/bigint-class-property-key.js
 ✓ test/parser/misc/js/bigint-object-key.js
 ✓ test/parser/misc/js/binary-literal-with-separator.js
+✓ test/parser/misc/js/class-accessor-modifier-names.js
 ✓ test/parser/misc/js/class-extends-simple-arrow-function.js
 error: Expected '{' to start class body, but found '=>'
    |

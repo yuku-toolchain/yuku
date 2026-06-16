@@ -807,6 +807,11 @@ pub const SymbolTracker = struct {
                 if (decl.declare) self.ambient = true;
             },
 
+            .ts_global_declaration => {
+                try self.pushSavedContext();
+                self.ambient = true;
+            },
+
             .ts_namespace_export_declaration => {
                 try self.pushSavedContext();
                 self.binding_flags = .{ .namespace_module = true };
@@ -968,6 +973,7 @@ pub const SymbolTracker = struct {
             .ts_type_alias_declaration,
             .ts_enum_declaration,
             .ts_module_declaration,
+            .ts_global_declaration,
             .ts_namespace_export_declaration,
             .ts_type_parameter,
             .ts_mapped_type,

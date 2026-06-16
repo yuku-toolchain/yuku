@@ -189,7 +189,6 @@ pub fn build(b: *std.Build) void {
     inline for ([_]struct { name: []const u8, root: []const u8 }{
         .{ .name = "yuku-parser", .root = "src/parser/ffi/wasm/parser.zig" },
         .{ .name = "yuku-codegen", .root = "src/parser/ffi/wasm/codegen.zig" },
-        .{ .name = "yuku-analyzer", .root = "src/parser/ffi/wasm/analyzer.zig" },
     }) |cfg| {
         const wasm_module = b.createModule(.{
             .root_source_file = b.path(cfg.root),

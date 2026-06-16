@@ -1275,6 +1275,8 @@ function decode(buffer, source) {
       }
     }
     let o = ((dp + 3) & ~3) >> 2;
+    if (o + 8 > _u32.length)
+      throw new RangeError("yuku-analyzer: truncated semantic sub-header");
     const scopeCount = _u32[o], symbolCount = _u32[o + 1],
           referenceCount = _u32[o + 2], declNodeCount = _u32[o + 3],
           importCount = _u32[o + 4], exportCount = _u32[o + 5],
@@ -1294,6 +1296,8 @@ function decode(buffer, source) {
     o += exportCount * 10;
     const nodeScopes = _u32.subarray(o, o + nodeScopeCount);
     o += nodeScopeCount;
+    if (o > _u32.length)
+      throw new RangeError("yuku-analyzer: truncated semantic sections");
     const _id = (v) => v === NULL ? null : v;
     return (_semView = {
       scope: {

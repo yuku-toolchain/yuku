@@ -11,6 +11,10 @@ export class Analyzer {
   #diagnostics = [];
   #dirty = false;
   #linking = false;
+  // origin defining symbol -> importing local symbols that resolve to it,
+  // across every module. built once per link so referencesOf is a lookup
+  // rather than a per-call walk over every import in the graph.
+  #importersByOrigin = new Map();
 
   constructor(options = {}) {
     this.#resolve = options.resolve ?? defaultResolve(this.#modules);
@@ -75,7 +79,31 @@ export class Analyzer {
         }
       }
     }
+    this.#indexImporters();
     this.#linking = false;
+  }
+
+  // buckets every importing local under the origin symbol it resolves to,
+  // computing each definitionOf once. referencesOf then reads the bucket
+  // instead of re-walking the whole import graph on every call.
+  #indexImporters() {
+    this.#importersByOrigin = new Map();
+    for (const module of this.#modules.values()) {
+      for (const record of module.imports) {
+        const local = record.local;
+        if (local === null) continue;
+        const definition = this.definitionOf(local);
+        // a symbol object is unique to its (module, id), so the origin
+        // symbol alone keys the bucket; the module is implied.
+        if (definition === null || definition.symbol === null) continue;
+        let importers = this.#importersByOrigin.get(definition.symbol);
+        if (importers === undefined) {
+          importers = [];
+          this.#importersByOrigin.set(definition.symbol, importers);
+        }
+        importers.push(local);
+      }
+    }
   }
 
   // report a record whose name fails to resolve or resolves ambiguously
@@ -128,19 +156,14 @@ export class Analyzer {
     for (const reference of origin.symbol.references) {
       out.push({ module: origin.module, reference });
     }
-    for (const module of this.#modules.values()) {
-      if (module === origin.module) continue;
-      for (const record of module.imports) {
-        if (record.local === null) continue;
-        const definition = this.definitionOf(record.local);
-        if (
-          definition !== null &&
-          definition.symbol === origin.symbol &&
-          definition.module === origin.module
-        ) {
-          for (const reference of record.local.references) {
-            out.push({ module, reference });
-          }
+    const importers = this.#importersByOrigin.get(origin.symbol);
+    if (importers !== undefined) {
+      for (const local of importers) {
+        // a self-import resolving back to the origin module is already
+        // covered by the direct references above
+        if (local.module === origin.module) continue;
+        for (const reference of local.references) {
+          out.push({ module: local.module, reference });
         }
       }
     }

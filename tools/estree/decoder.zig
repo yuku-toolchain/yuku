@@ -1,4 +1,3 @@
-
 const std = @import("std");
 const parser = @import("parser");
 const ast = parser.ast;
@@ -556,7 +555,6 @@ fn writeChildTables(w: *Writer) !void {
     }
     try w.writeAll("];\n");
 }
-
 
 fn writeNodeCases(w: *Writer) !void {
     @setEvalBranchQuota(100_000);
@@ -1386,6 +1384,8 @@ fn writeSemanticBody(w: *Writer) !void {
         \\      }}
         \\    }}
         \\    let o = ((dp + 3) & ~3) >> 2;
+        \\    if (o + {[sub]d} > _u32.length)
+        \\      throw new RangeError("yuku-analyzer: truncated semantic sub-header");
         \\    const scopeCount = _u32[o], symbolCount = _u32[o + 1],
         \\          referenceCount = _u32[o + 2], declNodeCount = _u32[o + 3],
         \\          importCount = _u32[o + 4], exportCount = _u32[o + 5],
@@ -1405,6 +1405,8 @@ fn writeSemanticBody(w: *Writer) !void {
         \\    o += exportCount * {[expt]d};
         \\    const nodeScopes = _u32.subarray(o, o + nodeScopeCount);
         \\    o += nodeScopeCount;
+        \\    if (o > _u32.length)
+        \\      throw new RangeError("yuku-analyzer: truncated semantic sections");
         \\
     , .{
         .flag = rt.FLAG_SEMANTIC,
@@ -1653,7 +1655,6 @@ fn writeTsExtras(w: *Writer, comptime name: []const u8) !void {
         try w.print("r.{s} = {s}; ", .{ e.field, e.value });
     }
 }
-
 
 fn emit(w: *Writer, comptime fmt: []const u8, args: anytype) !void {
     try w.print(fmt, args);

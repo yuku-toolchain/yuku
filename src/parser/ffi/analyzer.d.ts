@@ -388,7 +388,10 @@ interface Module {
   symbolOf(node: Node): Symbol | null;
   /** The reference recorded for an identifier node, or null. */
   referenceOf(node: Node): Reference | null;
-  /** The innermost scope whose extent contains `node`. */
+  /**
+   * The innermost scope whose extent contains `node`, or the module's
+   * root scope for a node not produced by this module's analysis.
+   */
   scopeOf(node: Node): Scope;
   /**
    * The node that structurally contains `node`. Null at the program
@@ -432,7 +435,7 @@ interface Module {
 
   /** Collects every node of the given type(s), in source order. */
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
-  findAll<K extends NodeType>(types: readonly K[]): NodeOfType<K>[];
+  findAll<K extends NodeType>(types: Iterable<K>): NodeOfType<K>[];
 
   /** Import records, in source order. */
   readonly imports: Import[];
