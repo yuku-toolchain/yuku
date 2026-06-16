@@ -1,4 +1,0 @@
-foo();
-
-// after blank
-bar();

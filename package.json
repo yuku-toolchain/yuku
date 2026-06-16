@@ -1,10 +1,7 @@
 {
   "name": "yuku-root",
+  "version": "",
   "private": true,
-  "workspaces": [
-    "npm/**/*",
-    "docs"
-  ],
   "homepage": "https://yuku.fyi",
   "license": "MIT",
   "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
@@ -13,20 +10,25 @@
     "url": "git+https://github.com/yuku-toolchain/yuku.git"
   },
   "funding": "https://github.com/sponsors/arshad-yaseen",
+  "workspaces": [
+    "npm/**/*",
+    "docs"
+  ],
   "scripts": {
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
     "test:fuzz": "zig build fuzz",
     "test:parser": "bun test/parser/run.ts",
-    "test:codegen": "bun test/codegen/run.ts",
+    "test:codegen": "bun test test/codegen",
+    "test:analyzer": "bun test test/analyzer",
     "test:sourcemap": "bun test/sourcemap/run.ts",
     "format": "zig fmt **/*.zig",
-    "test": "bun load-files && bun build:npm && bun test:parser && bun test:codegen && bun test:sourcemap",
+    "test": "bun load-files && bun build:npm && bun test:parser && bun test:codegen && bun test:analyzer && bun test:sourcemap",
     "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
-    "release:npm": "napi bump",
-    "debug:npm": "napi build",
-    "build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-estree-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen",
-    "build:wasm": "zig build wasm && zig build gen-estree-decoder && zig build gen-estree-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/",
+    "release:npm": "napi-zig bump",
+    "debug:npm": "napi-zig build",
+    "build:npm": "napi-zig build --release && zig build gen-parser-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-codegen-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen && zig build gen-analyzer-decoder && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./src/parser/ffi/analyzer.d.ts ./npm/yuku-analyzer/index.d.ts && cp ./npm/yuku-parser/walk.js ./npm/yuku-analyzer/engine.js",
+    "build:wasm": "zig build wasm && zig build gen-parser-decoder && zig build gen-codegen-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser/walk.js ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/",
     "playground": "bun build:wasm && bun playground/server.ts"
   },
   "devDependencies": {
@@ -35,10 +37,10 @@
     "@types/node": "^25.5.0",
     "fast-deep-equal": "^3.1.3",
     "jest-diff": "^30.3.0",
-    "napi-zig": "^0.1.41",
+    "napi-zig": "^0.1.44",
     "typescript": "^6.0.2",
+    "yuku-analyzer": "workspace:*",
     "yuku-codegen": "workspace:*",
     "yuku-parser": "workspace:*"
-  },
-  "version": ""
+  }
 }

@@ -1,10 +1,7 @@
 // https://fitzgen.com/2013/08/02/testing-source-maps.html
 
-import { Glob } from "bun";
 import {
   parse,
-  langFromPath,
-  sourceTypeFromPath,
   type Identifier,
   type Node,
   type PrivateIdentifier,
@@ -12,12 +9,7 @@ import {
 } from "yuku-parser";
 import { print, type SourceMap } from "yuku-codegen";
 import { TraceMap, originalPositionFor, type EncodedSourceMap } from "@jridgewell/trace-mapping";
-
-const CORPUS_DIRS = [
-  "test/parser/suite/js/pass",
-  "test/parser/suite/jsx/pass",
-  "test/parser/suite/ts/pass",
-];
+import { CORPUS_DIRS, corpusFilesUnder } from "../corpus";
 
 let totalFiles = 0;
 let totalSkip = 0;
@@ -25,16 +17,13 @@ let totalFail = 0;
 const sampleErrs: string[] = [];
 
 for (const dir of CORPUS_DIRS) {
-  const files = [...new Glob("**/*.{ts,tsx,js,jsx}").scanSync({ cwd: dir })].sort();
+  const files = corpusFilesUnder(dir);
   const start = performance.now();
   let dirFiles = 0;
   let dirSkip = 0;
   let dirFail = 0;
 
-  for (const f of files) {
-    const file = `${dir}/${f}`;
-    const lang = langFromPath(file);
-    const sourceType = sourceTypeFromPath(file);
+  for (const { path: file, relative: f, lang, sourceType } of files) {
     const source = await Bun.file(file).text();
 
     const input = parse(source, { lang, sourceType });
@@ -190,7 +179,7 @@ function toEncodedSourceMap(map: SourceMap): EncodedSourceMap {
   };
 }
 
-function lineColOf(s: string, offset: number): { line: number; col: number } {
+function lineColOf(s: string, offset: number) {
   let line = 0;
   let lineStart = 0;
   for (let i = 0; i < offset; i++) {

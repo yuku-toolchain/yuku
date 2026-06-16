@@ -16,6 +16,8 @@ const eql = std.mem.eql;
 
 pub const AnalysisError = Allocator.Error;
 
+pub const module_record = @import("module_record.zig");
+
 /// Runs semantic analysis on a tree.
 ///
 /// Appends diagnostics directly to the tree alongside parse errors.

@@ -1,6 +1,8 @@
 import binding from "./binding.js";
 import { decode } from "./decode.js";
 
+export { WalkContext, _walk, walk } from "./walk.js";
+
 export function parse(source, options) {
   return decode(binding.parse(source, options ?? {}), source);
 }

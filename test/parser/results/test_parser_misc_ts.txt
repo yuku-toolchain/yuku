@@ -1,11 +1,22 @@
 test/parser/misc/ts
 ===================
-Passed:       24/24 (100.00%)
+Passed:       25/25 (100.00%)
 Failed:       0
-AST mismatch: 0/24
+AST mismatch: 0/25
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
+✓ test/parser/misc/ts/assignment-target-ts-assertions.ts
+error: Invalid assignment target
+   |
+25 | // whole expression is still not assignable (oxc rejects this too).
+26 | f()! = b;
+   | ^^^^
+27 | 
+   |
+   = help: The expression behind a non-null or type assertion must itself be a simple assignment target, like an identifier or member access, not a call or other expression.
+
+
 ✓ test/parser/misc/ts/catch-type-annotation.ts
 ✓ test/parser/misc/ts/constructor-overloads.ts
 ✓ test/parser/misc/ts/declare-function-overloads.ts

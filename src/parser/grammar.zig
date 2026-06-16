@@ -183,6 +183,32 @@ pub fn expressionToPattern(
             }
         },
 
+        .ts_non_null_expression,
+        .ts_as_expression,
+        .ts_satisfies_expression,
+        .ts_type_assertion,
+        => {
+            if (context != .assignable) {
+                try parser.report(
+                    parser.tree.span(expr),
+                    "TypeScript assertion is not allowed in binding pattern",
+                    .{ .help = "Non-null ('!') and type ('as', 'satisfies', '<T>')" ++
+                        " assertions can only appear in assignment targets." },
+                );
+                return;
+            }
+
+            if (!expressions.isSimpleAssignmentTarget(parser, expr)) {
+                try parser.report(
+                    parser.tree.span(expr),
+                    "Invalid assignment target",
+                    .{ .help = "The expression behind a non-null or type assertion must" ++
+                        " itself be a simple assignment target, like an identifier or" ++
+                        " member access, not a call or other expression." },
+                );
+            }
+        },
+
         .parenthesized_expression => |paren| {
             if (context != .assignable) {
                 try parser.report(
