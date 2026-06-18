@@ -153,6 +153,8 @@ fn parseForWithDeclaration(
 
     const declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
 
+    parser.context.in = saved_allow_in;
+
     const decl = try parser.tree.addNode(.{
         .variable_declaration = .{
             .declarators = declarators,
