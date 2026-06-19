@@ -1,7 +1,7 @@
 const std = @import("std");
 const parser = @import("parser");
 
-const source_path = "profiler/files/react.js";
+const source_path = "profiler/files/typescript.js";
 
 const warmup_runs = 50;
 const measured_runs = 300;
