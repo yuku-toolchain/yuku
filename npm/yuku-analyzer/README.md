@@ -35,6 +35,32 @@ console.log(def.module.path); // "lib.ts"
 console.log(def.symbol.has(SymbolFlags.Const)); // true
 ```
 
+## The nodes _are_ the AST, edit them and print
+
+The `node` on every symbol, reference, and scope is not a copy of the AST. It is the **same object** you reach by walking `module.ast`, so `===` holds. A refactor is therefore a plain assignment, and [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen) prints the mutated tree back to source. No visitor to register, no separate model to translate back.
+
+```js
+import { Analyzer } from "yuku-analyzer";
+import { print } from "yuku-codegen";
+
+const a = new Analyzer();
+const m = a.addFile("util.ts", `const tmp = load();\nexport const data = tmp.value + tmp.size;`);
+
+const tmp = m.rootScope.find("tmp");
+tmp.declarations[0] === m.ast.body[0].declarations[0].id; // true, literally the same node
+
+// rename the binding and every resolved use, then print
+tmp.declarations[0].name = "raw";
+for (const ref of tmp.references) ref.node.name = "raw";
+
+// across files, a.referencesOf(symbol) hands back these same live nodes for every use
+print(m.ast).code;
+// const raw = load();
+// export const data = raw.value + raw.size;
+```
+
+The uses come from resolved references, not a name search, so a shadowing inner `tmp` is left untouched: the rename only reaches the identifiers that actually bind to this symbol.
+
 ## How it works
 
 Nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and the corner cases arrive already correct: catch-clause scope sharing, named function expression scopes, `var` hoist targets, TS declaration merging, value space versus type space, and write detection through destructuring patterns.

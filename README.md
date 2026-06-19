@@ -78,7 +78,7 @@ minify(parse("const enabled = true;").program, { format: "compact" }).code;
 // "const enabled=!0;"
 ```
 
-Emits a Source Map V3 in the same pass, ~2x faster than `@babel/generator` with source maps on:
+Emits a Source Map V3 in the same pass, ~2.5x faster than `@babel/generator` with source maps on:
 
 ```js
 const { program, lineStarts } = parse(source);
@@ -121,6 +121,23 @@ def.symbol.has(SymbolFlags.Const); // true
 a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "app.ts"]
 
 // and many more
+```
+
+These aren't read-only views. Every symbol and reference holds the **actual** AST node from `module.ast` (`===` holds), so a refactor is a plain assignment. Mutate the nodes and print with `yuku-codegen`:
+
+```js
+import { print } from "yuku-codegen";
+
+const m = a.addFile("util.ts", `const tmp = load();\nexport const data = tmp.value + tmp.size;`);
+const tmp = m.rootScope.find("tmp");
+
+tmp.declarations[0].name = "raw"; // rename the binding
+for (const ref of tmp.references) ref.node.name = "raw"; // and every resolved use
+
+// across files, a.referencesOf(symbol) returns these same live nodes for every use
+print(m.ast).code;
+// const raw = load();
+// export const data = raw.value + raw.size;
 ```
 
 [Read the analyzer documentation →](https://yuku.fyi/analyzer)

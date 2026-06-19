@@ -28,6 +28,27 @@ def.symbol.name; // "flags"
 
 That is real cross-file resolution, not a string search: it follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
 
+## Edit the AST, then print
+
+The analyzer is also a refactoring engine, not just a query layer. The `node` on every symbol and reference is the same object you reach by walking `module.ast` (`===` holds), so a transform is a plain assignment, and [`yuku-codegen`](/parser/codegen) prints the mutated tree back to source:
+
+```js
+import { print } from "yuku-codegen";
+
+const m = analyzer.addFile("util.ts", `const tmp = load();\nexport const data = tmp.value + tmp.size;`);
+const tmp = m.rootScope.find("tmp");
+
+tmp.declarations[0].name = "raw"; // rename the binding
+for (const ref of tmp.references) ref.node.name = "raw"; // and every resolved use
+
+// across files, analyzer.referencesOf(symbol) returns these same live nodes for every use
+print(m.ast).code;
+// const raw = load();
+// export const data = raw.value + raw.size;
+```
+
+The uses come from resolved references, not a name search, so a shadowing inner `tmp` is left untouched.
+
 ## The problem it solves
 
 Assembling this yourself is not only slower, it is harder to get right. The lightweight tools give you a scope stack but leave the binding rules to you: hoisting, catch clauses, named function expressions, TypeScript declaration merging, value space versus type space. Each tool implements a subset, and each subset has its own bugs.
