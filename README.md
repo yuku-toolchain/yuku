@@ -39,6 +39,20 @@ const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 
 Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 4-16x faster than alternatives on npm.
 
+Walk the AST with a typed visitor:
+
+```js
+import { parse, walk } from "yuku-parser";
+
+const { program } = parse("const x = 1 + 2;");
+
+walk(program, {
+  Identifier(node) {
+    console.log(node.name); // x
+  },
+});
+```
+
 ### Zig
 
 ```bash
