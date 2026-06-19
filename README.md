@@ -52,6 +52,73 @@ defer tree.deinit();
 
 [Read the parser documentation →](https://yuku.fyi/parser)
 
+## Codegen
+
+```bash
+npm install yuku-codegen
+```
+
+```js
+import { parse } from "yuku-parser";
+import { print, strip, minify } from "yuku-codegen";
+
+print(parse("const x = 1 + 2;").program).code;
+// "const x = 1 + 2;"
+
+strip(parse("const x: number = 1;", { lang: "ts" }).program).code;
+// "const x = 1;"
+
+minify(parse("const enabled = true;").program, { format: "compact" }).code;
+// "const enabled=!0;"
+```
+
+Emits a Source Map V3 in the same pass, ~2x faster than `@babel/generator` with source maps on:
+
+```js
+const { program, lineStarts } = parse(source);
+const { code, map } = print(program, { sourceMaps: { lineStarts } });
+```
+
+[Read the codegen documentation →](https://yuku.fyi/codegen)
+
+## Analyzer
+
+```bash
+npm install yuku-analyzer
+```
+
+Scopes, symbols, resolved references, closures, and cross-file module linking in one native pass. Up to 15x faster than `eslint-scope`, `@typescript-eslint/scope-manager`, and Babel.
+
+```js
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
+
+const a = new Analyzer();
+a.addFile("math.ts", `export const add = (x: number, y: number) => x + y;`);
+a.addFile("app.ts", `import { add } from "./math.ts"; add(1, 2); add(3, 4);`);
+
+const app = a.module("app.ts");
+
+// walk with semantic context
+app.walk({
+  Identifier(node, ctx) {
+    console.log(node.name, ctx.scope.kind, ctx.symbol, ctx.reference);
+  },
+});
+
+const add = app.rootScope.find("add");
+add.has(SymbolFlags.Import); // true
+
+const def = add.definition();
+def.module.path; // "math.ts"
+def.symbol.has(SymbolFlags.Const); // true
+
+a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "app.ts"]
+
+// and many more
+```
+
+[Read the analyzer documentation →](https://yuku.fyi/analyzer)
+
 ## Performance
 
 Yuku prioritizes correctness while delivering top-tier speed and efficiency.
