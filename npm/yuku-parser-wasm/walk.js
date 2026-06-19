@@ -55,8 +55,7 @@ export class WalkContext {
     this._removed = true;
   }
   insertBefore(node) {
-    // advance past the insert so the current node keeps its turn and the
-    // new sibling is not visited
+    // advance past the insert so the current node keeps its turn
     this.#insert(node, 0);
     this._frame.i++;
   }
@@ -86,10 +85,6 @@ function createDispatch(visitors) {
   return { enter, leave, typed: (type) => concrete.get(type) };
 }
 
-/**
- * Walk an AST depth-first, dispatching to typed visitors and mutating
- * in place. Returns the root.
- */
 export function walk(root, visitors, state) {
   _walk(root, visitors, state, new WalkContext());
   return root;
@@ -107,8 +102,6 @@ export function _walk(root, visitors, state, ctx) {
     ctx._frame = frame;
   }
 
-  // swaps the current node in its parent slot and continues the walk on
-  // the replacement
   function applyReplace(parent, key, list, frame) {
     const next = ctx._replacement;
     ctx._replacement = null;

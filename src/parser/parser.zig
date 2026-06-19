@@ -141,11 +141,6 @@ pub const Parser = struct {
 
     pub fn parse(self: *Parser) Error!ast.Tree {
         try self.parseInner();
-
-        if (!self.preserve_parens) {
-            stripParenthesizedNodes(&self.tree);
-        }
-
         return self.tree;
     }
 
@@ -194,6 +189,10 @@ pub const Parser = struct {
         self.tree.diagnostics = self.diagnostics;
 
         try buildLineStarts(&self.tree);
+
+        if (!self.preserve_parens) {
+            stripParenthesizedNodes(&self.tree);
+        }
 
         if (self.comment_mode.attaches()) {
             try comments.attach(&self.tree, self.lexer.comments.items);
