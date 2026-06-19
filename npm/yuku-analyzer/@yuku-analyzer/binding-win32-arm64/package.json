@@ -1,6 +1,6 @@
 {
   "name": "@yuku-analyzer/binding-win32-arm64",
-  "version": "0.5.38",
+  "version": "0.5.39",
   "os": [
     "win32"
   ],

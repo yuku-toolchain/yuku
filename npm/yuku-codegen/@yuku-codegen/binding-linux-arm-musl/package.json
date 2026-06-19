@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-linux-arm-musl",
-  "version": "0.5.38",
+  "version": "0.5.39",
   "os": [
     "linux"
   ],
