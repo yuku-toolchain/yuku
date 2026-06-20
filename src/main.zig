@@ -1,49 +1,38 @@
 const std = @import("std");
 const parser = @import("parser");
 
-const ast = parser.ast;
-const Action = parser.traverser.Action;
-const Ctx = parser.traverser.basic.Ctx;
+const source_path = "profiler/files/typescript.js";
 
-const Printer = struct {
-    pub fn enter_node(_: *Printer, data: ast.NodeData, _: ast.NodeIndex, ctx: *Ctx) Action {
-        for (1..ctx.path.depth()) |_| std.debug.print("  ", .{});
-        std.debug.print("{s}\n", .{@tagName(data)});
-        return .proceed;
-    }
-};
+const warmup_runs = 50;
+const measured_runs = 300;
 
-pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const allocator = std.heap.smp_allocator;
 
-    const source =
-        \\class C {
-        \\  get async() { return 1; }
-        \\  set get(v) {}
-        \\  async get() { return 2; }
-        \\  static async *gen() {}
-        \\}
-    ;
+    const source = try std.Io.Dir.cwd().readFileAlloc(io, source_path, allocator, .unlimited);
+    defer allocator.free(source);
 
-    var tree = try parser.parse(allocator, source, .{ .lang = .ts });
-
-    const diagnostics = tree.diagnostics.items;
-    if (diagnostics.len == 0) {
-        std.debug.print("diagnostics: none\n\n", .{});
-    } else {
-        std.debug.print("diagnostics ({d}):\n", .{diagnostics.len});
-        for (diagnostics) |d| {
-            std.debug.print("  {s}: {s} ({d}..{d})\n", .{ d.severity.toString(), d.message, d.span.start, d.span.end });
-        }
-        std.debug.print("\n", .{});
+    for (0..warmup_runs) |_| {
+        var tree = try parser.parse(allocator, source, .{ .lang = .js });
+        std.mem.doNotOptimizeAway(tree.nodes.len);
+        tree.deinit();
     }
 
-    std.debug.print("ast:\n", .{});
-    var printer: Printer = .{};
-    try parser.traverser.basic.traverse(Printer, &tree, &printer);
+    var samples: [measured_runs]u64 = undefined;
+    for (&samples) |*sample| {
+        const start = std.Io.Clock.now(.awake, io);
+        var tree = try parser.parse(allocator, source, .{ .lang = .js });
+        const end = std.Io.Clock.now(.awake, io);
 
-    const result = try parser.codegen.print(allocator, &tree, .{});
-    std.debug.print("\ngenerated:\n{s}\n", .{result.code});
+        std.mem.doNotOptimizeAway(tree.nodes.len);
+        tree.deinit();
+
+        sample.* = @intCast(start.durationTo(end).toNanoseconds());
+    }
+
+    std.mem.sort(u64, &samples, {}, std.sort.asc(u64));
+    const median_ms = @as(f64, @floatFromInt(samples[samples.len / 2])) / std.time.ns_per_ms;
+
+    std.debug.print("parse: {d:.3} ms\n", .{median_ms});
 }

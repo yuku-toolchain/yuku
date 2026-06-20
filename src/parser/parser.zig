@@ -316,21 +316,22 @@ pub const Parser = struct {
     }
 
     inline fn nextToken(self: *Parser) Error!?Token {
-        return self.lexer.nextToken() catch |e| blk: {
+        return self.lexer.nextToken() catch |e| {
             if (e == error.OutOfMemory) return error.OutOfMemory;
-
-            const lex_err: lexer.LexicalError = @errorCast(e);
-
-            const a = self.current_token.span.end;
-            const b = self.lexer.cursor;
-            try self.diagnostics.append(self.allocator(), .{
-                .message = lexer.getLexicalErrorMessage(lex_err),
-                .span = .{ .start = @min(a, b), .end = @max(a, b) },
-                .help = lexer.getLexicalErrorHelp(lex_err),
-            });
-
-            break :blk null;
+            try self.reportLexicalError(@errorCast(e));
+            return null;
         };
+    }
+
+    noinline fn reportLexicalError(self: *Parser, lex_err: lexer.LexicalError) Error!void {
+        @branchHint(.cold);
+        const a = self.current_token.span.end;
+        const b = self.lexer.cursor;
+        try self.diagnostics.append(self.allocator(), .{
+            .message = lexer.getLexicalErrorMessage(lex_err),
+            .span = .{ .start = @min(a, b), .end = @max(a, b) },
+            .help = lexer.getLexicalErrorHelp(lex_err),
+        });
     }
 
     /// advance to the next token. reports an error if the current token

@@ -216,7 +216,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(main_exe);
 
     const run_cmd = b.addRunArtifact(main_exe);
-    const run_step = b.step("run", "Parse a sample, walk the AST, and print");
+    const run_step = b.step("run", "Benchmark the parser on a sample file");
     run_step.dependOn(&run_cmd.step);
 
     // js bridge generators. each main in tools/ generates one artifact
