@@ -670,19 +670,20 @@ function decode(buffer, source) {
     if (s === e) return "";
     if (s >= _srcLen) return _poolDecode(s, e);
     if (e <= _firstNa) return _src.slice(s, e);
-    const ss = s < _firstNa ? s : pm[s - _firstNa];
-    return _src.slice(ss, pm[e - _firstNa]);
+    return _src.slice(s < _firstNa ? s : pm[s - _firstNa], pm[e - _firstNa]);
   };
   function nodeArr(s, len) {
-    const r = Array.from({ length: len });
-    for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
+    const r = [];
+    const base = _extraBase + s;
+    for (let j = 0; j < len; j++) r.push(node(_u32[base + j]));
     return r;
   }
   function nodeArrHoles(s, len) {
-    const r = Array.from({ length: len });
+    const r = [];
+    const base = _extraBase + s;
     for (let j = 0; j < len; j++) {
-      const x = _u32[_extraBase + s + j];
-      r[j] = x !== NULL ? node(x) : null;
+      const x = _u32[base + j];
+      r.push(x !== NULL ? node(x) : null);
     }
     return r;
   }
@@ -722,11 +723,11 @@ function decode(buffer, source) {
     return r;
   }
   function _decode(i) {
-    const o = _nodesOff + i * 48;
-    const tag = _u8[o];
-    const flags = _u8[o + 2] | (_u8[o + 3] << 8);
-    const f0 = _u8[o + 4] | (_u8[o + 5] << 8);
-    const b = o >> 2;
+    const b = (_nodesOff + i * 48) >> 2;
+    const h0 = _u32[b];
+    const tag = h0 & 255;
+    const flags = h0 >>> 16;
+    const f0 = _u32[b + 1] & 65535;
     const f1 = _u32[b + 2], f2 = _u32[b + 3],
           f3 = _u32[b + 4], f4 = _u32[b + 5],
           f5 = _u32[b + 6], f6 = _u32[b + 7],

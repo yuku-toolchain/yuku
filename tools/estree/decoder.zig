@@ -212,19 +212,20 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    if (s === e) return "";
         \\    if (s >= _srcLen) return _poolDecode(s, e);
         \\    if (e <= _firstNa) return _src.slice(s, e);
-        \\    const ss = s < _firstNa ? s : pm[s - _firstNa];
-        \\    return _src.slice(ss, pm[e - _firstNa]);
+        \\    return _src.slice(s < _firstNa ? s : pm[s - _firstNa], pm[e - _firstNa]);
         \\  }};
         \\  function nodeArr(s, len) {{
-        \\    const r = Array.from({{ length: len }});
-        \\    for (let j = 0; j < len; j++) r[j] = node(_u32[_extraBase + s + j]);
+        \\    const r = [];
+        \\    const base = _extraBase + s;
+        \\    for (let j = 0; j < len; j++) r.push(node(_u32[base + j]));
         \\    return r;
         \\  }}
         \\  function nodeArrHoles(s, len) {{
-        \\    const r = Array.from({{ length: len }});
+        \\    const r = [];
+        \\    const base = _extraBase + s;
         \\    for (let j = 0; j < len; j++) {{
-        \\      const x = _u32[_extraBase + s + j];
-        \\      r[j] = x !== NULL ? node(x) : null;
+        \\      const x = _u32[base + j];
+        \\      r.push(x !== NULL ? node(x) : null);
         \\    }}
         \\    return r;
         \\  }}
@@ -263,7 +264,20 @@ fn writeDecodeOpen(w: *Writer) !void {
     });
 }
 
+fn u16At(comptime word: []const u8, comptime byte_in_word: u8) []const u8 {
+    const shift = byte_in_word * 8;
+    if (shift == 16) return word ++ " >>> 16";
+    if (shift == 0) return word ++ " & 65535";
+    return std.fmt.comptimePrint("({s} >>> {d}) & 65535", .{ word, shift });
+}
+
 fn writeNodeFunction(w: *Writer, mode: Mode) !void {
+    comptime std.debug.assert(rt.NODE_FLAGS_OFFSET / 4 == 0);
+    const flags_expr = comptime u16At("h0", rt.NODE_FLAGS_OFFSET % 4);
+    const f0_expr = comptime u16At(
+        std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0_OFFSET / 4}),
+        rt.NODE_FIELD0_OFFSET % 4,
+    );
     try w.print(
         \\  function _attachedCommentsOf(a, e) {{
         \\    const out = Array.from({{ length: e - a }});
@@ -291,11 +305,11 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
         \\    return r;
         \\  }}
         \\  function _decode(i) {{
-        \\    const o = _nodesOff + i * {[size]d};
-        \\    const tag = _u8[o];
-        \\    const flags = _u8[o + {[fl]d}] | (_u8[o + {[fl1]d}] << 8);
-        \\    const f0 = _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8);
-        \\    const b = o >> 2;
+        \\    const b = (_nodesOff + i * {[size]d}) >> 2;
+        \\    const h0 = _u32[b];
+        \\    const tag = h0 & 255;
+        \\    const flags = {[fe]s};
+        \\    const f0 = {[f0e]s};
         \\    const f1 = _u32[b + {[d0]d}], f2 = _u32[b + {[d1]d}],
         \\          f3 = _u32[b + {[d2]d}], f4 = _u32[b + {[d3]d}],
         \\          f5 = _u32[b + {[d4]d}], f6 = _u32[b + {[d5]d}],
@@ -311,10 +325,8 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
         .ac_fl = rt.ATTACHED_COMMENT_FLAGS_OFFSET,
         .ac_vs = rt.ATTACHED_COMMENT_VALUE_START_OFFSET,
         .ac_ve = rt.ATTACHED_COMMENT_VALUE_END_OFFSET,
-        .fl = rt.NODE_FLAGS_OFFSET,
-        .fl1 = rt.NODE_FLAGS_OFFSET + 1,
-        .f0 = rt.NODE_FIELD0_OFFSET,
-        .f01 = rt.NODE_FIELD0_OFFSET + 1,
+        .fe = flags_expr,
+        .f0e = f0_expr,
         .d0 = rt.NODE_HEADER_U32S,
         .d1 = rt.NODE_HEADER_U32S + 1,
         .d2 = rt.NODE_HEADER_U32S + 2,
@@ -351,7 +363,7 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
             \\
         ),
     }
-    try w.print(
+    if (mode == .analyzer) try w.print(
         \\  const _nodesU32 = _nodesOff >> 2;
         \\  function startOf(i) {{ return _p(_u32[_nodesU32 + i * {[stride]d} + {[ss]d}]); }}
         \\  function endOf(i) {{ return _p(_u32[_nodesU32 + i * {[stride]d} + {[se]d}]); }}
