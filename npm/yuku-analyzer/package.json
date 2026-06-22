@@ -1,6 +1,6 @@
 {
   "name": "yuku-analyzer",
-  "version": "0.5.40",
+  "version": "0.5.41",
   "description": "Full JavaScript and TypeScript semantic analysis: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects",
   "license": "MIT",
   "repository": {
@@ -21,17 +21,17 @@
     "decode.js"
   ],
   "optionalDependencies": {
-    "@yuku-analyzer/binding-linux-x64-gnu": "0.5.40",
-    "@yuku-analyzer/binding-linux-arm64-gnu": "0.5.40",
-    "@yuku-analyzer/binding-linux-arm-gnu": "0.5.40",
-    "@yuku-analyzer/binding-linux-x64-musl": "0.5.40",
-    "@yuku-analyzer/binding-linux-arm64-musl": "0.5.40",
-    "@yuku-analyzer/binding-linux-arm-musl": "0.5.40",
-    "@yuku-analyzer/binding-darwin-x64": "0.5.40",
-    "@yuku-analyzer/binding-darwin-arm64": "0.5.40",
-    "@yuku-analyzer/binding-win32-x64": "0.5.40",
-    "@yuku-analyzer/binding-win32-arm64": "0.5.40",
-    "@yuku-analyzer/binding-freebsd-x64": "0.5.40"
+    "@yuku-analyzer/binding-linux-x64-gnu": "0.5.41",
+    "@yuku-analyzer/binding-linux-arm64-gnu": "0.5.41",
+    "@yuku-analyzer/binding-linux-arm-gnu": "0.5.41",
+    "@yuku-analyzer/binding-linux-x64-musl": "0.5.41",
+    "@yuku-analyzer/binding-linux-arm64-musl": "0.5.41",
+    "@yuku-analyzer/binding-linux-arm-musl": "0.5.41",
+    "@yuku-analyzer/binding-darwin-x64": "0.5.41",
+    "@yuku-analyzer/binding-darwin-arm64": "0.5.41",
+    "@yuku-analyzer/binding-win32-x64": "0.5.41",
+    "@yuku-analyzer/binding-win32-arm64": "0.5.41",
+    "@yuku-analyzer/binding-freebsd-x64": "0.5.41"
   },
   "keywords": [
     "analyzer",
