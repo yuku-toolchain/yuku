@@ -1,13 +1,13 @@
 ---
 .title = "Codegen",
 .description = "Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.",
-.author = "Yuku",
+.author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
 The codegen takes a `Tree` and writes it back as source code. It walks the AST directly and emits each node from its tag, so the output is always syntactically valid and faithful to the tree's structure.
 
-## [Node.js]($heading.id('nodejs'))
+## [Node.js]($section.id('nodejs'))
 
 ```bash
 npm install yuku-codegen
@@ -23,7 +23,7 @@ const { code } = print(program);
 
 `print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the parser's `lineStarts` via `sourceMaps: { lineStarts }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
-## [Zig]($heading.id('zig'))
+## [Zig]($section.id('zig'))
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
@@ -48,7 +48,7 @@ pub fn main() !void {
 
 `print` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
 
-## [Result]($heading.id('result'))
+## [Result]($section.id('result'))
 
 ```zig
 pub const Result = struct {
@@ -76,7 +76,7 @@ pub const Diagnostic = struct {
 };
 ```
 
-## [Options]($heading.id('options'))
+## [Options]($section.id('options'))
 
 ```zig
 const result = try parser.codegen.print(allocator, &tree, .{
@@ -98,7 +98,7 @@ const result = try parser.codegen.print(allocator, &tree, .{
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
-## [Source maps]($heading.id('source-maps'))
+## [Source maps]($section.id('source-maps'))
 
 Set `source_maps` to emit a Source Map V3 alongside the generated code.
 
@@ -119,7 +119,7 @@ defer result.deinit(allocator);
 const map = result.map.?;
 ```
 
-### `SourceMapOptions`
+### [`SourceMapOptions`]($section.id('sourcemapoptions'))
 
 ```zig
 pub const SourceMapOptions = struct {
@@ -137,7 +137,7 @@ pub const SourceMapOptions = struct {
 | `source_root`      | `?[]const u8` | Prefix embedded as `sourceRoot`                                      |
 | `sources_content`  | `?[]const u8` | When set, embedded as the single entry of the map's `sourcesContent` |
 
-### Result shape
+### [Result shape]($section.id('result-shape'))
 
 `SourceMap` is the Source Map V3 wire format, ready to serialize:
 
@@ -155,7 +155,7 @@ pub const SourceMap = struct {
 
 Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome DevTools and consumer-side libraries (`@jridgewell/trace-mapping`, `source-map`, etc.).
 
-## [Comments]($heading.id('comments'))
+## [Comments]($section.id('comments'))
 
 Comments live on the AST nodes they were attached to during parsing (see [Comments](/parser/ast/#comments) in the AST reference). For codegen to print them, the tree must have been parsed with `comments = .attached` (or `.both`).
 
@@ -173,7 +173,7 @@ pub const Comments = enum {
 
 Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it.
 
-## [Type stripping]($heading.id('type-stripping'))
+## [Type stripping]($section.id('type-stripping'))
 
 Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same options, with TypeScript-only nodes and fields removed from the output.
 
@@ -187,13 +187,13 @@ defer result.deinit(allocator);
 std.debug.print("{s}", .{result.code});
 ```
 
-### How it works
+### [How it works]($section.id('how-it-works'))
 
 Stripping is not regex, not a separate transform pass, not a whitespace overlay on top of the original source. It is the codegen with one extra rule per node visit: skip nodes that are TypeScript-only, and skip TypeScript-only fields on shared nodes.
 
 That makes it always accurate and reliable. Nothing is parsed by hand a second time. The parser already classified every byte, and the codegen reads that classification directly. Comments, whitespace, nested template literal types, generic call expressions, conditional types, and every other awkward boundary case are tree nodes like any other, not regex edge cases. And it is extremely fast, one traversal of the parsed tree, writing directly into an output buffer.
 
-### What stripping does not do
+### [What stripping does not do]($section.id('what-stripping-does-not-do'))
 
 A few TypeScript features (`enum`, `namespace`, `module`, `export =`, `import = require()`, parameter properties) emit JavaScript runtime values. Converting them to JavaScript equivalents is a transpilation step, not a syntax-stripping step. The stripper does exactly what its name says, it strips TypeScript syntax. When a runtime-emitting construct is encountered, it is reported as a `Diagnostic` and skipped, and the rest of the file is still emitted.
 
@@ -201,7 +201,7 @@ The ambient forms of these constructs (`declare enum`, `declare namespace`, `dec
 
 All other TypeScript syntax (types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, `abstract`) strips cleanly today.
 
-## [Minification]($heading.id('minification'))
+## [Minification]($section.id('minification'))
 
 `minify` applies size-reducing rewrites at print time:
 
