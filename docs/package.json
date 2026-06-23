@@ -1,9 +1,0 @@
-{
-  "name": "yuku-docs",
-  "version": "0.2.19",
-  "private": true,
-  "scripts": {
-    "dev": "zine",
-    "build": "zine release"
-  }
-}

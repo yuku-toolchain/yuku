@@ -43,3 +43,15 @@ zig build run --watch -fincremental
 ```
 
 Prefer a browser-based playground? Run `bun run playground` to build and serve it locally.
+
+## Documentation
+
+The docs live in `docs/`, built with [Zine](https://zine-ssg.io). Pages are Markdown (`.smd`) files in `docs/content/` that you can edit directly. You only need Zine installed to preview changes locally.
+
+To preview, download the Zine binary for your OS from the [releases page](https://github.com/kristoff-it/zine/releases) and put `zine` on your `PATH`, then run from `docs/`:
+
+```bash
+cd docs
+zine            # preview at http://localhost:1990
+zine release    # build into docs/public/
+```

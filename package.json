@@ -11,11 +11,9 @@
   },
   "funding": "https://github.com/sponsors/arshad-yaseen",
   "workspaces": [
-    "npm/**/*",
-    "docs"
+    "npm/**/*"
   ],
   "scripts": {
-    "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
     "test:fuzz": "zig build fuzz",
     "test:parser": "bun test/parser/run.ts",

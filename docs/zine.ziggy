@@ -5,6 +5,7 @@ Site {
     .layouts_dir_path = "layouts",
     .assets_dir_path = "assets",
     .static_assets = [
+        "CNAME",
         "robots.txt",
         "sitemap.xml",
         "llms.txt",
