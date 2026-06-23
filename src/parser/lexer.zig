@@ -137,7 +137,9 @@ pub const Lexer = struct {
             }
             if (pos >= src.len or (src[pos] != '\\' and src[pos] < 0x80)) {
                 self.cursor = pos;
-                const tag = if (current_char >= 'a' and current_char <= 'z')
+                const len = pos - start;
+                const tag = if (current_char >= 'a' and current_char <= 'z' and
+                    len >= 2 and len <= 11)
                     self.getKeywordType(src[start..pos])
                 else
                     .identifier;
@@ -1304,6 +1306,10 @@ pub const Lexer = struct {
 
     inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
         std.debug.assert(self.cursor <= self.source.len);
+
+        if (self.cursor < self.source.len and ws_class[self.source[self.cursor]] == 0) {
+            return;
+        }
 
         var can_be_html_close_comment =
             self.cursor == 0 or self.hasTokenFlag(.line_terminator_before);
