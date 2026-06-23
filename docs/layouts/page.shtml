@@ -110,6 +110,27 @@
       margin: 0.35rem 0;
     }
 
+    #page table {
+      display: block;
+      overflow-x: auto;
+      max-width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      line-height: 1.5;
+    }
+
+    #page th,
+    #page td {
+      padding: 0.5rem 0.8rem;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: break-word;
+    }
+
+    #page td {
+      border-bottom: 1px solid #2a2a2a;
+    }
+
     #page pre {
       margin: 1.25rem 0;
       padding: 0.7rem 0.9rem;
