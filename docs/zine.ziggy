@@ -1,0 +1,19 @@
+Site {
+    .title = "Yuku — A JavaScript/TypeScript Compiler Toolchain in Zig",
+    .host_url = "https://yuku.fyi",
+    .content_dir_path = "content",
+    .layouts_dir_path = "layouts",
+    .assets_dir_path = "assets",
+    .static_assets = [
+        "robots.txt",
+        "sitemap.xml",
+        "llms.txt",
+        "fonts/Merriweather-Regular.ttf",
+        "fonts/Merriweather-Italic.ttf",
+        "fonts/Merriweather-Bold.ttf",
+        "fonts/Merriweather-BoldItalic.ttf",
+        "fonts/BebasNeue-Regular.ttf",
+        "fonts/jbm/JetBrainsMono-Regular.woff2",
+        "fonts/jbm/JetBrainsMono-Bold.woff2",
+    ],
+}

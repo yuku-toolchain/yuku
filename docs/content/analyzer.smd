@@ -1,8 +1,10 @@
 ---
-title: Analyzer
-description: "Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects."
+.title = "Analyzer",
+.description = "Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.",
+.author = "Yuku",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
-
 `yuku-analyzer` is full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
 **No single library gives you all of this.** Scopes and resolved references mean `eslint-scope` or `@typescript-eslint/scope-manager`. Cross-file go-to-definition means the TypeScript compiler or `ts-morph`. A parser sits underneath both. `yuku-analyzer` is all of them in one native pass behind one API.
@@ -28,13 +30,13 @@ def.symbol.name; // "flags"
 
 That is real cross-file resolution, not a string search: it follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
 
-## The problem it solves
+## [The problem it solves]($heading.id('the-problem-it-solves'))
 
 Assembling this yourself is not only slower, it is harder to get right. The lightweight tools give you a scope stack but leave the binding rules to you: hoisting, catch clauses, named function expressions, TypeScript declaration merging, value space versus type space. Each tool implements a subset, and each subset has its own bugs.
 
 `yuku-analyzer` computes none of that in JavaScript. The binder, scope tree, reference resolution, and module records all come from the same well-tested native analyzer that powers the rest of Yuku, so there is one implementation to keep correct, not a JavaScript copy that drifts from it. JavaScript receives a finished model to query, not events to track.
 
-## Architecture
+## [Architecture]($heading.id('architecture'))
 
 The design rests on one observation: a semantic model is mostly integers. Scopes point to parents, symbols point to scopes, references point to symbols, and everything points to AST nodes. Integers serialize for free.
 
@@ -48,7 +50,7 @@ The design rests on one observation: a semantic model is mostly integers. Scopes
 
 The result: native-code analysis speed, JavaScript-object ergonomics, and a wire format that is provably synchronized with the code that reads it.
 
-## The Analyzer
+## [The Analyzer]($heading.id('the-analyzer'))
 
 The `Analyzer` is the project: a set of modules plus the links between them.
 
@@ -92,7 +94,7 @@ const analyzer = new Analyzer({
 
 Returning `null` marks the import as external: `import.resolvedModule` stays `null` and definition chains stop there, without diagnostics.
 
-## The Module
+## [The Module]($heading.id('the-module'))
 
 `addFile` returns a `Module`, the per-file unit of the analysis. Everything on it is local JavaScript: no native calls happen after `addFile` returns.
 
@@ -122,7 +124,7 @@ module.exports;              // Export[], in source order
 
 Ids are stable within a parse: `(module.path, symbol.id)` is a persistable key for caches and incremental tooling. Re-adding a path reparses it into a new `Module` and can renumber, so pair the key with module identity and invalidate when `analyzer.module(path)` changes.
 
-## Scopes
+## [Scopes]($heading.id('scopes'))
 
 Every lexical environment in the file, as a tree:
 
@@ -144,7 +146,7 @@ for (const s of scope.ancestors()) { /* this scope up to global */ }
 
 The scope tree is the native binder's exact output, so the spec subtleties are already right.
 
-## Symbols
+## [Symbols]($heading.id('symbols'))
 
 A `Symbol` is one declared binding:
 
@@ -183,7 +185,7 @@ sym.has(SymbolFlags.TypeSpace);  // referencable from a TS type position
 
 A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
 
-## References
+## [References]($heading.id('references'))
 
 A `Reference` is one identifier in use position, already resolved:
 
@@ -202,7 +204,7 @@ ref.isWrite; // true when this use (re)assigns the binding
 
 `module.unresolvedReferences` is the complement: every name that resolves to no local binding. That list is precisely what a no-undef lint rule or a globals collector wants.
 
-## Node queries
+## [Node queries]($heading.id('node-queries'))
 
 These methods connect AST nodes to the semantic model. All of them work on node object identity, not positions or names:
 
@@ -219,9 +221,9 @@ module.resolve("x", someScope);     // or from any scope, like the engine would
 
 `parentOf` walks upward from a node you already hold, with no ancestor stack and no full walk. Because nodes are memoized by index, it is the same constant-time lookup as the others. It returns `null` at the program root and for any node that is not part of this module's AST.
 
-## Editing the AST
+## [Editing the AST]($heading.id('editing-the-ast'))
 
-Node identity is what makes the analyzer a refactoring engine, not just a query layer. The `node` on every symbol and reference is the same object you reach by walking `module.ast` (`===` holds), so a transform is a plain assignment, and [`yuku-codegen`](/parser/codegen) prints the mutated tree back to source:
+Node identity is what makes the analyzer a refactoring engine, not just a query layer. The `node` on every symbol and reference is the same object you reach by walking `module.ast` (`===` holds), so a transform is a plain assignment, and [`yuku-codegen`](/parser/codegen/) prints the mutated tree back to source:
 
 ```js
 import { print } from "yuku-codegen";
@@ -240,7 +242,7 @@ print(m.ast).code;
 
 The uses come from resolved references, not a name search, so a shadowing inner `tmp` is left untouched. The walk in the next section is the same edit applied with full context at every node.
 
-## Walking
+## [Walking]($heading.id('walking'))
 
 `module.walk` is a typed visitor walk with the semantic model in context. Handlers are keyed by node type and receive the exact node type, not a generic node:
 
@@ -300,7 +302,7 @@ The walk mutates the AST in place, with precise semantics:
 | `ctx.replace(node)`     | Swap the current node. The walk continues into the replacement's children and `leave` fires for its new type. |
 | `ctx.remove()`          | Splice the node out of an array field, or null a plain field. Children are not walked, `leave` does not fire.  |
 | `ctx.insertBefore(node)`| Insert a sibling before the current node. The inserted node is not visited.                                    |
-| `ctx.insertAfter(node)` | Insert a sibling after the current node. The walk visits it.                                                   |
+| `ctx.insertAfter(node)` | Insert a sibling after the current node. The walk visits it.                                                  |
 
 A replacement node created with `start: 0, end: 0` inherits the original node's span, which keeps source maps meaningful through `yuku-codegen`.
 
@@ -317,7 +319,7 @@ module.walk({
 
 One rule to remember: the semantic tables are a snapshot of the parsed source. Nodes you create have no symbols or references of their own. Analyze, transform, print, and re-analyze the output if you need fresh semantics for the transformed code.
 
-## findAll
+## [findAll]($heading.id('findall'))
 
 For the simplest queries there is a one-liner:
 
@@ -326,7 +328,7 @@ module.findAll("FunctionDeclaration");          // FunctionDeclaration[]
 module.findAll(["ClassDeclaration", "TSInterfaceDeclaration"]);
 ```
 
-## Closure analysis
+## [Closure analysis]($heading.id('closure-analysis'))
 
 `capturesOf` computes the free variables of a function: every binding referenced inside it (nested closures included) that is declared outside it.
 
@@ -354,7 +356,7 @@ Each `Capture` carries the outer `symbol`, the capturing `references` inside the
 
 Because the computation rides the resolved reference table, it is shadowing-correct and alias-correct by construction. A local `count` declared inside the function does not produce a false capture, and a reference is attributed to the binding it actually resolves to, not to the nearest matching name.
 
-## Cross-file analysis
+## [Cross-file analysis]($heading.id('cross-file-analysis'))
 
 ### Import and export records
 
@@ -467,7 +469,7 @@ analyzer.module("a.ts").exportedNames();   // ["one"]
 
 This is what namespace-member completion and re-export expansion build on.
 
-## SymbolFlags reference
+## [SymbolFlags reference]($heading.id('symbolflags-reference'))
 
 The full bitset, generated from the native binder's layout:
 
@@ -502,15 +504,16 @@ Plus four composites (unions of the above), for the common categorical questions
 | `ValueSpace`  | visible at runtime (var, function, class, enum, value namespace)  |
 | `TypeSpace`   | referencable from a type position (class, enum, interface, alias, type param) |
 
-## Performance
+## [Performance]($heading.id('performance'))
 
 Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against 55,000+ real-world files.
 
 Concretely, on an Apple M-series machine: parsing plus complete semantic analysis of a typical source file lands well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
 
-## TypeScript
+## [TypeScript]($heading.id('typescript'))
 
 Everything is fully typed. Visitor handlers receive exact node types, and the semantic surface (`Module`, `Scope`, `Symbol`, `Reference`, `Import`, `Export`, `Capture`) is exported:
 
 ```ts
 import type { Module, Symbol, Capture } from "yuku-analyzer";
+```

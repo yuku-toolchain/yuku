@@ -1,8 +1,10 @@
 ---
-title: AST
-description: The flat, data-oriented AST returned by Yuku's parser, with the full node reference.
+.title = "AST",
+.description = "The flat, data-oriented AST returned by Yuku's parser, with the full node reference.",
+.author = "Yuku",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
-
 The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
 
 The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs):
@@ -14,13 +16,12 @@ Comments can be attached to the AST nodes they belong to, exposed as a flat offs
 
 On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
-:::tip[Building tools on the AST?]
-The [traverser](/parser/traverse) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
+># [Building tools on the AST?]($block.attrs('tip'))
+>The [traverser](/parser/traverse/) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
+>
+>This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
 
-This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
-:::
-
-## Memory model
+## [Memory model]($heading.id('memory-model'))
 
 The AST is not a graph of heap-allocated structs. Every node lives in a single flat array (`Tree.nodes`), and child references are indices into that array. Variable-length child lists live in a second flat array (`Tree.extras`), and string content lives in a string pool. Three arrays, one arena.
 
@@ -35,7 +36,7 @@ Tree
 
 All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the entire tree at once.
 
-## The Tree
+## [The Tree]($heading.id('the-tree'))
 
 `Tree` is the root container returned by `parser.parse()`. The fields you read directly:
 
@@ -63,7 +64,7 @@ tree.isModule()          // source_type is .module
 tree.hasErrors()         // any diagnostic with severity .error
 ```
 
-## Core types
+## [Core types]($heading.id('core-types'))
 
 Four small types carry every reference inside the AST.
 
@@ -129,7 +130,7 @@ const span = tree.span(idx);
 const text = tree.source[span.start..span.end];
 ```
 
-## Reading a node
+## [Reading a node]($heading.id('reading-a-node'))
 
 `NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(idx)` returns one. `switch` on the tag and unpack:
 
@@ -153,7 +154,7 @@ switch (tree.data(idx)) {
 }
 ```
 
-The same snake_case tag names are used as visitor hook names: a method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse) enters that node kind.
+The same snake_case tag names are used as visitor hook names: a method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse/) enters that node kind.
 
 ### Reading children
 
@@ -176,9 +177,9 @@ switch (tree.data(idx)) {
 }
 ```
 
-For tree-wide walks, use the [traverser](/parser/traverse) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
+For tree-wide walks, use the [traverser](/parser/traverse/) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
 
-## Predicates
+## [Predicates]($heading.id('predicates'))
 
 Eight methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
 
@@ -218,13 +219,11 @@ switch (data) {
 }
 ```
 
-## Node reference
+## [Node reference]($heading.id('node-reference'))
 
 Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.data()` switches and visitor hooks (`enter_<tag>`).
 
 Optional child fields are noted with `.null`. Optional child lists are noted with `.empty`.
-
----
 
 ### Program
 
@@ -239,8 +238,6 @@ pub const Program = struct {
 ```
 
 `directive` nodes (such as `"use strict";`) appear at the start of the body. Imports and exports appear in source order alongside other statements.
-
----
 
 ### Statements
 
@@ -267,8 +264,6 @@ pub const Program = struct {
 | `catch_clause`         | `catch (e) { body }`            | The `catch` clause of a `try`, with an optional binding.                   |
 | `with_statement`       | `with (obj) body`               | A `with` block. Forbidden in strict mode.                                  |
 
----
-
 ### Declarations
 
 | Tag                    | Syntax                        | Description                                                                  |
@@ -294,8 +289,6 @@ ts_empty_body_function_expression   // body-less class methods (overloads,
 class_declaration                   // class Foo {}
 class_expression                    // const x = class {}
 ```
-
----
 
 ### Expressions
 
@@ -325,8 +318,6 @@ class_expression                    // const x = class {}
 | `this_expression`            | `this`                                  | The `this` keyword used as an expression.                                        |
 | `super`                      | `super`                                 | The `super` keyword used as an expression head.                                  |
 
----
-
 ### Literals
 
 | Tag                | Syntax                        | Description                                          |
@@ -339,8 +330,6 @@ class_expression                    // const x = class {}
 | `regexp_literal`   | `/pattern/flags`              | A regular expression literal.                        |
 | `template_literal` | `` `hello ${name}` ``         | A template literal with zero or more interpolations. |
 | `template_element` | text part between `${...}`    | A static text span inside a template literal.        |
-
----
 
 ### Identifiers
 
@@ -364,8 +353,6 @@ const foo = bar.baz;
 
 `binding_identifier` additionally carries decorators, an optional type annotation, and an optional `?` flag when it appears in a parameter position.
 
----
-
 ### Patterns (destructuring)
 
 | Tag                    | Syntax                          | Description                                                                        |
@@ -377,8 +364,6 @@ const foo = bar.baz;
 | `binding_rest_element` | `...rest`                       | A `...rest` element inside a binding pattern or parameter list.                    |
 | `formal_parameters`    | `(a, b = 1, ...rest)`           | The parameter list of a function.                                                  |
 | `formal_parameter`     | a single parameter slot         | A single parameter slot wrapping a binding pattern.                                |
-
----
 
 ### Functions
 
@@ -401,8 +386,6 @@ pub const Function = struct {
 | `function`                  | Every named and anonymous function form, including ambient and body-less ones. |
 | `function_body`             | The braced body of a function.                                                 |
 | `arrow_function_expression` | An arrow function, with either an expression or a block body.                  |
-
----
 
 ### Classes
 
@@ -431,8 +414,6 @@ pub const Class = struct {
 | `decorator`           | A decorator (`@expr`) applied to a class or class member. |
 | `super`               | The `super` keyword used as an expression head.           |
 
----
-
 ### Modules
 
 | Tag                          | Syntax                         | Description                                                                  |
@@ -446,8 +427,6 @@ pub const Class = struct {
 | `export_default_declaration` | `export default expr`          | An `export default` declaration.                                             |
 | `export_all_declaration`     | `export * from 'y'`            | An `export * from "m"` or `export * as ns from "m"` declaration.             |
 | `export_specifier`           | `{ local as exported }`        | A named binding specifier in an export declaration.                          |
-
----
 
 ### JSX
 
@@ -475,9 +454,7 @@ A JSX tag name (the `name` field on `jsx_opening_element`, `jsx_closing_element`
 
 A JSX child (entries in the `children` list on `jsx_element` and `jsx_fragment`) is one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
 
----
-
-## TypeScript
+## [TypeScript]($heading.id('typescript'))
 
 TypeScript nodes are present in `.ts`, `.tsx`, and `.dts` trees.
 
@@ -641,9 +618,7 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_import_equals_declaration`    | `import x = require("m")`, `import x = Foo.Bar` | An `import =` declaration binding to a require or entity name.                    |
 | `ts_external_module_reference`    | `require("m")`                                  | The `require("module")` form on the right-hand side of `import x = require(...)`. |
 
----
-
-## Comments
+## [Comments]($heading.id('comments'))
 
 The `comments` option controls collection. It has four modes:
 

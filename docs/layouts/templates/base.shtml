@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head id="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="$page.description">
+    <link rel="canonical" href="$site.host_url.addPath($page.link())">
+    <link rel="icon" type="image/svg+xml" href="$site.asset('favicon.svg').link()">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="$page.title.suffix(' | Yuku')">
+    <meta property="og:description" content="$page.description">
+    <meta property="og:url" content="$site.host_url.addPath($page.link())">
+    <meta property="og:image" content="$site.host_url.addPath($site.asset('logo.png').link())">
+    <meta name="twitter:card" content="summary_large_image">
+    <title id="title">
+      <super>
+      | Yuku
+    </title>
+    <link rel="stylesheet" type="text/css" href="$site.asset('fonts.css').link()">
+    <link rel="stylesheet" type="text/css" href="$site.asset('style.css').link()">
+    <link rel="stylesheet" type="text/css" href="$site.asset('highlight.css').link()">
+    <super>
+  </head>
+  <body>
+    <nav id="menu" class="centered">
+      <a href="$site.page('').link()">Introduction</a>
+      •
+      <a href="$site.page('parser').link()">Parser</a>
+      •
+      <a href="$site.page('parser/ast').link()">AST</a>
+      •
+      <a href="$site.page('parser/traverse').link()">Traverse</a>
+      •
+      <a href="$site.page('parser/codegen').link()">Codegen</a>
+      •
+      <a href="$site.page('analyzer').link()">Analyzer</a>
+      •
+      <a href="https://github.com/yuku-toolchain/yuku" target="_blank">Code</a>
+    </nav>
+    <div id="content">
+      <super>
+    </div>
+  </body>
+</html>

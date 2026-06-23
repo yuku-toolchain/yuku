@@ -1,0 +1,34 @@
+<extend template="base.shtml">
+<title id="title" :text="$page.title"></title>
+<head id="head"></head>
+<div id="content">
+  <style>
+    h3.overtitle {
+      margin-bottom: 0;
+    }
+    h1.title {
+      margin-top: 0;
+    }
+
+    #page h2, #page h3 {
+      text-align: left;
+    }
+
+    #page h2 {
+      font-size: 1.7rem;
+      border-bottom: 1px dashed #aaa;
+      margin-top: 2em;
+    }
+
+    #page h3 {
+      font-size: 1.5rem;
+    }
+
+    #page h4 {
+      font-size: 1rem;
+    }
+  </style>
+  <h3 class="overtitle centered">Yuku</h3>
+  <h1 class="title" :text="$page.title"></h1>
+  <div id="page" :html="$page.content()"></div>
+</div>

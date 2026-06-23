@@ -1,0 +1,180 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: normal;
+  color: #eee;
+  align-self: center;
+  text-align: center;
+}
+
+h1 a,
+h2 a,
+h4 a,
+h5 a {
+  text-decoration: none;
+}
+
+h4 {
+  color: #eee;
+}
+
+b,
+strong {
+  color: #eee;
+}
+
+a {
+  color: #ccc;
+  font-weight: bold;
+}
+
+body {
+  font-family: 'Merriweather', serif;
+  background-color: #111;
+  color: #ccc;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+
+html {
+  scrollbar-gutter: stable;
+  scrollbar-color: #cccc49 #222;
+  overflow-y: scroll;
+}
+
+p {
+  line-height: 1.4;
+}
+
+nav {
+  padding-top: 1rem;
+  font-weight: bold;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+#content {
+  align-self: center;
+  box-sizing: border-box;
+  padding: 0 30px;
+  max-width: min(600px, 100%);
+}
+
+.centered {
+  align-self: center;
+  text-align: center;
+}
+
+p:has(+ pre) {
+  margin-bottom: 0;
+}
+
+p + pre {
+  margin-top: 5px;
+}
+
+pre {
+  overflow: auto;
+  border-top: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  padding: 4px 0;
+  background-color: #111;
+}
+
+code {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+}
+
+p > code,
+a > code,
+h1 > code,
+h2 > code,
+h3 > code,
+h4 > code,
+h5 > code,
+li > code {
+  font-weight: bold;
+  color: #ddd;
+  font-size: 1em;
+}
+
+table th {
+  border-bottom: 1px solid #ccc;
+}
+
+img,
+video {
+  margin: 0;
+  max-width: 100%;
+}
+
+.block {
+  border: 1px dashed #ccc;
+}
+
+.block p {
+  padding-top: 0;
+  font-size: 0.9em;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.block h1 {
+  font-size: 1.17em;
+  margin: 0 !important;
+  text-align: left;
+  padding: 2px 15px;
+  border: 1px solid #ccc;
+  color: #111;
+  background-color: #ccc;
+}
+
+li {
+  padding: 1px 0;
+}
+
+:root {
+  font-size: 1rem;
+}
+
+@media screen and (min-width: 800px) and (max-width: 1000px) {
+  :root { zoom: 1.2; }
+}
+
+@media screen and (min-width: 1000px) and (max-width: 1200px) {
+  :root { zoom: 1.3; }
+}
+
+@media screen and (min-width: 1200px) and (max-width: 1400px) {
+  :root { zoom: 1.4; }
+}
+
+@media screen and (min-width: 1400px) and (max-width: 1600px) {
+  :root { zoom: 1.5; }
+}
+
+@media screen and (min-width: 1600px) and (max-width: 1800px) {
+  :root { zoom: 1.65; }
+}
+
+@media screen and (min-width: 1800px) {
+  :root { zoom: 1.7; }
+}

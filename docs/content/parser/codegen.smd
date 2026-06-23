@@ -1,11 +1,13 @@
 ---
-title: Codegen
-description: Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.
+.title = "Codegen",
+.description = "Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.",
+.author = "Yuku",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
-
 The codegen takes a `Tree` and writes it back as source code. It walks the AST directly and emits each node from its tag, so the output is always syntactically valid and faithful to the tree's structure.
 
-## Node.js
+## [Node.js]($heading.id('nodejs'))
 
 ```bash
 npm install yuku-codegen
@@ -21,7 +23,7 @@ const { code } = print(program);
 
 `print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the parser's `lineStarts` via `sourceMaps: { lineStarts }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
-## Zig
+## [Zig]($heading.id('zig'))
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
@@ -46,7 +48,7 @@ pub fn main() !void {
 
 `print` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
 
-## Result
+## [Result]($heading.id('result'))
 
 ```zig
 pub const Result = struct {
@@ -74,7 +76,7 @@ pub const Diagnostic = struct {
 };
 ```
 
-## Options
+## [Options]($heading.id('options'))
 
 ```zig
 const result = try parser.codegen.print(allocator, &tree, .{
@@ -96,7 +98,7 @@ const result = try parser.codegen.print(allocator, &tree, .{
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
-## Source maps
+## [Source maps]($heading.id('source-maps'))
 
 Set `source_maps` to emit a Source Map V3 alongside the generated code.
 
@@ -153,9 +155,9 @@ pub const SourceMap = struct {
 
 Columns are 0-indexed UTF-16 code units, matching the convention used by Chrome DevTools and consumer-side libraries (`@jridgewell/trace-mapping`, `source-map`, etc.).
 
-## Comments
+## [Comments]($heading.id('comments'))
 
-Comments live on the AST nodes they were attached to during parsing (see [Comments](/parser/ast#comments) in the AST reference). For codegen to print them, the tree must have been parsed with `comments = .attached` (or `.both`).
+Comments live on the AST nodes they were attached to during parsing (see [Comments](/parser/ast/#comments) in the AST reference). For codegen to print them, the tree must have been parsed with `comments = .attached` (or `.both`).
 
 The `comments` option selects which attached comments are emitted. The default is `.some`, matching the bundler convention of preserving legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
 
@@ -171,7 +173,7 @@ pub const Comments = enum {
 
 Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it.
 
-## Type stripping
+## [Type stripping]($heading.id('type-stripping'))
 
 Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same options, with TypeScript-only nodes and fields removed from the output.
 
@@ -199,7 +201,7 @@ The ambient forms of these constructs (`declare enum`, `declare namespace`, `dec
 
 All other TypeScript syntax (types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, `abstract`) strips cleanly today.
 
-## Minification
+## [Minification]($heading.id('minification'))
 
 `minify` applies size-reducing rewrites at print time:
 

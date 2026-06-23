@@ -1,8 +1,10 @@
 ---
-title: Traverse
-description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
+.title = "Traverse",
+.description = "Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.",
+.author = "Yuku",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
-
 The traverser is how you do real work on a Yuku AST. It walks the tree for you, calls your visitor hooks at every node, and (depending on the mode you pick) hands you the surrounding lexical scopes, the symbol table, or a mutable handle on the tree itself.
 
 | Mode          | What you get                                      | Returns                     |
@@ -14,11 +16,10 @@ The traverser is how you do real work on a Yuku AST. It walks the tree for you, 
 
 The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional: tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
 
-:::note
-The traverser is stable and powers Yuku's semantic checker in production. The surface may still grow as we build more tools on top of it (minifier, bundler, formatter). Breaking changes will be called out in release notes.
-:::
+>[]($block.attrs('note'))
+>The traverser is stable and powers Yuku's semantic checker in production. The surface may still grow as we build more tools on top of it (minifier, bundler, formatter). Breaking changes will be called out in release notes.
 
-## Your First Visitor
+## [Your First Visitor]($heading.id('your-first-visitor'))
 
 A visitor is just a struct with `enter_*` and `exit_*` methods. Pick a node type, write a method named after it, and the walker will call you when it gets there.
 
@@ -54,7 +55,7 @@ std.debug.print("found {d} functions\n", .{counter.functions});
 
 That is the entire shape of every traverser-based tool you will write. The rest of this page is "what else you can do inside a hook".
 
-## Hooks
+## [Hooks]($heading.id('hooks'))
 
 Every hook follows the same four-argument shape:
 
@@ -121,7 +122,7 @@ pub fn enter_call_expression(
 }
 ```
 
-See the [AST reference](/parser/ast) for every node type and its fields.
+See the [AST reference](/parser/ast/) for every node type and its fields.
 
 ### Catch-All Hooks
 
@@ -182,7 +183,7 @@ try result.symbol_table.resolveAll(result.scope_tree);
 
 The empty struct makes the absence of hooks visible in the code, which is why there is no hidden `analyze`-style helper inside the traverser. If a tool wants the result of a walk without any per-node logic, the caller spells that out exactly.
 
-## The Path
+## [The Path]($heading.id('the-path'))
 
 Every mode tracks the path from the root down to the current node. The path is a small fixed-capacity stack of `NodeIndex` values you can read at any time through `ctx.path`.
 
@@ -221,7 +222,7 @@ pub fn enter_identifier_reference(
 
 The path has a hard cap of 256 entries. In practice this is far beyond any realistic ECMAScript nesting depth, so you can treat it as effectively unbounded.
 
-## Basic Traverser
+## [Basic Traverser]($heading.id('basic-traverser'))
 
 The minimum: path tracking plus the full immutable tree. No allocator needed, nothing returned.
 
@@ -248,7 +249,7 @@ ctx.path    // NodePath, the current path stack
 
 That is it. Step up to scoped or semantic when you need to know what bindings are in scope.
 
-## Scoped Traverser
+## [Scoped Traverser]($heading.id('scoped-traverser'))
 
 Scoped mode adds automatic lexical scope tracking. Whenever the walker enters a scope-creating node, the tracker pushes a new scope. On exit, it pops. Your hooks see `ctx.scope.currentScope()` already pointing at the right place.
 
@@ -357,7 +358,7 @@ while (it.next()) |id| {
 
 The tree is backed by the parser's arena, so it lives as long as the source `Tree` does. Calling `tree.deinit()` invalidates it.
 
-## Semantic Traverser
+## [Semantic Traverser]($heading.id('semantic-traverser'))
 
 Semantic mode is the full-power one: path, scopes, symbols, references, redeclaration handling, TypeScript context tracking.
 
@@ -391,9 +392,8 @@ Symbol declaration is split across two phases per node:
 
 Why the split? It guarantees a useful invariant for your visitor:
 
-:::note
-Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is _about to_ be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
-:::
+>[]($block.attrs('note'))
+>Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is _about to_ be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
 
 ```zig
 pub fn enter_binding_identifier(
@@ -708,7 +708,7 @@ table.isReferenced(sym_id)             // shorthand for "any uses?"
 
 The table aliases the tree's arena, so it lives as long as the tree. Calling `tree.deinit()` invalidates everything inside.
 
-## Transform Traverser
+## [Transform Traverser]($heading.id('transform-traverser'))
 
 Transform mode is for rewrites: codemods, desugaring passes, AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
 
@@ -807,9 +807,8 @@ Returning `.skip` here is essential. If you let the walker descend, it will re-r
 
 ### Self-Reference Safety
 
-:::caution
-Never set a node's child to its own index. The walker re-reads node data after every enter hook, so a self-referential node causes infinite recursion.
-:::
+>[]($block.attrs('caution'))
+>Never set a node's child to its own index. The walker re-reads node data after every enter hook, so a self-referential node causes infinite recursion.
 
 ```zig
 // WRONG: cycle. The wrapper points to its own index.
@@ -824,7 +823,7 @@ const inner = try ctx.tree.addNode(original_data, span);
 ctx.tree.setData(index, .{ .parenthesized_expression = .{ .expression = inner } });
 ```
 
-## Building ASTs From Scratch
+## [Building ASTs From Scratch]($heading.id('building-asts-from-scratch'))
 
 `Tree.initEmpty(allocator)` creates a tree with no source text, intended for programmatic AST construction. Because there is no source backing it, every string must be created with `tree.addString(...)`.
 
@@ -904,7 +903,7 @@ _ = try sem.traverse(Transpiler, &source_tree, &transpiler);
 
 The two trees never touch each other's storage, and either can be freed independently. This is the recommended structure for any tool that produces a transformed AST from an input AST without mutating the input.
 
-## Combining Modes
+## [Combining Modes]($heading.id('combining-modes'))
 
 The four modes compose via multiple passes. A typical pipeline looks like:
 
