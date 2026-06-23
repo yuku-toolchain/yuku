@@ -13,7 +13,7 @@ A high-performance JavaScript/TypeScript compiler toolchain written in Zig, brin
 
 Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is designed for correctness, performance, and clarity.
 
-**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 55,000+ tests from [Test262](https://github.com/tc39/test262), Babel, TypeScript, etc., with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches. See the [test results](https://github.com/yuku-toolchain/yuku/tree/main/test/results).
+**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 55,000+ tests from [Test262](https://github.com/tc39/test262), Babel, TypeScript, etc., with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches. See the [test results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
 
 **Fast by design.** The parser is built using data-oriented design principles and generous performance engineering.
 
@@ -29,21 +29,15 @@ The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node
 
 On native (Zig/Rust) parsing, Yuku is competitive with Oxc and roughly 2× faster than SWC:
 
-![Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js (7.8 MB) on macOS, Apple M4 Pro](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark chart comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js")
-
-_Parsing the `typescript.js` file (7.8 MB) · macOS (ARM) Apple M4 Pro · [Benchmark source ↗](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)_
+![Parsing `typescript.js` (7.8 MB) · macOS (ARM), Apple M4 Pro · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js")
 
 On the JavaScript side (npm), Yuku is **4-16x faster** than alternatives:
 
-![JavaScript npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing react.js](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark chart comparing Yuku, Oxc, Acorn, and other npm parsers parsing react.js")
-
-_Parsing the `react.js` file (72 KB) via npm packages · macOS (ARM) Apple M4 Pro · [Benchmark source ↗](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)_
+![Parsing `react.js` (72 KB) via npm · macOS (ARM), Apple M4 Pro · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing react.js")
 
 But does it scale? Yes:
 
-![JavaScript npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing typescript.js (7.8 MB)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark chart comparing Yuku, Oxc, Acorn, and other npm parsers parsing typescript.js")
-
-_Parsing the `typescript.js` file (7.8 MB) via npm packages · macOS (ARM) Apple M4 Pro · [Benchmark source ↗](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)_
+![Parsing `typescript.js` (7.8 MB) via npm · macOS (ARM), Apple M4 Pro · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing typescript.js")
 
 ># [A note on Oxc's npm performance]($block.collapsible(false))
 >You may wonder why Oxc is slower in this npm benchmark, even slower than Babel. This is because Oxc's npm package has the overhead of passing the AST from Rust to JavaScript. What it does is serialize the AST to a JSON string on the Rust side and then call `JSON.parse` on the JavaScript side. This overhead makes it slower, even though Oxc is very fast at raw parsing speed.

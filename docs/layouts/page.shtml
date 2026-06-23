@@ -4,28 +4,124 @@
 <div id="content">
   <style>
     h3.overtitle {
-      margin-bottom: 0;
-    }
-    h1.title {
-      margin-top: 0;
+      margin: 2.5rem 0 0;
+      letter-spacing: 0.04em;
     }
 
-    #page h2, #page h3 {
+    h1.title {
+      margin: 0 0 1.6rem;
+    }
+
+    #page {
+      line-height: 1.65;
+    }
+
+    #page h2,
+    #page h3,
+    #page h4 {
       text-align: left;
     }
 
     #page h2 {
-      font-size: 1.7rem;
-      border-bottom: 1px dashed #aaa;
-      margin-top: 2em;
+      font-size: 1.95rem;
+      line-height: 1.15;
+      margin: 2.75rem 0 1rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed #555;
     }
 
     #page h3 {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
+      line-height: 1.2;
+      margin: 2.1rem 0 0.6rem;
     }
 
     #page h4 {
-      font-size: 1rem;
+      font-size: 1.05rem;
+      margin: 1.6rem 0 0.5rem;
+    }
+
+    #page p {
+      margin: 0 0 1.15rem;
+      line-height: 1.65;
+    }
+
+    #page ul,
+    #page ol {
+      margin: 0 0 1.15rem;
+      padding-left: 1.4rem;
+    }
+
+    #page li {
+      margin: 0.35rem 0;
+    }
+
+    #page pre {
+      margin: 1.25rem 0;
+      padding: 0.7rem 0.9rem;
+    }
+
+    #page hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 2.25rem 0;
+    }
+
+    #page table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 1.3rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    #page th,
+    #page td {
+      padding: 0.45rem 0.7rem;
+      border: 1px solid #333;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    #page th {
+      background: #1a1a1a;
+      color: #eee;
+    }
+
+    #page figure {
+      margin: 1.7rem 0;
+      text-align: center;
+    }
+
+    #page figcaption {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #8a8a8a;
+    }
+
+    #page .block {
+      margin: 1.5rem 0;
+    }
+
+    #page .block p {
+      margin: 0.65rem 0;
+    }
+
+    #page details.block > summary {
+      padding: 0.55rem 0.95rem;
+      cursor: pointer;
+      font-weight: bold;
+      color: #eee;
+    }
+
+    #page details.block[open] > summary {
+      margin-bottom: 0.5rem;
+      border-bottom: 1px dashed #555;
+    }
+
+    #page details.block {
+      padding-bottom: 0.35rem;
     }
   </style>
   <h3 class="overtitle centered">Yuku</h3>
