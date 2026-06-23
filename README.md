@@ -5,7 +5,7 @@
 <div align="center">
 
   <!-- markdownlint-disable-next-line no-alt-text -->
-  <img src="/docs/public/logo.svg" alt="Logo" width="300" />
+  <img src="docs/assets/logo.svg" alt="Logo" width="300" />
   
   <br>
   <br>
