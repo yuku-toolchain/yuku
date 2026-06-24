@@ -221,10 +221,12 @@ fn Printer(comptime cfg: Config) type {
                 .allocator = allocator,
             };
             try p.code.ensureTotalCapacity(allocator, tree.source.len);
+
             if (comptime source_maps) if (options.source_maps) |sm_opts| {
-                p.sm = sourcemap.State.init(sm_opts);
-                // preallocate the mappings buffer to limit regrowth
-                try p.sm.?.out.ensureTotalCapacity(allocator, tree.nodes.len * 8 + 64);
+                if (sm_opts.source != null) {
+                    p.sm = sourcemap.State.init(sm_opts);
+                    try p.sm.?.out.ensureTotalCapacity(allocator, tree.nodes.len * 8 + 64);
+                }
             };
             return p;
         }
@@ -729,8 +731,8 @@ fn Printer(comptime cfg: Config) type {
             const span = self.tree.span(idx);
             if (span.start == 0 and span.end == 0) return;
 
-            const orig = self.tree.lineColNear(span.start, sm.line_cursor);
-            sm.line_cursor = orig.line;
+            const orig = sm.resolve(span.start);
+
             try sm.record(self.allocator, orig.line, orig.col);
         }
 

@@ -21,7 +21,7 @@ const { program } = parse("const x = 1 + 2;");
 const { code } = print(program);
 ```
 
-`print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the parser's `lineStarts` via `sourceMaps: { lineStarts }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMaps: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## [Zig]($section.id('zig'))
 
@@ -100,7 +100,7 @@ const result = try parser.codegen.print(allocator, &tree, .{
 
 ## [Source maps]($section.id('source-maps'))
 
-Set `source_maps` to emit a Source Map V3 alongside the generated code.
+Pass the original `source` to `source_maps` to emit a Source Map V3 alongside the generated code. Without a `source` there is nothing to map back to, so no map is produced.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -108,6 +108,7 @@ defer tree.deinit();
 
 const result = try parser.codegen.print(allocator, &tree, .{
     .source_maps = .{
+        .source = source,
         .file = "out.js",
         .source_file_name = "in.js",
         .sources_content = source,
@@ -115,7 +116,7 @@ const result = try parser.codegen.print(allocator, &tree, .{
 });
 defer result.deinit(allocator);
 
-// result.map is non-null when source_maps was set.
+// result.map is non-null when a source was provided.
 const map = result.map.?;
 ```
 
@@ -123,6 +124,7 @@ const map = result.map.?;
 
 ```zig
 pub const SourceMapOptions = struct {
+    source: ?[]const u8 = null,
     file: ?[]const u8 = null,
     source_file_name: ?[]const u8 = null,
     source_root: ?[]const u8 = null,
@@ -132,6 +134,7 @@ pub const SourceMapOptions = struct {
 
 | Field              | Type          | Description                                                          |
 | ------------------ | ------------- | -------------------------------------------------------------------- |
+| `source`           | `?[]const u8` | The original source text. Required to emit a map                     |
 | `file`             | `?[]const u8` | Output filename, embedded as the map's `file`                        |
 | `source_file_name` | `?[]const u8` | Source filename, embedded as the single entry of `sources`           |
 | `source_root`      | `?[]const u8` | Prefix embedded as `sourceRoot`                                      |

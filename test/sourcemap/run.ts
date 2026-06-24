@@ -36,7 +36,7 @@ for (const dir of CORPUS_DIRS) {
     const result = print(input.program, {
       comments: true,
       sourceMaps: {
-        lineStarts: input.lineStarts,
+        source,
         file: "out.js",
         sourceFileName: f,
         sourcesContent: source,
@@ -179,13 +179,26 @@ function toEncodedSourceMap(map: SourceMap): EncodedSourceMap {
   };
 }
 
+// length of the line terminator at `i` (LF, CR, CRLF, U+2028, U+2029), else 0.
+function lineBreakLen(s: string, i: number): number {
+  const c = s.charCodeAt(i);
+  if (c === 13) return s.charCodeAt(i + 1) === 10 ? 2 : 1;
+  if (c === 10 || c === 0x2028 || c === 0x2029) return 1;
+  return 0;
+}
+
 function lineColOf(s: string, offset: number) {
   let line = 0;
   let lineStart = 0;
-  for (let i = 0; i < offset; i++) {
-    if (s.charCodeAt(i) === 10) {
+  let i = 0;
+  while (i < offset) {
+    const brk = lineBreakLen(s, i);
+    if (brk > 0) {
       line++;
-      lineStart = i + 1;
+      i += brk;
+      lineStart = i;
+    } else {
+      i++;
     }
   }
   return { line, col: offset - lineStart };
@@ -195,8 +208,13 @@ function offsetOf(s: string, line: number, col: number): number {
   let l = 0;
   let off = 0;
   while (l < line && off < s.length) {
-    if (s.charCodeAt(off) === 10) l++;
-    off++;
+    const brk = lineBreakLen(s, off);
+    if (brk > 0) {
+      l++;
+      off += brk;
+    } else {
+      off++;
+    }
   }
   return off + col;
 }

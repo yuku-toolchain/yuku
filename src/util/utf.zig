@@ -36,6 +36,19 @@ pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     return 0;
 }
 
+/// byte length of the line terminator beginning at `pos`, or 0 if there is
+/// none. Recognizes LF, CR, CRLF (a single terminator), and the U+2028 and
+/// U+2029 separators.
+pub fn lineBreakLen(source: []const u8, pos: usize) u8 {
+    std.debug.assert(pos < source.len);
+    return switch (source[pos]) {
+        '\n' => 1,
+        '\r' => if (pos + 1 < source.len and source[pos + 1] == '\n') 2 else 1,
+        0xE2 => unicodeSeparatorLen(source, pos),
+        else => 0,
+    };
+}
+
 pub fn isMultiByteSpace(cp: u21) bool {
     return switch (cp) {
         '\u{FEFF}',
@@ -415,6 +428,20 @@ test "unicodeSeparatorLen not a separator" {
 test "unicodeSeparatorLen too short" {
     const s = &[_]u8{ 0xE2, 0x80 };
     try testing.expectEqual(@as(u8, 0), unicodeSeparatorLen(s, 0));
+}
+
+test "lineBreakLen lf cr crlf" {
+    try testing.expectEqual(@as(u8, 1), lineBreakLen("\n", 0));
+    try testing.expectEqual(@as(u8, 1), lineBreakLen("\r", 0));
+    try testing.expectEqual(@as(u8, 2), lineBreakLen("\r\n", 0));
+    try testing.expectEqual(@as(u8, 1), lineBreakLen("\r\n", 1));
+    try testing.expectEqual(@as(u8, 0), lineBreakLen("a", 0));
+}
+
+test "lineBreakLen unicode separators" {
+    try testing.expectEqual(@as(u8, 3), lineBreakLen(&[_]u8{ 0xE2, 0x80, 0xA8 }, 0));
+    try testing.expectEqual(@as(u8, 3), lineBreakLen(&[_]u8{ 0xE2, 0x80, 0xA9 }, 0));
+    try testing.expectEqual(@as(u8, 0), lineBreakLen("€", 0));
 }
 
 test "isMultiByteSpace" {

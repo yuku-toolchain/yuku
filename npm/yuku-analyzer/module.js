@@ -256,12 +256,6 @@ export class Module {
   get comments() {
     return this.#r.comments;
   }
-  get lineStarts() {
-    return this.#r.lineStarts;
-  }
-  locOf(offset) {
-    return this.#r.locOf(offset);
-  }
 
   get scopes() {
     return (this.#scopes ??= this.#rows(Scope, this.#sem.scope.count));

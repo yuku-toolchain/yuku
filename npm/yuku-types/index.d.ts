@@ -75,16 +75,6 @@ interface Diagnostic {
   labels: DiagnosticLabel[];
 }
 
-/**
- * A `(line, column)` pair into the source, matching ESTree's `loc` convention.
- * Lines are 1-based; columns are 0-based.
- */
-interface SourceLocation {
-  /** 1-based line number. */
-  line: number;
-  /** 0-based column number within the line. */
-  column: number;
-}
 /** Discriminant `type` string of every AST node. */
 type NodeType = Node["type"];
 
@@ -1742,7 +1732,6 @@ export type {
   SourceType,
   ModuleKind,
   SourceLang,
-  SourceLocation,
   BaseNode,
   Span,
   Program,

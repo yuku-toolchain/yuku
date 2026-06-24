@@ -188,8 +188,6 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
 
-        try buildLineStarts(&self.tree);
-
         if (!self.preserve_parens) {
             stripParenthesizedNodes(&self.tree);
         }
@@ -703,35 +701,4 @@ pub fn parse(
 ) Error!ast.Tree {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
-}
-
-/// Scans `tree.source` once and records the offset of every line start
-/// into `tree.line_starts`.
-fn buildLineStarts(tree: *ast.Tree) Error!void {
-    const alloc = tree.allocator();
-    const src = tree.source;
-
-    var starts: std.ArrayList(u32) = .empty;
-    try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
-    starts.appendAssumeCapacity(0);
-
-    const N = 64;
-    const Vec = @Vector(N, u8);
-    const Mask = std.meta.Int(.unsigned, N);
-    const lf: Vec = @splat('\n');
-
-    var i: usize = 0;
-    while (i + N <= src.len) : (i += N) {
-        const chunk: Vec = src[i..][0..N].*;
-        var bits: Mask = @bitCast(chunk == lf);
-        while (bits != 0) {
-            const k = @ctz(bits);
-            try starts.append(alloc, @intCast(i + k + 1));
-            bits &= bits - 1;
-        }
-    }
-    while (i < src.len) : (i += 1) {
-        if (src[i] == '\n') try starts.append(alloc, @intCast(i + 1));
-    }
-    tree.line_starts = try starts.toOwnedSlice(alloc);
 }

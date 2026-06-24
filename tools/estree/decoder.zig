@@ -161,7 +161,6 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\        extraCount = _u32[{[u_ec]d}],
         \\        spLen = _u32[{[u_sp]d}];
         \\  const commentCount = _u32[{[u_cc]d}],
-        \\        lineStartsCount = _u32[{[u_ls]d}],
         \\        diagCount = _u32[{[u_dc]d}],
         \\        progIdx = _u32[{[u_pi]d}];
         \\  const attachedCommentCount = _u32[{[u_acc]d}];
@@ -246,7 +245,6 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_ec = rt.HDR_EXTRA_COUNT_U32,
         .u_sp = rt.HDR_STRING_POOL_LEN_U32,
         .u_cc = rt.HDR_COMMENT_COUNT_U32,
-        .u_ls = rt.HDR_LINE_STARTS_COUNT_U32,
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
@@ -1209,8 +1207,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
 
 fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     try w.print(
-        \\  const lsOff = _cOff + commentCount * {[csize]d};
-        \\  const dOff = lsOff + lineStartsCount * 4;
+        \\  const dOff = _cOff + commentCount * {[csize]d};
         \\  function _decodeComments() {{
         \\    const out = Array.from({{ length: commentCount }});
         \\    for (let j = 0; j < commentCount; j++) {{
@@ -1226,20 +1223,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\        start: _p(ss),
         \\        end: _p(se),
         \\      }};
-        \\    }}
-        \\    return out;
-        \\  }}
-        \\  function _decodeLineStarts() {{
-        \\    const out = Array.from({{ length: lineStartsCount }});
-        \\    if (_firstNa >= _srcLen) {{
-        \\      for (let j = 0; j < lineStartsCount; j++) {{
-        \\        out[j] = dv.getUint32(lsOff + j * 4, true);
-        \\      }}
-        \\      return out;
-        \\    }}
-        \\    for (let j = 0; j < lineStartsCount; j++) {{
-        \\      const v = dv.getUint32(lsOff + j * 4, true);
-        \\      out[j] = v < _firstNa ? v : (v >= _srcLen ? pm[pm.length - 1] : pm[v - _firstNa]);
         \\    }}
         \\    return out;
         \\  }}
@@ -1291,11 +1274,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     }
 
     try w.writeAll(
-        \\  let _program, _lineStarts, _diagnostics, _comments;
-        \\  function _getLineStarts() {
-        \\    if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
-        \\    return _lineStarts;
-        \\  }
+        \\  let _program, _diagnostics, _comments;
         \\  return {
         \\    get program() {
         \\      return _program !== undefined ? _program : (_program = node(progIdx));
@@ -1309,16 +1288,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\      return _diagnostics !== undefined
         \\        ? _diagnostics
         \\        : (_diagnostics = _decodeDiagnostics());
-        \\    },
-        \\    get lineStarts() { return _getLineStarts(); },
-        \\    locOf(offset) {
-        \\      const ls = _getLineStarts();
-        \\      let lo = 0, hi = ls.length;
-        \\      while (lo < hi) {
-        \\        const mid = (lo + hi) >>> 1;
-        \\        if (ls[mid] <= offset) lo = mid + 1; else hi = mid;
-        \\      }
-        \\      return { line: lo, column: offset - ls[lo - 1] };
         \\    },
         \\
     );

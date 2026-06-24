@@ -209,8 +209,7 @@ const Ctx = struct {
         };
     }
 
-    // a and b are always close, so memchr beats a `line_starts` binary
-    // search.
+    // a and b are always close, so a direct newline scan between them is cheap.
     inline fn sameLine(self: *const Ctx, a: u32, b: u32) bool {
         const lo = if (a < b) a else b;
         const hi = if (a < b) b else a;

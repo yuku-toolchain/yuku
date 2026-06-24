@@ -56,7 +56,6 @@ tree.span(idx)           // Span (source byte range) for the node at idx
 tree.extra(range)        // []const NodeIndex for an IndexRange
 tree.string(handle)      // []const u8 for a String handle
 tree.commentsOf(idx)     // []const AttachedComment attached to the node at idx
-tree.lineColOf(pos)      // zero-indexed { line, col } for a byte offset
 
 tree.isTs()              // language is .ts, .tsx, or .dts
 tree.isJsx()             // language is .jsx or .tsx

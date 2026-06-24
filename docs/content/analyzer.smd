@@ -104,8 +104,6 @@ module.source;      // the original source text
 module.ast;         // ESTree / TS-ESTree Program, lazily decoded
 module.diagnostics; // syntax and semantic errors for this file
 module.comments;    // every comment in source order
-module.lineStarts;  // sorted offsets where each line begins
-module.locOf(120);  // { line, column } for an offset
 ```
 
 The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, and nodes are plain mutable objects. Edit them, run them through any ESTree tool, print them with `yuku-codegen`.

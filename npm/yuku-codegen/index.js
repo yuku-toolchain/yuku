@@ -7,13 +7,7 @@ function normalizeOptions(options) {
   const c = next.comments;
   if (c === true) next.comments = "all";
   else if (c === false) next.comments = "none";
-  const s = next.sourceMaps;
-  if (s) {
-    const { lineStarts: _, ...meta } = s;
-    next.sourceMaps = meta;
-  } else {
-    next.sourceMaps = undefined;
-  }
+  if (next.sourceMaps == null) next.sourceMaps = undefined;
   return next;
 }
 
@@ -24,15 +18,7 @@ function run(method, program, options) {
         (program === null ? "null" : typeof program),
     );
   }
-  const sourceMaps = options?.sourceMaps;
-  const lineStarts = sourceMaps ? sourceMaps.lineStarts : null;
-  if (sourceMaps && !Array.isArray(lineStarts)) {
-    throw new Error(
-      "`sourceMaps` requires a `lineStarts` array. Pass the parser's " +
-        "`ParseResult.lineStarts`, e.g. `{ sourceMaps: { lineStarts } }`.",
-    );
-  }
-  return binding[method](encode(program, lineStarts), normalizeOptions(options));
+  return binding[method](encode(program), normalizeOptions(options));
 }
 
 export function print(program, options) {

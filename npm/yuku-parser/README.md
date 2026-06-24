@@ -58,19 +58,6 @@ sourceTypeFromPath("foo.cjs");     // "script"
 sourceTypeFromPath("foo.mjs");     // "module"
 ```
 
-## Resolving offsets to `(line, column)`
-
-Nodes and diagnostics carry `start`/`end` offsets (UTF-16 code units). To turn an offset into a `{ line, column }` pair, call `locOf` on the parse result:
-
-```ts
-import { parse } from "yuku-parser";
-
-const result = parse(source);
-const { line, column } = result.locOf(result.program.body[0].start);
-```
-
-Lines are 1-based and columns are 0-based, matching ESTree's `loc` convention. The lookup is an O(log n) binary search: tens of nanoseconds per call, safe to invoke per node during a walk.
-
 ## Walking the AST
 
 A typed, mutating walker is built in:
@@ -149,8 +136,6 @@ interface ParseResult {
   program: Program;
   comments: Comment[]; // every comment in source order
   diagnostics: Diagnostic[];
-  lineStarts: number[];
-  locOf(offset: number): { line: number; column: number };
 }
 ```
 

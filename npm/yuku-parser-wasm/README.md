@@ -20,8 +20,8 @@ const { program, comments, diagnostics } = parse("const x: number = 1", {
 });
 ```
 
-`parse(source, options?)` returns `{ program, comments, diagnostics, lineStarts,
-locOf, scan }`. Options:
+`parse(source, options?)` returns `{ program, comments, diagnostics, scan }`.
+Options:
 
 | Option                       | Default    | Description                               |
 | ---------------------------- | ---------- | ----------------------------------------- |

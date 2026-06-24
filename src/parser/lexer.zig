@@ -388,10 +388,8 @@ pub const Lexer = struct {
         self.clearTokenFlags();
     }
 
-    inline fn isLineTerminator(self: *const Lexer, c: u8) bool {
-        std.debug.assert(self.cursor <= self.source.len);
-        return c == '\n' or c == '\r' or
-            (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0);
+    inline fn isLineTerminator(self: *const Lexer) bool {
+        return util.Utf.lineBreakLen(self.source, self.cursor) > 0;
     }
 
     // functions exclusively called by the parser for context-specific lexing
@@ -493,7 +491,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
-            if (self.isLineTerminator(c)) {
+            if (self.isLineTerminator()) {
                 return error.InvalidRegexLineTerminator;
             }
 
@@ -504,7 +502,7 @@ pub const Lexer = struct {
                     return error.UnterminatedRegexLiteral;
                 }
 
-                if (self.isLineTerminator(self.source[self.cursor])) {
+                if (self.isLineTerminator()) {
                     return error.InvalidRegexLineTerminator;
                 }
 
@@ -1512,7 +1510,7 @@ pub const Lexer = struct {
                 self.cursor += 3;
                 return self.recordComment(.line, start, self.cursor);
             }
-            if (self.isLineTerminator(c)) break;
+            if (self.isLineTerminator()) break;
             self.cursor += 1;
         }
         try self.recordComment(.line, start, self.cursor);
@@ -1527,7 +1525,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 3;
         while (self.cursor < self.source.len) : (self.cursor += 1) {
-            if (self.isLineTerminator(self.source[self.cursor])) break;
+            if (self.isLineTerminator()) break;
         }
         try self.recordComment(.line, start, self.cursor);
     }

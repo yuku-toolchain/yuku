@@ -28,11 +28,10 @@ export type { Comment };
 /** Source-map configuration. Pass to `CodegenOptions.sourceMaps` to enable. */
 export interface SourceMapOptions {
   /**
-   * UTF-16 line-start offsets, taken straight from the parser's
-   * `ParseResult.lineStarts`. Required: this is what maps generated positions
-   * back to the original source.
+   * The original source text. Required to emit a map; without it, `map` is
+   * `null`.
    */
-  lineStarts: number[];
+  source: string;
   /** Output filename, embedded as the map's `file`. */
   file?: string;
   /** Source filename, embedded as the single entry of `sources`. */
@@ -56,7 +55,7 @@ export interface CodegenOptions {
   quotes?: Quotes;
   /**
    * Enable Source Map V3 output. Pass a {@link SourceMapOptions} object. Its
-   * `lineStarts` (from the parser) is required. The rest of the metadata
+   * `source` (the original source text) is required. The rest of the metadata
    * (`file`, `sources`, `sourcesContent`, `sourceRoot`) is optional. Omit to
    * disable.
    * @default undefined
