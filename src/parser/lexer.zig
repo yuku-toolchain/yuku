@@ -157,7 +157,7 @@ pub const Lexer = struct {
         };
     }
 
-    pub inline fn nextTokenFast(self: *Lexer) ?Token {
+    pub inline fn tryNextTokenFast(self: *Lexer) ?Token {
         std.debug.assert(self.cursor <= self.source.len);
 
         if (self.mode != .normal) return null;

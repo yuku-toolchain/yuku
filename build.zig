@@ -56,6 +56,21 @@ pub fn build(b: *std.Build) void {
     const profile_step = b.step("profile", "Run profiler");
     profile_step.dependOn(&profile_cmd.step);
 
+    const bench_module = b.createModule(.{
+        .root_source_file = b.path("profiler/bench.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    bench_module.addImport("parser", parser_module);
+
+    const bench_exe = b.addExecutable(.{ .name = "bench", .root_module = bench_module });
+    const bench_cmd = b.addRunArtifact(bench_exe);
+    const bench_step = b.step("bench", "Run per-file throughput benchmark");
+    bench_step.dependOn(&bench_cmd.step);
+
+    const bench_bin_step = b.step("bench-bin", "Install the per-file throughput benchmark");
+    bench_bin_step.dependOn(&b.addInstallArtifact(bench_exe, .{}).step);
+
     const gen_unicode_id_table = b.addExecutable(.{
         .name = "gen-unicode-id",
         .root_module = b.createModule(.{
@@ -99,6 +114,7 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSafe,
     });
     fuzz_parser.addImport("util", fuzz_util);
+    fuzz_parser.addImport("codegen_options", codegen_options.createModule());
     const fuzz_driver = b.createModule(.{
         .root_source_file = b.path("src/parser/fuzz/main.zig"),
         .target = b.graph.host,

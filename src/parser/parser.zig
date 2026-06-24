@@ -339,7 +339,7 @@ pub const Parser = struct {
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
         self.prev_token_end = self.current_token.span.end;
-        if (self.lexer.nextTokenFast()) |token| {
+        if (self.lexer.tryNextTokenFast()) |token| {
             self.current_token = token;
         } else {
             self.current_token = try self.nextToken() orelse return null;
@@ -349,7 +349,7 @@ pub const Parser = struct {
     /// advance without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.prev_token_end = self.current_token.span.end;
-        if (self.lexer.nextTokenFast()) |token| {
+        if (self.lexer.tryNextTokenFast()) |token| {
             self.current_token = token;
         } else {
             self.current_token = try self.nextToken() orelse return null;

@@ -166,38 +166,33 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
 
 fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const current = parser.current_token;
+    const tag = current.tag;
 
-    switch (current.tag) {
-        .as, .satisfies => if (parser.tree.isTs())
-            return ts.parseAsOrSatisfiesExpression(parser, left),
-        .logical_not => if (parser.tree.isTs() and !current.hasLineTerminatorBefore())
-            return ts.parseNonNullExpression(parser, left),
-        else => {},
+    if (tag == .dot) return parseStaticMemberExpression(parser, left, false);
+    if (tag == .left_paren) return parseCallExpression(parser, left, false, .null);
+    if (tag == .left_bracket) return parseComputedMemberExpression(parser, left, false);
+
+    if (tag.isBinaryOperator()) return parseBinaryExpression(parser, precedence, left);
+    if (tag.isLogicalOperator()) return parseLogicalExpression(parser, precedence, left);
+    if (tag.isAssignmentOperator()) return parseAssignmentExpression(parser, precedence, left);
+
+    if (parser.tree.isTs()) {
+        switch (tag) {
+            .as, .satisfies => return ts.parseAsOrSatisfiesExpression(parser, left),
+            .logical_not => if (!current.hasLineTerminatorBefore())
+                return ts.parseNonNullExpression(parser, left),
+            else => {},
+        }
     }
 
-    if (current.tag.isBinaryOperator()) {
-        return parseBinaryExpression(parser, precedence, left);
-    }
-
-    if (current.tag.isLogicalOperator()) {
-        return parseLogicalExpression(parser, precedence, left);
-    }
-
-    if (current.tag.isAssignmentOperator()) {
-        return parseAssignmentExpression(parser, precedence, left);
-    }
-
-    if (current.tag == .arrow and !current.hasLineTerminatorBefore()) {
+    if (tag == .arrow and !current.hasLineTerminatorBefore()) {
         return parseSimpleArrowFunction(parser, left);
     }
 
-    switch (current.tag) {
+    switch (tag) {
         .increment, .decrement => return parseUpdateExpression(parser, false, left),
         .question => return parseConditionalExpression(parser, precedence, left),
         .comma => return parseSequenceExpression(parser, precedence, left),
-        .dot => return parseStaticMemberExpression(parser, left, false),
-        .left_bracket => return parseComputedMemberExpression(parser, left, false),
-        .left_paren => return parseCallExpression(parser, left, false, .null),
         .template_head, .no_substitution_template => return parseTaggedTemplateExpression(
             parser,
             left,
