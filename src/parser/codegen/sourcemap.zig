@@ -1,4 +1,5 @@
 const std = @import("std");
+const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 
@@ -21,6 +22,8 @@ pub const SourceMap = struct {
 
 /// Configures source map generation.
 pub const Options = struct {
+    /// The original source text. Required to emit a map.
+    source: ?[]const u8 = null,
     /// Output filename, embedded as the map's `file`.
     file: ?[]const u8 = null,
     /// Source filename, embedded as the single entry of `sources`.
@@ -30,6 +33,9 @@ pub const Options = struct {
     /// When set, embedded as the single entry of `sourcesContent`.
     sources_content: ?[]const u8 = null,
 };
+
+/// A zero-based source position, with `col` counted in UTF-16 code units.
+pub const LineCol = struct { line: u32, col: u32 };
 
 /// A single mapping from a generated position to its original position.
 pub const Segment = struct {
@@ -42,12 +48,12 @@ pub const Segment = struct {
 /// Source map generation state for one codegen run.
 pub const State = struct {
     options: Options,
+    source: []const u8,
+    cursor: SourceCursor = .{},
     // vlq mappings string, encoded as segments are recorded
     out: std.ArrayList(u8) = .empty,
     gen_line: u32 = 0,
     gen_col: u32 = 0,
-    // last line resolved by Tree.lineColNear, reused as the next search hint
-    line_cursor: u32 = 0,
 
     // most recent segment, held until one at a different generated position
     // arrives so a deeper node can overwrite it in place
@@ -76,11 +82,16 @@ pub const State = struct {
     };
 
     pub fn init(options: Options) State {
-        return .{ .options = options };
+        return .{ .options = options, .source = options.source orelse "" };
     }
 
     pub fn deinit(self: *State, allocator: Allocator) void {
         self.out.deinit(allocator);
+    }
+
+    /// Resolves a source offset to a zero-based `(line, col)` pair.
+    pub fn resolve(self: *State, offset: u32) LineCol {
+        return self.cursor.resolve(self.source, offset);
     }
 
     /// Advances the generated position over `bytes` just written, counting
@@ -93,35 +104,38 @@ pub const State = struct {
 
         var i: usize = 0;
         var col_inc: u32 = 0;
-        var saw_nl = false;
-        while (i < bytes.len) : (i += 1) {
-            const b = bytes[i];
-            if (b == '\n') {
+        var saw_break = false;
+        while (i < bytes.len) {
+            const brk = util.Utf.lineBreakLen(bytes, i);
+            if (brk > 0) {
                 self.gen_line += 1;
                 col_inc = 0;
-                saw_nl = true;
-                continue;
+                saw_break = true;
+                i += brk;
+            } else {
+                const n = std.unicode.utf8ByteSequenceLength(bytes[i]) catch 1;
+                col_inc += utf16Width(n);
+                i += n;
             }
-            const n = std.unicode.utf8ByteSequenceLength(b) catch continue;
-            col_inc += if (n == 4) @as(u32, 2) else 1;
-            i += n - 1;
         }
-        self.gen_col = if (saw_nl) col_inc else self.gen_col + col_inc;
+        self.gen_col = if (saw_break) col_inc else self.gen_col + col_inc;
     }
 
-    // true when every byte is below 0x80 and none is a newline
     inline fn isPlainAscii(bytes: []const u8) bool {
         const N = 16;
         const Vec = @Vector(N, u8);
         const hi: Vec = @splat(0x80);
-        const nl: Vec = @splat('\n');
+        const lf: Vec = @splat('\n');
+        const cr: Vec = @splat('\r');
         var i: usize = 0;
         while (i + N <= bytes.len) : (i += N) {
             const chunk: Vec = bytes[i..][0..N].*;
-            if (@reduce(.Or, chunk >= hi) or @reduce(.Or, chunk == nl)) return false;
+            if (@reduce(.Or, chunk >= hi) or
+                @reduce(.Or, chunk == lf) or
+                @reduce(.Or, chunk == cr)) return false;
         }
         while (i < bytes.len) : (i += 1) {
-            if (bytes[i] >= 0x80 or bytes[i] == '\n') return false;
+            if (bytes[i] >= 0x80 or bytes[i] == '\n' or bytes[i] == '\r') return false;
         }
         return true;
     }
@@ -256,6 +270,74 @@ pub const State = struct {
         };
     }
 };
+
+/// Maps a UTF-16 offset into a UTF-8 source to a zero-based `(line, col)`,
+/// columns in UTF-16 code units. Scans incrementally from the last position.
+pub const SourceCursor = struct {
+    byte: u32 = 0,
+    utf16: u32 = 0,
+    line: u32 = 0,
+    line_start_utf16: u32 = 0,
+
+    pub fn resolve(
+        self: *SourceCursor,
+        source: []const u8,
+        target_utf16: u32,
+    ) LineCol {
+        if (target_utf16 >= self.utf16) {
+            while (self.utf16 < target_utf16 and self.byte < source.len) {
+                const brk = util.Utf.lineBreakLen(source, self.byte);
+                if (brk > 0) {
+                    self.line += 1;
+                    self.byte += brk;
+                    self.utf16 += if (brk == 2) @as(u32, 2) else 1;
+                    self.line_start_utf16 = self.utf16;
+                } else {
+                    const len = std.unicode.utf8ByteSequenceLength(source[self.byte]) catch 1;
+                    self.byte += len;
+                    self.utf16 += utf16Width(len);
+                }
+            }
+        } else {
+            while (self.utf16 > target_utf16) {
+                self.byte -= 1;
+                while (self.byte > 0 and isContinuation(source[self.byte])) self.byte -= 1;
+                const lead = source[self.byte];
+                self.utf16 -= utf16Width(std.unicode.utf8ByteSequenceLength(lead) catch 1);
+                // count a crlf once: its lf belongs to the preceding cr
+                const is_break = if (lead == '\n')
+                    self.byte == 0 or source[self.byte - 1] != '\r'
+                else
+                    util.Utf.lineBreakLen(source, self.byte) > 0;
+                if (is_break) self.line -= 1;
+            }
+            self.line_start_utf16 = self.lineStart(source);
+        }
+        return .{ .line = self.line, .col = self.utf16 - self.line_start_utf16 };
+    }
+
+    fn lineStart(self: *const SourceCursor, source: []const u8) u32 {
+        var b = self.byte;
+        var units_back: u32 = 0;
+        while (b > 0) {
+            var p = b - 1;
+            while (p > 0 and isContinuation(source[p])) p -= 1;
+            if (util.Utf.lineBreakLen(source, p) > 0) break;
+            units_back += utf16Width(std.unicode.utf8ByteSequenceLength(source[p]) catch 1);
+            b = p;
+        }
+        return self.utf16 - units_back;
+    }
+};
+
+inline fn isContinuation(byte: u8) bool {
+    return (byte & 0xC0) == 0x80;
+}
+
+// a 4-byte utf-8 code point is a utf-16 surrogate pair, all else one unit
+inline fn utf16Width(utf8_len: u8) u32 {
+    return if (utf8_len == 4) 2 else 1;
+}
 
 const VLQ_CHARS: [64]u8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".*;
 

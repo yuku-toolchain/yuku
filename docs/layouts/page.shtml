@@ -1,0 +1,190 @@
+<extend template="base.shtml">
+<title id="title" :text="$page.title"></title>
+<head id="head"></head>
+<div id="content">
+  <style>
+    h3.overtitle {
+      margin: 2.5rem 0 0;
+      letter-spacing: 0.04em;
+    }
+
+    h1.title {
+      margin: 0 0 1.6rem;
+    }
+
+    .page-toc {
+      margin: 0 0 2.25rem;
+      padding: 0.7rem 1rem 0.8rem;
+      border: 1px dashed #555;
+      font-weight: normal;
+    }
+
+    .page-toc-title {
+      margin: 0 0 0.4rem;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.15rem;
+      color: #eee;
+    }
+
+    .page-toc ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-toc ul ul ul {
+      display: none;
+    }
+
+    .page-toc li {
+      margin: 0.18rem 0;
+      line-height: 1.45;
+    }
+
+    .page-toc a {
+      color: #ccc;
+      font-weight: normal;
+      text-decoration: none;
+    }
+
+    .page-toc a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    #page {
+      line-height: 1.65;
+    }
+
+    #page h2,
+    #page h3,
+    #page h4 {
+      text-align: left;
+    }
+
+    #page h2 {
+      font-size: 1.95rem;
+      line-height: 1.15;
+      margin: 2.75rem 0 1rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed #555;
+    }
+
+    #page h3 {
+      font-size: 1.35rem;
+      line-height: 1.2;
+      margin: 2.1rem 0 0.6rem;
+    }
+
+    #page h4 {
+      font-size: 1.05rem;
+      margin: 1.6rem 0 0.5rem;
+    }
+
+    #page :is(h2, h3, h4) a {
+      color: inherit;
+      font-weight: inherit;
+      text-decoration: none;
+    }
+
+    #page :is(h2, h3, h4) a:hover::after {
+      content: " #";
+      color: #777;
+      font-family: 'Merriweather', serif;
+      font-size: 0.65em;
+      vertical-align: middle;
+    }
+
+    #page p {
+      margin: 0 0 1.15rem;
+      line-height: 1.65;
+    }
+
+    #page ul,
+    #page ol {
+      margin: 0 0 1.15rem;
+      padding-left: 1.4rem;
+    }
+
+    #page li {
+      margin: 0.35rem 0;
+    }
+
+    #page table {
+      display: block;
+      overflow-x: auto;
+      max-width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      line-height: 1.5;
+    }
+
+    #page th,
+    #page td {
+      padding: 0.5rem 0.8rem;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: break-word;
+    }
+
+    #page td {
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    #page pre {
+      margin: 1.25rem 0;
+      padding: 0.7rem 0.9rem;
+    }
+
+    #page hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 2.25rem 0;
+    }
+
+    #page figure {
+      margin: 1.7rem 0;
+      text-align: center;
+    }
+
+    #page figcaption {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #8a8a8a;
+    }
+
+    #page .block {
+      margin: 1.5rem 0;
+    }
+
+    #page .block p {
+      margin: 0.65rem 0;
+    }
+
+    #page details.block > summary {
+      padding: 0.55rem 0.95rem;
+      cursor: pointer;
+      font-weight: bold;
+      color: #eee;
+    }
+
+    #page details.block[open] > summary {
+      margin-bottom: 0.5rem;
+      border-bottom: 1px dashed #555;
+    }
+
+    #page details.block {
+      padding-bottom: 0.35rem;
+    }
+  </style>
+  <h3 class="overtitle centered">Yuku</h3>
+  <h1 class="title" :text="$page.title"></h1>
+  <ctx :if="$page.link().eql('/').not()">
+    <nav class="page-toc" aria-label="On this page">
+      <p class="page-toc-title">On this page</p>
+      <div :html="$page.toc()"></div>
+    </nav>
+  </ctx>
+  <div id="page" :html="$page.content()"></div>
+</div>

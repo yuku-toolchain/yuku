@@ -5,7 +5,7 @@
 <div align="center">
 
   <!-- markdownlint-disable-next-line no-alt-text -->
-  <img src="/docs/public/logo.svg" alt="Logo" width="300" />
+  <img src="docs/assets/logo.svg" alt="Logo" width="300" />
   
   <br>
   <br>
@@ -81,8 +81,8 @@ minify(parse("const enabled = true;").program, { format: "compact" }).code;
 Emits a Source Map V3 in the same pass, ~2.5x faster than `@babel/generator` with source maps on:
 
 ```js
-const { program, lineStarts } = parse(source);
-const { code, map } = print(program, { sourceMaps: { lineStarts } });
+const { program } = parse(source);
+const { code, map } = print(program, { sourceMaps: { source } });
 ```
 
 [Read the codegen documentation →](https://yuku.fyi/codegen)

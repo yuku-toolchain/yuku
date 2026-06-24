@@ -42,8 +42,6 @@
 //   comments           comment_count * COMMENT_SIZE bytes, in source order,
 //                      each carrying its own span. Present when
 //                      FLAG_COMMENTS is set.
-//   line_starts        line_starts_count * 4 bytes. Flat u32 array of the
-//                      byte offset at which each source line begins.
 //   diagnostics        Variable length sequence (see diagnostics below).
 //                      Written by the encoder; skipped by the decoder.
 //
@@ -122,7 +120,6 @@ const Header = extern struct {
     comment_count: u32,
     /// entries in the attached comments section.
     attached_comment_count: u32,
-    line_starts_count: u32,
     diag_count: u32,
     program_index: u32,
     flags: u32,
@@ -205,7 +202,6 @@ pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 
 pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
 pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
 pub const HDR_ATTACHED_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "attached_comment_count") / 4;
-pub const HDR_LINE_STARTS_COUNT_U32: u32 = @offsetOf(Header, "line_starts_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
 pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
@@ -364,8 +360,7 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
         tree.strings.extra.items.len +
         tree.attached_comment_offsets.len * 4 +
         tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
-        tree.comments.len * COMMENT_SIZE +
-        tree.line_starts.len * 4;
+        tree.comments.len * COMMENT_SIZE;
 
     for (tree.diagnostics.items) |d| {
         size += diag_fixed + d.message.len;
@@ -398,7 +393,6 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
         .attached_comment_count = @intCast(tree.attached_comments.len),
-        .line_starts_count = @intCast(tree.line_starts.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
         .flags = hdr_flags,
@@ -459,11 +453,6 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
         pos += COMMENT_SIZE;
     }
-
-    // line starts
-    const ls_bytes = std.mem.sliceAsBytes(tree.line_starts);
-    @memcpy(buf[pos..][0..ls_bytes.len], ls_bytes);
-    pos += ls_bytes.len;
 
     // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
@@ -706,16 +695,6 @@ pub fn deserializeFromBuf(
             };
         }
         tree.comments = comments;
-    }
-
-    // line starts
-    const ls_bytes: usize = @as(usize, hdr.line_starts_count) * 4;
-    if (buf.len < pos + ls_bytes) return error.InvalidBuffer;
-    if (hdr.line_starts_count > 0) {
-        const starts = try tree.allocator().alloc(u32, hdr.line_starts_count);
-        @memcpy(std.mem.sliceAsBytes(starts), buf[pos..][0..ls_bytes]);
-        tree.line_starts = starts;
-        pos += ls_bytes;
     }
 
     // skip diagnostics. codegen doesn't read them.

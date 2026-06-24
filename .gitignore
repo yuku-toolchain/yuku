@@ -8,6 +8,10 @@ jsx-roadmap.md
 **/dist
 !playground/dist
 .astro/
+
+# Zine docs build output
+docs/public/
+
 test/**/suite
 profiler/files
 zig-pkg

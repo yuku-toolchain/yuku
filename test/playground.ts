@@ -1,18 +1,29 @@
-import { Analyzer } from "yuku-analyzer";
+import { parse } from "yuku-parser";
+import { print } from "yuku-codegen";
 
-const analyzer = new Analyzer();
-
-const counter = `
-  import {step} from "./utils.ts"
-  let count = 0;
-  export function tick() {
-    count += step;
-    step;
-    return () => count;
-  }
+// non-ascii (é) on line 1 exercises the utf-16 column mapping.
+const source = `const gréeting = "hi";
+function add(a, b) {
+  return a + b;
+}
 `;
 
-const utils = `const step = 2; export { step }`;
+const { program, diagnostics, ...rest } = parse(source);
+console.log("parse result keys:", Object.keys({ program, diagnostics, ...rest }));
 
-analyzer.addFile("utils.ts", utils);
-analyzer.addFile("counter.ts", counter);
+// source maps take the original `source` to resolve generated positions.
+const withMap = print(program, {
+  sourceMaps: {
+    source,
+    file: "out.js",
+    sourceFileName: "in.js",
+    sourcesContent: source,
+  },
+});
+console.log("\n--- code ---\n" + withMap.code);
+console.log("--- map ---");
+console.log(JSON.stringify(withMap.map, null, 2));
+
+// no source provided -> no source map.
+const noMap = print(program, { sourceMaps: { file: "out.js" } as never });
+console.log("\nno-source map:", noMap.map);

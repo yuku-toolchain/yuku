@@ -30,6 +30,10 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     parser.context.directive_prologue = parser.context.directive_prologue and
         parser.current_token.tag == .string_literal;
 
+    if (parser.current_token.tag == .identifier) {
+        return parseExpressionOrLabeledStatementOrDirective(parser);
+    }
+
     return switch (parser.current_token.tag) {
         .at => parseDecoratedStatement(parser),
         .await => parseAwaitUsingOrExpression(parser),

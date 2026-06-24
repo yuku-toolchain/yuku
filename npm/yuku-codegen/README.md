@@ -52,7 +52,7 @@ const out = print(program, {
   indent: 2,
   quotes: "preserve",
   comments: "some",
-  sourceMaps: { lineStarts },
+  sourceMaps: { source },
 });
 ```
 
@@ -62,22 +62,22 @@ const out = print(program, {
 | `indent`     | `number`                                 | `2`        | Spaces per indentation level. Applies in pretty mode only.                   |
 | `quotes`     | `"preserve" \| "double" \| "single"`     | `"preserve"` | Quote style for string literals. `"preserve"` keeps each literal's source quote style (re-escaping the content); `"double"` / `"single"` force one. |
 | `comments`   | `boolean \| "some" \| "line" \| "block"` | `"some"`   | Comment passthrough filter. See [Comments](#comments).                       |
-| `sourceMaps` | `SourceMapOptions`                       | `undefined` | Pass an object to emit a Source Map V3. Its `lineStarts` is required, the rest of the metadata is optional. See [Source maps](#source-maps). |
+| `sourceMaps` | `SourceMapOptions`                       | `undefined` | Pass an object to emit a Source Map V3. Its `source` is required, the rest of the metadata is optional. See [Source maps](#source-maps). |
 
 ## Source maps
 
-Pass a `SourceMapOptions` object to emit a Source Map V3. Its `lineStarts` field is required: feed it the `lineStarts` array from the parser's `ParseResult` (this is what maps generated positions back to the source). The remaining fields (`file`, `sources`, `sourcesContent`, `sourceRoot`) are optional metadata.
+Pass a `SourceMapOptions` object to emit a Source Map V3. Its `source` field is required: feed it the original source text (this is what maps generated positions back to the source). Without it, no map is produced and `map` is `null`. The remaining fields (`file`, `sources`, `sourcesContent`, `sourceRoot`) are optional metadata.
 
 ```js
 import { parse } from "yuku-parser";
 import { print } from "yuku-codegen";
 
 const source = `const greet = (name) => "Hello, " + name;`;
-const { program, lineStarts } = parse(source);
+const { program } = parse(source);
 
 const { code, map } = print(program, {
   sourceMaps: {
-    lineStarts,
+    source,
     file: "out.js",
     sourceFileName: "in.js",
     sourcesContent: source,
@@ -92,7 +92,7 @@ await Bun.write("out.js.map", JSON.stringify(map));
 
 | Field            | Type       | Description                                                                       |
 | ---------------- | ---------- | --------------------------------------------------------------------------------- |
-| `lineStarts`     | `number[]` | **Required.** The parser's `ParseResult.lineStarts`, used to map positions to the source. |
+| `source`         | `string`   | **Required.** The original source text, used to map positions to the source. |
 | `file`           | `string`   | Output filename, embedded as the map's `file`.                                    |
 | `sourceFileName` | `string` | Source filename, embedded as the single entry of `sources`.                         |
 | `sourceRoot`     | `string` | Prefix embedded as `sourceRoot`.                                                    |

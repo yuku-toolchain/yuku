@@ -1,8 +1,10 @@
 ---
-title: Traverse
-description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
+.title = "Traverse",
+.description = "Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.",
+.author = "Arshad Yaseen",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
-
 The traverser is how you do real work on a Yuku AST. It walks the tree for you, calls your visitor hooks at every node, and (depending on the mode you pick) hands you the surrounding lexical scopes, the symbol table, or a mutable handle on the tree itself.
 
 | Mode          | What you get                                      | Returns                     |
@@ -14,11 +16,10 @@ The traverser is how you do real work on a Yuku AST. It walks the tree for you, 
 
 The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional: tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
 
-:::note
-The traverser is stable and powers Yuku's semantic checker in production. The surface may still grow as we build more tools on top of it (minifier, bundler, formatter). Breaking changes will be called out in release notes.
-:::
+>[]($block.attrs('note'))
+>The traverser is stable and powers Yuku's semantic checker in production. The surface may still grow as we build more tools on top of it (minifier, bundler, formatter). Breaking changes will be called out in release notes.
 
-## Your First Visitor
+## [Your First Visitor]($section.id('your-first-visitor'))
 
 A visitor is just a struct with `enter_*` and `exit_*` methods. Pick a node type, write a method named after it, and the walker will call you when it gets there.
 
@@ -54,7 +55,7 @@ std.debug.print("found {d} functions\n", .{counter.functions});
 
 That is the entire shape of every traverser-based tool you will write. The rest of this page is "what else you can do inside a hook".
 
-## Hooks
+## [Hooks]($section.id('hooks'))
 
 Every hook follows the same four-argument shape:
 
@@ -80,7 +81,7 @@ Enter hooks may return either `traverser.Action` or `Allocator.Error!traverser.A
 
 Exit hooks always return `void`.
 
-### Receiving the Payload Already Unpacked
+### [Receiving the Payload Already Unpacked]($section.id('receiving-the-payload-already-unpacked'))
 
 Each typed hook receives its node's payload pre-extracted from the tagged union, so you never write a `switch` to "unwrap" the node you just matched on:
 
@@ -121,9 +122,9 @@ pub fn enter_call_expression(
 }
 ```
 
-See the [AST reference](/parser/ast) for every node type and its fields.
+See the [AST reference](/parser/ast/) for every node type and its fields.
 
-### Catch-All Hooks
+### [Catch-All Hooks]($section.id('catch-all-hooks'))
 
 If you want one hook that fires for every node regardless of type, define `enter_node` and/or `exit_node`. The payload is `ast.NodeData` (the full union):
 
@@ -152,7 +153,7 @@ When both a typed hook and a catch-all are defined, the order is:
 
 That ordering lets a catch-all enter "gate" a subtree (return `.skip` to opt out before the typed hooks run) and a catch-all exit "summarise" what just happened.
 
-### Actions
+### [Actions]($section.id('actions'))
 
 Every enter hook returns one of three actions:
 
@@ -164,7 +165,7 @@ Every enter hook returns one of three actions:
 
 `.skip` is what you return after hand-walking a subtree yourself, or after a transform that should not be re-entered. `.stop` is how you implement "find the first X and exit".
 
-### Running Without Hooks
+### [Running Without Hooks]($section.id('running-without-hooks'))
 
 Sometimes the only thing you want from the traverser is its output: a `ScopeTree` from the scoped mode, or a `ScopeTree` + `SymbolTable` from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
 
@@ -182,7 +183,7 @@ try result.symbol_table.resolveAll(result.scope_tree);
 
 The empty struct makes the absence of hooks visible in the code, which is why there is no hidden `analyze`-style helper inside the traverser. If a tool wants the result of a walk without any per-node logic, the caller spells that out exactly.
 
-## The Path
+## [The Path]($section.id('the-path'))
 
 Every mode tracks the path from the root down to the current node. The path is a small fixed-capacity stack of `NodeIndex` values you can read at any time through `ctx.path`.
 
@@ -221,7 +222,7 @@ pub fn enter_identifier_reference(
 
 The path has a hard cap of 256 entries. In practice this is far beyond any realistic ECMAScript nesting depth, so you can treat it as effectively unbounded.
 
-## Basic Traverser
+## [Basic Traverser]($section.id('basic-traverser'))
 
 The minimum: path tracking plus the full immutable tree. No allocator needed, nothing returned.
 
@@ -248,7 +249,7 @@ ctx.path    // NodePath, the current path stack
 
 That is it. Step up to scoped or semantic when you need to know what bindings are in scope.
 
-## Scoped Traverser
+## [Scoped Traverser]($section.id('scoped-traverser'))
 
 Scoped mode adds automatic lexical scope tracking. Whenever the walker enters a scope-creating node, the tracker pushes a new scope. On exit, it pops. Your hooks see `ctx.scope.currentScope()` already pointing at the right place.
 
@@ -260,7 +261,7 @@ const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor);
 // scope_tree contains every scope the walk produced
 ```
 
-### What Creates a Scope
+### [What Creates a Scope]($section.id('what-creates-a-scope'))
 
 The tracker recognises every construct in the spec that introduces a new lexical environment, plus the TypeScript-specific ones that scope type parameters and infer bindings.
 
@@ -298,7 +299,7 @@ Without this, `const foo = 1` inside the body would conflict with the expression
 
 **`ts_module` is its own scope kind, not a block.** TypeScript namespace bodies act as a `var`-hoist target, so a `var` inside a namespace stays inside the namespace instead of escaping to the surrounding scope. That difference is encoded as a separate `Scope.Kind` so `Kind.isHoistTarget()` returns true for it.
 
-### Strict Mode
+### [Strict Mode]($section.id('strict-mode'))
 
 Strict mode propagates automatically:
 
@@ -308,7 +309,7 @@ Strict mode propagates automatically:
 - Child scopes inherit strict mode from their parent.
 - Functions whose body opens with `"use strict"` get `strict = true` set **at function-scope creation time**, before any parameter hooks fire. This is needed because the directive applies retroactively to the parameter list, where rules like "no duplicate parameters" only kick in under strict mode.
 
-### Querying the Tracker
+### [Querying the Tracker]($section.id('querying-the-tracker'))
 
 Inside a hook, `ctx.scope` is a live `ScopeTracker` you can interrogate:
 
@@ -338,7 +339,7 @@ pub fn enter_node(
 
 `getScope(id)` and `getScopeMut(id)` look up any scope by id. `currentScopeMut()` is there if you need to flip a flag on the active scope yourself (rarely needed, the tracker handles `"use strict"` automatically).
 
-### Using the ScopeTree After Traversal
+### [Using the ScopeTree After Traversal]($section.id('using-the-scopetree-after-traversal'))
 
 `scoped.traverse` returns an immutable `ScopeTree` containing every scope that was created:
 
@@ -357,7 +358,7 @@ while (it.next()) |id| {
 
 The tree is backed by the parser's arena, so it lives as long as the source `Tree` does. Calling `tree.deinit()` invalidates it.
 
-## Semantic Traverser
+## [Semantic Traverser]($section.id('semantic-traverser'))
 
 Semantic mode is the full-power one: path, scopes, symbols, references, redeclaration handling, TypeScript context tracking.
 
@@ -381,7 +382,7 @@ ctx.inTypePosition()  // true inside a TS type-only subtree
 ctx.inTsNamespace()   // true inside a TS `namespace` body
 ```
 
-### Two-Phase Binding
+### [Two-Phase Binding]($section.id('two-phase-binding'))
 
 Symbol declaration is split across two phases per node:
 
@@ -391,9 +392,8 @@ Symbol declaration is split across two phases per node:
 
 Why the split? It guarantees a useful invariant for your visitor:
 
-:::note
-Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is _about to_ be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
-:::
+>[]($block.attrs('note'))
+>Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is _about to_ be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
 
 ```zig
 pub fn enter_binding_identifier(
@@ -424,7 +424,7 @@ pub fn enter_binding_identifier(
 
 `currentBindingFlags`, `currentBindingExcludes`, and `currentTarget` are the three readers for the pending state. Reading them inside an enter hook on a `binding_identifier` is always safe. Reading them at any other node is undefined.
 
-### The Symbol
+### [The Symbol]($section.id('the-symbol'))
 
 Once a binding is materialised, you get a `Symbol`:
 
@@ -441,7 +441,7 @@ pub const Symbol = struct {
 
 A single symbol can collect multiple declarators when the language allows merging: TS function overloads, `class` + `interface` merging, `namespace` + `enum` merging, ambient module patterns. The tracker records every declarator node, so a renamer or a "go to definition" feature can show all of them.
 
-### Symbol Flags
+### [Symbol Flags]($section.id('symbol-flags'))
 
 `Symbol.Flags` describes everything the tracker knows about a binding. A single symbol can carry several flags at once: a `class` lives in both value and type space, an exported `var` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into a single symbol that satisfies both kinds.
 
@@ -496,7 +496,7 @@ flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
 
 `class` and `regular_enum` deliberately satisfy both `inValueSpace` and `inTypeSpace`. That is what makes "use a class as a type" work without special-casing.
 
-### Per-Kind Redeclaration Excludes
+### [Per-Kind Redeclaration Excludes]($section.id('per-kind-redeclaration-excludes'))
 
 For each declaration kind, the tracker has a precomputed `Symbol.Excludes.X` flag set. The rule is uniform:
 
@@ -521,7 +521,7 @@ Symbol.Excludes.type_parameter
 
 This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching. If you ever need to teach the tracker a new merging rule, you change one flag set, not a tangle of `if` statements.
 
-### TypeScript Context Flags
+### [TypeScript Context Flags]($section.id('typescript-context-flags'))
 
 Two booleans on `sem.Ctx` track whether the walker is currently inside TS-only territory:
 
@@ -547,7 +547,7 @@ pub fn enter_identifier_reference(
 
 `inTypePosition()` is also what the tracker uses internally to decide that a `binding_identifier` inside a function-type or index signature is a parameter _label_ (not a real declaration). Only `type_parameter` bindings are real in type position.
 
-### References and Their Kind
+### [References and Their Kind]($section.id('references-and-their-kind'))
 
 Every `identifier_reference` node produces one `Reference`. Each reference carries a `kind`:
 
@@ -562,7 +562,7 @@ pub const Reference = struct {
 
 `.value` means the reference is a runtime use (the receiver of a property access, an argument, the LHS of an assignment, etc.). `.type` means it appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context. Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
 
-### Resolving References
+### [Resolving References]($section.id('resolving-references'))
 
 During traversal, references are recorded but not yet linked to their declarations. After traversal, call `resolveAll` with the scope tree to walk every reference up its chain and build the cross-index:
 
@@ -627,7 +627,7 @@ if (table.resolve(result.scope_tree, scope_id, "myVar")) |found| {
 
 `resolve` walks up the scope chain just like JavaScript does at runtime, also matching hoisted `var`s passing through intermediate block scopes.
 
-### Single-Scope Lookups
+### [Single-Scope Lookups]($section.id('single-scope-lookups'))
 
 For tools that do _not_ want a full chain walk (a minifier checking "is this name shadowed in this exact scope"), both the tracker and the table expose tight single-scope lookups:
 
@@ -638,7 +638,7 @@ findInScopeOrHoisted(scope, name)  // also matches a `var` passing through `scop
 
 `findInScopeOrHoisted` is the same lookup the tracker uses internally to detect block-scoped redeclarations of names that a hoisting `var` is travelling through.
 
-### Iterating the Table
+### [Iterating the Table]($section.id('iterating-the-table'))
 
 Three iterators walk the whole table. Each yields an entry so you never reach back through the table for a lookup you were just handed:
 
@@ -678,7 +678,7 @@ while (it2.next()) |sym_id_ptr| {
 }
 ```
 
-### SymbolTable Reference
+### [SymbolTable Reference]($section.id('symboltable-reference'))
 
 The table's public surface, in one place:
 
@@ -708,7 +708,7 @@ table.isReferenced(sym_id)             // shorthand for "any uses?"
 
 The table aliases the tree's arena, so it lives as long as the tree. Calling `tree.deinit()` invalidates everything inside.
 
-## Transform Traverser
+## [Transform Traverser]($section.id('transform-traverser'))
 
 Transform mode is for rewrites: codemods, desugaring passes, AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
 
@@ -728,7 +728,7 @@ ctx.path    // NodePath
 
 There is no scope or symbol tracking in this mode. Mutating the tree would invalidate any tracked state mid-walk, so the design splits "analyse" from "rewrite" at the type level. If you need both, run two passes (see [Combining Modes](#combining-modes) below).
 
-### Replacing a Node In Place
+### [Replacing a Node In Place]($section.id('replacing-a-node-in-place'))
 
 The simplest transform replaces a node's data inside its enter hook. The walker re-reads the node after every enter, so the replacement's children are walked automatically:
 
@@ -750,7 +750,7 @@ pub fn enter_binary_expression(
 }
 ```
 
-### Renaming an Identifier
+### [Renaming an Identifier]($section.id('renaming-an-identifier'))
 
 `setIdentifierName` rewrites the name field of any identifier-shaped node (`binding_identifier`, `identifier_reference`, `identifier_name`, `label_identifier`, `private_identifier`, `jsx_identifier`) without changing its variant or span:
 
@@ -761,7 +761,7 @@ ctx.tree.setIdentifierName(node_index, new_name);
 
 This is the primitive Yuku's minifier uses to rename every site of a symbol in lock-step. Combined with `symbolSites`, you can rewrite a whole binding in a few lines.
 
-### Creating New Nodes
+### [Creating New Nodes]($section.id('creating-new-nodes'))
 
 Use `addNode` to append a brand-new node and get its index. Use `addExtra` to allocate variable-length child lists for fields typed as `IndexRange`:
 
@@ -776,7 +776,7 @@ const args = try ctx.tree.addExtra(&.{ child1, child2, child3 });
 
 Both are safe to call during traversal and use the tree's arena, so there is nothing to free.
 
-### Wrapping a Node
+### [Wrapping a Node]($section.id('wrapping-a-node'))
 
 A common pattern: "take this node, move it to a fresh node, replace this one with a wrapper pointing at the moved copy". Useful for parenthesising expressions, wrapping in `await`, etc.
 
@@ -805,11 +805,10 @@ pub fn enter_binary_expression(
 
 Returning `.skip` here is essential. If you let the walker descend, it will re-read the new wrapper, find its child (the moved copy), and call `enter_binary_expression` again on the same data, infinitely.
 
-### Self-Reference Safety
+### [Self-Reference Safety]($section.id('self-reference-safety'))
 
-:::caution
-Never set a node's child to its own index. The walker re-reads node data after every enter hook, so a self-referential node causes infinite recursion.
-:::
+>[]($block.attrs('caution'))
+>Never set a node's child to its own index. The walker re-reads node data after every enter hook, so a self-referential node causes infinite recursion.
 
 ```zig
 // WRONG: cycle. The wrapper points to its own index.
@@ -824,7 +823,7 @@ const inner = try ctx.tree.addNode(original_data, span);
 ctx.tree.setData(index, .{ .parenthesized_expression = .{ .expression = inner } });
 ```
 
-## Building ASTs From Scratch
+## [Building ASTs From Scratch]($section.id('building-asts-from-scratch'))
 
 `Tree.initEmpty(allocator)` creates a tree with no source text, intended for programmatic AST construction. Because there is no source backing it, every string must be created with `tree.addString(...)`.
 
@@ -855,7 +854,7 @@ out.root = try out.addNode(
 
 That is enough for a tree that any read-only consumer (a printer, an emitter, another traverser pass) will accept.
 
-### Building One Tree While Walking Another
+### [Building One Tree While Walking Another]($section.id('building-one-tree-while-walking-another'))
 
 A particularly powerful pattern, central to transpilers and source-to-source compilers, is walking an _input_ tree with full semantic context (scopes, symbols, path) while building a completely separate _output_ tree:
 
@@ -904,7 +903,7 @@ _ = try sem.traverse(Transpiler, &source_tree, &transpiler);
 
 The two trees never touch each other's storage, and either can be freed independently. This is the recommended structure for any tool that produces a transformed AST from an input AST without mutating the input.
 
-## Combining Modes
+## [Combining Modes]($section.id('combining-modes'))
 
 The four modes compose via multiple passes. A typical pipeline looks like:
 

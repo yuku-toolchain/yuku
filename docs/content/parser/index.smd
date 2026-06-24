@@ -1,11 +1,13 @@
 ---
-title: Parser
-description: A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
+.title = "Parser",
+.description = "A fast, spec-compliant JavaScript and TypeScript parser written in Zig.",
+.author = "Arshad Yaseen",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
+Yuku's parser turns JavaScript and TypeScript source code into an [Abstract Syntax Tree](/parser/ast/).
 
-Yuku's parser turns JavaScript and TypeScript source code into an [Abstract Syntax Tree](/parser/ast).
-
-## Node.js
+## [Node.js]($section.id('nodejs'))
 
 ```bash
 npm install yuku-parser
@@ -19,7 +21,7 @@ const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 
 Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 4-16x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
-## Zig
+## [Zig]($section.id('zig'))
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
@@ -35,11 +37,10 @@ const yuku_dep = b.dependency("yuku", .{
 my_module.addImport("parser", yuku_dep.module("parser"));
 ```
 
-:::note
-Yuku requires Zig 0.16.0 or later.
-:::
+>[]($block.attrs('note'))
+>Yuku requires Zig 0.16.0 or later.
 
-## Quick Start
+## [Quick Start]($section.id('quick-start'))
 
 ```zig
 const std = @import("std");
@@ -56,7 +57,7 @@ pub fn main() !void {
 }
 ```
 
-## Options
+## [Options]($section.id('options'))
 
 `parse` takes an `Options` struct to configure the parsing mode:
 
@@ -73,7 +74,7 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `allow_return_outside_function` | `true`, `false`                      | `false`   | Allow `return` statements at the top level                                        |
-| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat`   | Collect comments: as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast#comments) |
+| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments: as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast/#comments) |
 
 Both fields can be inferred from a file path:
 
@@ -84,7 +85,7 @@ const tree = try parser.parse(allocator, source, .{
 });
 ```
 
-## The Tree
+## [The Tree]($section.id('the-tree'))
 
 `parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. The allocator passed to `parse` is used as the backing allocator for the tree's internal arena, so `tree.deinit()` frees everything at once.
 
@@ -111,9 +112,9 @@ for (tree.extra(program.body)) |child_idx| {
 }
 ```
 
-The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](/parser/ast) for the full node catalog, the field conventions, and the eight categorical predicates on `NodeData`.
+The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](/parser/ast/) for the full node catalog, the field conventions, and the eight categorical predicates on `NodeData`.
 
-## Diagnostics
+## [Diagnostics]($section.id('diagnostics'))
 
 The parser recovers from errors and continues, so a single parse produces the full AST alongside all diagnostics:
 
@@ -135,9 +136,9 @@ for (tree.diagnostics.items) |d| {
 
 Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `message`, a source `span`, optional `labels` pointing to related code regions, and optional `help` text.
 
-## Traversal
+## [Traversal]($section.id('traversal'))
 
-The [traverser system](/parser/traverse) walks the AST and calls visitor hooks at every node. There are four modes with increasing context:
+The [traverser system](/parser/traverse/) walks the AST and calls visitor hooks at every node. There are four modes with increasing context:
 
 | Mode          | Context                            | Result                      |
 | ------------- | ---------------------------------- | --------------------------- |
@@ -160,9 +161,9 @@ var visitor = MyVisitor{};
 try traverser.basic.traverse(MyVisitor, &tree, &visitor);
 ```
 
-See [Traverse](/parser/traverse) for the full API.
+See [Traverse](/parser/traverse/) for the full API.
 
-## Semantic Analysis
+## [Semantic Analysis]($section.id('semantic-analysis'))
 
 The ECMAScript specification defines a set of [early errors](https://tc39.es/ecma262/#early-error) that conformant implementations must report before execution. Some are detectable during parsing from local context alone: `return` outside a function, `yield` outside a generator, invalid destructuring. Others require knowledge of the program's scope structure and bindings: redeclarations, unresolved exports, private fields used outside their class, and more.
 
@@ -185,18 +186,17 @@ Semantic diagnostics are appended directly to `tree.diagnostics` alongside parse
 
 All allocations (scope tree, symbol table) use the tree's arena, so they are valid for the lifetime of the tree and freed by `tree.deinit()`.
 
-:::note
-If you need the scope tree and symbol table without running the early-error checks, call the [semantic traverser](/parser/traverse#semantic-traverser) directly with your own visitor (or an empty `struct {}` if you only want the tables):
-
-```zig
-const sem = parser.traverser.semantic;
-
-var noop = struct {}{};
-const result = try sem.traverse(@TypeOf(noop), &tree, &noop);
-
-// result.scope_tree   - all lexical scopes
-// result.symbol_table - all symbols and references (no diagnostics emitted)
-```
-
-`semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a real visitor that emits the early-error diagnostics on top.
-:::
+>[]($block.attrs('note'))
+>If you need the scope tree and symbol table without running the early-error checks, call the [semantic traverser](/parser/traverse/#semantic-traverser) directly with your own visitor (or an empty `struct {}` if you only want the tables):
+>
+>```zig
+>const sem = parser.traverser.semantic;
+>
+>var noop = struct {}{};
+>const result = try sem.traverse(@TypeOf(noop), &tree, &noop);
+>
+>// result.scope_tree   - all lexical scopes
+>// result.symbol_table - all symbols and references (no diagnostics emitted)
+>```
+>
+>`semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a real visitor that emits the early-error diagnostics on top.

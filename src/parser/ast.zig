@@ -175,10 +175,6 @@ pub const Tree = struct {
     attached_comments: []const AttachedComment = &.{},
     /// Prefix-sum index into `attached_comments`, of length `nodes.len + 1`.
     attached_comment_offsets: []const u32 = &.{},
-    /// Offset where each source line begins. Index 0 is always 0. Powers
-    /// `lineColOf` so consumers resolve positions without rescanning the
-    /// source.
-    line_starts: []const u32 = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
     /// The original source text passed to the parser.
@@ -265,40 +261,6 @@ pub const Tree = struct {
     pub inline fn extra(self: *const Tree, range: IndexRange) []const NodeIndex {
         std.debug.assert(range.start + range.len <= self.extras.items.len);
         return self.extras.items[range.start..][0..range.len];
-    }
-
-    /// Resolves an offset to a zero-indexed `(line, col)` pair. Returns
-    /// `(0, 0)` when `line_starts` is empty.
-    pub fn lineColOf(self: *const Tree, pos: u32) struct { line: u32, col: u32 } {
-        const starts = self.line_starts;
-        if (starts.len == 0) return .{ .line = 0, .col = 0 };
-        var lo: u32 = 0;
-        var hi: u32 = @intCast(starts.len);
-        while (lo < hi) {
-            const mid = lo + (hi - lo) / 2;
-            if (starts[mid] <= pos) lo = mid + 1 else hi = mid;
-        }
-        const line = lo - 1;
-        return .{ .line = line, .col = pos - starts[line] };
-    }
-
-    /// Resolves an offset to a zero-indexed `(line, col)` pair, starting the
-    /// search at `hint_line` and scanning toward the target line. For offsets
-    /// queried in roughly source order, passing the previously returned `line`
-    /// as `hint_line` keeps lookups near-constant time, avoiding the binary
-    /// search in `lineColOf`. Returns `(0, 0)` when `line_starts` is empty.
-    pub fn lineColNear(self: *const Tree, pos: u32, hint_line: u32) struct { line: u32, col: u32 } {
-        const starts = self.line_starts;
-        if (starts.len == 0) return .{ .line = 0, .col = 0 };
-        var line = hint_line;
-        if (line >= starts.len) line = @intCast(starts.len - 1);
-        if (starts[line] <= pos) {
-            while (line + 1 < starts.len and starts[line + 1] <= pos) : (line += 1) {}
-        } else {
-            // starts[0] is 0, so this stops at line 0 at worst
-            while (line > 0 and starts[line] > pos) : (line -= 1) {}
-        }
-        return .{ .line = line, .col = pos - starts[line] };
     }
 
     /// Replaces an existing node's data in-place.

@@ -188,8 +188,6 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
 
-        try buildLineStarts(&self.tree);
-
         if (!self.preserve_parens) {
             stripParenthesizedNodes(&self.tree);
         }
@@ -339,13 +337,21 @@ pub const Parser = struct {
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
         self.prev_token_end = self.current_token.span.end;
-        self.current_token = try self.nextToken() orelse return null;
+        if (self.lexer.tryNextToken()) |token| {
+            self.current_token = token;
+        } else {
+            self.current_token = try self.nextToken() orelse return null;
+        }
     }
 
     /// advance without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.prev_token_end = self.current_token.span.end;
-        self.current_token = try self.nextToken() orelse return null;
+        if (self.lexer.tryNextToken()) |token| {
+            self.current_token = token;
+        } else {
+            self.current_token = try self.nextToken() orelse return null;
+        }
     }
 
     pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
@@ -620,19 +626,15 @@ pub const Parser = struct {
         const alloc = self.allocator();
         const source_len = self.source.len;
 
-        const estimated_nodes = if (source_len < 4_000)
-            @max(256, source_len / 4)
-        else if (source_len < 10_000)
-            source_len / 3
-        else if (source_len < 100_000)
+        const estimated_nodes = if (source_len < 512_000)
+            @max(256, source_len / 2)
+        else
+            source_len / 4;
+
+        const estimated_extra = if (source_len < 512_000)
             source_len / 6
         else
-            source_len / 8;
-
-        const estimated_extra = if (source_len < 5_000_000)
-            estimated_nodes / 4
-        else
-            estimated_nodes / 3;
+            source_len / 12;
 
         try self.tree.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.tree.extras.ensureTotalCapacity(alloc, estimated_extra);
@@ -699,35 +701,4 @@ pub fn parse(
 ) Error!ast.Tree {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
-}
-
-/// Scans `tree.source` once and records the offset of every line start
-/// into `tree.line_starts`.
-fn buildLineStarts(tree: *ast.Tree) Error!void {
-    const alloc = tree.allocator();
-    const src = tree.source;
-
-    var starts: std.ArrayList(u32) = .empty;
-    try starts.ensureTotalCapacity(alloc, @max(8, src.len / 24));
-    starts.appendAssumeCapacity(0);
-
-    const N = 64;
-    const Vec = @Vector(N, u8);
-    const Mask = std.meta.Int(.unsigned, N);
-    const lf: Vec = @splat('\n');
-
-    var i: usize = 0;
-    while (i + N <= src.len) : (i += N) {
-        const chunk: Vec = src[i..][0..N].*;
-        var bits: Mask = @bitCast(chunk == lf);
-        while (bits != 0) {
-            const k = @ctz(bits);
-            try starts.append(alloc, @intCast(i + k + 1));
-            bits &= bits - 1;
-        }
-    }
-    while (i < src.len) : (i += 1) {
-        if (src[i] == '\n') try starts.append(alloc, @intCast(i + 1));
-    }
-    tree.line_starts = try starts.toOwnedSlice(alloc);
 }

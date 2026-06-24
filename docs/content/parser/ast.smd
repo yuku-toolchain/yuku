@@ -1,8 +1,10 @@
 ---
-title: AST
-description: The flat, data-oriented AST returned by Yuku's parser, with the full node reference.
+.title = "AST",
+.description = "The flat, data-oriented AST returned by Yuku's parser, with the full node reference.",
+.author = "Arshad Yaseen",
+.date = @date("2026-06-23T00:00:00"),
+.layout = "page.shtml",
 ---
-
 The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
 
 The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs):
@@ -14,13 +16,12 @@ Comments can be attached to the AST nodes they belong to, exposed as a flat offs
 
 On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
-:::tip[Building tools on the AST?]
-The [traverser](/parser/traverse) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
+># [Building tools on the AST?]($block.attrs('tip'))
+>The [traverser](/parser/traverse/) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
+>
+>This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
 
-This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
-:::
-
-## Memory model
+## [Memory model]($section.id('memory-model'))
 
 The AST is not a graph of heap-allocated structs. Every node lives in a single flat array (`Tree.nodes`), and child references are indices into that array. Variable-length child lists live in a second flat array (`Tree.extras`), and string content lives in a string pool. Three arrays, one arena.
 
@@ -35,7 +36,7 @@ Tree
 
 All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the entire tree at once.
 
-## The Tree
+## [The Tree]($section.id('the-tree'))
 
 `Tree` is the root container returned by `parser.parse()`. The fields you read directly:
 
@@ -55,7 +56,6 @@ tree.span(idx)           // Span (source byte range) for the node at idx
 tree.extra(range)        // []const NodeIndex for an IndexRange
 tree.string(handle)      // []const u8 for a String handle
 tree.commentsOf(idx)     // []const AttachedComment attached to the node at idx
-tree.lineColOf(pos)      // zero-indexed { line, col } for a byte offset
 
 tree.isTs()              // language is .ts, .tsx, or .dts
 tree.isJsx()             // language is .jsx or .tsx
@@ -63,11 +63,11 @@ tree.isModule()          // source_type is .module
 tree.hasErrors()         // any diagnostic with severity .error
 ```
 
-## Core types
+## [Core types]($section.id('core-types'))
 
 Four small types carry every reference inside the AST.
 
-### NodeIndex
+### [NodeIndex]($section.id('nodeindex'))
 
 ```zig
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
@@ -82,7 +82,7 @@ if (node.alternate != .null) {
 }
 ```
 
-### IndexRange
+### [IndexRange]($section.id('indexrange'))
 
 ```zig
 pub const IndexRange = struct { start: u32, len: u32 };
@@ -99,7 +99,7 @@ for (children) |child| {
 
 `IndexRange.empty` is the zero-length range.
 
-### String
+### [String]($section.id('string'))
 
 ```zig
 pub const String = struct { start: u32, end: u32 };
@@ -116,7 +116,7 @@ pub const String = struct { start: u32, end: u32 };
 const name = tree.string(node.name);
 ```
 
-### Span
+### [Span]($section.id('span'))
 
 ```zig
 pub const Span = struct { start: u32, end: u32 };
@@ -129,7 +129,7 @@ const span = tree.span(idx);
 const text = tree.source[span.start..span.end];
 ```
 
-## Reading a node
+## [Reading a node]($section.id('reading-a-node'))
 
 `NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(idx)` returns one. `switch` on the tag and unpack:
 
@@ -153,9 +153,9 @@ switch (tree.data(idx)) {
 }
 ```
 
-The same snake_case tag names are used as visitor hook names: a method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse) enters that node kind.
+The same snake_case tag names are used as visitor hook names: a method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse/) enters that node kind.
 
-### Reading children
+### [Reading children]($section.id('reading-children'))
 
 A node's children sit in two kinds of fields:
 
@@ -176,9 +176,9 @@ switch (tree.data(idx)) {
 }
 ```
 
-For tree-wide walks, use the [traverser](/parser/traverse) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
+For tree-wide walks, use the [traverser](/parser/traverse/) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
 
-## Predicates
+## [Predicates]($section.id('predicates'))
 
 Eight methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
 
@@ -218,15 +218,13 @@ switch (data) {
 }
 ```
 
-## Node reference
+## [Node reference]($section.id('node-reference'))
 
 Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.data()` switches and visitor hooks (`enter_<tag>`).
 
 Optional child fields are noted with `.null`. Optional child lists are noted with `.empty`.
 
----
-
-### Program
+### [Program]($section.id('program'))
 
 The root of every tree. There is always exactly one `program` node at `tree.root`.
 
@@ -240,9 +238,7 @@ pub const Program = struct {
 
 `directive` nodes (such as `"use strict";`) appear at the start of the body. Imports and exports appear in source order alongside other statements.
 
----
-
-### Statements
+### [Statements]($section.id('statements'))
 
 | Tag                    | Syntax                          | Description                                                                |
 | ---------------------- | ------------------------------- | -------------------------------------------------------------------------- |
@@ -267,9 +263,7 @@ pub const Program = struct {
 | `catch_clause`         | `catch (e) { body }`            | The `catch` clause of a `try`, with an optional binding.                   |
 | `with_statement`       | `with (obj) body`               | A `with` block. Forbidden in strict mode.                                  |
 
----
-
-### Declarations
+### [Declarations]($section.id('declarations'))
 
 | Tag                    | Syntax                        | Description                                                                  |
 | ---------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
@@ -295,9 +289,7 @@ class_declaration                   // class Foo {}
 class_expression                    // const x = class {}
 ```
 
----
-
-### Expressions
+### [Expressions]($section.id('expressions'))
 
 | Tag                          | Syntax                                  | Description                                                                      |
 | ---------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
@@ -325,9 +317,7 @@ class_expression                    // const x = class {}
 | `this_expression`            | `this`                                  | The `this` keyword used as an expression.                                        |
 | `super`                      | `super`                                 | The `super` keyword used as an expression head.                                  |
 
----
-
-### Literals
+### [Literals]($section.id('literals'))
 
 | Tag                | Syntax                        | Description                                          |
 | ------------------ | ----------------------------- | ---------------------------------------------------- |
@@ -340,9 +330,7 @@ class_expression                    // const x = class {}
 | `template_literal` | `` `hello ${name}` ``         | A template literal with zero or more interpolations. |
 | `template_element` | text part between `${...}`    | A static text span inside a template literal.        |
 
----
-
-### Identifiers
+### [Identifiers]($section.id('identifiers'))
 
 Five tags, all carrying a single `name: String` field. They are structurally identical but appear in different syntactic positions and resolve differently.
 
@@ -364,9 +352,7 @@ const foo = bar.baz;
 
 `binding_identifier` additionally carries decorators, an optional type annotation, and an optional `?` flag when it appears in a parameter position.
 
----
-
-### Patterns (destructuring)
+### [Patterns (destructuring)]($section.id('patterns-destructuring'))
 
 | Tag                    | Syntax                          | Description                                                                        |
 | ---------------------- | ------------------------------- | ---------------------------------------------------------------------------------- |
@@ -378,9 +364,7 @@ const foo = bar.baz;
 | `formal_parameters`    | `(a, b = 1, ...rest)`           | The parameter list of a function.                                                  |
 | `formal_parameter`     | a single parameter slot         | A single parameter slot wrapping a binding pattern.                                |
 
----
-
-### Functions
+### [Functions]($section.id('functions'))
 
 ```zig
 pub const Function = struct {
@@ -402,9 +386,7 @@ pub const Function = struct {
 | `function_body`             | The braced body of a function.                                                 |
 | `arrow_function_expression` | An arrow function, with either an expression or a block body.                  |
 
----
-
-### Classes
+### [Classes]($section.id('classes'))
 
 ```zig
 pub const Class = struct {
@@ -431,9 +413,7 @@ pub const Class = struct {
 | `decorator`           | A decorator (`@expr`) applied to a class or class member. |
 | `super`               | The `super` keyword used as an expression head.           |
 
----
-
-### Modules
+### [Modules]($section.id('modules'))
 
 | Tag                          | Syntax                         | Description                                                                  |
 | ---------------------------- | ------------------------------ | ---------------------------------------------------------------------------- |
@@ -447,9 +427,7 @@ pub const Class = struct {
 | `export_all_declaration`     | `export * from 'y'`            | An `export * from "m"` or `export * as ns from "m"` declaration.             |
 | `export_specifier`           | `{ local as exported }`        | A named binding specifier in an export declaration.                          |
 
----
-
-### JSX
+### [JSX]($section.id('jsx'))
 
 JSX nodes are only present in `.jsx` and `.tsx` trees.
 
@@ -475,19 +453,17 @@ A JSX tag name (the `name` field on `jsx_opening_element`, `jsx_closing_element`
 
 A JSX child (entries in the `children` list on `jsx_element` and `jsx_fragment`) is one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
 
----
-
-## TypeScript
+## [TypeScript]($section.id('typescript'))
 
 TypeScript nodes are present in `.ts`, `.tsx`, and `.dts` trees.
 
-### Type wrapper
+### [Type wrapper]($section.id('type-wrapper'))
 
 | Tag                  | Syntax | Description                                                                  |
 | -------------------- | ------ | ---------------------------------------------------------------------------- |
 | `ts_type_annotation` | `: T`  | A `: T` annotation wrapping an inner type. The span starts at the `:` token. |
 
-### Keyword types
+### [Keyword types]($section.id('keyword-types'))
 
 Each keyword is its own zero-field node.
 
@@ -508,7 +484,7 @@ Each keyword is its own zero-field node.
 | `ts_intrinsic_keyword` | `intrinsic` |
 | `ts_this_type`         | `this`      |
 
-### Type references
+### [Type references]($section.id('type-references'))
 
 | Tag                 | Syntax               | Description                                                                  |
 | ------------------- | -------------------- | ---------------------------------------------------------------------------- |
@@ -517,7 +493,7 @@ Each keyword is its own zero-field node.
 | `ts_type_query`     | `typeof console.log` | The `typeof` type operator applied to a value reference.                     |
 | `ts_import_type`    | `import("m").Foo<T>` | A reference to a type imported from a module path, written in type position. |
 
-### Type parameters and arguments
+### [Type parameters and arguments]($section.id('type-parameters-and-arguments'))
 
 | Tag                               | Syntax                 | Description                                                                    |
 | --------------------------------- | ---------------------- | ------------------------------------------------------------------------------ |
@@ -525,14 +501,14 @@ Each keyword is its own zero-field node.
 | `ts_type_parameter_declaration`   | `<T, U>`               | The `<...>` parameter list introduced by a generic declaration.                |
 | `ts_type_parameter_instantiation` | `<number, string>`     | The `<...>` argument list applied at a call site, reference, or instantiation. |
 
-### Literal and template types
+### [Literal and template types]($section.id('literal-and-template-types'))
 
 | Tag                        | Syntax                        | Description                                                          |
 | -------------------------- | ----------------------------- | -------------------------------------------------------------------- |
 | `ts_literal_type`          | `"hello"`, `42`, `true`, `-1` | A literal value used in type position.                               |
 | `ts_template_literal_type` | `` `Hello, ${N}!` ``          | A template literal in type position with one or more interpolations. |
 
-### Composite types
+### [Composite types]($section.id('composite-types'))
 
 | Tag                      | Syntax                  | Description                                                                  |
 | ------------------------ | ----------------------- | ---------------------------------------------------------------------------- |
@@ -543,7 +519,7 @@ Each keyword is its own zero-field node.
 | `ts_optional_type`       | `T?` (in tuple slot)    | An optional element inside a tuple type.                                     |
 | `ts_rest_type`           | `...T` (in tuple slot)  | A rest element inside a tuple type.                                          |
 
-### Set-operation types
+### [Set-operation types]($section.id('set-operation-types'))
 
 | Tag                    | Syntax                              | Description                                                        |
 | ---------------------- | ----------------------------------- | ------------------------------------------------------------------ |
@@ -552,14 +528,14 @@ Each keyword is its own zero-field node.
 | `ts_conditional_type`  | `T extends U ? X : Y`               | A conditional type selecting between two branches.                 |
 | `ts_infer_type`        | `infer R`, `infer R extends string` | An `infer` placeholder inside a conditional type's extends branch. |
 
-### Type operators
+### [Type operators]($section.id('type-operators'))
 
 | Tag                     | Syntax                                     | Description                                                 |
 | ----------------------- | ------------------------------------------ | ----------------------------------------------------------- |
 | `ts_type_operator`      | `keyof T`, `unique symbol`, `readonly T[]` | A `keyof`, `unique`, or `readonly` prefix on an inner type. |
 | `ts_parenthesized_type` | `(T)`                                      | A parenthesized type used for grouping or precedence.       |
 
-### Callable types
+### [Callable types]($section.id('callable-types'))
 
 | Tag                   | Syntax                                  | Description                                                                   |
 | --------------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
@@ -567,14 +543,14 @@ Each keyword is its own zero-field node.
 | `ts_constructor_type` | `new (x: T) => U`, `abstract new ...`   | A constructor signature in type position, optionally `abstract`.              |
 | `ts_type_predicate`   | `x is T`, `asserts x is T`, `asserts x` | A type predicate that narrows a parameter or `this` in control-flow analysis. |
 
-### Object-shape types
+### [Object-shape types]($section.id('object-shape-types'))
 
 | Tag               | Syntax            | Description                                                              |
 | ----------------- | ----------------- | ------------------------------------------------------------------------ |
 | `ts_type_literal` | `{ x: T; y: U }`  | An anonymous object type holding a list of signatures.                   |
 | `ts_mapped_type`  | `{ [K in T]: V }` | A mapped type that projects every key in a union to a new property type. |
 
-### JSDoc types
+### [JSDoc types]($section.id('jsdoc-types'))
 
 | Tag                          | Syntax            | Description                                                     |
 | ---------------------------- | ----------------- | --------------------------------------------------------------- |
@@ -582,7 +558,7 @@ Each keyword is its own zero-field node.
 | `ts_jsdoc_non_nullable_type` | `!T` or `T!`      | A JSDoc-style non-nullable type marker.                         |
 | `ts_jsdoc_unknown_type`      | `?` (in `Foo<?>`) | A JSDoc-style unknown type, valid only in a type argument slot. |
 
-### Signature members
+### [Signature members]($section.id('signature-members'))
 
 These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 
@@ -594,7 +570,7 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_construct_signature_declaration` | `new (x: T): U`                           | A bare construct signature inside a type literal or interface body.              |
 | `ts_index_signature`                 | `[k: K]: V`, `readonly [...]: V`          | An index signature inside a type literal, interface body, or class body.         |
 
-### Type, interface, and enum declarations
+### [Type, interface, and enum declarations]($section.id('type-interface-and-enum-declarations'))
 
 | Tag                         | Syntax                                 | Description                                                            |
 | --------------------------- | -------------------------------------- | ---------------------------------------------------------------------- |
@@ -607,7 +583,7 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_enum_body`              | `{ ... }` of an enum                   | The body of an enum, holding its members in source order.              |
 | `ts_enum_member`            | `A = 1` inside an enum body            | A single member of an enum body, with an optional initializer.         |
 
-### Module and namespace declarations
+### [Module and namespace declarations]($section.id('module-and-namespace-declarations'))
 
 | Tag                     | Syntax                                   | Description                                                           |
 | ----------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
@@ -615,14 +591,14 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_module_block`       | the `{ ... }` of a module                | The body of a `namespace`, `module`, or `declare global` declaration. |
 | `ts_global_declaration` | `declare global { ... }`                 | A `declare global` augmentation block.                                |
 
-### Parameters and `this`
+### [Parameters and `this`]($section.id('parameters-and-this'))
 
 | Tag                     | Syntax                        | Description                                                                     |
 | ----------------------- | ----------------------------- | ------------------------------------------------------------------------------- |
 | `ts_parameter_property` | `constructor(public x: T) {}` | A constructor parameter that implicitly declares a class field.                 |
 | `ts_this_parameter`     | `function f(this: T)`         | An explicit `this` parameter declaring the type of `this` in the function body. |
 
-### TypeScript expressions
+### [TypeScript expressions]($section.id('typescript-expressions'))
 
 | Tag                           | Syntax             | Description                                               |
 | ----------------------------- | ------------------ | --------------------------------------------------------- |
@@ -632,7 +608,7 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_non_null_expression`      | `expr!`            | A postfix non-null assertion.                             |
 | `ts_instantiation_expression` | `expr<T>`          | A type instantiation expression without call parentheses. |
 
-### TypeScript module forms
+### [TypeScript module forms]($section.id('typescript-module-forms'))
 
 | Tag                               | Syntax                                          | Description                                                                       |
 | --------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -641,9 +617,7 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_import_equals_declaration`    | `import x = require("m")`, `import x = Foo.Bar` | An `import =` declaration binding to a require or entity name.                    |
 | `ts_external_module_reference`    | `require("m")`                                  | The `require("module")` form on the right-hand side of `import x = require(...)`. |
 
----
-
-## Comments
+## [Comments]($section.id('comments'))
 
 The `comments` option controls collection. It has four modes:
 
@@ -672,7 +646,7 @@ pub const Comment = struct {
 };
 ```
 
-### Attached comments
+### [Attached comments]($section.id('attached-comments'))
 
 `.attached` (and `.both`) bind each comment to its host node, read with `tree.commentsOf(idx)`:
 

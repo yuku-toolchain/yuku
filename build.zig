@@ -99,6 +99,7 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSafe,
     });
     fuzz_parser.addImport("util", fuzz_util);
+    fuzz_parser.addImport("codegen_options", codegen_options.createModule());
     const fuzz_driver = b.createModule(.{
         .root_source_file = b.path("src/parser/fuzz/main.zig"),
         .target = b.graph.host,

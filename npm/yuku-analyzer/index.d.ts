@@ -13,7 +13,6 @@ import type {
   NodeType,
   Program,
   SourceLang,
-  SourceLocation,
   SourceType,
   WalkContext as BaseWalkContext,
 } from "@yuku-toolchain/types";
@@ -364,10 +363,6 @@ interface Module {
   readonly diagnostics: Diagnostic[];
   /** Every comment in source order. */
   readonly comments: Comment[];
-  /** Sorted offsets where each line begins. */
-  readonly lineStarts: number[];
-  /** Resolves an offset to a `(line, column)` pair. */
-  locOf(offset: number): SourceLocation;
 
   /** Every lexical scope; index is the scope id. `scopes[0]` is global. */
   readonly scopes: Scope[];

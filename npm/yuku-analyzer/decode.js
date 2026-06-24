@@ -619,15 +619,14 @@ function decode(buffer, source) {
         extraCount = _u32[1],
         spLen = _u32[2];
   const commentCount = _u32[4],
-        lineStartsCount = _u32[6],
-        diagCount = _u32[7],
-        progIdx = _u32[8];
+        diagCount = _u32[6],
+        progIdx = _u32[7];
   const attachedCommentCount = _u32[5];
-  const _flags = _u32[9];
+  const _flags = _u32[8];
   const _isTs = !!(_flags & 1);
   const _attached = !!(_flags & 2);
-  const _firstNa = _u32[10];
-  const _nodesOff = 44;
+  const _firstNa = _u32[9];
+  const _nodesOff = 40;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
@@ -1165,8 +1164,7 @@ function decode(buffer, source) {
   const _nodesU32 = _nodesOff >> 2;
   function startOf(i) { return _p(_u32[_nodesU32 + i * 12 + 10]); }
   function endOf(i) { return _p(_u32[_nodesU32 + i * 12 + 11]); }
-  const lsOff = _cOff + commentCount * 20;
-  const dOff = lsOff + lineStartsCount * 4;
+  const dOff = _cOff + commentCount * 20;
   function _decodeComments() {
     const out = Array.from({ length: commentCount });
     for (let j = 0; j < commentCount; j++) {
@@ -1182,20 +1180,6 @@ function decode(buffer, source) {
         start: _p(ss),
         end: _p(se),
       };
-    }
-    return out;
-  }
-  function _decodeLineStarts() {
-    const out = Array.from({ length: lineStartsCount });
-    if (_firstNa >= _srcLen) {
-      for (let j = 0; j < lineStartsCount; j++) {
-        out[j] = dv.getUint32(lsOff + j * 4, true);
-      }
-      return out;
-    }
-    for (let j = 0; j < lineStartsCount; j++) {
-      const v = dv.getUint32(lsOff + j * 4, true);
-      out[j] = v < _firstNa ? v : (v >= _srcLen ? pm[pm.length - 1] : pm[v - _firstNa]);
     }
     return out;
   }
@@ -1360,11 +1344,7 @@ function decode(buffer, source) {
       nodeScope: (i) => nodeScopes[i],
     });
   }
-  let _program, _lineStarts, _diagnostics, _comments;
-  function _getLineStarts() {
-    if (_lineStarts === undefined) _lineStarts = _decodeLineStarts();
-    return _lineStarts;
-  }
+  let _program, _diagnostics, _comments;
   return {
     get program() {
       return _program !== undefined ? _program : (_program = node(progIdx));
@@ -1378,16 +1358,6 @@ function decode(buffer, source) {
       return _diagnostics !== undefined
         ? _diagnostics
         : (_diagnostics = _decodeDiagnostics());
-    },
-    get lineStarts() { return _getLineStarts(); },
-    locOf(offset) {
-      const ls = _getLineStarts();
-      let lo = 0, hi = ls.length;
-      while (lo < hi) {
-        const mid = (lo + hi) >>> 1;
-        if (ls[mid] <= offset) lo = mid + 1; else hi = mid;
-      }
-      return { line: lo, column: offset - ls[lo - 1] };
     },
     nodeOf: node,
     indexOf: (n) => _nodeIndexes.get(n),
