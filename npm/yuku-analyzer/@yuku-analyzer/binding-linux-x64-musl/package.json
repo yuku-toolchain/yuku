@@ -1,6 +1,6 @@
 {
   "name": "@yuku-analyzer/binding-linux-x64-musl",
-  "version": "0.5.41",
+  "version": "0.5.42",
   "os": [
     "linux"
   ],
