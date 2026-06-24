@@ -6,7 +6,7 @@ const codspeed = @import("codspeed");
 // check load-parser-bench-files.ts script in profiler dir
 const parser_bench_files = .{
     .{ .name = "typescript.js", .path = "files/typescript.js" },
-    .{ .name = "calcom.tsx", .path = "files/calcom.tsx" },
+    .{ .name = "checker.ts", .path = "files/checker.ts" },
     .{ .name = "react.js", .path = "files/react.js" },
 };
 
