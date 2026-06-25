@@ -68,6 +68,12 @@ nav a:hover {
   text-decoration: underline;
 }
 
+.menu-divider {
+  margin: 0 0.35rem;
+  opacity: 0.4;
+  font-weight: normal;
+}
+
 #content {
   align-self: center;
   box-sizing: border-box;

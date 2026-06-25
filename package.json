@@ -23,6 +23,7 @@
     "test:fuzz": "zig build fuzz",
     "playground": "bun build:wasm && bun playground/server.ts",
     "format": "zig fmt **/*.zig",
+    "docs:llms": "bun docs/generate-llms.ts",
     "build:local": "napi-zig build --release --current && bun gen:npm",
     "build:npm": "napi-zig build --release && bun gen:npm",
     "build:wasm": "zig build wasm && bun gen:wasm",

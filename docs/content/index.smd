@@ -27,11 +27,11 @@ The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node
 
 ## [Performance]($section.id('performance'))
 
-On native (Zig/Rust) parsing, Yuku is competitive with Oxc and roughly 2× faster than SWC:
+On native (Zig/Rust) parsing, Yuku is faster than Oxc and roughly 2× faster than SWC:
 
 ![Parsing `typescript.js` (7.8 MB) · macOS (ARM), Apple M4 Pro · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js")
 
-On the JavaScript side (npm), Yuku is **4-16x faster** than alternatives:
+On the JavaScript side (npm), Yuku is **3-10x faster** than alternatives:
 
 ![Parsing `react.js` (72 KB) via npm · macOS (ARM), Apple M4 Pro · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing react.js")
 

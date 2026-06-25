@@ -150,3 +150,9 @@ cd docs
 zine            # preview at http://localhost:1990
 zine release    # build into docs/public/
 ```
+
+After editing pages, regenerate `docs/assets/llms.txt` and `llms-full.txt`:
+
+```bash
+bun run docs:llms
+```

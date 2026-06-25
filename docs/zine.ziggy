@@ -9,6 +9,7 @@ Site {
         "robots.txt",
         "sitemap.xml",
         "llms.txt",
+        "llms-full.txt",
         "fonts/Merriweather-Regular.ttf",
         "fonts/Merriweather-Italic.ttf",
         "fonts/Merriweather-Bold.ttf",
