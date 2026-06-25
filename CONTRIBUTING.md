@@ -68,8 +68,9 @@ suites.
 
 > The JS suites import native addons (`yuku-parser`, `yuku-codegen`,
 > `yuku-analyzer`) compiled from your Zig. `bun run test` rebuilds them first via
-> `build:npm`. If you run a suite on its own after editing Zig, run
-> `bun run build:npm` first, or it tests the previously built addon.
+> `build:local`, which builds only for your machine. If you run a suite on its own
+> after editing Zig, run `bun run build:local` first, or it tests the previously
+> built addon. (Plain `build:npm` builds every platform, for publishing.)
 
 ### Parser
 

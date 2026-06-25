@@ -22,7 +22,7 @@
 #         with:
 #           version: 0.16.0
 #       - name: Load files
-#         run: bun load-files
+#         run: bun fetch:fixtures
 #       - name: Build profiler
 #         run: zig build --release=fast
 #       - name: Run profiler
