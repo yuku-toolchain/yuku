@@ -46,10 +46,20 @@ pub fn parseClassDecorated(
     start_from_param: ?u32,
     decorators: ast.IndexRange,
 ) Error!?ast.NodeIndex {
-    // entry is either `class` directly, or a modifier (`abstract`/`declare`) the
-    // caller consumed before passing `start_from_param`
-    std.debug.assert(start_from_param != null or parser.current_token.tag == .class);
+    std.debug.assert(start_from_param != null or
+        parser.current_token.tag == .class or
+        parser.current_token.tag == .abstract);
     const start = start_from_param orelse parser.current_token.span.start;
+
+    var is_abstract = opts.is_abstract;
+    if (parser.current_token.tag == .abstract and
+        !is_abstract and !opts.is_expression and
+        parser.tree.isTs() and isAbstractClassNext(parser))
+    {
+        is_abstract = true;
+        try parser.advance() orelse return null; // consume 'abstract'
+    }
+
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 
     const is_ts = parser.tree.isTs();
@@ -129,8 +139,15 @@ pub fn parseClassDecorated(
         .super_type_arguments = super_type_arguments,
         .implements = implements,
         .declare = opts.is_declare,
-        .abstract = opts.is_abstract,
+        .abstract = is_abstract,
     } }, .{ .start = start, .end = parser.tree.span(body).end });
+}
+
+// `abstract` is a contextual keyword, treat it as a class modifier only when a
+// `class` keyword follows on the same line.
+inline fn isAbstractClassNext(parser: *Parser) bool {
+    const next = parser.peekAhead() orelse return false;
+    return next.tag == .class and !next.hasLineTerminatorBefore();
 }
 
 inline fn canStartClassName(parser: *Parser) Error!bool {

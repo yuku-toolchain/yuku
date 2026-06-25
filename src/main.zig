@@ -1,38 +1,50 @@
 const std = @import("std");
 const parser = @import("parser");
 
-const source_path = "profiler/files/typescript.js";
+const ast = parser.ast;
+const basic = parser.traverser.basic;
+const codegen = parser.codegen;
+const Action = parser.traverser.Action;
 
-const warmup_runs = 50;
-const measured_runs = 300;
+const source =
+    \\abstract class Shape {
+    \\  abstract area(): number;
+    \\}
+    \\
+    \\function clamp(x: number): number {
+    \\  return x;
+    \\}
+    \\
+;
 
-pub fn main(init: std.process.Init) !void {
-    const io = init.io;
-    const allocator = std.heap.smp_allocator;
-
-    const source = try std.Io.Dir.cwd().readFileAlloc(io, source_path, allocator, .unlimited);
-    defer allocator.free(source);
-
-    for (0..warmup_runs) |_| {
-        var tree = try parser.parse(allocator, source, .{ .lang = .js });
-        std.mem.doNotOptimizeAway(tree.nodes.len);
-        tree.deinit();
+const Visitor = struct {
+    pub fn enter_class(_: *Visitor, c: ast.Class, _: ast.NodeIndex, ctx: *basic.Ctx) !Action {
+        std.debug.print("class {s}\n", .{name(ctx.tree, c.id)});
+        return .proceed;
     }
 
-    var samples: [measured_runs]u64 = undefined;
-    for (&samples) |*sample| {
-        const start = std.Io.Clock.now(.awake, io);
-        var tree = try parser.parse(allocator, source, .{ .lang = .js });
-        const end = std.Io.Clock.now(.awake, io);
-
-        std.mem.doNotOptimizeAway(tree.nodes.len);
-        tree.deinit();
-
-        sample.* = @intCast(start.durationTo(end).toNanoseconds());
+    pub fn enter_function(_: *Visitor, f: ast.Function, _: ast.NodeIndex, ctx: *basic.Ctx) !Action {
+        if (f.id == .null) return .proceed;
+        std.debug.print("function {s}\n", .{name(ctx.tree, f.id)});
+        return .proceed;
     }
+};
 
-    std.mem.sort(u64, &samples, {}, std.sort.asc(u64));
-    const median_ms = @as(f64, @floatFromInt(samples[samples.len / 2])) / std.time.ns_per_ms;
+fn name(tree: *const ast.Tree, id: ast.NodeIndex) []const u8 {
+    if (id == .null) return "(anonymous)";
+    return tree.string(tree.data(id).binding_identifier.name);
+}
 
-    std.debug.print("parse: {d:.3} ms\n", .{median_ms});
+pub fn main() !void {
+    const gpa = std.heap.smp_allocator;
+
+    var tree = try parser.parse(gpa, source, .{ .lang = .ts });
+    defer tree.deinit();
+
+    var visitor: Visitor = .{};
+    try basic.traverse(Visitor, &tree, &visitor);
+
+    const js = try codegen.strip(gpa, &tree, .{});
+    defer js.deinit(gpa);
+    std.debug.print("\n{s}\n", .{js.code});
 }

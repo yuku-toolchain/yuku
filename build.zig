@@ -217,12 +217,9 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(main_exe);
 
     const run_cmd = b.addRunArtifact(main_exe);
-    const run_step = b.step("run", "Benchmark the parser on a sample file");
+    const run_step = b.step("run", "Run the src/main.zig toolchain playground");
     run_step.dependOn(&run_cmd.step);
 
-    // js bridge generators. each main in tools/ generates one artifact
-    // for one npm package from the shared engines in tools/estree/,
-    // driven by the wire layouts in src/parser/ffi/transfer/.
     const ast_transfer_module = b.createModule(.{
         .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
         .target = b.graph.host,

@@ -1,0 +1,186 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 63,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 62,
+        "decorators": [
+          {
+            "type": "Decorator",
+            "start": 0,
+            "end": 2,
+            "expression": {
+              "type": "Identifier",
+              "start": 1,
+              "end": 2,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          {
+            "type": "Decorator",
+            "start": 3,
+            "end": 8,
+            "expression": {
+              "type": "CallExpression",
+              "start": 4,
+              "end": 8,
+              "callee": {
+                "type": "Identifier",
+                "start": 4,
+                "end": 5,
+                "name": "b",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "arguments": [
+                {
+                  "type": "Literal",
+                  "start": 6,
+                  "end": 7,
+                  "value": 1,
+                  "raw": "1"
+                }
+              ],
+              "optional": false,
+              "typeArguments": null
+            }
+          }
+        ],
+        "id": {
+          "type": "Identifier",
+          "start": 24,
+          "end": 25,
+          "name": "A",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 37,
+          "end": 38,
+          "name": "B",
+          "decorators": [],
+          "optional": false,
+          "typeAnnotation": null
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 60,
+          "end": 62,
+          "body": []
+        },
+        "typeParameters": {
+          "type": "TSTypeParameterDeclaration",
+          "start": 25,
+          "end": 28,
+          "params": [
+            {
+              "type": "TSTypeParameter",
+              "start": 26,
+              "end": 27,
+              "name": {
+                "type": "Identifier",
+                "start": 26,
+                "end": 27,
+                "name": "T",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "constraint": null,
+              "default": null,
+              "in": false,
+              "out": false,
+              "const": false
+            }
+          ]
+        },
+        "superTypeArguments": {
+          "type": "TSTypeParameterInstantiation",
+          "start": 38,
+          "end": 41,
+          "params": [
+            {
+              "type": "TSTypeReference",
+              "start": 39,
+              "end": 40,
+              "typeName": {
+                "type": "Identifier",
+                "start": 39,
+                "end": 40,
+                "name": "T",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeArguments": null
+            }
+          ]
+        },
+        "implements": [
+          {
+            "type": "TSClassImplements",
+            "start": 53,
+            "end": 54,
+            "expression": {
+              "type": "Identifier",
+              "start": 53,
+              "end": 54,
+              "name": "C",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeArguments": null
+          },
+          {
+            "type": "TSClassImplements",
+            "start": 56,
+            "end": 59,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 56,
+              "end": 59,
+              "object": {
+                "type": "Identifier",
+                "start": 56,
+                "end": 57,
+                "name": "D",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 58,
+                "end": 59,
+                "name": "E",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "computed": false,
+              "optional": false
+            },
+            "typeArguments": null
+          }
+        ],
+        "abstract": true,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
