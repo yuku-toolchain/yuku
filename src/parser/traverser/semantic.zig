@@ -3,7 +3,7 @@ const ast = @import("../ast.zig");
 const wk = @import("walk.zig");
 const sc = @import("../semantic/scope.zig");
 const bi = @import("../semantic/binder.zig");
-const ecmascript = @import("../ecmascript.zig");
+const NodePath = wk.NodePath;
 
 const Allocator = std.mem.Allocator;
 
@@ -74,7 +74,7 @@ pub const Ctx = struct {
         data: ast.NodeData,
     ) Allocator.Error!void {
         const is_write = data == .identifier_reference and
-            ecmascript.isWriteTarget(self.tree, &self.path);
+            isWriteTarget(self.tree, &self.path);
         try self.symbols.declareBindings(index, data, &self.scope, .{
             .in_type_position = self.inTypePosition(),
             .is_write = is_write,
@@ -91,6 +91,60 @@ pub const Ctx = struct {
         self.path.pop();
     }
 };
+
+/// https://tc39.es/ecma262/#sec-static-semantics-assignmenttargettype
+pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
+    std.debug.assert(path.depth() > 0);
+
+    var child = path.ancestor(0) orelse return false;
+    var n: usize = 1;
+    while (path.ancestor(n)) |parent| : (n += 1) {
+        std.debug.assert(parent != child);
+        switch (tree.data(parent)) {
+            .assignment_expression => |a| return a.left == child,
+            .update_expression => |u| return u.argument == child,
+            // assignment form only. the declaration form holds a
+            // variable_declaration whose leaves are binding identifiers,
+            // never references.
+            .for_in_statement => |f| return f.left == child,
+            .for_of_statement => |f| return f.left == child,
+            .array_pattern => child = parent,
+            .object_pattern => child = parent,
+            // computed keys are reads
+            .binding_property => |bp| {
+                if (bp.value != child) return false;
+                child = parent;
+            },
+            // the default value is a read
+            .assignment_pattern => |ap| {
+                if (ap.left != child) return false;
+                child = parent;
+            },
+            .binding_rest_element => |r| {
+                if (r.argument != child) return false;
+                child = parent;
+            },
+            // transparent wrappers: `(a) += 1`, `a!++`, `(a as T) = b`
+            .parenthesized_expression => child = parent,
+            .ts_non_null_expression => child = parent,
+            .ts_as_expression => |e| {
+                if (e.expression != child) return false;
+                child = parent;
+            },
+            .ts_satisfies_expression => |e| {
+                if (e.expression != child) return false;
+                child = parent;
+            },
+            .ts_type_assertion => |e| {
+                if (e.expression != child) return false;
+                child = parent;
+            },
+            // member objects, call arguments, initializers: reads
+            else => return false,
+        }
+    }
+    return false;
+}
 
 /// Combined output of a semantic traversal. Holds the scope tree and
 /// the symbol table.
