@@ -931,6 +931,10 @@ fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
 // import attributes with { } or legacy assert { }
 fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
+    if (parser.current_token.tag == .assert and parser.current_token.hasLineTerminatorBefore()) {
+        return ast.IndexRange.empty;
+    }
+
     if (parser.current_token.tag != .with and parser.current_token.tag != .assert) {
         return ast.IndexRange.empty;
     }

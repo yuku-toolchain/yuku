@@ -1,0 +1,97 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 155,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 54,
+        "end": 77,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 61,
+            "end": 66,
+            "local": {
+              "type": "Identifier",
+              "start": 61,
+              "end": 66,
+              "name": "value"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 72,
+          "end": 77,
+          "value": "pkg",
+          "raw": "\"pkg\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 103,
+        "end": 130,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 112,
+            "end": 117,
+            "local": {
+              "type": "Identifier",
+              "start": 112,
+              "end": 117,
+              "name": "named"
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 112,
+              "end": 117,
+              "name": "named"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 125,
+          "end": 130,
+          "value": "pkg",
+          "raw": "\"pkg\""
+        },
+        "attributes": []
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " assert import assertions cannot cross a line break",
+      "start": 0,
+      "end": 53
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '{'",
+      "start": 85,
+      "end": 86,
+      "help": "Try inserting a semicolon here",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '{'",
+      "start": 138,
+      "end": 139,
+      "help": "Try inserting a semicolon here",
+      "labels": []
+    }
+  ]
+}

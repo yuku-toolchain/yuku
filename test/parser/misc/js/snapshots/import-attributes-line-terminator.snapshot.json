@@ -1,0 +1,249 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 272,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 76,
+        "end": 99,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 83,
+            "end": 88,
+            "local": {
+              "type": "Identifier",
+              "start": 83,
+              "end": 88,
+              "name": "value"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 94,
+          "end": 99,
+          "value": "pkg",
+          "raw": "\"pkg\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 100,
+        "end": 122,
+        "expression": {
+          "type": "CallExpression",
+          "start": 100,
+          "end": 122,
+          "callee": {
+            "type": "MemberExpression",
+            "start": 100,
+            "end": 112,
+            "object": {
+              "type": "Identifier",
+              "start": 100,
+              "end": 106,
+              "name": "assert"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 107,
+              "end": 112,
+              "name": "equal"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "arguments": [
+            {
+              "type": "Identifier",
+              "start": 113,
+              "end": 118,
+              "name": "value"
+            },
+            {
+              "type": "Literal",
+              "start": 120,
+              "end": 121,
+              "value": 1,
+              "raw": "1"
+            }
+          ],
+          "optional": false
+        }
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 124,
+        "end": 154,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 131,
+            "end": 135,
+            "local": {
+              "type": "Identifier",
+              "start": 131,
+              "end": 135,
+              "name": "data"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 141,
+          "end": 154,
+          "value": "./data.json",
+          "raw": "\"./data.json\""
+        },
+        "attributes": [
+          {
+            "type": "ImportAttribute",
+            "start": 162,
+            "end": 174,
+            "key": {
+              "type": "Identifier",
+              "start": 162,
+              "end": 166,
+              "name": "type"
+            },
+            "value": {
+              "type": "Literal",
+              "start": 168,
+              "end": 174,
+              "value": "json",
+              "raw": "\"json\""
+            }
+          }
+        ],
+        "phase": null
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 178,
+        "end": 205,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 187,
+            "end": 192,
+            "local": {
+              "type": "Identifier",
+              "start": 187,
+              "end": 192,
+              "name": "named"
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 187,
+              "end": 192,
+              "name": "named"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 200,
+          "end": 205,
+          "value": "pkg",
+          "raw": "\"pkg\""
+        },
+        "attributes": []
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 206,
+        "end": 228,
+        "expression": {
+          "type": "CallExpression",
+          "start": 206,
+          "end": 228,
+          "callee": {
+            "type": "MemberExpression",
+            "start": 206,
+            "end": 218,
+            "object": {
+              "type": "Identifier",
+              "start": 206,
+              "end": 212,
+              "name": "assert"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 213,
+              "end": 218,
+              "name": "equal"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "arguments": [
+            {
+              "type": "Identifier",
+              "start": 219,
+              "end": 224,
+              "name": "named"
+            },
+            {
+              "type": "Literal",
+              "start": 226,
+              "end": 227,
+              "value": 2,
+              "raw": "2"
+            }
+          ],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExportAllDeclaration",
+        "start": 230,
+        "end": 249,
+        "exported": null,
+        "source": {
+          "type": "Literal",
+          "start": 244,
+          "end": 249,
+          "value": "pkg",
+          "raw": "\"pkg\""
+        },
+        "attributes": [
+          {
+            "type": "ImportAttribute",
+            "start": 257,
+            "end": 269,
+            "key": {
+              "type": "Identifier",
+              "start": 257,
+              "end": 261,
+              "name": "type"
+            },
+            "value": {
+              "type": "Literal",
+              "start": 263,
+              "end": 269,
+              "value": "json",
+              "raw": "\"json\""
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " assert after a line break is a statement while with remains an attribute",
+      "start": 0,
+      "end": 75
+    }
+  ],
+  "diagnostics": []
+}

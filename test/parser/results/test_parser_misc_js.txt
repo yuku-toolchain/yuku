@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       43/43 (100.00%)
+Passed:       45/45 (100.00%)
 Failed:       0
-AST mismatch: 0/43
+AST mismatch: 0/45
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -107,6 +107,18 @@ error: Expected ';' after for-loop init, but found 'id'
    |
 
 ✓ test/parser/misc/js/hex-literal-with-separator.js
+✓ test/parser/misc/js/import-assertion-line-terminator-invalid.module.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
+   |
+ 2 | import value from "pkg"
+ 3 | assert { type: "json" }
+   |        ^
+ 4 | 
+   |
+   = help: Try inserting a semicolon here
+
+
+✓ test/parser/misc/js/import-attributes-line-terminator.module.js
 ✓ test/parser/misc/js/import-defer-normal.module.js
 ✓ test/parser/misc/js/import-defer-original.module.js
 ✓ test/parser/misc/js/import-expression-call.js
