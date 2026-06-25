@@ -518,9 +518,10 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
     }
 
     if (tag == .async and !parser.current_token.hasLineTerminatorBefore()) {
-        const async_start = parser.current_token.span.start;
-        try parser.advance() orelse return null;
-        if (parser.current_token.tag == .function) {
+        const next = parser.peekAhead() orelse return null;
+        if (next.tag == .function and !next.hasLineTerminatorBefore()) {
+            const async_start = parser.current_token.span.start;
+            try parser.advance() orelse return null;
             const decl = try functions.parseFunction(
                 parser,
                 .{ .is_default_export = true, .is_async = true },
@@ -528,15 +529,6 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
             ) orelse return null;
             return .{ .declaration = decl, .needs_semi = false };
         }
-        // export default async as identifier value
-        const async_end = async_start + 5;
-        const id = try parser.tree.addNode(
-            .{ .identifier_reference = .{
-                .name = parser.tree.sourceSlice(async_start, async_end),
-            } },
-            .{ .start = async_start, .end = async_end },
-        );
-        return .{ .declaration = id, .needs_semi = true };
     }
 
     if (tag == .class) {
