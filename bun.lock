@@ -10,7 +10,7 @@
         "@types/node": "^25.5.0",
         "fast-deep-equal": "^3.1.3",
         "jest-diff": "^30.3.0",
-        "napi-zig": "^0.1.44",
+        "napi-zig": "^0.1.45",
         "typescript": "^6.0.2",
         "yuku-analyzer": "workspace:*",
         "yuku-codegen": "workspace:*",
@@ -19,7 +19,7 @@
     },
     "npm/yuku-analyzer": {
       "name": "yuku-analyzer",
-      "version": "0.5.41",
+      "version": "0.5.42",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:*",
       },
@@ -39,51 +39,51 @@
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-darwin-arm64": {
       "name": "@yuku-analyzer/binding-darwin-arm64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-darwin-x64": {
       "name": "@yuku-analyzer/binding-darwin-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-freebsd-x64": {
       "name": "@yuku-analyzer/binding-freebsd-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-linux-arm-gnu": {
       "name": "@yuku-analyzer/binding-linux-arm-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-linux-arm-musl": {
       "name": "@yuku-analyzer/binding-linux-arm-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-linux-arm64-gnu": {
       "name": "@yuku-analyzer/binding-linux-arm64-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-linux-arm64-musl": {
       "name": "@yuku-analyzer/binding-linux-arm64-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-linux-x64-gnu": {
       "name": "@yuku-analyzer/binding-linux-x64-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-linux-x64-musl": {
       "name": "@yuku-analyzer/binding-linux-x64-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-win32-arm64": {
       "name": "@yuku-analyzer/binding-win32-arm64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-analyzer/@yuku-analyzer/binding-win32-x64": {
       "name": "@yuku-analyzer/binding-win32-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen": {
       "name": "yuku-codegen",
-      "version": "0.5.41",
+      "version": "0.5.42",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:*",
       },
@@ -103,55 +103,55 @@
     },
     "npm/yuku-codegen-wasm": {
       "name": "@yuku-codegen/wasm",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-darwin-arm64": {
       "name": "@yuku-codegen/binding-darwin-arm64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-darwin-x64": {
       "name": "@yuku-codegen/binding-darwin-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-freebsd-x64": {
       "name": "@yuku-codegen/binding-freebsd-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm-gnu": {
       "name": "@yuku-codegen/binding-linux-arm-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm-musl": {
       "name": "@yuku-codegen/binding-linux-arm-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-gnu": {
       "name": "@yuku-codegen/binding-linux-arm64-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-arm64-musl": {
       "name": "@yuku-codegen/binding-linux-arm64-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-x64-gnu": {
       "name": "@yuku-codegen/binding-linux-x64-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-linux-x64-musl": {
       "name": "@yuku-codegen/binding-linux-x64-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-win32-arm64": {
       "name": "@yuku-codegen/binding-win32-arm64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-codegen/@yuku-codegen/binding-win32-x64": {
       "name": "@yuku-codegen/binding-win32-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser": {
       "name": "yuku-parser",
-      "version": "0.5.41",
+      "version": "0.5.42",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:*",
       },
@@ -171,58 +171,58 @@
     },
     "npm/yuku-parser-wasm": {
       "name": "@yuku-parser/wasm",
-      "version": "0.5.41",
+      "version": "0.5.42",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:*",
       },
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-arm64": {
       "name": "@yuku-parser/binding-darwin-arm64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-x64": {
       "name": "@yuku-parser/binding-darwin-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-freebsd-x64": {
       "name": "@yuku-parser/binding-freebsd-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-gnu": {
       "name": "@yuku-parser/binding-linux-arm-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-musl": {
       "name": "@yuku-parser/binding-linux-arm-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-gnu": {
       "name": "@yuku-parser/binding-linux-arm64-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-musl": {
       "name": "@yuku-parser/binding-linux-arm64-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-gnu": {
       "name": "@yuku-parser/binding-linux-x64-gnu",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-musl": {
       "name": "@yuku-parser/binding-linux-x64-musl",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-arm64": {
       "name": "@yuku-parser/binding-win32-arm64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-x64": {
       "name": "@yuku-parser/binding-win32-x64",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
     "npm/yuku-types": {
       "name": "@yuku-toolchain/types",
-      "version": "0.5.41",
+      "version": "0.5.42",
     },
   },
   "packages": {
@@ -336,7 +336,7 @@
 
     "kleur": ["kleur@3.0.3", "", {}, "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w=="],
 
-    "napi-zig": ["napi-zig@0.1.44", "", { "dependencies": { "cac": "^7.0.0", "package-manager-detector": "^1.6.0", "prompts": "^2.4.2", "semver": "^7.7.4" }, "bin": { "napi-zig": "dist/index.js" } }, "sha512-RKe3Sn602RGgGKUJ6Vs48agHpDo+M+Cg/DvjIu7bBoMFBtaepgcn3upozOVYb9GjemrcR/yuxGQLhbaONtszFA=="],
+    "napi-zig": ["napi-zig@0.1.45", "", { "dependencies": { "cac": "^7.0.0", "package-manager-detector": "^1.6.0", "prompts": "^2.4.2", "semver": "^7.7.4" }, "bin": { "napi-zig": "dist/index.js" } }, "sha512-2cr7S+Mgz4RLN/l8vpqxJY7dbzcZEkQwMXBy4YEhQ0jvydtAgTfF66jfYQv22TSy16sC53h/QbUP85UhAfl4zQ=="],
 
     "package-manager-detector": ["package-manager-detector@1.6.0", "", {}, "sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA=="],
 

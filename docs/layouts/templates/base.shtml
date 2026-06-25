@@ -36,6 +36,10 @@
       <a href="$site.page('analyzer').link()">Analyzer</a>
       •
       <a href="https://github.com/yuku-toolchain/yuku" target="_blank">Code</a>
+      <span class="menu-divider">|</span>
+      <a href="/llms.txt" target="_blank">llms.txt</a>
+      •
+      <a href="/llms-full.txt" target="_blank">llms-full.txt</a>
     </nav>
     <div id="content">
       <super>

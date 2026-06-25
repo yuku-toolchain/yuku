@@ -39,7 +39,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Load files
-        run: bun run load-files
+        run: bun run fetch:fixtures
 
       - name: Build
         run: bun run build:npm

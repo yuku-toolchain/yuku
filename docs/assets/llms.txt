@@ -1,32 +1,18 @@
-# Yuku
+# Yuku — A JavaScript/TypeScript Compiler Toolchain in Zig
 
-> A high-performance JavaScript and TypeScript compiler toolchain, written in Zig. Faster than Oxc, SWC, Babel, and Acorn. 100% ECMAScript spec compliant, zero dependencies.
-
-Yuku is a JavaScript/TypeScript compiler toolchain in Zig. It provides a fast, spec-compliant parser with an ESTree-compatible AST, a traverser system (basic, scoped, semantic, transform), and semantic analysis. It is designed for correctness, performance, and clarity.
-
-## Performance
-
-Yuku is faster than Oxc, SWC, Babel, and Acorn. Native parsing is competitive with Oxc and roughly 2× faster than SWC. On the JavaScript (npm) side, Yuku is 3–5× faster than alternatives, driven by a flat, near-binary AST transfer format.
-
-Live benchmark sources:
-
-- Native: https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native
-- JavaScript (npm): https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js
-
-## Correctness
-
-Yuku passes 55,000+ tests from Test262, Babel, TypeScript, and others with full AST matching. Zero failures, zero AST mismatches for JavaScript and JSX.
+> Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
 ## Documentation
 
-- [Introduction](https://yuku.fyi/): overview, benchmarks, status
-- [Parser](https://yuku.fyi/parser/): install, quick start, options, diagnostics, traversal, semantic analysis
-- [AST reference](https://yuku.fyi/parser/ast/): memory model, core types, full node catalog
-- [Traverse](https://yuku.fyi/parser/traverse/): basic, scoped, semantic, transform traversers
-- [Analyzer](https://yuku.fyi/analyzer/): JavaScript-side semantic analysis, scopes, symbols, resolved references, closures, typed walk and buffer scan, cross-file module linking
+- [Introduction](https://yuku.fyi/): Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
+- [Parser](https://yuku.fyi/parser/): A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
+- [AST](https://yuku.fyi/parser/ast/): The flat, data-oriented AST returned by Yuku's parser, with the full node reference.
+- [Traverse](https://yuku.fyi/parser/traverse/): Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
+- [Codegen](https://yuku.fyi/parser/codegen/): Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.
+- [Analyzer](https://yuku.fyi/analyzer/): Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
-## Repository
+## Resources
 
-- GitHub: https://github.com/yuku-toolchain/yuku
-- npm: https://www.npmjs.com/package/yuku-parser
-- Zig: `zig fetch --save git+https://github.com/yuku-toolchain/yuku.git`
+- [Full documentation text](https://yuku.fyi/llms-full.txt): every page, concatenated
+- [Playground](https://playground.yuku.fyi)
+- [Source code](https://github.com/yuku-toolchain/yuku)

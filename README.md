@@ -43,7 +43,7 @@ walk(program, {
 });
 ```
 
-Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 4-16x faster than alternatives on npm.
+Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm.
 
 ### Zig
 
@@ -129,8 +129,8 @@ a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "app.ts"]
 
 Yuku prioritizes correctness while delivering top-tier speed and efficiency.
 
-- [Native benchmark (Zig/Rust)](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native) - competitive with Oxc on raw parsing speed
-- [npm benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) - 4-16x faster than alternatives
+- [Native benchmark (Zig/Rust)](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native) - faster than Oxc and SWC
+- [npm benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) - 3-10x faster than alternatives
 
 ## 🤝 Contributing
 
