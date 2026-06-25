@@ -742,18 +742,10 @@ pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?
     const is_default = parser.current_token.tag == .default;
     if (is_default) try parser.advance() orelse return null;
 
-    var opts: class.ParseClassOpts = .{ .is_default_export = is_default };
-    var class_start: ?u32 = null;
-    if (parser.tree.isTs() and parser.current_token.tag == .abstract) {
-        opts.is_abstract = true;
-        class_start = parser.current_token.span.start;
-        try parser.advance() orelse return null;
-    }
-
     const declaration = try class.parseClassDecorated(
         parser,
-        opts,
-        class_start,
+        .{ .is_default_export = is_default },
+        null,
         decorators,
     ) orelse return null;
     const span: ast.Span = .{ .start = start, .end = parser.tree.span(declaration).end };
