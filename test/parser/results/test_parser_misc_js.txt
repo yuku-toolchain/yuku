@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       42/42 (100.00%)
+Passed:       43/43 (100.00%)
 Failed:       0
-AST mismatch: 0/42
+AST mismatch: 0/43
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -77,6 +77,7 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 ✓ test/parser/misc/js/class-static-block-await-context.js
 ✓ test/parser/misc/js/dynamic-import-in-script.js
 ✓ test/parser/misc/js/dynamic-import.module.js
+✓ test/parser/misc/js/export-default-async-linebreak.module.js
 ✓ test/parser/misc/js/export-default-using.module.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'resource'
    |
