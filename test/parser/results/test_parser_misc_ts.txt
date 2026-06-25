@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       25/25 (100.00%)
+Passed:       26/26 (100.00%)
 Failed:       0
-AST mismatch: 0/25
+AST mismatch: 0/26
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
@@ -20,6 +20,7 @@ error: Invalid assignment target
 ✓ test/parser/misc/ts/catch-type-annotation.ts
 ✓ test/parser/misc/ts/constructor-overloads.ts
 ✓ test/parser/misc/ts/declare-function-overloads.ts
+✓ test/parser/misc/ts/decorated-export-default-abstract-class.module.ts
 ✓ test/parser/misc/ts/empty-type-argument-list.ts
 error: A type argument list cannot be empty
    |

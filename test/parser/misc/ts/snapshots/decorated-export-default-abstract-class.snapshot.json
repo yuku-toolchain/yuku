@@ -1,0 +1,81 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExportDefaultDeclaration",
+        "start": 12,
+        "end": 44,
+        "declaration": {
+          "type": "ClassDeclaration",
+          "start": 27,
+          "end": 44,
+          "decorators": [
+            {
+              "type": "Decorator",
+              "start": 0,
+              "end": 11,
+              "expression": {
+                "type": "CallExpression",
+                "start": 1,
+                "end": 11,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 1,
+                  "end": 2,
+                  "name": "x",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "arguments": [
+                  {
+                    "type": "ArrowFunctionExpression",
+                    "start": 3,
+                    "end": 10,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "Literal",
+                      "start": 9,
+                      "end": 10,
+                      "value": 0,
+                      "raw": "0"
+                    },
+                    "expression": true,
+                    "typeParameters": null,
+                    "returnType": null
+                  }
+                ],
+                "optional": false,
+                "typeArguments": null
+              }
+            }
+          ],
+          "id": null,
+          "superClass": null,
+          "body": {
+            "type": "ClassBody",
+            "start": 42,
+            "end": 44,
+            "body": []
+          },
+          "typeParameters": null,
+          "superTypeArguments": null,
+          "implements": [],
+          "abstract": true,
+          "declare": false
+        },
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
