@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-darwin-x64",
-  "version": "0.5.42",
+  "version": "0.5.43",
   "os": [
     "darwin"
   ],
