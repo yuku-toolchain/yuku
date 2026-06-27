@@ -60,7 +60,7 @@ fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeI
     }, .{});
 
     const end = try consumeAngleClose(parser, kind) orelse return .null;
-    const params = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    const params = try parser.flushToExtras(&parser.scratch_a, checkpoint);
 
     const data: ast.NodeData = switch (kind) {
         .arguments => .{ .ts_type_parameter_instantiation = .{ .params = params } },

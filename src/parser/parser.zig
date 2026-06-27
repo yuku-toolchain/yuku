@@ -224,7 +224,7 @@ pub const Parser = struct {
             }
         }
 
-        return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
+        return self.flushToExtras(&self.scratch_statements, statements_checkpoint);
     }
 
     inline fn isAtBodyEnd(self: *Parser, terminator: ?TokenTag) bool {
@@ -289,7 +289,7 @@ pub const Parser = struct {
         self.lexer.mode = mode;
     }
 
-    pub fn addExtraFromScratch(
+    pub fn flushToExtras(
         self: *Parser,
         scratch: *ScratchBuffer,
         scratch_checkpoint: usize,

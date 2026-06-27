@@ -278,7 +278,7 @@ pub fn parseFormalParameters(
     if (!try parser.expect(.right_paren, "Expected ')' to close parameter list", null)) return null;
 
     return try parser.tree.addNode(.{ .formal_parameters = .{
-        .items = try parser.addExtraFromScratch(&parser.scratch_a, params_checkpoint),
+        .items = try parser.flushToExtras(&parser.scratch_a, params_checkpoint),
         .rest = rest,
         .kind = kind,
     } }, .{ .start = start, .end = end });

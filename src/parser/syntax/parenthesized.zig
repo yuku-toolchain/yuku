@@ -39,7 +39,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     if (parser.current_token.tag == .right_paren) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
-        const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+        const elements = try parser.flushToExtras(&parser.scratch_cover, checkpoint);
         return .{
             .elements = elements,
             .start = start,
@@ -119,7 +119,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
     try parser.advance() orelse return null; // consume )
 
-    const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const elements = try parser.flushToExtras(&parser.scratch_cover, checkpoint);
 
     return .{
         .elements = elements,
@@ -342,7 +342,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
         try parser.scratch_cover.append(parser.allocator(), param);
     }
 
-    const items = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const items = try parser.flushToExtras(&parser.scratch_cover, checkpoint);
 
     return try parser.tree.addNode(
         .{ .formal_parameters = .{

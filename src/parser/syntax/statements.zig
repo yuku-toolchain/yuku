@@ -342,7 +342,7 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
         }
     }
 
-    return parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
@@ -413,7 +413,7 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         }
     }
 
-    return parser.addExtraFromScratch(&parser.scratch_b, checkpoint);
+    return parser.flushToExtras(&parser.scratch_b, checkpoint);
 }
 
 /// https://tc39.es/ecma262/#sec-if-statement

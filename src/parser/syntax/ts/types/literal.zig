@@ -113,8 +113,8 @@ pub fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.tree.addNode(
         .{ .ts_template_literal_type = .{
-            .quasis = try parser.addExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
-            .types = try parser.addExtraFromScratch(&parser.scratch_b, types_checkpoint),
+            .quasis = try parser.flushToExtras(&parser.scratch_a, quasis_checkpoint),
+            .types = try parser.flushToExtras(&parser.scratch_b, types_checkpoint),
         } },
         .{ .start = start, .end = end },
     );

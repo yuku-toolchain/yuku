@@ -334,7 +334,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         }
     }
 
-    return try parser.addExtraFromScratch(&parser.scratch_b, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_b, checkpoint);
 }
 
 fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
@@ -402,7 +402,7 @@ fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
         try parser.scratch_a.append(parser.allocator(), attr);
     }
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 // https://facebook.github.io/jsx/#prod-JSXAttribute

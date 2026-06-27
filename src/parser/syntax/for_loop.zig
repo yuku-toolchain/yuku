@@ -151,7 +151,7 @@ fn parseForWithDeclaration(
         end = parser.tree.span(declarator).end;
     }
 
-    const declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    const declarators = try parser.flushToExtras(&parser.scratch_a, checkpoint);
 
     parser.context.in = saved_allow_in;
 

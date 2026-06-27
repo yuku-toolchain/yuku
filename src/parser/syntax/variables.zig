@@ -80,7 +80,7 @@ pub fn parseVariableDeclaration(
     return try parser.tree.addNode(
         .{
             .variable_declaration = .{
-                .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+                .declarators = try parser.flushToExtras(&parser.scratch_a, checkpoint),
                 .kind = kind,
                 .declare = opts.is_declare,
             },

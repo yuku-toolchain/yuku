@@ -89,7 +89,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume }
 
-    const properties = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const properties = try parser.flushToExtras(&parser.scratch_cover, checkpoint);
 
     return .{
         .properties = properties,

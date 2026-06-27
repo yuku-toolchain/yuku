@@ -171,8 +171,8 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
 
     return try parser.tree.addNode(.{
         .template_literal = .{
-            .quasis = try parser.addExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
-            .expressions = try parser.addExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
+            .quasis = try parser.flushToExtras(&parser.scratch_a, quasis_checkpoint),
+            .expressions = try parser.flushToExtras(&parser.scratch_b, exprs_checkpoint),
         },
     }, .{ .start = start, .end = end });
 }

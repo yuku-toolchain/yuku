@@ -129,7 +129,7 @@ fn parseBinaryTypeChain(
         try parser.scratch_a.append(parser.allocator(), last);
     }
 
-    const types = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    const types = try parser.flushToExtras(&parser.scratch_a, checkpoint);
     const span: ast.Span = .{
         .start = leading_start orelse parser.tree.span(first).start,
         .end = parser.tree.span(last).end,
@@ -706,7 +706,7 @@ fn parseTupleType(parser: *Parser) Error!?ast.NodeIndex {
         "Each '[' in a tuple type must be matched by a ']'",
     )) return null;
 
-    const element_types = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    const element_types = try parser.flushToExtras(&parser.scratch_a, checkpoint);
 
     return try parser.tree.addNode(
         .{ .ts_tuple_type = .{ .element_types = element_types } },

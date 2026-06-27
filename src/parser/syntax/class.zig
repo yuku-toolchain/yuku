@@ -189,7 +189,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     )) return null;
 
     return try parser.tree.addNode(.{
-        .class_body = .{ .body = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint) },
+        .class_body = .{ .body = try parser.flushToExtras(&parser.scratch_a, checkpoint) },
     }, .{ .start = start, .end = end });
 }
 

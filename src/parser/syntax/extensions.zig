@@ -15,7 +15,7 @@ pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
         try parser.scratch_decorators.append(parser.allocator(), decorator);
     }
 
-    return try parser.addExtraFromScratch(&parser.scratch_decorators, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_decorators, checkpoint);
 }
 
 pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {

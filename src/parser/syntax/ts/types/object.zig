@@ -48,7 +48,7 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
         "Each '{' in a type must be matched by a '}'",
     )) return null;
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 // comma or semicolon folds into span, newline ends member without span stretch, else error

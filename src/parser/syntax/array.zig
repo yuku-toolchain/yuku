@@ -90,7 +90,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume ]
 
-    const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const elements = try parser.flushToExtras(&parser.scratch_cover, checkpoint);
 
     return .{
         .elements = elements,

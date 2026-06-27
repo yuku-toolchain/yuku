@@ -144,7 +144,7 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
     if (parser.current_token.tag == .star) {
         const ns = try parseImportNamespaceSpecifier(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), ns);
-        return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+        return try parser.flushToExtras(&parser.scratch_a, checkpoint);
     }
 
     if (parser.current_token.tag == .left_brace) {
@@ -177,7 +177,7 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
         }
     }
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 // import foo from 'm'
@@ -237,7 +237,7 @@ fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
 
     if (!try parser.expect(.right_brace, "Expected '}' to close named imports", null)) return null;
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 // member: name, rename, string rename, ts type forms
@@ -865,8 +865,8 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
         return null;
 
     return .{
-        .specifiers = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
-        .local_tags = try parser.addExtraFromScratch(&parser.scratch_b, token_checkpoint),
+        .specifiers = try parser.flushToExtras(&parser.scratch_a, checkpoint),
+        .local_tags = try parser.flushToExtras(&parser.scratch_b, token_checkpoint),
     };
 }
 
@@ -963,7 +963,7 @@ fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
         return ast.IndexRange.empty;
     }
 
-    return parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 // attr key string value

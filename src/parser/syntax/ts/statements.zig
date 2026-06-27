@@ -314,7 +314,7 @@ fn parseHeritageClause(
         try parser.advance() orelse return null;
     }
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 // Bar    Foo.Bar    Foo.Bar<U>
@@ -420,7 +420,7 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
         "Each '{' in an enum must be matched by a '}'",
     )) return null;
 
-    const members = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    const members = try parser.flushToExtras(&parser.scratch_a, checkpoint);
 
     return try parser.tree.addNode(
         .{ .ts_enum_body = .{ .members = members } },

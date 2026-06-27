@@ -879,7 +879,7 @@ fn parseSequenceExpression(
 
     return try parser.tree.addNode(
         .{ .sequence_expression = .{
-            .expressions = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+            .expressions = try parser.flushToExtras(&parser.scratch_a, checkpoint),
         } },
         .{ .start = parser.tree.span(left).start, .end = parser.tree.span(last).end },
     );
@@ -1202,7 +1202,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
     }
 
     parser.context.in = saved_allow_in;
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
 /// `` tag`template` ``. `type_arguments` is `.null` for a plain tag,
