@@ -27,7 +27,7 @@
     "build:local": "napi-zig build --release --current && bun gen:npm",
     "build:npm": "napi-zig build --release && bun gen:npm",
     "build:wasm": "zig build wasm && bun gen:wasm",
-    "release:npm": "napi-zig bump --commit 'npm %s'",
+    "release:npm": "napi-zig bump --commit 'npm v%s'",
     "fetch:fixtures": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
     "gen:npm": "zig build gen-parser-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-codegen-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen && zig build gen-analyzer-decoder && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./src/parser/ffi/analyzer.d.ts ./npm/yuku-analyzer/index.d.ts && cp ./npm/yuku-parser/walk.js ./npm/yuku-analyzer/engine.js",
     "gen:wasm": "zig build gen-parser-decoder && zig build gen-codegen-encoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser/walk.js ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/"
