@@ -1,0 +1,49 @@
+test/parser/misc/tsrx
+=====================
+Passed:       12/15 (80.00%)
+Failed:       3
+AST mismatch: 0/12
+
+✓ test/parser/misc/tsrx/code-block-expression.module.tsrx
+✓ test/parser/misc/tsrx/code-block-function.module.tsrx
+✓ test/parser/misc/tsrx/code-block.module.tsrx
+✓ test/parser/misc/tsrx/control-flow-for.module.tsrx
+✓ test/parser/misc/tsrx/control-flow-if.module.tsrx
+✗ test/parser/misc/tsrx/control-flow-switch-invalid.module.tsrx (parse errors)
+error: `break` is invalid inside `@switch` cases.
+   |
+ 4 |     @case "ready": {
+ 5 |         break;
+   |         ^^^^^^
+ 6 |     }
+   |
+
+✓ test/parser/misc/tsrx/control-flow-switch.module.tsrx
+✓ test/parser/misc/tsrx/control-flow-try.module.tsrx
+✗ test/parser/misc/tsrx/dynamic-tag-invalid.module.tsrx (parse errors)
+error: TSRX dynamic tag expression must resolve to an element name
+   |
+ 3 |
+ 4 | const call_tag = <{getTag()} />;
+   |                   ^^^^^^^^^^
+ 5 | const concat_tag = <{"x" + name} />;
+   |
+   = help: Use an identifier, member expression, string literal, or conditional.
+
+
+✓ test/parser/misc/tsrx/dynamic-tag.module.tsrx
+✓ test/parser/misc/tsrx/lazy-destructuring.module.tsrx
+✓ test/parser/misc/tsrx/style-element.module.tsrx
+✓ test/parser/misc/tsrx/submodule-import.module.tsrx
+✗ test/parser/misc/tsrx/template-return-invalid.module.tsrx (parse errors)
+error: `return` is invalid inside TSRX template blocks
+   |
+ 3 |         @{
+ 4 |             return <span>invalid</span>;
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 5 |         }
+   |
+   = help: Use rendered output as the final expression instead.
+
+
+✓ test/parser/misc/tsrx/text-entities.module.tsrx

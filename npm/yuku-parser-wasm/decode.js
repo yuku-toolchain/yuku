@@ -84,7 +84,7 @@ _ck("SwitchStatement", ["discriminant", "cases"]);
 _ck("SwitchCase", ["test", "consequent"]);
 _ck("ForStatement", ["init", "test", "update", "body"]);
 _ck("ForInStatement", ["left", "right", "body"]);
-_ck("ForOfStatement", ["left", "right", "body"]);
+_ck("ForOfStatement", ["left", "right", "body", "index", "key"]);
 _ck("WhileStatement", ["test", "body"]);
 _ck("DoWhileStatement", ["body", "test"]);
 _ck("BreakStatement", ["label"]);
@@ -94,7 +94,7 @@ _ck("WithStatement", ["object", "body"]);
 _ck("ReturnStatement", ["argument"]);
 _ck("ThrowStatement", ["argument"]);
 _ck("TryStatement", ["block", "handler", "finalizer"]);
-_ck("CatchClause", ["param", "body"]);
+_ck("CatchClause", ["param", "resetParam", "body"]);
 _ck("DebuggerStatement", []);
 _ck("EmptyStatement", []);
 _ck("VariableDeclaration", ["declarations"]);
@@ -202,6 +202,13 @@ _ck("JSXExpressionContainer", ["expression"]);
 _ck("JSXEmptyExpression", []);
 _ck("JSXText", []);
 _ck("JSXSpreadChild", ["expression"]);
+_ck("JSXCodeBlock", ["body", "render"]);
+_ck("StyleSheet", []);
+_ck("JSXStyleElement", ["openingElement", "children", "closingElement"]);
+_ck("JSXIfExpression", ["test", "consequent", "alternate"]);
+_ck("JSXForExpression", ["statement", "empty"]);
+_ck("JSXSwitchExpression", ["statement"]);
+_ck("JSXTryExpression", ["statement", "pending"]);
 _ck("Hashbang", []);
 function buildPosMap(src, byteLen, startByte) {
   const m = new Uint32Array(byteLen - startByte + 1);
@@ -553,7 +560,7 @@ function decode(buffer, source) {
     case 50: return { type: "SwitchCase", start, end, test: f1 !== NULL ? node(f1) : null, consequent: nodeArr(f2, f0) };
     case 51: return { type: "ForStatement", start, end, init: f1 !== NULL ? node(f1) : null, test: f2 !== NULL ? node(f2) : null, update: f3 !== NULL ? node(f3) : null, body: f4 !== NULL ? node(f4) : null };
     case 52: return { type: "ForInStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null };
-    case 53: return { type: "ForOfStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null, await: !!(flags & 1) };
+    case 53: return { type: "ForOfStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null, await: !!(flags & 1), index: f4 !== NULL ? node(f4) : null, key: f5 !== NULL ? node(f5) : null };
     case 54: return { type: "WhileStatement", start, end, test: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
     case 55: return { type: "DoWhileStatement", start, end, body: f1 !== NULL ? node(f1) : null, test: f2 !== NULL ? node(f2) : null };
     case 56: return { type: "BreakStatement", start, end, label: f1 !== NULL ? node(f1) : null };
@@ -563,7 +570,7 @@ function decode(buffer, source) {
     case 60: return { type: "ReturnStatement", start, end, argument: f1 !== NULL ? node(f1) : null };
     case 61: return { type: "ThrowStatement", start, end, argument: f1 !== NULL ? node(f1) : null };
     case 62: return { type: "TryStatement", start, end, block: f1 !== NULL ? node(f1) : null, handler: f2 !== NULL ? node(f2) : null, finalizer: f3 !== NULL ? node(f3) : null };
-    case 63: return { type: "CatchClause", start, end, param: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
+    case 63: return { type: "CatchClause", start, end, param: f1 !== NULL ? node(f1) : null, resetParam: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null };
     case 64: return { type: "DebuggerStatement", start, end };
     case 65: return { type: "EmptyStatement", start, end };
     case 66: { const r = { type: "VariableDeclaration", start, end, kind: VAR_KINDS[flags & 7], declarations: nodeArr(f1, f0) }; if (_isTs) { r.declare = !!(flags & 8); } return r; }
@@ -578,9 +585,10 @@ function decode(buffer, source) {
       const el = nodeArrHoles(f1, f0);
       if (f2 !== NULL) el.push(node(f2));
       const r = { type: "ArrayPattern", start, end, elements: el };
+      if (flags & 1) r.lazy = true;
       if (_isTs) {
         r.decorators = nodeArr(f3, f4);
-        r.optional = !!(flags & 1);
+        r.optional = !!(flags & 2);
         r.typeAnnotation = f5 !== NULL ? node(f5) : null;
       }
       return r;
@@ -589,9 +597,10 @@ function decode(buffer, source) {
       const pr = nodeArr(f1, f0);
       if (f2 !== NULL) pr.push(node(f2));
       const r = { type: "ObjectPattern", start, end, properties: pr };
+      if (flags & 1) r.lazy = true;
       if (_isTs) {
         r.decorators = nodeArr(f3, f4);
-        r.optional = !!(flags & 1);
+        r.optional = !!(flags & 2);
         r.typeAnnotation = f5 !== NULL ? node(f5) : null;
       }
       return r;
@@ -774,6 +783,13 @@ function decode(buffer, source) {
       return { type: "JSXText", start, end, value: t, raw: t };
     }
     case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 171: return { type: "JSXCodeBlock", start, end, body: nodeArr(f1, f0), render: f2 !== NULL ? node(f2) : null };
+    case 172: return { type: "StyleSheet", start, end, source: str(f1, f2) };
+    case 173: return { type: "JSXStyleElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null, css: str(f4, f5) };
+    case 174: return { type: "JSXIfExpression", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
+    case 175: return { type: "JSXForExpression", start, end, statement: f1 !== NULL ? node(f1) : null, empty: f2 !== NULL ? node(f2) : null };
+    case 176: return { type: "JSXSwitchExpression", start, end, statement: f1 !== NULL ? node(f1) : null };
+    case 177: return { type: "JSXTryExpression", start, end, statement: f1 !== NULL ? node(f1) : null, pending: f2 !== NULL ? node(f2) : null };
     }
   }
   const node = _attached ? nodeWithComments : _decode;

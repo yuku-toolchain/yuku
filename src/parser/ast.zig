@@ -74,13 +74,14 @@ pub const Lang = enum {
     jsx,
     tsx,
     dts,
+    tsrx,
 
     /// Determines the language variant based on the file extension.
     ///
-    /// `.d.ts`, `.d.mts`, `.d.cts` resolve to `dts`. `.tsx` resolves to
-    /// `tsx`. `.ts`, `.mts`, `.cts` resolve to `ts`. `.jsx` resolves to
-    /// `jsx`. Anything else (including `.js`, `.mjs`, `.cjs`) resolves to
-    /// `js`.
+    /// `.d.ts`, `.d.mts`, `.d.cts` resolve to `dts`. `.tsrx` resolves to
+    /// `tsrx`. `.tsx` resolves to `tsx`. `.ts`, `.mts`, `.cts` resolve to
+    /// `ts`. `.jsx` resolves to `jsx`. Anything else (including `.js`,
+    /// `.mjs`, `.cjs`) resolves to `js`.
     pub fn fromPath(path: []const u8) Lang {
         if (std.mem.endsWith(u8, path, ".d.ts") or
             std.mem.endsWith(u8, path, ".d.mts") or
@@ -89,6 +90,7 @@ pub const Lang = enum {
             return .dts;
         }
 
+        if (std.mem.endsWith(u8, path, ".tsrx")) return .tsrx;
         if (std.mem.endsWith(u8, path, ".tsx")) return .tsx;
 
         if (std.mem.endsWith(u8, path, ".ts") or
@@ -184,7 +186,7 @@ pub const Tree = struct {
     strings: StringPool = .{},
     /// Source type (script or module).
     source_type: SourceType = .module,
-    /// Language variant (js, ts, jsx, tsx, dts).
+    /// Language variant (js, ts, jsx, tsx, dts, tsrx).
     lang: Lang = .js,
 
     /// Creates a tree for parsing or transforming source code.
@@ -214,11 +216,16 @@ pub const Tree = struct {
     }
 
     pub inline fn isTs(self: *const Tree) bool {
-        return self.lang == .ts or self.lang == .tsx or self.lang == .dts;
+        return self.lang == .ts or self.lang == .tsx or
+            self.lang == .dts or self.lang == .tsrx;
     }
 
     pub inline fn isJsx(self: *const Tree) bool {
-        return self.lang == .tsx or self.lang == .jsx;
+        return self.lang == .tsx or self.lang == .jsx or self.lang == .tsrx;
+    }
+
+    pub inline fn isTsrx(self: *const Tree) bool {
+        return self.lang == .tsrx;
     }
 
     pub inline fn isModule(self: *const Tree) bool {
@@ -1200,6 +1207,10 @@ pub const ForOfStatement = struct {
     body: NodeIndex,
     /// true for `for await (...)`.
     await: bool,
+    /// `identifier_reference`. `.null` when omitted.
+    index: NodeIndex = .null,
+    /// any expression. `.null` when omitted.
+    key: NodeIndex = .null,
 };
 
 /// A `break` statement, optionally targeting a label.
@@ -1312,6 +1323,8 @@ pub const TryStatement = struct {
 pub const CatchClause = struct {
     /// any binding pattern. `.null` for `catch { }` with no binding.
     param: NodeIndex,
+    /// TSRX reset binding pattern. `.null` when omitted.
+    reset_param: NodeIndex = .null,
     /// `block_statement`
     body: NodeIndex,
 };
@@ -1663,6 +1676,8 @@ pub const ArrayPattern = struct {
     elements: IndexRange,
     /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
+    /// True when written as TSRX lazy destructuring `&[...]`.
+    lazy: bool = false,
     /// `decorator[]`. Decorators on a parameter binding (legacy
     /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
@@ -1686,6 +1701,8 @@ pub const ObjectPattern = struct {
     properties: IndexRange,
     /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
+    /// True when written as TSRX lazy destructuring `&{...}`.
+    lazy: bool = false,
     /// `decorator[]`. Decorators on a parameter binding (legacy
     /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
@@ -1904,7 +1921,7 @@ pub const Function = struct {
     declare: bool = false,
     /// `formal_parameters`
     params: NodeIndex,
-    /// `function_body`. `.null` for body-less declarations and signatures.
+    /// `function_body` or `jsx_code_block`. `.null` for body-less declarations and signatures.
     body: NodeIndex,
     /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
@@ -2252,7 +2269,7 @@ pub const ImportDeclaration = struct {
     /// `import_specifier`, `import_default_specifier`, or
     /// `import_namespace_specifier`. Empty for side-effect-only imports.
     specifiers: IndexRange,
-    /// `string_literal`
+    /// `string_literal`, or TSRX `identifier_reference`
     source: NodeIndex,
     /// `import_attribute[]`
     attributes: IndexRange,
@@ -3851,7 +3868,7 @@ pub const TSExternalModuleReference = struct {
 pub const JSXElement = struct {
     /// `jsx_opening_element`
     opening_element: NodeIndex,
-    /// `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`
+    /// JSX child nodes.
     children: IndexRange,
     /// `jsx_closing_element`. `.null` for self-closing tags like `<Foo />`.
     closing_element: NodeIndex,
@@ -3904,7 +3921,7 @@ pub const JSXClosingElement = struct {
 pub const JSXFragment = struct {
     /// `jsx_opening_fragment`
     opening_fragment: NodeIndex,
-    /// `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`
+    /// JSX child nodes.
     children: IndexRange,
     /// `jsx_closing_fragment`
     closing_fragment: NodeIndex,
@@ -4025,6 +4042,106 @@ pub const JSXText = struct {
 pub const JSXSpreadChild = struct {
     /// any expression
     expression: NodeIndex,
+};
+
+/// A TSRX `@{ ... }` statement container inside JSX children.
+///
+/// ## Example
+/// ```tsrx
+/// <View>@{ const value = 1; }</View>
+/// //    ^^^^^^^^^^^^^^^^^^^^^ body
+/// ```
+pub const JSXCodeBlock = struct {
+    /// statement[]
+    body: IndexRange,
+    /// render output node. `.null` when the block only contains statements.
+    render: NodeIndex = .null,
+};
+
+/// Raw CSS captured from a TSRX `<style>` element.
+///
+/// ## Example
+/// ```tsrx
+/// <style>.card { color: red; }</style>
+/// //     ^^^^^^^^^^^^^^^^^^^^^ source
+/// ```
+pub const StyleSheet = struct {
+    source: String = .empty,
+};
+
+/// A TSRX raw `<style>` element.
+///
+/// ## Example
+/// ```tsrx
+/// <style>.card { color: red; }</style>
+/// //      ^^^^^^^^^^^^^^^^^^^ children
+/// ```
+pub const JSXStyleElement = struct {
+    /// `jsx_opening_element`
+    opening_element: NodeIndex,
+    /// `style_sheet`.
+    children: IndexRange,
+    /// `jsx_closing_element`. `.null` for self-closing authored input.
+    closing_element: NodeIndex,
+    /// raw CSS source text between the opening and closing tags.
+    css: String = .empty,
+};
+
+/// A TSRX `@if` template control-flow expression.
+///
+/// ## Example
+/// ```tsrx
+/// @if (ready) { <span /> }
+/// //  ^^^^^ test
+/// ```
+pub const JSXIfExpression = struct {
+    /// any expression
+    @"test": NodeIndex,
+    /// `block_statement`
+    consequent: NodeIndex,
+    /// `block_statement` or `jsx_if_expression`. `.null` when there is no `@else`.
+    alternate: NodeIndex,
+};
+
+/// A TSRX `@for` template control-flow expression.
+///
+/// ## Example
+/// ```tsrx
+/// @for (const item of items) { <Row /> } @empty { <Empty /> }
+/// //   ^^^^^^^^^^^^^^^^^^^^^ statement
+/// //                                    ^^^^^^^^^^^^^^^^^^^ empty
+/// ```
+pub const JSXForExpression = struct {
+    /// `for_statement`, `for_in_statement`, or `for_of_statement`
+    statement: NodeIndex,
+    /// `block_statement`. `.null` when there is no `@empty` clause.
+    empty: NodeIndex = .null,
+};
+
+/// A TSRX `@switch` template control-flow expression.
+///
+/// ## Example
+/// ```tsrx
+/// @switch (kind) { @case "ok": { <Ok /> } }
+/// //       ^^^^ statement.discriminant
+/// ```
+pub const JSXSwitchExpression = struct {
+    /// `switch_statement`
+    statement: NodeIndex,
+};
+
+/// A TSRX `@try` template control-flow expression.
+///
+/// ## Example
+/// ```tsrx
+/// @try { <Ready /> } @catch (error) { <Error /> }
+/// //   ^ statement.block
+/// ```
+pub const JSXTryExpression = struct {
+    /// `try_statement`
+    statement: NodeIndex,
+    /// `block_statement`. `.null` when there is no `@pending` clause.
+    pending: NodeIndex = .null,
 };
 
 pub const NodeData = union(enum) {
@@ -4203,6 +4320,13 @@ pub const NodeData = union(enum) {
     jsx_empty_expression: JSXEmptyExpression,
     jsx_text: JSXText,
     jsx_spread_child: JSXSpreadChild,
+    jsx_code_block: JSXCodeBlock,
+    style_sheet: StyleSheet,
+    jsx_style_element: JSXStyleElement,
+    jsx_if_expression: JSXIfExpression,
+    jsx_for_expression: JSXForExpression,
+    jsx_switch_expression: JSXSwitchExpression,
+    jsx_try_expression: JSXTryExpression,
 
     /// True when this node produces a value at runtime.
     ///
@@ -4249,6 +4373,12 @@ pub const NodeData = union(enum) {
             .ts_instantiation_expression,
             .jsx_element,
             .jsx_fragment,
+            .jsx_style_element,
+            .jsx_code_block,
+            .jsx_if_expression,
+            .jsx_for_expression,
+            .jsx_switch_expression,
+            .jsx_try_expression,
             => true,
             .function => |f| f.type == .function_expression or
                 f.type == .ts_empty_body_function_expression,

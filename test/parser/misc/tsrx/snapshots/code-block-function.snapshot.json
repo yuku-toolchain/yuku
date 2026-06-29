@@ -1,0 +1,315 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 176,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 70,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 13,
+          "name": "View",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "JSXCodeBlock",
+          "start": 25,
+          "end": 70,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 28,
+              "end": 47,
+              "kind": "const",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 34,
+                  "end": 46,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 34,
+                    "end": 39,
+                    "name": "label",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 42,
+                    "end": 46,
+                    "value": "fn",
+                    "raw": "\"fn\""
+                  },
+                  "definite": false
+                }
+              ],
+              "declare": false
+            }
+          ],
+          "render": {
+            "type": "JSXElement",
+            "start": 48,
+            "end": 68,
+            "openingElement": {
+              "type": "JSXOpeningElement",
+              "start": 48,
+              "end": 54,
+              "name": {
+                "type": "JSXIdentifier",
+                "start": 49,
+                "end": 53,
+                "name": "span"
+              },
+              "attributes": [],
+              "selfClosing": false,
+              "typeArguments": null
+            },
+            "children": [
+              {
+                "type": "JSXExpressionContainer",
+                "start": 54,
+                "end": 61,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 60,
+                  "name": "label",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                }
+              }
+            ],
+            "closingElement": {
+              "type": "JSXClosingElement",
+              "start": 61,
+              "end": 68,
+              "name": {
+                "type": "JSXIdentifier",
+                "start": 63,
+                "end": 67,
+                "name": "span"
+              }
+            }
+          }
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 15,
+          "end": 24,
+          "typeAnnotation": {
+            "type": "TSUnknownKeyword",
+            "start": 17,
+            "end": 24
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 72,
+        "end": 150,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 78,
+            "end": 149,
+            "id": {
+              "type": "Identifier",
+              "start": 78,
+              "end": 83,
+              "name": "Arrow",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "start": 86,
+              "end": 149,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "JSXCodeBlock",
+                "start": 101,
+                "end": 149,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 104,
+                    "end": 126,
+                    "kind": "const",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 110,
+                        "end": 125,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 110,
+                          "end": 115,
+                          "name": "label",
+                          "decorators": [],
+                          "typeAnnotation": null,
+                          "optional": false
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 118,
+                          "end": 125,
+                          "value": "arrow",
+                          "raw": "\"arrow\""
+                        },
+                        "definite": false
+                      }
+                    ],
+                    "declare": false
+                  }
+                ],
+                "render": {
+                  "type": "JSXElement",
+                  "start": 127,
+                  "end": 147,
+                  "openingElement": {
+                    "type": "JSXOpeningElement",
+                    "start": 127,
+                    "end": 133,
+                    "name": {
+                      "type": "JSXIdentifier",
+                      "start": 128,
+                      "end": 132,
+                      "name": "span"
+                    },
+                    "attributes": [],
+                    "selfClosing": false,
+                    "typeArguments": null
+                  },
+                  "children": [
+                    {
+                      "type": "JSXExpressionContainer",
+                      "start": 133,
+                      "end": 140,
+                      "expression": {
+                        "type": "Identifier",
+                        "start": 134,
+                        "end": 139,
+                        "name": "label",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      }
+                    }
+                  ],
+                  "closingElement": {
+                    "type": "JSXClosingElement",
+                    "start": 140,
+                    "end": 147,
+                    "name": {
+                      "type": "JSXIdentifier",
+                      "start": 142,
+                      "end": 146,
+                      "name": "span"
+                    }
+                  }
+                }
+              },
+              "expression": true,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 88,
+                "end": 97,
+                "typeAnnotation": {
+                  "type": "TSUnknownKeyword",
+                  "start": 90,
+                  "end": 97
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 152,
+        "end": 175,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 161,
+            "end": 165,
+            "local": {
+              "type": "Identifier",
+              "start": 161,
+              "end": 165,
+              "name": "View",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 161,
+              "end": 165,
+              "name": "View",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          },
+          {
+            "type": "ExportSpecifier",
+            "start": 167,
+            "end": 172,
+            "local": {
+              "type": "Identifier",
+              "start": 167,
+              "end": 172,
+              "name": "Arrow",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 167,
+              "end": 172,
+              "name": "Arrow",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

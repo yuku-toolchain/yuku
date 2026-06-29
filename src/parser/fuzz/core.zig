@@ -15,6 +15,7 @@ pub const modes = [_]Mode{
     .{ .lang = .tsx, .source_type = .module },
     .{ .lang = .jsx, .source_type = .module },
     .{ .lang = .dts, .source_type = .module },
+    .{ .lang = .tsrx, .source_type = .module },
 };
 
 // adversarial fragments: surrogate and overlong escapes, unterminated literals,

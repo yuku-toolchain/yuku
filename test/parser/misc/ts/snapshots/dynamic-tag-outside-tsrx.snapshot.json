@@ -1,0 +1,53 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 72,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 22,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 21,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 9,
+              "name": "tag",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 12,
+              "end": 21,
+              "value": "section",
+              "raw": "\"section\""
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Expected JSX element name, but found '{'",
+      "start": 38,
+      "end": 39,
+      "help": "Dynamic JSX tag names are only enabled in TSRX files",
+      "labels": []
+    }
+  ]
+}

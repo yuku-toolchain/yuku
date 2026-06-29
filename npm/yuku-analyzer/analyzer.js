@@ -1,6 +1,16 @@
 import { Module, SymbolFlags } from "./module.js";
 
-const RESOLVE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mts", ".mjs", ".cts", ".cjs"];
+const RESOLVE_EXTENSIONS = [
+    ".tsrx",
+    ".tsx",
+    ".ts",
+    ".jsx",
+    ".js",
+    ".mts",
+    ".mjs",
+    ".cts",
+    ".cjs",
+];
 
 // name supplied ambiguously by multiple export * (ResolveExport, 16.2.1.7.2.2)
 const AMBIGUOUS = Symbol("ambiguous");

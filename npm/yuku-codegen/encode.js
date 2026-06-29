@@ -831,11 +831,15 @@ function encode(program) {
     const c_left = n.left == null ? NULL : encNode(n.left);
     const c_right = n.right == null ? NULL : encNode(n.right);
     const c_body = n.body == null ? NULL : encNode(n.body);
+    const c_index = n.index == null ? NULL : encNode(n.index);
+    const c_key = n.key == null ? NULL : encNode(n.key);
     const idx = alloc();
     tagAt(idx, 53);
     slotAt(idx, 0, c_left);
     slotAt(idx, 1, c_right);
     slotAt(idx, 2, c_body);
+    slotAt(idx, 3, c_index);
+    slotAt(idx, 4, c_key);
     flagsAt(idx, 0 | (n.await ? 1 : 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
@@ -936,11 +940,13 @@ function encode(program) {
   }
   function enc_catch_clause(n) {
     const c_param = n.param == null ? NULL : encBindingTarget(n.param);
+    const c_reset_param = n.resetParam == null ? NULL : encNode(n.resetParam);
     const c_body = n.body == null ? NULL : encNode(n.body);
     const idx = alloc();
     tagAt(idx, 63);
     slotAt(idx, 0, c_param);
-    slotAt(idx, 1, c_body);
+    slotAt(idx, 1, c_reset_param);
+    slotAt(idx, 2, c_body);
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -1045,7 +1051,7 @@ function encode(program) {
     slotAt(idx, 1, rest);
     slotAt(idx, 2, decs.start); slotAt(idx, 3, decs.len);
     slotAt(idx, 4, ta);
-    flagsAt(idx, n.optional ? 1 : 0);
+    flagsAt(idx, (n.lazy ? 1 : 0) | (n.optional ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -1069,7 +1075,7 @@ function encode(program) {
     slotAt(idx, 1, rest);
     slotAt(idx, 2, decs.start); slotAt(idx, 3, decs.len);
     slotAt(idx, 4, ta);
-    flagsAt(idx, n.optional ? 1 : 0);
+    flagsAt(idx, (n.lazy ? 1 : 0) | (n.optional ? 2 : 0));
     spanAt(idx, asStart(n), asEnd(n));
     recordComments(n, idx);
     return idx;
@@ -2109,6 +2115,89 @@ function encode(program) {
     recordComments(n, idx);
     return idx;
   }
+  function enc_jsx_code_block(n) {
+    const c_body = encArr(n.body, encNode);
+    const c_render = n.render == null ? NULL : encNode(n.render);
+    const idx = alloc();
+    tagAt(idx, 171);
+    f0At(idx, c_body.len);
+    slotAt(idx, 0, c_body.start);
+    slotAt(idx, 1, c_render);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
+  function enc_style_sheet(n) {
+    const c_source = encStr(n.source);
+    const idx = alloc();
+    tagAt(idx, 172);
+    slotAt(idx, 0, c_source.start);
+    slotAt(idx, 1, c_source.end);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
+  function enc_jsx_style_element(n) {
+    const c_opening_element = n.openingElement == null ? NULL : encNode(n.openingElement);
+    const c_children = encArr(n.children, encNode);
+    const c_closing_element = n.closingElement == null ? NULL : encNode(n.closingElement);
+    const c_css = encStr(n.css);
+    const idx = alloc();
+    tagAt(idx, 173);
+    slotAt(idx, 0, c_opening_element);
+    f0At(idx, c_children.len);
+    slotAt(idx, 1, c_children.start);
+    slotAt(idx, 2, c_closing_element);
+    slotAt(idx, 3, c_css.start);
+    slotAt(idx, 4, c_css.end);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
+  function enc_jsx_if_expression(n) {
+    const c_test = n.test == null ? NULL : encNode(n.test);
+    const c_consequent = n.consequent == null ? NULL : encNode(n.consequent);
+    const c_alternate = n.alternate == null ? NULL : encNode(n.alternate);
+    const idx = alloc();
+    tagAt(idx, 174);
+    slotAt(idx, 0, c_test);
+    slotAt(idx, 1, c_consequent);
+    slotAt(idx, 2, c_alternate);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
+  function enc_jsx_for_expression(n) {
+    const c_statement = n.statement == null ? NULL : encNode(n.statement);
+    const c_empty = n.empty == null ? NULL : encNode(n.empty);
+    const idx = alloc();
+    tagAt(idx, 175);
+    slotAt(idx, 0, c_statement);
+    slotAt(idx, 1, c_empty);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
+  function enc_jsx_switch_expression(n) {
+    const c_statement = n.statement == null ? NULL : encNode(n.statement);
+    const idx = alloc();
+    tagAt(idx, 176);
+    slotAt(idx, 0, c_statement);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
+  function enc_jsx_try_expression(n) {
+    const c_statement = n.statement == null ? NULL : encNode(n.statement);
+    const c_pending = n.pending == null ? NULL : encNode(n.pending);
+    const idx = alloc();
+    tagAt(idx, 177);
+    slotAt(idx, 0, c_statement);
+    slotAt(idx, 1, c_pending);
+    spanAt(idx, asStart(n), asEnd(n));
+    recordComments(n, idx);
+    return idx;
+  }
   const commentsByIdx = new Map();
   function encNode(n) {
     if (n == null) return NULL;
@@ -2292,6 +2381,13 @@ function encode(program) {
       case "JSXEmptyExpression": return enc_jsx_empty_expression(n);
       case "JSXText": return enc_jsx_text(n);
       case "JSXSpreadChild": return enc_jsx_spread_child(n);
+      case "JSXCodeBlock": return enc_jsx_code_block(n);
+      case "StyleSheet": return enc_style_sheet(n);
+      case "JSXStyleElement": return enc_jsx_style_element(n);
+      case "JSXIfExpression": return enc_jsx_if_expression(n);
+      case "JSXForExpression": return enc_jsx_for_expression(n);
+      case "JSXSwitchExpression": return enc_jsx_switch_expression(n);
+      case "JSXTryExpression": return enc_jsx_try_expression(n);
       default: throw new Error("yuku-codegen: unsupported ESTree node type: " + n.type);
     }
   }
