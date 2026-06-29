@@ -20,7 +20,7 @@ async function instantiate() {
 const { memory, alloc, free, parse: wasmParse } = (await instantiate()).exports;
 const encoder = new TextEncoder();
 
-const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
+const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4, tsrx: 5 };
 
 function packFlags(o = {}) {
   let f = (LANGS[o.lang] ?? 0) << 1;
@@ -52,6 +52,7 @@ export function parse(source, options) {
 
 export function langFromPath(path) {
   if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";
+  if (path.endsWith(".tsrx")) return "tsrx";
   if (path.endsWith(".tsx")) return "tsx";
   if (path.endsWith(".ts") || path.endsWith(".mts") || path.endsWith(".cts")) return "ts";
   if (path.endsWith(".jsx")) return "jsx";

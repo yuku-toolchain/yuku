@@ -110,6 +110,7 @@ export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>
  * Resolves a {@link SourceLang} from a file path's extension.
  *
  * - `.d.ts`, `.d.mts`, `.d.cts` → `"dts"`
+ * - `.tsrx` → `"tsrx"`
  * - `.tsx` → `"tsx"`
  * - `.ts`, `.mts`, `.cts` → `"ts"`
  * - `.jsx` → `"jsx"`

@@ -947,6 +947,7 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
     const sr = comptime slotOf(T, "rest");
     const sdec = comptime slotOf(T, "decorators");
     const sta = comptime slotOf(T, "type_annotation");
+    const mlazy = comptime flagMask(T, "lazy");
     const mopt = comptime flagMask(T, "optional");
     try w.print(
         \\  function enc_array_pattern(n) {{
@@ -969,13 +970,13 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, rest);
         \\    slotAt(idx, {d}, decs.start); slotAt(idx, {d}, decs.len);
         \\    slotAt(idx, {d}, ta);
-        \\    flagsAt(idx, n.optional ? {d} : 0);
+        \\    flagsAt(idx, (n.lazy ? {d} : 0) | (n.optional ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sr, sdec, sdec + 1, sta, mopt });
+    , .{ tag, sr, sdec, sdec + 1, sta, mlazy, mopt });
 }
 
 fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
@@ -983,6 +984,7 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
     const sr = comptime slotOf(T, "rest");
     const sdec = comptime slotOf(T, "decorators");
     const sta = comptime slotOf(T, "type_annotation");
+    const mlazy = comptime flagMask(T, "lazy");
     const mopt = comptime flagMask(T, "optional");
     try w.print(
         \\  function enc_object_pattern(n) {{
@@ -1004,13 +1006,13 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, rest);
         \\    slotAt(idx, {d}, decs.start); slotAt(idx, {d}, decs.len);
         \\    slotAt(idx, {d}, ta);
-        \\    flagsAt(idx, n.optional ? {d} : 0);
+        \\    flagsAt(idx, (n.lazy ? {d} : 0) | (n.optional ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sr, sdec, sdec + 1, sta, mopt });
+    , .{ tag, sr, sdec, sdec + 1, sta, mlazy, mopt });
 }
 
 fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {

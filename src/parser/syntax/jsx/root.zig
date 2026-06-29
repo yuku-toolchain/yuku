@@ -1,12 +1,16 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
 const Precedence = @import("../../token.zig").Precedence;
+const Token = @import("../../token.zig").Token;
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 
 const literals = @import("../literals.zig");
 const expressions = @import("../expressions.zig");
 const ts = @import("../ts/types.zig");
+const tsrx = @import("../tsrx/root.zig");
+const tsrx_dynamic_tag = @import("../tsrx/dynamic_tag.zig");
+const tsrx_template = @import("../tsrx/template.zig");
 
 /// context for JSX element parsing, determines post-parse behavior
 const JsxElementContext = enum {
@@ -45,6 +49,17 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
     const opening_data = parser.tree.data(opening).jsx_opening_element;
     const opening_end = parser.tree.span(opening).end;
 
+    if (isTsrxStyleElementName(parser, opening_data.name)) {
+        return try parseTsrxStyleElement(
+            parser,
+            opening,
+            opening_data,
+            start,
+            opening_end,
+            context,
+        );
+    }
+
     // self-closing element: <elem />
     if (opening_data.self_closing) {
         return try parser.tree.addNode(.{
@@ -72,6 +87,101 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
             .closing_element = closing,
         },
     }, .{ .start = start, .end = parser.tree.span(closing).end });
+}
+
+fn parseTsrxStyleElement(
+    parser: *Parser,
+    opening: ast.NodeIndex,
+    opening_data: ast.JSXOpeningElement,
+    start: u32,
+    opening_end: u32,
+    comptime context: JsxElementContext,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.tree.isTsrx());
+    std.debug.assert(isTsrxStyleElementName(parser, opening_data.name));
+    std.debug.assert(start <= opening_end);
+
+    if (opening_data.self_closing) {
+        return try parser.tree.addNode(.{
+            .jsx_style_element = .{
+                .opening_element = opening,
+                .children = ast.IndexRange.empty,
+                .closing_element = .null,
+                .css = .empty,
+            },
+        }, .{ .start = start, .end = opening_end });
+    }
+
+    const close_text = "</style>";
+    const close_index = std.mem.indexOfPos(u8, parser.source, opening_end, close_text) orelse {
+        try parser.report(
+            .{ .start = opening_end, .end = opening_end },
+            "Unclosed TSRX style element",
+            .{ .help = "Add '</style>' before the end of the template." },
+        );
+        return null;
+    };
+
+    const close_start: u32 = @intCast(close_index);
+    const close_end = close_start + @as(u32, @intCast(close_text.len));
+
+    const css = parser.tree.sourceSlice(opening_end, close_start);
+    const style_sheet = try parser.tree.addNode(
+        .{ .style_sheet = .{ .source = css } },
+        .{ .start = opening_end, .end = close_start },
+    );
+    const children = try parser.tree.addExtra(&.{style_sheet});
+
+    const name_start = close_start + 2;
+    const name_end = name_start + @as(u32, @intCast("style".len));
+    const name = try parser.tree.addNode(.{
+        .jsx_identifier = .{ .name = parser.tree.sourceSlice(name_start, name_end) },
+    }, .{ .start = name_start, .end = name_end });
+    const closing = try parser.tree.addNode(
+        .{ .jsx_closing_element = .{ .name = name } },
+        .{ .start = close_start, .end = close_end },
+    );
+
+    try finishTsrxStyleElement(parser, close_end, context) orelse return null;
+
+    return try parser.tree.addNode(.{
+        .jsx_style_element = .{
+            .opening_element = opening,
+            .children = children,
+            .closing_element = closing,
+            .css = css,
+        },
+    }, .{ .start = start, .end = close_end });
+}
+
+fn finishTsrxStyleElement(
+    parser: *Parser,
+    close_end: u32,
+    comptime context: JsxElementContext,
+) Error!?void {
+    std.debug.assert(close_end <= parser.source.len);
+
+    const closing_gt: Token = .{
+        .tag = .greater_than,
+        .span = .{ .start = close_end - 1, .end = close_end },
+    };
+
+    parser.lexer.rewindTo(close_end);
+    switch (context) {
+        .child => {
+            exitJsxTag(parser);
+            parser.current_token = closing_gt;
+            parser.prev_token_end = close_end;
+        },
+        .top_level => {
+            exitJsxTag(parser);
+            try parser.advanceWithRescannedToken(closing_gt) orelse return null;
+        },
+        .attribute => {
+            enterJsxTag(parser);
+            try parser.advanceWithRescannedToken(closing_gt) orelse return null;
+        },
+    }
 }
 
 // https://facebook.github.io/jsx/#prod-JSXFragment
@@ -273,6 +383,20 @@ fn parseJsxClosingElement(
 }
 
 fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool {
+    switch (parser.tree.data(a)) {
+        .jsx_expression_container => |a_container| switch (parser.tree.data(b)) {
+            .jsx_expression_container => |b_container| {
+                const expression_a = parser.spanText(parser.tree.span(a_container.expression));
+                const expression_b = parser.spanText(parser.tree.span(b_container.expression));
+                const trimmed_a = std.mem.trim(u8, expression_a, " \t\r\n");
+                const trimmed_b = std.mem.trim(u8, expression_b, " \t\r\n");
+                return std.mem.eql(u8, trimmed_a, trimmed_b);
+            },
+            else => {},
+        },
+        else => {},
+    }
+
     const span_a = parser.tree.span(a);
     const span_b = parser.tree.span(b);
 
@@ -287,6 +411,15 @@ fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool
     return std.mem.eql(u8, text_a, text_b);
 }
 
+fn isTsrxStyleElementName(parser: *const Parser, name: ast.NodeIndex) bool {
+    if (!parser.tree.isTsrx()) return false;
+
+    return switch (parser.tree.data(name)) {
+        .jsx_identifier => |id| std.mem.eql(u8, parser.tree.string(id.name), "style"),
+        else => false,
+    };
+}
+
 // https://facebook.github.io/jsx/#prod-JSXChildren
 fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_b.begin();
@@ -299,12 +432,12 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
 
     while (true) {
         // scan text content until '<' or '{'
-        const text_token = parser.lexer.reScanJsxText(scan_from);
+        const text_token = parser.lexer.reScanJsxText(scan_from, parser.tree.isTsrx());
 
         if (text_token.len() > 0) {
             const text_node = try parser.tree.addNode(.{
                 .jsx_text = .{
-                    .value = parser.tree.sourceSlice(text_token.span.start, text_token.span.end),
+                    .value = try parseJsxTextValue(parser, text_token.span),
                 },
             }, text_token.span);
 
@@ -330,11 +463,136 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
                 scan_from = parser.tree.span(child).end;
                 try parser.scratch_b.append(parser.allocator(), child);
             },
+            .at => {
+                const child = if (tsrx.isCodeBlockStart(parser))
+                    try tsrx_template.parseCodeBlock(parser) orelse return null
+                else if (tsrx.isControlFlowDirectiveStart(parser))
+                    try tsrx_template.parseControlFlowExpression(parser) orelse return null
+                else {
+                    try parser.reportExpected(
+                        parser.current_token.span,
+                        "Expected TSRX template directive",
+                        .{ .help = "TSRX template directives are '@{...}', '@if', '@for'," ++
+                            " '@switch', or '@try'." },
+                    );
+                    return null;
+                };
+                scan_from = parser.tree.span(child).end;
+                try parser.scratch_b.append(parser.allocator(), child);
+            },
             else => break,
         }
     }
 
     return try parser.flushToExtras(&parser.scratch_b, checkpoint);
+}
+
+fn parseJsxTextValue(parser: *Parser, span: ast.Span) Error!ast.String {
+    std.debug.assert(span.start <= span.end);
+    std.debug.assert(span.end <= parser.source.len);
+
+    const text = parser.spanText(span);
+    if (std.mem.indexOfScalar(u8, text, '&') == null) {
+        return parser.tree.sourceSlice(span.start, span.end);
+    }
+
+    var out: std.ArrayList(u8) = .empty;
+    defer out.deinit(parser.allocator());
+    try out.ensureTotalCapacity(parser.allocator(), text.len);
+
+    var index: u32 = 0;
+    while (index < text.len) {
+        if (text[index] != '&') {
+            try out.append(parser.allocator(), text[index]);
+            index += 1;
+            continue;
+        }
+
+        const entity = parseJsxTextEntity(text[index..]) orelse {
+            try out.append(parser.allocator(), text[index]);
+            index += 1;
+            continue;
+        };
+
+        if (entity.codepoint) |codepoint| {
+            var bytes: [4]u8 = undefined;
+            const len = std.unicode.utf8Encode(codepoint, &bytes) catch unreachable;
+            try out.appendSlice(parser.allocator(), bytes[0..len]);
+        } else {
+            try out.appendSlice(parser.allocator(), entity.value);
+        }
+        index += entity.len;
+    }
+
+    return try parser.tree.addString(out.items);
+}
+
+const JsxTextEntity = struct {
+    value: []const u8 = "",
+    codepoint: ?u21 = null,
+    len: u32,
+};
+
+fn parseJsxTextEntity(text: []const u8) ?JsxTextEntity {
+    std.debug.assert(text.len > 0);
+    std.debug.assert(text[0] == '&');
+
+    if (text.len < 4) return null;
+
+    if (std.mem.startsWith(u8, text, "&amp;")) {
+        return .{ .value = "&", .len = 5 };
+    }
+    if (std.mem.startsWith(u8, text, "&lt;")) {
+        return .{ .value = "<", .len = 4 };
+    }
+    if (std.mem.startsWith(u8, text, "&gt;")) {
+        return .{ .value = ">", .len = 4 };
+    }
+    if (std.mem.startsWith(u8, text, "&quot;")) {
+        return .{ .value = "\"", .len = 6 };
+    }
+    if (std.mem.startsWith(u8, text, "&apos;")) {
+        return .{ .value = "'", .len = 6 };
+    }
+    if (std.mem.startsWith(u8, text, "&nbsp;")) {
+        return .{ .value = "\u{00a0}", .len = 6 };
+    }
+    if (text[1] == '#') {
+        return parseJsxNumericTextEntity(text);
+    }
+
+    return null;
+}
+
+fn parseJsxNumericTextEntity(text: []const u8) ?JsxTextEntity {
+    std.debug.assert(text.len >= 2);
+    std.debug.assert(text[0] == '&');
+    std.debug.assert(text[1] == '#');
+
+    var base: u8 = 10;
+    var index: u32 = 2;
+    if (index < text.len and (text[index] == 'x' or text[index] == 'X')) {
+        base = 16;
+        index += 1;
+    }
+
+    const digits_start = index;
+    var codepoint: u32 = 0;
+    while (index < text.len) : (index += 1) {
+        const c = text[index];
+        if (c == ';') break;
+        const digit = std.fmt.charToDigit(c, base) catch return null;
+        if (codepoint > (@as(u32, 0x10ffff) - digit) / base) return null;
+        codepoint = codepoint * base + digit;
+    }
+
+    if (index == text.len) return null;
+    if (text[index] != ';') return null;
+    if (index == digits_start) return null;
+    if (codepoint > 0x10ffff) return null;
+    if (codepoint >= 0xd800 and codepoint <= 0xdfff) return null;
+
+    return .{ .codepoint = @intCast(codepoint), .len = index + 1 };
 }
 
 fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
@@ -612,6 +870,21 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
 // https://facebook.github.io/jsx/#prod-JSXElementName
 fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .left_brace) {
+        if (parser.tree.isTsrx()) {
+            const name = try parseJsxExpressionContainer(parser, .tag) orelse return null;
+            try tsrx_dynamic_tag.validateExpression(parser, name);
+            return name;
+        }
+
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected JSX element name",
+            .{ .help = "Dynamic JSX tag names are only enabled in TSRX files" },
+        );
+        return null;
+    }
+
     if (parser.current_token.tag != .jsx_identifier) {
         try parser.reportExpected(
             parser.current_token.span,

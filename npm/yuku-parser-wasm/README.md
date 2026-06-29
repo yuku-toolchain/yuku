@@ -25,7 +25,7 @@ Options:
 
 | Option                       | Default    | Description                               |
 | ---------------------------- | ---------- | ----------------------------------------- |
-| `lang`                       | `"js"`     | `"js" \| "ts" \| "jsx" \| "tsx" \| "dts"` |
+| `lang`                       | `"js"`     | `"js" \| "ts" \| "jsx" \| "tsx" \| "dts" \| "tsrx"` |
 | `sourceType`                 | `"module"` | `"module" \| "script"`                    |
 | `preserveParens`             | `true`     | Keep `ParenthesizedExpression` nodes      |
 | `allowReturnOutsideFunction` | `false`    | Allow top-level `return`                  |

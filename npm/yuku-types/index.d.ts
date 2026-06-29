@@ -4,7 +4,7 @@ type SourceType = "script" | "module";
 type ModuleKind = SourceType;
 
 /** Language variant of the source code. */
-type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
+type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts" | "tsrx";
 /** Whether a comment came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
@@ -296,6 +296,7 @@ type Literal =
 interface ArrayPattern extends BaseNode {
   type: "ArrayPattern";
   elements: Array<BindingPattern | RestElement | null>;
+  lazy?: boolean;
   decorators?: Decorator[];
   optional?: boolean;
   typeAnnotation?: TSTypeAnnotation | null;
@@ -304,6 +305,7 @@ interface ArrayPattern extends BaseNode {
 interface ObjectPattern extends BaseNode {
   type: "ObjectPattern";
   properties: Array<BindingProperty | RestElement>;
+  lazy?: boolean;
   decorators?: Decorator[];
   optional?: boolean;
   typeAnnotation?: TSTypeAnnotation | null;
@@ -558,7 +560,7 @@ interface Directive extends BaseNode {
 
 interface BlockStatement extends BaseNode {
   type: "BlockStatement";
-  body: (Statement | Directive)[];
+  body: (Statement | Directive | Expression)[];
 }
 
 interface IfStatement extends BaseNode {
@@ -604,6 +606,8 @@ interface ForOfStatement extends BaseNode {
   right: Expression;
   body: Statement;
   await: boolean;
+  index: IdentifierReference | null;
+  key: Expression | null;
 }
 
 interface WhileStatement extends BaseNode {
@@ -660,6 +664,7 @@ interface TryStatement extends BaseNode {
 interface CatchClause extends BaseNode {
   type: "CatchClause";
   param: BindingPattern | null;
+  resetParam: BindingPattern | null;
   body: BlockStatement;
 }
 
@@ -691,7 +696,7 @@ interface FunctionDeclaration extends BaseNode {
   generator: boolean;
   async: boolean;
   params: FunctionParameter[];
-  body: BlockStatement | null;
+  body: BlockStatement | JSXCodeBlock | null;
   expression: false;
   declare?: boolean;
   typeParameters?: TSTypeParameterDeclaration | null;
@@ -704,7 +709,7 @@ interface FunctionExpression extends BaseNode {
   generator: boolean;
   async: boolean;
   params: FunctionParameter[];
-  body: BlockStatement | null;
+  body: BlockStatement | JSXCodeBlock | null;
   expression: false;
   declare?: boolean;
   typeParameters?: TSTypeParameterDeclaration | null;
@@ -901,7 +906,7 @@ type ClassElement =
 interface ImportDeclaration extends BaseNode {
   type: "ImportDeclaration";
   specifiers: ImportDeclarationSpecifier[];
-  source: StringLiteral;
+  source: StringLiteral | IdentifierReference;
   phase: ImportPhase | null;
   attributes: ImportAttribute[];
   importKind?: ImportOrExportKind;
@@ -1035,7 +1040,12 @@ interface JSXAttribute extends BaseNode {
 
 type JSXAttributeName = JSXIdentifier | JSXNamespacedName;
 
-type JSXAttributeValue = StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment;
+type JSXAttributeValue =
+  | StringLiteral
+  | JSXExpressionContainer
+  | JSXElement
+  | JSXFragment
+  | JSXStyleElement;
 
 interface JSXSpreadAttribute extends BaseNode {
   type: "JSXSpreadAttribute";
@@ -1064,11 +1074,73 @@ interface JSXSpreadChild extends BaseNode {
   expression: Expression;
 }
 
-type JSXElementName = JSXIdentifier | JSXNamespacedName | JSXMemberExpression;
+interface JSXCodeBlock extends BaseNode {
+  type: "JSXCodeBlock";
+  body: Statement[];
+  render: Node | null;
+}
+
+interface StyleSheet extends BaseNode {
+  type: "StyleSheet";
+  source: string;
+}
+
+interface JSXStyleElement extends BaseNode {
+  type: "JSXStyleElement";
+  openingElement: JSXOpeningElement;
+  children: StyleSheet[];
+  closingElement: JSXClosingElement | null;
+  css: string;
+}
+
+interface JSXIfExpression extends BaseNode {
+  type: "JSXIfExpression";
+  test: Expression;
+  consequent: BlockStatement;
+  alternate: BlockStatement | JSXIfExpression | null;
+  statementType?: "IfStatement";
+}
+
+interface JSXForExpression extends BaseNode {
+  type: "JSXForExpression";
+  statement: ForStatement | ForInStatement | ForOfStatement;
+  empty: BlockStatement | null;
+  statementType?: "ForStatement" | "ForInStatement" | "ForOfStatement";
+}
+
+interface JSXSwitchExpression extends BaseNode {
+  type: "JSXSwitchExpression";
+  statement: SwitchStatement;
+  statementType?: "SwitchStatement";
+}
+
+interface JSXTryExpression extends BaseNode {
+  type: "JSXTryExpression";
+  statement: TryStatement;
+  pending: BlockStatement | null;
+  statementType?: "TryStatement";
+}
+
+type JSXElementName =
+  | JSXIdentifier
+  | JSXNamespacedName
+  | JSXMemberExpression
+  | JSXExpressionContainer;
 
 type JSXTagName = JSXElementName;
 
-type JSXChild = JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild;
+type JSXChild =
+  | JSXText
+  | JSXElement
+  | JSXFragment
+  | JSXStyleElement
+  | JSXExpressionContainer
+  | JSXSpreadChild
+  | JSXCodeBlock
+  | JSXIfExpression
+  | JSXForExpression
+  | JSXSwitchExpression
+  | JSXTryExpression;
 
 // TypeScript types
 
@@ -1618,7 +1690,13 @@ type Expression =
   | TSNonNullExpression
   | TSInstantiationExpression
   | JSXElement
-  | JSXFragment;
+  | JSXFragment
+  | JSXStyleElement
+  | JSXCodeBlock
+  | JSXIfExpression
+  | JSXForExpression
+  | JSXSwitchExpression
+  | JSXTryExpression;
 
 type Statement =
   | ExpressionStatement
@@ -1696,6 +1774,13 @@ type Node =
   | JSXEmptyExpression
   | JSXText
   | JSXSpreadChild
+  | JSXCodeBlock
+  | StyleSheet
+  | JSXStyleElement
+  | JSXIfExpression
+  | JSXForExpression
+  | JSXSwitchExpression
+  | JSXTryExpression
   | TSTypeAnnotation
   | TSType
   | TSTypeParameter
@@ -1886,6 +1971,13 @@ export type {
   JSXEmptyExpression,
   JSXText,
   JSXSpreadChild,
+  JSXCodeBlock,
+  StyleSheet,
+  JSXStyleElement,
+  JSXIfExpression,
+  JSXForExpression,
+  JSXSwitchExpression,
+  JSXTryExpression,
   JSXTagName,
   JSXElementName,
   JSXChild,

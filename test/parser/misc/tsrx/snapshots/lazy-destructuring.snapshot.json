@@ -1,0 +1,557 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 306,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 0,
+        "end": 55,
+        "id": {
+          "type": "Identifier",
+          "start": 5,
+          "end": 10,
+          "name": "Props",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSTypeLiteral",
+          "start": 13,
+          "end": 54,
+          "members": [
+            {
+              "type": "TSPropertySignature",
+              "start": 19,
+              "end": 33,
+              "key": {
+                "type": "Identifier",
+                "start": 19,
+                "end": 24,
+                "name": "title",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 24,
+                "end": 32,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 26,
+                  "end": 32
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            },
+            {
+              "type": "TSPropertySignature",
+              "start": 38,
+              "end": 52,
+              "key": {
+                "type": "Identifier",
+                "start": 38,
+                "end": 43,
+                "name": "count",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 43,
+                "end": 51,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 45,
+                  "end": 51
+                }
+              },
+              "computed": false,
+              "optional": false,
+              "readonly": false,
+              "accessibility": null,
+              "static": false
+            }
+          ]
+        },
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 57,
+        "end": 84,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 71,
+            "end": 83,
+            "id": {
+              "type": "Identifier",
+              "start": 71,
+              "end": 83,
+              "name": "props",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 76,
+                "end": 83,
+                "typeAnnotation": {
+                  "type": "TSTypeReference",
+                  "start": 78,
+                  "end": 83,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 78,
+                    "end": 83,
+                    "name": "Props",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 85,
+        "end": 116,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 99,
+            "end": 115,
+            "id": {
+              "type": "Identifier",
+              "start": 99,
+              "end": 115,
+              "name": "values",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 105,
+                "end": 115,
+                "typeAnnotation": {
+                  "type": "TSArrayType",
+                  "start": 107,
+                  "end": 115,
+                  "elementType": {
+                    "type": "TSStringKeyword",
+                    "start": 107,
+                    "end": 113
+                  }
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 118,
+        "end": 159,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 122,
+            "end": 158,
+            "id": {
+              "type": "ObjectPattern",
+              "start": 122,
+              "end": 150,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 125,
+                  "end": 130,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 125,
+                    "end": 130,
+                    "name": "title",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 125,
+                    "end": 130,
+                    "name": "title",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false,
+                  "optional": false
+                },
+                {
+                  "type": "Property",
+                  "start": 132,
+                  "end": 148,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 132,
+                    "end": 137,
+                    "name": "count",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "value": {
+                    "type": "AssignmentPattern",
+                    "start": 139,
+                    "end": 148,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 139,
+                      "end": 144,
+                      "name": "total",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "start": 147,
+                      "end": 148,
+                      "value": 0,
+                      "raw": "0"
+                    },
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false,
+                  "optional": false
+                }
+              ],
+              "lazy": true,
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 153,
+              "end": 158,
+              "name": "props",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 160,
+        "end": 195,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 166,
+            "end": 194,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 166,
+              "end": 185,
+              "elements": [
+                {
+                  "type": "Identifier",
+                  "start": 168,
+                  "end": 173,
+                  "name": "first",
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false
+                },
+                null,
+                {
+                  "type": "RestElement",
+                  "start": 177,
+                  "end": 184,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 180,
+                    "end": 184,
+                    "name": "rest",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false,
+                  "value": null
+                }
+              ],
+              "lazy": true,
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 188,
+              "end": 194,
+              "name": "values",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 197,
+        "end": 216,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 197,
+          "end": 215,
+          "left": {
+            "type": "ObjectPattern",
+            "start": 197,
+            "end": 207,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 200,
+                "end": 205,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 200,
+                  "end": 205,
+                  "name": "title",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 200,
+                  "end": 205,
+                  "name": "title",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "method": false,
+                "shorthand": true,
+                "computed": false,
+                "optional": false
+              }
+            ],
+            "lazy": true,
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 210,
+            "end": 215,
+            "name": "props",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 217,
+        "end": 235,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 217,
+          "end": 234,
+          "left": {
+            "type": "ArrayPattern",
+            "start": 217,
+            "end": 225,
+            "elements": [
+              {
+                "type": "Identifier",
+                "start": 219,
+                "end": 224,
+                "name": "first",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            ],
+            "lazy": true,
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 228,
+            "end": 234,
+            "name": "values",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 237,
+        "end": 305,
+        "declaration": {
+          "type": "FunctionDeclaration",
+          "start": 244,
+          "end": 305,
+          "id": {
+            "type": "Identifier",
+            "start": 253,
+            "end": 257,
+            "name": "pick",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "generator": false,
+          "async": false,
+          "params": [
+            {
+              "type": "ObjectPattern",
+              "start": 258,
+              "end": 282,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 261,
+                  "end": 273,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 261,
+                    "end": 266,
+                    "name": "title",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 268,
+                    "end": 273,
+                    "name": "label",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false,
+                  "optional": false
+                }
+              ],
+              "lazy": true,
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 275,
+                "end": 282,
+                "typeAnnotation": {
+                  "type": "TSTypeReference",
+                  "start": 277,
+                  "end": 282,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 277,
+                    "end": 282,
+                    "name": "Props",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              }
+            }
+          ],
+          "body": {
+            "type": "BlockStatement",
+            "start": 284,
+            "end": 305,
+            "body": [
+              {
+                "type": "ReturnStatement",
+                "start": 290,
+                "end": 303,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 297,
+                  "end": 302,
+                  "name": "label",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                }
+              }
+            ]
+          },
+          "expression": false,
+          "typeParameters": null,
+          "returnType": null,
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

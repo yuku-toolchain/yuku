@@ -1018,11 +1018,13 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sr = comptime slotOf(ast.ArrayPattern, "rest");
         const sdec = comptime slotOf(ast.ArrayPattern, "decorators");
         const sta = comptime slotOf(ast.ArrayPattern, "type_annotation");
+        const mlazy = comptime flagMask(ast.ArrayPattern, "lazy");
         try emit(w,
             \\    case {d}: {{
             \\      const el = nodeArrHoles(f{d}, f0);
             \\      if (f{d} !== NULL) el.push(node(f{d}));
             \\      const r = {{ type: "ArrayPattern", start, end, elements: el }};
+            \\      if (flags & {d}) r.lazy = true;
             \\      if (_isTs) {{
             \\        r.decorators = nodeArr(f{d}, f{d});
             \\        r.optional = !!(flags & {d});
@@ -1031,20 +1033,22 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
             \\      return r;
             \\    }}
         , .{
-            tag,  se,       sr,                                              sr,
-            sdec, sdec + 1, comptime flagMask(ast.ArrayPattern, "optional"), sta,
-            sta,
+            tag,   se,   sr,       sr,
+            mlazy, sdec, sdec + 1, comptime flagMask(ast.ArrayPattern, "optional"),
+            sta,   sta,
         });
     } else if (comptime eql(u8, name, "object_pattern")) {
         const sp = comptime slotOf(ast.ObjectPattern, "properties");
         const sr = comptime slotOf(ast.ObjectPattern, "rest");
         const sdec = comptime slotOf(ast.ObjectPattern, "decorators");
         const sta = comptime slotOf(ast.ObjectPattern, "type_annotation");
+        const mlazy = comptime flagMask(ast.ObjectPattern, "lazy");
         try emit(w,
             \\    case {d}: {{
             \\      const pr = nodeArr(f{d}, f0);
             \\      if (f{d} !== NULL) pr.push(node(f{d}));
             \\      const r = {{ type: "ObjectPattern", start, end, properties: pr }};
+            \\      if (flags & {d}) r.lazy = true;
             \\      if (_isTs) {{
             \\        r.decorators = nodeArr(f{d}, f{d});
             \\        r.optional = !!(flags & {d});
@@ -1053,9 +1057,9 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
             \\      return r;
             \\    }}
         , .{
-            tag,  sp,       sr,                                               sr,
-            sdec, sdec + 1, comptime flagMask(ast.ObjectPattern, "optional"), sta,
-            sta,
+            tag,   sp,   sr,       sr,
+            mlazy, sdec, sdec + 1, comptime flagMask(ast.ObjectPattern, "optional"),
+            sta,   sta,
         });
     } else if (comptime eql(u8, name, "jsx_text")) {
         const sv = comptime slotOf(ast.JSXText, "value");

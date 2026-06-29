@@ -1034,6 +1034,18 @@ fn Printer(comptime cfg: Config) type {
             if (wrap_async) try self.writeByte(')');
             try self.writeStr(" of ");
             try self.emitValue(s.right);
+            if (s.index != .null or s.key != .null) {
+                try self.writeStr("; ");
+                if (s.index != .null) {
+                    try self.writeStr("index ");
+                    try self.emit(s.index);
+                    if (s.key != .null) try self.writeStr("; ");
+                }
+                if (s.key != .null) {
+                    try self.writeStr("key ");
+                    try self.emit(s.key);
+                }
+            }
             try self.writeByte(')');
             try self.space();
             try self.emitStmt(s.body);
@@ -1101,6 +1113,10 @@ fn Printer(comptime cfg: Config) type {
                 try self.space();
                 try self.writeByte('(');
                 try self.emit(c.param);
+                if (c.reset_param != .null) {
+                    try self.writeStr(", ");
+                    try self.emit(c.reset_param);
+                }
                 try self.writeByte(')');
             }
             try self.space();
@@ -1677,6 +1693,7 @@ fn Printer(comptime cfg: Config) type {
         fn emit_array_pattern(self: *Self, p: *const ast.ArrayPattern) Error!void {
             const definite = self.takeDefinite();
             if (comptime !strip_ts) try self.printDecorators(p.decorators);
+            if (p.lazy) try self.writeByte('&');
             try self.writeByte('[');
             const list = self.tree.extra(p.elements);
             for (list, 0..) |x, i| {
@@ -1697,6 +1714,7 @@ fn Printer(comptime cfg: Config) type {
         fn emit_object_pattern(self: *Self, p: *const ast.ObjectPattern) Error!void {
             const definite = self.takeDefinite();
             if (comptime !strip_ts) try self.printDecorators(p.decorators);
+            if (p.lazy) try self.writeByte('&');
             try self.writeByte('{');
             const list = self.tree.extra(p.properties);
             const has_any = list.len > 0 or p.rest != .null;
@@ -2817,6 +2835,20 @@ fn Printer(comptime cfg: Config) type {
             if (e.closing_element != .null) try self.emit(e.closing_element);
         }
 
+        fn emit_jsx_style_element(self: *Self, e: *const ast.JSXStyleElement) Error!void {
+            try self.emit(e.opening_element);
+            if (e.css.len() > 0) {
+                try self.writeString(e.css);
+            } else {
+                for (self.tree.extra(e.children)) |c| try self.emit(c);
+            }
+            if (e.closing_element != .null) try self.emit(e.closing_element);
+        }
+
+        fn emit_style_sheet(self: *Self, s: *const ast.StyleSheet) Error!void {
+            try self.writeString(s.source);
+        }
+
         fn emit_jsx_opening_element(self: *Self, o: *const ast.JSXOpeningElement) Error!void {
             try self.writeByte('<');
             try self.emit(o.name);
@@ -2890,7 +2922,15 @@ fn Printer(comptime cfg: Config) type {
         fn emit_jsx_empty_expression(_: *Self, _: *const ast.JSXEmptyExpression) Error!void {}
 
         fn emit_jsx_text(self: *Self, t: *const ast.JSXText) Error!void {
-            try self.writeString(t.value);
+            const text = self.tree.string(t.value);
+            for (text) |c| {
+                switch (c) {
+                    '&' => try self.writeStr("&amp;"),
+                    '<' => try self.writeStr("&lt;"),
+                    '{' => try self.writeStr("&#123;"),
+                    else => try self.writeByte(c),
+                }
+            }
         }
 
         fn emit_jsx_spread_child(self: *Self, c: *const ast.JSXSpreadChild) Error!void {
@@ -2898,6 +2938,143 @@ fn Printer(comptime cfg: Config) type {
             try self.writeStr("...");
             try self.emit(c.expression);
             try self.writeByte('}');
+        }
+
+        fn emit_jsx_code_block(self: *Self, c: *const ast.JSXCodeBlock) Error!void {
+            try self.writeByte('@');
+            try self.writeByte('{');
+
+            const body = self.tree.extra(c.body);
+            const has_render = c.render != .null;
+            if (body.len > 0 or has_render) {
+                const cur = self.cursor();
+                self.indent_depth += 1;
+                try self.newline();
+                const after_indent = self.mark();
+
+                try self.printStmtList(c.body, false);
+                if (has_render) {
+                    if (body.len > 0) {
+                        try self.flushSemi();
+                        try self.newline();
+                    }
+                    try self.emit(c.render);
+                }
+
+                self.indent_depth -= 1;
+                if (self.mark() == after_indent) {
+                    self.restore(cur);
+                } else {
+                    self.pending_semi = false;
+                    try self.newline();
+                }
+            }
+
+            try self.writeByte('}');
+        }
+
+        fn emit_jsx_if_expression(self: *Self, i: *const ast.JSXIfExpression) Error!void {
+            try self.writeStr("@if");
+            try self.space();
+            try self.writeByte('(');
+            try self.emit(i.@"test");
+            try self.writeByte(')');
+            try self.space();
+            try self.emit(i.consequent);
+
+            if (i.alternate != .null) {
+                try self.space();
+                try self.writeStr("@else ");
+                try self.emit(i.alternate);
+            }
+        }
+
+        fn emit_jsx_for_expression(self: *Self, f: *const ast.JSXForExpression) Error!void {
+            try self.writeByte('@');
+            try self.emit(f.statement);
+
+            if (f.empty != .null) {
+                try self.space();
+                try self.writeStr("@empty ");
+                try self.emit(f.empty);
+            }
+        }
+
+        fn emit_jsx_switch_expression(
+            self: *Self,
+            s: *const ast.JSXSwitchExpression,
+        ) Error!void {
+            const statement = self.nodeData(s.statement).switch_statement;
+
+            try self.writeStr("@switch");
+            try self.space();
+            try self.writeByte('(');
+            try self.emit(statement.discriminant);
+            try self.writeByte(')');
+            try self.space();
+            try self.writeByte('{');
+
+            const cases = self.tree.extra(statement.cases);
+            if (cases.len > 0) {
+                self.indent_depth += 1;
+                for (cases) |case_node| {
+                    try self.newline();
+                    try self.emitTsrxSwitchCase(case_node);
+                }
+                self.indent_depth -= 1;
+                try self.newline();
+            }
+
+            try self.writeByte('}');
+        }
+
+        fn emitTsrxSwitchCase(self: *Self, idx: NodeIndex) Error!void {
+            const case_node = self.nodeData(idx).switch_case;
+            if (case_node.@"test" == .null) {
+                try self.writeStr("@default");
+            } else {
+                try self.writeStr("@case ");
+                try self.emit(case_node.@"test");
+            }
+
+            try self.writeStr(": ");
+            try self.printBlock(case_node.consequent, false);
+        }
+
+        fn emit_jsx_try_expression(self: *Self, t: *const ast.JSXTryExpression) Error!void {
+            const statement = self.nodeData(t.statement).try_statement;
+
+            try self.writeStr("@try ");
+            try self.emit(statement.block);
+
+            if (t.pending != .null) {
+                try self.space();
+                try self.writeStr("@pending ");
+                try self.emit(t.pending);
+            }
+
+            if (statement.handler != .null) {
+                try self.space();
+                try self.emitTsrxCatchClause(statement.handler);
+            }
+        }
+
+        fn emitTsrxCatchClause(self: *Self, idx: NodeIndex) Error!void {
+            const catch_clause = self.nodeData(idx).catch_clause;
+
+            try self.writeStr("@catch");
+            if (catch_clause.param != .null) {
+                try self.space();
+                try self.writeByte('(');
+                try self.emit(catch_clause.param);
+                if (catch_clause.reset_param != .null) {
+                    try self.writeStr(", ");
+                    try self.emit(catch_clause.reset_param);
+                }
+                try self.writeByte(')');
+            }
+            try self.space();
+            try self.emit(catch_clause.body);
         }
     };
 }

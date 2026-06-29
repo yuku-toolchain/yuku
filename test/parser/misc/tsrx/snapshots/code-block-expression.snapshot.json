@@ -1,0 +1,379 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 223,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 62,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 61,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 11,
+              "name": "value",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "JSXCodeBlock",
+              "start": 14,
+              "end": 61,
+              "body": [
+                {
+                  "type": "VariableDeclaration",
+                  "start": 17,
+                  "end": 38,
+                  "kind": "const",
+                  "declarations": [
+                    {
+                      "type": "VariableDeclarator",
+                      "start": 23,
+                      "end": 37,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 23,
+                        "end": 28,
+                        "name": "label",
+                        "decorators": [],
+                        "typeAnnotation": null,
+                        "optional": false
+                      },
+                      "init": {
+                        "type": "Literal",
+                        "start": 31,
+                        "end": 37,
+                        "value": "expr",
+                        "raw": "\"expr\""
+                      },
+                      "definite": false
+                    }
+                  ],
+                  "declare": false
+                }
+              ],
+              "render": {
+                "type": "JSXElement",
+                "start": 39,
+                "end": 59,
+                "openingElement": {
+                  "type": "JSXOpeningElement",
+                  "start": 39,
+                  "end": 45,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 40,
+                    "end": 44,
+                    "name": "span"
+                  },
+                  "attributes": [],
+                  "selfClosing": false,
+                  "typeArguments": null
+                },
+                "children": [
+                  {
+                    "type": "JSXExpressionContainer",
+                    "start": 45,
+                    "end": 52,
+                    "expression": {
+                      "type": "Identifier",
+                      "start": 46,
+                      "end": 51,
+                      "name": "label",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    }
+                  }
+                ],
+                "closingElement": {
+                  "type": "JSXClosingElement",
+                  "start": 52,
+                  "end": 59,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 54,
+                    "end": 58,
+                    "name": "span"
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 64,
+        "end": 195,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 70,
+            "end": 194,
+            "id": {
+              "type": "Identifier",
+              "start": 70,
+              "end": 76,
+              "name": "nested",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 79,
+              "end": 194,
+              "expression": {
+                "type": "JSXElement",
+                "start": 85,
+                "end": 192,
+                "openingElement": {
+                  "type": "JSXOpeningElement",
+                  "start": 85,
+                  "end": 94,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 86,
+                    "end": 93,
+                    "name": "section"
+                  },
+                  "attributes": [],
+                  "selfClosing": false,
+                  "typeArguments": null
+                },
+                "children": [
+                  {
+                    "type": "JSXText",
+                    "start": 94,
+                    "end": 103,
+                    "value": "\n        ",
+                    "raw": "\n        "
+                  },
+                  {
+                    "type": "JSXCodeBlock",
+                    "start": 103,
+                    "end": 177,
+                    "body": [
+                      {
+                        "type": "VariableDeclaration",
+                        "start": 106,
+                        "end": 128,
+                        "kind": "const",
+                        "declarations": [
+                          {
+                            "type": "VariableDeclarator",
+                            "start": 112,
+                            "end": 127,
+                            "id": {
+                              "type": "Identifier",
+                              "start": 112,
+                              "end": 117,
+                              "name": "label",
+                              "decorators": [],
+                              "typeAnnotation": null,
+                              "optional": false
+                            },
+                            "init": {
+                              "type": "Literal",
+                              "start": 120,
+                              "end": 127,
+                              "value": "outer",
+                              "raw": "\"outer\""
+                            },
+                            "definite": false
+                          }
+                        ],
+                        "declare": false
+                      }
+                    ],
+                    "render": {
+                      "type": "JSXCodeBlock",
+                      "start": 129,
+                      "end": 175,
+                      "body": [
+                        {
+                          "type": "VariableDeclaration",
+                          "start": 132,
+                          "end": 152,
+                          "kind": "const",
+                          "declarations": [
+                            {
+                              "type": "VariableDeclarator",
+                              "start": 138,
+                              "end": 151,
+                              "id": {
+                                "type": "Identifier",
+                                "start": 138,
+                                "end": 143,
+                                "name": "inner",
+                                "decorators": [],
+                                "typeAnnotation": null,
+                                "optional": false
+                              },
+                              "init": {
+                                "type": "Identifier",
+                                "start": 146,
+                                "end": 151,
+                                "name": "label",
+                                "decorators": [],
+                                "optional": false,
+                                "typeAnnotation": null
+                              },
+                              "definite": false
+                            }
+                          ],
+                          "declare": false
+                        }
+                      ],
+                      "render": {
+                        "type": "JSXElement",
+                        "start": 153,
+                        "end": 173,
+                        "openingElement": {
+                          "type": "JSXOpeningElement",
+                          "start": 153,
+                          "end": 159,
+                          "name": {
+                            "type": "JSXIdentifier",
+                            "start": 154,
+                            "end": 158,
+                            "name": "span"
+                          },
+                          "attributes": [],
+                          "selfClosing": false,
+                          "typeArguments": null
+                        },
+                        "children": [
+                          {
+                            "type": "JSXExpressionContainer",
+                            "start": 159,
+                            "end": 166,
+                            "expression": {
+                              "type": "Identifier",
+                              "start": 160,
+                              "end": 165,
+                              "name": "inner",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            }
+                          }
+                        ],
+                        "closingElement": {
+                          "type": "JSXClosingElement",
+                          "start": 166,
+                          "end": 173,
+                          "name": {
+                            "type": "JSXIdentifier",
+                            "start": 168,
+                            "end": 172,
+                            "name": "span"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "JSXText",
+                    "start": 177,
+                    "end": 182,
+                    "value": "\n    ",
+                    "raw": "\n    "
+                  }
+                ],
+                "closingElement": {
+                  "type": "JSXClosingElement",
+                  "start": 182,
+                  "end": 192,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 184,
+                    "end": 191,
+                    "name": "section"
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 197,
+        "end": 222,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 206,
+            "end": 211,
+            "local": {
+              "type": "Identifier",
+              "start": 206,
+              "end": 211,
+              "name": "value",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 206,
+              "end": 211,
+              "name": "value",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          },
+          {
+            "type": "ExportSpecifier",
+            "start": 213,
+            "end": 219,
+            "local": {
+              "type": "Identifier",
+              "start": 213,
+              "end": 219,
+              "name": "nested",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 213,
+              "end": 219,
+              "name": "nested",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

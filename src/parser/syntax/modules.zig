@@ -917,16 +917,27 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-// module string
+// module string or TSRX submodule identifier
 fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.tag != .string_literal) {
-        try parser.reportExpected(parser.current_token.span, "Expected module specifier", .{
-            .help = "Module specifiers must be string literals, e.g., './module.js' or 'package'",
+    if (parser.current_token.tag == .string_literal) {
+        return literals.parseStringLiteral(parser);
+    }
+
+    if (parser.tree.isTsrx() and parser.current_token.tag.isIdentifierLike()) {
+        return literals.parseIdentifier(parser);
+    }
+
+    if (parser.current_token.tag.isIdentifierLike()) {
+        try parser.report(parser.current_token.span, "Identifier module specifiers require TSRX", .{
+            .help = "Use a .tsrx file for submodule imports such as import { load } from server.",
         });
         return null;
     }
 
-    return literals.parseStringLiteral(parser);
+    try parser.reportExpected(parser.current_token.span, "Expected module specifier", .{
+        .help = "Module specifiers must be string literals, e.g., './module.js' or 'package'",
+    });
+    return null;
 }
 
 // import attributes with { } or legacy assert { }

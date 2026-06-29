@@ -10,9 +10,19 @@ const variables = @import("variables.zig");
 const grammar = @import("../grammar.zig");
 const statements = @import("statements.zig");
 
+const BodyParser = fn (*Parser) Error!?ast.NodeIndex;
+
 /// https://tc39.es/ecma262/#sec-for-statement
 /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
 pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeIndex {
+    return parseForStatementWithBody(parser, is_for_await, parseNormalForBody);
+}
+
+pub fn parseForStatementWithBody(
+    parser: *Parser,
+    is_for_await: bool,
+    comptime parse_body: BodyParser,
+) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"for");
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'for'
@@ -30,16 +40,21 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
 
         if (!try parser.expect(.left_paren, "Expected '(' after 'for await'", null)) return null;
 
-        return parseForHead(parser, start, true);
+        return parseForHead(parser, start, true, parse_body);
     }
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'for'", null)) return null;
-    return parseForHead(parser, start, is_for_await);
+    return parseForHead(parser, start, is_for_await, parse_body);
 }
 
-fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
+fn parseForHead(
+    parser: *Parser,
+    start: u32,
+    is_for_await: bool,
+    comptime parse_body: BodyParser,
+) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .semicolon) {
-        return parseForStatementRest(parser, start, .null, is_for_await);
+        return parseForStatementRest(parser, start, .null, is_for_await, parse_body);
     }
 
     const decl_start = parser.current_token.span.start;
@@ -55,14 +70,21 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
 
             try parser.advance() orelse return null;
 
-            return parseForWithDeclaration(parser, start, is_for_await, kind, decl_start);
+            return parseForWithDeclaration(
+                parser,
+                start,
+                is_for_await,
+                kind,
+                decl_start,
+                parse_body,
+            );
         },
         .using => {
             const next = parser.peekAhead() orelse return null;
 
             // [+Using] using [no LineTerminator here] ForBinding
             if (next.hasLineTerminatorBefore()) {
-                return parseForWithExpression(parser, start, is_for_await);
+                return parseForWithExpression(parser, start, is_for_await, parse_body);
             }
 
             switch (next.tag) {
@@ -72,7 +94,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                 // by returning null (not a declaration), the caller produces a natural
                 // "expected ';', found '{'" error.
                 .in, .dot, .left_paren, .left_bracket, .left_brace => {
-                    return parseForWithExpression(parser, start, is_for_await);
+                    return parseForWithExpression(parser, start, is_for_await, parse_body);
                 },
                 // `using of` is ambiguous because `of` is a valid identifier:
                 //   `for (using of expr)` -> for-of loop, `using` is the expression
@@ -92,15 +114,29 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                         is_for_await,
                         .using,
                         decl_start,
+                        parse_body,
                     );
 
                     try grammar.expressionToPattern(parser, using_identifier, .assignable);
 
-                    return parseForOfStatementRest(parser, start, using_identifier, is_for_await);
+                    return parseForOfStatementRest(
+                        parser,
+                        start,
+                        using_identifier,
+                        is_for_await,
+                        parse_body,
+                    );
                 },
                 else => {
                     try parser.advance() orelse return null;
-                    return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
+                    return parseForWithDeclaration(
+                        parser,
+                        start,
+                        is_for_await,
+                        .using,
+                        decl_start,
+                        parse_body,
+                    );
                 },
             }
         },
@@ -108,15 +144,22 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             const next = parser.peekAhead() orelse return null;
 
             if (next.tag != .using or next.hasLineTerminatorBefore()) {
-                return parseForWithExpression(parser, start, is_for_await);
+                return parseForWithExpression(parser, start, is_for_await, parse_body);
             }
 
             try parser.advance() orelse return null; // consume 'await'
             try parser.advance() orelse return null; // consume 'using'
 
-            return parseForWithDeclaration(parser, start, is_for_await, .await_using, decl_start);
+            return parseForWithDeclaration(
+                parser,
+                start,
+                is_for_await,
+                .await_using,
+                decl_start,
+                parse_body,
+            );
         },
-        else => return parseForWithExpression(parser, start, is_for_await),
+        else => return parseForWithExpression(parser, start, is_for_await, parse_body),
     }
 }
 
@@ -127,6 +170,7 @@ fn parseForWithDeclaration(
     is_for_await: bool,
     kind: ast.VariableKind,
     decl_start: u32,
+    comptime parse_body: BodyParser,
 ) Error!?ast.NodeIndex {
     const saved_allow_in = parser.context.in;
     parser.context.in = false;
@@ -173,20 +217,25 @@ fn parseForWithDeclaration(
                 .{ .help = "Did you mean to use a for...of statement?" },
             );
         }
-        return parseForInStatementRest(parser, start, decl, is_for_await);
+        return parseForInStatementRest(parser, start, decl, is_for_await, parse_body);
     }
 
     if (parser.current_token.tag == .of) {
-        return parseForOfStatementRest(parser, start, decl, is_for_await);
+        return parseForOfStatementRest(parser, start, decl, is_for_await, parse_body);
     }
 
     if (!try validateRegularForDeclarators(parser, declarators, kind)) return null;
 
-    return parseForStatementRest(parser, start, decl, is_for_await);
+    return parseForStatementRest(parser, start, decl, is_for_await, parse_body);
 }
 
 /// for loop starting with an expression.
-fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
+fn parseForWithExpression(
+    parser: *Parser,
+    start: u32,
+    is_for_await: bool,
+    comptime parse_body: BodyParser,
+) Error!?ast.NodeIndex {
     const saved_allow_in = parser.context.in;
     parser.context.in = false;
 
@@ -204,7 +253,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     if (parser.current_token.tag == .in) {
         try grammar.expressionToPattern(parser, expr, .assignable);
 
-        return parseForInStatementRest(parser, start, expr, is_for_await);
+        return parseForInStatementRest(parser, start, expr, is_for_await, parse_body);
     }
 
     if (parser.current_token.tag == .of) {
@@ -220,10 +269,10 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
 
         try grammar.expressionToPattern(parser, expr, .assignable);
 
-        return parseForOfStatementRest(parser, start, expr, is_for_await);
+        return parseForOfStatementRest(parser, start, expr, is_for_await, parse_body);
     }
 
-    return parseForStatementRest(parser, start, expr, is_for_await);
+    return parseForStatementRest(parser, start, expr, is_for_await, parse_body);
 }
 
 /// for(init; test; update) body
@@ -232,6 +281,7 @@ fn parseForStatementRest(
     start: u32,
     init: ast.NodeIndex,
     is_for_await: bool,
+    comptime parse_body: BodyParser,
 ) Error!?ast.NodeIndex {
     if (is_for_await) {
         try parser.report(
@@ -264,10 +314,7 @@ fn parseForStatementRest(
         return null;
     }
 
-    const body = try statements.parseStatement(
-        parser,
-        .{ .can_be_single_statement_context = true },
-    ) orelse return null;
+    const body = try parse_body(parser) orelse return null;
 
     return try parser.tree.addNode(.{
         .for_statement = .{
@@ -285,6 +332,7 @@ fn parseForInStatementRest(
     start: u32,
     left: ast.NodeIndex,
     is_for_await: bool,
+    comptime parse_body: BodyParser,
 ) Error!?ast.NodeIndex {
     if (is_for_await) {
         try parser.report(
@@ -302,10 +350,7 @@ fn parseForInStatementRest(
         return null;
     }
 
-    const body = try statements.parseStatement(
-        parser,
-        .{ .can_be_single_statement_context = true },
-    ) orelse return null;
+    const body = try parse_body(parser) orelse return null;
 
     return try parser.tree.addNode(.{
         .for_in_statement = .{
@@ -322,20 +367,48 @@ fn parseForOfStatementRest(
     start: u32,
     left: ast.NodeIndex,
     is_for_await: bool,
+    comptime parse_body: BodyParser,
 ) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'of'
 
     const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
 
+    var index: ast.NodeIndex = .null;
+    var key: ast.NodeIndex = .null;
+    if (parser.tree.isTsrx() and parser.current_token.tag == .semicolon) {
+        try parser.advance() orelse return null; // consume ';'
+
+        if (isContextualIdentifier(parser, "index")) {
+            try parser.advance() orelse return null; // consume 'index'
+            index = try literals.parseIdentifier(parser) orelse return null;
+
+            if (parser.current_token.tag == .semicolon) {
+                try parser.advance() orelse return null; // consume ';'
+            }
+        }
+
+        if (isContextualIdentifier(parser, "key")) {
+            try parser.advance() orelse return null; // consume 'key'
+            key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+                return null;
+        }
+
+        if (isContextualIdentifier(parser, "index")) {
+            try parser.report(
+                parser.current_token.span,
+                "'index' must come before 'key' in a TSRX for-of header",
+                .{},
+            );
+            return null;
+        }
+    }
+
     if (!try parser.expect(.right_paren, "Expected ')' after for-of expression", null)) {
         return null;
     }
 
-    const body = try statements.parseStatement(
-        parser,
-        .{ .can_be_single_statement_context = true },
-    ) orelse return null;
+    const body = try parse_body(parser) orelse return null;
 
     return try parser.tree.addNode(.{
         .for_of_statement = .{
@@ -343,8 +416,17 @@ fn parseForOfStatementRest(
             .right = right,
             .body = body,
             .await = is_for_await,
+            .index = index,
+            .key = key,
         },
     }, .{ .start = start, .end = parser.tree.span(body).end });
+}
+
+fn parseNormalForBody(parser: *Parser) Error!?ast.NodeIndex {
+    return statements.parseStatement(
+        parser,
+        .{ .can_be_single_statement_context = true },
+    );
 }
 
 fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
@@ -353,6 +435,13 @@ fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
     // compare raw source text, escaped `\u0061sync` should not match
     const span = parser.tree.span(expr);
     return std.mem.eql(u8, parser.source[span.start..span.end], "async");
+}
+
+fn isContextualIdentifier(parser: *const Parser, expected: []const u8) bool {
+    if (parser.current_token.tag != .identifier) return false;
+
+    const span = parser.current_token.span;
+    return std.mem.eql(u8, parser.source[span.start..span.end], expected);
 }
 
 fn validateRegularForDeclarators(

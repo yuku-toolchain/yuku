@@ -1,0 +1,262 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 193,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSModuleDeclaration",
+        "start": 0,
+        "end": 73,
+        "id": {
+          "type": "Identifier",
+          "start": 7,
+          "end": 13,
+          "name": "server",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "module",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 14,
+          "end": 73,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 20,
+              "end": 71,
+              "declaration": {
+                "type": "FunctionDeclaration",
+                "start": 27,
+                "end": 71,
+                "id": {
+                  "type": "Identifier",
+                  "start": 36,
+                  "end": 40,
+                  "name": "load",
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false
+                },
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 43,
+                  "end": 71,
+                  "body": [
+                    {
+                      "type": "ReturnStatement",
+                      "start": 53,
+                      "end": 65,
+                      "argument": {
+                        "type": "Literal",
+                        "start": 60,
+                        "end": 64,
+                        "value": "ok",
+                        "raw": "\"ok\""
+                      }
+                    }
+                  ]
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 75,
+        "end": 103,
+        "specifiers": [
+          {
+            "type": "ImportSpecifier",
+            "start": 84,
+            "end": 88,
+            "imported": {
+              "type": "Identifier",
+              "start": 84,
+              "end": 88,
+              "name": "load",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "local": {
+              "type": "Identifier",
+              "start": 84,
+              "end": 88,
+              "name": "load",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "importKind": "value"
+          }
+        ],
+        "source": {
+          "type": "Identifier",
+          "start": 96,
+          "end": 102,
+          "name": "server",
+          "decorators": [],
+          "optional": false,
+          "typeAnnotation": null
+        },
+        "attributes": [],
+        "phase": null,
+        "importKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 105,
+        "end": 192,
+        "declaration": {
+          "type": "FunctionDeclaration",
+          "start": 112,
+          "end": 192,
+          "id": {
+            "type": "Identifier",
+            "start": 121,
+            "end": 125,
+            "name": "View",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "generator": false,
+          "async": false,
+          "params": [],
+          "body": {
+            "type": "JSXCodeBlock",
+            "start": 137,
+            "end": 192,
+            "body": [
+              {
+                "type": "VariableDeclaration",
+                "start": 144,
+                "end": 165,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 150,
+                    "end": 164,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 150,
+                      "end": 155,
+                      "name": "value",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "CallExpression",
+                      "start": 158,
+                      "end": 164,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 158,
+                        "end": 162,
+                        "name": "load",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "arguments": [],
+                      "optional": false,
+                      "typeArguments": null
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              }
+            ],
+            "render": {
+              "type": "JSXElement",
+              "start": 170,
+              "end": 190,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 170,
+                "end": 176,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 171,
+                  "end": 175,
+                  "name": "span"
+                },
+                "attributes": [],
+                "selfClosing": false,
+                "typeArguments": null
+              },
+              "children": [
+                {
+                  "type": "JSXExpressionContainer",
+                  "start": 176,
+                  "end": 183,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 177,
+                    "end": 182,
+                    "name": "value",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                }
+              ],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 183,
+                "end": 190,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 185,
+                  "end": 189,
+                  "name": "span"
+                }
+              }
+            }
+          },
+          "expression": false,
+          "typeParameters": null,
+          "returnType": {
+            "type": "TSTypeAnnotation",
+            "start": 127,
+            "end": 136,
+            "typeAnnotation": {
+              "type": "TSUnknownKeyword",
+              "start": 129,
+              "end": 136
+            }
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
