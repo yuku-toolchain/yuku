@@ -5,11 +5,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const codspeed_dep = b.dependency("codspeed_zig", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
     const util_module = b.createModule(.{
         .root_source_file = b.path("src/util/root.zig"),
         .target = target,
@@ -33,28 +28,6 @@ pub fn build(b: *std.Build) void {
 
     parser_module.addImport("util", util_module);
     parser_module.addImport("codegen_options", codegen_options.createModule());
-
-    const profiler_module = b.createModule(.{
-        .root_source_file = b.path("profiler/profile.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    profiler_module.addImport("parser", parser_module);
-
-    profiler_module.addImport("codspeed", codspeed_dep.module("codspeed"));
-
-    const profiler_exe = b.addExecutable(.{
-        .name = "profiler",
-        .root_module = profiler_module,
-    });
-
-    b.installArtifact(profiler_exe);
-
-    const profile_cmd = b.addRunArtifact(profiler_exe);
-
-    const profile_step = b.step("profile", "Run profiler");
-    profile_step.dependOn(&profile_cmd.step);
 
     const gen_unicode_id_table = b.addExecutable(.{
         .name = "gen-unicode-id",

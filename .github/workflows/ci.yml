@@ -82,8 +82,7 @@ jobs:
         with:
           path: |
             test/parser/suite
-            profiler/files
-          key: test-data-v1-${{ hashFiles('test/parser/load.ts', 'profiler/load-parser-bench-files.ts') }}
+          key: test-data-v1-${{ hashFiles('test/parser/load.ts') }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile

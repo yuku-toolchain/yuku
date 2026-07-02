@@ -2,16 +2,10 @@
     .name = .yuku,
     .version = "0.3.0",
     .dependencies = .{
-        // dev dependencies
-        .codspeed_zig = .{
-            .url = "git+https://github.com/arshad-yaseen/codspeed-zig/?ref=HEAD#93c263560a19fb99068c321017d1a1e404c73258",
-            .hash = "codspeed_zig-0.2.0-cdqftluuHgBRVSbKDUlAmfFb_pLRmgi7ytEQmcspW06E",
-        },
         .napi_zig = .{
             .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#3d0fcf5b033a44b2947b1dcb86e197fb9a99f3fe",
             .hash = "napi_zig-0.2.0-XRkY0fbeAQD5OpDn6XWK-gzSf40zIuvkvkiq7Gej6KIL",
         },
-        //
     },
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
     .minimum_zig_version = "0.16.0",
