@@ -115,13 +115,12 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 ### Naming
 
 - **Get the nouns and verbs just right.** Great names capture what a thing is or does and reveal that you understand the domain. Take time to find names where the whole exceeds the sum of the parts.
-- Use `snake_case` for functions, variables, and files. The underscore is the closest thing programmers have to a space, and it encourages descriptive names.
 - **Do not abbreviate** variable names, except primitive integers used in sorts or matrix calculations. Use long-form flags in scripts (`--force`, not `-f`). Single-letter flags are for interactive use.
 - Use proper capitalization for acronyms (`ASTNode`, not `AstNode`; `JSXElement`, not `JsxElement`).
 - **Add units or qualifiers** to variable names and put them last, sorted by descending significance. Prefer `latency_ms_max` over `max_latency_ms`. This lines up nicely when `latency_ms_min` is added and groups related variables together.
 - **Infuse names with meaning.** `allocator: Allocator` is fine, but `gpa: Allocator` and `arena: Allocator` are excellent: they tell the reader whether `deinit` is needed.
 - **Match character lengths for related names.** `source` and `target` align better than `src` and `dest`, and downstream variables like `source_offset` and `target_offset` then line up cleanly in calculations.
-- When a function calls a helper, **prefix the helper with the caller's name** to show call history: `parse_statement()` and `parse_statement_body()`.
+- When a function calls a helper, **prefix the helper with the caller's name** to show call history: `parseStatement()` and `parseStatementBody()`.
 - **Callbacks go last** in parameter lists. This mirrors control flow, since callbacks are also invoked last.
 - **Order matters for readability.** Files are read top-down, so put important things first. `main` goes first. For structs: fields, then types, then methods.
 
