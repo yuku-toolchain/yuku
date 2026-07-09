@@ -54,7 +54,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update npm
-        run: npm install -g npm@latest
+        # Pin to npm 11.x: npm 12.0.0 fails provenance publishing with
+        # "Cannot find module 'sigstore'" because the module isn't bundled.
+        # https://github.com/npm/cli/issues/9722
+        run: npm install -g npm@11
 
       - name: Publish packages to npm
         run: bun napi-zig publish
