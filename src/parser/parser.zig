@@ -71,9 +71,9 @@ pub const TsContext = packed struct {
     /// trailing `?` after a type does not start a new conditional.
     disallow_conditional_types: bool = false,
     /// a speculatively parsed arrow with a return type must be followed
-    /// by an outer `:` to commit. set to `false` only by the conditional-
-    /// expression's consequent slot, where a `(x): T => ...` arrow would
-    /// otherwise eat the ternary `:`. read by `tryParseArrow` in ts/types.zig.
+    /// by an outer `:` to commit. set to `false` only while the conditional
+    /// expression re-parses its consequent after a `(x): T => ...` arrow ate
+    /// the ternary `:`. read by `tryParseArrow` in ts/arrows.zig.
     allow_arrow_return_type: bool = true,
 };
 

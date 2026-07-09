@@ -1,10 +1,11 @@
 test/parser/misc/ts
 ===================
-Passed:       31/31 (100.00%)
+Passed:       34/34 (100.00%)
 Failed:       0
-AST mismatch: 0/31
+AST mismatch: 0/34
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
+✓ test/parser/misc/ts/arrow-return-type-ternary-colon-steal.ts
 ✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
 ✓ test/parser/misc/ts/assignment-target-ts-assertions.ts
 error: Invalid assignment target
@@ -129,3 +130,5 @@ error: Identifier 'T7' has already been declared
 ✓ test/parser/misc/ts/redeclare-merge-namespace.ts
 ✓ test/parser/misc/ts/redeclare-merge-overloads.ts
 ✓ test/parser/misc/ts/redeclare-type-parameter-scope.ts
+✓ test/parser/misc/ts/typed-arrow-predicate-in-ternary-jsx.module.tsx
+✓ test/parser/misc/ts/typed-arrow-predicate-in-ternary.ts

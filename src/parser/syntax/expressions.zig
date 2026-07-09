@@ -933,17 +933,28 @@ fn parseConditionalExpression(
     try parser.advance() orelse return null; // consume '?'
 
     // ConditionalExpression[?In]: ... ? AssignmentExpression[+In] : AssignmentExpression[?In]
-    // consequent gets [+In]: `in` is always allowed, and ts arrows with a
-    // return type must defer to the ternary `:` when they would eat it.
+    // consequent gets [+In]: `in` is always allowed.
     const saved_allow_in = parser.context.in;
-    const saved_allow_arrow_return_type = parser.ts_context.allow_arrow_return_type;
     parser.context.in = true;
-    parser.ts_context.allow_arrow_return_type = false;
 
-    const consequent = try parseExpression(parser, precedence, .{}) orelse return null;
+    // a ts arrow return type (`(a): T => b`) can eat the ternary `:`. parse
+    // permissively, and only if the `:` went missing rewind and re-parse with
+    // return types restricted so the arrow yields it (see `tryParseArrow`).
+    const consequent = if (!parser.tree.isTs())
+        try parseExpression(parser, precedence, .{}) orelse return null
+    else consequent: {
+        const before = parser.checkpoint();
+        const permissive = try parseExpression(parser, precedence, .{}) orelse return null;
+        if (parser.current_token.tag == .colon) break :consequent permissive;
+
+        parser.rewind(before);
+        const saved_return_type = parser.ts_context.allow_arrow_return_type;
+        parser.ts_context.allow_arrow_return_type = false;
+        defer parser.ts_context.allow_arrow_return_type = saved_return_type;
+        break :consequent try parseExpression(parser, precedence, .{}) orelse return null;
+    };
 
     parser.context.in = saved_allow_in;
-    parser.ts_context.allow_arrow_return_type = saved_allow_arrow_return_type;
 
     if (!try parser.expect(
         .colon,
