@@ -9,7 +9,7 @@ export const CORPUS_DIRS = [
   "test/parser/suite/ts/pass",
 ];
 
-const CORPUS_GLOB = "**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}";
+const CORPUS_GLOB = "**/*.{js,jsx,ts,tsx,tsrx,mjs,cjs,mts,cts}";
 
 export interface CorpusFile {
   path: string;

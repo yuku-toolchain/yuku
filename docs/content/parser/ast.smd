@@ -46,7 +46,7 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the enti
 | `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints                              |
 | `source`      | `[]const u8`            | Original source text                                       |
 | `source_type` | `SourceType`            | `.script` or `.module`                                     |
-| `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                    |
+| `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts`, or `.tsrx`           |
 
 Everything else is reached through methods:
 
@@ -57,8 +57,8 @@ tree.extra(range)        // []const NodeIndex for an IndexRange
 tree.string(handle)      // []const u8 for a String handle
 tree.commentsOf(idx)     // []const AttachedComment attached to the node at idx
 
-tree.isTs()              // language is .ts, .tsx, or .dts
-tree.isJsx()             // language is .jsx or .tsx
+tree.isTs()              // language is .ts, .tsx, .dts, or .tsrx
+tree.isJsx()             // language is .jsx, .tsx, or .tsrx
 tree.isModule()          // source_type is .module
 tree.hasErrors()         // any diagnostic with severity .error
 ```
@@ -364,6 +364,9 @@ const foo = bar.baz;
 | `formal_parameters`    | `(a, b = 1, ...rest)`           | The parameter list of a function.                                                  |
 | `formal_parameter`     | a single parameter slot         | A single parameter slot wrapping a binding pattern.                                |
 
+In `.tsrx` trees, `&{...}` and `&[...]` set `lazy = true` on the object or array
+pattern node.
+
 ### [Functions]($section.id('functions'))
 
 ```zig
@@ -374,7 +377,7 @@ pub const Function = struct {
     async: bool,           // true for async function
     declare: bool,         // true for declare function
     params: NodeIndex,     // formal_parameters
-    body: NodeIndex,       // function_body (.null for TS overloads / abstract)
+    body: NodeIndex,       // function_body, jsx_code_block, or .null
     type_parameters: NodeIndex,  // ts_type_parameter_declaration or .null
     return_type: NodeIndex,      // ts_type_annotation or .null
 };
@@ -383,7 +386,7 @@ pub const Function = struct {
 | Tag                         | Description                                                                    |
 | --------------------------- | ------------------------------------------------------------------------------ |
 | `function`                  | Every named and anonymous function form, including ambient and body-less ones. |
-| `function_body`             | The braced body of a function.                                                 |
+| `function_body`             | The braced body of a function. `.tsrx` functions may use `jsx_code_block`.     |
 | `arrow_function_expression` | An arrow function, with either an expression or a block body.                  |
 
 ### [Classes]($section.id('classes'))
@@ -429,7 +432,7 @@ pub const Class = struct {
 
 ### [JSX]($section.id('jsx'))
 
-JSX nodes are only present in `.jsx` and `.tsx` trees.
+JSX nodes are only present in `.jsx`, `.tsx`, and `.tsrx` trees.
 
 | Tag                        | Syntax                      | Description                                              |
 | -------------------------- | --------------------------- | -------------------------------------------------------- |
@@ -448,14 +451,19 @@ JSX nodes are only present in `.jsx` and `.tsx` trees.
 | `jsx_empty_expression`     | `{}`                        | The empty `{}` placeholder inside a JSX expression slot. |
 | `jsx_text`                 | text content between tags   | A span of raw text inside a JSX element or fragment.     |
 | `jsx_spread_child`         | `{...children}`             | A spread child inside a JSX element.                     |
+| `jsx_code_block`           | `@{ statements }`           | A TSRX statement block inside JSX children.              |
 
-A JSX tag name (the `name` field on `jsx_opening_element`, `jsx_closing_element`, and one form of `jsx_attribute`) is one of `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`.
+A JSX tag name is one of `jsx_identifier`, `jsx_namespaced_name`,
+`jsx_member_expression`, or a `jsx_expression_container` dynamic tag in `.tsrx`.
 
-A JSX child (entries in the `children` list on `jsx_element` and `jsx_fragment`) is one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
+A JSX child, which is an entry in the `children` list on `jsx_element` and
+`jsx_fragment`, is one of `jsx_text`, `jsx_expression_container`,
+`jsx_spread_child`, `jsx_element`, `jsx_fragment`, or a `.tsrx`
+`jsx_code_block`.
 
 ## [TypeScript]($section.id('typescript'))
 
-TypeScript nodes are present in `.ts`, `.tsx`, and `.dts` trees.
+TypeScript nodes are present in `.ts`, `.tsx`, `.dts`, and `.tsrx` trees.
 
 ### [Type wrapper]($section.id('type-wrapper'))
 
@@ -604,7 +612,7 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | ----------------------------- | ------------------ | --------------------------------------------------------- |
 | `ts_as_expression`            | `expr as T`        | A postfix `as` type assertion.                            |
 | `ts_satisfies_expression`     | `expr satisfies T` | A postfix `satisfies` constraint check.                   |
-| `ts_type_assertion`           | `<T>expr`          | A prefix `<T>` type assertion. Forbidden in `.tsx`.       |
+| `ts_type_assertion`           | `<T>expr`          | A prefix `<T>` type assertion. Forbidden in `.tsx` and `.tsrx`. |
 | `ts_non_null_expression`      | `expr!`            | A postfix non-null assertion.                             |
 | `ts_instantiation_expression` | `expr<T>`          | A type instantiation expression without call parentheses. |
 

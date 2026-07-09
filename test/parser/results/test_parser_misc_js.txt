@@ -12,7 +12,7 @@ error: Unexpected '=>'
    |                      ^^^^^
  2 | () => {}
    | ^^
- 3 | 
+ 3 |
    |
    = help: '=>' is only valid after a single identifier or a parenthesized parameter list
 
@@ -29,7 +29,7 @@ error: The left-hand side of '**' cannot be an unparenthesized await expression
    |
  1 | await promise ** 2;
    | ^^^^^^^^^^^^^
- 2 | 
+ 2 |
    |
    = help: Add parentheses to make precedence explicit, for example `(await x) ** y`.
 
@@ -83,7 +83,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
  1 | export default using resource = Bun;
    |                      ^^^^^^^^
- 2 | 
+ 2 |
    |
    = help: Try inserting a semicolon here
 
@@ -103,7 +103,7 @@ error: Expected ';' after for-loop init, but found 'id'
  1 | for (using
  2 | id = value;;) {
    | ^^
- 3 | 
+ 3 |
    |
 
 ✓ test/parser/misc/js/hex-literal-with-separator.js
@@ -113,7 +113,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  2 | import value from "pkg"
  3 | assert { type: "json" }
    |        ^
- 4 | 
+ 4 |
    |
    = help: Try inserting a semicolon here
 
@@ -128,7 +128,7 @@ error: Identifier cannot immediately follow a numeric literal
    |
  1 | 012_7
    | ^^^
- 2 | 
+ 2 |
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -139,7 +139,7 @@ error: Tagged template expressions are not permitted in an optional chain
    |
  1 | tagFunction?.pass``;
    |                  ^^
- 2 | 
+ 2 |
    |
    = help: Remove the optional chaining operator '?.' before the template literal or add parentheses.
 
@@ -150,7 +150,7 @@ error: Expected declaration after 'export', but found 'using'
    |
  1 | export using resource = Bun;
    |        ^^^^^
- 2 | 
+ 2 |
    |
 
 ✓ test/parser/misc/js/using-var.js
@@ -159,7 +159,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
  1 |  function *a() { (b) => { yield cool }; }
    |                                 ^^^^
- 2 | 
+ 2 |
    |
    = help: Try inserting a semicolon here
 

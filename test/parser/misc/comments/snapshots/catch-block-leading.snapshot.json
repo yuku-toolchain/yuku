@@ -45,6 +45,7 @@
             "end": 23,
             "name": "e"
           },
+          "resetParam": null,
           "body": {
             "type": "BlockStatement",
             "start": 25,

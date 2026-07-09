@@ -8,6 +8,8 @@ const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const extensions = @import("extensions.zig");
 const ts = @import("ts/types.zig");
+const tsrx = @import("tsrx/root.zig");
+const tsrx_template = @import("tsrx/template.zig");
 
 const ParseFunctionOpts = struct {
     is_async: bool = false,
@@ -119,7 +121,8 @@ pub fn parseFunction(
 
     // function expressions always carry a body, only declarations obey ambient rules.
     const is_ambient_declaration = parser.ts_context.ambient and !is_function_expression;
-    if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
+    const has_tsrx_body = tsrx.isCodeBlockStart(parser);
+    if (is_ambient_declaration and (parser.current_token.tag == .left_brace or has_tsrx_body)) {
         try parser.report(
             parser.current_token.span,
             "An implementation cannot be declared in ambient contexts",
@@ -130,7 +133,8 @@ pub fn parseFunction(
 
     // ts ambient declarations and overload signatures are body-less.
     const has_body = !is_ambient_declaration and
-        (!is_ts or is_function_expression or parser.current_token.tag == .left_brace);
+        (!is_ts or is_function_expression or parser.current_token.tag == .left_brace or
+            has_tsrx_body);
     const body: ast.NodeIndex = if (has_body)
         try parseFunctionBody(parser) orelse .null
     else
@@ -187,6 +191,14 @@ pub fn parseFunction(
 }
 
 pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
+    const saved_allow_return_statement = parser.context.@"return";
+    parser.context.@"return" = true;
+    defer {
+        parser.context.@"return" = saved_allow_return_statement;
+    }
+
+    if (tsrx.isCodeBlockStart(parser)) return tsrx_template.parseCodeBlock(parser);
+
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(
@@ -194,14 +206,6 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Expected '{' to start function body",
         "Function bodies must be enclosed in braces: function name() { ... }",
     )) return null;
-
-    const saved_allow_return_statement = parser.context.@"return";
-
-    parser.context.@"return" = true;
-
-    defer {
-        parser.context.@"return" = saved_allow_return_statement;
-    }
 
     const body = try parser.parseBody(.right_brace, .function);
 

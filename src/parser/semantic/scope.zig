@@ -56,11 +56,19 @@ pub const Scope = struct {
         /// TS namespace body. Acts as a var-hoist target so vars
         /// declared inside don't escape to the surrounding scope.
         ts_module,
+        /// TSRX code block scope for `@{ ... }`.
+        tsrx_code_block,
 
         /// Returns whether `var` declarations hoist to this scope kind.
         pub fn isHoistTarget(kind: Kind) bool {
             return switch (kind) {
-                .global, .module, .function, .static_block, .ts_module => true,
+                .global,
+                .module,
+                .function,
+                .static_block,
+                .ts_module,
+                .tsrx_code_block,
+                => true,
                 else => false,
             };
         }
@@ -253,6 +261,7 @@ pub const ScopeTracker = struct {
             .ts_conditional_type,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
+            .jsx_code_block => try self.pushScope(.tsrx_code_block, index, self.inheritStrictFlag()),
             .class => |cls| {
                 // section 15.7.14: classes are always strict mode.
                 const flags = Scope.Flags{ .strict = true };
@@ -351,6 +360,7 @@ pub const ScopeTracker = struct {
             .ts_index_signature,
             .ts_mapped_type,
             .ts_conditional_type,
+            .jsx_code_block,
             => self.popScope(),
             .block_statement => {
                 // catch body blocks share the catch scope (Section 14.15.2)

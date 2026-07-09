@@ -24,6 +24,8 @@ const patterns = @import("patterns.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
 const ts = @import("ts/types.zig");
+const tsrx = @import("tsrx/root.zig");
+const tsrx_template = @import("tsrx/template.zig");
 
 const ParseExpressionOpts = struct {
     /// whether we are parsing this expression in a cover context.
@@ -117,9 +119,23 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     if (tag == .at) {
+        if (tsrx.isCodeBlockStart(parser)) return tsrx_template.parseCodeBlock(parser);
+        if (tsrx.isControlFlowDirectiveStart(parser)) return tsrx_template.parseControlFlowExpression(parser);
+
         const start = parser.current_token.span.start;
         const decorators = try extensions.parseDecorators(parser) orelse return null;
         return class.parseClassDecorated(parser, .{ .is_expression = true }, start, decorators);
+    }
+
+    if (tag == .bitwise_and and patterns.isLazyPatternStart(parser)) {
+        if (parser.tree.isTsrx()) return parseLazyAssignmentPattern(parser);
+
+        try parser.report(
+            parser.current_token.span,
+            "Lazy destructuring assignments are only enabled in TSRX files",
+            .{ .help = "Use a .tsrx file or remove the '&' lazy-pattern marker." },
+        );
+        return null;
     }
 
     if (tag.isUnaryOperator()) {
@@ -162,6 +178,33 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     return parsePrimaryExpression(parser, opts);
+}
+
+fn parseLazyAssignmentPattern(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .bitwise_and);
+    std.debug.assert(patterns.isLazyPatternStart(parser));
+
+    const ampersand = parser.current_token;
+    try parser.advance() orelse return null;
+
+    const left = switch (parser.current_token.tag) {
+        .left_bracket => try parseArrayExpression(parser, true) orelse return null,
+        .left_brace => try parseObjectExpression(parser, true) orelse return null,
+        else => unreachable,
+    };
+
+    try grammar.expressionToPattern(parser, left, .assignable);
+    patterns.markLazyPattern(parser, left, ampersand.span.start);
+
+    if (parser.current_token.tag != .assign) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '=' after lazy destructuring assignment pattern",
+            .{ .help = "Lazy destructuring at statement level must assign from a value." },
+        );
+    }
+
+    return left;
 }
 
 fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {

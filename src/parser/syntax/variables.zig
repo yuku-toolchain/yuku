@@ -203,6 +203,22 @@ pub fn canStartBinding(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
+fn canStartLazyBinding(parser: *Parser, first: TokenTag) bool {
+    if (!parser.tree.isTsrx()) return false;
+    if (first != .bitwise_and) return false;
+
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    const ampersand = peek.next() orelse return false;
+    std.debug.assert(ampersand.tag == .bitwise_and);
+
+    const open = peek.next() orelse return false;
+    if (ampersand.span.end != open.span.start) return false;
+
+    return open.tag == .left_brace or open.tag == .left_bracket;
+}
+
 /// Determines if 'let' should be parsed as an identifier rather than a variable
 /// declaration keyword.
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
@@ -214,6 +230,8 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     if (next.tag == .semicolon) {
         return true;
     }
+
+    if (canStartLazyBinding(parser, next.tag)) return false;
 
     // in single-statement contexts (eg, if/while bodies), parse `let` as an identifier
     // when the next token cannot start a lexical binding.

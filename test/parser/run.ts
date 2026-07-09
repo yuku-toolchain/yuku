@@ -70,6 +70,14 @@ const suites: TestSuite[] = [
     options: { semanticErrors: true },
   },
   {
+    path: `${MISC_DIR}/tsrx`,
+    expect: "snapshot",
+    lang: ["tsrx"],
+    recursive: false,
+    autoSnapshot: true,
+    options: { semanticErrors: true },
+  },
+  {
     path: `${MISC_DIR}/js/preserve-parens-disabled`,
     expect: "snapshot",
     lang: ["js"],

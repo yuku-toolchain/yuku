@@ -323,7 +323,8 @@ export function formatDiagnostics(
       }
       prev = ln;
 
-      output.push(lineGutter(ln) + expandTabs(sourceLines[ln] ?? ""));
+      const sourceLine = expandTabs(sourceLines[ln] ?? "");
+      output.push(sourceLine.length > 0 ? lineGutter(ln) + sourceLine : `${pad(ln + 1)} |`);
 
       const lineM = markersByLine.get(ln);
       if (lineM && lineM.length > 0) {

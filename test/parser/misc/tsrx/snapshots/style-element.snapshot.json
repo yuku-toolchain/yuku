@@ -1,0 +1,439 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 576,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 356,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 355,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 10,
+              "name": "view",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 13,
+              "end": 355,
+              "expression": {
+                "type": "JSXElement",
+                "start": 19,
+                "end": 353,
+                "openingElement": {
+                  "type": "JSXOpeningElement",
+                  "start": 19,
+                  "end": 28,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 20,
+                    "end": 27,
+                    "name": "section"
+                  },
+                  "attributes": [],
+                  "selfClosing": false,
+                  "typeArguments": null
+                },
+                "children": [
+                  {
+                    "type": "JSXText",
+                    "start": 28,
+                    "end": 37,
+                    "value": "\n        ",
+                    "raw": "\n        "
+                  },
+                  {
+                    "type": "JSXStyleElement",
+                    "start": 37,
+                    "end": 286,
+                    "openingElement": {
+                      "type": "JSXOpeningElement",
+                      "start": 37,
+                      "end": 44,
+                      "name": {
+                        "type": "JSXIdentifier",
+                        "start": 38,
+                        "end": 43,
+                        "name": "style"
+                      },
+                      "attributes": [],
+                      "selfClosing": false,
+                      "typeArguments": null
+                    },
+                    "children": [
+                      {
+                        "type": "StyleSheet",
+                        "start": 44,
+                        "end": 278,
+                        "source": "\n            .card {\n                color: red;\n            }\n\n            /* stays in css */\n            @media (min-width: 40rem) {\n                .card {\n                    display: grid;\n                }\n            }\n        "
+                      }
+                    ],
+                    "closingElement": {
+                      "type": "JSXClosingElement",
+                      "start": 278,
+                      "end": 286,
+                      "name": {
+                        "type": "JSXIdentifier",
+                        "start": 280,
+                        "end": 285,
+                        "name": "style"
+                      }
+                    },
+                    "css": "\n            .card {\n                color: red;\n            }\n\n            /* stays in css */\n            @media (min-width: 40rem) {\n                .card {\n                    display: grid;\n                }\n            }\n        "
+                  },
+                  {
+                    "type": "JSXText",
+                    "start": 286,
+                    "end": 295,
+                    "value": "\n        ",
+                    "raw": "\n        "
+                  },
+                  {
+                    "type": "JSXElement",
+                    "start": 295,
+                    "end": 338,
+                    "openingElement": {
+                      "type": "JSXOpeningElement",
+                      "start": 295,
+                      "end": 321,
+                      "name": {
+                        "type": "JSXIdentifier",
+                        "start": 296,
+                        "end": 303,
+                        "name": "article"
+                      },
+                      "attributes": [
+                        {
+                          "type": "JSXAttribute",
+                          "start": 304,
+                          "end": 320,
+                          "name": {
+                            "type": "JSXIdentifier",
+                            "start": 304,
+                            "end": 313,
+                            "name": "className"
+                          },
+                          "value": {
+                            "type": "Literal",
+                            "start": 314,
+                            "end": 320,
+                            "value": "card",
+                            "raw": "\"card\""
+                          }
+                        }
+                      ],
+                      "selfClosing": false,
+                      "typeArguments": null
+                    },
+                    "children": [
+                      {
+                        "type": "JSXText",
+                        "start": 321,
+                        "end": 328,
+                        "value": "content",
+                        "raw": "content"
+                      }
+                    ],
+                    "closingElement": {
+                      "type": "JSXClosingElement",
+                      "start": 328,
+                      "end": 338,
+                      "name": {
+                        "type": "JSXIdentifier",
+                        "start": 330,
+                        "end": 337,
+                        "name": "article"
+                      }
+                    }
+                  },
+                  {
+                    "type": "JSXText",
+                    "start": 338,
+                    "end": 343,
+                    "value": "\n    ",
+                    "raw": "\n    "
+                  }
+                ],
+                "closingElement": {
+                  "type": "JSXClosingElement",
+                  "start": 343,
+                  "end": 353,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 345,
+                    "end": 352,
+                    "name": "section"
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 358,
+        "end": 417,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 364,
+            "end": 416,
+            "id": {
+              "type": "Identifier",
+              "start": 364,
+              "end": 374,
+              "name": "standalone",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "JSXStyleElement",
+              "start": 377,
+              "end": 416,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 377,
+                "end": 384,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 378,
+                  "end": 383,
+                  "name": "style"
+                },
+                "attributes": [],
+                "selfClosing": false,
+                "typeArguments": null
+              },
+              "children": [
+                {
+                  "type": "StyleSheet",
+                  "start": 384,
+                  "end": 408,
+                  "source": ".inline { color: blue; }"
+                }
+              ],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 408,
+                "end": 416,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 410,
+                  "end": 415,
+                  "name": "style"
+                }
+              },
+              "css": ".inline { color: blue; }"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 419,
+        "end": 528,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 425,
+            "end": 527,
+            "id": {
+              "type": "Identifier",
+              "start": 425,
+              "end": 440,
+              "name": "from_code_block",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "JSXCodeBlock",
+              "start": 443,
+              "end": 527,
+              "body": [
+                {
+                  "type": "VariableDeclaration",
+                  "start": 450,
+                  "end": 471,
+                  "kind": "const",
+                  "declarations": [
+                    {
+                      "type": "VariableDeclarator",
+                      "start": 456,
+                      "end": 470,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 456,
+                        "end": 460,
+                        "name": "tone",
+                        "decorators": [],
+                        "typeAnnotation": null,
+                        "optional": false
+                      },
+                      "init": {
+                        "type": "Literal",
+                        "start": 463,
+                        "end": 470,
+                        "value": "green",
+                        "raw": "\"green\""
+                      },
+                      "definite": false
+                    }
+                  ],
+                  "declare": false
+                }
+              ],
+              "render": {
+                "type": "JSXStyleElement",
+                "start": 476,
+                "end": 525,
+                "openingElement": {
+                  "type": "JSXOpeningElement",
+                  "start": 476,
+                  "end": 483,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 477,
+                    "end": 482,
+                    "name": "style"
+                  },
+                  "attributes": [],
+                  "selfClosing": false,
+                  "typeArguments": null
+                },
+                "children": [
+                  {
+                    "type": "StyleSheet",
+                    "start": 483,
+                    "end": 517,
+                    "source": ".from-code-block { color: green; }"
+                  }
+                ],
+                "closingElement": {
+                  "type": "JSXClosingElement",
+                  "start": 517,
+                  "end": 525,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 519,
+                    "end": 524,
+                    "name": "style"
+                  }
+                },
+                "css": ".from-code-block { color: green; }"
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 530,
+        "end": 575,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 539,
+            "end": 543,
+            "local": {
+              "type": "Identifier",
+              "start": 539,
+              "end": 543,
+              "name": "view",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 539,
+              "end": 543,
+              "name": "view",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          },
+          {
+            "type": "ExportSpecifier",
+            "start": 545,
+            "end": 555,
+            "local": {
+              "type": "Identifier",
+              "start": 545,
+              "end": 555,
+              "name": "standalone",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 545,
+              "end": 555,
+              "name": "standalone",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          },
+          {
+            "type": "ExportSpecifier",
+            "start": 557,
+            "end": 572,
+            "local": {
+              "type": "Identifier",
+              "start": 557,
+              "end": 572,
+              "name": "from_code_block",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 557,
+              "end": 572,
+              "name": "from_code_block",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

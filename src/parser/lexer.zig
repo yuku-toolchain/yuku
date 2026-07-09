@@ -447,9 +447,9 @@ pub const Lexer = struct {
         return self.createToken(.less_than, token_start, token_start + 1);
     }
 
-    /// scans JSX text content between '<' and '{' in JSX children.
+    /// scans JSX text content between '<', '{', and TSRX directives in JSX children.
     /// called by the parser when parsing JSX element children.
-    pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
+    pub fn reScanJsxText(self: *Lexer, initial_cursor: u32, stop_at_tsrx_code: bool) Token {
         std.debug.assert(initial_cursor <= self.source.len);
         self.rewindTo(initial_cursor);
 
@@ -460,12 +460,45 @@ pub const Lexer = struct {
 
             switch (c) {
                 '<', '{' => break,
+                '@' => {
+                    if (stop_at_tsrx_code and self.isTsrxTemplateAtSign()) break;
+                    self.cursor += 1;
+                },
                 else => self.cursor += 1,
             }
         }
 
         std.debug.assert(self.cursor >= start);
         return self.createToken(.jsx_text, start, self.cursor);
+    }
+
+    fn isTsrxTemplateAtSign(self: *const Lexer) bool {
+        std.debug.assert(self.cursor < self.source.len);
+        std.debug.assert(self.source[self.cursor] == '@');
+
+        if (self.peek(1) == '{') return true;
+
+        const start = self.cursor + 1;
+        return self.matchesTsrxDirective(start, "if") or
+            self.matchesTsrxDirective(start, "for") or
+            self.matchesTsrxDirective(start, "switch") or
+            self.matchesTsrxDirective(start, "try");
+    }
+
+    fn matchesTsrxDirective(self: *const Lexer, start: u32, word: []const u8) bool {
+        std.debug.assert(start <= self.source.len);
+        std.debug.assert(word.len > 0);
+
+        const end = start + @as(u32, @intCast(word.len));
+        if (end > self.source.len) return false;
+        if (!std.mem.eql(u8, self.source[start..end], word)) return false;
+        if (end == self.source.len) return true;
+
+        return !isAsciiIdentifierContinue(self.source[end]);
+    }
+
+    fn isAsciiIdentifierContinue(c: u8) bool {
+        return std.ascii.isAlphanumeric(c) or c == '_' or c == '$';
     }
 
     const RegexResult = struct {

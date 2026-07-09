@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       31/31 (100.00%)
+Passed:       34/34 (100.00%)
 Failed:       0
-AST mismatch: 0/31
+AST mismatch: 0/34
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
@@ -12,7 +12,7 @@ error: Invalid assignment target
 25 | // whole expression is still not assignable (oxc rejects this too).
 26 | f()! = b;
    | ^^^^
-27 | 
+27 |
    |
    = help: The expression behind a non-null or type assertion must itself be a simple assignment target, like an identifier or member access, not a call or other expression.
 
@@ -25,7 +25,7 @@ error: Expected 'class' keyword, but found 'abstract'
    |
  1 | const C = @x(() => 0) abstract class {};
    |                       ^^^^^^^^
- 2 | 
+ 2 |
    |
 
 ✓ test/parser/misc/ts/decorated-abstract-class-heritage.ts
@@ -33,10 +33,21 @@ error: Expected 'class' keyword, but found 'abstract'
 ✓ test/parser/misc/ts/decorated-export-abstract-class.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class-named.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class.module.ts
+✓ test/parser/misc/ts/dynamic-tag-outside-tsrx.tsx
+error: Expected JSX element name, but found '{'
+   |
+ 1 | const tag = "section";
+ 2 | const value = <{tag} />;
+   |                ^
+ 3 | const fallback = value;
+   |
+   = help: Dynamic JSX tag names are only enabled in TSRX files
+
+
 ✓ test/parser/misc/ts/empty-type-argument-list.ts
 error: A type argument list cannot be empty
    |
- 4 | 
+ 4 |
  5 | type A = Array<numbe<>>
    |                      ^^
  6 | type B = Array<numbe<> >
@@ -46,6 +57,17 @@ error: A type argument list cannot be empty
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/function-overloads.ts
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
+✓ test/parser/misc/ts/lazy-destructuring-outside-tsrx.ts
+error: Lazy destructuring patterns are only enabled in TSRX files
+   |
+ 1 | declare const props: { value: string };
+ 2 | const &{ value } = props;
+   |       ^
+ 3 |
+   |
+   = help: Use a .tsrx file or remove the '&' lazy-pattern marker.
+
+
 ✓ test/parser/misc/ts/optional-chain-call-fused-angle.ts
 ✓ test/parser/misc/ts/optional-chain-instantiation-fused-angle.ts
 ✓ test/parser/misc/ts/redeclare-error-class.ts
@@ -57,7 +79,7 @@ error: Identifier 'B1' has already been declared
  5 | class B1 {}
    |       ^^
    |       ~~ cannot be redeclared here
- 6 | 
+ 6 |
    |
    = help: Consider removing or renaming this declaration of 'B1'
 
@@ -89,7 +111,7 @@ error: Identifier 'D1' has already been declared
  7 | var D1 = 0;
    |     ^^
    |     ~~ cannot be redeclared here
- 8 | 
+ 8 |
    |
    = help: Consider removing or renaming this declaration of 'D1'
 
@@ -103,7 +125,7 @@ error: Identifier 'A1' has already been declared
  5 | type A1 = string;
    |      ^^
    |      ~~ cannot be redeclared here
- 6 | 
+ 6 |
    |
    = help: Consider removing or renaming this declaration of 'A1'
 
@@ -120,7 +142,7 @@ error: Identifier 'T7' has already been declared
 39 | import T7 from "./b";
    |        ^^
    |        ~~ cannot be redeclared here
-40 | 
+40 |
    |
    = help: Consider removing or renaming this declaration of 'T7'
 
@@ -129,3 +151,11 @@ error: Identifier 'T7' has already been declared
 ✓ test/parser/misc/ts/redeclare-merge-namespace.ts
 ✓ test/parser/misc/ts/redeclare-merge-overloads.ts
 ✓ test/parser/misc/ts/redeclare-type-parameter-scope.ts
+✓ test/parser/misc/ts/submodule-import-outside-tsrx.ts
+error: Identifier module specifiers require TSRX
+   |
+ 1 | import { load } from server;
+   |                      ^^^^^^
+ 2 |
+   |
+   = help: Use a .tsrx file for submodule imports such as import { load } from server.

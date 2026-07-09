@@ -11,6 +11,15 @@ const std = @import("std");
 const parser = @import("parser");
 const transfer = @import("transfer");
 
+comptime {
+    std.debug.assert(@intFromEnum(parser.ast.Lang.js) == 0);
+    std.debug.assert(@intFromEnum(parser.ast.Lang.ts) == 1);
+    std.debug.assert(@intFromEnum(parser.ast.Lang.jsx) == 2);
+    std.debug.assert(@intFromEnum(parser.ast.Lang.tsx) == 3);
+    std.debug.assert(@intFromEnum(parser.ast.Lang.dts) == 4);
+    std.debug.assert(@intFromEnum(parser.ast.Lang.tsrx) == 5);
+}
+
 const gpa = std.heap.wasm_allocator;
 
 // Option bits packed by index.js `packFlags`.

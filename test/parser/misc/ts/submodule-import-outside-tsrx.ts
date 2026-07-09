@@ -1,0 +1,1 @@
+import { load } from server;

@@ -1,0 +1,116 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 94,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 75,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 74,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 10,
+              "name": "view",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 13,
+              "end": 74,
+              "expression": {
+                "type": "JSXElement",
+                "start": 19,
+                "end": 72,
+                "openingElement": {
+                  "type": "JSXOpeningElement",
+                  "start": 19,
+                  "end": 22,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 20,
+                    "end": 21,
+                    "name": "p"
+                  },
+                  "attributes": [],
+                  "selfClosing": false,
+                  "typeArguments": null
+                },
+                "children": [
+                  {
+                    "type": "JSXText",
+                    "start": 22,
+                    "end": 68,
+                    "value": "\"ABB&<>'&unknown;",
+                    "raw": "\"ABB&<>'&unknown;"
+                  }
+                ],
+                "closingElement": {
+                  "type": "JSXClosingElement",
+                  "start": 68,
+                  "end": 72,
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 70,
+                    "end": 71,
+                    "name": "p"
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 77,
+        "end": 93,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 86,
+            "end": 90,
+            "local": {
+              "type": "Identifier",
+              "start": 86,
+              "end": 90,
+              "name": "view",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 86,
+              "end": 90,
+              "name": "view",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
