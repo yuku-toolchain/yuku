@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-linux-arm-gnu",
-  "version": "0.5.45",
+  "version": "0.5.46",
   "os": [
     "linux"
   ],
