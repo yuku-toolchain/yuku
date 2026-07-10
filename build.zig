@@ -141,6 +141,17 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Experiment for issue #84: a minimal N-API addon (no parser import) that
+    // does the least possible, to isolate whether the Bun-on-Windows crash is
+    // inherent to Zig N-API addons or specific to the parser. Built to
+    // zig-out/lib/yuku-minimal.node; not published to npm.
+    napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-minimal",
+        .root = b.path("experiment/minimal.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .freestanding,

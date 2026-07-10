@@ -1,0 +1,77 @@
+name: Experiment — minimal Zig N-API addon (#84)
+
+# Isolates the Bun-on-Windows crash from issue #84: a minimal N-API addon that
+# imports only napi-zig (no parser) and uses the same napi-zig as yuku-parser.
+# Each Bun step runs in its own process so a segfault tells us exactly which
+# operation triggers it. Node runs the same variants as a control.
+
+on:
+  push:
+    branches: [investigate-binder-detector-crash-with-bun]
+  workflow_dispatch:
+
+jobs:
+  minimal:
+    name: minimal addon on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Versions
+        run: |
+          node --version
+          bun --version
+          zig version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build addons (incl. yuku-minimal) to zig-out/lib
+        run: zig build
+
+      - name: Show built minimal addon
+        run: node -e "const fs=require('fs');const p='zig-out/lib/yuku-minimal.node';console.log(p, fs.existsSync(p)?('exists, '+fs.statSync(p).size+' bytes'):'MISSING')"
+
+      # -------- Node control: every variant should pass --------
+      - name: "Node · load"
+        if: always()
+        run: node experiment/minimal.ts load
+      - name: "Node · hello"
+        if: always()
+        run: node experiment/minimal.ts hello
+      - name: "Node · strlen"
+        if: always()
+        run: node experiment/minimal.ts strlen
+      - name: "Node · buffer"
+        if: always()
+        run: node experiment/minimal.ts buffer
+
+      # -------- Bun: each in its own process; the first failing one is the trigger --------
+      - name: "Bun · load only (module init)"
+        if: always()
+        run: bun experiment/minimal.ts load
+      - name: "Bun · hello (no args / no alloc / no ArrayBuffer)"
+        if: always()
+        run: bun experiment/minimal.ts hello
+      - name: "Bun · strlen (string arg -> arena allocation)"
+        if: always()
+        run: bun experiment/minimal.ts strlen
+      - name: "Bun · makeBuffer (returns napi ArrayBuffer)"
+        if: always()
+        run: bun experiment/minimal.ts buffer
