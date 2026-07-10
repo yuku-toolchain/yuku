@@ -15,7 +15,7 @@ const Options = struct {
 /// buffer: the v7 AST sections followed by the semantic sections
 /// (scopes, symbols, resolved references, module records).
 pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
-    var tree = parser.parse(napi.mem.allocator(), source, .{
+    var tree = parser.parse(std.heap.smp_allocator, source, .{
         .source_type = options.source_type,
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,

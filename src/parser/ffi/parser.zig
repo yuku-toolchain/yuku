@@ -13,7 +13,7 @@ const Options = struct {
 };
 
 pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
-    var tree = parser.parse(napi.mem.allocator(), source, .{
+    var tree = parser.parse(std.heap.smp_allocator, source, .{
         .source_type = options.source_type,
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,
