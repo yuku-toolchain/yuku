@@ -3,8 +3,8 @@
     .version = "0.3.0",
     .dependencies = .{
         .napi_zig = .{
-            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#6a5179b2185ccb544457c5c44002b83acdb8f75a",
-            .hash = "napi_zig-0.2.1-XRkY0TvhAQDU4IhctNNh7-WelFmlLH4y_MiMTVV7RZPR",
+            .url = "git+https://github.com/yuku-toolchain/napi-zig/?ref=HEAD#74b2b6ef0e888b0a8575421f4330d3ba18a38de4",
+            .hash = "napi_zig-0.2.1-XRkY0VXhAQBJ4JzTs9Zp_Q7dmeTdoAeQzhk4QVCGE67B",
         },
     },
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
