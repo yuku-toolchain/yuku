@@ -1,0 +1,55 @@
+name: Repro Issue #84 (Bun Windows crash)
+
+# Temporary workflow to reproduce and then verify the fix for
+# https://github.com/yuku-toolchain/yuku/issues/84
+# Builds the native binding from the workspace and parses a sample file with
+# both Node (control) and Bun on Windows.
+
+on:
+  push:
+    branches: [investigate-binder-detector-crash-with-bun]
+  workflow_dispatch:
+
+jobs:
+  repro:
+    name: parse on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Print versions
+        run: |
+          node --version
+          bun --version
+          zig version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build native binding (win32-x64)
+        run: bun run build:local
+
+      - name: Show built binding
+        run: node -e "const fs=require('fs');const p='npm/yuku-parser/@yuku-parser/binding-win32-x64/yuku-parser.node';console.log(p, fs.existsSync(p)?('exists, '+fs.statSync(p).size+' bytes'):'MISSING')"
+
+      - name: Parse with Node (control — expected to pass)
+        run: node repr.ts
+
+      - name: Parse with Bun (reproduces the crash)
+        run: bun repr.ts
