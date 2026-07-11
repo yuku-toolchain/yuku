@@ -16,6 +16,7 @@ const violations = {
   captures: [] as string[],
   determinism: [] as string[],
   records: [] as string[],
+  ordering: [] as string[],
 };
 let analyzed = 0;
 
@@ -121,8 +122,10 @@ function check(path: string, source: string): void {
     }
   }
 
+  const walkOrder = new Map<Node, number>();
   module.walk({
     enter(node, ctx) {
+      walkOrder.set(node, walkOrder.size);
       const reference = ctx.reference;
       if (reference !== null && ctx.scope !== reference.scope) {
         note(violations.scopeMatch, `${path}: ${reference.name} ctx ${ctx.scope.id} vs ref ${reference.scope.id}`);
@@ -132,6 +135,31 @@ function check(path: string, source: string): void {
       }
     },
   });
+
+  // symbols and references are recorded in walk order, and the walk is
+  // source-ordered (see the ast.zig module doc), so ids ascend with source
+  let prevRef = -1;
+  for (const reference of module.references) {
+    const at = walkOrder.get(reference.node);
+    if (at === undefined) continue;
+    if (at < prevRef) {
+      note(violations.ordering, `${path}: reference ${reference.name} out of walk order`);
+      break;
+    }
+    prevRef = at;
+  }
+  let prevSym = -1;
+  for (const symbol of module.symbols) {
+    const decl = symbol.declarations[0];
+    if (decl === undefined) continue;
+    const at = walkOrder.get(decl);
+    if (at === undefined) continue;
+    if (at < prevSym) {
+      note(violations.ordering, `${path}: symbol ${symbol.name} out of walk order`);
+      break;
+    }
+    prevSym = at;
+  }
 
   // captures match an independent oracle for every function
   for (const fn of module.findAll([
@@ -216,5 +244,9 @@ describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
 
   test("analysis is deterministic", () => {
     expect(violations.determinism).toEqual([]);
+  });
+
+  test("symbols and references are recorded in walk (source) order", () => {
+    expect(violations.ordering).toEqual([]);
   });
 });
