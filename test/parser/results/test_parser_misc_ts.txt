@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       34/34 (100.00%)
+Passed:       35/35 (100.00%)
 Failed:       0
-AST mismatch: 0/34
+AST mismatch: 0/35
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/arrow-return-type-ternary-colon-steal.ts
@@ -49,6 +49,7 @@ error: A type argument list cannot be empty
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
 ✓ test/parser/misc/ts/optional-chain-call-fused-angle.ts
 ✓ test/parser/misc/ts/optional-chain-instantiation-fused-angle.ts
+✓ test/parser/misc/ts/parameter-pattern-decorators.ts
 ✓ test/parser/misc/ts/redeclare-error-class.ts
 error: Identifier 'B1' has already been declared
    |

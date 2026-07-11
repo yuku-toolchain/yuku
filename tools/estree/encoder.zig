@@ -944,6 +944,7 @@ fn writeSpecialBindingProperty(w: *Writer, comptime tag: usize) !void {
 
 fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
     const T = ast.ArrayPattern;
+    const se = comptime slotOf(T, "elements");
     const sr = comptime slotOf(T, "rest");
     const sdec = comptime slotOf(T, "decorators");
     const sta = comptime slotOf(T, "type_annotation");
@@ -964,10 +965,10 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, r.len);
-        \\    slotAt(idx, 0, r.start);
+        \\    f0At(idx, decs.len);
+        \\    slotAt(idx, {d}, decs.start);
+        \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.len);
         \\    slotAt(idx, {d}, rest);
-        \\    slotAt(idx, {d}, decs.start); slotAt(idx, {d}, decs.len);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
@@ -975,11 +976,12 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sr, sdec, sdec + 1, sta, mopt });
+    , .{ tag, sdec, se, se + 1, sr, sta, mopt });
 }
 
 fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
     const T = ast.ObjectPattern;
+    const sp = comptime slotOf(T, "properties");
     const sr = comptime slotOf(T, "rest");
     const sdec = comptime slotOf(T, "decorators");
     const sta = comptime slotOf(T, "type_annotation");
@@ -999,10 +1001,10 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, r.len);
-        \\    slotAt(idx, 0, r.start);
+        \\    f0At(idx, decs.len);
+        \\    slotAt(idx, {d}, decs.start);
+        \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.len);
         \\    slotAt(idx, {d}, rest);
-        \\    slotAt(idx, {d}, decs.start); slotAt(idx, {d}, decs.len);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
         \\    spanAt(idx, asStart(n), asEnd(n));
@@ -1010,7 +1012,7 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sr, sdec, sdec + 1, sta, mopt });
+    , .{ tag, sdec, sp, sp + 1, sr, sta, mopt });
 }
 
 fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {

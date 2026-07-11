@@ -380,9 +380,6 @@ pub const IndexRange = struct {
     pub const empty: IndexRange = .{ .start = 0, .len = 0 };
 };
 
-// node definitions follow. see `NodeIndex` for the field-annotation
-// conventions used in their doc comments.
-
 /// The `super` keyword used as an expression head.
 ///
 /// ## Example
@@ -472,19 +469,19 @@ pub const Class = struct {
     decorators: IndexRange,
     /// `binding_identifier`. `.null` for anonymous class expressions.
     id: NodeIndex,
-    /// any expression. `.null` when the class has no `extends` clause.
-    super_class: NodeIndex,
-    /// `class_body`
-    body: NodeIndex,
     /// `ts_type_parameter_declaration`. `.null` when the class has no `<T, U>`
     /// parameters.
     type_parameters: NodeIndex = .null,
+    /// any expression. `.null` when the class has no `extends` clause.
+    super_class: NodeIndex,
     /// `ts_type_parameter_instantiation`. `.null` when `extends` has no `<T>`
     /// arguments.
     super_type_arguments: NodeIndex = .null,
     /// `ts_class_implements[]`. Empty when the class has no `implements`
     /// clause.
     implements: IndexRange = .empty,
+    /// `class_body`
+    body: NodeIndex,
     /// true for `abstract class`.
     abstract: bool = false,
     /// true for `declare class`.
@@ -605,6 +602,8 @@ pub const PropertyDefinition = struct {
     /// `identifier_name`, `string_literal`, `numeric_literal`,
     /// `private_identifier` (class members only), or any expression when `computed = true`
     key: NodeIndex,
+    /// `ts_type_annotation`. `.null` when the field has no annotation.
+    type_annotation: NodeIndex = .null,
     /// any expression. `.null` when the field has no initializer.
     value: NodeIndex,
     /// true when the key is written inside `[...]`.
@@ -613,8 +612,6 @@ pub const PropertyDefinition = struct {
     static: bool,
     /// true for `accessor x;` auto-accessor fields.
     accessor: bool,
-    /// `ts_type_annotation`. `.null` when the field has no annotation.
-    type_annotation: NodeIndex = .null,
     /// true for the `declare` modifier.
     declare: bool = false,
     /// true for the `override` modifier.
@@ -1614,15 +1611,15 @@ pub const LabelIdentifier = struct {
 /// //             ^ right
 /// ```
 pub const AssignmentPattern = struct {
-    /// any binding pattern
-    left: NodeIndex,
-    /// any expression
-    right: NodeIndex,
     /// `decorator[]`. Decorators on a parameter binding (legacy
     /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
+    /// any binding pattern
+    left: NodeIndex,
     /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
+    /// any expression
+    right: NodeIndex,
     /// true when marked optional in a parameter position.
     optional: bool = false,
 };
@@ -1636,11 +1633,11 @@ pub const AssignmentPattern = struct {
 /// //            ^^^^ argument
 /// ```
 pub const BindingRestElement = struct {
-    /// any binding pattern
-    argument: NodeIndex,
     /// `decorator[]`. Decorators on a parameter rest element (legacy
     /// `experimentalDecorators`).
     decorators: IndexRange = .empty,
+    /// any binding pattern
+    argument: NodeIndex,
     /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
     /// true when marked optional in a parameter position.
@@ -1659,13 +1656,13 @@ pub const BindingRestElement = struct {
 ///
 /// `elements[1]` is `.null` (the hole between the two commas).
 pub const ArrayPattern = struct {
+    /// `decorator[]`. Decorators on a parameter binding (legacy
+    /// `experimentalDecorators`).
+    decorators: IndexRange = .empty,
     /// any binding pattern. Entries are `.null` for holes.
     elements: IndexRange,
     /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
-    /// `decorator[]`. Decorators on a parameter binding (legacy
-    /// `experimentalDecorators`).
-    decorators: IndexRange = .empty,
     /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
     /// true when marked optional in a parameter position.
@@ -1682,13 +1679,13 @@ pub const ArrayPattern = struct {
 /// //               ^^^^^^^ rest
 /// ```
 pub const ObjectPattern = struct {
+    /// `decorator[]`. Decorators on a parameter binding (legacy
+    /// `experimentalDecorators`).
+    decorators: IndexRange = .empty,
     /// `binding_property[]`
     properties: IndexRange,
     /// `binding_rest_element`. `.null` when no rest element is present.
     rest: NodeIndex,
-    /// `decorator[]`. Decorators on a parameter binding (legacy
-    /// `experimentalDecorators`).
-    decorators: IndexRange = .empty,
     /// `ts_type_annotation`. `.null` when absent.
     type_annotation: NodeIndex = .null,
     /// true when marked optional in a parameter position.
@@ -1896,20 +1893,20 @@ pub const Function = struct {
     type: FunctionType,
     /// `binding_identifier`. `.null` for anonymous functions.
     id: NodeIndex,
+    /// `ts_type_parameter_declaration`. `.null` when absent.
+    type_parameters: NodeIndex = .null,
+    /// `formal_parameters`
+    params: NodeIndex,
+    /// `ts_type_annotation`. `.null` when absent.
+    return_type: NodeIndex = .null,
+    /// `function_body`. `.null` for body-less declarations and signatures.
+    body: NodeIndex,
     generator: bool,
     async: bool,
     /// true when preceded by the `declare` modifier. Distinguishes a real
     /// ambient declaration from a plain overload signature, which share the
     /// `.ts_declare_function` shape.
     declare: bool = false,
-    /// `formal_parameters`
-    params: NodeIndex,
-    /// `function_body`. `.null` for body-less declarations and signatures.
-    body: NodeIndex,
-    /// `ts_type_parameter_declaration`. `.null` when absent.
-    type_parameters: NodeIndex = .null,
-    /// `ts_type_annotation`. `.null` when absent.
-    return_type: NodeIndex = .null,
 };
 
 /// The body of a function.
@@ -2006,14 +2003,14 @@ pub const ArrowFunctionExpression = struct {
     /// `() => { ... }`.
     expression: bool,
     async: bool,
-    /// `formal_parameters`
-    params: NodeIndex,
-    /// `function_body` when `expression` is false. any expression otherwise.
-    body: NodeIndex,
     /// `ts_type_parameter_declaration`. `.null` when absent.
     type_parameters: NodeIndex = .null,
+    /// `formal_parameters`
+    params: NodeIndex,
     /// `ts_type_annotation`. `.null` when absent.
     return_type: NodeIndex = .null,
+    /// `function_body` when `expression` is false. any expression otherwise.
+    body: NodeIndex,
 };
 
 /// A comma-separated sequence of expressions.
@@ -2065,12 +2062,12 @@ pub const MemberExpression = struct {
 pub const CallExpression = struct {
     /// any expression
     callee: NodeIndex,
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
+    type_arguments: NodeIndex = .null,
     /// any expression or `spread_element`.
     arguments: IndexRange,
     /// true for `foo?.()`.
     optional: bool,
-    /// `ts_type_parameter_instantiation`. `.null` when absent.
-    type_arguments: NodeIndex = .null,
 };
 
 /// Wraps an optional chain so that short-circuiting applies to the whole
@@ -2102,10 +2099,10 @@ pub const ChainExpression = struct {
 pub const TaggedTemplateExpression = struct {
     /// any expression
     tag: NodeIndex,
-    /// `template_literal`
-    quasi: NodeIndex,
     /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
+    /// `template_literal`
+    quasi: NodeIndex,
 };
 
 /// A `new` expression.
@@ -2122,10 +2119,10 @@ pub const TaggedTemplateExpression = struct {
 pub const NewExpression = struct {
     /// any expression
     callee: NodeIndex,
-    /// any expression or `spread_element`.
-    arguments: IndexRange,
     /// `ts_type_parameter_instantiation`. `.null` when absent.
     type_arguments: NodeIndex = .null,
+    /// any expression or `spread_element`.
+    arguments: IndexRange,
 };
 
 /// An `await` expression.
@@ -3871,11 +3868,11 @@ pub const JSXElement = struct {
 pub const JSXOpeningElement = struct {
     /// `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`
     name: NodeIndex,
+    /// `ts_type_parameter_instantiation`. `.null` when absent.
+    type_arguments: NodeIndex = .null,
     /// `jsx_attribute` or `jsx_spread_attribute`.
     attributes: IndexRange,
     self_closing: bool,
-    /// `ts_type_parameter_instantiation`. `.null` when absent.
-    type_arguments: NodeIndex = .null,
 };
 
 /// The closing `</Foo>` of a JSX element.

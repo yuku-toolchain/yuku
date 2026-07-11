@@ -61,6 +61,17 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser_module })).step);
 
+    const zig_tests_module = b.createModule(.{
+        .root_source_file = b.path("test/zig/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    zig_tests_module.addImport("parser", parser_module);
+    const run_zig_tests = b.addRunArtifact(b.addTest(.{ .root_module = zig_tests_module }));
+    // corpus-driven tests read test/parser/suite relative to the repo root
+    run_zig_tests.setCwd(b.path("."));
+    test_step.dependOn(&run_zig_tests.step);
+
     const fuzz_util = b.createModule(.{
         .root_source_file = b.path("src/util/root.zig"),
         .target = b.graph.host,

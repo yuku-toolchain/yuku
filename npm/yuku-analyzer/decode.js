@@ -27,11 +27,11 @@ function _ck(type, keys) {
 }
 _ck("SequenceExpression", ["expressions"]);
 _ck("ParenthesizedExpression", ["expression"]);
-_ck("ArrowFunctionExpression", ["params", "body", "typeParameters", "returnType"]);
-_ck("FunctionDeclaration", ["id", "params", "body", "typeParameters", "returnType"]);
-_ck("FunctionExpression", ["id", "params", "body", "typeParameters", "returnType"]);
-_ck("TSDeclareFunction", ["id", "params", "body", "typeParameters", "returnType"]);
-_ck("TSEmptyBodyFunctionExpression", ["id", "params", "body", "typeParameters", "returnType"]);
+_ck("ArrowFunctionExpression", ["typeParameters", "params", "returnType", "body"]);
+_ck("FunctionDeclaration", ["id", "typeParameters", "params", "returnType", "body"]);
+_ck("FunctionExpression", ["id", "typeParameters", "params", "returnType", "body"]);
+_ck("TSDeclareFunction", ["id", "typeParameters", "params", "returnType", "body"]);
+_ck("TSEmptyBodyFunctionExpression", ["id", "typeParameters", "params", "returnType", "body"]);
 _ck("BlockStatement", ["body"]);
 _ck("BlockStatement", ["body"]);
 _ck("BinaryExpression", ["left", "right"]);
@@ -45,23 +45,23 @@ _ck("ObjectExpression", ["properties"]);
 _ck("SpreadElement", ["argument"]);
 _ck("Property", ["key", "value"]);
 _ck("MemberExpression", ["object", "property"]);
-_ck("CallExpression", ["callee", "arguments", "typeArguments"]);
+_ck("CallExpression", ["callee", "typeArguments", "arguments"]);
 _ck("ChainExpression", ["expression"]);
-_ck("TaggedTemplateExpression", ["tag", "quasi", "typeArguments"]);
-_ck("NewExpression", ["callee", "arguments", "typeArguments"]);
+_ck("TaggedTemplateExpression", ["tag", "typeArguments", "quasi"]);
+_ck("NewExpression", ["callee", "typeArguments", "arguments"]);
 _ck("AwaitExpression", ["argument"]);
 _ck("YieldExpression", ["argument"]);
 _ck("MetaProperty", ["meta", "property"]);
 _ck("Decorator", ["expression"]);
-_ck("ClassDeclaration", ["decorators", "id", "superClass", "body", "typeParameters", "superTypeArguments", "implements"]);
-_ck("ClassExpression", ["decorators", "id", "superClass", "body", "typeParameters", "superTypeArguments", "implements"]);
+_ck("ClassDeclaration", ["decorators", "id", "typeParameters", "superClass", "superTypeArguments", "implements", "body"]);
+_ck("ClassExpression", ["decorators", "id", "typeParameters", "superClass", "superTypeArguments", "implements", "body"]);
 _ck("ClassBody", ["body"]);
 _ck("MethodDefinition", ["decorators", "key", "value"]);
 _ck("TSAbstractMethodDefinition", ["decorators", "key", "value"]);
-_ck("PropertyDefinition", ["decorators", "key", "value", "typeAnnotation"]);
-_ck("AccessorProperty", ["decorators", "key", "value", "typeAnnotation"]);
-_ck("TSAbstractPropertyDefinition", ["decorators", "key", "value", "typeAnnotation"]);
-_ck("TSAbstractAccessorProperty", ["decorators", "key", "value", "typeAnnotation"]);
+_ck("PropertyDefinition", ["decorators", "key", "typeAnnotation", "value"]);
+_ck("AccessorProperty", ["decorators", "key", "typeAnnotation", "value"]);
+_ck("TSAbstractPropertyDefinition", ["decorators", "key", "typeAnnotation", "value"]);
+_ck("TSAbstractAccessorProperty", ["decorators", "key", "typeAnnotation", "value"]);
 _ck("StaticBlock", ["body"]);
 _ck("Super", []);
 _ck("Literal", []);
@@ -100,8 +100,8 @@ _ck("EmptyStatement", []);
 _ck("VariableDeclaration", ["declarations"]);
 _ck("VariableDeclarator", ["id", "init"]);
 _ck("ExpressionStatement", ["expression"]);
-_ck("AssignmentPattern", ["left", "right", "decorators", "typeAnnotation"]);
-_ck("RestElement", ["argument", "decorators", "typeAnnotation"]);
+_ck("AssignmentPattern", ["decorators", "left", "typeAnnotation", "right"]);
+_ck("RestElement", ["decorators", "argument", "typeAnnotation"]);
 _ck("ArrayPattern", ["decorators", "elements", "typeAnnotation"]);
 _ck("ObjectPattern", ["decorators", "properties", "typeAnnotation"]);
 _ck("Property", ["key", "value"]);
@@ -188,7 +188,7 @@ _ck("TSNamespaceExportDeclaration", ["id"]);
 _ck("TSImportEqualsDeclaration", ["id", "moduleReference"]);
 _ck("TSExternalModuleReference", ["expression"]);
 _ck("JSXElement", ["openingElement", "children", "closingElement"]);
-_ck("JSXOpeningElement", ["name", "attributes", "typeArguments"]);
+_ck("JSXOpeningElement", ["name", "typeArguments", "attributes"]);
 _ck("JSXClosingElement", ["name"]);
 _ck("JSXFragment", ["openingFragment", "children", "closingFragment"]);
 _ck("JSXOpeningFragment", []);
@@ -251,15 +251,15 @@ const CHILD_SLOTS = [
   [0, 2],
   [0, 2, 0, 3],
   [0, 2, 0, 3],
-  [0, 2, 2, 3, 0, 4],
+  [0, 2, 0, 3, 2, 4],
   [0, 2],
   [0, 2, 0, 3, 0, 4],
-  [0, 2, 2, 3, 0, 4],
+  [0, 2, 0, 3, 2, 4],
   [0, 2],
   [0, 2],
   [0, 2, 0, 3],
   [0, 2],
-  [2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 1, 8],
+  [2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 1, 7, 0, 9],
   [2, 2],
   [2, 2, 0, 3, 0, 4],
   [2, 2, 0, 3, 0, 4, 0, 5],
@@ -301,10 +301,10 @@ const CHILD_SLOTS = [
   [2, 2],
   [0, 2, 0, 3],
   [0, 2],
-  [0, 2, 0, 3, 2, 4, 0, 5],
-  [0, 2, 2, 3, 0, 4],
-  [2, 2, 0, 3, 1, 4, 0, 6],
-  [2, 2, 0, 3, 1, 4, 0, 6],
+  [2, 2, 0, 3, 0, 4, 0, 5],
+  [2, 2, 0, 3, 0, 4],
+  [2, 2, 1, 3, 0, 5, 0, 6],
+  [2, 2, 1, 3, 0, 5, 0, 6],
   [0, 2, 0, 3],
   [2, 2],
   [0, 2, 0, 3],
@@ -389,7 +389,7 @@ const CHILD_SLOTS = [
   [0, 2, 0, 3],
   [0, 2],
   [0, 2, 2, 3, 0, 4],
-  [0, 2, 2, 3, 0, 4],
+  [0, 2, 0, 3, 2, 4],
   [0, 2],
   [0, 2, 2, 3, 0, 4],
   [],
@@ -741,12 +741,12 @@ function decode(buffer, source) {
       const r = {
         type: "ArrowFunctionExpression", start, end,
         id: null, generator: false, async: !!(flags & 2),
-        params: f1 !== NULL ? fnParams(f1) : [],
-        body: node(f2), expression: !!(flags & 1),
+        params: f2 !== NULL ? fnParams(f2) : [],
+        body: node(f4), expression: !!(flags & 1),
       };
       if (_isTs) {
-        r.typeParameters = f3 !== NULL ? node(f3) : null;
-        r.returnType = f4 !== NULL ? node(f4) : null;
+        r.typeParameters = f1 !== NULL ? node(f1) : null;
+        r.returnType = f3 !== NULL ? node(f3) : null;
       }
       return r;
     }
@@ -756,13 +756,13 @@ function decode(buffer, source) {
         type: FUNCTION_TYPES[ft], start, end,
         id: f1 !== NULL ? node(f1) : null,
         generator: !!(flags & 4), async: !!(flags & 8),
-        params: f2 !== NULL ? fnParams(f2) : [],
-        body: f3 !== NULL ? node(f3) : null,
+        params: f3 !== NULL ? fnParams(f3) : [],
+        body: f5 !== NULL ? node(f5) : null,
         expression: false,
       };
       if (_isTs) {
-        r.typeParameters = f4 !== NULL ? node(f4) : null;
-        r.returnType = f5 !== NULL ? node(f5) : null;
+        r.typeParameters = f2 !== NULL ? node(f2) : null;
+        r.returnType = f4 !== NULL ? node(f4) : null;
         r.declare = !!(flags & 16);
       }
       return r;
@@ -786,10 +786,10 @@ function decode(buffer, source) {
     case 16: return { type: "SpreadElement", start, end, argument: f1 !== NULL ? node(f1) : null };
     case 17: { const r = { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) }; if (_isTs) { r.optional = false; } return r; }
     case 18: return { type: "MemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2) };
-    case 19: { const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
+    case 19: { const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f3, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
     case 20: return { type: "ChainExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 21: { const r = { type: "TaggedTemplateExpression", start, end, tag: f1 !== NULL ? node(f1) : null, quasi: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
-    case 22: { const r = { type: "NewExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
+    case 21: { const r = { type: "TaggedTemplateExpression", start, end, tag: f1 !== NULL ? node(f1) : null, quasi: f3 !== NULL ? node(f3) : null }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
+    case 22: { const r = { type: "NewExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f3, f0) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
     case 23: return { type: "AwaitExpression", start, end, argument: f1 !== NULL ? node(f1) : null };
     case 24: return { type: "YieldExpression", start, end, argument: f1 !== NULL ? node(f1) : null, delegate: !!(flags & 1) };
     case 25: return { type: "MetaProperty", start, end, meta: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
@@ -799,13 +799,13 @@ function decode(buffer, source) {
         type: CLASS_TYPES[flags & 1], start, end,
         decorators: nodeArr(f1, f0),
         id: f2 !== NULL ? node(f2) : null,
-        superClass: f3 !== NULL ? node(f3) : null,
-        body: node(f4),
+        superClass: f4 !== NULL ? node(f4) : null,
+        body: node(f8),
       };
       if (_isTs) {
-        r.typeParameters = f5 !== NULL ? node(f5) : null;
-        r.superTypeArguments = f6 !== NULL ? node(f6) : null;
-        r.implements = nodeArr(f7, f8);
+        r.typeParameters = f3 !== NULL ? node(f3) : null;
+        r.superTypeArguments = f5 !== NULL ? node(f5) : null;
+        r.implements = nodeArr(f6, f7);
         r.abstract = !!(flags & 2);
         r.declare = !!(flags & 4);
       }
@@ -836,11 +836,11 @@ function decode(buffer, source) {
         start, end,
         decorators: nodeArr(f1, f0),
         key: node(f2),
-        value: f3 !== NULL ? node(f3) : null,
+        value: f4 !== NULL ? node(f4) : null,
         computed: !!(flags & 1), static: !!(flags & 2),
       };
       if (_isTs) {
-        r.typeAnnotation = f4 !== NULL ? node(f4) : null;
+        r.typeAnnotation = f3 !== NULL ? node(f3) : null;
         r.declare = !!(flags & 8);
         r.override = !!(flags & 16);
         r.optional = !!(flags & 32);
@@ -946,25 +946,25 @@ function decode(buffer, source) {
       type: "ExpressionStatement", start, end,
       expression: node(f1), directive: str(f2, f3),
     };
-    case 69: { const r = { type: "AssignmentPattern", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
-    case 70: { const r = { type: "RestElement", start, end, argument: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.decorators = nodeArr(f2, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
+    case 69: { const r = { type: "AssignmentPattern", start, end, left: f2 !== NULL ? node(f2) : null, right: f4 !== NULL ? node(f4) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); } return r; }
+    case 70: { const r = { type: "RestElement", start, end, argument: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
     case 71: {
-      const el = nodeArrHoles(f1, f0);
-      if (f2 !== NULL) el.push(node(f2));
+      const el = nodeArrHoles(f2, f3);
+      if (f4 !== NULL) el.push(node(f4));
       const r = { type: "ArrayPattern", start, end, elements: el };
       if (_isTs) {
-        r.decorators = nodeArr(f3, f4);
+        r.decorators = nodeArr(f1, f0);
         r.optional = !!(flags & 1);
         r.typeAnnotation = f5 !== NULL ? node(f5) : null;
       }
       return r;
     }
     case 72: {
-      const pr = nodeArr(f1, f0);
-      if (f2 !== NULL) pr.push(node(f2));
+      const pr = nodeArr(f2, f3);
+      if (f4 !== NULL) pr.push(node(f4));
       const r = { type: "ObjectPattern", start, end, properties: pr };
       if (_isTs) {
-        r.decorators = nodeArr(f3, f4);
+        r.decorators = nodeArr(f1, f0);
         r.optional = !!(flags & 1);
         r.typeAnnotation = f5 !== NULL ? node(f5) : null;
       }
@@ -1131,7 +1131,7 @@ function decode(buffer, source) {
     case 154: return { type: "TSImportEqualsDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, moduleReference: f2 !== NULL ? node(f2) : null, importKind: IMPORT_EXPORT_KINDS[flags & 1] };
     case 155: return { type: "TSExternalModuleReference", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 156: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
-    case 157: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
+    case 157: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
     case 158: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
     case 159: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
     case 160: return { type: "JSXOpeningFragment", start, end };

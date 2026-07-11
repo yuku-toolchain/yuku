@@ -425,9 +425,9 @@ const special_child_keys = [_]SpecialChildKeys{
     .{ .variant = "function", .types = &.{
         "FunctionDeclaration", "FunctionExpression",
         "TSDeclareFunction",   "TSEmptyBodyFunctionExpression",
-    }, .keys = &.{ "id", "params", "body", "typeParameters", "returnType" } },
+    }, .keys = &.{ "id", "typeParameters", "params", "returnType", "body" } },
     .{ .variant = "arrow_function_expression", .types = &.{"ArrowFunctionExpression"}, .keys = &.{
-        "params", "body", "typeParameters", "returnType",
+        "typeParameters", "params", "returnType", "body",
     } },
     .{ .variant = "program", .types = &.{"Program"}, .keys = &.{ "hashbang", "body" } },
     .{ .variant = "directive", .types = &.{"ExpressionStatement"}, .keys = &.{"expression"} },
@@ -439,8 +439,9 @@ const special_child_keys = [_]SpecialChildKeys{
     .{ .variant = "regexp_literal", .types = &.{"Literal"}, .keys = &.{} },
     .{ .variant = "template_element", .types = &.{"TemplateElement"}, .keys = &.{} },
     .{ .variant = "class", .types = &.{ "ClassDeclaration", "ClassExpression" }, .keys = &.{
-        "decorators",     "id",                 "superClass", "body",
-        "typeParameters", "superTypeArguments", "implements",
+        "decorators", "id",                 "typeParameters",
+        "superClass", "superTypeArguments", "implements",
+        "body",
     } },
     .{ .variant = "method_definition", .types = &.{
         "MethodDefinition", "TSAbstractMethodDefinition",
@@ -448,7 +449,7 @@ const special_child_keys = [_]SpecialChildKeys{
     .{ .variant = "property_definition", .types = &.{
         "PropertyDefinition",           "AccessorProperty",
         "TSAbstractPropertyDefinition", "TSAbstractAccessorProperty",
-    }, .keys = &.{ "decorators", "key", "value", "typeAnnotation" } },
+    }, .keys = &.{ "decorators", "key", "typeAnnotation", "value" } },
     .{ .variant = "unary_expression", .types = &.{"UnaryExpression"}, .keys = &.{"argument"} },
     .{ .variant = "binding_property", .types = &.{"Property"}, .keys = &.{ "key", "value" } },
     .{ .variant = "array_pattern", .types = &.{"ArrayPattern"}, .keys = &.{
@@ -1020,19 +1021,19 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sta = comptime slotOf(ast.ArrayPattern, "type_annotation");
         try emit(w,
             \\    case {d}: {{
-            \\      const el = nodeArrHoles(f{d}, f0);
+            \\      const el = nodeArrHoles(f{d}, f{d});
             \\      if (f{d} !== NULL) el.push(node(f{d}));
             \\      const r = {{ type: "ArrayPattern", start, end, elements: el }};
             \\      if (_isTs) {{
-            \\        r.decorators = nodeArr(f{d}, f{d});
+            \\        r.decorators = nodeArr(f{d}, f0);
             \\        r.optional = !!(flags & {d});
             \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
             \\      }}
             \\      return r;
             \\    }}
         , .{
-            tag,  se,       sr,                                              sr,
-            sdec, sdec + 1, comptime flagMask(ast.ArrayPattern, "optional"), sta,
+            tag, se,   se + 1,                                          sr,
+            sr,  sdec, comptime flagMask(ast.ArrayPattern, "optional"), sta,
             sta,
         });
     } else if (comptime eql(u8, name, "object_pattern")) {
@@ -1042,19 +1043,19 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sta = comptime slotOf(ast.ObjectPattern, "type_annotation");
         try emit(w,
             \\    case {d}: {{
-            \\      const pr = nodeArr(f{d}, f0);
+            \\      const pr = nodeArr(f{d}, f{d});
             \\      if (f{d} !== NULL) pr.push(node(f{d}));
             \\      const r = {{ type: "ObjectPattern", start, end, properties: pr }};
             \\      if (_isTs) {{
-            \\        r.decorators = nodeArr(f{d}, f{d});
+            \\        r.decorators = nodeArr(f{d}, f0);
             \\        r.optional = !!(flags & {d});
             \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
             \\      }}
             \\      return r;
             \\    }}
         , .{
-            tag,  sp,       sr,                                               sr,
-            sdec, sdec + 1, comptime flagMask(ast.ObjectPattern, "optional"), sta,
+            tag, sp,   sp + 1,                                           sr,
+            sr,  sdec, comptime flagMask(ast.ObjectPattern, "optional"), sta,
             sta,
         });
     } else if (comptime eql(u8, name, "jsx_text")) {
