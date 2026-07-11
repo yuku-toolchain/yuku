@@ -1,3 +1,8 @@
+//! AST node definitions.
+//!
+//! Child fields (`NodeIndex`/`IndexRange`) of every node struct are declared
+//! in source order.
+
 const std = @import("std");
 const strings = @import("strings.zig");
 const TokenSpan = @import("token.zig").Span;
