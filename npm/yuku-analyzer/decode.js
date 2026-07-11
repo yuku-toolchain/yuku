@@ -869,7 +869,7 @@ function decode(buffer, source) {
         : +s;
       return {
         type: "Literal", start, end,
-        value: v === v && isFinite(v) ? v : null,
+        value: v,
         raw: r,
       };
     }

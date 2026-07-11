@@ -784,7 +784,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
             \\        : +s;
             \\      return {{
             \\        type: "Literal", start, end,
-            \\        value: v === v && isFinite(v) ? v : null,
+            \\        value: v,
             \\        raw: r,
             \\      }};
             \\    }}

@@ -2,10 +2,11 @@ import type { Diagnostic } from "yuku-parser";
 
 const BIG_INT_PREFIX = "(BigInt) ";
 const REGEXP_PREFIX = "(RegExp) ";
+const NUMBER_PREFIX = "(Number) ";
 const REGEXP_LITERAL = /^\/(.+)\/([dgimsuyv]*)$/;
 
-// JSON can't represent BigInt or RegExp values natively, so we use tagged strings
-// in test snapshots to preserve them.
+// JSON can't represent BigInt, RegExp, or non-finite number values natively,
+// so we use tagged strings in test snapshots to preserve them.
 
 export function serializeAstJson(obj: unknown, space?: string | number): string {
   return JSON.stringify(
@@ -17,6 +18,10 @@ export function serializeAstJson(obj: unknown, space?: string | number): string 
 
       if (value instanceof RegExp) {
         return `${REGEXP_PREFIX}${value.toString()}`;
+      }
+
+      if (typeof value === "number" && !Number.isFinite(value)) {
+        return `${NUMBER_PREFIX}${value}`;
       }
 
       return value;
@@ -38,6 +43,10 @@ export function deserializeAstJson<T = unknown>(jsonString: string): T {
 
     if (value.startsWith(BIG_INT_PREFIX)) {
       return BigInt(value.slice(BIG_INT_PREFIX.length).replace(/n$/, "").replaceAll("_", ""));
+    }
+
+    if (value.startsWith(NUMBER_PREFIX)) {
+      return Number(value.slice(NUMBER_PREFIX.length));
     }
 
     if (value.startsWith(REGEXP_PREFIX)) {

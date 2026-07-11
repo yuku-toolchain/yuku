@@ -252,7 +252,7 @@ interface StringLiteral extends BaseNode {
 
 interface NumericLiteral extends BaseNode {
   type: "Literal";
-  value: number | null;
+  value: number;
   raw: string;
 }
 
