@@ -32,22 +32,11 @@ pub const Scope = struct {
         class,
         /// Section 15.7.11 ClassStaticBlockDefinitionEvaluation.
         static_block,
-        /// Intermediate scope for named function/class expression names.
+        /// Intermediate scope holding a named function/class expression's
+        /// name (sections 15.2.5 and 15.7.14). The name binds in its own
+        /// environment between the outer scope and the body, so it never
+        /// conflicts with same-named bindings inside the body:
         ///
-        /// Section 15.2.5 InstantiateOrdinaryFunctionExpression (step 2-3):
-        ///   Creates a new environment, binds the function name as immutable,
-        ///   then the function body closes over that environment.
-        ///
-        /// Section 15.7.14 ClassDefinitionEvaluation (step 5-6):
-        ///   Same pattern for class expressions with a name.
-        ///
-        /// In JS, `const x = function foo() { const foo = 1; }` is valid
-        /// because the expression name `foo` lives in a separate scope
-        /// between the outer scope and the function body. Same for
-        /// `const x = class C { }`. Without this, the name would
-        /// conflict with same-named bindings inside the body.
-        ///
-        /// Scope structure for `const x = function foo() { ... }`:
         ///   outer scope (x lives here)
         ///     expression_name scope (foo lives here)
         ///       function scope (body bindings live here)
@@ -73,34 +62,34 @@ pub const Scope = struct {
     };
 };
 
-/// The result of a scoped traversal. Contains all scopes created during the walk.
+/// All scopes of a tree, indexed by `ScopeId`.
 pub const ScopeTree = struct {
-    scopes: []const Scope,
+    list: []const Scope,
 
-    /// Returns the scope for the given ID.
-    pub inline fn getScope(self: ScopeTree, id: ScopeId) Scope {
+    /// The scope with the given id.
+    pub inline fn get(self: ScopeTree, id: ScopeId) Scope {
         std.debug.assert(id != .none);
-        std.debug.assert(@intFromEnum(id) < self.scopes.len);
-        return self.scopes[@intFromEnum(id)];
+        std.debug.assert(@intFromEnum(id) < self.list.len);
+        return self.list[@intFromEnum(id)];
     }
 
-    /// Returns an iterator that walks from `start` up to the root scope.
+    /// Walks from `start` up to the root, yielding `start` first.
     pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
-        std.debug.assert(start == .none or @intFromEnum(start) < self.scopes.len);
-        return .{ .scopes = self.scopes, .current = start };
+        std.debug.assert(start == .none or @intFromEnum(start) < self.list.len);
+        return .{ .list = self.list, .current = start };
     }
 
-    /// Walks up from `start` to root, yielding each scope ID.
+    /// Yields each scope id from a starting scope up to the root.
     pub const AncestorIterator = struct {
-        scopes: []const Scope,
+        list: []const Scope,
         current: ScopeId,
 
-        /// Returns the next ancestor scope ID, or `null` when the root has been passed.
+        /// The next scope id, or `null` past the root.
         pub fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
-            std.debug.assert(@intFromEnum(id) < self.scopes.len);
-            self.current = self.scopes[@intFromEnum(id)].parent;
+            std.debug.assert(@intFromEnum(id) < self.list.len);
+            self.current = self.list[@intFromEnum(id)].parent;
             return id;
         }
     };
@@ -182,8 +171,7 @@ pub const ScopeTracker = struct {
     }
 
     fn popScope(self: *ScopeTracker) void {
-        // root and module have no further parent, so popping them would
-        // unbalance the stack
+        // root and module are never popped
         std.debug.assert(self.current != .none);
         std.debug.assert(self.current != .root);
 
@@ -198,7 +186,7 @@ pub const ScopeTracker = struct {
         switch (data) {
             .directive => |d| {
                 if (std.mem.eql(u8, self.tree.string(d.value), "use strict")) {
-                    self.currentScopeMut().flags.strict = true;
+                    self.currentMut().flags.strict = true;
                 }
             },
             .function => |func| {
@@ -208,9 +196,7 @@ pub const ScopeTracker = struct {
                     else
                         self.inheritStrictFlag();
 
-                // named function expressions get an extra scope for the
-                // name, pushed before the function scope so it sits
-                // between outer and body
+                // the expression-name scope sits between outer and body
                 if (isNamedFunctionExpression(func))
                     try self.pushScope(.expression_name, index, flags);
 
@@ -226,11 +212,9 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.function, index, flags);
             },
             .block_statement => {
-                // section 14.15.2 CatchClauseEvaluation creates a single
-                // environment (catchEnv) for both the parameter bindings
-                // and the Block body. the body block reuses the catch scope
-                // so that findInScopeOrHoisted naturally detects conflicts
-                // required by section 14.15.1 early errors.
+                // section 14.15.2: the catch parameter and the block body
+                // share one environment, so the body reuses the catch
+                // scope and single-scope lookups detect their conflicts
                 const current = self.tree.data(self.currentScope().node);
                 if (current != .catch_clause or current.catch_clause.body != index)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
@@ -264,10 +248,9 @@ pub const ScopeTracker = struct {
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
             .decorator => {
-                // decorator expressions evaluate in the
-                // scope enclosing the class. neither the class's type
-                // parameters nor a class expression's own name are
-                // visible, so retarget `current` for the subtree.
+                // decorators evaluate in the scope enclosing the class:
+                // neither its type parameters nor an expression's own
+                // name are visible, so retarget `current` for the subtree
                 try self.decorator_saved.append(self.allocator, self.current);
                 self.current = self.decoratorEvalScope();
             },
@@ -275,17 +258,16 @@ pub const ScopeTracker = struct {
         }
     }
 
-    // a decorator evaluates in the scope enclosing its class. that is the
-    // parent of the nearest class scope, past a named class expression's
-    // name scope. member and parameter decorators hang off the same class.
+    // the parent of the nearest class scope, past a named class
+    // expression's name scope
     fn decoratorEvalScope(self: *const ScopeTracker) ScopeId {
         var it = self.ancestors(self.current);
         while (it.next()) |id| {
-            if (self.getScope(id).kind != .class) continue;
-            const parent = self.getScope(id).parent;
+            if (self.get(id).kind != .class) continue;
+            const parent = self.get(id).parent;
             if (parent == .none) break;
-            if (self.getScope(parent).kind == .expression_name) {
-                return self.getScope(parent).parent;
+            if (self.get(parent).kind == .expression_name) {
+                return self.get(parent).parent;
             }
             return parent;
         }
@@ -293,12 +275,9 @@ pub const ScopeTracker = struct {
         return self.current;
     }
 
-    // "use strict" applies to the whole function including its parameters,
-    // but the tree walk creates the function scope at the function node,
-    // before any body statement is visited. peek into the body so the
-    // strict flag can be set when the scope is created, catching cases
-    // like `function foo(a, a) { "use strict"; }` where the duplicate
-    // params are illegal once the retroactive directive applies
+    // "use strict" applies retroactively to the whole function including
+    // its parameter list, so peek into the body and set the flag at
+    // scope-creation time, before any parameter is visited
     fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
         if (body_index == .null) return false;
 
@@ -381,55 +360,44 @@ pub const ScopeTracker = struct {
         return cls.type != .class_declaration and cls.id != .null;
     }
 
-    /// Returns the ID of the current scope.
-    pub inline fn currentScopeId(self: *const ScopeTracker) ScopeId {
-        return self.current;
+    /// The current scope.
+    pub inline fn currentScope(self: *const ScopeTracker) Scope {
+        std.debug.assert(self.current != .none);
+        return self.get(self.current);
     }
 
-    /// Returns the ID of the nearest hoist target scope (where `var` lands).
-    pub inline fn currentHoistScopeId(self: *const ScopeTracker) ScopeId {
+    // mutable view of the current scope, for the tracker's own
+    // strict-mode bookkeeping
+    inline fn currentMut(self: *ScopeTracker) *Scope {
+        std.debug.assert(self.current != .none);
+        return &self.scopes.items[@intFromEnum(self.current)];
+    }
+
+    /// The scope where a `var` declared here would land.
+    pub inline fn hoistTarget(self: *const ScopeTracker) ScopeId {
         return self.currentScope().hoist_target;
     }
 
-    /// Returns the current scope.
-    pub inline fn currentScope(self: *const ScopeTracker) Scope {
-        std.debug.assert(self.current != .none);
-        return self.getScope(self.currentScopeId());
-    }
-
-    /// Returns a mutable pointer to the current scope.
-    pub inline fn currentScopeMut(self: *ScopeTracker) *Scope {
-        std.debug.assert(self.current != .none);
-        return &self.scopes.items[@intFromEnum(self.currentScopeId())];
-    }
-
-    /// Returns the scope for the given ID.
-    pub inline fn getScope(self: *const ScopeTracker, id: ScopeId) Scope {
+    /// The scope with the given id.
+    pub inline fn get(self: *const ScopeTracker, id: ScopeId) Scope {
         std.debug.assert(id != .none);
         std.debug.assert(@intFromEnum(id) < self.scopes.items.len);
         return self.scopes.items[@intFromEnum(id)];
     }
 
-    /// Returns a mutable pointer to the scope for the given ID.
-    pub inline fn getScopeMut(self: *ScopeTracker, id: ScopeId) *Scope {
-        std.debug.assert(id != .none);
-        std.debug.assert(@intFromEnum(id) < self.scopes.items.len);
-        return &self.scopes.items[@intFromEnum(id)];
-    }
-
-    /// Returns whether the current scope is in strict mode.
+    /// Whether the current scope is in strict mode.
     pub inline fn isStrict(self: *const ScopeTracker) bool {
         return self.currentScope().flags.strict;
     }
 
-    /// Returns an iterator that walks from `start` up to the root scope.
+    /// Walks from `start` up to the root, yielding `start` first.
     pub fn ancestors(self: *const ScopeTracker, start: ScopeId) ScopeTree.AncestorIterator {
         std.debug.assert(start == .none or @intFromEnum(start) < self.scopes.items.len);
-        return .{ .scopes = self.scopes.items, .current = start };
+        return .{ .list = self.scopes.items, .current = start };
     }
 
     /// Finalizes into an immutable `ScopeTree`.
     pub fn toScopeTree(self: *ScopeTracker) ScopeTree {
-        return .{ .scopes = self.scopes.items };
+        return .{ .list = self.scopes.items };
     }
 };

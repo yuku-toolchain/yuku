@@ -26,18 +26,17 @@ pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
 
     // analysis is error tolerant: a tree with syntax errors still
     // produces scopes, symbols, and diagnostics
-    var result = parser.semantic.analyze(&tree) catch return error.AnalyzeFailed;
-    result.symbol_table.resolveAll(result.scope_tree) catch return error.AnalyzeFailed;
+    const sem = parser.semantic.analyze(&tree) catch return error.AnalyzeFailed;
 
     // collect before sizing: records may intern "default" into the pool
     const records = parser.semantic.module_record.collect(
         &tree,
-        &result.symbol_table,
+        &sem,
     ) catch return error.AnalyzeFailed;
 
-    const size = transfer.bufferSize(&tree, &result, records);
+    const size = transfer.bufferSize(&tree, &sem, records);
     const ab = try env.createArrayBuffer(size);
-    _ = transfer.serializeInto(&tree, &result, records, ab.data);
+    _ = transfer.serializeInto(&tree, &sem, records, ab.data);
 
     return ab.val;
 }

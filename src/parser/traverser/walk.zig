@@ -62,8 +62,6 @@ fn walkNode(
     return result;
 }
 
-// walks all child nodes by iterating over the struct fields of the
-// node payload.
 fn walkChildren(
     comptime C: type,
     comptime V: type,
@@ -237,16 +235,13 @@ pub const dispatch = struct {
     }
 };
 
-// lets visitor hooks return either `Action` or `Allocator.Error!Action`.
-// both coerce to `Allocator.Error!Action` through Zig's error union rules,
-// so hooks that don't need to allocate can just return `.proceed` directly
-// without wrapping it in an error union.
+// lets hooks return either `Action` or `Allocator.Error!Action`
 inline fn unwrapAction(result: anytype) Allocator.Error!Action {
     return result;
 }
 
-// checks at compile time that all visitor hook names (enter_X, exit_X)
-// match actual node types in ast.NodeData and have correct payload types.
+// compile-time check that hook names match `ast.NodeData` fields and
+// have the right payload types
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;

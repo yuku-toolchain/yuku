@@ -1,6 +1,6 @@
 ---
 .title = "Semantic Analysis",
-.description = "Scope-dependent early errors, scope tree, symbol table, and module import/export records for JavaScript and TypeScript.",
+.description = "Scope-dependent early errors, the semantic model, and module import/export records for JavaScript and TypeScript.",
 .author = "Arshad Yaseen",
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",
@@ -11,36 +11,34 @@ Yuku defers these scope-dependent checks to a separate semantic analysis pass. T
 
 ## [Analyzing a Tree]($section.id('analyzing-a-tree'))
 
-`semantic.analyze` builds a scope tree and symbol table, resolves identifier references to their declarations, and reports the remaining early errors. Together, parsing and semantic analysis cover the full set of early errors required by the specification.
+`semantic.analyze` builds the complete [`Semantic`](/parser/traverse/#the-semantic-model) model, with every reference resolved to its declaration, and reports the remaining early errors. Together, parsing and semantic analysis cover the full set of early errors required by the specification.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
 defer tree.deinit();
 
-// run semantic analysis
-const result = try parser.semantic.analyze(&tree);
+const semantic = try parser.semantic.analyze(&tree);
 
-// result.scope_tree   - all lexical scopes
-// result.symbol_table - all symbols and references
+semantic.symbolOf(node);          // what does this node declare or refer to?
+semantic.uses(symbol_id);         // every use site of a symbol
+semantic.lookup(scope_id, "x");   // name resolution from any scope
 ```
 
 Semantic diagnostics are appended directly to `tree.diagnostics` alongside parse errors. After analysis, `tree.hasErrors()` reflects both.
 
-All allocations (scope tree, symbol table) use the tree's arena, so they are valid for the lifetime of the tree and freed by `tree.deinit()`.
+All allocations use the tree's arena, so the model is valid for the lifetime of the tree and freed by `tree.deinit()`.
 
-See [Traverse](/parser/traverse/#semantic-traverser) for everything the returned `ScopeTree` and `SymbolTable` can do.
+See [The Semantic Model](/parser/traverse/#the-semantic-model) for everything `Semantic` can answer.
 
 >[]($block.attrs('note'))
->If you need the scope tree and symbol table without running the early-error checks, call the [semantic traverser](/parser/traverse/#semantic-traverser) directly with your own visitor (or an empty `struct {}` if you only want the tables):
+>If you want the model without the early-error checks, call the [semantic traverser](/parser/traverse/#semantic-traverser) directly with your own visitor (or an empty `struct {}` if you only want the model):
 >
 >```zig
 >const sem = parser.traverser.semantic;
 >
 >var noop = struct {}{};
->const result = try sem.traverse(@TypeOf(noop), &tree, &noop);
->
->// result.scope_tree   - all lexical scopes
->// result.symbol_table - all symbols and references (no diagnostics emitted)
+>const semantic = try sem.traverse(@TypeOf(noop), &tree, &noop);
+>// same Semantic model, no diagnostics emitted
 >```
 >
 >`semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a real visitor that emits the early-error diagnostics on top.
@@ -49,14 +47,14 @@ See [Traverse](/parser/traverse/#semantic-traverser) for everything the returned
 
 `semantic.module_record` produces a module's flat import/export records, mirroring the specification's [ImportEntry](https://tc39.es/ecma262/#table-importentry-record-fields) / [ExportEntry](https://tc39.es/ecma262/#table-exportentry-records) model. The [Analyzer](/analyzer/)'s cross-file linking is built on it.
 
-Records carry the `SymbolId` of each local binding, so a linker joins an importing module's record to the defining module's symbol with no name re-resolution. That is why `collect` takes the symbol table:
+Records carry the `SymbolId` of each local binding, so a linker joins an importing module's record to the defining module's symbol with no name re-resolution. That is why `collect` takes the semantic model:
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
 defer tree.deinit();
 
-const result = try parser.semantic.analyze(&tree);
-const records = try parser.semantic.module_record.collect(&tree, &result.symbol_table);
+const semantic = try parser.semantic.analyze(&tree);
+const records = try parser.semantic.module_record.collect(&tree, &semantic);
 
 for (records.imports) |imp| {
     std.debug.print("imports '{s}' from \"{s}\"\n", .{

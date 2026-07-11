@@ -17,13 +17,15 @@ const eql = std.mem.eql;
 pub const AnalysisError = Allocator.Error;
 
 pub const module_record = @import("module_record.zig");
+pub const Semantic = semantic.Semantic;
 
-/// Runs semantic analysis on a tree.
+/// Runs semantic analysis on a tree: builds the complete `Semantic`
+/// model and reports the scope-dependent early errors.
 ///
-/// Appends diagnostics directly to the tree alongside parse errors.
-/// All allocations use the tree's arena, so the returned scope tree
-/// and symbol table are valid as long as the tree is alive.
-pub fn analyze(tree: *ast.Tree) AnalysisError!semantic.Result {
+/// Diagnostics are appended directly to the tree alongside parse
+/// errors. All allocations use the tree's arena, so the returned
+/// model is valid as long as the tree is alive.
+pub fn analyze(tree: *ast.Tree) AnalysisError!Semantic {
     std.debug.assert(tree.root != .null);
 
     var visitor = SemanticVisit{
@@ -31,12 +33,9 @@ pub fn analyze(tree: *ast.Tree) AnalysisError!semantic.Result {
         .allocator = tree.allocator(),
     };
 
-    const result = try semantic.traverse(SemanticVisit, tree, &visitor);
-
-    // post traversal
-    try visitor.checkUnresolvedExports(result);
-
-    return result;
+    const sem = try semantic.traverse(SemanticVisit, tree, &visitor);
+    try visitor.checkUnresolvedExports(sem);
+    return sem;
 }
 
 const SemanticVisit = struct {
@@ -60,7 +59,7 @@ const SemanticVisit = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         const name = ctx.tree.string(id.name);
-        const flags = ctx.symbols.currentBindingFlags();
+        const flags = ctx.symbols.pending.flags;
 
         // type-position binding identifiers are parameter labels, not
         // real bindings. only type parameters are real here.
@@ -85,7 +84,7 @@ const SemanticVisit = struct {
             );
         }
 
-        const existing = ctx.symbols.findInScopeOrHoisted(ctx.symbols.currentTarget(), name);
+        const existing = ctx.symbols.binding(ctx.symbols.pending.scope, name);
         try self.checkRedeclaration(id, node_index, name, flags, ctx, existing);
 
         // ts loosens duplicate-export for declaration merges (interface
@@ -110,11 +109,11 @@ const SemanticVisit = struct {
     ) AnalysisError!void {
         std.debug.assert(node_index != .null);
         std.debug.assert(name.len > 0);
-        const target = ctx.symbols.currentTarget();
-        const excludes = ctx.symbols.currentBindingExcludes();
+        const target = ctx.symbols.pending.scope;
+        const excludes = ctx.symbols.pending.excludes;
 
         if (existing_id) |sym| {
-            const existing = ctx.symbols.getSymbol(sym);
+            const existing = ctx.symbols.symbol(sym);
             const merging_with_ambient = flags.ambient or existing.flags.ambient;
 
             if (!merging_with_ambient and existing.flags.intersects(excludes)) {
@@ -141,11 +140,11 @@ const SemanticVisit = struct {
         // 14.2.1: hoisting var conflicts with block-scoped names in
         // any intermediate block it passes through.
         if (flags.isHoistingVar()) {
-            var iter = ctx.scope.ancestors(ctx.scope.currentScopeId());
+            var iter = ctx.scope.ancestors(ctx.scope.current);
             while (iter.next()) |scope_id| {
                 if (scope_id == target) break;
-                if (ctx.symbols.findInScope(scope_id, name)) |sym| {
-                    const existing = ctx.symbols.getSymbol(sym);
+                if (ctx.symbols.ownBinding(scope_id, name)) |sym| {
+                    const existing = ctx.symbols.symbol(sym);
                     if (existing.flags.isBlockScopedLike()) {
                         try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                         break;
@@ -1439,10 +1438,10 @@ const SemanticVisit = struct {
     }
 
     /// Post-traversal: checks that all local export specifiers refer to declared bindings.
-    fn checkUnresolvedExports(self: *Self, result: semantic.Result) AnalysisError!void {
+    fn checkUnresolvedExports(self: *Self, sem: Semantic) AnalysisError!void {
         if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |spec| {
-            const found = result.symbol_table.findInScopeOrHoisted(.module, spec.local_name);
+            const found = sem.binding(.module, spec.local_name);
             if (found == null) try self.report(
                 self.tree.span(spec.node),
                 try self.fmt("Export '{s}' is not defined", .{spec.local_name}),

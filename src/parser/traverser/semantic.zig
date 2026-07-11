@@ -15,7 +15,7 @@ pub const SymbolId = bi.SymbolId;
 pub const ReferenceId = bi.ReferenceId;
 pub const Symbol = bi.Symbol;
 pub const Reference = bi.Reference;
-pub const SymbolTable = bi.SymbolTable;
+pub const Semantic = bi.Semantic;
 pub const SymbolTracker = bi.SymbolTracker;
 
 /// Walk context combining the path stack, scope tracker, and symbol
@@ -29,17 +29,21 @@ pub const Ctx = struct {
     symbols: SymbolTracker,
     // depth of ts type-only context. inspect via `inTypePosition()`.
     type_position_depth: u32 = 0,
-    // the lexical scope of every node, indexed by node index.
+    // per-node tables carried into the final `Semantic`
     node_scopes: []ScopeId,
+    node_parents: []ast.NodeIndex,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
         const node_scopes = try tree.allocator().alloc(ScopeId, tree.nodes.len);
         @memset(node_scopes, .root);
+        const node_parents = try tree.allocator().alloc(ast.NodeIndex, tree.nodes.len);
+        @memset(node_parents, .null);
         return .{
             .tree = tree,
             .scope = try ScopeTracker.init(tree),
             .symbols = try SymbolTracker.init(tree),
             .node_scopes = node_scopes,
+            .node_parents = node_parents,
         };
     }
 
@@ -50,9 +54,9 @@ pub const Ctx = struct {
 
     /// True when the walker is currently inside a TS namespace body.
     pub inline fn inTsNamespace(self: *const Ctx) bool {
-        var it = self.scope.ancestors(self.scope.currentScopeId());
+        var it = self.scope.ancestors(self.scope.current);
         while (it.next()) |id| {
-            if (self.scope.getScope(id).kind == .ts_module) return true;
+            if (self.scope.get(id).kind == .ts_module) return true;
         }
         return false;
     }
@@ -61,7 +65,8 @@ pub const Ctx = struct {
         self.path.push(index);
         try self.scope.enter(index, data);
 
-        self.node_scopes[@intFromEnum(index)] = self.scope.currentScopeId();
+        self.node_scopes[@intFromEnum(index)] = self.scope.current;
+        self.node_parents[@intFromEnum(index)] = self.path.parent() orelse .null;
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 
@@ -146,26 +151,17 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
     return false;
 }
 
-/// Combined output of a semantic traversal. Holds the scope tree and
-/// the symbol table.
-pub const Result = struct {
-    scope_tree: ScopeTree,
-    symbol_table: SymbolTable,
-    /// Lexical scope of every node, indexed by node index.
-    node_scopes: []const ScopeId,
-};
-
 /// Walks the tree with full path, scope, and symbol tracking. Returns
-/// the scope tree and the unresolved symbol table. Call
-/// `SymbolTable.resolveAll` to build the reference cross-index.
-pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Result {
+/// the complete `Semantic` model: scopes, symbols, and references,
+/// fully resolved and cross-indexed.
+pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
     std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree);
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
-    return .{
-        .scope_tree = ctx.scope.toScopeTree(),
-        .symbol_table = try ctx.symbols.toSymbolTable(),
-        .node_scopes = ctx.node_scopes,
-    };
+    return ctx.symbols.finalize(
+        ctx.scope.toScopeTree(),
+        ctx.node_scopes,
+        ctx.node_parents,
+    );
 }

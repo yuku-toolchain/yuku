@@ -15,7 +15,7 @@
 //   decl_nodes   decl_node_count * 4.            Flat NodeIndex array
 //                backing `PackedSymbol.decls_start/len` ranges.
 //   references   reference_count * REFERENCE_SIZE. One PackedReference
-//                each, resolution folded in. Requires `resolveAll`.
+//                each, resolution folded in.
 //   imports      import_count * IMPORT_SIZE.     One PackedImport each.
 //   exports      export_count * EXPORT_SIZE.     One PackedExport each.
 //   node_scopes  node_scope_count * 4.           One ScopeId per node,
@@ -38,7 +38,7 @@ const module_record = parser.semantic.module_record;
 
 const Scope = semantic.Scope;
 const Symbol = semantic.Symbol;
-const Result = semantic.Result;
+const Semantic = semantic.Semantic;
 const ModuleRecords = module_record.ModuleRecords;
 
 /// fixed-size counts block. one reserved slot keeps room for future
@@ -189,34 +189,30 @@ comptime {
 /// sections, including the alignment padding between them.
 pub fn bufferSize(
     tree: *const ast.Tree,
-    result: *const Result,
+    sem: *const Semantic,
     records: ModuleRecords,
 ) usize {
     const base = transfer.bufferSize(tree);
     const aligned = std.mem.alignForward(usize, base, 4);
     return aligned + SUBHEADER_SIZE +
-        result.scope_tree.scopes.len * SCOPE_SIZE +
-        result.symbol_table.symbols.len * SYMBOL_SIZE +
-        result.symbol_table.decl_nodes.len * 4 +
-        result.symbol_table.references.len * REFERENCE_SIZE +
+        sem.scopes.list.len * SCOPE_SIZE +
+        sem.symbols.len * SYMBOL_SIZE +
+        sem.decl_nodes.len * 4 +
+        sem.references.len * REFERENCE_SIZE +
         records.imports.len * IMPORT_SIZE +
         records.exports.len * EXPORT_SIZE +
-        result.node_scopes.len * 4;
+        sem.node_scopes.len * 4;
 }
 
 /// Serializes the core AST buffer followed by the semantic sections.
-/// `result.symbol_table` must have been resolved with `resolveAll` so
-/// every reference carries its resolution. Returns bytes written.
+/// Returns bytes written.
 pub fn serializeInto(
     tree: *const ast.Tree,
-    result: *const Result,
+    sem: *const Semantic,
     records: ModuleRecords,
     buf: []u8,
 ) usize {
-    const table = &result.symbol_table;
-    // resolveAll has run: one resolution per reference
-    std.debug.assert(table.resolutions.len == table.references.len);
-    std.debug.assert(buf.len >= bufferSize(tree, result, records));
+    std.debug.assert(buf.len >= bufferSize(tree, sem, records));
 
     const base = transfer.serializeInto(tree, buf);
 
@@ -229,18 +225,18 @@ pub fn serializeInto(
     @memset(buf[base..pos], 0);
 
     const sub = SubHeader{
-        .scope_count = @intCast(result.scope_tree.scopes.len),
-        .symbol_count = @intCast(table.symbols.len),
-        .reference_count = @intCast(table.references.len),
-        .decl_node_count = @intCast(table.decl_nodes.len),
+        .scope_count = @intCast(sem.scopes.list.len),
+        .symbol_count = @intCast(sem.symbols.len),
+        .reference_count = @intCast(sem.references.len),
+        .decl_node_count = @intCast(sem.decl_nodes.len),
         .import_count = @intCast(records.imports.len),
         .export_count = @intCast(records.exports.len),
-        .node_scope_count = @intCast(result.node_scopes.len),
+        .node_scope_count = @intCast(sem.node_scopes.len),
     };
     @memcpy(buf[pos..][0..SUBHEADER_SIZE], std.mem.asBytes(&sub));
     pos += SUBHEADER_SIZE;
 
-    for (result.scope_tree.scopes) |scope| {
+    for (sem.scopes.list) |scope| {
         const entry = PackedScope{
             .node = @intFromEnum(scope.node),
             .parent = @intFromEnum(scope.parent),
@@ -252,7 +248,7 @@ pub fn serializeInto(
         pos += SCOPE_SIZE;
     }
 
-    for (table.symbols) |symbol| {
+    for (sem.symbols) |symbol| {
         const entry = PackedSymbol{
             .name_start = symbol.name.start,
             .name_end = symbol.name.end,
@@ -265,11 +261,11 @@ pub fn serializeInto(
         pos += SYMBOL_SIZE;
     }
 
-    const decl_bytes = std.mem.sliceAsBytes(table.decl_nodes);
+    const decl_bytes = std.mem.sliceAsBytes(sem.decl_nodes);
     @memcpy(buf[pos..][0..decl_bytes.len], decl_bytes);
     pos += decl_bytes.len;
 
-    for (table.references, 0..) |reference, i| {
+    for (sem.references) |reference| {
         const entry = PackedReference{
             .name_start = reference.name.start,
             .name_end = reference.name.end,
@@ -277,7 +273,7 @@ pub fn serializeInto(
             .node = @intFromEnum(reference.node),
             .bits = (@as(u32, @intFromEnum(reference.kind)) << REFERENCE_TYPE_BIT) |
                 (@as(u32, @intFromBool(reference.is_write)) << REFERENCE_WRITE_BIT),
-            .symbol = @intFromEnum(table.resolutions[i]),
+            .symbol = @intFromEnum(reference.symbol),
         };
         @memcpy(buf[pos..][0..REFERENCE_SIZE], std.mem.asBytes(&entry));
         pos += REFERENCE_SIZE;
@@ -321,11 +317,11 @@ pub fn serializeInto(
         pos += EXPORT_SIZE;
     }
 
-    const node_scope_bytes = std.mem.sliceAsBytes(result.node_scopes);
+    const node_scope_bytes = std.mem.sliceAsBytes(sem.node_scopes);
     @memcpy(buf[pos..][0..node_scope_bytes.len], node_scope_bytes);
     pos += node_scope_bytes.len;
 
     // writer and size calculation must agree exactly
-    std.debug.assert(pos == bufferSize(tree, result, records));
+    std.debug.assert(pos == bufferSize(tree, sem, records));
     return pos;
 }
