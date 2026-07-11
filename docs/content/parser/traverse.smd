@@ -341,13 +341,24 @@ pub fn enter_node(
 
 ### [Using the ScopeTree After Traversal]($section.id('using-the-scopetree-after-traversal'))
 
-`scoped.traverse` returns an immutable `ScopeTree` containing every scope that was created:
+`scoped.traverse` returns an immutable `ScopeTree` containing every scope that was created. Each scope is:
+
+```zig
+pub const Scope = struct {
+    node: ast.NodeIndex,   // the AST node that created this scope
+    parent: ScopeId,       // parent scope, .none at the root
+    hoist_target: ScopeId, // nearest ancestor (or self) where `var` hoists to
+    kind: Kind,            // .global, .module, .function, .block, .class, ...
+    flags: Flags,          // flags.strict
+};
+```
+
+`ScopeId.root` (the global scope) is always `0`, and when `source_type` is `.module`, `ScopeId.module` is always `1`.
 
 ```zig
 const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor);
 
-const root = scope_tree.getScope(.root);          // ScopeId.root is always 0
-_ = root;
+const root = scope_tree.getScope(.root);
 
 var it = scope_tree.ancestors(some_scope_id);
 while (it.next()) |id| {
@@ -355,6 +366,8 @@ while (it.next()) |id| {
     _ = scope;
 }
 ```
+
+`scope_tree.scopes` is the raw slice, indexed by `ScopeId`. `getScope(id)` and `ancestors(start)` are the only two methods; everything else you do with scopes goes through the [SymbolTable](#symboltable-reference) lookups that take a `ScopeId`.
 
 The tree is backed by the parser's arena, so it lives as long as the source `Tree` does. Calling `tree.deinit()` invalidates it.
 

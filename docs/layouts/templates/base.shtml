@@ -31,6 +31,8 @@
       •
       <a href="$site.page('parser/traverse').link()">Traverse</a>
       •
+      <a href="$site.page('parser/semantic').link()">Semantic</a>
+      •
       <a href="$site.page('parser/codegen').link()">Codegen</a>
       •
       <a href="$site.page('analyzer').link()">Analyzer</a>

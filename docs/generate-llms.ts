@@ -7,7 +7,15 @@ const ASSETS_DIR = join(DOCS_DIR, "assets");
 
 const PLAYGROUND_URL = "https://playground.yuku.fyi";
 
-const ORDER = ["", "parser", "parser/ast", "parser/traverse", "parser/codegen", "analyzer"];
+const ORDER = [
+  "",
+  "parser",
+  "parser/ast",
+  "parser/traverse",
+  "parser/semantic",
+  "parser/codegen",
+  "analyzer",
+];
 
 interface Page {
   slug: string; // "" for the home page, else "parser", "parser/ast", ...
