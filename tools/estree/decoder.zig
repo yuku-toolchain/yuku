@@ -106,18 +106,21 @@ fn writeSemanticConstants(w: *Writer) !void {
     // one entry per Reference.Space value, in enum order, plus the
     // mirrored Space.inTypePosition lookup
     const space_fields = @typeInfo(Reference.Space).@"enum".fields;
-    try w.writeAll("const REFERENCE_SPACES = [");
-    inline for (space_fields, 0..) |field, i| {
-        if (i > 0) try w.writeAll(", ");
-        try w.print("\"{s}\"", .{field.name});
-    }
-    try w.writeAll("];\n");
-    try w.writeAll("const REFERENCE_TYPE_POSITION = [");
-    inline for (space_fields, 0..) |field, i| {
-        if (i > 0) try w.writeAll(", ");
-        try w.print("{}", .{@field(Reference.Space, field.name).inTypePosition()});
-    }
-    try w.writeAll("];\n");
+    const space_names = comptime blk: {
+        var names: [space_fields.len][]const u8 = undefined;
+        for (space_fields, 0..) |field, i| names[i] = field.name;
+        break :blk names;
+    };
+    try writeArray(w, "REFERENCE_SPACES", &space_names);
+    const space_type_position = comptime blk: {
+        var vals: [space_fields.len][]const u8 = undefined;
+        for (space_fields, 0..) |field, i| {
+            const space = @field(Reference.Space, field.name);
+            vals[i] = if (space.inTypePosition()) "true" else "false";
+        }
+        break :blk vals;
+    };
+    try writeArrayRaw(w, "REFERENCE_TYPE_POSITION", &space_type_position);
 
     try w.writeAll("const SymbolFlags = Object.freeze({\n");
     inline for (@typeInfo(Symbol.Flags).@"struct".fields) |field| {

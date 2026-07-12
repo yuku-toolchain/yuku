@@ -85,27 +85,19 @@ class Symbol {
   hasAll(mask) {
     return (this.flags & mask) === mask;
   }
-  get inValueSpace() {
-    return (this.flags & SymbolFlags.ValueSpace) !== 0;
-  }
-  get inTypeSpace() {
-    return (this.flags & SymbolFlags.TypeSpace) !== 0;
-  }
-  get inNamespaceSpace() {
-    return (this.flags & SymbolFlags.NamespaceSpace) !== 0;
-  }
   // the acceptance rule of name resolution. import bindings alias
   // symbols of unknowable space and are visible in every space
   visibleIn(space) {
-    if ((this.flags & SymbolFlags.Import) !== 0) return true;
+    const flags = this.flags;
+    if ((flags & SymbolFlags.Import) !== 0) return true;
     switch (space) {
       case "value":
       case "typeof":
-        return this.inValueSpace;
+        return (flags & SymbolFlags.ValueSpace) !== 0;
       case "type":
-        return this.inTypeSpace;
+        return (flags & SymbolFlags.TypeSpace) !== 0;
       case "namespace":
-        return this.inNamespaceSpace;
+        return (flags & SymbolFlags.NamespaceSpace) !== 0;
       case "any":
         return true;
     }

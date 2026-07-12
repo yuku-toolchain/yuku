@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer } from "yuku-analyzer";
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
 import { summary } from "./summarize";
 
 describe("resolution", () => {
@@ -184,8 +184,8 @@ describe("declaration spaces", () => {
       "input.ts",
       `type T = string; function f() { const T = 1; T; }`,
     );
-    const alias = module.symbols.find((s) => s.name === "T" && s.inTypeSpace)!;
-    const local = module.symbols.find((s) => s.name === "T" && s.inValueSpace)!;
+    const alias = module.symbols.find((s) => s.name === "T" && s.has(SymbolFlags.TypeSpace))!;
+    const local = module.symbols.find((s) => s.name === "T" && s.has(SymbolFlags.ValueSpace))!;
     const inner = local.scope;
 
     expect(module.resolve("T", inner, "type")).toBe(alias);
@@ -196,7 +196,7 @@ describe("declaration spaces", () => {
     expect(alias.visibleIn("type")).toBe(true);
     expect(alias.visibleIn("value")).toBe(false);
     expect(local.visibleIn("typeof")).toBe(true);
-    expect(local.inNamespaceSpace).toBe(false);
+    expect(local.has(SymbolFlags.NamespaceSpace)).toBe(false);
   });
 });
 

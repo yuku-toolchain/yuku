@@ -208,12 +208,6 @@ interface Symbol {
   has(mask: number): boolean;
   /** True when every flag in `mask` is set. */
   hasAll(mask: number): boolean;
-  /** Occupies value space: exists at runtime. */
-  readonly inValueSpace: boolean;
-  /** Occupies TS type space: referencable from annotations. */
-  readonly inTypeSpace: boolean;
-  /** A dotted type name can start from it: namespaces and enums. */
-  readonly inNamespaceSpace: boolean;
   /**
    * True when a reference resolving in `space` may bind to this
    * symbol, the acceptance rule of name resolution. Import bindings

@@ -173,19 +173,19 @@ sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
 sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // an exported function?
 ```
 
-Alongside the single-bit flags, five **composites** answer the common categorical questions directly, with getters for the three declaration spaces.
+Alongside the single-bit flags, five **composites** answer the common categorical questions directly.
 
 ```js
-sym.has(SymbolFlags.Variable);  // var / let / const, parameters and catch bindings included
-sym.has(SymbolFlags.Import);    // any import binding, value or `import type`
-
-sym.inValueSpace;      // visible at runtime
-sym.inTypeSpace;       // referencable from a TS type position
-sym.inNamespaceSpace;  // a dotted type name (`ns.T`) can start from it
-sym.visibleIn(space);  // the acceptance rule of name resolution
+sym.has(SymbolFlags.Variable);       // var / let / const, parameters and catch bindings included
+sym.has(SymbolFlags.Import);         // any import binding, value or `import type`
+sym.has(SymbolFlags.ValueSpace);     // visible at runtime
+sym.has(SymbolFlags.TypeSpace);      // referencable from a TS type position
+sym.has(SymbolFlags.NamespaceSpace); // a dotted type name (`ns.T`) can start from it
 ```
 
-A `class` satisfies both `inValueSpace` and `inTypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
+The one method beyond `has` is `sym.visibleIn(space)`, the acceptance rule of name resolution: whether a reference resolving in `space` may bind to this symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
+
+A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
 
 ## [References]($section.id('references'))
 
