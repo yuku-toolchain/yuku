@@ -78,14 +78,17 @@ pub const Ctx = struct {
         index: ast.NodeIndex,
         data: ast.NodeData,
     ) Allocator.Error!void {
-        const is_ref = data == .identifier_reference;
-        const is_write = is_ref and isWriteTarget(self.tree, &self.path);
-        const space = if (is_ref)
-            refSpace(self.tree, &self.path, self.inTypePosition())
-        else
-            .value;
+        const is_write = data == .identifier_reference and
+            isWriteTarget(self.tree, &self.path);
+        const space = switch (data) {
+            .identifier_reference, .binding_identifier => refSpace(
+                self.tree,
+                &self.path,
+                self.inTypePosition(),
+            ),
+            else => .value,
+        };
         try self.symbols.declareBindings(index, data, &self.scope, .{
-            .in_type_position = self.inTypePosition(),
             .is_write = is_write,
             .space = space,
         });
@@ -102,8 +105,8 @@ pub const Ctx = struct {
     }
 };
 
-/// The declaration space an `identifier_reference` position resolves
-/// in. The reference is the top of `path`.
+/// The declaration space an identifier position resolves in. The
+/// identifier is the top of `path`.
 pub fn refSpace(
     tree: *const ast.Tree,
     path: *const NodePath,

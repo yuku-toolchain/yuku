@@ -55,8 +55,8 @@ pub const Scope = struct {
         ts_module,
 
         /// Returns whether `var` declarations hoist to this scope kind.
-        pub fn isHoistTarget(kind: Kind) bool {
-            return switch (kind) {
+        pub fn isHoistTarget(self: Kind) bool {
+            return switch (self) {
                 .global, .module, .function, .static_block, .ts_module => true,
                 else => false,
             };

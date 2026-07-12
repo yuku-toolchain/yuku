@@ -327,8 +327,8 @@ Each declaration kind has a precomputed `Symbol.Excludes.X` flag set. The rule i
 > A new declaration with `Excludes.X` conflicts with any existing symbol whose flags **intersect** `Excludes.X`. Otherwise the two declarations merge into a single symbol with the union of their flags.
 
 ```zig
-Symbol.Excludes.block_var        // let / const / using
-Symbol.Excludes.function_var     // var
+Symbol.Excludes.block_scoped_var    // let / const / using
+Symbol.Excludes.function_scoped_var // var
 Symbol.Excludes.function         // function (allows overloads in TS, var-merge in sloppy)
 Symbol.Excludes.class
 Symbol.Excludes.interface
@@ -339,7 +339,7 @@ Symbol.Excludes.value_module
 Symbol.Excludes.namespace_module
 Symbol.Excludes.import_binding
 Symbol.Excludes.parameter
-Symbol.Excludes.catch_param
+Symbol.Excludes.catch_var
 Symbol.Excludes.type_parameter
 ```
 

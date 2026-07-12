@@ -199,9 +199,9 @@ pub const Symbol = struct {
     /// `Excludes.X` conflicts with any existing flag also in
     /// `Excludes.X`. Otherwise both declarations merge into one symbol.
     pub const Excludes = struct {
-        pub const block_var: Flags = value_space;
+        pub const block_scoped_var: Flags = value_space;
 
-        pub const function_var: Flags = blk: {
+        pub const function_scoped_var: Flags = blk: {
             var f = value_space;
             f.function_scoped_var = false;
             f.function = false;
@@ -210,7 +210,7 @@ pub const Symbol = struct {
 
         /// Function in a hoist scope (function/global/static_block). TS
         /// allows function overloads, sloppy JS allows merge with `var`.
-        /// The `block_var` excludes are used instead at
+        /// The `block_scoped_var` excludes are used instead at
         /// lexical scopes (block/module).
         pub const function: Flags = blk: {
             var f = value_space;
@@ -269,7 +269,7 @@ pub const Symbol = struct {
             break :blk f;
         };
 
-        pub const catch_param: Flags = value_space;
+        pub const catch_var: Flags = value_space;
 
         // type parameters merge (multiple `infer T` in one conditional
         // unify). duplicate explicit `<T, T>` is caught structurally
@@ -299,7 +299,8 @@ pub const Reference = struct {
     /// The referencing node.
     node: ast.NodeIndex,
     /// The declaring symbol this reference resolves to. `.none` for
-    /// names with no local binding (globals, undeclared names).
+    /// names with no binding visible in the reference's space
+    /// (globals, undeclared names).
     symbol: SymbolId = .none,
     flags: Flags = .{},
 
@@ -737,7 +738,7 @@ pub const SymbolTracker = struct {
                             .function_scoped_var = true,
                             .ambient = decl.declare or self.ambient,
                         },
-                        .excludes = Symbol.Excludes.function_var,
+                        .excludes = Symbol.Excludes.function_scoped_var,
                         .scope = scope.hoistTarget(),
                     },
                     .@"const", .using, .await_using => self.pending = .{
@@ -746,7 +747,7 @@ pub const SymbolTracker = struct {
                             .const_var = true,
                             .ambient = decl.declare or self.ambient,
                         },
-                        .excludes = Symbol.Excludes.block_var,
+                        .excludes = Symbol.Excludes.block_scoped_var,
                         .scope = scope.current,
                     },
                     .let => self.pending = .{
@@ -754,7 +755,7 @@ pub const SymbolTracker = struct {
                             .block_scoped_var = true,
                             .ambient = decl.declare or self.ambient,
                         },
-                        .excludes = Symbol.Excludes.block_var,
+                        .excludes = Symbol.Excludes.block_scoped_var,
                         .scope = scope.current,
                     },
                 }
@@ -783,7 +784,7 @@ pub const SymbolTracker = struct {
                     .excludes = if (allow_overload)
                         Symbol.Excludes.function
                     else
-                        Symbol.Excludes.block_var,
+                        Symbol.Excludes.block_scoped_var,
                     .scope = target,
                 };
 
@@ -847,7 +848,7 @@ pub const SymbolTracker = struct {
                 try self.pushSavedContext();
                 self.pending = .{
                     .flags = .{ .function_scoped_var = true, .catch_var = true },
-                    .excludes = Symbol.Excludes.catch_param,
+                    .excludes = Symbol.Excludes.catch_var,
                     .scope = scope.current,
                 };
             },
@@ -959,11 +960,9 @@ pub const SymbolTracker = struct {
 
     /// Per-node facts computed by the walker for `declareBindings`.
     pub const RefContext = struct {
-        /// inside a TS type-only subtree
-        in_type_position: bool,
         /// the node is an identifier in assignment-target position
         is_write: bool,
-        /// the declaration space the reference resolves in
+        /// the declaration space the identifier resolves in
         space: Reference.Space = .value,
     };
 
@@ -985,7 +984,7 @@ pub const SymbolTracker = struct {
             .binding_identifier => |id| {
                 // type-position identifiers are parameter labels.
                 // only type parameters are real declarations there
-                if (ref_ctx.in_type_position and !self.pending.flags.type_parameter) return;
+                if (ref_ctx.space.inTypePosition() and !self.pending.flags.type_parameter) return;
 
                 const sym_id = try self.declare(id.name, index);
 
