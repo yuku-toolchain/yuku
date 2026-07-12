@@ -183,7 +183,7 @@ pub const ScopeTracker = struct {
         std.debug.assert(self.current != .none);
         std.debug.assert(self.current != .root);
 
-        self.current = self.scopes.items[@intFromEnum(self.current)].parent;
+        self.current = self.currentScope().parent;
     }
 
     pub fn enter(

@@ -543,7 +543,7 @@ pub const Semantic = struct {
         var it = self.scopes.ancestors(scope_id);
         while (it.next()) |ancestor| {
             const id = self.scope_maps[@intFromEnum(ancestor)].get(name) orelse continue;
-            if (self.symbols[@intFromEnum(id)].flags.visibleIn(space)) return id;
+            if (self.symbol(id).flags.visibleIn(space)) return id;
         }
         return null;
     }
@@ -1106,9 +1106,7 @@ pub const SymbolTracker = struct {
         const name_str = self.tree.string(name);
         const target_idx = @intFromEnum(target);
 
-        const id = if (self.scope_maps.items[target_idx].get(name_str) orelse
-            self.hoisting_variables.items[target_idx].get(name_str)) |existing|
-        sid: {
+        const id = if (self.binding(target, name_str)) |existing| sid: {
             const sym = &self.symbols.items[@intFromEnum(existing)];
             if (!sym.flags.intersects(self.pending.excludes)) {
                 var merged = sym.flags.merge(self.pending.flags);
