@@ -173,16 +173,19 @@ sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
 sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // an exported function?
 ```
 
-Alongside the single-bit flags, four **composites** answer the common categorical questions directly.
+Alongside the single-bit flags, five **composites** answer the common categorical questions directly, with getters for the three declaration spaces.
 
 ```js
-sym.has(SymbolFlags.Variable);   // var / let / const, parameters and catch bindings included
-sym.has(SymbolFlags.Import);  // any import binding, value or `import type`
-sym.has(SymbolFlags.ValueSpace); // visible at runtime
-sym.has(SymbolFlags.TypeSpace);  // referencable from a TS type position
+sym.has(SymbolFlags.Variable);  // var / let / const, parameters and catch bindings included
+sym.has(SymbolFlags.Import);    // any import binding, value or `import type`
+
+sym.inValueSpace;      // visible at runtime
+sym.inTypeSpace;       // referencable from a TS type position
+sym.inNamespaceSpace;  // a dotted type name (`ns.T`) can start from it
+sym.visibleIn(space);  // the acceptance rule of name resolution
 ```
 
-A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
+A `class` satisfies both `inValueSpace` and `inTypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
 
 ## [References]($section.id('references'))
 
@@ -191,17 +194,29 @@ A `Reference` is one identifier in use position, already resolved.
 ```js
 const ref = module.references[0];
 
-ref.name;    // the identifier text
-ref.node;    // the Identifier node, identity-shared with the AST
-ref.scope;   // the scope the use occurs in
-ref.symbol;  // the resolved Symbol, or null for free names
-ref.kind;    // "value" for runtime uses, "type" for TS type positions
-ref.isWrite; // true when this use (re)assigns the binding
+ref.name;           // the identifier text
+ref.node;           // the Identifier node, identity-shared with the AST
+ref.scope;          // the scope the use occurs in
+ref.symbol;         // the resolved Symbol, or null for free names
+ref.space;          // "value" | "type" | "namespace" | "typeof" | "any"
+ref.inTypePosition; // true inside a type-only subtree
+ref.isWrite;        // true when this use (re)assigns the binding
 ```
 
-`kind` lets rename and dead-code tools treat a value and a same-named type independently. `isWrite` is computed structurally in the native pass.
+Resolution is space-aware, the way TypeScript resolves names. `space` is the declaration space the position resolves in: `"value"` for runtime uses, `"type"` for annotations and other type positions, `"namespace"` for the qualifier of a dotted type name (`ns.T`, `E.A`), `"typeof"` for value uses inside a type (the entity of `typeof x`, `x is T` parameters), and `"any"` for alias positions that accept every space (`export { x }`, `export default x`, `export = x`, `import a = x`). A binding outside the reference's space does not shadow:
 
-`module.unresolvedReferences` is the complement, every name that resolves to no local binding. That list is precisely what a no-undef lint rule or a globals collector wants.
+```ts
+type T = string;
+function f() {
+  const T = 1;
+  let x: T; // resolves to the outer `type T`, exactly like tsc
+  T;        // resolves to the inner `const T`
+}
+```
+
+`inTypePosition` collapses the space to the question rename and dead-code tools ask, whether the use is erased at compile time, so a value and a same-named type stay independent. `isWrite` is computed structurally in the native pass.
+
+`module.unresolvedReferences` is the complement, every name whose space has no binding anywhere in scope. That list is precisely what a no-undef lint rule or a globals collector wants.
 
 ## [Node queries]($section.id('node-queries'))
 
@@ -212,8 +227,9 @@ module.symbolOf(node);    // the symbol a node declares or references, or null
 module.referenceOf(node); // the Reference for an identifier node, or null
 module.scopeOf(node);     // the innermost scope whose extent contains the node
 module.parentOf(node);    // the node that structurally contains it, or null
-module.resolve("fetch");            // scope-chain lookup from the root scope
-module.resolve("x", someScope);     // or from any scope, like the engine would
+module.resolve("fetch");                  // scope-chain lookup from the root scope
+module.resolve("x", someScope);           // or from any scope, like the engine would
+module.resolve("T", someScope, "type");   // or in another space ("any" is by name alone)
 ```
 
 `symbolOf` is the workhorse. Hand it a declaration identifier and you get the symbol it declares, hand it a reference identifier and you get the symbol it resolves to.

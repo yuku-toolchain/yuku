@@ -61,8 +61,8 @@ describe("exports", () => {
       "global
         module [strict]
           a#0  const
-          a → #0
-          a → #0
+          a → #0 any
+          a → #0 any
       exports
         a → #0
         aliased → #0"
@@ -117,7 +117,7 @@ describe("exports", () => {
     expect(summary(`export = foo;`)).toMatchInlineSnapshot(`
       "global
         module [strict]
-          foo → free
+          foo → free any
       exports
         export="
     `);
@@ -133,7 +133,7 @@ describe("exports", () => {
           lib#0  import
           foo#1  const
           lib → #0
-          foo → #1
+          foo → #1 any
         imports
           * as #0 from "./lib"
         exports

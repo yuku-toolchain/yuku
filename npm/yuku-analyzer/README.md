@@ -37,7 +37,7 @@ console.log(def.symbol.has(SymbolFlags.Const)); // true
 
 ## How it works
 
-Nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and the corner cases arrive already correct: catch-clause scope sharing, named function expression scopes, `var` hoist targets, TS declaration merging, value space versus type space, and write detection through destructuring patterns.
+Nothing semantic is reimplemented in JavaScript. The binder, scope tree, reference resolution, and module records are computed by the same well-tested native analyzer that powers the rest of Yuku, then shipped to JavaScript as one compact buffer that the JS side only decodes, through lazy zero-copy views. That handoff is usually where native tooling stalls: either every query pays an FFI round trip, or the semantics get a hand-written JS twin that slowly drifts. Here there is one implementation and one crossing, so it cannot drift, and the corner cases arrive already correct: catch-clause scope sharing, named function expression scopes, `var` hoist targets, TS declaration merging, space-aware resolution (a `const T` never captures a type-position `T` away from an outer `type T`), and write detection through destructuring patterns.
 
 ## What one `addFile` gives you
 
@@ -62,8 +62,11 @@ module.symbolOf(node)    // the symbol a node declares or references
 module.referenceOf(node) // the reference recorded for an identifier
 module.scopeOf(node)     // the innermost scope containing the node
 module.parentOf(node)    // the node that structurally contains it, or null
-module.resolve("name")   // scope-chain lookup, like the engine does at runtime
+module.resolve("name")             // scope-chain lookup, like the engine at runtime
+module.resolve("T", scope, "type") // or in another declaration space
 ```
+
+Every reference carries the declaration space its position resolves in (`ref.space`: `"value"`, `"type"`, `"namespace"`, `"typeof"`, or `"any"`), and resolution is space-aware the way TypeScript's is: an inner `const T` does not capture a type annotation's `T` away from an outer `type T`.
 
 Node identity is exact: the node you reach by walking `module.ast` and the node a semantic query returns are the same JavaScript object, so `===` always works.
 
