@@ -16,12 +16,21 @@ const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
 /// A `(start, len)` window into a backing slice.
 pub const Range = struct { start: u32, len: u32 };
 
-/// A declared binding. Declarations that legally share a name merge
-/// into one symbol (`var` redeclaration, TS function overloads,
-/// `class` + `interface` and other declaration merging), so a symbol
-/// can have several declaration sites, and `Semantic.decls` lists
-/// them all. `flags` describes which spaces (value, type, namespace) and
-/// modifiers it occupies.
+/// A declared binding.
+///
+/// ## Example
+/// ```ts
+/// interface Shape { kind: string }
+/// class Shape { kind = "circle" }
+/// //    ^^^^^ one symbol with two declarations, occupying
+/// //          both value space and type space
+/// ```
+///
+/// Declarations that legally share a name merge into one symbol,
+/// such as `var` redeclarations, TS function overloads, and `class`
+/// + `interface` merging. `Semantic.decls` lists every declaration
+/// site. `flags` describes the declaration kinds, the modifiers,
+/// and the spaces the symbol occupies.
 pub const Symbol = struct {
     name: String,
     flags: Flags,
@@ -92,7 +101,20 @@ pub const Symbol = struct {
             return self.intersects(namespace_space);
         }
 
-        /// True when a symbol with these flags is visible in `space`.
+        /// True when a symbol with these flags is visible in `space`,
+        /// the acceptance rule of name resolution.
+        ///
+        /// ## Example
+        /// ```ts
+        /// type T = string;
+        /// function f() {
+        ///   const T = 1;
+        ///   let x: T;
+        ///   //     ^ the const is not visible in .type, so
+        ///   //       resolution walks on to the outer alias
+        /// }
+        /// ```
+        ///
         /// Import bindings alias symbols of unknowable space and are
         /// visible in every space.
         pub fn visibleIn(self: Flags, space: Reference.Space) bool {
@@ -263,6 +285,13 @@ pub const Symbol = struct {
 /// in the source, for JSX component tag names (`<Foo>`), and for TS
 /// type-predicate parameters (`x is T`). Declaration sites live on
 /// the symbol itself.
+///
+/// ## Example
+/// ```ts
+/// let a = b; a = 2;
+/// //      ^ a read of `b`
+/// //         ^ a write of `a`, flags.write
+/// ```
 pub const Reference = struct {
     name: String,
     /// The scope the reference appears in.
@@ -290,6 +319,19 @@ pub const Reference = struct {
     /// The declaration space a syntactic position resolves in,
     /// matching TypeScript name resolution. A binding outside a
     /// reference's space does not shadow.
+    ///
+    /// ## Example
+    /// ```ts
+    /// let a: T = v;
+    /// //     ^ type
+    /// //         ^ value
+    /// let b: N.T;
+    /// //     ^ namespace
+    /// let c: typeof v;
+    /// //            ^ typeof
+    /// export { T };
+    /// //       ^ any
+    /// ```
     pub const Space = enum(u3) {
         /// a runtime use
         value,
@@ -317,6 +359,16 @@ pub const Reference = struct {
 /// The complete semantic model of a tree, with every scope, symbol,
 /// and reference fully resolved and cross-indexed. Backed by the
 /// tree's arena and valid for the lifetime of the tree.
+///
+/// ## Example
+/// ```zig
+/// const sem = try parser.semantic.analyze(&tree);
+///
+/// const sym = sem.symbolOf(node);      // declared at or resolved to
+/// const sites = sem.uses(sym.?);       // every use, in source order
+/// const first = sem.decls(sym.?)[0];   // first declaration node
+/// const found = sem.lookup(sem.scopeOf(node), "x", .value);
+/// ```
 pub const Semantic = struct {
     /// Every scope, indexed by `ScopeId`.
     scopes: sc.ScopeTree,
@@ -358,6 +410,13 @@ pub const Semantic = struct {
     /// The symbol declared at `node`, or the symbol the reference at
     /// `node` resolves to. `null` when the node neither declares nor
     /// references a binding.
+    ///
+    /// ## Example
+    /// ```ts
+    /// let a = 1; a;
+    /// //  ^ the declared symbol
+    /// //         ^ the same symbol, through the reference
+    /// ```
     pub fn symbolOf(self: Semantic, node: ast.NodeIndex) ?SymbolId {
         std.debug.assert(node != .null);
         std.debug.assert(@intFromEnum(node) < self.node_symbols.len);
@@ -407,6 +466,13 @@ pub const Semantic = struct {
     /// declarations merge (`var` redeclaration, TS overloads, `class`
     /// + `interface`) have one entry per declaration. `parentOf`
     /// reaches the enclosing declarator or declaration from there.
+    ///
+    /// ## Example
+    /// ```ts
+    /// var a = 1; var a = 2;
+    /// //  ^ decls[0]
+    /// //             ^ decls[1], same symbol
+    /// ```
     pub fn decls(self: Semantic, id: SymbolId) []const ast.NodeIndex {
         const range = self.symbol(id).decls;
         std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
@@ -422,9 +488,16 @@ pub const Semantic = struct {
         return self.use_ids[range.start..][0..range.len];
     }
 
-    /// The binding of `name` at `scope`, including a hoisting `var`
-    /// passing through on its way to its hoist target. Does not walk
-    /// the scope chain, see `lookup`.
+    /// The binding of `name` at `scope` alone, including a hoisting
+    /// `var` passing through on its way to its hoist target. Does not
+    /// walk the scope chain, see `lookup`.
+    ///
+    /// ## Example
+    /// ```ts
+    /// function f() { { var a; } }
+    /// //             ^ binding here finds `a`, whose symbol
+    /// //               lives in the function scope
+    /// ```
     pub fn binding(self: Semantic, scope_id: sc.ScopeId, name: []const u8) ?SymbolId {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@intFromEnum(scope_id) < self.scope_maps.len);
@@ -445,6 +518,16 @@ pub const Semantic = struct {
     /// walking up the scope chain the way reference resolution does.
     /// A binding outside the space does not shadow. `.any` matches by
     /// name alone.
+    ///
+    /// ## Example
+    /// ```ts
+    /// type T = string;
+    /// function f() {
+    ///   const T = 1;
+    ///   // from here .type finds the outer alias, .value the
+    ///   // local const, .any the nearest by name
+    /// }
+    /// ```
     pub fn lookup(
         self: Semantic,
         scope_id: sc.ScopeId,
