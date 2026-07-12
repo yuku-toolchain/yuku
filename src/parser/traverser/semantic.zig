@@ -78,11 +78,16 @@ pub const Ctx = struct {
         index: ast.NodeIndex,
         data: ast.NodeData,
     ) Allocator.Error!void {
-        const is_write = data == .identifier_reference and
-            isWriteTarget(self.tree, &self.path);
+        const is_ref = data == .identifier_reference;
+        const is_write = is_ref and isWriteTarget(self.tree, &self.path);
+        const space = if (is_ref)
+            refSpace(self.tree, &self.path, self.inTypePosition())
+        else
+            .value;
         try self.symbols.declareBindings(index, data, &self.scope, .{
             .in_type_position = self.inTypePosition(),
             .is_write = is_write,
+            .space = space,
         });
     }
 
@@ -96,6 +101,42 @@ pub const Ctx = struct {
         self.path.pop();
     }
 };
+
+/// The declaration space an `identifier_reference` position resolves
+/// in. The reference is the top of `path`.
+pub fn refSpace(
+    tree: *const ast.Tree,
+    path: *const NodePath,
+    in_type_position: bool,
+) Reference.Space {
+    std.debug.assert(path.depth() > 0);
+
+    // only the leftmost name of a dotted chain is a reference, so
+    // crossing a qualified name marks this reference as the qualifier
+    var qualified_left = false;
+    var child = path.ancestor(0) orelse return .value;
+    var n: usize = 1;
+    while (path.ancestor(n)) |parent| : (n += 1) {
+        switch (tree.data(parent)) {
+            .ts_qualified_name => {
+                qualified_left = true;
+                child = parent;
+            },
+            .ts_type_query => return .typeof,
+            .export_specifier => |s| return if (s.local == child) .any else .value,
+            .export_default_declaration => return .any,
+            .ts_export_assignment => return .any,
+            .ts_import_equals_declaration => return .any,
+            else => return if (!in_type_position)
+                .value
+            else if (qualified_left)
+                .namespace
+            else
+                .type,
+        }
+    }
+    return .value;
+}
 
 /// https://tc39.es/ecma262/#sec-static-semantics-assignmenttargettype
 pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {

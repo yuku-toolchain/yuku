@@ -21,7 +21,7 @@ const semantic = try parser.semantic.analyze(&tree);
 
 semantic.symbolOf(node);          // what does this node declare or refer to?
 semantic.uses(symbol_id);         // every use site of a symbol
-semantic.lookup(scope_id, "x");   // name resolution from any scope
+semantic.lookup(scope_id, "x", .value); // name resolution from any scope
 ```
 
 Semantic diagnostics land in `tree.diagnostics` alongside parse errors. After analysis, `tree.hasErrors()` reflects both. Together, parsing and semantic analysis cover the full set of early errors required by the specification.
@@ -78,7 +78,7 @@ for (semantic.decls(id)) |binding_node| { ... }
 // Every use site, in source order. A plain slice of ReferenceIds.
 for (semantic.uses(id)) |ref_id| {
     const use = semantic.reference(ref_id);
-    // use.node, use.flags.type_position, use.flags.write
+    // use.node, use.flags.space, use.flags.write
 }
 ```
 
@@ -99,7 +99,7 @@ for (semantic.uses(id)) |ref_id| {
 // only ever used in type positions
 var type_only = true;
 for (semantic.uses(id)) |ref_id| {
-    if (!semantic.reference(ref_id).flags.type_position) type_only = false;
+    if (!semantic.reference(ref_id).flags.space.inTypePosition()) type_only = false;
 }
 ```
 
@@ -125,15 +125,18 @@ Rewrite as the final step before printing, or run `analyze` again afterwards.
 const local = semantic.binding(scope_id, "x");
 
 // The nearest binding visible from a scope, walking up the chain
-// the way name resolution works at runtime.
-const found = semantic.lookup(scope_id, "x");
+// exactly like reference resolution. The space picks what the name
+// can see: `.value` resolves like runtime code, `.type` like a type
+// annotation, and `.any` matches purely by name.
+const found = semantic.lookup(scope_id, "x", .value);
+const ty = semantic.lookup(scope_id, "T", .type);
 
 // Every symbol declared directly in a scope.
 var it = semantic.bindings(scope_id);
 while (it.next()) |sym_id| { ... }
 ```
 
-`binding` checks a single scope, `lookup` resolves a name the way the runtime does, and `bindings` enumerates a scope.
+`binding` checks a single scope, `lookup` walks the scope chain the way references resolve (see [References](#references)), and `bindings` enumerates a scope.
 
 ### [Iterating Everything]($section.id('iterating-everything'))
 
@@ -182,7 +185,9 @@ semantic.uses(sym_id)            // []const ReferenceId, all use sites
 
 semantic.binding(scope, name)    // ?SymbolId at one scope, no chain walk
 semantic.bindings(scope)         // iterator over a scope's symbols
-semantic.lookup(scope, name)     // ?SymbolId, walking the scope chain
+semantic.lookup(scope, name, space) // ?SymbolId, walking the scope
+                                 // chain like reference resolution
+                                 // (.any matches purely by name)
 
 semantic.iterScopes()            // (id, scope) entries
 semantic.iterSymbols()           // (id, symbol) entries
@@ -320,6 +325,7 @@ flags.toString()            // human-readable category for diagnostics
 ```zig
 flags.inValueSpace()        // var, let, const, function, class, enum, value namespace
 flags.inTypeSpace()         // class, enum, interface, type alias, type parameter
+flags.inNamespaceSpace()    // namespace, enum: what a dotted type name starts from
 flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
                             // (block_scoped_var, class, function)
 ```
@@ -361,15 +367,38 @@ pub const Reference = struct {
     scope: ScopeId,      // the scope the reference appears in
     node: ast.NodeIndex, // the referencing node
     symbol: SymbolId,    // the declaring symbol, .none if unresolved
-    flags: Flags,        // flags.type_position, flags.write
+    flags: Flags,        // flags.space, flags.write
 };
 ```
 
 `symbol` is the resolution, the binding this reference refers to. Resolution is scope-based, exactly like name binding in the language. A reference resolves to the nearest binding of its name up the scope chain, regardless of where in those scopes the declaration appears (a use above a `let` still resolves to it, and the temporal dead zone is a runtime concern, not a binding concern). `.none` means the name has no binding anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
 
-Language-provided names are not bindings. `this`, `super`, and (unless user-declared) `arguments` produce no symbols, so a reference to `arguments` inside a function is unresolved. Labels are their own namespace and produce neither symbols nor references.
+Resolution is also space-aware, the way TypeScript resolves each name position. `flags.space` is the declaration space the reference's position resolves in:
 
-`flags.type_position` is true when the reference appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context. False means a runtime use, such as the receiver of a property access, an argument, or the LHS of an assignment. Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
+| `space`      | Position                                                            | Resolves against               |
+| ------------ | ------------------------------------------------------------------- | ------------------------------ |
+| `.value`     | runtime uses                                                         | value space                    |
+| `.type`      | annotations, heritage clauses, type arguments                        | type space                     |
+| `.namespace` | the qualifier of a dotted type name (`ns.T`, `E.A`)                  | namespaces and enums           |
+| `.typeof`    | the entity of a `typeof` query, a type-predicate parameter           | value space                    |
+| `.any`       | `export { x }`, `export default x`, `export = x`, `import a = x`     | every space                    |
+
+`space.inTypePosition()` is true for the three spaces that sit inside a type-only subtree (`.type`, `.namespace`, `.typeof`), which is what rename-aware tooling checks to change a value without touching a same-named type, and vice versa.
+
+A binding outside the reference's space does not shadow: in
+
+```ts
+type T = string;
+function f() {
+  const T = 1;
+  let x: T; // resolves to the outer `type T`, exactly like tsc
+  T;        // resolves to the inner `const T`
+}
+```
+
+the annotation skips the inner `const T` and keeps walking the chain. A reference whose space has no binding anywhere resolves to `.none` even when another space binds the name, which is tsc's "cannot find name" behavior. Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space. `semantic.lookup(scope, name, space)` runs this same walk as a query.
+
+Language-provided names are not bindings. `this`, `super`, and (unless user-declared) `arguments` produce no symbols, so a reference to `arguments` inside a function is unresolved. Labels are their own namespace and produce neither symbols nor references.
 
 `flags.write` is true when the reference (re)assigns its binding, meaning the target of an assignment, the operand of `++`/`--`, the iteration variable of a `for...in`/`for...of`, or a destructuring assignment leaf. Compound targets (`+=`, `++`) both read and write. Initializers in declarations are part of the declaration, not references, so `let x = 1` produces no write reference. Only a later `x = 2` does.
 

@@ -86,6 +86,25 @@ pub const Symbol = struct {
             return self.intersects(type_space);
         }
 
+        /// True for a binding a dotted type name can start from,
+        /// namespaces and enums.
+        pub inline fn inNamespaceSpace(self: Flags) bool {
+            return self.intersects(namespace_space);
+        }
+
+        /// True when a symbol with these flags is visible in `space`.
+        /// Import bindings alias symbols of unknowable space and are
+        /// visible in every space.
+        pub fn visibleIn(self: Flags, space: Reference.Space) bool {
+            if (self.intersects(any_import)) return true;
+            return switch (space) {
+                .value, .typeof => self.inValueSpace(),
+                .type => self.inTypeSpace(),
+                .namespace => self.inNamespaceSpace(),
+                .any => true,
+            };
+        }
+
         /// True for declarations a hoisting `var` is forbidden to
         /// pass through, meaning block-scoped bindings (`let`,
         /// `const`), classes, and functions.
@@ -137,6 +156,14 @@ pub const Symbol = struct {
         .interface = true,
         .type_alias = true,
         .type_parameter = true,
+    };
+
+    /// Declarations a dotted type name can start from.
+    pub const namespace_space: Flags = .{
+        .value_module = true,
+        .namespace_module = true,
+        .regular_enum = true,
+        .const_enum = true,
     };
 
     // names a hoisted `var` cannot pass through
@@ -248,9 +275,6 @@ pub const Reference = struct {
     flags: Flags = .{},
 
     pub const Flags = packed struct(u8) {
-        /// True for a type-position use (annotations, `extends`,
-        /// `implements`, type arguments). False for a runtime use.
-        type_position: bool = false,
         /// True when this reference (re)assigns its binding, meaning
         /// the target of an assignment, the operand of `++`/`--`, the
         /// iteration variable of for-in/for-of, or a destructuring
@@ -258,7 +282,35 @@ pub const Reference = struct {
         /// references, so an initialized but never reassigned binding
         /// has no write.
         write: bool = false,
-        _: u6 = 0,
+        /// The declaration space this position resolves in.
+        space: Space = .value,
+        _: u4 = 0,
+    };
+
+    /// The declaration space a syntactic position resolves in,
+    /// matching TypeScript name resolution. A binding outside a
+    /// reference's space does not shadow.
+    pub const Space = enum(u3) {
+        /// a runtime use
+        value,
+        /// a type use, annotations, heritage clauses, type arguments
+        type,
+        /// the qualifier of a dotted type name, `ns` in `ns.T`
+        namespace,
+        /// a value use inside a type, the entity of a `typeof` query
+        /// or a type predicate parameter
+        typeof,
+        /// an alias position that accepts every space, `export { x }`,
+        /// `export default x`, `export = x`, `import a = x`
+        any,
+
+        /// True for positions inside a type-only subtree.
+        pub inline fn inTypePosition(self: Space) bool {
+            return switch (self) {
+                .type, .namespace, .typeof => true,
+                .value, .any => false,
+            };
+        }
     };
 };
 
@@ -389,12 +441,20 @@ pub const Semantic = struct {
         return .{ .inner = self.scope_maps[@intFromEnum(scope_id)].valueIterator() };
     }
 
-    /// The nearest binding of `name` visible from `scope`, walking up
-    /// the scope chain the way name resolution does at runtime.
-    pub fn lookup(self: Semantic, scope_id: sc.ScopeId, name: []const u8) ?SymbolId {
+    /// The nearest binding of `name` visible in `space` from `scope`,
+    /// walking up the scope chain the way reference resolution does.
+    /// A binding outside the space does not shadow. `.any` matches by
+    /// name alone.
+    pub fn lookup(
+        self: Semantic,
+        scope_id: sc.ScopeId,
+        name: []const u8,
+        space: Reference.Space,
+    ) ?SymbolId {
         var it = self.scopes.ancestors(scope_id);
         while (it.next()) |ancestor| {
-            if (self.scope_maps[@intFromEnum(ancestor)].get(name)) |id| return id;
+            const id = self.scope_maps[@intFromEnum(ancestor)].get(name) orelse continue;
+            if (self.symbols[@intFromEnum(id)].flags.visibleIn(space)) return id;
         }
         return null;
     }
@@ -820,6 +880,8 @@ pub const SymbolTracker = struct {
         in_type_position: bool,
         /// the node is an identifier in assignment-target position
         is_write: bool,
+        /// the declaration space the reference resolves in
+        space: Reference.Space = .value,
     };
 
     /// Materializes the pending binding context into a symbol (for
@@ -858,8 +920,8 @@ pub const SymbolTracker = struct {
             },
             .identifier_reference => |id| {
                 _ = try self.addReference(id.name, scope.current, index, .{
-                    .type_position = ref_ctx.in_type_position,
                     .write = ref_ctx.is_write,
+                    .space = ref_ctx.space,
                 });
             },
             // `param is T` parses the param as an `identifier_name`, but
@@ -873,7 +935,7 @@ pub const SymbolTracker = struct {
                     pname.identifier_name.name,
                     scope.current,
                     pred.parameter_name,
-                    .{ .type_position = ref_ctx.in_type_position },
+                    .{ .space = .typeof },
                 );
             },
             // the leftmost capitalized `jsx_identifier` of a tag is a js
@@ -1107,7 +1169,11 @@ pub const SymbolTracker = struct {
                 var it = scopes.ancestors(ref.scope);
                 while (it.next()) |ancestor| {
                     const idx = @intFromEnum(ancestor);
-                    if (self.scope_maps.items[idx].getAdapted(name, pctx)) |id| break :blk id;
+                    const id = self.scope_maps.items[idx].getAdapted(name, pctx) orelse continue;
+                    // a binding outside the reference's space does
+                    // not shadow, keep walking
+                    if (self.symbols.items[@intFromEnum(id)].flags.visibleIn(ref.flags.space))
+                        break :blk id;
                 }
                 break :blk .none;
             };

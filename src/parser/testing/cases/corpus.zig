@@ -96,7 +96,7 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
         if (sem.referenceOf(ref.node) != entry.id) return error.ReferenceNodeMismatch;
 
         const name = tree.string(ref.name);
-        const expected = sem.lookup(ref.scope, name);
+        const expected = sem.lookup(ref.scope, name, ref.flags.space);
         if (ref.symbol == .none) {
             if (expected != null) return error.UnresolvedButBound;
             continue;
