@@ -16,13 +16,18 @@ const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
 /// A `(start, len)` window into a backing slice.
 pub const Range = struct { start: u32, len: u32 };
 
-/// A declared binding. `flags` describes which spaces (value, type,
-/// namespace) and modifiers it occupies. Query its declaration sites
-/// with `Semantic.decls` and its use sites with `Semantic.uses`.
+/// A declared binding. Declarations that legally share a name merge
+/// into one symbol (`var` redeclaration, TS function overloads,
+/// `class` + `interface` and other declaration merging), so a symbol
+/// can have several declaration sites; `Semantic.decls` lists them
+/// all. `flags` describes which spaces (value, type, namespace) and
+/// modifiers it occupies.
 pub const Symbol = struct {
     name: String,
     flags: Flags,
-    /// The scope the symbol is declared in.
+    /// The scope the symbol is declared in. For a hoisting `var`,
+    /// this is the hoist target it lands in, not the block it is
+    /// written in.
     scope: sc.ScopeId,
     // window into `Semantic.decl_nodes`, expanded by `Semantic.decls`
     decls: Range,
@@ -227,8 +232,9 @@ pub const Symbol = struct {
     };
 };
 
-/// A use of a name. One entry per `identifier_reference` in the
-/// source. Declaration sites live on the symbol itself.
+/// A use of a name: every `identifier_reference` in the source, plus
+/// JSX component tag names (`<Foo>`) and TS type-predicate parameters
+/// (`x is T`). Declaration sites live on the symbol itself.
 pub const Reference = struct {
     name: String,
     /// The scope the reference appears in.
@@ -322,7 +328,10 @@ pub const Semantic = struct {
         return if (id != .none) id else null;
     }
 
-    /// The lexical scope `node` belongs to.
+    /// The innermost lexical scope containing `node`. A scope-creating
+    /// node (function, block, class, ...) maps to the scope it
+    /// creates; `scope(scopeOf(node)).parent` is the scope enclosing
+    /// it.
     pub inline fn scopeOf(self: Semantic, node: ast.NodeIndex) sc.ScopeId {
         std.debug.assert(node != .null);
         std.debug.assert(@intFromEnum(node) < self.node_scopes.len);
@@ -344,15 +353,18 @@ pub const Semantic = struct {
     }
 
     /// The `binding_identifier` node of every declaration of `id`, in
-    /// source order. `parentOf` reaches the enclosing declarator or
-    /// declaration from there.
+    /// source order. Usually a single element; symbols whose
+    /// declarations merge (`var` redeclaration, TS overloads, `class`
+    /// + `interface`) have one entry per declaration. `parentOf`
+    /// reaches the enclosing declarator or declaration from there.
     pub fn decls(self: Semantic, id: SymbolId) []const ast.NodeIndex {
         const range = self.symbol(id).decls;
         std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
         return self.decl_nodes[range.start..][0..range.len];
     }
 
-    /// Every use site of `id`, in source order.
+    /// Every use site of `id`, in source order. Declaration sites are
+    /// not uses; those are in `decls`.
     pub fn uses(self: Semantic, id: SymbolId) []const ReferenceId {
         std.debug.assert(id != .none);
         std.debug.assert(@intFromEnum(id) < self.use_ranges.len);
@@ -360,7 +372,9 @@ pub const Semantic = struct {
         return self.use_ids[range.start..][0..range.len];
     }
 
-    /// True when any reference (re)assigns `id`.
+    /// True when any reference (re)assigns `id`. Initializers in
+    /// declarations are not references, so a binding that is
+    /// initialized but never reassigned is not mutated.
     pub fn isMutated(self: Semantic, id: SymbolId) bool {
         return self.useFlags(id).mutated;
     }
@@ -376,8 +390,8 @@ pub const Semantic = struct {
     }
 
     /// The binding of `name` at `scope`, including a hoisting `var`
-    /// passing through on its way to its target. Does not walk the
-    /// scope chain; see `lookup`.
+    /// passing through on its way to its hoist target. Does not walk
+    /// the scope chain; see `lookup`.
     pub fn binding(self: Semantic, scope_id: sc.ScopeId, name: []const u8) ?SymbolId {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@intFromEnum(scope_id) < self.scope_maps.len);
@@ -385,7 +399,9 @@ pub const Semantic = struct {
             self.hoisting_variables[@intFromEnum(scope_id)].get(name);
     }
 
-    /// Every symbol declared directly in `scope`.
+    /// Every symbol declared directly in `scope`. A hoisting `var`
+    /// appears in its hoist target's scope, not in the blocks it
+    /// passes through.
     pub fn bindings(self: Semantic, scope_id: sc.ScopeId) BindingIterator {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@intFromEnum(scope_id) < self.scope_maps.len);
@@ -1035,7 +1051,9 @@ pub const SymbolTracker = struct {
         return self.symbols.items[@intFromEnum(id)];
     }
 
-    /// The `binding_identifier` node of the first declaration of `id`.
+    /// The `binding_identifier` node of the earliest declaration of
+    /// `id`. Later declarations that merge into the same symbol do
+    /// not change it.
     pub fn firstDeclOf(self: *const SymbolTracker, id: SymbolId) ast.NodeIndex {
         std.debug.assert(id != .none);
         std.debug.assert(@intFromEnum(id) < self.first_decls.items.len);
@@ -1051,7 +1069,7 @@ pub const SymbolTracker = struct {
     }
 
     /// The binding of `name` at `scope`, including a hoisting `var`
-    /// passing through on its way to its target.
+    /// passing through on its way to its hoist target.
     pub fn binding(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
         if (self.ownBinding(scope, name)) |id| return id;
         const idx = @intFromEnum(scope);

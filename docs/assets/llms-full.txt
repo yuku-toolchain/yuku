@@ -914,7 +914,7 @@ Node queries answer for a node you are holding, such as a match from a walk, a d
 ```zig
 const sym = semantic.symbolOf(node);    // ?SymbolId: declared here, or resolved to
 const ref = semantic.referenceOf(node); // ?ReferenceId recorded at this node
-const scope = semantic.scopeOf(node);   // the node's lexical ScopeId
+const scope = semantic.scopeOf(node);   // innermost ScopeId containing the node
 const parent = semantic.parentOf(node); // ?NodeIndex, null at the root
 
 // Walk up from any node. Yields the node itself first.
@@ -927,6 +927,8 @@ while (it.next()) |ancestor| {
 ```
 
 `symbolOf` answers for both sides: a `binding_identifier` gives its declared symbol, and an `identifier_reference` gives the symbol it resolved to. `parentOf` reads a per-node parent table built during the walk, so walking up from any node needs no visitor state.
+
+`scopeOf` returns the innermost scope containing the node. A scope-creating node (function, block, class, ...) maps to the scope it creates; when you want the scope enclosing such a node instead, it is one step up: `semantic.scope(semantic.scopeOf(node)).parent`.
 
 ### From a Symbol
 
@@ -943,12 +945,12 @@ for (semantic.uses(id)) |ref_id| {
 }
 
 // Aggregates, precomputed, O(1):
-semantic.isMutated(id)     // any write reference?
+semantic.isMutated(id)     // any write reference? (initializers don't count)
 semantic.hasValueUses(id)  // any runtime use?
 semantic.hasTypeUses(id)   // any type-position use?
 ```
 
-`decls` returns the name node at each declaration: for `let a = 1`, that is the `binding_identifier` `a`. From there, `semantic.parentOf` reaches the enclosing declarator or declaration statement.
+`decls` returns the name node at each declaration: for `let a = 1`, that is the `binding_identifier` `a`. From there, `semantic.parentOf` reaches the enclosing declarator or declaration statement. Most symbols have exactly one declaration; the slice grows when declarations legally merge into one symbol, such as `var` redeclarations, TS function overloads, and `class` + `interface` merging (see [Symbols](#symbols)).
 
 A renamer visits `decls` then `uses`. An unused-variable lint checks `uses(id).len == 0`. A const-correctness lint checks `isMutated`. Dead-code elimination distinguishes value-space from type-space reachability with `hasValueUses` and `hasTypeUses`.
 
@@ -1008,7 +1010,7 @@ semantic.scope(id)               // Scope by id
 
 semantic.symbolOf(node)          // ?SymbolId: declared at node, or resolved to
 semantic.referenceOf(node)       // ?ReferenceId recorded at node
-semantic.scopeOf(node)           // the node's lexical ScopeId
+semantic.scopeOf(node)           // innermost ScopeId containing the node
 semantic.parentOf(node)          // ?NodeIndex, null at the root
 semantic.ancestors(node)         // iterator from node up to the root
 
@@ -1103,7 +1105,9 @@ pub const Symbol = struct {
 };
 ```
 
-A single symbol can collect multiple declarations when the language allows merging: TS function overloads, `class` + `interface` merging, `namespace` + `enum` merging, ambient module patterns. The `binding_identifier` node of every declaration is recorded and `semantic.decls(id)` returns them all, so a renamer or a "go to definition" feature can show each one.
+`scope` is where the binding actually lives. For a hoisting `var` that is the hoist target it lands in (function, module, or global scope), not the block it is written in.
+
+A single symbol can collect multiple declarations when the language allows merging: `var` redeclarations, TS function overloads, `class` + `interface` merging, `namespace` + `enum` merging, ambient module patterns. The `binding_identifier` node of every declaration is recorded and `semantic.decls(id)` returns them all, so a renamer or a "go to definition" feature can show each one.
 
 ### Symbol Flags
 
@@ -1187,7 +1191,7 @@ This single mechanism handles function overloads, `class` + `interface` declarat
 
 ## References
 
-Every `identifier_reference` node produces one `Reference`:
+Every `identifier_reference` node produces one `Reference`, and so do JSX component tag names (`<Foo>`) and TS type-predicate parameters (`x is T`), so rename-aware tooling sees every site that must change together:
 
 ```zig
 pub const Reference = struct {
@@ -1204,7 +1208,7 @@ pub const Reference = struct {
 
 `.value` means the reference is a runtime use (the receiver of a property access, an argument, the LHS of an assignment, etc.). `.type` means it appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context. Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
 
-`is_write` is true when the reference (re)assigns its binding: the target of an assignment, the operand of `++`/`--`, the iteration variable of a `for...in`/`for...of`, or a destructuring assignment leaf. Compound targets (`+=`, `++`) both read and write.
+`is_write` is true when the reference (re)assigns its binding: the target of an assignment, the operand of `++`/`--`, the iteration variable of a `for...in`/`for...of`, or a destructuring assignment leaf. Compound targets (`+=`, `++`) both read and write. Initializers in declarations are part of the declaration, not references, so `let x = 1` produces no write reference; only a later `x = 2` does.
 
 ## Module Records
 
