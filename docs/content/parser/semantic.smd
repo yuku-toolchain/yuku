@@ -84,6 +84,8 @@ for (semantic.uses(id)) |ref_id| {
 
 `decls` returns the name node at each declaration. For `let a = 1`, that is the `binding_identifier` `a`, and `semantic.parentOf` reaches the enclosing declarator or declaration statement from there. Most symbols have exactly one declaration. The slice grows when declarations legally merge into one symbol, such as `var` redeclarations, TS function overloads, and `class` + `interface` merging (see [Symbols](#symbols)).
 
+A conflicting redeclaration (`let x; let x;`) is recorded here too: the early error lands in `tree.diagnostics`, and the conflicting declarator is aliased onto the existing symbol so tooling on broken code still maps the node somewhere. Check `tree.hasErrors()` when only legal declarations matter.
+
 Any per-symbol fact derives from one loop over `uses`, since every use site carries its flags:
 
 ```zig

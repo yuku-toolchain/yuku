@@ -474,6 +474,11 @@ pub const Semantic = struct {
     /// //  ^ decls[0]
     /// //             ^ decls[1], same symbol
     /// ```
+    ///
+    /// A conflicting redeclaration (an early error) is recorded here
+    /// too, aliased onto the existing symbol so tooling on broken
+    /// code still maps the node somewhere. Check `tree.hasErrors()`
+    /// when only legal declarations matter.
     pub fn decls(self: Semantic, id: SymbolId) []const ast.NodeIndex {
         const range = self.symbol(id).decls;
         std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
@@ -1007,18 +1012,26 @@ pub const SymbolTracker = struct {
                 });
             },
             // `param is T` parses the param as an `identifier_name`, but
-            // it semantically references the function's parameter binding.
+            // it references the enclosing function's parameter binding.
             // synthesize the reference so renamers update both together.
+            //
+            // in a type-only signature the parameter is a label with no
+            // binding, so nothing is recorded there:
+            //
+            //   function isStr(v: unknown): v is string {}
+            //                  ^             ^ references the parameter
+            //   type P = (x: unknown) => x is string;
+            //             ^              ^ a label, no reference
             .ts_type_predicate => |pred| {
                 if (pred.parameter_name == .null) return;
                 const pname = self.tree.data(pred.parameter_name);
                 if (pname != .identifier_name) return;
-                _ = try self.addReference(
-                    pname.identifier_name.name,
-                    scope.current,
-                    pred.parameter_name,
-                    .{ .space = .typeof },
-                );
+                const name = pname.identifier_name.name;
+                const param = self.ownBinding(scope.current, self.tree.string(name)) orelse return;
+                if (!self.symbol(param).flags.parameter) return;
+                _ = try self.addReference(name, scope.current, pred.parameter_name, .{
+                    .space = .typeof,
+                });
             },
             // the leftmost capitalized `jsx_identifier` of a tag is a js
             // binding reference. lowercase tags (`<div>`) are intrinsic
@@ -1080,9 +1093,10 @@ pub const SymbolTracker = struct {
     /// Declares the pending binding for `name` at `node`. If the name
     /// is already bound in the target scope with non-conflicting flags,
     /// merges into the existing symbol. If the name conflicts, keeps
-    /// the existing symbol unchanged (the caller emits a diagnostic).
-    /// Otherwise creates a fresh symbol. `node` is always recorded as
-    /// a declarator.
+    /// the existing symbol's flags unchanged (the caller emits a
+    /// diagnostic). Otherwise creates a fresh symbol. `node` is always
+    /// recorded as a declarator of the returned symbol, conflicts
+    /// included, so error recovery still maps the node to a symbol.
     pub fn declare(self: *SymbolTracker, name: String, node: ast.NodeIndex) Allocator.Error!SymbolId {
         const target = self.pending.scope;
         std.debug.assert(target != .none);
@@ -1254,8 +1268,7 @@ pub const SymbolTracker = struct {
                     const id = self.scope_maps.items[idx].getAdapted(name, pctx) orelse continue;
                     // a binding outside the reference's space does
                     // not shadow, keep walking
-                    if (self.symbols.items[@intFromEnum(id)].flags.visibleIn(ref.flags.space))
-                        break :blk id;
+                    if (self.symbol(id).flags.visibleIn(ref.flags.space)) break :blk id;
                 }
                 break :blk .none;
             };

@@ -526,6 +526,35 @@ test "type predicates synthesize a reference to the parameter" {
     try testing.expectEqual(.value, body_ref.flags.space);
 }
 
+test "a predicate in a type-only signature names no binding and records no reference" {
+    var a = try analyze(
+        \\const x = 1;
+        \\type P = (x: unknown) => x is string;
+        \\interface I { m(v: unknown): v is string }
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    // the outer const must not capture the predicate names
+    try testing.expectEqual(@as(usize, 0), a.sem.uses((try a.symbolNamed("x")).id).len);
+
+    var buf: [4]Semantic.ReferenceEntry = undefined;
+    try testing.expectEqual(@as(usize, 0), referencesNamed(&a, "x", &buf).len);
+    try testing.expectEqual(@as(usize, 0), referencesNamed(&a, "v", &buf).len);
+}
+
+test "a conflicting redeclaration is aliased onto the existing symbol" {
+    var a = try analyzeAllowErrors("let y; let y;", .{});
+    defer a.deinit();
+
+    try testing.expect(a.tree.hasErrors());
+
+    const y = try a.symbolNamed("y");
+    try testing.expectEqual(@as(usize, 2), a.sem.decls(y.id).len);
+
+    const second = try a.nthBindingNamed("y", 1);
+    try testing.expectEqual(y.id, a.sem.symbolOf(second).?);
+}
+
 test "a value binding does not shadow an outer type for type-position references" {
     var a = try analyze(
         \\type T = string;
