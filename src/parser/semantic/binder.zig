@@ -244,23 +244,21 @@ pub const Reference = struct {
     /// The declaring symbol this reference resolves to. `.none` for
     /// names with no local binding (globals, undeclared names).
     symbol: SymbolId = .none,
-    /// `.value` for runtime uses, `.type` for type-position uses
-    /// (annotations, `extends`, `implements`, type arguments).
-    kind: Kind = .value,
-    /// True when this reference (re)assigns its binding: the target of
-    /// an assignment, the operand of `++`/`--`, the iteration variable
-    /// of for-in/for-of, or a destructuring assignment leaf.
-    is_write: bool = false,
+    flags: Flags = .{},
 
-    pub const Kind = enum(u1) { value, type };
-};
-
-// per-symbol facts aggregated from its resolved references
-const UseFlags = packed struct(u8) {
-    mutated: bool = false,
-    value_used: bool = false,
-    type_used: bool = false,
-    _: u5 = 0,
+    pub const Flags = packed struct(u8) {
+        /// True for a type-position use (annotations, `extends`,
+        /// `implements`, type arguments); false for a runtime use.
+        type_position: bool = false,
+        /// True when this reference (re)assigns its binding: the
+        /// target of an assignment, the operand of `++`/`--`, the
+        /// iteration variable of for-in/for-of, or a destructuring
+        /// assignment leaf. Initializers in declarations are not
+        /// references, so an initialized but never reassigned binding
+        /// has no write.
+        write: bool = false,
+        _: u6 = 0,
+    };
 };
 
 /// The complete semantic model of a tree: every scope, symbol, and
@@ -278,7 +276,6 @@ pub const Semantic = struct {
     decl_nodes: []const ast.NodeIndex,
     use_ids: []const ReferenceId,
     use_ranges: []const Range,
-    use_flags: []const UseFlags,
     scope_maps: []const ScopeMap,
     hoisting_variables: []const ScopeMap,
     node_scopes: []const sc.ScopeId,
@@ -372,23 +369,6 @@ pub const Semantic = struct {
         return self.use_ids[range.start..][0..range.len];
     }
 
-    /// True when any reference (re)assigns `id`. Initializers in
-    /// declarations are not references, so a binding that is
-    /// initialized but never reassigned is not mutated.
-    pub fn isMutated(self: Semantic, id: SymbolId) bool {
-        return self.useFlags(id).mutated;
-    }
-
-    /// True when `id` has at least one value-position (runtime) use.
-    pub fn hasValueUses(self: Semantic, id: SymbolId) bool {
-        return self.useFlags(id).value_used;
-    }
-
-    /// True when `id` has at least one type-position use.
-    pub fn hasTypeUses(self: Semantic, id: SymbolId) bool {
-        return self.useFlags(id).type_used;
-    }
-
     /// The binding of `name` at `scope`, including a hoisting `var`
     /// passing through on its way to its hoist target. Does not walk
     /// the scope chain; see `lookup`.
@@ -431,12 +411,6 @@ pub const Semantic = struct {
     /// Iterates every `(id, reference)` pair in source order.
     pub fn iterReferences(self: Semantic) ReferenceIterator {
         return .{ .references = self.references };
-    }
-
-    inline fn useFlags(self: Semantic, id: SymbolId) UseFlags {
-        std.debug.assert(id != .none);
-        std.debug.assert(@intFromEnum(id) < self.use_flags.len);
-        return self.use_flags[@intFromEnum(id)];
     }
 
     /// A `(id, scope)` pair yielded by `iterScopes`.
@@ -882,14 +856,10 @@ pub const SymbolTracker = struct {
                 }
             },
             .identifier_reference => |id| {
-                const kind: Reference.Kind = if (ref_ctx.in_type_position) .type else .value;
-                _ = try self.addReference(
-                    id.name,
-                    scope.current,
-                    index,
-                    kind,
-                    ref_ctx.is_write,
-                );
+                _ = try self.addReference(id.name, scope.current, index, .{
+                    .type_position = ref_ctx.in_type_position,
+                    .write = ref_ctx.is_write,
+                });
             },
             // `param is T` parses the param as an `identifier_name`, but
             // it semantically references the function's parameter binding.
@@ -898,13 +868,11 @@ pub const SymbolTracker = struct {
                 if (pred.parameter_name == .null) return;
                 const pname = self.tree.data(pred.parameter_name);
                 if (pname != .identifier_name) return;
-                const kind: Reference.Kind = if (ref_ctx.in_type_position) .type else .value;
                 _ = try self.addReference(
                     pname.identifier_name.name,
                     scope.current,
                     pred.parameter_name,
-                    kind,
-                    false,
+                    .{ .type_position = ref_ctx.in_type_position },
                 );
             },
             // the leftmost capitalized `jsx_identifier` of a tag is a js
@@ -915,13 +883,7 @@ pub const SymbolTracker = struct {
                     const id = self.tree.data(root_idx).jsx_identifier;
                     const text = self.tree.string(id.name);
                     if (text.len > 0 and text[0] >= 'A' and text[0] <= 'Z') {
-                        _ = try self.addReference(
-                            id.name,
-                            scope.current,
-                            root_idx,
-                            .value,
-                            false,
-                        );
+                        _ = try self.addReference(id.name, scope.current, root_idx, .{});
                     }
                 }
             },
@@ -1026,8 +988,7 @@ pub const SymbolTracker = struct {
         name: String,
         scope: sc.ScopeId,
         node: ast.NodeIndex,
-        kind: Reference.Kind,
-        is_write: bool,
+        flags: Reference.Flags,
     ) Allocator.Error!ReferenceId {
         std.debug.assert(scope != .none);
         std.debug.assert(node != .null);
@@ -1038,8 +999,7 @@ pub const SymbolTracker = struct {
             .name = name,
             .scope = scope,
             .node = node,
-            .kind = kind,
-            .is_write = is_write,
+            .flags = flags,
         });
         return id;
     }
@@ -1153,16 +1113,6 @@ pub const SymbolTracker = struct {
             };
         }
 
-        const use_flags = try allocator.alloc(UseFlags, sym_count);
-        @memset(use_flags, .{});
-        for (self.references.items) |ref| {
-            if (ref.symbol == .none) continue;
-            const flags = &use_flags[@intFromEnum(ref.symbol)];
-            flags.mutated = flags.mutated or ref.is_write;
-            flags.value_used = flags.value_used or ref.kind == .value;
-            flags.type_used = flags.type_used or ref.kind == .type;
-        }
-
         // use index: count, prefix-sum, fill.
         // `len` doubles as the write cursor during the fill.
         const use_ranges = try allocator.alloc(Range, sym_count);
@@ -1191,7 +1141,6 @@ pub const SymbolTracker = struct {
             .decl_nodes = decl_nodes,
             .use_ids = use_ids,
             .use_ranges = use_ranges,
-            .use_flags = use_flags,
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
             .node_scopes = node_scopes,

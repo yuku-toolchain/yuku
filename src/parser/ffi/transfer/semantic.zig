@@ -38,6 +38,7 @@ const module_record = parser.semantic.module_record;
 
 const Scope = semantic.Scope;
 const Symbol = semantic.Symbol;
+const Reference = semantic.Reference;
 const Semantic = semantic.Semantic;
 const ModuleRecords = module_record.ModuleRecords;
 
@@ -74,8 +75,9 @@ pub const PackedSymbol = extern struct {
     decls_len: u32,
 };
 
-/// `bits` packs kind (bit 0: 0 value, 1 type) and is_write (bit 1).
-/// `symbol` is the resolved SymbolId or the none sentinel.
+/// `bits` is the raw `Reference.Flags` bitset: type_position (bit 0)
+/// and write (bit 1). `symbol` is the resolved SymbolId or the none
+/// sentinel.
 pub const PackedReference = extern struct {
     name_start: u32,
     name_end: u32,
@@ -165,6 +167,11 @@ comptime {
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "catch_var") == 16);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "exported") == 17);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "is_default") == 18);
+
+    // reference flags cross as a raw bitset inside `bits`, freeze the layout
+    std.debug.assert(@bitSizeOf(Reference.Flags) == 8);
+    std.debug.assert(@bitOffsetOf(Reference.Flags, "type_position") == REFERENCE_TYPE_BIT);
+    std.debug.assert(@bitOffsetOf(Reference.Flags, "write") == REFERENCE_WRITE_BIT);
 
     // scope kinds cross as raw u8 values inside `bits`, freeze the order
     std.debug.assert(@intFromEnum(Scope.Kind.global) == 0);
@@ -271,8 +278,7 @@ pub fn serializeInto(
             .name_end = reference.name.end,
             .scope = @intFromEnum(reference.scope),
             .node = @intFromEnum(reference.node),
-            .bits = (@as(u32, @intFromEnum(reference.kind)) << REFERENCE_TYPE_BIT) |
-                (@as(u32, @intFromBool(reference.is_write)) << REFERENCE_WRITE_BIT),
+            .bits = @as(u8, @bitCast(reference.flags)),
             .symbol = @intFromEnum(reference.symbol),
         };
         @memcpy(buf[pos..][0..REFERENCE_SIZE], std.mem.asBytes(&entry));

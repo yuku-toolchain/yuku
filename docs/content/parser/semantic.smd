@@ -72,18 +72,44 @@ for (semantic.decls(id)) |binding_node| { ... }
 // Every use site, in source order. A plain slice of ReferenceIds.
 for (semantic.uses(id)) |ref_id| {
     const use = semantic.reference(ref_id);
-    // use.node, use.kind, use.is_write
+    // use.node, use.flags.type_position, use.flags.write
 }
-
-// Aggregates, precomputed, O(1):
-semantic.isMutated(id)     // any write reference? (initializers don't count)
-semantic.hasValueUses(id)  // any runtime use?
-semantic.hasTypeUses(id)   // any type-position use?
 ```
 
 `decls` returns the name node at each declaration: for `let a = 1`, that is the `binding_identifier` `a`. From there, `semantic.parentOf` reaches the enclosing declarator or declaration statement. Most symbols have exactly one declaration; the slice grows when declarations legally merge into one symbol, such as `var` redeclarations, TS function overloads, and `class` + `interface` merging (see [Symbols](#symbols)).
 
-A renamer visits `decls` then `uses`. An unused-variable lint checks `uses(id).len == 0`. A const-correctness lint checks `isMutated`. Dead-code elimination distinguishes value-space from type-space reachability with `hasValueUses` and `hasTypeUses`.
+Per-symbol questions are one loop over `uses`:
+
+```zig
+// no-unused-vars: the binding is never used
+const unused = semantic.uses(id).len == 0;
+
+// prefer-const: never reassigned (initializers are not writes)
+var mutated = false;
+for (semantic.uses(id)) |ref_id| {
+    if (semantic.reference(ref_id).flags.write) mutated = true;
+}
+
+// type-aware DCE: only ever used as a type, safe to drop from runtime output
+var type_only = true;
+for (semantic.uses(id)) |ref_id| {
+    if (!semantic.reference(ref_id).flags.type_position) type_only = false;
+}
+```
+
+Every declaration and use carries its node, so rewrites compose directly with the [tree's write API](/parser/traverse/#transform-traverser). A complete rename of one binding (check the new name against `lookup` first if it might collide):
+
+```zig
+const new_name = try tree.addString("renamed");
+for (semantic.decls(id)) |node| {
+    tree.setIdentifierName(node, new_name);
+}
+for (semantic.uses(id)) |ref_id| {
+    tree.setIdentifierName(semantic.reference(ref_id).node, new_name);
+}
+```
+
+Mutating the tree does not update the model, so rewrite as the final step before printing, or run `analyze` again on the changed tree.
 
 ### [By Name]($section.id('by-name'))
 
@@ -147,9 +173,6 @@ semantic.ancestors(node)         // iterator from node up to the root
 
 semantic.decls(sym_id)           // binding_identifier node of each declaration
 semantic.uses(sym_id)            // []const ReferenceId, all use sites
-semantic.isMutated(sym_id)       // any write reference?
-semantic.hasValueUses(sym_id)    // any runtime use?
-semantic.hasTypeUses(sym_id)     // any type-position use?
 
 semantic.binding(scope, name)    // ?SymbolId at one scope, no chain walk
 semantic.bindings(scope)         // iterator over a scope's symbols
@@ -327,19 +350,18 @@ Every `identifier_reference` node produces one `Reference`, and so do JSX compon
 ```zig
 pub const Reference = struct {
     name: String,
-    scope: ScopeId,         // the scope the reference appears in
-    node: ast.NodeIndex,    // the referencing node
-    symbol: SymbolId,       // the declaring symbol, .none if unresolved
-    kind: Kind = .value,    // .value or .type
-    is_write: bool = false, // assignment target, ++/--, for-in/of variable
+    scope: ScopeId,      // the scope the reference appears in
+    node: ast.NodeIndex, // the referencing node
+    symbol: SymbolId,    // the declaring symbol, .none if unresolved
+    flags: Flags,        // flags.type_position, flags.write
 };
 ```
 
 `symbol` is the resolution: the binding this reference refers to. `.none` means the name has no local binding, which makes it a global, an undeclared name, or a free variable.
 
-`.value` means the reference is a runtime use (the receiver of a property access, an argument, the LHS of an assignment, etc.). `.type` means it appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context. Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
+`flags.type_position` is true when the reference appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context; false means a runtime use (the receiver of a property access, an argument, the LHS of an assignment, etc.). Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
 
-`is_write` is true when the reference (re)assigns its binding: the target of an assignment, the operand of `++`/`--`, the iteration variable of a `for...in`/`for...of`, or a destructuring assignment leaf. Compound targets (`+=`, `++`) both read and write. Initializers in declarations are part of the declaration, not references, so `let x = 1` produces no write reference; only a later `x = 2` does.
+`flags.write` is true when the reference (re)assigns its binding: the target of an assignment, the operand of `++`/`--`, the iteration variable of a `for...in`/`for...of`, or a destructuring assignment leaf. Compound targets (`+=`, `++`) both read and write. Initializers in declarations are part of the declaration, not references, so `let x = 1` produces no write reference; only a later `x = 2` does.
 
 ## [Module Records]($section.id('module-records'))
 
