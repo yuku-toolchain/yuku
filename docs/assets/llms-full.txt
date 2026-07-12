@@ -874,7 +874,7 @@ pub const AttachedComment = struct {
 
 Source: https://yuku.fyi/parser/semantic/
 
-Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
+Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names, so a type `T` and a value `T` never capture each other. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
 
 Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs. A formatter, for example, only needs the AST and should not pay for scope resolution.
 
@@ -890,7 +890,7 @@ const semantic = try parser.semantic.analyze(&tree);
 
 semantic.symbolOf(node);          // what does this node declare or refer to?
 semantic.uses(symbol_id);         // every use site of a symbol
-semantic.lookup(scope_id, "x");   // name resolution from any scope
+semantic.lookup(scope_id, "x", .value); // name resolution from any scope
 ```
 
 Semantic diagnostics land in `tree.diagnostics` alongside parse errors. After analysis, `tree.hasErrors()` reflects both. Together, parsing and semantic analysis cover the full set of early errors required by the specification.
@@ -947,11 +947,13 @@ for (semantic.decls(id)) |binding_node| { ... }
 // Every use site, in source order. A plain slice of ReferenceIds.
 for (semantic.uses(id)) |ref_id| {
     const use = semantic.reference(ref_id);
-    // use.node, use.flags.type_position, use.flags.write
+    // use.node, use.flags.space, use.flags.write
 }
 ```
 
 `decls` returns the name node at each declaration. For `let a = 1`, that is the `binding_identifier` `a`, and `semantic.parentOf` reaches the enclosing declarator or declaration statement from there. Most symbols have exactly one declaration. The slice grows when declarations legally merge into one symbol, such as `var` redeclarations, TS function overloads, and `class` + `interface` merging (see [Symbols](#symbols)).
+
+A conflicting redeclaration (`let x; let x;`) is recorded here too: the early error lands in `tree.diagnostics`, and the conflicting declarator is aliased onto the existing symbol so tooling on broken code still maps the node somewhere. Check `tree.hasErrors()` when only legal declarations matter.
 
 Any per-symbol fact derives from one loop over `uses`, since every use site carries its flags:
 
@@ -964,15 +966,11 @@ var mutated = false;
 for (semantic.uses(id)) |ref_id| {
     if (semantic.reference(ref_id).flags.write) mutated = true;
 }
-
-// only ever used in type positions
-var type_only = true;
-for (semantic.uses(id)) |ref_id| {
-    if (!semantic.reference(ref_id).flags.type_position) type_only = false;
-}
 ```
 
-Every declaration and use carries its node, so rewrites compose directly with the [tree's write API](https://yuku.fyi/parser/traverse/#transform-traverser). A complete rename of one binding (check the new name against `lookup` first if it might collide):
+The same loop answers space questions, such as "is every use type-only", see [Declaration Spaces](#declaration-spaces).
+
+Every declaration and use carries its node, so rewrites compose directly with the [tree's write API](https://yuku.fyi/parser/traverse/#transform-traverser). A complete rename of one binding (check the new name against `lookup(scope, name, .any)` first if it might collide):
 
 ```zig
 const new_name = try tree.addString("renamed");
@@ -994,15 +992,18 @@ Rewrite as the final step before printing, or run `analyze` again afterwards.
 const local = semantic.binding(scope_id, "x");
 
 // The nearest binding visible from a scope, walking up the chain
-// the way name resolution works at runtime.
-const found = semantic.lookup(scope_id, "x");
+// exactly like reference resolution. The space picks what the name
+// can see: `.value` resolves like runtime code, `.type` like a type
+// annotation, and `.any` matches purely by name.
+const found = semantic.lookup(scope_id, "x", .value);
+const ty = semantic.lookup(scope_id, "T", .type);
 
 // Every symbol declared directly in a scope.
 var it = semantic.bindings(scope_id);
 while (it.next()) |sym_id| { ... }
 ```
 
-`binding` checks a single scope, `lookup` resolves a name the way the runtime does, and `bindings` enumerates a scope.
+`binding` checks a single scope, `lookup` walks the scope chain the way references resolve (see [Declaration Spaces](#declaration-spaces)), and `bindings` enumerates a scope.
 
 ### Iterating Everything
 
@@ -1051,7 +1052,9 @@ semantic.uses(sym_id)            // []const ReferenceId, all use sites
 
 semantic.binding(scope, name)    // ?SymbolId at one scope, no chain walk
 semantic.bindings(scope)         // iterator over a scope's symbols
-semantic.lookup(scope, name)     // ?SymbolId, walking the scope chain
+semantic.lookup(scope, name, space) // ?SymbolId, walking the scope
+                                 // chain like reference resolution
+                                 // (.any matches purely by name)
 
 semantic.iterScopes()            // (id, scope) entries
 semantic.iterSymbols()           // (id, symbol) entries
@@ -1181,19 +1184,12 @@ symbol.flags.is_default  // default export
 flags.intersects(other)     // true if `flags` and `other` share at least one flag
 flags.merge(other)          // union of two flag sets (used when merging compatible declarations)
 flags.isHoistingVar()       // true for a real `var` (not a parameter, not a catch_var)
+flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
+                            // (block_scoped_var, class, function)
 flags.toString()            // human-readable category for diagnostics
 ```
 
-**Space predicates.** A symbol can occupy JS value space (visible at runtime), TS type space (referenced from annotations), or both (a `class` straddles them by design). These are common enough questions that they have direct predicates:
-
-```zig
-flags.inValueSpace()        // var, let, const, function, class, enum, value namespace
-flags.inTypeSpace()         // class, enum, interface, type alias, type parameter
-flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
-                            // (block_scoped_var, class, function)
-```
-
-`class` and `regular_enum` deliberately satisfy both `inValueSpace` and `inTypeSpace`. That is what makes "use a class as a type" work without special-casing.
+The space predicates (`inValueSpace`, `inTypeSpace`, `inNamespaceSpace`, `visibleIn`) answer which declaration spaces a symbol occupies. They drive reference resolution and have their own section: [Declaration Spaces](#declaration-spaces).
 
 ### Redeclaration Excludes
 
@@ -1202,8 +1198,8 @@ Each declaration kind has a precomputed `Symbol.Excludes.X` flag set. The rule i
 > A new declaration with `Excludes.X` conflicts with any existing symbol whose flags **intersect** `Excludes.X`. Otherwise the two declarations merge into a single symbol with the union of their flags.
 
 ```zig
-Symbol.Excludes.block_var        // let / const / using
-Symbol.Excludes.function_var     // var
+Symbol.Excludes.block_scoped_var    // let / const / using
+Symbol.Excludes.function_scoped_var // var
 Symbol.Excludes.function         // function (allows overloads in TS, var-merge in sloppy)
 Symbol.Excludes.class
 Symbol.Excludes.interface
@@ -1214,11 +1210,58 @@ Symbol.Excludes.value_module
 Symbol.Excludes.namespace_module
 Symbol.Excludes.import_binding
 Symbol.Excludes.parameter
-Symbol.Excludes.catch_param
+Symbol.Excludes.catch_var
 Symbol.Excludes.type_parameter
 ```
 
 This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching.
+
+## Declaration Spaces
+
+TypeScript names live in three declaration spaces. Value space is what exists at runtime, type space is what annotations can name, and namespace space is what a dotted type name (`ns.T`, `E.A`) can start from. Plain JavaScript has only value space, and everything below reduces to it automatically.
+
+Both sides of the model speak in spaces. A **symbol occupies** one or more spaces, decided by its declarations:
+
+```zig
+flags.inValueSpace()        // var, let, const, function, class, enum, value namespace
+flags.inTypeSpace()         // class, enum, interface, type alias, type parameter
+flags.inNamespaceSpace()    // namespace, enum
+```
+
+`class` and `regular_enum` deliberately satisfy both `inValueSpace` and `inTypeSpace`. That is what makes "use a class as a type" work without special-casing. Import bindings alias another module's symbol, whose space one file cannot know, so they count as occupying every space.
+
+A **reference resolves in** exactly one space, decided by its syntactic position and carried as `flags.space`:
+
+| `space`      | Position                                                            | Resolves against               |
+| ------------ | ------------------------------------------------------------------- | ------------------------------ |
+| `.value`     | runtime uses                                                         | value space                    |
+| `.type`      | annotations, heritage clauses, type arguments                        | type space                     |
+| `.namespace` | the qualifier of a dotted type name (`ns.T`, `E.A`)                  | namespaces and enums           |
+| `.typeof`    | the entity of a `typeof` query, a type-predicate parameter           | value space                    |
+| `.any`       | `export { x }`, `export default x`, `export = x`, `import a = x`     | every space                    |
+
+Resolution connects the two. Walking up the scope chain, a name match counts only when the symbol is visible in the reference's space (`Symbol.Flags.visibleIn`), so a binding outside the space does not shadow:
+
+```ts
+type T = string;
+function f() {
+  const T = 1;
+  let x: T; // resolves to the outer `type T`, exactly like tsc
+  T;        // resolves to the inner `const T`
+}
+```
+
+The annotation skips the inner `const T` and keeps walking the chain. A reference whose space has no binding anywhere resolves to `.none` even when another space binds the name, which is tsc's "cannot find name" behavior.
+
+Two helpers expose the machinery directly. `semantic.lookup(scope, name, space)` runs the same walk as a query, with `.any` matching by name alone. `space.inTypePosition()` is true for the three spaces sitting inside a type-only subtree (`.type`, `.namespace`, `.typeof`), which is what rename-aware tooling checks to change a value without touching a same-named type, and vice versa:
+
+```zig
+// does this import only back type uses? then `import type` is safe
+var type_only = true;
+for (semantic.uses(id)) |ref_id| {
+    if (!semantic.reference(ref_id).flags.space.inTypePosition()) type_only = false;
+}
+```
 
 ## References
 
@@ -1230,15 +1273,13 @@ pub const Reference = struct {
     scope: ScopeId,      // the scope the reference appears in
     node: ast.NodeIndex, // the referencing node
     symbol: SymbolId,    // the declaring symbol, .none if unresolved
-    flags: Flags,        // flags.type_position, flags.write
+    flags: Flags,        // flags.space, flags.write
 };
 ```
 
-`symbol` is the resolution, the binding this reference refers to. Resolution is scope-based, exactly like name binding in the language. A reference resolves to the nearest binding of its name up the scope chain, regardless of where in those scopes the declaration appears (a use above a `let` still resolves to it, and the temporal dead zone is a runtime concern, not a binding concern). `.none` means the name has no binding anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
+`symbol` is the resolution, the binding this reference refers to. Resolution is scope-based, exactly like name binding in the language: a reference resolves to the nearest binding of its name up the scope chain that is visible in its space (see [Declaration Spaces](#declaration-spaces)), regardless of where in those scopes the declaration appears (a use above a `let` still resolves to it, and the temporal dead zone is a runtime concern, not a binding concern). `.none` means the reference's space has no binding of that name anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
 
 Language-provided names are not bindings. `this`, `super`, and (unless user-declared) `arguments` produce no symbols, so a reference to `arguments` inside a function is unresolved. Labels are their own namespace and produce neither symbols nor references.
-
-`flags.type_position` is true when the reference appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context. False means a runtime use, such as the receiver of a property access, an argument, or the LHS of an assignment. Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
 
 `flags.write` is true when the reference (re)assigns its binding, meaning the target of an assignment, the operand of `++`/`--`, the iteration variable of a `for...in`/`for...of`, or a destructuring assignment leaf. Compound targets (`+=`, `++`) both read and write. Initializers in declarations are part of the declaration, not references, so `let x = 1` produces no write reference. Only a later `x = 2` does.
 
@@ -2398,14 +2439,17 @@ sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
 sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // an exported function?
 ```
 
-Alongside the single-bit flags, four **composites** answer the common categorical questions directly.
+Alongside the single-bit flags, five **composites** answer the common categorical questions directly.
 
 ```js
-sym.has(SymbolFlags.Variable);   // var / let / const, parameters and catch bindings included
-sym.has(SymbolFlags.Import);  // any import binding, value or `import type`
-sym.has(SymbolFlags.ValueSpace); // visible at runtime
-sym.has(SymbolFlags.TypeSpace);  // referencable from a TS type position
+sym.has(SymbolFlags.Variable);       // var / let / const, parameters and catch bindings included
+sym.has(SymbolFlags.Import);         // any import binding, value or `import type`
+sym.has(SymbolFlags.ValueSpace);     // visible at runtime
+sym.has(SymbolFlags.TypeSpace);      // referencable from a TS type position
+sym.has(SymbolFlags.NamespaceSpace); // a dotted type name (`ns.T`) can start from it
 ```
+
+The one method beyond `has` is `sym.visibleIn(space)`, the acceptance rule of name resolution: whether a reference resolving in `space` may bind to this symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
 
 A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
 
@@ -2416,17 +2460,29 @@ A `Reference` is one identifier in use position, already resolved.
 ```js
 const ref = module.references[0];
 
-ref.name;    // the identifier text
-ref.node;    // the Identifier node, identity-shared with the AST
-ref.scope;   // the scope the use occurs in
-ref.symbol;  // the resolved Symbol, or null for free names
-ref.kind;    // "value" for runtime uses, "type" for TS type positions
-ref.isWrite; // true when this use (re)assigns the binding
+ref.name;           // the identifier text
+ref.node;           // the Identifier node, identity-shared with the AST
+ref.scope;          // the scope the use occurs in
+ref.symbol;         // the resolved Symbol, or null for free names
+ref.space;          // "value" | "type" | "namespace" | "typeof" | "any"
+ref.inTypePosition; // true inside a type-only subtree
+ref.isWrite;        // true when this use (re)assigns the binding
 ```
 
-`kind` lets rename and dead-code tools treat a value and a same-named type independently. `isWrite` is computed structurally in the native pass.
+Resolution is space-aware, the way TypeScript resolves names. `space` is the declaration space the position resolves in: `"value"` for runtime uses, `"type"` for annotations and other type positions, `"namespace"` for the qualifier of a dotted type name (`ns.T`, `E.A`), `"typeof"` for value uses inside a type (the entity of `typeof x`, `x is T` parameters), and `"any"` for alias positions that accept every space (`export { x }`, `export default x`, `export = x`, `import a = x`). A binding outside the reference's space does not shadow:
 
-`module.unresolvedReferences` is the complement, every name that resolves to no local binding. That list is precisely what a no-undef lint rule or a globals collector wants.
+```ts
+type T = string;
+function f() {
+  const T = 1;
+  let x: T; // resolves to the outer `type T`, exactly like tsc
+  T;        // resolves to the inner `const T`
+}
+```
+
+`inTypePosition` collapses the space to the question rename and dead-code tools ask, whether the use is erased at compile time, so a value and a same-named type stay independent. `isWrite` is computed structurally in the native pass.
+
+`module.unresolvedReferences` is the complement, every name whose space has no binding anywhere in scope. That list is precisely what a no-undef lint rule or a globals collector wants.
 
 ## Node queries
 
@@ -2437,8 +2493,9 @@ module.symbolOf(node);    // the symbol a node declares or references, or null
 module.referenceOf(node); // the Reference for an identifier node, or null
 module.scopeOf(node);     // the innermost scope whose extent contains the node
 module.parentOf(node);    // the node that structurally contains it, or null
-module.resolve("fetch");            // scope-chain lookup from the root scope
-module.resolve("x", someScope);     // or from any scope, like the engine would
+module.resolve("fetch");                  // scope-chain lookup from the root scope
+module.resolve("x", someScope);           // or from any scope, like the engine would
+module.resolve("T", someScope, "type");   // or in another space ("any" is by name alone)
 ```
 
 `symbolOf` is the workhorse. Hand it a declaration identifier and you get the symbol it declares, hand it a reference identifier and you get the symbol it resolves to.
