@@ -138,6 +138,6 @@ Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `me
 
 ## [Going Further]($section.id('going-further'))
 
+- [Semantic Analysis](/parser/semantic/): the semantic model of a tree, with scopes, symbols, resolved references, early errors, and module records.
 - [Traverse](/parser/traverse/): walk the AST with typed visitor hooks, in four modes: basic, scoped, semantic, and transform.
-- [Semantic Analysis](/parser/semantic/): the semantic model, scope-dependent early errors, and module import/export records.
 - [Codegen](/parser/codegen/): print a tree back to JavaScript/TypeScript source.

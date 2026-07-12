@@ -343,7 +343,9 @@ pub const Semantic = struct {
         return .{ .node_parents = self.node_parents, .current = node };
     }
 
-    /// Every declaration site of `id`, in source order.
+    /// The `binding_identifier` node of every declaration of `id`, in
+    /// source order. `parentOf` reaches the enclosing declarator or
+    /// declaration from there.
     pub fn decls(self: Semantic, id: SymbolId) []const ast.NodeIndex {
         const range = self.symbol(id).decls;
         std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
@@ -400,6 +402,11 @@ pub const Semantic = struct {
         return null;
     }
 
+    /// Iterates every `(id, scope)` pair in creation order.
+    pub fn iterScopes(self: Semantic) ScopeIterator {
+        return .{ .list = self.scopes.list };
+    }
+
     /// Iterates every `(id, symbol)` pair in declaration order.
     pub fn iterSymbols(self: Semantic) SymbolIterator {
         return .{ .symbols = self.symbols };
@@ -416,11 +423,27 @@ pub const Semantic = struct {
         return self.use_flags[@intFromEnum(id)];
     }
 
+    /// A `(id, scope)` pair yielded by `iterScopes`.
+    pub const ScopeEntry = struct { id: sc.ScopeId, scope: sc.Scope };
+
     /// A `(id, symbol)` pair yielded by `iterSymbols`.
     pub const SymbolEntry = struct { id: SymbolId, symbol: Symbol };
 
     /// A `(id, reference)` pair yielded by `iterReferences`.
     pub const ReferenceEntry = struct { id: ReferenceId, reference: Reference };
+
+    /// Yields every `(id, scope)` pair in creation order.
+    pub const ScopeIterator = struct {
+        list: []const sc.Scope,
+        index: u32 = 0,
+
+        pub fn next(self: *ScopeIterator) ?ScopeEntry {
+            if (self.index >= self.list.len) return null;
+            const i = self.index;
+            self.index += 1;
+            return .{ .id = @enumFromInt(i), .scope = self.list[i] };
+        }
+    };
 
     /// Yields each node index from a starting node up to the root.
     pub const AncestorIterator = struct {
@@ -1012,7 +1035,7 @@ pub const SymbolTracker = struct {
         return self.symbols.items[@intFromEnum(id)];
     }
 
-    /// The first declarator recorded for `id`.
+    /// The `binding_identifier` node of the first declaration of `id`.
     pub fn firstDeclOf(self: *const SymbolTracker, id: SymbolId) ast.NodeIndex {
         std.debug.assert(id != .none);
         std.debug.assert(@intFromEnum(id) < self.first_decls.items.len);

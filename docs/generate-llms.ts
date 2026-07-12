@@ -11,8 +11,8 @@ const ORDER = [
   "",
   "parser",
   "parser/ast",
-  "parser/traverse",
   "parser/semantic",
+  "parser/traverse",
   "parser/codegen",
   "analyzer",
 ];
