@@ -77,8 +77,8 @@ pub const PackedSymbol = extern struct {
     decls_len: u32,
 };
 
-/// `bits` is the raw `Reference.Flags` bitset: type_position (bit 0)
-/// and write (bit 1). `symbol` is the resolved SymbolId or the none
+/// `bits` is the raw `Reference.Flags` bitset: write (bit 0) and
+/// space (bits 1-3). `symbol` is the resolved SymbolId or the none
 /// sentinel.
 pub const PackedReference = extern struct {
     name_start: u32,
@@ -127,8 +127,9 @@ pub const EXPORT_SIZE: u32 = @sizeOf(PackedExport);
 // bit positions inside the packed `bits` words, for the JS decoder.
 pub const SCOPE_KIND_MASK: u32 = 0xFF;
 pub const SCOPE_STRICT_BIT: u5 = 8;
-pub const REFERENCE_TYPE_BIT: u5 = 0;
-pub const REFERENCE_WRITE_BIT: u5 = 1;
+pub const REFERENCE_WRITE_BIT: u5 = 0;
+pub const REFERENCE_SPACE_SHIFT: u5 = 1;
+pub const REFERENCE_SPACE_MASK: u32 = 0b111;
 pub const IMPORT_KIND_MASK: u32 = 0b111;
 pub const IMPORT_TYPE_BIT: u5 = 3;
 pub const IMPORT_HAS_PHASE_BIT: u5 = 4;
@@ -170,8 +171,13 @@ comptime {
 
     // reference flags cross as a raw bitset inside `bits`, freeze the layout
     std.debug.assert(@bitSizeOf(Reference.Flags) == 8);
-    std.debug.assert(@bitOffsetOf(Reference.Flags, "type_position") == REFERENCE_TYPE_BIT);
     std.debug.assert(@bitOffsetOf(Reference.Flags, "write") == REFERENCE_WRITE_BIT);
+    std.debug.assert(@bitOffsetOf(Reference.Flags, "space") == REFERENCE_SPACE_SHIFT);
+    std.debug.assert(@intFromEnum(Reference.Space.value) == 0);
+    std.debug.assert(@intFromEnum(Reference.Space.type) == 1);
+    std.debug.assert(@intFromEnum(Reference.Space.namespace) == 2);
+    std.debug.assert(@intFromEnum(Reference.Space.typeof) == 3);
+    std.debug.assert(@intFromEnum(Reference.Space.any) == 4);
 
     // scope kinds cross as raw u8 values inside `bits`, freeze the order
     std.debug.assert(@intFromEnum(Scope.Kind.global) == 0);

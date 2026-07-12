@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer } from "yuku-analyzer";
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
 import { summary } from "./summarize";
 
 describe("resolution", () => {
@@ -91,7 +91,7 @@ describe("write detection", () => {
   });
 });
 
-describe("value vs type space", () => {
+describe("declaration spaces", () => {
   test("a name used as both a value and a type resolves in each space", () => {
     expect(summary(`class C {} const c: C = new C();`)).toMatchInlineSnapshot(`
       "global
@@ -114,6 +114,89 @@ describe("value vs type space", () => {
       imports
         T → #0 from "./t""
     `);
+  });
+
+  test("an inner value binding does not shadow an outer type, and vice versa", () => {
+    expect(summary(`type T = string; function f() { const T = 1; let x: T; T; }`))
+      .toMatchInlineSnapshot(`
+        "global
+          module [strict]
+            T#0  type
+            f#1  function
+            block TSTypeAliasDeclaration
+            function "f"
+              T#2  const
+              x#3  let
+              T → #0 type
+              T → #2"
+      `);
+  });
+
+  test("typeof resolves its entity in value space", () => {
+    expect(summary(`const v = 1; function f() { type v = string; let a: typeof v; let b: v; }`))
+      .toMatchInlineSnapshot(`
+        "global
+          module [strict]
+            v#0  const
+            f#1  function
+            function "f"
+              v#2  type
+              a#3  let
+              b#4  let
+              v → #0 typeof
+              v → #2 type
+              block TSTypeAliasDeclaration"
+      `);
+  });
+
+  test("a dotted type name starts from a namespace, not a shadowing value", () => {
+    expect(summary(`namespace N { export type T = number; } function f() { const N = 1; let x: N.T; }`))
+      .toMatchInlineSnapshot(`
+        "global
+          module [strict]
+            N#0  namespace
+            f#2  function
+            tsModule
+              T#1  type exported
+              block TSTypeAliasDeclaration
+            function "f"
+              N#3  const
+              x#4  let
+              N → #0 namespace"
+      `);
+  });
+
+  test("a reference with no binding in its space anywhere is unresolved", () => {
+    expect(summary(`function f() { const T = 1; let x: T; T; }`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          f#0  function
+          function "f"
+            T#1  const
+            x#2  let
+            T → free type
+            T → #1"
+    `);
+  });
+
+  test("resolve walks the chain per space, and symbols expose the predicates", () => {
+    const module = new Analyzer().addFile(
+      "input.ts",
+      `type T = string; function f() { const T = 1; T; }`,
+    );
+    const alias = module.symbols.find((s) => s.name === "T" && s.has(SymbolFlags.TypeSpace))!;
+    const local = module.symbols.find((s) => s.name === "T" && s.has(SymbolFlags.ValueSpace))!;
+    const inner = local.scope;
+
+    expect(module.resolve("T", inner, "type")).toBe(alias);
+    expect(module.resolve("T", inner, "value")).toBe(local);
+    expect(module.resolve("T", inner, "any")).toBe(local);
+    expect(module.resolve("T", inner)).toBe(local);
+
+    expect(alias.visibleIn("type")).toBe(true);
+    expect(alias.visibleIn("value")).toBe(false);
+    expect(local.visibleIn("typeof")).toBe(true);
+    expect(local.has(SymbolFlags.NamespaceSpace)).toBe(false);
   });
 });
 

@@ -69,7 +69,7 @@ describe("import equals", () => {
         module [strict]
           NS#0  namespace value-module
           A#2  import
-          NS → #0 type
+          NS → #0 any
           A → #2
           tsModule
             B#1  const exported"

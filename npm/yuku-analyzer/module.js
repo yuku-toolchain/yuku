@@ -85,6 +85,24 @@ class Symbol {
   hasAll(mask) {
     return (this.flags & mask) === mask;
   }
+  // the acceptance rule of name resolution. import bindings alias
+  // symbols of unknowable space and are visible in every space
+  visibleIn(space) {
+    const flags = this.flags;
+    if ((flags & SymbolFlags.Import) !== 0) return true;
+    switch (space) {
+      case "value":
+      case "typeof":
+        return (flags & SymbolFlags.ValueSpace) !== 0;
+      case "type":
+        return (flags & SymbolFlags.TypeSpace) !== 0;
+      case "namespace":
+        return (flags & SymbolFlags.NamespaceSpace) !== 0;
+      case "any":
+        return true;
+    }
+    throw new TypeError(`visibleIn: unknown space "${space}"`);
+  }
   definition() {
     return this.module.analyzer.definitionOf(this);
   }
@@ -106,8 +124,11 @@ class Reference {
   get node() {
     return this.#sem.reference.node(this.id);
   }
-  get kind() {
-    return this.#sem.reference.kind(this.id);
+  get space() {
+    return this.#sem.reference.space(this.id);
+  }
+  get inTypePosition() {
+    return this.#sem.reference.inTypePosition(this.id);
   }
   get isWrite() {
     return this.#sem.reference.isWrite(this.id);
@@ -329,10 +350,13 @@ export class Module {
     return parent < 0 ? null : this.#r.nodeOf(parent);
   }
 
-  resolve(name, from = this.rootScope) {
+  // the space filters what the name can see, exactly like reference
+  // resolution: a binding outside the space does not shadow, the walk
+  // keeps going. "any" matches by name alone
+  resolve(name, from = this.rootScope, space = "value") {
     for (let s = from; s; s = s.parent) {
       const found = s.find(name);
-      if (found) return found;
+      if (found && found.visibleIn(space)) return found;
     }
     return null;
   }
@@ -368,7 +392,7 @@ export class Module {
     const captures = new Map();
     for (let i = 0; i < reference.count; i++) {
       const symbolId = reference.symbolId(i);
-      if (symbolId === null || reference.kind(i) === "type") continue;
+      if (symbolId === null || reference.inTypePosition(i)) continue;
       if (reference.start(i) < start || reference.end(i) > end) continue;
       let inside = false;
       for (let s = symbol.scopeId(symbolId); s !== null; s = scope.parentId(s)) {

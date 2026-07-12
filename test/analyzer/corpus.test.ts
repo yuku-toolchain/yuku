@@ -33,7 +33,7 @@ function captureOracle(module: Module, fn: Node): Set<number> {
   };
   const captured = new Set<number>();
   for (const reference of module.references) {
-    if (reference.kind !== "value" || reference.symbol === null) continue;
+    if (reference.inTypePosition || reference.symbol === null) continue;
     if (reference.node.start < fn.start || reference.node.end > fn.end) continue;
     if (within(reference.symbol.scope)) continue;
     captured.add(reference.symbol.id);

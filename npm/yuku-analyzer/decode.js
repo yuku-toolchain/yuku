@@ -207,6 +207,8 @@ const SCOPE_KINDS = ["global", "module", "function", "block", "class", "staticBl
 const IMPORT_PHASES = ["source", "defer"];
 const IMPORT_KINDS = ["named", "namespace", "sideEffect", "importEquals", "dynamic", "require"];
 const EXPORT_KINDS = ["named", "reExport", "namespace", "star", "equals", "global"];
+const REFERENCE_SPACES = ["value", "type", "namespace", "typeof", "any"];
+const REFERENCE_TYPE_POSITION = [false, true, true, true, false];
 const SymbolFlags = Object.freeze({
   FunctionScopedVariable: 1 << 0,
   BlockScopedVariable: 1 << 1,
@@ -231,6 +233,7 @@ const SymbolFlags = Object.freeze({
   Import: 6144,
   ValueSpace: 127,
   TypeSpace: 952,
+  NamespaceSpace: 1136,
 });
 const CHILD_SLOTS = [
   [2, 2],
@@ -1312,8 +1315,9 @@ function decode(buffer, source) {
         scopeId: (i) => references[i * 6 + 2],
         node: (i) => node(references[i * 6 + 3]),
         nodeIndex: (i) => references[i * 6 + 3],
-        kind: (i) => IMPORT_EXPORT_KINDS[(references[i * 6 + 4] >> 0) & 1],
-        isWrite: (i) => ((references[i * 6 + 4] >> 1) & 1) !== 0,
+        space: (i) => REFERENCE_SPACES[(references[i * 6 + 4] >> 1) & 7],
+        inTypePosition: (i) => REFERENCE_TYPE_POSITION[(references[i * 6 + 4] >> 1) & 7],
+        isWrite: (i) => ((references[i * 6 + 4] >> 0) & 1) !== 0,
         symbolId: (i) => _id(references[i * 6 + 5]),
         start: (i) => startOf(references[i * 6 + 3]),
         end: (i) => endOf(references[i * 6 + 3]),

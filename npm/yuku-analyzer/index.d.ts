@@ -123,7 +123,24 @@ declare const SymbolFlags: {
   readonly ValueSpace: number;
   /** Composite: referencable from a type position (class, enum, interface, alias, type param). */
   readonly TypeSpace: number;
+  /** Composite: what a dotted type name starts from (namespace, enum). */
+  readonly NamespaceSpace: number;
 };
+
+/**
+ * The declaration space a reference position resolves in, matching
+ * TypeScript name resolution. A binding outside a reference's space
+ * does not shadow: an inner `const T` never captures a type-position
+ * `T` away from an outer `type T`, and vice versa.
+ *
+ * - `"value"`: runtime uses
+ * - `"type"`: annotations, heritage clauses, type arguments
+ * - `"namespace"`: the qualifier of a dotted type name (`ns.T`, `E.A`)
+ * - `"typeof"`: value uses inside a type (`typeof x`, `x is T` params)
+ * - `"any"`: alias positions accepting every space (`export { x }`,
+ *   `export default x`, `export = x`, `import a = x`)
+ */
+type Space = "value" | "type" | "namespace" | "typeof" | "any";
 
 /** What kind of construct created a {@link Scope}. */
 type ScopeKind =
@@ -192,6 +209,12 @@ interface Symbol {
   /** True when every flag in `mask` is set. */
   hasAll(mask: number): boolean;
   /**
+   * True when a reference resolving in `space` may bind to this
+   * symbol, the acceptance rule of name resolution. Import bindings
+   * alias symbols of unknowable space and are visible in every space.
+   */
+  visibleIn(space: Space): boolean;
+  /**
    * The defining site of this symbol, following import/re-export chains
    * across modules. Shorthand for {@link Analyzer.definitionOf}.
    */
@@ -209,8 +232,14 @@ interface Reference {
   readonly scope: Scope;
   /** The identifier node, the same object as in the walked AST. */
   readonly node: Identifier | JSXIdentifier;
-  /** `"value"` for runtime uses, `"type"` for TS type-position uses. */
-  readonly kind: "value" | "type";
+  /** The declaration {@link Space} this position resolves in. */
+  readonly space: Space;
+  /**
+   * True when the position sits inside a type-only subtree (`"type"`,
+   * `"namespace"`, `"typeof"` spaces): erased at compile time, so a
+   * rename tool can change a value without touching a same-named type.
+   */
+  readonly inTypePosition: boolean;
   /**
    * True when this reference (re)assigns its binding: assignment
    * targets, `++`/`--` operands, for-in/of iteration variables, and
@@ -218,7 +247,10 @@ interface Reference {
    * and write.
    */
   readonly isWrite: boolean;
-  /** The symbol this resolves to, or null for free/global names. */
+  /**
+   * The symbol this resolves to, or null when no binding is visible
+   * in this reference's space (globals, undeclared names).
+   */
   readonly symbol: Symbol | null;
 }
 
@@ -396,9 +428,12 @@ interface Module {
   parentOf(node: Node): Node | null;
   /**
    * Walks the scope chain from `from` (default: the root scope) to
-   * find the nearest binding of `name`.
+   * find the nearest binding of `name` visible in `space` (default:
+   * `"value"`, resolving like runtime code). A binding outside the
+   * space does not shadow, the walk keeps going. `"any"` matches by
+   * name alone.
    */
-  resolve(name: string, from?: Scope): Symbol | null;
+  resolve(name: string, from?: Scope, space?: Space): Symbol | null;
   /**
    * The free variables of a function or arrow: every binding referenced
    * inside it (nested closures included, value positions only) that is
@@ -542,6 +577,7 @@ export {
   type Reference,
   type Scope,
   type ScopeKind,
+  type Space,
   type Symbol,
   type Visitors,
   type WalkContext,

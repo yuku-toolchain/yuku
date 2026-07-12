@@ -6,7 +6,15 @@ const Allocator = std.mem.Allocator;
 /// ID for a scope. `.root` is the top-level scope, `.none` means no scope.
 pub const ScopeId = enum(u32) { root = 0, module = 1, none = std.math.maxInt(u32), _ };
 
-/// A single lexical scope in the JavaScript scope tree.
+/// A single lexical scope in the scope tree.
+///
+/// ## Example
+/// ```ts
+/// function f() { { var a; let b; } }
+/// //       ^ creates a function scope, a hoist target
+/// //             ^ creates a block scope where `b` lives,
+/// //               while `a` hoists to the function scope
+/// ```
 pub const Scope = struct {
     /// The AST node that created this scope.
     node: ast.NodeIndex,
@@ -47,8 +55,8 @@ pub const Scope = struct {
         ts_module,
 
         /// Returns whether `var` declarations hoist to this scope kind.
-        pub fn isHoistTarget(kind: Kind) bool {
-            return switch (kind) {
+        pub fn isHoistTarget(self: Kind) bool {
+            return switch (self) {
                 .global, .module, .function, .static_block, .ts_module => true,
                 else => false,
             };

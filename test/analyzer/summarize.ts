@@ -103,8 +103,8 @@ function bindingRow(symbol: Symbol): string {
 function referenceRow(reference: Reference): string {
   const target = reference.symbol ? `#${reference.symbol.id}` : "free";
   const write = reference.isWrite ? " write" : "";
-  const type = reference.kind === "type" ? " type" : "";
-  return `${reference.name} → ${target}${write}${type}`;
+  const space = reference.space === "value" ? "" : ` ${reference.space}`;
+  return `${reference.name} → ${target}${write}${space}`;
 }
 
 // Decodes the raw flag bitset into canonical words. The variable kind folds its
@@ -243,7 +243,7 @@ export function links(files: Record<string, string>): string {
 function bindingOf(analyzer: Analyzer, path: string, name: string): Symbol {
   const module = analyzer.module(path);
   if (module === undefined) throw new Error(`no module ${path}`);
-  const symbol = module.resolve(name);
+  const symbol = module.resolve(name, module.rootScope, "any");
   if (symbol === null) throw new Error(`no binding ${name} in ${path}`);
   return symbol;
 }

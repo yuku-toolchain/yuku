@@ -358,7 +358,7 @@ test "lookup agrees with resolution when a var passes through a catch scope" {
 
     const ref = try a.onlyReferenceNamed("e");
     try testing.expectEqual(catch_param.id, ref.reference.symbol);
-    try testing.expectEqual(catch_param.id, a.sem.lookup(ref.reference.scope, "e").?);
+    try testing.expectEqual(catch_param.id, a.sem.lookup(ref.reference.scope, "e", .any).?);
     try testing.expectEqual(hoisted_var.id, a.sem.binding(ref.reference.scope, "e").?);
 }
 
@@ -463,8 +463,9 @@ test "type-position references are flagged, value references are not" {
     var buf: [4]Semantic.ReferenceEntry = undefined;
     const refs = referencesNamed(&a, "Ck", &buf);
     try testing.expectEqual(@as(usize, 2), refs.len);
-    try testing.expect(refs[0].reference.flags.type_position);
-    try testing.expect(!refs[1].reference.flags.type_position);
+    try testing.expectEqual(.type, refs[0].reference.flags.space);
+    try testing.expect(refs[0].reference.flags.space.inTypePosition());
+    try testing.expectEqual(.value, refs[1].reference.flags.space);
 
     const ck = try a.symbolNamed("Ck");
     try testing.expectEqual(ck.id, refs[0].reference.symbol);
@@ -521,8 +522,209 @@ test "type predicates synthesize a reference to the parameter" {
 
     const pred_ref = a.sem.reference(uses[0]);
     const body_ref = a.sem.reference(uses[1]);
-    try testing.expect(pred_ref.flags.type_position);
-    try testing.expect(!body_ref.flags.type_position);
+    try testing.expectEqual(.typeof, pred_ref.flags.space);
+    try testing.expectEqual(.value, body_ref.flags.space);
+}
+
+test "a value binding does not shadow an outer type for type-position references" {
+    var a = try analyze(
+        \\type T = string;
+        \\function f() {
+        \\  const T = 1;
+        \\  let x: T;
+        \\  T;
+        \\}
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    var syms: [4]Semantic.SymbolEntry = undefined;
+    const ts = a.symbolsNamed("T", &syms);
+    try testing.expectEqual(@as(usize, 2), ts.len);
+    const alias = ts[0]; // module scope `type T`
+    const local = ts[1]; // function scope `const T`
+    try testing.expect(alias.symbol.flags.type_alias);
+    try testing.expect(local.symbol.flags.const_var);
+
+    var buf: [4]Semantic.ReferenceEntry = undefined;
+    const refs = referencesNamed(&a, "T", &buf);
+    try testing.expectEqual(@as(usize, 2), refs.len);
+
+    const type_ref = refs[0].reference; // `x: T`
+    try testing.expectEqual(.type, type_ref.flags.space);
+    try testing.expectEqual(alias.id, type_ref.symbol);
+
+    const value_ref = refs[1].reference; // the bare statement use
+    try testing.expectEqual(.value, value_ref.flags.space);
+    try testing.expectEqual(local.id, value_ref.symbol);
+
+    // the space-aware lookup mirrors resolution from the same scope
+    const scope = a.sem.reference(refs[0].id).scope;
+    try testing.expectEqual(alias.id, a.sem.lookup(scope, "T", .type).?);
+    try testing.expectEqual(local.id, a.sem.lookup(scope, "T", .value).?);
+}
+
+test "a type binding does not shadow an outer value for value references" {
+    var a = try analyze(
+        \\const T = 1;
+        \\function f() {
+        \\  interface T { a: number }
+        \\  T;
+        \\  let x: T;
+        \\}
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    var syms: [4]Semantic.SymbolEntry = undefined;
+    const ts = a.symbolsNamed("T", &syms);
+    try testing.expectEqual(@as(usize, 2), ts.len);
+    const outer_const = ts[0];
+    const inner_iface = ts[1];
+    try testing.expect(outer_const.symbol.flags.const_var);
+    try testing.expect(inner_iface.symbol.flags.interface);
+
+    var buf: [4]Semantic.ReferenceEntry = undefined;
+    const refs = referencesNamed(&a, "T", &buf);
+    try testing.expectEqual(@as(usize, 2), refs.len);
+    try testing.expectEqual(outer_const.id, refs[0].reference.symbol); // the bare statement use
+    try testing.expectEqual(inner_iface.id, refs[1].reference.symbol); // `x: T`
+}
+
+test "typeof resolves its entity in value space" {
+    var a = try analyze(
+        \\const v = 1;
+        \\function f() {
+        \\  type v = string;
+        \\  let a: typeof v;
+        \\  let b: v;
+        \\}
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    var syms: [4]Semantic.SymbolEntry = undefined;
+    const vs = a.symbolsNamed("v", &syms);
+    try testing.expectEqual(@as(usize, 2), vs.len);
+    const outer_const = vs[0];
+    const inner_alias = vs[1];
+
+    var buf: [4]Semantic.ReferenceEntry = undefined;
+    const refs = referencesNamed(&a, "v", &buf);
+    try testing.expectEqual(@as(usize, 2), refs.len);
+
+    const query_ref = refs[0].reference; // `typeof v`
+    try testing.expectEqual(.typeof, query_ref.flags.space);
+    try testing.expectEqual(outer_const.id, query_ref.symbol);
+
+    const ann_ref = refs[1].reference; // `: v`
+    try testing.expectEqual(.type, ann_ref.flags.space);
+    try testing.expectEqual(inner_alias.id, ann_ref.symbol);
+}
+
+test "qualified type names start from a namespace or enum" {
+    var a = try analyze(
+        \\namespace N { export type T = number; }
+        \\enum E { A }
+        \\function f() {
+        \\  const N = 1;
+        \\  const E = 2;
+        \\  let x: N.T;
+        \\  let y: E.A;
+        \\  N;
+        \\}
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    var syms: [4]Semantic.SymbolEntry = undefined;
+    const ns = a.symbolsNamed("N", &syms);
+    try testing.expectEqual(@as(usize, 2), ns.len);
+    try testing.expect(ns[0].symbol.flags.namespace_module);
+
+    var ebuf: [4]Semantic.SymbolEntry = undefined;
+    const es = a.symbolsNamed("E", &ebuf);
+    try testing.expectEqual(@as(usize, 2), es.len);
+    try testing.expect(es[0].symbol.flags.regular_enum);
+
+    var buf: [4]Semantic.ReferenceEntry = undefined;
+    const n_refs = referencesNamed(&a, "N", &buf);
+    try testing.expectEqual(@as(usize, 2), n_refs.len);
+
+    const qual_ref = n_refs[0].reference; // `N.T`
+    try testing.expectEqual(.namespace, qual_ref.flags.space);
+    try testing.expectEqual(ns[0].id, qual_ref.symbol);
+    try testing.expectEqual(ns[1].id, n_refs[1].reference.symbol); // the bare statement use
+
+    const e_refs = referencesNamed(&a, "E", &buf);
+    try testing.expectEqual(@as(usize, 1), e_refs.len);
+    try testing.expectEqual(.namespace, e_refs[0].reference.flags.space);
+    try testing.expectEqual(es[0].id, e_refs[0].reference.symbol); // `E.A`
+}
+
+test "export specifiers see every declaration space" {
+    var a = try analyze(
+        \\type T = 1;
+        \\interface I { a: number }
+        \\const v = 2;
+        \\export { T, I, v };
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    inline for (.{ "T", "I", "v" }) |name| {
+        const entry = try a.onlyReferenceNamed(name);
+        try testing.expectEqual(.any, entry.reference.flags.space);
+        try testing.expectEqual((try a.symbolNamed(name)).id, entry.reference.symbol);
+    }
+}
+
+test "export default, export =, and import = see type-only bindings" {
+    {
+        var a = try analyze(
+            \\interface I { a: number }
+            \\export default I;
+        , .{ .lang = .ts });
+        defer a.deinit();
+        const ref = try a.onlyReferenceNamed("I");
+        try testing.expectEqual(.any, ref.reference.flags.space);
+        try testing.expectEqual((try a.symbolNamed("I")).id, ref.reference.symbol);
+    }
+    {
+        var a = try analyze(
+            \\interface I { a: number }
+            \\export = I;
+        , .{ .lang = .ts });
+        defer a.deinit();
+        const ref = try a.onlyReferenceNamed("I");
+        try testing.expectEqual(.any, ref.reference.flags.space);
+        try testing.expectEqual((try a.symbolNamed("I")).id, ref.reference.symbol);
+    }
+    {
+        var a = try analyze(
+            \\namespace X { export const Y = 1; }
+            \\import a = X.Y;
+        , .{ .lang = .ts });
+        defer a.deinit();
+        const ref = try a.onlyReferenceNamed("X");
+        try testing.expectEqual(.any, ref.reference.flags.space);
+        try testing.expectEqual((try a.symbolNamed("X")).id, ref.reference.symbol);
+    }
+}
+
+test "a reference with no binding in its space anywhere is unresolved" {
+    var a = try analyze(
+        \\function f() {
+        \\  const T = 1;
+        \\  let x: T;
+        \\  T;
+        \\}
+    , .{ .lang = .ts });
+    defer a.deinit();
+
+    var buf: [4]Semantic.ReferenceEntry = undefined;
+    const refs = referencesNamed(&a, "T", &buf);
+    try testing.expectEqual(@as(usize, 2), refs.len);
+    try testing.expectEqual(.none, refs[0].reference.symbol); // `x: T`
+    try testing.expectEqual((try a.symbolNamed("T")).id, refs[1].reference.symbol); // the bare statement use
+
+    // no use is recorded for the unresolved type-position reference
+    try testing.expectEqual(@as(usize, 1), a.sem.uses((try a.symbolNamed("T")).id).len);
 }
 
 test "symbolOf answers for both declaration and reference nodes" {
@@ -573,9 +775,9 @@ test "lookup walks the scope chain, binding does not" {
     const inner = try a.symbolNamed("inner");
     const block_scope = inner.symbol.scope;
 
-    try testing.expectEqual(inner.id, a.sem.lookup(block_scope, "inner").?);
-    try testing.expectEqual(outer.id, a.sem.lookup(block_scope, "outer").?);
-    try testing.expectEqual(@as(?SymbolId, null), a.sem.lookup(block_scope, "missing"));
+    try testing.expectEqual(inner.id, a.sem.lookup(block_scope, "inner", .any).?);
+    try testing.expectEqual(outer.id, a.sem.lookup(block_scope, "outer", .any).?);
+    try testing.expectEqual(@as(?SymbolId, null), a.sem.lookup(block_scope, "missing", .any));
 
     try testing.expectEqual(@as(?SymbolId, null), a.sem.binding(block_scope, "outer"));
     try testing.expectEqual(inner.id, a.sem.binding(block_scope, "inner").?);

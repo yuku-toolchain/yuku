@@ -6,6 +6,7 @@ const sem_rt = rt.semantic;
 const meta = @import("meta.zig");
 
 const Symbol = parser.traverser.semantic.Symbol;
+const Reference = parser.traverser.semantic.Reference;
 const ModuleFlags = parser.semantic.module_record.Flags;
 
 const Writer = std.Io.Writer;
@@ -102,6 +103,25 @@ fn writeSemanticConstants(w: *Writer) !void {
         "named", "reExport", "namespace", "star", "equals", "global",
     });
 
+    // one entry per Reference.Space value, in enum order, plus the
+    // mirrored Space.inTypePosition lookup
+    const space_fields = @typeInfo(Reference.Space).@"enum".fields;
+    const space_names = comptime blk: {
+        var names: [space_fields.len][]const u8 = undefined;
+        for (space_fields, 0..) |field, i| names[i] = field.name;
+        break :blk names;
+    };
+    try writeArray(w, "REFERENCE_SPACES", &space_names);
+    const space_type_position = comptime blk: {
+        var vals: [space_fields.len][]const u8 = undefined;
+        for (space_fields, 0..) |field, i| {
+            const space = @field(Reference.Space, field.name);
+            vals[i] = if (space.inTypePosition()) "true" else "false";
+        }
+        break :blk vals;
+    };
+    try writeArrayRaw(w, "REFERENCE_TYPE_POSITION", &space_type_position);
+
     try w.writeAll("const SymbolFlags = Object.freeze({\n");
     inline for (@typeInfo(Symbol.Flags).@"struct".fields) |field| {
         if (comptime std.mem.eql(u8, field.name, "_")) continue;
@@ -114,6 +134,7 @@ fn writeSemanticConstants(w: *Writer) !void {
     try w.print("  Import: {d},\n", .{@as(u32, @bitCast(Symbol.any_import))});
     try w.print("  ValueSpace: {d},\n", .{@as(u32, @bitCast(Symbol.value_space))});
     try w.print("  TypeSpace: {d},\n", .{@as(u32, @bitCast(Symbol.type_space))});
+    try w.print("  NamespaceSpace: {d},\n", .{@as(u32, @bitCast(Symbol.namespace_space))});
     try w.writeAll("});\n");
 }
 
@@ -1469,7 +1490,8 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        scopeId: (i) => {[scope]s},
         \\        node: (i) => node({[n]s}),
         \\        nodeIndex: (i) => {[n]s},
-        \\        kind: (i) => IMPORT_EXPORT_KINDS[({[bits]s} >> {[tbit]d}) & 1],
+        \\        space: (i) => REFERENCE_SPACES[({[bits]s} >> {[sshift]d}) & {[smask]d}],
+        \\        inTypePosition: (i) => REFERENCE_TYPE_POSITION[({[bits]s} >> {[sshift]d}) & {[smask]d}],
         \\        isWrite: (i) => (({[bits]s} >> {[wbit]d}) & 1) !== 0,
         \\        symbolId: (i) => _id({[sym]s}),
         \\        start: (i) => startOf({[n]s}),
@@ -1481,7 +1503,8 @@ fn writeSemanticAccessors(w: *Writer) !void {
         .scope = comptime cell("references", Ref, "scope"),
         .n = comptime cell("references", Ref, "node"),
         .bits = comptime cell("references", Ref, "bits"),
-        .tbit = sem_rt.REFERENCE_TYPE_BIT,
+        .sshift = sem_rt.REFERENCE_SPACE_SHIFT,
+        .smask = sem_rt.REFERENCE_SPACE_MASK,
         .wbit = sem_rt.REFERENCE_WRITE_BIT,
         .sym = comptime cell("references", Ref, "symbol"),
     });
