@@ -31,8 +31,14 @@ strong {
 }
 
 a {
-  color: #ccc;
+  color: #fff;
   font-weight: bold;
+  text-decoration-color: #888;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-color: #fff;
 }
 
 body {
@@ -110,7 +116,6 @@ code {
 }
 
 p > code,
-a > code,
 h1 > code,
 h2 > code,
 h3 > code,
@@ -119,6 +124,12 @@ h5 > code,
 li > code {
   font-weight: bold;
   color: #ddd;
+  font-size: 1em;
+}
+
+a > code {
+  font-weight: bold;
+  color: #fff;
   font-size: 1em;
 }
 

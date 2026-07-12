@@ -334,6 +334,49 @@ ctx.inTypePosition()  // true inside a TS type-only subtree
 ctx.inTsNamespace()   // true inside a TS `namespace` body
 ```
 
+### [Querying the Symbol Tracker]($section.id('querying-the-symbol-tracker'))
+
+Inside a hook, `ctx.symbols` is the live symbol tracker, and `ctx.scope` works exactly as in [scoped mode](#querying-the-tracker). The tracker answers name questions about everything declared so far:
+
+```zig
+pub fn enter_identifier_reference(
+    _: *V,
+    id: ast.IdentifierReference,
+    _: ast.NodeIndex,
+    ctx: *sem.Ctx,
+) traverser.Action {
+    const name = ctx.tree.string(id.name);
+
+    // is this name bound anywhere in the current scope chain?
+    var it = ctx.scope.ancestors(ctx.scope.current);
+    while (it.next()) |scope_id| {
+        if (ctx.symbols.binding(scope_id, name)) |sym_id| {
+            const symbol = ctx.symbols.symbol(sym_id);       // name, flags, scope
+            const first = ctx.symbols.firstDeclOf(sym_id);   // its first declaration
+            _ = symbol;
+            _ = first;
+            break;
+        }
+    }
+    return .proceed;
+}
+```
+
+The live surface:
+
+```zig
+ctx.symbols.pending                 // the pending binding (see below)
+ctx.symbols.symbol(id)              // Symbol by id
+ctx.symbols.binding(scope, name)    // binding at one scope, including a
+                                    // hoisting `var` passing through
+ctx.symbols.ownBinding(scope, name) // declared directly in `scope` only
+ctx.symbols.firstDeclOf(id)         // binding_identifier node of the
+                                    // first declaration
+```
+
+>[]($block.attrs('note'))
+>The trackers are live: they know only what the walk has visited so far. A name declared later in the file is not bound yet, and the full [`Semantic`](/parser/semantic/#the-semantic-model) model (resolved references, use indexes, node queries) exists only after `traverse` returns. Query the trackers for the mid-walk view; run the traversal first and query the model when a tool needs whole-file answers.
+
 ### [Two-Phase Binding]($section.id('two-phase-binding'))
 
 Symbol declaration is split across two phases per node:
