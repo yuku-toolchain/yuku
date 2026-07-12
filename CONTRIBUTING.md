@@ -30,7 +30,8 @@ src/
     traverser/        AST visitors
     codegen/          print / strip / minify, plus source maps
     semantic/         scopes, symbols, references
-test/                 the test suites
+    testing/          Zig-side tests and the fuzzer (zig build test, zig build fuzz)
+test/                 the product test suites, run through the published JS packages
 npm/                  published JS packages (the native bridges the tests import)
 docs/                 the website
 ```

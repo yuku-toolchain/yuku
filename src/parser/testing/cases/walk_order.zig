@@ -1,13 +1,9 @@
-//! Verifies the walker enters every parent's children in source order.
-//!
-//! Node payload structs in `ast.zig` declare their child fields in source
-//! order and the walker visits struct fields in declaration order, so this
-//! sweep over the full `test/parser` corpus catches any field that drifts
-//! out of order.
+//! Corpus sweep. The walker enters every parent's children in source
+//! order, so any payload field declared out of order is caught.
 
 const std = @import("std");
 const parser = @import("parser");
-const utils = @import("utils.zig");
+const helpers = @import("../helpers.zig");
 
 const ast = parser.ast;
 const traverser = parser.traverser;
@@ -20,8 +16,6 @@ const NodeTag = std.meta.Tag(ast.NodeData);
 const Frame = struct {
     tag: NodeTag,
     last: u32 = 0,
-    /// quasis and expressions interleave in source, but walk order is by
-    /// field, matching every ESTree walker
     interleaved: bool,
 };
 
@@ -100,5 +94,5 @@ const OrderChecker = struct {
 
 test "walker enters children in source order across the parser corpus" {
     const gpa = std.testing.allocator;
-    try utils.forEachCorpusTree(gpa, OrderChecker{ .gpa = gpa });
+    try helpers.forEachCorpusTree(gpa, OrderChecker{ .gpa = gpa });
 }

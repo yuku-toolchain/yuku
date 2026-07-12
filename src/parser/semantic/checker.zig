@@ -131,6 +131,22 @@ pub const Checker = struct {
                         try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                         break;
                     }
+
+                    // https://tc39.es/ecma262/#sec-variablestatements-in-catch-blocks
+                    // (14.15.1): a var colliding with a catch
+                    // parameter is a syntax error, unless the parameter
+                    // is a plain binding identifier, the Annex B.3.4
+                    // web-compat carve-out.
+                    if (existing.flags.catch_var) {
+                        const catch_node = ctx.scope.get(scope_id).node;
+                        const param = ctx.tree.data(catch_node).catch_clause.param;
+                        const simple_param = param != .null and
+                            ctx.tree.data(param) == .binding_identifier;
+                        if (!simple_param) {
+                            try self.reportRedeclaration(id, node_index, sym, existing, ctx);
+                            break;
+                        }
+                    }
                 }
             }
         }

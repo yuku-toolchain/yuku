@@ -394,7 +394,7 @@ pub const Semantic = struct {
     pub fn lookup(self: Semantic, scope_id: sc.ScopeId, name: []const u8) ?SymbolId {
         var it = self.scopes.ancestors(scope_id);
         while (it.next()) |ancestor| {
-            if (self.binding(ancestor, name)) |id| return id;
+            if (self.scope_maps[@intFromEnum(ancestor)].get(name)) |id| return id;
         }
         return null;
     }

@@ -17,7 +17,7 @@ pub const modes = [_]Mode{
     .{ .lang = .dts, .source_type = .module },
 };
 
-// adversarial fragments: surrogate and overlong escapes, unterminated literals,
+// adversarial fragments. surrogate and overlong escapes, unterminated literals,
 // numeric and regex corners, raw wtf-8 bytes, and nesting openers.
 pub const fragments = [_][]const u8{
     "'\\uD800",              "\"\\uDBFF",              "`\\uD800",
@@ -127,7 +127,7 @@ const Guard = struct {
 
 // inputs the fuzzer has caught, kept as fixed regressions.
 pub const regressions = [_][]const u8{
-    "'\\uD800", // high-surrogate escape at eof: oob read in the lexer
+    "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
     "switch (x) { case \xa01: break; default", // lex error spun parseSwitchCases
     "'\\uD83D\\u{1F600}'", // astral \u{} after a high surrogate overflowed a u16
     "const x = 1 .awai", // member `.` on a bare int reprinted as a fraction dot
@@ -137,7 +137,7 @@ pub const regressions = [_][]const u8{
     "type T = import(a).X", // import-type with a non-string arg hit unreachable
     "import x = require(1)", // require() with a non-string arg hit unreachable
     "x as T\r[1, 2]", // member access on a cast reprinted as a type index T[1,2]
-    "class C{async get x(){await 0}}", // async getter: printer dropped the async
+    "class C{async get x(){await 0}}", // async getter whose async the printer dropped
 };
 
 // parse one (input, mode) and assert the invariants. violations panic so the
@@ -160,7 +160,7 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
     // semantic analysis folds its early-error diagnostics into the tree.
     const parse_clean = !tree.hasErrors();
 
-    // exercise semantic analysis on every parse: it must never panic, and the
+    // exercise semantic analysis on every parse. it must never panic, and the
     // diagnostics it appends must stay within the source bounds.
     _ = parser.semantic.analyze(&tree) catch |e| switch (e) {
         error.OutOfMemory => return,
@@ -207,7 +207,7 @@ fn checkRoundTrip(gpa: Allocator, tree: *ast.Tree, mode: Mode, src: []const u8) 
     );
 }
 
-// fail at each successive allocation: every point must yield error.OutOfMemory
+// fail at each successive allocation. every point must yield error.OutOfMemory
 // or success, never a panic. the arena absorbs any error-path leak, while the
 // safety-checked build still traps a bad free.
 pub fn oomSweep(src: []const u8, mode: Mode) void {
@@ -225,11 +225,11 @@ pub fn oomSweep(src: []const u8, mode: Mode) void {
         })) |tree| {
             var t = tree;
             defer t.deinit();
-            // semantic analysis allocates too; it must also yield OOM or
+            // semantic analysis allocates too, and it must also yield OOM or
             // success at every failure point, never a panic.
             if (parser.semantic.analyze(&t)) |_| {
                 // neither parse nor analysis induced a failure, so the fail
-                // index is past the last allocation: every point is covered.
+                // index is past the last allocation, so every point is covered.
                 if (!failing.has_induced_failure) break;
             } else |e| switch (e) {
                 error.OutOfMemory => {},
@@ -263,7 +263,7 @@ pub const Mutator = struct {
         if (buf.items.len == 0) try buf.append(gpa, 'x');
         const len = buf.items.len;
         switch (self.rng.uintLessThan(usize, 13)) {
-            // eof truncation, double-weighted: most past bugs were token-at-eof.
+            // eof truncation, double-weighted, since most past bugs were token-at-eof.
             0, 1 => buf.shrinkRetainingCapacity(self.rng.intRangeAtMost(usize, 0, len)),
             // cut just past an escape backslash to strand an incomplete escape.
             2 => {
@@ -300,7 +300,7 @@ pub const Mutator = struct {
                 defer gpa.free(dup);
                 try buf.insertSlice(gpa, self.rng.intRangeAtMost(usize, 0, buf.items.len), dup);
             },
-            // nesting bomb: a parser must reject depth, never overflow the stack.
+            // nesting bomb. a parser must reject depth, never overflow the stack.
             11, 12 => {
                 const openers = [_][]const u8{ "(", "[", "{", "`${", "/", "a&", "a?b:", "typeof " };
                 const op = openers[self.rng.uintLessThan(usize, openers.len)];
