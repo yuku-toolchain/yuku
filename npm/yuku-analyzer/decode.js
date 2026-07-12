@@ -204,8 +204,9 @@ _ck("JSXText", []);
 _ck("JSXSpreadChild", ["expression"]);
 _ck("Hashbang", []);
 const SCOPE_KINDS = ["global", "module", "function", "block", "class", "staticBlock", "expressionName", "tsModule"];
-const NAME_KINDS = ["named", "star", "none", "equals", "global"];
 const IMPORT_PHASES = ["source", "defer"];
+const IMPORT_KINDS = ["named", "namespace", "sideEffect", "importEquals", "dynamic", "require"];
+const EXPORT_KINDS = ["named", "reExport", "namespace", "star", "equals", "global"];
 const SymbolFlags = Object.freeze({
   FunctionScopedVariable: 1 << 0,
   BlockScopedVariable: 1 << 1,
@@ -1265,7 +1266,7 @@ function decode(buffer, source) {
     const scopeCount = _u32[o], symbolCount = _u32[o + 1],
           referenceCount = _u32[o + 2], declNodeCount = _u32[o + 3],
           importCount = _u32[o + 4], exportCount = _u32[o + 5],
-          nodeScopeCount = _u32[o + 6];
+          nodeScopeCount = _u32[o + 6], moduleFlags = _u32[o + 7];
     o += 8;
     const scopes = _u32.subarray(o, o + scopeCount * 4);
     o += scopeCount * 4;
@@ -1319,8 +1320,8 @@ function decode(buffer, source) {
       },
       import: {
         count: importCount,
+        kind: (i) => IMPORT_KINDS[imports[i * 8 + 1] & 7],
         symbolId: (i) => _id(imports[i * 8 + 0]),
-        nameKind: (i) => NAME_KINDS[imports[i * 8 + 1] & 7],
         name: (i) => str(imports[i * 8 + 2], imports[i * 8 + 3]),
         specifier: (i) => str(imports[i * 8 + 4], imports[i * 8 + 5]),
         typeOnly: (i) => ((imports[i * 8 + 1] >> 3) & 1) !== 0,
@@ -1332,14 +1333,19 @@ function decode(buffer, source) {
       },
       export: {
         count: exportCount,
-        nameKind: (i) => NAME_KINDS[exports[i * 10 + 0] & 7],
-        fromKind: (i) => NAME_KINDS[(exports[i * 10 + 0] >> 3) & 7],
-        typeOnly: (i) => ((exports[i * 10 + 0] >> 6) & 1) !== 0,
+        kind: (i) => EXPORT_KINDS[exports[i * 10 + 0] & 7],
+        typeOnly: (i) => ((exports[i * 10 + 0] >> 3) & 1) !== 0,
         name: (i) => str(exports[i * 10 + 1], exports[i * 10 + 2]),
         fromName: (i) => str(exports[i * 10 + 4], exports[i * 10 + 5]),
         specifier: (i) => str(exports[i * 10 + 6], exports[i * 10 + 7]),
         symbolId: (i) => _id(exports[i * 10 + 3]),
         node: (i) => node(exports[i * 10 + 8]),
+      },
+      moduleFlags: {
+        usesRequire: (moduleFlags & 1) !== 0,
+        usesModule: (moduleFlags & 2) !== 0,
+        usesExports: (moduleFlags & 4) !== 0,
+        usesImportMeta: (moduleFlags & 8) !== 0,
       },
       nodeScope: (i) => nodeScopes[i],
     });

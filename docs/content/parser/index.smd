@@ -27,7 +27,7 @@ Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
 ```
 
-In your `build.zig`:
+In your `build.zig`.
 
 ```zig
 const yuku_dep = b.dependency("yuku", .{
@@ -59,7 +59,7 @@ pub fn main() !void {
 
 ## [Options]($section.id('options'))
 
-`parse` takes an `Options` struct to configure the parsing mode:
+`parse` takes an `Options` struct to configure the parsing mode.
 
 ```zig
 const tree = try parser.parse(allocator, source, .{
@@ -74,9 +74,9 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `allow_return_outside_function` | `true`, `false`                      | `false`   | Allow `return` statements at the top level                                        |
-| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments: as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast/#comments) |
+| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast/#comments) |
 
-Both fields can be inferred from a file path:
+Both fields can be inferred from a file path.
 
 ```zig
 const tree = try parser.parse(allocator, source, .{
@@ -89,7 +89,7 @@ const tree = try parser.parse(allocator, source, .{
 
 `parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. The allocator passed to `parse` is used as the backing allocator for the tree's internal arena, so `tree.deinit()` frees everything at once.
 
-The AST is a flat array of nodes referenced by integer index. `tree.root` is always a `program` node, so unpack it directly. Everything below it is a tagged union you `switch` on:
+The AST is a flat array of nodes referenced by integer index. `tree.root` is always a `program` node, so unpack it directly. Everything below it is a tagged union you `switch` on.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -116,7 +116,7 @@ The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.
 
 ## [Diagnostics]($section.id('diagnostics'))
 
-The parser recovers from errors and continues, so a single parse produces the full AST alongside all diagnostics:
+The parser recovers from errors and continues, so a single parse produces the full AST alongside all diagnostics.
 
 ```zig
 for (tree.diagnostics.items) |d| {
@@ -138,6 +138,6 @@ Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `me
 
 ## [Going Further]($section.id('going-further'))
 
-- [Traverse](/parser/traverse/) — walk the AST with typed visitor hooks, in four modes: basic, scoped, semantic, and transform.
-- [Semantic Analysis](/parser/semantic/) — scope tree, symbol table, scope-dependent early errors, and module import/export records.
-- [Codegen](/parser/codegen/) — print a tree back to JavaScript/TypeScript source.
+- [Semantic Analysis](/parser/semantic/) documents the semantic model of a tree, with scopes, symbols, resolved references, early errors, and module records.
+- [Traverse](/parser/traverse/) walks the AST with typed visitor hooks in four modes (basic, scoped, semantic, transform).
+- [Codegen](/parser/codegen/) prints a tree back to JavaScript/TypeScript source.

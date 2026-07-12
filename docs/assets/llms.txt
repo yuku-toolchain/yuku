@@ -1,4 +1,4 @@
-# Yuku — A JavaScript/TypeScript Compiler Toolchain in Zig
+# Yuku, a JavaScript/TypeScript Compiler Toolchain in Zig
 
 > Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
@@ -7,10 +7,10 @@
 - [Introduction](https://yuku.fyi/): Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 - [Parser](https://yuku.fyi/parser/): A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
 - [AST](https://yuku.fyi/parser/ast/): The flat, data-oriented AST returned by Yuku's parser, with the full node reference.
+- [Semantic Analysis](https://yuku.fyi/parser/semantic/): The semantic model of a JavaScript/TypeScript tree: scopes, symbols, resolved references, scope-dependent early errors, and module records.
 - [Traverse](https://yuku.fyi/parser/traverse/): Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
-- [Semantic Analysis](https://yuku.fyi/parser/semantic/): Scope-dependent early errors, scope tree, symbol table, and module import/export records for JavaScript and TypeScript.
 - [Codegen](https://yuku.fyi/parser/codegen/): Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.
-- [Analyzer](https://yuku.fyi/analyzer/): Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
+- [Analyzer](https://yuku.fyi/analyzer/): Full semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
 ## Resources
 

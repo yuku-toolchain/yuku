@@ -49,8 +49,9 @@ module.scopes               // every lexical scope, as a tree
 module.symbols              // every declared binding
 module.references           // every identifier use, resolved to its symbol
 module.unresolvedReferences // free names and globals
-module.imports              // spec-true import records
+module.imports              // import records, dynamic import() and require() included
 module.exports              // spec-true export records
+module.moduleFlags          // CommonJS classification signals
 module.diagnostics          // syntax + semantic errors
 ```
 

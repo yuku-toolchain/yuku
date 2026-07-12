@@ -126,21 +126,28 @@ class Import {
     this.#sem = sem;
     this._resolved = null;
   }
-  get #nameKind() {
-    return this.#sem.import.nameKind(this.id);
+  get kind() {
+    return this.#sem.import.kind(this.id);
   }
   get local() {
     const s = this.#sem.import.symbolId(this.id);
     return s === null ? null : this.module.symbols[s];
   }
   get name() {
-    return this.#nameKind === "named" ? this.#sem.import.name(this.id) : null;
+    return this.kind === "named" ? this.#sem.import.name(this.id) : null;
   }
   get isNamespace() {
-    return this.#nameKind === "star" && this.local !== null;
+    const kind = this.kind;
+    return kind === "namespace" || kind === "importEquals";
   }
   get isSideEffect() {
-    return this.#nameKind === "none";
+    return this.kind === "sideEffect";
+  }
+  get isDynamic() {
+    return this.kind === "dynamic";
+  }
+  get isRequire() {
+    return this.kind === "require";
   }
   get typeOnly() {
     return this.#sem.import.typeOnly(this.id);
@@ -168,23 +175,23 @@ class Export {
     this.#sem = sem;
     this._resolved = null;
   }
-  get #nameKind() {
-    return this.#sem.export.nameKind(this.id);
-  }
-  get #fromKind() {
-    return this.#sem.export.fromKind(this.id);
+  get kind() {
+    return this.#sem.export.kind(this.id);
   }
   get name() {
-    return this.#nameKind === "named" ? this.#sem.export.name(this.id) : null;
+    const kind = this.kind;
+    return kind === "named" || kind === "reExport" || kind === "namespace"
+      ? this.#sem.export.name(this.id)
+      : null;
   }
   get isStar() {
-    return this.#nameKind === "star";
+    return this.kind === "star";
   }
   get isExportEquals() {
-    return this.#nameKind === "equals";
+    return this.kind === "equals";
   }
   get globalName() {
-    return this.#nameKind === "global" ? this.#sem.export.name(this.id) : null;
+    return this.kind === "global" ? this.#sem.export.name(this.id) : null;
   }
   get typeOnly() {
     return this.#sem.export.typeOnly(this.id);
@@ -194,13 +201,16 @@ class Export {
     return s === null ? null : this.module.symbols[s];
   }
   get specifier() {
-    return this.#fromKind === "none" ? null : this.#sem.export.specifier(this.id);
+    const kind = this.kind;
+    return kind === "reExport" || kind === "namespace" || kind === "star"
+      ? this.#sem.export.specifier(this.id)
+      : null;
   }
   get fromName() {
-    return this.#fromKind === "named" ? this.#sem.export.fromName(this.id) : null;
+    return this.kind === "reExport" ? this.#sem.export.fromName(this.id) : null;
   }
   get isNamespaceReexport() {
-    return this.#fromKind === "star";
+    return this.kind === "namespace";
   }
   get node() {
     return this.#sem.export.node(this.id);
@@ -271,6 +281,9 @@ export class Module {
   }
   get exports() {
     return (this.#exports ??= this.#rows(Export, this.#sem.export.count));
+  }
+  get moduleFlags() {
+    return this.#sem.moduleFlags;
   }
   get unresolvedReferences() {
     return (this.#unresolved ??= this.references.filter((r) => r.symbol === null));

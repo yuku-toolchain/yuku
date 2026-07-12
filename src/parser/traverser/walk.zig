@@ -39,11 +39,7 @@ fn walkNode(
 
     const data = ctx.tree.data(index);
 
-    switch (try dispatch.enter(C, V, visitor, data, index, ctx)) {
-        .skip => return .proceed,
-        .stop => return .stop,
-        .proceed => {},
-    }
+    const action = try dispatch.enter(C, V, visitor, data, index, ctx);
 
     // if a visitor replaced this node during enter, re-read so we walk
     // the replacement's children. skip when the tree is const since no
@@ -53,17 +49,19 @@ fn walkNode(
     else
         ctx.tree.data(index);
 
-    const result = try walkChildren(C, V, visitor, current, ctx);
+    const result = if (action == .proceed)
+        try walkChildren(C, V, visitor, current, ctx)
+    else
+        Action.proceed;
 
-    if (result != .stop) {
-        dispatch.exit(C, V, visitor, current, index, ctx);
-    }
+    // exits pair with enters unconditionally, they run when children
+    // were skipped and while a stop unwinds, so tracking contexts
+    // stay balanced.
+    dispatch.exit(C, V, visitor, current, index, ctx);
 
-    return result;
+    return if (action == .stop) .stop else result;
 }
 
-// walks all child nodes by iterating over the struct fields of the
-// node payload.
 fn walkChildren(
     comptime C: type,
     comptime V: type,
@@ -237,16 +235,13 @@ pub const dispatch = struct {
     }
 };
 
-// lets visitor hooks return either `Action` or `Allocator.Error!Action`.
-// both coerce to `Allocator.Error!Action` through Zig's error union rules,
-// so hooks that don't need to allocate can just return `.proceed` directly
-// without wrapping it in an error union.
+// lets hooks return either `Action` or `Allocator.Error!Action`
 inline fn unwrapAction(result: anytype) Allocator.Error!Action {
     return result;
 }
 
-// checks at compile time that all visitor hook names (enter_X, exit_X)
-// match actual node types in ast.NodeData and have correct payload types.
+// compile-time check that hook names match `ast.NodeData` fields and
+// have the right payload types
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;

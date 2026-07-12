@@ -15,7 +15,7 @@
 //   decl_nodes   decl_node_count * 4.            Flat NodeIndex array
 //                backing `PackedSymbol.decls_start/len` ranges.
 //   references   reference_count * REFERENCE_SIZE. One PackedReference
-//                each, resolution folded in. Requires `resolveAll`.
+//                each, resolution folded in.
 //   imports      import_count * IMPORT_SIZE.     One PackedImport each.
 //   exports      export_count * EXPORT_SIZE.     One PackedExport each.
 //   node_scopes  node_scope_count * 4.           One ScopeId per node,
@@ -38,11 +38,11 @@ const module_record = parser.semantic.module_record;
 
 const Scope = semantic.Scope;
 const Symbol = semantic.Symbol;
-const Result = semantic.Result;
-const ModuleRecords = module_record.ModuleRecords;
+const Reference = semantic.Reference;
+const Semantic = semantic.Semantic;
+const Records = module_record.Records;
 
-/// fixed-size counts block. one reserved slot keeps room for future
-/// sections without a layout break.
+/// fixed-size counts block.
 pub const SubHeader = extern struct {
     scope_count: u32,
     symbol_count: u32,
@@ -52,7 +52,10 @@ pub const SubHeader = extern struct {
     export_count: u32,
     /// one ScopeId per node, indexed by node index.
     node_scope_count: u32,
-    reserved0: u32 = 0,
+    /// raw `module_record.Flags` bitset (CJS classification), layout
+    /// frozen by the comptime asserts below. was a reserved
+    /// always-zero slot before, so old decoders read `.{}` flags.
+    module_flags: u32 = 0,
 };
 
 /// `bits` packs kind (low 8 bits) and the strict flag (bit 8).
@@ -74,8 +77,9 @@ pub const PackedSymbol = extern struct {
     decls_len: u32,
 };
 
-/// `bits` packs kind (bit 0: 0 value, 1 type) and is_write (bit 1).
-/// `symbol` is the resolved SymbolId or the none sentinel.
+/// `bits` is the raw `Reference.Flags` bitset: type_position (bit 0)
+/// and write (bit 1). `symbol` is the resolved SymbolId or the none
+/// sentinel.
 pub const PackedReference = extern struct {
     name_start: u32,
     name_end: u32,
@@ -85,8 +89,8 @@ pub const PackedReference = extern struct {
     symbol: u32,
 };
 
-/// `bits` packs name_kind (bits 0-2), kind (bit 3: 0 value, 1 type),
-/// has_phase (bit 4), and phase (bit 5: 0 source, 1 defer).
+/// `bits` packs kind (bits 0-2), type_only (bit 3), has_phase (bit 4),
+/// and phase (bit 5: 0 source, 1 defer).
 pub const PackedImport = extern struct {
     symbol: u32,
     bits: u32,
@@ -98,8 +102,7 @@ pub const PackedImport = extern struct {
     reserved: u32 = 0,
 };
 
-/// `bits` packs name_kind (bits 0-2), from_kind (bits 3-5), and kind
-/// (bit 6: 0 value, 1 type).
+/// `bits` packs kind (bits 0-2) and type_only (bit 3).
 pub const PackedExport = extern struct {
     bits: u32,
     name_start: u32,
@@ -126,13 +129,12 @@ pub const SCOPE_KIND_MASK: u32 = 0xFF;
 pub const SCOPE_STRICT_BIT: u5 = 8;
 pub const REFERENCE_TYPE_BIT: u5 = 0;
 pub const REFERENCE_WRITE_BIT: u5 = 1;
-pub const IMPORT_NAME_KIND_MASK: u32 = 0b111;
+pub const IMPORT_KIND_MASK: u32 = 0b111;
 pub const IMPORT_TYPE_BIT: u5 = 3;
 pub const IMPORT_HAS_PHASE_BIT: u5 = 4;
 pub const IMPORT_PHASE_BIT: u5 = 5;
-pub const EXPORT_NAME_KIND_MASK: u32 = 0b111;
-pub const EXPORT_FROM_KIND_SHIFT: u5 = 3;
-pub const EXPORT_TYPE_BIT: u5 = 6;
+pub const EXPORT_KIND_MASK: u32 = 0b111;
+pub const EXPORT_TYPE_BIT: u5 = 3;
 
 comptime {
     // every entry is whole u32s, no padding to leak
@@ -166,6 +168,11 @@ comptime {
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "exported") == 17);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "is_default") == 18);
 
+    // reference flags cross as a raw bitset inside `bits`, freeze the layout
+    std.debug.assert(@bitSizeOf(Reference.Flags) == 8);
+    std.debug.assert(@bitOffsetOf(Reference.Flags, "type_position") == REFERENCE_TYPE_BIT);
+    std.debug.assert(@bitOffsetOf(Reference.Flags, "write") == REFERENCE_WRITE_BIT);
+
     // scope kinds cross as raw u8 values inside `bits`, freeze the order
     std.debug.assert(@intFromEnum(Scope.Kind.global) == 0);
     std.debug.assert(@intFromEnum(Scope.Kind.module) == 1);
@@ -176,47 +183,59 @@ comptime {
     std.debug.assert(@intFromEnum(Scope.Kind.expression_name) == 6);
     std.debug.assert(@intFromEnum(Scope.Kind.ts_module) == 7);
 
-    // name kinds cross as raw bits inside the import/export `bits`
-    // words, a contract with the JS NAME_KINDS table. freeze the order.
-    std.debug.assert(@intFromEnum(module_record.NameKind.named) == 0);
-    std.debug.assert(@intFromEnum(module_record.NameKind.star) == 1);
-    std.debug.assert(@intFromEnum(module_record.NameKind.none) == 2);
-    std.debug.assert(@intFromEnum(module_record.NameKind.equals) == 3);
-    std.debug.assert(@intFromEnum(module_record.NameKind.global) == 4);
+    // record kinds cross as raw bits inside the import/export `bits`
+    // words, a contract with the JS IMPORT_KINDS and EXPORT_KINDS
+    // tables. freeze the order.
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.named) == 0);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.namespace) == 1);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.side_effect) == 2);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.import_equals) == 3);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.dynamic) == 4);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.require) == 5);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.named) == 0);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.re_export) == 1);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.namespace) == 2);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.star) == 3);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.equals) == 4);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.global) == 5);
+
+    // module flags cross as a raw bitset in the sub-header, a contract
+    // with the JS moduleFlags accessors. freeze the layout.
+    std.debug.assert(@bitSizeOf(module_record.Flags) == 8);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_require") == 0);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_module") == 1);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_exports") == 2);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_import_meta") == 3);
 }
 
 /// Total buffer size for the core AST sections plus the semantic
 /// sections, including the alignment padding between them.
 pub fn bufferSize(
     tree: *const ast.Tree,
-    result: *const Result,
-    records: ModuleRecords,
+    sem: *const Semantic,
+    records: Records,
 ) usize {
     const base = transfer.bufferSize(tree);
     const aligned = std.mem.alignForward(usize, base, 4);
     return aligned + SUBHEADER_SIZE +
-        result.scope_tree.scopes.len * SCOPE_SIZE +
-        result.symbol_table.symbols.len * SYMBOL_SIZE +
-        result.symbol_table.decl_nodes.len * 4 +
-        result.symbol_table.references.len * REFERENCE_SIZE +
+        sem.scopes.list.len * SCOPE_SIZE +
+        sem.symbols.len * SYMBOL_SIZE +
+        sem.decl_nodes.len * 4 +
+        sem.references.len * REFERENCE_SIZE +
         records.imports.len * IMPORT_SIZE +
         records.exports.len * EXPORT_SIZE +
-        result.node_scopes.len * 4;
+        sem.node_scopes.len * 4;
 }
 
 /// Serializes the core AST buffer followed by the semantic sections.
-/// `result.symbol_table` must have been resolved with `resolveAll` so
-/// every reference carries its resolution. Returns bytes written.
+/// Returns bytes written.
 pub fn serializeInto(
     tree: *const ast.Tree,
-    result: *const Result,
-    records: ModuleRecords,
+    sem: *const Semantic,
+    records: Records,
     buf: []u8,
 ) usize {
-    const table = &result.symbol_table;
-    // resolveAll has run: one resolution per reference
-    std.debug.assert(table.resolutions.len == table.references.len);
-    std.debug.assert(buf.len >= bufferSize(tree, result, records));
+    std.debug.assert(buf.len >= bufferSize(tree, sem, records));
 
     const base = transfer.serializeInto(tree, buf);
 
@@ -229,18 +248,19 @@ pub fn serializeInto(
     @memset(buf[base..pos], 0);
 
     const sub = SubHeader{
-        .scope_count = @intCast(result.scope_tree.scopes.len),
-        .symbol_count = @intCast(table.symbols.len),
-        .reference_count = @intCast(table.references.len),
-        .decl_node_count = @intCast(table.decl_nodes.len),
+        .scope_count = @intCast(sem.scopes.list.len),
+        .symbol_count = @intCast(sem.symbols.len),
+        .reference_count = @intCast(sem.references.len),
+        .decl_node_count = @intCast(sem.decl_nodes.len),
         .import_count = @intCast(records.imports.len),
         .export_count = @intCast(records.exports.len),
-        .node_scope_count = @intCast(result.node_scopes.len),
+        .node_scope_count = @intCast(sem.node_scopes.len),
+        .module_flags = @as(u8, @bitCast(records.flags)),
     };
     @memcpy(buf[pos..][0..SUBHEADER_SIZE], std.mem.asBytes(&sub));
     pos += SUBHEADER_SIZE;
 
-    for (result.scope_tree.scopes) |scope| {
+    for (sem.scopes.list) |scope| {
         const entry = PackedScope{
             .node = @intFromEnum(scope.node),
             .parent = @intFromEnum(scope.parent),
@@ -252,7 +272,7 @@ pub fn serializeInto(
         pos += SCOPE_SIZE;
     }
 
-    for (table.symbols) |symbol| {
+    for (sem.symbols) |symbol| {
         const entry = PackedSymbol{
             .name_start = symbol.name.start,
             .name_end = symbol.name.end,
@@ -265,27 +285,26 @@ pub fn serializeInto(
         pos += SYMBOL_SIZE;
     }
 
-    const decl_bytes = std.mem.sliceAsBytes(table.decl_nodes);
+    const decl_bytes = std.mem.sliceAsBytes(sem.decl_nodes);
     @memcpy(buf[pos..][0..decl_bytes.len], decl_bytes);
     pos += decl_bytes.len;
 
-    for (table.references, 0..) |reference, i| {
+    for (sem.references) |reference| {
         const entry = PackedReference{
             .name_start = reference.name.start,
             .name_end = reference.name.end,
             .scope = @intFromEnum(reference.scope),
             .node = @intFromEnum(reference.node),
-            .bits = (@as(u32, @intFromEnum(reference.kind)) << REFERENCE_TYPE_BIT) |
-                (@as(u32, @intFromBool(reference.is_write)) << REFERENCE_WRITE_BIT),
-            .symbol = @intFromEnum(table.resolutions[i]),
+            .bits = @as(u8, @bitCast(reference.flags)),
+            .symbol = @intFromEnum(reference.symbol),
         };
         @memcpy(buf[pos..][0..REFERENCE_SIZE], std.mem.asBytes(&entry));
         pos += REFERENCE_SIZE;
     }
 
     for (records.imports) |record| {
-        var bits: u32 = @intFromEnum(record.name_kind);
-        bits |= @as(u32, @intFromEnum(record.kind)) << IMPORT_TYPE_BIT;
+        var bits: u32 = @intFromEnum(record.kind);
+        bits |= @as(u32, @intFromBool(record.type_only)) << IMPORT_TYPE_BIT;
         if (record.phase) |phase| {
             bits |= @as(u32, 1) << IMPORT_HAS_PHASE_BIT;
             bits |= @as(u32, @intFromEnum(phase)) << IMPORT_PHASE_BIT;
@@ -305,9 +324,8 @@ pub fn serializeInto(
 
     for (records.exports) |record| {
         const entry = PackedExport{
-            .bits = @as(u32, @intFromEnum(record.name_kind)) |
-                (@as(u32, @intFromEnum(record.from_kind)) << EXPORT_FROM_KIND_SHIFT) |
-                (@as(u32, @intFromEnum(record.kind)) << EXPORT_TYPE_BIT),
+            .bits = @as(u32, @intFromEnum(record.kind)) |
+                (@as(u32, @intFromBool(record.type_only)) << EXPORT_TYPE_BIT),
             .name_start = record.name.start,
             .name_end = record.name.end,
             .symbol = @intFromEnum(record.symbol),
@@ -321,11 +339,11 @@ pub fn serializeInto(
         pos += EXPORT_SIZE;
     }
 
-    const node_scope_bytes = std.mem.sliceAsBytes(result.node_scopes);
+    const node_scope_bytes = std.mem.sliceAsBytes(sem.node_scopes);
     @memcpy(buf[pos..][0..node_scope_bytes.len], node_scope_bytes);
     pos += node_scope_bytes.len;
 
     // writer and size calculation must agree exactly
-    std.debug.assert(pos == bufferSize(tree, result, records));
+    std.debug.assert(pos == bufferSize(tree, sem, records));
     return pos;
 }

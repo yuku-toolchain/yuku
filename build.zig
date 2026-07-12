@@ -62,7 +62,7 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser_module })).step);
 
     const zig_tests_module = b.createModule(.{
-        .root_source_file = b.path("test/zig/root.zig"),
+        .root_source_file = b.path("src/parser/testing/root.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -85,7 +85,7 @@ pub fn build(b: *std.Build) void {
     fuzz_parser.addImport("util", fuzz_util);
     fuzz_parser.addImport("codegen_options", codegen_options.createModule());
     const fuzz_driver = b.createModule(.{
-        .root_source_file = b.path("src/parser/fuzz/main.zig"),
+        .root_source_file = b.path("src/parser/testing/fuzz/main.zig"),
         .target = b.graph.host,
         .optimize = .ReleaseSafe,
     });

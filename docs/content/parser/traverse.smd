@@ -5,19 +5,21 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The traverser is how you do real work on a Yuku AST. It walks the tree for you, calls your visitor hooks at every node, and (depending on the mode you pick) hands you the surrounding lexical scopes, the symbol table, or a mutable handle on the tree itself.
+The traverser is how you do real work on a Yuku AST. It walks the tree for you, calls your visitor hooks at every node, and (depending on the mode you pick) hands you the surrounding lexical scopes, the full [semantic model](/parser/semantic/), or a mutable handle on the tree itself.
 
-| Mode          | What you get                                      | Returns                     |
-| ------------- | ------------------------------------------------- | --------------------------- |
-| **Basic**     | Path from root, plus the full immutable tree      | nothing                     |
-| **Scoped**    | Path + lexical scopes (with strict-mode tracking) | `ScopeTree`                 |
-| **Semantic**  | Path + scopes + symbols and references            | `ScopeTree` + `SymbolTable` |
-| **Transform** | Path + a mutable `*Tree` for in-place rewrites    | nothing                     |
+| Mode          | What you get                                      | Returns     |
+| ------------- | ------------------------------------------------- | ----------- |
+| **Basic**     | Path from root, plus the full immutable tree      | nothing     |
+| **Scoped**    | Path + lexical scopes (with strict-mode tracking) | `ScopeTree` |
+| **Semantic**  | Path + scopes + symbols and references            | `Semantic`  |
+| **Transform** | Path + a mutable `*Tree` for in-place rewrites    | nothing     |
 
-The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional: tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
+The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional. Tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
+
+This page covers the hooks, the path, the four modes, and the transform patterns. The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](/parser/semantic/).
 
 >[]($block.attrs('note'))
->The traverser is stable and powers Yuku's semantic checker in production. The surface may still grow as we build more tools on top of it (minifier, bundler, formatter). Breaking changes will be called out in release notes.
+>The traverser is stable and powers Yuku's semantic checker in production. Breaking changes are called out in release notes.
 
 ## [Your First Visitor]($section.id('your-first-visitor'))
 
@@ -153,21 +155,30 @@ When both a typed hook and a catch-all are defined, the order is:
 
 That ordering lets a catch-all enter "gate" a subtree (return `.skip` to opt out before the typed hooks run) and a catch-all exit "summarise" what just happened.
 
+### [Walk Order]($section.id('walk-order'))
+
+The walk is a depth-first, source-order traversal with two guarantees you can build on:
+
+- **Enter hooks fire pre-order, exit hooks post-order.** A parent's enter runs before any of its children, and a parent's exit runs after all of its children.
+- **Siblings are visited in source order.** Node payloads declare their child fields in source order and the walker visits fields in declaration order, an invariant enforced across the whole parser corpus. The one exception is template literals, whose quasis and expressions interleave in the source but are visited field by field, matching every ESTree walker.
+
 ### [Actions]($section.id('actions'))
 
 Every enter hook returns one of three actions:
 
-| Action     | Effect                                   |
-| ---------- | ---------------------------------------- |
-| `.proceed` | Walk into this node's children           |
-| `.skip`    | Do not descend, move to the next sibling |
-| `.stop`    | End the entire traversal immediately     |
+| Action     | Effect                                        |
+| ---------- | --------------------------------------------- |
+| `.proceed` | Walk into this node's children                |
+| `.skip`    | Do not descend, move to the next sibling      |
+| `.stop`    | No further enter hooks fire anywhere          |
+
+Enter and exit hooks are always paired. Once a node's enter hooks have run, its exit hooks run too. `.skip` skips the children but still fires the node's own exit hooks. After a `.stop`, the exit hooks of every already-entered node still run as the walk unwinds to the root. The pairing is what keeps path, scope, and symbol tracking balanced, so a scoped or semantic traversal that skipped or stopped still returns a consistent result covering everything that was visited.
 
 `.skip` is what you return after hand-walking a subtree yourself, or after a transform that should not be re-entered. `.stop` is how you implement "find the first X and exit".
 
 ### [Running Without Hooks]($section.id('running-without-hooks'))
 
-Sometimes the only thing you want from the traverser is its output: a `ScopeTree` from the scoped mode, or a `ScopeTree` + `SymbolTable` from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
+Sometimes the only thing you want from the traverser is its output, a `ScopeTree` from the scoped mode or the full [`Semantic`](/parser/semantic/#the-semantic-model) model from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
 
 ```zig
 const NoopVisitor = struct {};
@@ -176,12 +187,11 @@ var noop = NoopVisitor{};
 // Just the scope tree:
 const scope_tree = try scoped.traverse(NoopVisitor, &tree, &noop);
 
-// Scope tree + symbol table:
-var result = try sem.traverse(NoopVisitor, &tree, &noop);
-try result.symbol_table.resolveAll(result.scope_tree);
+// The full semantic model:
+const semantic = try sem.traverse(NoopVisitor, &tree, &noop);
 ```
 
-The empty struct makes the absence of hooks visible in the code, which is why there is no hidden `analyze`-style helper inside the traverser. If a tool wants the result of a walk without any per-node logic, the caller spells that out exactly.
+The empty struct makes the absence of hooks explicit. A tool that wants the result of a walk without any per-node logic spells that out at the call site.
 
 ## [The Path]($section.id('the-path'))
 
@@ -220,11 +230,11 @@ pub fn enter_identifier_reference(
 }
 ```
 
-The path has a hard cap of 256 entries. In practice this is far beyond any realistic ECMAScript nesting depth, so you can treat it as effectively unbounded.
+The path records up to 256 entries. Deeper nodes are still walked and `depth()` stays accurate, but `parent()` and `ancestor()` return `null` past the recorded depth. 256 levels is far beyond any realistic ECMAScript nesting, so in practice you can treat the path as unbounded.
 
 ## [Basic Traverser]($section.id('basic-traverser'))
 
-The minimum: path tracking plus the full immutable tree. No allocator needed, nothing returned.
+The lightest mode, with path tracking plus the full immutable tree. No allocator needed, nothing returned.
 
 Use it for tools that only need structural pattern matching:
 
@@ -261,53 +271,7 @@ const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor);
 // scope_tree contains every scope the walk produced
 ```
 
-### [What Creates a Scope]($section.id('what-creates-a-scope'))
-
-The tracker recognises every construct in the spec that introduces a new lexical environment, plus the TypeScript-specific ones that scope type parameters and infer bindings.
-
-| Node                                                         | Scope kind                                                    |
-| ------------------------------------------------------------ | ------------------------------------------------------------- |
-| Program                                                      | `global` (plus a child `module` if `source_type` is `module`) |
-| Function declaration / expression                            | `function`                                                    |
-| Arrow function                                               | `function`                                                    |
-| Block statement                                              | `block`                                                       |
-| `for` / `for...in` / `for...of`                              | `block`                                                       |
-| `catch` clause                                               | `block` (the body block reuses this scope)                    |
-| `switch` statement                                           | `block`                                                       |
-| Class declaration / expression                               | `class` (always strict per spec)                              |
-| Class static block                                           | `static_block`                                                |
-| Named function or class expression                           | `expression_name` wrapping a `function` / `class` scope       |
-| TS interface / type alias                                    | `block`                                                       |
-| TS function/constructor type, call/construct/index signature | `block`                                                       |
-| TS method signature                                          | `block`                                                       |
-| TS mapped / conditional type                                 | `block` (conditional isolates `infer T` per branch)           |
-| TS namespace body                                            | `ts_module` (its own kind, see below)                         |
-
-A few details worth pinning down because they trip up first-time readers:
-
-**Catch clauses share their body block.** Per spec section 14.15.2 the catch parameter and the block body live in the same `catchEnv`. The tracker pushes one `block` scope on `catch_clause`, and the body's `block_statement` reuses it instead of pushing a second one. This is what lets `findInScopeOrHoisted` naturally detect the early-error case where a `var` inside the body collides with the parameter.
-
-**Named function and class expressions create two scopes.** For `const x = function foo() { ... }`, ECMAScript section 15.2.5 wraps the body in an extra environment that holds an immutable binding for `foo`:
-
-```
-outer scope          (x lives here)
-  expression_name    (foo lives here, immutable)
-    function scope   (body bindings live here)
-```
-
-Without this, `const foo = 1` inside the body would conflict with the expression name. Same pattern for `const C = class D { ... }` per section 15.7.14.
-
-**`ts_module` is its own scope kind, not a block.** TypeScript namespace bodies act as a `var`-hoist target, so a `var` inside a namespace stays inside the namespace instead of escaping to the surrounding scope. That difference is encoded as a separate `Scope.Kind` so `Kind.isHoistTarget()` returns true for it.
-
-### [Strict Mode]($section.id('strict-mode'))
-
-Strict mode propagates automatically:
-
-- Module scopes are always strict.
-- Class scopes are always strict.
-- A `"use strict"` directive at the top of any scope sets `flags.strict` on that scope.
-- Child scopes inherit strict mode from their parent.
-- Functions whose body opens with `"use strict"` get `strict = true` set **at function-scope creation time**, before any parameter hooks fire. This is needed because the directive applies retroactively to the parameter list, where rules like "no duplicate parameters" only kick in under strict mode.
+The tracker pushes a scope for every construct that introduces a lexical environment and tracks strict mode as it goes. [Scopes](/parser/semantic/#scopes) documents the full list of scope-creating constructs, the scope kinds, and the strict-mode rules.
 
 ### [Querying the Tracker]($section.id('querying-the-tracker'))
 
@@ -320,16 +284,16 @@ pub fn enter_node(
     _: ast.NodeIndex,
     ctx: *scoped.Ctx,
 ) traverser.Action {
-    const id = ctx.scope.currentScopeId();      // ScopeId of current scope
-    const cur = ctx.scope.currentScope();       // Scope value (kind, flags, parent, ...)
-    const hoist = ctx.scope.currentHoistScopeId(); // where `var` declarations would land
+    const id = ctx.scope.current;            // ScopeId of the current scope
+    const cur = ctx.scope.currentScope();    // Scope value (kind, flags, parent, ...)
+    const hoist = ctx.scope.hoistTarget();   // where `var` declarations would land
     const strict = ctx.scope.isStrict();
 
     if (cur.kind == .function and !strict) { ... }
 
     var it = ctx.scope.ancestors(id);
     while (it.next()) |ancestor_id| {
-        const ancestor = ctx.scope.getScope(ancestor_id);
+        const ancestor = ctx.scope.get(ancestor_id);
         _ = ancestor;
     }
 
@@ -337,52 +301,36 @@ pub fn enter_node(
 }
 ```
 
-`getScope(id)` and `getScopeMut(id)` look up any scope by id. `currentScopeMut()` is there if you need to flip a flag on the active scope yourself (rarely needed, the tracker handles `"use strict"` automatically).
-
 ### [Using the ScopeTree After Traversal]($section.id('using-the-scopetree-after-traversal'))
 
-`scoped.traverse` returns an immutable `ScopeTree` containing every scope that was created. Each scope is:
-
-```zig
-pub const Scope = struct {
-    node: ast.NodeIndex,   // the AST node that created this scope
-    parent: ScopeId,       // parent scope, .none at the root
-    hoist_target: ScopeId, // nearest ancestor (or self) where `var` hoists to
-    kind: Kind,            // .global, .module, .function, .block, .class, ...
-    flags: Flags,          // flags.strict
-};
-```
-
-`ScopeId.root` (the global scope) is always `0`, and when `source_type` is `.module`, `ScopeId.module` is always `1`.
+`scoped.traverse` returns an immutable `ScopeTree` containing every scope that was created. `get(id)` returns a [`Scope`](/parser/semantic/#scopes) and `ancestors(start)` walks from a scope up to the root:
 
 ```zig
 const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor);
 
-const root = scope_tree.getScope(.root);
+const root = scope_tree.get(.root);
 
 var it = scope_tree.ancestors(some_scope_id);
 while (it.next()) |id| {
-    const scope = scope_tree.getScope(id);
+    const scope = scope_tree.get(id);
     _ = scope;
 }
 ```
-
-`scope_tree.scopes` is the raw slice, indexed by `ScopeId`. `getScope(id)` and `ancestors(start)` are the only two methods; everything else you do with scopes goes through the [SymbolTable](#symboltable-reference) lookups that take a `ScopeId`.
 
 The tree is backed by the parser's arena, so it lives as long as the source `Tree` does. Calling `tree.deinit()` invalidates it.
 
 ## [Semantic Traverser]($section.id('semantic-traverser'))
 
-Semantic mode is the full-power one: path, scopes, symbols, references, redeclaration handling, TypeScript context tracking.
+Semantic mode is the full-power one, with path, scopes, symbols, references, redeclaration handling, and TypeScript context tracking.
 
 ```zig
 const sem = traverser.semantic;
 
 var visitor = MyVisitor{};
-const result = try sem.traverse(MyVisitor, &tree, &visitor);
-// result.scope_tree   - every scope
-// result.symbol_table - every symbol and reference
+const semantic = try sem.traverse(MyVisitor, &tree, &visitor);
 ```
+
+It returns a [`Semantic`](/parser/semantic/#the-semantic-model), the complete model of the tree with every reference resolved to its declaring symbol. This is the same model `semantic.analyze` returns. Drive the traverser directly when you want your own hooks to run during the analysis walk.
 
 `sem.Ctx` exposes:
 
@@ -394,6 +342,49 @@ ctx.symbols       // SymbolTracker
 ctx.inTypePosition()  // true inside a TS type-only subtree
 ctx.inTsNamespace()   // true inside a TS `namespace` body
 ```
+
+### [Querying the Symbol Tracker]($section.id('querying-the-symbol-tracker'))
+
+Inside a hook, `ctx.symbols` is the live symbol tracker, and `ctx.scope` works exactly as in [scoped mode](#querying-the-tracker). The tracker answers name questions about everything declared so far:
+
+```zig
+pub fn enter_identifier_reference(
+    _: *V,
+    id: ast.IdentifierReference,
+    _: ast.NodeIndex,
+    ctx: *sem.Ctx,
+) traverser.Action {
+    const name = ctx.tree.string(id.name);
+
+    // is this name bound anywhere in the current scope chain?
+    var it = ctx.scope.ancestors(ctx.scope.current);
+    while (it.next()) |scope_id| {
+        if (ctx.symbols.binding(scope_id, name)) |sym_id| {
+            const symbol = ctx.symbols.symbol(sym_id);       // name, flags, scope
+            const first = ctx.symbols.firstDeclOf(sym_id);   // its first declaration
+            _ = symbol;
+            _ = first;
+            break;
+        }
+    }
+    return .proceed;
+}
+```
+
+The live surface:
+
+```zig
+ctx.symbols.pending                 // the pending binding (see below)
+ctx.symbols.symbol(id)              // Symbol by id
+ctx.symbols.binding(scope, name)    // binding at one scope, including a
+                                    // hoisting `var` passing through
+ctx.symbols.ownBinding(scope, name) // declared directly in `scope` only
+ctx.symbols.firstDeclOf(id)         // binding_identifier node of the
+                                    // first declaration
+```
+
+>[]($block.attrs('note'))
+>The trackers are live, so they know only what the walk has visited so far. A name declared later in the file is not bound yet, and the full [`Semantic`](/parser/semantic/#the-semantic-model) model (resolved references, use indexes, node queries) exists only after `traverse` returns. Query the trackers for the mid-walk view. Run the traversal first and query the model when a tool needs whole-file answers.
 
 ### [Two-Phase Binding]($section.id('two-phase-binding'))
 
@@ -415,14 +406,15 @@ pub fn enter_binding_identifier(
     _: ast.NodeIndex,
     ctx: *sem.Ctx,
 ) !traverser.Action {
-    const flags    = ctx.symbols.currentBindingFlags();    // what the new symbol will be
-    const excludes = ctx.symbols.currentBindingExcludes(); // what it conflicts with
-    const target   = ctx.symbols.currentTarget();          // which scope it lands in
+    const pending = ctx.symbols.pending;
+    // pending.flags    - what the new symbol will be
+    // pending.excludes - what it conflicts with
+    // pending.scope    - which scope it lands in
 
     const name = ctx.tree.string(id.name);
-    if (ctx.symbols.findInScopeOrHoisted(target, name)) |existing_id| {
-        const existing = ctx.symbols.getSymbol(existing_id);
-        if (existing.flags.intersects(excludes)) {
+    if (ctx.symbols.binding(pending.scope, name)) |existing_id| {
+        const existing = ctx.symbols.symbol(existing_id);
+        if (existing.flags.intersects(pending.excludes)) {
             // genuine conflict: emit a redeclaration diagnostic
         } else {
             // compatible merge (e.g. function overload, class + interface,
@@ -435,104 +427,7 @@ pub fn enter_binding_identifier(
 }
 ```
 
-`currentBindingFlags`, `currentBindingExcludes`, and `currentTarget` are the three readers for the pending state. Reading them inside an enter hook on a `binding_identifier` is always safe. Reading them at any other node is undefined.
-
-### [The Symbol]($section.id('the-symbol'))
-
-Once a binding is materialised, you get a `Symbol`:
-
-```zig
-pub const Symbol = struct {
-    name: String,        // index into the tree's string pool
-    flags: Flags,        // declaration kind + modifiers (see below)
-    scope: ScopeId,      // the scope this symbol was declared in
-    decls: Range,        // every declarator of this symbol, as a slice
-                         // into SymbolTable.decl_nodes. Use
-                         // table.symbolDecls(id) to read it.
-};
-```
-
-A single symbol can collect multiple declarators when the language allows merging: TS function overloads, `class` + `interface` merging, `namespace` + `enum` merging, ambient module patterns. The tracker records every declarator node, so a renamer or a "go to definition" feature can show all of them.
-
-### [Symbol Flags]($section.id('symbol-flags'))
-
-`Symbol.Flags` describes everything the tracker knows about a binding. A single symbol can carry several flags at once: a `class` lives in both value and type space, an exported `var` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into a single symbol that satisfies both kinds.
-
-The flags group into three categories.
-
-**Declaration kind** (what created the binding):
-
-```zig
-symbol.flags.function_scoped_var  // var, parameter, catch_var
-symbol.flags.block_scoped_var     // let, const, using, await_using
-symbol.flags.function             // function declaration / expression
-symbol.flags.class                // class declaration / expression
-symbol.flags.interface            // TS interface
-symbol.flags.type_alias           // TS type alias
-symbol.flags.type_parameter       // TS <T>, infer T, mapped key
-symbol.flags.regular_enum         // TS enum
-symbol.flags.const_enum           // TS const enum
-symbol.flags.value_module         // TS namespace whose body has runtime content
-symbol.flags.namespace_module     // TS namespace (any kind)
-symbol.flags.import               // value or unspecified-kind import
-symbol.flags.type_import          // `import type ...` or `import { type x }`
-```
-
-**Modifiers** (qualifiers on the binding):
-
-```zig
-symbol.flags.const_var   // const or using binding
-symbol.flags.parameter   // function/method parameter
-symbol.flags.catch_var   // catch (e) binding
-symbol.flags.ambient     // TS `declare`
-symbol.flags.exported    // exported from a module
-symbol.flags.is_default  // default export
-```
-
-**Helpers** on the flag struct itself:
-
-```zig
-flags.intersects(other)     // true if `flags` and `other` share at least one flag
-flags.merge(other)          // union of two flag sets (used when merging compatible declarations)
-flags.isHoistingVar()       // true for a real `var` (not a parameter, not a catch_var)
-flags.toString()            // human-readable category for diagnostics
-```
-
-**Space predicates.** A symbol can occupy JS value space (visible at runtime), TS type space (referenced from annotations), or both (a `class` straddles them by design). These are common enough questions that they have direct predicates, no manual flag combinations needed:
-
-```zig
-flags.inValueSpace()        // var, let, const, function, class, enum, value namespace
-flags.inTypeSpace()         // class, enum, interface, type alias, type parameter
-flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
-                            // (block_scoped_var, class, function)
-```
-
-`class` and `regular_enum` deliberately satisfy both `inValueSpace` and `inTypeSpace`. That is what makes "use a class as a type" work without special-casing.
-
-### [Per-Kind Redeclaration Excludes]($section.id('per-kind-redeclaration-excludes'))
-
-For each declaration kind, the tracker has a precomputed `Symbol.Excludes.X` flag set. The rule is uniform:
-
-> A new declaration with `Excludes.X` conflicts with any existing symbol whose flags **intersect** `Excludes.X`. Otherwise the two declarations merge into a single symbol with the union of their flags.
-
-```zig
-Symbol.Excludes.block_var        // let / const / using
-Symbol.Excludes.function_var     // var
-Symbol.Excludes.function         // function (allows overloads in TS, var-merge in sloppy)
-Symbol.Excludes.class
-Symbol.Excludes.interface
-Symbol.Excludes.type_alias
-Symbol.Excludes.regular_enum
-Symbol.Excludes.const_enum
-Symbol.Excludes.value_module
-Symbol.Excludes.namespace_module
-Symbol.Excludes.import_binding
-Symbol.Excludes.parameter
-Symbol.Excludes.catch_param
-Symbol.Excludes.type_parameter
-```
-
-This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching. If you ever need to teach the tracker a new merging rule, you change one flag set, not a tangle of `if` statements.
+`ctx.symbols.pending` is the pending state. Reading it inside an enter hook on a `binding_identifier` is always safe. Reading it at any other node is undefined. The flags and excludes it carries are documented in [Symbol Flags](/parser/semantic/#symbol-flags) and [Redeclaration Excludes](/parser/semantic/#redeclaration-excludes).
 
 ### [TypeScript Context Flags]($section.id('typescript-context-flags'))
 
@@ -560,170 +455,9 @@ pub fn enter_identifier_reference(
 
 `inTypePosition()` is also what the tracker uses internally to decide that a `binding_identifier` inside a function-type or index signature is a parameter _label_ (not a real declaration). Only `type_parameter` bindings are real in type position.
 
-### [References and Their Kind]($section.id('references-and-their-kind'))
-
-Every `identifier_reference` node produces one `Reference`. Each reference carries a `kind`:
-
-```zig
-pub const Reference = struct {
-    name: String,
-    scope: ScopeId,
-    node: ast.NodeIndex,
-    kind: Kind = .value,  // .value or .type
-};
-```
-
-`.value` means the reference is a runtime use (the receiver of a property access, an argument, the LHS of an assignment, etc.). `.type` means it appears inside a type annotation, an `extends` / `implements` clause, a type argument, or any other TS type-position context. Rename-aware tooling distinguishes the two so it can change a value without touching a same-named type, and vice versa.
-
-### [Resolving References]($section.id('resolving-references'))
-
-During traversal, references are recorded but not yet linked to their declarations. After traversal, call `resolveAll` with the scope tree to walk every reference up its chain and build the cross-index:
-
-```zig
-var result = try sem.traverse(MyVisitor, &tree, &visitor);
-try result.symbol_table.resolveAll(result.scope_tree);
-```
-
-Once resolved you have the full bidirectional map. Crucially, the reverse iterators yield `NodeIndex` values directly, so you can rewrite or annotate the source without an extra lookup:
-
-```zig
-const table = result.symbol_table;
-
-// Forward: what does this reference point to?
-const sym_id = table.referenceSymbol(some_ref_id);
-if (sym_id != .none) {
-    const sym = table.getSymbol(sym_id);
-    _ = sym;
-}
-
-// Every declaration site of a symbol. Returns a slice you can index.
-for (table.symbolDecls(my_sym_id)) |decl_node| {
-    _ = decl_node;
-}
-
-// Every use site of a symbol.
-var uses = table.symbolUses(my_sym_id);
-while (uses.next()) |use_node| {
-    _ = use_node;
-}
-
-// Every site (declarations first in source order, then uses).
-// This is the iterator a renamer wants.
-var sites = table.symbolSites(my_sym_id);
-while (sites.next()) |node| {
-    _ = node;
-}
-
-// Quick check: is this binding used at all?
-if (!table.isReferenced(my_sym_id)) {
-    // candidate for an "unused variable" diagnostic
-}
-
-// References that did not resolve to any local binding.
-// These are globals, undeclared names, or free variables.
-var it = table.iterUnresolved();
-while (it.next()) |entry| {
-    _ = entry; // entry.id, entry.reference
-}
-```
-
-`iterUnresolved` is exactly what a "no-undef" linter wants: every name the parser saw that is not bound anywhere in the tree.
-
-You can also resolve a name manually from any starting scope:
-
-```zig
-if (table.resolve(result.scope_tree, scope_id, "myVar")) |found| {
-    const sym = table.getSymbol(found);
-    _ = sym;
-}
-```
-
-`resolve` walks up the scope chain just like JavaScript does at runtime, also matching hoisted `var`s passing through intermediate block scopes.
-
-### [Single-Scope Lookups]($section.id('single-scope-lookups'))
-
-For tools that do _not_ want a full chain walk (a minifier checking "is this name shadowed in this exact scope"), both the tracker and the table expose tight single-scope lookups:
-
-```zig
-findInScope(scope, name)           // bindings declared directly in `scope`
-findInScopeOrHoisted(scope, name)  // also matches a `var` passing through `scope`
-```
-
-`findInScopeOrHoisted` is the same lookup the tracker uses internally to detect block-scoped redeclarations of names that a hoisting `var` is travelling through.
-
-### [Iterating the Table]($section.id('iterating-the-table'))
-
-Three iterators walk the whole table. Each yields an entry so you never reach back through the table for a lookup you were just handed:
-
-```zig
-var syms = table.iterSymbols();
-while (syms.next()) |entry| {
-    _ = entry; // entry.id, entry.symbol
-}
-
-var refs = table.iterReferences();
-while (refs.next()) |entry| {
-    _ = entry; // entry.id, entry.reference
-}
-
-var unresolved = table.iterUnresolved();
-while (unresolved.next()) |entry| {
-    _ = entry; // unresolved refs only, requires resolveAll
-}
-```
-
-For tight per-scope loops (a minifier checking shadowing in one scope, a renamer enumerating bindings in a function body), `scopeSymbols(scope_id)` yields raw `*SymbolId`s straight out of the per-scope hash map, so you avoid copying full `Symbol` structs:
-
-```zig
-// During traversal (live tracker):
-var it = ctx.symbols.scopeSymbols(scope_id);
-while (it.next()) |sym_id_ptr| {
-    const sym = ctx.symbols.getSymbol(sym_id_ptr.*);
-    const name = ctx.tree.string(sym.name);
-    _ = name;
-}
-
-// After traversal (immutable table):
-var it2 = result.symbol_table.scopeSymbols(scope_id);
-while (it2.next()) |sym_id_ptr| {
-    const sym = result.symbol_table.getSymbol(sym_id_ptr.*);
-    _ = sym;
-}
-```
-
-### [SymbolTable Reference]($section.id('symboltable-reference'))
-
-The table's public surface, in one place:
-
-```zig
-table.symbols                          // []const Symbol, in declaration order
-table.references                       // []const Reference, in source order
-
-table.getSymbol(sym_id)                // Symbol by id
-table.getReference(ref_id)             // Reference by id
-
-table.iterSymbols()                    // (id, symbol) entries
-table.iterReferences()                 // (id, reference) entries
-table.iterUnresolved()                 // unresolved (id, reference), requires resolveAll
-table.scopeSymbols(scope_id)           // *SymbolId per binding in the scope
-
-table.findInScope(scope, name)         // single-scope lookup
-table.findInScopeOrHoisted(scope, name)// + hoisting var passing through
-table.resolve(scope_tree, scope, name) // scope-chain lookup
-
-try table.resolveAll(scope_tree)       // build the cross-index
-table.referenceSymbol(ref_id)          // forward (ref -> sym), after resolveAll
-table.symbolDecls(sym_id)              // []const NodeIndex of declarators
-table.symbolUses(sym_id)               // iterator over use sites, after resolveAll
-table.symbolSites(sym_id)              // iterator over decls + uses, after resolveAll
-table.isReferenced(sym_id)             // shorthand for "any uses?"
-```
-
-The table aliases the tree's arena, so it lives as long as the tree. Calling `tree.deinit()` invalidates everything inside.
-
 ## [Transform Traverser]($section.id('transform-traverser'))
 
-Transform mode is for rewrites: codemods, desugaring passes, AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
+Transform mode is for rewrites such as codemods, desugaring passes, and AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
 
 ```zig
 const transform = traverser.transform;
@@ -740,6 +474,8 @@ ctx.path    // NodePath
 ```
 
 There is no scope or symbol tracking in this mode. Mutating the tree would invalidate any tracked state mid-walk, so the design splits "analyse" from "rewrite" at the type level. If you need both, run two passes (see [Combining Modes](#combining-modes) below).
+
+A [`Semantic`](/parser/semantic/#the-semantic-model) model built before a transform describes the tree as it was, so nodes you add and rewrites you make are not in it. Run `analyze` again after mutating when a later pass needs fresh semantics.
 
 ### [Replacing a Node In Place]($section.id('replacing-a-node-in-place'))
 
@@ -772,7 +508,7 @@ const new_name = try ctx.tree.addString("a");
 ctx.tree.setIdentifierName(node_index, new_name);
 ```
 
-This is the primitive Yuku's minifier uses to rename every site of a symbol in lock-step. Combined with `symbolSites`, you can rewrite a whole binding in a few lines.
+This is the primitive Yuku's minifier uses to rename every site of a symbol in lock-step. Combined with `decls` and `uses` on the semantic model, you can rewrite a whole binding in a few lines.
 
 ### [Creating New Nodes]($section.id('creating-new-nodes'))
 
@@ -791,7 +527,7 @@ Both are safe to call during traversal and use the tree's arena, so there is not
 
 ### [Wrapping a Node]($section.id('wrapping-a-node'))
 
-A common pattern: "take this node, move it to a fresh node, replace this one with a wrapper pointing at the moved copy". Useful for parenthesising expressions, wrapping in `await`, etc.
+A common pattern is "take this node, move it to a fresh node, replace this one with a wrapper pointing at the moved copy". Useful for parenthesising expressions, wrapping in `await`, etc.
 
 ```zig
 pub fn enter_binary_expression(
@@ -930,10 +666,9 @@ try transform.traverse(MyTransform, &tree, &rewriter);
 
 // Pass 2: semantic analysis on the rewritten tree
 var analyser = MyAnalyser{};
-var result = try sem.traverse(MyAnalyser, &tree, &analyser);
-try result.symbol_table.resolveAll(result.scope_tree);
+const semantic = try sem.traverse(MyAnalyser, &tree, &analyser);
 
 // Pass 3: emit, lint, minify, etc.
 ```
 
-Because read-only modes hand visitors a `*const Tree` and transform hands a `*Tree`, the type system enforces that you cannot accidentally smuggle a tracking pass into a mutation pass. If a function compiles with `*const Tree` you have a mathematical guarantee it will not change the AST.
+Because read-only modes hand visitors a `*const Tree` and transform hands a `*Tree`, the type system keeps analysis and mutation apart. A function that takes `*const Tree` cannot change the AST.
