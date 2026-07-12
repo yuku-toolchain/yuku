@@ -279,92 +279,30 @@ interface Capture {
   readonly isWritten: boolean;
 }
 
-/**
- * The import form. `"named"` covers default imports too (the spec
- * models default as the name `"default"`). `"dynamic"` is `import("m")`
- * and `"require"` is CommonJS `require("m")`, both collected from
- * anywhere in the tree, only for string-literal specifiers, and for
- * `require` only when it is a free name (a local binding named
- * `require` shadows the CJS one).
- */
-type ImportKind =
-  | "named"
-  | "namespace"
-  | "sideEffect"
-  | "importEquals"
-  | "dynamic"
-  | "require";
-
-/**
- * The export form. `"named"` covers exported declarations, export
- * specifiers, and `export default`. `"reExport"` is
- * `export { a as b } from "m"`, `"namespace"` is
- * `export * as ns from "m"`, and `"star"` is `export * from "m"`.
- * `"equals"` and `"global"` are the TS `export =` and
- * `export as namespace N` forms.
- */
-type ExportKind =
-  | "named"
-  | "reExport"
-  | "namespace"
-  | "star"
-  | "equals"
-  | "global";
-
-/**
- * CommonJS/ESM classification signals, set from free (unshadowed,
- * value-position) references anywhere in the module. CJS exports are
- * runtime assignments with no sound static enumeration, so they never
- * appear in {@link Module.exports}; these flags say "this file is
- * CJS-flavored" instead. Combine with the file's source type.
- */
-interface ModuleFlags {
-  /** A free `require` reference appears (calls, `typeof require`, ...). */
-  readonly usesRequire: boolean;
-  /** A free `module` reference appears (`module.exports = ...`). */
-  readonly usesModule: boolean;
-  /** A free `exports` reference appears (`exports.x = ...`). */
-  readonly usesExports: boolean;
-  /** `import.meta` appears. */
-  readonly usesImportMeta: boolean;
-}
-
-/** One dependency edge of a module, static or dynamic. */
+/** One imported binding (or side-effect import) of a module. */
 interface Import {
   /** The importing module. */
   readonly module: Module;
   /** Stable id, the index into {@link Module.imports}. */
   readonly id: number;
-  /** The import form. */
-  readonly kind: ImportKind;
-  /**
-   * The local binding symbol, or null when the form binds nothing
-   * (side-effect, dynamic, and require records).
-   */
+  /** The local binding symbol, or null for side-effect imports. */
   readonly local: Symbol | null;
   /**
-   * The imported name of a `"named"` record, `"default"` for default
-   * imports. Null otherwise.
+   * The imported export name, `"default"` for default imports (the
+   * spec models default as a name). Null for namespace and side-effect
+   * imports.
    */
   readonly name: string | null;
-  /** True for `import * as ns` and `import x = require("m")`. */
+  /** True for `import * as ns`. */
   readonly isNamespace: boolean;
   /** True for bare `import "m"`. */
   readonly isSideEffect: boolean;
-  /** True for a dynamic `import("m")` record. */
-  readonly isDynamic: boolean;
-  /** True for a CommonJS `require("m")` record. */
-  readonly isRequire: boolean;
   /** True for `import type` / `import { type x }`. */
   readonly typeOnly: boolean;
   /** Stage 3 phase modifier, or null. */
   readonly phase: "source" | "defer" | null;
   readonly specifier: string;
-  /**
-   * The smallest node identifying the record. The import specifier,
-   * the call expression for dynamic and require records, or the whole
-   * declaration for side-effect and import-equals records.
-   */
+  /** The specifier node (the declaration for side-effect imports). */
   readonly node: Node;
   /** The defining module, or null when external. Links on demand. */
   readonly resolvedModule: Module | null;
@@ -376,11 +314,9 @@ interface Export {
   readonly module: Module;
   /** Stable id, the index into {@link Module.exports}. */
   readonly id: number;
-  /** The export form. */
-  readonly kind: ExportKind;
   /**
-   * The exported name (`"default"` included), or null for `"star"`,
-   * `"equals"`, and `"global"` records.
+   * The exported name (`"default"` included), or null for `export *`,
+   * `export =`, and `export as namespace`.
    */
   readonly name: string | null;
   /** True for `export * from "m"` without an alias. */
@@ -394,15 +330,10 @@ interface Export {
   readonly local: Symbol | null;
   /** The re-export source specifier, or null for local exports. */
   readonly specifier: string | null;
-  /** The name a `"reExport"` takes from its source module, or null. */
+  /** The name taken from the source module, or null (namespace / `export *`). */
   readonly fromName: string | null;
-  /** True for `export * as ns from "m"`. */
+  /** True for `export *` and `export * as ns from "m"`. */
   readonly isNamespaceReexport: boolean;
-  /**
-   * The smallest node identifying the record. The export specifier,
-   * the binding identifier of an exported declaration, or the whole
-   * declaration.
-   */
   readonly node: Node;
   /** The re-export source module, or null. Links on demand. */
   readonly resolvedModule: Module | null;
@@ -443,8 +374,6 @@ interface Module {
   readonly references: Reference[];
   /** References resolving to no binding: globals and free names. */
   readonly unresolvedReferences: Reference[];
-  /** CommonJS/ESM classification signals for this file. */
-  readonly moduleFlags: ModuleFlags;
 
   /**
    * The symbol a node refers to: its own symbol for a declaration
@@ -503,10 +432,7 @@ interface Module {
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
   findAll<K extends NodeType>(types: Iterable<K>): NodeOfType<K>[];
 
-  /**
-   * Import records: static declarations first in source order, then
-   * dynamic `import()` and `require("m")` records in source order.
-   */
+  /** Import records, in source order. */
   readonly imports: Import[];
   /** Export records, in source order. */
   readonly exports: Export[];
@@ -607,12 +533,9 @@ export {
   type Capture,
   type Definition,
   type Export,
-  type ExportKind,
   type Import,
-  type ImportKind,
   type LinkDiagnostic,
   type Module,
-  type ModuleFlags,
   type ModuleReference,
   type NodeOfType,
   type NodeType,
