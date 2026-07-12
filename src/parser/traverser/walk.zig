@@ -39,11 +39,7 @@ fn walkNode(
 
     const data = ctx.tree.data(index);
 
-    switch (try dispatch.enter(C, V, visitor, data, index, ctx)) {
-        .skip => return .proceed,
-        .stop => return .stop,
-        .proceed => {},
-    }
+    const action = try dispatch.enter(C, V, visitor, data, index, ctx);
 
     // if a visitor replaced this node during enter, re-read so we walk
     // the replacement's children. skip when the tree is const since no
@@ -53,13 +49,17 @@ fn walkNode(
     else
         ctx.tree.data(index);
 
-    const result = try walkChildren(C, V, visitor, current, ctx);
+    const result = if (action == .proceed)
+        try walkChildren(C, V, visitor, current, ctx)
+    else
+        Action.proceed;
 
-    if (result != .stop) {
-        dispatch.exit(C, V, visitor, current, index, ctx);
-    }
+    // exits pair with enters unconditionally, they run when children
+    // were skipped and while a stop unwinds, so tracking contexts
+    // stay balanced.
+    dispatch.exit(C, V, visitor, current, index, ctx);
 
-    return result;
+    return if (action == .stop) .stop else result;
 }
 
 fn walkChildren(

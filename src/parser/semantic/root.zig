@@ -9,7 +9,7 @@ pub const module_record = @import("module_record.zig");
 pub const Semantic = semantic.Semantic;
 pub const AnalysisError = checker.AnalysisError;
 
-/// Runs semantic analysis on a tree: builds the complete `Semantic`
+/// Runs semantic analysis on a tree. Builds the complete `Semantic`
 /// model and reports the scope-dependent early errors.
 ///
 /// Diagnostics are appended directly to the tree alongside parse

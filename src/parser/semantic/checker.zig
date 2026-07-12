@@ -1,4 +1,4 @@
-//! The early-error checker: a semantic-traverser visitor that reports
+//! The early-error checker, a semantic-traverser visitor that reports
 //! the scope-dependent early errors the specification requires.
 
 const std = @import("std");
@@ -119,8 +119,8 @@ pub const Checker = struct {
             }
         }
 
-        // 14.2.1: hoisting var conflicts with block-scoped names in
-        // any intermediate block it passes through.
+        // per 14.2.1, a hoisting var conflicts with block-scoped
+        // names in any intermediate block it passes through.
         if (flags.isHoistingVar()) {
             var iter = ctx.scope.ancestors(ctx.scope.current);
             while (iter.next()) |scope_id| {
@@ -875,7 +875,7 @@ pub const Checker = struct {
         return .proceed;
     }
 
-    /// Section 14.12: the CaseBlock grammar permits at most one DefaultClause.
+    /// Per section 14.12, the CaseBlock grammar permits at most one DefaultClause.
     pub fn enter_switch_statement(
         self: *Self,
         stmt: ast.SwitchStatement,
@@ -1016,8 +1016,8 @@ pub const Checker = struct {
         };
     }
 
-    /// 15.7.7 AllPrivateIdentifiersValid: walks ancestor ClassBody nodes,
-    /// collecting PrivateBoundIdentifiers at each level.
+    /// 15.7.7 AllPrivateIdentifiersValid. Walks ancestor ClassBody
+    /// nodes, collecting PrivateBoundIdentifiers at each level.
     fn isPrivateNameDeclared(ctx: *SemanticCtx, name: []const u8) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1355,8 +1355,8 @@ pub const Checker = struct {
         return null;
     }
 
-    /// Extracts the name from a ModuleExportName: an IdentifierName, an
-    /// IdentifierReference, or a StringLiteral.
+    /// Extracts the name from a ModuleExportName, which is an
+    /// IdentifierName, an IdentifierReference, or a StringLiteral.
     fn getModuleExportName(tree: *const ast.Tree, node: ast.NodeIndex) []const u8 {
         return switch (tree.data(node)) {
             .identifier_name => |id| tree.string(id.name),
@@ -1419,7 +1419,7 @@ pub const Checker = struct {
         }
     }
 
-    /// Post-traversal: checks that all local export specifiers refer to declared bindings.
+    /// Post-traversal check that all local export specifiers refer to declared bindings.
     pub fn checkUnresolvedExports(self: *Self, sem: Semantic) AnalysisError!void {
         if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |spec| {

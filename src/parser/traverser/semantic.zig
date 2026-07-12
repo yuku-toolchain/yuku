@@ -152,7 +152,7 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
 }
 
 /// Walks the tree with full path, scope, and symbol tracking. Returns
-/// the complete `Semantic` model: scopes, symbols, and references,
+/// the complete `Semantic` model, with scopes, symbols, and references
 /// fully resolved and cross-indexed.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
     std.debug.assert(tree.root != .null);

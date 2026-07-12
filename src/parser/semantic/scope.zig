@@ -212,9 +212,10 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.function, index, flags);
             },
             .block_statement => {
-                // section 14.15.2: the catch parameter and the block body
-                // share one environment, so the body reuses the catch
-                // scope and single-scope lookups detect their conflicts
+                // per section 14.15.2 the catch parameter and the
+                // block body share one environment, so the body reuses
+                // the catch scope and single-scope lookups detect
+                // their conflicts
                 const current = self.tree.data(self.currentScope().node);
                 if (current != .catch_clause or current.catch_clause.body != index)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
@@ -238,7 +239,7 @@ pub const ScopeTracker = struct {
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             .class => |cls| {
-                // section 15.7.14: classes are always strict mode.
+                // classes are always strict mode (section 15.7.14)
                 const flags = Scope.Flags{ .strict = true };
 
                 if (isNamedClassExpression(cls))

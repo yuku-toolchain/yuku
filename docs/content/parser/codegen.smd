@@ -66,7 +66,7 @@ pub const Result = struct {
 
 The only return-value error from `print` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain `print`, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
 
-A `Diagnostic` carries:
+A `Diagnostic` carries.
 
 ```zig
 pub const Diagnostic = struct {
@@ -92,7 +92,7 @@ const result = try parser.codegen.print(allocator, &tree, .{
 | ------------- | ------------------- | --------- | ---------------------------------------------------------- |
 | `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)   |
 | `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                  |
-| `quotes`      | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style; `.double` / `.single` force one (content always re-escaped) |
+| `quotes`      | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style, while `.double` / `.single` force one (content always re-escaped) |
 | `comments`    | `Comments`          | `.some`   | Comment passthrough filter. See [Comments](#comments).     |
 | `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code             |
 
@@ -142,7 +142,7 @@ pub const SourceMapOptions = struct {
 
 ### [Result shape]($section.id('result-shape'))
 
-`SourceMap` is the Source Map V3 wire format, ready to serialize:
+`SourceMap` is the Source Map V3 wire format, ready to serialize.
 
 ```zig
 pub const SourceMap = struct {
@@ -174,7 +174,7 @@ pub const Comments = enum {
 };
 ```
 
-Because comments are attached to nodes, they survive AST transforms: move or replace a node and its comments come with it.
+Because comments are attached to nodes, they survive AST transforms. Move or replace a node and its comments come with it.
 
 ## [Type stripping]($section.id('type-stripping'))
 
@@ -192,7 +192,7 @@ std.debug.print("{s}", .{result.code});
 
 ### [How it works]($section.id('how-it-works'))
 
-Stripping is not regex, not a separate transform pass, not a whitespace overlay on top of the original source. It is the codegen with one extra rule per node visit: skip nodes that are TypeScript-only, and skip TypeScript-only fields on shared nodes.
+Stripping is not regex, not a separate transform pass, not a whitespace overlay on top of the original source. It is the codegen with one extra rule per node visit. Skip nodes that are TypeScript-only, and skip TypeScript-only fields on shared nodes.
 
 That makes it always accurate and reliable. Nothing is parsed by hand a second time. The parser already classified every byte, and the codegen reads that classification directly. Comments, whitespace, nested template literal types, generic call expressions, conditional types, and every other awkward boundary case are tree nodes like any other, not regex edge cases. And it is extremely fast, one traversal of the parsed tree, writing directly into an output buffer.
 
@@ -206,14 +206,14 @@ All other TypeScript syntax (types, interfaces, type aliases, generics, type ass
 
 ## [Minification]($section.id('minification'))
 
-`minify` applies size-reducing rewrites at print time:
+`minify` applies size-reducing rewrites at print time.
 
 ```zig
 const result = try parser.codegen.minify(allocator, &tree, .{ .format = .compact });
 defer result.deinit(allocator);
 ```
 
-The substitutions:
+The substitutions.
 
 - `true` / `false` → `!0` / `!1`
 - `undefined` → `void 0` (in expression position)

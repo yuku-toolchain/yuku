@@ -1,10 +1,10 @@
 //! Module import/export records.
 //!
 //! Walks the top level of an analyzed module and produces the flat
-//! records a cross-file linker consumes: which names this module pulls
+//! records a cross-file linker consumes, meaning which names this module pulls
 //! in from which specifiers, and which names it exposes. The shapes
 //! mirror the spec's ImportEntry/ExportEntry model (ImportEntries,
-//! 16.2.2.2, and ExportEntries, 16.2.3.4): `default` is not a special
+//! 16.2.2.2, and ExportEntries, 16.2.3.4). `default` is not a special
 //! kind, it is the export *name* "default".
 //!
 //! Records reference local bindings by `SymbolId`, so a linker joins an
@@ -28,13 +28,13 @@ pub const NameKind = enum(u3) {
     named,
     /// The module namespace object (`* as ns`) or all names (`export *`).
     star,
-    /// No binding at all: a side-effect import (`import "m"`).
+    /// No binding at all, a side-effect import (`import "m"`).
     none,
-    /// The module's entire export value: TS `export = expr`. Exports
-    /// only; consumed by `import x = require("m")`.
+    /// The module's entire export value, TS `export = expr`. Exports
+    /// only, consumed by `import x = require("m")`.
     equals,
-    /// A UMD global alias: TS `export as namespace N` exposes the
-    /// module under the global name `N`. Exports only; not reachable
+    /// A UMD global alias, TS `export as namespace N` exposing the
+    /// module under the global name `N`. Exports only, not reachable
     /// from the import graph.
     global,
 };
@@ -124,7 +124,7 @@ const Collector = struct {
     sem: *const Semantic,
     allocator: Allocator,
     default_name: ast.String,
-    /// The scope top-level bindings live in: `.module` for modules,
+    /// The scope top-level bindings live in. `.module` for modules,
     /// `.root` (global) for scripts.
     top_scope: sc.ScopeId,
     imports: std.ArrayList(ImportRecord) = .empty,
@@ -437,7 +437,7 @@ const Collector = struct {
         }
     }
 
-    /// `export = expr` (legacy TS, CommonJS-style): the expression is
+    /// `export = expr` (legacy TS, CommonJS-style). The expression is
     /// the module's entire export value. Like default exports, only an
     /// identifier expression resolves to a module-scope binding.
     fn exportAssignment(
@@ -462,7 +462,7 @@ const Collector = struct {
         });
     }
 
-    /// `export as namespace N` (legacy TS, UMD): exposes the module
+    /// `export as namespace N` (legacy TS, UMD). Exposes the module
     /// under the global name `N`. The name is a global alias, not a
     /// local binding, so no symbol backs it.
     fn namespaceExport(
@@ -498,7 +498,7 @@ const Collector = struct {
         return self.sem.binding(self.top_scope, text) orelse .none;
     }
 
-    /// name text handle of a ModuleExportName-shaped node: an
+    /// name text handle of a ModuleExportName-shaped node, either an
     /// identifier, a binding identifier, or a string literal.
     fn stringOf(self: *const Collector, node: ast.NodeIndex) ast.String {
         std.debug.assert(node != .null);

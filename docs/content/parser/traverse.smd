@@ -14,9 +14,9 @@ The traverser is how you do real work on a Yuku AST. It walks the tree for you, 
 | **Semantic**  | Path + scopes + symbols and references            | `Semantic`  |
 | **Transform** | Path + a mutable `*Tree` for in-place rewrites    | nothing     |
 
-The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional: tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
+The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional. Tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
 
-This page covers the machinery: hooks, the path, the four modes, and transforms. The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](/parser/semantic/).
+This page covers the hooks, the path, the four modes, and the transform patterns. The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](/parser/semantic/).
 
 >[]($block.attrs('note'))
 >The traverser is stable and powers Yuku's semantic checker in production. Breaking changes are called out in release notes.
@@ -155,21 +155,30 @@ When both a typed hook and a catch-all are defined, the order is:
 
 That ordering lets a catch-all enter "gate" a subtree (return `.skip` to opt out before the typed hooks run) and a catch-all exit "summarise" what just happened.
 
+### [Walk Order]($section.id('walk-order'))
+
+The walk is a depth-first, source-order traversal with two guarantees you can build on:
+
+- **Enter hooks fire pre-order, exit hooks post-order.** A parent's enter runs before any of its children, and a parent's exit runs after all of its children.
+- **Siblings are visited in source order.** Node payloads declare their child fields in source order and the walker visits fields in declaration order, an invariant enforced across the whole parser corpus. The one exception is template literals, whose quasis and expressions interleave in the source but are visited field by field, matching every ESTree walker.
+
 ### [Actions]($section.id('actions'))
 
 Every enter hook returns one of three actions:
 
-| Action     | Effect                                   |
-| ---------- | ---------------------------------------- |
-| `.proceed` | Walk into this node's children           |
-| `.skip`    | Do not descend, move to the next sibling |
-| `.stop`    | End the entire traversal immediately     |
+| Action     | Effect                                        |
+| ---------- | --------------------------------------------- |
+| `.proceed` | Walk into this node's children                |
+| `.skip`    | Do not descend, move to the next sibling      |
+| `.stop`    | No further enter hooks fire anywhere          |
+
+Enter and exit hooks are always paired. Once a node's enter hooks have run, its exit hooks run too. `.skip` skips the children but still fires the node's own exit hooks. After a `.stop`, the exit hooks of every already-entered node still run as the walk unwinds to the root. The pairing is what keeps path, scope, and symbol tracking balanced, so a scoped or semantic traversal that skipped or stopped still returns a consistent result covering everything that was visited.
 
 `.skip` is what you return after hand-walking a subtree yourself, or after a transform that should not be re-entered. `.stop` is how you implement "find the first X and exit".
 
 ### [Running Without Hooks]($section.id('running-without-hooks'))
 
-Sometimes the only thing you want from the traverser is its output: a `ScopeTree` from the scoped mode, or the full [`Semantic`](/parser/semantic/#the-semantic-model) model from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
+Sometimes the only thing you want from the traverser is its output, a `ScopeTree` from the scoped mode or the full [`Semantic`](/parser/semantic/#the-semantic-model) model from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
 
 ```zig
 const NoopVisitor = struct {};
@@ -182,7 +191,7 @@ const scope_tree = try scoped.traverse(NoopVisitor, &tree, &noop);
 const semantic = try sem.traverse(NoopVisitor, &tree, &noop);
 ```
 
-The empty struct makes the absence of hooks explicit: a tool that wants the result of a walk without any per-node logic spells that out at the call site.
+The empty struct makes the absence of hooks explicit. A tool that wants the result of a walk without any per-node logic spells that out at the call site.
 
 ## [The Path]($section.id('the-path'))
 
@@ -221,11 +230,11 @@ pub fn enter_identifier_reference(
 }
 ```
 
-The path has a hard cap of 256 entries. In practice this is far beyond any realistic ECMAScript nesting depth, so you can treat it as effectively unbounded.
+The path records up to 256 entries. Deeper nodes are still walked and `depth()` stays accurate, but `parent()` and `ancestor()` return `null` past the recorded depth. 256 levels is far beyond any realistic ECMAScript nesting, so in practice you can treat the path as unbounded.
 
 ## [Basic Traverser]($section.id('basic-traverser'))
 
-The minimum: path tracking plus the full immutable tree. No allocator needed, nothing returned.
+The lightest mode, with path tracking plus the full immutable tree. No allocator needed, nothing returned.
 
 Use it for tools that only need structural pattern matching:
 
@@ -312,7 +321,7 @@ The tree is backed by the parser's arena, so it lives as long as the source `Tre
 
 ## [Semantic Traverser]($section.id('semantic-traverser'))
 
-Semantic mode is the full-power one: path, scopes, symbols, references, redeclaration handling, TypeScript context tracking.
+Semantic mode is the full-power one, with path, scopes, symbols, references, redeclaration handling, and TypeScript context tracking.
 
 ```zig
 const sem = traverser.semantic;
@@ -321,7 +330,7 @@ var visitor = MyVisitor{};
 const semantic = try sem.traverse(MyVisitor, &tree, &visitor);
 ```
 
-It returns a [`Semantic`](/parser/semantic/#the-semantic-model), the complete model of the tree with every reference resolved to its declaring symbol. This is the same model `semantic.analyze` returns; drive the traverser directly when you want your own hooks to run during the analysis walk.
+It returns a [`Semantic`](/parser/semantic/#the-semantic-model), the complete model of the tree with every reference resolved to its declaring symbol. This is the same model `semantic.analyze` returns. Drive the traverser directly when you want your own hooks to run during the analysis walk.
 
 `sem.Ctx` exposes:
 
@@ -375,7 +384,7 @@ ctx.symbols.firstDeclOf(id)         // binding_identifier node of the
 ```
 
 >[]($block.attrs('note'))
->The trackers are live: they know only what the walk has visited so far. A name declared later in the file is not bound yet, and the full [`Semantic`](/parser/semantic/#the-semantic-model) model (resolved references, use indexes, node queries) exists only after `traverse` returns. Query the trackers for the mid-walk view; run the traversal first and query the model when a tool needs whole-file answers.
+>The trackers are live, so they know only what the walk has visited so far. A name declared later in the file is not bound yet, and the full [`Semantic`](/parser/semantic/#the-semantic-model) model (resolved references, use indexes, node queries) exists only after `traverse` returns. Query the trackers for the mid-walk view. Run the traversal first and query the model when a tool needs whole-file answers.
 
 ### [Two-Phase Binding]($section.id('two-phase-binding'))
 
@@ -448,7 +457,7 @@ pub fn enter_identifier_reference(
 
 ## [Transform Traverser]($section.id('transform-traverser'))
 
-Transform mode is for rewrites: codemods, desugaring passes, AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
+Transform mode is for rewrites such as codemods, desugaring passes, and AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
 
 ```zig
 const transform = traverser.transform;
@@ -465,6 +474,8 @@ ctx.path    // NodePath
 ```
 
 There is no scope or symbol tracking in this mode. Mutating the tree would invalidate any tracked state mid-walk, so the design splits "analyse" from "rewrite" at the type level. If you need both, run two passes (see [Combining Modes](#combining-modes) below).
+
+A [`Semantic`](/parser/semantic/#the-semantic-model) model built before a transform describes the tree as it was, so nodes you add and rewrites you make are not in it. Run `analyze` again after mutating when a later pass needs fresh semantics.
 
 ### [Replacing a Node In Place]($section.id('replacing-a-node-in-place'))
 
@@ -516,7 +527,7 @@ Both are safe to call during traversal and use the tree's arena, so there is not
 
 ### [Wrapping a Node]($section.id('wrapping-a-node'))
 
-A common pattern: "take this node, move it to a fresh node, replace this one with a wrapper pointing at the moved copy". Useful for parenthesising expressions, wrapping in `await`, etc.
+A common pattern is "take this node, move it to a fresh node, replace this one with a wrapper pointing at the moved copy". Useful for parenthesising expressions, wrapping in `await`, etc.
 
 ```zig
 pub fn enter_binary_expression(
@@ -660,4 +671,4 @@ const semantic = try sem.traverse(MyAnalyser, &tree, &analyser);
 // Pass 3: emit, lint, minify, etc.
 ```
 
-Because read-only modes hand visitors a `*const Tree` and transform hands a `*Tree`, the type system keeps analysis and mutation apart: a function that takes `*const Tree` cannot change the AST.
+Because read-only modes hand visitors a `*const Tree` and transform hands a `*Tree`, the type system keeps analysis and mutation apart. A function that takes `*const Tree` cannot change the AST.
