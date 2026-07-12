@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       # [windows-latest], bun is crashing on windows
       matrix:
-        os: [macos-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
 
