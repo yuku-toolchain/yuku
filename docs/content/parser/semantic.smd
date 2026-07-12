@@ -375,7 +375,7 @@ Language-provided names are not bindings. `this`, `super`, and (unless user-decl
 
 ## [Module Records]($section.id('module-records'))
 
-`semantic.module_record` produces a module's flat import/export records, mirroring the specification's [ImportEntry](https://tc39.es/ecma262/#table-importentry-record-fields) / [ExportEntry](https://tc39.es/ecma262/#table-exportentry-records) model. The [Analyzer](/analyzer/)'s cross-file linking is built on it.
+`semantic.module_record` produces a module's flat import and export records, mirroring the specification's [ImportEntry](https://tc39.es/ecma262/#table-importentry-record-fields) / [ExportEntry](https://tc39.es/ecma262/#table-exportentry-records) model. The [Analyzer](/analyzer/)'s cross-file linking is built on it.
 
 Records carry the `SymbolId` of each local binding, so a linker joins an importing module's record to the defining module's symbol with no name re-resolution. That is why `collect` takes the semantic model:
 
@@ -386,87 +386,78 @@ defer tree.deinit();
 const semantic = try parser.semantic.analyze(&tree);
 const records = try parser.semantic.module_record.collect(&tree, &semantic);
 
-for (records.imports) |imp| {
-    std.debug.print("imports '{s}' from \"{s}\"\n", .{
-        tree.string(imp.name), tree.string(imp.specifier),
-    });
-}
-for (records.exports) |exp| {
-    std.debug.print("exports '{s}'\n", .{tree.string(exp.name)});
-}
+records.imports // []const Import
+records.exports // []const Export
+records.flags   // CommonJS classification signals
 ```
 
-Both slices are in source order, allocated in the tree's arena, and freed by `tree.deinit()`.
+Static records come first in source order, then dynamic `import()` and `require` records in source order. Everything is allocated in the tree's arena and freed by `tree.deinit()`.
 
-### [NameKind]($section.id('namekind'))
+### [Imports]($section.id('imports'))
 
-Both record types describe what is taken from (or exposed by) a module with a `NameKind`:
+One `Import` per dependency edge, static or dynamic. A single `kind` pins down the form:
 
-| Kind      | Meaning                                                                                             |
-| --------- | --------------------------------------------------------------------------------------------------- |
-| `.named`  | A specific export name. Default imports/exports use the name `"default"`, exactly as the spec models them. |
-| `.star`   | The module namespace object (`* as ns`) or all names (`export *`)                                   |
-| `.none`   | No binding at all: a side-effect import (`import "m"`)                                              |
-| `.equals` | The module's entire export value: TS `export = expr`. Exports only.                                 |
-| `.global` | A UMD global alias: TS `export as namespace N`. Exports only, not reachable from the import graph.  |
+| Source                       | `kind`           | `name`      | `symbol`        |
+| ---------------------------- | ---------------- | ----------- | --------------- |
+| `import x from "m"`          | `.named`         | `"default"` | binding of `x`  |
+| `import { a as b } from "m"` | `.named`         | `"a"`       | binding of `b`  |
+| `import * as ns from "m"`    | `.namespace`     | `.empty`    | binding of `ns` |
+| `import "m"`                 | `.side_effect`   | `.empty`    | `.none`         |
+| `import x = require("m")`    | `.import_equals` | `.empty`    | binding of `x`  |
+| `import("m")`                | `.dynamic`       | `.empty`    | `.none`         |
+| `require("m")`               | `.require`       | `.empty`    | `.none`         |
 
-### [ImportRecord]($section.id('importrecord'))
+| Field       | Type               | Meaning                                                               |
+| ----------- | ------------------ | ---------------------------------------------------------------------- |
+| `kind`      | `Import.Kind`      | The import form                                                        |
+| `name`      | `ast.String`       | Imported name of a `.named` record, `"default"` for default imports    |
+| `symbol`    | `SymbolId`         | Local binding, `.none` when the form binds nothing                     |
+| `specifier` | `ast.String`       | Decoded module specifier                                               |
+| `type_only` | `bool`             | True for `import type` and `import { type x }`                        |
+| `phase`     | `?ast.ImportPhase` | Stage 3 phase modifier (`.source`, `.defer`), `null` otherwise         |
+| `node`      | `ast.NodeIndex`    | The smallest node identifying the record (see below)                   |
 
-One imported binding (or side-effect import) of the module:
+`node` is the import specifier for `.named` and `.namespace` records, the call expression for `.dynamic` and `.require`, and the whole declaration for `.side_effect` and `.import_equals`.
 
-| Field       | Type                    | Meaning                                                                     |
-| ----------- | ----------------------- | ---------------------------------------------------------------------------- |
-| `symbol`    | `SymbolId`              | The local binding symbol. `.none` for side-effect imports.                  |
-| `name_kind` | `NameKind`              | What is taken from the source module                                         |
-| `name`      | `ast.String`            | The imported name when `name_kind` is `.named` (`"default"` for default imports). `.empty` otherwise. |
-| `specifier` | `ast.String`            | Decoded module specifier text                                                |
-| `kind`      | `ast.ImportOrExportKind`| `.type` for `import type` and `import { type x }` bindings                  |
-| `phase`     | `?ast.ImportPhase`      | Stage 3 phase modifier (`.source`, `.defer`), or `null` for a regular import |
-| `node`      | `ast.NodeIndex`         | The specifier node, or the whole declaration for side-effect imports         |
+`.dynamic` and `.require` records are collected from any depth, only for string-literal specifiers. A `require` call counts only when `require` is a free name, so a parameter or local named `require` never produces a record. TS `import a = B.C` aliases a namespace, not a module, and produces no record.
 
-How each import form maps:
+### [Exports]($section.id('exports'))
 
-| Source                       | `name_kind` | `name`      | `symbol`         |
-| ---------------------------- | ----------- | ----------- | ---------------- |
-| `import x from "m"`          | `.named`    | `"default"` | binding of `x`   |
-| `import { a } from "m"`      | `.named`    | `"a"`       | binding of `a`   |
-| `import { a as b } from "m"` | `.named`    | `"a"`       | binding of `b`   |
-| `import * as ns from "m"`    | `.star`     | `.empty`    | binding of `ns`  |
-| `import "m"`                 | `.none`     | `.empty`    | `.none`          |
-| `import x = require("m")`    | `.star`     | `.empty`    | binding of `x`   |
+One `Export` per exported name:
 
-TS `import a = B.C` aliases a namespace, not a module, so it produces no record.
+| Source                           | `kind`       | `name`      | `symbol`       | `from_name` |
+| -------------------------------- | ------------ | ----------- | -------------- | ----------- |
+| `export const a = 1`             | `.named`     | `"a"`       | binding of `a` |             |
+| `export default function f() {}` | `.named`     | `"default"` | binding of `f` |             |
+| `export default expr`            | `.named`     | `"default"` | `.none`        |             |
+| `export { a as b }`              | `.named`     | `"b"`       | binding of `a` |             |
+| `export { a as b } from "m"`     | `.re_export` | `"b"`       | `.none`        | `"a"`       |
+| `export * as ns from "m"`        | `.namespace` | `"ns"`      | `.none`        |             |
+| `export * from "m"`              | `.star`      | `.empty`    | `.none`        |             |
+| `export = expr`                  | `.equals`    | `.empty`    | see below      |             |
+| `export as namespace N`          | `.global`    | `"N"`       | `.none`        |             |
 
-### [ExportRecord]($section.id('exportrecord'))
+| Field       | Type            | Meaning                                                       |
+| ----------- | --------------- | --------------------------------------------------------------- |
+| `kind`      | `Export.Kind`   | The export form                                                 |
+| `name`      | `ast.String`    | Exported name, the global name for `.global`, empty otherwise   |
+| `symbol`    | `SymbolId`      | Backing local binding, `.none` when nothing local backs it      |
+| `from_name` | `ast.String`    | Name taken from the source module by a `.re_export`             |
+| `specifier` | `ast.String`    | Decoded specifier of the `from` clause, empty for local exports |
+| `type_only` | `bool`          | True for type-only exports                                      |
+| `node`      | `ast.NodeIndex` | The smallest node identifying the record (see below)            |
 
-One exported name of the module:
+`node` is the export specifier for `.named` and `.re_export` records with specifiers, the binding identifier for names exported by a declaration (`export const a = 1` points at `a`), and the whole declaration otherwise (`export default`, `.star`, `.namespace`, `.equals`, `.global`).
 
-| Field       | Type                    | Meaning                                                                    |
-| ----------- | ----------------------- | --------------------------------------------------------------------------- |
-| `name_kind` | `NameKind`              | `.named` for every named export including `"default"`. `.star` only for `export * from "m"` without an alias. `.equals` for `export =`, `.global` for `export as namespace`. |
-| `name`      | `ast.String`            | The exported name when `.named`, or the global name when `.global`. `.empty` for `export *` and `export =`. |
-| `symbol`    | `SymbolId`              | The local symbol backing the export. `.none` for re-exports, anonymous default exports, and expression exports that do not resolve to a module-scope binding. |
-| `from_kind` | `NameKind`              | What a re-export takes from its source module. `.none` when the export is local (no `from` clause). |
-| `from_name` | `ast.String`            | The source-module name when `from_kind` is `.named`                        |
-| `specifier` | `ast.String`            | Decoded specifier of the `from` clause. `.empty` when local.               |
-| `kind`      | `ast.ImportOrExportKind`| `.type` for type-only exports                                              |
-| `node`      | `ast.NodeIndex`         | The specifier or declaration node, for spans and diagnostics               |
+`export <decl>` produces one record per bound name, so `export const { a, b: [c] } = x` records `a` and `c`. `export default expr` and `export = expr` resolve `symbol` only when the expression is an identifier naming a module-scope binding. Following the specification, `default` is an export *name*, not a kind of its own.
 
-How each export form maps:
+### [Flags]($section.id('flags'))
 
-| Source                           | `name_kind` | `name`      | `symbol`       | `from_kind`               |
-| -------------------------------- | ----------- | ----------- | -------------- | ------------------------- |
-| `export const a = 1`             | `.named`    | `"a"`       | binding of `a` | `.none`                   |
-| `export default function f() {}` | `.named`    | `"default"` | binding of `f` | `.none`                   |
-| `export default expr`            | `.named`    | `"default"` | `.none`        | `.none`                   |
-| `export { a as b }`              | `.named`    | `"b"`       | binding of `a` | `.none`                   |
-| `export { a as b } from "m"`     | `.named`    | `"b"`       | `.none`        | `.named` (`from_name = "a"`) |
-| `export * from "m"`              | `.star`     | `.empty`    | `.none`        | `.star`                   |
-| `export * as ns from "m"`        | `.named`    | `"ns"`      | `.none`        | `.star`                   |
-| `export = expr`                  | `.equals`   | `.empty`    | see below      | `.none`                   |
-| `export as namespace N`          | `.global`   | `"N"`       | `.none`        | `.none`                   |
+CommonJS exports are runtime assignments with no sound static shape, so they never become export records. `records.flags` classifies the file instead, from free (unshadowed, value-position) references at any depth:
 
-`export <decl>` produces one record per bound name, so `export const { a, b: [c] } = x` records `a` and `c`. `export default expr` and `export = expr` resolve `symbol` only when the expression is an identifier naming a module-scope binding.
-
->[]($block.attrs('note'))
->CommonJS (`require`, `module.exports`) is ordinary code, not module syntax, and produces no records.
+```zig
+records.flags.uses_require     // a free `require` reference appears
+records.flags.uses_module      // a free `module` reference appears
+records.flags.uses_exports     // a free `exports` reference appears
+records.flags.uses_import_meta // `import.meta` appears
+```

@@ -40,10 +40,9 @@ const Scope = semantic.Scope;
 const Symbol = semantic.Symbol;
 const Reference = semantic.Reference;
 const Semantic = semantic.Semantic;
-const ModuleRecords = module_record.ModuleRecords;
+const Records = module_record.Records;
 
-/// fixed-size counts block. one reserved slot keeps room for future
-/// sections without a layout break.
+/// fixed-size counts block.
 pub const SubHeader = extern struct {
     scope_count: u32,
     symbol_count: u32,
@@ -53,7 +52,10 @@ pub const SubHeader = extern struct {
     export_count: u32,
     /// one ScopeId per node, indexed by node index.
     node_scope_count: u32,
-    reserved0: u32 = 0,
+    /// raw `module_record.Flags` bitset (CJS classification), layout
+    /// frozen by the comptime asserts below. was a reserved
+    /// always-zero slot before, so old decoders read `.{}` flags.
+    module_flags: u32 = 0,
 };
 
 /// `bits` packs kind (low 8 bits) and the strict flag (bit 8).
@@ -87,8 +89,8 @@ pub const PackedReference = extern struct {
     symbol: u32,
 };
 
-/// `bits` packs name_kind (bits 0-2), kind (bit 3: 0 value, 1 type),
-/// has_phase (bit 4), and phase (bit 5: 0 source, 1 defer).
+/// `bits` packs kind (bits 0-2), type_only (bit 3), has_phase (bit 4),
+/// and phase (bit 5: 0 source, 1 defer).
 pub const PackedImport = extern struct {
     symbol: u32,
     bits: u32,
@@ -100,8 +102,7 @@ pub const PackedImport = extern struct {
     reserved: u32 = 0,
 };
 
-/// `bits` packs name_kind (bits 0-2), from_kind (bits 3-5), and kind
-/// (bit 6: 0 value, 1 type).
+/// `bits` packs kind (bits 0-2) and type_only (bit 3).
 pub const PackedExport = extern struct {
     bits: u32,
     name_start: u32,
@@ -128,13 +129,12 @@ pub const SCOPE_KIND_MASK: u32 = 0xFF;
 pub const SCOPE_STRICT_BIT: u5 = 8;
 pub const REFERENCE_TYPE_BIT: u5 = 0;
 pub const REFERENCE_WRITE_BIT: u5 = 1;
-pub const IMPORT_NAME_KIND_MASK: u32 = 0b111;
+pub const IMPORT_KIND_MASK: u32 = 0b111;
 pub const IMPORT_TYPE_BIT: u5 = 3;
 pub const IMPORT_HAS_PHASE_BIT: u5 = 4;
 pub const IMPORT_PHASE_BIT: u5 = 5;
-pub const EXPORT_NAME_KIND_MASK: u32 = 0b111;
-pub const EXPORT_FROM_KIND_SHIFT: u5 = 3;
-pub const EXPORT_TYPE_BIT: u5 = 6;
+pub const EXPORT_KIND_MASK: u32 = 0b111;
+pub const EXPORT_TYPE_BIT: u5 = 3;
 
 comptime {
     // every entry is whole u32s, no padding to leak
@@ -183,13 +183,29 @@ comptime {
     std.debug.assert(@intFromEnum(Scope.Kind.expression_name) == 6);
     std.debug.assert(@intFromEnum(Scope.Kind.ts_module) == 7);
 
-    // name kinds cross as raw bits inside the import/export `bits`
-    // words, a contract with the JS NAME_KINDS table. freeze the order.
-    std.debug.assert(@intFromEnum(module_record.NameKind.named) == 0);
-    std.debug.assert(@intFromEnum(module_record.NameKind.star) == 1);
-    std.debug.assert(@intFromEnum(module_record.NameKind.none) == 2);
-    std.debug.assert(@intFromEnum(module_record.NameKind.equals) == 3);
-    std.debug.assert(@intFromEnum(module_record.NameKind.global) == 4);
+    // record kinds cross as raw bits inside the import/export `bits`
+    // words, a contract with the JS IMPORT_KINDS and EXPORT_KINDS
+    // tables. freeze the order.
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.named) == 0);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.namespace) == 1);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.side_effect) == 2);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.import_equals) == 3);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.dynamic) == 4);
+    std.debug.assert(@intFromEnum(module_record.Import.Kind.require) == 5);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.named) == 0);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.re_export) == 1);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.namespace) == 2);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.star) == 3);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.equals) == 4);
+    std.debug.assert(@intFromEnum(module_record.Export.Kind.global) == 5);
+
+    // module flags cross as a raw bitset in the sub-header, a contract
+    // with the JS moduleFlags accessors. freeze the layout.
+    std.debug.assert(@bitSizeOf(module_record.Flags) == 8);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_require") == 0);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_module") == 1);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_exports") == 2);
+    std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_import_meta") == 3);
 }
 
 /// Total buffer size for the core AST sections plus the semantic
@@ -197,7 +213,7 @@ comptime {
 pub fn bufferSize(
     tree: *const ast.Tree,
     sem: *const Semantic,
-    records: ModuleRecords,
+    records: Records,
 ) usize {
     const base = transfer.bufferSize(tree);
     const aligned = std.mem.alignForward(usize, base, 4);
@@ -216,7 +232,7 @@ pub fn bufferSize(
 pub fn serializeInto(
     tree: *const ast.Tree,
     sem: *const Semantic,
-    records: ModuleRecords,
+    records: Records,
     buf: []u8,
 ) usize {
     std.debug.assert(buf.len >= bufferSize(tree, sem, records));
@@ -239,6 +255,7 @@ pub fn serializeInto(
         .import_count = @intCast(records.imports.len),
         .export_count = @intCast(records.exports.len),
         .node_scope_count = @intCast(sem.node_scopes.len),
+        .module_flags = @as(u8, @bitCast(records.flags)),
     };
     @memcpy(buf[pos..][0..SUBHEADER_SIZE], std.mem.asBytes(&sub));
     pos += SUBHEADER_SIZE;
@@ -286,8 +303,8 @@ pub fn serializeInto(
     }
 
     for (records.imports) |record| {
-        var bits: u32 = @intFromEnum(record.name_kind);
-        bits |= @as(u32, @intFromEnum(record.kind)) << IMPORT_TYPE_BIT;
+        var bits: u32 = @intFromEnum(record.kind);
+        bits |= @as(u32, @intFromBool(record.type_only)) << IMPORT_TYPE_BIT;
         if (record.phase) |phase| {
             bits |= @as(u32, 1) << IMPORT_HAS_PHASE_BIT;
             bits |= @as(u32, @intFromEnum(phase)) << IMPORT_PHASE_BIT;
@@ -307,9 +324,8 @@ pub fn serializeInto(
 
     for (records.exports) |record| {
         const entry = PackedExport{
-            .bits = @as(u32, @intFromEnum(record.name_kind)) |
-                (@as(u32, @intFromEnum(record.from_kind)) << EXPORT_FROM_KIND_SHIFT) |
-                (@as(u32, @intFromEnum(record.kind)) << EXPORT_TYPE_BIT),
+            .bits = @as(u32, @intFromEnum(record.kind)) |
+                (@as(u32, @intFromBool(record.type_only)) << EXPORT_TYPE_BIT),
             .name_start = record.name.start,
             .name_end = record.name.end,
             .symbol = @intFromEnum(record.symbol),

@@ -116,8 +116,9 @@ module.rootScope;            // the scope top-level code runs in
 module.symbols;              // Symbol[], index is the symbol id
 module.references;           // Reference[], in source order
 module.unresolvedReferences; // references that resolve to no binding
-module.imports;              // Import[], in source order
+module.imports;              // Import[], dynamic import() and require() included
 module.exports;              // Export[], in source order
+module.moduleFlags;          // CommonJS classification signals
 ```
 
 Ids are stable within a parse, so `(module.path, symbol.id)` is a persistable key for caches and incremental tooling. Re-adding a path reparses it into a new `Module` and can renumber, so pair the key with module identity and invalidate when `analyzer.module(path)` changes.
@@ -358,38 +359,38 @@ Because the computation rides the resolved reference table, it is shadowing-corr
 
 ### [Import and export records]($section.id('import-and-export-records'))
 
-Each module carries spec-true records of its module surface, computed natively.
+Each module carries records of its module surface, computed natively. Every record has one `kind` that pins down its form.
 
 ```js
 for (const imp of module.imports) {
+  imp.kind;           // "named" | "namespace" | "sideEffect"
+                      // | "importEquals" | "dynamic" | "require"
   imp.specifier;      // "./lib.ts"
-  imp.name;           // imported export name, "default" for default imports,
-                      // null for namespace and side-effect imports
-  imp.local;          // the local binding Symbol, or null for side effects
-  imp.isNamespace;    // import * as ns
-  imp.isSideEffect;   // import "m"
+  imp.name;           // imported name of a named record, "default" for
+                      // default imports, null otherwise
+  imp.local;          // the local binding Symbol, or null when nothing binds
   imp.typeOnly;       // import type / import { type x }
   imp.phase;          // "source" | "defer" | null (stage 3 phase imports)
   imp.resolvedModule; // the defining Module, or null when external
 }
 
 for (const exp of module.exports) {
-  exp.name;                // exported name, "default" included, null for export *
-  exp.local;               // backing local Symbol, when there is one
-  exp.isStar;              // export * from "m"
-  exp.specifier;           // re-export source, or null for local exports
-  exp.fromName;            // the name taken from the source module
-  exp.isNamespaceReexport; // export * as ns from "m"
-  exp.isExportEquals;      // TS export = expr (the module's entire value)
-  exp.globalName;          // TS export as namespace N, else null
-  exp.typeOnly;            // export type
-  exp.resolvedModule;      // the source Module for re-exports
+  exp.kind;           // "named" | "reExport" | "namespace"
+                      // | "star" | "equals" | "global"
+  exp.name;           // exported name, "default" included, null for
+                      // star, equals, and global records
+  exp.local;          // backing local Symbol, when there is one
+  exp.specifier;      // re-export source, or null for local exports
+  exp.fromName;       // the name a reExport takes from its source module
+  exp.globalName;     // TS export as namespace N, else null
+  exp.typeOnly;       // export type
+  exp.resolvedModule; // the source Module for re-exports
 }
 ```
 
-Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. TypeScript's legacy module forms (`export =`, `export as namespace`) are recorded with their own kinds, so ESM tooling never mistakes them for named exports. Tools built on these records inherit the spec behavior instead of approximating it.
+Import records cover every statically known dependency edge. Dynamic `import("m")` and CommonJS `require("m")` anywhere in the file produce records like static declarations do, and link into the graph the same way. Only literal specifiers become records, and a `require` call counts only when `require` is a free name, so every edge is sound.
 
-These records cover ECMAScript module syntax and TypeScript's module forms (`import` / `export`, `import type`, `export =`, `export as namespace`). CommonJS is ordinary code rather than module syntax, so `require`, `module.exports`, and `exports.x` produce no import or export records and take no part in linking. Everything per file (scopes, symbols, references, captures) is computed for CommonJS sources the same way.
+Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. CommonJS exports are runtime assignments with no sound static shape, so they never become export records. `module.moduleFlags` (`usesRequire`, `usesModule`, `usesExports`, `usesImportMeta`) classifies the file instead.
 
 ### [Linking]($section.id('linking'))
 
