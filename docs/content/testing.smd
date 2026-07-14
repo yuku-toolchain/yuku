@@ -9,13 +9,13 @@ Correctness in Yuku is not an afterthought. A large share of the work behind the
 
 ## [The parser test suite]($section.id('parser-test-suite'))
 
-The parser is validated against a dedicated repository, [parser-test-suite](https://github.com/yuku-toolchain/parser-test-suite), a comprehensive ECMAScript test suite targeting the [ESTree](https://github.com/estree/estree) and [TypeScript-ESTree](https://typescript-eslint.io/packages/typescript-estree/) AST formats. Its tests come from three sources:
+The parser is validated against a dedicated repository, [parser-test-suite](https://github.com/yuku-toolchain/parser-test-suite), a comprehensive ECMAScript test suite targeting the [ESTree](https://github.com/estree/estree) and [TypeScript-ESTree](https://typescript-eslint.io/packages/typescript-estree/) AST formats. Its tests come from three sources.
 
-- [tc39/test262](https://github.com/tc39/test262), the official ECMAScript conformance suite: language grammar, built-ins, Annex B, Intl, and staging proposals.
+- [tc39/test262](https://github.com/tc39/test262), the official ECMAScript conformance suite, covering language grammar, built-ins, Annex B, Intl, and staging proposals.
 - [microsoft/TypeScript](https://github.com/microsoft/TypeScript) compiler test fixtures.
 - [babel](https://github.com/babel/babel) fixtures for JSX.
 
-The suite holds over 50,000 tests, and it grows as upstream grows. As a rough shape: JavaScript makes up the bulk with around 45,000 cases, TypeScript adds around 8,000, and JSX contributes a smaller set of focused cases.
+The suite holds over 50,000 tests, and it grows as upstream grows. As a rough shape, JavaScript makes up the bulk with around 45,000 cases, TypeScript adds around 8,000, and JSX contributes a smaller set of focused cases.
 
 Each language suite splits into three categories.
 
@@ -27,36 +27,36 @@ Each language suite splits into three categories.
 
 ## [What a passing test verifies]($section.id('what-a-passing-test-verifies'))
 
-A `pass` test is much stricter than "it parses":
+A `pass` test is much stricter than "it parses".
 
 - **Zero diagnostics.** The file must parse without a single error.
-- **Exact AST match.** The full parse result, the program, every node type, every field, every position, plus comments, is compared structurally against a snapshot: ESTree for JS/JSX, TypeScript-ESTree for TS.
+- **Exact AST match.** The full parse result, the program, every node type, every field, every position, plus comments, is compared structurally against a snapshot, ESTree for JS/JSX and TypeScript-ESTree for TS.
 - **Walk order.** Traversing the tree must visit children in source order, an invariant every ESTree walker relies on.
 
 Pass files also run with [semantic analysis](/parser/semantic/) enabled, so the early-error checker is simultaneously validated for zero false positives on valid code.
 
-`fail` tests cover syntax the parser must reject. `semantic` tests cover the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that cannot be caught from local context alone: strict mode violations, duplicate lexical bindings, unresolved exports, private fields used outside their class, and so on. These files parse fine, but must fail once semantic analysis runs.
+`fail` tests cover syntax the parser must reject. `semantic` tests cover the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that cannot be caught from local context alone, such as strict mode violations, duplicate lexical bindings, unresolved exports, and private fields used outside their class. These files parse fine, but must fail once semantic analysis runs.
 
 ## [Where the snapshots come from]($section.id('where-the-snapshots-come-from'))
 
-The expected ASTs are not produced by Yuku. Snapshots are generated with an independent reference parser, [Oxc](https://oxc.rs): ESTree output for JS/JSX, TypeScript-ESTree output for TS. This keeps Yuku from grading its own homework: matching an independently generated AST proves Yuku produces the exact tree shape the ESTree ecosystem agrees on, not just output consistent with itself.
+The expected ASTs are not produced by Yuku. Snapshots are generated with an independent reference parser, [Oxc](https://oxc.rs), which emits ESTree output for JS/JSX and TypeScript-ESTree output for TS. This keeps Yuku from grading its own homework. Matching an independently generated AST proves Yuku produces the exact tree shape the ESTree ecosystem agrees on, not just output consistent with itself.
 
 ## [Synced with the spec, daily]($section.id('synced-daily'))
 
-Test262 and the TypeScript compiler are moving targets: new proposals and features land in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
+Test262 and the TypeScript compiler are moving targets, with new proposals and features landing in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
 
 ## [Conformance status]($section.id('conformance-status'))
 
-Yuku passes the entire suite: every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
+Yuku passes the entire suite, every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
 
-The suites run through the published npm packages, built from the local Zig source. So every run validates not just the Zig core but the whole chain: the parser, the native bridge, and the JavaScript API, with exact AST matching between Zig and JavaScript.
+The suites run through the published npm packages, built from the local Zig source. So every run validates not just the Zig core but the whole chain, from the parser through the native bridge to the JavaScript API, with exact AST matching between Zig and JavaScript.
 
 ## [Codegen]($section.id('codegen'))
 
-Curated inline-snapshot tests pin the exact output of `print`, `strip`, and `minify` on inputs chosen by hand. On top of that, the corpus suite runs all three operations over every parseable file in the parser test suite and checks invariants:
+Curated inline-snapshot tests pin the exact output of `print`, `strip`, and `minify` on inputs chosen by hand. On top of that, the corpus suite runs all three operations over every parseable file in the parser test suite and checks a set of invariants.
 
 - Every operation's output parses cleanly again.
-- `print` is semantics-preserving: the reparsed AST equals the original, modulo positions.
+- `print` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
 - Every operation is a fixed point on its own output, and no comment is lost or duplicated.
 
 ## [Source maps]($section.id('source-maps'))
@@ -65,7 +65,11 @@ Every corpus file is round-tripped through `print` with source maps enabled, and
 
 ## [Fuzzing]($section.id('fuzzing'))
 
-Beyond the fixed suites, a Zig-side fuzzer throws millions of randomized inputs per run at the parser: adversarial fragments (malformed surrogate escapes, unterminated literals, numeric and regex corner cases, raw invalid UTF-8 bytes) and mutations of structurally complete programs, across every language mode, with simulated out-of-memory conditions injected along the way. The parser must never crash, whatever the input. Any failure dumps a self-contained reproducer.
+Beyond the fixed suites, a Zig-side fuzzer throws millions of randomized inputs per run at the parser, adversarial fragments (malformed surrogate escapes, unterminated literals, numeric and regex corner cases, raw invalid UTF-8 bytes) and mutations of structurally complete programs, across every language mode, with simulated out-of-memory conditions injected along the way. The parser must never crash, whatever the input. Any failure dumps a self-contained reproducer.
+
+## [Memory]($section.id('memory'))
+
+The parser is deliberate about memory. Everything a parse allocates, the nodes, spans, strings, and diagnostics, lives in a single arena owned by the tree, and `tree.deinit()` is a single free. There are no per-node allocations to leak and no ownership graph to get wrong. The fuzzer's simulated allocation failures exercise exactly this pattern, so the expectation holds even when memory runs out. No crashes, no segfaults, no leaks. Yuku is memory safe and memory efficient by construction, and it is tested to stay that way.
 
 ## [Running the suites]($section.id('running-the-suites'))
 
