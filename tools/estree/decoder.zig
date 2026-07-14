@@ -256,9 +256,8 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    return r;
         \\  }}
         \\  function fnParams(idx) {{
-        \\    const po = _nodesOff + idx * {[size]d};
-        \\    const len = _u8[po + {[f0]d}] | (_u8[po + {[f01]d}] << 8);
-        \\    const pb = po >> 2;
+        \\    const pb = (_nodesOff + idx * {[size]d}) >> 2;
+        \\    const len = _u32[pb + {[f0]d}] >>> 0;
         \\    const iStart = _u32[pb + {[items]d}], rest = _u32[pb + {[rest]d}];
         \\    const p = [];
         \\    for (let j = 0; j < len; j++) p.push(node(_u32[_extraBase + iStart + j]));
@@ -282,8 +281,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
         .acsize = rt.ATTACHED_COMMENT_SIZE,
-        .f0 = rt.NODE_FIELD0_OFFSET,
-        .f01 = rt.NODE_FIELD0_OFFSET + 1,
+        .f0 = rt.NODE_FIELD0_OFFSET / 4,
         .items = comptime u32IndexOf(ast.FormalParameters, "items"),
         .rest = comptime u32IndexOf(ast.FormalParameters, "rest"),
     });
@@ -299,9 +297,10 @@ fn u16At(comptime word: []const u8, comptime byte_in_word: u8) []const u8 {
 fn writeNodeFunction(w: *Writer, mode: Mode) !void {
     comptime std.debug.assert(rt.NODE_FLAGS_OFFSET / 4 == 0);
     const flags_expr = comptime u16At("h0", rt.NODE_FLAGS_OFFSET % 4);
-    const f0_expr = comptime u16At(
-        std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0_OFFSET / 4}),
-        rt.NODE_FIELD0_OFFSET % 4,
+    comptime std.debug.assert(rt.NODE_FIELD0_OFFSET % 4 == 0);
+    const f0_expr = comptime std.fmt.comptimePrint(
+        "_u32[b + {d}] >>> 0",
+        .{rt.NODE_FIELD0_OFFSET / 4},
     );
     try w.print(
         \\  function _attachedCommentsOf(a, e) {{
@@ -1357,7 +1356,7 @@ fn writeParentBody(w: *Writer) !void {
         \\          const s = _u32[b + slot];
         \\          const len = ops[q] === 1
         \\            ? _u32[b + slot + 1]
-        \\            : _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8);
+        \\            : _u32[b + {[f0]d}] >>> 0;
         \\          for (let j = 0; j < len; j++) {{
         \\            const c = _u32[_extraBase + s + j];
         \\            if (c !== NULL) visit(c, parent);
@@ -1370,8 +1369,7 @@ fn writeParentBody(w: *Writer) !void {
         \\
     , .{
         .size = rt.NODE_SIZE,
-        .f0 = rt.NODE_FIELD0_OFFSET,
-        .f01 = rt.NODE_FIELD0_OFFSET + 1,
+        .f0 = rt.NODE_FIELD0_OFFSET / 4,
     });
 }
 

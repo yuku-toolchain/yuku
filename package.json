@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "test": "bun fetch:fixtures && bun build:local && bun test:parser && bun test:codegen && bun test:analyzer && bun test:sourcemap",
-    "test:parser": "bun test/parser/run.ts",
+    "test:parser": "bun test/parser/run.ts && bun test:parser:large-ast",
+    "test:parser:large-ast": "zig build wasm && vitest run test/parser/large-ast.test.ts",
     "test:codegen": "bun test test/codegen",
     "test:analyzer": "bun test test/analyzer",
     "test:sourcemap": "bun test/sourcemap/run.ts",
@@ -40,6 +41,7 @@
     "jest-diff": "^30.4.1",
     "napi-zig": "^0.1.45",
     "typescript": "^6.0.3",
+    "vitest": "^4.1.10",
     "yuku-analyzer": "workspace:*",
     "yuku-codegen": "workspace:*",
     "yuku-parser": "workspace:*"

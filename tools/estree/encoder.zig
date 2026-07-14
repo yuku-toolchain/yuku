@@ -9,6 +9,7 @@ const Writer = std.Io.Writer;
 // generates encode.js, the inverse of decode.js, walks ESTree and writes the v7 wire-format buffer
 pub fn generate(w: *Writer) !void {
     @setEvalBranchQuota(500_000);
+    comptime std.debug.assert(rt.NODE_FIELD0_OFFSET % 4 == 0);
     try writePrologue(w);
     try writeInverseMaps(w);
     try writeRuntime(w);
@@ -130,8 +131,8 @@ fn writeRuntime(w: *Writer) !void {
         \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
         \\  }
         \\  function f0At(idx, v) {
-        \\    const o = idx * NODE_SIZE + NODE_FIELD0_OFFSET;
-        \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
+        \\    const b = (idx * NODE_SIZE) >>> 2;
+        \\    nU32[b + (NODE_FIELD0_OFFSET >>> 2)] = v >>> 0;
         \\  }
         \\  function slotAt(idx, slot, v) {
         \\    nU32[((idx * NODE_SIZE) >>> 2) + NODE_HEADER_U32S + slot] = v >>> 0;

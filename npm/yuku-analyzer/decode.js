@@ -691,9 +691,8 @@ function decode(buffer, source) {
     return r;
   }
   function fnParams(idx) {
-    const po = _nodesOff + idx * 48;
-    const len = _u8[po + 4] | (_u8[po + 5] << 8);
-    const pb = po >> 2;
+    const pb = (_nodesOff + idx * 48) >> 2;
+    const len = _u32[pb + 1] >>> 0;
     const iStart = _u32[pb + 2], rest = _u32[pb + 3];
     const p = [];
     for (let j = 0; j < len; j++) p.push(node(_u32[_extraBase + iStart + j]));
@@ -730,7 +729,7 @@ function decode(buffer, source) {
     const h0 = _u32[b];
     const tag = h0 & 255;
     const flags = h0 >>> 16;
-    const f0 = _u32[b + 1] & 65535;
+    const f0 = _u32[b + 1] >>> 0;
     const f1 = _u32[b + 2], f2 = _u32[b + 3],
           f3 = _u32[b + 4], f4 = _u32[b + 5],
           f5 = _u32[b + 6], f6 = _u32[b + 7],
@@ -1238,7 +1237,7 @@ function decode(buffer, source) {
           const s = _u32[b + slot];
           const len = ops[q] === 1
             ? _u32[b + slot + 1]
-            : _u8[o + 4] | (_u8[o + 5] << 8);
+            : _u32[b + 1] >>> 0;
           for (let j = 0; j < len; j++) {
             const c = _u32[_extraBase + s + j];
             if (c !== NULL) visit(c, parent);
