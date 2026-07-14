@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       3698/3698 (100.00%)
+Passed:       3672/3672 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -1073,15 +1073,6 @@ error: Rest element must be the last element
  4 | callCount = callCount + 1;
    |
    = help: No elements can follow the rest element in a destructuring pattern.
-
-
-✓ test/parser/suite/js/fail/072a3aa84a8f14ef.js
-error: Function declaration requires a name
-   |
- 1 | async function () {} = 1;
-   |                ^
-   |
-   = help: Add a name after 'function', e.g. 'function myFunc() {}'.
 
 
 ✓ test/parser/suite/js/fail/07435600b55f5b9e.js
@@ -3362,17 +3353,6 @@ error: 'var' is reserved and cannot be used as a binding identifier
  1 | var var = 123;
    |     ^^^
    |
-
-✓ test/parser/suite/js/fail/17c3b74f78165234.js
-error: Unexpected token ')'
-   |
- 1 | for(
- 2 | ) {
-   | ^
- 3 |   break;
-   |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/17cdff3d673e6dda.js
 error: Rest element must be the last element
@@ -7318,17 +7298,6 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  2 | 
    |
 
-✓ test/parser/suite/js/fail/327ef23961eea821.js
-error: Unexpected token ')'
-   |
- 1 | for(
- 2 | ) {
-   | ^
- 3 |   break;
-   |
-   = help: Expected an expression
-
-
 ✓ test/parser/suite/js/fail/328fddc7bdffb499.js
 error: 'yield' is reserved in a generator context and cannot be used as an identifier
    |
@@ -7544,16 +7513,6 @@ error: 'default' is reserved and cannot be used as a binding identifier
  1 | var default = 123;
    |     ^^^^^^^
    |
-
-✓ test/parser/suite/js/fail/34732c10656a4a83.js
-error: Line terminator not allowed in regular expression literal
-   |
- 1 | /
-   | ^
- 2 | /
-   |
-   = help: Try removing the line break here or escaping it within the regex pattern
-
 
 ✓ test/parser/suite/js/fail/34929e0bb360a28b.js
 error: Invalid element in assignment pattern
@@ -7874,15 +7833,6 @@ error: Invalid character at start of identifier
  3 | };
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
-
-
-✓ test/parser/suite/js/fail/3747791e316c6678.js
-error: Invalid element in assignment pattern
-   |
- 1 | 1 == 2 = 1;
-   | ^^^^^^
-   |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
 ✓ test/parser/suite/js/fail/374a43ed9cc7222e.js
@@ -9384,15 +9334,6 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/43170fb5e312dc3b.js
-error: Lexical declaration cannot appear in a single-statement context
-   |
- 1 | while (false) let x;
-   |               ^^^^^^
-   |
-   = help: Wrap this declaration in a block statement
-
-
 ✓ test/parser/suite/js/fail/432e00afa5a3a9dc.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -10041,15 +9982,6 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✓ test/parser/suite/js/fail/481292e787273e5a.js
-error: Rest element is not allowed in parenthesized expression
-   |
- 1 | (a,...a)/**/ => 0
-   |    ^^^^
-   |
-   = help: Spread in parentheses is only valid for arrow function parameters.
-
-
 ✓ test/parser/suite/js/fail/4825cbb117aae61b.js
 error: Invalid element in assignment pattern
    |
@@ -10499,15 +10431,6 @@ error: Rest element must be the last element
  4 | callCount = callCount + 1;
    |
    = help: No elements can follow the rest element in a destructuring pattern.
-
-
-✓ test/parser/suite/js/fail/4b530b153d486a53.js
-error: Parenthesized expression in assignment pattern must be a simple assignment target
-   |
- 1 | (async () => 1) = 1;
-   |  ^^^^^^^^^^^^^
-   |
-   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
 ✓ test/parser/suite/js/fail/4b5e3a154805acfc.js
@@ -11608,15 +11531,6 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✓ test/parser/suite/js/fail/534dac338ea83de6.js
-error: Identifier cannot immediately follow a numeric literal
-   |
- 1 | 3in []
-   | ^
-   |
-   = help: Try adding whitespace here between the number and identifier
-
-
 ✓ test/parser/suite/js/fail/537c4a516d7c8d7f.js
 error: Member expression is not allowed in binding pattern
    |
@@ -12190,15 +12104,6 @@ error: Getter must have no parameters
    |            ^^^
    |
    = help: Remove all parameters from the getter.
-
-
-✓ test/parser/suite/js/fail/576b306865eabe82.js
-error: Lexical declaration cannot appear in a single-statement context
-   |
- 1 | if (true) let x;
-   |           ^^^^^^
-   |
-   = help: Wrap this declaration in a block statement
 
 
 ✓ test/parser/suite/js/fail/578feb7232ff0ac3.js
@@ -13222,13 +13127,6 @@ error: Keywords cannot contain escape characters
    |
    = help: Remove the escape characters
 
-
-✓ test/parser/suite/js/fail/5f9c35a9bd9c32d0.module.js
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
-   |
- 1 | class await {}
-   |       ^^^^^
-   |
 
 ✓ test/parser/suite/js/fail/5fae862d7fe6531c.js
 error: Invalid element in binding pattern
@@ -14269,16 +14167,6 @@ error: Classes can't have a private field named '#constructor'
    = help: Use a different name for this private member.
 
 
-✓ test/parser/suite/js/fail/679ab0881c66b0cf.js
-error: Unexpected token ']'
-   |
- 1 | 
- 2 | ]
-   | ^
-   |
-   = help: Expected an expression
-
-
 ✓ test/parser/suite/js/fail/67bd42d10bce7497.js
 error: A rest element cannot have an initializer
    |
@@ -14318,15 +14206,6 @@ error: Expected '(' after import, but found '.'
    |                       ^
  3 | };
    |
-
-✓ test/parser/suite/js/fail/67e1c8f828783987.js
-error: Parenthesized expression in assignment pattern must be a simple assignment target
-   |
- 1 | (() => 1) = 1;
-   |  ^^^^^^^
-   |
-   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
-
 
 ✓ test/parser/suite/js/fail/6800c3128dd1c4fa.js
 error: 'import' keyword is not allowed here
@@ -17429,16 +17308,6 @@ error: Unexpected token '.'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/7de070714e8bd3be.js
-error: Unexpected token 'end of file'
-   |
- 1 | do
- 2 | while (false)
-   |              ^
-   |
-   = help: Expected an expression
-
-
 ✓ test/parser/suite/js/fail/7de28635b9d2015a.js
 error: Rest element is not allowed in parenthesized expression
    |
@@ -20049,16 +19918,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✓ test/parser/suite/js/fail/8f7c7b7f4d70f975.js
-error: Unexpected token ']'
-   |
- 1 | 
- 2 | ]
-   | ^
-   |
-   = help: Expected an expression
-
-
 ✓ test/parser/suite/js/fail/8fbd2cf38b334266.js
 error: 'import' keyword is not allowed here
    |
@@ -20586,13 +20445,6 @@ error: Rest parameter must be the last parameter
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
 
 
-✓ test/parser/suite/js/fail/9430703645fae273.module.js
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
-   |
- 1 | var C = class await {};
-   |               ^^^^^
-   |
-
 ✓ test/parser/suite/js/fail/94325adbbbe58f6d.js
 error: Unexpected token ')'
    |
@@ -20677,13 +20529,6 @@ error: Lexical declaration cannot appear in a single-statement context
    |
    = help: Wrap this declaration in a block statement
 
-
-✓ test/parser/suite/js/fail/94646c6669853917.module.js
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
-   |
- 1 | var await;
-   |     ^^^^^
-   |
 
 ✓ test/parser/suite/js/fail/946861cdb2144113.js
 error: Unexpected token ';'
@@ -21767,16 +21612,6 @@ error: Classes may not have a static property named 'prototype'
    |                 ^^^^^^^^^
    |
    = help: Remove 'static' or rename the property.
-
-
-✓ test/parser/suite/js/fail/9cc8f0d9f8555a71.js
-error: Rest element is not allowed in parenthesized expression
-   |
- 1 | (a,...a)/*
-   |    ^^^^
- 2 | */ => 0
-   |
-   = help: Spread in parentheses is only valid for arrow function parameters.
 
 
 ✓ test/parser/suite/js/fail/9ce27fbf70fb921a.module.js
@@ -22914,15 +22749,6 @@ error: Identifier cannot immediately follow a numeric literal
    = help: Try adding whitespace here between the number and identifier
 
 
-✓ test/parser/suite/js/fail/a54942c8e365f378.js
-error: Hexadecimal literal must contain at least one hex digit
-   |
- 1 | 0x
-   | ^^
-   |
-   = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
-
-
 ✓ test/parser/suite/js/fail/a55c71a1f28f11e1.js
 error: Rest element must be the last element
    |
@@ -23994,15 +23820,6 @@ error: 'import' is reserved and cannot be used as an identifier
 45 | }
    |
 
-✓ test/parser/suite/js/fail/ac1ee2739ad30d66.js
-error: Unterminated multi-line comment
-   |
- 1 | /*
-   | ^^^
-   |
-   = help: Try adding the closing delimiter (*/) here to complete the comment
-
-
 ✓ test/parser/suite/js/fail/ac3635be7f6d037a.js
 error: A rest element cannot have an initializer
    |
@@ -24651,15 +24468,6 @@ error: Rest element must be the last element
  7 | iterCount += 1;
    |
    = help: No elements can follow the rest element in a destructuring pattern.
-
-
-✓ test/parser/suite/js/fail/b1c7791e8dd3c98e.js
-error: Lexical declaration cannot appear in a single-statement context
-   |
- 1 | do let x; while (false)
-   |    ^^^^^^
-   |
-   = help: Wrap this declaration in a block statement
 
 
 ✓ test/parser/suite/js/fail/b1f1e599a3dcf9c5.js
@@ -25624,15 +25432,6 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/b939286b53df3337.js
-error: Unterminated string literal
-   |
- 1 | ''
-   | ^
-   |
-   = help: Try adding a closing quote here to complete the string
-
-
 ✓ test/parser/suite/js/fail/b93a3a929e6f2e92.js
 error: Rest element must be the last element
    |
@@ -25664,13 +25463,6 @@ error: Unexpected token ';' in binding pattern
    |
    = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
 
-
-✓ test/parser/suite/js/fail/b9422ea5edcddf0b.module.js
-error: Bad escape sequence in untagged template literal
-   |
- 1 | `\00`;
-   |  ^^^
-   |
 
 ✓ test/parser/suite/js/fail/b94278c0e4bdb364.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found '_'
@@ -29654,17 +29446,6 @@ error: Unexpected token ',' as property key
    |     ^
    |
    = help: Property keys must be identifiers, strings, numbers, or computed expressions [expr].
-
-
-✓ test/parser/suite/js/fail/d84e2bcf4c1fb32b.js
-error: Unexpected token ')'
-   |
- 1 | for(
- 2 | ;) {
-   |  ^
- 3 |   break;
-   |
-   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/d873b8a3d3b22ecc.js
@@ -34713,16 +34494,6 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✓ test/parser/suite/js/fail/fd2a45941e114896.js
-error: Line terminator not allowed in regular expression literal
-   |
- 1 | /a\
-   | ^
- 2 | /
-   |
-   = help: Try removing the line break here or escaping it within the regex pattern
-
-
 ✓ test/parser/suite/js/fail/fd30a6f14d24fad3.js
 error: Unexpected token ';'
    |
@@ -34984,15 +34755,6 @@ error: A rest element cannot have an initializer
  3 | iterCount += 1;
    |
    = help: Remove the '= ...' from the rest element.
-
-
-✓ test/parser/suite/js/fail/fec38e278dcc2104.js
-error: Lexical declaration cannot appear in a single-statement context
-   |
- 1 | label: let x;
-   |        ^^^^^^
-   |
-   = help: Wrap this declaration in a block statement
 
 
 ✓ test/parser/suite/js/fail/fed7b251b0b1412b.js
