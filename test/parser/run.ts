@@ -65,7 +65,7 @@ const suites: TestSuite[] = [
   {
     path: `${MISC_DIR}/ts`,
     expect: "snapshot",
-    lang: ["ts", "tsx"],
+    lang: ["ts", "tsx", "dts"],
     recursive: false,
     allowErrors: true,
     autoSnapshot: true,

@@ -1,0 +1,264 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 289,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 127,
+        "end": 151,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 134,
+          "end": 151,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 140,
+              "end": 151,
+              "id": {
+                "type": "Identifier",
+                "start": 140,
+                "end": 151,
+                "name": "foo",
+                "decorators": [],
+                "typeAnnotation": {
+                  "type": "TSTypeAnnotation",
+                  "start": 143,
+                  "end": 151,
+                  "typeAnnotation": {
+                    "type": "TSStringKeyword",
+                    "start": 145,
+                    "end": 151
+                  }
+                },
+                "optional": false
+              },
+              "init": null,
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 153,
+        "end": 192,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 160,
+          "end": 192,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 166,
+              "end": 177,
+              "id": {
+                "type": "Identifier",
+                "start": 166,
+                "end": 177,
+                "name": "bar",
+                "decorators": [],
+                "typeAnnotation": {
+                  "type": "TSTypeAnnotation",
+                  "start": 169,
+                  "end": 177,
+                  "typeAnnotation": {
+                    "type": "TSNumberKeyword",
+                    "start": 171,
+                    "end": 177
+                  }
+                },
+                "optional": false
+              },
+              "init": null,
+              "definite": false
+            },
+            {
+              "type": "VariableDeclarator",
+              "start": 179,
+              "end": 191,
+              "id": {
+                "type": "Identifier",
+                "start": 179,
+                "end": 191,
+                "name": "baz",
+                "decorators": [],
+                "typeAnnotation": {
+                  "type": "TSTypeAnnotation",
+                  "start": 182,
+                  "end": 191,
+                  "typeAnnotation": {
+                    "type": "TSBooleanKeyword",
+                    "start": 184,
+                    "end": 191
+                  }
+                },
+                "optional": false
+              },
+              "init": null,
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 194,
+        "end": 235,
+        "declaration": {
+          "type": "TSDeclareFunction",
+          "start": 201,
+          "end": 235,
+          "id": {
+            "type": "Identifier",
+            "start": 210,
+            "end": 215,
+            "name": "greet",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "generator": false,
+          "async": false,
+          "params": [
+            {
+              "type": "Identifier",
+              "start": 216,
+              "end": 228,
+              "name": "name",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 220,
+                "end": 228,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 222,
+                  "end": 228
+                }
+              },
+              "optional": false
+            }
+          ],
+          "body": null,
+          "expression": false,
+          "typeParameters": null,
+          "returnType": {
+            "type": "TSTypeAnnotation",
+            "start": 229,
+            "end": 235,
+            "typeAnnotation": {
+              "type": "TSVoidKeyword",
+              "start": 231,
+              "end": 235
+            }
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 237,
+        "end": 256,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 243,
+            "end": 256,
+            "id": {
+              "type": "Identifier",
+              "start": 243,
+              "end": 256,
+              "name": "local",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 248,
+                "end": 256,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 250,
+                  "end": 256
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 258,
+        "end": 288,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 272,
+            "end": 288,
+            "id": {
+              "type": "Identifier",
+              "start": 272,
+              "end": 288,
+              "name": "explicit",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 280,
+                "end": 288,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 282,
+                  "end": 288
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " a .d.ts file is ambient throughout, so const needs no initializer and",
+      "start": 0,
+      "end": 72
+    },
+    {
+      "type": "Line",
+      "value": " functions are body-less without a declare modifier",
+      "start": 73,
+      "end": 126
+    }
+  ],
+  "diagnostics": []
+}

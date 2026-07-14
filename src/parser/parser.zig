@@ -160,6 +160,9 @@ pub const Parser = struct {
         self.context.await = self.tree.isModule();
         self.context.@"return" = self.allow_return_outside_function;
 
+        // a `.d.ts` file is ambient throughout
+        self.ts_context.ambient = self.lang == .dts;
+
         // let's begin
         try self.advance() orelse {
             self.current_token = Token.eof(0);
