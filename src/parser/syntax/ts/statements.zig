@@ -59,7 +59,8 @@ pub fn isStartOfTsDeclaration(parser: *Parser) bool {
     }
 
     switch (cur.tag) {
-        .type, .interface, .@"enum", .namespace => {
+        .@"enum" => return true,
+        .type, .interface, .namespace => {
             // reserved word after head is not a name, fall through to expr
             const name = peek.next() orelse return false;
             return isDeclarationName(name);
