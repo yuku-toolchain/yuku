@@ -1,9 +1,10 @@
 test/parser/misc/ts
 ===================
-Passed:       36/36 (100.00%)
+Passed:       37/37 (100.00%)
 Failed:       0
-AST mismatch: 0/36
+AST mismatch: 0/37
 
+✓ test/parser/misc/ts/ambient-file-declarations.module.d.ts
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/arrow-return-type-ternary-colon-steal.ts
 ✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
