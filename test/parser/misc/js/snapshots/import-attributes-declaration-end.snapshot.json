@@ -1,0 +1,201 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 288,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 78,
+        "end": 107,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 85,
+            "end": 88,
+            "local": {
+              "type": "Identifier",
+              "start": 85,
+              "end": 88,
+              "name": "foo"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 94,
+          "end": 99,
+          "value": "foo",
+          "raw": "\"foo\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 108,
+        "end": 151,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 115,
+            "end": 118,
+            "local": {
+              "type": "Identifier",
+              "start": 115,
+              "end": 118,
+              "name": "bar"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 124,
+          "end": 129,
+          "value": "bar",
+          "raw": "\"bar\""
+        },
+        "attributes": [
+          {
+            "type": "ImportAttribute",
+            "start": 137,
+            "end": 149,
+            "key": {
+              "type": "Identifier",
+              "start": 137,
+              "end": 141,
+              "name": "type"
+            },
+            "value": {
+              "type": "Literal",
+              "start": 143,
+              "end": 149,
+              "value": "json",
+              "raw": "\"json\""
+            }
+          }
+        ],
+        "phase": null
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 152,
+        "end": 196,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 159,
+            "end": 162,
+            "local": {
+              "type": "Identifier",
+              "start": 159,
+              "end": 162,
+              "name": "baz"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 168,
+          "end": 173,
+          "value": "baz",
+          "raw": "\"baz\""
+        },
+        "attributes": [
+          {
+            "type": "ImportAttribute",
+            "start": 181,
+            "end": 193,
+            "key": {
+              "type": "Identifier",
+              "start": 181,
+              "end": 185,
+              "name": "type"
+            },
+            "value": {
+              "type": "Literal",
+              "start": 187,
+              "end": 193,
+              "value": "json",
+              "raw": "\"json\""
+            }
+          }
+        ],
+        "phase": null
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 197,
+        "end": 225,
+        "specifiers": [],
+        "source": {
+          "type": "Literal",
+          "start": 204,
+          "end": 217,
+          "value": "side-effect",
+          "raw": "\"side-effect\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ExportAllDeclaration",
+        "start": 226,
+        "end": 253,
+        "exported": null,
+        "source": {
+          "type": "Literal",
+          "start": 240,
+          "end": 245,
+          "value": "all",
+          "raw": "\"all\""
+        },
+        "attributes": []
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 254,
+        "end": 287,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 263,
+            "end": 264,
+            "local": {
+              "type": "Identifier",
+              "start": 263,
+              "end": 264,
+              "name": "a"
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 263,
+              "end": 264,
+              "name": "a"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 272,
+          "end": 279,
+          "value": "named",
+          "raw": "\"named\""
+        },
+        "attributes": []
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " declaration spans must include the attributes clause, with and without ASI",
+      "start": 0,
+      "end": 77
+    }
+  ],
+  "diagnostics": []
+}

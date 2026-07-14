@@ -81,7 +81,7 @@
       {
         "type": "ImportDeclaration",
         "start": 124,
-        "end": 154,
+        "end": 176,
         "specifiers": [
           {
             "type": "ImportDefaultSpecifier",
@@ -205,7 +205,7 @@
       {
         "type": "ExportAllDeclaration",
         "start": 230,
-        "end": 249,
+        "end": 271,
         "exported": null,
         "source": {
           "type": "Literal",
