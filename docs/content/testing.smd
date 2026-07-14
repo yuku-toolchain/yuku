@@ -1,11 +1,11 @@
 ---
 .title = "Testing",
-.description = "How Yuku is tested: the parser test suite, spec conformance, exact AST validation, and the corpus-driven suites behind codegen, source maps, and the analyzer.",
+.description = "How Yuku is tested: the parser test suite, spec conformance, exact AST validation, fuzzing, and the corpus-driven suites behind codegen and source maps.",
 .author = "Arshad Yaseen",
 .date = @date("2026-07-14T00:00:00"),
 .layout = "page.shtml",
 ---
-Every claim Yuku makes about correctness is backed by a test you can run. This page describes the test infrastructure: what the parser is tested against, what a passing test actually verifies, and how the rest of the toolchain is validated.
+Correctness in Yuku is not an afterthought. A large share of the work behind the toolchain went into the test suite and the infrastructure around it, built and maintained with the same care as the parser itself. It covers everything from spec conformance and exact AST shapes to codegen soundness, source map accuracy, and memory behavior under simulated out-of-memory conditions. This page describes how it all works.
 
 ## [The parser test suite]($section.id('parser-test-suite'))
 
@@ -63,10 +63,6 @@ Curated inline-snapshot tests pin the exact output of `print`, `strip`, and `min
 
 Every corpus file is round-tripped through `print` with source maps enabled, and every identifier in the output must trace back to the right name and position in the original source.
 
-## [Analyzer]($section.id('analyzer'))
-
-Inline-snapshot suites cover scopes, symbols, references, closures/captures, imports and exports, and cross-file linking. A corpus suite then runs full semantic analysis over every file in the parser test suite and checks invariants: analysis never crashes, results are deterministic, every reference resolves within its scope chain, node identities line up with the AST, and capture sets match an independently computed oracle.
-
 ## [Fuzzing]($section.id('fuzzing'))
 
 Beyond the fixed suites, a Zig-side fuzzer throws millions of randomized inputs per run at the parser: adversarial fragments (malformed surrogate escapes, unterminated literals, numeric and regex corner cases, raw invalid UTF-8 bytes) and mutations of structurally complete programs, across every language mode, with simulated out-of-memory conditions injected along the way. The parser must never crash, whatever the input. Any failure dumps a self-contained reproducer.
@@ -77,4 +73,4 @@ Beyond the fixed suites, a Zig-side fuzzer throws millions of randomized inputs 
 bun run test
 ```
 
-On first run this downloads the parser test suite (cached for a day), builds the native addons from your local Zig, then runs the parser, codegen, analyzer, and source map suites. Each suite can also be run on its own, and you can add your own cases. See [CONTRIBUTING.md](https://github.com/yuku-toolchain/yuku/blob/main/CONTRIBUTING.md) for the details.
+On first run this downloads the parser test suite (cached for a day), builds the native addons from your local Zig, then runs every suite. Each suite can also be run on its own, and you can add your own cases. See [CONTRIBUTING.md](https://github.com/yuku-toolchain/yuku/blob/main/CONTRIBUTING.md) for the details.

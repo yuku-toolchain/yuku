@@ -11,7 +11,7 @@
 - [Traverse](https://yuku.fyi/parser/traverse/): Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
 - [Codegen](https://yuku.fyi/parser/codegen/): Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.
 - [Analyzer](https://yuku.fyi/analyzer/): Full semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
-- [Testing](https://yuku.fyi/testing/): How Yuku is tested: the parser test suite, spec conformance, exact AST validation, and the corpus-driven suites behind codegen, source maps, and the analyzer.
+- [Testing](https://yuku.fyi/testing/): How Yuku is tested: the parser test suite, spec conformance, exact AST validation, fuzzing, and the corpus-driven suites behind codegen and source maps.
 
 ## Resources
 
