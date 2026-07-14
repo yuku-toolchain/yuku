@@ -249,16 +249,32 @@ pub fn parseFormalParameters(
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
 
             if (parser.current_token.tag == .comma and rest != .null) {
-                try parser.report(
-                    .{
-                        .start = parser.tree.span(rest).start,
-                        .end = parser.current_token.span.end,
-                    },
-                    "Rest parameter must be the last parameter",
-                    .{ .help = "Move the '...rest' parameter to the end of the parameter" ++
-                        " list, or remove trailing parameters." },
-                );
-                return null;
+                const after_comma = parser.peekAhead() orelse return null;
+                if (after_comma.tag == .right_paren) {
+                    // ts allows `(...rest,)` in ambient contexts only
+                    if (!parser.ts_context.ambient) {
+                        try parser.report(
+                            .{
+                                .start = parser.tree.span(rest).start,
+                                .end = parser.current_token.span.end,
+                            },
+                            "Rest parameter may not have a trailing comma",
+                            .{ .help = "Remove the trailing comma after the rest parameter." },
+                        );
+                        return null;
+                    }
+                } else {
+                    try parser.report(
+                        .{
+                            .start = parser.tree.span(rest).start,
+                            .end = parser.current_token.span.end,
+                        },
+                        "Rest parameter must be the last parameter",
+                        .{ .help = "Move the '...rest' parameter to the end of the parameter" ++
+                            " list, or remove trailing parameters." },
+                    );
+                    return null;
+                }
             }
         } else {
             const param = try parseFormalParameter(

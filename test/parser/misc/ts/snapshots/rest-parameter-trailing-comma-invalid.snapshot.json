@@ -1,0 +1,99 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 247,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSDeclareFunction",
+        "start": 149,
+        "end": 202,
+        "id": {
+          "type": "Identifier",
+          "start": 166,
+          "end": 173,
+          "name": "ambient",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "RestElement",
+            "start": 174,
+            "end": 191,
+            "argument": {
+              "type": "Identifier",
+              "start": 177,
+              "end": 181,
+              "name": "args",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 181,
+              "end": 191,
+              "typeAnnotation": {
+                "type": "TSArrayType",
+                "start": 183,
+                "end": 191,
+                "elementType": {
+                  "type": "TSStringKeyword",
+                  "start": 183,
+                  "end": 189
+                }
+              }
+            },
+            "optional": false,
+            "value": null
+          }
+        ],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 193,
+          "end": 201,
+          "typeAnnotation": {
+            "type": "TSStringKeyword",
+            "start": 195,
+            "end": 201
+          }
+        },
+        "declare": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " outside ambient contexts a trailing comma after a rest parameter is an",
+      "start": 0,
+      "end": 73
+    },
+    {
+      "type": "Line",
+      "value": " error, while a declare modifier makes the declaration ambient even here",
+      "start": 74,
+      "end": 148
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Rest parameter may not have a trailing comma",
+      "start": 218,
+      "end": 236,
+      "help": "Remove the trailing comma after the rest parameter.",
+      "labels": []
+    }
+  ]
+}

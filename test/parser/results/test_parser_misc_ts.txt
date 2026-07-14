@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       38/38 (100.00%)
+Passed:       40/40 (100.00%)
 Failed:       0
-AST mismatch: 0/38
+AST mismatch: 0/40
 
 ✓ test/parser/misc/ts/ambient-file-declarations.module.d.ts
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
@@ -134,5 +134,17 @@ error: Identifier 'T7' has already been declared
 ✓ test/parser/misc/ts/redeclare-merge-namespace.ts
 ✓ test/parser/misc/ts/redeclare-merge-overloads.ts
 ✓ test/parser/misc/ts/redeclare-type-parameter-scope.ts
+✓ test/parser/misc/ts/rest-parameter-trailing-comma-ambient.module.d.ts
+✓ test/parser/misc/ts/rest-parameter-trailing-comma-invalid.ts
+error: Rest parameter may not have a trailing comma
+   |
+ 4 | 
+ 5 | function impl(...args: string[],): void {}
+   |               ^^^^^^^^^^^^^^^^^^
+ 6 | 
+   |
+   = help: Remove the trailing comma after the rest parameter.
+
+
 ✓ test/parser/misc/ts/typed-arrow-predicate-in-ternary-jsx.module.tsx
 ✓ test/parser/misc/ts/typed-arrow-predicate-in-ternary.ts

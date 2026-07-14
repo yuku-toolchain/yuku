@@ -1437,13 +1437,13 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/0a09ed9ebb001643.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, function(...a,) {
    |             ^^^^^
  2 | };
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/0a225effb5493c00.js
@@ -1721,14 +1721,14 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/0c44b59a2296b099.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   *method(...a,) {
    |           ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/0c4a0ee34dbc98a5.js
@@ -2418,13 +2418,13 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/117a10f6c3079307.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | function f(...a,) {
    |            ^^^^^
  2 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/119aaa88b4b70564.js
@@ -3415,14 +3415,14 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/180a4e63d8cf84cf.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   async method(...a,) {
    |                ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/180c9ff1f8b82045.js
@@ -4539,14 +4539,14 @@ error: Function declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/20c3be8fdb4d5de5.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   static async method(...a,) {
    |                       ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/20f12b7208ee736d.js
@@ -6273,14 +6273,14 @@ error: 'new' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/2c606564150e2de9.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, class {
  2 |   static async *method(...a,) {
    |                        ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/2c64afc4ba817f6d.js
@@ -7158,14 +7158,14 @@ error: Unexpected token '...'
 
 
 ✓ test/parser/suite/js/fail/319b032d3450a9a2.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, class {
  2 |   static method(...a,) {
    |                 ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/31a1be69e89a8e93.js
@@ -7960,14 +7960,14 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/383b04bbef94592a.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   static async *method(...a,) {
    |                        ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/386cf314bb05acda.js
@@ -8038,14 +8038,14 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/38e250b1d0c01e06.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, {
  2 |   async *method(...a,) {
    |                 ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/38f1f00eb2446576.js
@@ -8815,13 +8815,13 @@ error: Unexpected token 'end of file'
 
 
 ✓ test/parser/suite/js/fail/3e9ffee4a38f7c9b.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, async function* g(...a,) {
    |                      ^^^^^
  2 | };
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/3eba12cedd29aa20.js
@@ -9696,14 +9696,14 @@ error: Unexpected token '}' as property key
 
 
 ✓ test/parser/suite/js/fail/45b760a9847a56ba.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, {
  2 |   method(...a,) {
    |          ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/45cb305cf7a07edd.js
@@ -11653,14 +11653,14 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
    |
 
 ✓ test/parser/suite/js/fail/5468095b697725fc.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   static method(...a,) {
    |                 ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/5469c975a9d993ba.js
@@ -17018,14 +17018,14 @@ error: 'import' keyword is not allowed here
 
 
 ✓ test/parser/suite/js/fail/7be9be014f006b2d.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   async *method(...a,) {
    |                 ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/7bf2a85a919df006.js
@@ -18193,14 +18193,14 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/844f808283041d67.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, class {
  2 |   async *method(...a,) {
    |                 ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/845efa8cd6045640.js
@@ -18911,13 +18911,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/891ba1838fc84b2b.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | async function f(...a,) {
    |                  ^^^^^
  2 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/893403934bc7d980.js
@@ -19959,14 +19959,14 @@ error: Expected ')' after function arguments, but found '1'
 
 
 ✓ test/parser/suite/js/fail/8fe7719130caf244.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, class {
  2 |   *method(...a,) {
    |           ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/8ffbf66d2d4848c7.js
@@ -20436,13 +20436,13 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/94020dc478f51c0b.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | function* f(...a,) {
    |             ^^^^^
  2 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/94325adbbbe58f6d.js
@@ -21868,13 +21868,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/9eafc41390671fa0.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, function*(...a,) {
    |              ^^^^^
  2 | };
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/9eb36c00864dd9c5.js
@@ -23370,13 +23370,13 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/a92a4ad1a69f52b9.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | (async function(...a,) {
    |                 ^^^^^
  2 | });
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/a92a829dd9e384d2.js
@@ -24680,14 +24680,14 @@ error: Lexical declaration cannot appear in a single-statement context
 
 
 ✓ test/parser/suite/js/fail/b38eb623ae26dbf4.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, class {
  2 |   method(...a,) {
    |          ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/b3a42d0172b90451.js
@@ -25474,13 +25474,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/b944075c5b2cbd0f.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | async function* f(...a,) {
    |                   ^^^^^
  2 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/b94cccf4bc5e6c21.module.js
@@ -27473,14 +27473,14 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/c89228027298abef.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   static *method(...a,) {
    |                  ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/c8da4e800f9c3858.js
@@ -30801,14 +30801,14 @@ error: Expected ',' or ']' in array, but found ''''
 
 
 ✓ test/parser/suite/js/fail/e1eb251de9088873.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, class {
  2 |   static *method(...a,) {
    |                  ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/e1f3b9fa78028b70.js
@@ -30879,13 +30879,13 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
    |
 
 ✓ test/parser/suite/js/fail/e2aa4a8b9557a4d7.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | (async function f(...a,) {
    |                   ^^^^^
  2 | });
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/e2b16fd95893607e.js
@@ -31438,14 +31438,14 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/e6e67554ed746623.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | var C = class {
  2 |   static async method(...a,) {
    |                       ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/e6f4696d1ee76d6f.js
@@ -32101,14 +32101,14 @@ error: Invalid element in binding pattern
 
 
 ✓ test/parser/suite/js/fail/ec0badaf3e413378.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, {
  2 |   *method(...a,) {
    |           ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/ec0eb7e76a578d9d.js
@@ -32738,14 +32738,14 @@ error: 'return' statement is only valid inside a function
 
 
 ✓ test/parser/suite/js/fail/f057c84a2216d637.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | class C {
  2 |   method(...a,) {
    |          ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/f0650722451fd802.js
@@ -33735,14 +33735,14 @@ error: Exponent part is missing a number
 
 
 ✓ test/parser/suite/js/fail/f7a33e867aa42bec.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | ({
  2 |   async *method(...a,) {
    |                 ^^^^^
  3 | }
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/f7db62d4dceec7d1.js
@@ -34465,13 +34465,13 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/fd17660323de86b9.js
-error: Rest parameter must be the last parameter
+error: Rest parameter may not have a trailing comma
    |
  1 | 0, async function*(...a,) {
    |                    ^^^^^
  2 | };
    |
-   = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
+   = help: Remove the trailing comma after the rest parameter.
 
 
 ✓ test/parser/suite/js/fail/fd21569121840641.js
