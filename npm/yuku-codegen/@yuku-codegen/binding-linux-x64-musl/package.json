@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-linux-x64-musl",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "os": [
     "linux"
   ],
