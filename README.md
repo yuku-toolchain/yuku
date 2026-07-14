@@ -11,6 +11,7 @@
   <br>
 
 [![NPM Version](https://img.shields.io/npm/v/yuku-parser?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku-parser)
+[![NPM Downloads](https://img.shields.io/npm/dw/yuku-parser?logo=npm&logoColor=212121&label=downloads&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku-parser)
 [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
 Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
@@ -85,7 +86,7 @@ const { program } = parse(source);
 const { code, map } = print(program, { sourceMaps: { source } });
 ```
 
-[Read the codegen documentation →](https://yuku.fyi/codegen)
+[Read the codegen documentation →](https://yuku.fyi/parser/codegen)
 
 ## Analyzer
 
