@@ -1,0 +1,202 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 269,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 144,
+        "end": 157,
+        "expression": {
+          "type": "NewExpression",
+          "start": 144,
+          "end": 157,
+          "callee": {
+            "type": "TSNonNullExpression",
+            "start": 148,
+            "end": 155,
+            "expression": {
+              "type": "ParenthesizedExpression",
+              "start": 148,
+              "end": 154,
+              "expression": {
+                "type": "ChainExpression",
+                "start": 149,
+                "end": 153,
+                "expression": {
+                  "type": "MemberExpression",
+                  "start": 149,
+                  "end": 153,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 149,
+                    "end": 150,
+                    "name": "a",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 152,
+                    "end": 153,
+                    "name": "b",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "computed": false,
+                  "optional": true
+                }
+              }
+            }
+          },
+          "arguments": [],
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 158,
+        "end": 166,
+        "expression": {
+          "type": "NewExpression",
+          "start": 158,
+          "end": 166,
+          "callee": {
+            "type": "TSNonNullExpression",
+            "start": 162,
+            "end": 164,
+            "expression": {
+              "type": "Identifier",
+              "start": 162,
+              "end": 163,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          "arguments": [],
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 167,
+        "end": 177,
+        "expression": {
+          "type": "NewExpression",
+          "start": 167,
+          "end": 177,
+          "callee": {
+            "type": "MemberExpression",
+            "start": 171,
+            "end": 175,
+            "object": {
+              "type": "TSNonNullExpression",
+              "start": 171,
+              "end": 173,
+              "expression": {
+                "type": "Identifier",
+                "start": 171,
+                "end": 172,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 174,
+              "end": 175,
+              "name": "b",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "computed": false,
+            "optional": false
+          },
+          "arguments": [],
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 258,
+        "end": 263,
+        "expression": {
+          "type": "NewExpression",
+          "start": 258,
+          "end": 263,
+          "callee": {
+            "type": "Identifier",
+            "start": 262,
+            "end": 263,
+            "name": "a",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "arguments": [],
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 264,
+        "end": 268,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 264,
+          "end": 268,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "ParenthesizedExpression",
+            "start": 265,
+            "end": 268,
+            "expression": {
+              "type": "Literal",
+              "start": 266,
+              "end": 267,
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        },
+        "directive": null
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " non-null assertion binds into the new-expression callee chain, so the",
+      "start": 0,
+      "end": 72
+    },
+    {
+      "type": "Line",
+      "value": " trailing parens are constructor arguments, not a call on the result",
+      "start": 73,
+      "end": 143
+    },
+    {
+      "type": "Line",
+      "value": " a line break before ! ends the new expression and ASI splits the statements",
+      "start": 179,
+      "end": 257
+    }
+  ],
+  "diagnostics": []
+}
