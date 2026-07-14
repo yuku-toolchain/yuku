@@ -665,7 +665,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
     };
 
-    // member expression chain (. [] and tagged templates)
+    // member expression chain (. [] ! and tagged templates)
     while (true) {
         callee = switch (parser.current_token.tag) {
             .dot => try parseStaticMemberExpression(parser, callee, false) orelse return null,
@@ -676,6 +676,13 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
                 callee,
                 .null,
             ) orelse return null,
+            // ts `!` binds to the callee, so `new (a?.b)!()` constructs with
+            // arguments instead of calling the finished `new` expression
+            .logical_not => if (parser.tree.isTs() and
+                !parser.current_token.hasLineTerminatorBefore())
+                try ts.parseNonNullExpression(parser, callee) orelse return null
+            else
+                break,
             .optional_chaining => {
                 try parser.report(
                     parser.current_token.span,
