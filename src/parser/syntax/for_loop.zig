@@ -45,9 +45,8 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
     const decl_start = parser.current_token.span.start;
 
     switch (parser.current_token.tag) {
-        .let, .@"const", .@"var" => {
+        .@"const", .@"var" => {
             const kind: ast.VariableKind = switch (parser.current_token.tag) {
-                .let => .let,
                 .@"const" => .@"const",
                 .@"var" => .@"var",
                 else => unreachable,
@@ -56,6 +55,18 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             try parser.advance() orelse return null;
 
             return parseForWithDeclaration(parser, start, is_for_await, kind, decl_start);
+        },
+        .let => {
+            const next = parser.peekAhead() orelse return null;
+
+            // `let` heads a declaration only when a binding can follow.
+            if (!variables.canStartLetBinding(next.tag)) {
+                return parseForWithExpression(parser, start, is_for_await);
+            }
+
+            try parser.advance() orelse return null;
+
+            return parseForWithDeclaration(parser, start, is_for_await, .let, decl_start);
         },
         .using => {
             const next = parser.peekAhead() orelse return null;
@@ -187,6 +198,11 @@ fn parseForWithDeclaration(
 
 /// for loop starting with an expression.
 fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
+    // escaped `let` is a different token sequence, exempt from the
+    // for-of lookahead restriction below
+    const head = parser.current_token;
+    const head_is_let = head.tag == .let and !head.isEscaped();
+
     const saved_allow_in = parser.context.in;
     parser.context.in = false;
 
@@ -208,6 +224,16 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     }
 
     if (parser.current_token.tag == .of) {
+        // for ( [lookahead ∉ { let }] LeftHandSideExpression of AssignmentExpression )
+        if (head_is_let) {
+            try parser.report(
+                head.span,
+                "The left-hand side of a for-of statement may not start with 'let'",
+                .{ .help = "Rename the variable or wrap it in parentheses:" ++
+                    " 'for ((let).x of ...)'" },
+            );
+        }
+
         // for ( [lookahead ∉ { async of }] LeftHandSideExpression of AssignmentExpression )
         if (!is_for_await and isAsyncIdentifier(parser, expr)) {
             try parser.report(

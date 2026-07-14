@@ -1,0 +1,304 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 284,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 122,
+        "end": 135,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 126,
+            "end": 134,
+            "id": {
+              "type": "Identifier",
+              "start": 126,
+              "end": 129,
+              "name": "let"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 132,
+              "end": 134,
+              "value": 10,
+              "raw": "10"
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 136,
+        "end": 145,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 136,
+          "end": 144,
+          "left": {
+            "type": "Identifier",
+            "start": 136,
+            "end": 139,
+            "name": "let"
+          },
+          "right": {
+            "type": "Literal",
+            "start": 142,
+            "end": 144,
+            "value": 30,
+            "raw": "30"
+          },
+          "operator": "="
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 146,
+        "end": 154,
+        "expression": {
+          "type": "MemberExpression",
+          "start": 146,
+          "end": 153,
+          "object": {
+            "type": "Identifier",
+            "start": 146,
+            "end": 149,
+            "name": "let"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 150,
+            "end": 153,
+            "name": "foo"
+          },
+          "computed": false,
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 155,
+        "end": 161,
+        "expression": {
+          "type": "UpdateExpression",
+          "start": 155,
+          "end": 160,
+          "argument": {
+            "type": "Identifier",
+            "start": 155,
+            "end": 158,
+            "name": "let"
+          },
+          "operator": "++",
+          "prefix": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 162,
+        "end": 172,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 162,
+          "end": 171,
+          "left": {
+            "type": "Identifier",
+            "start": 162,
+            "end": 165,
+            "name": "let"
+          },
+          "right": {
+            "type": "ObjectExpression",
+            "start": 169,
+            "end": 171,
+            "properties": []
+          },
+          "operator": "in"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 173,
+        "end": 182,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 177,
+            "end": 181,
+            "id": {
+              "type": "Identifier",
+              "start": 177,
+              "end": 181,
+              "name": "next"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ForStatement",
+        "start": 183,
+        "end": 211,
+        "init": {
+          "type": "Identifier",
+          "start": 188,
+          "end": 191,
+          "name": "let"
+        },
+        "test": {
+          "type": "BinaryExpression",
+          "start": 193,
+          "end": 200,
+          "left": {
+            "type": "Identifier",
+            "start": 193,
+            "end": 196,
+            "name": "let"
+          },
+          "right": {
+            "type": "Literal",
+            "start": 199,
+            "end": 200,
+            "value": 5,
+            "raw": "5"
+          },
+          "operator": "<"
+        },
+        "update": {
+          "type": "UpdateExpression",
+          "start": 202,
+          "end": 207,
+          "argument": {
+            "type": "Identifier",
+            "start": 202,
+            "end": 205,
+            "name": "let"
+          },
+          "operator": "++",
+          "prefix": false
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 209,
+          "end": 211,
+          "body": []
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 212,
+        "end": 236,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 217,
+          "end": 224,
+          "left": {
+            "type": "Identifier",
+            "start": 217,
+            "end": 220,
+            "name": "let"
+          },
+          "right": {
+            "type": "Literal",
+            "start": 223,
+            "end": 224,
+            "value": 0,
+            "raw": "0"
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BreakStatement",
+          "start": 230,
+          "end": 236,
+          "label": null
+        }
+      },
+      {
+        "type": "ForInStatement",
+        "start": 237,
+        "end": 255,
+        "left": {
+          "type": "Identifier",
+          "start": 242,
+          "end": 245,
+          "name": "let"
+        },
+        "right": {
+          "type": "ObjectExpression",
+          "start": 249,
+          "end": 251,
+          "properties": []
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 253,
+          "end": 255,
+          "body": []
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 256,
+        "end": 283,
+        "init": {
+          "type": "VariableDeclaration",
+          "start": 261,
+          "end": 271,
+          "kind": "let",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 265,
+              "end": 271,
+              "id": {
+                "type": "Identifier",
+                "start": 265,
+                "end": 267,
+                "name": "of"
+              },
+              "init": {
+                "type": "Literal",
+                "start": 270,
+                "end": 271,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BreakStatement",
+          "start": 277,
+          "end": 283,
+          "label": null
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " sloppy mode keeps `let` an identifier wherever no binding can follow,",
+      "start": 0,
+      "end": 72
+    },
+    {
+      "type": "Line",
+      "value": " in both statement and for-loop-head positions",
+      "start": 73,
+      "end": 121
+    }
+  ],
+  "diagnostics": []
+}

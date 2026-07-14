@@ -1337,6 +1337,24 @@ pub const Lexer = struct {
         break :blk t;
     };
 
+    fn isMultiByteSpace(cp: u21) bool {
+        return switch (cp) {
+            '\u{FEFF}',
+            '\u{00A0}',
+            // U+0085 NEXT LINE is not WhiteSpace in the spec, but tsc
+            // scans it as a space (not a line break, so no ASI)
+            '\u{0085}',
+            '\u{2000}',
+            '\u{2001}'...'\u{200A}',
+            '\u{202F}',
+            '\u{205F}',
+            '\u{3000}',
+            '\u{1680}',
+            => true,
+            else => false,
+        };
+    }
+
     inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
         std.debug.assert(self.cursor <= self.source.len);
 
@@ -1407,7 +1425,7 @@ pub const Lexer = struct {
                     }
                     self.cursor = pos;
                     const cp = try util.Utf.codePointAt(src, pos);
-                    if (!util.Utf.isMultiByteSpace(cp.value)) break;
+                    if (!isMultiByteSpace(cp.value)) break;
                     pos += cp.len;
                 },
                 else => break,

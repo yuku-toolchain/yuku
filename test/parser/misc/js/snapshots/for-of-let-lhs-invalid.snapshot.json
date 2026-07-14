@@ -1,0 +1,66 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 86,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ForOfStatement",
+        "start": 66,
+        "end": 85,
+        "left": {
+          "type": "MemberExpression",
+          "start": 71,
+          "end": 76,
+          "object": {
+            "type": "Identifier",
+            "start": 71,
+            "end": 74,
+            "name": "let"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 75,
+            "end": 76,
+            "name": "a"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 80,
+          "end": 81,
+          "name": "x"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 83,
+          "end": 85,
+          "body": []
+        },
+        "await": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " for-of forbids a left-hand side beginning with the `let` token",
+      "start": 0,
+      "end": 65
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "The left-hand side of a for-of statement may not start with 'let'",
+      "start": 71,
+      "end": 74,
+      "help": "Rename the variable or wrap it in parentheses: 'for ((let).x of ...)'",
+      "labels": []
+    }
+  ]
+}

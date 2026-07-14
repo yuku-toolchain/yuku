@@ -273,11 +273,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // only `const` bypasses reserved guard, `as const`
-    const is_type_ref_start =
-        (token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) or
-        token.tag == .@"const";
-    if (is_type_ref_start) {
+    if (token.tag.isIdentifierLike()) {
         return parseTypeReference(parser);
     }
 

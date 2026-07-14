@@ -1,8 +1,8 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8083/8083 (100.00%)
+Passed:       8226/8226 (100.00%)
 Failed:       0
-AST mismatch: 0/8083
+AST mismatch: 0/8226
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -69,6 +69,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/01fca3e7f3c167ff.ts
 ✓ test/parser/suite/ts/pass/02049c6073ae8522.ts
 ✓ test/parser/suite/ts/pass/020719fb89b72a87.ts
+✓ test/parser/suite/ts/pass/020f3bca4add9cfa.ts
 ✓ test/parser/suite/ts/pass/02141f2ca7c90482.module.ts
 ✓ test/parser/suite/ts/pass/0217a2c2be06a2eb.ts
 ✓ test/parser/suite/ts/pass/021a571b122f1b3a.ts
@@ -101,6 +102,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/02f19faa6e3036be.module.ts
 ✓ test/parser/suite/ts/pass/02fff8d5a3757968.ts
 ✓ test/parser/suite/ts/pass/0301622f0e921bec.ts
+✓ test/parser/suite/ts/pass/03041bfaa16434a5.ts
 ✓ test/parser/suite/ts/pass/030adebab641e8ba.ts
 ✓ test/parser/suite/ts/pass/030fc59012db46bc.ts
 ✓ test/parser/suite/ts/pass/031f14be2b72e483.ts
@@ -133,6 +135,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/0408984ccc59bcc7.ts
 ✓ test/parser/suite/ts/pass/0418622091a719c8.ts
 ✓ test/parser/suite/ts/pass/041b00b9e98e800b.ts
+✓ test/parser/suite/ts/pass/04211725b8919f6f.ts
 ✓ test/parser/suite/ts/pass/042b8c81bbe2fb4c.ts
 ✓ test/parser/suite/ts/pass/044c672fd959b0d9.ts
 ✓ test/parser/suite/ts/pass/045087a868bd0c98.ts
@@ -141,6 +144,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/0462028b2a7d6289.module.ts
 ✓ test/parser/suite/ts/pass/046b98c4ad470513.ts
 ✓ test/parser/suite/ts/pass/046e6508d342becc.ts
+✓ test/parser/suite/ts/pass/047f57d192165b63.ts
 ✓ test/parser/suite/ts/pass/048b0dc1df92c881.module.ts
 ✓ test/parser/suite/ts/pass/048ef060ced13d09.ts
 ✓ test/parser/suite/ts/pass/0490826b22b34db0.ts
@@ -277,8 +281,9 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/08b904daa3d332cb.ts
 ✓ test/parser/suite/ts/pass/08d097eb42ca55d2.ts
 ✓ test/parser/suite/ts/pass/08d39c57a4f5c7ca.ts
-✓ test/parser/suite/ts/pass/08d7e3686eb7e332.module.ts
+✓ test/parser/suite/ts/pass/08d7e3686eb7e332.module.d.ts
 ✓ test/parser/suite/ts/pass/08f4f4d2cb336dc5.ts
+✓ test/parser/suite/ts/pass/08fb285ec5241fd5.module.ts
 ✓ test/parser/suite/ts/pass/091aaeceb8cce44a.ts
 ✓ test/parser/suite/ts/pass/0925d76d3c442dbc.ts
 ✓ test/parser/suite/ts/pass/092837663d103155.ts
@@ -286,7 +291,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/09300ab6efcb168e.ts
 ✓ test/parser/suite/ts/pass/0930870a0e3c208d.ts
 ✓ test/parser/suite/ts/pass/0930a76d8da19264.ts
-✓ test/parser/suite/ts/pass/0937a7723c537125.ts
+✓ test/parser/suite/ts/pass/0937a7723c537125.d.ts
 ✓ test/parser/suite/ts/pass/093db2e44325b13f.module.ts
 ✓ test/parser/suite/ts/pass/093e8b9ee8de12a5.ts
 ✓ test/parser/suite/ts/pass/0948e5e54d39528d.ts
@@ -323,6 +328,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/0a3ac241d9599486.ts
 ✓ test/parser/suite/ts/pass/0a3b3f3af5297757.ts
 ✓ test/parser/suite/ts/pass/0a3e5459dd24cee1.ts
+✓ test/parser/suite/ts/pass/0a45f244a698bd97.module.ts
 ✓ test/parser/suite/ts/pass/0a4712e08dec1dd2.ts
 ✓ test/parser/suite/ts/pass/0a47a5660d494bde.ts
 ✓ test/parser/suite/ts/pass/0a47be06e49f2e27.ts
@@ -370,7 +376,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/0b9acf73ccdb1f0c.ts
 ✓ test/parser/suite/ts/pass/0ba1e5e48ac79596.ts
 ✓ test/parser/suite/ts/pass/0ba4431b5658f3d8.ts
-✓ test/parser/suite/ts/pass/0ba677b81d995653.ts
+✓ test/parser/suite/ts/pass/0ba677b81d995653.d.ts
 ✓ test/parser/suite/ts/pass/0baf6bade375fc72.ts
 ✓ test/parser/suite/ts/pass/0bc78eed30211aa0.module.tsx
 ✓ test/parser/suite/ts/pass/0bc87c7817168345.module.ts
@@ -424,6 +430,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/0d7e9b609da60972.ts
 ✓ test/parser/suite/ts/pass/0d859ca020eee6f8.ts
 ✓ test/parser/suite/ts/pass/0d85ad4c7d02e7c0.ts
+✓ test/parser/suite/ts/pass/0d863061cf8eba95.ts
 ✓ test/parser/suite/ts/pass/0d93b541a31043ad.ts
 ✓ test/parser/suite/ts/pass/0d9d4e784ffb62cd.ts
 ✓ test/parser/suite/ts/pass/0db029facdb669a8.ts
@@ -484,6 +491,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/0f3d0e0d34e8870c.ts
 ✓ test/parser/suite/ts/pass/0f42e6512fc6bc0f.ts
 ✓ test/parser/suite/ts/pass/0f4a1bd3dc242b17.ts
+✓ test/parser/suite/ts/pass/0f763240575c4c1b.ts
 ✓ test/parser/suite/ts/pass/0f95374c28a9d739.ts
 ✓ test/parser/suite/ts/pass/0f978dfc4113f393.ts
 ✓ test/parser/suite/ts/pass/0f983e258903e59a.module.ts
@@ -575,7 +583,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/11ae5b7ff2b04de6.ts
 ✓ test/parser/suite/ts/pass/11c4f6c5cdf5a41f.module.ts
 ✓ test/parser/suite/ts/pass/11dac9db1650e185.ts
-✓ test/parser/suite/ts/pass/11de5491a9682329.ts
+✓ test/parser/suite/ts/pass/11de5491a9682329.d.ts
 ✓ test/parser/suite/ts/pass/11e5341cfb831ddf.ts
 ✓ test/parser/suite/ts/pass/11e97937a05b0d4f.ts
 ✓ test/parser/suite/ts/pass/120836e43d187596.module.ts
@@ -612,7 +620,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/134937a8ec37776a.ts
 ✓ test/parser/suite/ts/pass/134c42b478e63ec5.ts
 ✓ test/parser/suite/ts/pass/134c4d64435f5bc3.ts
-✓ test/parser/suite/ts/pass/13529724969a0d7e.ts
+✓ test/parser/suite/ts/pass/13529724969a0d7e.d.ts
 ✓ test/parser/suite/ts/pass/135fa184f31bd32e.ts
 ✓ test/parser/suite/ts/pass/13672f2ff814efd0.ts
 ✓ test/parser/suite/ts/pass/1370262e1e10213a.ts
@@ -624,6 +632,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/13a400e9fcb7655c.ts
 ✓ test/parser/suite/ts/pass/13c5408711b490a7.ts
 ✓ test/parser/suite/ts/pass/13cdef6c785a047b.ts
+✓ test/parser/suite/ts/pass/13cec26dce2e1b24.ts
 ✓ test/parser/suite/ts/pass/13f0c499a3c0e9aa.ts
 ✓ test/parser/suite/ts/pass/13fdcf11d2753a49.ts
 ✓ test/parser/suite/ts/pass/1401f6a8e640afa1.ts
@@ -655,7 +664,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/14c09740dd978bc7.ts
 ✓ test/parser/suite/ts/pass/14c0b7f79857aa4f.ts
 ✓ test/parser/suite/ts/pass/14d09775b99e5668.ts
-✓ test/parser/suite/ts/pass/14d155b431451c3b.ts
+✓ test/parser/suite/ts/pass/14d155b431451c3b.d.ts
 ✓ test/parser/suite/ts/pass/14d5c33db1acdbfe.ts
 ✓ test/parser/suite/ts/pass/14d66ad70b699e90.ts
 ✓ test/parser/suite/ts/pass/14e1d17d4d261985.ts
@@ -714,6 +723,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/16a89c287de1b5cb.ts
 ✓ test/parser/suite/ts/pass/16a9fdee4151a4fe.ts
 ✓ test/parser/suite/ts/pass/16aa1b7d0ab95244.ts
+✓ test/parser/suite/ts/pass/16aaada7d882312d.ts
 ✓ test/parser/suite/ts/pass/16b2352b1da478c2.ts
 ✓ test/parser/suite/ts/pass/16b628dcbbb5e28a.ts
 ✓ test/parser/suite/ts/pass/16bcc250464e2288.ts
@@ -732,6 +742,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/171e2b3ac0488f27.ts
 ✓ test/parser/suite/ts/pass/171ec3500057b0e8.ts
 ✓ test/parser/suite/ts/pass/17317aa4a8cd36e4.ts
+✓ test/parser/suite/ts/pass/1735662326ce0638.ts
 ✓ test/parser/suite/ts/pass/17365036feedf060.ts
 ✓ test/parser/suite/ts/pass/174e006112b8ba55.ts
 ✓ test/parser/suite/ts/pass/174e56bdc12072c8.ts
@@ -757,7 +768,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/17d8ae0c1b3cf0d2.ts
 ✓ test/parser/suite/ts/pass/17eda1e24e8d4892.ts
 ✓ test/parser/suite/ts/pass/17f61dc4696eb811.ts
-✓ test/parser/suite/ts/pass/17f81d4daf8edc52.ts
+✓ test/parser/suite/ts/pass/17f81d4daf8edc52.d.ts
 ✓ test/parser/suite/ts/pass/180c813fe37c87f0.module.ts
 ✓ test/parser/suite/ts/pass/180cc3a6d247cecf.ts
 ✓ test/parser/suite/ts/pass/1854ced7d62f01c5.ts
@@ -832,6 +843,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/1adba205104c6478.module.ts
 ✓ test/parser/suite/ts/pass/1adcae10a3cf5627.ts
 ✓ test/parser/suite/ts/pass/1aecf64033f295fc.ts
+✓ test/parser/suite/ts/pass/1af1672d6a4bfcc3.module.ts
 ✓ test/parser/suite/ts/pass/1af25d6c34d0da49.ts
 ✓ test/parser/suite/ts/pass/1af3dcf81f26daee.ts
 ✓ test/parser/suite/ts/pass/1afbca366e248e91.ts
@@ -934,9 +946,11 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/1df57e008f55e2dc.ts
 ✓ test/parser/suite/ts/pass/1dff497e2d0cc557.ts
 ✓ test/parser/suite/ts/pass/1e1219cb8fd4d81c.ts
+✓ test/parser/suite/ts/pass/1e13b568982b3e1e.ts
 ✓ test/parser/suite/ts/pass/1e154736736175d6.ts
 ✓ test/parser/suite/ts/pass/1e1e4ab3b80e876b.ts
 ✓ test/parser/suite/ts/pass/1e205d0164efb0fd.ts
+✓ test/parser/suite/ts/pass/1e24b70484348c48.ts
 ✓ test/parser/suite/ts/pass/1e2da2bc48b1c713.module.ts
 ✓ test/parser/suite/ts/pass/1e3037086e240371.ts
 ✓ test/parser/suite/ts/pass/1e37b7d9bd37379a.ts
@@ -997,7 +1011,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/2059dbf3e83bf1f4.ts
 ✓ test/parser/suite/ts/pass/205f43562b316cad.ts
 ✓ test/parser/suite/ts/pass/2060d3550204c6b0.ts
-✓ test/parser/suite/ts/pass/2062e1b78275bf05.ts
+✓ test/parser/suite/ts/pass/2062e1b78275bf05.d.ts
 ✓ test/parser/suite/ts/pass/20635a741c16d166.ts
 ✓ test/parser/suite/ts/pass/207ad207bcc5de2d.ts
 ✓ test/parser/suite/ts/pass/207d0875b0c4cc50.ts
@@ -1009,6 +1023,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/209c7e05e03830d5.module.ts
 ✓ test/parser/suite/ts/pass/209cc3618a802181.module.ts
 ✓ test/parser/suite/ts/pass/209ff120885d72a5.ts
+✓ test/parser/suite/ts/pass/20b190e03812c7f7.ts
 ✓ test/parser/suite/ts/pass/20b9fbaeefc2e832.ts
 ✓ test/parser/suite/ts/pass/20bb372ebdc87e4a.ts
 ✓ test/parser/suite/ts/pass/20bc44b6843bea78.ts
@@ -1037,7 +1052,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/217fd2bd6bebcc39.ts
 ✓ test/parser/suite/ts/pass/2184bd1c6ad3d08e.ts
 ✓ test/parser/suite/ts/pass/2184c01d1817098c.ts
-✓ test/parser/suite/ts/pass/21852a7ce3f8f2b2.ts
+✓ test/parser/suite/ts/pass/21852a7ce3f8f2b2.d.ts
 ✓ test/parser/suite/ts/pass/218cb58a97113f33.ts
 ✓ test/parser/suite/ts/pass/218e02c6c2dd2ed7.ts
 ✓ test/parser/suite/ts/pass/2196a135b40c8854.ts
@@ -1051,6 +1066,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/21cab5911d167212.ts
 ✓ test/parser/suite/ts/pass/21cfa402d34de07b.ts
 ✓ test/parser/suite/ts/pass/21d002a222734f8f.ts
+✓ test/parser/suite/ts/pass/21d3b2d1293f735e.ts
 ✓ test/parser/suite/ts/pass/21d407c14fd23270.ts
 ✓ test/parser/suite/ts/pass/21d96b0b75d68cdf.ts
 ✓ test/parser/suite/ts/pass/21e82dfd919e020e.module.ts
@@ -1058,6 +1074,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/21fe18135dc56ff4.ts
 ✓ test/parser/suite/ts/pass/220b5e9875c1c9c0.ts
 ✓ test/parser/suite/ts/pass/22104078e0f71dc3.ts
+✓ test/parser/suite/ts/pass/22153c52eba831b9.ts
 ✓ test/parser/suite/ts/pass/2218a43dbbef7378.ts
 ✓ test/parser/suite/ts/pass/221bf83adc5192f5.ts
 ✓ test/parser/suite/ts/pass/222c98fad9fff1f2.module.ts
@@ -1083,7 +1100,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/22c7559c26cd9965.module.ts
 ✓ test/parser/suite/ts/pass/22cc879690cdb421.ts
 ✓ test/parser/suite/ts/pass/22d1234bd3f13f43.ts
-✓ test/parser/suite/ts/pass/22d9e7fd6bff9e1a.ts
+✓ test/parser/suite/ts/pass/22d9e7fd6bff9e1a.d.ts
 ✓ test/parser/suite/ts/pass/22e6adb05e605f5a.ts
 ✓ test/parser/suite/ts/pass/22ea080ae1e75aee.ts
 ✓ test/parser/suite/ts/pass/22eaea5be0337606.ts
@@ -1183,6 +1200,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/25ca3382f1e11cb9.ts
 ✓ test/parser/suite/ts/pass/25ca6209a5b18ee7.ts
 ✓ test/parser/suite/ts/pass/25ca95dab02c4b66.ts
+✓ test/parser/suite/ts/pass/25cbdc66aa98e551.module.ts
 ✓ test/parser/suite/ts/pass/25d75f1550e12ab6.ts
 ✓ test/parser/suite/ts/pass/25d9f90999afef88.ts
 ✓ test/parser/suite/ts/pass/25e4aca1b8c8da11.ts
@@ -1195,11 +1213,12 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/25fb739da6e75feb.ts
 ✓ test/parser/suite/ts/pass/25fcb2a06448b4e4.ts
 ✓ test/parser/suite/ts/pass/25ffcc97e3e18828.ts
-✓ test/parser/suite/ts/pass/2617f91b8f4b7383.ts
+✓ test/parser/suite/ts/pass/2617f91b8f4b7383.d.ts
 ✓ test/parser/suite/ts/pass/26333e1c091907a8.tsx
 ✓ test/parser/suite/ts/pass/2638521365de607d.ts
 ✓ test/parser/suite/ts/pass/2638f8beae8c6b28.ts
 ✓ test/parser/suite/ts/pass/26441ee617082198.ts
+✓ test/parser/suite/ts/pass/266f35283cb6cf1d.ts
 ✓ test/parser/suite/ts/pass/26712ee4aa19ef12.ts
 ✓ test/parser/suite/ts/pass/2676f5ed1c9b6158.ts
 ✓ test/parser/suite/ts/pass/267890589be988aa.ts
@@ -1247,12 +1266,14 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/27e5683760b06d49.ts
 ✓ test/parser/suite/ts/pass/27e69d3e9c282d3b.ts
 ✓ test/parser/suite/ts/pass/27e803382953739d.ts
+✓ test/parser/suite/ts/pass/27e840a9c2a16176.ts
 ✓ test/parser/suite/ts/pass/27f2bb1d9373061b.module.ts
 ✓ test/parser/suite/ts/pass/27f3f2291a6cf6ce.ts
 ✓ test/parser/suite/ts/pass/27f4d1005ea5ed7a.module.ts
+✓ test/parser/suite/ts/pass/27f8a0fcf8439550.module.ts
 ✓ test/parser/suite/ts/pass/27f8a94134dbf743.ts
 ✓ test/parser/suite/ts/pass/27fe2a5c3b14ce38.ts
-✓ test/parser/suite/ts/pass/2802c83c84f7da40.ts
+✓ test/parser/suite/ts/pass/2802c83c84f7da40.d.ts
 ✓ test/parser/suite/ts/pass/2803a4be184b6b62.ts
 ✓ test/parser/suite/ts/pass/28041ca1267fb633.ts
 ✓ test/parser/suite/ts/pass/28068593589e8eb3.module.ts
@@ -1382,6 +1403,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/2be59bc060adceb6.ts
 ✓ test/parser/suite/ts/pass/2be5bb7b0a10ba45.ts
 ✓ test/parser/suite/ts/pass/2bf00840e2fe595c.ts
+✓ test/parser/suite/ts/pass/2bf279c43b3c6889.ts
 ✓ test/parser/suite/ts/pass/2bf39346f905c625.ts
 ✓ test/parser/suite/ts/pass/2bfef297a985b276.ts
 ✓ test/parser/suite/ts/pass/2c0094cbf89125b6.ts
@@ -1440,6 +1462,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/2dcc4a4f77258d1e.ts
 ✓ test/parser/suite/ts/pass/2dce64f78f3bf080.ts
 ✓ test/parser/suite/ts/pass/2dcef96a7b736812.ts
+✓ test/parser/suite/ts/pass/2dd574df0d070dba.ts
 ✓ test/parser/suite/ts/pass/2de1d4e251a91c18.ts
 ✓ test/parser/suite/ts/pass/2de22f2e228175e5.module.ts
 ✓ test/parser/suite/ts/pass/2de2c001b685b797.ts
@@ -1450,6 +1473,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/2e023c81924ae1f0.module.ts
 ✓ test/parser/suite/ts/pass/2e1123cdf8b48003.module.ts
 ✓ test/parser/suite/ts/pass/2e1cb6d9fa6adb46.ts
+✓ test/parser/suite/ts/pass/2e209f22110fff1d.ts
 ✓ test/parser/suite/ts/pass/2e21001f99f8767f.ts
 ✓ test/parser/suite/ts/pass/2e2d3854ab2da4b9.ts
 ✓ test/parser/suite/ts/pass/2e3afd4beae14763.ts
@@ -1598,6 +1622,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/322958af01858ba9.ts
 ✓ test/parser/suite/ts/pass/322b9978609d0943.ts
 ✓ test/parser/suite/ts/pass/322c3584f1696007.ts
+✓ test/parser/suite/ts/pass/3231b5e8c66a41a2.ts
 ✓ test/parser/suite/ts/pass/3238632bb41768e1.ts
 ✓ test/parser/suite/ts/pass/323d283afd286640.ts
 ✓ test/parser/suite/ts/pass/3240544fcb6caf15.ts
@@ -1622,7 +1647,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/32bd8e9d53d5180c.ts
 ✓ test/parser/suite/ts/pass/32c29a8c3f0fa509.ts
 ✓ test/parser/suite/ts/pass/32c3449fb1b896da.ts
-✓ test/parser/suite/ts/pass/32c707be5e60b505.ts
+✓ test/parser/suite/ts/pass/32c707be5e60b505.d.ts
 ✓ test/parser/suite/ts/pass/32d4db5b5d8fc3ee.ts
 ✓ test/parser/suite/ts/pass/32d9af3875ff6806.ts
 ✓ test/parser/suite/ts/pass/32ecf1dfa5cd592b.ts
@@ -1694,6 +1719,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/3514f6f7a776c2f4.module.ts
 ✓ test/parser/suite/ts/pass/351935aa5fe779cb.ts
 ✓ test/parser/suite/ts/pass/351af375b16d6d94.ts
+✓ test/parser/suite/ts/pass/351ce135f7148dd6.ts
 ✓ test/parser/suite/ts/pass/3525612caaf81603.ts
 ✓ test/parser/suite/ts/pass/352f067618cfc041.ts
 ✓ test/parser/suite/ts/pass/353c10dc8d526c39.ts
@@ -1789,6 +1815,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/382ff3ae705f9235.ts
 ✓ test/parser/suite/ts/pass/3835c045c639a8bb.ts
 ✓ test/parser/suite/ts/pass/383dc34f8d496650.module.ts
+✓ test/parser/suite/ts/pass/385021ae0bce5ae3.ts
 ✓ test/parser/suite/ts/pass/385e77ba67b13549.ts
 ✓ test/parser/suite/ts/pass/385eee735619105f.ts
 ✓ test/parser/suite/ts/pass/38616cd98d512b71.ts
@@ -1822,7 +1849,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/39c3d8708ca0c247.ts
 ✓ test/parser/suite/ts/pass/39ca60429bfcd9db.ts
 ✓ test/parser/suite/ts/pass/39d801c86f318fcf.ts
-✓ test/parser/suite/ts/pass/39d8340ced81a371.ts
+✓ test/parser/suite/ts/pass/39d8340ced81a371.d.ts
 ✓ test/parser/suite/ts/pass/39dc0c583bf3a752.ts
 ✓ test/parser/suite/ts/pass/39dc97346fb905ad.ts
 ✓ test/parser/suite/ts/pass/39e7243468cd6f47.ts
@@ -1847,6 +1874,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/3a66bcb0ff2adb2c.module.ts
 ✓ test/parser/suite/ts/pass/3a7005f0690599fc.ts
 ✓ test/parser/suite/ts/pass/3a80c7d58b7c57b6.ts
+✓ test/parser/suite/ts/pass/3a8e66f9d28904d9.ts
 ✓ test/parser/suite/ts/pass/3a9989fc8e61f47b.ts
 ✓ test/parser/suite/ts/pass/3aa14e185acb79b4.ts
 ✓ test/parser/suite/ts/pass/3aa1e3b9e78afcbe.ts
@@ -1984,6 +2012,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/3eae19358a54aae9.ts
 ✓ test/parser/suite/ts/pass/3eb14c406ee296f5.ts
 ✓ test/parser/suite/ts/pass/3eb86d88016f11e1.module.ts
+✓ test/parser/suite/ts/pass/3ebc3ff32e8e114e.ts
 ✓ test/parser/suite/ts/pass/3ebc7bd87173e1a1.ts
 ✓ test/parser/suite/ts/pass/3ec10d24d9fcfdb1.ts
 ✓ test/parser/suite/ts/pass/3ece15af4aba4baa.ts
@@ -2017,6 +2046,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/3fbc5ca6a7857177.ts
 ✓ test/parser/suite/ts/pass/3fc21091d9adaa51.ts
 ✓ test/parser/suite/ts/pass/3fc31ea3949307a3.ts
+✓ test/parser/suite/ts/pass/3fc43370eef02c9f.ts
 ✓ test/parser/suite/ts/pass/3fca705befbb6743.ts
 ✓ test/parser/suite/ts/pass/3fda8c593efd983d.ts
 ✓ test/parser/suite/ts/pass/3ff5bceefe8e2258.ts
@@ -2031,11 +2061,12 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/403a5ad143f908b1.ts
 ✓ test/parser/suite/ts/pass/403de744bd7f7369.ts
 ✓ test/parser/suite/ts/pass/40411e25432b4d71.ts
+✓ test/parser/suite/ts/pass/404871b623771a16.ts
 ✓ test/parser/suite/ts/pass/40670e3383940e50.module.ts
 ✓ test/parser/suite/ts/pass/4072db8c6a230270.module.ts
 ✓ test/parser/suite/ts/pass/407eb641d0f4d8be.ts
 ✓ test/parser/suite/ts/pass/408aea93cbfb02a9.ts
-✓ test/parser/suite/ts/pass/4092076ef09ff909.ts
+✓ test/parser/suite/ts/pass/4092076ef09ff909.d.ts
 ✓ test/parser/suite/ts/pass/40928ff1aa66da8a.module.tsx
 ✓ test/parser/suite/ts/pass/409815d165576318.ts
 ✓ test/parser/suite/ts/pass/409c04ff75b183ef.ts
@@ -2063,6 +2094,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/411bf852808241c7.ts
 ✓ test/parser/suite/ts/pass/411d05f3cd83fc2f.ts
 ✓ test/parser/suite/ts/pass/4121174fec904482.ts
+✓ test/parser/suite/ts/pass/41342b042bf3c830.ts
 ✓ test/parser/suite/ts/pass/4141f0ea19f93567.ts
 ✓ test/parser/suite/ts/pass/4149501f6994637f.ts
 ✓ test/parser/suite/ts/pass/414c011209a6202d.ts
@@ -2083,6 +2115,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/41ed93761c3540a1.ts
 ✓ test/parser/suite/ts/pass/41f10158a8b17fed.module.ts
 ✓ test/parser/suite/ts/pass/41f7fff2022a1e56.ts
+✓ test/parser/suite/ts/pass/41fe148bc91e1e9b.module.ts
 ✓ test/parser/suite/ts/pass/420753afd117e975.ts
 ✓ test/parser/suite/ts/pass/4211b2e16063fa48.ts
 ✓ test/parser/suite/ts/pass/42127bf6eaefbf9f.ts
@@ -2091,6 +2124,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/421d6e15f4f9ab45.ts
 ✓ test/parser/suite/ts/pass/421dbabc67d1b9d5.ts
 ✓ test/parser/suite/ts/pass/422de4fc68f142ce.ts
+✓ test/parser/suite/ts/pass/4231882930a879a5.ts
 ✓ test/parser/suite/ts/pass/4232b745cb30799c.ts
 ✓ test/parser/suite/ts/pass/4234c286b28a2ea4.ts
 ✓ test/parser/suite/ts/pass/4236e5625b12eaee.ts
@@ -2176,6 +2210,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/44a674c4cd1c5372.ts
 ✓ test/parser/suite/ts/pass/44abb894c41bdf78.ts
 ✓ test/parser/suite/ts/pass/44bbfe6e44903eed.ts
+✓ test/parser/suite/ts/pass/44c8296df9906efd.ts
 ✓ test/parser/suite/ts/pass/44c96c6a3545f3bc.ts
 ✓ test/parser/suite/ts/pass/44caad35124ce74c.ts
 ✓ test/parser/suite/ts/pass/44cbafbd5fa860d6.ts
@@ -2188,6 +2223,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/450308bc2936c44a.ts
 ✓ test/parser/suite/ts/pass/450849316531f32e.ts
 ✓ test/parser/suite/ts/pass/450dc03acf7221bf.ts
+✓ test/parser/suite/ts/pass/451135648c4410f4.ts
 ✓ test/parser/suite/ts/pass/4515ce1aa8cca813.ts
 ✓ test/parser/suite/ts/pass/452a2f370caca9f1.module.ts
 ✓ test/parser/suite/ts/pass/4530f1256ec5ea3e.ts
@@ -2205,6 +2241,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/458e05404e0e7d69.ts
 ✓ test/parser/suite/ts/pass/458edec90e9b56ff.ts
 ✓ test/parser/suite/ts/pass/45985725510951e9.ts
+✓ test/parser/suite/ts/pass/459d65d029d23f74.ts
 ✓ test/parser/suite/ts/pass/45a19b8eb9fd46af.module.ts
 ✓ test/parser/suite/ts/pass/45a837d13dfa107c.ts
 ✓ test/parser/suite/ts/pass/45af334dd6e972bb.ts
@@ -2217,6 +2254,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/45dd775e0eb7f3a6.ts
 ✓ test/parser/suite/ts/pass/45e6d19679900943.module.ts
 ✓ test/parser/suite/ts/pass/45f122eeca13c981.ts
+✓ test/parser/suite/ts/pass/45f623dcd19754e5.ts
 ✓ test/parser/suite/ts/pass/45faf31bb87c4848.ts
 ✓ test/parser/suite/ts/pass/460ece813281278d.ts
 ✓ test/parser/suite/ts/pass/461121b0ddce3306.ts
@@ -2259,6 +2297,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/472cc8176c12fdf4.ts
 ✓ test/parser/suite/ts/pass/47383fb9750bb345.ts
 ✓ test/parser/suite/ts/pass/47424e0e8f55480f.ts
+✓ test/parser/suite/ts/pass/47425c6d4f7b55a2.ts
 ✓ test/parser/suite/ts/pass/4746166cdd474d2b.ts
 ✓ test/parser/suite/ts/pass/474d00295e0b2d8c.ts
 ✓ test/parser/suite/ts/pass/4750260fe5b1ae88.ts
@@ -2315,6 +2354,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/48e49630cbdb9b40.ts
 ✓ test/parser/suite/ts/pass/48eb3c8e9a93319e.ts
 ✓ test/parser/suite/ts/pass/48f8551f71118aeb.ts
+✓ test/parser/suite/ts/pass/48f9773ddb8b6f7c.ts
 ✓ test/parser/suite/ts/pass/49083ca0231f3850.module.ts
 ✓ test/parser/suite/ts/pass/491844c2ee3d81b3.ts
 ✓ test/parser/suite/ts/pass/491abf12f068b4fa.ts
@@ -2374,6 +2414,8 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/4ab05ea5058f811a.ts
 ✓ test/parser/suite/ts/pass/4ab12d786b12d14c.ts
 ✓ test/parser/suite/ts/pass/4ac38f5fc4875018.ts
+✓ test/parser/suite/ts/pass/4af32dc2c9d9e456.ts
+✓ test/parser/suite/ts/pass/4af896b3a1ccef36.ts
 ✓ test/parser/suite/ts/pass/4b0ca2fb8f2c7387.module.tsx
 ✓ test/parser/suite/ts/pass/4b1161892d618e24.ts
 ✓ test/parser/suite/ts/pass/4b148749e0f3b80f.ts
@@ -2407,6 +2449,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/4bfdd55fd302a18b.ts
 ✓ test/parser/suite/ts/pass/4c0536799efeda51.ts
 ✓ test/parser/suite/ts/pass/4c07ad2bb691a076.ts
+✓ test/parser/suite/ts/pass/4c16e6d1f4c0fef8.module.ts
 ✓ test/parser/suite/ts/pass/4c22e5c692f18594.ts
 ✓ test/parser/suite/ts/pass/4c2557c5eb111a93.ts
 ✓ test/parser/suite/ts/pass/4c25e01d12f072da.ts
@@ -2461,6 +2504,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/4df210801a0d6fff.ts
 ✓ test/parser/suite/ts/pass/4df5fb01a0418afe.module.ts
 ✓ test/parser/suite/ts/pass/4df7781cb809baf5.module.ts
+✓ test/parser/suite/ts/pass/4dfad4ba4ec8fe27.ts
 ✓ test/parser/suite/ts/pass/4dfe025a7a67ced6.ts
 ✓ test/parser/suite/ts/pass/4dfe36cd8bd849d4.ts
 ✓ test/parser/suite/ts/pass/4e04119e3e851e68.ts
@@ -2495,6 +2539,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/4ed25e2bf34ba6f4.ts
 ✓ test/parser/suite/ts/pass/4ed66b965b454f89.module.ts
 ✓ test/parser/suite/ts/pass/4edae9fc304ef68c.ts
+✓ test/parser/suite/ts/pass/4ee64abe9dd2fac1.ts
 ✓ test/parser/suite/ts/pass/4ee7560ba1ea0f5a.ts
 ✓ test/parser/suite/ts/pass/4ee8cfadb20922fb.ts
 ✓ test/parser/suite/ts/pass/4eec602bffa7a271.ts
@@ -2599,6 +2644,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/51a881d4f0aa37ee.module.ts
 ✓ test/parser/suite/ts/pass/51af390b5d64c228.ts
 ✓ test/parser/suite/ts/pass/51bc75bc49c750c7.ts
+✓ test/parser/suite/ts/pass/51bcf84b89363bc3.ts
 ✓ test/parser/suite/ts/pass/51cea12c57f593e8.ts
 ✓ test/parser/suite/ts/pass/51da5b7b2d920c69.ts
 ✓ test/parser/suite/ts/pass/51f413ee6e123a7d.ts
@@ -2692,7 +2738,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/54f522305e173d27.ts
 ✓ test/parser/suite/ts/pass/550639589f085c3f.ts
 ✓ test/parser/suite/ts/pass/550c18ac5729f47d.ts
-✓ test/parser/suite/ts/pass/5519c7c44c16229e.ts
+✓ test/parser/suite/ts/pass/5519c7c44c16229e.d.ts
 ✓ test/parser/suite/ts/pass/551bdee086b062aa.ts
 ✓ test/parser/suite/ts/pass/551cd1d42be4e241.ts
 ✓ test/parser/suite/ts/pass/5524d6826cbc5f9f.ts
@@ -2815,6 +2861,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/58812738e2de4b61.ts
 ✓ test/parser/suite/ts/pass/58852f13ec17eaf5.ts
 ✓ test/parser/suite/ts/pass/588915d0b0664cd7.ts
+✓ test/parser/suite/ts/pass/588f0843272bcda6.module.ts
 ✓ test/parser/suite/ts/pass/5894e97b0bda2066.ts
 ✓ test/parser/suite/ts/pass/58a671d8eb5f77e3.ts
 ✓ test/parser/suite/ts/pass/58a776eca3ec96ca.ts
@@ -2823,6 +2870,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/58c20387c1c6cb08.ts
 ✓ test/parser/suite/ts/pass/58d6ae53d33ac379.module.ts
 ✓ test/parser/suite/ts/pass/58e3251cb68c971a.ts
+✓ test/parser/suite/ts/pass/58e44b27a684e08a.ts
 ✓ test/parser/suite/ts/pass/58ee1b056561e4c4.module.ts
 ✓ test/parser/suite/ts/pass/58f6c6814d029c75.ts
 ✓ test/parser/suite/ts/pass/58f7d0b742d81a18.ts
@@ -2845,7 +2893,8 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/59aca295ed409f51.ts
 ✓ test/parser/suite/ts/pass/59afc69fa63dbbb7.ts
 ✓ test/parser/suite/ts/pass/59bcdc9a229ef096.module.ts
-✓ test/parser/suite/ts/pass/59be50c626e815e3.ts
+✓ test/parser/suite/ts/pass/59be50c626e815e3.d.ts
+✓ test/parser/suite/ts/pass/59ca0212ff93ab05.ts
 ✓ test/parser/suite/ts/pass/59d9b92720571e7d.ts
 ✓ test/parser/suite/ts/pass/59e3e57bee6d7b82.ts
 ✓ test/parser/suite/ts/pass/59e4c07b7a94b887.ts
@@ -2866,6 +2915,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/5a9dfc29f3084584.ts
 ✓ test/parser/suite/ts/pass/5aa19aef1fb64e43.ts
 ✓ test/parser/suite/ts/pass/5aa6f509f09054ba.ts
+✓ test/parser/suite/ts/pass/5aa9d258f45d0d3f.ts
 ✓ test/parser/suite/ts/pass/5aab0032135c9e5a.ts
 ✓ test/parser/suite/ts/pass/5ab8d50da40f5fa3.module.ts
 ✓ test/parser/suite/ts/pass/5acaaef0bd85f8af.ts
@@ -2880,6 +2930,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/5b00033d5d40c615.ts
 ✓ test/parser/suite/ts/pass/5b076ebbb057a2fb.ts
 ✓ test/parser/suite/ts/pass/5b0770b10f0dd7de.ts
+✓ test/parser/suite/ts/pass/5b0b8d61d0c2fd73.ts
 ✓ test/parser/suite/ts/pass/5b117a3a906a6f4c.ts
 ✓ test/parser/suite/ts/pass/5b1989cc85029f80.ts
 ✓ test/parser/suite/ts/pass/5b1c4d7f0c6b682c.ts
@@ -2907,11 +2958,13 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/5bdda89aa24d75b9.ts
 ✓ test/parser/suite/ts/pass/5be5f80591249e06.ts
 ✓ test/parser/suite/ts/pass/5be7d73a834513b2.ts
-✓ test/parser/suite/ts/pass/5bf5490efce7e1b9.ts
-✓ test/parser/suite/ts/pass/5bf5a56d4a249097.ts
+✓ test/parser/suite/ts/pass/5bf5490efce7e1b9.d.ts
+✓ test/parser/suite/ts/pass/5bf5a56d4a249097.d.ts
 ✓ test/parser/suite/ts/pass/5bf6d9878e064ece.ts
 ✓ test/parser/suite/ts/pass/5bfa924554402b4a.ts
+✓ test/parser/suite/ts/pass/5c06916529309429.ts
 ✓ test/parser/suite/ts/pass/5c07fbec166a95c5.ts
+✓ test/parser/suite/ts/pass/5c146bce29db27eb.ts
 ✓ test/parser/suite/ts/pass/5c1788645c3a78d6.ts
 ✓ test/parser/suite/ts/pass/5c22bd1fbf89f3da.tsx
 ✓ test/parser/suite/ts/pass/5c26d6f77d05655a.ts
@@ -2927,6 +2980,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/5c6d6e3fe1282e48.ts
 ✓ test/parser/suite/ts/pass/5c7324f2d360a5b7.ts
 ✓ test/parser/suite/ts/pass/5c747ccab2ed0e3e.ts
+✓ test/parser/suite/ts/pass/5c75b78536bdf32d.ts
 ✓ test/parser/suite/ts/pass/5c8806ca2a3566a4.ts
 ✓ test/parser/suite/ts/pass/5c8e613f4dc3c3c0.ts
 ✓ test/parser/suite/ts/pass/5c971b8f17d3128d.ts
@@ -2963,6 +3017,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/5d6d87ee0ddc41a4.ts
 ✓ test/parser/suite/ts/pass/5d7d8a597d40d365.ts
 ✓ test/parser/suite/ts/pass/5d7ee29c44e1618c.ts
+✓ test/parser/suite/ts/pass/5d89e8cb05cb7867.ts
 ✓ test/parser/suite/ts/pass/5d8c808f7b21d6f4.ts
 ✓ test/parser/suite/ts/pass/5d9513fcbbd5c05f.ts
 ✓ test/parser/suite/ts/pass/5d9dfb5070d3f9d1.ts
@@ -2991,6 +3046,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/5e5f776dd23eccde.ts
 ✓ test/parser/suite/ts/pass/5e6b6e7057801c19.ts
 ✓ test/parser/suite/ts/pass/5e6d770098824f13.ts
+✓ test/parser/suite/ts/pass/5e7017d0f8287bb4.ts
 ✓ test/parser/suite/ts/pass/5e74c4dd6d52650b.ts
 ✓ test/parser/suite/ts/pass/5e7d8104f592d0eb.ts
 ✓ test/parser/suite/ts/pass/5e837a1a594486ce.ts
@@ -3053,6 +3109,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/6036f7fdefa93a69.ts
 ✓ test/parser/suite/ts/pass/6043fe48cdc19bde.ts
 ✓ test/parser/suite/ts/pass/6045233c164d70c3.ts
+✓ test/parser/suite/ts/pass/60465fed47c52423.ts
 ✓ test/parser/suite/ts/pass/605139337a89ab2b.ts
 ✓ test/parser/suite/ts/pass/60530f5ceeac8c33.ts
 ✓ test/parser/suite/ts/pass/605a62c6e1e77b8a.ts
@@ -3063,6 +3120,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/60b7424b9eec0ec1.ts
 ✓ test/parser/suite/ts/pass/60b7fe545bc0049c.ts
 ✓ test/parser/suite/ts/pass/60c3260578d0da89.ts
+✓ test/parser/suite/ts/pass/60cc4774eb9b0604.ts
 ✓ test/parser/suite/ts/pass/60cf5b81ae703611.ts
 ✓ test/parser/suite/ts/pass/60d142e15d29a3ce.ts
 ✓ test/parser/suite/ts/pass/60d2a072c2cdf0c6.ts
@@ -3102,11 +3160,12 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/61ec44abe3765b31.ts
 ✓ test/parser/suite/ts/pass/61ed84a2e3dc826b.ts
 ✓ test/parser/suite/ts/pass/61ef87bff4e5d426.ts
+✓ test/parser/suite/ts/pass/61f3dc6e5d3e7e8d.ts
 ✓ test/parser/suite/ts/pass/61fa2a02dff0f1e5.ts
 ✓ test/parser/suite/ts/pass/620a054dfc99b104.ts
 ✓ test/parser/suite/ts/pass/6216f45450590603.ts
 ✓ test/parser/suite/ts/pass/621b8c2d8e9ceebb.ts
-✓ test/parser/suite/ts/pass/62267e16ee53a0ef.ts
+✓ test/parser/suite/ts/pass/62267e16ee53a0ef.d.ts
 ✓ test/parser/suite/ts/pass/62268ccfa897914b.ts
 ✓ test/parser/suite/ts/pass/622b73e971f37674.ts
 ✓ test/parser/suite/ts/pass/6234be035f094639.ts
@@ -3116,6 +3175,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/628371cb70c4a228.module.ts
 ✓ test/parser/suite/ts/pass/62843d469e4438dc.ts
 ✓ test/parser/suite/ts/pass/6287b2baf2fc2d8c.ts
+✓ test/parser/suite/ts/pass/628a054457154b44.ts
 ✓ test/parser/suite/ts/pass/628a693b838f2080.ts
 ✓ test/parser/suite/ts/pass/628c3ba4f0efd025.ts
 ✓ test/parser/suite/ts/pass/628fe7d176c0f82f.ts
@@ -3166,6 +3226,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/641e67698a911839.ts
 ✓ test/parser/suite/ts/pass/642d679b8c62b71b.ts
 ✓ test/parser/suite/ts/pass/64342b5471feebc2.ts
+✓ test/parser/suite/ts/pass/6435e0ac3f4d3dfe.ts
 ✓ test/parser/suite/ts/pass/6436538daec7a2c6.ts
 ✓ test/parser/suite/ts/pass/643935a068b9aff3.ts
 ✓ test/parser/suite/ts/pass/643ae8e8ccdeb069.ts
@@ -3189,6 +3250,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/64bcaa60337e60ef.ts
 ✓ test/parser/suite/ts/pass/64c3520900e57778.module.ts
 ✓ test/parser/suite/ts/pass/64c47479bec0a76e.ts
+✓ test/parser/suite/ts/pass/64cfa2fba515a2b5.ts
 ✓ test/parser/suite/ts/pass/64e2d6df66b02a21.ts
 ✓ test/parser/suite/ts/pass/64e4dcaee86500a4.ts
 ✓ test/parser/suite/ts/pass/64e9d973a59f15d2.ts
@@ -3246,6 +3308,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/66e1596681243083.ts
 ✓ test/parser/suite/ts/pass/66eb0635bbe5e257.ts
 ✓ test/parser/suite/ts/pass/66ed12d7ed768ff0.ts
+✓ test/parser/suite/ts/pass/66f315f875491949.ts
 ✓ test/parser/suite/ts/pass/66f4645a9c320740.module.ts
 ✓ test/parser/suite/ts/pass/66f60e4aaf92cb79.ts
 ✓ test/parser/suite/ts/pass/66fdda54338e1def.module.ts
@@ -3289,7 +3352,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/6826b3596d09fc33.ts
 ✓ test/parser/suite/ts/pass/6827b5feab7a38c2.ts
 ✓ test/parser/suite/ts/pass/6833f4f80d668603.ts
-✓ test/parser/suite/ts/pass/683d1ffb7e4c80d3.ts
+✓ test/parser/suite/ts/pass/683d1ffb7e4c80d3.d.ts
 ✓ test/parser/suite/ts/pass/684bf837b8509109.module.ts
 ✓ test/parser/suite/ts/pass/6855a4febc59b274.ts
 ✓ test/parser/suite/ts/pass/685856ae70e7c310.ts
@@ -3381,6 +3444,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/6b1815805e8097b7.ts
 ✓ test/parser/suite/ts/pass/6b18247470c06dd4.ts
 ✓ test/parser/suite/ts/pass/6b2803df933305dc.ts
+✓ test/parser/suite/ts/pass/6b2d05dc236073ce.ts
 ✓ test/parser/suite/ts/pass/6b3c8ba9012dd5f4.module.ts
 ✓ test/parser/suite/ts/pass/6b44dde314117a8b.ts
 ✓ test/parser/suite/ts/pass/6b4b9fe4f528af6b.ts
@@ -3400,6 +3464,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/6bc7444768227688.module.tsx
 ✓ test/parser/suite/ts/pass/6bc84ceaf1bdac6e.module.ts
 ✓ test/parser/suite/ts/pass/6bc9e36d1ad07ce4.ts
+✓ test/parser/suite/ts/pass/6bd7e0bc469afc77.ts
 ✓ test/parser/suite/ts/pass/6be6063515de74b9.ts
 ✓ test/parser/suite/ts/pass/6be83cf45de83ff2.ts
 ✓ test/parser/suite/ts/pass/6bfcfecedda536e9.ts
@@ -3418,6 +3483,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/6c52386d9d3cfdd1.ts
 ✓ test/parser/suite/ts/pass/6c61fa90bc51b0c2.ts
 ✓ test/parser/suite/ts/pass/6c667e186e31184c.module.ts
+✓ test/parser/suite/ts/pass/6c7390324de0828c.ts
 ✓ test/parser/suite/ts/pass/6c810611ca60c946.ts
 ✓ test/parser/suite/ts/pass/6c88f7cffde90a18.ts
 ✓ test/parser/suite/ts/pass/6c9176f53d013ccd.ts
@@ -3505,6 +3571,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/6efb5548dea9864c.ts
 ✓ test/parser/suite/ts/pass/6efeb17444acfa45.ts
 ✓ test/parser/suite/ts/pass/6f0109f089fa2af6.ts
+✓ test/parser/suite/ts/pass/6f0ecf328237fc62.ts
 ✓ test/parser/suite/ts/pass/6f28e848a6cad0e8.ts
 ✓ test/parser/suite/ts/pass/6f2d99d414548b03.ts
 ✓ test/parser/suite/ts/pass/6f54cb35d9fb8d05.ts
@@ -3582,7 +3649,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/7123ef73dca289e0.ts
 ✓ test/parser/suite/ts/pass/7124b5c970d9a870.ts
 ✓ test/parser/suite/ts/pass/7151c55b741e8624.ts
-✓ test/parser/suite/ts/pass/71529180f73222bb.ts
+✓ test/parser/suite/ts/pass/71529180f73222bb.d.ts
 ✓ test/parser/suite/ts/pass/7155cac4ad6f46a2.ts
 ✓ test/parser/suite/ts/pass/7158bdad21ff9b6f.module.ts
 ✓ test/parser/suite/ts/pass/715db718bb22ebdc.ts
@@ -3786,6 +3853,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/7726d6a8c3c2506b.ts
 ✓ test/parser/suite/ts/pass/772883875ab04e02.ts
 ✓ test/parser/suite/ts/pass/7730eef5b6f594bf.ts
+✓ test/parser/suite/ts/pass/773262ce83cc73a3.ts
 ✓ test/parser/suite/ts/pass/773b4131315c4bd3.ts
 ✓ test/parser/suite/ts/pass/77407685bf816494.ts
 ✓ test/parser/suite/ts/pass/77437781be2005e2.ts
@@ -3795,6 +3863,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/7751c1cb950052e6.ts
 ✓ test/parser/suite/ts/pass/775581f7e385757c.ts
 ✓ test/parser/suite/ts/pass/7757cf0d49468937.ts
+✓ test/parser/suite/ts/pass/7758ddaa719bf926.ts
 ✓ test/parser/suite/ts/pass/775dd8530bd861fb.ts
 ✓ test/parser/suite/ts/pass/7760fc7c795bfa70.ts
 ✓ test/parser/suite/ts/pass/7762f5496f7babcf.ts
@@ -3901,8 +3970,10 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/7a526a723212f419.ts
 ✓ test/parser/suite/ts/pass/7a54e4397006aa85.ts
 ✓ test/parser/suite/ts/pass/7a6c9d426b32a4ff.ts
+✓ test/parser/suite/ts/pass/7a730e9a67103577.module.ts
 ✓ test/parser/suite/ts/pass/7a7d3cd9a9b96247.ts
 ✓ test/parser/suite/ts/pass/7a80b21ac52ddee6.ts
+✓ test/parser/suite/ts/pass/7a8449abb30fc454.ts
 ✓ test/parser/suite/ts/pass/7a91ecc75cfa458f.ts
 ✓ test/parser/suite/ts/pass/7a923329bbc1637f.ts
 ✓ test/parser/suite/ts/pass/7a95c4f80137e895.module.ts
@@ -3937,6 +4008,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/7b355389846c42ad.ts
 ✓ test/parser/suite/ts/pass/7b4ec9c907d434fa.ts
 ✓ test/parser/suite/ts/pass/7b4f7ed0cc7034b4.ts
+✓ test/parser/suite/ts/pass/7b55106f247e1e3b.module.ts
 ✓ test/parser/suite/ts/pass/7b599904e5062198.ts
 ✓ test/parser/suite/ts/pass/7b7cf8a9a641098e.module.ts
 ✓ test/parser/suite/ts/pass/7b7f7f752217fe8c.ts
@@ -4139,6 +4211,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8184cdac6ebbb56e.ts
 ✓ test/parser/suite/ts/pass/818d186fa937dfad.ts
 ✓ test/parser/suite/ts/pass/81a0136756d097e3.ts
+✓ test/parser/suite/ts/pass/81a7fe7f5d05d3ef.ts
 ✓ test/parser/suite/ts/pass/81a8088a15024fc9.ts
 ✓ test/parser/suite/ts/pass/81b22f2e088ec46f.ts
 ✓ test/parser/suite/ts/pass/81bbecfe0f1b5e1d.ts
@@ -4160,7 +4233,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8265bf79b9f29ab8.ts
 ✓ test/parser/suite/ts/pass/826aa4e88b709f88.ts
 ✓ test/parser/suite/ts/pass/826ba5a803798969.ts
-✓ test/parser/suite/ts/pass/8272241a817496ac.ts
+✓ test/parser/suite/ts/pass/8272241a817496ac.d.ts
 ✓ test/parser/suite/ts/pass/829219fcef156a36.ts
 ✓ test/parser/suite/ts/pass/8294a267e70943da.ts
 ✓ test/parser/suite/ts/pass/829b40ee9f253c5e.ts
@@ -4178,6 +4251,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/82d0bbb4605d7cd7.ts
 ✓ test/parser/suite/ts/pass/82d6ae29928b4571.ts
 ✓ test/parser/suite/ts/pass/82f1aad6b2e541d2.ts
+✓ test/parser/suite/ts/pass/82fcab40451e3ee8.ts
 ✓ test/parser/suite/ts/pass/8301739a9f818808.ts
 ✓ test/parser/suite/ts/pass/8326b0782bd7f551.ts
 ✓ test/parser/suite/ts/pass/8328f37774b1cac9.ts
@@ -4215,7 +4289,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8465fd28618a2a02.module.ts
 ✓ test/parser/suite/ts/pass/8466da3563d8d0b9.ts
 ✓ test/parser/suite/ts/pass/8469223d6cbe3357.ts
-✓ test/parser/suite/ts/pass/846c50f40ce456a9.ts
+✓ test/parser/suite/ts/pass/846c50f40ce456a9.d.ts
 ✓ test/parser/suite/ts/pass/84713f0728765c92.ts
 ✓ test/parser/suite/ts/pass/84738531fb564681.ts
 ✓ test/parser/suite/ts/pass/848309796df799ee.ts
@@ -4269,8 +4343,9 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/85ea816e769ec261.ts
 ✓ test/parser/suite/ts/pass/85ec7c0196e28d5c.ts
 ✓ test/parser/suite/ts/pass/85ee0edebb024405.ts
+✓ test/parser/suite/ts/pass/85fdded4ad8a5f7e.ts
 ✓ test/parser/suite/ts/pass/85ff8a2aaec1ed17.ts
-✓ test/parser/suite/ts/pass/861a9af564676d5d.ts
+✓ test/parser/suite/ts/pass/861a9af564676d5d.d.ts
 ✓ test/parser/suite/ts/pass/862b09a39eba072f.ts
 ✓ test/parser/suite/ts/pass/862d983758efd1fd.ts
 ✓ test/parser/suite/ts/pass/862ea37a7500a130.ts
@@ -4290,6 +4365,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/86b8c36f2e9f0d96.ts
 ✓ test/parser/suite/ts/pass/86bb7b2e3ad3664e.ts
 ✓ test/parser/suite/ts/pass/86bfbd68b6ccc7eb.ts
+✓ test/parser/suite/ts/pass/86c550bf657cd3b9.ts
 ✓ test/parser/suite/ts/pass/86d220be3f677d2f.ts
 ✓ test/parser/suite/ts/pass/86ed9692c825a5ba.ts
 ✓ test/parser/suite/ts/pass/86efc03aed8d3ff8.module.ts
@@ -4366,6 +4442,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/88f0a58d293ca72a.ts
 ✓ test/parser/suite/ts/pass/88f6b4698dcbd984.module.ts
 ✓ test/parser/suite/ts/pass/88f8f9fd95e78aa4.ts
+✓ test/parser/suite/ts/pass/88fb41e1acf2f212.ts
 ✓ test/parser/suite/ts/pass/88fd8b895939e99a.ts
 ✓ test/parser/suite/ts/pass/89021a0f3aa35be4.ts
 ✓ test/parser/suite/ts/pass/890d75b7d4d0b8cd.ts
@@ -4391,7 +4468,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8a1379c04cbccaa9.ts
 ✓ test/parser/suite/ts/pass/8a139f973325f3f0.ts
 ✓ test/parser/suite/ts/pass/8a156f8bec20a2b6.ts
-✓ test/parser/suite/ts/pass/8a1f12271944ab8e.ts
+✓ test/parser/suite/ts/pass/8a1f12271944ab8e.d.ts
 ✓ test/parser/suite/ts/pass/8a2827dee8af36c5.module.ts
 ✓ test/parser/suite/ts/pass/8a2ba71192d906f8.ts
 ✓ test/parser/suite/ts/pass/8a3c498d8b096f3b.ts
@@ -4434,6 +4511,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
 ✓ test/parser/suite/ts/pass/8b0853d37670ce97.ts
 ✓ test/parser/suite/ts/pass/8b1a5cb409bcab36.ts
+✓ test/parser/suite/ts/pass/8b1b056e5080ea58.module.ts
 ✓ test/parser/suite/ts/pass/8b1d4c35e3486c5f.ts
 ✓ test/parser/suite/ts/pass/8b22f2f7eba146ed.ts
 ✓ test/parser/suite/ts/pass/8b24d087a2bec07a.ts
@@ -4567,6 +4645,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8f1385ea2a5b0c6e.ts
 ✓ test/parser/suite/ts/pass/8f1726c7ae4cf920.ts
 ✓ test/parser/suite/ts/pass/8f1cad1b2106f9e8.ts
+✓ test/parser/suite/ts/pass/8f1dd7244044e7e0.ts
 ✓ test/parser/suite/ts/pass/8f1f1a31bea24edc.ts
 ✓ test/parser/suite/ts/pass/8f1f1e9c27dfbce2.module.ts
 ✓ test/parser/suite/ts/pass/8f1fd5bd1c70f4b3.ts
@@ -4586,6 +4665,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/8f772e0a3fc52727.module.ts
 ✓ test/parser/suite/ts/pass/8f85b411268665c6.ts
 ✓ test/parser/suite/ts/pass/8f912f9e5326a7a6.module.ts
+✓ test/parser/suite/ts/pass/8f933b4a3d7431ab.ts
 ✓ test/parser/suite/ts/pass/8f98fe5bf13b7281.module.tsx
 ✓ test/parser/suite/ts/pass/8fc277199bec892d.module.ts
 ✓ test/parser/suite/ts/pass/8fca7b5958cf25fd.ts
@@ -4603,6 +4683,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/901491f2c32a1866.tsx
 ✓ test/parser/suite/ts/pass/90164d7ba76554f8.ts
 ✓ test/parser/suite/ts/pass/901817a223d97f86.ts
+✓ test/parser/suite/ts/pass/902b0e50a22e5e01.ts
 ✓ test/parser/suite/ts/pass/903cc4739f4bb932.ts
 ✓ test/parser/suite/ts/pass/90422614e2357cac.ts
 ✓ test/parser/suite/ts/pass/9045f7b7f8bb7dce.module.tsx
@@ -4716,6 +4797,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/946f0bba3a247276.ts
 ✓ test/parser/suite/ts/pass/94735f9336db5620.ts
 ✓ test/parser/suite/ts/pass/9475695a7899f31f.ts
+✓ test/parser/suite/ts/pass/947978c041efa5b3.module.ts
 ✓ test/parser/suite/ts/pass/94821781a9b9574e.ts
 ✓ test/parser/suite/ts/pass/9486f24b8805d90c.ts
 ✓ test/parser/suite/ts/pass/94896f5822036405.module.ts
@@ -4728,6 +4810,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/94b2e7c59d9d8172.ts
 ✓ test/parser/suite/ts/pass/94b38b819f884606.ts
 ✓ test/parser/suite/ts/pass/94c47d4e890dbc6c.ts
+✓ test/parser/suite/ts/pass/94d2bec4cada0314.ts
 ✓ test/parser/suite/ts/pass/94e2df39e76385f3.ts
 ✓ test/parser/suite/ts/pass/94f26eb6e5f85869.ts
 ✓ test/parser/suite/ts/pass/94feb1dd3ece5769.ts
@@ -4884,6 +4967,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/994dec62acd4a693.ts
 ✓ test/parser/suite/ts/pass/99562d88ab5b408c.ts
 ✓ test/parser/suite/ts/pass/99582800717d1f13.ts
+✓ test/parser/suite/ts/pass/995ec2fb4e1c410f.ts
 ✓ test/parser/suite/ts/pass/9963b03a19f76e78.ts
 ✓ test/parser/suite/ts/pass/9969f4fa2b470e27.ts
 ✓ test/parser/suite/ts/pass/99721f2b4414b381.ts
@@ -4895,6 +4979,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/998fc985242e9645.ts
 ✓ test/parser/suite/ts/pass/99ad8a642159d0a7.ts
 ✓ test/parser/suite/ts/pass/99af753b5ea8edf3.ts
+✓ test/parser/suite/ts/pass/99b6164509b31290.ts
 ✓ test/parser/suite/ts/pass/99c092d90c7c26f7.ts
 ✓ test/parser/suite/ts/pass/99c538d3e978b24c.ts
 ✓ test/parser/suite/ts/pass/99c952c91829b233.ts
@@ -4941,9 +5026,10 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/9b57fac0435dc537.ts
 ✓ test/parser/suite/ts/pass/9b673e77bf5bb42d.ts
 ✓ test/parser/suite/ts/pass/9b7bae18b3f5588e.module.ts
+✓ test/parser/suite/ts/pass/9b7c5b6be4ae1b34.ts
 ✓ test/parser/suite/ts/pass/9b7e4ab96447ff15.ts
 ✓ test/parser/suite/ts/pass/9b8883429a1b7664.ts
-✓ test/parser/suite/ts/pass/9b8c9fe7e896ec3f.ts
+✓ test/parser/suite/ts/pass/9b8c9fe7e896ec3f.d.ts
 ✓ test/parser/suite/ts/pass/9b8df69d51213b24.ts
 ✓ test/parser/suite/ts/pass/9ba219868ca5aa4f.ts
 ✓ test/parser/suite/ts/pass/9ba6a437ef1ecaf8.ts
@@ -4973,7 +5059,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/9c3a1169b9a21dd6.ts
 ✓ test/parser/suite/ts/pass/9c3bc73a560092ab.module.ts
 ✓ test/parser/suite/ts/pass/9c414f7a1ae45d35.ts
-✓ test/parser/suite/ts/pass/9c4f8d4a90266155.ts
+✓ test/parser/suite/ts/pass/9c4f8d4a90266155.d.ts
 ✓ test/parser/suite/ts/pass/9c4fe93675dca5e4.ts
 ✓ test/parser/suite/ts/pass/9c521a6a3ad45c70.ts
 ✓ test/parser/suite/ts/pass/9c56dc4333487cc7.ts
@@ -4990,6 +5076,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/9cbf6243f712bea0.ts
 ✓ test/parser/suite/ts/pass/9ccf6342fa8a0dac.module.ts
 ✓ test/parser/suite/ts/pass/9cd05acd0d0bd74e.ts
+✓ test/parser/suite/ts/pass/9ce1ba3905152d82.ts
 ✓ test/parser/suite/ts/pass/9d0035b97465df02.ts
 ✓ test/parser/suite/ts/pass/9d31f63823f43f2d.ts
 ✓ test/parser/suite/ts/pass/9d3ec2350eb9a97e.ts
@@ -5023,6 +5110,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/9dfce601af34878c.ts
 ✓ test/parser/suite/ts/pass/9e00cc0579eed7b2.ts
 ✓ test/parser/suite/ts/pass/9e1f3d202908651f.ts
+✓ test/parser/suite/ts/pass/9e26c9e8d29b03de.ts
 ✓ test/parser/suite/ts/pass/9e2d28de257d32ea.ts
 ✓ test/parser/suite/ts/pass/9e2e00727cc49826.ts
 ✓ test/parser/suite/ts/pass/9e2f1528d16c95ed.ts
@@ -5059,6 +5147,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/9f0b88539b62782d.ts
 ✓ test/parser/suite/ts/pass/9f109b152ba2363c.ts
 ✓ test/parser/suite/ts/pass/9f14e8253e45a07b.ts
+✓ test/parser/suite/ts/pass/9f1b583e9f3a0b6e.ts
 ✓ test/parser/suite/ts/pass/9f2501df94dead93.ts
 ✓ test/parser/suite/ts/pass/9f2bce562f0bedd5.ts
 ✓ test/parser/suite/ts/pass/9f2d847ddd0fff7f.ts
@@ -5118,6 +5207,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a0e40f572c68b088.ts
 ✓ test/parser/suite/ts/pass/a0e8bbdc36fa1dfb.ts
 ✓ test/parser/suite/ts/pass/a0efa4a748f5460e.ts
+✓ test/parser/suite/ts/pass/a0fbdf0616561b1f.ts
 ✓ test/parser/suite/ts/pass/a0ff64baeb0dc967.ts
 ✓ test/parser/suite/ts/pass/a0ff824483fa335a.ts
 ✓ test/parser/suite/ts/pass/a10fe88c3bcfd023.module.ts
@@ -5152,6 +5242,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a20a305ebe83a7e1.ts
 ✓ test/parser/suite/ts/pass/a2105a902a6f1430.ts
 ✓ test/parser/suite/ts/pass/a21894a883e3037a.ts
+✓ test/parser/suite/ts/pass/a21bf1a103ee3aac.ts
 ✓ test/parser/suite/ts/pass/a21c47cb9bf84d65.ts
 ✓ test/parser/suite/ts/pass/a2203cbf334c1d96.ts
 ✓ test/parser/suite/ts/pass/a2244dd74d8414f0.ts
@@ -5258,11 +5349,11 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a57a56dbb9c708cd.ts
 ✓ test/parser/suite/ts/pass/a58b099d85149235.ts
 ✓ test/parser/suite/ts/pass/a5953965808f7c6c.ts
-✓ test/parser/suite/ts/pass/a5a8efa037b926aa.ts
 ✓ test/parser/suite/ts/pass/a5af197de99af2d8.ts
 ✓ test/parser/suite/ts/pass/a5b6489cbc01f12b.ts
 ✓ test/parser/suite/ts/pass/a5bbee33debc7d9d.ts
 ✓ test/parser/suite/ts/pass/a5cde727c4d276bf.ts
+✓ test/parser/suite/ts/pass/a5da3379abb603cb.ts
 ✓ test/parser/suite/ts/pass/a5dd1fdc5a3c168d.ts
 ✓ test/parser/suite/ts/pass/a5e6f8103948caa4.tsx
 ✓ test/parser/suite/ts/pass/a5ec5a3330dbf2cb.ts
@@ -5276,6 +5367,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a631ff86af8e5bcb.module.ts
 ✓ test/parser/suite/ts/pass/a634b94b1833ec64.ts
 ✓ test/parser/suite/ts/pass/a63e0feb4cb6274c.ts
+✓ test/parser/suite/ts/pass/a6414c816df510dc.ts
 ✓ test/parser/suite/ts/pass/a650c295ffb62e7b.ts
 ✓ test/parser/suite/ts/pass/a651494cf82bc0df.ts
 ✓ test/parser/suite/ts/pass/a6519178024969d7.ts
@@ -5313,6 +5405,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a798aa93de7fcdbd.ts
 ✓ test/parser/suite/ts/pass/a79dd24549fb0457.ts
 ✓ test/parser/suite/ts/pass/a7a01453a8cdf7e6.ts
+✓ test/parser/suite/ts/pass/a7a1ff1221af0bc4.ts
 ✓ test/parser/suite/ts/pass/a7b094cc11590ddf.ts
 ✓ test/parser/suite/ts/pass/a7b198e291337463.ts
 ✓ test/parser/suite/ts/pass/a7b4bfef33c44d96.ts
@@ -5325,6 +5418,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a80ec8f27d5984b8.ts
 ✓ test/parser/suite/ts/pass/a8186835d5aeba45.ts
 ✓ test/parser/suite/ts/pass/a818ec70c31add4e.module.ts
+✓ test/parser/suite/ts/pass/a81cfbc1c9405b6b.ts
 ✓ test/parser/suite/ts/pass/a81df84126be03ac.ts
 ✓ test/parser/suite/ts/pass/a81f7826404a5014.ts
 ✓ test/parser/suite/ts/pass/a83794b3a463388f.ts
@@ -5372,6 +5466,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/a964964b6f53aa59.module.ts
 ✓ test/parser/suite/ts/pass/a965ea329d2b4d7a.ts
 ✓ test/parser/suite/ts/pass/a96911d798260685.ts
+✓ test/parser/suite/ts/pass/a96dbca1185b63ff.ts
 ✓ test/parser/suite/ts/pass/a97450a63e171e7f.ts
 ✓ test/parser/suite/ts/pass/a98220084d38b299.ts
 ✓ test/parser/suite/ts/pass/a9848db412b47ed3.ts
@@ -5405,6 +5500,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/aa5e535ba84043f1.ts
 ✓ test/parser/suite/ts/pass/aa62e260dcf925d8.module.tsx
 ✓ test/parser/suite/ts/pass/aa66cff1930889d8.ts
+✓ test/parser/suite/ts/pass/aa67dd6adace70be.ts
 ✓ test/parser/suite/ts/pass/aa6805ceb3af911c.ts
 ✓ test/parser/suite/ts/pass/aa762a42c39a4500.ts
 ✓ test/parser/suite/ts/pass/aa76e9937d5d60e1.ts
@@ -5522,9 +5618,11 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/ae7cc042ffc1fa70.module.ts
 ✓ test/parser/suite/ts/pass/ae84fe678e58d57a.ts
 ✓ test/parser/suite/ts/pass/ae8cc0d4df0b618f.module.ts
+✓ test/parser/suite/ts/pass/ae8ddb9583403a67.module.ts
 ✓ test/parser/suite/ts/pass/ae8ec6e991791660.ts
 ✓ test/parser/suite/ts/pass/ae90a7eea834ccbc.ts
 ✓ test/parser/suite/ts/pass/aeb5d396fa1f9dca.ts
+✓ test/parser/suite/ts/pass/aeb9064d1221628a.ts
 ✓ test/parser/suite/ts/pass/aed4b51c6c5cff37.ts
 ✓ test/parser/suite/ts/pass/aeecc2cae933fedb.ts
 ✓ test/parser/suite/ts/pass/aef46a1a1215fb98.ts
@@ -5571,6 +5669,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/b091d6ebbd0dc9bc.ts
 ✓ test/parser/suite/ts/pass/b094c35e0d1159d6.ts
 ✓ test/parser/suite/ts/pass/b09b85d63de2414f.ts
+✓ test/parser/suite/ts/pass/b0a40fde7fb0c9d1.module.ts
 ✓ test/parser/suite/ts/pass/b0a4e1ba9fa614bb.module.ts
 ✓ test/parser/suite/ts/pass/b0a8c2f2e996f5cb.ts
 ✓ test/parser/suite/ts/pass/b0b4d13140dd27d3.module.ts
@@ -5593,9 +5692,11 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/b1146458367d5fd5.ts
 ✓ test/parser/suite/ts/pass/b11ea16e4e374c30.ts
 ✓ test/parser/suite/ts/pass/b129ece671d68195.ts
+✓ test/parser/suite/ts/pass/b12f8c2d09430b17.ts
 ✓ test/parser/suite/ts/pass/b137ac72ff0c9468.ts
 ✓ test/parser/suite/ts/pass/b149952a8d33f719.ts
 ✓ test/parser/suite/ts/pass/b15c361ee4bb0b92.ts
+✓ test/parser/suite/ts/pass/b15dfccdf4ae7fb7.ts
 ✓ test/parser/suite/ts/pass/b161bae74830bc93.module.ts
 ✓ test/parser/suite/ts/pass/b1698b122ef17449.module.ts
 ✓ test/parser/suite/ts/pass/b1737d6dac5443b9.ts
@@ -5705,6 +5806,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/b47b86c7ae5ff0ed.ts
 ✓ test/parser/suite/ts/pass/b485720f2cc56603.ts
 ✓ test/parser/suite/ts/pass/b486edad44e4d76a.ts
+✓ test/parser/suite/ts/pass/b4877f413e505d07.ts
 ✓ test/parser/suite/ts/pass/b492768e35a1cf1d.ts
 ✓ test/parser/suite/ts/pass/b49bb71fd164c9b4.ts
 ✓ test/parser/suite/ts/pass/b4a04211d64fae89.ts
@@ -5777,6 +5879,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/b681e140679a63b6.ts
 ✓ test/parser/suite/ts/pass/b68726913f5385ed.ts
 ✓ test/parser/suite/ts/pass/b68c4450bc44e14d.ts
+✓ test/parser/suite/ts/pass/b68d5f987e814da9.ts
 ✓ test/parser/suite/ts/pass/b68d89597269b240.module.ts
 ✓ test/parser/suite/ts/pass/b69613fcb69c4d64.ts
 ✓ test/parser/suite/ts/pass/b69a275029d2873b.ts
@@ -6026,6 +6129,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/be4ae04ea8a5ce8a.module.ts
 ✓ test/parser/suite/ts/pass/be4d59b031736e54.ts
 ✓ test/parser/suite/ts/pass/be4f80d852cefb42.ts
+✓ test/parser/suite/ts/pass/be561658267135f4.ts
 ✓ test/parser/suite/ts/pass/be5897e34a4cc77e.ts
 ✓ test/parser/suite/ts/pass/be5b553073545d16.ts
 ✓ test/parser/suite/ts/pass/be5c2a8440868b88.ts
@@ -6148,6 +6252,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/c1b94493cf6fa38b.ts
 ✓ test/parser/suite/ts/pass/c1beafd94084c420.ts
 ✓ test/parser/suite/ts/pass/c1c2c3886d81ab66.module.ts
+✓ test/parser/suite/ts/pass/c1c63a12fdca26c9.module.ts
 ✓ test/parser/suite/ts/pass/c1cc3f39e6e91241.ts
 ✓ test/parser/suite/ts/pass/c1ce1ef6c942ca65.module.tsx
 ✓ test/parser/suite/ts/pass/c1d465c94fd47862.ts
@@ -6358,6 +6463,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/c8533fe99ef038cf.ts
 ✓ test/parser/suite/ts/pass/c856d81b24a5ff12.ts
 ✓ test/parser/suite/ts/pass/c858122477dc1750.ts
+✓ test/parser/suite/ts/pass/c8619c781f067961.ts
 ✓ test/parser/suite/ts/pass/c863becd22e28a13.ts
 ✓ test/parser/suite/ts/pass/c864e718dc49ae25.ts
 ✓ test/parser/suite/ts/pass/c868578f235cd5f3.ts
@@ -6408,6 +6514,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/c9b15416311383b0.ts
 ✓ test/parser/suite/ts/pass/c9b9de1751cef23d.module.ts
 ✓ test/parser/suite/ts/pass/c9ce02ee8ef05f50.ts
+✓ test/parser/suite/ts/pass/c9dd601e384400c4.ts
 ✓ test/parser/suite/ts/pass/c9e3d842a1b0d0e2.ts
 ✓ test/parser/suite/ts/pass/c9e94e8de457aff9.ts
 ✓ test/parser/suite/ts/pass/c9eac098fffd45a4.ts
@@ -6501,6 +6608,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/ccd3fd543889d07c.ts
 ✓ test/parser/suite/ts/pass/ccd68cc1bc38e162.ts
 ✓ test/parser/suite/ts/pass/ccd6d7d996473bc4.ts
+✓ test/parser/suite/ts/pass/cce5d3fe4d03c006.ts
 ✓ test/parser/suite/ts/pass/ccf01f663fbad84a.ts
 ✓ test/parser/suite/ts/pass/cd0463086aa812e5.ts
 ✓ test/parser/suite/ts/pass/cd073d163eb5c022.ts
@@ -6566,6 +6674,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/cef238340f1e9eb1.ts
 ✓ test/parser/suite/ts/pass/cef32521bd91d8b2.ts
 ✓ test/parser/suite/ts/pass/cf075d092621391b.ts
+✓ test/parser/suite/ts/pass/cf11a2a8505961a3.ts
 ✓ test/parser/suite/ts/pass/cf19adb021999cef.ts
 ✓ test/parser/suite/ts/pass/cf1f82c3599b5948.ts
 ✓ test/parser/suite/ts/pass/cf25c17f77a87fdc.ts
@@ -6593,6 +6702,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d001c87b24cec290.ts
 ✓ test/parser/suite/ts/pass/d00f2db191fc7d44.ts
 ✓ test/parser/suite/ts/pass/d015269a11b1ebda.ts
+✓ test/parser/suite/ts/pass/d01996a80fb98574.ts
 ✓ test/parser/suite/ts/pass/d020ef81363361fc.ts
 ✓ test/parser/suite/ts/pass/d02671ea82773b13.ts
 ✓ test/parser/suite/ts/pass/d0289f4b1f4c0740.ts
@@ -6618,6 +6728,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d0a6e5ccc63644fa.ts
 ✓ test/parser/suite/ts/pass/d0b4e5df70b16f04.ts
 ✓ test/parser/suite/ts/pass/d0c3450b243d168e.ts
+✓ test/parser/suite/ts/pass/d0c637f2c164c22b.ts
 ✓ test/parser/suite/ts/pass/d0cf98d4a230d978.ts
 ✓ test/parser/suite/ts/pass/d0d83b4ebea2f12d.ts
 ✓ test/parser/suite/ts/pass/d0da592b1163824b.ts
@@ -6634,7 +6745,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d10d698276ffbacf.ts
 ✓ test/parser/suite/ts/pass/d10f41db8b6dbde3.ts
 ✓ test/parser/suite/ts/pass/d114df40ec16bfb2.ts
-✓ test/parser/suite/ts/pass/d1294bf0dc15d363.ts
+✓ test/parser/suite/ts/pass/d1294bf0dc15d363.d.ts
 ✓ test/parser/suite/ts/pass/d1505f8178cc3373.ts
 ✓ test/parser/suite/ts/pass/d158dfa59a453797.ts
 ✓ test/parser/suite/ts/pass/d160a71d418c1366.ts
@@ -6742,6 +6853,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d45d53ff18e0f406.ts
 ✓ test/parser/suite/ts/pass/d46fdd89eba02a8c.ts
 ✓ test/parser/suite/ts/pass/d470a654b7683d2a.ts
+✓ test/parser/suite/ts/pass/d473dc80645a6e75.ts
 ✓ test/parser/suite/ts/pass/d479f8f9e97ef36f.ts
 ✓ test/parser/suite/ts/pass/d47aee7960ee2655.ts
 ✓ test/parser/suite/ts/pass/d4871629c9f6a11f.module.ts
@@ -6807,11 +6919,13 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d67cb7c69d299a7e.ts
 ✓ test/parser/suite/ts/pass/d68eda8fb7dc7685.ts
 ✓ test/parser/suite/ts/pass/d69acd059252447a.ts
+✓ test/parser/suite/ts/pass/d6b09d616d189689.ts
 ✓ test/parser/suite/ts/pass/d6b3637d97696186.ts
 ✓ test/parser/suite/ts/pass/d6b49b64841a7755.ts
 ✓ test/parser/suite/ts/pass/d6b872407e4e59f4.ts
 ✓ test/parser/suite/ts/pass/d6bf1215dd87d852.ts
 ✓ test/parser/suite/ts/pass/d6cadc7c9a23f2ea.ts
+✓ test/parser/suite/ts/pass/d6cf5684c8472520.ts
 ✓ test/parser/suite/ts/pass/d6cfd57ee93cb4b8.ts
 ✓ test/parser/suite/ts/pass/d6d691df531453dd.ts
 ✓ test/parser/suite/ts/pass/d6e4a578a83afa49.ts
@@ -6828,6 +6942,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d73cc578f447cad2.ts
 ✓ test/parser/suite/ts/pass/d765f5da74c45772.ts
 ✓ test/parser/suite/ts/pass/d767babf946f6826.ts
+✓ test/parser/suite/ts/pass/d77642f9552f5f66.ts
 ✓ test/parser/suite/ts/pass/d791fd1b70b4d15b.ts
 ✓ test/parser/suite/ts/pass/d7aa2c56e9f7eb9f.ts
 ✓ test/parser/suite/ts/pass/d7bf4e12a48cb5a6.ts
@@ -6849,6 +6964,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d8634111403cebb7.ts
 ✓ test/parser/suite/ts/pass/d86a802a38ad8536.ts
 ✓ test/parser/suite/ts/pass/d86f34b6962b553a.ts
+✓ test/parser/suite/ts/pass/d86fe8acf5a41619.ts
 ✓ test/parser/suite/ts/pass/d874bd5af1cdae02.ts
 ✓ test/parser/suite/ts/pass/d87f5eb2663fb680.ts
 ✓ test/parser/suite/ts/pass/d88242ffb66cc303.ts
@@ -6862,6 +6978,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/d8be146826bdcd1d.ts
 ✓ test/parser/suite/ts/pass/d8cd0a48e658e63e.ts
 ✓ test/parser/suite/ts/pass/d8da2d55a70889d5.ts
+✓ test/parser/suite/ts/pass/d8e2d57f12774180.ts
 ✓ test/parser/suite/ts/pass/d90069081cfac33b.ts
 ✓ test/parser/suite/ts/pass/d904ee22be8225b0.ts
 ✓ test/parser/suite/ts/pass/d91c608d4355a0fe.ts
@@ -6939,6 +7056,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/db6629cbd26c3f6c.ts
 ✓ test/parser/suite/ts/pass/db6cd744e25ca432.ts
 ✓ test/parser/suite/ts/pass/db7265ada4af9c30.ts
+✓ test/parser/suite/ts/pass/db753f1cf6ccb583.ts
 ✓ test/parser/suite/ts/pass/db757a24b38d2edd.ts
 ✓ test/parser/suite/ts/pass/db7d09fcd47121cb.ts
 ✓ test/parser/suite/ts/pass/db91688b90befb41.module.ts
@@ -6959,7 +7077,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/dc47e1bd4547f05c.ts
 ✓ test/parser/suite/ts/pass/dc5c75111a7e010d.module.ts
 ✓ test/parser/suite/ts/pass/dc62edf063bb42ca.ts
-✓ test/parser/suite/ts/pass/dc6616209605866f.ts
+✓ test/parser/suite/ts/pass/dc6616209605866f.d.ts
 ✓ test/parser/suite/ts/pass/dc6a13bb2890d9f8.ts
 ✓ test/parser/suite/ts/pass/dc6ee91491e61470.ts
 ✓ test/parser/suite/ts/pass/dc702952428d80d6.ts
@@ -6976,6 +7094,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/dce3a06232932cdb.ts
 ✓ test/parser/suite/ts/pass/dce3c10560f63290.ts
 ✓ test/parser/suite/ts/pass/dce8a38527aa7256.ts
+✓ test/parser/suite/ts/pass/dceaa6f7ed6bb3bf.ts
 ✓ test/parser/suite/ts/pass/dcef7382264b20e3.ts
 ✓ test/parser/suite/ts/pass/dcf4f75083047529.ts
 ✓ test/parser/suite/ts/pass/dcf759340c42face.ts
@@ -7014,6 +7133,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/de0b6c86b5a13ff5.tsx
 ✓ test/parser/suite/ts/pass/de11abcaa286f62d.ts
 ✓ test/parser/suite/ts/pass/de16c343fa4957cb.ts
+✓ test/parser/suite/ts/pass/de178153b93d7e81.ts
 ✓ test/parser/suite/ts/pass/de1c772a7e3a29a4.module.ts
 ✓ test/parser/suite/ts/pass/de1e88dfc9789032.module.ts
 ✓ test/parser/suite/ts/pass/de1ff2e9c0d994f4.ts
@@ -7033,6 +7153,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/debbf72223435010.ts
 ✓ test/parser/suite/ts/pass/debd7d28b937723c.ts
 ✓ test/parser/suite/ts/pass/debe2d8d6f9fd414.ts
+✓ test/parser/suite/ts/pass/dedafa88ba7ac50a.ts
 ✓ test/parser/suite/ts/pass/dee12246bfe07747.ts
 ✓ test/parser/suite/ts/pass/dee668a616835bb0.ts
 ✓ test/parser/suite/ts/pass/dee874da2539564e.ts
@@ -7045,6 +7166,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/df10a3262995dd9e.ts
 ✓ test/parser/suite/ts/pass/df18d5c6c1cff7b0.ts
 ✓ test/parser/suite/ts/pass/df277bb02891939b.ts
+✓ test/parser/suite/ts/pass/df2f550b50896485.ts
 ✓ test/parser/suite/ts/pass/df39a7b28dced337.ts
 ✓ test/parser/suite/ts/pass/df454f44d8776d5f.module.ts
 ✓ test/parser/suite/ts/pass/df491d1d31a784e5.ts
@@ -7080,6 +7202,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/e03a6035309590ee.ts
 ✓ test/parser/suite/ts/pass/e03a7a6ee742e2a5.module.ts
 ✓ test/parser/suite/ts/pass/e03a93825ee2a6ac.ts
+✓ test/parser/suite/ts/pass/e03b150066a336f7.module.ts
 ✓ test/parser/suite/ts/pass/e0485a10598c63a4.ts
 ✓ test/parser/suite/ts/pass/e053c046c5464a4b.ts
 ✓ test/parser/suite/ts/pass/e05515fc6e8ba1fb.ts
@@ -7091,6 +7214,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/e0beab7fbe9f59e5.ts
 ✓ test/parser/suite/ts/pass/e0c74b9d146dc6a8.ts
 ✓ test/parser/suite/ts/pass/e0cae079fbc3a96e.ts
+✓ test/parser/suite/ts/pass/e0d1f2d669bb6191.ts
 ✓ test/parser/suite/ts/pass/e0d637b6bc60ec64.ts
 ✓ test/parser/suite/ts/pass/e0e61f6cb71d8c86.ts
 ✓ test/parser/suite/ts/pass/e0eb9d51c30372ac.ts
@@ -7118,6 +7242,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/e15c1259b7c9ffb4.ts
 ✓ test/parser/suite/ts/pass/e1655029f8f0182e.module.ts
 ✓ test/parser/suite/ts/pass/e169fbbbc0a6e3f5.ts
+✓ test/parser/suite/ts/pass/e16b9b2d8f2292ef.ts
 ✓ test/parser/suite/ts/pass/e16bd3fcce61a2e8.ts
 ✓ test/parser/suite/ts/pass/e16c76b2df590ee4.ts
 ✓ test/parser/suite/ts/pass/e16e994a10c50387.ts
@@ -7137,7 +7262,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/e1c6152196564ec3.ts
 ✓ test/parser/suite/ts/pass/e1dfe28b4a677cff.ts
 ✓ test/parser/suite/ts/pass/e209061e08cb0874.ts
-✓ test/parser/suite/ts/pass/e212d52c2e7b2c6b.ts
+✓ test/parser/suite/ts/pass/e212d52c2e7b2c6b.d.ts
 ✓ test/parser/suite/ts/pass/e235d06b2207baf7.ts
 ✓ test/parser/suite/ts/pass/e23865459bc50a4d.ts
 ✓ test/parser/suite/ts/pass/e24352ecb37c21de.module.ts
@@ -7265,6 +7390,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/e612db867d68cc52.ts
 ✓ test/parser/suite/ts/pass/e617ecd9a044510b.ts
 ✓ test/parser/suite/ts/pass/e61fb2b3991eef3b.ts
+✓ test/parser/suite/ts/pass/e621811aad2a4009.ts
 ✓ test/parser/suite/ts/pass/e63265a823f54df9.ts
 ✓ test/parser/suite/ts/pass/e63d44bfb40a48ef.ts
 ✓ test/parser/suite/ts/pass/e65ac32957f4f1ea.ts
@@ -7357,6 +7483,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/e8c7653e366341cf.ts
 ✓ test/parser/suite/ts/pass/e8de2de578a39fd9.ts
 ✓ test/parser/suite/ts/pass/e8fe57f44fa79739.module.ts
+✓ test/parser/suite/ts/pass/e8feb22373242206.ts
 ✓ test/parser/suite/ts/pass/e8ffbdcdf0c0aa48.ts
 ✓ test/parser/suite/ts/pass/e903e8f1dc53f712.ts
 ✓ test/parser/suite/ts/pass/e9067973b9d7fe37.module.ts
@@ -7425,6 +7552,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/eae6b092615fdd4d.ts
 ✓ test/parser/suite/ts/pass/eae76e3eea6cde61.ts
 ✓ test/parser/suite/ts/pass/eaed3d1b20d5812a.ts
+✓ test/parser/suite/ts/pass/eaf144dc3064b9b7.ts
 ✓ test/parser/suite/ts/pass/eafd3bc0071012be.ts
 ✓ test/parser/suite/ts/pass/eb0236d7efad2f8d.ts
 ✓ test/parser/suite/ts/pass/eb1f2a0df46a445d.ts
@@ -7463,11 +7591,13 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/ec3193d39191eedf.ts
 ✓ test/parser/suite/ts/pass/ec3334ae3d1b63ee.ts
 ✓ test/parser/suite/ts/pass/ec3d3a914108b460.ts
+✓ test/parser/suite/ts/pass/ec4079b2bc4ee480.ts
 ✓ test/parser/suite/ts/pass/ec4c05188ad1698a.module.ts
 ✓ test/parser/suite/ts/pass/ec5401dbc12fe839.ts
 ✓ test/parser/suite/ts/pass/ec54bfde325117dc.ts
 ✓ test/parser/suite/ts/pass/ec55d0290cc7013a.ts
 ✓ test/parser/suite/ts/pass/ec5aaeb744cfc160.module.ts
+✓ test/parser/suite/ts/pass/ec617d1406cf2414.ts
 ✓ test/parser/suite/ts/pass/ec6770f4f4433925.ts
 ✓ test/parser/suite/ts/pass/ec7009723c5bb1bc.ts
 ✓ test/parser/suite/ts/pass/ec73d8617afbca21.module.ts
@@ -7534,11 +7664,13 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/ee6340addb6b23bf.ts
 ✓ test/parser/suite/ts/pass/ee6605b0f812bfce.ts
 ✓ test/parser/suite/ts/pass/ee67f6c59b0254e5.ts
+✓ test/parser/suite/ts/pass/ee82fa587323d636.ts
 ✓ test/parser/suite/ts/pass/ee8ba03d71cf4c89.module.ts
 ✓ test/parser/suite/ts/pass/ee9bd571fc067f49.ts
 ✓ test/parser/suite/ts/pass/eea46bc783cc26ad.ts
 ✓ test/parser/suite/ts/pass/eea9f67f59ef3d26.ts
 ✓ test/parser/suite/ts/pass/eeaa0cef31d700e0.ts
+✓ test/parser/suite/ts/pass/eeab7816dc2535ad.module.ts
 ✓ test/parser/suite/ts/pass/eeac8999b6d01b0c.ts
 ✓ test/parser/suite/ts/pass/eeb1a84111975f17.ts
 ✓ test/parser/suite/ts/pass/eeb2c6478336e657.ts
@@ -7576,7 +7708,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/efc172e70a0d5104.ts
 ✓ test/parser/suite/ts/pass/efc3c18b6945d484.ts
 ✓ test/parser/suite/ts/pass/efe346c2fa432efb.ts
-✓ test/parser/suite/ts/pass/eff014c18151d515.ts
+✓ test/parser/suite/ts/pass/eff014c18151d515.d.ts
 ✓ test/parser/suite/ts/pass/eff3bddad8a9e5bf.ts
 ✓ test/parser/suite/ts/pass/eff54c64777d517b.ts
 ✓ test/parser/suite/ts/pass/eff590eddfc030c3.module.ts
@@ -7588,6 +7720,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f05f68b9d7439d72.ts
 ✓ test/parser/suite/ts/pass/f0614164e28a39ad.ts
 ✓ test/parser/suite/ts/pass/f068fabd48a64602.ts
+✓ test/parser/suite/ts/pass/f073454a388bf285.module.ts
 ✓ test/parser/suite/ts/pass/f07d8f7a96c3d866.ts
 ✓ test/parser/suite/ts/pass/f0823d1e9322d965.ts
 ✓ test/parser/suite/ts/pass/f084b5437ae7326e.ts
@@ -7633,6 +7766,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f1e85480ea8137e0.ts
 ✓ test/parser/suite/ts/pass/f1feaa567deab5eb.ts
 ✓ test/parser/suite/ts/pass/f21309e4f1ed06c8.ts
+✓ test/parser/suite/ts/pass/f2131ad89bc9a8ba.ts
 ✓ test/parser/suite/ts/pass/f213dbaa3c521ba9.ts
 ✓ test/parser/suite/ts/pass/f217a30027cc37ce.ts
 ✓ test/parser/suite/ts/pass/f21999329c1922cc.ts
@@ -7698,6 +7832,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f383e9860b7e371c.ts
 ✓ test/parser/suite/ts/pass/f384f51244ac7e63.ts
 ✓ test/parser/suite/ts/pass/f389fa913c176813.ts
+✓ test/parser/suite/ts/pass/f39185877bce3dbd.ts
 ✓ test/parser/suite/ts/pass/f3acfab7c075d038.ts
 ✓ test/parser/suite/ts/pass/f3b2fae3e41dcaed.ts
 ✓ test/parser/suite/ts/pass/f3b48ff5fd6769a9.ts
@@ -7732,6 +7867,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f469fc25a3d9115d.ts
 ✓ test/parser/suite/ts/pass/f473333cefb8c159.ts
 ✓ test/parser/suite/ts/pass/f47e8a76dc3b30f2.ts
+✓ test/parser/suite/ts/pass/f48488337b6898ba.ts
 ✓ test/parser/suite/ts/pass/f4848f3df3cb1dbc.ts
 ✓ test/parser/suite/ts/pass/f4864aa4bdac7e89.ts
 ✓ test/parser/suite/ts/pass/f4a630f8551e99fb.ts
@@ -7765,6 +7901,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f54fe3fd8f2d2916.ts
 ✓ test/parser/suite/ts/pass/f5516d3717d94357.ts
 ✓ test/parser/suite/ts/pass/f569df7490b847d8.ts
+✓ test/parser/suite/ts/pass/f56a0039b4ca488d.ts
 ✓ test/parser/suite/ts/pass/f56dd20c3ab1fac2.ts
 ✓ test/parser/suite/ts/pass/f5791b9ac55caa4e.ts
 ✓ test/parser/suite/ts/pass/f579e74efa5c1ae9.ts
@@ -7803,12 +7940,13 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f66b739ed8138489.ts
 ✓ test/parser/suite/ts/pass/f66ee8bbf74c0f67.ts
 ✓ test/parser/suite/ts/pass/f6991574fc9f0dc5.ts
+✓ test/parser/suite/ts/pass/f69d57d30d6f1243.ts
 ✓ test/parser/suite/ts/pass/f69f02727fa5e211.ts
 ✓ test/parser/suite/ts/pass/f6acace18c8c8c99.ts
 ✓ test/parser/suite/ts/pass/f6adad28945142de.ts
 ✓ test/parser/suite/ts/pass/f6b9bda12fe53bde.ts
 ✓ test/parser/suite/ts/pass/f6c09bbbf930945f.ts
-✓ test/parser/suite/ts/pass/f6c89ab9d2350625.ts
+✓ test/parser/suite/ts/pass/f6c89ab9d2350625.d.ts
 ✓ test/parser/suite/ts/pass/f6d2ca373624ecb6.ts
 ✓ test/parser/suite/ts/pass/f6de17bed167580f.ts
 ✓ test/parser/suite/ts/pass/f6ee14ed6eb29e8e.ts
@@ -7908,6 +8046,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/f975f38ef8275e42.module.ts
 ✓ test/parser/suite/ts/pass/f98a86f3d545f3ec.ts
 ✓ test/parser/suite/ts/pass/f999146b42729db7.ts
+✓ test/parser/suite/ts/pass/f9a6d4f7f53c8135.ts
 ✓ test/parser/suite/ts/pass/f9b47291d912c372.ts
 ✓ test/parser/suite/ts/pass/f9bbe9c960c9945f.ts
 ✓ test/parser/suite/ts/pass/f9bc750edacd18d8.ts
@@ -7946,10 +8085,12 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/faed7029ba47465a.ts
 ✓ test/parser/suite/ts/pass/faf18556aafab780.ts
 ✓ test/parser/suite/ts/pass/faf242b7461a1b19.ts
+✓ test/parser/suite/ts/pass/faf545309d364d2a.ts
 ✓ test/parser/suite/ts/pass/fb03ba41eabfa38b.ts
 ✓ test/parser/suite/ts/pass/fb08a63e7ea68928.ts
 ✓ test/parser/suite/ts/pass/fb10a3cf93e0e382.ts
 ✓ test/parser/suite/ts/pass/fb35c6d1fc6a54c9.ts
+✓ test/parser/suite/ts/pass/fb36ce736b90d420.module.ts
 ✓ test/parser/suite/ts/pass/fb3c8fc50b3c6eee.ts
 ✓ test/parser/suite/ts/pass/fb45c2113576a0d7.ts
 ✓ test/parser/suite/ts/pass/fb4b8672b1a9c05a.ts
@@ -8013,6 +8154,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/fd426d3bf4afe075.ts
 ✓ test/parser/suite/ts/pass/fd4a4991e20d1ae8.ts
 ✓ test/parser/suite/ts/pass/fd5a58aaeee4b137.ts
+✓ test/parser/suite/ts/pass/fd68e4fc085d38ed.ts
 ✓ test/parser/suite/ts/pass/fd6c63cef8a08c14.ts
 ✓ test/parser/suite/ts/pass/fd7650ff49af0cc3.ts
 ✓ test/parser/suite/ts/pass/fd78683499d6b9c5.ts
@@ -8042,6 +8184,7 @@ AST mismatch: 0/8083
 ✓ test/parser/suite/ts/pass/fdf9d8f7b8c9fa10.module.ts
 ✓ test/parser/suite/ts/pass/fe0474435253740a.ts
 ✓ test/parser/suite/ts/pass/fe0be9a3ae985f1c.module.ts
+✓ test/parser/suite/ts/pass/fe29e021f555cd20.ts
 ✓ test/parser/suite/ts/pass/fe2f4b083943d05a.ts
 ✓ test/parser/suite/ts/pass/fe2fcd5d4a296e9f.ts
 ✓ test/parser/suite/ts/pass/fe4224fcd18795d1.ts

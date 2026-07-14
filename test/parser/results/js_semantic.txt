@@ -10674,10 +10674,10 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/4d513c17428f7941.module.js
-error: 'in' is reserved and cannot be used as a binding identifier
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | for (let in {}) {}
-   |          ^^
+   |      ^^^
    |
 
 ✓ test/parser/suite/js/semantic/4d6157c794653374.module.js
@@ -19974,15 +19974,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/93dba0832f768c12.module.js
-error: Unexpected token '=' in binding pattern
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  2 |   using;
  3 |   let = "irrelevant initializer";
-   |       ^
+   |   ^^^
  4 |   var using, let;
    |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
 
 ✓ test/parser/suite/js/semantic/93ddd4a16af973bc.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -20574,21 +20572,18 @@ error: 'let' is not allowed as a variable name in a lexical declaration
    |
 
 ✓ test/parser/suite/js/semantic/978d861516846a89.module.js
-error: Unexpected token '=' in binding pattern
+error: 'let' is reserved in strict mode and cannot be used as a binding identifier
    |
  1 | var let;
+   |     ^^^
  2 | let = 1;
-   |     ^
- 3 | for (let; ; ) break;
    |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
 
 ✓ test/parser/suite/js/semantic/9790460167204c05.js
-error: 'in' is reserved and cannot be used as a binding identifier
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | 'use strict'; for (let in a) {}
-   |                        ^^
+   |                    ^^^
  2 | 
    |
 
@@ -26774,12 +26769,12 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/c4e2bc7110d2242c.module.js
-error: 'in' is reserved and cannot be used as a binding identifier
+error: 'let' is reserved in strict mode and cannot be used as a binding identifier
    |
+ 1 | var obj = Object.create(null);
+ 2 | var let, value;
+   |     ^^^
  3 | obj.key = 1;
- 4 | for ( let in obj ) ;
-   |           ^^
- 5 | assert.sameValue(let, 'key', 'IdentifierReference');
    |
 
 ✓ test/parser/suite/js/semantic/c4e5bbf66d84bd96.js
@@ -28509,14 +28504,12 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/d0b47c964e36292c.js
-error: Unexpected token '=' in binding pattern
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | function a() { "use strict"; let = 1; }
-   |                                  ^
+   |                              ^^^
  2 | 
    |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
 
 ✓ test/parser/suite/js/semantic/d102ad3e1ed11297.js
 error: Cannot use 'export default' declaration outside a module
@@ -31207,13 +31200,11 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
    |
 
 ✓ test/parser/suite/js/semantic/e0bcfb63cbe11c82.js
-error: Unexpected token '+' in binding pattern
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | 'use strict'; let + 1
-   |                   ^
+   |               ^^^
    |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
 
 ✓ test/parser/suite/js/semantic/e0c3d30b6fe96812.js
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
@@ -35235,11 +35226,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/fc68dca26314b6f8.module.js
-error: 'in' is reserved and cannot be used as a binding identifier
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | var o = { a: 1 };
  2 | for (let in o) { }
-   |          ^^
+   |      ^^^
    |
 
 ✓ test/parser/suite/js/semantic/fc6fe891ccb0eb4e.js

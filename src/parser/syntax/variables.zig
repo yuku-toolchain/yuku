@@ -203,23 +203,25 @@ pub fn canStartBinding(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
+/// like `canStartBinding`, but resolving the `let` ambiguity. reserved words
+/// can never bind, so `let in obj` keeps `let` as an identifier instead of
+/// committing to a declaration that cannot parse.
+pub fn canStartLetBinding(tag: TokenTag) bool {
+    if (tag == .left_bracket or tag == .left_brace) return true;
+    return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
+}
+
 /// Determines if 'let' should be parsed as an identifier rather than a variable
-/// declaration keyword.
+/// declaration keyword. the only ExpressionStatement lookahead restriction is
+/// `let [`, so sloppy-mode `let = 1`, `let.foo`, or `let in obj` are
+/// expression statements. strict-mode misuse is the checker's reserved-word
+/// error.
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .let);
 
     const next = parser.peekAhead() orelse return null;
 
-    // 'let' followed by a semicolon should be parsed as an identifier, not a declaration.
-    if (next.tag == .semicolon) {
-        return true;
-    }
-
-    // in single-statement contexts (eg, if/while bodies), parse `let` as an identifier
-    // when the next token cannot start a lexical binding.
-    if (parser.context.single_statement and !canStartBinding(next.tag)) return true;
-
-    return false;
+    return !canStartLetBinding(next.tag);
 }
 
 /// returns whether the current `using` token is an `IdentifierReference`

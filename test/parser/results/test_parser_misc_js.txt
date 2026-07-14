@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       47/47 (100.00%)
+Passed:       49/49 (100.00%)
 Failed:       0
-AST mismatch: 0/47
+AST mismatch: 0/49
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -98,6 +98,17 @@ error: 'for await' is only valid with for-of loops
  3 |   for await (x in y) {}
    |
 
+✓ test/parser/misc/js/for-of-let-lhs-invalid.js
+error: The left-hand side of a for-of statement may not start with 'let'
+   |
+ 1 | // for-of forbids a left-hand side beginning with the `let` token
+ 2 | for (let.a of x) {}
+   |      ^^^
+ 3 | 
+   |
+   = help: Rename the variable or wrap it in parentheses: 'for ((let).x of ...)'
+
+
 ✓ test/parser/misc/js/for-using-with-line-terminator.js
 error: Expected ';' after for-loop init, but found 'id'
    |
@@ -135,6 +146,7 @@ error: Identifier cannot immediately follow a numeric literal
    = help: Try adding whitespace here between the number and identifier
 
 
+✓ test/parser/misc/js/let-identifier-contexts.js
 ✓ test/parser/misc/js/octal-literal-with-separator.js
 ✓ test/parser/misc/js/tagged-template-with-optional-chaining.js
 error: Tagged template expressions are not permitted in an optional chain

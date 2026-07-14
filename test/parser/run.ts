@@ -58,8 +58,8 @@ const suites: TestSuite[] = [
   },
   { path: `${SUITE_DIR}/jsx/pass`, expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
   { path: `${SUITE_DIR}/jsx/fail`, expect: "fail", lang: ["jsx"] },
-  { path: `${SUITE_DIR}/ts/pass`, expect: "snapshot", lang: ["ts", "tsx"], options: { semanticErrors: true } },
-  { path: `${SUITE_DIR}/ts/semantic`, expect: "fail", lang: ["ts", "tsx"], options: { semanticErrors: true } },
+  { path: `${SUITE_DIR}/ts/pass`, expect: "snapshot", lang: ["ts", "tsx", "dts"], options: { semanticErrors: true } },
+  { path: `${SUITE_DIR}/ts/semantic`, expect: "fail", lang: ["ts", "tsx", "dts"], options: { semanticErrors: true } },
   { path: `${MISC_DIR}/jsx`, expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true, autoSnapshot: true },
   { path: `${MISC_DIR}/js`, expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true, autoSnapshot: true },
   {

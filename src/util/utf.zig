@@ -49,21 +49,6 @@ pub fn lineBreakLen(source: []const u8, pos: usize) u8 {
     };
 }
 
-pub fn isMultiByteSpace(cp: u21) bool {
-    return switch (cp) {
-        '\u{FEFF}',
-        '\u{00A0}',
-        '\u{2000}',
-        '\u{2001}'...'\u{200A}',
-        '\u{202F}',
-        '\u{205F}',
-        '\u{3000}',
-        '\u{1680}',
-        => true,
-        else => false,
-    };
-}
-
 pub fn parseOctal(input: []const u8, start: usize) struct { value: u21, end: usize } {
     std.debug.assert(start < input.len);
     var value: u21 = 0;
@@ -442,17 +427,6 @@ test "lineBreakLen unicode separators" {
     try testing.expectEqual(@as(u8, 3), lineBreakLen(&[_]u8{ 0xE2, 0x80, 0xA8 }, 0));
     try testing.expectEqual(@as(u8, 3), lineBreakLen(&[_]u8{ 0xE2, 0x80, 0xA9 }, 0));
     try testing.expectEqual(@as(u8, 0), lineBreakLen("€", 0));
-}
-
-test "isMultiByteSpace" {
-    try testing.expect(isMultiByteSpace(0xFEFF)); // BOM
-    try testing.expect(isMultiByteSpace(0x00A0)); // NBSP
-    try testing.expect(isMultiByteSpace(0x2000)); // EN QUAD
-    try testing.expect(isMultiByteSpace(0x2005)); // FOUR-PER-EM SPACE
-    try testing.expect(isMultiByteSpace(0x3000)); // IDEOGRAPHIC SPACE
-    try testing.expect(isMultiByteSpace(0x1680)); // OGHAM SPACE MARK
-    try testing.expect(!isMultiByteSpace(' '));
-    try testing.expect(!isMultiByteSpace('A'));
 }
 
 test "parseOctal single digit" {
