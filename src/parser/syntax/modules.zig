@@ -86,7 +86,7 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
 
     const attributes = try parseWithClause(parser);
 
-    const end = try parser.eatSemicolon(parser.tree.span(source).end) orelse return null;
+    const end = try parser.eatSemicolon(parser.prev_token_end) orelse return null;
 
     return try parser.tree.addNode(.{
         .import_declaration = .{
@@ -123,7 +123,7 @@ fn parseSideEffectImport(
 ) Error!?ast.NodeIndex {
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
-    const end = try parser.eatSemicolon(parser.tree.span(source).end) orelse return null;
+    const end = try parser.eatSemicolon(parser.prev_token_end) orelse return null;
 
     return try parser.tree.addNode(.{
         .import_declaration = .{
@@ -606,7 +606,7 @@ fn parseExportAllDeclaration(
 
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
-    const end = try parser.eatSemicolon(parser.tree.span(source).end) orelse return null;
+    const end = try parser.eatSemicolon(parser.prev_token_end) orelse return null;
 
     return try parser.tree.addNode(.{
         .export_all_declaration = .{
@@ -636,7 +636,7 @@ fn parseExportNamedFromClause(
         try parser.advance() orelse return null;
         source = try parseModuleSpecifier(parser) orelse return null;
         attributes = try parseWithClause(parser);
-        end = parser.tree.span(source).end;
+        end = parser.prev_token_end;
     } else {
         try resolveLocalExportSpecifiers(parser, result);
     }

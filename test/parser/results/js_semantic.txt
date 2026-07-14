@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       3615/3615 (100.00%)
+Passed:       3619/3619 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
@@ -5705,6 +5705,17 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  1 | function eval() {}
    |          ^^^^
  2 | 
+   |
+
+✓ test/parser/suite/js/semantic/29731444f8cc7c53.module.js
+error: Duplicate import attribute key 'type'
+   |
+20 | export * from './import-attribute-3_FIXTURE.js' with {
+21 |   type: 'json',
+   |   ~~~~ first used here
+22 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+23 | };
    |
 
 ✓ test/parser/suite/js/semantic/29ad3064c5197af3.js
@@ -18549,6 +18560,17 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
+✓ test/parser/suite/js/semantic/87976b71d4910ad4.module.js
+error: Duplicate import attribute key 'type'
+   |
+21 | import x from './import-attribute-1_FIXTURE.js' with {
+22 |   type: 'json',
+   |   ~~~~ first used here
+23 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+24 | };
+   |
+
 ✓ test/parser/suite/js/semantic/879c075c866d56cf.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -20978,6 +21000,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  1 | let yield = 2;
    |     ^^^^^
  2 | let x;
+   |
+
+✓ test/parser/suite/js/semantic/9a59d601e13bcff3.module.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+18 | 
+19 | import('./empty_FIXTURE.js', yield);
+   |                              ^^^^^
+20 | 
    |
 
 ✓ test/parser/suite/js/semantic/9a666205cafd530f.module.js
@@ -30627,6 +30658,17 @@ error: In strict mode code, functions can only be declared at top level or insid
  8 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  9 |     return 'second declaration';
+   |
+
+✓ test/parser/suite/js/semantic/ddf9372de3f62b97.module.js
+error: Duplicate import attribute key 'type'
+   |
+21 | import './import-attribute-2_FIXTURE.js' with {
+22 |   type: 'json',
+   |   ~~~~ first used here
+23 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+24 | };
    |
 
 ✓ test/parser/suite/js/semantic/de01685d5e823545.js
