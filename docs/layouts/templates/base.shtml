@@ -36,6 +36,8 @@
       <a href="$site.page('parser/codegen').link()">Codegen</a>
       •
       <a href="$site.page('analyzer').link()">Analyzer</a>
+      •
+      <a href="$site.page('testing').link()">Testing</a>
       <span class="menu-divider">|</span>
       <a href="https://github.com/yuku-toolchain/yuku" target="_blank">github</a>
       •

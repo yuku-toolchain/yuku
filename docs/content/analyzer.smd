@@ -521,7 +521,7 @@ Plus four composites (unions of the above), for the common categorical questions
 
 ## [Performance]($section.id('performance'))
 
-Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against 55,000+ real-world files.
+Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against every file in the [parser test corpus](/testing/).
 
 Concretely, on an Apple M-series machine, parsing plus complete semantic analysis of a typical source file lands well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
 

@@ -62,10 +62,11 @@ Run the full suite:
 bun run test
 ```
 
-On first run it downloads the parser corpus (55,000+ real-world files from
-Test262, Babel, TypeScript, and others, cached for a day), builds the native
+On first run it downloads the parser corpus (tens of thousands of files from
+Test262, TypeScript, Babel, and others, cached for a day), builds the native
 addons from your Zig, then runs the parser, codegen, analyzer, and source map
-suites.
+suites. For what these suites verify and how conformance is tracked, see
+[how Yuku is tested](https://yuku.fyi/testing/).
 
 > The JS suites import native addons (`yuku-parser`, `yuku-codegen`,
 > `yuku-analyzer`) compiled from your Zig. `bun run test` rebuilds them first via

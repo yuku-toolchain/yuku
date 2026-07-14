@@ -133,6 +133,12 @@ Yuku prioritizes correctness while delivering top-tier speed and efficiency.
 - [Native benchmark (Zig/Rust)](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native) - faster than Oxc and SWC
 - [npm benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) - 3-10x faster than alternatives
 
+## Testing
+
+Yuku is validated against a dedicated [parser test suite](https://github.com/yuku-toolchain/parser-test-suite): tens of thousands of cases sourced from [Test262](https://github.com/tc39/test262), the TypeScript compiler, and Babel, with exact AST matching against ESTree / TS-ESTree snapshots. The suite syncs with upstream daily, and Yuku passes all of it with zero failures and zero AST mismatches.
+
+[Read how Yuku is tested →](https://yuku.fyi/testing)
+
 ## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
