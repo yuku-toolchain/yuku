@@ -487,12 +487,9 @@ inline fn canStartElementKey(tag: TokenTag) bool {
         tag == .star;
 }
 
-// ts modifiers and `accessor` require the next token on the same line.
-// `abstract\n foo()` parses as `abstract` + `foo()`, not a single
-// abstract method. plain js modifiers stay permissive.
 inline fn requiresSameLine(tag: TokenTag) bool {
     return switch (tag) {
-        .static, .async, .get, .set => false,
+        .static, .get, .set => false,
         else => true,
     };
 }
