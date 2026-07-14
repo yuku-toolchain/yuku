@@ -1024,9 +1024,7 @@ pub fn parseDynamicImport(
 
     var options: ast.NodeIndex = .null;
 
-    // the ImportCall grammar takes the same optional second argument in
-    // every phase, `import(x, opts)`, `import.source(x, opts)`, and
-    // `import.defer(x, opts)`
+    // the ImportCall grammar takes the same optional second argument.
     if (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
 
