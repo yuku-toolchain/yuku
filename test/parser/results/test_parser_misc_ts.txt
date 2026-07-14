@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       35/35 (100.00%)
+Passed:       36/36 (100.00%)
 Failed:       0
-AST mismatch: 0/35
+AST mismatch: 0/36
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/arrow-return-type-ternary-colon-steal.ts
@@ -43,6 +43,7 @@ error: A type argument list cannot be empty
  6 | type B = Array<numbe<> >
    |
 
+✓ test/parser/misc/ts/enum-declaration-line-terminator.ts
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/function-overloads.ts
