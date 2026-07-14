@@ -1,0 +1,315 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 279,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 65,
+        "end": 107,
+        "expression": {
+          "type": "ImportExpression",
+          "start": 65,
+          "end": 106,
+          "source": {
+            "type": "Literal",
+            "start": 72,
+            "end": 77,
+            "value": "foo",
+            "raw": "\"foo\""
+          },
+          "options": {
+            "type": "ObjectExpression",
+            "start": 79,
+            "end": 105,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 81,
+                "end": 103,
+                "key": {
+                  "type": "Identifier",
+                  "start": 81,
+                  "end": 85,
+                  "name": "with"
+                },
+                "value": {
+                  "type": "ObjectExpression",
+                  "start": 87,
+                  "end": 103,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 89,
+                      "end": 101,
+                      "key": {
+                        "type": "Identifier",
+                        "start": 89,
+                        "end": 93,
+                        "name": "type"
+                      },
+                      "value": {
+                        "type": "Literal",
+                        "start": 95,
+                        "end": 101,
+                        "value": "json",
+                        "raw": "\"json\""
+                      },
+                      "kind": "init",
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    }
+                  ]
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          },
+          "phase": null
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 108,
+        "end": 156,
+        "expression": {
+          "type": "ImportExpression",
+          "start": 108,
+          "end": 155,
+          "source": {
+            "type": "Literal",
+            "start": 121,
+            "end": 126,
+            "value": "foo",
+            "raw": "\"foo\""
+          },
+          "options": {
+            "type": "ObjectExpression",
+            "start": 128,
+            "end": 154,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 130,
+                "end": 152,
+                "key": {
+                  "type": "Identifier",
+                  "start": 130,
+                  "end": 134,
+                  "name": "with"
+                },
+                "value": {
+                  "type": "ObjectExpression",
+                  "start": 136,
+                  "end": 152,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 138,
+                      "end": 150,
+                      "key": {
+                        "type": "Identifier",
+                        "start": 138,
+                        "end": 142,
+                        "name": "type"
+                      },
+                      "value": {
+                        "type": "Literal",
+                        "start": 144,
+                        "end": 150,
+                        "value": "json",
+                        "raw": "\"json\""
+                      },
+                      "kind": "init",
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    }
+                  ]
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          },
+          "phase": "defer"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 157,
+        "end": 206,
+        "expression": {
+          "type": "ImportExpression",
+          "start": 157,
+          "end": 205,
+          "source": {
+            "type": "Literal",
+            "start": 171,
+            "end": 176,
+            "value": "foo",
+            "raw": "\"foo\""
+          },
+          "options": {
+            "type": "ObjectExpression",
+            "start": 178,
+            "end": 204,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 180,
+                "end": 202,
+                "key": {
+                  "type": "Identifier",
+                  "start": 180,
+                  "end": 184,
+                  "name": "with"
+                },
+                "value": {
+                  "type": "ObjectExpression",
+                  "start": 186,
+                  "end": 202,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 188,
+                      "end": 200,
+                      "key": {
+                        "type": "Identifier",
+                        "start": 188,
+                        "end": 192,
+                        "name": "type"
+                      },
+                      "value": {
+                        "type": "Literal",
+                        "start": 194,
+                        "end": 200,
+                        "value": "json",
+                        "raw": "\"json\""
+                      },
+                      "kind": "init",
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    }
+                  ]
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          },
+          "phase": "source"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 207,
+        "end": 256,
+        "expression": {
+          "type": "ImportExpression",
+          "start": 207,
+          "end": 255,
+          "source": {
+            "type": "Literal",
+            "start": 220,
+            "end": 225,
+            "value": "foo",
+            "raw": "\"foo\""
+          },
+          "options": {
+            "type": "ObjectExpression",
+            "start": 227,
+            "end": 253,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 229,
+                "end": 251,
+                "key": {
+                  "type": "Identifier",
+                  "start": 229,
+                  "end": 233,
+                  "name": "with"
+                },
+                "value": {
+                  "type": "ObjectExpression",
+                  "start": 235,
+                  "end": 251,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 237,
+                      "end": 249,
+                      "key": {
+                        "type": "Identifier",
+                        "start": 237,
+                        "end": 241,
+                        "name": "type"
+                      },
+                      "value": {
+                        "type": "Literal",
+                        "start": 243,
+                        "end": 249,
+                        "value": "json",
+                        "raw": "\"json\""
+                      },
+                      "kind": "init",
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    }
+                  ]
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          },
+          "phase": "defer"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 257,
+        "end": 278,
+        "expression": {
+          "type": "ImportExpression",
+          "start": 257,
+          "end": 277,
+          "source": {
+            "type": "Literal",
+            "start": 271,
+            "end": 276,
+            "value": "foo",
+            "raw": "\"foo\""
+          },
+          "options": null,
+          "phase": "source"
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " every import call phase accepts the optional options argument",
+      "start": 0,
+      "end": 64
+    }
+  ],
+  "diagnostics": []
+}
