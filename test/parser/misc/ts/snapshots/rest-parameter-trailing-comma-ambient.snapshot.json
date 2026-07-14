@@ -1,0 +1,456 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 338,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 66,
+        "end": 122,
+        "declaration": {
+          "type": "TSDeclareFunction",
+          "start": 73,
+          "end": 122,
+          "id": {
+            "type": "Identifier",
+            "start": 90,
+            "end": 93,
+            "name": "foo",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "generator": false,
+          "async": false,
+          "params": [
+            {
+              "type": "RestElement",
+              "start": 94,
+              "end": 111,
+              "argument": {
+                "type": "Identifier",
+                "start": 97,
+                "end": 101,
+                "name": "args",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 101,
+                "end": 111,
+                "typeAnnotation": {
+                  "type": "TSArrayType",
+                  "start": 103,
+                  "end": 111,
+                  "elementType": {
+                    "type": "TSStringKeyword",
+                    "start": 103,
+                    "end": 109
+                  }
+                }
+              },
+              "optional": false,
+              "value": null
+            }
+          ],
+          "body": null,
+          "expression": false,
+          "typeParameters": null,
+          "returnType": {
+            "type": "TSTypeAnnotation",
+            "start": 113,
+            "end": 121,
+            "typeAnnotation": {
+              "type": "TSStringKeyword",
+              "start": 115,
+              "end": 121
+            }
+          },
+          "declare": true
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 124,
+        "end": 178,
+        "declaration": {
+          "type": "TSInterfaceDeclaration",
+          "start": 131,
+          "end": 178,
+          "id": {
+            "type": "Identifier",
+            "start": 141,
+            "end": 142,
+            "name": "I",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "typeParameters": null,
+          "extends": [],
+          "body": {
+            "type": "TSInterfaceBody",
+            "start": 143,
+            "end": 178,
+            "body": [
+              {
+                "type": "TSMethodSignature",
+                "start": 149,
+                "end": 176,
+                "key": {
+                  "type": "Identifier",
+                  "start": 149,
+                  "end": 150,
+                  "name": "m",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "computed": false,
+                "optional": false,
+                "kind": "method",
+                "typeParameters": null,
+                "params": [
+                  {
+                    "type": "RestElement",
+                    "start": 151,
+                    "end": 168,
+                    "argument": {
+                      "type": "Identifier",
+                      "start": 154,
+                      "end": 158,
+                      "name": "args",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 158,
+                      "end": 168,
+                      "typeAnnotation": {
+                        "type": "TSArrayType",
+                        "start": 160,
+                        "end": 168,
+                        "elementType": {
+                          "type": "TSStringKeyword",
+                          "start": 160,
+                          "end": 166
+                        }
+                      }
+                    },
+                    "optional": false,
+                    "value": null
+                  }
+                ],
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 170,
+                  "end": 176,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 172,
+                    "end": 176
+                  }
+                },
+                "accessibility": null,
+                "readonly": false,
+                "static": false
+              }
+            ]
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 180,
+        "end": 224,
+        "declaration": {
+          "type": "TSTypeAliasDeclaration",
+          "start": 187,
+          "end": 224,
+          "id": {
+            "type": "Identifier",
+            "start": 192,
+            "end": 193,
+            "name": "F",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "typeParameters": null,
+          "typeAnnotation": {
+            "type": "TSFunctionType",
+            "start": 196,
+            "end": 224,
+            "typeParameters": null,
+            "params": [
+              {
+                "type": "RestElement",
+                "start": 197,
+                "end": 214,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 200,
+                  "end": 204,
+                  "name": "args",
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false
+                },
+                "decorators": [],
+                "typeAnnotation": {
+                  "type": "TSTypeAnnotation",
+                  "start": 204,
+                  "end": 214,
+                  "typeAnnotation": {
+                    "type": "TSArrayType",
+                    "start": 206,
+                    "end": 214,
+                    "elementType": {
+                      "type": "TSStringKeyword",
+                      "start": 206,
+                      "end": 212
+                    }
+                  }
+                },
+                "optional": false,
+                "value": null
+              }
+            ],
+            "returnType": {
+              "type": "TSTypeAnnotation",
+              "start": 217,
+              "end": 224,
+              "typeAnnotation": {
+                "type": "TSVoidKeyword",
+                "start": 220,
+                "end": 224
+              }
+            }
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 226,
+        "end": 277,
+        "declaration": {
+          "type": "TSTypeAliasDeclaration",
+          "start": 233,
+          "end": 277,
+          "id": {
+            "type": "Identifier",
+            "start": 238,
+            "end": 240,
+            "name": "C2",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "typeParameters": null,
+          "typeAnnotation": {
+            "type": "TSConstructorType",
+            "start": 243,
+            "end": 277,
+            "abstract": false,
+            "typeParameters": null,
+            "params": [
+              {
+                "type": "RestElement",
+                "start": 248,
+                "end": 265,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 251,
+                  "end": 255,
+                  "name": "args",
+                  "decorators": [],
+                  "typeAnnotation": null,
+                  "optional": false
+                },
+                "decorators": [],
+                "typeAnnotation": {
+                  "type": "TSTypeAnnotation",
+                  "start": 255,
+                  "end": 265,
+                  "typeAnnotation": {
+                    "type": "TSArrayType",
+                    "start": 257,
+                    "end": 265,
+                    "elementType": {
+                      "type": "TSStringKeyword",
+                      "start": 257,
+                      "end": 263
+                    }
+                  }
+                },
+                "optional": false,
+                "value": null
+              }
+            ],
+            "returnType": {
+              "type": "TSTypeAnnotation",
+              "start": 268,
+              "end": 277,
+              "typeAnnotation": {
+                "type": "TSObjectKeyword",
+                "start": 271,
+                "end": 277
+              }
+            }
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 279,
+        "end": 337,
+        "declaration": {
+          "type": "ClassDeclaration",
+          "start": 286,
+          "end": 337,
+          "decorators": [],
+          "id": {
+            "type": "Identifier",
+            "start": 300,
+            "end": 301,
+            "name": "C",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "superClass": null,
+          "body": {
+            "type": "ClassBody",
+            "start": 302,
+            "end": 337,
+            "body": [
+              {
+                "type": "MethodDefinition",
+                "start": 308,
+                "end": 335,
+                "decorators": [],
+                "key": {
+                  "type": "Identifier",
+                  "start": 308,
+                  "end": 309,
+                  "name": "m",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "value": {
+                  "type": "TSEmptyBodyFunctionExpression",
+                  "start": 309,
+                  "end": 335,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "RestElement",
+                      "start": 310,
+                      "end": 327,
+                      "argument": {
+                        "type": "Identifier",
+                        "start": 313,
+                        "end": 317,
+                        "name": "args",
+                        "decorators": [],
+                        "typeAnnotation": null,
+                        "optional": false
+                      },
+                      "decorators": [],
+                      "typeAnnotation": {
+                        "type": "TSTypeAnnotation",
+                        "start": 317,
+                        "end": 327,
+                        "typeAnnotation": {
+                          "type": "TSArrayType",
+                          "start": 319,
+                          "end": 327,
+                          "elementType": {
+                            "type": "TSStringKeyword",
+                            "start": 319,
+                            "end": 325
+                          }
+                        }
+                      },
+                      "optional": false,
+                      "value": null
+                    }
+                  ],
+                  "body": null,
+                  "expression": false,
+                  "typeParameters": null,
+                  "returnType": {
+                    "type": "TSTypeAnnotation",
+                    "start": 329,
+                    "end": 335,
+                    "typeAnnotation": {
+                      "type": "TSVoidKeyword",
+                      "start": 331,
+                      "end": 335
+                    }
+                  },
+                  "declare": false
+                },
+                "kind": "method",
+                "computed": false,
+                "static": false,
+                "override": false,
+                "optional": false,
+                "accessibility": null
+              }
+            ]
+          },
+          "typeParameters": null,
+          "superTypeArguments": null,
+          "implements": [],
+          "abstract": false,
+          "declare": true
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " ambient contexts allow a trailing comma after a rest parameter",
+      "start": 0,
+      "end": 65
+    }
+  ],
+  "diagnostics": []
+}
