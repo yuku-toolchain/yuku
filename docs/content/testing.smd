@@ -13,9 +13,9 @@ The parser is validated against a dedicated repository, [parser-test-suite](http
 
 - [tc39/test262](https://github.com/tc39/test262), the official ECMAScript conformance suite, covering language grammar, built-ins, Annex B, Intl, and staging proposals.
 - [microsoft/TypeScript](https://github.com/microsoft/TypeScript) compiler test fixtures.
-- [babel](https://github.com/babel/babel) fixtures for JSX.
+- [babel](https://github.com/babel/babel) parser test fixtures, across JavaScript, TypeScript, and JSX.
 
-The suite holds over 50,000 tests, and it grows as upstream grows. As a rough shape, JavaScript makes up the bulk with around 45,000 cases, TypeScript adds around 8,000, and JSX contributes a smaller set of focused cases.
+The suite holds over 55,000 tests, and it grows as upstream grows. As a rough shape, JavaScript makes up the bulk with around 48,000 cases, TypeScript adds around 9,000, and JSX contributes a smaller set of focused cases.
 
 Each language suite splits into three categories.
 
@@ -43,7 +43,7 @@ The expected ASTs are not produced by Yuku. Snapshots are generated with an inde
 
 ## [Synced with the spec, daily]($section.id('synced-daily'))
 
-Test262 and the TypeScript compiler are moving targets, with new proposals and features landing in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
+Test262, the TypeScript compiler, and Babel are moving targets, with new proposals and features landing in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
 
 ## [Conformance status]($section.id('conformance-status'))
 
