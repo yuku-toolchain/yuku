@@ -151,7 +151,9 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     if (tag == .less_than) {
         if (parser.tree.isTs()) {
             const start = parser.current_token.span.start;
-            if (try ts.tryParseGenericArrow(parser, false, start)) |arrow| return arrow;
+             if (precedence <= Precedence.Assignment) {
+                 if (try ts.tryParseGenericArrow(parser, false, start)) |arrow| return arrow;
+             }
             if (!parser.tree.isJsx()) return ts.parseTypeAssertion(parser);
         }
         if (parser.tree.isJsx()) return jsx.parseJsxExpression(parser);
@@ -358,7 +360,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     }
 
     // async <T>(params) => ...
-    if (parser.tree.isTs() and next.tag == .less_than) {
+    if (parser.tree.isTs() and next.tag == .less_than and precedence <= Precedence.Assignment) {
         if (try ts.tryParseGenericArrow(parser, true, async_span.start)) |arrow| {
             if (is_escaped) try parser.reportEscapedKeyword(async_span);
             return arrow;
