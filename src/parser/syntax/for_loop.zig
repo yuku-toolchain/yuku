@@ -76,49 +76,43 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                 return parseForWithExpression(parser, start, is_for_await);
             }
 
-            switch (next.tag) {
-                // `using.`, `using(`, `using[` are expression forms where `using` is an identifier.
-                //
-                // `using` doesn't support destructuring, so `for (using {} = ...;;)` is invalid.
-                // by returning null (not a declaration), the caller produces a natural
-                // "expected ';', found '{'" error.
-                .in, .dot, .left_paren, .left_bracket, .left_brace => {
-                    return parseForWithExpression(parser, start, is_for_await);
-                },
-                // `using of` is ambiguous because `of` is a valid identifier:
-                //   `for (using of expr)` -> for-of loop, `using` is the expression
-                //   `for (using of = 1;;)` -> `using` declaration, `of` is the variable name
-                .of => {
-                    const using_identifier = try literals.parseIdentifier(parser) orelse
-                        return null;
-
-                    const after_of = parser.peekAhead() orelse return null;
-
-                    const after_of_is_decl = after_of.tag == .assign or
-                        after_of.tag == .semicolon or
-                        after_of.tag == .colon;
-                    if (after_of_is_decl) return parseForWithDeclaration(
-                        parser,
-                        start,
-                        is_for_await,
-                        .using,
-                        decl_start,
-                    );
-
-                    try grammar.expressionToPattern(parser, using_identifier, .assignable);
-
-                    return parseForOfStatementRest(parser, start, using_identifier, is_for_await);
-                },
-                else => {
-                    try parser.advance() orelse return null;
-                    return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
-                },
+            if (!variables.canStartUsingBinding(next.tag)) {
+                return parseForWithExpression(parser, start, is_for_await);
             }
+
+            // `using of` is ambiguous because `of` is a valid identifier:
+            //   `for (using of expr)` -> for-of loop, `using` is the expression
+            //   `for (using of = 1;;)` -> `using` declaration, `of` is the variable name
+            if (next.tag == .of) {
+                const using_identifier = try literals.parseIdentifier(parser) orelse
+                    return null;
+
+                const after_of = parser.peekAhead() orelse return null;
+
+                const after_of_is_decl = after_of.tag == .assign or
+                    after_of.tag == .semicolon or
+                    after_of.tag == .colon;
+                if (after_of_is_decl) return parseForWithDeclaration(
+                    parser,
+                    start,
+                    is_for_await,
+                    .using,
+                    decl_start,
+                );
+
+                try grammar.expressionToPattern(parser, using_identifier, .assignable);
+
+                return parseForOfStatementRest(parser, start, using_identifier, is_for_await);
+            }
+
+            try parser.advance() orelse return null;
+            return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
         },
         .await => {
-            const next = parser.peekAhead() orelse return null;
+            const is_declaration = try variables.isAwaitUsingDeclarationAhead(parser) orelse
+                return null;
 
-            if (next.tag != .using or next.hasLineTerminatorBefore()) {
+            if (!is_declaration) {
                 return parseForWithExpression(parser, start, is_for_await);
             }
 

@@ -177,30 +177,15 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 /// `await using` declaration, or fall through to expression statement.
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .await);
-    const next = parser.peekAhead() orelse return null;
 
-    return switch (next.tag) {
-        .using => {
-            const start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume 'await'
+    const is_declaration = try variables.isAwaitUsingDeclarationAhead(parser) orelse return null;
+    if (is_declaration) {
+        const start = parser.current_token.span.start;
+        try parser.advance() orelse return null; // consume 'await'
+        return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
+    }
 
-            // determine if 'using' is an identifier or a keyword
-            const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
-
-            if (!is_using_identifier) {
-                return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
-            }
-
-            return parseAwaitExpressionStatement(parser, start);
-        },
-        else => parseExpressionOrLabeledStatementOrDirective(parser),
-    };
-}
-
-fn parseAwaitExpressionStatement(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    const await_expr = try expressions.parseAwaitExpression(parser, start) orelse return null;
-
-    return parseExpressionStatementWithExpression(parser, await_expr);
+    return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
 /// import declaration, or fall through to import expression statement (`import(` / `import.`).

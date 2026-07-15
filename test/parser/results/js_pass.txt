@@ -1,8 +1,8 @@
 test/parser/suite/js/pass
 =========================
-Passed:       38543/38554 (99.97%)
-Failed:       11
-AST mismatch: 2/38545
+Passed:       38551/38554 (99.99%)
+Failed:       3
+AST mismatch: 1/38552
 
 ✓ test/parser/suite/js/pass/00004f77ab493ca5.js
 ✓ test/parser/suite/js/pass/0002acdfadf901db.js
@@ -2456,17 +2456,7 @@ AST mismatch: 2/38545
 ✓ test/parser/suite/js/pass/108907771104ed9e.js
 ✓ test/parser/suite/js/pass/108bc276b3271e50.js
 ✓ test/parser/suite/js/pass/108cbded01c872ff.js
-✗ test/parser/suite/js/pass/108e149da859dbc9.js (parse errors)
-error: Unexpected token ';' in binding pattern
-   |
- 1 | for (
- 2 |   using;
-   |        ^
- 3 |   reader = getReader(););
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/js/pass/108e149da859dbc9.js
 ✓ test/parser/suite/js/pass/1090bf55d958d0aa.js
 ✓ test/parser/suite/js/pass/1090c3f8a239744a.js
 ✓ test/parser/suite/js/pass/1091172cfd2ec4e7.js
@@ -3919,17 +3909,7 @@ error: Unexpected token ';' in binding pattern
 ✓ test/parser/suite/js/pass/19e8f5b0b66a70ac.js
 ✓ test/parser/suite/js/pass/19e913f5407db4e8.js
 ✓ test/parser/suite/js/pass/19e9199aa15d2630.js
-✗ test/parser/suite/js/pass/19e94b2aaf3df83b.js (parse errors)
-error: Unexpected token '``' in binding pattern
-   |
- 3 | for (using().foo of of);
- 4 | for (using``.foo of of);
-   |           ^^
- 5 | 
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/js/pass/19e94b2aaf3df83b.js
 ✓ test/parser/suite/js/pass/19ea660ff1414653.js
 ✓ test/parser/suite/js/pass/19ea7f17d75a0bd2.js
 ✓ test/parser/suite/js/pass/19eb2a533980a7e9.js
@@ -4949,17 +4929,7 @@ error: Unexpected token '``' in binding pattern
 ✓ test/parser/suite/js/pass/20d4356d3f1c1465.js
 ✓ test/parser/suite/js/pass/20d45301e294fc32.js
 ✓ test/parser/suite/js/pass/20d5bf891db8ef5d.js
-✗ test/parser/suite/js/pass/20d6d2534eabed06.js (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '+'
-   |
- 2 |   await using[x];
- 3 |   await using.x + await using(x) ? await using?.x : await using`x`;
-   |                 ^
- 4 | }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/js/pass/20d6d2534eabed06.js
 ✓ test/parser/suite/js/pass/20d9a59169008f33.js
 ✓ test/parser/suite/js/pass/20d9f69249e3c31a.js
 ✓ test/parser/suite/js/pass/20dd4a7a627cc1c5.js
@@ -7219,15 +7189,7 @@ error: Getter cannot be a generator
 ✓ test/parser/suite/js/pass/2fab126fffb385ad.js
 ✓ test/parser/suite/js/pass/2faecdfd403a9e6b.js
 ✓ test/parser/suite/js/pass/2fb0c1b1f8d90872.js
-✗ test/parser/suite/js/pass/2fb10c655279f6b3.js (parse errors)
-error: 'instanceof' is reserved and cannot be used as a binding identifier
-   |
- 1 | async function f() {
- 2 |   await using instanceof foo;
-   |               ^^^^^^^^^^
- 3 | }
-   |
-
+✓ test/parser/suite/js/pass/2fb10c655279f6b3.js
 ✓ test/parser/suite/js/pass/2fb3453d5362900b.js
 ✓ test/parser/suite/js/pass/2fb4fc1c939d4b8b.js
 ✓ test/parser/suite/js/pass/2fb7b94457ac8d54.js
@@ -7631,14 +7593,7 @@ error: 'instanceof' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/js/pass/3252c92ca11a5483.js
 ✓ test/parser/suite/js/pass/32552ba9269229b1.js
 ✓ test/parser/suite/js/pass/32575b835cd03a0d.module.js
-✗ test/parser/suite/js/pass/32593d4ad248f780.js (parse errors)
-error: 'in' is reserved and cannot be used as a binding identifier
-   |
- 1 | using in using instanceof using;
-   |       ^^
- 2 | 
-   |
-
+✓ test/parser/suite/js/pass/32593d4ad248f780.js
 ✓ test/parser/suite/js/pass/3259cee0e404dcc0.js
 ✓ test/parser/suite/js/pass/325a0b16152466f9.js
 ✓ test/parser/suite/js/pass/325a2455e47ba029.js
@@ -10066,15 +10021,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/js/pass/424af2de2bffcd51.js
 ✓ test/parser/suite/js/pass/424b2f20346bc3c5.js
 ✓ test/parser/suite/js/pass/424c2048f55ede7e.js
-✗ test/parser/suite/js/pass/424da60c18b6e833.js (parse errors)
-error: 'in' is reserved and cannot be used as a binding identifier
-   |
- 1 | async function f() {
- 2 |   await using in foo;
-   |               ^^
- 3 | }
-   |
-
+✓ test/parser/suite/js/pass/424da60c18b6e833.js
 ✓ test/parser/suite/js/pass/424ee9683a6acdc7.module.js
 ✓ test/parser/suite/js/pass/424f4d5671b944c7.js
 ✓ test/parser/suite/js/pass/424fb5db0f6734b6.js
@@ -20897,7 +20844,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/js/pass/8b6ae2c3bee6c863.js
 ✓ test/parser/suite/js/pass/8b6bded4f89f89f6.js
 ✓ test/parser/suite/js/pass/8b6c6df5e97f609d.js
-✗ test/parser/suite/js/pass/8b6f5313a26b6b70.js (snapshot mismatch)
+✓ test/parser/suite/js/pass/8b6f5313a26b6b70.js
 ✓ test/parser/suite/js/pass/8b72dfb0d499b865.js
 ✓ test/parser/suite/js/pass/8b74cd818b2c89d9.js
 ✓ test/parser/suite/js/pass/8b76a09ae90b11ae.js
@@ -31486,17 +31433,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/js/pass/d0f0a91612d0dd0e.js
 ✓ test/parser/suite/js/pass/d0f1f7c91a31d0ce.js
 ✓ test/parser/suite/js/pass/d0f2971def205559.js
-✗ test/parser/suite/js/pass/d0f2d35af96a3806.js (parse errors)
-error: Unexpected token '``' in binding pattern
-   |
- 3 | for (using().foo in []);
- 4 | for (using``.foo in []);
-   |           ^^
- 5 | 
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/js/pass/d0f2d35af96a3806.js
 ✓ test/parser/suite/js/pass/d0f6849c88006c48.js
 ✓ test/parser/suite/js/pass/d0f6fb88cfaaaa28.js
 ✓ test/parser/suite/js/pass/d0f84ff36394f0b5.js

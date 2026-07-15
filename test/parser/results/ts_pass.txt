@@ -1,8 +1,8 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8667/8672 (99.94%)
-Failed:       5
-AST mismatch: 3/8670
+Passed:       8666/8672 (99.93%)
+Failed:       6
+AST mismatch: 3/8669
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -8082,7 +8082,15 @@ error: Invalid element in assignment pattern
 ✓ test/parser/suite/ts/pass/edd4fdbe2cf2d0e0.ts
 ✓ test/parser/suite/ts/pass/edd6811e64ec814d.ts
 ✓ test/parser/suite/ts/pass/eddb583645f80a1a.ts
-✓ test/parser/suite/ts/pass/ee0720d6a0d68f01.ts
+✗ test/parser/suite/ts/pass/ee0720d6a0d68f01.ts (parse errors)
+error: Expected ';' after for-loop init, but found 'using'
+   |
+ 9 | {
+10 |   for (await using of of of) {};
+   |              ^^^^^
+11 | }
+   |
+
 ✓ test/parser/suite/ts/pass/ee0780dc360cb222.ts
 ✓ test/parser/suite/ts/pass/ee0e7352126ab68c.ts
 ✓ test/parser/suite/ts/pass/ee1405c09b6f3828.ts

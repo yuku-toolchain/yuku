@@ -208,6 +208,11 @@ pub fn canStartBinding(tag: TokenTag) bool {
 /// committing to a declaration that cannot parse.
 pub fn canStartLetBinding(tag: TokenTag) bool {
     if (tag == .left_bracket or tag == .left_brace) return true;
+    return canStartUsingBinding(tag);
+}
+
+/// `using` binds only a plain identifier, and reserved words never bind.
+pub fn canStartUsingBinding(tag: TokenTag) bool {
     return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
 }
 
@@ -236,9 +241,29 @@ pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
 
     // if next token starts a BindingList and ASI cannot insert a semicolon,
     // treat `using` as the contextual keyword (declaration form).
-    if (next.tag.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
+    if (canStartUsingBinding(next.tag) and !parser.canInsertImplicitSemicolon(next)) {
         return false;
     }
 
     return true; // `using` is an identifier
+}
+
+/// `await [no LineTerminator here] using [no LineTerminator here] Binding`
+/// in an [+Await] context heads an AwaitUsingDeclaration.
+pub fn isAwaitUsingDeclarationAhead(parser: *Parser) Error!?bool {
+    std.debug.assert(parser.current_token.tag == .await);
+
+    if (!parser.context.await) return false;
+
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    const using_token = peek.next() orelse return null;
+    if (using_token.tag != .using) return false;
+    if (using_token.hasLineTerminatorBefore()) return false;
+
+    const binding = peek.next() orelse return null;
+    if (binding.hasLineTerminatorBefore()) return false;
+
+    return canStartUsingBinding(binding.tag);
 }

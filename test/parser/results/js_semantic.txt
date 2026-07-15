@@ -2293,12 +2293,14 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/0f28fa85de46a483.js
-error: 'await using' is not allowed at the top level of a script
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
    |
  1 | await using x = bar();
-   | ^^^^^^^^^^^^^^^^^^^^^^
+   |       ^^^^^
  2 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/js/semantic/0f3652dea9e0ae65.js
 error: 'super' property access is only valid inside a method or class body
@@ -8880,12 +8882,14 @@ error: 'arguments' is not allowed in class field initializers or static blocks
    |
 
 ✓ test/parser/suite/js/semantic/37a7850f313127a8.js
-error: 'await using' is not allowed at the top level of a script
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
    |
  1 | await using z = null;
-   | ^^^^^^^^^^^^^^^^^^^^^
+   |       ^^^^^
  2 | {
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/js/semantic/37bc8534570fd5c4.module.js
 error: Identifier 'f' has already been declared
@@ -19395,11 +19399,13 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/7a6f20d74aed16d8.js
-error: 'await using' is not allowed at the top level of a script
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
    |
  1 | await using x = null;
-   | ^^^^^^^^^^^^^^^^^^^^^
+   |       ^^^^^
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/js/semantic/7a7f48f2ae9de97d.js
 error: Private field '#foo' must be declared in an enclosing class

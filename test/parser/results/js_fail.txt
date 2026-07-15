@@ -1,7 +1,7 @@
 test/parser/suite/js/fail
 =========================
-Passed:       4967/4992 (99.50%)
-Failed:       25
+Passed:       4969/4992 (99.54%)
+Failed:       23
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
 error: Expected ',' or ')' in parenthesized expression, but found ';'
@@ -16264,7 +16264,15 @@ error: 'catch' is reserved and cannot be used as a binding identifier
    |     ^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/fail/568b2dc1084c2029.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/568b2dc1084c2029.js
+error: Expected ';' after for-loop init, but found 'basic'
+   |
+ 2 |   for (await using
+ 3 |     basic of []);
+   |     ^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/fail/568e5f904880decd.js
 error: Numeric separator cannot appear at the end of a numeric literal
    |
@@ -17487,7 +17495,7 @@ error: Private names are only allowed in property accesses (`obj.#field`) or in 
    |
 
 ✓ test/parser/suite/js/fail/5d4084e759b838a1.js
-error: 'void' is reserved and cannot be used as a binding identifier
+error: Expected ';' after for-loop init, but found 'void'
    |
  1 | async () => {
  2 |   for(await using void of []);
@@ -22044,7 +22052,17 @@ error: 'default' is reserved and cannot be used as a binding identifier
    |       ^^^^^^^
    |
 
-✗ test/parser/suite/js/fail/762115fc9c119794.module.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/762115fc9c119794.module.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
+   |
+ 2 |   await
+ 3 |   using using = h();
+   |         ^^^^^
+ 4 | }
+   |
+   = help: Try inserting a semicolon here
+
+
 ✓ test/parser/suite/js/fail/7624feb2a003e001.js
 error: Invalid character at start of identifier
    |
@@ -33230,13 +33248,13 @@ error: Bad escape sequence in untagged template literal
    |
 
 ✓ test/parser/suite/js/fail/b1b8b98c5e96723a.js
-error: Lexical declaration cannot appear in a single-statement context
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
    |
  1 | label: await using x = bar();
-   |        ^^^^^^^^^^^^^^^^^^^^^^
+   |              ^^^^^
  2 | 
    |
-   = help: Wrap this declaration in a block statement
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/js/fail/b1d9a5bf407eb79c.js
@@ -34516,14 +34534,14 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/b8c5626288b2d83b.js
-error: Lexical declaration cannot appear in a single-statement context
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
    |
  1 | {
  2 |   while (1) await using a = foo;
-   |             ^^^^^^^^^^^^^^^^^^^^
+   |                   ^^^^^
  3 |   for (;0;) await using b = foo;
    |
-   = help: Wrap this declaration in a block statement
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/js/fail/b8cf257ce1bcc4da.js
@@ -40849,13 +40867,15 @@ error: Expected '(' after 'if', but found '.'
    |
 
 ✓ test/parser/suite/js/fail/dce7a42ecfa630fb.js
-error: 'void' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'void'
    |
  2 |   // using 1 declarator
  3 |   using void = f();
    |         ^^^^
  4 | }
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/js/fail/dcf748ef0cc087bb.js
 error: Numeric literal cannot contain consecutive separators
@@ -41257,14 +41277,14 @@ error: Member expression is not allowed in binding pattern
 
 
 ✓ test/parser/suite/js/fail/deef4d468a18d668.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '='
+error: Invalid element in assignment pattern
    |
  1 | async function f() {
  2 |   await using [ foo ] = f();
-   |                       ^
+   |   ^^^^^^^^^^^^^^^^^^^
  3 | }
    |
-   = help: Try inserting a semicolon here
+   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
 ✓ test/parser/suite/js/fail/def42f10edd9bd8c.js
@@ -45444,7 +45464,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/f566f4f1773185aa.js
-error: 'void' is reserved and cannot be used as a binding identifier
+error: Expected ';' after for-loop init, but found 'void'
    |
  1 | {
  2 |   for(using void of []);

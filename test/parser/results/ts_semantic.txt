@@ -876,13 +876,15 @@ error: Private field '#prop' must be declared in an enclosing class
    |
 
 ✓ test/parser/suite/ts/semantic/4fbe0b328fa8af31.ts
-error: 'await using' is not allowed at the top level of a script
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'using'
    |
  6 | 
  7 | await using x = null;
-   | ^^^^^^^^^^^^^^^^^^^^^
+   |       ^^^^^
  8 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/semantic/5286e2bbaba0939b.ts
 error: Illegal break statement
