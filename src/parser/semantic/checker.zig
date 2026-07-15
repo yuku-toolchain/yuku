@@ -611,7 +611,7 @@ pub const Checker = struct {
             "'import' declaration",
             ctx,
         );
-        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
+        try self.checkDuplicateWithAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
@@ -627,7 +627,7 @@ pub const Checker = struct {
             "'export' declaration",
             ctx,
         );
-        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
+        try self.checkDuplicateWithAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
@@ -664,7 +664,7 @@ pub const Checker = struct {
             node_index,
             ctx,
         );
-        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
+        try self.checkDuplicateWithAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
@@ -1382,7 +1382,7 @@ pub const Checker = struct {
         };
     }
 
-    fn checkDuplicateWithClaudeAttributes(
+    fn checkDuplicateWithAttributes(
         self: *Self,
         attributes: ast.IndexRange,
         ctx: *SemanticCtx,
