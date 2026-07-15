@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       233/233 (100.00%)
+Passed:       254/254 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -71,6 +71,30 @@ error: 'export' declaration may only appear at the top level
    | ^^^^
  5 | }
    |
+
+✓ test/parser/suite/ts/semantic/0b1b56feb8e2a1b8.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | class A {}
+   |       ~ 'A' was first declared as a class here
+ 2 | class A {}
+   |       ^
+   |       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
+
+✓ test/parser/suite/ts/semantic/0c225cc26d1da7c8.ts
+error: Identifier 'X' has already been declared
+   |
+ 1 | enum X {}
+   |      ~ 'X' was first declared as an enum here
+ 2 | interface X {}
+   |           ^
+   |           ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'X'
+
 
 ✓ test/parser/suite/ts/semantic/0c63afab136ff78a.module.ts
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -274,6 +298,18 @@ error: Identifier 'e1111' has already been declared
  5 | 
    |
    = help: Consider removing or renaming this declaration of 'e1111'
+
+
+✓ test/parser/suite/ts/semantic/1a5d610a345f2858.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 1 | enum Foo {}
+   |      ~~~ 'Foo' was first declared as an enum here
+ 2 | function Foo() {}
+   |          ^^^
+   |          ~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
 
 
 ✓ test/parser/suite/ts/semantic/1a964a2c4756dc39.ts
@@ -596,6 +632,18 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
+✓ test/parser/suite/ts/semantic/36ecd50a966edb89.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 1 | function Foo() {}
+   |          ~~~ 'Foo' was first declared as a function here
+ 2 | enum Foo {}
+   |      ^^^
+   |      ~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
 ✓ test/parser/suite/ts/semantic/377bbceb3554e15c.ts
 error: Identifier 'x' has already been declared
    |
@@ -793,6 +841,18 @@ error: Identifier 'baz' has already been declared
    = help: Consider removing or renaming this declaration of 'baz'
 
 
+✓ test/parser/suite/ts/semantic/49a7f24b331f09dc.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 1 | let Foo;
+   |     ~~~ 'Foo' was first declared as a variable here
+ 2 | enum Foo {}
+   |      ^^^
+   |      ~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
 ✓ test/parser/suite/ts/semantic/4c7dd49b55c52bff.ts
 error: Identifier 'a' has already been declared
    |
@@ -854,6 +914,18 @@ error: Use of undefined label 'target'
    |   ^^^^^^^^^^^^^^^^
  4 | }
    |
+
+✓ test/parser/suite/ts/semantic/573057c550ec7be0.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | type A = number;
+   |      ~ 'A' was first declared as a type alias here
+ 2 | type A = string;
+   |      ^
+   |      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
 
 ✓ test/parser/suite/ts/semantic/57658e1e4c0e3966.module.ts
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -980,6 +1052,30 @@ error: Identifier 'x4' has already been declared
    = help: Consider removing or renaming this declaration of 'x4'
 
 
+✓ test/parser/suite/ts/semantic/6b1e94fe0cbfe05d.ts
+error: Identifier 'X' has already been declared
+   |
+ 1 | enum X {}
+   |      ~ 'X' was first declared as an enum here
+ 2 | class X {}
+   |       ^
+   |       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'X'
+
+
+✓ test/parser/suite/ts/semantic/6d665615206122c2.ts
+error: Identifier 'X' has already been declared
+   |
+ 1 | enum X {}
+   |      ~ 'X' was first declared as an enum here
+ 2 | const enum X {}
+   |            ^
+   |            ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'X'
+
+
 ✓ test/parser/suite/ts/semantic/6dee4998cf1f9d02.module.ts
 error: Private field '#prop' must be declared in an enclosing class
    |
@@ -1005,6 +1101,30 @@ error: Cannot continue to label 'target' across function boundaries
    |       ^^^^^^^^^^^^^^^^
  9 |     }
    |
+
+✓ test/parser/suite/ts/semantic/7352767b8666249b.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | type A = number;
+   |      ~ 'A' was first declared as a type alias here
+ 2 | interface A {}
+   |           ^
+   |           ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
+
+✓ test/parser/suite/ts/semantic/75377c602f83f9d4.ts
+error: Identifier 'X' has already been declared
+   |
+ 1 | interface X {}
+   |           ~ 'X' was first declared as an interface here
+ 2 | enum X {}
+   |      ^
+   |      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'X'
+
 
 ✓ test/parser/suite/ts/semantic/753f78bf3ef9b503.ts
 error: Identifier 'x' has already been declared
@@ -1093,6 +1213,18 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
+✓ test/parser/suite/ts/semantic/7a30fd30be992ffd.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | type A = number;
+   |      ~ 'A' was first declared as a type alias here
+ 2 | enum A {}
+   |      ^
+   |      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
+
 ✓ test/parser/suite/ts/semantic/7ab551d56cc54e08.module.ts
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -1170,6 +1302,18 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  4 | var eval;
    |     ^^^^
    |
+
+✓ test/parser/suite/ts/semantic/8446ac2b67c4a712.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 1 | enum Foo {}
+   |      ~~~ 'Foo' was first declared as an enum here
+ 2 | let Foo;
+   |     ^^^
+   |     ~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
 
 ✓ test/parser/suite/ts/semantic/8447f2a7404b4c89.ts
 error: 'super()' is only valid in a constructor of a derived class
@@ -1572,6 +1716,18 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
  7 | }
    |
 
+✓ test/parser/suite/ts/semantic/a51393b32204ad51.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | class A {}
+   |       ~ 'A' was first declared as a class here
+ 2 | type A = number;
+   |      ^
+   |      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
+
 ✓ test/parser/suite/ts/semantic/a5f9c2a73058382a.ts
 error: 'super' property access is only valid inside a method or class body
    |
@@ -1615,6 +1771,17 @@ error: Identifier 'v' has already been declared
    = help: Consider removing or renaming this declaration of 'v'
 
 
+✓ test/parser/suite/ts/semantic/a96776561426b407.ts
+error: A class can only have one constructor
+   |
+ 1 | class Foo {
+ 2 |   constructor(set, readonly) {}
+   |   ~~~~~~~~~~~ first constructor defined here
+ 3 |   constructor(set: any, readonly: boolean) {}
+   |   ^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/ts/semantic/a98d6aaeb4a1b036.module.ts
 error: Duplicate export of 'default'
    |
@@ -1653,6 +1820,19 @@ error: Deleting a variable in strict mode is not allowed
    |          ^^^^^^^^^
  8 |     set [[0, 1]](v) { }
    |
+
+✓ test/parser/suite/ts/semantic/ac2a25589313fc01.ts
+error: Identifier 'X' has already been declared
+   |
+ 1 | enum X {}
+   |      ~ 'X' was first declared as an enum here
+ 2 | type X = number;
+   |      ^
+   |      ~ cannot be redeclared here
+ 3 | 
+   |
+   = help: Consider removing or renaming this declaration of 'X'
+
 
 ✓ test/parser/suite/ts/semantic/aee66b63f2862974.module.ts
 error: 'public' is reserved in strict mode and cannot be used as a binding identifier
@@ -1996,6 +2176,18 @@ error: Illegal break statement
    = help: A 'break' statement can only be used within an enclosing iteration or switch statement
 
 
+✓ test/parser/suite/ts/semantic/c13da97825b3c67c.module.ts
+error: Duplicate export of 'default'
+   |
+ 4 | // `export abstract class {}` is not valid TypeScript.
+ 5 | export default abstract class { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 6 | export default abstract class C4 { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 7 | // `abstract class` is not valid as an expression.
+   |
+
 ✓ test/parser/suite/ts/semantic/c1fb3ef863086776.module.ts
 error: 'public' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -2026,6 +2218,30 @@ error: Identifier 'M' has already been declared
 13 | 
    |
    = help: Consider removing or renaming this declaration of 'M'
+
+
+✓ test/parser/suite/ts/semantic/c7192104ff76c15d.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | class A {}
+   |       ~ 'A' was first declared as a class here
+ 2 | enum A {}
+   |      ^
+   |      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
+
+✓ test/parser/suite/ts/semantic/c861416e3f6080e7.ts
+error: Identifier 'A' has already been declared
+   |
+ 1 | type A = number;
+   |      ~ 'A' was first declared as a type alias here
+ 2 | class A {}
+   |       ^
+   |       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'A'
 
 
 ✓ test/parser/suite/ts/semantic/ca0cdde37aaec33e.module.ts
@@ -2125,6 +2341,14 @@ error: Identifier 'CC1' has already been declared
    |
    = help: Consider removing or renaming this declaration of 'CC1'
 
+
+✓ test/parser/suite/ts/semantic/d00cdf8ccb1add2d.ts
+error: Cannot use import statement outside a module
+   |
+ 1 | import type { Context } from 'react';
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 2 | import { Context } from 'react';
+   |
 
 ✓ test/parser/suite/ts/semantic/d017c9355a112b5f.module.ts
 error: Duplicate export of 'default'
@@ -2483,6 +2707,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Add an 'extends' clause to the class or remove the 'super()' call
 
 
+✓ test/parser/suite/ts/semantic/f1aec79048b71e95.ts
+error: Duplicate private name '#f'
+   |
+ 1 | class Test {
+ 2 |   #f(x: string): number;
+   |   ~~~~~~~~~~~~~~~~~~~~~~ first declared here
+ 3 |   #f(x: number): string;
+   |   ^^^^^^^^^^^^^^^^^^^^^^
+ 4 |   #f(x: string | number): string | number {
+   |
+
 ✓ test/parser/suite/ts/semantic/f2c6db3ad9c90b42.ts
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -2551,6 +2786,18 @@ error: Private field '#prop' must be declared in an enclosing class
    |                       ^^^^^
 12 |     }
    |
+
+✓ test/parser/suite/ts/semantic/f9a3e5b61ee95bc8.ts
+error: Identifier 'X' has already been declared
+   |
+ 1 | const enum X {}
+   |            ~ 'X' was first declared as an enum here
+ 2 | enum X {}
+   |      ^
+   |      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'X'
+
 
 ✓ test/parser/suite/ts/semantic/fe0df9565e88edf4.ts
 error: Identifier 'x' has already been declared

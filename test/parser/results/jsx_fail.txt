@@ -1,7 +1,7 @@
 test/parser/suite/jsx/fail
 ==========================
-Passed:       14/14 (100.00%)
-Failed:       0
+Passed:       19/23 (82.61%)
+Failed:       4
 
 ✓ test/parser/suite/jsx/fail/007be3029be81746.jsx
 error: Expected string literal or JSX expression for attribute value, but found 'bar'
@@ -11,6 +11,27 @@ error: Expected string literal or JSX expression for attribute value, but found 
  2 | 
    |
    = help: JSX attribute values must be either a string literal (e.g. "value") or an expression in braces (e.g. {expression})
+
+
+✓ test/parser/suite/jsx/fail/1d4cd6a3bf14941f.jsx
+error: Expected '</' to close the JSX element, but found 'end of file'
+   |
+ 1 | <div>() => {}
+ 2 | 
+   | ^
+   |
+   = help: Add a closing tag to match the opening element
+
+
+✓ test/parser/suite/jsx/fail/2224661258279331.jsx
+error: Expected ';' after class field, but found '<'
+   |
+ 1 | class NodeUtils extends UtilParser {
+ 2 |   finishNodeAt<T : NodeType>(node: T): T {
+   |               ^
+ 3 |     return node;
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/jsx/fail/2577591d02114569.module.jsx
@@ -23,6 +44,7 @@ error: Expected JSX element name, but found '!'
    = help: JSX element names must start with a valid identifier
 
 
+✗ test/parser/suite/jsx/fail/2e5f061b58b219c3.jsx (expected error, but parsed successfully)
 ✓ test/parser/suite/jsx/fail/356094f49f10eea4.jsx
 error: Expected '>' to close JSX closing fragment, but found 'something'
    |
@@ -32,6 +54,15 @@ error: Expected '>' to close JSX closing fragment, but found 'something'
    |
    = help: Add '>' to complete the fragment closing tag
 
+
+✓ test/parser/suite/jsx/fail/44c9428e28910f29.jsx
+error: 'do' is reserved and cannot be used as an identifier
+   |
+ 5 |       {
+ 6 |         do {
+   |         ^^
+ 7 |           if (loggedIn) {
+   |
 
 ✓ test/parser/suite/jsx/fail/59c4f348793b3069.jsx
 error: Expected JSX element name, but found '>'
@@ -94,6 +125,17 @@ error: Expected '</' to close the JSX element, but found 'end of file'
    = help: Add a closing tag to match the opening element
 
 
+✗ test/parser/suite/jsx/fail/9b8239d602194027.jsx (expected error, but parsed successfully)
+✓ test/parser/suite/jsx/fail/ab67a6eb1c134bbe.jsx
+error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
+   |
+ 1 | var x: "string";
+   |      ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
 ✓ test/parser/suite/jsx/fail/b226f7bb3b73ae99.jsx
 error: Expected '>' to close JSX opening element, but found '.'
    |
@@ -112,6 +154,17 @@ error: Line terminator not allowed in regular expression literal
  2 | 
    |
    = help: Try removing the line break here or escaping it within the regex pattern
+
+
+✗ test/parser/suite/jsx/fail/c5d2e6e97c749191.jsx (expected error, but parsed successfully)
+✓ test/parser/suite/jsx/fail/d2843ea4509626b5.jsx
+error: Setter must have exactly one parameter
+   |
+ 1 | ({ set x(){} })
+   |         ^^
+ 2 | 
+   |
+   = help: Setters accept exactly one argument.
 
 
 ✓ test/parser/suite/jsx/fail/daff53a98ac58ae5.jsx
@@ -134,6 +187,7 @@ error: Expected '>' to close JSX opening element, but found '='
    = help: Add '>' to close the JSX tag
 
 
+✗ test/parser/suite/jsx/fail/ea91641e2b71f4d3.jsx (expected error, but parsed successfully)
 ✓ test/parser/suite/jsx/fail/f7cb5b3ea1fefffa.jsx
 error: JSX attribute value cannot be an empty expression
    |
