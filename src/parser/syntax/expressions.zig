@@ -665,17 +665,29 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
     };
 
-    // member expression chain (. [] ! and tagged templates)
+    var type_arguments: ast.NodeIndex = .null;
+
+    // member expression chain (. [] ! `<T>` and tagged templates)
     while (true) {
+        // committed type arguments bind to the constructor unless a
+        // template tags the callee, `new C<T>`x`` news the tagged template
+        if (type_arguments != .null and
+            parser.current_token.tag != .template_head and
+            parser.current_token.tag != .no_substitution_template) break;
+
         callee = switch (parser.current_token.tag) {
             .dot => try parseStaticMemberExpression(parser, callee, false) orelse return null,
             .left_bracket => try parseComputedMemberExpression(parser, callee, false) orelse
                 return null,
-            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(
-                parser,
-                callee,
-                .null,
-            ) orelse return null,
+            .template_head, .no_substitution_template => blk: {
+                const tagged = try parseTaggedTemplateExpression(
+                    parser,
+                    callee,
+                    type_arguments,
+                ) orelse return null;
+                type_arguments = .null;
+                break :blk tagged;
+            },
             // ts `!` binds to the callee, so `new (a?.b)!()` constructs with
             // arguments instead of calling the finished `new` expression
             .logical_not => if (parser.tree.isTs() and
@@ -691,16 +703,17 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
                 );
                 return null;
             },
+            // `new Foo<T>(...)` or `new Foo<T>`. on commit, the args fold
+            // straight into the `NewExpression`
+            .less_than, .left_shift => blk: {
+                if (!parser.tree.isTs()) break;
+                type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
+                if (type_arguments == .null) break;
+                break :blk callee;
+            },
             else => break,
         };
     }
-
-    // `new Foo<T>(...)` or `new Foo<T>`. parse `<T>` speculatively. on
-    // commit, the args fold straight into the `NewExpression`
-    const type_arguments = if (parser.tree.isTs())
-        try ts.tryParseTypeArgumentsInExpression(parser)
-    else
-        ast.NodeIndex.null;
 
     // optional arguments
     var arguments = ast.IndexRange.empty;
@@ -1281,14 +1294,18 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                     .{ .start = parser.tree.span(expr).start, .end = bang_end },
                 );
             },
-            // `a?.b<T>(c)` stays in the chain. we only commit when `(`
-            // follows the type args. a bare `a?.b<T>` closes the chain
-            // so the outer pratt loop builds a `TSInstantiationExpression`.
-            // `<<` covers nested generics like `a?.b<<T>(x: T) => R>(c)`.
+            // `a?.b<T>(c)` stays in the chain. a bare `a?.b<T>` rewinds and
+            // closes the chain so the outer pratt loop wraps the
+            // `TSInstantiationExpression` around it.
             .less_than, .left_shift => {
                 if (!is_ts) break;
+                const checkpoint = parser.checkpoint();
                 const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
-                if (type_arguments == .null or parser.current_token.tag != .left_paren) break;
+                if (type_arguments == .null) break;
+                if (parser.current_token.tag != .left_paren) {
+                    parser.rewind(checkpoint);
+                    break;
+                }
                 expr = try parseCallExpression(parser, expr, false, type_arguments) orelse
                     return null;
             },
@@ -1328,10 +1345,12 @@ fn parseOptionalChainElement(
     // `a?.<T>(args)` generic call right after `?.`. only `<...>(...)`
     // is valid here. tagged templates and bare instantiations aren't.
     if (parser.tree.isTs() and ts.isAngleOpen(tag)) {
+        const checkpoint = parser.checkpoint();
         const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
         if (type_arguments != .null and parser.current_token.tag == .left_paren) {
             return parseCallExpression(parser, object_node, optional, type_arguments);
         }
+        parser.rewind(checkpoint);
     }
 
     return switch (tag) {

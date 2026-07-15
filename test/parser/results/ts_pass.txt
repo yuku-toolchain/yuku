@@ -1,8 +1,8 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8666/8672 (99.93%)
-Failed:       6
-AST mismatch: 3/8669
+Passed:       8670/8672 (99.98%)
+Failed:       2
+AST mismatch: 0/8670
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -1958,7 +1958,7 @@ error: 'this' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/39df0a69446db953.ts
 ✓ test/parser/suite/ts/pass/39e7243468cd6f47.ts
 ✓ test/parser/suite/ts/pass/39e924bd47cc4e05.ts
-✗ test/parser/suite/ts/pass/39ee68a10301d453.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/39ee68a10301d453.ts
 ✓ test/parser/suite/ts/pass/39f07b4dac39e9e0.ts
 ✓ test/parser/suite/ts/pass/39f2fa36d459d80d.ts
 ✓ test/parser/suite/ts/pass/39fcc7375de21c23.ts
@@ -2369,7 +2369,7 @@ error: 'this' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/45ba38b18114cca7.module.ts
 ✓ test/parser/suite/ts/pass/45cb11707cd091f8.ts
 ✓ test/parser/suite/ts/pass/45d0841cba075228.module.ts
-✗ test/parser/suite/ts/pass/45d70b1bc4242b67.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/45d70b1bc4242b67.ts
 ✓ test/parser/suite/ts/pass/45dc57c359a1e4dc.ts
 ✓ test/parser/suite/ts/pass/45dd775e0eb7f3a6.ts
 ✓ test/parser/suite/ts/pass/45e6d19679900943.module.ts
@@ -2518,16 +2518,7 @@ error: 'this' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/49fb4f502762b36e.ts
 ✓ test/parser/suite/ts/pass/49fea8c941da1f42.ts
 ✓ test/parser/suite/ts/pass/4a020edb9f17678c.ts
-✗ test/parser/suite/ts/pass/4a0279704765bbb7.ts (parse errors)
-error: Invalid element in assignment pattern
-   |
- 1 | fn(x < y, x >= y)
-   |    ^^^^^^^^^^
- 2 | 
-   |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
-
-
+✓ test/parser/suite/ts/pass/4a0279704765bbb7.ts
 ✓ test/parser/suite/ts/pass/4a1cff0a12d24167.ts
 ✓ test/parser/suite/ts/pass/4a3eb6f595442a8c.ts
 ✓ test/parser/suite/ts/pass/4a48dfcf1253bc8b.ts
@@ -6236,7 +6227,7 @@ error: Invalid element in assignment pattern
 ✓ test/parser/suite/ts/pass/b74de7e26071be60.ts
 ✓ test/parser/suite/ts/pass/b751ef557303924e.ts
 ✓ test/parser/suite/ts/pass/b765cc494186c1f9.ts
-✗ test/parser/suite/ts/pass/b76b6473893d061c.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/b76b6473893d061c.ts
 ✓ test/parser/suite/ts/pass/b76be91aa5a8d72b.ts
 ✓ test/parser/suite/ts/pass/b76e350f8f271894.ts
 ✓ test/parser/suite/ts/pass/b77274cc13c05b3d.ts

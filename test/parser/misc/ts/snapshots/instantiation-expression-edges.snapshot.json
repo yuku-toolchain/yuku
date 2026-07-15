@@ -1,0 +1,853 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 308,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 98,
+        "end": 116,
+        "expression": {
+          "type": "CallExpression",
+          "start": 98,
+          "end": 115,
+          "callee": {
+            "type": "Identifier",
+            "start": 98,
+            "end": 100,
+            "name": "fn",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "arguments": [
+            {
+              "type": "BinaryExpression",
+              "start": 101,
+              "end": 106,
+              "left": {
+                "type": "Identifier",
+                "start": 101,
+                "end": 102,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 105,
+                "end": 106,
+                "name": "y",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "operator": "<"
+            },
+            {
+              "type": "BinaryExpression",
+              "start": 108,
+              "end": 114,
+              "left": {
+                "type": "Identifier",
+                "start": 108,
+                "end": 109,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 113,
+                "end": 114,
+                "name": "y",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "operator": ">="
+            }
+          ],
+          "optional": false,
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 117,
+        "end": 139,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 117,
+          "end": 138,
+          "left": {
+            "type": "Identifier",
+            "start": 117,
+            "end": 118,
+            "name": "f",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "BinaryExpression",
+            "start": 121,
+            "end": 138,
+            "left": {
+              "type": "BinaryExpression",
+              "start": 121,
+              "end": 128,
+              "left": {
+                "type": "Identifier",
+                "start": 121,
+                "end": 122,
+                "name": "h",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "Literal",
+                "start": 127,
+                "end": 128,
+                "value": 0,
+                "raw": "0"
+              },
+              "operator": ">>>"
+            },
+            "right": {
+              "type": "BinaryExpression",
+              "start": 131,
+              "end": 138,
+              "left": {
+                "type": "Identifier",
+                "start": 131,
+                "end": 132,
+                "name": "j",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "Literal",
+                "start": 137,
+                "end": 138,
+                "value": 0,
+                "raw": "0"
+              },
+              "operator": ">>>"
+            },
+            "operator": "<"
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 140,
+        "end": 151,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 140,
+          "end": 150,
+          "left": {
+            "type": "Identifier",
+            "start": 140,
+            "end": 141,
+            "name": "g",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "BinaryExpression",
+            "start": 144,
+            "end": 150,
+            "left": {
+              "type": "BinaryExpression",
+              "start": 144,
+              "end": 147,
+              "left": {
+                "type": "Identifier",
+                "start": 144,
+                "end": 145,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 146,
+                "end": 147,
+                "name": "b",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "operator": "<"
+            },
+            "right": {
+              "type": "Identifier",
+              "start": 149,
+              "end": 150,
+              "name": "c",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "operator": ">="
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 152,
+        "end": 163,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 152,
+          "end": 162,
+          "left": {
+            "type": "Identifier",
+            "start": 152,
+            "end": 153,
+            "name": "r",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "BinaryExpression",
+            "start": 156,
+            "end": 162,
+            "left": {
+              "type": "Identifier",
+              "start": 156,
+              "end": 157,
+              "name": "f",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "right": {
+              "type": "BinaryExpression",
+              "start": 158,
+              "end": 162,
+              "left": {
+                "type": "Identifier",
+                "start": 158,
+                "end": 159,
+                "name": "T",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 161,
+                "end": 162,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "operator": ">>"
+            },
+            "operator": "<"
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 164,
+        "end": 179,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 164,
+          "end": 178,
+          "left": {
+            "type": "Identifier",
+            "start": 164,
+            "end": 168,
+            "name": "inst",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "TSInstantiationExpression",
+            "start": 171,
+            "end": 178,
+            "expression": {
+              "type": "ChainExpression",
+              "start": 171,
+              "end": 175,
+              "expression": {
+                "type": "MemberExpression",
+                "start": 171,
+                "end": 175,
+                "object": {
+                  "type": "Identifier",
+                  "start": 171,
+                  "end": 172,
+                  "name": "a",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 174,
+                  "end": 175,
+                  "name": "b",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "computed": false,
+                "optional": true
+              }
+            },
+            "typeArguments": {
+              "type": "TSTypeParameterInstantiation",
+              "start": 175,
+              "end": 178,
+              "params": [
+                {
+                  "type": "TSTypeReference",
+                  "start": 176,
+                  "end": 177,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 176,
+                    "end": 177,
+                    "name": "c",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              ]
+            }
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 180,
+        "end": 199,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 180,
+          "end": 198,
+          "left": {
+            "type": "Identifier",
+            "start": 180,
+            "end": 186,
+            "name": "called",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "ChainExpression",
+            "start": 189,
+            "end": 198,
+            "expression": {
+              "type": "CallExpression",
+              "start": 189,
+              "end": 198,
+              "callee": {
+                "type": "MemberExpression",
+                "start": 189,
+                "end": 193,
+                "object": {
+                  "type": "Identifier",
+                  "start": 189,
+                  "end": 190,
+                  "name": "a",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 192,
+                  "end": 193,
+                  "name": "b",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "computed": false,
+                "optional": true
+              },
+              "arguments": [],
+              "optional": false,
+              "typeArguments": {
+                "type": "TSTypeParameterInstantiation",
+                "start": 193,
+                "end": 196,
+                "params": [
+                  {
+                    "type": "TSTypeReference",
+                    "start": 194,
+                    "end": 195,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 194,
+                      "end": 195,
+                      "name": "c",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                ]
+              }
+            }
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 200,
+        "end": 223,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 200,
+          "end": 222,
+          "left": {
+            "type": "Identifier",
+            "start": 200,
+            "end": 206,
+            "name": "nested",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "CallExpression",
+            "start": 209,
+            "end": 222,
+            "callee": {
+              "type": "Identifier",
+              "start": 209,
+              "end": 210,
+              "name": "f",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "arguments": [
+              {
+                "type": "Identifier",
+                "start": 220,
+                "end": 221,
+                "name": "x",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            ],
+            "optional": false,
+            "typeArguments": {
+              "type": "TSTypeParameterInstantiation",
+              "start": 210,
+              "end": 219,
+              "params": [
+                {
+                  "type": "TSTypeReference",
+                  "start": 211,
+                  "end": 218,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 211,
+                    "end": 212,
+                    "name": "A",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": {
+                    "type": "TSTypeParameterInstantiation",
+                    "start": 212,
+                    "end": 218,
+                    "params": [
+                      {
+                        "type": "TSTypeReference",
+                        "start": 213,
+                        "end": 217,
+                        "typeName": {
+                          "type": "Identifier",
+                          "start": 213,
+                          "end": 214,
+                          "name": "B",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "typeArguments": {
+                          "type": "TSTypeParameterInstantiation",
+                          "start": 214,
+                          "end": 217,
+                          "params": [
+                            {
+                              "type": "TSTypeReference",
+                              "start": 215,
+                              "end": 216,
+                              "typeName": {
+                                "type": "Identifier",
+                                "start": 215,
+                                "end": 216,
+                                "name": "C",
+                                "decorators": [],
+                                "optional": false,
+                                "typeAnnotation": null
+                              },
+                              "typeArguments": null
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 224,
+        "end": 238,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 224,
+          "end": 237,
+          "left": {
+            "type": "Identifier",
+            "start": 224,
+            "end": 227,
+            "name": "lit",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "CallExpression",
+            "start": 230,
+            "end": 237,
+            "callee": {
+              "type": "Literal",
+              "start": 230,
+              "end": 231,
+              "value": 0,
+              "raw": "0"
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 235,
+                "end": 236,
+                "value": 1,
+                "raw": "1"
+              }
+            ],
+            "optional": false,
+            "typeArguments": {
+              "type": "TSTypeParameterInstantiation",
+              "start": 231,
+              "end": 234,
+              "params": [
+                {
+                  "type": "TSTypeReference",
+                  "start": 232,
+                  "end": 233,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 232,
+                    "end": 233,
+                    "name": "T",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              ]
+            }
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 239,
+        "end": 259,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 239,
+          "end": 258,
+          "left": {
+            "type": "Identifier",
+            "start": 239,
+            "end": 245,
+            "name": "tagged",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "NewExpression",
+            "start": 248,
+            "end": 258,
+            "callee": {
+              "type": "TaggedTemplateExpression",
+              "start": 252,
+              "end": 258,
+              "tag": {
+                "type": "Identifier",
+                "start": 252,
+                "end": 253,
+                "name": "C",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "quasi": {
+                "type": "TemplateLiteral",
+                "start": 256,
+                "end": 258,
+                "quasis": [
+                  {
+                    "type": "TemplateElement",
+                    "start": 256,
+                    "end": 258,
+                    "value": {
+                      "raw": "",
+                      "cooked": ""
+                    },
+                    "tail": true
+                  }
+                ],
+                "expressions": []
+              },
+              "typeArguments": {
+                "type": "TSTypeParameterInstantiation",
+                "start": 253,
+                "end": 256,
+                "params": [
+                  {
+                    "type": "TSTypeReference",
+                    "start": 254,
+                    "end": 255,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 254,
+                      "end": 255,
+                      "name": "T",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                ]
+              }
+            },
+            "arguments": [],
+            "typeArguments": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 260,
+        "end": 289,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 260,
+          "end": 288,
+          "left": {
+            "type": "Identifier",
+            "start": 260,
+            "end": 271,
+            "name": "constructed",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "NewExpression",
+            "start": 274,
+            "end": 288,
+            "callee": {
+              "type": "TaggedTemplateExpression",
+              "start": 278,
+              "end": 285,
+              "tag": {
+                "type": "Identifier",
+                "start": 278,
+                "end": 279,
+                "name": "C",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "quasi": {
+                "type": "TemplateLiteral",
+                "start": 282,
+                "end": 285,
+                "quasis": [
+                  {
+                    "type": "TemplateElement",
+                    "start": 282,
+                    "end": 285,
+                    "value": {
+                      "raw": "x",
+                      "cooked": "x"
+                    },
+                    "tail": true
+                  }
+                ],
+                "expressions": []
+              },
+              "typeArguments": {
+                "type": "TSTypeParameterInstantiation",
+                "start": 279,
+                "end": 282,
+                "params": [
+                  {
+                    "type": "TSTypeReference",
+                    "start": 280,
+                    "end": 281,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 280,
+                      "end": 281,
+                      "name": "T",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                ]
+              }
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 286,
+                "end": 287,
+                "value": 1,
+                "raw": "1"
+              }
+            ],
+            "typeArguments": null
+          },
+          "operator": "="
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 290,
+        "end": 307,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 290,
+          "end": 306,
+          "left": {
+            "type": "Identifier",
+            "start": 290,
+            "end": 295,
+            "name": "plain",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "right": {
+            "type": "NewExpression",
+            "start": 298,
+            "end": 306,
+            "callee": {
+              "type": "Identifier",
+              "start": 302,
+              "end": 303,
+              "name": "C",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "arguments": [],
+            "typeArguments": {
+              "type": "TSTypeParameterInstantiation",
+              "start": 303,
+              "end": 306,
+              "params": [
+                {
+                  "type": "TSTypeReference",
+                  "start": 304,
+                  "end": 305,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 304,
+                    "end": 305,
+                    "name": "T",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              ]
+            }
+          },
+          "operator": "="
+        },
+        "directive": null
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " expression type arguments close only with a lone `>`, fused closers keep",
+      "start": 0,
+      "end": 75
+    },
+    {
+      "type": "Line",
+      "value": " the operator parse",
+      "start": 76,
+      "end": 97
+    }
+  ],
+  "diagnostics": []
+}
