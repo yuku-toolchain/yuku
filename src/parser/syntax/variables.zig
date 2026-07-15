@@ -203,17 +203,16 @@ pub fn canStartBinding(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
+/// non-reserved identifier-like tokens can begin a `BindingIdentifier`.
+pub fn canStartBindingIdentifier(tag: TokenTag) bool {
+    return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
+}
+
 /// like `canStartBinding`, but resolving the `let` ambiguity. reserved words
 /// can never bind, so `let in obj` keeps `let` as an identifier instead of
 /// committing to a declaration that cannot parse.
 pub fn canStartLetBinding(tag: TokenTag) bool {
-    if (tag == .left_bracket or tag == .left_brace) return true;
-    return canStartUsingBinding(tag);
-}
-
-/// `using` binds only a plain identifier, and reserved words never bind.
-pub fn canStartUsingBinding(tag: TokenTag) bool {
-    return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
+    return tag == .left_bracket or tag == .left_brace or canStartBindingIdentifier(tag);
 }
 
 /// Determines if 'let' should be parsed as an identifier rather than a variable
@@ -239,13 +238,8 @@ pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
 
     const next = parser.peekAhead() orelse return null;
 
-    // if next token starts a BindingList and ASI cannot insert a semicolon,
-    // treat `using` as the contextual keyword (declaration form).
-    if (canStartUsingBinding(next.tag) and !parser.canInsertImplicitSemicolon(next)) {
-        return false;
-    }
-
-    return true; // `using` is an identifier
+    // [+Using] using [no LineTerminator here] BindingList
+    return next.hasLineTerminatorBefore() or !canStartBindingIdentifier(next.tag);
 }
 
 /// `await [no LineTerminator here] using [no LineTerminator here] Binding`
@@ -265,5 +259,5 @@ pub fn isAwaitUsingDeclarationAhead(parser: *Parser) Error!?bool {
     const binding = peek.next() orelse return null;
     if (binding.hasLineTerminatorBefore()) return false;
 
-    return canStartUsingBinding(binding.tag);
+    return canStartBindingIdentifier(binding.tag);
 }

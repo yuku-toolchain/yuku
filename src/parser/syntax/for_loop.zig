@@ -4,7 +4,6 @@ const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 
-const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
 const grammar = @import("../grammar.zig");
@@ -72,37 +71,28 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             const next = parser.peekAhead() orelse return null;
 
             // [+Using] using [no LineTerminator here] ForBinding
-            if (next.hasLineTerminatorBefore()) {
+            if (next.hasLineTerminatorBefore() or
+                !variables.canStartBindingIdentifier(next.tag))
+            {
                 return parseForWithExpression(parser, start, is_for_await);
             }
 
-            if (!variables.canStartUsingBinding(next.tag)) {
-                return parseForWithExpression(parser, start, is_for_await);
-            }
-
-            // `using of` is ambiguous because `of` is a valid identifier:
-            //   `for (using of expr)` -> for-of loop, `using` is the expression
-            //   `for (using of = 1;;)` -> `using` declaration, `of` is the variable name
+            // `using of` binds `of` only when `=`, `;`, or `:` follows,
+            // else `using` is the expression of a for-of loop
             if (next.tag == .of) {
-                const using_identifier = try literals.parseIdentifier(parser) orelse
-                    return null;
+                const after_of = blk: {
+                    var peek = parser.beginPeek();
+                    defer peek.end();
+                    _ = peek.next();
+                    break :blk peek.next() orelse return null;
+                };
 
-                const after_of = parser.peekAhead() orelse return null;
-
-                const after_of_is_decl = after_of.tag == .assign or
+                const of_is_binding = after_of.tag == .assign or
                     after_of.tag == .semicolon or
                     after_of.tag == .colon;
-                if (after_of_is_decl) return parseForWithDeclaration(
-                    parser,
-                    start,
-                    is_for_await,
-                    .using,
-                    decl_start,
-                );
-
-                try grammar.expressionToPattern(parser, using_identifier, .assignable);
-
-                return parseForOfStatementRest(parser, start, using_identifier, is_for_await);
+                if (!of_is_binding) {
+                    return parseForWithExpression(parser, start, is_for_await);
+                }
             }
 
             try parser.advance() orelse return null;
