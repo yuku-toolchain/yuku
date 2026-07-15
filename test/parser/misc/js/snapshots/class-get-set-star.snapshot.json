@@ -1,0 +1,152 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 131,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 74,
+        "end": 101,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 80,
+          "end": 81,
+          "name": "A"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 82,
+          "end": 101,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 86,
+              "end": 89,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 86,
+                "end": 89,
+                "name": "get"
+              },
+              "value": null,
+              "computed": false,
+              "static": false
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 92,
+              "end": 99,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 93,
+                "end": 94,
+                "name": "a"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 94,
+                "end": 99,
+                "id": null,
+                "generator": true,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 97,
+                  "end": 99,
+                  "body": []
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 103,
+        "end": 130,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 109,
+          "end": 110,
+          "name": "B"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 111,
+          "end": 130,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 115,
+              "end": 118,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 115,
+                "end": 118,
+                "name": "set"
+              },
+              "value": null,
+              "computed": false,
+              "static": false
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 121,
+              "end": 128,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 122,
+                "end": 123,
+                "name": "b"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 123,
+                "end": 128,
+                "id": null,
+                "generator": true,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 126,
+                  "end": 128,
+                  "body": []
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " get/set before a generator star is a field, never an accessor modifier",
+      "start": 0,
+      "end": 73
+    }
+  ],
+  "diagnostics": []
+}

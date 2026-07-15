@@ -1,8 +1,8 @@
 test/parser/suite/js/pass
 =========================
-Passed:       38551/38554 (99.99%)
-Failed:       3
-AST mismatch: 1/38552
+Passed:       38553/38554 (100.00%)
+Failed:       1
+AST mismatch: 1/38554
 
 ✓ test/parser/suite/js/pass/00004f77ab493ca5.js
 ✓ test/parser/suite/js/pass/0002acdfadf901db.js
@@ -7112,17 +7112,7 @@ AST mismatch: 1/38552
 ✓ test/parser/suite/js/pass/2f39e9d0b8c10c1c.js
 ✓ test/parser/suite/js/pass/2f3ca7b0cddef19d.js
 ✓ test/parser/suite/js/pass/2f3cc33232495f61.js
-✗ test/parser/suite/js/pass/2f412f6a028fc934.js (parse errors)
-error: Getter cannot be a generator
-   |
-14 |   get
-15 |   *a(){}
-   |    ^
-16 | }
-   |
-   = help: Remove the '*' from the getter definition.
-
-
+✓ test/parser/suite/js/pass/2f412f6a028fc934.js
 ✓ test/parser/suite/js/pass/2f42a3fb78e781e7.js
 ✓ test/parser/suite/js/pass/2f4363b80a510bd3.js
 ✓ test/parser/suite/js/pass/2f47770cc5721d81.js
@@ -36025,15 +36015,7 @@ error: Getter cannot be a generator
 ✓ test/parser/suite/js/pass/ef5ace361763d89c.js
 ✓ test/parser/suite/js/pass/ef5ad49190095fb7.js
 ✓ test/parser/suite/js/pass/ef5c0c89714a0bf4.js
-✗ test/parser/suite/js/pass/ef5da829d473858b.js (parse errors)
-error: Unexpected token '@'
-   |
- 1 | @bar class Foo extends @foo class Bar {} {}
-   |                        ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/js/pass/ef5da829d473858b.js
 ✓ test/parser/suite/js/pass/ef5e55d0df719ec3.js
 ✓ test/parser/suite/js/pass/ef5e5c1f3134f970.js
 ✓ test/parser/suite/js/pass/ef601078ba9712b3.js

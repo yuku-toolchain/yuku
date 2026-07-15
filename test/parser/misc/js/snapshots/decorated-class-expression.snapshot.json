@@ -1,0 +1,174 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 163,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 68,
+        "end": 111,
+        "decorators": [
+          {
+            "type": "Decorator",
+            "start": 68,
+            "end": 72,
+            "expression": {
+              "type": "Identifier",
+              "start": 69,
+              "end": 72,
+              "name": "bar"
+            }
+          }
+        ],
+        "id": {
+          "type": "Identifier",
+          "start": 79,
+          "end": 82,
+          "name": "Foo"
+        },
+        "superClass": {
+          "type": "ClassExpression",
+          "start": 91,
+          "end": 108,
+          "decorators": [
+            {
+              "type": "Decorator",
+              "start": 91,
+              "end": 95,
+              "expression": {
+                "type": "Identifier",
+                "start": 92,
+                "end": 95,
+                "name": "foo"
+              }
+            }
+          ],
+          "id": {
+            "type": "Identifier",
+            "start": 102,
+            "end": 105,
+            "name": "Bar"
+          },
+          "superClass": null,
+          "body": {
+            "type": "ClassBody",
+            "start": 106,
+            "end": 108,
+            "body": []
+          }
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 109,
+          "end": 111,
+          "body": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 113,
+        "end": 131,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 113,
+          "end": 130,
+          "left": {
+            "type": "Identifier",
+            "start": 113,
+            "end": 114,
+            "name": "x"
+          },
+          "right": {
+            "type": "ClassExpression",
+            "start": 117,
+            "end": 130,
+            "decorators": [
+              {
+                "type": "Decorator",
+                "start": 117,
+                "end": 121,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 118,
+                  "end": 121,
+                  "name": "dec"
+                }
+              }
+            ],
+            "id": null,
+            "superClass": null,
+            "body": {
+              "type": "ClassBody",
+              "start": 128,
+              "end": 130,
+              "body": []
+            }
+          },
+          "operator": "="
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 132,
+        "end": 162,
+        "expression": {
+          "type": "CallExpression",
+          "start": 132,
+          "end": 161,
+          "callee": {
+            "type": "Identifier",
+            "start": 132,
+            "end": 133,
+            "name": "f"
+          },
+          "arguments": [
+            {
+              "type": "ClassExpression",
+              "start": 134,
+              "end": 160,
+              "decorators": [
+                {
+                  "type": "Decorator",
+                  "start": 134,
+                  "end": 138,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 135,
+                    "end": 138,
+                    "name": "dec"
+                  }
+                }
+              ],
+              "id": null,
+              "superClass": {
+                "type": "Identifier",
+                "start": 153,
+                "end": 157,
+                "name": "Base"
+              },
+              "body": {
+                "type": "ClassBody",
+                "start": 158,
+                "end": 160,
+                "body": []
+              }
+            }
+          ],
+          "optional": false
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " decorators are valid on class expressions in expression position",
+      "start": 0,
+      "end": 67
+    }
+  ],
+  "diagnostics": []
+}

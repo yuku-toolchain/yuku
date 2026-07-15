@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       42/42 (100.00%)
+Passed:       43/43 (100.00%)
 Failed:       0
-AST mismatch: 0/42
+AST mismatch: 0/43
 
 ✓ test/parser/misc/ts/ambient-file-declarations.module.d.ts
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
@@ -48,6 +48,7 @@ error: A type argument list cannot be empty
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/function-overloads.ts
+✓ test/parser/misc/ts/heritage-this-and-reserved-names.ts
 ✓ test/parser/misc/ts/instantiation-expression-edges.ts
 ✓ test/parser/misc/ts/instantiation-property-access-invalid.ts
 error: An instantiation expression cannot be followed by a property access

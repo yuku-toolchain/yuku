@@ -15268,11 +15268,11 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/5100850e15d4d904.js
-error: Unexpected token '@'
+error: Unexpected token 'end of file'
    |
  1 | 1 + @@
-   |      ^
  2 | 
+   | ^
    |
    = help: Expected an expression
 
@@ -41809,10 +41809,10 @@ error: 'default' is reserved and cannot be used as a binding identifier
    |
 
 ✓ test/parser/suite/js/fail/e12eef61db344c06.js
-error: Unexpected token '@'
+error: Unexpected token ')'
    |
  1 | @@@@FUNCTION@@@@(0, @@@@VALUE@@@@);
-   |  ^
+   |                                  ^
  2 | 
    |
    = help: Expected an expression

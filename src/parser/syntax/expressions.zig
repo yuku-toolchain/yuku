@@ -116,12 +116,6 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseUpdateExpression(parser, true, .null);
     }
 
-    if (tag == .at) {
-        const start = parser.current_token.span.start;
-        const decorators = try extensions.parseDecorators(parser) orelse return null;
-        return class.parseClassDecorated(parser, .{ .is_expression = true }, start, decorators);
-    }
-
     if (tag.isUnaryOperator()) {
         return parseUnaryExpression(parser);
     }
@@ -247,6 +241,16 @@ pub inline fn parsePrimaryExpression(
         .left_brace => parseObjectExpression(parser, opts.in_cover),
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
+        .at => blk: {
+            const decorators_start = parser.current_token.span.start;
+            const decorators = try extensions.parseDecorators(parser) orelse break :blk null;
+            break :blk try class.parseClassDecorated(
+                parser,
+                .{ .is_expression = true },
+                decorators_start,
+                decorators,
+            );
+        },
         else => {
             // contextual keywords used as identifiers (let, as, from, get, set, etc.)
             if (parser.current_token.tag.isIdentifierLike()) {

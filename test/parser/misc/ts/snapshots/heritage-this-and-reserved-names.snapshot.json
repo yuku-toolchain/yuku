@@ -1,0 +1,122 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 158,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 102,
+        "end": 131,
+        "id": {
+          "type": "Identifier",
+          "start": 112,
+          "end": 113,
+          "name": "A",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [
+          {
+            "type": "TSInterfaceHeritage",
+            "start": 122,
+            "end": 128,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 122,
+              "end": 128,
+              "object": {
+                "type": "ThisExpression",
+                "start": 122,
+                "end": 126
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 127,
+                "end": 128,
+                "name": "B",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "computed": false,
+              "optional": false
+            },
+            "typeArguments": null
+          }
+        ],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 129,
+          "end": 131,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 133,
+        "end": 157,
+        "id": {
+          "type": "Identifier",
+          "start": 138,
+          "end": 139,
+          "name": "T",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSTypeQuery",
+          "start": 142,
+          "end": 156,
+          "exprName": {
+            "type": "TSQualifiedName",
+            "start": 149,
+            "end": 156,
+            "left": {
+              "type": "Identifier",
+              "start": 149,
+              "end": 152,
+              "name": "var",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "right": {
+              "type": "Identifier",
+              "start": 153,
+              "end": 156,
+              "name": "bar",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          "typeArguments": null
+        },
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " a `this` heritage root and reserved type query names parse, the type",
+      "start": 0,
+      "end": 71
+    },
+    {
+      "type": "Line",
+      "value": " checker rejects them later",
+      "start": 72,
+      "end": 101
+    }
+  ],
+  "diagnostics": []
+}

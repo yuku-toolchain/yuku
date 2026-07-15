@@ -347,9 +347,13 @@ pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
     return parseHeritageClause(parser, .implements, .class);
 }
 
-// dotted heritage name, plain `.prop` chain only
+// dotted heritage name, plain `.prop` chain only.
 fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
-    var expression = try literals.parseIdentifier(parser) orelse return null;
+    var expression = if (parser.current_token.tag == .this) blk: {
+        const span = parser.current_token.span;
+        try parser.advance() orelse return null;
+        break :blk try parser.tree.addNode(.{ .this_expression = .{} }, span);
+    } else try literals.parseIdentifier(parser) orelse return null;
 
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null;
