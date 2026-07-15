@@ -519,6 +519,19 @@ fn toObjectPatternImpl(
             // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, prop, context);
 
+            // BindingRestProperty[Yield, Await] : ... BindingIdentifier[?Yield, ?Await]
+            const argument = parser.tree.data(prop).binding_rest_element.argument;
+            switch (parser.tree.data(argument)) {
+                .array_pattern, .object_pattern => try parser.report(
+                    parser.tree.span(argument),
+                    "Object rest argument cannot be a destructuring pattern",
+                    .{ .help = "Collect the remaining properties into an identifier" ++
+                        " and destructure it separately." },
+                ),
+                else => {},
+            }
+
+
             rest = prop;
             properties_len = @intCast(i);
             break;

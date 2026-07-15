@@ -1,7 +1,7 @@
 test/parser/suite/js/fail
 =========================
-Passed:       4969/4992 (99.54%)
-Failed:       23
+Passed:       4977/4992 (99.70%)
+Failed:       15
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
 error: Expected ',' or ')' in parenthesized expression, but found ';'
@@ -1219,7 +1219,16 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
  4 |   }
    |
 
-✗ test/parser/suite/js/fail/059ef4a08cbfd3bc.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/059ef4a08cbfd3bc.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | ({...[]} = {})
+   |      ^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/05ae832c56edfce9.module.js
 error: A string literal cannot be used as an exported binding without 'from'
    |
@@ -8463,7 +8472,16 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/2bb1c394a2a72c18.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/2bb1c394a2a72c18.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | var {...[]} = {}
+   |         ^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/2bda76258cd1b5b4.js
 error: Expected '(' after 'if', but found 'true'
    |
@@ -20262,7 +20280,16 @@ error: Expected ';' after for-loop init, but found 'null'
  2 |   await null;
    |
 
-✗ test/parser/suite/js/fail/6c013aecdee6b528.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/6c013aecdee6b528.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | function test({...{a}}) {}
+   |                   ^^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/6c14037010c9bdf2.js
 error: Unexpected token ','
    |
@@ -25073,7 +25100,16 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
  4 |   }
    |
 
-✗ test/parser/suite/js/fail/8543884090c9a56b.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/8543884090c9a56b.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | var {...{z}} = { z: 1};
+   |         ^^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/8548474b8e7827b7.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
@@ -31014,7 +31050,16 @@ error: Expected ';' after class field, but found 'a'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/js/fail/a5c7f380aeaad53a.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/a5c7f380aeaad53a.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | ({...{}} = {})
+   |      ^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/a5cdf6484cfec4f4.js
 error: 'return' statement is only valid inside a function
    |
@@ -32587,7 +32632,16 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
-✗ test/parser/suite/js/fail/ada1b8e3d05fe93d.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/ada1b8e3d05fe93d.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | function test({...{}}) {}
+   |                   ^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/ada2c1c9cf216d4f.js
 error: Unexpected token '...'
    |
@@ -38394,7 +38448,16 @@ error: Empty parentheses are only valid as arrow function parameters
    | ^^
    |
 
-✗ test/parser/suite/js/fail/cf4568d4edfe65e0.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/cf4568d4edfe65e0.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | var { ...{ x = 5 } } = {x : 1};
+   |          ^^^^^^^^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/cf4ae79c94591871.js
 error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
@@ -47122,7 +47185,16 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
  3 | }};
    |
 
-✗ test/parser/suite/js/fail/fe07f200afb4455c.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/fe07f200afb4455c.js
+error: Object rest argument cannot be a destructuring pattern
+   |
+ 1 | function test({...[]}) {}
+   |                   ^^
+ 2 | 
+   |
+   = help: Collect the remaining properties into an identifier and destructure it separately.
+
+
 ✓ test/parser/suite/js/fail/fe15fc8e76857816.js
 error: Unexpected token '>'
    |
