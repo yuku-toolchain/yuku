@@ -1,7 +1,7 @@
 test/parser/suite/js/fail
 =========================
-Passed:       4977/4992 (99.70%)
-Failed:       15
+Passed:       4979/4992 (99.74%)
+Failed:       13
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
 error: Expected ',' or ')' in parenthesized expression, but found ';'
@@ -6484,7 +6484,16 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
    |                    ^^^^^
    |
 
-✗ test/parser/suite/js/fail/223858aa0179c4a6.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/223858aa0179c4a6.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+   |
+ 1 | true || async x => {}
+   |               ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
 ✓ test/parser/suite/js/fail/2240108f282c31e1.js
 error: A rest element cannot have an initializer
    |
@@ -44312,7 +44321,16 @@ error: 'case' is reserved and cannot be used as an identifier
    | ^^^^
    |
 
-✗ test/parser/suite/js/fail/eeb071edc9745ccf.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/eeb071edc9745ccf.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+   |
+ 1 | typeof async x => {}
+   |              ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
 ✓ test/parser/suite/js/fail/eeb45e66e2a11bd8.js
 error: Rest element must be the last element
    |
