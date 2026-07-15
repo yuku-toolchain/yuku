@@ -1287,8 +1287,10 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                 try parser.advance() orelse return null;
                 expr = try parseOptionalChainElement(parser, expr, true) orelse return null;
             },
-            // `m?.[0]!` keeps the `!` inside the chain so it lifts
-            // naturally under the enclosing `ChainExpression`.
+            // m?.[0]!
+            //       ^ parsed here, inside the chain, so it lifts
+            //         naturally under the enclosing wrapper:
+            //         ChainExpression(TSNonNullExpression(m?.[0]))
             .logical_not => {
                 if (!is_ts or parser.current_token.hasLineTerminatorBefore()) break;
                 const bang_end = parser.current_token.span.end;
@@ -1298,9 +1300,13 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                     .{ .start = parser.tree.span(expr).start, .end = bang_end },
                 );
             },
-            // `a?.b<T>(c)` stays in the chain. a bare `a?.b<T>` rewinds and
-            // closes the chain so the outer pratt loop wraps the
-            // `TSInstantiationExpression` around it.
+            // a?.b<T>(c)
+            //     ^~^ `(` follows -> generic call, stays in the chain
+            //
+            // a?.b<T>
+            //     ^~^ bare -> rewind past `<T>` and close the chain,
+            //         so the outer pratt loop wraps the result:
+            //         TSInstantiationExpression(ChainExpression(a?.b))
             .less_than, .left_shift => {
                 if (!is_ts) break;
                 const checkpoint = parser.checkpoint();
@@ -1346,8 +1352,9 @@ fn parseOptionalChainElement(
         return parseMemberProperty(parser, object_node, optional);
     }
 
-    // `a?.<T>(args)` generic call right after `?.`. only `<...>(...)`
-    // is valid here. tagged templates and bare instantiations aren't.
+    // a?.<T>(args)
+    //    ^~^ generic call right after `?.` -- the only valid form here.
+    //        a?.<T>`tpl` and a bare a?.<T> rewind instead.
     if (parser.tree.isTs() and ts.isAngleOpen(tag)) {
         const checkpoint = parser.checkpoint();
         const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
