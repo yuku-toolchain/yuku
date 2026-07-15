@@ -49,8 +49,10 @@ pub fn parseExpression(
     while (true) {
         const current_token = parser.current_token;
 
-        // `<` is dispatched before the binary precedence gate so it
-        // can act as a call-level postfix instead of relational.
+        // f<T>(x)
+        //  ^ dispatched before the binary precedence gate so it can
+        //    act as a call-level postfix (generic call/instantiation)
+        //    instead of the relational `f < T`.
         if (is_ts and ts.isAngleOpen(current_token.tag) and
             maxLeftPrecedence(parser.tree.data(left)) >= Precedence.Call)
         {
@@ -84,9 +86,12 @@ pub fn parseExpression(
 /// restricted productions that would otherwise let the pratt loop fold
 /// two statements into one under ASI:
 ///
-/// - `a [no LineTerminator here] ++` / `--` (postfix update).
-/// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
-/// - `a [no LineTerminator here] !` (ts non-null assertion).
+/// a
+/// ++b
+/// ^~^ line break before `++` -> not infix: parses as `a; ++b;`
+///     under ASI, never as postfix `a++`. same for `--`,
+///     `as T` / `satisfies T` (ts narrowing), and `!` (ts non-null).
+///
 /// `!` is also infix only in TypeScript, in plain JS it is purely prefix.
 ///
 inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
@@ -673,8 +678,13 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     // member expression chain (. [] ! `<T>` and tagged templates)
     while (true) {
-        // committed type arguments bind to the constructor unless a
-        // template tags the callee, `new C<T>`x`` news the tagged template
+        // new C<T>(x)
+        //      ^~^ committed type arguments bind to the constructor,
+        //          unless a template follows:
+        //
+        // new C<T>`x`
+        //      ^~^ tags the template instead:
+        //          NewExpression(TaggedTemplateExpression<T>(C))
         if (type_arguments != .null and
             parser.current_token.tag != .template_head and
             parser.current_token.tag != .no_substitution_template) break;
@@ -692,8 +702,10 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
                 type_arguments = .null;
                 break :blk tagged;
             },
-            // ts `!` binds to the callee, so `new (a?.b)!()` constructs with
-            // arguments instead of calling the finished `new` expression
+            // new (a?.b)!()
+            //           ^ binds to the callee, so this constructs with
+            //             arguments: NewExpression(TSNonNull(a?.b), ())
+            //             not a call on the finished `new` expression
             .logical_not => if (parser.tree.isTs() and
                 !parser.current_token.hasLineTerminatorBefore())
                 try ts.parseNonNullExpression(parser, callee) orelse return null
@@ -707,8 +719,9 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
                 );
                 return null;
             },
-            // `new Foo<T>(...)` or `new Foo<T>`. on commit, the args fold
-            // straight into the `NewExpression`
+            // new Foo<T>(...)   or   new Foo<T>
+            //        ^~^ on commit, the type args fold straight into
+            //            the `NewExpression` node itself
             .less_than, .left_shift => blk: {
                 if (!parser.tree.isTs()) break;
                 type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
@@ -961,9 +974,11 @@ fn parseConditionalExpression(
     const saved_allow_in = parser.context.in;
     parser.context.in = true;
 
-    // a ts arrow return type (`(a): T => b`) can eat the ternary `:`. parse
-    // permissively, and only if the `:` went missing rewind and re-parse with
-    // return types restricted so the arrow yields it (see `tryParseArrow`).
+    // cond ? (a): T => b : alt
+    //           ^ a ts arrow return type can eat the ternary `:`.
+    //             parse permissively, and only if the `:` went missing
+    //             rewind and re-parse with return types restricted so
+    //             the arrow yields it (see `tryParseArrow`).
     const consequent = if (!parser.tree.isTs())
         try parseExpression(parser, precedence, .{}) orelse return null
     else consequent: {
