@@ -86,12 +86,9 @@ pub fn parseExpression(
 /// restricted productions that would otherwise let the pratt loop fold
 /// two statements into one under ASI:
 ///
-/// a
-/// ++b
-/// ^~^ line break before `++` -> not infix: parses as `a; ++b;`
-///     under ASI, never as postfix `a++`. same for `--`,
-///     `as T` / `satisfies T` (ts narrowing), and `!` (ts non-null).
-///
+/// - `a [no LineTerminator here] ++` / `--` (postfix update).
+/// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
+/// - `a [no LineTerminator here] !` (ts non-null assertion).
 /// `!` is also infix only in TypeScript, in plain JS it is purely prefix.
 ///
 inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
@@ -680,10 +677,10 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
     while (true) {
         // new C<T>(x)
         //      ^~^ committed type arguments bind to the constructor,
-        //          unless a template follows:
+        //          unless a template follows
         //
         // new C<T>`x`
-        //      ^~^ tags the template instead:
+        //      ^~^ tags the template instead, giving
         //          NewExpression(TaggedTemplateExpression<T>(C))
         if (type_arguments != .null and
             parser.current_token.tag != .template_head and
@@ -704,8 +701,8 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
             },
             // new (a?.b)!()
             //           ^ binds to the callee, so this constructs with
-            //             arguments: NewExpression(TSNonNull(a?.b), ())
-            //             not a call on the finished `new` expression
+            //             arguments as NewExpression(TSNonNull(a?.b), ())
+            //             instead of calling the finished `new` expression
             .logical_not => if (parser.tree.isTs() and
                 !parser.current_token.hasLineTerminatorBefore())
                 try ts.parseNonNullExpression(parser, callee) orelse return null
@@ -1304,7 +1301,7 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
             },
             // m?.[0]!
             //       ^ parsed here, inside the chain, so it lifts
-            //         naturally under the enclosing wrapper:
+            //         naturally under the enclosing wrapper as
             //         ChainExpression(TSNonNullExpression(m?.[0]))
             .logical_not => {
                 if (!is_ts or parser.current_token.hasLineTerminatorBefore()) break;
@@ -1320,7 +1317,7 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
             //
             // a?.b<T>
             //     ^~^ bare -> rewind past `<T>` and close the chain,
-            //         so the outer pratt loop wraps the result:
+            //         so the outer pratt loop wraps the result as
             //         TSInstantiationExpression(ChainExpression(a?.b))
             .less_than, .left_shift => {
                 if (!is_ts) break;
@@ -1368,7 +1365,7 @@ fn parseOptionalChainElement(
     }
 
     // a?.<T>(args)
-    //    ^~^ generic call right after `?.` -- the only valid form here.
+    //    ^~^ generic call right after `?.` is the only valid form here.
     //        a?.<T>`tpl` and a bare a?.<T> rewind instead.
     if (parser.tree.isTs() and ts.isAngleOpen(tag)) {
         const checkpoint = parser.checkpoint();
