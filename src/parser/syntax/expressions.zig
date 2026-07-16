@@ -31,10 +31,11 @@ const ParseExpressionOpts = struct {
     /// whether to parse them as patterns until the top level context is known after
     /// the cover is parsed.
     in_cover: bool = false,
-    /// whether to stop at `in` when `allow_in` is disabled. only the direct caller
-    /// that sets `allow_in = false` should pass `true` here, recursive calls (inside
-    /// parentheses, computed members, etc.) leave this `false` so `in` is parsed as
-    /// a binary operator normally.
+    /// whether to stop at `in` when `allow_in` is disabled. passed by the
+    /// for-head that disables it and by positions that inherit [?In]
+    /// (declarator inits, ternary alternates, concise arrow bodies).
+    /// recursive calls (parens, computed members, ...) leave it `false`
+    /// so `in` resets to allowed.
     respect_allow_in: bool = false,
 };
 
@@ -159,7 +160,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         if (parser.tree.isJsx()) return jsx.parseJsxExpression(parser);
     }
 
-    return parsePrimaryExpression(parser, opts);
+    return parsePrimaryExpression(parser, opts, precedence);
 }
 
 fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
@@ -213,6 +214,7 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
 pub inline fn parsePrimaryExpression(
     parser: *Parser,
     opts: ParseExpressionOpts,
+    precedence: u8,
 ) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isNumericLiteral()) {
         return literals.parseNumericLiteral(parser);
@@ -222,7 +224,7 @@ pub inline fn parsePrimaryExpression(
         .private_identifier => blk: {
             const node = try literals.parsePrivateIdentifier(parser) orelse break :blk null;
 
-            if (parser.current_token.tag != .in) {
+            if (parser.current_token.tag != .in or precedence > Precedence.Relational) {
                 try parser.report(
                     parser.tree.span(node),
                     "Private names are only valid in property accesses (`obj.#field`)" ++
@@ -670,7 +672,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         // otherwise, start with a primary expression
-        break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
+        break :blk try parsePrimaryExpression(parser, .{}, Precedence.New) orelse return null;
     };
 
     var type_arguments: ast.NodeIndex = .null;
@@ -729,6 +731,16 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
             },
             else => break,
         };
+    }
+
+    if (parser.tree.data(callee) == .super) {
+        try parser.report(
+            parser.tree.span(callee),
+            "'super' cannot be used as the target of 'new'",
+            .{ .help = "Call the parent constructor with 'super()', or construct a" ++
+                " parent member with 'new super.prop()'." },
+        );
+        return null;
     }
 
     // optional arguments
@@ -1420,7 +1432,7 @@ pub fn parseLeftHandSideExpression(parser: *Parser, ctx: LhsContext) Error!?ast.
         .left_paren => try parseParenthesizedExpression(parser) orelse return null,
         .new => try parseNewExpression(parser) orelse return null,
         .import => try parseImportExpression(parser, null) orelse return null,
-        else => try parsePrimaryExpression(parser, .{}) orelse return null,
+        else => try parsePrimaryExpression(parser, .{}, Precedence.Call) orelse return null,
     };
 
     const is_ts = parser.tree.isTs();

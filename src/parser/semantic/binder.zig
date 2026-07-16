@@ -738,13 +738,22 @@ pub const SymbolTracker = struct {
             .variable_declaration => |decl| {
                 try self.pushSavedContext();
                 switch (decl.kind) {
-                    .@"var" => self.pending = .{
-                        .flags = .{
-                            .function_scoped_var = true,
-                            .ambient = decl.declare or self.ambient,
-                        },
-                        .excludes = Symbol.Excludes.function_scoped_var,
-                        .scope = scope.hoistTarget(),
+                    .@"var" => {
+                        const target = scope.hoistTarget();
+                        // module-level function declarations are lexical,
+                        // everywhere else (and in ts) `var` merges with them
+                        var excludes = Symbol.Excludes.function_scoped_var;
+                        if (!self.tree.isTs() and scope.get(target).kind == .module) {
+                            excludes.function = true;
+                        }
+                        self.pending = .{
+                            .flags = .{
+                                .function_scoped_var = true,
+                                .ambient = decl.declare or self.ambient,
+                            },
+                            .excludes = excludes,
+                            .scope = target,
+                        };
                     },
                     .@"const", .using, .await_using => self.pending = .{
                         .flags = .{

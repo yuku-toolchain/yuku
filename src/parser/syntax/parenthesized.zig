@@ -295,9 +295,11 @@ pub fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
     }
 
     // expression body: () => expr
-    // arrow body is parsed at assignment precedence
-    const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-        return null;
+    const expr = try expressions.parseExpression(
+        parser,
+        Precedence.Assignment,
+        .{ .respect_allow_in = true },
+    ) orelse return null;
 
     return .{ .body = expr, .is_expression = true };
 }

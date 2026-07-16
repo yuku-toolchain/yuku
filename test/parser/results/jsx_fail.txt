@@ -1,7 +1,7 @@
 test/parser/suite/jsx/fail
 ==========================
-Passed:       19/23 (82.61%)
-Failed:       4
+Passed:       23/23 (100.00%)
+Failed:       0
 
 ✓ test/parser/suite/jsx/fail/007be3029be81746.jsx
 error: Expected string literal or JSX expression for attribute value, but found 'bar'
@@ -14,13 +14,13 @@ error: Expected string literal or JSX expression for attribute value, but found 
 
 
 ✓ test/parser/suite/jsx/fail/1d4cd6a3bf14941f.jsx
-error: Expected '</' to close the JSX element, but found 'end of file'
+error: Unexpected '>' in JSX text
    |
  1 | <div>() => {}
+   |          ^
  2 | 
-   | ^
    |
-   = help: Add a closing tag to match the opening element
+   = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
 
 
 ✓ test/parser/suite/jsx/fail/2224661258279331.jsx
@@ -44,7 +44,16 @@ error: Expected JSX element name, but found '!'
    = help: JSX element names must start with a valid identifier
 
 
-✗ test/parser/suite/jsx/fail/2e5f061b58b219c3.jsx (expected error, but parsed successfully)
+✓ test/parser/suite/jsx/fail/2e5f061b58b219c3.jsx
+error: Unexpected '>' in JSX text
+   |
+ 1 | <div>></div>
+   |      ^
+ 2 | 
+   |
+   = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
+
+
 ✓ test/parser/suite/jsx/fail/356094f49f10eea4.jsx
 error: Expected '>' to close JSX closing fragment, but found 'something'
    |
@@ -125,7 +134,15 @@ error: Expected '</' to close the JSX element, but found 'end of file'
    = help: Add a closing tag to match the opening element
 
 
-✗ test/parser/suite/jsx/fail/9b8239d602194027.jsx (expected error, but parsed successfully)
+✓ test/parser/suite/jsx/fail/9b8239d602194027.jsx
+error: Expected '}' to close JSX expression, but found ','
+   |
+ 1 | <div key={console.log('foo'), JSON.stringify(props)} />
+   |                             ^
+   |
+   = help: Add '}' to close the expression
+
+
 ✓ test/parser/suite/jsx/fail/ab67a6eb1c134bbe.jsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -156,7 +173,15 @@ error: Line terminator not allowed in regular expression literal
    = help: Try removing the line break here or escaping it within the regex pattern
 
 
-✗ test/parser/suite/jsx/fail/c5d2e6e97c749191.jsx (expected error, but parsed successfully)
+✓ test/parser/suite/jsx/fail/c5d2e6e97c749191.jsx
+error: Expected '}' to close JSX expression, but found ','
+   |
+ 1 | <div>{console.log('foo'), JSON.stringify(props)}</div>
+   |                         ^
+   |
+   = help: Add '}' to close the expression
+
+
 ✓ test/parser/suite/jsx/fail/d2843ea4509626b5.jsx
 error: Setter must have exactly one parameter
    |
@@ -187,7 +212,16 @@ error: Expected '>' to close JSX opening element, but found '='
    = help: Add '>' to close the JSX tag
 
 
-✗ test/parser/suite/jsx/fail/ea91641e2b71f4d3.jsx (expected error, but parsed successfully)
+✓ test/parser/suite/jsx/fail/ea91641e2b71f4d3.jsx
+error: Unexpected '}' in JSX text
+   |
+ 1 | <div>}</div>
+   |      ^
+ 2 | 
+   |
+   = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
+
+
 ✓ test/parser/suite/jsx/fail/f7cb5b3ea1fefffa.jsx
 error: JSX attribute value cannot be an empty expression
    |

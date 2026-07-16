@@ -1,7 +1,7 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4157/4160 (99.93%)
-Failed:       3
+Passed:       4160/4160 (100.00%)
+Failed:       0
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -2583,7 +2583,15 @@ error: A class can only have one constructor
    |            ~~~~~~~~~~~ first constructor defined here
    |
 
-✗ test/parser/suite/js/semantic/10732c60df2fa012.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/semantic/10732c60df2fa012.js
+error: Private fields cannot be deleted
+   |
+ 3 |   constructor() {
+ 4 |     delete this?.#x;
+   |     ^^^^^^^^^^^^^^^
+ 5 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/10786cdac00d0c02.js
 error: Cannot use import statement outside a module
    |
@@ -5053,7 +5061,19 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/1fb4005b8fb27901.module.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/semantic/1fb4005b8fb27901.module.js
+error: Identifier 'foo' has already been declared
+   |
+ 1 | function foo() {}
+   |          ~~~ 'foo' was first declared as a function here
+ 2 | var foo = 1;
+   |     ^^^
+   |     ~~~ cannot be redeclared here
+ 3 | 
+   |
+   = help: Consider removing or renaming this declaration of 'foo'
+
+
 ✓ test/parser/suite/js/semantic/1fc70bca408f884c.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -23385,7 +23405,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/970659a8993a43d1.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/semantic/970659a8993a43d1.js
+error: Cannot use 'for await' in class static initialization block
+   |
+ 2 |   static {
+ 3 |     for await (const i of imports) {}
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/9716357f0b225a1a.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |

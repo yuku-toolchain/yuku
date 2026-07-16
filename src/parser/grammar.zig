@@ -259,8 +259,8 @@ pub fn expressionToPattern(
 
             // strip the parenthesized wrapper, assignment targets don't
             // preserve outer parens regardless of `preserveParens`. record
-            // the node so a `.binding` pass can still reject the paren
-            // the tree no longer shows.
+            // the node first, a later `.binding` pass must still reject
+            // the elided paren.
             parser.state.stripped_paren = expr;
             parser.tree.setData(expr, parser.tree.data(paren.expression));
             parser.tree.setSpan(expr, parser.tree.span(paren.expression));
@@ -273,14 +273,14 @@ pub fn expressionToPattern(
         // still unknown:
         //
         //   ([a.b] = []) => {}
-        //   at `=`  : valid as an assignment, array becomes array_pattern
+        //   at `=`  : valid as an assignment, the array becomes array_pattern
         //   at `=>` : the same node is now a parameter, where `a.b` is
         //             illegal, a stripped `(a)` is illegal, and `a` must
         //             become a declaring binding_identifier
         //
         // so `.binding` re-descends every target and judges it again.
         // defaults and computed keys stay expressions and are skipped.
-        // `.assignable` again has nothing stricter to add: no-op.
+        // a second `.assignable` visit has nothing stricter to add, no-op.
         .assignment_pattern => |pattern| if (context == .binding) {
             try expressionToPattern(parser, pattern.left, context);
         },
@@ -298,11 +298,10 @@ pub fn expressionToPattern(
         .object_pattern => |pattern| if (context == .binding) {
             for (parser.tree.extra(pattern.properties)) |property| {
                 const property_data = parser.tree.data(property);
-                // a property the `.assignable` pass could not convert (a
-                // method or getter/setter, e.g. `({ get x() {} } = ...)`)
-                // was reported back then and kept its object_property
-                // shape. skip it, only binding_property has a converted
-                // value, and its error is already on record.
+                // a property the `.assignable` pass could not convert
+                // (a method or getter/setter) keeps its object_property
+                // shape and is already diagnosed. only binding_property
+                // carries a converted value.
                 if (property_data != .binding_property) continue;
                 try expressionToPattern(parser, property_data.binding_property.value, context);
             }

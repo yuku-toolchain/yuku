@@ -445,7 +445,12 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (expr.operator == .delete) {
-            const target = unwrapParens(ctx.tree, expr.argument);
+            var target = unwrapParens(ctx.tree, expr.argument);
+
+            if (ctx.tree.data(target) == .chain_expression) {
+                target = unwrapParens(ctx.tree, ctx.tree.data(target).chain_expression.expression);
+            }
+
             switch (ctx.tree.data(target)) {
                 // https://tc39.es/ecma262/#sec-delete-operator-static-semantics-early-errors
                 .identifier_reference => if (ctx.scope.isStrict()) {
@@ -741,10 +746,15 @@ pub const Checker = struct {
     pub fn enter_for_of_statement(
         self: *Self,
         stmt: ast.ForOfStatement,
-        _: ast.NodeIndex,
+        node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.checkForInOfInitializer(ctx, stmt.left);
+        if (stmt.await and !ctx.tree.isTs() and isInsideStaticBlock(ctx)) try self.report(
+            ctx.tree.span(node_index),
+            "Cannot use 'for await' in class static initialization block",
+            .{},
+        );
+        try self.checkForInOfInitializer(ctx, stmt.left, false);
         if (ctx.scope.isStrict())
             try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
@@ -757,7 +767,7 @@ pub const Checker = struct {
         _: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.checkForInOfInitializer(ctx, stmt.left);
+        try self.checkForInOfInitializer(ctx, stmt.left, true);
         if (ctx.scope.isStrict())
             try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
@@ -1088,6 +1098,7 @@ pub const Checker = struct {
         self: *Self,
         ctx: *SemanticCtx,
         left: ast.NodeIndex,
+        comptime is_for_in: bool,
     ) AnalysisError!void {
         if (ctx.tree.data(left) != .variable_declaration) return;
         const decl = ctx.tree.data(left).variable_declaration;
@@ -1104,14 +1115,20 @@ pub const Checker = struct {
 
         for (declarators) |child| {
             const declarator = ctx.tree.data(child).variable_declarator;
-            if (declarator.init != .null) {
-                try self.report(
-                    ctx.tree.span(child),
-                    "for-in/of loop variable declaration may not have an initializer",
-                    .{},
-                );
-                return;
-            }
+            if (declarator.init == .null) continue;
+
+            const annex_b = is_for_in and !ctx.tree.isTs() and
+                decl.kind == .@"var" and !ctx.scope.isStrict() and
+                ctx.tree.data(declarator.id) == .binding_identifier;
+
+            if (annex_b) continue;
+
+            try self.report(
+                ctx.tree.span(child),
+                "for-in/of loop variable declaration may not have an initializer",
+                .{},
+            );
+            return;
         }
     }
 

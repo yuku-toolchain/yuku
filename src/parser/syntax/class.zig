@@ -373,6 +373,8 @@ const Modifiers = struct {
     accessibility: ast.Accessibility = .none,
 
     fn conflicts(m: Modifiers, tag: TokenTag) bool {
+        // `accessor` sits directly before the key, a following modifier word is the key
+        if (m.is_accessor) return true;
         return switch (tag) {
             .async, .get, .set => m.is_async or m.kind != .method,
             .static => m.is_static,

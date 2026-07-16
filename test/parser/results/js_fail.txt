@@ -1,7 +1,7 @@
 test/parser/suite/js/fail
 =========================
-Passed:       4979/4992 (99.74%)
-Failed:       13
+Passed:       4992/4992 (100.00%)
+Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
 error: Expected ',' or ')' in parenthesized expression, but found ';'
@@ -8811,7 +8811,15 @@ error: Numeric separator cannot appear at the end of a numeric literal
    = help: Try removing the trailing underscore here or adding more digits after it
 
 
-✗ test/parser/suite/js/fail/2d1de23d88922524.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/2d1de23d88922524.js
+error: Private names are only valid in property accesses (`obj.#field`) or `in` expressions (`#field in obj`)
+   |
+ 3 |   async test() {
+ 4 |     await #x in this
+   |           ^^
+ 5 |   }
+   |
+
 ✓ test/parser/suite/js/fail/2d1e7bac8827160c.js
 error: Unexpected token '%'
    |
@@ -12192,7 +12200,16 @@ error: 'using' declarations must be initialized
    = help: Disposable resources require an initial value that implements the dispose protocol.
 
 
-✗ test/parser/suite/js/fail/3faf8bb608ffaf45.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/3faf8bb608ffaf45.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ([ [(a)] = [] ] = []) => {}
+   |      ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/3fbc800d2712f111.js
 error: Unexpected token '...'
    |
@@ -13169,7 +13186,16 @@ error: Expected identifier or string literal, but found '}'
    |             ^
    |
 
-✗ test/parser/suite/js/fail/458be00f0482c01a.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/458be00f0482c01a.js
+error: Invalid element in assignment pattern
+   |
+ 1 | for (() => x in y;;);
+   |      ^^^^^^^
+ 2 | 
+   |
+   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
+
 ✓ test/parser/suite/js/fail/459ac6220ff584d2.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -16331,7 +16357,16 @@ error: Expected ')' after import(), but found ''''
    = help: Dynamic import call must end with ')'
 
 
-✗ test/parser/suite/js/fail/56b846939118b1d7.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/56b846939118b1d7.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async ([(a) = []] = []) => {}
+   |          ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/56c154237f4f1298.js
 error: Invalid Unicode escape sequence
    |
@@ -17513,7 +17548,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/5d3416fe67893ca8.js
-error: Private names are only allowed in property accesses (`obj.#field`) or in `in` expressions (`#field in obj`)
+error: Private names are only valid in property accesses (`obj.#field`) or `in` expressions (`#field in obj`)
    |
  3 |   method() {
  4 |     1 + #a in b
@@ -24454,7 +24489,16 @@ error: Empty parentheses are only valid as arrow function parameters
    | ^^
    |
 
-✗ test/parser/suite/js/fail/81ae94e5ef087847.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/81ae94e5ef087847.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async ([ [(a)] = [] ] = []) => {};
+   |            ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/81e87854090d04ae.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -25061,7 +25105,17 @@ error: Invalid operand for increment/decrement operator
    = help: The '++' and '--' operators require a variable or property reference, not a literal or complex expression.
 
 
-✗ test/parser/suite/js/fail/851cb4f479374df9.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/851cb4f479374df9.js
+error: Expected ';' after class field, but found 'bar'
+   |
+ 1 | class Foo {
+ 2 |   accessor static bar;
+   |                   ^^^
+ 3 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/852839511e658d77.js
 error: Invalid element in assignment pattern
    |
@@ -28685,7 +28739,16 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/988a4daf4cca85f8.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/988a4daf4cca85f8.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ([(a) = [] ] = []) => {}
+   |    ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/9895b72e1ae440ad.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
@@ -31163,7 +31226,16 @@ error: Destructuring declaration in for loop initializer must be initialized
    = help: Add '= value' to provide the object or array to destructure from.
 
 
-✗ test/parser/suite/js/fail/a65fb383dc86ab78.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/a65fb383dc86ab78.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async ([(a.b) = []] = []) => {}
+   |          ^^^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/a660fb69f32f7ad2.js
 error: Unexpected token '(' in binding pattern
    |
@@ -35711,7 +35783,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/bf664810a9bc70bc.js
-error: Private names are only allowed in property accesses (`obj.#field`) or in `in` expressions (`#field in obj`)
+error: Private names are only valid in property accesses (`obj.#field`) or `in` expressions (`#field in obj`)
    |
  3 | constructor() {
  4 |     #field in #field in this;
@@ -36061,7 +36133,17 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  4 |   }
    |
 
-✗ test/parser/suite/js/fail/c15f2d3cb5b09ead.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/c15f2d3cb5b09ead.js
+error: 'super' cannot be used as the target of 'new'
+   |
+ 1 | class A extends class {} {
+ 2 |   constructor() { new super() }
+   |                       ^^^^^
+ 3 | }
+   |
+   = help: Call the parent constructor with 'super()', or construct a parent member with 'new super.prop()'.
+
+
 ✓ test/parser/suite/js/fail/c164d3dea983e889.js
 error: Unterminated string literal
    |
@@ -37153,7 +37235,15 @@ error: Unexpected token ';'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/c78e43a0be4e02d3.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/c78e43a0be4e02d3.js
+error: The left-hand side of a for-in/of statement cannot be an assignment
+   |
+ 1 | var a;
+ 2 | for (a = 0 of {});
+   |      ^^^^^
+ 3 | 
+   |
+
 ✓ test/parser/suite/js/fail/c791b10692b47ba1.js
 error: Unexpected token '>'
    |
@@ -38247,7 +38337,16 @@ error: Expected ',' or ']' in array, but found 'await'
    = help: Add a comma between elements or close the array with ']'.
 
 
-✗ test/parser/suite/js/fail/ce180a941a1245c7.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/ce180a941a1245c7.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ({ a: (foo) } = {}) => {}
+   |        ^^^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/ce435cf331c786b5.js
 error: Expected '(' after import, but found ';'
    |
@@ -43404,7 +43503,16 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✗ test/parser/suite/js/fail/e980cc95ac2d11ac.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/e980cc95ac2d11ac.js
+error: 'using' declarations must be initialized
+   |
+ 1 | for (using of;of.isValid;);
+   |            ^^
+ 2 | 
+   |
+   = help: Disposable resources require an initial value that implements the dispose protocol.
+
+
 ✓ test/parser/suite/js/fail/e98777d7b4c239a8.js
 error: Expected '(' after 'switch', but found '`test`'
    |
@@ -43526,7 +43634,16 @@ error: 'import' is reserved and cannot be used as an identifier
 32 | 
    |
 
-✗ test/parser/suite/js/fail/ea34d073f9aad19f.js (expected error, but parsed successfully)
+✓ test/parser/suite/js/fail/ea34d073f9aad19f.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ({ a: (foo.qux) } = {}) => {}
+   |        ^^^^^^^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/ea4d962dac83e2a1.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
@@ -45949,7 +46066,7 @@ error: 'in' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/f7f13690c1ceef6f.js
-error: Private names are only allowed in property accesses (`obj.#field`) or in `in` expressions (`#field in obj`)
+error: Private names are only valid in property accesses (`obj.#field`) or `in` expressions (`#field in obj`)
    |
  4 |   method() {
  5 |     #a in #b in c

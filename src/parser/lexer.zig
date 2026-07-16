@@ -447,8 +447,7 @@ pub const Lexer = struct {
         return self.createToken(.less_than, token_start, token_start + 1);
     }
 
-    /// scans JSX text content between '<' and '{' in JSX children.
-    /// called by the parser when parsing JSX element children.
+    /// scans JSX text content in JSX children
     pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
         std.debug.assert(initial_cursor <= self.source.len);
         self.rewindTo(initial_cursor);
@@ -459,7 +458,7 @@ pub const Lexer = struct {
             const c = self.source[self.cursor];
 
             switch (c) {
-                '<', '{' => break,
+                '<', '{', '>', '}' => break,
                 else => self.cursor += 1,
             }
         }

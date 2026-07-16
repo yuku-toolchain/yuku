@@ -201,6 +201,16 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
 
     parser.context.in = saved_allow_in;
 
+    if ((parser.current_token.tag == .in or parser.current_token.tag == .of) and
+        parser.tree.data(expr) == .assignment_expression)
+    {
+        try parser.report(
+            parser.tree.span(expr),
+            "The left-hand side of a for-in/of statement cannot be an assignment",
+            .{},
+        );
+    }
+
     if (parser.current_token.tag == .in) {
         try grammar.expressionToPattern(parser, expr, .assignable);
 
@@ -390,6 +400,16 @@ fn validateRegularForDeclarators(
                 id_span,
                 "'const' declarations in for loop initializer must be initialized",
                 .{ .help = "Add '= value' to initialize the constant in the for loop." },
+            );
+            return false;
+        }
+
+        if (kind == .using or kind == .await_using) {
+            try parser.report(
+                id_span,
+                try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
+                .{ .help = "Disposable resources require an initial value that" ++
+                    " implements the dispose protocol." },
             );
             return false;
         }
