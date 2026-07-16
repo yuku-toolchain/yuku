@@ -44,9 +44,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      # [windows-latest], bun is crashing on windows
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
