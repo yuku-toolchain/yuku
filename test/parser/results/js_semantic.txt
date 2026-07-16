@@ -15758,14 +15758,12 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/6384ca10dbba5dce.js
-error: Expected module specifier, but found 'from'
+error: Cannot use import statement outside a module
    |
  1 | import source from from "x";
-   |                    ^^^^
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Module specifiers must be string literals, e.g., './module.js' or 'package'
-
 
 ✓ test/parser/suite/js/semantic/6390f4b3cc6551d8.js
 error: Duplicate private name '#m'

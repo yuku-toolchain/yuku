@@ -82,7 +82,7 @@ jobs:
         with:
           path: |
             test/parser/suite
-          key: test-data-v2-${{ hashFiles('test/parser/load.ts') }}
+          key: test-data-v3-${{ hashFiles('test/parser/load.ts') }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile

@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       50/50 (100.00%)
+Passed:       52/52 (100.00%)
 Failed:       0
-AST mismatch: 0/50
+AST mismatch: 0/52
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -132,10 +132,21 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/misc/js/import-attributes-declaration-end.module.js
 ✓ test/parser/misc/js/import-attributes-line-terminator.module.js
+✓ test/parser/misc/js/import-defer-default-binding.module.js
+error: 'import defer' only supports a namespace import
+   |
+ 1 | import defer from from "x";
+   |        ^^^^^
+ 2 | 
+   |
+   = help: Write 'import defer * as ns from "..."'.
+
+
 ✓ test/parser/misc/js/import-defer-normal.module.js
 ✓ test/parser/misc/js/import-defer-original.module.js
 ✓ test/parser/misc/js/import-expression-call.js
 ✓ test/parser/misc/js/import-phase-call-options.module.js
+✓ test/parser/misc/js/import-source-from-binding.module.js
 ✓ test/parser/misc/js/legacy-octal-literal-with-separator.js
 error: Identifier cannot immediately follow a numeric literal
    |
