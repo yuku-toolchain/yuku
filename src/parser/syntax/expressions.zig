@@ -151,9 +151,9 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     if (tag == .less_than) {
         if (parser.tree.isTs()) {
             const start = parser.current_token.span.start;
-             if (precedence <= Precedence.Assignment) {
-                 if (try ts.tryParseGenericArrow(parser, false, start)) |arrow| return arrow;
-             }
+            if (precedence <= Precedence.Assignment) {
+                if (try ts.tryParseGenericArrow(parser, false, start)) |arrow| return arrow;
+            }
             if (!parser.tree.isJsx()) return ts.parseTypeAssertion(parser);
         }
         if (parser.tree.isJsx()) return jsx.parseJsxExpression(parser);
@@ -950,7 +950,12 @@ fn parseAssignmentExpression(
 
     try parser.advance() orelse return null;
 
+    // a paren stripped inside the right-hand side sits in expression
+    // position, never in an arrow-head target, so it must not displace a
+    // target-position record from the left-hand side (`[(a) = ((b) = c)]`)
+    const saved_stripped_paren = parser.state.stripped_paren;
     const right = try parseExpression(parser, precedence, .{}) orelse return null;
+    parser.state.stripped_paren = saved_stripped_paren;
 
     return try parser.tree.addNode(
         .{ .assignment_expression = .{ .left = left, .right = right, .operator = operator } },

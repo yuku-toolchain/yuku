@@ -83,6 +83,10 @@ const ParserState = struct {
     cover_has_trailing_comma: ?u32 = null,
     /// Tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
+    /// Target node whose paren the `.assignable` conversion stripped
+    /// (`(a) = b`). Legal there, a syntax error if the node later lands
+    /// in binding position. See `expressionToPattern`.
+    stripped_paren: ?ast.NodeIndex = null,
 };
 
 pub const Error = error{OutOfMemory};

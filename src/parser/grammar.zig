@@ -97,6 +97,20 @@ pub fn expressionToPattern(
     expr: ast.NodeIndex,
     comptime context: PatternContext,
 ) Error!void {
+    // `(a) = b` is a valid assignment, so the `.assignable` pass stripped
+    // the paren in-place. in binding position that paren is a syntax error,
+    // visible only through the recorded evidence.
+    if (context == .binding and parser.state.stripped_paren == expr) {
+        try parser.report(
+            parser.tree.span(expr),
+            "Parentheses are not allowed in this binding pattern",
+            .{ .help = "Remove the extra parentheses. Binding patterns can only be" ++
+                " identifiers, destructuring patterns, or assignment patterns, not" ++
+                " parenthesized expressions." },
+        );
+        return;
+    }
+
     const data = parser.tree.data(expr);
 
     switch (data) {
@@ -244,12 +258,62 @@ pub fn expressionToPattern(
             }
 
             // strip the parenthesized wrapper, assignment targets don't
-            // preserve outer parens regardless of `preserveParens`
+            // preserve outer parens regardless of `preserveParens`. record
+            // the node so a `.binding` pass can still reject the paren
+            // the tree no longer shows.
+            parser.state.stripped_paren = expr;
             parser.tree.setData(expr, parser.tree.data(paren.expression));
             parser.tree.setSpan(expr, parser.tree.span(paren.expression));
         },
 
-        .binding_identifier, .array_pattern, .object_pattern, .assignment_pattern => {},
+        .binding_identifier => {},
+
+        // this pattern was already converted at its `=` under the looser
+        // `.assignable` rules, while "assignment or arrow head?" was
+        // still unknown:
+        //
+        //   ([a.b] = []) => {}
+        //   at `=`  : valid as an assignment, array becomes array_pattern
+        //   at `=>` : the same node is now a parameter, where `a.b` is
+        //             illegal, a stripped `(a)` is illegal, and `a` must
+        //             become a declaring binding_identifier
+        //
+        // so `.binding` re-descends every target and judges it again.
+        // defaults and computed keys stay expressions and are skipped.
+        // `.assignable` again has nothing stricter to add: no-op.
+        .assignment_pattern => |pattern| if (context == .binding) {
+            try expressionToPattern(parser, pattern.left, context);
+        },
+
+        .array_pattern => |pattern| if (context == .binding) {
+            for (parser.tree.extra(pattern.elements)) |element| {
+                if (element == .null) continue;
+                try expressionToPattern(parser, element, context);
+            }
+            if (pattern.rest != .null) {
+                try expressionToPattern(parser, pattern.rest, context);
+            }
+        },
+
+        .object_pattern => |pattern| if (context == .binding) {
+            for (parser.tree.extra(pattern.properties)) |property| {
+                const property_data = parser.tree.data(property);
+                // a property the `.assignable` pass could not convert (a
+                // method or getter/setter, e.g. `({ get x() {} } = ...)`)
+                // was reported back then and kept its object_property
+                // shape. skip it, only binding_property has a converted
+                // value, and its error is already on record.
+                if (property_data != .binding_property) continue;
+                try expressionToPattern(parser, property_data.binding_property.value, context);
+            }
+            if (pattern.rest != .null) {
+                try expressionToPattern(parser, pattern.rest, context);
+            }
+        },
+
+        .binding_rest_element => |rest| if (context == .binding) {
+            try expressionToPattern(parser, rest.argument, context);
+        },
 
         else => {
             try parser.report(
