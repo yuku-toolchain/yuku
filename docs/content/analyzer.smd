@@ -16,16 +16,32 @@ npm install yuku-analyzer
 ```
 
 ```js
-import { Analyzer } from "yuku-analyzer";
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
 
-const analyzer = new Analyzer();
-analyzer.addFile("config.ts", `export const flags = { debug: true };`);
-const app = analyzer.addFile("app.ts", `import { flags } from "./config.ts";`);
+const a = new Analyzer();
+a.addFile("math.ts", `export const add = (x: number, y: number) => x + y;`);
+a.addFile("app.ts", `import { add } from "./math.ts"; add(1, 2);`);
+a.addFile("ui.ts", `import { add } from "./math.ts"; add(3, 4);`);
 
-const def = app.rootScope.find("flags").definition();
+const app = a.module("app.ts");
 
-def.module.path; // "config.ts"
-def.symbol.name; // "flags"
+// walk with semantic context
+app.walk({
+  Identifier(node, ctx) {
+    console.log(node.name, ctx.scope.kind, ctx.symbol, ctx.reference);
+  },
+});
+
+const add = app.rootScope.find("add");
+add.has(SymbolFlags.Import); // true
+
+const def = add.definition();
+def.module.path; // "math.ts"
+def.symbol.has(SymbolFlags.Const); // true
+
+a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
+
+// and many more
 ```
 
 That is real cross-file resolution, not a string search. It follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
