@@ -60,10 +60,7 @@ jobs:
       - name: Cache bun dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            node_modules
-            docs/node_modules
-            npm/*/node_modules
+          path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           restore-keys: |
             bun-${{ runner.os }}-
