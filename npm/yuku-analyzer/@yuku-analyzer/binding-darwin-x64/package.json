@@ -1,6 +1,6 @@
 {
   "name": "@yuku-analyzer/binding-darwin-x64",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "os": [
     "darwin"
   ],
