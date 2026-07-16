@@ -1,0 +1,329 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 295,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 76,
+        "end": 108,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 76,
+          "end": 107,
+          "left": {
+            "type": "BinaryExpression",
+            "start": 76,
+            "end": 90,
+            "left": {
+              "type": "Identifier",
+              "start": 76,
+              "end": 81,
+              "name": "using"
+            },
+            "right": {
+              "type": "Identifier",
+              "start": 85,
+              "end": 90,
+              "name": "using"
+            },
+            "operator": "in"
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 102,
+            "end": 107,
+            "name": "using"
+          },
+          "operator": "instanceof"
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 109,
+        "end": 143,
+        "init": {
+          "type": "Identifier",
+          "start": 114,
+          "end": 119,
+          "name": "using"
+        },
+        "test": {
+          "type": "BinaryExpression",
+          "start": 121,
+          "end": 130,
+          "left": {
+            "type": "Identifier",
+            "start": 121,
+            "end": 126,
+            "name": "using"
+          },
+          "right": {
+            "type": "Literal",
+            "start": 129,
+            "end": 130,
+            "value": 5,
+            "raw": "5"
+          },
+          "operator": "<"
+        },
+        "update": {
+          "type": "UpdateExpression",
+          "start": 132,
+          "end": 139,
+          "argument": {
+            "type": "Identifier",
+            "start": 132,
+            "end": 137,
+            "name": "using"
+          },
+          "operator": "++",
+          "prefix": false
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 141,
+          "end": 143,
+          "body": []
+        }
+      },
+      {
+        "type": "ForInStatement",
+        "start": 144,
+        "end": 164,
+        "left": {
+          "type": "Identifier",
+          "start": 149,
+          "end": 154,
+          "name": "using"
+        },
+        "right": {
+          "type": "ArrayExpression",
+          "start": 158,
+          "end": 160,
+          "elements": []
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 162,
+          "end": 164,
+          "body": []
+        }
+      },
+      {
+        "type": "ForInStatement",
+        "start": 165,
+        "end": 189,
+        "left": {
+          "type": "MemberExpression",
+          "start": 170,
+          "end": 179,
+          "object": {
+            "type": "Identifier",
+            "start": 170,
+            "end": 175,
+            "name": "using"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 176,
+            "end": 179,
+            "name": "foo"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "right": {
+          "type": "ArrayExpression",
+          "start": 183,
+          "end": 185,
+          "elements": []
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 187,
+          "end": 189,
+          "body": []
+        }
+      },
+      {
+        "type": "ForInStatement",
+        "start": 190,
+        "end": 216,
+        "left": {
+          "type": "MemberExpression",
+          "start": 195,
+          "end": 206,
+          "object": {
+            "type": "TaggedTemplateExpression",
+            "start": 195,
+            "end": 202,
+            "tag": {
+              "type": "Identifier",
+              "start": 195,
+              "end": 200,
+              "name": "using"
+            },
+            "quasi": {
+              "type": "TemplateLiteral",
+              "start": 200,
+              "end": 202,
+              "quasis": [
+                {
+                  "type": "TemplateElement",
+                  "start": 201,
+                  "end": 201,
+                  "value": {
+                    "raw": "",
+                    "cooked": ""
+                  },
+                  "tail": true
+                }
+              ],
+              "expressions": []
+            }
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 203,
+            "end": 206,
+            "name": "foo"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "right": {
+          "type": "ArrayExpression",
+          "start": 210,
+          "end": 212,
+          "elements": []
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 214,
+          "end": 216,
+          "body": []
+        }
+      },
+      {
+        "type": "ForOfStatement",
+        "start": 217,
+        "end": 237,
+        "left": {
+          "type": "Identifier",
+          "start": 222,
+          "end": 227,
+          "name": "using"
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 231,
+          "end": 233,
+          "name": "of"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 235,
+          "end": 237,
+          "body": []
+        },
+        "await": false
+      },
+      {
+        "type": "ForOfStatement",
+        "start": 238,
+        "end": 264,
+        "left": {
+          "type": "MemberExpression",
+          "start": 243,
+          "end": 254,
+          "object": {
+            "type": "CallExpression",
+            "start": 243,
+            "end": 250,
+            "callee": {
+              "type": "Identifier",
+              "start": 243,
+              "end": 248,
+              "name": "using"
+            },
+            "arguments": [],
+            "optional": false
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 251,
+            "end": 254,
+            "name": "foo"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 258,
+          "end": 260,
+          "name": "of"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 262,
+          "end": 264,
+          "body": []
+        },
+        "await": false
+      },
+      {
+        "type": "ForStatement",
+        "start": 265,
+        "end": 294,
+        "init": {
+          "type": "VariableDeclaration",
+          "start": 270,
+          "end": 282,
+          "kind": "using",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 276,
+              "end": 282,
+              "id": {
+                "type": "Identifier",
+                "start": 276,
+                "end": 278,
+                "name": "of"
+              },
+              "init": {
+                "type": "Literal",
+                "start": 281,
+                "end": 282,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BreakStatement",
+          "start": 288,
+          "end": 294,
+          "label": null
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " using stays an identifier when no binding identifier follows on the line",
+      "start": 0,
+      "end": 75
+    }
+  ],
+  "diagnostics": []
+}

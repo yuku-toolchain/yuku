@@ -44,6 +44,9 @@ console.log("\nDownloading test suite...\n");
 
 const gitCmd = [
   "git",
+  // snapshot spans are byte offsets, keep fixture line endings as committed
+  "-c",
+  "core.autocrlf=false",
   "clone",
   "--progress",
   "--single-branch",

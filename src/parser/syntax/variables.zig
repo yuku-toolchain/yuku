@@ -203,12 +203,16 @@ pub fn canStartBinding(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
+/// non-reserved identifier-like tokens can begin a `BindingIdentifier`.
+pub fn canStartBindingIdentifier(tag: TokenTag) bool {
+    return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
+}
+
 /// like `canStartBinding`, but resolving the `let` ambiguity. reserved words
 /// can never bind, so `let in obj` keeps `let` as an identifier instead of
 /// committing to a declaration that cannot parse.
 pub fn canStartLetBinding(tag: TokenTag) bool {
-    if (tag == .left_bracket or tag == .left_brace) return true;
-    return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
+    return tag == .left_bracket or tag == .left_brace or canStartBindingIdentifier(tag);
 }
 
 /// Determines if 'let' should be parsed as an identifier rather than a variable
@@ -234,11 +238,26 @@ pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
 
     const next = parser.peekAhead() orelse return null;
 
-    // if next token starts a BindingList and ASI cannot insert a semicolon,
-    // treat `using` as the contextual keyword (declaration form).
-    if (next.tag.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
-        return false;
-    }
+    // [+Using] using [no LineTerminator here] BindingList
+    return next.hasLineTerminatorBefore() or !canStartBindingIdentifier(next.tag);
+}
 
-    return true; // `using` is an identifier
+/// `await [no LineTerminator here] using [no LineTerminator here] Binding`
+/// in an [+Await] context heads an AwaitUsingDeclaration.
+pub fn isAwaitUsingDeclarationAhead(parser: *Parser) Error!?bool {
+    std.debug.assert(parser.current_token.tag == .await);
+
+    if (!parser.context.await) return false;
+
+    var peek = parser.beginPeek();
+    defer peek.end();
+
+    const using_token = peek.next() orelse return null;
+    if (using_token.tag != .using) return false;
+    if (using_token.hasLineTerminatorBefore()) return false;
+
+    const binding = peek.next() orelse return null;
+    if (binding.hasLineTerminatorBefore()) return false;
+
+    return canStartBindingIdentifier(binding.tag);
 }

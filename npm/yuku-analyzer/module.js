@@ -344,6 +344,10 @@ export class Module {
 
   // structural parent, or null at the root or for a foreign node
   parentOf(node) {
+    // the synthesized hashbang has no native index, its parent is the program
+    if (node?.type === "Hashbang") {
+      return node === this.ast.hashbang ? this.ast : null;
+    }
     const index = this.#r.indexOf(node);
     if (index === undefined) return null;
     const parent = this.#r.parentIndex(index);

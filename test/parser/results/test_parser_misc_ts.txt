@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       40/40 (100.00%)
+Passed:       42/42 (100.00%)
 Failed:       0
-AST mismatch: 0/40
+AST mismatch: 0/42
 
 ✓ test/parser/misc/ts/ambient-file-declarations.module.d.ts
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
@@ -48,6 +48,18 @@ error: A type argument list cannot be empty
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/function-overloads.ts
+✓ test/parser/misc/ts/instantiation-expression-edges.ts
+✓ test/parser/misc/ts/instantiation-property-access-invalid.ts
+error: An instantiation expression cannot be followed by a property access
+   |
+ 1 | // tsc 1477, a bare instantiation cannot be followed by a property access
+ 2 | a<b>.c;
+   | ^^^^
+ 3 | 
+   |
+   = help: Wrap the instantiation expression in parentheses.
+
+
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
 ✓ test/parser/misc/ts/new-expression-non-null-callee.ts
 ✓ test/parser/misc/ts/optional-chain-call-fused-angle.ts

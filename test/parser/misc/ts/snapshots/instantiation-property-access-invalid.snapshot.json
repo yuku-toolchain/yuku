@@ -1,0 +1,87 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 82,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 74,
+        "end": 81,
+        "expression": {
+          "type": "MemberExpression",
+          "start": 74,
+          "end": 80,
+          "object": {
+            "type": "TSInstantiationExpression",
+            "start": 74,
+            "end": 78,
+            "expression": {
+              "type": "Identifier",
+              "start": 74,
+              "end": 75,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "typeArguments": {
+              "type": "TSTypeParameterInstantiation",
+              "start": 75,
+              "end": 78,
+              "params": [
+                {
+                  "type": "TSTypeReference",
+                  "start": 76,
+                  "end": 77,
+                  "typeName": {
+                    "type": "Identifier",
+                    "start": 76,
+                    "end": 77,
+                    "name": "b",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "typeArguments": null
+                }
+              ]
+            }
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 79,
+            "end": 80,
+            "name": "c",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "computed": false,
+          "optional": false
+        },
+        "directive": null
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " tsc 1477, a bare instantiation cannot be followed by a property access",
+      "start": 0,
+      "end": 73
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "An instantiation expression cannot be followed by a property access",
+      "start": 74,
+      "end": 78,
+      "help": "Wrap the instantiation expression in parentheses.",
+      "labels": []
+    }
+  ]
+}

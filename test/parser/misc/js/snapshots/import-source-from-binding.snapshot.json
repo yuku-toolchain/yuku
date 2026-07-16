@@ -1,0 +1,94 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 84,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 28,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 14,
+            "end": 18,
+            "local": {
+              "type": "Identifier",
+              "start": 14,
+              "end": 18,
+              "name": "from"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 24,
+          "end": 27,
+          "value": "x",
+          "raw": "\"x\""
+        },
+        "attributes": [],
+        "phase": "source"
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 29,
+        "end": 52,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 36,
+            "end": 42,
+            "local": {
+              "type": "Identifier",
+              "start": 36,
+              "end": 42,
+              "name": "source"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 48,
+          "end": 51,
+          "value": "x",
+          "raw": "\"x\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 53,
+        "end": 83,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 67,
+            "end": 73,
+            "local": {
+              "type": "Identifier",
+              "start": 67,
+              "end": 73,
+              "name": "source"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 79,
+          "end": 82,
+          "value": "x",
+          "raw": "\"x\""
+        },
+        "attributes": [],
+        "phase": "source"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

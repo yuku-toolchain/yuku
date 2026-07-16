@@ -330,6 +330,18 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
                 scan_from = parser.tree.span(child).end;
                 try parser.scratch_b.append(parser.allocator(), child);
             },
+            .greater_than, .right_brace => {
+                try parser.report(
+                    parser.current_token.span,
+                    if (parser.current_token.tag == .greater_than)
+                        "Unexpected '>' in JSX text"
+                    else
+                        "Unexpected '}' in JSX text",
+                    .{ .help = "Escape it with an HTML entity or wrap it in an" ++
+                        " expression container like {'>'}." },
+                );
+                scan_from = parser.current_token.span.end;
+            },
             else => break,
         }
     }
@@ -347,7 +359,7 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .spread) {
         try parser.advance() orelse return null; // consume '...'
 
-        const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
             return null;
         const end = try expectJsxChildRightBrace(parser, "JSX spread") orelse return null;
 
@@ -370,7 +382,7 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
         );
     }
 
-    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+    const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
     const end = try expectJsxChildRightBrace(parser, "JSX expression") orelse return null;
 
@@ -480,7 +492,7 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
 
         // expression: {expr}
         .left_brace => {
-            const container = try parseJsxExpressionContainer(parser, .tag) orelse return null;
+            const container = try parseJsxExpressionContainer(parser) orelse return null;
 
             // validate non-empty
             const expr = parser.tree.data(container).jsx_expression_container.expression;
@@ -512,35 +524,20 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     }
 }
 
-const JsxExprContext = enum {
-    /// inside a tag (attribute value), restore jsx_tag after '}'
-    tag,
-    /// inside children area, stay in normal mode after '}'
-    child,
-};
-
-// parses {expr} in children context
-fn parseJsxExpressionContainer(
-    parser: *Parser,
-    comptime context: JsxExprContext,
-) Error!?ast.NodeIndex {
+// parses an attribute-value {expr}, restoring jsx_tag mode after '}'
+fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
 
     // switch to normal mode for JS expression parsing
-    // (only matters when called from tag context, already normal in child context)
-    if (context == .tag) {
-        exitJsxTag(parser);
-    }
+    exitJsxTag(parser);
 
     try parser.advance() orelse return null; // consume '{'
 
     // empty expression: {}
     if (parser.current_token.tag == .right_brace) {
         const end = parser.current_token.span.end;
-        if (context == .tag) {
-            enterJsxTag(parser);
-        }
+        enterJsxTag(parser);
         try parser.advance() orelse return null;
 
         const empty = try parser.tree.addNode(
@@ -553,14 +550,12 @@ fn parseJsxExpressionContainer(
         );
     }
 
-    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+    const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
     const end = parser.current_token.span.end;
 
     // restore mode before consuming '}'
-    if (context == .tag) {
-        enterJsxTag(parser);
-    }
+    enterJsxTag(parser);
 
     const brace_ok = try parser.expect(
         .right_brace,
@@ -591,7 +586,7 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
     );
     if (!spread_ok) return null;
 
-    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+    const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
     const end = parser.current_token.span.end;
 

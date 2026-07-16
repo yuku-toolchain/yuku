@@ -373,6 +373,8 @@ const Modifiers = struct {
     accessibility: ast.Accessibility = .none,
 
     fn conflicts(m: Modifiers, tag: TokenTag) bool {
+        // `accessor` sits directly before the key, a following modifier word is the key
+        if (m.is_accessor) return true;
         return switch (tag) {
             .async, .get, .set => m.is_async or m.kind != .method,
             .static => m.is_static,
@@ -424,8 +426,14 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
 
     const next = parser.peekAhead() orelse return .none;
 
+    // a getter or setter can never be a generator, so `get *`/`set *`
+    // keeps get/set as a field key before a generator method
+    const accessor_before_star = next.tag == .star and
+        (token.tag == .get or token.tag == .set);
+
     const is_modifier =
         canStartElementKey(next.tag) and
+        !accessor_before_star and
         !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
         !mods.conflicts(token.tag);
 

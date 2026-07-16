@@ -86,16 +86,28 @@ pub fn parseTypeArgumentedCallOrInstantiation(
             callee,
             type_arguments,
         ),
-        else => try parser.tree.addNode(
-            .{ .ts_instantiation_expression = .{
-                .expression = callee,
-                .type_arguments = type_arguments,
-            } },
-            .{
-                .start = parser.tree.span(callee).start,
-                .end = parser.tree.span(type_arguments).end,
-            },
-        ),
+        else => blk: {
+            const node = try parser.tree.addNode(
+                .{ .ts_instantiation_expression = .{
+                    .expression = callee,
+                    .type_arguments = type_arguments,
+                } },
+                .{
+                    .start = parser.tree.span(callee).start,
+                    .end = parser.tree.span(type_arguments).end,
+                },
+            );
+
+            if (parser.current_token.tag == .dot) {
+                try parser.report(
+                    parser.tree.span(node),
+                    "An instantiation expression cannot be followed by a property access",
+                    .{ .help = "Wrap the instantiation expression in parentheses." },
+                );
+            }
+
+            break :blk node;
+        },
     };
 }
 
@@ -109,7 +121,7 @@ pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
 
     const cp = parser.checkpoint();
 
-    const args = try generics.parseTypeArguments(parser);
+    const args = try generics.parseTypeArgumentsInExpression(parser);
     if (args == .null or !canFollowTypeArgumentsInExpression(parser.current_token)) {
         parser.rewind(cp);
         return .null;

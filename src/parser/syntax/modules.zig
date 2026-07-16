@@ -45,24 +45,36 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
         import_kind = .type;
         try parser.advance() orelse return null;
     }
-    // import source x from
-    else if (parser.current_token.tag == .source and
-        next.tag.isIdentifierLike() and next.tag != .from)
-    {
-        phase = .source;
-        try parser.advance() orelse return null;
-    }
-    // import defer * as x from
-    else if (parser.current_token.tag == .@"defer" and next.tag == .star) {
-        phase = .@"defer";
-        try parser.advance() orelse return null;
-    }
-
-    // ts import x = rhs when id then assign, covers import type x = too
+    // ts import x = rhs when id then assign, covers import type x = too.
+    // checked before the phase forms so `import source = require("m")`
+    // binds `source` and `import source x = ...` keeps its phase to fail
     if (is_ts and parser.current_token.tag.isIdentifierLike()) {
         const after_id = parser.peekAhead() orelse return null;
         if (after_id.tag == .assign) {
             return ts.parseImportEqualsBody(parser, start, import_kind);
+        }
+    }
+
+    if (import_kind == .value) {
+        // import source x from
+        if (parser.current_token.tag == .source and isPhaseImportBinding(parser, next)) {
+            phase = .source;
+            try parser.advance() orelse return null;
+        }
+        // import defer * as x from
+        else if (parser.current_token.tag == .@"defer" and next.tag == .star) {
+            phase = .@"defer";
+            try parser.advance() orelse return null;
+        }
+        // import defer x from, a phase attempt with the wrong clause
+        else if (parser.current_token.tag == .@"defer" and isPhaseImportBinding(parser, next)) {
+            try parser.report(
+                parser.current_token.span,
+                "'import defer' only supports a namespace import",
+                .{ .help = "Write 'import defer * as ns from \"...\"'." },
+            );
+            phase = .@"defer";
+            try parser.advance() orelse return null;
         }
     }
 
@@ -113,6 +125,19 @@ fn isTypeImportModifier(parser: *Parser, after_type: Token) bool {
     }
 
     return true;
+}
+
+// `import source x from "m"` binds x, `import source from "m"` binds
+// `source` itself, and `import source from from "m"` binds `from`
+fn isPhaseImportBinding(parser: *Parser, next: Token) bool {
+    if (!next.tag.isIdentifierLike()) return false;
+    if (next.tag != .from) return true;
+
+    var peek = parser.beginPeek();
+    defer peek.end();
+    _ = peek.next();
+    const after_from = peek.next() orelse return false;
+    return after_from.tag == .from;
 }
 
 // import 'm' only, no bindings

@@ -31,10 +31,11 @@ const ParseExpressionOpts = struct {
     /// whether to parse them as patterns until the top level context is known after
     /// the cover is parsed.
     in_cover: bool = false,
-    /// whether to stop at `in` when `allow_in` is disabled. only the direct caller
-    /// that sets `allow_in = false` should pass `true` here, recursive calls (inside
-    /// parentheses, computed members, etc.) leave this `false` so `in` is parsed as
-    /// a binary operator normally.
+    /// whether to stop at `in` when `allow_in` is disabled. passed by the
+    /// for-head that disables it and by positions that inherit [?In]
+    /// (declarator inits, ternary alternates, concise arrow bodies).
+    /// recursive calls (parens, computed members, ...) leave it `false`
+    /// so `in` resets to allowed.
     respect_allow_in: bool = false,
 };
 
@@ -49,8 +50,10 @@ pub fn parseExpression(
     while (true) {
         const current_token = parser.current_token;
 
-        // `<` is dispatched before the binary precedence gate so it
-        // can act as a call-level postfix instead of relational.
+        // f<T>(x)
+        //  ^ dispatched before the binary precedence gate so it can
+        //    act as a call-level postfix (generic call/instantiation)
+        //    instead of the relational `f < T`.
         if (is_ts and ts.isAngleOpen(current_token.tag) and
             maxLeftPrecedence(parser.tree.data(left)) >= Precedence.Call)
         {
@@ -116,12 +119,6 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseUpdateExpression(parser, true, .null);
     }
 
-    if (tag == .at) {
-        const start = parser.current_token.span.start;
-        const decorators = try extensions.parseDecorators(parser) orelse return null;
-        return class.parseClassDecorated(parser, .{ .is_expression = true }, start, decorators);
-    }
-
     if (tag.isUnaryOperator()) {
         return parseUnaryExpression(parser);
     }
@@ -155,13 +152,15 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     if (tag == .less_than) {
         if (parser.tree.isTs()) {
             const start = parser.current_token.span.start;
-            if (try ts.tryParseGenericArrow(parser, false, start)) |arrow| return arrow;
+            if (precedence <= Precedence.Assignment) {
+                if (try ts.tryParseGenericArrow(parser, false, start)) |arrow| return arrow;
+            }
             if (!parser.tree.isJsx()) return ts.parseTypeAssertion(parser);
         }
         if (parser.tree.isJsx()) return jsx.parseJsxExpression(parser);
     }
 
-    return parsePrimaryExpression(parser, opts);
+    return parsePrimaryExpression(parser, opts, precedence);
 }
 
 fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
@@ -215,6 +214,7 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
 pub inline fn parsePrimaryExpression(
     parser: *Parser,
     opts: ParseExpressionOpts,
+    precedence: u8,
 ) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isNumericLiteral()) {
         return literals.parseNumericLiteral(parser);
@@ -224,7 +224,7 @@ pub inline fn parsePrimaryExpression(
         .private_identifier => blk: {
             const node = try literals.parsePrivateIdentifier(parser) orelse break :blk null;
 
-            if (parser.current_token.tag != .in) {
+            if (parser.current_token.tag != .in or precedence > Precedence.Relational) {
                 try parser.report(
                     parser.tree.span(node),
                     "Private names are only valid in property accesses (`obj.#field`)" ++
@@ -247,6 +247,16 @@ pub inline fn parsePrimaryExpression(
         .left_brace => parseObjectExpression(parser, opts.in_cover),
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
+        .at => blk: {
+            const decorators_start = parser.current_token.span.start;
+            const decorators = try extensions.parseDecorators(parser) orelse break :blk null;
+            break :blk try class.parseClassDecorated(
+                parser,
+                .{ .is_expression = true },
+                decorators_start,
+                decorators,
+            );
+        },
         else => {
             // contextual keywords used as identifiers (let, as, from, get, set, etc.)
             if (parser.current_token.tag.isIdentifierLike()) {
@@ -352,7 +362,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     }
 
     // async <T>(params) => ...
-    if (parser.tree.isTs() and next.tag == .less_than) {
+    if (parser.tree.isTs() and next.tag == .less_than and precedence <= Precedence.Assignment) {
         if (try ts.tryParseGenericArrow(parser, true, async_span.start)) |arrow| {
             if (is_escaped) try parser.reportEscapedKeyword(async_span);
             return arrow;
@@ -360,7 +370,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     }
 
     // async ident => body
-    if (next.tag.isIdentifierLike()) {
+    if (next.tag.isIdentifierLike() and precedence <= Precedence.Assignment) {
         const after_id = parser.peekAhead() orelse return null;
         if (after_id.tag == .arrow and !after_id.hasLineTerminatorBefore()) {
             if (is_escaped) try parser.reportEscapedKeyword(async_span);
@@ -662,22 +672,41 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         // otherwise, start with a primary expression
-        break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
+        break :blk try parsePrimaryExpression(parser, .{}, Precedence.New) orelse return null;
     };
 
-    // member expression chain (. [] ! and tagged templates)
+    var type_arguments: ast.NodeIndex = .null;
+
+    // member expression chain (. [] ! `<T>` and tagged templates)
     while (true) {
+        // new C<T>(x)
+        //      ^~^ committed type arguments bind to the constructor,
+        //          unless a template follows
+        //
+        // new C<T>`x`
+        //      ^~^ tags the template instead, giving
+        //          NewExpression(TaggedTemplateExpression<T>(C))
+        if (type_arguments != .null and
+            parser.current_token.tag != .template_head and
+            parser.current_token.tag != .no_substitution_template) break;
+
         callee = switch (parser.current_token.tag) {
             .dot => try parseStaticMemberExpression(parser, callee, false) orelse return null,
             .left_bracket => try parseComputedMemberExpression(parser, callee, false) orelse
                 return null,
-            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(
-                parser,
-                callee,
-                .null,
-            ) orelse return null,
-            // ts `!` binds to the callee, so `new (a?.b)!()` constructs with
-            // arguments instead of calling the finished `new` expression
+            .template_head, .no_substitution_template => blk: {
+                const tagged = try parseTaggedTemplateExpression(
+                    parser,
+                    callee,
+                    type_arguments,
+                ) orelse return null;
+                type_arguments = .null;
+                break :blk tagged;
+            },
+            // new (a?.b)!()
+            //           ^ binds to the callee, so this constructs with
+            //             arguments as NewExpression(TSNonNull(a?.b), ())
+            //             instead of calling the finished `new` expression
             .logical_not => if (parser.tree.isTs() and
                 !parser.current_token.hasLineTerminatorBefore())
                 try ts.parseNonNullExpression(parser, callee) orelse return null
@@ -691,16 +720,28 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
                 );
                 return null;
             },
+            // new Foo<T>(...)   or   new Foo<T>
+            //        ^~^ on commit, the type args fold straight into
+            //            the `NewExpression` node itself
+            .less_than, .left_shift => blk: {
+                if (!parser.tree.isTs()) break;
+                type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
+                if (type_arguments == .null) break;
+                break :blk callee;
+            },
             else => break,
         };
     }
 
-    // `new Foo<T>(...)` or `new Foo<T>`. parse `<T>` speculatively. on
-    // commit, the args fold straight into the `NewExpression`
-    const type_arguments = if (parser.tree.isTs())
-        try ts.tryParseTypeArgumentsInExpression(parser)
-    else
-        ast.NodeIndex.null;
+    if (parser.tree.data(callee) == .super) {
+        try parser.report(
+            parser.tree.span(callee),
+            "'super' cannot be used as the target of 'new'",
+            .{ .help = "Call the parent constructor with 'super()', or construct a" ++
+                " parent member with 'new super.prop()'." },
+        );
+        return null;
+    }
 
     // optional arguments
     var arguments = ast.IndexRange.empty;
@@ -921,7 +962,12 @@ fn parseAssignmentExpression(
 
     try parser.advance() orelse return null;
 
+    // a paren stripped inside the right-hand side sits in expression
+    // position, never in an arrow-head target, so it must not displace a
+    // target-position record from the left-hand side (`[(a) = ((b) = c)]`)
+    const saved_stripped_paren = parser.state.stripped_paren;
     const right = try parseExpression(parser, precedence, .{}) orelse return null;
+    parser.state.stripped_paren = saved_stripped_paren;
 
     return try parser.tree.addNode(
         .{ .assignment_expression = .{ .left = left, .right = right, .operator = operator } },
@@ -944,9 +990,11 @@ fn parseConditionalExpression(
     const saved_allow_in = parser.context.in;
     parser.context.in = true;
 
-    // a ts arrow return type (`(a): T => b`) can eat the ternary `:`. parse
-    // permissively, and only if the `:` went missing rewind and re-parse with
-    // return types restricted so the arrow yields it (see `tryParseArrow`).
+    // cond ? (a): T => b : alt
+    //           ^ a ts arrow return type can eat the ternary `:`.
+    //             parse permissively, and only if the `:` went missing
+    //             rewind and re-parse with return types restricted so
+    //             the arrow yields it (see `tryParseArrow`).
     const consequent = if (!parser.tree.isTs())
         try parseExpression(parser, precedence, .{}) orelse return null
     else consequent: {
@@ -1270,8 +1318,10 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                 try parser.advance() orelse return null;
                 expr = try parseOptionalChainElement(parser, expr, true) orelse return null;
             },
-            // `m?.[0]!` keeps the `!` inside the chain so it lifts
-            // naturally under the enclosing `ChainExpression`.
+            // m?.[0]!
+            //       ^ parsed here, inside the chain, so it lifts
+            //         naturally under the enclosing wrapper as
+            //         ChainExpression(TSNonNullExpression(m?.[0]))
             .logical_not => {
                 if (!is_ts or parser.current_token.hasLineTerminatorBefore()) break;
                 const bang_end = parser.current_token.span.end;
@@ -1281,14 +1331,22 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                     .{ .start = parser.tree.span(expr).start, .end = bang_end },
                 );
             },
-            // `a?.b<T>(c)` stays in the chain. we only commit when `(`
-            // follows the type args. a bare `a?.b<T>` closes the chain
-            // so the outer pratt loop builds a `TSInstantiationExpression`.
-            // `<<` covers nested generics like `a?.b<<T>(x: T) => R>(c)`.
+            // a?.b<T>(c)
+            //     ^~^ `(` follows -> generic call, stays in the chain
+            //
+            // a?.b<T>
+            //     ^~^ bare -> rewind past `<T>` and close the chain,
+            //         so the outer pratt loop wraps the result as
+            //         TSInstantiationExpression(ChainExpression(a?.b))
             .less_than, .left_shift => {
                 if (!is_ts) break;
+                const checkpoint = parser.checkpoint();
                 const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
-                if (type_arguments == .null or parser.current_token.tag != .left_paren) break;
+                if (type_arguments == .null) break;
+                if (parser.current_token.tag != .left_paren) {
+                    parser.rewind(checkpoint);
+                    break;
+                }
                 expr = try parseCallExpression(parser, expr, false, type_arguments) orelse
                     return null;
             },
@@ -1325,13 +1383,16 @@ fn parseOptionalChainElement(
         return parseMemberProperty(parser, object_node, optional);
     }
 
-    // `a?.<T>(args)` generic call right after `?.`. only `<...>(...)`
-    // is valid here. tagged templates and bare instantiations aren't.
+    // a?.<T>(args)
+    //    ^~^ generic call right after `?.` is the only valid form here.
+    //        a?.<T>`tpl` and a bare a?.<T> rewind instead.
     if (parser.tree.isTs() and ts.isAngleOpen(tag)) {
+        const checkpoint = parser.checkpoint();
         const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);
         if (type_arguments != .null and parser.current_token.tag == .left_paren) {
             return parseCallExpression(parser, object_node, optional, type_arguments);
         }
+        parser.rewind(checkpoint);
     }
 
     return switch (tag) {
@@ -1371,7 +1432,7 @@ pub fn parseLeftHandSideExpression(parser: *Parser, ctx: LhsContext) Error!?ast.
         .left_paren => try parseParenthesizedExpression(parser) orelse return null,
         .new => try parseNewExpression(parser) orelse return null,
         .import => try parseImportExpression(parser, null) orelse return null,
-        else => try parsePrimaryExpression(parser, .{}) orelse return null,
+        else => try parsePrimaryExpression(parser, .{}, Precedence.Call) orelse return null,
     };
 
     const is_ts = parser.tree.isTs();

@@ -2141,9 +2141,9 @@ const Printer = struct {
             self.restore(cur);
             return;
         }
-        // expression defaults need `;`, function/class declarations do not.
+        // expression defaults need `;`, declaration forms do not
         switch (data) {
-            .function, .class => {},
+            .function, .class, .ts_interface_declaration => {},
             else => try self.softSemi(),
         }
     }
@@ -2876,13 +2876,13 @@ const Printer = struct {
     fn emit_jsx_spread_attribute(self: *Self, a: *const ast.JSXSpreadAttribute) Error!void {
         try self.writeByte('{');
         try self.writeStr("...");
-        try self.emit(a.argument);
+        try self.emitValue(a.argument);
         try self.writeByte('}');
     }
 
     fn emit_jsx_expression_container(self: *Self, c: *const ast.JSXExpressionContainer) Error!void {
         try self.writeByte('{');
-        try self.emit(c.expression);
+        try self.emitValue(c.expression);
         try self.writeByte('}');
     }
 
@@ -2895,7 +2895,7 @@ const Printer = struct {
     fn emit_jsx_spread_child(self: *Self, c: *const ast.JSXSpreadChild) Error!void {
         try self.writeByte('{');
         try self.writeStr("...");
-        try self.emit(c.expression);
+        try self.emitValue(c.expression);
         try self.writeByte('}');
     }
 };

@@ -1,0 +1,404 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 438,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 142,
+        "end": 225,
+        "id": {
+          "type": "Identifier",
+          "start": 157,
+          "end": 169,
+          "name": "declarations"
+        },
+        "generator": false,
+        "async": true,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 172,
+          "end": 225,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 176,
+              "end": 196,
+              "kind": "await using",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 188,
+                  "end": 195,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 188,
+                    "end": 189,
+                    "name": "x"
+                  },
+                  "init": {
+                    "type": "CallExpression",
+                    "start": 192,
+                    "end": 195,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 192,
+                      "end": 193,
+                      "name": "h"
+                    },
+                    "arguments": [],
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 199,
+              "end": 223,
+              "kind": "await using",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 211,
+                  "end": 222,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 211,
+                    "end": 216,
+                    "name": "using"
+                  },
+                  "init": {
+                    "type": "CallExpression",
+                    "start": 219,
+                    "end": 222,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 219,
+                      "end": 220,
+                      "name": "h"
+                    },
+                    "arguments": [],
+                    "optional": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 227,
+        "end": 383,
+        "id": {
+          "type": "Identifier",
+          "start": 242,
+          "end": 253,
+          "name": "expressions"
+        },
+        "generator": false,
+        "async": true,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 256,
+          "end": 383,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 260,
+              "end": 325,
+              "expression": {
+                "type": "ConditionalExpression",
+                "start": 260,
+                "end": 324,
+                "test": {
+                  "type": "BinaryExpression",
+                  "start": 260,
+                  "end": 290,
+                  "left": {
+                    "type": "AwaitExpression",
+                    "start": 260,
+                    "end": 273,
+                    "argument": {
+                      "type": "MemberExpression",
+                      "start": 266,
+                      "end": 273,
+                      "object": {
+                        "type": "Identifier",
+                        "start": 266,
+                        "end": 271,
+                        "name": "using"
+                      },
+                      "property": {
+                        "type": "Identifier",
+                        "start": 272,
+                        "end": 273,
+                        "name": "x"
+                      },
+                      "computed": false,
+                      "optional": false
+                    }
+                  },
+                  "right": {
+                    "type": "AwaitExpression",
+                    "start": 276,
+                    "end": 290,
+                    "argument": {
+                      "type": "CallExpression",
+                      "start": 282,
+                      "end": 290,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 282,
+                        "end": 287,
+                        "name": "using"
+                      },
+                      "arguments": [
+                        {
+                          "type": "Identifier",
+                          "start": 288,
+                          "end": 289,
+                          "name": "x"
+                        }
+                      ],
+                      "optional": false
+                    }
+                  },
+                  "operator": "+"
+                },
+                "consequent": {
+                  "type": "AwaitExpression",
+                  "start": 293,
+                  "end": 307,
+                  "argument": {
+                    "type": "ChainExpression",
+                    "start": 299,
+                    "end": 307,
+                    "expression": {
+                      "type": "MemberExpression",
+                      "start": 299,
+                      "end": 307,
+                      "object": {
+                        "type": "Identifier",
+                        "start": 299,
+                        "end": 304,
+                        "name": "using"
+                      },
+                      "property": {
+                        "type": "Identifier",
+                        "start": 306,
+                        "end": 307,
+                        "name": "x"
+                      },
+                      "computed": false,
+                      "optional": true
+                    }
+                  }
+                },
+                "alternate": {
+                  "type": "AwaitExpression",
+                  "start": 310,
+                  "end": 324,
+                  "argument": {
+                    "type": "TaggedTemplateExpression",
+                    "start": 316,
+                    "end": 324,
+                    "tag": {
+                      "type": "Identifier",
+                      "start": 316,
+                      "end": 321,
+                      "name": "using"
+                    },
+                    "quasi": {
+                      "type": "TemplateLiteral",
+                      "start": 321,
+                      "end": 324,
+                      "quasis": [
+                        {
+                          "type": "TemplateElement",
+                          "start": 322,
+                          "end": 323,
+                          "value": {
+                            "raw": "x",
+                            "cooked": "x"
+                          },
+                          "tail": true
+                        }
+                      ],
+                      "expressions": []
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 328,
+              "end": 355,
+              "expression": {
+                "type": "BinaryExpression",
+                "start": 328,
+                "end": 354,
+                "left": {
+                  "type": "AwaitExpression",
+                  "start": 328,
+                  "end": 339,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 334,
+                    "end": 339,
+                    "name": "using"
+                  }
+                },
+                "right": {
+                  "type": "Identifier",
+                  "start": 351,
+                  "end": 354,
+                  "name": "foo"
+                },
+                "operator": "instanceof"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 358,
+              "end": 369,
+              "expression": {
+                "type": "AwaitExpression",
+                "start": 358,
+                "end": 369,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 364,
+                  "end": 369,
+                  "name": "using"
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 372,
+              "end": 381,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 372,
+                "end": 380,
+                "left": {
+                  "type": "Identifier",
+                  "start": 372,
+                  "end": 376,
+                  "name": "next"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 379,
+                  "end": 380,
+                  "value": 1,
+                  "raw": "1"
+                },
+                "operator": "="
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 385,
+        "end": 437,
+        "id": {
+          "type": "Identifier",
+          "start": 394,
+          "end": 400,
+          "name": "sloppy"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 403,
+          "end": 437,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 407,
+              "end": 412,
+              "expression": {
+                "type": "Identifier",
+                "start": 407,
+                "end": 412,
+                "name": "await"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 415,
+              "end": 420,
+              "expression": {
+                "type": "Identifier",
+                "start": 415,
+                "end": 420,
+                "name": "using"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 423,
+              "end": 435,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 423,
+                "end": 434,
+                "left": {
+                  "type": "Identifier",
+                  "start": 423,
+                  "end": 428,
+                  "name": "using"
+                },
+                "right": {
+                  "type": "CallExpression",
+                  "start": 431,
+                  "end": 434,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 431,
+                    "end": 432,
+                    "name": "h"
+                  },
+                  "arguments": [],
+                  "optional": false
+                },
+                "operator": "="
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " await using declares only in an await context with all three tokens on one",
+      "start": 0,
+      "end": 77
+    },
+    {
+      "type": "Line",
+      "value": " line, otherwise `await` is an operator or a plain identifier",
+      "start": 78,
+      "end": 141
+    }
+  ],
+  "diagnostics": []
+}

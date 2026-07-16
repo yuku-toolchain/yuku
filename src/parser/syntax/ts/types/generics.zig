@@ -10,7 +10,13 @@ const core = @import("core.zig");
 // Foo<T, U, V>
 //    ^^^^^^^^^
 pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
-    return parseAngleList(parser, .arguments);
+    return parseAngleList(parser, .arguments, .peel);
+}
+
+// expression position accepts only a lone `>` close, a fused `>=` or `>>`
+// keeps the operator parse, so `f<T>= x` stays relational like tsc
+pub inline fn parseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
+    return parseAngleList(parser, .arguments, .exact);
 }
 
 // `<>` after name in ref or typeof. newline before `<` keeps `typeof a` away from a
@@ -18,13 +24,13 @@ pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
 pub inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
     if (!isAngleOpen(parser.current_token.tag) or
         parser.current_token.hasLineTerminatorBefore()) return .null;
-    return parseAngleList(parser, .arguments);
+    return parseAngleList(parser, .arguments, .peel);
 }
 
 // function f<T, U extends V>() {}
 //           ^^^^^^^^^^^^^^^^
 pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
-    return parseAngleList(parser, .parameters);
+    return parseAngleList(parser, .parameters, .peel);
 }
 
 const AngleListKind = enum {
@@ -34,8 +40,19 @@ const AngleListKind = enum {
     parameters,
 };
 
+const AngleClose = enum {
+    // type context, one `>` peels off a fused `>>` or `>=`
+    peel,
+    // expression position, a fused closer fails the speculation
+    exact,
+};
+
 // null when no opening `<`
-fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeIndex {
+fn parseAngleList(
+    parser: *Parser,
+    comptime kind: AngleListKind,
+    comptime close: AngleClose,
+) Error!ast.NodeIndex {
     const start = try consumeAngleOpen(parser) orelse return .null;
 
     const checkpoint = parser.scratch_a.begin();
@@ -59,7 +76,7 @@ fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeI
         .parameters => "A type parameter list cannot be empty",
     }, .{});
 
-    const end = try consumeAngleClose(parser, kind) orelse return .null;
+    const end = try consumeAngleClose(parser, kind, close) orelse return .null;
     const params = try parser.flushToExtras(&parser.scratch_a, checkpoint);
 
     const data: ast.NodeData = switch (kind) {
@@ -104,7 +121,11 @@ fn consumeAngleOpen(parser: *Parser) Error!?u32 {
 }
 
 // `>` end or error report. peel one `>` from `>>` `>>=` style
-fn consumeAngleClose(parser: *Parser, comptime kind: AngleListKind) Error!?u32 {
+fn consumeAngleClose(
+    parser: *Parser,
+    comptime kind: AngleListKind,
+    comptime close: AngleClose,
+) Error!?u32 {
     switch (parser.current_token.tag) {
         .greater_than => {
             const end = parser.current_token.span.end;
@@ -117,6 +138,7 @@ fn consumeAngleClose(parser: *Parser, comptime kind: AngleListKind) Error!?u32 {
         .right_shift_assign,
         .unsigned_right_shift_assign,
         => {
+            if (close == .exact) return null;
             const gt = parser.lexer.reScanGreaterThan(parser.current_token.span.start);
             try parser.advanceWithRescannedToken(gt) orelse return null;
             return gt.span.end;
