@@ -54,7 +54,7 @@
 //   bool              1 flag bit, at the running sum of prior flag widths.
 //   enum              ceil(log2(n)) flag bits, where n is the variant count.
 //   NodeIndex         1 u32 slot. 0xFFFFFFFF marks null.
-//   IndexRange        the first such field in a struct takes field0 (u16
+//   IndexRange        the first such field in a struct takes field0 (u32
 //                     length) plus 1 u32 slot for start; each later one
 //                     takes 2 u32 slots, start then length.
 //   String            2 u32 slots (start, end); see string handles below.
@@ -134,7 +134,7 @@ const Header = extern struct {
 /// `flags` holds packed booleans and small enums, and `field1..field8`
 /// are u32 data slots assigned to struct fields by the packing rules.
 ///
-/// the *first* IndexRange in a struct uses `field0` (u16 length) plus one
+/// the *first* IndexRange in a struct uses `field0` (u32 length) plus one
 /// u32 slot for start, saving one full slot. every *later* IndexRange
 /// uses two consecutive u32 slots for start then length. this only
 /// affects structs with two or more IndexRange fields. the comptime
@@ -144,8 +144,7 @@ const PackedNode = extern struct {
     tag: u8,
     _pad0: u8 = 0,
     flags: u16,
-    field0: u16,
-    _pad1: u16 = 0,
+    field0: u32,
     field1: u32,
     field2: u32,
     field3: u32,
@@ -243,6 +242,9 @@ pub const ATTACHED_COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedAttachedComm
 pub const ATTACHED_COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_end");
 
 comptime {
+    std.debug.assert(NODE_SIZE == 48);
+    std.debug.assert(NODE_FIELD0_OFFSET == 4);
+    std.debug.assert(NODE_HEADER_U32S == 2);
     validateAllNodeLayouts();
 }
 
@@ -527,7 +529,7 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
             setSlot(n, slot, @intFromEnum(val));
         } else if (f.type == ast.IndexRange) {
             if (comptime isFirstRange(T, i)) {
-                n.field0 = @intCast(val.len);
+                n.field0 = val.len;
                 setSlot(n, slot, val.start);
             } else {
                 setSlot(n, slot, val.start);

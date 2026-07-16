@@ -72,8 +72,8 @@ function encode(program) {
     nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
   }
   function f0At(idx, v) {
-    const o = idx * NODE_SIZE + NODE_FIELD0_OFFSET;
-    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
+    const b = (idx * NODE_SIZE) >>> 2;
+    nU32[b + (NODE_FIELD0_OFFSET >>> 2)] = v >>> 0;
   }
   function slotAt(idx, slot, v) {
     nU32[((idx * NODE_SIZE) >>> 2) + NODE_HEADER_U32S + slot] = v >>> 0;
