@@ -11,15 +11,11 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "bun": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "tsdown"
@@ -40,5 +36,6 @@
     "typescript",
     "javascript",
     "yuku"
-  ]
+  ],
+  "module": "./dist/index.js"
 }

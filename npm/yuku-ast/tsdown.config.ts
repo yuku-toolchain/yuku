@@ -6,4 +6,5 @@ export default defineConfig({
   target: "es2022",
   dts: true,
   clean: true,
+  exports: true
 });
