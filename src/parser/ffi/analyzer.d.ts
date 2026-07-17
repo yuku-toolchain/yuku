@@ -110,14 +110,16 @@ declare const SymbolFlags: {
   readonly Exported: number;
   /** The default export. */
   readonly Default: number;
+  /** A TS enum member, declared in its enum's body scope. */
+  readonly EnumMember: number;
 
   /** Composite: any variable (`var` / `let` / `const`, params, catch). */
   readonly Variable: number;
   /** Composite: any import binding, value or `import type`. */
   readonly Import: number;
-  /** Composite: visible at runtime (var, function, class, enum, value namespace). */
+  /** Composite: visible at runtime (var, function, class, enum and its members, value namespace). */
   readonly ValueSpace: number;
-  /** Composite: referencable from a type position (class, enum, interface, alias, type param). */
+  /** Composite: referencable from a type position (class, enum and its members, interface, alias, type param). */
   readonly TypeSpace: number;
   /** Composite: what a dotted type name starts from (namespace, enum). */
   readonly NamespaceSpace: number;
@@ -147,7 +149,8 @@ type ScopeKind =
   | "class"
   | "staticBlock"
   | "expressionName"
-  | "tsModule";
+  | "tsModule"
+  | "functionBody";
 
 /** A lexical scope in a module's scope tree. */
 interface Scope {
@@ -444,7 +447,9 @@ interface Module {
    * find the nearest binding of `name` visible in `space` (default:
    * `"value"`, resolving like runtime code). A binding outside the
    * space does not shadow, the walk keeps going. `"any"` matches by
-   * name alone.
+   * name alone. A value-position `arguments` lookup stops at the
+   * first non-arrow function or static block, where the implicit
+   * arguments object shadows any outer binding of that name.
    */
   resolve(name: string, from?: Scope, space?: Space): Symbol | null;
   /**

@@ -61,7 +61,8 @@ pub const Symbol = struct {
         catch_var: bool = false,
         exported: bool = false,
         is_default: bool = false,
-        _: u13 = 0,
+        enum_member: bool = false,
+        _: u12 = 0,
 
         /// True when `a` and `b` have at least one flag in common.
         pub inline fn intersects(a: Flags, b: Flags) bool {
@@ -147,6 +148,7 @@ pub const Symbol = struct {
             if (self.parameter) return "parameter";
             if (self.catch_var) return "catch parameter";
             if (self.type_parameter) return "type parameter";
+            if (self.enum_member) return "enum member";
             return "variable";
         }
     };
@@ -168,6 +170,7 @@ pub const Symbol = struct {
         .regular_enum = true,
         .const_enum = true,
         .value_module = true,
+        .enum_member = true,
     };
 
     /// Declarations that live in TS type space.
@@ -178,6 +181,7 @@ pub const Symbol = struct {
         .interface = true,
         .type_alias = true,
         .type_parameter = true,
+        .enum_member = true,
     };
 
     /// Declarations a dotted type name can start from.
@@ -278,6 +282,8 @@ pub const Symbol = struct {
             f.type_parameter = false;
             break :blk f;
         };
+
+        pub const enum_member: Flags = value_space.merge(type_space);
     };
 };
 
@@ -720,6 +726,7 @@ pub const SymbolTracker = struct {
     pub fn setBindingContext(
         self: *SymbolTracker,
         data: ast.NodeData,
+        parent: ast.NodeIndex,
         scope: *const sc.ScopeTracker,
     ) Allocator.Error!void {
         switch (data) {
@@ -790,6 +797,7 @@ pub const SymbolTracker = struct {
                 const k = scope.get(target).kind;
                 const allow_overload = self.tree.isTs() or
                     k == .function or
+                    k == .function_body or
                     k == .global or
                     k == .static_block;
 
@@ -836,7 +844,7 @@ pub const SymbolTracker = struct {
             },
 
             // members are not the exported binding
-            .class_body, .ts_module_block => self.export_state = .none,
+            .class_body, .ts_module_block, .ts_enum_body => self.export_state = .none,
 
             inline .import_declaration, .ts_import_equals_declaration => |decl| {
                 try self.pushSavedContext();
@@ -952,12 +960,41 @@ pub const SymbolTracker = struct {
             // ts_mapped_type, so the same context applies.
             .ts_type_parameter, .ts_mapped_type => {
                 try self.pushSavedContext();
+                // infer declares in the enclosing conditional scope so the
+                // true branch sees it, even from inside a signature type:
+                //   T extends ((k: infer I) => void) ? I : never
+                //   //                  ^ declares here    ^ resolves
+                const target = if (parent != .null and self.tree.data(parent) == .ts_infer_type)
+                    nearestConditionalScope(self.tree, scope)
+                else
+                    scope.current;
                 self.pending = .{
                     .flags = .{ .type_parameter = true },
                     .excludes = Symbol.Excludes.type_parameter,
-                    .scope = scope.current,
+                    .scope = target,
                 };
                 self.export_state = .none;
+            },
+
+            // signature-type parameter names are labels, not declarations.
+            // clears an enclosing type-parameter context so nesting never
+            // declares them:
+            //
+            //   <T extends { [s: string]: number }>
+            //   //          ^ label, must not become a symbol
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
+            => {
+                try self.pushSavedContext();
+                self.pending = .{
+                    .flags = .{},
+                    .excludes = .{},
+                    .scope = scope.current,
+                };
             },
 
             else => {},
@@ -1042,6 +1079,30 @@ pub const SymbolTracker = struct {
                     .space = .typeof,
                 });
             },
+            // members are lexically visible inside the enum body:
+            //
+            //   enum E { a, b = a }
+            //   //              ^ resolves to the member, tsc-compatible
+            //
+            // member names are identifier_name or string_literal nodes,
+            // not binding_identifiers, so they declare here. computed and
+            // template names never declare.
+            .ts_enum_member => |member| {
+                if (member.computed) return;
+                const name = switch (self.tree.data(member.id)) {
+                    .identifier_name => |id| id.name,
+                    .string_literal => |str| str.value,
+                    else => return,
+                };
+                const saved = self.pending;
+                self.pending = .{
+                    .flags = .{ .enum_member = true, .ambient = self.ambient },
+                    .excludes = Symbol.Excludes.enum_member,
+                    .scope = scope.current,
+                };
+                _ = try self.declare(name, member.id);
+                self.pending = saved;
+            },
             // the leftmost capitalized `jsx_identifier` of a tag is a js
             // binding reference. lowercase tags (`<div>`) are intrinsic
             // element names and the rest of the chain is property syntax.
@@ -1085,6 +1146,12 @@ pub const SymbolTracker = struct {
             .ts_namespace_export_declaration,
             .ts_type_parameter,
             .ts_mapped_type,
+            .ts_function_type,
+            .ts_constructor_type,
+            .ts_method_signature,
+            .ts_call_signature_declaration,
+            .ts_construct_signature_declaration,
+            .ts_index_signature,
             => {
                 if (self.saved_stack.pop()) |saved| {
                     self.pending = saved.pending;
@@ -1268,14 +1335,27 @@ pub const SymbolTracker = struct {
         for (self.references.items) |*ref| {
             const name = self.tree.string(ref.name);
             const pctx = PrehashCtx{ .h = std.hash.Wyhash.hash(0, name) };
+            // the implicit arguments object (10.2.11 argumentsObjectNeeded)
+            // shadows outer bindings, an own parameter or var still wins
+            const arguments_barrier = (ref.flags.space == .value or ref.flags.space == .typeof) and
+                std.mem.eql(u8, name, "arguments");
             ref.symbol = blk: {
                 var it = scopes.ancestors(ref.scope);
                 while (it.next()) |ancestor| {
                     const idx = @intFromEnum(ancestor);
-                    const id = self.scope_maps.items[idx].getAdapted(name, pctx) orelse continue;
-                    // a binding outside the reference's space does
-                    // not shadow, keep walking
-                    if (self.symbol(id).flags.visibleIn(ref.flags.space)) break :blk id;
+                    if (self.scope_maps.items[idx].getAdapted(name, pctx)) |id| {
+                        // a binding outside the reference's space does
+                        // not shadow, keep walking
+                        const sym = self.symbol(id);
+                        if (sym.flags.visibleIn(ref.flags.space) and
+                            typeParameterVisible(self.tree, sym, ref.node, scopes, node_parents))
+                        {
+                            break :blk id;
+                        }
+                    }
+                    if (arguments_barrier and isArgumentsBarrier(self.tree, scopes.get(ancestor))) {
+                        break :blk .none;
+                    }
                 }
                 break :blk .none;
             };
@@ -1318,6 +1398,100 @@ pub const SymbolTracker = struct {
         };
     }
 };
+
+// TypeScript restricts type parameters beyond lexical scoping: infer
+// variables exist only in their conditional's true branch, and class
+// type parameters are hidden in static members (TS2302) and computed
+// member keys (TS2467)
+fn typeParameterVisible(
+    tree: *const ast.Tree,
+    sym: Symbol,
+    ref_node: ast.NodeIndex,
+    scopes: sc.ScopeTree,
+    node_parents: []const ast.NodeIndex,
+) bool {
+    if (!sym.flags.type_parameter) return true;
+    const scope_node = scopes.get(sym.scope).node;
+    return switch (tree.data(scope_node)) {
+        .ts_conditional_type => |cond| inSubtree(node_parents, ref_node, scope_node, cond.true_type),
+        .class => !classTypeParameterHidden(tree, node_parents, ref_node, scope_node),
+        else => true,
+    };
+}
+
+// whether walking up from `node` reaches `root` through `subtree`
+fn inSubtree(
+    node_parents: []const ast.NodeIndex,
+    node: ast.NodeIndex,
+    root: ast.NodeIndex,
+    subtree: ast.NodeIndex,
+) bool {
+    var child = node;
+    var parent = node_parents[@intFromEnum(child)];
+    while (parent != .null) : ({
+        child = parent;
+        parent = node_parents[@intFromEnum(parent)];
+    }) {
+        if (parent == root) return child == subtree;
+    }
+    return false;
+}
+
+fn classTypeParameterHidden(
+    tree: *const ast.Tree,
+    node_parents: []const ast.NodeIndex,
+    ref_node: ast.NodeIndex,
+    class_node: ast.NodeIndex,
+) bool {
+    var child = ref_node;
+    var parent = node_parents[@intFromEnum(child)];
+    while (parent != .null) : ({
+        child = parent;
+        parent = node_parents[@intFromEnum(parent)];
+    }) {
+        switch (tree.data(parent)) {
+            .method_definition => |m| if (m.computed and m.key == child and
+                memberOwner(node_parents, parent) == class_node) return true,
+            .property_definition => |p| if (p.computed and p.key == child and
+                memberOwner(node_parents, parent) == class_node) return true,
+            .class_body => {
+                if (node_parents[@intFromEnum(parent)] != class_node) continue;
+                return switch (tree.data(child)) {
+                    .method_definition => |m| m.static,
+                    .property_definition => |p| p.static,
+                    .ts_index_signature => |s| s.static,
+                    .static_block => true,
+                    else => false,
+                };
+            },
+            else => {},
+        }
+    }
+    return false;
+}
+
+fn memberOwner(node_parents: []const ast.NodeIndex, member: ast.NodeIndex) ast.NodeIndex {
+    const body = node_parents[@intFromEnum(member)];
+    return if (body == .null) .null else node_parents[@intFromEnum(body)];
+}
+
+fn nearestConditionalScope(tree: *const ast.Tree, scope: *const sc.ScopeTracker) sc.ScopeId {
+    var it = scope.ancestors(scope.current);
+    while (it.next()) |id| {
+        if (tree.data(scope.get(id).node) == .ts_conditional_type) return id;
+    }
+    return scope.current;
+}
+
+// non-arrow functions hold the implicit arguments object. static blocks
+// have no arguments at all, referencing it there is an early error
+fn isArgumentsBarrier(tree: *const ast.Tree, scope: sc.Scope) bool {
+    return switch (scope.kind) {
+        .function => tree.data(scope.node) == .function,
+        .static_block => true,
+        else => false,
+    };
+}
 
 // walks a jsx tag name to its leftmost `jsx_identifier`. returns null
 // for namespaced names (`<svg:path>`) and non-tag shapes.

@@ -531,7 +531,6 @@ fn toObjectPatternImpl(
                 else => {},
             }
 
-
             rest = prop;
             properties_len = @intCast(i);
             break;

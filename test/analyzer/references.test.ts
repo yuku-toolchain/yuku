@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer, SymbolFlags } from "yuku-analyzer";
-import { summary } from "./summarize";
+import { summary } from "./utils/summarize";
 
 describe("resolution", () => {
   test("a use resolves to the nearest binding; an inner declaration shadows", () => {

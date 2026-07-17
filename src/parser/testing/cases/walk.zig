@@ -385,7 +385,7 @@ const LayerCtx = struct {
         try self.log.append("ctx.post_enter");
     }
 
-    pub fn exit(self: *LayerCtx, data: ast.NodeData) void {
+    pub fn exit(self: *LayerCtx, _: ast.NodeIndex, data: ast.NodeData) void {
         _ = data;
         self.log.append("ctx.exit") catch unreachable;
     }
@@ -435,9 +435,8 @@ test "Layer runs ctx.enter, user hooks, ctx.post_enter, user exit, ctx.exit" {
         "ctx.enter", "user.enter", "ctx.post_enter",
         "ctx.enter", "user.enter", "ctx.post_enter",
         "ctx.enter", "user.enter", "ctx.post_enter",
-        "user.exit", "ctx.exit",
-        "user.exit", "ctx.exit",
-        "user.exit", "ctx.exit",
+        "user.exit", "ctx.exit",   "user.exit",
+        "ctx.exit",  "user.exit",  "ctx.exit",
     };
     try testing.expectEqual(expected.len, log.events.items.len);
     for (expected, log.events.items) |want, got| {

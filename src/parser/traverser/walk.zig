@@ -155,7 +155,7 @@ pub fn Layer(comptime C: type, comptime V: type) type {
             ctx: *C,
         ) void {
             dispatch.exit(C, V, self.inner, data, index, ctx);
-            ctx.exit(data);
+            ctx.exit(index, data);
         }
     };
 }

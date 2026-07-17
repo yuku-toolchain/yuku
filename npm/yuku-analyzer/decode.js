@@ -203,7 +203,7 @@ _ck("JSXEmptyExpression", []);
 _ck("JSXText", []);
 _ck("JSXSpreadChild", ["expression"]);
 _ck("Hashbang", []);
-const SCOPE_KINDS = ["global", "module", "function", "block", "class", "staticBlock", "expressionName", "tsModule"];
+const SCOPE_KINDS = ["global", "module", "function", "block", "class", "staticBlock", "expressionName", "tsModule", "functionBody"];
 const IMPORT_PHASES = ["source", "defer"];
 const IMPORT_KINDS = ["named", "namespace", "sideEffect", "importEquals", "dynamic", "require"];
 const EXPORT_KINDS = ["named", "reExport", "namespace", "star", "equals", "global"];
@@ -229,10 +229,11 @@ const SymbolFlags = Object.freeze({
   CatchVariable: 1 << 16,
   Exported: 1 << 17,
   Default: 1 << 18,
+  EnumMember: 1 << 19,
   Variable: 3,
   Import: 6144,
-  ValueSpace: 127,
-  TypeSpace: 952,
+  ValueSpace: 524415,
+  TypeSpace: 525240,
   NamespaceSpace: 1136,
 });
 const CHILD_SLOTS = [

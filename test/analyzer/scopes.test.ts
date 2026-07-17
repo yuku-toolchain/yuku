@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer } from "yuku-analyzer";
-import { summary } from "./summarize";
+import { summary } from "./utils/summarize";
 
 describe("root scope", () => {
   test("module wraps global, top-level bindings land in module scope", () => {

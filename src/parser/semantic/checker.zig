@@ -119,6 +119,36 @@ pub const Checker = struct {
             }
         }
 
+        // a split body environment keeps the early errors: lexical body
+        // names may not duplicate parameter names (15.2.1) or catch
+        // parameter names (14.15.1) one scope up:
+        //
+        //   function f(a = 1) { let a }   // still an error
+        //   function f(a = 1) { var a }   // legal, var stays out
+        if (!flags.function_scoped_var and !flags.function) {
+            const target_scope = ctx.scope.get(target);
+            const outer = target_scope.parent;
+            const outer_holds_parameters = outer != .none and switch (target_scope.kind) {
+                .function_body => true,
+                .block => blk: {
+                    const outer_data = ctx.tree.data(ctx.scope.get(outer).node);
+                    break :blk outer_data == .catch_clause and
+                        outer_data.catch_clause.body == target_scope.node;
+                },
+                else => false,
+            };
+            if (outer_holds_parameters) {
+                if (ctx.symbols.ownBinding(outer, name)) |sym| {
+                    const existing = ctx.symbols.symbol(sym);
+                    if ((existing.flags.parameter or existing.flags.catch_var) and
+                        existing.flags.intersects(excludes))
+                    {
+                        try self.reportRedeclaration(id, node_index, sym, existing, ctx);
+                    }
+                }
+            }
+        }
+
         // per 14.2.1, a hoisting var conflicts with block-scoped
         // names in any intermediate block it passes through.
         if (flags.isHoistingVar()) {

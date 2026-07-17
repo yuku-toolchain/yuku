@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { Analyzer } from "yuku-analyzer";
-import { captures } from "./summarize";
+import { captures } from "./utils/summarize";
 
 test("a read capture and a written capture", () => {
   expect(

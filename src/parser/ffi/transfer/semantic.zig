@@ -168,6 +168,7 @@ comptime {
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "catch_var") == 16);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "exported") == 17);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "is_default") == 18);
+    std.debug.assert(@bitOffsetOf(Symbol.Flags, "enum_member") == 19);
 
     // reference flags cross as a raw bitset inside `bits`, freeze the layout
     std.debug.assert(@bitSizeOf(Reference.Flags) == 8);
@@ -188,6 +189,7 @@ comptime {
     std.debug.assert(@intFromEnum(Scope.Kind.static_block) == 5);
     std.debug.assert(@intFromEnum(Scope.Kind.expression_name) == 6);
     std.debug.assert(@intFromEnum(Scope.Kind.ts_module) == 7);
+    std.debug.assert(@intFromEnum(Scope.Kind.function_body) == 8);
 
     // record kinds cross as raw bits inside the import/export `bits`
     // words, a contract with the JS IMPORT_KINDS and EXPORT_KINDS

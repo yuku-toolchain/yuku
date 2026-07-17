@@ -22,11 +22,11 @@ pub const Ctx = struct {
 
     pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
-        try self.scope.enter(index, data);
+        try self.scope.enter(index, self.path.parent() orelse .null, data);
     }
 
-    pub fn exit(self: *Ctx, data: ast.NodeData) void {
-        self.scope.exit(data);
+    pub fn exit(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) void {
+        self.scope.exit(index, data);
         self.path.pop();
     }
 };

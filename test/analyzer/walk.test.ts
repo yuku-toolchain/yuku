@@ -56,30 +56,28 @@ describe("walk", () => {
 
   test("a class decorator's scope is the enclosing scope, not the class", () => {
     const module = analyze(`let dec = () => {}; @dec class C {}`, "input.ts");
-    let decoratorScope: string | null = null;
+    const seen: string[] = [];
     module.walk({
       Identifier(node, ctx) {
-        if (node.name === "dec" && ctx.reference) decoratorScope = ctx.scope.kind;
+        if (node.name === "dec" && ctx.reference) seen.push(ctx.scope.kind);
       },
     });
-    expect(decoratorScope).toBe("module");
+    expect(seen).toEqual(["module"]);
   });
 
   test("ctx.symbol and ctx.reference are the node→model shorthands", () => {
     const module = analyze(`let x = 1; x;`);
-    let declSymbol: string | null = null;
-    let useReferenceSymbol: string | null = null;
+    const declSymbols: string[] = [];
+    const useReferenceSymbols: (string | null)[] = [];
 
     module.walk({
       Identifier(_, ctx) {
-        if (ctx.symbol) declSymbol = ctx.symbol.name;
-        if (ctx.reference) useReferenceSymbol = ctx.reference.symbol?.name ?? null;
+        if (ctx.symbol) declSymbols.push(ctx.symbol.name);
+        if (ctx.reference) useReferenceSymbols.push(ctx.reference.symbol?.name ?? null);
       },
     });
-    // @ts-expect-error
-    expect(declSymbol).toBe("x");
-    // @ts-expect-error
-    expect(useReferenceSymbol).toBe("x");
+    expect(declSymbols).toContain("x");
+    expect(useReferenceSymbols).toContain("x");
   });
 
   test("a subtree root limits the walk", () => {
@@ -201,10 +199,10 @@ describe("node queries", () => {
   test("symbolOf, referenceOf, and scopeOf work on node identity", () => {
     const module = analyze(`function f() { return inner; } let inner = 1;`);
     const [fn] = module.findAll("FunctionDeclaration");
-    const fnSymbol = module.symbolOf(fn.id!);
+    const fnSymbol = module.symbolOf(fn!.id!);
     expect(fnSymbol?.name).toBe("f");
 
-    const use = fn.body?.body[0];
+    const use = fn!.body?.body[0];
     const arg = (use as { argument: { type: string; name: string } }).argument;
     const reference = module.referenceOf(arg as never);
     expect(reference?.symbol?.name).toBe("inner");
@@ -253,7 +251,7 @@ describe("node queries", () => {
     void module.ast;
     for (const name of ["x", "p", "plain"]) {
       const symbol = module.symbols.find((s) => s.name === name)!;
-      expect(module.symbolOf(symbol.declarations[0])).toBe(symbol);
+      expect(module.symbolOf(symbol.declarations[0]!)).toBe(symbol);
     }
   });
 });

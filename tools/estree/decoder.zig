@@ -56,6 +56,7 @@ const symbol_flag_names = [_]struct { zig: []const u8, js: []const u8 }{
     .{ .zig = "catch_var", .js = "CatchVariable" },
     .{ .zig = "exported", .js = "Exported" },
     .{ .zig = "is_default", .js = "Default" },
+    .{ .zig = "enum_member", .js = "EnumMember" },
 };
 
 fn jsFlagName(comptime zig_name: []const u8) []const u8 {
@@ -92,8 +93,9 @@ fn strCell(
 
 fn writeSemanticConstants(w: *Writer) !void {
     try writeArray(w, "SCOPE_KINDS", &.{
-        "global", "module",      "function",       "block",
-        "class",  "staticBlock", "expressionName", "tsModule",
+        "global",       "module",      "function",       "block",
+        "class",        "staticBlock", "expressionName", "tsModule",
+        "functionBody",
     });
     try writeArray(w, "IMPORT_PHASES", &.{ "source", "defer" });
     try writeArray(w, "IMPORT_KINDS", &.{

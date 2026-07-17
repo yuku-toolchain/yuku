@@ -323,7 +323,7 @@ function writeResultFile(result: SuiteResult): string {
     const suffix = !passed && reason ? ` (${reason})` : "";
     lines.push(`${passed ? "✓" : "✗"} ${file}${suffix}`);
     if (diagnostics && diagnostics.length > 0 && source) {
-      lines.push(formatDiagnostics(source, [diagnostics[0]], file, { showFilename: false }));
+      lines.push(formatDiagnostics(source, [diagnostics[0]!], file, { showFilename: false }));
       lines.push("");
     }
   }

@@ -267,7 +267,7 @@ function renderUnderlines(rawLine: string, markers: LineMarker[], gutter: string
       rowIdx = placed.length;
       placed.push([]);
     }
-    placed[rowIdx].push({ start: expStart, end: totalEnd });
+    placed[rowIdx]!.push({ start: expStart, end: totalEnd });
 
     while (rows.length <= rowIdx) rows.push("");
     const ch = marker.isPrimary ? "^" : "~";
@@ -292,7 +292,7 @@ export function formatDiagnostics(
   const output: string[] = [];
 
   for (let di = 0; di < diagnostics.length; di++) {
-    const diag = diagnostics[di];
+    const diag = diagnostics[di]!;
     const pos = offsetToPos(source, diag.start);
     const markers = buildMarkers(source, sourceLines, diag);
 
@@ -312,7 +312,7 @@ export function formatDiagnostics(
     }
 
     const displayLines = [...contextLines].sort((a, b) => a - b);
-    const maxNum = displayLines.length > 0 ? displayLines[displayLines.length - 1] + 1 : 1;
+    const maxNum = displayLines.length > 0 ? displayLines[displayLines.length - 1]! + 1 : 1;
     const gw = Math.max(String(maxNum).length, 2);
     const pad = (n: number) => String(n).padStart(gw);
     const lineGutter = (n: number) => `${pad(n + 1)} | `;

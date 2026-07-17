@@ -1,7 +1,3 @@
-// yuku-parser's public type surface. The AST, diagnostic, and traversal type
-// model lives in @yuku-toolchain/types and is re-exported here for backward
-// compatibility; this file adds only the parser's own parse/walk API.
-
 import type {
   Comment,
   Diagnostic,
@@ -15,8 +11,6 @@ import type {
 } from "@yuku-toolchain/types";
 
 export * from "@yuku-toolchain/types";
-
-// Parsing
 
 /** Options for configuring the parser. */
 interface ParseOptions {
@@ -106,38 +100,6 @@ type Visitors<S = unknown> = {
  */
 export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T;
 
-/** A visitor function for one node type in an async walk. */
-type AsyncWalkHandler<T extends Node = Node, S = unknown> = (
-  node: T,
-  ctx: WalkContext<T, S>,
-) => void | Promise<void>;
-
-/** Enter/leave hooks for one node type in an async walk. */
-interface AsyncWalkHooks<T extends Node = Node, S = unknown> {
-  enter?: AsyncWalkHandler<T, S>;
-  leave?: AsyncWalkHandler<T, S>;
-}
-
-/** {@link Visitors}, with handlers that may return promises. */
-type AsyncVisitors<S = unknown> = {
-  [K in NodeType]?: AsyncWalkHandler<NodeOfType<K>, S> | AsyncWalkHooks<NodeOfType<K>, S>;
-} & {
-  enter?: AsyncWalkHandler<Node, S>;
-  leave?: AsyncWalkHandler<Node, S>;
-};
-
-/**
- * The async counterpart of {@link walk}: identical traversal order and
- * mutation semantics, with every handler awaited before the walk moves
- * on, so `ctx` and visit order stay exact across suspensions. Resolves
- * to the root.
- */
-export function walkAsync<T extends Node, S = unknown>(
-  root: T,
-  visitors: AsyncVisitors<S>,
-  state?: S,
-): Promise<T>;
-
 /**
  * Resolves a {@link SourceLang} from a file path's extension.
  *
@@ -157,13 +119,4 @@ export function langFromPath(path: string): SourceLang;
  */
 export function sourceTypeFromPath(path: string): SourceType;
 
-export type {
-  AsyncVisitors,
-  AsyncWalkHandler,
-  AsyncWalkHooks,
-  ParseOptions,
-  ParseResult,
-  Visitors,
-  WalkHandler,
-  WalkHooks,
-};
+export type { ParseOptions, ParseResult, Visitors, WalkHandler, WalkHooks };

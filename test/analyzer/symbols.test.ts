@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer, SymbolFlags } from "yuku-analyzer";
-import { summary } from "./summarize";
+import { summary } from "./utils/summarize";
 
 describe("variable kinds", () => {
   test("var, let, const, using", () => {
@@ -49,6 +49,7 @@ describe("variable kinds", () => {
               a#1  param
               b#2  param
               rest#3  param
+              functionBody BlockStatement
             function =>
               x#5  param
               y#6  param
@@ -79,7 +80,9 @@ describe("TypeScript declarations", () => {
             E#2  enum
             CE#3  const-enum
             block TSInterfaceDeclaration
-            block TSTypeAliasDeclaration"
+            block TSTypeAliasDeclaration
+            block TSEnumBody
+            block TSEnumBody"
       `);
   });
 
@@ -186,8 +189,10 @@ describe("declaration merging", () => {
       "global
         module [strict]
           E#0  enum namespace value-module ×2
+          block TSEnumBody
+            A#1  
           tsModule
-            b#1  const exported"
+            b#2  const exported"
     `);
   });
 

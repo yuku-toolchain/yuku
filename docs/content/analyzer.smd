@@ -147,7 +147,7 @@ Every lexical environment in the file, as a tree.
 const scope = module.scopes[3];
 
 scope.kind;        // "global" | "module" | "function" | "block" | "class"
-                   // | "staticBlock" | "expressionName" | "tsModule"
+                   // | "staticBlock" | "expressionName" | "tsModule" | "functionBody"
 scope.node;        // the AST node that created the scope
 scope.parent;      // parent Scope, or null at the global scope
 scope.strict;      // strict mode, propagated per spec
@@ -159,7 +159,9 @@ scope.contains(other);    // is `other` this scope or a descendant?
 for (const s of scope.ancestors()) { /* this scope up to global */ }
 ```
 
-The scope tree is the native binder's exact output, so the spec subtleties are already right.
+Most kinds map one to one onto the construct that created them. `block` covers every lexical environment: braced blocks, loop heads, catch clauses, the case block a `switch` shares across its cases (its discriminant sits outside, in the enclosing scope), and TypeScript enum bodies, where members are lexically visible (`enum E { a, b = a }` resolves `a` to the member). `functionBody` exists only for functions whose parameter list contains expressions: the spec gives such bodies a separate `var` environment, so in `function f(a = () => x) { var x = 2 }` the default's closure resolves `x` to the outer scope, not the body.
+
+The scope tree is the native binder's exact output, and resolution applies the rules the spec and TypeScript layer on top of it: `arguments` in a value position never resolves past the enclosing non-arrow function, where the implicit arguments object shadows any outer binding of that name, `infer` variables are visible only in their conditional's true branch, and class type parameters are out of scope in static members and computed member keys.
 
 ## [Symbols]($section.id('symbols'))
 
@@ -175,7 +177,7 @@ sym.references;   // every resolved use site in this module
 sym.id;           // stable index into module.symbols
 ```
 
-One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need.
+One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
 
 ### [Flags]($section.id('flags'))
 

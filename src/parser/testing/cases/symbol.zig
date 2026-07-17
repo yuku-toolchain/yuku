@@ -421,7 +421,7 @@ test "write references cover every assignment-target shape" {
     var buf: [16]Semantic.ReferenceEntry = undefined;
     const refs = referencesNamed(&a, "w", &buf);
     const expected_writes = [_]bool{
-        true,  true, true, true, true, true, true, true,
+        true,  true,  true, true, true, true, true, true,
         false, false,
     };
     try testing.expectEqual(expected_writes.len, refs.len);
