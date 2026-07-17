@@ -1,6 +1,6 @@
 import { decode } from "./decode.js";
 
-export { WalkContext, _walk, walk } from "./walk.js";
+export { WalkContext, _walk, _walkAsync, walk, walkAsync } from "./walk.js";
 
 const wasmUrl = new URL("./yuku-parser.wasm", import.meta.url);
 

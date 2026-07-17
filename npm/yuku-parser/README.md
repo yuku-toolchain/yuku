@@ -97,6 +97,18 @@ walk(program, {
 
 `ctx.replace(node)` continues the walk into the replacement, `ctx.remove()` skips the removed subtree, `ctx.insertBefore(node)` inserts a sibling without visiting it, and `ctx.insertAfter(node)` inserts one the walk will visit. An optional third argument threads state to every handler as `ctx.state`.
 
+`walkAsync` is the async counterpart: same traversal order and mutation semantics, with every handler awaited before the walk moves on, and it resolves to the root:
+
+```ts
+import { parse, walkAsync } from "yuku-parser";
+
+await walkAsync(program, {
+  async ImportDeclaration(node, ctx) {
+    if (!(await moduleExists(node.source.value))) ctx.remove();
+  },
+});
+```
+
 The AST is also standard ESTree, so any ESTree-compatible walker works as well.
 
 ## Semantic analysis

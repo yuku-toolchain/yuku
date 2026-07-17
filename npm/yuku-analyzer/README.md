@@ -113,6 +113,8 @@ module.walk({
 
 The walk mutates in place: `ctx.replace(node)`, `ctx.remove()`, `ctx.insertBefore(node)`, `ctx.insertAfter(node)`, plus `ctx.skip()` and `ctx.stop()`. Transform the AST during the walk and print it with [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen).
 
+`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on.
+
 ## Closure analysis
 
 `capturesOf` reports the free variables of any function: every outer binding it closes over, with the capturing reference sites and whether the function writes to the binding. Shadowing and aliasing are handled by the resolved reference table, not by name matching:

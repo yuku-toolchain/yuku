@@ -85,8 +85,38 @@ function createDispatch(visitors) {
   return { enter, leave, typed: (type) => concrete.get(type) };
 }
 
+function position(ctx, node, key, list, frame) {
+  ctx._node = node;
+  ctx._key = key;
+  ctx._list = list;
+  ctx._frame = frame;
+}
+
+function applyReplace(ctx, parent, key, list, frame) {
+  const next = ctx._replacement;
+  ctx._replacement = null;
+  if (list !== null) list[frame.i] = next;
+  else parent[key] = next;
+  return next;
+}
+
+function applyRemove(ctx, parent, key, list, frame) {
+  ctx._removed = false;
+  if (list !== null) {
+    list.splice(frame.i, 1);
+    frame.i--;
+  } else {
+    parent[key] = null;
+  }
+}
+
 export function walk(root, visitors, state) {
   _walk(root, visitors, state, new WalkContext());
+  return root;
+}
+
+export async function walkAsync(root, visitors, state) {
+  await _walkAsync(root, visitors, state, new WalkContext());
   return root;
 }
 
@@ -95,36 +125,11 @@ export function _walk(root, visitors, state, ctx) {
   ctx.state = state;
   const ancestors = ctx._ancestors;
 
-  function position(node, key, list, frame) {
-    ctx._node = node;
-    ctx._key = key;
-    ctx._list = list;
-    ctx._frame = frame;
-  }
-
-  function applyReplace(parent, key, list, frame) {
-    const next = ctx._replacement;
-    ctx._replacement = null;
-    if (list !== null) list[frame.i] = next;
-    else parent[key] = next;
-    return next;
-  }
-
-  function applyRemove(parent, key, list, frame) {
-    ctx._removed = false;
-    if (list !== null) {
-      list.splice(frame.i, 1);
-      frame.i--;
-    } else {
-      parent[key] = null;
-    }
-  }
-
   (function visit(node, key, list, frame) {
     let typed = d.typed(node.type);
     const parent = ctx.parent;
 
-    position(node, key, list, frame);
+    position(ctx, node, key, list, frame);
     if (d.enter !== null) {
       d.enter(node, ctx);
       if (ctx._stopped) return false;
@@ -134,11 +139,11 @@ export function _walk(root, visitors, state, ctx) {
       if (ctx._stopped) return false;
     }
     if (ctx._removed) {
-      applyRemove(parent, key, list, frame);
+      applyRemove(ctx, parent, key, list, frame);
       return true;
     }
     if (ctx._replacement !== null) {
-      node = applyReplace(parent, key, list, frame);
+      node = applyReplace(ctx, parent, key, list, frame);
       typed = d.typed(node.type);
     }
 
@@ -167,7 +172,7 @@ export function _walk(root, visitors, state, ctx) {
       }
     }
 
-    position(node, key, list, frame);
+    position(ctx, node, key, list, frame);
     if (typed !== undefined && typed.leave !== null) {
       typed.leave(node, ctx);
       if (ctx._stopped) return false;
@@ -176,8 +181,78 @@ export function _walk(root, visitors, state, ctx) {
       d.leave(node, ctx);
       if (ctx._stopped) return false;
     }
-    if (ctx._removed) applyRemove(parent, key, list, frame);
-    else if (ctx._replacement !== null) applyReplace(parent, key, list, frame);
+    if (ctx._removed) applyRemove(ctx, parent, key, list, frame);
+    else if (ctx._replacement !== null) applyReplace(ctx, parent, key, list, frame);
+
+    return true;
+  })(root, null, null, null);
+}
+
+// line-for-line twin of _walk with each handler awaited before the walk
+// moves on, so keep the two visit bodies in lockstep
+export async function _walkAsync(root, visitors, state, ctx) {
+  const d = createDispatch(visitors);
+  ctx.state = state;
+  const ancestors = ctx._ancestors;
+
+  await (async function visit(node, key, list, frame) {
+    let typed = d.typed(node.type);
+    const parent = ctx.parent;
+
+    position(ctx, node, key, list, frame);
+    if (d.enter !== null) {
+      await d.enter(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (typed !== undefined && typed.enter !== null) {
+      await typed.enter(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (ctx._removed) {
+      applyRemove(ctx, parent, key, list, frame);
+      return true;
+    }
+    if (ctx._replacement !== null) {
+      node = applyReplace(ctx, parent, key, list, frame);
+      typed = d.typed(node.type);
+    }
+
+    const skipped = ctx._skip;
+    ctx._skip = false;
+    if (!skipped) {
+      const keys = CHILD_KEYS[node.type];
+      if (keys !== undefined && keys.length > 0) {
+        ancestors.push(node);
+        for (let k = 0; k < keys.length; k++) {
+          const key2 = keys[k];
+          const value = node[key2];
+          if (value === null || value === undefined || typeof value !== "object") continue;
+          if (Array.isArray(value)) {
+            const childFrame = { i: 0 };
+            for (; childFrame.i < value.length; childFrame.i++) {
+              const item = value[childFrame.i];
+              // pattern element holes are null
+              if (item !== null && !(await visit(item, key2, value, childFrame))) return false;
+            }
+          } else if (!(await visit(value, key2, null, null))) {
+            return false;
+          }
+        }
+        ancestors.pop();
+      }
+    }
+
+    position(ctx, node, key, list, frame);
+    if (typed !== undefined && typed.leave !== null) {
+      await typed.leave(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (d.leave !== null) {
+      await d.leave(node, ctx);
+      if (ctx._stopped) return false;
+    }
+    if (ctx._removed) applyRemove(ctx, parent, key, list, frame);
+    else if (ctx._replacement !== null) applyReplace(ctx, parent, key, list, frame);
 
     return true;
   })(root, null, null, null);

@@ -1,7 +1,7 @@
 // one analyzed file, its AST plus a lazily built semantic graph
 import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
-import { walkModule } from "./walk.js";
+import { walkModule, walkModuleAsync } from "./walk.js";
 
 export function langFromPath(path) {
   if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";
@@ -419,6 +419,10 @@ export class Module {
 
   walk(visitor, root) {
     walkModule(this, visitor, root);
+  }
+
+  walkAsync(visitor, root) {
+    return walkModuleAsync(this, visitor, root);
   }
 
   findAll(types) {

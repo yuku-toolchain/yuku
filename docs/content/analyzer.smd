@@ -303,6 +303,8 @@ module.walk({
 
 Per node, the order is catch-all `enter`, typed enter, children, typed leave, catch-all `leave`. Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`.
 
+`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Reach for it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
+
 ### [The context]($section.id('the-context'))
 
 One context object is reused across the whole walk (do not store it). It carries the position and the semantics.

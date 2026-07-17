@@ -129,6 +129,67 @@ describe("mutation", () => {
   });
 });
 
+describe("walkAsync", () => {
+  test("awaited handlers keep the sync walk's exact visit order", async () => {
+    const syncTrace: string[] = [];
+    analyze(`f(x);`).walk({
+      enter: (node) => syncTrace.push(`enter ${node.type}`),
+      leave: (node) => syncTrace.push(`leave ${node.type}`),
+    });
+
+    const asyncTrace: string[] = [];
+    await analyze(`f(x);`).walkAsync({
+      async enter(node) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        asyncTrace.push(`enter ${node.type}`);
+      },
+      async leave(node) {
+        await Promise.resolve();
+        asyncTrace.push(`leave ${node.type}`);
+      },
+    });
+    expect(asyncTrace).toEqual(syncTrace);
+  });
+
+  test("ctx still points at the current node after an await", async () => {
+    const module = analyze(`function outer() { const inner = () => bound; } let bound = 1;`);
+    const seen: Record<string, string> = {};
+    await module.walkAsync({
+      async Identifier(node, ctx) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        seen[node.name] = ctx.scope.kind;
+      },
+    });
+    expect(seen).toEqual({ bound: "module", inner: "function", outer: "function" });
+  });
+
+  test("mutation works from an async handler", async () => {
+    const module = analyze(`a; debugger; b;`);
+    await module.walkAsync({
+      async DebuggerStatement(_node, ctx) {
+        await Promise.resolve();
+        ctx.remove();
+      },
+    });
+    expect(module.ast.body.map((n) => n.type)).toEqual([
+      "ExpressionStatement",
+      "ExpressionStatement",
+    ]);
+  });
+
+  test("ctx.stop ends the walk, sync handlers mix in", async () => {
+    const module = analyze(`a; b; c;`);
+    const names: string[] = [];
+    await module.walkAsync({
+      Identifier(node, ctx) {
+        names.push(node.name);
+        if (node.name === "b") ctx.stop();
+      },
+    });
+    expect(names).toEqual(["a", "b"]);
+  });
+});
+
 describe("node queries", () => {
   test("findAll collects matching nodes in source order", () => {
     const module = analyze(`function a() {} function b() {} class C {}`);

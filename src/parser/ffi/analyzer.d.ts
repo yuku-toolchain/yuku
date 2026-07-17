@@ -301,6 +301,23 @@ type Visitors = {
   leave?: WalkHandler;
 };
 
+/** Handler for one node type in an async walk, free to return a promise. */
+type AsyncWalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext<T>) => void | Promise<void>;
+
+/** Enter/leave pair for one node type in an async walk. */
+interface AsyncWalkHooks<T extends Node = Node> {
+  enter?: AsyncWalkHandler<T>;
+  leave?: AsyncWalkHandler<T>;
+}
+
+/** {@link Visitors}, with handlers that may return promises. */
+type AsyncVisitors = {
+  [K in NodeType]?: AsyncWalkHandler<NodeOfType<K>> | AsyncWalkHooks<NodeOfType<K>>;
+} & {
+  enter?: AsyncWalkHandler;
+  leave?: AsyncWalkHandler;
+};
+
 /** A free variable of a function, as reported by {@link Module.capturesOf}. */
 interface Capture {
   /** The outer binding being closed over. */
@@ -463,6 +480,13 @@ interface Module {
    */
   walk(visitors: Visitors, root?: Node): void;
 
+  /**
+   * The async counterpart of {@link Module.walk}: identical traversal
+   * order and mutation semantics, with every handler awaited before
+   * the walk moves on.
+   */
+  walkAsync(visitors: AsyncVisitors, root?: Node): Promise<void>;
+
   /** Collects every node of the given type(s), in source order. */
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
   findAll<K extends NodeType>(types: Iterable<K>): NodeOfType<K>[];
@@ -565,6 +589,9 @@ export {
   sourceTypeFromPath,
   type AddFileOptions,
   type AnalyzerOptions,
+  type AsyncVisitors,
+  type AsyncWalkHandler,
+  type AsyncWalkHooks,
   type Capture,
   type Definition,
   type Export,
