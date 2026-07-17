@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer, type Module } from "yuku-analyzer";
+import { b } from "yuku-ast";
 
 function analyze(source: string, path = "input.js"): Module {
   return new Analyzer().addFile(path, source);
@@ -203,10 +204,12 @@ describe("node queries", () => {
     expect(fnSymbol?.name).toBe("f");
 
     const use = fn!.body?.body[0];
-    const arg = (use as { argument: { type: string; name: string } }).argument;
-    const reference = module.referenceOf(arg as never);
+    if (use?.type !== "ReturnStatement" || use.argument?.type !== "Identifier") {
+      throw new Error("expected a returned identifier");
+    }
+    const reference = module.referenceOf(use.argument);
     expect(reference?.symbol?.name).toBe("inner");
-    expect(module.scopeOf(arg as never)).toBe(reference!.scope);
+    expect(module.scopeOf(use.argument)).toBe(reference!.scope);
   });
 
   test("resolve walks the scope chain from a starting scope", () => {
@@ -227,21 +230,23 @@ describe("node queries", () => {
       .findAll("Identifier")
       .find((n) => n.name === "handler" && module.symbolOf(n))!;
     const property = module.parentOf(handler)!;
-    expect(property.type).toBe("Property");
-    expect((property as { key: { name: string } }).key.name).toBe("onPress");
+    expect(
+      property.type === "Property" && property.key.type === "Identifier"
+        ? property.key.name
+        : null,
+    ).toBe("onPress");
     expect(module.parentOf(property)?.type).toBe("ObjectPattern");
 
     // a use climbs to the declarator whose init it is
     const use = module.findAll("Identifier").find((n) => n.name === "handler" && module.referenceOf(n))!;
     const declarator = module.parentOf(use)!;
-    expect(declarator.type).toBe("VariableDeclarator");
-    expect((declarator as { init: unknown }).init).toBe(use);
+    expect(declarator.type === "VariableDeclarator" ? declarator.init : null).toBe(use);
   });
 
   test("parentOf is null at the root and for a foreign node", () => {
     const module = analyze(`let x = 1;`);
     expect(module.parentOf(module.ast)).toBeNull();
-    expect(module.parentOf({ type: "Identifier", name: "x" } as never)).toBeNull();
+    expect(module.parentOf(b.Identifier({ name: "x" }))).toBeNull();
   });
 
   test("a parameter declaration resolves back through symbolOf", () => {

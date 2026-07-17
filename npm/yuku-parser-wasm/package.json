@@ -14,7 +14,6 @@
     "index.js",
     "index.d.ts",
     "decode.js",
-    "walk.js",
     "yuku-parser.wasm"
   ],
   "dependencies": {

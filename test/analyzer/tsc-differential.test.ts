@@ -36,7 +36,7 @@ function tscResolutions(source: string, fileName: string): Map<number, number[]>
     if (ts.isIdentifier(node)) {
       const starts: number[] = [];
       for (const decl of checker.getSymbolAtLocation(node)?.declarations ?? []) {
-        const name = (decl as { name?: ts.Node }).name;
+        const name = ts.getNameOfDeclaration(decl);
         if (name !== undefined && name.getSourceFile() === sourceFile) {
           starts.push(name.getStart(sourceFile));
         }

@@ -6,8 +6,6 @@ import { diff } from "jest-diff";
 import {
   parse,
   langFromPath,
-  walk,
-  type Node,
   type ParseOptions,
   type ParseResult,
   type Diagnostic,
@@ -137,30 +135,6 @@ function parseFile(content: string, file: string, suite: TestSuite) {
   });
 }
 
-// quasis and expressions interleave in source, but walk order is by key,
-// matching every ESTree walker
-const INTERLEAVED_TYPES = new Set(["TemplateLiteral", "TSTemplateLiteralType"]);
-
-/** Returns the first child entered out of source order during a walk, if any. */
-function checkWalkOrder(program: Node): string | null {
-  let violation: string | null = null;
-  const lastStart = new Map<Node, number>();
-  walk(program, {
-    enter(node, ctx) {
-      const parent = ctx.parent;
-      if (parent === null || INTERLEAVED_TYPES.has(parent.type)) return;
-      const prev = lastStart.get(parent);
-      if (prev !== undefined && node.start < prev) {
-        violation = `${node.type} at ${node.start} entered after a sibling at ${prev} inside ${parent.type}`;
-        ctx.stop();
-        return;
-      }
-      lastStart.set(parent, node.start);
-    },
-  });
-  return violation;
-}
-
 function runTest(file: string, content: string, parsed: ParseResult, suite: TestSuite): boolean {
   const hasErrors = parsed.diagnostics.length > 0;
 
@@ -248,15 +222,6 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
     if (parsed.diagnostics.length > 0) {
       entry.source = content;
       entry.diagnostics = parsed.diagnostics;
-    } else {
-      const violation = checkWalkOrder(parsed.program);
-      if (violation !== null) {
-        passed = false;
-        entry.passed = false;
-        entry.reason = `walk order: ${violation}`;
-        clearProgress();
-        console.log(`\nx ${file} (${entry.reason})`);
-      }
     }
 
     if (passed && suite.expect === "snapshot") {

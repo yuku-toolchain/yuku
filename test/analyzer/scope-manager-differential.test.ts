@@ -70,7 +70,7 @@ function compare(
   for (const scope of manager.scopes) {
     for (const variable of scope.variables) {
       for (const def of variable.defs) {
-        const name = def.name as { range?: [number, number]; name?: string; type?: string };
+        const name = def.name;
         const position = name?.range?.[0];
         if (position === undefined) continue;
         // only identifier and string enum member names declare
@@ -78,7 +78,7 @@ function compare(
           continue;
         }
         if (def.type === "Parameter" && SIGNATURE_TYPES.has(def.node.type)) continue;
-        if (def.type === "Parameter" && name.name === "this") continue;
+        if (def.type === "Parameter" && name.type === "Identifier" && name.name === "this") continue;
         theirDecls.set(position, variable.name);
       }
     }
@@ -106,7 +106,7 @@ function compare(
       const throughAssertion =
         ours.write &&
         parent !== null &&
-        ASSERTION_WRAPPERS.has((parent as { type: string }).type);
+        ASSERTION_WRAPPERS.has(parent.type);
       if (!throughAssertion) {
         mismatches.push(
           `${label} ref@${position}: yuku write=${ours.write}, scope-manager write=${theirs.write}`,

@@ -33,15 +33,9 @@ npm install yuku-parser
 ```
 
 ```js
-import { parse, walk } from "yuku-parser";
+import { parse } from "yuku-parser";
 
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
-
-walk(program, {
-  Identifier(node) {
-    console.log(node.name); // x
-  },
-});
 ```
 
 Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm.
@@ -88,7 +82,38 @@ const { code, map } = print(program, { sourceMaps: { source } });
 
 [Read the codegen documentation →](https://yuku.fyi/parser/codegen)
 
-And many more, like the [analyzer](https://yuku.fyi/analyzer) with scopes, symbols, resolved references, closures, and cross-file module linking in one native pass.
+## Analyzer
+
+```bash
+npm install yuku-analyzer
+```
+
+```js
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
+
+const analyzer = new Analyzer();
+
+analyzer.addFile("lib.ts", `export const helper = (x: number) => x * 2;`);
+const main = analyzer.addFile(
+  "main.ts",
+  `import { helper } from "./lib.ts";
+   export const out = helper(21);`,
+);
+
+// per-file semantics
+const helperSym = main.rootScope.find("helper");
+console.log(helperSym.has(SymbolFlags.Import)); // true
+console.log(helperSym.references.length); // 1, the call site
+
+// cross-file: follow the import to where helper is actually defined
+const def = helperSym.definition();
+console.log(def.module.path); // "lib.ts"
+console.log(def.symbol.has(SymbolFlags.Const)); // true
+```
+
+Scopes, symbols, resolved references, closures, and cross-file module linking, computed in one native pass.
+
+[Read the analyzer documentation →](https://yuku.fyi/analyzer)
 
 ## Performance
 
