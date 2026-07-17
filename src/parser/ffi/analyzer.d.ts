@@ -518,6 +518,29 @@ interface ModuleReference {
   readonly reference: Reference;
 }
 
+/** Options for {@link analyze}: {@link AddFileOptions} plus the module path. */
+interface AnalyzeOptions extends AddFileOptions {
+  /**
+   * The path recorded on the module, also the default source of
+   * `lang` and `sourceType`.
+   * @default "input.js"
+   */
+  path?: string;
+}
+
+/**
+ * Parses and analyzes a single file, the shorthand for one-file
+ * semantics: scopes, symbols, resolved references, and a semantic
+ * walk. Cross-file surfaces stay empty, use {@link Analyzer} and
+ * {@link Analyzer.addFile} for multi-file projects and linking.
+ *
+ * ```ts
+ * const module = analyze(`const x = 1; x;`, { lang: "ts" });
+ * module.walk({ Identifier(node, ctx) { ctx.symbol; } });
+ * ```
+ */
+declare function analyze(source: string, options?: AnalyzeOptions): Module;
+
 /**
  * The project: a set of analyzed modules and the links between them.
  *
@@ -584,11 +607,13 @@ declare function langFromPath(path: string): SourceLang;
 declare function sourceTypeFromPath(path: string): SourceType;
 
 export {
+  analyze,
   Analyzer,
   SymbolFlags,
   langFromPath,
   sourceTypeFromPath,
   type AddFileOptions,
+  type AnalyzeOptions,
   type AnalyzerOptions,
   type AsyncVisitors,
   type AsyncWalkHandler,

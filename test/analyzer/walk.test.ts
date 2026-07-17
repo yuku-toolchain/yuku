@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer, type Module } from "yuku-analyzer";
+import { analyze as analyzeFile, type Module } from "yuku-analyzer";
 import { b } from "yuku-ast";
 
 function analyze(source: string, path = "input.js"): Module {
-  return new Analyzer().addFile(path, source);
+  return analyzeFile(source, { path });
 }
 
 describe("walk", () => {

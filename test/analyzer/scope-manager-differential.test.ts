@@ -4,7 +4,7 @@
 import { describe, expect, test } from "bun:test";
 import { analyze } from "@typescript-eslint/scope-manager";
 import { parse as tsParse } from "@typescript-eslint/typescript-estree";
-import { Analyzer } from "yuku-analyzer";
+import { analyze as analyzeFile } from "yuku-analyzer";
 import type { SourceLang, SourceType } from "yuku-parser";
 import { corpusFiles } from "../corpus";
 
@@ -34,7 +34,7 @@ function compare(
   sourceType: SourceType,
   lang: SourceLang = "js",
 ): { mismatches: string[]; compared: number; declarations: number } {
-  const module = new Analyzer().addFile("input.js", source, { sourceType, lang });
+  const module = analyzeFile(source, { sourceType, lang });
   const yuku = new Map<number, { def: number; write: boolean }>();
   const referenceAt = new Map<number, (typeof module.references)[number]>();
   for (const reference of module.references) {

@@ -15,6 +15,24 @@
 npm install yuku-analyzer
 ```
 
+For one file, `analyze` returns the full per-file semantics in a call:
+
+```js
+import { analyze } from "yuku-analyzer";
+
+const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lang: "ts" });
+
+module.walk({
+  Identifier(node, ctx) {
+    console.log(node.name, ctx.scope.kind, ctx.symbol, ctx.reference);
+  },
+});
+
+module.rootScope.find("double").references.length; // 1
+```
+
+For a project, `Analyzer` adds files and links them:
+
 ```js
 import { Analyzer, SymbolFlags } from "yuku-analyzer";
 
@@ -24,13 +42,6 @@ a.addFile("app.ts", `import { add } from "./math.ts"; add(1, 2);`);
 a.addFile("ui.ts", `import { add } from "./math.ts"; add(3, 4);`);
 
 const app = a.module("app.ts");
-
-// walk with semantic context
-app.walk({
-  Identifier(node, ctx) {
-    console.log(node.name, ctx.scope.kind, ctx.symbol, ctx.reference);
-  },
-});
 
 const add = app.rootScope.find("add");
 add.has(SymbolFlags.Import); // true

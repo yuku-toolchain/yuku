@@ -3,7 +3,7 @@
 
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
-import { Analyzer } from "yuku-analyzer";
+import { analyze as analyzeFile } from "yuku-analyzer";
 import type { SourceLang } from "yuku-parser";
 import { corpusFilesUnder } from "../corpus";
 
@@ -54,7 +54,7 @@ function compare(
   lang: SourceLang = "ts",
 ): { mismatches: string[]; compared: number } {
   const fileName = lang === "tsx" ? "input.tsx" : "input.ts";
-  const module = new Analyzer().addFile(fileName, source, { sourceType: "module", lang });
+  const module = analyzeFile(source, { path: fileName, sourceType: "module", lang });
   const tsc = tscResolutions(source, fileName);
   const enums = module.findAll("TSEnumDeclaration");
   const mismatches: string[] = [];
