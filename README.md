@@ -89,29 +89,19 @@ npm install yuku-analyzer
 ```
 
 ```js
-import { Analyzer, SymbolFlags } from "yuku-analyzer";
+import { Analyzer } from "yuku-analyzer";
 
-const analyzer = new Analyzer();
+const project = new Analyzer();
 
-analyzer.addFile("lib.ts", `export const helper = (x: number) => x * 2;`);
-const main = analyzer.addFile(
-  "main.ts",
-  `import { helper } from "./lib.ts";
-   export const out = helper(21);`,
-);
+project.addFile("a.ts", `export const value = 1;`);
+project.addFile("b.ts", `export { value as renamed } from "./a.ts";`);
+project.addFile("c.ts", `import { renamed } from "./b.ts"; renamed;`);
 
-// per-file semantics
-const helperSym = main.rootScope.find("helper");
-console.log(helperSym.has(SymbolFlags.Import)); // true
-console.log(helperSym.references.length); // 1, the call site
-
-// cross-file: follow the import to where helper is actually defined
-const def = helperSym.definition();
-console.log(def.module.path); // "lib.ts"
-console.log(def.symbol.has(SymbolFlags.Const)); // true
+project.module("c.ts").rootScope.find("renamed").definition().symbol.name;
+// "value"
 ```
 
-Scopes, symbols, resolved references, closures, and cross-file module linking, computed in one native pass.
+Go-to-definition through a rename, across three files, in one expression. Scopes, symbols, resolved references, closures, and cross-file module linking, computed in one native pass.
 
 [Read the analyzer documentation →](https://yuku.fyi/analyzer)
 
