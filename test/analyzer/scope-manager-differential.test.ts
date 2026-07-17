@@ -207,7 +207,8 @@ describe("resolution agrees with @typescript-eslint/scope-manager", () => {
     let unparsable = 0;
     for (let i = 0; i < corpus.length; i += step) {
       const file = corpus[i]!;
-      if (KNOWN_DIVERGENCES.has(file.path)) continue;
+      // corpus paths use backslashes on windows
+      if (KNOWN_DIVERGENCES.has(file.path.replaceAll("\\", "/"))) continue;
       const source = await Bun.file(file.path).text();
       // non-ascii offsets differ between bytes and UTF-16
       if (Buffer.byteLength(source) !== source.length) continue;
