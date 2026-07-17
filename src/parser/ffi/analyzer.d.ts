@@ -1,7 +1,3 @@
-/**
- * yuku-analyzer: semantic analysis for JavaScript and TypeScript.
- */
-
 import type {
   Comment,
   Diagnostic,
