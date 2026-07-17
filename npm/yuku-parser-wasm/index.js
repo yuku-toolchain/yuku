@@ -1,7 +1,5 @@
 import { decode } from "./decode.js";
 
-export { WalkContext, _walk, walk } from "./walk.js";
-
 const wasmUrl = new URL("./yuku-parser.wasm", import.meta.url);
 
 async function instantiate() {

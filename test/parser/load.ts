@@ -36,7 +36,7 @@ if (argv.length > 0) {
     argv.splice(branchIndex, 2);
   }
   if (argv.length > 0) {
-    dest = argv[0];
+    dest = argv[0]!;
   }
 }
 

@@ -1,7 +1,3 @@
-// yuku-parser's public type surface. The AST, diagnostic, and traversal type
-// model lives in @yuku-toolchain/types and is re-exported here for backward
-// compatibility; this file adds only the parser's own parse/walk API.
-
 import type {
   Comment,
   Diagnostic,
@@ -15,8 +11,6 @@ import type {
 } from "@yuku-toolchain/types";
 
 export * from "@yuku-toolchain/types";
-
-// Parsing
 
 /** Options for configuring the parser. */
 interface ParseOptions {

@@ -1,0 +1,45 @@
+{
+  "name": "yuku-ast",
+  "version": "0.6.5",
+  "description": "Typed AST toolkit for JavaScript and TypeScript ESTree trees: walker, builders, guards, and syntactic utilities",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepack": "tsdown"
+  },
+  "dependencies": {
+    "@yuku-toolchain/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsdown": "^0.15.6"
+  },
+  "keywords": [
+    "ast",
+    "estree",
+    "walker",
+    "builder",
+    "traverse",
+    "visitor",
+    "typescript",
+    "javascript",
+    "yuku"
+  ]
+}

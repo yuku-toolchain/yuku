@@ -1,5 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
+const ecmascript = @import("../ecmascript.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -54,10 +55,20 @@ pub const Scope = struct {
         /// declared inside don't escape to the surrounding scope.
         ts_module,
 
+        /// Separate var environment of a function body whose parameter
+        /// list contains expressions (10.2.11 FunctionDeclarationInstantiation
+        /// step 28):
+        ///
+        ///   function f(a = () => x) { var x }
+        ///   //       ^ function scope: a
+        ///   //                        ^ function_body scope: x,
+        ///   //                          invisible to the default's closure
+        function_body,
+
         /// Returns whether `var` declarations hoist to this scope kind.
         pub fn isHoistTarget(self: Kind) bool {
             return switch (self) {
-                .global, .module, .function, .static_block, .ts_module => true,
+                .global, .module, .function, .static_block, .ts_module, .function_body => true,
                 else => false,
             };
         }
@@ -189,6 +200,7 @@ pub const ScopeTracker = struct {
     pub fn enter(
         self: *ScopeTracker,
         index: ast.NodeIndex,
+        parent: ast.NodeIndex,
         data: ast.NodeData,
     ) Allocator.Error!void {
         switch (data) {
@@ -219,21 +231,55 @@ pub const ScopeTracker = struct {
 
                 try self.pushScope(.function, index, flags);
             },
+            .function_body => {
+                // pushed only when the parent function's parameter list
+                // contains expressions, see Kind.function_body
+                const params = switch (self.tree.data(parent)) {
+                    .function => |f| f.params,
+                    .arrow_function_expression => |a| a.params,
+                    else => return,
+                };
+                if (params == .null) return;
+                const params_data = self.tree.data(params);
+                if (params_data != .formal_parameters) return;
+                if (ecmascript.findParameterExpression(self.tree, params_data.formal_parameters) != null)
+                    try self.pushScope(.function_body, index, self.inheritStrictFlag());
+            },
             .block_statement => {
-                // per section 14.15.2 the catch parameter and the
-                // block body share one environment, so the body reuses
-                // the catch scope and single-scope lookups detect
-                // their conflicts
+                // 14.15.2 CatchClauseEvaluation gives the parameter and
+                // the block separate environments. folding them into one
+                // scope is unobservable and lets single-scope lookups
+                // catch the 14.15.1 conflicts, except when the parameter
+                // contains an expression that runs before the block env
+                // exists:
+                //
+                //   catch (e)       { let e }   // shared, conflict found
+                //   catch ([e = 1]) { let e }   // split, the default
+                //                               // must not see the let
                 const current = self.tree.data(self.currentScope().node);
-                if (current != .catch_clause or current.catch_clause.body != index)
+                const shares_catch_scope = current == .catch_clause and
+                    current.catch_clause.body == index and
+                    ecmascript.findPatternExpression(self.tree, current.catch_clause.param) == null;
+                if (!shares_catch_scope)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
             },
+            .switch_case => {
+                // one case-block scope per switch, shared by all cases,
+                // created at the first case. per 14.12.4 the discriminant
+                // evaluates (steps 1-2) before the case env exists
+                // (step 4):
+                //
+                //   switch (x) { case 1: let x }
+                //   //      ^ outer scope    ^ case-block scope
+                if (self.currentScope().node != parent)
+                    try self.pushScope(.block, parent, self.inheritStrictFlag());
+            },
+            // tsc resolves unqualified member references inside the body
+            .ts_enum_body => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .for_statement,
             .for_in_statement,
             .for_of_statement,
             .catch_clause,
-            // section 14.12 switch creates one block scope for all case clauses
-            .switch_statement,
             .ts_interface_declaration,
             .ts_type_alias_declaration,
             .ts_function_type,
@@ -313,48 +359,21 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    // pops one scope per push from `enter`. named function / class
-    // expressions pop twice (body + name).
-    pub fn exit(self: *ScopeTracker, data: ast.NodeData) void {
+    // A node pops exactly the scopes recording it as creator: two for a
+    // named function or class expression (name + body), zero for a
+    // shared or never-created scope. Cannot drift from `enter`.
+    pub fn exit(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) void {
         switch (data) {
-            .function => |func| {
-                self.popScope();
-                if (isNamedFunctionExpression(func)) self.popScope();
-            },
-            .arrow_function_expression,
-            .for_statement,
-            .for_in_statement,
-            .for_of_statement,
-            .catch_clause,
-            .switch_statement,
-            .static_block,
-            .ts_module_block,
-            .ts_interface_declaration,
-            .ts_type_alias_declaration,
-            .ts_function_type,
-            .ts_constructor_type,
-            .ts_method_signature,
-            .ts_call_signature_declaration,
-            .ts_construct_signature_declaration,
-            .ts_index_signature,
-            .ts_mapped_type,
-            .ts_conditional_type,
-            => self.popScope(),
-            .block_statement => {
-                // catch body blocks share the catch scope (Section 14.15.2)
-                if (self.tree.data(self.currentScope().node) != .catch_clause)
-                    self.popScope();
-            },
-            .class => |cls| {
-                self.popScope();
-                if (isNamedClassExpression(cls)) self.popScope();
-            },
+            // the root and module scopes live for the whole walk
+            .program => {},
             .decorator => {
                 // every decorator enter saved exactly one scope
                 std.debug.assert(self.decorator_saved.items.len > 0);
                 self.current = self.decorator_saved.pop().?;
             },
-            else => {},
+            else => while (self.current != .root and self.currentScope().node == index) {
+                self.popScope();
+            },
         }
     }
 

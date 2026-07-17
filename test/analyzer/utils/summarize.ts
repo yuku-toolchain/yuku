@@ -31,7 +31,7 @@ export function summary(source: string, options: SummaryOptions = {}): string {
 
   const childrenOf = groupScopeChildren(module);
   const referencesByScope = groupReferencesByScope(module);
-  renderScope(module.scopes[0], 0, lines, childrenOf, referencesByScope);
+  renderScope(module.scopes[0]!, 0, lines, childrenOf, referencesByScope);
 
   if (module.imports.length > 0) {
     lines.push("imports");

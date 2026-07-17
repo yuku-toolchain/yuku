@@ -20,7 +20,7 @@ pub const Ctx = struct {
         self.path.push(index);
     }
 
-    pub fn exit(self: *Ctx, _: ast.NodeData) void {
+    pub fn exit(self: *Ctx, _: ast.NodeIndex, _: ast.NodeData) void {
         self.path.pop();
     }
 };

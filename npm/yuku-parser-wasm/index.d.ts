@@ -1,22 +1,12 @@
-// yuku-parser's public type surface. The AST, diagnostic, and traversal type
-// model lives in @yuku-toolchain/types and is re-exported here for backward
-// compatibility; this file adds only the parser's own parse/walk API.
-
 import type {
   Comment,
   Diagnostic,
-  Node,
-  NodeOfType,
-  NodeType,
   Program,
   SourceLang,
   SourceType,
-  WalkContext,
 } from "@yuku-toolchain/types";
 
 export * from "@yuku-toolchain/types";
-
-// Parsing
 
 /** Options for configuring the parser. */
 interface ParseOptions {
@@ -76,36 +66,6 @@ interface ParseResult {
  */
 export function parse(source: string, options?: ParseOptions): ParseResult;
 
-// Walking
-
-/** A visitor function for one node type. */
-type WalkHandler<T extends Node = Node, S = unknown> = (node: T, ctx: WalkContext<T, S>) => void;
-
-/** Enter/leave hooks for one node type. */
-interface WalkHooks<T extends Node = Node, S = unknown> {
-  enter?: WalkHandler<T, S>;
-  leave?: WalkHandler<T, S>;
-}
-
-/**
- * Handlers keyed by node `type`, or the universal `enter`/`leave`. A bare
- * function is an enter handler; per node `enter` runs before children and
- * `leave` after.
- */
-type Visitors<S = unknown> = {
-  [K in NodeType]?: WalkHandler<NodeOfType<K>, S> | WalkHooks<NodeOfType<K>, S>;
-} & {
-  enter?: WalkHandler<Node, S>;
-  leave?: WalkHandler<Node, S>;
-};
-
-/**
- * Walk an AST depth-first, dispatching to typed visitors and mutating
- * in place. Traversal order is driven by tables generated from the
- * parser's AST definition, so it can never drift. Returns the root.
- */
-export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T;
-
 /**
  * Resolves a {@link SourceLang} from a file path's extension.
  *
@@ -125,4 +85,4 @@ export function langFromPath(path: string): SourceLang;
  */
 export function sourceTypeFromPath(path: string): SourceType;
 
-export type { ParseOptions, ParseResult, Visitors, WalkHandler, WalkHooks };
+export type { ParseOptions, ParseResult };

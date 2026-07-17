@@ -63,14 +63,14 @@ pub const Ctx = struct {
 
     pub inline fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
-        try self.scope.enter(index, data);
+        try self.scope.enter(index, self.path.parent() orelse .null, data);
 
         self.node_scopes[@intFromEnum(index)] = self.scope.current;
         self.node_parents[@intFromEnum(index)] = self.path.parent() orelse .null;
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 
-        try self.symbols.setBindingContext(data, &self.scope);
+        try self.symbols.setBindingContext(data, self.path.parent() orelse .null, &self.scope);
     }
 
     pub inline fn post_enter(
@@ -94,9 +94,9 @@ pub const Ctx = struct {
         });
     }
 
-    pub inline fn exit(self: *Ctx, data: ast.NodeData) void {
+    pub inline fn exit(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) void {
         self.symbols.exit(data);
-        self.scope.exit(data);
+        self.scope.exit(index, data);
         if (data.isTypeContext()) {
             std.debug.assert(self.type_position_depth > 0);
             self.type_position_depth -= 1;
@@ -124,6 +124,17 @@ pub fn refSpace(
             .ts_qualified_name => {
                 qualified_left = true;
                 child = parent;
+            },
+            // computed keys of type members are value positions:
+            //   interface I { [key]: string }
+            //   //             ^ resolves as typeof, not type
+            .ts_property_signature => |sig| {
+                if (sig.computed and sig.key == child) return .typeof;
+                return if (!in_type_position) .value else if (qualified_left) .namespace else .type;
+            },
+            .ts_method_signature => |sig| {
+                if (sig.computed and sig.key == child) return .typeof;
+                return if (!in_type_position) .value else if (qualified_left) .namespace else .type;
             },
             .ts_type_query => return .typeof,
             .export_specifier => |s| return if (s.local == child) .any else .value,

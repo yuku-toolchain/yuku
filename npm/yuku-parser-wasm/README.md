@@ -2,7 +2,7 @@
 
 The [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) JavaScript/TypeScript
 parser as a single WebAssembly module. Runs anywhere: browsers, bundlers, Deno,
-Bun and Node. Same API and same AST as `yuku-parser`.
+Bun and Node. Same API and same AST as `yuku-parser`. Pairs with [`yuku-ast`](https://www.npmjs.com/package/yuku-ast), which is pure JavaScript and walks the AST anywhere this package runs.
 
 ## Install
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer } from "yuku-analyzer";
-import { definition, project } from "./summarize";
+import { definition, project } from "./utils/summarize";
 
 function messages(analyzer: Analyzer): string[] {
   return analyzer.diagnostics.map((d) => `${d.module}: ${d.message}`);

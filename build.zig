@@ -235,6 +235,12 @@ pub fn build(b: *std.Build) void {
             .root = "tools/gen_codegen_encoder.zig",
             .output = "encode.js",
         },
+        .{
+            .step = "gen-walk-tables",
+            .description = "Generate generated.ts for yuku-ast",
+            .root = "tools/gen_walk_tables.zig",
+            .output = "walk-tables.ts",
+        },
     }) |cfg| {
         const generator_module = b.createModule(.{
             .root_source_file = b.path(cfg.root),

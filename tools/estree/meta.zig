@@ -1,4 +1,3 @@
-
 // shared metadata for the decoder and encoder generators, one source so they agree
 
 const std = @import("std");

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer } from "yuku-analyzer";
-import { definition, links, project, references } from "./summarize";
+import { definition, links, project, references } from "./utils/summarize";
 
 describe("definitionOf", () => {
   test("follows import then renamed re-export to the original binding", () => {

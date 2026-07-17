@@ -1,4 +1,4 @@
-import { WalkContext, _walk } from "./engine.js";
+import { WalkContext, _walk, _walkAsync } from "yuku-ast";
 
 class SemanticWalkContext extends WalkContext {
   #module;
@@ -22,4 +22,8 @@ class SemanticWalkContext extends WalkContext {
 
 export function walkModule(module, visitors, root) {
   _walk(root ?? module.ast, visitors, undefined, new SemanticWalkContext(module));
+}
+
+export function walkModuleAsync(module, visitors, root) {
+  return _walkAsync(root ?? module.ast, visitors, undefined, new SemanticWalkContext(module));
 }

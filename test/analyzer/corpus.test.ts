@@ -24,7 +24,7 @@ function note(list: string[], detail: string): void {
   if (list.length < SAMPLE_MAX) list.push(detail);
 }
 
-function captureOracle(module: Module, fn: Node): Set<number> {
+function expectedCaptures(module: Module, fn: Node): Set<number> {
   const fnScope = module.scopes.find((s) => s.node === fn && s.kind === "function");
   if (fnScope === undefined) return new Set();
   const within = (scope: typeof fnScope | null): boolean => {
@@ -161,7 +161,7 @@ function check(path: string, source: string): void {
     prevSym = at;
   }
 
-  // captures match an independent oracle for every function
+  // captures recomputed independently from the reference table
   for (const fn of module.findAll([
     "FunctionDeclaration",
     "FunctionExpression",
@@ -173,11 +173,11 @@ function check(path: string, source: string): void {
     } catch {
       continue;
     }
-    const oracle = captureOracle(module, fn);
-    if (native.size !== oracle.size || [...native].some((id) => !oracle.has(id))) {
+    const expected = expectedCaptures(module, fn);
+    if (native.size !== expected.size || [...native].some((id) => !expected.has(id))) {
       note(
         violations.captures,
-        `${path}: ${fn.type} native=[${[...native]}] oracle=[${[...oracle]}]`,
+        `${path}: ${fn.type} native=[${[...native]}] expected=[${[...expected]}]`,
       );
     }
   }
@@ -234,7 +234,7 @@ describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
     expect(violations.parentMatch).toEqual([]);
   });
 
-  test("capturesOf matches an independent oracle", () => {
+  test("capturesOf matches an independent recomputation", () => {
     expect(violations.captures).toEqual([]);
   });
 

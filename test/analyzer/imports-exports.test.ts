@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { summary } from "./summarize";
+import { summary } from "./utils/summarize";
 
 describe("imports", () => {
   test("default, named, aliased, and namespace", () => {

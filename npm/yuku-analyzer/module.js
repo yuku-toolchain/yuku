@@ -1,7 +1,7 @@
 // one analyzed file, its AST plus a lazily built semantic graph
 import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
-import { walkModule } from "./walk.js";
+import { walkModule, walkModuleAsync } from "./walk.js";
 
 export function langFromPath(path) {
   if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";
@@ -354,13 +354,22 @@ export class Module {
     return parent < 0 ? null : this.#r.nodeOf(parent);
   }
 
-  // the space filters what the name can see, exactly like reference
-  // resolution: a binding outside the space does not shadow, the walk
-  // keeps going. "any" matches by name alone
+  // mirrors reference resolution: a binding outside the space does not
+  // shadow, "any" matches by name alone, and a value-position arguments
+  // lookup stops where the implicit arguments object shadows
   resolve(name, from = this.rootScope, space = "value") {
+    const argumentsBarrier =
+      name === "arguments" && (space === "value" || space === "typeof");
     for (let s = from; s; s = s.parent) {
       const found = s.find(name);
       if (found && found.visibleIn(space)) return found;
+      if (
+        argumentsBarrier &&
+        (s.kind === "staticBlock" ||
+          (s.kind === "function" && s.node.type !== "ArrowFunctionExpression"))
+      ) {
+        return null;
+      }
     }
     return null;
   }
@@ -419,6 +428,10 @@ export class Module {
 
   walk(visitor, root) {
     walkModule(this, visitor, root);
+  }
+
+  walkAsync(visitor, root) {
+    return walkModuleAsync(this, visitor, root);
   }
 
   findAll(types) {

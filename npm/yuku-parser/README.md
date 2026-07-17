@@ -60,44 +60,20 @@ sourceTypeFromPath("foo.mjs");     // "module"
 
 ## Walking the AST
 
-A typed, mutating walker is built in:
+The AST is standard ESTree, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks it with typed visitors, alias groups, in-place mutation, and syntactic utilities:
 
 ```ts
-import { parse, walk } from "yuku-parser";
+import { parse } from "yuku-parser";
+import { walk } from "yuku-ast";
 
-const { program } = parse(`
-  const message = "hello";
-  console.log(message);
-`);
+const { program } = parse(`console.log("hello");`);
 
 walk(program, {
   Identifier(node) {
     console.log(node.name);
   },
-  CallExpression: {
-    enter(node, ctx) { /* before children */ },
-    leave(node, ctx) { /* after children */ },
-  },
-  enter(node) { /* every node */ },
 });
 ```
-
-The context exposes the position (`ctx.parent`, `ctx.key`, `ctx.index`, `ctx.ancestors()`), flow control (`ctx.skip()`, `ctx.stop()`), and in-place mutation:
-
-```ts
-walk(program, {
-  DebuggerStatement(node, ctx) {
-    ctx.remove();
-  },
-  Literal(node, ctx) {
-    if (node.value === 1) ctx.replace({ type: "Identifier", start: 0, end: 0, name: "ONE" });
-  },
-});
-```
-
-`ctx.replace(node)` continues the walk into the replacement, `ctx.remove()` skips the removed subtree, `ctx.insertBefore(node)` inserts a sibling without visiting it, and `ctx.insertAfter(node)` inserts one the walk will visit. An optional third argument threads state to every handler as `ctx.state`.
-
-The AST is also standard ESTree, so any ESTree-compatible walker works as well.
 
 ## Semantic analysis
 

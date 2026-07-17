@@ -246,6 +246,8 @@ Without this, `const foo = 1` inside the body would conflict with the expression
 
 **`ts_module` is its own scope kind, not a block.** TypeScript namespace bodies act as a `var`-hoist target, so a `var` inside a namespace stays inside the namespace instead of escaping to the surrounding scope. That difference is encoded as a separate `Scope.Kind` so `Kind.isHoistTarget()` returns true for it.
 
+**`function_body` splits a function in two when its parameter list contains expressions.** Per FunctionDeclarationInstantiation (section 10.2.11, step 28), body `var`s then live in a separate environment so closures created in parameter defaults cannot see them: in `function f(a = () => x) { var x }` the default's `x` resolves to the outer scope. Plain parameter lists keep the single `function` scope.
+
 **Decorators evaluate in the scope enclosing the class.** Per the decorator proposal, neither the class's type parameters nor a class expression's own name are visible inside a decorator expression. `scopeOf` on nodes inside a decorator reflects that, even though the decorator sits inside the class syntactically.
 
 ### [Strict Mode]($section.id('strict-mode'))

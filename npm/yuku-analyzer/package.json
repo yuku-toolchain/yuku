@@ -16,7 +16,6 @@
     "analyzer.js",
     "module.js",
     "walk.js",
-    "engine.js",
     "binding.js",
     "decode.js"
   ],
@@ -49,6 +48,7 @@
     "typescript"
   ],
   "dependencies": {
-    "@yuku-toolchain/types": "workspace:*"
+    "@yuku-toolchain/types": "workspace:*",
+    "yuku-ast": "workspace:*"
   }
 }

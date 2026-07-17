@@ -97,8 +97,12 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
 
         const name = tree.string(ref.name);
         const expected = sem.lookup(ref.scope, name, ref.flags.space);
+        // resolution applies the arguments barrier and type parameter
+        // visibility rules, which a plain lookup does not know
+        const rules_may_differ = std.mem.eql(u8, name, "arguments") or
+            (expected != null and sem.symbol(expected.?).flags.type_parameter);
         if (ref.symbol == .none) {
-            if (expected != null) return error.UnresolvedButBound;
+            if (expected != null and !rules_may_differ) return error.UnresolvedButBound;
             continue;
         }
         resolved_count += 1;
@@ -106,7 +110,7 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
         const symbol = sem.symbol(ref.symbol);
         if (!std.mem.eql(u8, tree.string(symbol.name), name))
             return error.ResolvedNameMismatch;
-        if (expected != ref.symbol) return error.ResolvedToWrongBinding;
+        if (expected != ref.symbol and !rules_may_differ) return error.ResolvedToWrongBinding;
 
         var on_chain = false;
         var chain = sem.scopes.ancestors(ref.scope);

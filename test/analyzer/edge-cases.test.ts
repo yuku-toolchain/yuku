@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Analyzer } from "yuku-analyzer";
-import { summary } from "./summarize";
+import { summary } from "./utils/summarize";
 
 describe("write detection through wrappers", () => {
   test("parenthesized and TS-assertion assignment targets are writes", () => {
@@ -56,8 +56,8 @@ describe("string pool", () => {
       "input.js",
       `import x from ${JSON.stringify(surrogate)};`,
     );
-    expect(module.imports[0].specifier).toBe(surrogate);
-    expect(module.imports[0].specifier.charCodeAt(0)).toBe(0xd800);
+    expect(module.imports[0]!.specifier).toBe(surrogate);
+    expect(module.imports[0]!.specifier.charCodeAt(0)).toBe(0xd800);
   });
 });
 

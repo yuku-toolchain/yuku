@@ -110,11 +110,11 @@ function parseFrontmatter(raw: string): { data: Record<string, string>; body: st
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
   if (!match) return { data: {}, body: raw };
 
-  const fm = match[1];
+  const fm = match[1]!;
   const data: Record<string, string> = {};
   for (const key of ["title", "description"]) {
     const m = fm.match(new RegExp(`^\\s*\\.${key}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`, "m"));
-    if (m) data[key] = m[1].replace(/\\"/g, '"').replace(/\\n/g, " ");
+    if (m) data[key] = m[1]!.replace(/\\"/g, '"').replace(/\\n/g, " ");
   }
   return { data, body: raw.slice(match[0].length) };
 }

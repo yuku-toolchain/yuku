@@ -1,7 +1,3 @@
-/**
- * yuku-analyzer: semantic analysis for JavaScript and TypeScript.
- */
-
 import type {
   Comment,
   Diagnostic,
@@ -114,14 +110,16 @@ declare const SymbolFlags: {
   readonly Exported: number;
   /** The default export. */
   readonly Default: number;
+  /** A TS enum member, declared in its enum's body scope. */
+  readonly EnumMember: number;
 
   /** Composite: any variable (`var` / `let` / `const`, params, catch). */
   readonly Variable: number;
   /** Composite: any import binding, value or `import type`. */
   readonly Import: number;
-  /** Composite: visible at runtime (var, function, class, enum, value namespace). */
+  /** Composite: visible at runtime (var, function, class, enum and its members, value namespace). */
   readonly ValueSpace: number;
-  /** Composite: referencable from a type position (class, enum, interface, alias, type param). */
+  /** Composite: referencable from a type position (class, enum and its members, interface, alias, type param). */
   readonly TypeSpace: number;
   /** Composite: what a dotted type name starts from (namespace, enum). */
   readonly NamespaceSpace: number;
@@ -151,7 +149,8 @@ type ScopeKind =
   | "class"
   | "staticBlock"
   | "expressionName"
-  | "tsModule";
+  | "tsModule"
+  | "functionBody";
 
 /** A lexical scope in a module's scope tree. */
 interface Scope {
@@ -301,6 +300,23 @@ type Visitors = {
   leave?: WalkHandler;
 };
 
+/** Handler for one node type in an async walk, free to return a promise. */
+type AsyncWalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext<T>) => void | Promise<void>;
+
+/** Enter/leave pair for one node type in an async walk. */
+interface AsyncWalkHooks<T extends Node = Node> {
+  enter?: AsyncWalkHandler<T>;
+  leave?: AsyncWalkHandler<T>;
+}
+
+/** {@link Visitors}, with handlers that may return promises. */
+type AsyncVisitors = {
+  [K in NodeType]?: AsyncWalkHandler<NodeOfType<K>> | AsyncWalkHooks<NodeOfType<K>>;
+} & {
+  enter?: AsyncWalkHandler;
+  leave?: AsyncWalkHandler;
+};
+
 /** A free variable of a function, as reported by {@link Module.capturesOf}. */
 interface Capture {
   /** The outer binding being closed over. */
@@ -431,7 +447,9 @@ interface Module {
    * find the nearest binding of `name` visible in `space` (default:
    * `"value"`, resolving like runtime code). A binding outside the
    * space does not shadow, the walk keeps going. `"any"` matches by
-   * name alone.
+   * name alone. A value-position `arguments` lookup stops at the
+   * first non-arrow function or static block, where the implicit
+   * arguments object shadows any outer binding of that name.
    */
   resolve(name: string, from?: Scope, space?: Space): Symbol | null;
   /**
@@ -463,6 +481,13 @@ interface Module {
    */
   walk(visitors: Visitors, root?: Node): void;
 
+  /**
+   * The async counterpart of {@link Module.walk}: identical traversal
+   * order and mutation semantics, with every handler awaited before
+   * the walk moves on.
+   */
+  walkAsync(visitors: AsyncVisitors, root?: Node): Promise<void>;
+
   /** Collects every node of the given type(s), in source order. */
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
   findAll<K extends NodeType>(types: Iterable<K>): NodeOfType<K>[];
@@ -492,6 +517,29 @@ interface ModuleReference {
   readonly module: Module;
   readonly reference: Reference;
 }
+
+/** Options for {@link analyze}: {@link AddFileOptions} plus the module path. */
+interface AnalyzeOptions extends AddFileOptions {
+  /**
+   * The path recorded on the module, also the default source of
+   * `lang` and `sourceType`.
+   * @default "input.js"
+   */
+  path?: string;
+}
+
+/**
+ * Parses and analyzes a single file, the shorthand for one-file
+ * semantics: scopes, symbols, resolved references, and a semantic
+ * walk. Cross-file surfaces stay empty, use {@link Analyzer} and
+ * {@link Analyzer.addFile} for multi-file projects and linking.
+ *
+ * ```ts
+ * const module = analyze(`const x = 1; x;`, { lang: "ts" });
+ * module.walk({ Identifier(node, ctx) { ctx.symbol; } });
+ * ```
+ */
+declare function analyze(source: string, options?: AnalyzeOptions): Module;
 
 /**
  * The project: a set of analyzed modules and the links between them.
@@ -559,12 +607,17 @@ declare function langFromPath(path: string): SourceLang;
 declare function sourceTypeFromPath(path: string): SourceType;
 
 export {
+  analyze,
   Analyzer,
   SymbolFlags,
   langFromPath,
   sourceTypeFromPath,
   type AddFileOptions,
+  type AnalyzeOptions,
   type AnalyzerOptions,
+  type AsyncVisitors,
+  type AsyncWalkHandler,
+  type AsyncWalkHooks,
   type Capture,
   type Definition,
   type Export,
