@@ -22,8 +22,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsdown",
-    "prepack": "tsdown"
+    "build": "tsdown"
   },
   "dependencies": {
     "@yuku-toolchain/types": "workspace:*"
