@@ -1,0 +1,127 @@
+name: win-arm64 repro
+
+# Reproduction for the win32-arm64 crash reported against yuku 0.6.x
+# (Node exit code 5 during the tsdown dts stage, x64 green in the same
+# run). Bisects published versions on both Windows arches. 0.6.3 is the
+# last release before the napi-zig upgrade, 0.6.4 is the first after it.
+
+on:
+  push:
+    branches: [win-arm64-repro]
+  workflow_dispatch:
+
+jobs:
+  parse-codegen:
+    name: yuku ${{ matrix.version }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-11-arm, windows-latest]
+        version: ["0.5.48", "0.6.3", "0.6.4", "0.6.9"]
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Stage repro project
+        shell: bash
+        run: |
+          mkdir repro && cd repro
+          npm init -y > /dev/null
+          npm i yuku-parser@${{ matrix.version }} yuku-codegen@${{ matrix.version }}
+          cat > repro.mjs <<'EOF'
+          import { parse } from "yuku-parser";
+          import { print } from "yuku-codegen";
+
+          const codeOf = (r) => (r && typeof r === "object" && "code" in r ? r.code : r);
+
+          // small input first, the reported crash hits right as the dts
+          // stage starts on a small file
+          const small = 'export function greet(name: string): string { return "hi " + name }\n';
+          const smallDts = "export declare function greet(name: string): string;\n";
+
+          const unit = (i) => `
+          export interface Config${i} {
+            name: string;
+            value: number;
+            nested: { a: string[]; b?: Map<string, number[]> };
+          }
+          export function fn${i}<T extends object>(x: T, y: number = ${i}): T & Config${i} {
+            const z = [...Array(16).keys()].map((k) => k * ${i});
+            return { ...x, name: "n${i}", value: z.reduce((a, b) => a + b, 0), nested: { a: ["a"] } } as T & Config${i};
+          }
+          export class C${i} {
+            #p = ${i};
+            async m(...args: number[]): Promise<number> {
+              return args.length + this.#p;
+            }
+          }
+          `;
+          let big = "";
+          for (let i = 0; i < 1500; i++) big += unit(i);
+
+          const cases = [
+            ["small ts", small, "ts"],
+            ["small dts", smallDts, "dts"],
+            ["big ts", big, "ts"],
+          ];
+
+          for (const [label, src, lang] of cases) {
+            const result = parse(src, { lang });
+            const program = result.program ?? result;
+            const out = codeOf(print(program));
+            if (!out || !out.length) throw new Error("empty codegen output for " + label);
+            console.log(label + " ok, in:", src.length, "out:", out.length);
+          }
+
+          for (let round = 0; round < 10; round++) {
+            const result = parse(big, { lang: "ts" });
+            const program = result.program ?? result;
+            const out = codeOf(print(program));
+            if (!out || !out.length) throw new Error("empty codegen output");
+          }
+          console.log("ALL OK");
+          EOF
+
+      - name: Run parse + codegen under Node
+        shell: bash
+        working-directory: repro
+        run: node repro.mjs
+
+  tsdown-dts:
+    name: tsdown dts stage (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-11-arm, windows-latest]
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scaffold project and run tsdown with dts
+        shell: bash
+        run: |
+          mkdir app && cd app
+          npm init -y > /dev/null
+          npm pkg set type=module > /dev/null
+          npm i -D tsdown typescript
+          mkdir src
+          cat > src/index.ts <<'EOF'
+          export interface Options {
+            name: string;
+            tags?: string[];
+          }
+          export function greet(o: Options): string {
+            return "hello " + o.name + (o.tags ? " [" + o.tags.join(",") + "]" : "");
+          }
+          export class Greeter {
+            constructor(public opts: Options) {}
+            run() {
+              return greet(this.opts);
+            }
+          }
+          EOF
+          npx tsdown src/index.ts --dts
