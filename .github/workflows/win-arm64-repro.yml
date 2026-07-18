@@ -12,8 +12,8 @@ on:
 
 jobs:
   fixed-build:
-    name: source build with patched napi-zig (win-arm64)
-    runs-on: windows-11-arm
+    name: cross-compile with patched napi-zig
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -21,13 +21,27 @@ jobs:
         with:
           version: 0.16.0
 
+      - name: Build yuku-parser for aarch64-windows
+        run: zig build -Dtarget=aarch64-windows --release=fast
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: patched-arm64-binding
+          path: zig-out/lib/yuku-parser.node
+
+  fixed-test:
+    name: patched binding on win-arm64
+    needs: fixed-build
+    runs-on: windows-11-arm
+    steps:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Build yuku-parser for aarch64-windows
-        shell: bash
-        run: zig build -Dtarget=aarch64-windows --release=fast
+      - uses: actions/download-artifact@v4
+        with:
+          name: patched-arm64-binding
+          path: patched
 
       - name: Stage repro against the patched binding
         shell: bash
@@ -35,7 +49,7 @@ jobs:
           mkdir repro-fixed && cd repro-fixed
           npm init -y > /dev/null
           npm i yuku-parser@0.6.9
-          cp ../zig-out/lib/yuku-parser.node node_modules/@yuku-parser/binding-win32-arm64/yuku-parser.node
+          cp ../patched/yuku-parser.node node_modules/@yuku-parser/binding-win32-arm64/yuku-parser.node
           cat > repro.mjs <<'EOF'
           import { parse } from "yuku-parser";
 
