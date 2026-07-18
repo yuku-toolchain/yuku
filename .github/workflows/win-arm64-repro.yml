@@ -78,11 +78,36 @@ jobs:
           ls "/c/Program Files (x86)/Windows Kits/10/Debuggers" 2>/dev/null || true
           exit 1
 
-      - name: Run crashing stage under cdb
+      - name: Run crashing stage under cdb without debug heap
         if: steps.cdb.outputs.path != ''
         shell: bash
         working-directory: repro
         continue-on-error: true
         run: |
           NODEPATH=$(command -v node)
-          "${{ steps.cdb.outputs.path }}" -g -G -o -c 'g; !analyze -v; lm; r; u @$ip-0x20 @$ip+0x14; k 30; q' "$NODEPATH" stage2.mjs
+          "${{ steps.cdb.outputs.path }}" -hd -g -G -o -c 'g; !analyze -v; lm; r; u @$ip-0x20 @$ip+0x14; k 30; q' "$NODEPATH" stage2.mjs
+
+      - name: Capture WER crash dump as fallback
+        shell: pwsh
+        working-directory: repro
+        continue-on-error: true
+        run: |
+          $dumps = "$env:GITHUB_WORKSPACE\dumps"
+          New-Item -ItemType Directory -Force -Path $dumps | Out-Null
+          $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+          New-Item -Path $key -Force | Out-Null
+          Set-ItemProperty -Path $key -Name DumpFolder -Value $dumps
+          Set-ItemProperty -Path $key -Name DumpType -Value 2 -Type DWord
+          node stage2.mjs
+          if ($LASTEXITCODE -ne 0) { Write-Host "crashed with $LASTEXITCODE" }
+          Start-Sleep -Seconds 5
+          Get-ChildItem $dumps
+
+      - name: Analyze crash dump
+        if: steps.cdb.outputs.path != ''
+        shell: bash
+        continue-on-error: true
+        run: |
+          dump=$(ls "$GITHUB_WORKSPACE"/dumps/*.dmp 2>/dev/null | head -1)
+          if [ -z "$dump" ]; then echo "no dump captured"; exit 0; fi
+          "${{ steps.cdb.outputs.path }}" -z "$dump" -c '!analyze -v; lm; r; u @$ip-0x20 @$ip+0x14; k 30; q'
