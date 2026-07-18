@@ -1,9 +1,9 @@
 name: win-arm64 repro
 
 # Reproduction for the win32-arm64 crash reported against yuku 0.6.x
-# (Node exit code 5 during the tsdown dts stage, x64 green in the same
-# run). Bisects published versions on both Windows arches. 0.6.3 is the
-# last release before the napi-zig upgrade, 0.6.4 is the first after it.
+# (segfault at first use, x64 green in the same run). The version bisect
+# run pinned it to the napi-zig upgrade between 0.6.3 and 0.6.4. This
+# revision drills into the crash location with staged loading and cdb.
 
 on:
   push:
@@ -11,14 +11,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  parse-codegen:
-    name: yuku ${{ matrix.version }} (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-11-arm, windows-latest]
-        version: ["0.5.48", "0.6.3", "0.6.4", "0.6.9"]
+  localize:
+    name: localize crash (win-arm64, yuku 0.6.9)
+    runs-on: windows-11-arm
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -29,99 +24,65 @@ jobs:
         run: |
           mkdir repro && cd repro
           npm init -y > /dev/null
-          npm i yuku-parser@${{ matrix.version }} yuku-codegen@${{ matrix.version }}
-          cat > repro.mjs <<'EOF'
-          import { parse } from "yuku-parser";
-          import { print } from "yuku-codegen";
-
-          const codeOf = (r) => (r && typeof r === "object" && "code" in r ? r.code : r);
-
-          // small input first, the reported crash hits right as the dts
-          // stage starts on a small file
-          const small = 'export function greet(name: string): string { return "hi " + name }\n';
-          const smallDts = "export declare function greet(name: string): string;\n";
-
-          const unit = (i) => `
-          export interface Config${i} {
-            name: string;
-            value: number;
-            nested: { a: string[]; b?: Map<string, number[]> };
-          }
-          export function fn${i}<T extends object>(x: T, y: number = ${i}): T & Config${i} {
-            const z = [...Array(16).keys()].map((k) => k * ${i});
-            return { ...x, name: "n${i}", value: z.reduce((a, b) => a + b, 0), nested: { a: ["a"] } } as T & Config${i};
-          }
-          export class C${i} {
-            #p = ${i};
-            async m(...args: number[]): Promise<number> {
-              return args.length + this.#p;
-            }
-          }
-          `;
-          let big = "";
-          for (let i = 0; i < 1500; i++) big += unit(i);
-
-          const cases = [
-            ["small ts", small, "ts"],
-            ["small dts", smallDts, "dts"],
-            ["big ts", big, "ts"],
-          ];
-
-          for (const [label, src, lang] of cases) {
-            const result = parse(src, { lang });
-            const program = result.program ?? result;
-            const out = codeOf(print(program));
-            if (!out || !out.length) throw new Error("empty codegen output for " + label);
-            console.log(label + " ok, in:", src.length, "out:", out.length);
-          }
-
-          for (let round = 0; round < 10; round++) {
-            const result = parse(big, { lang: "ts" });
-            const program = result.program ?? result;
-            const out = codeOf(print(program));
-            if (!out || !out.length) throw new Error("empty codegen output");
-          }
-          console.log("ALL OK");
+          npm i yuku-parser@0.6.9
+          cat > stage1.mjs <<'EOF'
+          console.log("stage1: about to import binding");
+          const binding = (await import("yuku-parser/binding.js")).default;
+          console.log("stage1: binding loaded, keys:", Object.keys(binding).join(","));
+          EOF
+          cat > stage2.mjs <<'EOF'
+          const binding = (await import("yuku-parser/binding.js")).default;
+          console.log("stage2: binding loaded");
+          const raw = binding.parse("let x = 1", {});
+          console.log("stage2: raw parse ok, type:", Object.prototype.toString.call(raw));
+          EOF
+          cat > stage3.mjs <<'EOF'
+          const { parse } = await import("yuku-parser");
+          console.log("stage3: parse imported");
+          const result = parse("let x = 1", { lang: "js" });
+          console.log("stage3: full parse + decode ok, keys:", Object.keys(result).join(","));
           EOF
 
-      - name: Run parse + codegen under Node
+      - name: "Stage 1: dlopen + module registration only"
         shell: bash
         working-directory: repro
-        run: node repro.mjs
+        continue-on-error: true
+        run: node stage1.mjs
 
-  tsdown-dts:
-    name: tsdown dts stage (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-11-arm, windows-latest]
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Scaffold project and run tsdown with dts
+      - name: "Stage 2: one raw binding.parse call"
         shell: bash
+        working-directory: repro
+        continue-on-error: true
+        run: node stage2.mjs
+
+      - name: "Stage 3: full parse via public API"
+        shell: bash
+        working-directory: repro
+        continue-on-error: true
+        run: node stage3.mjs
+
+      - name: Locate cdb
+        id: cdb
+        shell: bash
+        continue-on-error: true
         run: |
-          mkdir app && cd app
-          npm init -y > /dev/null
-          npm pkg set type=module > /dev/null
-          npm i -D tsdown typescript
-          mkdir src
-          cat > src/index.ts <<'EOF'
-          export interface Options {
-            name: string;
-            tags?: string[];
-          }
-          export function greet(o: Options): string {
-            return "hello " + o.name + (o.tags ? " [" + o.tags.join(",") + "]" : "");
-          }
-          export class Greeter {
-            constructor(public opts: Options) {}
-            run() {
-              return greet(this.opts);
-            }
-          }
-          EOF
-          npx tsdown src/index.ts --dts
+          for p in "/c/Program Files (x86)/Windows Kits/10/Debuggers/arm64/cdb.exe" \
+                   "/c/Program Files (x86)/Windows Kits/10/Debuggers/x64/cdb.exe"; do
+            if [ -x "$p" ]; then
+              echo "found: $p"
+              echo "path=$p" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "cdb not found, listing debugger dirs:"
+          ls "/c/Program Files (x86)/Windows Kits/10/Debuggers" 2>/dev/null || true
+          exit 1
+
+      - name: Run crashing stage under cdb
+        if: steps.cdb.outputs.path != ''
+        shell: bash
+        working-directory: repro
+        continue-on-error: true
+        run: |
+          NODEPATH=$(command -v node)
+          "${{ steps.cdb.outputs.path }}" -g -G -o -c 'g; !analyze -v; lm; r; u @$ip-0x20 @$ip+0x14; k 30; q' "$NODEPATH" stage2.mjs
