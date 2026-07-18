@@ -37,5 +37,6 @@
     "javascript",
     "yuku"
   ],
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "sideEffects": false
 }
