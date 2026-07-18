@@ -11,6 +11,58 @@ on:
   workflow_dispatch:
 
 jobs:
+  fixed-build:
+    name: source build with patched napi-zig (win-arm64)
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build yuku-parser for aarch64-windows
+        shell: bash
+        run: zig build -Dtarget=aarch64-windows --release=fast
+
+      - name: Stage repro against the patched binding
+        shell: bash
+        run: |
+          mkdir repro-fixed && cd repro-fixed
+          npm init -y > /dev/null
+          npm i yuku-parser@0.6.9
+          cp ../zig-out/lib/yuku-parser.node node_modules/@yuku-parser/binding-win32-arm64/yuku-parser.node
+          cat > repro.mjs <<'EOF'
+          import { parse } from "yuku-parser";
+
+          const unit = (i) => `
+          export interface Config${i} {
+            name: string;
+            value: number;
+            nested: { a: string[]; b?: Map<string, number[]> };
+          }
+          export function fn${i}<T extends object>(x: T, y: number = ${i}): T & Config${i} {
+            const z = [...Array(16).keys()].map((k) => k * ${i});
+            return { ...x, name: "n${i}", value: z.reduce((a, b) => a + b, 0), nested: { a: ["a"] } } as T & Config${i};
+          }
+          `;
+          let big = "";
+          for (let i = 0; i < 1500; i++) big += unit(i);
+
+          const small = parse("let x = 1", { lang: "js" });
+          console.log("small parse ok, keys:", Object.keys(small).join(","));
+          for (let round = 0; round < 10; round++) {
+            const result = parse(big, { lang: "ts" });
+            if (!result.program) throw new Error("no program");
+          }
+          console.log("ALL OK with patched napi-zig");
+          EOF
+          node repro.mjs
+
   localize:
     name: localize crash (win-arm64, yuku 0.6.9)
     runs-on: windows-11-arm
