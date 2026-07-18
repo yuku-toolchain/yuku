@@ -60,7 +60,7 @@ sourceTypeFromPath("foo.mjs");     // "module"
 
 ## Walking the AST
 
-The AST is standard ESTree, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks it with typed visitors, alias groups, in-place mutation, and syntactic utilities:
+The AST is standard ESTree, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks it with typed visitors, alias groups, in-place mutation, and syntactic utilities. `walk` imported from this package still works as a deprecated re-export and will be removed in the next major version:
 
 ```ts
 import { parse } from "yuku-parser";

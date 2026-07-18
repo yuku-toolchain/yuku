@@ -1,3 +1,4 @@
+import { walk as astWalk } from "yuku-ast";
 import { decode } from "./decode.js";
 
 const wasmUrl = new URL("./yuku-parser.wasm", import.meta.url);
@@ -58,4 +59,22 @@ export function langFromPath(path) {
 
 export function sourceTypeFromPath(path) {
   return path.endsWith(".cjs") || path.endsWith(".cts") ? "script" : "module";
+}
+
+export { WalkContext } from "yuku-ast";
+
+let deprecationWarned = false;
+function warnWalkMoved(name) {
+  if (deprecationWarned) return;
+  deprecationWarned = true;
+  console.warn(
+    `[yuku-parser] ${name}() has moved to the yuku-ast package. ` +
+      `Install yuku-ast and update the import to: import { ${name} } from "yuku-ast". ` +
+      `This re-export will be removed in the next major version.`,
+  );
+}
+
+export function walk(root, visitors, state) {
+  warnWalkMoved("walk");
+  return astWalk(root, visitors, state);
 }

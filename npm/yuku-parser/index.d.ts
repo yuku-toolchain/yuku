@@ -70,22 +70,19 @@ interface ParseResult {
  */
 export function parse(source: string, options?: ParseOptions): ParseResult;
 
-// Walking
+// Deprecated walking surface. Walking moved to the yuku-ast package,
+// these delegate there and will be removed in the next major version.
 
-/** A visitor function for one node type. */
+/** @deprecated Import `WalkHandler` from the yuku-ast package instead. */
 type WalkHandler<T extends Node = Node, S = unknown> = (node: T, ctx: WalkContext<T, S>) => void;
 
-/** Enter/leave hooks for one node type. */
+/** @deprecated Import `WalkHooks` from the yuku-ast package instead. */
 interface WalkHooks<T extends Node = Node, S = unknown> {
   enter?: WalkHandler<T, S>;
   leave?: WalkHandler<T, S>;
 }
 
-/**
- * Handlers keyed by node `type`, or the universal `enter`/`leave`. A bare
- * function is an enter handler; per node `enter` runs before children and
- * `leave` after.
- */
+/** @deprecated Import `Visitors` from the yuku-ast package instead. */
 type Visitors<S = unknown> = {
   [K in NodeType]?: WalkHandler<NodeOfType<K>, S> | WalkHooks<NodeOfType<K>, S>;
 } & {
@@ -94,9 +91,8 @@ type Visitors<S = unknown> = {
 };
 
 /**
- * Walk an AST depth-first, dispatching to typed visitors and mutating
- * in place. Traversal order is driven by tables generated from the
- * parser's AST definition, so it can never drift. Returns the root.
+ * @deprecated Walking moved to the yuku-ast package. Install yuku-ast
+ * and import `walk` from there. Removed in the next major version.
  */
 export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T;
 
