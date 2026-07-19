@@ -188,7 +188,7 @@ fn checkSpans(tree: *const ast.Tree, src: []const u8) void {
 }
 
 fn checkRoundTrip(gpa: Allocator, tree: *ast.Tree, mode: Mode, src: []const u8) void {
-    var res = codegen.print(gpa, tree, .{}) catch |e| switch (e) {
+    var res = codegen.generate(gpa, tree, .{}) catch |e| switch (e) {
         error.OutOfMemory => return,
     };
     defer res.deinit(gpa);

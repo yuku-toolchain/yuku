@@ -7,7 +7,7 @@ import {
   type PrivateIdentifier,
   type Program,
 } from "yuku-parser";
-import { print, type SourceMap } from "yuku-codegen";
+import { generate, type SourceMap } from "yuku-codegen";
 import { TraceMap, originalPositionFor, type EncodedSourceMap } from "@jridgewell/trace-mapping";
 import { CORPUS_DIRS, corpusFilesUnder } from "../corpus";
 
@@ -33,9 +33,9 @@ for (const dir of CORPUS_DIRS) {
     }
     dirFiles++;
 
-    const result = print(input.program, {
+    const result = generate(input.program, {
       comments: true,
-      sourceMaps: {
+      sourceMap: {
         source,
         file: "out.js",
         sourceFileName: f,

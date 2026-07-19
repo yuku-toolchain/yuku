@@ -12,7 +12,8 @@
       {
         "imports": {
           "@yuku-parser/wasm": "https://esm.sh/@yuku-parser/wasm",
-          "@yuku-codegen/wasm": "https://esm.sh/@yuku-codegen/wasm"
+          "@yuku-codegen/wasm": "https://esm.sh/@yuku-codegen/wasm",
+          "yuku-ast": "https://esm.sh/yuku-ast"
         }
       }
     </script>
@@ -57,10 +58,27 @@
       <section class="pane">
         <div class="pane-head">
           output
-          <div class="tabs">
-            <button data-op="print" class="active">print</button>
-            <button data-op="strip">strip</button>
-            <button data-op="minify">minify</button>
+          <div class="opts">
+            <label class="chk" title="drop TypeScript-only syntax"><input type="checkbox" id="strip" /> strip</label>
+            <label class="chk" title="size-reducing syntax rewrites"><input type="checkbox" id="minify" /> minify</label>
+            <select id="format" title="format">
+              <option>pretty</option>
+              <option>compact</option>
+            </select>
+            <select id="quotes" title="quotes">
+              <option>preserve</option>
+              <option>double</option>
+              <option>single</option>
+              <option>shortest</option>
+            </select>
+            <select id="comments" title="comments">
+              <option>some</option>
+              <option>all</option>
+              <option>none</option>
+              <option>line</option>
+              <option>block</option>
+            </select>
+            <input id="indent" type="number" min="0" max="16" value="2" title="indent" />
           </div>
         </div>
         <pre id="out" class="view"></pre>

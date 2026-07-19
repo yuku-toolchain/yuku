@@ -36,7 +36,7 @@ pub fn main() !void {
     var visitor: Visitor = .{};
     try basic.traverse(Visitor, &tree, &visitor);
 
-    const js = try codegen.strip(gpa, &tree, .{});
+    const js = try codegen.generate(gpa, &tree, .{ .strip = true });
     defer js.deinit(gpa);
     std.debug.print("\n{s}\n", .{js.code});
 }

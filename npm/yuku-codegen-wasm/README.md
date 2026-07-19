@@ -8,11 +8,12 @@ returns generated source.
 
 ```js
 import { parse } from "@yuku-parser/wasm";
-import { print, strip, minify } from "@yuku-codegen/wasm";
+import { generate } from "@yuku-codegen/wasm";
 
 const { program } = parse("const x: number = 1", { lang: "ts" });
 
-print(program); // formatted source
-strip(program); // TypeScript stripped to JavaScript
-minify(program); // compact
+generate(program); // formatted source
+generate(program, { strip: true }); // TypeScript stripped to JavaScript
+generate(program, { minify: true }); // minified
+generate(program, { strip: true, minify: true }); // both
 ```

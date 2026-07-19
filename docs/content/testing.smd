@@ -53,15 +53,15 @@ The suites run through the published npm packages, built from the local Zig sour
 
 ## [Codegen]($section.id('codegen'))
 
-Curated inline-snapshot tests pin the exact output of `print`, `strip`, and `minify` on inputs chosen by hand. On top of that, the corpus suite runs all three operations over every parseable file in the parser test suite and checks a set of invariants.
+Curated inline-snapshot tests pin the exact output of `generate` on inputs chosen by hand, across its option sets (plain, `strip`, `minify`). On top of that, the corpus suite runs all three option sets over every parseable file in the parser test suite and checks a set of invariants.
 
-- Every operation's output parses cleanly again.
-- `print` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
-- Every operation is a fixed point on its own output, and no comment is lost or duplicated.
+- Every option set's output parses cleanly again.
+- A plain `generate` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
+- Every option set is a fixed point on its own output, and no comment is lost or duplicated.
 
 ## [Source maps]($section.id('source-maps'))
 
-Every corpus file is round-tripped through `print` with source maps enabled, and every identifier in the output must trace back to the right name and position in the original source.
+Every corpus file is round-tripped through `generate` with source maps enabled, and every identifier in the output must trace back to the right name and position in the original source.
 
 ## [Fuzzing]($section.id('fuzzing'))
 

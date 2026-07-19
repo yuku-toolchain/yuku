@@ -15,13 +15,13 @@ npm install yuku-codegen
 
 ```js
 import { parse } from "yuku-parser";
-import { print } from "yuku-codegen";
+import { generate } from "yuku-codegen";
 
 const { program } = parse("const x = 1 + 2;");
-const { code } = print(program);
+const { code } = generate(program);
 ```
 
-`print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMaps: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). Transformations are independent flags that compose freely, e.g. `generate(program, { strip: true, minify: true })`. For source maps, pass the original source text via `sourceMap: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## [Zig]($section.id('zig'))
 
@@ -39,14 +39,14 @@ pub fn main() !void {
     var tree = try parser.parse(allocator, "const x = 1 + 2;", .{});
     defer tree.deinit();
 
-    const result = try parser.codegen.print(allocator, &tree, .{});
+    const result = try parser.codegen.generate(allocator, &tree, .{});
     defer result.deinit(allocator);
 
     std.debug.print("{s}", .{result.code});
 }
 ```
 
-`print` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
+`generate` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
 
 ## [Result]($section.id('result'))
 
@@ -61,10 +61,10 @@ pub const Result = struct {
 | Field    | Type           | Description                                         |
 | -------- | -------------- | --------------------------------------------------- |
 | `code`   | `[]const u8`   | Generated source                                    |
-| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean print  |
-| `map`    | `?SourceMap`   | Source Map V3 when `source_maps` was set, else null |
+| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean run    |
+| `map`    | `?SourceMap`   | Source Map V3 when `source_map` was set, else null  |
 
-The only return-value error from `print` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain `print`, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
+The only return-value error from `generate` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain run, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
 
 A `Diagnostic` carries.
 
@@ -79,35 +79,41 @@ pub const Diagnostic = struct {
 ## [Options]($section.id('options'))
 
 ```zig
-const result = try parser.codegen.print(allocator, &tree, .{
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .strip = false,
+    .minify = false,
     .format = .pretty,
     .indent = 2,
     .quotes = .preserve,
     .comments = .some,
-    .source_maps = null,
+    .source_map = null,
 });
 ```
 
-| Field         | Type                | Default   | Description                                                |
-| ------------- | ------------------- | --------- | ---------------------------------------------------------- |
-| `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)   |
-| `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                  |
-| `quotes`      | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style, while `.double` / `.single` force one (content always re-escaped) |
-| `comments`    | `Comments`          | `.some`   | Comment passthrough filter. See [Comments](#comments).     |
-| `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code             |
+| Field        | Type                | Default     | Description                                                |
+| ------------ | ------------------- | ----------- | ---------------------------------------------------------- |
+| `strip`      | `bool`              | `false`     | Drop TypeScript-only syntax. See [Type stripping](#type-stripping). |
+| `minify`     | `bool`              | `false`     | Apply size-reducing syntax rewrites. See [Minification](#minification). |
+| `format`     | `Format`            | `.pretty`   | `.pretty` (indented) or `.compact` (no extra whitespace)   |
+| `indent`     | `u8`                | `2`         | Spaces per level in pretty format                          |
+| `quotes`     | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style, `.double` / `.single` force one (content always re-escaped), `.shortest` picks the quote with fewer escapes |
+| `comments`   | `Comments`          | `.some`     | Comment passthrough filter. See [Comments](#comments).     |
+| `source_map` | `?SourceMapOptions` | `null`      | Set to emit a Source Map V3 alongside the code             |
+
+Every transformation is an independent flag, so they compose freely, e.g. `.strip = true` together with `.minify = .all`.
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
 ## [Source maps]($section.id('source-maps'))
 
-Pass the original `source` to `source_maps` to emit a Source Map V3 alongside the generated code. Without a `source` there is nothing to map back to, so no map is produced.
+Pass the original `source` to `source_map` to emit a Source Map V3 alongside the generated code. Without a `source` there is nothing to map back to, so no map is produced.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
 defer tree.deinit();
 
-const result = try parser.codegen.print(allocator, &tree, .{
-    .source_maps = .{
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .source_map = .{
         .source = source,
         .file = "out.js",
         .source_file_name = "in.js",
@@ -184,7 +190,7 @@ Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same op
 var tree = try parser.parse(allocator, source, .{ .lang = .ts });
 defer tree.deinit();
 
-const result = try parser.codegen.strip(allocator, &tree, .{});
+const result = try parser.codegen.generate(allocator, &tree, .{ .strip = true });
 defer result.deinit(allocator);
 
 std.debug.print("{s}", .{result.code});
@@ -206,10 +212,14 @@ All other TypeScript syntax (types, interfaces, type aliases, generics, type ass
 
 ## [Minification]($section.id('minification'))
 
-`minify` applies size-reducing rewrites at print time.
+`minify` applies size-reducing syntax rewrites. Combine with `format` and `quotes` for maximum minification.
 
 ```zig
-const result = try parser.codegen.minify(allocator, &tree, .{ .format = .compact });
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .minify = true,
+    .format = .compact,
+    .quotes = .shortest,
+});
 defer result.deinit(allocator);
 ```
 
@@ -222,4 +232,3 @@ The substitutions.
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe
 
-Combine with `format = .compact` for full minification.

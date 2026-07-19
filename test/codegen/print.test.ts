@@ -3,7 +3,7 @@ import { gen } from "./helpers";
 
 test("array holes keep their elisions", () => {
   expect(
-    gen("print", `const a = [, ,];\nconst b = [1, , 3];\nconst c = [1, 2, ,];\nconst d = [,];`),
+    gen(`const a = [, ,];\nconst b = [1, , 3];\nconst c = [1, 2, ,];\nconst d = [,];`),
   ).toMatchInlineSnapshot(`
       "const a = [, ,];
       const b = [1, , 3];
@@ -15,7 +15,6 @@ test("array holes keep their elisions", () => {
 test("directives are printed verbatim, not re-cooked", () => {
   expect(
     gen(
-      "print",
       String.raw`"\x75se strict";
 function f() {
   "use asm";
@@ -30,18 +29,18 @@ function f() {
 });
 
 test("normal comments are dropped by default", () => {
-  expect(gen("print", `// hi\nconst x = 1;`)).toMatchInlineSnapshot(`"const x = 1;"`);
+  expect(gen(`// hi\nconst x = 1;`)).toMatchInlineSnapshot(`"const x = 1;"`);
 });
 
 test("a legal banner comment is kept", () => {
-  expect(gen("print", `/*! ©2025 */\nconst x = 1;`)).toMatchInlineSnapshot(`
+  expect(gen(`/*! ©2025 */\nconst x = 1;`)).toMatchInlineSnapshot(`
     "/*! ©2025 */
     const x = 1;"
   `);
 });
 
 test("a pure annotation is kept", () => {
-  expect(gen("print", `const x = /*#__PURE__*/ foo();`)).toMatchInlineSnapshot(
+  expect(gen(`const x = /*#__PURE__*/ foo();`)).toMatchInlineSnapshot(
     `"const x = /*#__PURE__*/ foo();"`,
   );
 });
@@ -49,7 +48,6 @@ test("a pure annotation is kept", () => {
 test("lone surrogates round-trip in string literals", () => {
   expect(
     gen(
-      "print",
       String.raw`const high = "\uD800";
 const low = "\uDC00";
 const mixed = "a\uD834b\uDD1Ec";`,
@@ -62,7 +60,7 @@ const mixed = "a\uD834b\uDD1Ec";`,
 });
 
 test("script-close sequences in strings stay literal", () => {
-  expect(gen("print", `const a = "</script>";\nconst b = "<!-- c -->";`)).toMatchInlineSnapshot(`
+  expect(gen(`const a = "</script>";\nconst b = "<!-- c -->";`)).toMatchInlineSnapshot(`
     "const a = "</script>";
     const b = "<!-- c -->";"
   `);
@@ -71,7 +69,6 @@ test("script-close sequences in strings stay literal", () => {
 test("template raw text is preserved", () => {
   expect(
     gen(
-      "print",
       "const a = `A\\t\\n`;\nconst b = `head${1}tail`;\nconst c = String.raw`\\d+\\n${2}`;",
     ),
   ).toMatchInlineSnapshot(`
@@ -84,7 +81,6 @@ test("template raw text is preserved", () => {
 test("a JSX attribute keeps its raw text", () => {
   expect(
     gen(
-      "print",
       `const a = <a href="&amp;x" title='y' />;\nconst b = <b data-x={"&lt;"} />;`,
       {},
       "input.jsx",
@@ -96,7 +92,7 @@ test("a JSX attribute keeps its raw text", () => {
 });
 
 test("TS definite assignment assertions", () => {
-  expect(gen("print", `let x!: number;\nclass C {\n  y!: string;\n}`)).toMatchInlineSnapshot(`
+  expect(gen(`let x!: number;\nclass C {\n  y!: string;\n}`)).toMatchInlineSnapshot(`
     "let x!: number;
     class C {
       y!: string;
@@ -107,7 +103,6 @@ test("TS definite assignment assertions", () => {
 test("TS leading union and intersection operators", () => {
   expect(
     gen(
-      "print",
       `type A = | string;\ntype B = & number;\ntype C = string | number;\ntype D = A & B;`,
     ),
   ).toMatchInlineSnapshot(`

@@ -9,7 +9,7 @@ const apostrophe = "it's";
 const obj = { 'key': 1, "other": 2 };`;
 
 test("quotes:preserve keeps the original quote of each literal", () => {
-  expect(gen("print", MIXED, { quotes: "preserve" })).toMatchInlineSnapshot(`
+  expect(gen(MIXED, { quotes: "preserve" })).toMatchInlineSnapshot(`
     "const single = 'hi';
     const double = "hi";
     const escaped = "escApe";
@@ -20,12 +20,23 @@ test("quotes:preserve keeps the original quote of each literal", () => {
 });
 
 test("quotes:single normalizes to single quotes where it avoids escaping", () => {
-  expect(gen("print", MIXED, { quotes: "single" })).toMatchInlineSnapshot(`
+  expect(gen(MIXED, { quotes: "single" })).toMatchInlineSnapshot(`
     "const single = 'hi';
     const double = 'hi';
     const escaped = 'escApe';
     const quoteInside = 'say "hi"';
     const apostrophe = 'it\\'s';
     const obj = { 'key': 1, 'other': 2 };"
+  `);
+});
+
+test("quotes:shortest picks the quote with fewer escapes, double on a tie", () => {
+  expect(gen(MIXED, { quotes: "shortest" })).toMatchInlineSnapshot(`
+    "const single = "hi";
+    const double = "hi";
+    const escaped = "escApe";
+    const quoteInside = 'say "hi"';
+    const apostrophe = "it's";
+    const obj = { "key": 1, "other": 2 };"
   `);
 });

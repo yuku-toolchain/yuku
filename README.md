@@ -61,23 +61,23 @@ npm install yuku-codegen
 
 ```js
 import { parse } from "yuku-parser";
-import { print, strip, minify } from "yuku-codegen";
+import { generate } from "yuku-codegen";
 
-print(parse("const x = 1 + 2;").program).code;
+generate(parse("const x = 1 + 2;").program).code;
 // "const x = 1 + 2;"
 
-strip(parse("const x: number = 1;", { lang: "ts" }).program).code;
+generate(parse("const x: number = 1;", { lang: "ts" }).program, { strip: true }).code;
 // "const x = 1;"
 
-minify(parse("const enabled = true;").program, { format: "compact" }).code;
-// "const enabled=!0;"
+generate(parse("const enabled = true;").program, { minify: true }).code;
+// "const enabled=!0"
 ```
 
 Emits a Source Map V3 in the same pass, ~2.5x faster than `@babel/generator` with source maps on:
 
 ```js
 const { program } = parse(source);
-const { code, map } = print(program, { sourceMaps: { source } });
+const { code, map } = generate(program, { sourceMap: { source } });
 ```
 
 [Read the codegen documentation →](https://yuku.fyi/parser/codegen)

@@ -1,20 +1,17 @@
 import { parse } from "@yuku-parser/wasm";
-import { print, strip, minify } from "@yuku-codegen/wasm";
+import { generate } from "@yuku-codegen/wasm";
 import { CodeJar } from "https://esm.sh/codejar@4.2.0";
 import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
 import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
 
 hljs.registerLanguage("typescript", typescript);
 
-const codegen = { print, strip, minify };
 const $ = (id) => document.getElementById(id);
 
 const codeView = $("code");
 const astView = $("ast");
 const outView = $("out");
 const status = $("status");
-
-let op = "print";
 
 const OPEN_DEPTH = 4;
 
@@ -159,14 +156,22 @@ function render() {
   const t2 = performance.now();
   const outScroll = outView.scrollTop;
   try {
-    outView.innerHTML = hl(codegen[op](result.program), "typescript");
+    const out = generate(result.program, {
+      strip: $("strip").checked,
+      minify: { syntax: $("minify").checked },
+      format: $("format").value,
+      quotes: $("quotes").value,
+      comments: $("comments").value,
+      indent: +$("indent").value,
+    });
+    outView.innerHTML = hl(out, "typescript");
   } catch (e) {
     outView.textContent = String(e);
   }
   outView.scrollTop = outScroll;
   const t3 = performance.now();
 
-  const times = `parse ${(t1 - t0).toFixed(2)}ms · ${op} ${(t3 - t2).toFixed(2)}ms`;
+  const times = `parse ${(t1 - t0).toFixed(2)}ms · codegen ${(t3 - t2).toFixed(2)}ms`;
   const diags = result.diagnostics;
   if (diags.length) {
     setStatus(`${diags.length} diagnostic${diags.length > 1 ? "s" : ""} · ${times} · ${diags.map((d) => d.message).join("  |  ")}`, "warn");
@@ -350,10 +355,10 @@ astView.addEventListener("click", (e) => {
 });
 
 const STATE_KEY = "yuku-state";
-const CONTROLS = ["lang", "sourceType", "preserveParens", "allowReturnOutsideFunction", "semanticErrors", "attachComments"];
+const CONTROLS = ["lang", "sourceType", "preserveParens", "allowReturnOutsideFunction", "semanticErrors", "attachComments", "strip", "minify", "format", "quotes", "comments", "indent"];
 
 function snapshot() {
-  const s = { code: jar.toString(), op, theme: document.documentElement.dataset.theme };
+  const s = { code: jar.toString(), theme: document.documentElement.dataset.theme };
   for (const id of CONTROLS) {
     const c = $(id);
     s[id] = c.type === "checkbox" ? c.checked : c.value;
@@ -417,12 +422,7 @@ function applyState(s) {
     if (c.type === "checkbox") c.checked = !!s[id];
     else c.value = s[id];
   }
-  if (s.op && codegen[s.op]) {
-    op = s.op;
-    for (const b of document.querySelectorAll(".tabs button")) {
-      b.classList.toggle("active", b.dataset.op === op);
-    }
-  }
+  if (s.op === "strip" || s.op === "minify") $(s.op).checked = true;
   if (s.theme === "dark" || s.theme === "light") {
     document.documentElement.dataset.theme = s.theme;
     localStorage.setItem("yuku-theme", s.theme);
@@ -461,18 +461,14 @@ labelTheme();
 
 jar.onUpdate(render);
 
-for (const control of document.querySelectorAll("header select, header input")) {
-  control.addEventListener("change", render);
-}
+// registered before the render listeners so render sees the synced values
+$("minify").addEventListener("change", (e) => {
+  $("format").value = e.target.checked ? "compact" : "pretty";
+  $("quotes").value = e.target.checked ? "shortest" : "preserve";
+});
 
-for (const btn of document.querySelectorAll(".tabs button")) {
-  btn.addEventListener("click", () => {
-    op = btn.dataset.op;
-    for (const b of document.querySelectorAll(".tabs button")) {
-      b.classList.toggle("active", b === btn);
-    }
-    render();
-  });
+for (const control of document.querySelectorAll("header select, header input, .pane-head select, .pane-head input")) {
+  control.addEventListener("change", render);
 }
 
 const initial = loadState();

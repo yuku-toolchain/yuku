@@ -4,6 +4,7 @@ const npm = `${dir}/../npm`;
 const local: Record<string, string> = {
   "https://esm.sh/@yuku-parser/wasm": "/pkg/yuku-parser-wasm/index.js",
   "https://esm.sh/@yuku-codegen/wasm": "/pkg/yuku-codegen-wasm/index.js",
+  "https://esm.sh/yuku-ast": "/pkg/yuku-ast/dist/index.js",
 };
 
 const server = Bun.serve({

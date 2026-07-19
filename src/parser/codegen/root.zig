@@ -10,9 +10,7 @@ pub const Error = printer.Error;
 pub const SourceMap = printer.SourceMap;
 pub const SourceMapOptions = printer.SourceMapOptions;
 
-pub const print = printer.print;
-pub const strip = printer.strip;
-pub const minify = printer.minify;
+pub const generate = printer.generate;
 
 test {
     _ = printer;

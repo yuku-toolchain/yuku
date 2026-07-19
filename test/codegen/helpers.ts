@@ -1,24 +1,9 @@
-import {
-  parse,
-  langFromPath,
-  sourceTypeFromPath,
-  type ParseOptions,
-  type Program,
-} from "yuku-parser";
-import { print, strip, minify, type CodegenOptions, type CodegenResult } from "yuku-codegen";
-
-export type Op = "print" | "strip" | "minify";
-
-const OPS: Record<Op, (program: Program, options: CodegenOptions) => CodegenResult> = {
-  print,
-  strip,
-  minify,
-};
+import { parse, langFromPath, sourceTypeFromPath, type ParseOptions } from "yuku-parser";
+import { generate, type GenerateOptions } from "yuku-codegen";
 
 export function gen(
-  op: Op,
   source: string,
-  options: CodegenOptions = {},
+  options: GenerateOptions = {},
   path = "input.ts",
   parseOptions: Partial<ParseOptions> = {},
 ): string {
@@ -28,5 +13,5 @@ export function gen(
     attachComments: true,
     ...parseOptions,
   });
-  return OPS[op](ast.program, options).code;
+  return generate(ast.program, options).code;
 }

@@ -37,15 +37,10 @@ pub const Format = enum {
     compact,
 };
 
-/// Quote style for emitted string literals.
-///
-/// - `preserve`: keep each literal's original quote style (single vs double);
-///   synthetic nodes default to double.
-/// - `double` / `single`: force that quote.
-///
-/// Minify mode ignores this and always picks whichever quote needs fewer
-/// escapes.
-pub const Quotes = enum { preserve, double, single };
+/// Quote style for string literals. `preserve` keeps each literal's source
+/// quote (synthetic nodes get double); `shortest` picks the quote with fewer
+/// escapes, double on a tie.
+pub const Quotes = enum { preserve, double, single, shortest };
 
 /// Comment passthrough filter.
 pub const Comments = enum {
@@ -62,16 +57,19 @@ pub const Comments = enum {
     block,
 };
 
-/// Codegen options.
+/// Codegen options. Transformations are independent flags and compose freely.
+/// Maximum minification: `.minify = true, .format = .compact, .quotes = .shortest`.
 pub const Options = struct {
+    /// Drop TypeScript-only syntax.
+    strip: bool = false,
+    /// Apply size-reducing syntax rewrites.
+    minify: bool = false,
     format: Format = .pretty,
-    /// Spaces per indentation level. Used only when `format = .pretty`.
+    /// Spaces per level in pretty format.
     indent: u8 = 2,
     quotes: Quotes = .preserve,
-    /// Set to enable Source Map V3 output alongside the code.
-    source_maps: ?SourceMapOptions = null,
-    /// Comment passthrough filter. Defaults to `.some`, which preserves
-    /// legal headers, JSDoc, and tree-shaking annotations.
+    /// Set to emit a Source Map V3 alongside the code.
+    source_map: ?SourceMapOptions = null,
     comments: Comments = .some,
 };
 
@@ -84,14 +82,13 @@ pub const Diagnostic = struct {
     end: u32,
 };
 
-/// Output of a codegen run. All buffers are owned by the allocator
-/// passed to `print`/`strip`/`minify`. Call `deinit` with the same
-/// allocator to free them.
+/// Output of a codegen run. Buffers are owned by the allocator passed to
+/// `generate`; free with `deinit`.
 pub const Result = struct {
     code: []const u8,
     /// Empty when codegen succeeded cleanly.
     errors: []const Diagnostic,
-    /// Populated when `Options.source_maps` was set.
+    /// Populated when `Options.source_map` was set.
     map: ?SourceMap = null,
 
     pub fn deinit(self: Result, allocator: Allocator) void {
@@ -103,36 +100,10 @@ pub const Result = struct {
 
 pub const Error = error{OutOfMemory};
 
-pub const Config = struct {
-    strip_ts: bool = false,
-    /// When true, applies size-reducing substitutions during emit.
-    minify: bool = false,
-};
-
 /// Renders a `Tree` to source code.
-pub fn print(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    return printImpl(.{}, allocator, tree, options);
-}
-
-/// Render TypeScript `Tree` to JavaScript output, excluding TypeScript-specific syntax.
-pub fn strip(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    return printImpl(.{ .strip_ts = true }, allocator, tree, options);
-}
-
-/// render `Tree` with print-time minification substitutions enabled.
-/// combine with `Options.format = .compact` for fully minified output.
-pub fn minify(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
-    return printImpl(.{ .minify = true }, allocator, tree, options);
-}
-
-pub fn printImpl(
-    cfg: Config,
-    allocator: Allocator,
-    tree: *Tree,
-    options: Options,
-) Error!Result {
+pub fn generate(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     std.debug.assert(tree.root != .null);
-    var p = try Printer.init(cfg, allocator, tree, options);
+    var p = try Printer.init(allocator, tree, options);
     defer p.deinit();
     try p.printRoot();
 
@@ -144,37 +115,8 @@ pub fn printImpl(
     return .{ .code = code, .errors = errors, .map = map };
 }
 
-/// Tags whose emit is a single fixed string. Centralizing these trivial
-/// keyword/punctuation nodes lets `emitNode` handle them in one branch
-/// instead of a per-tag `emit_*` function each.
-fn fixedString(comptime tag: std.meta.Tag(NodeData)) ?[]const u8 {
-    return switch (tag) {
-        .super => "super",
-        .this_expression, .ts_this_type => "this",
-        .null_literal, .ts_null_keyword => "null",
-        .ts_any_keyword => "any",
-        .ts_unknown_keyword => "unknown",
-        .ts_never_keyword => "never",
-        .ts_void_keyword => "void",
-        .ts_undefined_keyword => "undefined",
-        .ts_string_keyword => "string",
-        .ts_number_keyword => "number",
-        .ts_bigint_keyword => "bigint",
-        .ts_boolean_keyword => "boolean",
-        .ts_symbol_keyword => "symbol",
-        .ts_object_keyword => "object",
-        .ts_intrinsic_keyword => "intrinsic",
-        .ts_jsdoc_unknown_type => "?",
-        .jsx_opening_fragment => "<>",
-        .jsx_closing_fragment => "</>",
-        else => null,
-    };
-}
-
 const Printer = struct {
     const Self = @This();
-
-    cfg: Config,
 
     tree: *Tree,
     node_data: []const NodeData,
@@ -191,7 +133,7 @@ const Printer = struct {
     /// rather than emitted immediately. The next statement flushes it,
     /// a closing `}` clears it, eliminating the trailing `;` for free.
     pending_semi: bool = false,
-    /// Source-map state. Present if `options.source_maps != null`.
+    /// Source-map state. Present if `options.source_map != null`.
     sm: ?sourcemap.State = null,
     /// node currently being emitted, used by container helpers to look
     /// up inside-comments without threading the index through every call
@@ -211,9 +153,8 @@ const Printer = struct {
     /// `in` forbidden in the current declarator init (a `for` head)
     decl_no_in: bool = false,
 
-    fn init(cfg: Config, allocator: Allocator, tree: *Tree, options: Options) Error!Self {
+    fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
         var p = Self{
-            .cfg = cfg,
             .tree = tree,
             .node_data = tree.nodes.items(.data),
             .options = options,
@@ -221,7 +162,7 @@ const Printer = struct {
         };
         try p.code.ensureTotalCapacity(allocator, tree.source.len);
 
-        if (comptime source_maps) if (options.source_maps) |sm_opts| {
+        if (comptime source_maps) if (options.source_map) |sm_opts| {
             if (sm_opts.source != null) {
                 p.sm = sourcemap.State.init(sm_opts);
                 try p.sm.?.out.ensureTotalCapacity(allocator, tree.nodes.len * 8 + 64);
@@ -331,7 +272,7 @@ const Printer = struct {
     /// Trailing `?`/`!`/type-annotation shared by binding identifiers and
     /// array/object patterns.
     fn printBindingSuffix(self: *Self, optional: bool, definite: bool, annotation: NodeIndex) Error!void {
-        if (!self.cfg.strip_ts) if (optional) try self.writeByte('?');
+        if (!self.options.strip) if (optional) try self.writeByte('?');
         if (definite) try self.writeByte('!');
         try self.emit(annotation);
     }
@@ -339,7 +280,7 @@ const Printer = struct {
     /// takes the parked `!`, clearing it so it never leaks into a nested
     /// binding (`let {x}!` keeps `!` after `}`)
     inline fn takeDefinite(self: *Self) bool {
-        if (self.cfg.strip_ts) return false;
+        if (self.options.strip) return false;
         const d = self.definite_pending;
         self.definite_pending = false;
         return d;
@@ -406,7 +347,7 @@ const Printer = struct {
     fn emitExpr(self: *Self, idx: NodeIndex, ctx: Ctx) Error!void {
         if (idx == .null) return;
 
-        if (self.cfg.strip_ts) {
+        if (self.options.strip) {
             const data = self.nodeData(idx);
             if (data.isTypeContext()) return;
 
@@ -502,10 +443,10 @@ const Printer = struct {
             .ts_non_null_expression,
             .ts_instantiation_expression,
             => Precedence.Call,
-            .boolean_literal => if (self.cfg.minify) Precedence.Unary else Precedence.Grouping,
+            .boolean_literal => if (self.options.minify) Precedence.Unary else Precedence.Grouping,
             // minify rewrites `undefined` and `Infinity`
             .identifier_reference => |id| blk: {
-                if (!self.cfg.minify or self.in_assign_target) break :blk Precedence.Grouping;
+                if (!self.options.minify or self.in_assign_target) break :blk Precedence.Grouping;
                 const s = self.tree.string(id.name);
                 if (std.mem.eql(u8, s, "undefined")) break :blk Precedence.Unary;
                 if (std.mem.eql(u8, s, "Infinity")) break :blk Precedence.Multiplicative;
@@ -558,7 +499,7 @@ const Printer = struct {
     }
 
     inline fn stripped(self: *const Self, idx: NodeIndex) NodeIndex {
-        if (!self.cfg.strip_ts) return idx;
+        if (!self.options.strip) return idx;
         var i = idx;
         while (true) i = switch (self.nodeData(i)) {
             .ts_as_expression => |e| e.expression,
@@ -1107,7 +1048,7 @@ const Printer = struct {
     }
 
     fn emit_variable_declaration(self: *Self, d: *const ast.VariableDeclaration) Error!void {
-        if (self.cfg.strip_ts) if (d.declare) return;
+        if (self.options.strip) if (d.declare) return;
         try self.printVariableDecl(d.*, true, false);
     }
 
@@ -1117,7 +1058,7 @@ const Printer = struct {
         with_semicolon: bool,
         no_in: bool,
     ) Error!void {
-        if (!self.cfg.strip_ts) if (d.declare) try self.writeStr("declare ");
+        if (!self.options.strip) if (d.declare) try self.writeStr("declare ");
         try self.writeStr(d.kind.toString());
         try self.writeByte(' ');
         const prev = self.decl_no_in;
@@ -1130,7 +1071,7 @@ const Printer = struct {
     fn emit_variable_declarator(self: *Self, d: *const ast.VariableDeclarator) Error!void {
         // park `!` so the binding emits it as `let x!: T`, not `let x: T!`.
         // `d.id` is always a binding pattern, whose takeDefinite() consumes it.
-        if (!self.cfg.strip_ts) self.definite_pending = d.definite;
+        if (!self.options.strip) self.definite_pending = d.definite;
         try self.emit(d.id);
         std.debug.assert(!self.definite_pending);
         if (d.init != .null) {
@@ -1361,7 +1302,7 @@ const Printer = struct {
         try self.emitExpr(e.object, .{ .prec = Precedence.Call, .no_call = ctx.no_call });
 
         // `obj["foo"]` → `obj.foo` when the key names a valid identifier.
-        const static_key: ?[]const u8 = if (self.cfg.minify)
+        const static_key: ?[]const u8 = if (self.options.minify)
             (if (e.computed) simpleStringKey(self.tree, e.property) else null)
         else
             null;
@@ -1453,20 +1394,16 @@ const Printer = struct {
         try self.writeByte(q);
     }
 
-    /// In minify mode, picks the quote that needs fewer escapes for `s`.
-    /// Otherwise `.preserve` keeps the source's quote style (`single_quoted`)
-    /// and `.single` / `.double` force that quote.
     inline fn pickQuote(self: *const Self, s: []const u8, single_quoted: bool) u8 {
-        if (self.cfg.minify) {
-            const single = std.mem.count(u8, s, "'");
-            const double = std.mem.count(u8, s, "\"");
-            if (single == double) return if (self.options.quotes == .single) '\'' else '"';
-            return if (double < single) '"' else '\'';
-        }
         return switch (self.options.quotes) {
             .preserve => if (single_quoted) '\'' else '"',
             .single => '\'',
             .double => '"',
+            .shortest => blk: {
+                const single = std.mem.count(u8, s, "'");
+                const double = std.mem.count(u8, s, "\"");
+                break :blk if (single < double) '\'' else '"';
+            },
         };
     }
 
@@ -1488,7 +1425,7 @@ const Printer = struct {
             }
             const esc: ?[]const u8 = blk: {
                 // keep minified output safe to inline in a `<script>` tag
-                if (self.cfg.minify) {
+                if (self.options.minify) {
                     if (utils.scriptEscape(s, i)) |e| break :blk e;
                 }
                 break :blk switch (c) {
@@ -1524,7 +1461,7 @@ const Printer = struct {
     }
 
     fn emit_numeric_literal(self: *Self, lit: *const ast.NumericLiteral) Error!void {
-        if (self.cfg.minify) {
+        if (self.options.minify) {
             try self.writeShortestNumber(lit.*);
         } else {
             try self.writeString(lit.raw);
@@ -1547,7 +1484,7 @@ const Printer = struct {
     }
 
     fn emit_boolean_literal(self: *Self, lit: *const ast.BooleanLiteral) Error!void {
-        if (self.cfg.minify) {
+        if (self.options.minify) {
             try self.writeStr(if (lit.value) "!0" else "!1");
         } else {
             try self.writeStr(if (lit.value) "true" else "false");
@@ -1585,7 +1522,7 @@ const Printer = struct {
         // print/strip emit the raw verbatim to keep the exact escapes (the
         // tag of a tagged template sees them). minify recomputes from cooked,
         // as do synthetic nodes with no raw.
-        if (!self.cfg.minify) {
+        if (!self.options.minify) {
             const raw = self.tree.string(el.raw);
             if (raw.len != 0) return self.writeStr(raw);
         }
@@ -1603,7 +1540,7 @@ const Printer = struct {
             }
             const esc: ?[]const u8 = blk: {
                 // keep minified output safe to inline in a `<script>` tag
-                if (self.cfg.minify) {
+                if (self.options.minify) {
                     if (utils.scriptEscape(s, i)) |e| break :blk e;
                 }
                 break :blk switch (c) {
@@ -1625,7 +1562,7 @@ const Printer = struct {
     }
 
     fn emit_identifier_reference(self: *Self, id: *const ast.IdentifierReference) Error!void {
-        if (self.cfg.minify) {
+        if (self.options.minify) {
             if (!self.in_assign_target) {
                 const name = self.tree.string(id.name);
                 if (std.mem.eql(u8, name, "undefined")) return self.writeStr("void 0");
@@ -1641,7 +1578,7 @@ const Printer = struct {
 
     fn emit_binding_identifier(self: *Self, id: *const ast.BindingIdentifier) Error!void {
         const definite = self.takeDefinite();
-        if (!self.cfg.strip_ts) try self.printDecorators(id.decorators);
+        if (!self.options.strip) try self.printDecorators(id.decorators);
         try self.writeString(id.name);
         try self.printBindingSuffix(id.optional, definite, id.type_annotation);
     }
@@ -1656,9 +1593,9 @@ const Printer = struct {
     }
 
     fn emit_assignment_pattern(self: *Self, p: *const ast.AssignmentPattern) Error!void {
-        if (!self.cfg.strip_ts) try self.printDecorators(p.decorators);
+        if (!self.options.strip) try self.printDecorators(p.decorators);
         try self.emit(p.left);
-        if (!self.cfg.strip_ts) if (p.optional) try self.writeByte('?');
+        if (!self.options.strip) if (p.optional) try self.writeByte('?');
         try self.emit(p.type_annotation);
         try self.separateBangFromAssign();
         try self.printEq();
@@ -1666,16 +1603,16 @@ const Printer = struct {
     }
 
     fn emit_binding_rest_element(self: *Self, r: *const ast.BindingRestElement) Error!void {
-        if (!self.cfg.strip_ts) try self.printDecorators(r.decorators);
+        if (!self.options.strip) try self.printDecorators(r.decorators);
         try self.writeStr("...");
         try self.emit(r.argument);
-        if (!self.cfg.strip_ts) if (r.optional) try self.writeByte('?');
+        if (!self.options.strip) if (r.optional) try self.writeByte('?');
         try self.emit(r.type_annotation);
     }
 
     fn emit_array_pattern(self: *Self, p: *const ast.ArrayPattern) Error!void {
         const definite = self.takeDefinite();
-        if (!self.cfg.strip_ts) try self.printDecorators(p.decorators);
+        if (!self.options.strip) try self.printDecorators(p.decorators);
         try self.writeByte('[');
         const list = self.tree.extra(p.elements);
         for (list, 0..) |x, i| {
@@ -1695,7 +1632,7 @@ const Printer = struct {
 
     fn emit_object_pattern(self: *Self, p: *const ast.ObjectPattern) Error!void {
         const definite = self.takeDefinite();
-        if (!self.cfg.strip_ts) try self.printDecorators(p.decorators);
+        if (!self.options.strip) try self.printDecorators(p.decorators);
         try self.writeByte('{');
         const list = self.tree.extra(p.properties);
         const has_any = list.len > 0 or p.rest != .null;
@@ -1735,7 +1672,7 @@ const Printer = struct {
     }
 
     fn printObjectKey(self: *Self, key: NodeIndex, computed: bool) Error!void {
-        if (self.cfg.minify) {
+        if (self.options.minify) {
             if (simpleStringKey(self.tree, key)) |s| return self.writeStr(s);
         }
         try self.printPropertyKey(key, computed);
@@ -1756,7 +1693,7 @@ const Printer = struct {
         static: bool,
         is_field: bool,
     ) Error!void {
-        if (self.cfg.minify) {
+        if (self.options.minify) {
             if (simpleStringKey(self.tree, key)) |s| {
                 if (!computed) return self.writeStr(s);
                 const ctor_clash = std.mem.eql(u8, s, "constructor") and (is_field or !static);
@@ -1768,13 +1705,13 @@ const Printer = struct {
     }
 
     fn emit_function(self: *Self, f: *const ast.Function) Error!void {
-        if (self.cfg.strip_ts) {
+        if (self.options.strip) {
             const is_ts_only = f.declare or
                 f.type == .ts_declare_function or
                 f.type == .ts_empty_body_function_expression;
             if (is_ts_only) return;
         }
-        if (!self.cfg.strip_ts) if (f.declare) try self.writeStr("declare ");
+        if (!self.options.strip) if (f.declare) try self.writeStr("declare ");
         if (f.async) try self.writeStr("async ");
         try self.writeStr("function");
         if (f.generator) try self.writeByte('*');
@@ -1792,7 +1729,7 @@ const Printer = struct {
         if (f.body != .null) {
             try self.space();
             try self.emit(f.body);
-        } else if (!self.cfg.strip_ts) {
+        } else if (!self.options.strip) {
             try self.softSemi();
         }
     }
@@ -1840,9 +1777,9 @@ const Printer = struct {
     }
 
     fn emit_class(self: *Self, c: *const ast.Class) Error!void {
-        if (self.cfg.strip_ts) if (c.declare) return;
+        if (self.options.strip) if (c.declare) return;
         try self.printDecorators(c.decorators);
-        if (!self.cfg.strip_ts) {
+        if (!self.options.strip) {
             if (c.declare) try self.writeStr("declare ");
             if (c.abstract) try self.writeStr("abstract ");
         }
@@ -1857,7 +1794,7 @@ const Printer = struct {
             try self.emitExpr(c.super_class, .{ .prec = Precedence.Call });
             try self.emit(c.super_type_arguments);
         }
-        if (!self.cfg.strip_ts) {
+        if (!self.options.strip) {
             if (self.tree.extra(c.implements).len > 0) {
                 try self.writeStr(" implements ");
                 try self.emitList(c.implements);
@@ -1896,16 +1833,16 @@ const Printer = struct {
 
     fn emit_method_definition(self: *Self, m: *const ast.MethodDefinition) Error!void {
         const fn_data = self.nodeData(m.value).function;
-        if (self.cfg.strip_ts) if (m.abstract or fn_data.body == .null) return;
+        if (self.options.strip) if (m.abstract or fn_data.body == .null) return;
         try self.printDecorators(m.decorators);
         try self.hoistKeyComments(m.key);
         defer self.skip_leading_of = .null;
-        if (!self.cfg.strip_ts) if (m.accessibility != .none) {
+        if (!self.options.strip) if (m.accessibility != .none) {
             try self.writeStr(m.accessibility.toString());
             try self.writeByte(' ');
         };
         if (m.static) try self.writeStr("static ");
-        if (!self.cfg.strip_ts) {
+        if (!self.options.strip) {
             if (m.abstract) try self.writeStr("abstract ");
             if (m.override) try self.writeStr("override ");
         }
@@ -1918,16 +1855,16 @@ const Printer = struct {
             },
         }
         try self.printClassKey(m.key, m.computed, m.static, false);
-        if (!self.cfg.strip_ts) if (m.optional) try self.writeByte('?');
+        if (!self.options.strip) if (m.optional) try self.writeByte('?');
         try self.printFunctionAsMethod(fn_data);
     }
 
     fn emit_property_definition(self: *Self, p: *const ast.PropertyDefinition) Error!void {
-        if (self.cfg.strip_ts) if (p.declare or p.abstract) return;
+        if (self.options.strip) if (p.declare or p.abstract) return;
         try self.printDecorators(p.decorators);
         try self.hoistKeyComments(p.key);
         defer self.skip_leading_of = .null;
-        if (!self.cfg.strip_ts) {
+        if (!self.options.strip) {
             if (p.declare) try self.writeStr("declare ");
             if (p.accessibility != .none) {
                 try self.writeStr(p.accessibility.toString());
@@ -1935,14 +1872,14 @@ const Printer = struct {
             }
         }
         if (p.static) try self.writeStr("static ");
-        if (!self.cfg.strip_ts) {
+        if (!self.options.strip) {
             if (p.abstract) try self.writeStr("abstract ");
             if (p.override) try self.writeStr("override ");
             if (p.readonly) try self.writeStr("readonly ");
         }
         if (p.accessor) try self.writeStr("accessor ");
         try self.printClassKey(p.key, p.computed, p.static, true);
-        if (!self.cfg.strip_ts) {
+        if (!self.options.strip) {
             if (p.optional) try self.writeByte('?');
             if (p.definite) try self.writeByte('!');
         }
@@ -1992,7 +1929,7 @@ const Printer = struct {
 
     fn emit_import_declaration(self: *Self, d: *const ast.ImportDeclaration) Error!void {
         const list = self.tree.extra(d.specifiers);
-        if (self.cfg.strip_ts) {
+        if (self.options.strip) {
             if (d.import_kind == .type) return;
             if (list.len > 0 and !hasValueImportSpecifier(self.tree, list)) return;
         }
@@ -2040,7 +1977,7 @@ const Printer = struct {
     }
 
     fn emit_import_specifier(self: *Self, s: *const ast.ImportSpecifier) Error!void {
-        if (self.cfg.strip_ts) if (s.import_kind == .type) return;
+        if (self.options.strip) if (s.import_kind == .type) return;
         if (s.import_kind == .type) try self.writeStr("type ");
         try self.emit(s.imported);
         if (!sameIdentifier(self.tree, s.imported, s.local)) {
@@ -2088,9 +2025,9 @@ const Printer = struct {
     }
 
     fn emit_export_named_declaration(self: *Self, d: *const ast.ExportNamedDeclaration) Error!void {
-        if (self.cfg.strip_ts) if (d.export_kind == .type) return;
+        if (self.options.strip) if (d.export_kind == .type) return;
         const list = self.tree.extra(d.specifiers);
-        if (self.cfg.strip_ts) {
+        if (self.options.strip) {
             const no_value_specifiers = d.declaration == .null and list.len > 0 and
                 !hasValueExportSpecifier(self.tree, list);
             if (no_value_specifiers) return;
@@ -2149,7 +2086,7 @@ const Printer = struct {
     }
 
     fn emit_export_all_declaration(self: *Self, d: *const ast.ExportAllDeclaration) Error!void {
-        if (self.cfg.strip_ts) if (d.export_kind == .type) return;
+        if (self.options.strip) if (d.export_kind == .type) return;
         try self.writeStr("export");
         if (d.export_kind == .type) try self.writeStr(" type");
         try self.writeStr(" *");
@@ -2164,7 +2101,7 @@ const Printer = struct {
     }
 
     fn emit_export_specifier(self: *Self, s: *const ast.ExportSpecifier) Error!void {
-        if (self.cfg.strip_ts) if (s.export_kind == .type) return;
+        if (self.options.strip) if (s.export_kind == .type) return;
         if (s.export_kind == .type) try self.writeStr("type ");
         try self.emit(s.local);
         if (!sameIdentifier(self.tree, s.local, s.exported)) {
@@ -2932,6 +2869,30 @@ fn leftmostByteIs(tree: *const Tree, idx: NodeIndex, byte: u8) bool {
         .ts_non_null_expression => |e| leftmostByteIs(tree, e.expression, byte),
         .ts_instantiation_expression => |e| leftmostByteIs(tree, e.expression, byte),
         else => false,
+    };
+}
+
+fn fixedString(comptime tag: std.meta.Tag(NodeData)) ?[]const u8 {
+    return switch (tag) {
+        .super => "super",
+        .this_expression, .ts_this_type => "this",
+        .null_literal, .ts_null_keyword => "null",
+        .ts_any_keyword => "any",
+        .ts_unknown_keyword => "unknown",
+        .ts_never_keyword => "never",
+        .ts_void_keyword => "void",
+        .ts_undefined_keyword => "undefined",
+        .ts_string_keyword => "string",
+        .ts_number_keyword => "number",
+        .ts_bigint_keyword => "bigint",
+        .ts_boolean_keyword => "boolean",
+        .ts_symbol_keyword => "symbol",
+        .ts_object_keyword => "object",
+        .ts_intrinsic_keyword => "intrinsic",
+        .ts_jsdoc_unknown_type => "?",
+        .jsx_opening_fragment => "<>",
+        .jsx_closing_fragment => "</>",
+        else => null,
     };
 }
 
