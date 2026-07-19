@@ -1013,153 +1013,82 @@ pub const Lexer = struct {
         return self.getKeywordType(buf[0..out]);
     }
 
-    // keyword lookup dispatched first by length and then by the most discriminating byte.
-    // each candidate matches its full lexeme via `std.mem.eql`; the compiler folds the
-    // length check (the outer switch already pinned `lexeme.len`). the switch shape is
-    // preserved so dispatch stays a jump table
-    fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
-        const eql = std.mem.eql;
-        switch (lexeme.len) {
-            2 => switch (lexeme[1]) {
-                'f' => return switch (lexeme[0]) {
-                    'i' => .@"if",
-                    'o' => .of,
-                    else => .identifier,
-                },
-                'n' => if (lexeme[0] == 'i') return .in,
-                'o' => if (lexeme[0] == 'd') return .do,
-                's' => {
-                    if (lexeme[0] == 'a') return .as;
-                    if (lexeme[0] == 'i') return .is;
-                },
-                else => {},
-            },
-            3 => switch (lexeme[0]) {
-                'a' => if (eql(u8, lexeme, "any")) return .any,
-                'f' => if (eql(u8, lexeme, "for")) return .@"for",
-                'g' => if (eql(u8, lexeme, "get")) return .get,
-                'l' => if (eql(u8, lexeme, "let")) return .let,
-                'n' => if (eql(u8, lexeme, "new")) return .new,
-                'o' => if (eql(u8, lexeme, "out")) return .out,
-                's' => if (eql(u8, lexeme, "set")) return .set,
-                't' => if (eql(u8, lexeme, "try")) return .@"try",
-                'v' => if (eql(u8, lexeme, "var")) return .@"var",
-                else => {},
-            },
-            4 => switch (lexeme[1]) {
-                'a' => if (eql(u8, lexeme, "case")) return .case,
-                'h' => if (eql(u8, lexeme, "this")) return .this,
-                'l' => if (eql(u8, lexeme, "else")) return .@"else",
-                'n' => if (eql(u8, lexeme, "enum")) return .@"enum",
-                'o' => if (eql(u8, lexeme, "void")) return .void,
-                'i' => if (eql(u8, lexeme, "with")) return .with,
-                'u' => if (eql(u8, lexeme, "null")) return .null_literal,
-                'y' => if (eql(u8, lexeme, "type")) return .type,
-                'r' => {
-                    if (eql(u8, lexeme, "true")) return .true;
-                    if (eql(u8, lexeme, "from")) return .from;
-                },
-                else => {},
-            },
-            5 => switch (lexeme[0]) {
-                'a' => {
-                    if (eql(u8, lexeme, "await")) return .await;
-                    if (eql(u8, lexeme, "async")) return .async;
-                },
-                'b' => if (eql(u8, lexeme, "break")) return .@"break",
-                'c' => {
-                    if (eql(u8, lexeme, "const")) return .@"const";
-                    if (eql(u8, lexeme, "class")) return .class;
-                    if (eql(u8, lexeme, "catch")) return .@"catch";
-                },
-                'd' => if (eql(u8, lexeme, "defer")) return .@"defer",
-                'f' => if (eql(u8, lexeme, "false")) return .false,
-                'i' => if (eql(u8, lexeme, "infer")) return .infer,
-                'k' => if (eql(u8, lexeme, "keyof")) return .keyof,
-                'n' => if (eql(u8, lexeme, "never")) return .never,
-                's' => if (eql(u8, lexeme, "super")) return .super,
-                't' => if (eql(u8, lexeme, "throw")) return .throw,
-                'u' => if (eql(u8, lexeme, "using")) return .using,
-                'w' => if (eql(u8, lexeme, "while")) return .@"while",
-                'y' => if (eql(u8, lexeme, "yield")) return .yield,
-                else => {},
-            },
-            6 => switch (lexeme[0]) {
-                'a' => if (eql(u8, lexeme, "assert")) return .assert,
-                'b' => if (eql(u8, lexeme, "bigint")) return .bigint,
-                'd' => if (eql(u8, lexeme, "delete")) return .delete,
-                'e' => if (eql(u8, lexeme, "export")) return .@"export",
-                'g' => if (eql(u8, lexeme, "global")) return .global,
-                'i' => if (eql(u8, lexeme, "import")) return .import,
-                'm' => if (eql(u8, lexeme, "module")) return .module,
-                'n' => if (eql(u8, lexeme, "number")) return .number,
-                'o' => if (eql(u8, lexeme, "object")) return .object,
-                'p' => if (eql(u8, lexeme, "public")) return .public,
-                'r' => if (eql(u8, lexeme, "return")) return .@"return",
-                's' => {
-                    if (eql(u8, lexeme, "string")) return .string;
-                    if (eql(u8, lexeme, "symbol")) return .symbol;
-                    if (eql(u8, lexeme, "switch")) return .@"switch";
-                    if (eql(u8, lexeme, "static")) return .static;
-                    if (eql(u8, lexeme, "source")) return .source;
-                },
-                't' => if (eql(u8, lexeme, "typeof")) return .typeof,
-                'u' => if (eql(u8, lexeme, "unique")) return .unique,
-                else => {},
-            },
-            7 => switch (lexeme[0]) {
-                'a' => if (eql(u8, lexeme, "asserts")) return .asserts,
-                'b' => if (eql(u8, lexeme, "boolean")) return .boolean,
-                'd' => {
-                    if (eql(u8, lexeme, "default")) return .default;
-                    if (eql(u8, lexeme, "declare")) return .declare;
-                },
-                'e' => if (eql(u8, lexeme, "extends")) return .extends,
-                'f' => if (eql(u8, lexeme, "finally")) return .finally,
-                'p' => {
-                    if (eql(u8, lexeme, "private")) return .private;
-                    if (eql(u8, lexeme, "package")) return .package;
-                },
-                'r' => if (eql(u8, lexeme, "require")) return .require,
-                'u' => if (eql(u8, lexeme, "unknown")) return .unknown,
-                else => {},
-            },
-            8 => switch (lexeme[0]) {
-                'a' => {
-                    if (eql(u8, lexeme, "accessor")) return .accessor;
-                    if (eql(u8, lexeme, "abstract")) return .abstract;
-                },
-                'c' => if (eql(u8, lexeme, "continue")) return .@"continue",
-                'd' => if (eql(u8, lexeme, "debugger")) return .debugger,
-                'f' => if (eql(u8, lexeme, "function")) return .function,
-                'o' => if (eql(u8, lexeme, "override")) return .override,
-                'r' => if (eql(u8, lexeme, "readonly")) return .readonly,
-                else => {},
-            },
-            9 => switch (lexeme[0]) {
-                'i' => {
-                    if (eql(u8, lexeme, "interface")) return .interface;
-                    if (eql(u8, lexeme, "intrinsic")) return .intrinsic;
-                },
-                'n' => if (eql(u8, lexeme, "namespace")) return .namespace,
-                'p' => if (eql(u8, lexeme, "protected")) return .protected,
-                's' => if (eql(u8, lexeme, "satisfies")) return .satisfies,
-                'u' => if (eql(u8, lexeme, "undefined")) return .undefined,
-                else => {},
-            },
-            10 => switch (lexeme[0]) {
-                'i' => {
-                    if (eql(u8, lexeme, "instanceof")) return .instanceof;
-                    if (eql(u8, lexeme, "implements")) return .implements;
-                },
-                else => {},
-            },
-            11 => {
-                if (eql(u8, lexeme, "constructor")) return .constructor;
-            },
-            else => {},
+    const keyword_list = [_]struct { []const u8, TokenTag }{
+        .{ "if", .@"if" },          .{ "of", .of },             .{ "in", .in },
+        .{ "do", .do },             .{ "as", .as },             .{ "is", .is },
+        .{ "any", .any },           .{ "for", .@"for" },        .{ "get", .get },
+        .{ "let", .let },           .{ "new", .new },           .{ "out", .out },
+        .{ "set", .set },           .{ "try", .@"try" },        .{ "var", .@"var" },
+        .{ "case", .case },         .{ "this", .this },         .{ "else", .@"else" },
+        .{ "enum", .@"enum" },      .{ "void", .void },         .{ "with", .with },
+        .{ "null", .null_literal }, .{ "type", .type },         .{ "true", .true },
+        .{ "from", .from },         .{ "await", .await },       .{ "async", .async },
+        .{ "break", .@"break" },    .{ "const", .@"const" },    .{ "class", .class },
+        .{ "catch", .@"catch" },    .{ "defer", .@"defer" },    .{ "false", .false },
+        .{ "infer", .infer },       .{ "keyof", .keyof },       .{ "never", .never },
+        .{ "super", .super },       .{ "throw", .throw },       .{ "using", .using },
+        .{ "while", .@"while" },    .{ "yield", .yield },       .{ "assert", .assert },
+        .{ "bigint", .bigint },     .{ "delete", .delete },     .{ "export", .@"export" },
+        .{ "global", .global },     .{ "import", .import },     .{ "module", .module },
+        .{ "number", .number },     .{ "object", .object },     .{ "public", .public },
+        .{ "return", .@"return" },  .{ "string", .string },     .{ "symbol", .symbol },
+        .{ "switch", .@"switch" },  .{ "static", .static },     .{ "source", .source },
+        .{ "typeof", .typeof },     .{ "unique", .unique },     .{ "asserts", .asserts },
+        .{ "boolean", .boolean },   .{ "default", .default },   .{ "declare", .declare },
+        .{ "extends", .extends },   .{ "finally", .finally },   .{ "private", .private },
+        .{ "package", .package },   .{ "require", .require },   .{ "unknown", .unknown },
+        .{ "accessor", .accessor }, .{ "abstract", .abstract }, .{ "continue", .@"continue" },
+        .{ "debugger", .debugger }, .{ "function", .function }, .{ "override", .override },
+        .{ "readonly", .readonly }, .{ "interface", .interface },
+        .{ "intrinsic", .intrinsic },   .{ "namespace", .namespace },
+        .{ "protected", .protected },   .{ "satisfies", .satisfies },
+        .{ "undefined", .undefined },   .{ "instanceof", .instanceof },
+        .{ "implements", .implements }, .{ "constructor", .constructor },
+    };
+
+    const keyword_length_min = 2;
+    const keyword_length_max = 11;
+
+    const KeywordEntry = struct {
+        name: [keyword_length_max]u8,
+        len: u8,
+        tag: TokenTag,
+    };
+
+    // perfect hash over (first, second, last, length). the multipliers were
+    // found by offline search so that every keyword lands in a distinct slot
+    // of the 512-entry table, making the lookup a single probe
+    inline fn keywordHash(c0: u8, c1: u8, c_last: u8, length: usize) u32 {
+        const h = @as(u32, c0) * 56 + @as(u32, c1) * 97 +
+            @as(u32, c_last) * 108 + @as(u32, @intCast(length)) * 117;
+        return h & 511;
+    }
+
+    const keyword_table: [512]KeywordEntry = blk: {
+        @setEvalBranchQuota(20_000);
+        var t: [512]KeywordEntry = @splat(.{ .name = @splat(0), .len = 0, .tag = .identifier });
+        for (keyword_list) |kv| {
+            const name, const keyword_tag = kv;
+            std.debug.assert(name.len >= keyword_length_min);
+            std.debug.assert(name.len <= keyword_length_max);
+            const h = keywordHash(name[0], name[1], name[name.len - 1], name.len);
+            if (t[h].len != 0) @compileError("keyword perfect hash collision: " ++ name);
+            var entry: KeywordEntry = .{ .name = @splat(0), .len = name.len, .tag = keyword_tag };
+            @memcpy(entry.name[0..name.len], name);
+            t[h] = entry;
         }
-        return .identifier;
+        break :blk t;
+    };
+
+    fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
+        if (lexeme.len < keyword_length_min or lexeme.len > keyword_length_max) {
+            return .identifier;
+        }
+        const h = keywordHash(lexeme[0], lexeme[1], lexeme[lexeme.len - 1], lexeme.len);
+        const entry = &keyword_table[h];
+        if (entry.len != lexeme.len) return .identifier;
+        if (!std.mem.eql(u8, entry.name[0..lexeme.len], lexeme)) return .identifier;
+        return entry.tag;
     }
 
     fn scanNumber(self: *Lexer) LexicalError!Token {
