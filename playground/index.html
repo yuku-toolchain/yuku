@@ -13,6 +13,7 @@
         "imports": {
           "@yuku-parser/wasm": "https://esm.sh/@yuku-parser/wasm",
           "@yuku-codegen/wasm": "https://esm.sh/@yuku-codegen/wasm",
+          "@yuku-analyzer/wasm": "https://esm.sh/@yuku-analyzer/wasm",
           "yuku-ast": "https://esm.sh/yuku-ast"
         }
       }
@@ -52,7 +53,15 @@
         <div id="code" class="view editor" spellcheck="false"></div>
       </section>
       <section class="pane">
-        <div class="pane-head">ast</div>
+        <div class="pane-head">
+          <span id="paneTitle">ast</span>
+          <div class="opts">
+            <select id="view" title="view">
+              <option value="ast">ast</option>
+              <option value="semantics">semantics</option>
+            </select>
+          </div>
+        </div>
         <div id="ast" class="view tree"></div>
       </section>
       <section class="pane">

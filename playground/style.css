@@ -204,7 +204,51 @@ main {
 }
 
 ::highlight(yuku-src) {
-  background-color: var(--sel);
+  background-color: color-mix(in srgb, var(--sel) 80%, transparent);
+}
+
+::highlight(yuku-decl) {
+  background-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  text-decoration: underline 1.5px var(--accent);
+}
+
+::highlight(yuku-ref) {
+  background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+  text-decoration: underline 1px dashed color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+.sem-sym {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 4px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.sem-sym:hover {
+  background: color-mix(in srgb, var(--sel) 40%, transparent);
+}
+
+.sem-site {
+  padding-left: 1.1em;
+}
+
+.sem-name {
+  color: var(--fg);
+}
+
+.sem-flag {
+  font-size: 10px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--dim);
+}
+
+.sem-err {
+  color: var(--dim);
+  padding: 12px;
 }
 
 .tree {

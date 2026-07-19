@@ -1,5 +1,6 @@
 import { parse } from "@yuku-parser/wasm";
 import { generate } from "@yuku-codegen/wasm";
+import { analyze, SymbolFlags } from "@yuku-analyzer/wasm";
 import { CodeJar } from "https://esm.sh/codejar@4.2.0";
 import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
 import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
@@ -113,6 +114,188 @@ function value_(key, value, depth, path) {
   return row(key, leafSpan(value));
 }
 
+const FLAG_BADGES = [
+  ["Const", "const"],
+  ["BlockScopedVariable", "let"],
+  ["FunctionScopedVariable", "var"],
+  ["Function", "function"],
+  ["Class", "class"],
+  ["Parameter", "param"],
+  ["CatchVariable", "catch"],
+  ["ValueImport", "import"],
+  ["TypeImport", "type-import"],
+  ["Interface", "interface"],
+  ["TypeAlias", "type"],
+  ["TypeParameter", "type-param"],
+  ["RegularEnum", "enum"],
+  ["ConstEnum", "const-enum"],
+  ["EnumMember", "member"],
+  ["NamespaceModule", "namespace"],
+  ["Exported", "exported"],
+  ["Default", "default"],
+];
+
+function badges(sym) {
+  const out = [];
+  for (const [flag, label] of FLAG_BADGES) if (sym.has(SymbolFlags[flag])) out.push(label);
+  const i = out.indexOf("let");
+  if (i >= 0 && out.includes("const")) out.splice(i, 1);
+  return out;
+}
+
+function spansOf(sym) {
+  return {
+    decl: sym.declarations.map((d) => [d.start, d.end]),
+    refs: sym.references.map((r) => [r.node.start, r.node.end]),
+  };
+}
+
+function siteRow(label, badgeList, start, end, isDecl) {
+  const span = [[start, end]];
+  const r = el("div", "sem-sym sem-site");
+  r.append(el("span", "ast-meta", label));
+  for (const b of badgeList) r.append(el("span", "sem-flag", b));
+  r.append(el("span", "ast-span", `${start}:${end}`));
+  r.__spans = { decl: isDecl ? span : [], refs: isDecl ? [] : span };
+  r.__focus = [start, end];
+  return r;
+}
+
+function refBadges(ref) {
+  const out = [ref.isWrite ? "write" : "read"];
+  if (ref.space !== "value") out.push(ref.space);
+  if (ref.inTypePosition && ref.space === "value") out.push("type-pos");
+  return out;
+}
+
+// a symbol (or unresolved-name group): summary hover lights every site
+// at once, the expanded per-site rows light one at a time
+function symNode(name, badgeList, spans, sites, path) {
+  const details = el("details");
+  details.__path = path;
+  details.open = openState.get(path) ?? false;
+  const summary = el("summary", "sem-sym");
+  summary.append(el("span", "sem-name", name));
+  for (const b of badgeList) summary.append(el("span", "sem-flag", b));
+  summary.append(el("span", "ast-meta", `${spans.refs.length} ref${spans.refs.length === 1 ? "" : "s"}`));
+  summary.__spans = spans;
+  summary.__focus = spans.decl[0] ?? spans.refs[0];
+  details.append(summary);
+  const body = el("div", "ast-body");
+  for (const row of sites) body.append(row);
+  details.append(body);
+  return details;
+}
+
+function symSites(sym) {
+  return [
+    ...sym.declarations.map((d) => siteRow("decl", [], d.start, d.end, true)),
+    ...sym.references.map((r) => siteRow("ref", refBadges(r), r.node.start, r.node.end, false)),
+  ];
+}
+
+function scopeNode(scope, kids, depth, path) {
+  const details = el("details");
+  details.__path = path;
+  details.open = openState.get(path) ?? depth < OPEN_DEPTH;
+  const summary = el("summary");
+  summary.append(el("span", "ast-type", scope.kind));
+  if (scope.strict) summary.append(el("span", "sem-flag", "strict"));
+  const n = scope.node;
+  if (n && typeof n.start === "number") {
+    summary.append(el("span", "ast-span", ` ${n.start}:${n.end}`));
+    summary.dataset.start = n.start;
+    summary.dataset.end = n.end;
+  }
+  details.append(summary);
+  const body = el("div", "ast-body");
+  for (const sym of scope.bindings) {
+    body.append(symNode(sym.name, badges(sym), spansOf(sym), symSites(sym), `${path}/s${sym.id}`));
+  }
+  for (const child of kids[scope.id]) body.append(scopeNode(child, kids, depth + 1, `${path}/${child.id}`));
+  details.append(body);
+  return details;
+}
+
+function section(root, title, count, path) {
+  const details = el("details");
+  details.__path = path;
+  details.open = openState.get(path) ?? true;
+  const summary = el("summary");
+  summary.append(el("span", "ast-type", title));
+  summary.append(el("span", "ast-meta", ` [${count}]`));
+  details.append(summary);
+  const body = el("div", "ast-body");
+  details.append(body);
+  root.append(details);
+  return body;
+}
+
+function recordRow(label, badgeList, specifier, spans, focus) {
+  const r = el("div", "sem-sym");
+  r.append(el("span", "sem-name", label));
+  for (const b of badgeList) r.append(el("span", "sem-flag", b));
+  if (specifier !== null) r.append(el("span", "ast-str", JSON.stringify(specifier)));
+  r.__spans = spans;
+  r.__focus = focus;
+  return r;
+}
+
+function importRow(imp) {
+  const badgeList = [];
+  if (imp.isNamespace) badgeList.push("namespace");
+  if (imp.isSideEffect) badgeList.push("side-effect");
+  if (imp.typeOnly) badgeList.push("type-only");
+  if (imp.phase) badgeList.push(imp.phase);
+  let label = imp.local ? imp.local.name : "(side effect)";
+  if (imp.name && imp.local && imp.name !== imp.local.name) label += ` ← ${imp.name}`;
+  const spans = imp.local ? spansOf(imp.local) : { decl: [[imp.node.start, imp.node.end]], refs: [] };
+  return recordRow(label, badgeList, imp.specifier, spans, [imp.node.start, imp.node.end]);
+}
+
+function exportRow(ex) {
+  const badgeList = [];
+  if (ex.isStar) badgeList.push("star");
+  if (ex.isNamespaceReexport && !ex.isStar) badgeList.push("namespace");
+  if (ex.isExportEquals) badgeList.push("export=");
+  if (ex.typeOnly) badgeList.push("type-only");
+  let label = ex.name ?? (ex.isExportEquals ? "export =" : "*");
+  if (ex.globalName) label = `as namespace ${ex.globalName}`;
+  if (ex.fromName && ex.fromName !== ex.name) label += ` ← ${ex.fromName}`;
+  const spans = ex.local ? spansOf(ex.local) : { decl: [[ex.node.start, ex.node.end]], refs: [] };
+  return recordRow(label, badgeList, ex.specifier, spans, [ex.node.start, ex.node.end]);
+}
+
+function semTree(m) {
+  const kids = m.scopes.map(() => []);
+  for (const s of m.scopes) if (s.parent) kids[s.parent.id].push(s);
+  const root = el("div");
+  root.append(scopeNode(m.rootScope, kids, 0, "sem"));
+
+  if (m.imports.length) {
+    const body = section(root, "imports", m.imports.length, "sem/imports");
+    for (const imp of m.imports) body.append(importRow(imp));
+  }
+  if (m.exports.length) {
+    const body = section(root, "exports", m.exports.length, "sem/exports");
+    for (const ex of m.exports) body.append(exportRow(ex));
+  }
+  if (m.unresolvedReferences.length) {
+    const body = section(root, "unresolved", m.unresolvedReferences.length, "sem/unresolved");
+    const byName = new Map();
+    for (const r of m.unresolvedReferences) {
+      if (!byName.has(r.name)) byName.set(r.name, []);
+      byName.get(r.name).push(r);
+    }
+    for (const [name, list] of byName) {
+      const spans = { decl: [], refs: list.map((r) => [r.node.start, r.node.end]) };
+      const sites = list.map((r) => siteRow("ref", refBadges(r), r.node.start, r.node.end, false));
+      body.append(symNode(name, ["global"], spans, sites, `sem/unresolved/${name}`));
+    }
+  }
+  return root;
+}
+
 function options() {
   return {
     lang: $("lang").value,
@@ -150,7 +333,16 @@ function render() {
   const t1 = performance.now();
 
   const astScroll = astView.scrollTop;
-  astView.replaceChildren(value_(null, result.program, 0, ""));
+  $("paneTitle").textContent = $("view").value;
+  if ($("view").value === "semantics") {
+    try {
+      astView.replaceChildren(semTree(analyze(jar.toString(), options())));
+    } catch (e) {
+      astView.replaceChildren(el("div", "sem-err", String(e)));
+    }
+  } else {
+    astView.replaceChildren(value_(null, result.program, 0, ""));
+  }
   astView.scrollTop = astScroll;
 
   const t2 = performance.now();
@@ -186,6 +378,10 @@ function render() {
 const HAS_HL = typeof Highlight !== "undefined" && typeof CSS !== "undefined" && !!CSS.highlights;
 const srcHighlight = HAS_HL ? new Highlight() : null;
 if (srcHighlight) CSS.highlights.set("yuku-src", srcHighlight);
+const refHighlight = HAS_HL ? new Highlight() : null;
+if (refHighlight) CSS.highlights.set("yuku-ref", refHighlight);
+const declHighlight = HAS_HL ? new Highlight() : null;
+if (declHighlight) CSS.highlights.set("yuku-decl", declHighlight);
 
 let suppressCaret = false;
 
@@ -226,13 +422,28 @@ function caretOffset() {
 
 function highlightCode(start, end) {
   if (!srcHighlight) return;
-  srcHighlight.clear();
+  clearCodeHighlight();
   const range = rangeFromOffsets(codeView, start, end);
   if (range) srcHighlight.add(range);
 }
 
 function clearCodeHighlight() {
   if (srcHighlight) srcHighlight.clear();
+  if (refHighlight) refHighlight.clear();
+  if (declHighlight) declHighlight.clear();
+}
+
+function highlightSpans({ decl, refs }) {
+  if (!srcHighlight) return;
+  clearCodeHighlight();
+  for (const [s, e] of decl) {
+    const r = rangeFromOffsets(codeView, s, e);
+    if (r) declHighlight.add(r);
+  }
+  for (const [s, e] of refs) {
+    const r = rangeFromOffsets(codeView, s, e);
+    if (r) refHighlight.add(r);
+  }
 }
 
 function selectCode(start, end) {
@@ -248,17 +459,23 @@ function selectCode(start, end) {
   });
 }
 
-function scrollCodeIntoView(offset) {
-  const range = rangeFromOffsets(codeView, offset, offset);
-  let node = range && range.startContainer;
-  if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-  if (node && node.scrollIntoView) node.scrollIntoView({ block: "nearest", inline: "nearest" });
+function scrollCodeIntoView(start, end) {
+  const range = rangeFromOffsets(codeView, start, end);
+  if (!range) return;
+  const rect = range.getBoundingClientRect();
+  const view = codeView.getBoundingClientRect();
+  if (rect.top < view.top || rect.bottom > view.bottom) {
+    codeView.scrollTop += rect.top - view.top - codeView.clientHeight / 2;
+  }
+  if (rect.left < view.left || rect.right > view.right) {
+    codeView.scrollLeft += rect.left - view.left - codeView.clientWidth / 2;
+  }
 }
 
 function focusCode(start, end, scroll) {
   if (srcHighlight) highlightCode(start, end);
   else if (scroll) selectCode(start, end);
-  if (scroll) scrollCodeIntoView(start);
+  if (scroll) scrollCodeIntoView(start, end);
 }
 
 let focused = null;
@@ -341,21 +558,27 @@ astView.addEventListener(
 );
 
 astView.addEventListener("mouseover", (e) => {
+  const sym = e.target.closest(".sem-sym");
+  if (sym && sym.__spans) return highlightSpans(sym.__spans);
   const summary = e.target.closest("summary");
-  if (!summary || !astView.contains(summary) || summary.dataset.start === undefined) return;
-  highlightCode(+summary.dataset.start, +summary.dataset.end);
+  if (summary && astView.contains(summary) && summary.dataset.start !== undefined) {
+    return highlightCode(+summary.dataset.start, +summary.dataset.end);
+  }
+  clearCodeHighlight();
 });
 
 astView.addEventListener("mouseleave", clearCodeHighlight);
 
 astView.addEventListener("click", (e) => {
+  const sym = e.target.closest(".sem-sym");
+  if (sym && sym.__focus) return focusCode(sym.__focus[0], sym.__focus[1], true);
   const summary = e.target.closest("summary");
   if (!summary || summary.dataset.start === undefined) return;
   focusCode(+summary.dataset.start, +summary.dataset.end, true);
 });
 
 const STATE_KEY = "yuku-state";
-const CONTROLS = ["lang", "sourceType", "preserveParens", "allowReturnOutsideFunction", "semanticErrors", "attachComments", "strip", "minify", "format", "quotes", "comments", "indent"];
+const CONTROLS = ["lang", "sourceType", "preserveParens", "allowReturnOutsideFunction", "semanticErrors", "attachComments", "strip", "minify", "format", "quotes", "comments", "indent", "view"];
 
 function snapshot() {
   const s = { code: jar.toString(), theme: document.documentElement.dataset.theme };

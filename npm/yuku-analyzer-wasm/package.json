@@ -1,0 +1,38 @@
+{
+  "name": "@yuku-analyzer/wasm",
+  "version": "0.6.12",
+  "description": "Full JavaScript/TypeScript semantic analysis, compiled to WebAssembly",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "analyzer.js",
+    "module.js",
+    "walk.js",
+    "binding.js",
+    "decode.js",
+    "yuku-analyzer.wasm"
+  ],
+  "keywords": [
+    "analyzer",
+    "ast",
+    "javascript",
+    "references",
+    "scope",
+    "semantic",
+    "symbols",
+    "typescript",
+    "wasm"
+  ],
+  "dependencies": {
+    "@yuku-toolchain/types": "workspace:*",
+    "yuku-ast": "workspace:*"
+  }
+}
