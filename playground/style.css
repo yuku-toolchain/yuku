@@ -298,6 +298,10 @@ main {
   background: var(--sel);
 }
 
+.tree .sem-current {
+  background: var(--sel);
+}
+
 .tree .ast-body {
   margin-left: 0.65em;
   padding-left: 0.95em;

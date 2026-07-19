@@ -68,6 +68,7 @@ function row(key, valueNode) {
 
 let astNodes = [];
 let astDetails = [];
+let semTargets = [];
 const openState = new Map();
 
 function branch(key, value, depth, path) {
@@ -182,7 +183,10 @@ function symNode(name, badgeList, spans, sites, path) {
   summary.__focus = spans.decl[0] ?? spans.refs[0];
   details.append(summary);
   const body = el("div", "ast-body");
-  for (const row of sites) body.append(row);
+  for (const row of sites) {
+    body.append(row);
+    semTargets.push({ start: row.__focus[0], end: row.__focus[1], row, spans });
+  }
   details.append(body);
   return details;
 }
@@ -206,6 +210,7 @@ function scopeNode(scope, kids, depth, path) {
     summary.append(el("span", "ast-span", ` ${n.start}:${n.end}`));
     summary.dataset.start = n.start;
     summary.dataset.end = n.end;
+    semTargets.push({ start: n.start, end: n.end, row: summary, spans: null });
   }
   details.append(summary);
   const body = el("div", "ast-body");
@@ -238,6 +243,7 @@ function recordRow(label, badgeList, specifier, spans, focus) {
   if (specifier !== null) r.append(el("span", "ast-str", JSON.stringify(specifier)));
   r.__spans = spans;
   r.__focus = focus;
+  semTargets.push({ start: focus[0], end: focus[1], row: r, spans });
   return r;
 }
 
@@ -315,8 +321,11 @@ function setStatus(text, kind) {
 function render() {
   astNodes = [];
   astDetails = [];
+  semTargets = [];
   focused = null;
   lastHit = null;
+  semHit = null;
+  activeSpans = null;
   clearCodeHighlight();
 
   let result;
@@ -371,7 +380,7 @@ function render() {
     setStatus(`ok · ${times}`, "ok");
   }
 
-  mapCaretToAst(false, false);
+  mapCaret(false, false);
   persist();
 }
 
@@ -444,6 +453,14 @@ function highlightSpans({ decl, refs }) {
     const r = rangeFromOffsets(codeView, s, e);
     if (r) refHighlight.add(r);
   }
+}
+
+// spans of the selected symbol, restored after hover previews
+let activeSpans = null;
+
+function restoreActive() {
+  if (activeSpans) highlightSpans(activeSpans);
+  else clearCodeHighlight();
 }
 
 function selectCode(start, end) {
@@ -540,13 +557,63 @@ function mapCaretToAst(scroll, collapseRest) {
   else removeHit();
 }
 
+let semHit = null;
+
+function markSem(row) {
+  if (semHit === row) return;
+  if (semHit) semHit.classList.remove("sem-current");
+  semHit = row;
+  row.classList.add("sem-current");
+}
+
+function clearSem() {
+  if (semHit) {
+    semHit.classList.remove("sem-current");
+    semHit = null;
+  }
+}
+
+// smallest symbol site, import/export record, or scope containing the offset
+function semTargetAt(offset) {
+  let best = null;
+  for (const t of semTargets) {
+    if (offset >= t.start && offset <= t.end) {
+      if (!best || t.end - t.start <= best.end - best.start) best = t;
+    }
+  }
+  return best;
+}
+
+function mapCaretToSem(scroll) {
+  if (suppressCaret) return;
+  const offset = caretOffset();
+  if (offset == null) return;
+  const hit = semTargetAt(offset);
+  if (!hit) {
+    activeSpans = null;
+    clearCodeHighlight();
+    clearSem();
+    return;
+  }
+  activeSpans = hit.spans;
+  restoreActive();
+  markSem(hit.row);
+  reveal(hit.row);
+  if (scroll) hit.row.scrollIntoView({ block: "nearest" });
+}
+
+function mapCaret(scroll, collapseRest) {
+  if ($("view").value === "semantics") mapCaretToSem(scroll);
+  else mapCaretToAst(scroll, collapseRest);
+}
+
 let caretFrame;
 document.addEventListener("selectionchange", () => {
   cancelAnimationFrame(caretFrame);
-  caretFrame = requestAnimationFrame(() => mapCaretToAst(true, false));
+  caretFrame = requestAnimationFrame(() => mapCaret(true, false));
 });
 
-codeView.addEventListener("click", () => mapCaretToAst(true, true));
+codeView.addEventListener("click", () => mapCaret(true, true));
 codeView.addEventListener("blur", removeHit);
 
 astView.addEventListener(
@@ -564,14 +631,23 @@ astView.addEventListener("mouseover", (e) => {
   if (summary && astView.contains(summary) && summary.dataset.start !== undefined) {
     return highlightCode(+summary.dataset.start, +summary.dataset.end);
   }
-  clearCodeHighlight();
+  restoreActive();
 });
 
-astView.addEventListener("mouseleave", clearCodeHighlight);
+astView.addEventListener("mouseleave", restoreActive);
 
 astView.addEventListener("click", (e) => {
   const sym = e.target.closest(".sem-sym");
-  if (sym && sym.__focus) return focusCode(sym.__focus[0], sym.__focus[1], true);
+  if (sym && sym.__spans) {
+    activeSpans = sym.__spans;
+    markSem(sym);
+    if (srcHighlight) highlightSpans(activeSpans);
+    if (sym.__focus) {
+      if (!srcHighlight) selectCode(sym.__focus[0], sym.__focus[1]);
+      scrollCodeIntoView(sym.__focus[0], sym.__focus[1]);
+    }
+    return;
+  }
   const summary = e.target.closest("summary");
   if (!summary || summary.dataset.start === undefined) return;
   focusCode(+summary.dataset.start, +summary.dataset.end, true);
