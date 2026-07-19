@@ -202,7 +202,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(main_exe);
 
     const run_cmd = b.addRunArtifact(main_exe);
-    const run_step = b.step("run", "Run the src/main.zig parser benchmark");
+    const run_step = b.step("run", "Run the src/main.zig toolchain playground");
     run_step.dependOn(&run_cmd.step);
 
     const ast_transfer_module = b.createModule(.{
