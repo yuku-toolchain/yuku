@@ -108,6 +108,19 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 - **Let the CPU be a sprinter** doing the 100m. Be predictable. Don't force it to change lanes. Give it large enough chunks of work. This is batching, again.
 - **Be explicit. Minimize dependence on the compiler.** Extract hot loops into stand-alone functions with primitive arguments (no `self`). The compiler doesn't need to prove it can cache fields in registers, and a human reader can spot redundant computations more easily.
 
+### Hot Loops
+
+The data plane is a small amount of code executed an enormous number of times. One cycle saved there is a cycle saved millions of times over. Treat cycles in hot loops as the budget they are:
+
+- **Early-exit before expensive work.** Order checks by `cost × probability`: the cheapest test that rejects the most candidates runs first. A one-cycle compare that skips a function call or a memory load in the common case is the highest-leverage instruction you can write.
+- **Make the common case straight-line.** Structure branches so the frequent path falls through without jumping and the rare path jumps away. Branch predictors reward monotony. Move cold paths (errors, rare escapes, slow fallbacks) into separate, out-of-line functions so they stop polluting the instruction cache of the hot path.
+- **Replace branch chains with table lookups.** A 256-entry lookup table classifies a byte in one load with zero mispredictions, where an `if`/`else` chain costs a data-dependent branch per arm. Precompute at `comptime` whenever inputs are enumerable.
+- **Hoist invariants and cache repeated loads.** Anything the loop does not change (lengths, flags, field loads through pointers) belongs in a local before the loop. Do not make the reader or the compiler re-prove invariance on every iteration.
+- **Never allocate in a hot loop.** Allocation is the control plane. Reserve, reuse, or batch before entering the loop.
+- **Keep hot data small and dense.** Smaller integers, packed structs, and struct-of-arrays layouts turn cache misses into cache hits. A cache miss costs hundreds of cycles and dwarfs any ALU cleverness.
+- **Batch validation at the boundary.** Validate once before the loop so the loop body can assume, with an assertion, rather than re-check.
+- **Measure, then trust the measurement.** Optimize against a stable benchmark: warmed up, repeated, compared by median, run in release mode on a quiet machine. Record the baseline before touching anything, and keep every change that survives only if the numbers say so. Profile to find where the cycles go rather than guessing.
+
 ## Developer Experience
 
 > "There are only two hard things in Computer Science: cache invalidation, naming things, and off-by-one errors."
