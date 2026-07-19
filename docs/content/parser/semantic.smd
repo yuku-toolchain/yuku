@@ -5,9 +5,9 @@
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",
 ---
-Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names, so a type `T` and a value `T` never capture each other. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
+Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
 
-Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs. A formatter, for example, only needs the AST and should not pay for scope resolution.
+Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs.
 
 ## [Analyzing a Tree]($section.id('analyzing-a-tree'))
 

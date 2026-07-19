@@ -874,9 +874,9 @@ pub const AttachedComment = struct {
 
 Source: https://yuku.fyi/parser/semantic/
 
-Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names, so a type `T` and a value `T` never capture each other. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
+Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
 
-Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs. A formatter, for example, only needs the AST and should not pay for scope resolution.
+Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs.
 
 ## Analyzing a Tree
 
@@ -1114,6 +1114,8 @@ outer scope          (x lives here)
 Without this, `const foo = 1` inside the body would conflict with the expression name. Same pattern for `const C = class D { ... }` per section 15.7.14.
 
 **`ts_module` is its own scope kind, not a block.** TypeScript namespace bodies act as a `var`-hoist target, so a `var` inside a namespace stays inside the namespace instead of escaping to the surrounding scope. That difference is encoded as a separate `Scope.Kind` so `Kind.isHoistTarget()` returns true for it.
+
+**`function_body` splits a function in two when its parameter list contains expressions.** Per FunctionDeclarationInstantiation (section 10.2.11, step 28), body `var`s then live in a separate environment so closures created in parameter defaults cannot see them: in `function f(a = () => x) { var x }` the default's `x` resolves to the outer scope. Plain parameter lists keep the single `function` scope.
 
 **Decorators evaluate in the scope enclosing the class.** Per the decorator proposal, neither the class's type parameters nor a class expression's own name are visible inside a decorator expression. `scopeOf` on nodes inside a decorator reflects that, even though the decorator sits inside the class syntactically.
 
@@ -2058,13 +2060,13 @@ npm install yuku-codegen
 
 ```js
 import { parse } from "yuku-parser";
-import { print } from "yuku-codegen";
+import { generate } from "yuku-codegen";
 
 const { program } = parse("const x = 1 + 2;");
-const { code } = print(program);
+const { code } = generate(program);
 ```
 
-`print`, `strip`, and `minify` take the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMaps: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). Transformations are independent flags that compose freely, e.g. `generate(program, { strip: true, minify: true })`. For source maps, pass the original source text via `sourceMap: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
 
@@ -2082,14 +2084,14 @@ pub fn main() !void {
     var tree = try parser.parse(allocator, "const x = 1 + 2;", .{});
     defer tree.deinit();
 
-    const result = try parser.codegen.print(allocator, &tree, .{});
+    const result = try parser.codegen.generate(allocator, &tree, .{});
     defer result.deinit(allocator);
 
     std.debug.print("{s}", .{result.code});
 }
 ```
 
-`print` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
+`generate` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
 
 ## Result
 
@@ -2104,10 +2106,10 @@ pub const Result = struct {
 | Field    | Type           | Description                                         |
 | -------- | -------------- | --------------------------------------------------- |
 | `code`   | `[]const u8`   | Generated source                                    |
-| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean print  |
-| `map`    | `?SourceMap`   | Source Map V3 when `source_maps` was set, else null |
+| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean run    |
+| `map`    | `?SourceMap`   | Source Map V3 when `source_map` was set, else null  |
 
-The only return-value error from `print` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain `print`, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
+The only return-value error from `generate` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain run, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
 
 A `Diagnostic` carries.
 
@@ -2122,35 +2124,41 @@ pub const Diagnostic = struct {
 ## Options
 
 ```zig
-const result = try parser.codegen.print(allocator, &tree, .{
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .strip = false,
+    .minify = false,
     .format = .pretty,
     .indent = 2,
     .quotes = .preserve,
     .comments = .some,
-    .source_maps = null,
+    .source_map = null,
 });
 ```
 
-| Field         | Type                | Default   | Description                                                |
-| ------------- | ------------------- | --------- | ---------------------------------------------------------- |
-| `format`      | `Format`            | `.pretty` | `.pretty` (indented) or `.compact` (no extra whitespace)   |
-| `indent`      | `u8`                | `2`       | Spaces per level when `format == .pretty`                  |
-| `quotes`      | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style, while `.double` / `.single` force one (content always re-escaped) |
-| `comments`    | `Comments`          | `.some`   | Comment passthrough filter. See [Comments](#comments).     |
-| `source_maps` | `?SourceMapOptions` | `null`    | Set to emit a Source Map V3 alongside the code             |
+| Field        | Type                | Default     | Description                                                |
+| ------------ | ------------------- | ----------- | ---------------------------------------------------------- |
+| `strip`      | `bool`              | `false`     | Drop TypeScript-only syntax. See [Type stripping](#type-stripping). |
+| `minify`     | `bool`              | `false`     | Apply size-reducing syntax rewrites. See [Minification](#minification). |
+| `format`     | `Format`            | `.pretty`   | `.pretty` (indented) or `.compact` (no extra whitespace)   |
+| `indent`     | `u8`                | `2`         | Spaces per level in pretty format                          |
+| `quotes`     | `Quotes`            | `.preserve` | `.preserve` keeps each string's source quote style, `.double` / `.single` force one (content always re-escaped), `.shortest` picks the quote with fewer escapes |
+| `comments`   | `Comments`          | `.some`     | Comment passthrough filter. See [Comments](#comments).     |
+| `source_map` | `?SourceMapOptions` | `null`      | Set to emit a Source Map V3 alongside the code             |
+
+Every transformation is an independent flag, so they compose freely, e.g. `.strip = true` together with `.minify = .all`.
 
 `Format` controls only discretionary whitespace. Grammar-required separators (semicolons, commas, parentheses) are always emitted regardless of mode.
 
 ## Source maps
 
-Pass the original `source` to `source_maps` to emit a Source Map V3 alongside the generated code. Without a `source` there is nothing to map back to, so no map is produced.
+Pass the original `source` to `source_map` to emit a Source Map V3 alongside the generated code. Without a `source` there is nothing to map back to, so no map is produced.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
 defer tree.deinit();
 
-const result = try parser.codegen.print(allocator, &tree, .{
-    .source_maps = .{
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .source_map = .{
         .source = source,
         .file = "out.js",
         .source_file_name = "in.js",
@@ -2227,7 +2235,7 @@ Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same op
 var tree = try parser.parse(allocator, source, .{ .lang = .ts });
 defer tree.deinit();
 
-const result = try parser.codegen.strip(allocator, &tree, .{});
+const result = try parser.codegen.generate(allocator, &tree, .{ .strip = true });
 defer result.deinit(allocator);
 
 std.debug.print("{s}", .{result.code});
@@ -2249,10 +2257,14 @@ All other TypeScript syntax (types, interfaces, type aliases, generics, type ass
 
 ## Minification
 
-`minify` applies size-reducing rewrites at print time.
+`minify` applies size-reducing syntax rewrites. Combine with `format` and `quotes` for maximum minification.
 
 ```zig
-const result = try parser.codegen.minify(allocator, &tree, .{ .format = .compact });
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .minify = true,
+    .format = .compact,
+    .quotes = .shortest,
+});
 defer result.deinit(allocator);
 ```
 
@@ -2264,8 +2276,6 @@ The substitutions.
 - numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe
-
-Combine with `format = .compact` for full minification.
 
 # Analyzer
 
@@ -2281,17 +2291,44 @@ Source: https://yuku.fyi/analyzer/
 npm install yuku-analyzer
 ```
 
+For one file, `analyze` returns the full per-file semantics in a call:
+
 ```js
-import { Analyzer } from "yuku-analyzer";
+import { analyze } from "yuku-analyzer";
 
-const analyzer = new Analyzer();
-analyzer.addFile("config.ts", `export const flags = { debug: true };`);
-const app = analyzer.addFile("app.ts", `import { flags } from "./config.ts";`);
+const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lang: "ts" });
 
-const def = app.rootScope.find("flags").definition();
+module.walk({
+  Identifier(node, ctx) {
+    console.log(node.name, ctx.scope.kind, ctx.symbol, ctx.reference);
+  },
+});
 
-def.module.path; // "config.ts"
-def.symbol.name; // "flags"
+module.rootScope.find("double").references.length; // 1
+```
+
+For a project, `Analyzer` adds files and links them:
+
+```js
+import { Analyzer, SymbolFlags } from "yuku-analyzer";
+
+const a = new Analyzer();
+a.addFile("math.ts", `export const add = (x: number, y: number) => x + y;`);
+a.addFile("app.ts", `import { add } from "./math.ts"; add(1, 2);`);
+a.addFile("ui.ts", `import { add } from "./math.ts"; add(3, 4);`);
+
+const app = a.module("app.ts");
+
+const add = app.rootScope.find("add");
+add.has(SymbolFlags.Import); // true
+
+const def = add.definition();
+def.module.path; // "math.ts"
+def.symbol.has(SymbolFlags.Const); // true
+
+a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
+
+// and many more
 ```
 
 That is real cross-file resolution, not a string search. It follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
@@ -2397,7 +2434,7 @@ Every lexical environment in the file, as a tree.
 const scope = module.scopes[3];
 
 scope.kind;        // "global" | "module" | "function" | "block" | "class"
-                   // | "staticBlock" | "expressionName" | "tsModule"
+                   // | "staticBlock" | "expressionName" | "tsModule" | "functionBody"
 scope.node;        // the AST node that created the scope
 scope.parent;      // parent Scope, or null at the global scope
 scope.strict;      // strict mode, propagated per spec
@@ -2409,7 +2446,9 @@ scope.contains(other);    // is `other` this scope or a descendant?
 for (const s of scope.ancestors()) { /* this scope up to global */ }
 ```
 
-The scope tree is the native binder's exact output, so the spec subtleties are already right.
+Most kinds map one to one onto the construct that created them. `block` covers every lexical environment: braced blocks, loop heads, catch clauses, the case block a `switch` shares across its cases (its discriminant sits outside, in the enclosing scope), and TypeScript enum bodies, where members are lexically visible (`enum E { a, b = a }` resolves `a` to the member). `functionBody` exists only for functions whose parameter list contains expressions: the spec gives such bodies a separate `var` environment, so in `function f(a = () => x) { var x = 2 }` the default's closure resolves `x` to the outer scope, not the body.
+
+The scope tree is the native binder's exact output, and resolution applies the rules the spec and TypeScript layer on top of it: `arguments` in a value position never resolves past the enclosing non-arrow function, where the implicit arguments object shadows any outer binding of that name, `infer` variables are visible only in their conditional's true branch, and class type parameters are out of scope in static members and computed member keys.
 
 ## Symbols
 
@@ -2425,7 +2464,7 @@ sym.references;   // every resolved use site in this module
 sym.id;           // stable index into module.symbols
 ```
 
-One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need.
+One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
 
 ### Flags
 
@@ -2507,7 +2546,7 @@ module.resolve("T", someScope, "type");   // or in another space ("any" is by na
 Node identity is what makes the analyzer a refactoring engine, not just a query layer. The `node` on every symbol and reference is the same object you reach by walking `module.ast` (`===` holds), so a transform is a plain assignment, and [`yuku-codegen`](https://yuku.fyi/parser/codegen/) prints the mutated tree back to source.
 
 ```js
-import { print } from "yuku-codegen";
+import { generate } from "yuku-codegen";
 
 const m = analyzer.addFile("util.ts", `const tmp = load();\nexport const data = tmp.value + tmp.size;`);
 const tmp = m.rootScope.find("tmp");
@@ -2516,7 +2555,7 @@ tmp.declarations[0].name = "raw"; // rename the binding
 for (const ref of tmp.references) ref.node.name = "raw"; // and every resolved use
 
 // across files, analyzer.referencesOf(symbol) returns these same live nodes for every use
-print(m.ast).code;
+generate(m.ast).code;
 // const raw = load();
 // export const data = raw.value + raw.size;
 ```
@@ -2552,6 +2591,8 @@ module.walk({
 ```
 
 Per node, the order is catch-all `enter`, typed enter, children, typed leave, catch-all `leave`. Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`.
+
+`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Reach for it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
 
 ### The context
 
@@ -2811,9 +2852,9 @@ The parser is validated against a dedicated repository, [parser-test-suite](http
 
 - [tc39/test262](https://github.com/tc39/test262), the official ECMAScript conformance suite, covering language grammar, built-ins, Annex B, Intl, and staging proposals.
 - [microsoft/TypeScript](https://github.com/microsoft/TypeScript) compiler test fixtures.
-- [babel](https://github.com/babel/babel) fixtures for JSX.
+- [babel](https://github.com/babel/babel) parser test fixtures, across JavaScript, TypeScript, and JSX.
 
-The suite holds over 50,000 tests, and it grows as upstream grows. As a rough shape, JavaScript makes up the bulk with around 45,000 cases, TypeScript adds around 8,000, and JSX contributes a smaller set of focused cases.
+The suite holds over 55,000 tests, and it grows as upstream grows. As a rough shape, JavaScript makes up the bulk with around 48,000 cases, TypeScript adds around 9,000, and JSX contributes a smaller set of focused cases.
 
 Each language suite splits into three categories.
 
@@ -2841,7 +2882,7 @@ The expected ASTs are not produced by Yuku. Snapshots are generated with an inde
 
 ## Synced with the spec, daily
 
-Test262 and the TypeScript compiler are moving targets, with new proposals and features landing in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
+Test262, the TypeScript compiler, and Babel are moving targets, with new proposals and features landing in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
 
 ## Conformance status
 
@@ -2851,15 +2892,15 @@ The suites run through the published npm packages, built from the local Zig sour
 
 ## Codegen
 
-Curated inline-snapshot tests pin the exact output of `print`, `strip`, and `minify` on inputs chosen by hand. On top of that, the corpus suite runs all three operations over every parseable file in the parser test suite and checks a set of invariants.
+Curated inline-snapshot tests pin the exact output of `generate` on inputs chosen by hand, across its option sets (plain, `strip`, `minify`). On top of that, the corpus suite runs all three option sets over every parseable file in the parser test suite and checks a set of invariants.
 
-- Every operation's output parses cleanly again.
-- `print` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
-- Every operation is a fixed point on its own output, and no comment is lost or duplicated.
+- Every option set's output parses cleanly again.
+- A plain `generate` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
+- Every option set is a fixed point on its own output, and no comment is lost or duplicated.
 
 ## Source maps
 
-Every corpus file is round-tripped through `print` with source maps enabled, and every identifier in the output must trace back to the right name and position in the original source.
+Every corpus file is round-tripped through `generate` with source maps enabled, and every identifier in the output must trace back to the right name and position in the original source.
 
 ## Fuzzing
 

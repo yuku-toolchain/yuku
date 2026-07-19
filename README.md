@@ -101,7 +101,7 @@ project.module("c.ts").rootScope.find("renamed").definition().symbol.name;
 // "value"
 ```
 
-Go-to-definition through a rename, across three files, in one expression. Scopes, symbols, resolved references, closures, and cross-file module linking, computed in one native pass.
+Scopes, symbols, resolved references, closures, and cross-file module linking, computed in one native pass.
 
 [Read the analyzer documentation →](https://yuku.fyi/analyzer)
 
