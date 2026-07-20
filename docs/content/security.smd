@@ -16,9 +16,9 @@ We aim to acknowledge reports within 72 hours. Please give us a reasonable windo
 
 ## [Our practices]($section.id('our-practices'))
 
-- **Zero runtime dependencies.** Every published `yuku-toolchain` package ships with no runtime dependencies. There is no transitive tree to audit or to be compromised through, only Yuku's own code.
+- **Zero runtime dependencies.** Every Yuku package published to npm ships with no runtime dependencies, and installing one runs no lifecycle scripts. There is no transitive tree to audit or to be compromised through, only Yuku's own code.
 - **Provenance publishing.** Packages are published to npm with provenance over an OIDC trusted-publisher flow, with no long-lived tokens, so each release is cryptographically tied to the workflow that built it.
-- **Pinned CI, least privilege.** Every GitHub Actions step is pinned to a full commit hash and kept current by Dependabot. The CI token defaults to read-only, and outbound network on release runners is monitored.
+- **Hardened CI.** Every GitHub Actions step is pinned to a full commit hash and kept current by Dependabot, which holds new releases for a cooldown period before adopting them. The workflow token defaults to read-only, our workflows are statically analyzed with [zizmor](https://github.com/zizmorcore/zizmor), the project is continuously graded by [OpenSSF Scorecard](https://securityscorecards.dev), and outbound network on release runners is monitored.
 - **Reproducible builds.** Dependencies install from a frozen lockfile, and the one Zig build dependency is pinned by content hash.
 - **Memory safety by construction.** Everything a parse allocates lives in a single arena freed in one step, so there is nothing to leak and no ownership graph to get wrong. The WASM build runs the same parser inside a memory-sandboxed container, so a parser bug cannot reach host memory.
 - **Fuzzing.** A fuzzer throws millions of randomized and adversarial inputs at the parser, across every language mode, with simulated out-of-memory conditions injected. See [how Yuku is tested](/testing/).
