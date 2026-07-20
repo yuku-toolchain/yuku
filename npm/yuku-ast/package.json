@@ -24,7 +24,7 @@
     "@yuku-toolchain/types": "workspace:*"
   },
   "devDependencies": {
-    "tsdown": "^0.15.6"
+    "tsdown": "^0.22.7"
   },
   "keywords": [
     "ast",
