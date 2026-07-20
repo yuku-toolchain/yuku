@@ -38,6 +38,8 @@
       <a href="$site.page('analyzer').link()">Analyzer</a>
       •
       <a href="$site.page('testing').link()">Testing</a>
+      •
+      <a href="$site.page('security').link()">Security</a>
       <span class="menu-divider">|</span>
       <a href="https://github.com/yuku-toolchain/yuku" target="_blank">github</a>
       •
