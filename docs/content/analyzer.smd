@@ -57,6 +57,22 @@ a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
 
 That is real cross-file resolution, not a string search. It follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
 
+## [WebAssembly]($section.id('webassembly'))
+
+```bash
+npm install @yuku-analyzer/wasm
+```
+
+```js
+import { analyze } from "@yuku-analyzer/wasm";
+
+const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lang: "ts" });
+
+module.rootScope.find("double").references.length; // 1
+```
+
+The same API and the same semantic model as `yuku-analyzer`, delivered as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
+
 ## [The problem it solves]($section.id('the-problem-it-solves'))
 
 Assembling this yourself is not only slower, it is harder to get right. The lightweight tools give you a scope stack but leave the binding rules to you, meaning hoisting, catch clauses, named function expressions, TypeScript declaration merging, and value space versus type space. Each tool implements a subset, and each subset has its own bugs.
