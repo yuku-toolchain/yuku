@@ -80,7 +80,7 @@ import { parse } from "@yuku-parser/wasm";
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-The same API and the same AST as `yuku-parser`, delivered as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-parser/wasm on npm](https://www.npmjs.com/package/@yuku-parser/wasm).
+The same API and AST as `yuku-parser`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-parser/wasm on npm](https://www.npmjs.com/package/@yuku-parser/wasm).
 
 ## Zig
 
@@ -2096,7 +2096,7 @@ const { program } = parse("const x = 1 + 2;");
 const code = generate(program);
 ```
 
-The same API as `yuku-codegen`, pairing with `@yuku-parser/wasm`, as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
+The same API as `yuku-codegen`, paired with `@yuku-parser/wasm`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
 
 ## Zig
 
@@ -2377,7 +2377,7 @@ const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lan
 module.rootScope.find("double").references.length; // 1
 ```
 
-The same API and the same semantic model as `yuku-analyzer`, delivered as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
+The same API and semantic model as `yuku-analyzer`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
 
 ## The problem it solves
 
