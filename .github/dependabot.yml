@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Do not adopt a release until it has been public for 7 days, so a
+    # compromised just-published version is caught before we pull it.
+    # Security updates bypass the cooldown.
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ["*"]
@@ -14,6 +19,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       dev-dependencies:
         patterns: ["*"]
