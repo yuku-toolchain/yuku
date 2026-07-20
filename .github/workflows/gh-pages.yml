@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Zine
-        uses: kristoff-it/setup-zine@ecfe04402bfa943fb0dc59e097e81c858a8ad9d9 # v2
+        uses: kristoff-it/setup-zine@46308d08c1c1316d1927adcc3eaaba8037f10c1e # v1
         with:
           version: v0.11.3
 

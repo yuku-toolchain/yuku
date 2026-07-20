@@ -14,6 +14,11 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: "ci"
+    ignore:
+      # setup-zine v2 requires Zine >= 0.12, a breaking config and frontmatter
+      # change from our pinned 0.11.3. Stay on v1 until Zine is upgraded.
+      - dependency-name: "kristoff-it/setup-zine"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/"
