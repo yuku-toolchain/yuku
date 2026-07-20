@@ -113,10 +113,6 @@ Yuku prioritizes correctness while delivering top-tier speed and efficiency.
   <img src="https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png" alt="Parsing typescript.js (7.8 MB) · macOS (ARM), Apple M3, 16 GB · native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers">
 </p>
 
-<p align="center">
-  <sub>Parsing <code>typescript.js</code> (7.8 MB) · macOS (ARM), Apple M3, 16 GB · <a href="https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native">benchmark source</a></sub>
-</p>
-
 - [Native benchmark (Zig/Rust)](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native) - faster than Oxc and SWC
 - [npm benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) - 3-10x faster than alternatives
 
