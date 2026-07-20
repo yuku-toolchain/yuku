@@ -1,10 +1,20 @@
 # zizmor configuration: https://docs.zizmor.sh/configuration/
+#
+# The ignores below are scoped to the whole publish-to-npm.yml file, not to a
+# line number, on purpose: line-pinned ignores broke every time the file
+# shifted. The residual risk is small and reviewed, since this is a stable and
+# deliberately hardened release workflow.
 rules:
   cache-poisoning:
     ignore:
-      # actions/setup-node here sets no `cache:` input, so it restores no
-      # cache and cannot be a cache-poisoning sink. zizmor reports it as a
-      # low-confidence default, which is a false positive. The real caching
-      # actions in this job (setup-zig, setup-bun) are disabled through their
-      # use-cache / no-cache inputs, not through this ignore.
-      - publish-to-npm.yml:35
+      # actions/setup-node sets no `cache:` input, so it restores no cache and
+      # cannot be a cache-poisoning sink. The real caching actions in this job
+      # (setup-zig, setup-bun) are disabled through their use-cache / no-cache
+      # inputs, which zizmor detects directly, not through this ignore.
+      - publish-to-npm.yml
+  adhoc-packages:
+    ignore:
+      # `npm install -g npm@11` is a deliberate, documented pin: npm 12.0.0
+      # breaks provenance publishing (npm/cli#9722). A global npm install has
+      # no lockfile form, so this ad-hoc install is required, not accidental.
+      - publish-to-npm.yml

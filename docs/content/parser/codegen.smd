@@ -37,7 +37,7 @@ const { program } = parse("const x = 1 + 2;");
 const code = generate(program);
 ```
 
-The same API as `yuku-codegen`, pairing with `@yuku-parser/wasm`, as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
+The same API as `yuku-codegen`, paired with `@yuku-parser/wasm`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
 
 ## [Zig]($section.id('zig'))
 

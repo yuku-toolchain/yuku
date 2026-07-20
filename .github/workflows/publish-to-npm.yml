@@ -6,13 +6,15 @@ on:
       - "v*"
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 jobs:
   release:
     name: Release Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # changelogithub creates the GitHub Release
+      id-token: write # OIDC for npm provenance / trusted publishing
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
