@@ -116,7 +116,7 @@ Yuku prioritizes correctness while delivering top-tier speed and efficiency.
 
 ## Testing
 
-Yuku is validated against a dedicated [parser test suite](https://github.com/yuku-toolchain/parser-test-suite): tens of thousands of cases sourced from [Test262](https://github.com/tc39/test262), the TypeScript compiler, and Babel, with exact AST matching against ESTree / TS-ESTree snapshots. The suite syncs with upstream daily, and Yuku passes all of it with zero failures and zero AST mismatches.
+Correctness in Yuku is not an afterthought. The parser is validated against a dedicated [parser test suite](https://github.com/yuku-toolchain/parser-test-suite): over 55,000 cases sourced from [Test262](https://github.com/tc39/test262), the TypeScript compiler, and Babel, with exact AST matching against independently generated ESTree / TS-ESTree snapshots. The suite syncs with upstream daily, and Yuku passes all of it with zero failures and zero AST mismatches.
 
 [Read how Yuku is tested →](https://yuku.fyi/testing)
 
