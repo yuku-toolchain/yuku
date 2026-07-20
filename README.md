@@ -109,7 +109,9 @@ Scopes, symbols, resolved references, closures, and cross-file module linking, c
 
 Yuku prioritizes correctness while delivering top-tier speed and efficiency.
 
-![Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png)
+![Parsing typescript.js (7.8 MB) · macOS (ARM), Apple M3, 16 GB · native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png)
+
+<sub>Parsing `typescript.js` (7.8 MB) · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)</sub>
 
 - [Native benchmark (Zig/Rust)](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native) - faster than Oxc and SWC
 - [npm benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) - 3-10x faster than alternatives
