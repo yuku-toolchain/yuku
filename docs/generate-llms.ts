@@ -16,6 +16,7 @@ const ORDER = [
   "parser/codegen",
   "analyzer",
   "testing",
+  "security",
 ];
 
 interface Page {

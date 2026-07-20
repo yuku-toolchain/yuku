@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Do not adopt a release until it has been public for 7 days, so a
+    # compromised just-published version is caught before we pull it.
+    # Security updates bypass the cooldown.
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      dev-dependencies:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore"
+    ignore:
+      - dependency-name: "yuku-*"
+      - dependency-name: "@yuku-*/*"

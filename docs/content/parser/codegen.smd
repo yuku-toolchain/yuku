@@ -21,7 +21,23 @@ const { program } = parse("const x = 1 + 2;");
 const { code } = generate(program);
 ```
 
-`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). Transformations are independent flags that compose freely, e.g. `generate(program, { strip: true, minify: true })`. For source maps, pass the original source text via `sourceMap: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMap: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+
+## [WebAssembly]($section.id('webassembly'))
+
+```bash
+npm install @yuku-codegen/wasm
+```
+
+```js
+import { parse } from "@yuku-parser/wasm";
+import { generate } from "@yuku-codegen/wasm";
+
+const { program } = parse("const x = 1 + 2;");
+const code = generate(program);
+```
+
+The same API as `yuku-codegen`, pairing with `@yuku-parser/wasm`, as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
 
 ## [Zig]($section.id('zig'))
 
@@ -231,4 +247,3 @@ The substitutions.
 - numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe
-

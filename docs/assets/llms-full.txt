@@ -68,6 +68,20 @@ const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 
 Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
+## WebAssembly
+
+```bash
+npm install @yuku-parser/wasm
+```
+
+```js
+import { parse } from "@yuku-parser/wasm";
+
+const { program, comments, diagnostics } = parse("const x = 1 + 2;");
+```
+
+The same API and the same AST as `yuku-parser`, delivered as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-parser/wasm on npm](https://www.npmjs.com/package/@yuku-parser/wasm).
+
 ## Zig
 
 ```bash
@@ -2066,7 +2080,23 @@ const { program } = parse("const x = 1 + 2;");
 const { code } = generate(program);
 ```
 
-`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). Transformations are independent flags that compose freely, e.g. `generate(program, { strip: true, minify: true })`. For source maps, pass the original source text via `sourceMap: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMap: { source }`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+
+## WebAssembly
+
+```bash
+npm install @yuku-codegen/wasm
+```
+
+```js
+import { parse } from "@yuku-parser/wasm";
+import { generate } from "@yuku-codegen/wasm";
+
+const { program } = parse("const x = 1 + 2;");
+const code = generate(program);
+```
+
+The same API as `yuku-codegen`, pairing with `@yuku-parser/wasm`, as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
 
 ## Zig
 
@@ -2332,6 +2362,22 @@ a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
 ```
 
 That is real cross-file resolution, not a string search. It follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
+
+## WebAssembly
+
+```bash
+npm install @yuku-analyzer/wasm
+```
+
+```js
+import { analyze } from "@yuku-analyzer/wasm";
+
+const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lang: "ts" });
+
+module.rootScope.find("double").references.length; // 1
+```
+
+The same API and the same semantic model as `yuku-analyzer`, delivered as a single portable WebAssembly module that runs anywhere: browsers, bundlers, Deno, Bun, and Node. The `.wasm` build is optimized for size, so it runs a little slower than the performance-tuned native Node.js bindings, but it is still fast. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
 
 ## The problem it solves
 
@@ -2886,7 +2932,7 @@ Test262, the TypeScript compiler, and Babel are moving targets, with new proposa
 
 ## Conformance status
 
-Yuku passes the entire suite, every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
+Yuku is 100% ECMAScript spec compliant. It passes the entire suite, every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
 
 The suites run through the published npm packages, built from the local Zig source. So every run validates not just the Zig core but the whole chain, from the parser through the native bridge to the JavaScript API, with exact AST matching between Zig and JavaScript.
 
@@ -2917,3 +2963,24 @@ bun run test
 ```
 
 On first run this downloads the parser test suite (cached for a day), builds the native addons from your local Zig, then runs every suite. Each suite can also be run on its own, and you can add your own cases. See [CONTRIBUTING.md](https://github.com/yuku-toolchain/yuku/blob/main/CONTRIBUTING.md) for the details.
+
+# Security
+
+Source: https://yuku.fyi/security/
+
+Yuku's core job is to process untrusted input. The source code it parses may be attacker controlled, so we take its security seriously.
+
+## Reporting a vulnerability
+
+Please do not open a public issue for security reports. Report privately through GitHub's [private vulnerability reporting](https://github.com/yuku-toolchain/yuku/security/advisories/new), under "Report a vulnerability" in the repository's Security tab. If you cannot use that channel, email [arshadpyaseen@gmail.com](mailto:arshadpyaseen@gmail.com).
+
+We aim to acknowledge reports within 72 hours. Please give us a reasonable window to ship a fix before public disclosure, and we are glad to credit you in the advisory. Fixes ship against the latest published version of each package, so please upgrade before reporting.
+
+## Our practices
+
+- **Zero runtime dependencies.** Every Yuku package published to npm ships with no runtime dependencies, and installing one runs no lifecycle scripts. There is no transitive tree to audit or to be compromised through, only Yuku's own code.
+- **Provenance publishing.** Packages are published to npm with provenance over an OIDC trusted-publisher flow, with no long-lived tokens, so each release is cryptographically tied to the workflow that built it.
+- **Hardened CI.** Every GitHub Actions step is pinned to a full commit hash and kept current by Dependabot, which holds new releases for a cooldown period before adopting them. The workflow token defaults to read-only, our workflows are statically analyzed with [zizmor](https://github.com/zizmorcore/zizmor), the project is continuously graded by [OpenSSF Scorecard](https://securityscorecards.dev), and outbound network on release runners is monitored.
+- **Reproducible builds.** Dependencies install from a frozen lockfile, and the one Zig build dependency is pinned by content hash.
+- **Memory safety by construction.** Everything a parse allocates lives in a single arena freed in one step, so there is nothing to leak and no ownership graph to get wrong. The WASM build runs the same parser inside a memory-sandboxed container, so a parser bug cannot reach host memory.
+- **Fuzzing.** A fuzzer throws millions of randomized and adversarial inputs at the parser, across every language mode, with simulated out-of-memory conditions injected. See [how Yuku is tested](https://yuku.fyi/testing/).
