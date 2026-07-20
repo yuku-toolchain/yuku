@@ -47,7 +47,7 @@ Test262, the TypeScript compiler, and Babel are moving targets, with new proposa
 
 ## [Conformance status]($section.id('conformance-status'))
 
-Yuku passes the entire suite, every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
+Yuku is 100% ECMAScript spec compliant. It passes the entire suite, every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
 
 The suites run through the published npm packages, built from the local Zig source. So every run validates not just the Zig core but the whole chain, from the parser through the native bridge to the JavaScript API, with exact AST matching between Zig and JavaScript.
 
