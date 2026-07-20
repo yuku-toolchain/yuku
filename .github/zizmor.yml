@@ -1,0 +1,10 @@
+# zizmor configuration: https://docs.zizmor.sh/configuration/
+rules:
+  cache-poisoning:
+    ignore:
+      # actions/setup-node here sets no `cache:` input, so it restores no
+      # cache and cannot be a cache-poisoning sink. zizmor reports it as a
+      # low-confidence default, which is a false positive. The real caching
+      # actions in this job (setup-zig, setup-bun) are disabled through their
+      # use-cache / no-cache inputs, not through this ignore.
+      - publish-to-npm.yml:35
