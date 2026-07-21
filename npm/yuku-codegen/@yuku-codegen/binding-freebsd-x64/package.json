@@ -1,6 +1,7 @@
 {
   "name": "@yuku-codegen/binding-freebsd-x64",
   "version": "0.7.0",
+  "license": "MIT",
   "os": [
     "freebsd"
   ],

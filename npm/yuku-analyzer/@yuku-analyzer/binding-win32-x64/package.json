@@ -1,6 +1,7 @@
 {
   "name": "@yuku-analyzer/binding-win32-x64",
   "version": "0.7.0",
+  "license": "MIT",
   "os": [
     "win32"
   ],

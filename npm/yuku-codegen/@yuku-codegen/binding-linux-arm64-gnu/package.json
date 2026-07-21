@@ -1,6 +1,7 @@
 {
   "name": "@yuku-codegen/binding-linux-arm64-gnu",
   "version": "0.7.0",
+  "license": "MIT",
   "os": [
     "linux"
   ],
