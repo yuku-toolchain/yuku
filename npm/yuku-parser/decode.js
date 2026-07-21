@@ -69,7 +69,7 @@ function decode(buffer, source) {
   const _attached = !!(_flags & 2);
   const _firstNa = _u32[9];
   const _nodesOff = 40;
-  const eOff = _nodesOff + nodeCount * 48;
+  const eOff = _nodesOff + nodeCount * 44;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
   const _aoOff = _spOff + ((spLen + 3) & ~3);
@@ -127,7 +127,7 @@ function decode(buffer, source) {
     return r;
   }
   function fnParams(idx) {
-    const pb = idx * 12 + 10;
+    const pb = idx * 11 + 10;
     const len = _u32[pb + 1] & 65535;
     const iStart = _u32[pb + 2], rest = _u32[pb + 3];
     const p = new Array(rest !== NULL ? len + 1 : len);
@@ -160,11 +160,11 @@ function decode(buffer, source) {
     return r;
   }
   function _decode(i) {
-    const b = i * 12 + 10;
+    const b = i * 11 + 10;
     const h0 = _u32[b];
     const tag = h0 & 255;
     const flags = h0 >>> 16;
-    const _ss = _u32[b + 10], _se = _u32[b + 11];
+    const _ss = _u32[b + 9], _se = _u32[b + 10];
     const start = _ss <= _firstNa ? _ss : pm[_ss - _firstNa];
     const end = _se <= _firstNa ? _se : pm[_se - _firstNa];
     switch (tag) {
@@ -230,18 +230,18 @@ function decode(buffer, source) {
     case 24: { const f1 = _u32[b + 2]; return { type: "YieldExpression", start, end, argument: f1 !== NULL ? node(f1) : null, delegate: !!(flags & 1) }; }
     case 25: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "MetaProperty", start, end, meta: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null }; }
     case 26: { const f1 = _u32[b + 2]; return { type: "Decorator", start, end, expression: f1 !== NULL ? node(f1) : null }; }
-    case 27: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8], f8 = _u32[b + 9]; 
+    case 27: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8]; 
       const r = {
         type: CLASS_TYPES[flags & 1], start, end,
         decorators: nodeArr(f1, f0),
         id: f2 !== NULL ? node(f2) : null,
         superClass: f4 !== NULL ? node(f4) : null,
-        body: node(f8),
+        body: node(f7),
       };
       if (_isTs) {
         r.typeParameters = f3 !== NULL ? node(f3) : null;
         r.superTypeArguments = f5 !== NULL ? node(f5) : null;
-        r.implements = nodeArr(f6, f7);
+        r.implements = nodeArr(f6, f0b);
         r.abstract = !!(flags & 2);
         r.declare = !!(flags & 4);
       }
@@ -339,7 +339,7 @@ function decode(buffer, source) {
         regex: { pattern: p, flags: fl.split("").sort().join("") },
       };
  }
-    case 40: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) }; }
+    case 40: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f0b) }; }
     case 41: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
       const raw = _src.slice(start, end).replace(/\r\n?/g, "\n");
       const tl = !!(flags & 1);
@@ -387,25 +387,25 @@ function decode(buffer, source) {
  }
     case 69: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; const r = { type: "AssignmentPattern", start, end, left: f2 !== NULL ? node(f2) : null, right: f4 !== NULL ? node(f4) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); } return r; }
     case 70: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "RestElement", start, end, argument: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
-    case 71: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6]; 
-      const el = nodeArrHoles(f2, f3);
-      if (f4 !== NULL) el.push(node(f4));
+    case 71: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
+      const el = nodeArrHoles(f2, f0b);
+      if (f3 !== NULL) el.push(node(f3));
       const r = { type: "ArrayPattern", start, end, elements: el };
       if (_isTs) {
         r.decorators = nodeArr(f1, f0);
         r.optional = !!(flags & 1);
-        r.typeAnnotation = f5 !== NULL ? node(f5) : null;
+        r.typeAnnotation = f4 !== NULL ? node(f4) : null;
       }
       return r;
  }
-    case 72: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6]; 
-      const pr = nodeArr(f2, f3);
-      if (f4 !== NULL) pr.push(node(f4));
+    case 72: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
+      const pr = nodeArr(f2, f0b);
+      if (f3 !== NULL) pr.push(node(f3));
       const r = { type: "ObjectPattern", start, end, properties: pr };
       if (_isTs) {
         r.decorators = nodeArr(f1, f0);
         r.optional = !!(flags & 1);
-        r.typeAnnotation = f5 !== NULL ? node(f5) : null;
+        r.typeAnnotation = f4 !== NULL ? node(f4) : null;
       }
       return r;
  }
@@ -430,12 +430,12 @@ function decode(buffer, source) {
     };
  }
     case 75: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; }
-    case 76: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
+    case 76: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0b), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
     case 77: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 78: { const f1 = _u32[b + 2]; return { type: "ImportDefaultSpecifier", start, end, local: f1 !== NULL ? node(f1) : null }; }
     case 79: { const f1 = _u32[b + 2]; return { type: "ImportNamespaceSpecifier", start, end, local: f1 !== NULL ? node(f1) : null }; }
     case 80: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "ImportAttribute", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null }; }
-    case 81: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6]; const r = { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f5) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
+    case 81: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; const r = { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f0b) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 82: { const f1 = _u32[b + 2]; const r = { type: "ExportDefaultDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.exportKind = "value"; } return r; }
     case 83: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "ExportAllDeclaration", start, end, exported: f1 !== NULL ? node(f1) : null, source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 84: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "ExportSpecifier", start, end, local: f1 !== NULL ? node(f1) : null, exported: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
@@ -462,7 +462,7 @@ function decode(buffer, source) {
     case 105: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTypeParameterDeclaration", start, end, params: nodeArr(f1, f0) }; }
     case 106: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTypeParameterInstantiation", start, end, params: nodeArr(f1, f0) }; }
     case 107: { const f1 = _u32[b + 2]; return { type: "TSLiteralType", start, end, literal: f1 !== NULL ? node(f1) : null }; }
-    case 108: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "TSTemplateLiteralType", start, end, quasis: nodeArr(f1, f0), types: nodeArr(f2, f3) }; }
+    case 108: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSTemplateLiteralType", start, end, quasis: nodeArr(f1, f0), types: nodeArr(f2, f0b) }; }
     case 109: { const f1 = _u32[b + 2]; return { type: "TSArrayType", start, end, elementType: f1 !== NULL ? node(f1) : null }; }
     case 110: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSIndexedAccessType", start, end, objectType: f1 !== NULL ? node(f1) : null, indexType: f2 !== NULL ? node(f2) : null }; }
     case 111: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTupleType", start, end, elementTypes: nodeArr(f1, f0) }; }

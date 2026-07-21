@@ -57,9 +57,10 @@
 //   bool              1 flag bit, at the running sum of prior flag widths.
 //   enum              ceil(log2(n)) flag bits, where n is the variant count.
 //   NodeIndex         1 u32 slot. 0xFFFFFFFF marks null.
-//   IndexRange        the first such field in a struct takes field0 (u16
-//                     length) plus 1 u32 slot for start; each later one
-//                     takes 2 u32 slots, start then length.
+//   IndexRange        the first two such fields in a struct keep their
+//                     u16 length in field0/field0b and take 1 u32 slot
+//                     each for start; any later one takes 2 u32 slots,
+//                     start then length.
 //   String            2 u32 slots (start, end); see string handles below.
 //   ?ImportPhase      1 flag bit for presence plus enum bits for the value.
 //   ?Hashbang         1 flag bit for presence plus 2 u32 slots (start, end).
@@ -135,21 +136,20 @@ const Header = extern struct {
 };
 
 /// packed ast node entry. `tag` identifies the `ast.NodeData` variant,
-/// `flags` holds packed booleans and small enums, and `field1..field8`
+/// `flags` holds packed booleans and small enums, and `field1..field7`
 /// are u32 data slots assigned to struct fields by the packing rules.
 ///
-/// the *first* IndexRange in a struct uses `field0` (u16 length) plus one
-/// u32 slot for start, saving one full slot. every *later* IndexRange
-/// uses two consecutive u32 slots for start then length. this only
-/// affects structs with two or more IndexRange fields. the comptime
-/// validator still enforces the 8 slot and 16 flag bit budget regardless.
-/// when ordering fields for density, declare the first IndexRange first.
+/// the first IndexRange in a struct stores its u16 length in `field0`,
+/// the second in `field0b`; each takes just one u32 slot for its start.
+/// any further IndexRange uses two consecutive u32 slots, start then
+/// length (no current node needs a third). the comptime validator
+/// enforces the 7 slot and 16 flag bit budget regardless.
 const PackedNode = extern struct {
     tag: u8,
     _pad0: u8 = 0,
     flags: u16,
     field0: u16,
-    _pad1: u16 = 0,
+    field0b: u16,
     field1: u32,
     field2: u32,
     field3: u32,
@@ -157,7 +157,6 @@ const PackedNode = extern struct {
     field5: u32,
     field6: u32,
     field7: u32,
-    field8: u32,
     span_start: u32,
     span_end: u32,
 };
@@ -224,6 +223,7 @@ pub const FLAG_SEMANTIC: u32 = 1 << 3;
 // `PackedNode` byte offsets and u32 indices.
 pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
 pub const NODE_FIELD0_OFFSET: u8 = @offsetOf(PackedNode, "field0");
+pub const NODE_FIELD0B_OFFSET: u8 = @offsetOf(PackedNode, "field0b");
 pub const NODE_HEADER_U32S: u8 = @offsetOf(PackedNode, "field1") / 4;
 pub const NODE_SPAN_START_U32: u8 = @offsetOf(PackedNode, "span_start") / 4;
 pub const NODE_SPAN_END_U32: u8 = @offsetOf(PackedNode, "span_end") / 4;
@@ -274,10 +274,12 @@ pub fn flagBitForField(comptime T: type, comptime target: usize) u8 {
 }
 
 /// number of u32 slots consumed by field `field_idx` in struct T.
+/// the first two IndexRanges keep their length in the packed u16
+/// length fields (`field0`, `field0b`), so they take one slot each.
 pub fn fieldU32Count(comptime T: type, comptime field_idx: usize) u8 {
     const f = std.meta.fields(T)[field_idx];
     if (f.type == ast.NodeIndex) return 1;
-    if (f.type == ast.IndexRange) return if (isFirstRange(T, field_idx)) 1 else 2;
+    if (f.type == ast.IndexRange) return if (rangeIndexOf(T, field_idx) < 2) 1 else 2;
     if (f.type == ast.String) return 2;
     if (f.type == ?ast.Hashbang) return 2;
     if (f.type == bool or f.type == ?ast.ImportPhase or comptime isEnumType(f.type)) return 0;
@@ -293,13 +295,16 @@ pub fn u32SlotForField(comptime T: type, comptime target: usize) u8 {
     }
 }
 
-/// true if field `target` is the first IndexRange in struct T.
-pub fn isFirstRange(comptime T: type, comptime target: usize) bool {
+/// 0-based position of field `target` among struct T's IndexRange
+/// fields. `target` must be an IndexRange field.
+pub fn rangeIndexOf(comptime T: type, comptime target: usize) u8 {
     comptime {
-        for (std.meta.fields(T), 0..) |f, i| {
-            if (f.type == ast.IndexRange) return i == target;
+        std.debug.assert(std.meta.fields(T)[target].type == ast.IndexRange);
+        var idx: u8 = 0;
+        for (std.meta.fields(T)[0..target]) |f| {
+            if (f.type == ast.IndexRange) idx += 1;
         }
-        return false;
+        return idx;
     }
 }
 
@@ -538,13 +543,12 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
         } else if (f.type == ast.NodeIndex) {
             setSlot(n, slot, @intFromEnum(val));
         } else if (f.type == ast.IndexRange) {
-            if (comptime isFirstRange(T, i)) {
-                n.field0 = @intCast(val.len);
-                setSlot(n, slot, val.start);
-            } else {
-                setSlot(n, slot, val.start);
-                setSlot(n, slot + 1, @intCast(val.len));
+            switch (comptime rangeIndexOf(T, i)) {
+                0 => n.field0 = @intCast(val.len),
+                1 => n.field0b = @intCast(val.len),
+                else => setSlot(n, slot + 1, @intCast(val.len)),
             }
+            setSlot(n, slot, val.start);
         } else if (f.type == ast.String) {
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.end);
@@ -744,7 +748,11 @@ fn unpackPayload(comptime T: type, n: PackedNode, payload: *T) void {
         } else if (f.type == ast.NodeIndex) {
             @field(payload.*, f.name) = @enumFromInt(readSlot(n, slot));
         } else if (f.type == ast.IndexRange) {
-            const len: u32 = if (comptime isFirstRange(T, i)) n.field0 else readSlot(n, slot + 1);
+            const len: u32 = switch (comptime rangeIndexOf(T, i)) {
+                0 => n.field0,
+                1 => n.field0b,
+                else => readSlot(n, slot + 1),
+            };
             const start: u32 = if (len == 0) 0 else readSlot(n, slot);
             @field(payload.*, f.name) = .{ .start = start, .len = len };
         } else if (f.type == ast.String) {
