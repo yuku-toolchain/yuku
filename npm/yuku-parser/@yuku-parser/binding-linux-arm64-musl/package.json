@@ -1,6 +1,7 @@
 {
   "name": "@yuku-parser/binding-linux-arm64-musl",
   "version": "0.7.0",
+  "license": "MIT",
   "os": [
     "linux"
   ],
