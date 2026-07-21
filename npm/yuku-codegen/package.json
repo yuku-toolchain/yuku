@@ -40,6 +40,6 @@
     "typescript"
   ],
   "dependencies": {
-    "@yuku-toolchain/types": "workspace:*"
+    "@yuku-toolchain/types": "workspace:^"
   }
 }
