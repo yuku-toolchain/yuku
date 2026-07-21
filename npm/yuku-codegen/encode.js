@@ -2335,10 +2335,11 @@ function encode(program) {
   }
   const totalNodeBytes = nodeCount * NODE_SIZE;
   const totalExtraBytes = extraCount * 4;
+  const totalPoolBytes = (poolLen + 3) & ~3;
   const totalOffsetsBytes = attached ? (nodeCount + 1) * 4 : 0;
   const totalAttachedBytes = attachedCount * ATTACHED_COMMENT_SIZE;
   const finalSize =
-    HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen +
+    HEADER_SIZE + totalNodeBytes + totalExtraBytes + totalPoolBytes +
     totalOffsetsBytes + totalAttachedBytes;
   const out = new ArrayBuffer(finalSize);
   const outU8 = new Uint8Array(out);
@@ -2356,7 +2357,7 @@ function encode(program) {
   const nodesOff = HEADER_SIZE;
   const extrasOff = nodesOff + totalNodeBytes;
   const poolOff = extrasOff + totalExtraBytes;
-  const offsetsOff = poolOff + poolLen;
+  const offsetsOff = poolOff + totalPoolBytes;
   const attachedOff = offsetsOff + totalOffsetsBytes;
   outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
   outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);

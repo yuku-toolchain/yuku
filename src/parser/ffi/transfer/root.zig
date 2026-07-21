@@ -32,7 +32,10 @@
 //   extra              extra_count * 4 bytes. Flat u32 array backing
 //                      IndexRange (see below).
 //   strings            string_pool_len bytes of raw UTF-8 for pooled
-//                      strings (see string pool below).
+//                      strings (see string pool below), zero-padded to the
+//                      next 4-byte boundary. The header records the true
+//                      length; consumers advance by alignPool(len) so every
+//                      following section is 4-byte aligned.
 //   attached_offsets   (node_count + 1) u32s when FLAG_ATTACHED_COMMENTS is
 //                      set, absent otherwise. Prefix-sum offsets indexing
 //                      attached_comments: node i owns entries
@@ -78,9 +81,10 @@
 //                           (start - source_len).
 //   The string pool holds strings that cannot be sliced directly from the
 //   source (escaped or otherwise transformed values) and may contain WTF-8
-//   encoded lone surrogates. Its length is arbitrary, so every following
-//   section may begin at an unaligned byte offset; the JS decoder uses
-//   DataView for all reads, and the Zig decoder uses byte-wise @memcpy.
+//   encoded lone surrogates. On the wire it is zero-padded to a 4-byte
+//   boundary, so every section is 4-byte aligned and both decoders read
+//   whole u32 words. Only the variable-length diagnostics section has
+//   unaligned interior fields.
 //
 // diagnostics
 //   A sequence of diag_count entries, each variable length:
@@ -344,6 +348,12 @@ fn validateAllNodeLayouts() void {
 
 // serialization
 
+/// string pool length rounded up to the 4-byte boundary it occupies on
+/// the wire. keeps every section after the pool u32-aligned.
+pub inline fn alignPool(len: usize) usize {
+    return (len + 3) & ~@as(usize, 3);
+}
+
 pub fn bufferSize(tree: *const ast.Tree) usize {
     std.debug.assert(tree.nodes.len <= std.math.maxInt(u32));
     std.debug.assert(tree.extras.items.len <= std.math.maxInt(u32));
@@ -357,7 +367,7 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
     var size: usize = HEADER_SIZE +
         tree.nodes.len * NODE_SIZE +
         tree.extras.items.len * 4 +
-        tree.strings.extra.items.len +
+        alignPool(tree.strings.extra.items.len) +
         tree.attached_comment_offsets.len * 4 +
         tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
         tree.comments.len * COMMENT_SIZE;
@@ -373,6 +383,8 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
 pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     std.debug.assert(buf.len >= bufferSize(tree));
     std.debug.assert(tree.root != .null);
+    // every section is written through 4-byte-aligned pointers
+    std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
 
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
     const has_attached = tree.attached_comment_offsets.len != 0;
@@ -401,23 +413,25 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     @memcpy(buf[0..HEADER_SIZE], std.mem.asBytes(&hdr));
     var pos: usize = HEADER_SIZE;
 
-    // nodes
+    // nodes, packed straight into the destination buffer
+    const nodes_out: [*]PackedNode = @ptrCast(@alignCast(buf.ptr + pos));
     const data_items = tree.nodes.items(.data);
     const span_items = tree.nodes.items(.span);
-    for (0..hdr.node_count) |i| {
-        const n = packNode(&data_items[i], span_items[i]);
-        @memcpy(buf[pos..][0..NODE_SIZE], std.mem.asBytes(&n));
-        pos += NODE_SIZE;
+    for (data_items, span_items, 0..) |*data, span, i| {
+        nodes_out[i] = packNode(data, span);
     }
+    pos += @as(usize, hdr.node_count) * NODE_SIZE;
 
     // extra
     const extra_bytes = std.mem.sliceAsBytes(tree.extras.items);
     @memcpy(buf[pos..][0..extra_bytes.len], extra_bytes);
     pos += extra_bytes.len;
 
-    // string pool
+    // string pool, zero-padded to the next 4-byte boundary
     @memcpy(buf[pos..][0..string_pool_len], tree.strings.extra.items);
-    pos += string_pool_len;
+    const pool_pad = alignPool(string_pool_len) - string_pool_len;
+    @memset(buf[pos + string_pool_len ..][0..pool_pad], 0);
+    pos += string_pool_len + pool_pad;
 
     // attached comment offsets (present only when FLAG_ATTACHED_COMMENTS is set)
     const offsets_bytes = std.mem.sliceAsBytes(tree.attached_comment_offsets);
@@ -425,34 +439,32 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     pos += offsets_bytes.len;
 
     // attached comments
-    for (tree.attached_comments) |c| {
+    const attached_out: [*]PackedAttachedComment = @ptrCast(@alignCast(buf.ptr + pos));
+    for (tree.attached_comments, 0..) |c, i| {
         var flags: u8 = 0;
         if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
         flags |= @as(u8, @intFromEnum(c.position)) << ATTACHED_COMMENT_POSITION_SHIFT;
         if (c.same_line) flags |= 1 << ATTACHED_COMMENT_SAME_LINE_BIT;
-        const entry = PackedAttachedComment{
+        attached_out[i] = .{
             .flags = flags,
             .value_start = c.value.start,
             .value_end = c.value.end,
         };
-        @memcpy(buf[pos..][0..ATTACHED_COMMENT_SIZE], std.mem.asBytes(&entry));
-        pos += ATTACHED_COMMENT_SIZE;
     }
+    pos += tree.attached_comments.len * ATTACHED_COMMENT_SIZE;
 
     // comments
-    for (tree.comments) |c| {
-        var flags: u8 = 0;
-        if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
-        const entry = PackedComment{
-            .flags = flags,
+    const comments_out: [*]PackedComment = @ptrCast(@alignCast(buf.ptr + pos));
+    for (tree.comments, 0..) |c, i| {
+        comments_out[i] = .{
+            .flags = if (c.type == .block) 1 << COMMENT_TYPE_BIT else 0,
             .value_start = c.value.start,
             .value_end = c.value.end,
             .span_start = c.span.start,
             .span_end = c.span.end,
         };
-        @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
-        pos += COMMENT_SIZE;
     }
+    pos += tree.comments.len * COMMENT_SIZE;
 
     // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
@@ -603,6 +615,8 @@ pub fn deserializeFromBuf(
     source: []const u8,
 ) DeserializeError!ast.Tree {
     if (buf.len < HEADER_SIZE) return error.InvalidBuffer;
+    // sections are read through 4-byte-aligned pointers
+    std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
 
     var hdr: Header = undefined;
     @memcpy(std.mem.asBytes(&hdr), buf[0..HEADER_SIZE]);
@@ -624,15 +638,15 @@ pub fn deserializeFromBuf(
     const nodes_bytes: usize = @as(usize, hdr.node_count) * NODE_SIZE;
     if (buf.len < pos + nodes_bytes) return error.InvalidBuffer;
     try tree.nodes.resize(tree.allocator(), hdr.node_count);
+    const nodes_in: [*]const PackedNode = @ptrCast(@alignCast(buf.ptr + pos));
     for (0..hdr.node_count) |i| {
-        var pn: PackedNode = undefined;
-        @memcpy(std.mem.asBytes(&pn), buf[pos..][0..NODE_SIZE]);
-        pos += NODE_SIZE;
+        const pn = nodes_in[i];
         tree.nodes.set(i, .{
             .data = unpackNode(pn),
             .span = .{ .start = pn.span_start, .end = pn.span_end },
         });
     }
+    pos += nodes_bytes;
 
     // extras
     const extras_bytes: usize = @as(usize, hdr.extra_count) * 4;
@@ -641,11 +655,11 @@ pub fn deserializeFromBuf(
     @memcpy(std.mem.sliceAsBytes(tree.extras.items), buf[pos..][0..extras_bytes]);
     pos += extras_bytes;
 
-    // string pool
-    if (buf.len < pos + hdr.string_pool_len) return error.InvalidBuffer;
+    // string pool (padded to 4 bytes on the wire, true length in the header)
+    if (buf.len < pos + alignPool(hdr.string_pool_len)) return error.InvalidBuffer;
     try tree.strings.extra.resize(tree.allocator(), hdr.string_pool_len);
     @memcpy(tree.strings.extra.items, buf[pos..][0..hdr.string_pool_len]);
-    pos += hdr.string_pool_len;
+    pos += alignPool(hdr.string_pool_len);
 
     // attached comment offsets (present only when FLAG_ATTACHED_COMMENTS is set)
     const has_attached = (hdr.flags & FLAG_ATTACHED_COMMENTS) != 0;
@@ -664,12 +678,11 @@ pub fn deserializeFromBuf(
     if (buf.len < pos + attached_bytes) return error.InvalidBuffer;
     if (hdr.attached_comment_count > 0) {
         const attached = try tree.allocator().alloc(ast.AttachedComment, hdr.attached_comment_count);
-        for (0..hdr.attached_comment_count) |i| {
-            var ce: PackedAttachedComment = undefined;
-            @memcpy(std.mem.asBytes(&ce), buf[pos..][0..ATTACHED_COMMENT_SIZE]);
-            pos += ATTACHED_COMMENT_SIZE;
+        const attached_in: [*]const PackedAttachedComment = @ptrCast(@alignCast(buf.ptr + pos));
+        for (attached, 0..) |*out, i| {
+            const ce = attached_in[i];
             const pos_bits = (ce.flags & ATTACHED_COMMENT_POSITION_MASK) >> ATTACHED_COMMENT_POSITION_SHIFT;
-            attached[i] = .{
+            out.* = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
                 .position = @enumFromInt(pos_bits),
                 .same_line = (ce.flags >> ATTACHED_COMMENT_SAME_LINE_BIT) & 1 != 0,
@@ -678,17 +691,17 @@ pub fn deserializeFromBuf(
         }
         tree.attached_comments = attached;
     }
+    pos += attached_bytes;
 
     // comments
     const comments_bytes: usize = @as(usize, hdr.comment_count) * COMMENT_SIZE;
     if (buf.len < pos + comments_bytes) return error.InvalidBuffer;
     if (hdr.comment_count > 0) {
         const comments = try tree.allocator().alloc(ast.Comment, hdr.comment_count);
-        for (0..hdr.comment_count) |i| {
-            var ce: PackedComment = undefined;
-            @memcpy(std.mem.asBytes(&ce), buf[pos..][0..COMMENT_SIZE]);
-            pos += COMMENT_SIZE;
-            comments[i] = .{
+        const comments_in: [*]const PackedComment = @ptrCast(@alignCast(buf.ptr + pos));
+        for (comments, 0..) |*out, i| {
+            const ce = comments_in[i];
+            out.* = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
                 .value = .{ .start = ce.value_start, .end = ce.value_end },
                 .span = .{ .start = ce.span_start, .end = ce.span_end },
@@ -696,6 +709,7 @@ pub fn deserializeFromBuf(
         }
         tree.comments = comments;
     }
+    pos += comments_bytes;
 
     // skip diagnostics. codegen doesn't read them.
 
