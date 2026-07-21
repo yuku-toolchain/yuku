@@ -2,9 +2,6 @@ import { walk as astWalk } from "yuku-ast";
 import binding from "./binding.js";
 import { decode } from "./decode.js";
 
-// TextEncoder uses the engine's SIMD UTF-8 fast path; encoding here and
-// handing the binding bytes it can borrow zero-copy is much faster than
-// letting the binding convert the string through the Node-API.
 const _enc = new TextEncoder();
 
 export function parse(source, options) {
