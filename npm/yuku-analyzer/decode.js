@@ -19,6 +19,7 @@ const TS_METHOD_SIGNATURE_KINDS = ["method", "get", "set"];
 const TS_MODULE_KINDS = ["namespace", "module"];
 const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
+const AC_POSITIONS = ["before", "after", "inside"];
 const SCOPE_KINDS = ["global", "module", "function", "block", "class", "staticBlock", "expressionName", "tsModule", "functionBody"];
 const IMPORT_PHASES = ["source", "defer"];
 const IMPORT_KINDS = ["named", "namespace", "sideEffect", "importEquals", "dynamic", "require"];
@@ -80,7 +81,7 @@ const CHILD_SLOTS = [
   [0, 2],
   [0, 2, 0, 3],
   [0, 2],
-  [2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 1, 7, 0, 9],
+  [2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 3, 7, 0, 8],
   [2, 2],
   [2, 2, 0, 3, 0, 4],
   [2, 2, 0, 3, 0, 4, 0, 5],
@@ -93,7 +94,7 @@ const CHILD_SLOTS = [
   [],
   [],
   [],
-  [2, 2, 1, 3],
+  [2, 2, 3, 3],
   [],
   [],
   [],
@@ -124,17 +125,17 @@ const CHILD_SLOTS = [
   [0, 2],
   [2, 2, 0, 3, 0, 4, 0, 5],
   [2, 2, 0, 3, 0, 4],
-  [2, 2, 1, 3, 0, 5, 0, 6],
-  [2, 2, 1, 3, 0, 5, 0, 6],
+  [2, 2, 3, 3, 0, 4, 0, 5],
+  [2, 2, 3, 3, 0, 4, 0, 5],
   [0, 2, 0, 3],
   [2, 2],
   [0, 2, 0, 3],
-  [2, 2, 0, 3, 1, 4],
+  [2, 2, 0, 3, 3, 4],
   [0, 2, 0, 3],
   [0, 2],
   [0, 2],
   [0, 2, 0, 3],
-  [0, 2, 2, 3, 0, 4, 1, 5],
+  [0, 2, 2, 3, 0, 4, 3, 5],
   [0, 2],
   [0, 2, 0, 3, 2, 4],
   [0, 2, 0, 3],
@@ -161,7 +162,7 @@ const CHILD_SLOTS = [
   [2, 2],
   [2, 2],
   [0, 2],
-  [2, 2, 1, 3],
+  [2, 2, 3, 3],
   [0, 2],
   [0, 2, 0, 3],
   [2, 2],
@@ -432,8 +433,7 @@ function buildPosMap(src, byteLen, startByte) {
 }
 function decode(buffer, source) {
   const _u8 = new Uint8Array(buffer);
-  const aLen = (buffer.byteLength >> 2) << 2;
-  const _u32 = new Int32Array(buffer, 0, aLen >> 2);
+  const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
   const _src = source;
   const _srcLen = _u32[3];
   const nodeCount = _u32[0],
@@ -448,11 +448,10 @@ function decode(buffer, source) {
   const _attached = !!(_flags & 2);
   const _firstNa = _u32[9];
   const _nodesOff = 40;
-  const eOff = _nodesOff + nodeCount * 48;
+  const eOff = _nodesOff + nodeCount * 44;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
-  const dv = new DataView(buffer);
-  const _aoOff = _spOff + spLen;
+  const _aoOff = _spOff + ((spLen + 3) & ~3);
   const _acOff = _attached ? _aoOff + (nodeCount + 1) * 4 : _aoOff;
   const _cOff = _acOff + attachedCommentCount * 12;
   function _poolDecode(s, e) {
@@ -493,40 +492,37 @@ function decode(buffer, source) {
     return _src.slice(s < _firstNa ? s : pm[s - _firstNa], pm[e - _firstNa]);
   };
   function nodeArr(s, len) {
-    const r = [];
+    const r = new Array(len);
     const base = _extraBase + s;
-    for (let j = 0; j < len; j++) r.push(node(_u32[base + j]));
+    for (let j = 0; j < len; j++) r[j] = node(_u32[base + j]);
     return r;
   }
   function nodeArrHoles(s, len) {
-    const r = [];
-    const base = _extraBase + s;
-    for (let j = 0; j < len; j++) {
+    const r = new Array(len);
+    for (let j = 0, base = _extraBase + s; j < len; j++) {
       const x = _u32[base + j];
-      r.push(x !== NULL ? node(x) : null);
+      r[j] = x !== NULL ? node(x) : null;
     }
     return r;
   }
   function fnParams(idx) {
-    const po = _nodesOff + idx * 48;
-    const len = _u8[po + 4] | (_u8[po + 5] << 8);
-    const pb = po >> 2;
+    const pb = idx * 11 + 10;
+    const len = _u32[pb + 1] & 65535;
     const iStart = _u32[pb + 2], rest = _u32[pb + 3];
-    const p = [];
-    for (let j = 0; j < len; j++) p.push(node(_u32[_extraBase + iStart + j]));
-    if (rest !== NULL) p.push(node(rest));
+    const p = new Array(rest !== NULL ? len + 1 : len);
+    for (let j = 0, base = _extraBase + iStart; j < len; j++) p[j] = node(_u32[base + j]);
+    if (rest !== NULL) p[len] = node(rest);
     return p;
   }
   function _attachedCommentsOf(a, e) {
-    const out = Array.from({ length: e - a });
+    const out = new Array(e - a);
     for (let j = a; j < e; j++) {
-      const o = _acOff + j * 12;
-      const cf = _u8[o + 0];
-      const vs = dv.getUint32(o + 4, true),
-            ve = dv.getUint32(o + 8, true);
+      const o = (_acOff >> 2) + j * 3;
+      const cf = _u32[o] & 255;
+      const vs = _u32[o + 1], ve = _u32[o + 2];
       out[j - a] = {
         type: (cf & 1) ? "Block" : "Line",
-        position: ["before", "after", "inside"][(cf >> 1) & 3],
+        position: AC_POSITIONS[(cf >> 1) & 3],
         sameLine: (cf & 8) !== 0,
         value: str(vs, ve),
       };
@@ -536,29 +532,24 @@ function decode(buffer, source) {
   function nodeWithComments(i) {
     const r = _decode(i);
     if (r && r.type !== undefined && r.comments === undefined) {
-      const off = _aoOff + i * 4;
-      const a = dv.getUint32(off, true), e = dv.getUint32(off + 4, true);
+      const off = (_aoOff >> 2) + i;
+      const a = _u32[off], e = _u32[off + 1];
       if (a !== e) r.comments = _attachedCommentsOf(a, e);
     }
     return r;
   }
   function _decode(i) {
-    const b = (_nodesOff + i * 48) >> 2;
+    const b = i * 11 + 10;
     const h0 = _u32[b];
     const tag = h0 & 255;
     const flags = h0 >>> 16;
-    const f0 = _u32[b + 1] & 65535;
-    const f1 = _u32[b + 2], f2 = _u32[b + 3],
-          f3 = _u32[b + 4], f4 = _u32[b + 5],
-          f5 = _u32[b + 6], f6 = _u32[b + 7],
-          f7 = _u32[b + 8], f8 = _u32[b + 9];
-    const _ss = _u32[b + 10], _se = _u32[b + 11];
+    const _ss = _u32[b + 9], _se = _u32[b + 10];
     const start = _ss <= _firstNa ? _ss : pm[_ss - _firstNa];
     const end = _se <= _firstNa ? _se : pm[_se - _firstNa];
     switch (tag) {
-    case 0: return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) };
-    case 1: return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 2: {
+    case 0: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) }; }
+    case 1: { const f1 = _u32[b + 2]; return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 2: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
       const r = {
         type: "ArrowFunctionExpression", start, end,
         id: null, generator: false, async: !!(flags & 2),
@@ -570,8 +561,8 @@ function decode(buffer, source) {
         r.returnType = f3 !== NULL ? node(f3) : null;
       }
       return r;
-    }
-    case 3: {
+ }
+    case 3: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6]; 
       const ft = flags & 3;
       const r = {
         type: FUNCTION_TYPES[ft], start, end,
@@ -587,53 +578,56 @@ function decode(buffer, source) {
         r.declare = !!(flags & 16);
       }
       return r;
-    }
-    case 4: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
-    case 5: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
-    case 6: return { params: fnParams(i) };
-    case 7: return node(f1);
-    case 8: return { type: "BinaryExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: BINARY_OPS[flags & 31] };
-    case 9: return { type: "LogicalExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: LOGICAL_OPS[flags & 3] };
-    case 10: return { type: "ConditionalExpression", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
-    case 11: return {
+ }
+    case 4: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) }; }
+    case 5: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) }; }
+    case 6: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { params: fnParams(i) };
+ }
+    case 7: { const f1 = _u32[b + 2]; return node(f1);
+ }
+    case 8: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "BinaryExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: BINARY_OPS[flags & 31] }; }
+    case 9: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "LogicalExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: LOGICAL_OPS[flags & 3] }; }
+    case 10: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "ConditionalExpression", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null }; }
+    case 11: { const f1 = _u32[b + 2]; return {
       type: "UnaryExpression", start, end,
       operator: UNARY_OPS[flags & 7], prefix: true,
       argument: f1 !== NULL ? node(f1) : null,
     };
-    case 12: return { type: "UpdateExpression", start, end, argument: f1 !== NULL ? node(f1) : null, operator: UPDATE_OPS[flags & 1], prefix: !!(flags & 2) };
-    case 13: return { type: "AssignmentExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: ASSIGNMENT_OPS[flags & 15] };
-    case 14: return { type: "ArrayExpression", start, end, elements: nodeArrHoles(f1, f0) };
-    case 15: return { type: "ObjectExpression", start, end, properties: nodeArr(f1, f0) };
-    case 16: return { type: "SpreadElement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 17: { const r = { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) }; if (_isTs) { r.optional = false; } return r; }
-    case 18: return { type: "MemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2) };
-    case 19: { const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f3, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
-    case 20: return { type: "ChainExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 21: { const r = { type: "TaggedTemplateExpression", start, end, tag: f1 !== NULL ? node(f1) : null, quasi: f3 !== NULL ? node(f3) : null }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
-    case 22: { const r = { type: "NewExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f3, f0) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
-    case 23: return { type: "AwaitExpression", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 24: return { type: "YieldExpression", start, end, argument: f1 !== NULL ? node(f1) : null, delegate: !!(flags & 1) };
-    case 25: return { type: "MetaProperty", start, end, meta: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
-    case 26: return { type: "Decorator", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 27: {
+ }
+    case 12: { const f1 = _u32[b + 2]; return { type: "UpdateExpression", start, end, argument: f1 !== NULL ? node(f1) : null, operator: UPDATE_OPS[flags & 1], prefix: !!(flags & 2) }; }
+    case 13: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "AssignmentExpression", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, operator: ASSIGNMENT_OPS[flags & 15] }; }
+    case 14: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "ArrayExpression", start, end, elements: nodeArrHoles(f1, f0) }; }
+    case 15: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "ObjectExpression", start, end, properties: nodeArr(f1, f0) }; }
+    case 16: { const f1 = _u32[b + 2]; return { type: "SpreadElement", start, end, argument: f1 !== NULL ? node(f1) : null }; }
+    case 17: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) }; if (_isTs) { r.optional = false; } return r; }
+    case 18: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "MemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2) }; }
+    case 19: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f3, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
+    case 20: { const f1 = _u32[b + 2]; return { type: "ChainExpression", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 21: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "TaggedTemplateExpression", start, end, tag: f1 !== NULL ? node(f1) : null, quasi: f3 !== NULL ? node(f3) : null }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
+    case 22: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "NewExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f3, f0) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
+    case 23: { const f1 = _u32[b + 2]; return { type: "AwaitExpression", start, end, argument: f1 !== NULL ? node(f1) : null }; }
+    case 24: { const f1 = _u32[b + 2]; return { type: "YieldExpression", start, end, argument: f1 !== NULL ? node(f1) : null, delegate: !!(flags & 1) }; }
+    case 25: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "MetaProperty", start, end, meta: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null }; }
+    case 26: { const f1 = _u32[b + 2]; return { type: "Decorator", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 27: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8]; 
       const r = {
         type: CLASS_TYPES[flags & 1], start, end,
         decorators: nodeArr(f1, f0),
         id: f2 !== NULL ? node(f2) : null,
         superClass: f4 !== NULL ? node(f4) : null,
-        body: node(f8),
+        body: node(f7),
       };
       if (_isTs) {
         r.typeParameters = f3 !== NULL ? node(f3) : null;
         r.superTypeArguments = f5 !== NULL ? node(f5) : null;
-        r.implements = nodeArr(f6, f7);
+        r.implements = nodeArr(f6, f0b);
         r.abstract = !!(flags & 2);
         r.declare = !!(flags & 4);
       }
       return r;
-    }
-    case 28: return { type: "ClassBody", start, end, body: nodeArr(f1, f0) };
-    case 29: {
+ }
+    case 28: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "ClassBody", start, end, body: nodeArr(f1, f0) }; }
+    case 29: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; 
       const r = {
         type: "MethodDefinition", start, end,
         decorators: nodeArr(f1, f0),
@@ -649,8 +643,8 @@ function decode(buffer, source) {
         if (_abs) r.type = "TSAbstractMethodDefinition";
       }
       return r;
-    }
-    case 30: {
+ }
+    case 30: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
       const _acc = !!(flags & 4);
       const r = {
         type: _acc ? "AccessorProperty" : "PropertyDefinition",
@@ -675,14 +669,15 @@ function decode(buffer, source) {
             : "TSAbstractPropertyDefinition";
       }
       return r;
-    }
-    case 31: return { type: "StaticBlock", start, end, body: nodeArr(f1, f0) };
-    case 32: return { type: "Super", start, end };
-    case 33: return {
+ }
+    case 31: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "StaticBlock", start, end, body: nodeArr(f1, f0) }; }
+    case 32: { return { type: "Super", start, end }; }
+    case 33: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return {
       type: "Literal", start, end,
       value: str(f1, f2), raw: _src.slice(start, end),
     };
-    case 34: {
+ }
+    case 34: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; 
       const r = _src.slice(start, end);
       const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, "");
       const v = (flags & 3) === 2 && s[1] !== "o" && s[1] !== "O"
@@ -693,8 +688,8 @@ function decode(buffer, source) {
         value: v,
         raw: r,
       };
-    }
-    case 35: {
+ }
+    case 35: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; 
       const r = _src.slice(start, end);
       const d = str(f1, f2).replace(/_/g, "");
       const v = BigInt(d);
@@ -702,17 +697,18 @@ function decode(buffer, source) {
         type: "Literal", start, end,
         value: v, raw: r, bigint: v.toString(),
       };
-    }
-    case 36: {
+ }
+    case 36: { 
       const v = !!(flags & 1);
       return {
         type: "Literal", start, end,
         value: v, raw: v ? "true" : "false",
       };
-    }
-    case 37: return { type: "Literal", start, end, value: null, raw: "null" };
-    case 38: return { type: "ThisExpression", start, end };
-    case 39: {
+ }
+    case 37: { return { type: "Literal", start, end, value: null, raw: "null" };
+ }
+    case 38: { return { type: "ThisExpression", start, end }; }
+    case 39: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
       const p = str(f1, f2), fl = str(f3, f4);
       let v = null;
       try { v = new RegExp(p, fl); } catch {}
@@ -721,9 +717,9 @@ function decode(buffer, source) {
         value: v, raw: "/" + p + "/" + fl,
         regex: { pattern: p, flags: fl.split("").sort().join("") },
       };
-    }
-    case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
-    case 41: {
+ }
+    case 40: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f0b) }; }
+    case 41: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
       const raw = _src.slice(start, end).replace(/\r\n?/g, "\n");
       const tl = !!(flags & 1);
       const s = _isTs ? start - 1 : start;
@@ -736,62 +732,63 @@ function decode(buffer, source) {
         },
         tail: tl,
       };
-    }
-    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
-    case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
-    case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
-    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
-    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
-    case 47: { const r = { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.directive = null; } return r; }
-    case 48: return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
-    case 49: return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) };
-    case 50: return { type: "SwitchCase", start, end, test: f1 !== NULL ? node(f1) : null, consequent: nodeArr(f2, f0) };
-    case 51: return { type: "ForStatement", start, end, init: f1 !== NULL ? node(f1) : null, test: f2 !== NULL ? node(f2) : null, update: f3 !== NULL ? node(f3) : null, body: f4 !== NULL ? node(f4) : null };
-    case 52: return { type: "ForInStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null };
-    case 53: return { type: "ForOfStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null, await: !!(flags & 1) };
-    case 54: return { type: "WhileStatement", start, end, test: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
-    case 55: return { type: "DoWhileStatement", start, end, body: f1 !== NULL ? node(f1) : null, test: f2 !== NULL ? node(f2) : null };
-    case 56: return { type: "BreakStatement", start, end, label: f1 !== NULL ? node(f1) : null };
-    case 57: return { type: "ContinueStatement", start, end, label: f1 !== NULL ? node(f1) : null };
-    case 58: return { type: "LabeledStatement", start, end, label: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
-    case 59: return { type: "WithStatement", start, end, object: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
-    case 60: return { type: "ReturnStatement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 61: return { type: "ThrowStatement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 62: return { type: "TryStatement", start, end, block: f1 !== NULL ? node(f1) : null, handler: f2 !== NULL ? node(f2) : null, finalizer: f3 !== NULL ? node(f3) : null };
-    case 63: return { type: "CatchClause", start, end, param: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
-    case 64: return { type: "DebuggerStatement", start, end };
-    case 65: return { type: "EmptyStatement", start, end };
-    case 66: { const r = { type: "VariableDeclaration", start, end, kind: VAR_KINDS[flags & 7], declarations: nodeArr(f1, f0) }; if (_isTs) { r.declare = !!(flags & 8); } return r; }
-    case 67: { const r = { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.definite = !!(flags & 1); } return r; }
-    case 68: return {
+ }
+    case 42: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 43: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "PrivateIdentifier", start, end, name: str(f1, f2) }; }
+    case 44: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 45: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 46: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 47: { const f1 = _u32[b + 2]; const r = { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.directive = null; } return r; }
+    case 48: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null }; }
+    case 49: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) }; }
+    case 50: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "SwitchCase", start, end, test: f1 !== NULL ? node(f1) : null, consequent: nodeArr(f2, f0) }; }
+    case 51: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return { type: "ForStatement", start, end, init: f1 !== NULL ? node(f1) : null, test: f2 !== NULL ? node(f2) : null, update: f3 !== NULL ? node(f3) : null, body: f4 !== NULL ? node(f4) : null }; }
+    case 52: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "ForInStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null }; }
+    case 53: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "ForOfStatement", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null, body: f3 !== NULL ? node(f3) : null, await: !!(flags & 1) }; }
+    case 54: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "WhileStatement", start, end, test: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null }; }
+    case 55: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "DoWhileStatement", start, end, body: f1 !== NULL ? node(f1) : null, test: f2 !== NULL ? node(f2) : null }; }
+    case 56: { const f1 = _u32[b + 2]; return { type: "BreakStatement", start, end, label: f1 !== NULL ? node(f1) : null }; }
+    case 57: { const f1 = _u32[b + 2]; return { type: "ContinueStatement", start, end, label: f1 !== NULL ? node(f1) : null }; }
+    case 58: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "LabeledStatement", start, end, label: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null }; }
+    case 59: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "WithStatement", start, end, object: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null }; }
+    case 60: { const f1 = _u32[b + 2]; return { type: "ReturnStatement", start, end, argument: f1 !== NULL ? node(f1) : null }; }
+    case 61: { const f1 = _u32[b + 2]; return { type: "ThrowStatement", start, end, argument: f1 !== NULL ? node(f1) : null }; }
+    case 62: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "TryStatement", start, end, block: f1 !== NULL ? node(f1) : null, handler: f2 !== NULL ? node(f2) : null, finalizer: f3 !== NULL ? node(f3) : null }; }
+    case 63: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "CatchClause", start, end, param: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null }; }
+    case 64: { return { type: "DebuggerStatement", start, end }; }
+    case 65: { return { type: "EmptyStatement", start, end }; }
+    case 66: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; const r = { type: "VariableDeclaration", start, end, kind: VAR_KINDS[flags & 7], declarations: nodeArr(f1, f0) }; if (_isTs) { r.declare = !!(flags & 8); } return r; }
+    case 67: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.definite = !!(flags & 1); } return r; }
+    case 68: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return {
       type: "ExpressionStatement", start, end,
       expression: node(f1), directive: str(f2, f3),
     };
-    case 69: { const r = { type: "AssignmentPattern", start, end, left: f2 !== NULL ? node(f2) : null, right: f4 !== NULL ? node(f4) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); } return r; }
-    case 70: { const r = { type: "RestElement", start, end, argument: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
-    case 71: {
-      const el = nodeArrHoles(f2, f3);
-      if (f4 !== NULL) el.push(node(f4));
+ }
+    case 69: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; const r = { type: "AssignmentPattern", start, end, left: f2 !== NULL ? node(f2) : null, right: f4 !== NULL ? node(f4) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); } return r; }
+    case 70: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "RestElement", start, end, argument: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f1, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
+    case 71: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
+      const el = nodeArrHoles(f2, f0b);
+      if (f3 !== NULL) el.push(node(f3));
       const r = { type: "ArrayPattern", start, end, elements: el };
       if (_isTs) {
         r.decorators = nodeArr(f1, f0);
         r.optional = !!(flags & 1);
-        r.typeAnnotation = f5 !== NULL ? node(f5) : null;
+        r.typeAnnotation = f4 !== NULL ? node(f4) : null;
       }
       return r;
-    }
-    case 72: {
-      const pr = nodeArr(f2, f3);
-      if (f4 !== NULL) pr.push(node(f4));
+ }
+    case 72: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; 
+      const pr = nodeArr(f2, f0b);
+      if (f3 !== NULL) pr.push(node(f3));
       const r = { type: "ObjectPattern", start, end, properties: pr };
       if (_isTs) {
         r.decorators = nodeArr(f1, f0);
         r.optional = !!(flags & 1);
-        r.typeAnnotation = f5 !== NULL ? node(f5) : null;
+        r.typeAnnotation = f4 !== NULL ? node(f4) : null;
       }
       return r;
-    }
-    case 73: {
+ }
+    case 73: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; 
       const r = {
         type: "Property", start, end,
         kind: "init",
@@ -800,7 +797,7 @@ function decode(buffer, source) {
         shorthand: !!(flags & 1),
         computed: !!(flags & 2),
       }; if (_isTs) { r.optional = false; } return r; }
-    case 74: return {
+    case 74: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return {
       type: "Program", start, end,
       sourceType: (flags & 1) ? "module" : "script",
       hashbang: (flags & 2) ? {
@@ -810,71 +807,74 @@ function decode(buffer, source) {
       } : null,
       body: nodeArr(f1, f0),
     };
-    case 75: return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
-    case 76: { const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
-    case 77: { const r = { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
-    case 78: return { type: "ImportDefaultSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };
-    case 79: return { type: "ImportNamespaceSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };
-    case 80: return { type: "ImportAttribute", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
-    case 81: { const r = { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f5) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
-    case 82: { const r = { type: "ExportDefaultDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.exportKind = "value"; } return r; }
-    case 83: { const r = { type: "ExportAllDeclaration", start, end, exported: f1 !== NULL ? node(f1) : null, source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
-    case 84: { const r = { type: "ExportSpecifier", start, end, local: f1 !== NULL ? node(f1) : null, exported: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
-    case 85: return { type: "TSTypeAnnotation", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 86: return { type: "TSAnyKeyword", start, end };
-    case 87: return { type: "TSUnknownKeyword", start, end };
-    case 88: return { type: "TSNeverKeyword", start, end };
-    case 89: return { type: "TSVoidKeyword", start, end };
-    case 90: return { type: "TSNullKeyword", start, end };
-    case 91: return { type: "TSUndefinedKeyword", start, end };
-    case 92: return { type: "TSStringKeyword", start, end };
-    case 93: return { type: "TSNumberKeyword", start, end };
-    case 94: return { type: "TSBigIntKeyword", start, end };
-    case 95: return { type: "TSBooleanKeyword", start, end };
-    case 96: return { type: "TSSymbolKeyword", start, end };
-    case 97: return { type: "TSObjectKeyword", start, end };
-    case 98: return { type: "TSIntrinsicKeyword", start, end };
-    case 99: return { type: "TSThisType", start, end };
-    case 100: return { type: "TSTypeReference", start, end, typeName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
-    case 101: return { type: "TSQualifiedName", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null };
-    case 102: return { type: "TSTypeQuery", start, end, exprName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
-    case 103: return { type: "TSImportType", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, qualifier: f3 !== NULL ? node(f3) : null, typeArguments: f4 !== NULL ? node(f4) : null };
-    case 104: return { type: "TSTypeParameter", start, end, name: f1 !== NULL ? node(f1) : null, constraint: f2 !== NULL ? node(f2) : null, default: f3 !== NULL ? node(f3) : null, in: !!(flags & 1), out: !!(flags & 2), const: !!(flags & 4) };
-    case 105: return { type: "TSTypeParameterDeclaration", start, end, params: nodeArr(f1, f0) };
-    case 106: return { type: "TSTypeParameterInstantiation", start, end, params: nodeArr(f1, f0) };
-    case 107: return { type: "TSLiteralType", start, end, literal: f1 !== NULL ? node(f1) : null };
-    case 108: return { type: "TSTemplateLiteralType", start, end, quasis: nodeArr(f1, f0), types: nodeArr(f2, f3) };
-    case 109: return { type: "TSArrayType", start, end, elementType: f1 !== NULL ? node(f1) : null };
-    case 110: return { type: "TSIndexedAccessType", start, end, objectType: f1 !== NULL ? node(f1) : null, indexType: f2 !== NULL ? node(f2) : null };
-    case 111: return { type: "TSTupleType", start, end, elementTypes: nodeArr(f1, f0) };
-    case 112: return { type: "TSNamedTupleMember", start, end, label: f1 !== NULL ? node(f1) : null, elementType: f2 !== NULL ? node(f2) : null, optional: !!(flags & 1) };
-    case 113: return { type: "TSOptionalType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 114: return { type: "TSRestType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 115: return { type: "TSJSDocNullableType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, postfix: !!(flags & 1) };
-    case 116: return { type: "TSJSDocNonNullableType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, postfix: !!(flags & 1) };
-    case 117: return { type: "TSJSDocUnknownType", start, end };
-    case 118: return { type: "TSUnionType", start, end, types: nodeArr(f1, f0) };
-    case 119: return { type: "TSIntersectionType", start, end, types: nodeArr(f1, f0) };
-    case 120: return { type: "TSConditionalType", start, end, checkType: f1 !== NULL ? node(f1) : null, extendsType: f2 !== NULL ? node(f2) : null, trueType: f3 !== NULL ? node(f3) : null, falseType: f4 !== NULL ? node(f4) : null };
-    case 121: return { type: "TSInferType", start, end, typeParameter: f1 !== NULL ? node(f1) : null };
-    case 122: return { type: "TSTypeOperator", start, end, operator: TS_TYPE_OPERATORS[flags & 3], typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 123: return { type: "TSParenthesizedType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 124: return {
+ }
+    case 75: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; }
+    case 76: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0b), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
+    case 77: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
+    case 78: { const f1 = _u32[b + 2]; return { type: "ImportDefaultSpecifier", start, end, local: f1 !== NULL ? node(f1) : null }; }
+    case 79: { const f1 = _u32[b + 2]; return { type: "ImportNamespaceSpecifier", start, end, local: f1 !== NULL ? node(f1) : null }; }
+    case 80: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "ImportAttribute", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null }; }
+    case 81: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; const r = { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f0b) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
+    case 82: { const f1 = _u32[b + 2]; const r = { type: "ExportDefaultDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.exportKind = "value"; } return r; }
+    case 83: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "ExportAllDeclaration", start, end, exported: f1 !== NULL ? node(f1) : null, source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
+    case 84: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "ExportSpecifier", start, end, local: f1 !== NULL ? node(f1) : null, exported: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
+    case 85: { const f1 = _u32[b + 2]; return { type: "TSTypeAnnotation", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null }; }
+    case 86: { return { type: "TSAnyKeyword", start, end }; }
+    case 87: { return { type: "TSUnknownKeyword", start, end }; }
+    case 88: { return { type: "TSNeverKeyword", start, end }; }
+    case 89: { return { type: "TSVoidKeyword", start, end }; }
+    case 90: { return { type: "TSNullKeyword", start, end }; }
+    case 91: { return { type: "TSUndefinedKeyword", start, end }; }
+    case 92: { return { type: "TSStringKeyword", start, end }; }
+    case 93: { return { type: "TSNumberKeyword", start, end }; }
+    case 94: { return { type: "TSBigIntKeyword", start, end }; }
+    case 95: { return { type: "TSBooleanKeyword", start, end }; }
+    case 96: { return { type: "TSSymbolKeyword", start, end }; }
+    case 97: { return { type: "TSObjectKeyword", start, end }; }
+    case 98: { return { type: "TSIntrinsicKeyword", start, end }; }
+    case 99: { return { type: "TSThisType", start, end }; }
+    case 100: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSTypeReference", start, end, typeName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null }; }
+    case 101: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSQualifiedName", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null }; }
+    case 102: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSTypeQuery", start, end, exprName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null }; }
+    case 103: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return { type: "TSImportType", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, qualifier: f3 !== NULL ? node(f3) : null, typeArguments: f4 !== NULL ? node(f4) : null }; }
+    case 104: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "TSTypeParameter", start, end, name: f1 !== NULL ? node(f1) : null, constraint: f2 !== NULL ? node(f2) : null, default: f3 !== NULL ? node(f3) : null, in: !!(flags & 1), out: !!(flags & 2), const: !!(flags & 4) }; }
+    case 105: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTypeParameterDeclaration", start, end, params: nodeArr(f1, f0) }; }
+    case 106: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTypeParameterInstantiation", start, end, params: nodeArr(f1, f0) }; }
+    case 107: { const f1 = _u32[b + 2]; return { type: "TSLiteralType", start, end, literal: f1 !== NULL ? node(f1) : null }; }
+    case 108: { const f0 = _u32[b + 1] & 65535; const f0b = _u32[b + 1] >>> 16; const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSTemplateLiteralType", start, end, quasis: nodeArr(f1, f0), types: nodeArr(f2, f0b) }; }
+    case 109: { const f1 = _u32[b + 2]; return { type: "TSArrayType", start, end, elementType: f1 !== NULL ? node(f1) : null }; }
+    case 110: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSIndexedAccessType", start, end, objectType: f1 !== NULL ? node(f1) : null, indexType: f2 !== NULL ? node(f2) : null }; }
+    case 111: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTupleType", start, end, elementTypes: nodeArr(f1, f0) }; }
+    case 112: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSNamedTupleMember", start, end, label: f1 !== NULL ? node(f1) : null, elementType: f2 !== NULL ? node(f2) : null, optional: !!(flags & 1) }; }
+    case 113: { const f1 = _u32[b + 2]; return { type: "TSOptionalType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null }; }
+    case 114: { const f1 = _u32[b + 2]; return { type: "TSRestType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null }; }
+    case 115: { const f1 = _u32[b + 2]; return { type: "TSJSDocNullableType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, postfix: !!(flags & 1) }; }
+    case 116: { const f1 = _u32[b + 2]; return { type: "TSJSDocNonNullableType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, postfix: !!(flags & 1) }; }
+    case 117: { return { type: "TSJSDocUnknownType", start, end }; }
+    case 118: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSUnionType", start, end, types: nodeArr(f1, f0) }; }
+    case 119: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSIntersectionType", start, end, types: nodeArr(f1, f0) }; }
+    case 120: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return { type: "TSConditionalType", start, end, checkType: f1 !== NULL ? node(f1) : null, extendsType: f2 !== NULL ? node(f2) : null, trueType: f3 !== NULL ? node(f3) : null, falseType: f4 !== NULL ? node(f4) : null }; }
+    case 121: { const f1 = _u32[b + 2]; return { type: "TSInferType", start, end, typeParameter: f1 !== NULL ? node(f1) : null }; }
+    case 122: { const f1 = _u32[b + 2]; return { type: "TSTypeOperator", start, end, operator: TS_TYPE_OPERATORS[flags & 3], typeAnnotation: f1 !== NULL ? node(f1) : null }; }
+    case 123: { const f1 = _u32[b + 2]; return { type: "TSParenthesizedType", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null }; }
+    case 124: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return {
       type: "TSFunctionType", start, end,
       typeParameters: f1 !== NULL ? node(f1) : null,
       params: f2 !== NULL ? fnParams(f2) : [],
       returnType: f3 !== NULL ? node(f3) : null,
     };
-    case 125: return {
+ }
+    case 125: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return {
       type: "TSConstructorType", start, end,
       abstract: !!(flags & 1),
       typeParameters: f1 !== NULL ? node(f1) : null,
       params: f2 !== NULL ? fnParams(f2) : [],
       returnType: f3 !== NULL ? node(f3) : null,
     };
-    case 126: return { type: "TSTypePredicate", start, end, parameterName: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null, asserts: !!(flags & 1) };
-    case 127: return { type: "TSTypeLiteral", start, end, members: nodeArr(f1, f0) };
-    case 128: return {
+ }
+    case 126: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSTypePredicate", start, end, parameterName: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null, asserts: !!(flags & 1) }; }
+    case 127: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSTypeLiteral", start, end, members: nodeArr(f1, f0) }; }
+    case 128: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return {
       type: "TSMappedType", start, end,
       key: node(f1),
       constraint: node(f2),
@@ -883,8 +883,9 @@ function decode(buffer, source) {
       optional: TS_MAPPED_OPTIONAL[(flags >> 0) & 3],
       readonly: TS_MAPPED_READONLY[(flags >> 2) & 3],
     };
-    case 129: { const r = { type: "TSPropertySignature", start, end, key: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2), readonly: !!(flags & 4) }; if (_isTs) { r.accessibility = null; r.static = false; } return r; }
-    case 130: return {
+ }
+    case 129: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "TSPropertySignature", start, end, key: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2), readonly: !!(flags & 4) }; if (_isTs) { r.accessibility = null; r.static = false; } return r; }
+    case 130: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return {
       type: "TSMethodSignature", start, end,
       key: node(f1),
       computed: !!(flags & 4),
@@ -895,28 +896,31 @@ function decode(buffer, source) {
       returnType: f4 !== NULL ? node(f4) : null,
       accessibility: null, readonly: false, static: false,
     };
-    case 131: return {
+ }
+    case 131: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return {
       type: "TSCallSignatureDeclaration", start, end,
       typeParameters: f1 !== NULL ? node(f1) : null,
       params: f2 !== NULL ? fnParams(f2) : [],
       returnType: f3 !== NULL ? node(f3) : null,
     };
-    case 132: return {
+ }
+    case 132: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return {
       type: "TSConstructSignatureDeclaration", start, end,
       typeParameters: f1 !== NULL ? node(f1) : null,
       params: f2 !== NULL ? fnParams(f2) : [],
       returnType: f3 !== NULL ? node(f3) : null,
     };
-    case 133: { const r = { type: "TSIndexSignature", start, end, parameters: nodeArr(f1, f0), typeAnnotation: f2 !== NULL ? node(f2) : null, readonly: !!(flags & 1) }; if (_isTs) { r.static = !!(flags & 2); r.accessibility = null; } return r; }
-    case 134: return { type: "TSTypeAliasDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, typeParameters: f2 !== NULL ? node(f2) : null, typeAnnotation: f3 !== NULL ? node(f3) : null, declare: !!(flags & 1) };
-    case 135: return { type: "TSInterfaceDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, typeParameters: f2 !== NULL ? node(f2) : null, extends: nodeArr(f3, f0), body: f4 !== NULL ? node(f4) : null, declare: !!(flags & 1) };
-    case 136: return { type: "TSInterfaceBody", start, end, body: nodeArr(f1, f0) };
-    case 137: return { type: "TSInterfaceHeritage", start, end, expression: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
-    case 138: return { type: "TSClassImplements", start, end, expression: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
-    case 139: return { type: "TSEnumDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null, const: !!(flags & 1), declare: !!(flags & 2) };
-    case 140: return { type: "TSEnumBody", start, end, members: nodeArr(f1, f0) };
-    case 141: return { type: "TSEnumMember", start, end, id: f1 !== NULL ? node(f1) : null, initializer: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1) };
-    case 142: {
+ }
+    case 133: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "TSIndexSignature", start, end, parameters: nodeArr(f1, f0), typeAnnotation: f2 !== NULL ? node(f2) : null, readonly: !!(flags & 1) }; if (_isTs) { r.static = !!(flags & 2); r.accessibility = null; } return r; }
+    case 134: { const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "TSTypeAliasDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, typeParameters: f2 !== NULL ? node(f2) : null, typeAnnotation: f3 !== NULL ? node(f3) : null, declare: !!(flags & 1) }; }
+    case 135: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5]; return { type: "TSInterfaceDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, typeParameters: f2 !== NULL ? node(f2) : null, extends: nodeArr(f3, f0), body: f4 !== NULL ? node(f4) : null, declare: !!(flags & 1) }; }
+    case 136: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSInterfaceBody", start, end, body: nodeArr(f1, f0) }; }
+    case 137: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSInterfaceHeritage", start, end, expression: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null }; }
+    case 138: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSClassImplements", start, end, expression: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null }; }
+    case 139: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSEnumDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null, const: !!(flags & 1), declare: !!(flags & 2) }; }
+    case 140: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSEnumBody", start, end, members: nodeArr(f1, f0) }; }
+    case 141: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSEnumMember", start, end, id: f1 !== NULL ? node(f1) : null, initializer: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1) }; }
+    case 142: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; 
       const r = {
         type: "TSModuleDeclaration", start, end,
         id: node(f1),
@@ -926,49 +930,51 @@ function decode(buffer, source) {
       };
       if (f2 !== NULL) r.body = node(f2);
       return r;
-    }
-    case 143: return { type: "TSModuleBlock", start, end, body: nodeArr(f1, f0) };
-    case 144: return {
+ }
+    case 143: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2]; return { type: "TSModuleBlock", start, end, body: nodeArr(f1, f0) }; }
+    case 144: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return {
       type: "TSModuleDeclaration", start, end,
       id: node(f1), body: node(f2),
       kind: "global",
       declare: !!(flags & 1),
       global: true,
     };
-    case 145: { const r = { type: "TSParameterProperty", start, end, decorators: nodeArr(f1, f0), parameter: f2 !== NULL ? node(f2) : null, override: !!(flags & 1), readonly: !!(flags & 2), accessibility: ACCESSIBILITY[(flags >> 2) & 3] }; if (_isTs) { r.static = false; } return r; }
-    case 146: return {
+ }
+    case 145: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3]; const r = { type: "TSParameterProperty", start, end, decorators: nodeArr(f1, f0), parameter: f2 !== NULL ? node(f2) : null, override: !!(flags & 1), readonly: !!(flags & 2), accessibility: ACCESSIBILITY[(flags >> 2) & 3] }; if (_isTs) { r.static = false; } return r; }
+    case 146: { const f1 = _u32[b + 2]; return {
       type: "Identifier", start, end,
       decorators: [],
       name: "this", optional: false,
       typeAnnotation: f1 !== NULL ? node(f1) : null,
     };
-    case 147: return { type: "TSAsExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
-    case 148: return { type: "TSSatisfiesExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null };
-    case 149: return { type: "TSTypeAssertion", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, expression: f2 !== NULL ? node(f2) : null };
-    case 150: return { type: "TSNonNullExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 151: return { type: "TSInstantiationExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
-    case 152: return { type: "TSExportAssignment", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 153: return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null };
-    case 154: return { type: "TSImportEqualsDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, moduleReference: f2 !== NULL ? node(f2) : null, importKind: IMPORT_EXPORT_KINDS[flags & 1] };
-    case 155: return { type: "TSExternalModuleReference", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 156: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
-    case 157: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
-    case 158: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
-    case 159: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
-    case 160: return { type: "JSXOpeningFragment", start, end };
-    case 161: return { type: "JSXClosingFragment", start, end };
-    case 162: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
-    case 163: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };
-    case 164: return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
-    case 165: return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
-    case 166: return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 167: return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 168: return { type: "JSXEmptyExpression", start, end };
-    case 169: {
+ }
+    case 147: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSAsExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null }; }
+    case 148: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSSatisfiesExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeAnnotation: f2 !== NULL ? node(f2) : null }; }
+    case 149: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSTypeAssertion", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null, expression: f2 !== NULL ? node(f2) : null }; }
+    case 150: { const f1 = _u32[b + 2]; return { type: "TSNonNullExpression", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 151: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSInstantiationExpression", start, end, expression: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null }; }
+    case 152: { const f1 = _u32[b + 2]; return { type: "TSExportAssignment", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 153: { const f1 = _u32[b + 2]; return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null }; }
+    case 154: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "TSImportEqualsDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, moduleReference: f2 !== NULL ? node(f2) : null, importKind: IMPORT_EXPORT_KINDS[flags & 1] }; }
+    case 155: { const f1 = _u32[b + 2]; return { type: "TSExternalModuleReference", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 156: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null }; }
+    case 157: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f2 !== NULL ? node(f2) : null; } return r; }
+    case 158: { const f1 = _u32[b + 2]; return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null }; }
+    case 159: { const f0 = _u32[b + 1] & 65535; const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4]; return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null }; }
+    case 160: { return { type: "JSXOpeningFragment", start, end }; }
+    case 161: { return { type: "JSXClosingFragment", start, end }; }
+    case 162: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "JSXIdentifier", start, end, name: str(f1, f2) }; }
+    case 163: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null }; }
+    case 164: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null }; }
+    case 165: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null }; }
+    case 166: { const f1 = _u32[b + 2]; return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null }; }
+    case 167: { const f1 = _u32[b + 2]; return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 168: { return { type: "JSXEmptyExpression", start, end }; }
+    case 169: { const f1 = _u32[b + 2], f2 = _u32[b + 3]; 
       const t = str(f1, f2);
       return { type: "JSXText", start, end, value: t, raw: t };
-    }
-    case 170: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
+ }
+    case 170: { const f1 = _u32[b + 2]; return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null }; }
     }
   }
   const _inner = _attached ? nodeWithComments : _decode;
@@ -983,18 +989,16 @@ function decode(buffer, source) {
     return r;
   }
   const _nodesU32 = _nodesOff >> 2;
-  function startOf(i) { return _p(_u32[_nodesU32 + i * 12 + 10]); }
-  function endOf(i) { return _p(_u32[_nodesU32 + i * 12 + 11]); }
+  function startOf(i) { return _p(_u32[_nodesU32 + i * 11 + 9]); }
+  function endOf(i) { return _p(_u32[_nodesU32 + i * 11 + 10]); }
   const dOff = _cOff + commentCount * 20;
   function _decodeComments() {
-    const out = Array.from({ length: commentCount });
+    const out = new Array(commentCount);
     for (let j = 0; j < commentCount; j++) {
-      const o = _cOff + j * 20;
-      const cf = _u8[o + 0];
-      const vs = dv.getUint32(o + 4, true),
-            ve = dv.getUint32(o + 8, true);
-      const ss = dv.getUint32(o + 12, true),
-            se = dv.getUint32(o + 16, true);
+      const o = (_cOff >> 2) + j * 5;
+      const cf = _u32[o] & 255;
+      const vs = _u32[o + 1], ve = _u32[o + 2];
+      const ss = _u32[o + 3], se = _u32[o + 4];
       out[j] = {
         type: (cf & 1) ? "Block" : "Line",
         value: str(vs, ve),
@@ -1005,7 +1009,8 @@ function decode(buffer, source) {
     return out;
   }
   function _decodeDiagnostics() {
-    const out = Array.from({ length: diagCount });
+    const out = new Array(diagCount);
+    const dv = new DataView(buffer);
     let dp = dOff;
     for (let j = 0; j < diagCount; j++) {
       const sev = SEVERITY[_u8[dp]]; dp++;
@@ -1020,7 +1025,7 @@ function decode(buffer, source) {
         help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
       }
       const lc = dv.getUint32(dp, true); dp += 4;
-      const labels = Array.from({ length: lc });
+      const labels = new Array(lc);
       for (let k = 0; k < lc; k++) {
         const ls = _p(dv.getUint32(dp, true)); dp += 4;
         const le = _p(dv.getUint32(dp, true)); dp += 4;
@@ -1041,7 +1046,7 @@ function decode(buffer, source) {
     if (_parentArr !== undefined) return _parentArr;
     const p = new Int32Array(nodeCount).fill(-1);
     (function visit(i, parent) {
-      const o = _nodesOff + i * 48;
+      const o = _nodesOff + i * 44;
       const tag = _u8[o];
       if (IS_NODE[tag]) { p[i] = parent; parent = i; }
       const ops = CHILD_SLOTS[tag];
@@ -1055,7 +1060,9 @@ function decode(buffer, source) {
           const s = _u32[b + slot];
           const len = ops[q] === 1
             ? _u32[b + slot + 1]
-            : _u8[o + 4] | (_u8[o + 5] << 8);
+            : ops[q] === 2
+              ? _u8[o + 4] | (_u8[o + 5] << 8)
+              : _u8[o + 6] | (_u8[o + 7] << 8);
           for (let j = 0; j < len; j++) {
             const c = _u32[_extraBase + s + j];
             if (c !== NULL) visit(c, parent);
@@ -1069,6 +1076,7 @@ function decode(buffer, source) {
   function _semantic() {
     if (_semView !== undefined) return _semView;
     if (!(_flags & 8)) return (_semView = null);
+    const dv = new DataView(buffer);
     let dp = dOff;
     for (let j = 0; j < diagCount; j++) {
       dp += 9;

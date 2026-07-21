@@ -32,7 +32,10 @@
 //   extra              extra_count * 4 bytes. Flat u32 array backing
 //                      IndexRange (see below).
 //   strings            string_pool_len bytes of raw UTF-8 for pooled
-//                      strings (see string pool below).
+//                      strings (see string pool below), zero-padded to the
+//                      next 4-byte boundary. The header records the true
+//                      length; consumers advance by alignPool(len) so every
+//                      following section is 4-byte aligned.
 //   attached_offsets   (node_count + 1) u32s when FLAG_ATTACHED_COMMENTS is
 //                      set, absent otherwise. Prefix-sum offsets indexing
 //                      attached_comments: node i owns entries
@@ -54,9 +57,10 @@
 //   bool              1 flag bit, at the running sum of prior flag widths.
 //   enum              ceil(log2(n)) flag bits, where n is the variant count.
 //   NodeIndex         1 u32 slot. 0xFFFFFFFF marks null.
-//   IndexRange        the first such field in a struct takes field0 (u16
-//                     length) plus 1 u32 slot for start; each later one
-//                     takes 2 u32 slots, start then length.
+//   IndexRange        the first two such fields in a struct keep their
+//                     u16 length in field0/field0b and take 1 u32 slot
+//                     each for start; any later one takes 2 u32 slots,
+//                     start then length.
 //   String            2 u32 slots (start, end); see string handles below.
 //   ?ImportPhase      1 flag bit for presence plus enum bits for the value.
 //   ?Hashbang         1 flag bit for presence plus 2 u32 slots (start, end).
@@ -78,9 +82,10 @@
 //                           (start - source_len).
 //   The string pool holds strings that cannot be sliced directly from the
 //   source (escaped or otherwise transformed values) and may contain WTF-8
-//   encoded lone surrogates. Its length is arbitrary, so every following
-//   section may begin at an unaligned byte offset; the JS decoder uses
-//   DataView for all reads, and the Zig decoder uses byte-wise @memcpy.
+//   encoded lone surrogates. On the wire it is zero-padded to a 4-byte
+//   boundary, so every section is 4-byte aligned and both decoders read
+//   whole u32 words. Only the variable-length diagnostics section has
+//   unaligned interior fields.
 //
 // diagnostics
 //   A sequence of diag_count entries, each variable length:
@@ -131,21 +136,20 @@ const Header = extern struct {
 };
 
 /// packed ast node entry. `tag` identifies the `ast.NodeData` variant,
-/// `flags` holds packed booleans and small enums, and `field1..field8`
+/// `flags` holds packed booleans and small enums, and `field1..field7`
 /// are u32 data slots assigned to struct fields by the packing rules.
 ///
-/// the *first* IndexRange in a struct uses `field0` (u16 length) plus one
-/// u32 slot for start, saving one full slot. every *later* IndexRange
-/// uses two consecutive u32 slots for start then length. this only
-/// affects structs with two or more IndexRange fields. the comptime
-/// validator still enforces the 8 slot and 16 flag bit budget regardless.
-/// when ordering fields for density, declare the first IndexRange first.
+/// the first IndexRange in a struct stores its u16 length in `field0`,
+/// the second in `field0b`; each takes just one u32 slot for its start.
+/// any further IndexRange uses two consecutive u32 slots, start then
+/// length (no current node needs a third). the comptime validator
+/// enforces the 7 slot and 16 flag bit budget regardless.
 const PackedNode = extern struct {
     tag: u8,
     _pad0: u8 = 0,
     flags: u16,
     field0: u16,
-    _pad1: u16 = 0,
+    field0b: u16,
     field1: u32,
     field2: u32,
     field3: u32,
@@ -153,7 +157,6 @@ const PackedNode = extern struct {
     field5: u32,
     field6: u32,
     field7: u32,
-    field8: u32,
     span_start: u32,
     span_end: u32,
 };
@@ -220,6 +223,7 @@ pub const FLAG_SEMANTIC: u32 = 1 << 3;
 // `PackedNode` byte offsets and u32 indices.
 pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
 pub const NODE_FIELD0_OFFSET: u8 = @offsetOf(PackedNode, "field0");
+pub const NODE_FIELD0B_OFFSET: u8 = @offsetOf(PackedNode, "field0b");
 pub const NODE_HEADER_U32S: u8 = @offsetOf(PackedNode, "field1") / 4;
 pub const NODE_SPAN_START_U32: u8 = @offsetOf(PackedNode, "span_start") / 4;
 pub const NODE_SPAN_END_U32: u8 = @offsetOf(PackedNode, "span_end") / 4;
@@ -270,10 +274,12 @@ pub fn flagBitForField(comptime T: type, comptime target: usize) u8 {
 }
 
 /// number of u32 slots consumed by field `field_idx` in struct T.
+/// the first two IndexRanges keep their length in the packed u16
+/// length fields (`field0`, `field0b`), so they take one slot each.
 pub fn fieldU32Count(comptime T: type, comptime field_idx: usize) u8 {
     const f = std.meta.fields(T)[field_idx];
     if (f.type == ast.NodeIndex) return 1;
-    if (f.type == ast.IndexRange) return if (isFirstRange(T, field_idx)) 1 else 2;
+    if (f.type == ast.IndexRange) return if (rangeIndexOf(T, field_idx) < 2) 1 else 2;
     if (f.type == ast.String) return 2;
     if (f.type == ?ast.Hashbang) return 2;
     if (f.type == bool or f.type == ?ast.ImportPhase or comptime isEnumType(f.type)) return 0;
@@ -289,13 +295,16 @@ pub fn u32SlotForField(comptime T: type, comptime target: usize) u8 {
     }
 }
 
-/// true if field `target` is the first IndexRange in struct T.
-pub fn isFirstRange(comptime T: type, comptime target: usize) bool {
+/// 0-based position of field `target` among struct T's IndexRange
+/// fields. `target` must be an IndexRange field.
+pub fn rangeIndexOf(comptime T: type, comptime target: usize) u8 {
     comptime {
-        for (std.meta.fields(T), 0..) |f, i| {
-            if (f.type == ast.IndexRange) return i == target;
+        std.debug.assert(std.meta.fields(T)[target].type == ast.IndexRange);
+        var idx: u8 = 0;
+        for (std.meta.fields(T)[0..target]) |f| {
+            if (f.type == ast.IndexRange) idx += 1;
         }
-        return false;
+        return idx;
     }
 }
 
@@ -344,6 +353,12 @@ fn validateAllNodeLayouts() void {
 
 // serialization
 
+/// string pool length rounded up to the 4-byte boundary it occupies on
+/// the wire. keeps every section after the pool u32-aligned.
+pub inline fn alignPool(len: usize) usize {
+    return (len + 3) & ~@as(usize, 3);
+}
+
 pub fn bufferSize(tree: *const ast.Tree) usize {
     std.debug.assert(tree.nodes.len <= std.math.maxInt(u32));
     std.debug.assert(tree.extras.items.len <= std.math.maxInt(u32));
@@ -357,7 +372,7 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
     var size: usize = HEADER_SIZE +
         tree.nodes.len * NODE_SIZE +
         tree.extras.items.len * 4 +
-        tree.strings.extra.items.len +
+        alignPool(tree.strings.extra.items.len) +
         tree.attached_comment_offsets.len * 4 +
         tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
         tree.comments.len * COMMENT_SIZE;
@@ -373,6 +388,8 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
 pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     std.debug.assert(buf.len >= bufferSize(tree));
     std.debug.assert(tree.root != .null);
+    // every section is written through 4-byte-aligned pointers
+    std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
 
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
     const has_attached = tree.attached_comment_offsets.len != 0;
@@ -401,23 +418,25 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     @memcpy(buf[0..HEADER_SIZE], std.mem.asBytes(&hdr));
     var pos: usize = HEADER_SIZE;
 
-    // nodes
+    // nodes, packed straight into the destination buffer
+    const nodes_out: [*]PackedNode = @ptrCast(@alignCast(buf.ptr + pos));
     const data_items = tree.nodes.items(.data);
     const span_items = tree.nodes.items(.span);
-    for (0..hdr.node_count) |i| {
-        const n = packNode(&data_items[i], span_items[i]);
-        @memcpy(buf[pos..][0..NODE_SIZE], std.mem.asBytes(&n));
-        pos += NODE_SIZE;
+    for (data_items, span_items, 0..) |*data, span, i| {
+        nodes_out[i] = packNode(data, span);
     }
+    pos += @as(usize, hdr.node_count) * NODE_SIZE;
 
     // extra
     const extra_bytes = std.mem.sliceAsBytes(tree.extras.items);
     @memcpy(buf[pos..][0..extra_bytes.len], extra_bytes);
     pos += extra_bytes.len;
 
-    // string pool
+    // string pool, zero-padded to the next 4-byte boundary
     @memcpy(buf[pos..][0..string_pool_len], tree.strings.extra.items);
-    pos += string_pool_len;
+    const pool_pad = alignPool(string_pool_len) - string_pool_len;
+    @memset(buf[pos + string_pool_len ..][0..pool_pad], 0);
+    pos += string_pool_len + pool_pad;
 
     // attached comment offsets (present only when FLAG_ATTACHED_COMMENTS is set)
     const offsets_bytes = std.mem.sliceAsBytes(tree.attached_comment_offsets);
@@ -425,34 +444,32 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     pos += offsets_bytes.len;
 
     // attached comments
-    for (tree.attached_comments) |c| {
+    const attached_out: [*]PackedAttachedComment = @ptrCast(@alignCast(buf.ptr + pos));
+    for (tree.attached_comments, 0..) |c, i| {
         var flags: u8 = 0;
         if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
         flags |= @as(u8, @intFromEnum(c.position)) << ATTACHED_COMMENT_POSITION_SHIFT;
         if (c.same_line) flags |= 1 << ATTACHED_COMMENT_SAME_LINE_BIT;
-        const entry = PackedAttachedComment{
+        attached_out[i] = .{
             .flags = flags,
             .value_start = c.value.start,
             .value_end = c.value.end,
         };
-        @memcpy(buf[pos..][0..ATTACHED_COMMENT_SIZE], std.mem.asBytes(&entry));
-        pos += ATTACHED_COMMENT_SIZE;
     }
+    pos += tree.attached_comments.len * ATTACHED_COMMENT_SIZE;
 
     // comments
-    for (tree.comments) |c| {
-        var flags: u8 = 0;
-        if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
-        const entry = PackedComment{
-            .flags = flags,
+    const comments_out: [*]PackedComment = @ptrCast(@alignCast(buf.ptr + pos));
+    for (tree.comments, 0..) |c, i| {
+        comments_out[i] = .{
+            .flags = if (c.type == .block) 1 << COMMENT_TYPE_BIT else 0,
             .value_start = c.value.start,
             .value_end = c.value.end,
             .span_start = c.span.start,
             .span_end = c.span.end,
         };
-        @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
-        pos += COMMENT_SIZE;
     }
+    pos += tree.comments.len * COMMENT_SIZE;
 
     // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
@@ -526,13 +543,12 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
         } else if (f.type == ast.NodeIndex) {
             setSlot(n, slot, @intFromEnum(val));
         } else if (f.type == ast.IndexRange) {
-            if (comptime isFirstRange(T, i)) {
-                n.field0 = @intCast(val.len);
-                setSlot(n, slot, val.start);
-            } else {
-                setSlot(n, slot, val.start);
-                setSlot(n, slot + 1, @intCast(val.len));
+            switch (comptime rangeIndexOf(T, i)) {
+                0 => n.field0 = @intCast(val.len),
+                1 => n.field0b = @intCast(val.len),
+                else => setSlot(n, slot + 1, @intCast(val.len)),
             }
+            setSlot(n, slot, val.start);
         } else if (f.type == ast.String) {
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.end);
@@ -603,6 +619,8 @@ pub fn deserializeFromBuf(
     source: []const u8,
 ) DeserializeError!ast.Tree {
     if (buf.len < HEADER_SIZE) return error.InvalidBuffer;
+    // sections are read through 4-byte-aligned pointers
+    std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
 
     var hdr: Header = undefined;
     @memcpy(std.mem.asBytes(&hdr), buf[0..HEADER_SIZE]);
@@ -624,15 +642,15 @@ pub fn deserializeFromBuf(
     const nodes_bytes: usize = @as(usize, hdr.node_count) * NODE_SIZE;
     if (buf.len < pos + nodes_bytes) return error.InvalidBuffer;
     try tree.nodes.resize(tree.allocator(), hdr.node_count);
+    const nodes_in: [*]const PackedNode = @ptrCast(@alignCast(buf.ptr + pos));
     for (0..hdr.node_count) |i| {
-        var pn: PackedNode = undefined;
-        @memcpy(std.mem.asBytes(&pn), buf[pos..][0..NODE_SIZE]);
-        pos += NODE_SIZE;
+        const pn = nodes_in[i];
         tree.nodes.set(i, .{
             .data = unpackNode(pn),
             .span = .{ .start = pn.span_start, .end = pn.span_end },
         });
     }
+    pos += nodes_bytes;
 
     // extras
     const extras_bytes: usize = @as(usize, hdr.extra_count) * 4;
@@ -641,11 +659,11 @@ pub fn deserializeFromBuf(
     @memcpy(std.mem.sliceAsBytes(tree.extras.items), buf[pos..][0..extras_bytes]);
     pos += extras_bytes;
 
-    // string pool
-    if (buf.len < pos + hdr.string_pool_len) return error.InvalidBuffer;
+    // string pool (padded to 4 bytes on the wire, true length in the header)
+    if (buf.len < pos + alignPool(hdr.string_pool_len)) return error.InvalidBuffer;
     try tree.strings.extra.resize(tree.allocator(), hdr.string_pool_len);
     @memcpy(tree.strings.extra.items, buf[pos..][0..hdr.string_pool_len]);
-    pos += hdr.string_pool_len;
+    pos += alignPool(hdr.string_pool_len);
 
     // attached comment offsets (present only when FLAG_ATTACHED_COMMENTS is set)
     const has_attached = (hdr.flags & FLAG_ATTACHED_COMMENTS) != 0;
@@ -664,12 +682,11 @@ pub fn deserializeFromBuf(
     if (buf.len < pos + attached_bytes) return error.InvalidBuffer;
     if (hdr.attached_comment_count > 0) {
         const attached = try tree.allocator().alloc(ast.AttachedComment, hdr.attached_comment_count);
-        for (0..hdr.attached_comment_count) |i| {
-            var ce: PackedAttachedComment = undefined;
-            @memcpy(std.mem.asBytes(&ce), buf[pos..][0..ATTACHED_COMMENT_SIZE]);
-            pos += ATTACHED_COMMENT_SIZE;
+        const attached_in: [*]const PackedAttachedComment = @ptrCast(@alignCast(buf.ptr + pos));
+        for (attached, 0..) |*out, i| {
+            const ce = attached_in[i];
             const pos_bits = (ce.flags & ATTACHED_COMMENT_POSITION_MASK) >> ATTACHED_COMMENT_POSITION_SHIFT;
-            attached[i] = .{
+            out.* = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
                 .position = @enumFromInt(pos_bits),
                 .same_line = (ce.flags >> ATTACHED_COMMENT_SAME_LINE_BIT) & 1 != 0,
@@ -678,17 +695,17 @@ pub fn deserializeFromBuf(
         }
         tree.attached_comments = attached;
     }
+    pos += attached_bytes;
 
     // comments
     const comments_bytes: usize = @as(usize, hdr.comment_count) * COMMENT_SIZE;
     if (buf.len < pos + comments_bytes) return error.InvalidBuffer;
     if (hdr.comment_count > 0) {
         const comments = try tree.allocator().alloc(ast.Comment, hdr.comment_count);
-        for (0..hdr.comment_count) |i| {
-            var ce: PackedComment = undefined;
-            @memcpy(std.mem.asBytes(&ce), buf[pos..][0..COMMENT_SIZE]);
-            pos += COMMENT_SIZE;
-            comments[i] = .{
+        const comments_in: [*]const PackedComment = @ptrCast(@alignCast(buf.ptr + pos));
+        for (comments, 0..) |*out, i| {
+            const ce = comments_in[i];
+            out.* = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
                 .value = .{ .start = ce.value_start, .end = ce.value_end },
                 .span = .{ .start = ce.span_start, .end = ce.span_end },
@@ -696,6 +713,7 @@ pub fn deserializeFromBuf(
         }
         tree.comments = comments;
     }
+    pos += comments_bytes;
 
     // skip diagnostics. codegen doesn't read them.
 
@@ -730,7 +748,11 @@ fn unpackPayload(comptime T: type, n: PackedNode, payload: *T) void {
         } else if (f.type == ast.NodeIndex) {
             @field(payload.*, f.name) = @enumFromInt(readSlot(n, slot));
         } else if (f.type == ast.IndexRange) {
-            const len: u32 = if (comptime isFirstRange(T, i)) n.field0 else readSlot(n, slot + 1);
+            const len: u32 = switch (comptime rangeIndexOf(T, i)) {
+                0 => n.field0,
+                1 => n.field0b,
+                else => readSlot(n, slot + 1),
+            };
             const start: u32 = if (len == 0) 0 else readSlot(n, slot);
             @field(payload.*, f.name) = .{ .start = start, .len = len };
         } else if (f.type == ast.String) {

@@ -27,7 +27,9 @@ fn writePrologue(w: *Writer) !void {
         \\const HEADER_SIZE = {[hdr_size]d};
         \\const NODE_FLAGS_OFFSET = {[flags_off]d};
         \\const NODE_FIELD0_OFFSET = {[f0_off]d};
+        \\const NODE_FIELD0B_OFFSET = {[f0b_off]d};
         \\const NODE_HEADER_U32S = {[hdr_u32s]d};
+        \\const NODE_DATA_SLOTS = {[data_slots]d};
         \\const NODE_SPAN_START_U32 = {[ss_u32]d};
         \\const NODE_SPAN_END_U32 = {[se_u32]d};
         \\const ATTACHED_COMMENT_SIZE = {[c_size]d};
@@ -41,7 +43,9 @@ fn writePrologue(w: *Writer) !void {
         .hdr_size = rt.HEADER_SIZE,
         .flags_off = rt.NODE_FLAGS_OFFSET,
         .f0_off = rt.NODE_FIELD0_OFFSET,
+        .f0b_off = rt.NODE_FIELD0B_OFFSET,
         .hdr_u32s = rt.NODE_HEADER_U32S,
+        .data_slots = rt.NODE_DATA_SLOTS,
         .ss_u32 = rt.NODE_SPAN_START_U32,
         .se_u32 = rt.NODE_SPAN_END_U32,
         .c_size = rt.ATTACHED_COMMENT_SIZE,
@@ -114,14 +118,7 @@ fn writeRuntime(w: *Writer) !void {
         \\    }
         \\    const idx = nodeCount++;
         \\    const b = (idx * NODE_SIZE) >>> 2;
-        \\    nU32[b + NODE_HEADER_U32S + 0] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 1] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 2] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 3] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 4] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 5] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 6] = NULL;
-        \\    nU32[b + NODE_HEADER_U32S + 7] = NULL;
+        \\    for (let s = 0; s < NODE_DATA_SLOTS; s++) nU32[b + NODE_HEADER_U32S + s] = NULL;
         \\    return idx;
         \\  }
         \\  function tagAt(idx, tag) { nU8[idx * NODE_SIZE] = tag; }
@@ -131,6 +128,10 @@ fn writeRuntime(w: *Writer) !void {
         \\  }
         \\  function f0At(idx, v) {
         \\    const o = idx * NODE_SIZE + NODE_FIELD0_OFFSET;
+        \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
+        \\  }
+        \\  function f0bAt(idx, v) {
+        \\    const o = idx * NODE_SIZE + NODE_FIELD0B_OFFSET;
         \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
         \\  }
         \\  function slotAt(idx, slot, v) {
@@ -317,16 +318,19 @@ fn writeGenericEncoder(
         if (f.type == ast.NodeIndex) {
             try w.print("    slotAt(idx, {d}, c_{s});\n", .{ slot, f.name });
         } else if (f.type == ast.IndexRange) {
-            if (comptime rt.isFirstRange(T, i)) {
-                try w.print(
+            switch (comptime rt.rangeIndexOf(T, i)) {
+                0 => try w.print(
                     "    f0At(idx, c_{s}.len);\n    slotAt(idx, {d}, c_{s}.start);\n",
                     .{ f.name, slot, f.name },
-                );
-            } else {
-                try w.print(
+                ),
+                1 => try w.print(
+                    "    f0bAt(idx, c_{s}.len);\n    slotAt(idx, {d}, c_{s}.start);\n",
+                    .{ f.name, slot, f.name },
+                ),
+                else => try w.print(
                     "    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.len);\n",
                     .{ slot, f.name, slot + 1, f.name },
-                );
+                ),
             }
         } else if (f.type == ast.String) {
             try w.print(
@@ -793,15 +797,15 @@ fn writeSpecialClass(w: *Writer, comptime tag: usize) !void {
         \\    slotAt(idx, {d}, body);
         \\    slotAt(idx, {d}, tp);
         \\    slotAt(idx, {d}, sta);
+        \\    f0bAt(idx, imps.len);
         \\    slotAt(idx, {d}, imps.start);
-        \\    slotAt(idx, {d}, imps.len);
         \\    flagsAt(idx, ((kind & {d}) << {d}) | (n.abstract ? {d} : 0) | (n.declare ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, si, ss, sb, stp, ssta, simp, simp + 1, tm, bt, mab, mdc });
+    , .{ tag, si, ss, sb, stp, ssta, simp, tm, bt, mab, mdc });
 }
 
 fn writeSpecialMethodDef(w: *Writer, comptime tag: usize) !void {
@@ -967,7 +971,8 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    f0At(idx, decs.len);
         \\    slotAt(idx, {d}, decs.start);
-        \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.len);
+        \\    f0bAt(idx, r.len);
+        \\    slotAt(idx, {d}, r.start);
         \\    slotAt(idx, {d}, rest);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
@@ -976,7 +981,7 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sdec, se, se + 1, sr, sta, mopt });
+    , .{ tag, sdec, se, sr, sta, mopt });
 }
 
 fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
@@ -1003,7 +1008,8 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    tagAt(idx, {d});
         \\    f0At(idx, decs.len);
         \\    slotAt(idx, {d}, decs.start);
-        \\    slotAt(idx, {d}, r.start); slotAt(idx, {d}, r.len);
+        \\    f0bAt(idx, r.len);
+        \\    slotAt(idx, {d}, r.start);
         \\    slotAt(idx, {d}, rest);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
@@ -1012,7 +1018,7 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sdec, sp, sp + 1, sr, sta, mopt });
+    , .{ tag, sdec, sp, sr, sta, mopt });
 }
 
 fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {
@@ -1450,10 +1456,11 @@ fn writeAssemble(w: *Writer) !void {
         \\  }}
         \\  const totalNodeBytes = nodeCount * NODE_SIZE;
         \\  const totalExtraBytes = extraCount * 4;
+        \\  const totalPoolBytes = (poolLen + 3) & ~3;
         \\  const totalOffsetsBytes = attached ? (nodeCount + 1) * 4 : 0;
         \\  const totalAttachedBytes = attachedCount * ATTACHED_COMMENT_SIZE;
         \\  const finalSize =
-        \\    HEADER_SIZE + totalNodeBytes + totalExtraBytes + poolLen +
+        \\    HEADER_SIZE + totalNodeBytes + totalExtraBytes + totalPoolBytes +
         \\    totalOffsetsBytes + totalAttachedBytes;
         \\  const out = new ArrayBuffer(finalSize);
         \\  const outU8 = new Uint8Array(out);
@@ -1471,7 +1478,7 @@ fn writeAssemble(w: *Writer) !void {
         \\  const nodesOff = HEADER_SIZE;
         \\  const extrasOff = nodesOff + totalNodeBytes;
         \\  const poolOff = extrasOff + totalExtraBytes;
-        \\  const offsetsOff = poolOff + poolLen;
+        \\  const offsetsOff = poolOff + totalPoolBytes;
         \\  const attachedOff = offsetsOff + totalOffsetsBytes;
         \\  outU8.set(new Uint8Array(nodeAB, 0, totalNodeBytes), nodesOff);
         \\  outU8.set(new Uint8Array(extras.buffer, 0, totalExtraBytes), extrasOff);

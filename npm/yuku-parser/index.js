@@ -2,8 +2,11 @@ import { walk as astWalk } from "yuku-ast";
 import binding from "./binding.js";
 import { decode } from "./decode.js";
 
+const _enc = new TextEncoder();
+
 export function parse(source, options) {
-  return decode(binding.parse(source, options ?? {}), source);
+  const bytes = typeof source === "string" ? _enc.encode(source) : source;
+  return decode(binding.parse(bytes, options ?? {}), source);
 }
 
 export function langFromPath(path) {
