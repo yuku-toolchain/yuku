@@ -32,7 +32,7 @@
     "wasm"
   ],
   "dependencies": {
-    "@yuku-toolchain/types": "workspace:*",
-    "yuku-ast": "workspace:*"
+    "@yuku-toolchain/types": "workspace:^",
+    "yuku-ast": "workspace:^"
   }
 }

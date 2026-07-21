@@ -23,6 +23,7 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
+  "include": ["**/*", ".github/**/*"],
   "exclude": [
     "node_modules",
     "test/parser/suite",

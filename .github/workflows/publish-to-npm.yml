@@ -37,7 +37,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           # Pinned exact: this Node bundles npm 11.16.0. npm 12.0.0 breaks
-          # provenance publishing (npm/cli#9722), and every Node 24.x ships
+          # provenance publishing (https://github.com/npm/cli/issues/9722), and every Node 24.x ships
           # npm 11, so pinning here removes the need for an ad-hoc npm install.
           node-version: "24.18.0"
           registry-url: "https://registry.npmjs.org"
@@ -50,6 +50,12 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      # `bun pm pack` resolves workspace deps from bun.lock, so a lockfile
+      # that wasn't regenerated after the version bump would publish packages
+      # depending on the previous release (https://github.com/oven-sh/bun/issues/20477).
+      - name: Verify lockfile workspace versions
+        run: bun .github/scripts/check-lock-versions.ts
 
       - name: Build
         run: bun run build:npm

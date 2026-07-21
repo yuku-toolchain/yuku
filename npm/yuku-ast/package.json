@@ -21,7 +21,7 @@
     "build": "tsdown"
   },
   "dependencies": {
-    "@yuku-toolchain/types": "workspace:*"
+    "@yuku-toolchain/types": "workspace:^"
   },
   "devDependencies": {
     "tsdown": "^0.15.6"
