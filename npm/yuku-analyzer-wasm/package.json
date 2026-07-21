@@ -1,6 +1,6 @@
 {
   "name": "@yuku-analyzer/wasm",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Full JavaScript/TypeScript semantic analysis, compiled to WebAssembly",
   "license": "MIT",
   "repository": {
