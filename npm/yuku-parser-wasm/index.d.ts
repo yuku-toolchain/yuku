@@ -71,7 +71,7 @@ interface ParseResult {
 export function parse(source: string, options?: ParseOptions): ParseResult;
 
 // Deprecated walking surface. Walking moved to the yuku-ast package,
-// these delegate there and will be removed in the next major version.
+// these delegate there and will be removed in an upcoming minor version.
 
 /** @deprecated Import `WalkHandler` from the yuku-ast package instead. */
 type WalkHandler<T extends Node = Node, S = unknown> = (node: T, ctx: WalkContext<T, S>) => void;
@@ -92,7 +92,7 @@ type Visitors<S = unknown> = {
 
 /**
  * @deprecated Walking moved to the yuku-ast package. Install yuku-ast
- * and import `walk` from there. Removed in the next major version.
+ * and import `walk` from there. Removed in an upcoming minor version.
  */
 export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T;
 

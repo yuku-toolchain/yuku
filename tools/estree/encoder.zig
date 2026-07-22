@@ -92,6 +92,8 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
     try w.writeAll("};\n");
 }
 
+// encStr's second copy loop emits a wtf-8 tail: lone surrogates are
+// kept as ED A0..BF rather than replaced with U+FFFD.
 fn writeRuntime(w: *Writer) !void {
     try w.writeAll(
         \\function encode(program) {
@@ -189,7 +191,6 @@ fn writeRuntime(w: *Writer) !void {
         \\      if (c >= 0x80) break;
         \\      pool[p++] = c;
         \\    }
-        \\    // wtf-8 tail: keep lone surrogates as ED A0..BF rather than U+FFFD
         \\    for (; i < n; i++) {
         \\      let c = s.charCodeAt(i);
         \\      if (c < 0x80) {

@@ -623,47 +623,72 @@ fn rangeCount(comptime T: type) usize {
     }
 }
 
-/// opens `case N: {` and declares exactly the u32 slots this node type
-/// uses: `f0`/`f0b` (the packed u16 lengths of the first and second
-/// IndexRange) when present, and `f1..fn` for the type's data slots.
-/// cases therefore only load the words they read, instead of all slots
-/// for every node.
-fn writeCaseOpen(w: *Writer, comptime tag: usize, comptime T: type) !void {
-    try w.print("    case {d}: {{ ", .{tag});
-    if (@typeInfo(T) != .@"struct") return;
-    const ranges = comptime rangeCount(T);
-    if (ranges >= 1) {
-        try w.print("const f0 = {s}; ", .{comptime u16At(
-            std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0_OFFSET / 4}),
-            rt.NODE_FIELD0_OFFSET % 4,
-        )});
+fn isIdentChar(c: u8) bool {
+    return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+        (c >= '0' and c <= '9') or c == '_' or c == '$';
+}
+
+/// whether `body` references `name` as a standalone identifier, so that
+/// e.g. `f0` does not match inside `f0b`.
+fn usesIdent(body: []const u8, name: []const u8) bool {
+    var i: usize = 0;
+    while (std.mem.indexOfPos(u8, body, i, name)) |p| : (i = p + 1) {
+        const before_ok = p == 0 or !isIdentChar(body[p - 1]);
+        const after = p + name.len;
+        const after_ok = after >= body.len or !isIdentChar(body[after]);
+        if (before_ok and after_ok) return true;
     }
-    if (ranges >= 2) {
-        try w.print("const f0b = {s}; ", .{comptime u16At(
-            std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0B_OFFSET / 4}),
-            rt.NODE_FIELD0B_OFFSET % 4,
-        )});
-    }
-    const n = comptime rt.totalU32Slots(T);
-    if (n > 0) {
-        try w.writeAll("const ");
-        inline for (0..n) |k| {
-            if (k > 0) try w.writeAll(", ");
-            try w.print("f{d} = _u32[b + {d}]", .{ k + 1, k + rt.NODE_HEADER_U32S });
+    return false;
+}
+
+/// opens `case N: {` and declares only the u32 slots the rendered case
+/// body references: `f0`/`f0b` (the packed u16 lengths of the first and
+/// second IndexRange) and `f1..fn` for the type's data slots. cases
+/// therefore only load the words they read, and special-cased bodies
+/// that skip fields never see dead declarations.
+fn writeCaseOpen(w: *Writer, comptime tag: usize, comptime T: type, body: []const u8) !void {
+    try w.print("    case {d}: {{", .{tag});
+    if (@typeInfo(T) == .@"struct") {
+        const ranges = comptime rangeCount(T);
+        if (ranges >= 1 and usesIdent(body, "f0")) {
+            try w.print(" const f0 = {s};", .{comptime u16At(
+                std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0_OFFSET / 4}),
+                rt.NODE_FIELD0_OFFSET % 4,
+            )});
         }
-        try w.writeAll("; ");
+        if (ranges >= 2 and usesIdent(body, "f0b")) {
+            try w.print(" const f0b = {s};", .{comptime u16At(
+                std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0B_OFFSET / 4}),
+                rt.NODE_FIELD0B_OFFSET % 4,
+            )});
+        }
+        const n = comptime rt.totalU32Slots(T);
+        var first = true;
+        inline for (0..n) |k| {
+            if (usesIdent(body, std.fmt.comptimePrint("f{d}", .{k + 1}))) {
+                try w.writeAll(if (first) " const " else ", ");
+                first = false;
+                try w.print("f{d} = _u32[b + {d}]", .{ k + 1, k + rt.NODE_HEADER_U32S });
+            }
+        }
+        if (!first) try w.writeAll(";");
     }
+    if (body.len > 0 and body[0] != '\n') try w.writeAll(" ");
 }
 
 fn writeNodeCases(w: *Writer) !void {
     @setEvalBranchQuota(100_000);
+    var body_buf: [16 * 1024]u8 = undefined;
     inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, tag| {
-        try writeCaseOpen(w, tag, field.type);
+        var body_w: Writer = .fixed(&body_buf);
         if (comptime isSpecial(field.name)) {
-            try writeSpecialCase(w, field.name);
+            try writeSpecialCase(&body_w, field.name);
         } else {
-            try writeGenericCase(w, field.name, field.type);
+            try writeGenericCase(&body_w, field.name, field.type);
         }
+        const body = body_w.buffered();
+        try writeCaseOpen(w, tag, field.type, body);
+        try w.writeAll(body);
         try w.writeAll(" }\n");
     }
 }
