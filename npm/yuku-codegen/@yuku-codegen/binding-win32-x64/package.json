@@ -1,6 +1,6 @@
 {
   "name": "@yuku-codegen/binding-win32-x64",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "license": "MIT",
   "os": [
     "win32"
