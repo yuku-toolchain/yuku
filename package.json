@@ -14,12 +14,13 @@
     "npm/**/*"
   ],
   "scripts": {
-    "test": "bun fetch:fixtures && bun build:local && bun typecheck && bun test:parser && bun test:codegen && bun test:ast && bun test:analyzer && bun test:sourcemap",
+    "test": "bun fetch:fixtures && bun build:local && bun build:wasm && bun typecheck && bun test:parser && bun test:codegen && bun test:ast && bun test:analyzer && bun test:wasm && bun test:sourcemap",
     "typecheck": "tsc --noEmit",
     "test:parser": "bun test/parser/run.ts",
     "test:codegen": "bun test test/codegen",
     "test:ast": "bun test test/ast",
     "test:analyzer": "bun test test/analyzer",
+    "test:wasm": "bun test test/wasm",
     "test:sourcemap": "bun test/sourcemap/run.ts",
     "test:tools": "zig build test-tools",
     "test:fuzz": "zig build fuzz",

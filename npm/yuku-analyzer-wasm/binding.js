@@ -14,7 +14,7 @@ async function instantiate() {
 }
 
 const { memory, alloc, free, analyze } = (await instantiate()).exports;
-const encoder = new TextEncoder();
+const _enc = new TextEncoder();
 
 const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
 
@@ -29,7 +29,7 @@ function packFlags(o = {}) {
 
 export default {
   analyze(source, options) {
-    const bytes = encoder.encode(source);
+    const bytes = typeof source === "string" ? _enc.encode(source) : source;
     const srcLen = bytes.length;
     const srcPtr = alloc(srcLen || 1);
     // Growing wasm memory detaches memory.buffer, so re-view after every call.

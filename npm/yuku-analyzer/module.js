@@ -3,9 +3,6 @@ import binding from "./binding.js";
 import { decode, SymbolFlags } from "./decode.js";
 import { walkModule, walkModuleAsync } from "./walk.js";
 
-// TextEncoder uses the engine's SIMD UTF-8 fast path; the binding
-// borrows the encoded bytes zero-copy instead of converting the string
-// through the Node-API.
 const _enc = new TextEncoder();
 
 export function langFromPath(path) {
