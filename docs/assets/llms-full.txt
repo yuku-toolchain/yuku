@@ -131,17 +131,16 @@ const tree = try parser.parse(allocator, source, .{
 
 | Field                           | Values                               | Default   | Description                                                                       |
 | ------------------------------- | ------------------------------------ | --------- | --------------------------------------------------------------------------------- |
-| `source_type`                   | `.script`, `.module`                 | `.module` | Script mode or ES module mode (strict mode)                                       |
+| `source_type`                   | `.script`, `.module`, `.commonjs`    | `.module` | Script mode, ES module mode (strict mode), or CommonJS mode, where the top level behaves like a function body (top-level `return`, `new.target`, `using`) |
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
-| `allow_return_outside_function` | `true`, `false`                      | `false`   | Allow `return` statements at the top level                                        |
 | `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](https://yuku.fyi/parser/ast/#comments) |
 
 Both fields can be inferred from a file path.
 
 ```zig
 const tree = try parser.parse(allocator, source, .{
-    .source_type = .fromPath("app.cjs"), // .script
+    .source_type = .fromPath("app.cjs"), // .commonjs
     .lang = .fromPath("app.tsx"),               // .tsx
 });
 ```
@@ -2419,9 +2418,8 @@ analyzer.modules;                   // ReadonlyMap<string, Module>
 ```js
 analyzer.addFile("legacy.cjs", source, {
   // lang "js", inferred from the extension
-  // sourceType "script", inferred from the extension
+  // sourceType "commonjs", inferred from the extension
   preserveParens: true,
-  allowReturnOutsideFunction: false,
   attachComments: false,
 });
 ```

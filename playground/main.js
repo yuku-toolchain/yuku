@@ -307,7 +307,6 @@ function options() {
     lang: $("lang").value,
     sourceType: $("sourceType").value,
     preserveParens: $("preserveParens").checked,
-    allowReturnOutsideFunction: $("allowReturnOutsideFunction").checked,
     semanticErrors: $("semanticErrors").checked,
     attachComments: $("attachComments").checked,
   };
@@ -654,7 +653,7 @@ astView.addEventListener("click", (e) => {
 });
 
 const STATE_KEY = "yuku-state";
-const CONTROLS = ["lang", "sourceType", "preserveParens", "allowReturnOutsideFunction", "semanticErrors", "attachComments", "strip", "minify", "format", "quotes", "comments", "indent", "view"];
+const CONTROLS = ["lang", "sourceType", "preserveParens", "semanticErrors", "attachComments", "strip", "minify", "format", "quotes", "comments", "indent", "view"];
 
 function snapshot() {
   const s = { code: jar.toString(), theme: document.documentElement.dataset.theme };

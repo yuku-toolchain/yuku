@@ -1324,16 +1324,16 @@ pub const Lexer = struct {
                     pos = self.cursor;
                 },
                 4 => {
-                    // html-style `<!--` only valid in script mode
-                    if (self.source_type != .script or pos + 3 >= src.len or
+                    // html-style `<!--` only valid outside modules
+                    if (self.source_type == .module or pos + 3 >= src.len or
                         src[pos + 1] != '!' or src[pos + 2] != '-' or src[pos + 3] != '-') break;
                     self.cursor = pos;
                     try self.scanHtmlComment();
                     pos = self.cursor;
                 },
                 5 => {
-                    // html-style `-->` only valid at line start in script mode
-                    if (self.source_type != .script or
+                    // html-style `-->` only valid at line start outside modules
+                    if (self.source_type == .module or
                         !can_be_html_close_comment or
                         pos + 2 >= src.len or
                         src[pos + 1] != '-' or
@@ -1443,7 +1443,7 @@ pub const Lexer = struct {
     }
 
     fn scanHtmlComment(self: *Lexer) LexicalError!void {
-        std.debug.assert(self.source_type == .script);
+        std.debug.assert(self.source_type != .module);
         std.debug.assert(self.cursor + 3 < self.source.len);
         std.debug.assert(self.source[self.cursor] == '<');
         std.debug.assert(self.source[self.cursor + 1] == '!');
@@ -1463,7 +1463,7 @@ pub const Lexer = struct {
     }
 
     fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
-        std.debug.assert(self.source_type == .script);
+        std.debug.assert(self.source_type != .module);
         std.debug.assert(self.cursor + 2 < self.source.len);
         std.debug.assert(self.source[self.cursor] == '-');
         std.debug.assert(self.source[self.cursor + 1] == '-');

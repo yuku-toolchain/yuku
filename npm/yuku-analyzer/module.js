@@ -14,7 +14,7 @@ export function langFromPath(path) {
 }
 
 export function sourceTypeFromPath(path) {
-  return path.endsWith(".cjs") || path.endsWith(".cts") ? "script" : "module";
+  return path.endsWith(".cjs") || path.endsWith(".cts") ? "commonjs" : "module";
 }
 
 class Scope {
@@ -272,7 +272,6 @@ export class Module {
         lang: options.lang ?? langFromPath(path),
         sourceType: options.sourceType ?? sourceTypeFromPath(path),
         preserveParens: options.preserveParens,
-        allowReturnOutsideFunction: options.allowReturnOutsideFunction,
         attachComments: options.attachComments,
       }),
       source,

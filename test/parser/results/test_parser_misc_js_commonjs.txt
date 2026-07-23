@@ -1,0 +1,13 @@
+test/parser/misc/js/commonjs
+============================
+Passed:       7/7 (100.00%)
+Failed:       0
+AST mismatch: 0/7
+
+✓ test/parser/misc/js/commonjs/await-as-identifier.js
+✓ test/parser/misc/js/commonjs/new-target.js
+✓ test/parser/misc/js/commonjs/return-expression.js
+✓ test/parser/misc/js/commonjs/return-in-control-flow.js
+✓ test/parser/misc/js/commonjs/return-with-value.js
+✓ test/parser/misc/js/commonjs/return-without-value.js
+✓ test/parser/misc/js/commonjs/using-declaration.js

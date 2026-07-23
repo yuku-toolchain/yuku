@@ -15,9 +15,12 @@ export * from "@yuku-toolchain/types";
 /** Options for configuring the parser. */
 interface ParseOptions {
   /**
-   * Parse as a classic script or an ES module.
+   * Parse as a classic script, an ES module, or a CommonJS module.
    * Module mode enables `import`/`export`, `import.meta`, top-level `await`,
-   * and strict mode.
+   * and strict mode. CommonJS mode parses script code whose top level behaves
+   * like a function body, allowing top-level `return`, `new.target`, and
+   * `using`. The AST's `Program.sourceType` is always `"script"` or
+   * `"module"`, per ESTree.
    * @default "module"
    */
   sourceType?: SourceType;
@@ -33,11 +36,6 @@ interface ParseOptions {
    * @default true
    */
   preserveParens?: boolean;
-  /**
-   * Allow `return` statements outside of functions, at the top level.
-   * @default false
-   */
-  allowReturnOutsideFunction?: boolean;
   /**
    * Run semantic analysis after parsing and include semantic errors
    * (e.g. duplicate declarations, invalid `break`/`continue` targets)
@@ -110,7 +108,7 @@ export function langFromPath(path: string): SourceLang;
 /**
  * Resolves a {@link SourceType} from a file path's extension.
  *
- * - `.cjs`, `.cts` → `"script"`
+ * - `.cjs`, `.cts` → `"commonjs"`
  * - everything else → `"module"`
  */
 export function sourceTypeFromPath(path: string): SourceType;

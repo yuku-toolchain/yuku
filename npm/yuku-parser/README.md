@@ -54,7 +54,7 @@ import { langFromPath, sourceTypeFromPath } from "yuku-parser";
 
 langFromPath("foo.tsx");           // "tsx"
 langFromPath("types.d.ts");        // "dts"
-sourceTypeFromPath("foo.cjs");     // "script"
+sourceTypeFromPath("foo.cjs");     // "commonjs"
 sourceTypeFromPath("foo.mjs");     // "module"
 ```
 
@@ -88,7 +88,6 @@ const result = parse(source, {
   sourceType: "module",
   lang: "jsx",
   preserveParens: true,
-  allowReturnOutsideFunction: false,
   semanticErrors: false,
   attachComments: false,
 });
@@ -96,10 +95,9 @@ const result = parse(source, {
 
 | Option                       | Values                                    | Default    | Description                                                                                                                  |
 | ---------------------------- | ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `sourceType`                 | `"module"`, `"script"`                    | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode.                                    |
+| `sourceType`                 | `"module"`, `"script"`, `"commonjs"`      | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. CommonJS mode parses script code whose top level behaves like a function body, allowing top-level `return`, `new.target`, and `using`. |
 | `lang`                       | `"js"`, `"ts"`, `"jsx"`, `"tsx"`, `"dts"` | `"js"`     | Language variant controls which syntax extensions are enabled.                                                               |
 | `preserveParens`             | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
-| `allowReturnOutsideFunction` | `true`, `false`                           | `false`    | Allow `return` statements outside of functions, at the top level.                                                            |
 | `semanticErrors`             | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
 | `attachComments`             | `true`, `false`                           | `false`    | Also attach each comment to its host AST node. The flat `result.comments` list is always present. See [Comments](#comments). |
 

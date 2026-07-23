@@ -810,7 +810,7 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if ((decl.kind == .using or decl.kind == .await_using) and
-            !ctx.tree.isModule() and isAtProgramLevel(ctx))
+            ctx.tree.source_type == .script and isAtProgramLevel(ctx))
         {
             try self.report(ctx.tree.span(node_index), try self.fmt(
                 "'{s}' is not allowed at the top level of a script",
@@ -1329,7 +1329,8 @@ pub const Checker = struct {
                 else => {},
             }
         }
-        return false;
+        // commonjs top level is a function body
+        return ctx.tree.source_type == .commonjs;
     }
 
     const LabelSearch = enum { found, not_found, crossed_boundary };

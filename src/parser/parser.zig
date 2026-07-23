@@ -30,6 +30,8 @@ pub const CommentMode = enum {
 pub const Options = struct {
     /// Source type determines how the code is parsed and evaluated.
     /// Defaults to `.module` (ES module semantics, strict mode enabled).
+    /// `.commonjs` parses script code whose top level behaves like a
+    /// function body (top-level `return`, `new.target`, `using`).
     source_type: ast.SourceType = .module,
     /// Language variant determines which syntax features are enabled.
     /// Defaults to `.js` (plain JavaScript).
@@ -38,9 +40,6 @@ pub const Options = struct {
     /// `ParenthesizedExpression` nodes in the AST. When false,
     /// parentheses are stripped and only the inner expression is kept.
     preserve_parens: bool = true,
-    /// When true, `return` statements are allowed at the top level,
-    /// outside of any function. Defaults to false.
-    allow_return_outside_function: bool = false,
     /// Whether and how comments are collected. Defaults to `.flat`: comments
     /// land in the flat `tree.comments` list with no per-node attachment.
     comments: CommentMode = .flat,
@@ -97,7 +96,6 @@ pub const Parser = struct {
     source_type: ast.SourceType,
     lang: ast.Lang,
     preserve_parens: bool,
-    allow_return_outside_function: bool,
     comment_mode: CommentMode,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
@@ -132,7 +130,6 @@ pub const Parser = struct {
             .source_type = options.source_type,
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
-            .allow_return_outside_function = options.allow_return_outside_function,
             .comment_mode = options.comments,
             .lexer = undefined,
             .current_token = Token.eof(0),
@@ -160,9 +157,10 @@ pub const Parser = struct {
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
+        // commonjs top level is a function body, so [+Return]
         self.context.yield = false;
         self.context.await = self.tree.isModule();
-        self.context.@"return" = self.allow_return_outside_function;
+        self.context.@"return" = self.source_type == .commonjs;
 
         // a `.d.ts` file is ambient throughout
         self.ts_context.ambient = self.lang == .dts;

@@ -1,0 +1,79 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 60,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 14,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 13,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 9,
+              "name": "await"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 12,
+              "end": 13,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ]
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 15,
+        "end": 59,
+        "id": {
+          "type": "Identifier",
+          "start": 24,
+          "end": 32,
+          "name": "yield_ok"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 33,
+            "end": 39,
+            "name": "yield_"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 41,
+          "end": 59,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 43,
+              "end": 57,
+              "argument": {
+                "type": "Identifier",
+                "start": 50,
+                "end": 56,
+                "name": "yield_"
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

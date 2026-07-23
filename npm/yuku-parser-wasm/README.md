@@ -26,8 +26,7 @@ Options:
 | Option                       | Default    | Description                               |
 | ---------------------------- | ---------- | ----------------------------------------- |
 | `lang`                       | `"js"`     | `"js" \| "ts" \| "jsx" \| "tsx" \| "dts"` |
-| `sourceType`                 | `"module"` | `"module" \| "script"`                    |
+| `sourceType`                 | `"module"` | `"module" \| "script" \| "commonjs"`     |
 | `preserveParens`             | `true`     | Keep `ParenthesizedExpression` nodes      |
-| `allowReturnOutsideFunction` | `false`    | Allow top-level `return`                  |
 | `semanticErrors`             | `false`    | Also run semantic analysis                |
 | `attachComments`             | `false`    | Attach comments to their host node        |

@@ -10,6 +10,7 @@ pub const Mode = struct { lang: ast.Lang, source_type: ast.SourceType };
 pub const modes = [_]Mode{
     .{ .lang = .js, .source_type = .module },
     .{ .lang = .js, .source_type = .script },
+    .{ .lang = .js, .source_type = .commonjs },
     .{ .lang = .ts, .source_type = .module },
     .{ .lang = .ts, .source_type = .script },
     .{ .lang = .tsx, .source_type = .module },
