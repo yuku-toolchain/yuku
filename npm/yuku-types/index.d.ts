@@ -1,7 +1,8 @@
 /** How the source code should be parsed. */
-type SourceType = "script" | "module";
+type SourceType = "script" | "module" | "commonjs";
 
-type ModuleKind = SourceType;
+/** What a `Program` node reports, per ESTree. `commonjs` input parses as `script`. */
+type ModuleKind = "script" | "module";
 
 /** Language variant of the source code. */
 type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";

@@ -19,13 +19,12 @@ async function instantiate() {
 const { memory, alloc, free, parse: wasmParse } = (await instantiate()).exports;
 const _enc = new TextEncoder();
 
+const SOURCE_TYPES = { script: 0, module: 1, commonjs: 2 };
 const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
 
 function packFlags(o = {}) {
-  let f = (LANGS[o.lang] ?? 0) << 1;
-  if (o.sourceType === "script") f |= 1 << 0;
-  if (o.preserveParens !== false) f |= 1 << 4;
-  if (o.allowReturnOutsideFunction) f |= 1 << 5;
+  let f = (SOURCE_TYPES[o.sourceType] ?? 1) | ((LANGS[o.lang] ?? 0) << 2);
+  if (o.preserveParens !== false) f |= 1 << 5;
   if (o.semanticErrors) f |= 1 << 6;
   if (o.attachComments) f |= 1 << 7;
   return f;
@@ -58,7 +57,7 @@ export function langFromPath(path) {
 }
 
 export function sourceTypeFromPath(path) {
-  return path.endsWith(".cjs") || path.endsWith(".cts") ? "script" : "module";
+  return path.endsWith(".cjs") || path.endsWith(".cts") ? "commonjs" : "module";
 }
 
 export { WalkContext } from "yuku-ast";

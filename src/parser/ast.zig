@@ -46,25 +46,25 @@ pub const Diagnostic = struct {
 };
 
 /// Source type of a JavaScript or TypeScript file.
-///
-/// Determines whether the file is parsed as an ES module or a classic script.
 pub const SourceType = enum {
     script,
     module,
+    commonjs,
 
     pub fn toString(self: SourceType) []const u8 {
         return switch (self) {
             .script => "script",
             .module => "module",
+            .commonjs => "commonjs",
         };
     }
 
     /// Determines the source type based on the file extension.
-    /// `.mjs` and `.mts` are treated as modules, `.cjs` and `.cts` as
-    /// scripts. All other files default to module.
+    /// `.cjs` and `.cts` are treated as CommonJS. All other files
+    /// default to module.
     pub fn fromPath(path: []const u8) SourceType {
         if (std.mem.endsWith(u8, path, ".cjs") or std.mem.endsWith(u8, path, ".cts")) {
-            return .script;
+            return .commonjs;
         }
 
         return .module;

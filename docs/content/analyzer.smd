@@ -113,9 +113,8 @@ analyzer.modules;                   // ReadonlyMap<string, Module>
 ```js
 analyzer.addFile("legacy.cjs", source, {
   // lang "js", inferred from the extension
-  // sourceType "script", inferred from the extension
+  // sourceType "commonjs", inferred from the extension
   preserveParens: true,
-  allowReturnOutsideFunction: false,
   attachComments: false,
 });
 ```

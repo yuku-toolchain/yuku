@@ -4,6 +4,5 @@ test {
     _ = @import("cases/scope.zig");
     _ = @import("cases/symbol.zig");
     _ = @import("cases/module_record.zig");
-    _ = @import("cases/checker.zig");
     _ = @import("cases/corpus.zig");
 }

@@ -17,10 +17,9 @@ const transfer = @import("transfer");
 const gpa = std.heap.wasm_allocator;
 
 const flag = struct {
-    const script = 1 << 0;
-    const lang_shift = 1; // bits 1..3: ast.Lang index
-    const preserve_parens = 1 << 4;
-    const allow_return = 1 << 5;
+    const source_type_mask = 0b11; // bits 0..1: ast.SourceType index
+    const lang_shift = 2; // bits 2..4: ast.Lang index
+    const preserve_parens = 1 << 5;
     const attach_comments = 1 << 7;
 };
 
@@ -39,10 +38,9 @@ export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
 
 fn run(source: []const u8, flags: u32) ![]u8 {
     var tree = try parser.parse(gpa, source, .{
-        .source_type = if (flags & flag.script != 0) .script else .module,
+        .source_type = @enumFromInt(@as(u2, @truncate(flags & flag.source_type_mask))),
         .lang = @enumFromInt(@as(u3, @truncate(flags >> flag.lang_shift))),
         .preserve_parens = flags & flag.preserve_parens != 0,
-        .allow_return_outside_function = flags & flag.allow_return != 0,
         .comments = if (flags & flag.attach_comments != 0) .both else .flat,
     });
     defer tree.deinit();

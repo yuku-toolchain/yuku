@@ -31,8 +31,8 @@ interface AddFileOptions {
    */
   lang?: SourceLang;
   /**
-   * Parse as a script or an ES module. Defaults to the file extension
-   * via {@link sourceTypeFromPath}.
+   * Parse as a script, an ES module, or a CommonJS module. Defaults to
+   * the file extension via {@link sourceTypeFromPath}.
    */
   sourceType?: SourceType;
   /**
@@ -41,11 +41,6 @@ interface AddFileOptions {
    * @default true
    */
   preserveParens?: boolean;
-  /**
-   * Allow `return` at the top level.
-   * @default false
-   */
-  allowReturnOutsideFunction?: boolean;
   /**
    * Attach comments to their host AST nodes.
    * @default false

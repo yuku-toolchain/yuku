@@ -78,12 +78,12 @@ const suites: TestSuite[] = [
     options: { preserveParens: false },
   },
   {
-    path: `${MISC_DIR}/js/allow-return-outside-function`,
+    path: `${MISC_DIR}/js/commonjs`,
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
     autoSnapshot: true,
-    options: { allowReturnOutsideFunction: true },
+    options: { sourceType: "commonjs", semanticErrors: true },
   },
   {
     path: `${MISC_DIR}/comments`,
