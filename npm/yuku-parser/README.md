@@ -90,6 +90,7 @@ const result = parse(source, {
   preserveParens: true,
   semanticErrors: false,
   attachComments: false,
+  tokens: false,
 });
 ```
 
@@ -100,6 +101,7 @@ const result = parse(source, {
 | `preserveParens`             | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
 | `semanticErrors`             | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
 | `attachComments`             | `true`, `false`                           | `false`    | Also attach each comment to its host AST node. The flat `result.comments` list is always present. See [Comments](#comments). |
+| `tokens`                     | `true`, `false`                           | `false`    | Also return the token stream as `result.tokens`. See [Tokens](#tokens).                                                      |
 
 ## Result
 
@@ -110,6 +112,7 @@ interface ParseResult {
   program: Program;
   comments: Comment[]; // every comment in source order
   diagnostics: Diagnostic[];
+  tokens?: Token[]; // present only with the `tokens` option
 }
 ```
 
@@ -192,6 +195,38 @@ interface AttachedComment {
 ```
 
 `position` is where the comment sits relative to its host: `"before"` (leading), `"after"` (trailing), or `"inside"` (interior to an otherwise empty host like `function f() { /* hi */ }`). `sameLine` is `true` when the comment shares a source line with the host's adjacent edge.
+
+## Tokens
+
+The AST is intentionally lossy: it does not preserve punctuation like semicolons, commas, or parentheses. Tools that need exact source structure (lint rules, formatters, codemods) can set `tokens: true` to also get the token stream:
+
+```js
+const { tokens } = parse(`const x = /ab/g;`, { tokens: true });
+
+for (const t of tokens) {
+  console.log(t.type, JSON.stringify(t.value), t.start, t.end);
+}
+// Keyword "const" 0 5
+// Identifier "x" 6 7
+// Punctuator "=" 8 9
+// RegularExpression "/ab/g" 10 15
+// Punctuator ";" 15 16
+```
+
+Each entry is:
+
+```ts
+interface Token {
+  type: TokenType; // espree-style token type name
+  value: string; // raw source text
+  start: number;
+  end: number;
+}
+```
+
+`type` follows the [espree](https://github.com/eslint/js/tree/main/packages/espree) token type set: `Identifier`, `Keyword`, `Punctuator`, `String`, `Numeric`, `RegularExpression`, `Template`, `Boolean`, `Null`, `PrivateIdentifier`, `JSXIdentifier`, or `JSXText`. Reserved words classify as `Keyword`, contextual keywords (`async`, `of`, `type`, ...) as `Identifier`, matching typescript-estree. Comments are never tokens; they stay in `result.comments`.
+
+Tokens come straight from the parser's lexer, so parser-level decisions that cannot be reconstructed from source text alone (regex vs. division, template chunks, JSX text, TS generics vs. shift operators) are already resolved. The stream is in source order, tokens never overlap, and the option has zero cost when disabled.
 
 ## License
 

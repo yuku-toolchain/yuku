@@ -51,6 +51,40 @@ interface ParseOptions {
    * @default false
    */
   attachComments?: boolean;
+  /**
+   * Also return the token stream as {@link ParseResult.tokens}. Comments
+   * stay separate in {@link ParseResult.comments}. Zero cost when disabled.
+   * @default false
+   */
+  tokens?: boolean;
+}
+
+/** Espree-style token type names. */
+type TokenType =
+  | "Identifier"
+  | "Keyword"
+  | "Punctuator"
+  | "String"
+  | "Numeric"
+  | "RegularExpression"
+  | "Template"
+  | "Boolean"
+  | "Null"
+  | "PrivateIdentifier"
+  | "JSXIdentifier"
+  | "JSXText";
+
+/**
+ * A token with its raw source text and span. Tokens are in source order
+ * and never overlap. Offsets are UTF-16 code units, like every other span
+ * the package exposes.
+ */
+interface Token {
+  type: TokenType;
+  /** The raw source text of the token. */
+  value: string;
+  start: number;
+  end: number;
 }
 
 /** The result returned by the parser. */
@@ -61,6 +95,8 @@ interface ParseResult {
   comments: Comment[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
+  /** Every token in source order. Present only when {@link ParseOptions.tokens} is enabled. */
+  tokens?: Token[];
 }
 
 /**
@@ -113,4 +149,12 @@ export function langFromPath(path: string): SourceLang;
  */
 export function sourceTypeFromPath(path: string): SourceType;
 
-export type { ParseOptions, ParseResult, Visitors, WalkHandler, WalkHooks };
+export type {
+  ParseOptions,
+  ParseResult,
+  Token,
+  TokenType,
+  Visitors,
+  WalkHandler,
+  WalkHooks,
+};

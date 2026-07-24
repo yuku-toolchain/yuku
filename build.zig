@@ -67,6 +67,16 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     zig_tests_module.addImport("parser", parser_module);
+
+    // the token-stream tests round-trip trees through the transfer format
+    const test_transfer_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    test_transfer_module.addImport("parser", parser_module);
+    zig_tests_module.addImport("transfer", test_transfer_module);
+
     const run_zig_tests = b.addRunArtifact(b.addTest(.{ .root_module = zig_tests_module }));
     // corpus-driven tests read test/parser/suite relative to the repo root
     run_zig_tests.setCwd(b.path("."));

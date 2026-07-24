@@ -16,7 +16,7 @@
   "scripts": {
     "test": "bun fetch:fixtures && bun build:local && bun build:wasm && bun typecheck && bun test:parser && bun test:codegen && bun test:ast && bun test:analyzer && bun test:wasm && bun test:sourcemap",
     "typecheck": "tsc --noEmit",
-    "test:parser": "bun test/parser/run.ts",
+    "test:parser": "bun test/parser/run.ts && bun test test/parser",
     "test:codegen": "bun test test/codegen",
     "test:ast": "bun test test/ast",
     "test:analyzer": "bun test test/analyzer",

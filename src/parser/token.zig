@@ -17,6 +17,26 @@ pub const Mask = struct {
     pub const PrecOverlap: u32 = 0b11111;
 };
 
+/// The public token classification recorded in `Tree.tokens` and encoded
+/// on the wire as its `u8` enum value, following the espree token type
+/// set. The JS `TOKEN_TYPES` name table mirrors the variant order, so
+/// this enum is append-only. The internal `TokenTag` never leaves the
+/// parser.
+pub const TokenType = enum(u8) {
+    identifier,
+    keyword,
+    punctuator,
+    string,
+    numeric,
+    regular_expression,
+    template,
+    boolean,
+    null,
+    private_identifier,
+    jsx_identifier,
+    jsx_text,
+};
+
 pub const TokenTag = enum(u32) {
     // literals
     numeric_literal = 1 | Mask.IsNumericLiteral, // e.g., "123", "45.67"
@@ -279,6 +299,45 @@ pub const TokenTag = enum(u32) {
     pub fn isReserved(self: TokenTag) bool {
         return self.hasMask(Mask.IsUnconditionallyReserved) or
             self.hasMask(Mask.IsStrictModeReserved);
+    }
+
+    /// Classifies this tag into the public `TokenType`.
+    ///
+    /// Reserved words, including the strict-mode-only ones, classify as
+    /// keywords, matching typescript-estree. Contextual keywords (`async`,
+    /// `of`, `type`, and so on) classify as identifiers, matching both
+    /// espree and typescript-estree. `await` follows espree and is a
+    /// keyword only when `module` is true.
+    pub fn tokenType(self: TokenTag, module: bool) TokenType {
+        std.debug.assert(self != .eof);
+        return switch (self) {
+            .numeric_literal,
+            .hex_literal,
+            .octal_literal,
+            .binary_literal,
+            .bigint_literal,
+            => .numeric,
+            .string_literal => .string,
+            .regex_literal => .regular_expression,
+            .no_substitution_template,
+            .template_head,
+            .template_middle,
+            .template_tail,
+            => .template,
+            .true, .false => .boolean,
+            .null_literal => .null,
+            .identifier => .identifier,
+            .private_identifier => .private_identifier,
+            .jsx_identifier => .jsx_identifier,
+            .jsx_text => .jsx_text,
+            .await => if (module) .keyword else .identifier,
+            else => if (self.isReserved())
+                .keyword
+            else if (self.isIdentifierLike())
+                .identifier
+            else
+                .punctuator,
+        };
     }
 
     pub fn toString(self: TokenTag) ?[]const u8 {
