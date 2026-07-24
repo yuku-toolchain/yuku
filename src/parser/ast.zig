@@ -8,6 +8,8 @@ const strings = @import("strings.zig");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
+pub const TokenType = @import("token.zig").TokenType;
+
 pub const String = strings.String;
 pub const StringPool = strings.ASTStringPool;
 
@@ -128,6 +130,17 @@ pub const Comment = struct {
     };
 };
 
+/// A token recorded during parsing, exposed via `Tree.tokens` when
+/// `Options.tokens` is enabled. `type` is the public espree-style
+/// classification, the span is in source byte offsets. Tokens appear in
+/// source order and never overlap. Comments are not tokens, they live in
+/// `Tree.comments`.
+pub const Token = struct {
+    type: TokenType,
+    start: u32,
+    end: u32,
+};
+
 /// A comment bound to a host AST node, reachable via `Tree.commentsOf`.
 ///
 /// `position` is `before`, `after`, or `inside` relative to the host.
@@ -180,6 +193,13 @@ pub const Tree = struct {
     attached_comments: []const AttachedComment = &.{},
     /// Prefix-sum index into `attached_comments`, of length `nodes.len + 1`.
     attached_comment_offsets: []const u32 = &.{},
+    /// Every consumed token in source order, columnar. Populated only when
+    /// `Options.tokens` is enabled.
+    tokens: std.MultiArrayList(Token) = .empty,
+    /// True when token collection was enabled for this parse. Distinguishes
+    /// an empty token list from tokens never being recorded, so the
+    /// transfer format can expose an empty stream rather than none.
+    collected_tokens: bool = false,
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
     /// The original source text passed to the parser.

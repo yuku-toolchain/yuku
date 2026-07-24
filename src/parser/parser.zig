@@ -43,6 +43,11 @@ pub const Options = struct {
     /// Whether and how comments are collected. Defaults to `.flat`: comments
     /// land in the flat `tree.comments` list with no per-node attachment.
     comments: CommentMode = .flat,
+    /// When true, every consumed token is recorded into `tree.tokens` in
+    /// source order, classified by the public espree-style `TokenType`.
+    /// Comments stay separate in `tree.comments`. Defaults to false, with
+    /// no cost when disabled.
+    tokens: bool = false,
 };
 
 pub const Context = packed struct {
@@ -97,6 +102,7 @@ pub const Parser = struct {
     lang: ast.Lang,
     preserve_parens: bool,
     comment_mode: CommentMode,
+    collect_tokens: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
@@ -124,6 +130,7 @@ pub const Parser = struct {
         var b = ast.Tree.init(child_allocator, source);
         b.source_type = options.source_type;
         b.lang = options.lang;
+        b.collected_tokens = options.tokens;
         return .{
             .tree = b,
             .source = source,
@@ -131,6 +138,7 @@ pub const Parser = struct {
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
             .comment_mode = options.comments,
+            .collect_tokens = options.tokens,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -341,6 +349,7 @@ pub const Parser = struct {
     /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
+        try self.recordToken(self.current_token);
         self.prev_token_end = self.current_token.span.end;
         if (self.lexer.tryNextToken()) |token| {
             self.current_token = token;
@@ -351,12 +360,37 @@ pub const Parser = struct {
 
     /// advance without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
+        try self.recordToken(self.current_token);
         self.prev_token_end = self.current_token.span.end;
         if (self.lexer.tryNextToken()) |token| {
             self.current_token = token;
         } else {
             self.current_token = try self.nextToken() orelse return null;
         }
+    }
+
+    /// records the token being consumed into `tree.tokens`. recording at
+    /// consumption time is what makes the stream correct: rescans (regex,
+    /// template continuations, split `>>`, JSX text) replace
+    /// `current_token` before it is consumed, so the speculative first
+    /// scan never lands in the stream. zero-length tokens carry no source
+    /// text (the eof placeholder and empty JSX text rescans) and are
+    /// skipped. public for the one consumption path that bypasses
+    /// `advance`: JSX `>` tokens that the children rescan replaces.
+    pub inline fn recordToken(self: *Parser, token: Token) Error!void {
+        if (!self.collect_tokens) return;
+        if (token.span.start == token.span.end) return;
+        std.debug.assert(token.tag != .eof);
+        if (self.tree.tokens.len > 0) {
+            // consumed tokens never overlap and arrive in source order
+            const last_end = self.tree.tokens.items(.end)[self.tree.tokens.len - 1];
+            std.debug.assert(token.span.start >= last_end);
+        }
+        try self.tree.tokens.append(self.allocator(), .{
+            .type = token.tag.tokenType(self.tree.isModule()),
+            .start = token.span.start,
+            .end = token.span.end,
+        });
     }
 
     pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
@@ -404,6 +438,7 @@ pub const Parser = struct {
             .prev_token_end = self.prev_token_end,
             .nodes_len = self.tree.nodes.len,
             .extra_len = self.tree.extras.items.len,
+            .tokens_len = self.tree.tokens.len,
             .diagnostics_len = self.diagnostics.items.len,
             .context = self.context,
             .ts_context = self.ts_context,
@@ -421,6 +456,7 @@ pub const Parser = struct {
         self.prev_token_end = cp.prev_token_end;
         self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
         self.tree.extras.shrinkRetainingCapacity(cp.extra_len);
+        self.tree.tokens.shrinkRetainingCapacity(cp.tokens_len);
         self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
         self.context = cp.context;
         self.ts_context = cp.ts_context;
@@ -665,6 +701,7 @@ pub const Checkpoint = struct {
     // tree-backed append-only storage
     nodes_len: usize,
     extra_len: usize,
+    tokens_len: usize,
     diagnostics_len: usize,
 
     // parser flags, small structs copied by value.

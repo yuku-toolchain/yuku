@@ -3,6 +3,7 @@ const parser = @import("parser.zig");
 pub const parse = parser.parse;
 pub const Options = parser.Options;
 pub const CommentMode = parser.CommentMode;
+pub const TokenType = @import("token.zig").TokenType;
 
 pub const ast = @import("ast.zig");
 

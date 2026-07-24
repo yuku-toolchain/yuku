@@ -88,6 +88,7 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast/#comments) |
+| `tokens`                        | `true`, `false`                      | `false`   | Record every consumed token into `tree.tokens` in source order, classified by the espree-style `TokenType` |
 
 Both fields can be inferred from a file path.
 

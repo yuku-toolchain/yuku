@@ -30,3 +30,4 @@ Options:
 | `preserveParens`             | `true`     | Keep `ParenthesizedExpression` nodes      |
 | `semanticErrors`             | `false`    | Also run semantic analysis                |
 | `attachComments`             | `false`    | Attach comments to their host node        |
+| `tokens`                     | `false`    | Also return the token stream as `tokens`  |

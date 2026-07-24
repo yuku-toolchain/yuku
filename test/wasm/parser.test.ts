@@ -70,6 +70,52 @@ describe("@yuku-parser/wasm", () => {
     expect(program.body).toHaveLength(2);
   });
 
+  test("returns the token stream when requested", () => {
+    const source = "const x = /ab/g; let s = `a${x}b`;";
+    const { tokens, diagnostics } = parse(source, { lang: "js", tokens: true });
+    expect(diagnostics).toEqual([]);
+    if (!tokens) throw new Error("tokens missing");
+    expect(tokens.map((t) => t.type)).toEqual([
+      "Keyword", "Identifier", "Punctuator", "RegularExpression", "Punctuator",
+      "Keyword", "Identifier", "Punctuator", "Template", "Identifier",
+      "Template", "Punctuator",
+    ]);
+    for (const t of tokens) expect(source.slice(t.start, t.end)).toBe(t.value);
+    expect(tokens[3]?.value).toBe("/ab/g");
+    expect(tokens[8]?.value).toBe("`a${");
+  });
+
+  test("omits tokens by default and yields an empty list for token-less sources", () => {
+    expect(parse("const x = 1;", { lang: "js" }).tokens).toBeUndefined();
+    expect(parse("// only a comment", { lang: "js", tokens: true }).tokens).toEqual([]);
+  });
+
+  test("classifies JSX and TS tokens", () => {
+    const jsx = "let e = <a-b>hi{x}</a-b>;";
+    const jsxTokens = parse(jsx, { lang: "jsx", tokens: true }).tokens;
+    if (!jsxTokens) throw new Error("tokens missing");
+    expect(jsxTokens.map((t) => [t.type, t.value])).toContainEqual(["JSXIdentifier", "a-b"]);
+    expect(jsxTokens.map((t) => [t.type, t.value])).toContainEqual(["JSXText", "hi"]);
+    expect(jsxTokens.filter((t) => t.value === ">")).toHaveLength(2);
+    expect(jsxTokens.filter((t) => t.value === "}")).toHaveLength(1);
+
+    const ts = "type A = string;";
+    const tsTokens = parse(ts, { lang: "ts", tokens: true }).tokens;
+    if (!tsTokens) throw new Error("tokens missing");
+    expect(tsTokens.map((t) => t.type)).toEqual([
+      "Identifier", "Identifier", "Punctuator", "Identifier", "Punctuator",
+    ]);
+  });
+
+  test("token offsets are UTF-16 code units in non-ASCII sources", () => {
+    const source = `const emoji = "🎉héllo"; emoji;`;
+    const { tokens } = parse(source, { lang: "js", tokens: true });
+    if (!tokens) throw new Error("tokens missing");
+    for (const t of tokens) expect(source.slice(t.start, t.end)).toBe(t.value);
+    expect(tokens[3]?.value).toBe(`"🎉héllo"`);
+    expect(tokens[5]?.value).toBe("emoji");
+  });
+
   test("maps byte offsets to UTF-16 offsets in non-ASCII sources", () => {
     const source = `const emoji = "🎉héllo"; const após = emoji;`;
     const { program } = parse(source, { lang: "js" });

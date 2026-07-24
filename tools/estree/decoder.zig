@@ -23,6 +23,7 @@ pub fn generate(w: *Writer, mode: Mode) !void {
         \\
     );
     try writeLookupTables(w);
+    if (mode == .parser) try writeTokenTables(w);
     if (mode == .analyzer) try writeSemanticConstants(w);
     if (mode == .analyzer) try writeChildTables(w);
     try writeBuildPosMap(w);
@@ -33,6 +34,44 @@ pub fn generate(w: *Writer, mode: Mode) !void {
         .parser => try w.writeAll("export { decode };\n"),
         .analyzer => try w.writeAll("export { decode, SymbolFlags };\n"),
     }
+}
+
+/// espree name for each `TokenType` variant, in enum order.
+const token_type_names = [_]struct { zig: []const u8, js: []const u8 }{
+    .{ .zig = "identifier", .js = "Identifier" },
+    .{ .zig = "keyword", .js = "Keyword" },
+    .{ .zig = "punctuator", .js = "Punctuator" },
+    .{ .zig = "string", .js = "String" },
+    .{ .zig = "numeric", .js = "Numeric" },
+    .{ .zig = "regular_expression", .js = "RegularExpression" },
+    .{ .zig = "template", .js = "Template" },
+    .{ .zig = "boolean", .js = "Boolean" },
+    .{ .zig = "null", .js = "Null" },
+    .{ .zig = "private_identifier", .js = "PrivateIdentifier" },
+    .{ .zig = "jsx_identifier", .js = "JSXIdentifier" },
+    .{ .zig = "jsx_text", .js = "JSXText" },
+};
+
+fn jsTokenTypeName(comptime zig_name: []const u8) []const u8 {
+    inline for (token_type_names) |entry| {
+        if (comptime std.mem.eql(u8, entry.zig, zig_name)) return entry.js;
+    }
+    @compileError("TokenType variant '" ++ zig_name ++
+        "' has no js name in token_type_names");
+}
+
+/// `TOKEN_TYPES`, the name table indexed by the wire `u8` token type code.
+fn writeTokenTables(w: *Writer) !void {
+    const fields = @typeInfo(parser.TokenType).@"enum".fields;
+    comptime std.debug.assert(fields.len == token_type_names.len);
+    try w.writeAll("const TOKEN_TYPES = [");
+    inline for (fields, 0..) |field, i| {
+        // the wire code is the array index, so the enum must stay dense
+        comptime std.debug.assert(field.value == i);
+        if (i > 0) try w.writeAll(", ");
+        try w.print("\"{s}\"", .{comptime jsTokenTypeName(field.name)});
+    }
+    try w.writeAll("];\n");
 }
 
 const symbol_flag_names = [_]struct { zig: []const u8, js: []const u8 }{
@@ -191,6 +230,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\        diagCount = _u32[{[u_dc]d}],
         \\        progIdx = _u32[{[u_pi]d}];
         \\  const attachedCommentCount = _u32[{[u_acc]d}];
+        \\  const tokenCount = _u32[{[u_tc]d}];
         \\  const _flags = _u32[{[u_fl]d}];
         \\  const _isTs = !!(_flags & {[ts]d});
         \\  const _attached = !!(_flags & {[ac]d});
@@ -272,6 +312,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
+        .u_tc = rt.HDR_TOKEN_COUNT_U32,
         .u_fl = rt.HDR_FLAGS_U32,
         .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
         .ts = rt.FLAG_TS,
@@ -825,12 +866,18 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      return r;
         , .{
             comptime enumMask(ast.FunctionType),
-            sid, sid,
-            bg,  ba,
-            sp,  sp,
-            sb,  sb,
-            stp, stp,
-            srt, srt,
+            sid,
+            sid,
+            bg,
+            ba,
+            sp,
+            sp,
+            sb,
+            sb,
+            stp,
+            stp,
+            srt,
+            srt,
             bd,
         });
     } else if (comptime eql(u8, name, "arrow_function_expression")) {
@@ -989,13 +1036,19 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      return r;
         , .{
             comptime enumMask(ast.ClassType),
-            sd,                                       si,
-            si,                                       ss,
-            ss,                                       sb,
-            stp,                                      stp,
-            ssta,                                     ssta,
+            sd,
+            si,
+            si,
+            ss,
+            ss,
+            sb,
+            stp,
+            stp,
+            ssta,
+            ssta,
             simp,
-            comptime flagMask(ast.Class, "abstract"), comptime flagMask(ast.Class, "declare"),
+            comptime flagMask(ast.Class, "abstract"),
+            comptime flagMask(ast.Class, "declare"),
         });
     } else if (comptime eql(u8, name, "method_definition")) {
         const M = ast.MethodDefinition;
@@ -1131,10 +1184,10 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      }}
             \\      return r;
         , .{
-            se,  sr,
-            sr,  sdec,
-            comptime flagMask(ast.ArrayPattern, "optional"),
-            sta, sta,
+            se,                                              sr,
+            sr,                                              sdec,
+            comptime flagMask(ast.ArrayPattern, "optional"), sta,
+            sta,
         });
     } else if (comptime eql(u8, name, "object_pattern")) {
         const sp = comptime slotOf(ast.ObjectPattern, "properties");
@@ -1153,10 +1206,10 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      }}
             \\      return r;
         , .{
-            sp,  sr,
-            sr,  sdec,
-            comptime flagMask(ast.ObjectPattern, "optional"),
-            sta, sta,
+            sp,                                               sr,
+            sr,                                               sdec,
+            comptime flagMask(ast.ObjectPattern, "optional"), sta,
+            sta,
         });
     } else if (comptime eql(u8, name, "jsx_text")) {
         const sv = comptime slotOf(ast.JSXText, "value");
@@ -1308,7 +1361,30 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     comptime std.debug.assert(rt.COMMENT_FLAGS_OFFSET == 0);
     comptime std.debug.assert(rt.COMMENT_SIZE % 4 == 0);
     try w.print(
-        \\  const dOff = _cOff + commentCount * {[csize]d};
+        \\  const _tokOff = _cOff + commentCount * {[csize]d};
+        \\  const dOff = _tokOff + tokenCount * 8 + ((tokenCount + 3) & ~3);
+        \\
+    , .{ .csize = rt.COMMENT_SIZE });
+    if (mode == .parser) try w.print(
+        \\  function _decodeTokens() {{
+        \\    if (!(_flags & {[tok]d})) return undefined;
+        \\    const n = tokenCount;
+        \\    const sb = _tokOff >> 2, tb = _tokOff + n * 8;
+        \\    const out = new Array(n);
+        \\    for (let j = 0; j < n; j++) {{
+        \\      const s = _p(_u32[sb + j]), e = _p(_u32[sb + n + j]);
+        \\      out[j] = {{
+        \\        type: TOKEN_TYPES[_u8[tb + j]],
+        \\        value: _src.slice(s, e),
+        \\        start: s,
+        \\        end: e,
+        \\      }};
+        \\    }}
+        \\    return out;
+        \\  }}
+        \\
+    , .{ .tok = rt.FLAG_TOKENS });
+    try w.print(
         \\  function _decodeComments() {{
         \\    const out = new Array(commentCount);
         \\    for (let j = 0; j < commentCount; j++) {{
@@ -1360,7 +1436,6 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\  }}
         \\
     , .{
-        .csize = rt.COMMENT_SIZE,
         .c_stride = rt.COMMENT_SIZE / 4,
         .c_vs = rt.COMMENT_VALUE_START_OFFSET / 4,
         .c_ve = rt.COMMENT_VALUE_END_OFFSET / 4,
@@ -1374,7 +1449,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     }
 
     try w.writeAll(
-        \\  let _program, _diagnostics, _comments;
+        \\  let _program, _diagnostics, _comments, _tokens;
         \\  return {
         \\    get program() {
         \\      return _program !== undefined ? _program : (_program = node(progIdx));
@@ -1388,6 +1463,13 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\      return _diagnostics !== undefined
         \\        ? _diagnostics
         \\        : (_diagnostics = _decodeDiagnostics());
+        \\    },
+        \\
+    );
+
+    if (mode == .parser) try w.writeAll(
+        \\    get tokens() {
+        \\      return _tokens !== undefined ? _tokens : (_tokens = _decodeTokens());
         \\    },
         \\
     );

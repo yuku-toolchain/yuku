@@ -27,6 +27,7 @@ function packFlags(o = {}) {
   if (o.preserveParens !== false) f |= 1 << 5;
   if (o.semanticErrors) f |= 1 << 6;
   if (o.attachComments) f |= 1 << 7;
+  if (o.tokens) f |= 1 << 8;
   return f;
 }
 

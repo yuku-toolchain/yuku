@@ -45,6 +45,13 @@
 //   comments           comment_count * COMMENT_SIZE bytes, in source order,
 //                      each carrying its own span. Present when
 //                      FLAG_COMMENTS is set.
+//   tokens             Columnar token stream: token_count u32 span starts,
+//                      then token_count u32 span ends, then token_count u8
+//                      espree token type codes (`TokenType`), zero-padded
+//                      to the next 4-byte boundary. Tokens are in source
+//                      order and never overlap. Present when FLAG_TOKENS
+//                      is set; FLAG_TOKENS may be set with a zero count
+//                      (tokens were requested, none exist).
 //   diagnostics        Variable length sequence (see diagnostics below).
 //                      Written by the encoder; skipped by the decoder.
 //
@@ -125,6 +132,8 @@ const Header = extern struct {
     comment_count: u32,
     /// entries in the attached comments section.
     attached_comment_count: u32,
+    /// entries in the tokens section.
+    token_count: u32,
     diag_count: u32,
     program_index: u32,
     flags: u32,
@@ -205,6 +214,7 @@ pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 
 pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
 pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
 pub const HDR_ATTACHED_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "attached_comment_count") / 4;
+pub const HDR_TOKEN_COUNT_U32: u32 = @offsetOf(Header, "token_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
 pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
@@ -219,6 +229,9 @@ pub const FLAG_COMMENTS: u32 = 1 << 2;
 /// consumed only by the analyzer decoder. Other decoders never read
 /// past diagnostics, so the bit is invisible to them.
 pub const FLAG_SEMANTIC: u32 = 1 << 3;
+/// Token collection was enabled, so the tokens section is present
+/// (possibly with a zero count).
+pub const FLAG_TOKENS: u32 = 1 << 4;
 
 // `PackedNode` byte offsets and u32 indices.
 pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
@@ -359,6 +372,12 @@ pub inline fn alignPool(len: usize) usize {
     return (len + 3) & ~@as(usize, 3);
 }
 
+/// wire size of the tokens section: two u32 columns plus the u8 type
+/// column zero-padded to the next 4-byte boundary.
+pub inline fn tokenSectionSize(count: usize) usize {
+    return count * 8 + alignPool(count);
+}
+
 pub fn bufferSize(tree: *const ast.Tree) usize {
     std.debug.assert(tree.nodes.len <= std.math.maxInt(u32));
     std.debug.assert(tree.extras.items.len <= std.math.maxInt(u32));
@@ -369,13 +388,15 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
     const help_prefix = 4; // help_len
     const label_fixed = 4 + 4 + 4; // start, end, message_len
 
+    std.debug.assert(tree.tokens.len <= std.math.maxInt(u32));
     var size: usize = HEADER_SIZE +
         tree.nodes.len * NODE_SIZE +
         tree.extras.items.len * 4 +
         alignPool(tree.strings.extra.items.len) +
         tree.attached_comment_offsets.len * 4 +
         tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
-        tree.comments.len * COMMENT_SIZE;
+        tree.comments.len * COMMENT_SIZE +
+        tokenSectionSize(tree.tokens.len);
 
     for (tree.diagnostics.items) |d| {
         size += diag_fixed + d.message.len;
@@ -397,11 +418,15 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     // attached offsets table is sized `node_count + 1` when present
     std.debug.assert(!has_attached or tree.attached_comment_offsets.len == tree.nodes.len + 1);
 
+    // tokens exist only when collection was on
+    if (!tree.collected_tokens) std.debug.assert(tree.tokens.len == 0);
+
     // header
     var hdr_flags: u32 = 0;
     if (tree.isTs()) hdr_flags |= FLAG_TS;
     if (has_attached) hdr_flags |= FLAG_ATTACHED_COMMENTS;
     if (has_comments) hdr_flags |= FLAG_COMMENTS;
+    if (tree.collected_tokens) hdr_flags |= FLAG_TOKENS;
 
     const hdr = Header{
         .node_count = @intCast(tree.nodes.len),
@@ -410,6 +435,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
         .attached_comment_count = @intCast(tree.attached_comments.len),
+        .token_count = @intCast(tree.tokens.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
         .flags = hdr_flags,
@@ -470,6 +496,26 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         };
     }
     pos += tree.comments.len * COMMENT_SIZE;
+
+    // tokens, columnar: span starts, span ends, then type codes padded
+    // to the next 4-byte boundary
+    if (tree.tokens.len > 0) {
+        const starts_bytes = std.mem.sliceAsBytes(tree.tokens.items(.start));
+        @memcpy(buf[pos..][0..starts_bytes.len], starts_bytes);
+        pos += starts_bytes.len;
+
+        const ends_bytes = std.mem.sliceAsBytes(tree.tokens.items(.end));
+        @memcpy(buf[pos..][0..ends_bytes.len], ends_bytes);
+        pos += ends_bytes.len;
+
+        // `TokenType` is a u8 enum, so the column is raw bytes on the wire
+        const types_bytes = std.mem.sliceAsBytes(tree.tokens.items(.type));
+        std.debug.assert(types_bytes.len == tree.tokens.len);
+        @memcpy(buf[pos..][0..types_bytes.len], types_bytes);
+        const types_pad = alignPool(types_bytes.len) - types_bytes.len;
+        @memset(buf[pos + types_bytes.len ..][0..types_pad], 0);
+        pos += types_bytes.len + types_pad;
+    }
 
     // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
@@ -714,6 +760,22 @@ pub fn deserializeFromBuf(
         tree.comments = comments;
     }
     pos += comments_bytes;
+
+    // tokens
+    const has_tokens = (hdr.flags & FLAG_TOKENS) != 0;
+    if (!has_tokens) std.debug.assert(hdr.token_count == 0);
+    tree.collected_tokens = has_tokens;
+    const tokens_bytes = tokenSectionSize(hdr.token_count);
+    if (buf.len < pos + tokens_bytes) return error.InvalidBuffer;
+    if (hdr.token_count > 0) {
+        try tree.tokens.resize(tree.allocator(), hdr.token_count);
+        const column = @as(usize, hdr.token_count) * 4;
+        @memcpy(std.mem.sliceAsBytes(tree.tokens.items(.start)), buf[pos..][0..column]);
+        @memcpy(std.mem.sliceAsBytes(tree.tokens.items(.end)), buf[pos + column ..][0..column]);
+        const types_bytes = std.mem.sliceAsBytes(tree.tokens.items(.type));
+        @memcpy(types_bytes, buf[pos + 2 * column ..][0..hdr.token_count]);
+    }
+    pos += tokens_bytes;
 
     // skip diagnostics. codegen doesn't read them.
 

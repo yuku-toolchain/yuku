@@ -94,7 +94,9 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
         .{ .start = start, .end = opening_end },
     );
 
-    // parse children (don't advance past '>', parseJsxChildren scans from there)
+    // parse children (don't advance past '>', parseJsxChildren scans from
+    // there and its rescan replaces the token, so record it here)
+    try parser.recordToken(parser.current_token);
     const children = try parseJsxChildren(parser, opening_end) orelse return null;
 
     // parse </>
@@ -184,8 +186,14 @@ fn parseJsxOpeningElement(
             exitJsxTag(parser);
             if (context == .top_level) {
                 try parser.advance() orelse return null;
+            } else {
+                // consumed by the parent children rescan, record it here
+                try parser.recordToken(parser.current_token);
             }
         }
+    } else {
+        // consumed by the children rescan, record it here
+        try parser.recordToken(parser.current_token);
     }
 
     return try parser.tree.addNode(.{
@@ -240,7 +248,11 @@ fn parseJsxClosingElement(
     // a .child closing tag leaves the `>` in place so the parent `parseJsxChildren` loop
     // can rescan the following jsx text without a stray identifier scan.
     switch (context) {
-        .child => exitJsxTag(parser),
+        .child => {
+            exitJsxTag(parser);
+            // consumed by the parent children rescan, record it here
+            try parser.recordToken(parser.current_token);
+        },
         .top_level => {
             exitJsxTag(parser);
             try parser.advance() orelse return null;
@@ -372,6 +384,8 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     // empty expression: {}
     if (parser.current_token.tag == .right_brace) {
         const end = parser.current_token.span.end;
+        // consumed by the parent children rescan, record it here
+        try parser.recordToken(parser.current_token);
         const empty = try parser.tree.addNode(
             .{ .jsx_empty_expression = .{} },
             .{ .start = start + 1, .end = end - 1 },
@@ -401,6 +415,8 @@ fn expectJsxChildRightBrace(parser: *Parser, comptime what: []const u8) Error!?u
         );
         return null;
     }
+    // consumed by the parent children rescan, record it here
+    try parser.recordToken(parser.current_token);
     return parser.current_token.span.end;
 }
 
