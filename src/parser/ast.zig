@@ -155,6 +155,80 @@ pub const AttachedComment = struct {
     };
 };
 
+/// The kind reported for a token in `Tree.tokens`, matching the types
+/// ESLint's own parser emits.
+pub const TokenType = enum(u8) {
+    boolean,
+    identifier,
+    jsx_identifier,
+    jsx_text,
+    keyword,
+    null_literal,
+    numeric,
+    private_identifier,
+    punctuator,
+    regular_expression,
+    string,
+    template,
+
+    pub fn toString(self: TokenType) []const u8 {
+        return switch (self) {
+            .boolean => "Boolean",
+            .identifier => "Identifier",
+            .jsx_identifier => "JSXIdentifier",
+            .jsx_text => "JSXText",
+            .keyword => "Keyword",
+            .null_literal => "Null",
+            .numeric => "Numeric",
+            .private_identifier => "PrivateIdentifier",
+            .punctuator => "Punctuator",
+            .regular_expression => "RegularExpression",
+            .string => "String",
+            .template => "Template",
+        };
+    }
+
+    pub inline fn resolvesEscapes(self: TokenType) bool {
+        return switch (self) {
+            .identifier, .keyword, .jsx_identifier, .private_identifier => true,
+            else => false,
+        };
+    }
+
+    /// Classifies a scanned token. `in_jsx_tag` must be true when the lexer
+    /// scanned it inside a JSX tag, where a string literal is an attribute
+    /// value reported as `JSXText`.
+    pub inline fn fromTag(tag: TokenTag, in_jsx_tag: bool) TokenType {
+        if (in_jsx_tag and tag == .string_literal) return .jsx_text;
+        return tag_types[tagOrdinal(tag)];
+    }
+
+    /// The type once the parser reads the token as a name, or null when it
+    /// does not change. ESLint reports `let`, `static`, and `yield` from their
+    /// spelling alone, and a private or JSX identifier already reports right.
+    pub inline fn readAsName(self: TokenType, tag: TokenTag) ?TokenType {
+        switch (tag) {
+            .let, .static, .yield => return null,
+            else => {},
+        }
+        return switch (self) {
+            .keyword, .boolean, .null_literal => .identifier,
+            else => null,
+        };
+    }
+};
+
+/// A token in `Tree.tokens`. Trivia is not a token, so whitespace, comments,
+/// and the hashbang have no entry.
+///
+/// The text is the slice the span covers, except that a `private_identifier`
+/// drops its leading `#` and an escaped identifier resolves its escapes.
+pub const Token = struct {
+    type: TokenType,
+    escaped: bool,
+    span: Span,
+};
+
 /// The AST. Backed by growable arrays and an arena allocator.
 ///
 /// Returned by `parser.parse()`. Readable immediately after parsing.
@@ -180,6 +254,8 @@ pub const Tree = struct {
     attached_comments: []const AttachedComment = &.{},
     /// Prefix-sum index into `attached_comments`, of length `nodes.len + 1`.
     attached_comment_offsets: []const u32 = &.{},
+    /// Every token in source order. Populated when `Options.tokens` is set.
+    tokens: []const Token = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
     /// The original source text passed to the parser.
@@ -4445,4 +4521,79 @@ comptime {
     std.debug.assert(@sizeOf(Node) == 52);
     std.debug.assert(@sizeOf(Class) == 40);
     std.debug.assert(@sizeOf(PropertyDefinition) == 32);
+}
+
+// `TokenTag` keeps a dense ordinal in its low 8 bits, below the masks
+inline fn tagOrdinal(tag: TokenTag) u8 {
+    return @truncate(@intFromEnum(tag));
+}
+
+// one load per token, in place of a branch chain
+const tag_types = build: {
+    var table: [256]TokenType = @splat(.punctuator);
+    var seen: [256]bool = @splat(false);
+
+    for (@typeInfo(TokenTag).@"enum".fields) |field| {
+        const tag: TokenTag = @enumFromInt(field.value);
+        const ordinal = tagOrdinal(tag);
+        // a collision would give one tag another's type
+        if (seen[ordinal]) @compileError("duplicate TokenTag ordinal: " ++ field.name);
+        seen[ordinal] = true;
+
+        table[ordinal] = switch (tag) {
+            .numeric_literal,
+            .hex_literal,
+            .octal_literal,
+            .binary_literal,
+            .bigint_literal,
+            => .numeric,
+
+            .string_literal => .string,
+            .regex_literal => .regular_expression,
+
+            .no_substitution_template,
+            .template_head,
+            .template_middle,
+            .template_tail,
+            => .template,
+
+            .true, .false => .boolean,
+            .null_literal => .null_literal,
+
+            .private_identifier => .private_identifier,
+            .jsx_identifier => .jsx_identifier,
+            .jsx_text => .jsx_text,
+
+            // ECMAScript reserves `enum`, but ESLint scans it as a name
+            .@"enum" => .identifier,
+
+            // reserved only in strict mode, yet always keywords to ESLint
+            .let, .static, .yield => .keyword,
+
+            // never recorded
+            .eof => .punctuator,
+
+            // the masks decide the rest
+            else => if (tag.isUnconditionallyReserved())
+                .keyword
+            else if (tag.isIdentifierLike())
+                .identifier
+            else
+                .punctuator,
+        };
+    }
+
+    break :build table;
+};
+
+comptime {
+    // both spaces of the mask-derived branch, plus the JSX context
+    std.debug.assert(TokenType.fromTag(.@"if", false) == .keyword);
+    std.debug.assert(TokenType.fromTag(.@"enum", false) == .identifier);
+    std.debug.assert(TokenType.fromTag(.async, false) == .identifier);
+    std.debug.assert(TokenType.fromTag(.let, false) == .keyword);
+    std.debug.assert(TokenType.fromTag(.plus, false) == .punctuator);
+    std.debug.assert(TokenType.fromTag(.jsx_identifier, false) == .jsx_identifier);
+    std.debug.assert(TokenType.fromTag(.string_literal, false) == .string);
+    std.debug.assert(TokenType.fromTag(.string_literal, true) == .jsx_text);
 }

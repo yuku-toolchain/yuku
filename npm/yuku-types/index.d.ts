@@ -47,6 +47,40 @@ interface AttachedComment {
   value: string;
 }
 
+/** The kind reported for a {@link Token}. These are the token types ESLint's own parser emits. */
+type TokenType =
+  | "Boolean"
+  | "Identifier"
+  | "JSXIdentifier"
+  | "JSXText"
+  | "Keyword"
+  | "Null"
+  | "Numeric"
+  | "PrivateIdentifier"
+  | "Punctuator"
+  | "RegularExpression"
+  | "String"
+  | "Template";
+
+/**
+ * A token in the flat {@link ParseResult.tokens} list, carrying its source
+ * span. Trivia is not a token, so whitespace, comments, and the hashbang have
+ * no entry. Comments live in {@link ParseResult.comments} instead.
+ */
+interface Token {
+  type: TokenType;
+  /**
+   * The token's source text. Every type is the exact slice its span covers,
+   * including the quotes of a `String` and the delimiters of a `Template`.
+   * A `PrivateIdentifier` is the one exception, dropping its leading `#`.
+   */
+  value: string;
+  start: number;
+  end: number;
+  /** Split-out pattern and flags. Present only on `RegularExpression`. */
+  regex?: { pattern: string; flags: string };
+}
+
 /** A labeled source span attached to a {@link Diagnostic}. */
 interface DiagnosticLabel {
   /** Byte offset. */
@@ -1727,6 +1761,8 @@ export type {
   AttachedComment,
   CommentType,
   CommentPosition,
+  Token,
+  TokenType,
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,

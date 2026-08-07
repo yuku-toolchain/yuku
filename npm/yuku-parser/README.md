@@ -90,6 +90,7 @@ const result = parse(source, {
   preserveParens: true,
   semanticErrors: false,
   attachComments: false,
+  tokens: false,
 });
 ```
 
@@ -100,6 +101,7 @@ const result = parse(source, {
 | `preserveParens`             | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
 | `semanticErrors`             | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
 | `attachComments`             | `true`, `false`                           | `false`    | Also attach each comment to its host AST node. The flat `result.comments` list is always present. See [Comments](#comments). |
+| `tokens`                     | `true`, `false`                           | `false`    | Collect every token in source order into `result.tokens`. See [Tokens](#tokens). |
 
 ## Result
 
@@ -109,6 +111,7 @@ const result = parse(source, {
 interface ParseResult {
   program: Program;
   comments: Comment[]; // every comment in source order
+  tokens: Token[]; // every token, when `tokens` is enabled
   diagnostics: Diagnostic[];
 }
 ```
@@ -192,6 +195,17 @@ interface AttachedComment {
 ```
 
 `position` is where the comment sits relative to its host: `"before"` (leading), `"after"` (trailing), or `"inside"` (interior to an otherwise empty host like `function f() { /* hi */ }`). `sameLine` is `true` when the comment shares a source line with the host's adjacent edge.
+
+## Tokens
+
+Set `tokens: true` to also collect every token in source order:
+
+```js
+const { tokens } = parse("const x = 1;", { tokens: true });
+// [{ type: "Keyword", value: "const", start: 0, end: 5 }, ...]
+```
+
+`type` is one of the twelve types [espree](https://github.com/eslint/js/tree/main/packages/espree) reports, and classification matches it. Trivia is not a token, so comments stay in `result.comments`.
 
 ## License
 

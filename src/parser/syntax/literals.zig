@@ -265,6 +265,18 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     }, token.span);
 }
 
+/// Builds an `identifier_name` node for a keyword the parser consumed as a
+/// keyword, as `new` in `new.target`. The token keeps its keyword type.
+pub fn parseKeywordAsName(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag.isKeyword());
+    const token = parser.current_token;
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+
+    return try parser.tree.addNode(.{
+        .identifier_name = .{ .name = try parser.tokenName(token) },
+    }, token.span);
+}
+
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try validateIdentifier(parser, "a label", parser.current_token);
 

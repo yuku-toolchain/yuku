@@ -43,6 +43,9 @@ pub const Options = struct {
     /// Whether and how comments are collected. Defaults to `.flat`: comments
     /// land in the flat `tree.comments` list with no per-node attachment.
     comments: CommentMode = .flat,
+    /// When true, every token is collected into `tree.tokens` in source order.
+    /// Off by default, since the list costs memory proportional to the source.
+    tokens: bool = false,
 };
 
 pub const Context = packed struct {
@@ -97,6 +100,7 @@ pub const Parser = struct {
     lang: ast.Lang,
     preserve_parens: bool,
     comment_mode: CommentMode,
+    collect_tokens: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
@@ -131,6 +135,7 @@ pub const Parser = struct {
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
             .comment_mode = options.comments,
+            .collect_tokens = options.tokens,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -148,12 +153,11 @@ pub const Parser = struct {
     fn parseInner(self: *Parser) Error!void {
         const alloc = self.allocator();
 
-        self.lexer = try lexer.Lexer.init(
-            self.source,
-            alloc,
-            self.source_type,
-            self.comment_mode.collects(),
-        );
+        self.lexer = try lexer.Lexer.init(self.source, alloc, .{
+            .source_type = self.source_type,
+            .collect_comments = self.comment_mode.collects(),
+            .collect_tokens = self.collect_tokens,
+        });
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
@@ -203,6 +207,9 @@ pub const Parser = struct {
         if (self.comment_mode.isFlat()) {
             self.tree.comments = self.lexer.comments.items;
         }
+        if (self.collect_tokens) {
+            self.tree.tokens = self.lexer.tokens.items;
+        }
     }
 
     const BodyKind = enum {
@@ -237,9 +244,19 @@ pub const Parser = struct {
             (terminator != null and self.current_token.tag == terminator.?);
     }
 
-    /// returns the resolved name for any identifier-like token.
+    /// returns the resolved name for a token the parser reads as a name.
     /// strips '#' for private identifiers, decodes unicode escapes if present.
     pub inline fn identifierName(self: *Parser, token: Token) Error!ast.String {
+        if (self.collect_tokens) {
+            @branchHint(.unlikely);
+            self.lexer.retypeAsName(token);
+        }
+        return self.tokenName(token);
+    }
+
+    /// same, for a token whose recorded type must not change, as `new` in
+    /// `new.target`.
+    pub inline fn tokenName(self: *Parser, token: Token) Error!ast.String {
         const is_private = token.tag == .private_identifier;
         const start = token.span.start + @as(u32, @intFromBool(is_private));
         if (token.isEscaped()) return self.decodeEscapedIdentifier(start, token.span.end);
@@ -394,11 +411,17 @@ pub const Parser = struct {
     /// captures a snapshot of parser state. pair with `rewind` to
     /// commit or discard a speculative parse.
     pub fn checkpoint(self: *const Parser) Checkpoint {
+        const tokens_len = self.lexer.tokens.items.len;
         return .{
             .lexer_cursor = self.lexer.cursor,
             .lexer_state = self.lexer.state,
             .lexer_mode = self.lexer.mode,
             .lexer_comments_len = self.lexer.comments.items.len,
+            .lexer_tokens_len = tokens_len,
+            .lexer_last_token = if (tokens_len > 0)
+                self.lexer.tokens.items[tokens_len - 1]
+            else
+                .{ .type = .punctuator, .escaped = false, .span = .{ .start = 0, .end = 0 } },
             .current_token = self.current_token,
             .prev_token_end = self.prev_token_end,
             .nodes_len = self.tree.nodes.len,
@@ -416,6 +439,7 @@ pub const Parser = struct {
         self.lexer.state = cp.lexer_state;
         self.lexer.mode = cp.lexer_mode;
         self.lexer.comments.shrinkRetainingCapacity(cp.lexer_comments_len);
+        self.restoreTokens(cp);
         self.current_token = cp.current_token;
         self.prev_token_end = cp.prev_token_end;
         self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
@@ -426,11 +450,29 @@ pub const Parser = struct {
         self.state = cp.state;
     }
 
+    /// Undoes the token list's part of a speculative parse.
+    ///
+    /// Dropping what was recorded since the checkpoint is not enough. A
+    /// re-scan inside the region can have rewritten the entry that was last at
+    /// checkpoint time, splitting a recorded `<<` into `<` to open a type
+    /// argument list. `rewind` restores `current_token` from the snapshot
+    /// instead of lexing again, so only this puts the fused token back.
+    fn restoreTokens(self: *Parser, cp: Checkpoint) void {
+        // a checkpoint is always in the past
+        std.debug.assert(cp.lexer_tokens_len <= self.lexer.tokens.items.len);
+
+        self.lexer.tokens.shrinkRetainingCapacity(cp.lexer_tokens_len);
+        if (cp.lexer_tokens_len > 0) {
+            self.lexer.tokens.items[cp.lexer_tokens_len - 1] = cp.lexer_last_token;
+        }
+    }
+
     pub const Peek = struct {
         parser: *Parser,
         state: lexer.LexerState,
         cursor: u32,
         comments_len: usize,
+        tokens_len: usize,
 
         pub inline fn next(self: *Peek) Token {
             return self.parser.lexer.nextToken() catch
@@ -441,6 +483,8 @@ pub const Parser = struct {
             self.parser.lexer.state = self.state;
             self.parser.lexer.cursor = self.cursor;
             self.parser.lexer.comments.shrinkRetainingCapacity(self.comments_len);
+            // a peek only scans forward, so it can only have appended
+            self.parser.lexer.tokens.shrinkRetainingCapacity(self.tokens_len);
         }
     };
 
@@ -450,6 +494,7 @@ pub const Parser = struct {
             .state = self.lexer.state,
             .cursor = self.lexer.cursor,
             .comments_len = self.lexer.comments.items.len,
+            .tokens_len = self.lexer.tokens.items.len,
         };
     }
 
@@ -657,6 +702,10 @@ pub const Checkpoint = struct {
     lexer_state: lexer.LexerState,
     lexer_mode: lexer.LexerMode,
     lexer_comments_len: usize,
+    lexer_tokens_len: usize,
+    /// Meaningful only when `lexer_tokens_len` is non-zero. See
+    /// `Parser.restoreTokens`.
+    lexer_last_token: ast.Token,
 
     // parser token stream
     current_token: Token,
