@@ -23,6 +23,7 @@ const parenthesized = @import("parenthesized.zig");
 const patterns = @import("patterns.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
+const parser_extension = @import("parser_extension");
 const ts = @import("ts/types.zig");
 
 const ParseExpressionOpts = struct {
@@ -107,6 +108,8 @@ inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
 }
 
 fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error!?ast.NodeIndex {
+    if (comptime @hasDecl(parser_extension, "lazy_assignment_pattern"))
+        if (try parser_extension.lazy_assignment_pattern(Error!??ast.NodeIndex, parser)) |node| return node;
     const tag = parser.current_token.tag;
 
     // regular identifiers
@@ -248,6 +251,10 @@ pub inline fn parsePrimaryExpression(
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
         .at => blk: {
+            if (comptime @hasDecl(parser_extension, "expression_at_code_block"))
+                if (try parser_extension.expression_at_code_block(Error!??ast.NodeIndex, parser)) |node| return node;
+            if (comptime @hasDecl(parser_extension, "expression_at_control_flow"))
+                if (try parser_extension.expression_at_control_flow(Error!??ast.NodeIndex, parser)) |node| return node;
             const decorators_start = parser.current_token.span.start;
             const decorators = try extensions.parseDecorators(parser) orelse break :blk null;
             break :blk try class.parseClassDecorated(

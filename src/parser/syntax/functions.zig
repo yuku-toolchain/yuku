@@ -8,6 +8,7 @@ const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const extensions = @import("extensions.zig");
 const ts = @import("ts/types.zig");
+const parser_extension = @import("parser_extension");
 
 const ParseFunctionOpts = struct {
     is_async: bool = false,
@@ -129,8 +130,13 @@ pub fn parseFunction(
     }
 
     // ts ambient declarations and overload signatures are body-less.
-    const has_body = !is_ambient_declaration and
+    var has_body = !is_ambient_declaration and
         (!is_ts or is_function_expression or parser.current_token.tag == .left_brace);
+    if (comptime @hasDecl(parser_extension, "function_body_starts")) {
+        if (parser_extension.function_body_starts(parser)) |value| {
+            has_body = value;
+        }
+    }
     const body: ast.NodeIndex = if (has_body)
         try parseFunctionBody(parser) orelse .null
     else
@@ -187,6 +193,8 @@ pub fn parseFunction(
 }
 
 pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (comptime @hasDecl(parser_extension, "function_body"))
+        if (try parser_extension.function_body(Error!??ast.NodeIndex, parser)) |node| return node;
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(

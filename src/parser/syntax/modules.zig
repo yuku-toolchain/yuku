@@ -15,6 +15,7 @@ const class = @import("class.zig");
 const extensions = @import("extensions.zig");
 const variables = @import("variables.zig");
 const ts = @import("ts/statements.zig");
+const parser_extension = @import("parser_extension");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .import);
@@ -953,6 +954,8 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
 // module string
 fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .string_literal) {
+        if (comptime @hasDecl(parser_extension, "module_specifier"))
+            if (try parser_extension.module_specifier(Error!??ast.NodeIndex, parser)) |node| return node;
         try parser.reportExpected(parser.current_token.span, "Expected module specifier", .{
             .help = "Module specifiers must be string literals, e.g., './module.js' or 'package'",
         });

@@ -7,6 +7,57 @@ const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
 const comments = @import("comments.zig");
+const parser_extension = @import("parser_extension");
+
+/// names the parser dispatches on with `@hasDecl(parser_extension, …)`, each at exactly one
+/// call site. `R` is passed in by the call site and is `Error!??ast.NodeIndex` unless noted:
+/// outer `null` declines, `some(null)` is handled-and-failed and must report first, `some(idx)`
+/// is handled. `?bool` hooks defer on `null` and hard-override otherwise. declining must leave
+/// the token position untouched, `for_of_tail` excepted.
+pub const extension_points = [_][]const u8{
+    "binding_pattern", // fn(comptime R: type, parser) R; head of parseBindingPattern
+    "can_start_binding", // fn(tag: TokenTag) ?bool; head of canStartBinding
+    "expression_at_code_block", // fn(comptime R: type, parser) R; `@` in expression position
+    "expression_at_control_flow", // as above, consulted second
+    "for_of_tail", // fn(comptime R: type, parser, args: struct{start,left,right,is_for_await}) R; may consume its tail then decline
+    "function_body", // fn(comptime R: type, parser) R; head of parseFunctionBody
+    "function_body_starts", // fn(parser) ?bool; whether a `function` carries a body
+    "jsx_child_at_code_block", // fn(comptime R: type, parser) R; past `{` in a JSX child
+    "jsx_child_at_control_flow", // as above, consulted second
+    "jsx_element_after_open", // fn(comptime R: type, parser, opening, context) R
+    "jsx_element_name", // fn(comptime R: type, parser) R; opening and closing tags alike
+    "jsx_fragment_after_open", // fn(comptime R: type, parser, opening) R
+    "jsx_names_match", // fn(parser, a, b) ?bool; does a closing tag match its opening tag
+    "jsx_text_boundary", // fn(source: []const u8, cursor: u32) ?bool; true ends the text run
+    "jsx_text_value", // fn(comptime R: type, parser, span) R, R = Error!?ast.String; interned value
+    "lazy_assignment_pattern", // fn(comptime R: type, parser) R; head of parsePrefix
+    "module_specifier", // fn(comptime R: type, parser) R; a non-string module specifier
+    "statement_at_code_block", // fn(comptime R: type, parser) R; `@` in statement position
+    "statement_at_control_flow", // as above, consulted second
+    "validate_jsx_element_name", // fn(comptime R: type, parser, name) R, R = Error!void; advisory
+};
+
+const extension_point_list = blk: {
+    var list: []const u8 = "";
+    for (extension_points) |name| list = list ++ "\n  " ++ name;
+    break :blk list;
+};
+
+comptime {
+    // the quadratic name comparison overruns the default budget once an extension is bound
+    @setEvalBranchQuota(100 * extension_points.len * extension_points.len);
+    decls: for (@typeInfo(parser_extension).@"struct".decls) |decl| {
+        if (@typeInfo(@TypeOf(@field(parser_extension, decl.name))) != .@"fn") continue;
+        for (decl.name) |c| switch (c) {
+            'a'...'z', '0'...'9', '_' => {},
+            else => continue :decls,
+        };
+        for (extension_points) |name| if (std.mem.eql(u8, decl.name, name)) continue :decls;
+        @compileError("parser_extension declares the snake_case function \"" ++ decl.name ++
+            "\", which is not a parser extension point. Rename it or make it non-`pub`. " ++
+            "The extension points are:" ++ extension_point_list);
+    }
+}
 
 /// How comments are collected: not at all, as a flat list (`Tree.comments`),
 /// attached to host nodes (`Tree.commentsOf`), or both.

@@ -7,6 +7,7 @@ const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 const ts = @import("ts/types.zig");
 const std = @import("std");
+const parser_extension = @import("parser_extension");
 
 pub const ParseVariableDeclarationOpts = struct {
     await_using: bool = false,
@@ -204,6 +205,8 @@ pub fn parseVariableDeclarator(
 /// returns `true` when `tag` can begin a `BindingIdentifier` or destructuring
 /// pattern, i.e. the head of a variable declarator.
 pub fn canStartBinding(tag: TokenTag) bool {
+    if (comptime @hasDecl(parser_extension, "can_start_binding"))
+        if (parser_extension.can_start_binding(tag)) |value| return value;
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
@@ -216,7 +219,17 @@ pub fn canStartBindingIdentifier(tag: TokenTag) bool {
 /// can never bind, so `let in obj` keeps `let` as an identifier instead of
 /// committing to a declaration that cannot parse.
 pub fn canStartLetBinding(tag: TokenTag) bool {
-    return tag == .left_bracket or tag == .left_brace or canStartBindingIdentifier(tag);
+    return canStartBinding(tag) and !tag.isUnconditionallyReserved();
+}
+
+test "canStartLetBinding matches the longhand it replaced" {
+    inline for (@typeInfo(TokenTag).@"enum".fields) |field| {
+        const tag = @field(TokenTag, field.name);
+        try std.testing.expectEqual(
+            tag == .left_bracket or tag == .left_brace or canStartBindingIdentifier(tag),
+            canStartLetBinding(tag),
+        );
+    }
 }
 
 /// Determines if 'let' should be parsed as an identifier rather than a variable

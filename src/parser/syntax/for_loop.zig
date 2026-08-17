@@ -8,6 +8,7 @@ const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
 const grammar = @import("../grammar.zig");
 const statements = @import("statements.zig");
+const parser_extension = @import("parser_extension");
 
 /// https://tc39.es/ecma262/#sec-for-statement
 /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
@@ -346,6 +347,13 @@ fn parseForOfStatementRest(
 
     const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
+    if (comptime @hasDecl(parser_extension, "for_of_tail")) if (parser.current_token.tag != .right_paren)
+        if (try parser_extension.for_of_tail(Error!??ast.NodeIndex, parser, .{
+            .start = start,
+            .left = left,
+            .right = right,
+            .is_for_await = is_for_await,
+        })) |node| return node;
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-of expression", null)) {
         return null;

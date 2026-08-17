@@ -9,8 +9,11 @@ const object = @import("object.zig");
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
 const ts = @import("ts/types.zig");
+const parser_extension = @import("parser_extension");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
+    if (comptime @hasDecl(parser_extension, "binding_pattern"))
+        if (try parser_extension.binding_pattern(Error!??ast.NodeIndex, parser)) |node| return node;
     if (parser.current_token.tag.isIdentifierLike()) {
         return literals.parseBindingIdentifier(parser);
     }
