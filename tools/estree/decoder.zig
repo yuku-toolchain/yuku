@@ -23,6 +23,7 @@ pub fn generate(w: *Writer, mode: Mode) !void {
         \\
     );
     try writeLookupTables(w);
+    if (mode == .parser) try writeTokenConstants(w);
     if (mode == .analyzer) try writeSemanticConstants(w);
     if (mode == .analyzer) try writeChildTables(w);
     try writeBuildPosMap(w);
@@ -191,6 +192,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\        diagCount = _u32[{[u_dc]d}],
         \\        progIdx = _u32[{[u_pi]d}];
         \\  const attachedCommentCount = _u32[{[u_acc]d}];
+        \\  const tokenCount = _u32[{[u_tc]d}];
         \\  const _flags = _u32[{[u_fl]d}];
         \\  const _isTs = !!(_flags & {[ts]d});
         \\  const _attached = !!(_flags & {[ac]d});
@@ -272,6 +274,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
+        .u_tc = rt.HDR_TOKEN_COUNT_U32,
         .u_fl = rt.HDR_FLAGS_U32,
         .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
         .ts = rt.FLAG_TS,
@@ -404,6 +407,42 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArrayRaw(w, "TS_MAPPED_OPTIONAL", &meta.TS_MAPPED_OPTIONAL_RAW);
     try writeArrayRaw(w, "TS_MAPPED_READONLY", &meta.TS_MAPPED_READONLY_RAW);
     try writeArray(w, "AC_POSITIONS", &.{ "before", "after", "inside" });
+}
+
+// derived from the enum so the JS table cannot drift from the encoder
+fn writeTokenConstants(w: *Writer) !void {
+    try w.writeAll("const TOKEN_TYPES = [");
+    inline for (@typeInfo(ast.TokenType).@"enum".fields, 0..) |field, i| {
+        if (i > 0) try w.writeAll(", ");
+        const token_type: ast.TokenType = @enumFromInt(field.value);
+        try w.print("\"{s}\"", .{token_type.toString()});
+    }
+    try w.writeAll("];\n");
+
+    try w.print("const T_PRIVATE_ID = {d}, T_REGEX = {d};\n", .{
+        @intFromEnum(ast.TokenType.private_identifier),
+        @intFromEnum(ast.TokenType.regular_expression),
+    });
+
+    // identifier escapes are always `\uXXXX` or `\u{...}`
+    try w.writeAll(
+        \\function unescapeIdent(s) {
+        \\  let r = "";
+        \\  for (let i = 0; i < s.length; ) {
+        \\    if (s.charCodeAt(i) !== 92) { r += s[i++]; continue; }
+        \\    if (s.charCodeAt(i + 2) === 123) {
+        \\      const close = s.indexOf("}", i + 3);
+        \\      r += String.fromCodePoint(parseInt(s.slice(i + 3, close), 16));
+        \\      i = close + 1;
+        \\    } else {
+        \\      r += String.fromCharCode(parseInt(s.slice(i + 2, i + 6), 16));
+        \\      i += 6;
+        \\    }
+        \\  }
+        \\  return r;
+        \\}
+        \\
+    );
 }
 
 fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
@@ -1307,8 +1346,11 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
 fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     comptime std.debug.assert(rt.COMMENT_FLAGS_OFFSET == 0);
     comptime std.debug.assert(rt.COMMENT_SIZE % 4 == 0);
+    comptime std.debug.assert(rt.TOKEN_TYPE_OFFSET == 0);
+    comptime std.debug.assert(rt.TOKEN_SIZE % 4 == 0);
     try w.print(
-        \\  const dOff = _cOff + commentCount * {[csize]d};
+        \\  const _tOff = _cOff + commentCount * {[csize]d};
+        \\  const dOff = _tOff + tokenCount * {[tsize]d};
         \\  function _decodeComments() {{
         \\    const out = new Array(commentCount);
         \\    for (let j = 0; j < commentCount; j++) {{
@@ -1361,6 +1403,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\
     , .{
         .csize = rt.COMMENT_SIZE,
+        .tsize = rt.TOKEN_SIZE,
         .c_stride = rt.COMMENT_SIZE / 4,
         .c_vs = rt.COMMENT_VALUE_START_OFFSET / 4,
         .c_ve = rt.COMMENT_VALUE_END_OFFSET / 4,
@@ -1368,13 +1411,17 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         .c_se = rt.COMMENT_SPAN_END_OFFSET / 4,
     });
 
+    if (mode == .parser) try writeDecodeTokens(w);
+
     if (mode == .analyzer) {
         try writeParentBody(w);
         try writeSemanticBody(w);
     }
 
+    try w.writeAll("  let _program, _diagnostics, _comments");
+    if (mode == .parser) try w.writeAll(", _tokens");
     try w.writeAll(
-        \\  let _program, _diagnostics, _comments;
+        \\;
         \\  return {
         \\    get program() {
         \\      return _program !== undefined ? _program : (_program = node(progIdx));
@@ -1388,6 +1435,14 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\      return _diagnostics !== undefined
         \\        ? _diagnostics
         \\        : (_diagnostics = _decodeDiagnostics());
+        \\    },
+        \\
+    );
+
+    // one object per token, so a caller that never reads them pays nothing
+    if (mode == .parser) try w.writeAll(
+        \\    get tokens() {
+        \\      return _tokens !== undefined ? _tokens : (_tokens = _decodeTokens());
         \\    },
         \\
     );
@@ -1406,6 +1461,44 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\}
         \\
     );
+}
+
+// `value` is the slice the span covers, except that a private identifier drops
+// its `#` and an escaped identifier resolves its escapes
+fn writeDecodeTokens(w: *Writer) !void {
+    try w.print(
+        \\  function _decodeTokens() {{
+        \\    const out = new Array(tokenCount);
+        \\    for (let j = 0; j < tokenCount; j++) {{
+        \\      const o = (_tOff >> 2) + j * {[t_stride]d};
+        \\      const tt = _u32[o] & 255;
+        \\      const ss = _u32[o + {[t_ss]d}], se = _u32[o + {[t_se]d}];
+        \\      let value = str(tt === T_PRIVATE_ID ? ss + 1 : ss, se);
+        \\      if ((_u32[o] >> {[t_esc]d}) & 1) value = unescapeIdent(value);
+        \\      const t = {{
+        \\        type: TOKEN_TYPES[tt],
+        \\        value,
+        \\        start: _p(ss),
+        \\        end: _p(se),
+        \\      }};
+        \\      if (tt === T_REGEX) {{
+        \\        const slash = t.value.lastIndexOf("/");
+        \\        t.regex = {{
+        \\          pattern: t.value.slice(1, slash),
+        \\          flags: t.value.slice(slash + 1),
+        \\        }};
+        \\      }}
+        \\      out[j] = t;
+        \\    }}
+        \\    return out;
+        \\  }}
+        \\
+    , .{
+        .t_stride = rt.TOKEN_SIZE / 4,
+        .t_esc = 8 * rt.TOKEN_FLAGS_OFFSET + rt.TOKEN_ESCAPED_BIT,
+        .t_ss = rt.TOKEN_SPAN_START_OFFSET / 4,
+        .t_se = rt.TOKEN_SPAN_END_OFFSET / 4,
+    });
 }
 
 fn writeParentBody(w: *Writer) !void {

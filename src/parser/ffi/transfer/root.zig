@@ -10,9 +10,9 @@
 //                        on) without copying the underlying bytes.
 //   decode (JS -> Zig)   `deserializeFromBuf` reconstructs an `ast.Tree`
 //                        from the same buffer. It is the exact inverse of
-//                        the encoder for every section except diagnostics,
-//                        which it skips (the codegen path that consumes it
-//                        does not need them).
+//                        the encoder for every section except tokens and
+//                        diagnostics, which it skips (the codegen path that
+//                        consumes it does not need them).
 //
 // All multi-byte integers are little endian. The format carries no version
 // byte; producer and consumer are built from this file and must match.
@@ -45,6 +45,8 @@
 //   comments           comment_count * COMMENT_SIZE bytes, in source order,
 //                      each carrying its own span. Present when
 //                      FLAG_COMMENTS is set.
+//   tokens             token_count * TOKEN_SIZE bytes, in source order.
+//                      Written by the encoder, skipped by the decoder.
 //   diagnostics        Variable length sequence (see diagnostics below).
 //                      Written by the encoder; skipped by the decoder.
 //
@@ -125,6 +127,8 @@ const Header = extern struct {
     comment_count: u32,
     /// entries in the attached comments section.
     attached_comment_count: u32,
+    /// entries in the tokens section.
+    token_count: u32,
     diag_count: u32,
     program_index: u32,
     flags: u32,
@@ -188,6 +192,19 @@ const PackedAttachedComment = extern struct {
     value_end: u32,
 };
 
+/// Token entry on the wire, in source order. `type` is an `ast.TokenType`
+/// discriminant and `flags` bit 0 marks an escaped identifier. The text derives
+/// from the span, so no value handle is needed.
+const PackedToken = extern struct {
+    type: u8,
+    flags: u8,
+    _pad: u16 = 0,
+    span_start: u32,
+    span_end: u32,
+};
+
+pub const TOKEN_ESCAPED_BIT: u8 = 0;
+
 pub const ATTACHED_COMMENT_POSITION_SHIFT: u8 = 1;
 pub const ATTACHED_COMMENT_POSITION_MASK: u8 = 0b11 << ATTACHED_COMMENT_POSITION_SHIFT;
 pub const ATTACHED_COMMENT_SAME_LINE_BIT: u8 = 3;
@@ -197,6 +214,7 @@ pub const HEADER_SIZE: u32 = @sizeOf(Header);
 pub const NODE_SIZE: u32 = @sizeOf(PackedNode);
 pub const COMMENT_SIZE: u32 = @sizeOf(PackedComment);
 pub const ATTACHED_COMMENT_SIZE: u32 = @sizeOf(PackedAttachedComment);
+pub const TOKEN_SIZE: u32 = @sizeOf(PackedToken);
 
 // `Header` field u32 indices for the decoder.
 pub const HDR_NODE_COUNT_U32: u32 = @offsetOf(Header, "node_count") / 4;
@@ -205,6 +223,7 @@ pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 
 pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
 pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
 pub const HDR_ATTACHED_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "attached_comment_count") / 4;
+pub const HDR_TOKEN_COUNT_U32: u32 = @offsetOf(Header, "token_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
 pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
@@ -245,6 +264,12 @@ pub const COMMENT_SPAN_END_OFFSET: u8 = @offsetOf(PackedComment, "span_end");
 pub const ATTACHED_COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedAttachedComment, "flags");
 pub const ATTACHED_COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_start");
 pub const ATTACHED_COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_end");
+
+// `PackedToken` byte offsets for the decoder.
+pub const TOKEN_TYPE_OFFSET: u8 = @offsetOf(PackedToken, "type");
+pub const TOKEN_FLAGS_OFFSET: u8 = @offsetOf(PackedToken, "flags");
+pub const TOKEN_SPAN_START_OFFSET: u8 = @offsetOf(PackedToken, "span_start");
+pub const TOKEN_SPAN_END_OFFSET: u8 = @offsetOf(PackedToken, "span_end");
 
 comptime {
     validateAllNodeLayouts();
@@ -375,7 +400,8 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
         alignPool(tree.strings.extra.items.len) +
         tree.attached_comment_offsets.len * 4 +
         tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
-        tree.comments.len * COMMENT_SIZE;
+        tree.comments.len * COMMENT_SIZE +
+        tree.tokens.len * TOKEN_SIZE;
 
     for (tree.diagnostics.items) |d| {
         size += diag_fixed + d.message.len;
@@ -410,6 +436,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
         .attached_comment_count = @intCast(tree.attached_comments.len),
+        .token_count = @intCast(tree.tokens.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @intFromEnum(tree.root),
         .flags = hdr_flags,
@@ -470,6 +497,23 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         };
     }
     pos += tree.comments.len * COMMENT_SIZE;
+
+    // tokens
+    const tokens_out: [*]PackedToken = @ptrCast(@alignCast(buf.ptr + pos));
+    for (tree.tokens, 0..) |t, i| {
+        // pairs with `Lexer.recordToken`. the decoder reads a token's text from
+        // its span, which a zero-width or unordered span would corrupt.
+        std.debug.assert(t.span.start < t.span.end);
+        if (i > 0) std.debug.assert(tree.tokens[i - 1].span.start < t.span.start);
+
+        tokens_out[i] = .{
+            .type = @intFromEnum(t.type),
+            .flags = @as(u8, @intFromBool(t.escaped)) << TOKEN_ESCAPED_BIT,
+            .span_start = t.span.start,
+            .span_end = t.span.end,
+        };
+    }
+    pos += tree.tokens.len * TOKEN_SIZE;
 
     // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
@@ -715,7 +759,9 @@ pub fn deserializeFromBuf(
     }
     pos += comments_bytes;
 
-    // skip diagnostics. codegen doesn't read them.
+    // skip tokens and diagnostics. codegen reads neither.
+    const tokens_bytes: usize = @as(usize, hdr.token_count) * TOKEN_SIZE;
+    if (buf.len < pos + tokens_bytes) return error.InvalidBuffer;
 
     tree.root = @enumFromInt(hdr.program_index);
     std.debug.assert(tree.root != .null);

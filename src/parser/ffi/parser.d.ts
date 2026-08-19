@@ -7,6 +7,7 @@ import type {
   Program,
   SourceLang,
   SourceType,
+  Token,
   WalkContext,
 } from "@yuku-toolchain/types";
 
@@ -51,6 +52,14 @@ interface ParseOptions {
    * @default false
    */
   attachComments?: boolean;
+  /**
+   * Collect every token in source order into {@link ParseResult.tokens},
+   * classified the way ESLint's own parser classifies them.
+   *
+   * Off by default, since the list costs memory proportional to the source.
+   * @default false
+   */
+  tokens?: boolean;
 }
 
 /** The result returned by the parser. */
@@ -59,6 +68,11 @@ interface ParseResult {
   program: Program;
   /** Every comment in source order, each with its source span. */
   comments: Comment[];
+  /**
+   * Every token in source order. Empty unless {@link ParseOptions.tokens} is
+   * enabled. Token spans never overlap {@link ParseResult.comments}.
+   */
+  tokens: Token[];
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
 }

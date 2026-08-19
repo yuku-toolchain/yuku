@@ -56,7 +56,10 @@ pub const LexerState = struct {
 pub const Lexer = struct {
     /// comments in source order, populated only when `collect_comments` is true
     comments: std.ArrayList(ast.Comment),
+    /// tokens in source order, populated only when `collect_tokens` is true
+    tokens: std.ArrayList(ast.Token),
     collect_comments: bool,
+    collect_tokens: bool,
     allocator: std.mem.Allocator,
     state: LexerState,
     mode: LexerMode = .normal,
@@ -68,11 +71,16 @@ pub const Lexer = struct {
     source_type: ast.SourceType,
     hashbang: ?struct { start: u32, len: u16 } = null,
 
+    pub const Options = struct {
+        source_type: ast.SourceType,
+        collect_comments: bool,
+        collect_tokens: bool,
+    };
+
     pub fn init(
         source: []const u8,
         allocator: std.mem.Allocator,
-        source_type: ast.SourceType,
-        collect_comments: bool,
+        options: Options,
     ) error{OutOfMemory}!Lexer {
         // span positions are u32
         std.debug.assert(source.len <= std.math.maxInt(u32));
@@ -82,10 +90,19 @@ pub const Lexer = struct {
             .state = .{},
             .cursor = 0,
             .comments = .empty,
-            .collect_comments = collect_comments,
+            .tokens = .empty,
+            .collect_comments = options.collect_comments,
+            .collect_tokens = options.collect_tokens,
             .allocator = allocator,
-            .source_type = source_type,
+            .source_type = options.source_type,
         };
+
+        // entries are non-empty with strictly increasing starts, so `source.len`
+        // bounds the list. reserving it keeps `recordToken` infallible, and so
+        // `createToken` free of an error union.
+        if (options.collect_tokens) {
+            try self.tokens.ensureTotalCapacityPrecise(allocator, @max(1, source.len));
+        }
 
         self.skipHashbang();
 
@@ -1476,13 +1493,83 @@ pub const Lexer = struct {
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {
         std.debug.assert(start <= end);
         std.debug.assert(end <= self.source.len);
-        return .{
+        const token: Token = .{
             .tag = tag,
             .span = .{ .start = start, .end = end },
             .flags = self.consumeTokenFlags(),
         };
+        if (self.collect_tokens) {
+            @branchHint(.unlikely);
+            self.recordToken(token);
+        }
+        return token;
+    }
+
+    /// Appends `token`, dropping any entry it supersedes.
+    ///
+    /// Every re-lex restarts the scan at or before a position already
+    /// recorded, so discarding the entries from there leaves exactly the
+    /// tokens still standing. A rewind that does not re-lex has to restore
+    /// the list itself. See `Parser.restoreTokens`.
+    noinline fn recordToken(self: *Lexer, token: Token) void {
+        std.debug.assert(self.collect_tokens);
+
+        // eof has no text, and the JSX text scan yields a zero-width token
+        // whenever a delimiter follows immediately
+        if (token.tag == .eof) return;
+        if (token.span.start == token.span.end) return;
+
+        const recorded = self.tokens.items;
+        var len = recorded.len;
+        while (len > 0) {
+            if (recorded[len - 1].span.start < token.span.start) break;
+            len -= 1;
+        }
+        self.tokens.shrinkRetainingCapacity(len);
+
+        std.debug.assert(len < self.tokens.capacity);
+        const token_type = ast.TokenType.fromTag(token.tag, self.mode == .jsx_tag);
+        self.tokens.appendAssumeCapacity(.{
+            .type = token_type,
+            // a string or template flags escapes too, but reports raw text
+            .escaped = token.isEscaped() and token_type.resolvesEscapes(),
+            .span = .{ .start = token.span.start, .end = token.span.end },
+        });
+    }
+
+    /// Retypes `token`'s entry for a parser that has read it as a name. The
+    /// lexer classifies from the text alone, so `catch` in `p.catch(f)` records
+    /// as a keyword where ESLint reports an identifier.
+    pub noinline fn retypeAsName(self: *Lexer, token: Token) void {
+        std.debug.assert(self.collect_tokens);
+
+        const entry = self.recordedAt(token.span.start) orelse {
+            // unreachable, but a wrong type beats a crash in a release build
+            std.debug.assert(false);
+            return;
+        };
+        entry.type = entry.type.readAsName(token.tag) orelse return;
+    }
+
+    /// The entry starting at `position`, or null when none does. Starts
+    /// strictly increase, so the scan back stops at the first earlier entry.
+    inline fn recordedAt(self: *Lexer, position: u32) ?*ast.Token {
+        const recorded = self.tokens.items;
+        var index = recorded.len;
+        const limit = index - @min(index, recorded_scan_max);
+        while (index > limit) {
+            index -= 1;
+            const entry = &recorded[index];
+            if (entry.span.start == position) return entry;
+            if (entry.span.start < position) return null;
+        }
+        return null;
     }
 };
+
+/// How far back `recordedAt` looks. A name comes from a token consumed a few
+/// tokens ago at most, and a short scan stays in cache.
+const recorded_scan_max = 8;
 
 pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
     return switch (error_type) {

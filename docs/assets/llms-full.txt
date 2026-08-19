@@ -135,6 +135,7 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](https://yuku.fyi/parser/ast/#comments) |
+| `tokens`                        | `true`, `false`                      | `false`   | Collect every token in source order into `tree.tokens`. See [Tokens](#tokens)      |
 
 Both fields can be inferred from a file path.
 
@@ -173,6 +174,24 @@ for (tree.extra(program.body)) |child_idx| {
 ```
 
 The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](https://yuku.fyi/parser/ast/) for the full node catalog, the field conventions, and the eight categorical predicates on `NodeData`.
+
+## Tokens
+
+Set `.tokens = true` to also collect every token in source order into `tree.tokens`.
+
+```zig
+var tree = try parser.parse(allocator, source, .{ .tokens = true });
+defer tree.deinit();
+
+for (tree.tokens) |token| {
+    std.debug.print("{s} {s}\n", .{
+        token.type.toString(),
+        source[token.span.start..token.span.end],
+    });
+}
+```
+
+`token.type` is one of the twelve types ESLint's own parser reports, and classification matches `espree`. Trivia is not a token, so comments stay in `tree.comments`.
 
 ## Diagnostics
 

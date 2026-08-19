@@ -570,7 +570,7 @@ pub fn parseImportExpression(
     // we still represent it as IdentifierName in the AST, so escaped forms must be rejected here.
     try parser.reportIfEscapedKeyword(parser.current_token);
 
-    const name = name_from_param orelse try literals.parseIdentifierName(parser) orelse return null;
+    const name = name_from_param orelse try literals.parseKeywordAsName(parser) orelse return null;
 
     return switch (parser.current_token.tag) {
         .dot => parseImportMetaOrPhaseImport(parser, name),
@@ -653,7 +653,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .new);
     const start = parser.current_token.span.start;
     try parser.checkEscapedKeyword();
-    const new = try literals.parseIdentifierName(parser) orelse return null; // consume 'new'
+    const new = try literals.parseKeywordAsName(parser) orelse return null; // consume 'new'
 
     // check for new.target
     if (parser.current_token.tag == .dot) {

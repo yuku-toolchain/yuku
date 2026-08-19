@@ -20,6 +20,7 @@ const flag = struct {
     const preserve_parens = 1 << 5;
     const semantic = 1 << 6;
     const attach_comments = 1 << 7;
+    const tokens = 1 << 8;
 };
 
 export fn alloc(len: usize) [*]u8 {
@@ -41,6 +42,7 @@ fn run(source: []const u8, flags: u32) ![]u8 {
         .lang = @enumFromInt(@as(u3, @truncate(flags >> flag.lang_shift))),
         .preserve_parens = flags & flag.preserve_parens != 0,
         .comments = if (flags & flag.attach_comments != 0) .both else .flat,
+        .tokens = flags & flag.tokens != 0,
     });
     defer tree.deinit();
 
