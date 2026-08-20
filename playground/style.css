@@ -410,6 +410,8 @@ main {
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: none;
 }
 
 #status.ok {
@@ -422,4 +424,99 @@ main {
 
 #status.err {
   color: var(--err);
+}
+
+::highlight(yuku-diag-error) {
+  text-decoration: underline wavy var(--err) 1.5px;
+}
+
+::highlight(yuku-diag-warning) {
+  text-decoration: underline wavy var(--warn) 1.5px;
+}
+
+::highlight(yuku-diag-info) {
+  text-decoration: underline wavy var(--dim) 1px;
+}
+
+#problems {
+  max-height: 30vh;
+  overflow: auto;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.problem {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 16px;
+  cursor: pointer;
+  white-space: pre;
+}
+
+.problem:hover {
+  background: color-mix(in srgb, var(--sel) 40%, transparent);
+}
+
+.problem-icon {
+  flex: none;
+  width: 1em;
+}
+
+.sev-error .problem-icon {
+  color: var(--err);
+}
+
+.sev-warning .problem-icon {
+  color: var(--warn);
+}
+
+.sev-info .problem-icon {
+  color: var(--dim);
+}
+
+.problem-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.problem-pos {
+  flex: none;
+  margin-left: auto;
+  padding-left: 16px;
+  color: var(--dim);
+}
+
+#diagTip {
+  position: fixed;
+  z-index: 10;
+  max-width: 420px;
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.tip-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tip-item + .tip-item {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.tip-help {
+  margin-top: 2px;
+  color: var(--dim);
 }

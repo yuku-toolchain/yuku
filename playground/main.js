@@ -13,6 +13,9 @@ const codeView = $("code");
 const astView = $("ast");
 const outView = $("out");
 const status = $("status");
+const problemsPanel = $("problems");
+const problemsList = $("problemsList");
+const diagTip = $("diagTip");
 
 const OPEN_DEPTH = 4;
 
@@ -36,6 +39,9 @@ const jar = CodeJar(
   codeView,
   (el) => {
     el.innerHTML = hl(el.textContent, "typescript");
+    // codejar re-highlights on a debounce after onUpdate, so the rewrite above
+    // collapses squiggle ranges built during render. rebuild them here
+    renderSquiggles();
   },
   { tab: "  ", spellcheck: false },
 );
@@ -321,6 +327,139 @@ function setStatus(text, kind) {
   status.className = kind;
 }
 
+// hint shares the info style, matching ide convention
+const DIAG_LEVEL = { error: "error", warning: "warning", info: "info", hint: "info" };
+const DIAG_ICON = { error: "✖", warning: "⚠", info: "ℹ" };
+
+let currentDiags = [];
+let lineStarts = [0];
+let problemsOpen = true;
+
+function setDiagnostics(diags, source) {
+  currentDiags = diags;
+  lineStarts = [0];
+  for (let i = 0; i < source.length; i++) {
+    if (source.charCodeAt(i) === 10) lineStarts.push(i + 1);
+  }
+  diagTip.hidden = true;
+  renderSquiggles();
+  renderProblems();
+  problemsPanel.hidden = !(problemsOpen && diags.length > 0);
+}
+
+function renderSquiggles() {
+  if (!diagHighlights) return;
+  for (const h of Object.values(diagHighlights)) h.clear();
+  const textLen = codeView.textContent.length;
+  for (const d of currentDiags) {
+    const bucket = diagHighlights[DIAG_LEVEL[d.severity] ?? "info"];
+    // zero-length spans render nothing, stretch them to one char
+    let start = Math.min(Math.max(d.start, 0), textLen);
+    let end = d.end > d.start ? d.end : d.start + 1;
+    end = Math.min(Math.max(end, 0), textLen);
+    if (end === start && start > 0) {
+      start -= 1;
+      end = start + 1;
+    }
+    const range = rangeFromOffsets(codeView, start, end);
+    if (range) bucket.add(range);
+  }
+}
+
+function problemPos(offset) {
+  let lo = 0;
+  let hi = lineStarts.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (lineStarts[mid] <= offset) lo = mid;
+    else hi = mid - 1;
+  }
+  return `${lo + 1}:${offset - lineStarts[lo] + 1}`;
+}
+
+function renderProblems() {
+  problemsList.replaceChildren(
+    ...currentDiags.map((d) => {
+      const level = DIAG_LEVEL[d.severity] ?? "info";
+      const row = el("div", `problem sev-${level}`);
+      row.append(el("span", "problem-icon", DIAG_ICON[level]));
+      row.append(el("span", "problem-msg", d.message));
+      row.append(el("span", "problem-pos", problemPos(d.start)));
+      row.addEventListener("mouseover", () => highlightCode(d.start, d.end));
+      row.addEventListener("mouseleave", restoreActive);
+      row.addEventListener("click", () => {
+        selectCode(d.start, d.end);
+        scrollCodeIntoView(d.start, d.end);
+      });
+      return row;
+    }),
+  );
+}
+
+function diagStatusText(diags, times) {
+  const counts = { error: 0, warning: 0, info: 0 };
+  for (const d of diags) counts[DIAG_LEVEL[d.severity] ?? "info"]++;
+  const parts = [];
+  if (counts.error) parts.push(`${DIAG_ICON.error} ${counts.error}`);
+  if (counts.warning) parts.push(`${DIAG_ICON.warning} ${counts.warning}`);
+  if (counts.info) parts.push(`${DIAG_ICON.info} ${counts.info}`);
+  const kind = counts.error ? "err" : counts.warning ? "warn" : "";
+  return [`${parts.join("  ")} · ${times}`, kind];
+}
+
+function offsetAtPoint(x, y) {
+  let node;
+  let offset;
+  if (document.caretRangeFromPoint) {
+    const r = document.caretRangeFromPoint(x, y);
+    if (!r) return null;
+    node = r.startContainer;
+    offset = r.startOffset;
+  } else if (document.caretPositionFromPoint) {
+    const p = document.caretPositionFromPoint(x, y);
+    if (!p) return null;
+    node = p.offsetNode;
+    offset = p.offset;
+  } else {
+    return null;
+  }
+  if (!codeView.contains(node)) return null;
+  const pre = document.createRange();
+  pre.selectNodeContents(codeView);
+  pre.setEnd(node, offset);
+  return pre.toString().length;
+}
+
+function showDiagTip(x, y) {
+  const offset = offsetAtPoint(x, y);
+  const hits =
+    offset === null ? [] : currentDiags.filter((d) => offset >= d.start && offset <= d.end);
+  if (hits.length === 0) {
+    diagTip.hidden = true;
+    return;
+  }
+  diagTip.replaceChildren(
+    ...hits.map((d) => {
+      const level = DIAG_LEVEL[d.severity] ?? "info";
+      const item = el("div", `tip-item sev-${level}`);
+      item.append(el("span", "problem-icon", DIAG_ICON[level]));
+      const body = el("div");
+      body.append(el("div", "tip-msg", d.message));
+      if (d.help) body.append(el("div", "tip-help", d.help));
+      item.append(body);
+      return item;
+    }),
+  );
+  diagTip.hidden = false;
+  const pad = 12;
+  const rect = diagTip.getBoundingClientRect();
+  const left = Math.max(pad, Math.min(x + pad, window.innerWidth - rect.width - pad));
+  let top = y + pad + 6;
+  if (top + rect.height > window.innerHeight - pad) top = y - rect.height - pad;
+  diagTip.style.left = `${left}px`;
+  diagTip.style.top = `${Math.max(pad, top)}px`;
+}
+
 function render() {
   astNodes = [];
   astDetails = [];
@@ -331,24 +470,29 @@ function render() {
   activeSpans = null;
   clearCodeHighlight();
 
+  const source = jar.toString();
   let result;
   const t0 = performance.now();
   try {
-    result = parse(jar.toString(), options());
+    result = parse(source, options());
   } catch (e) {
     astView.replaceChildren();
     outView.textContent = "";
+    setDiagnostics([], source);
     setStatus(String(e), "err");
     persist();
     return;
   }
   const t1 = performance.now();
 
+  let diags = result.diagnostics;
   const astScroll = astView.scrollTop;
   $("paneTitle").textContent = $("view").value;
   if ($("view").value === "semantics") {
     try {
-      astView.replaceChildren(semTree(analyze(jar.toString(), options())));
+      const m = analyze(source, options());
+      diags = m.diagnostics;
+      astView.replaceChildren(semTree(m));
     } catch (e) {
       astView.replaceChildren(el("div", "sem-err", String(e)));
     }
@@ -379,9 +523,9 @@ function render() {
   const t3 = performance.now();
 
   const times = `parse ${(t1 - t0).toFixed(2)}ms · codegen ${(t3 - t2).toFixed(2)}ms`;
-  const diags = result.diagnostics;
+  setDiagnostics(diags, source);
   if (diags.length) {
-    setStatus(`${diags.length} diagnostic${diags.length > 1 ? "s" : ""} · ${times} · ${diags.map((d) => d.message).join("  |  ")}`, "warn");
+    setStatus(...diagStatusText(diags, times));
   } else {
     setStatus(`ok · ${times}`, "ok");
   }
@@ -397,6 +541,15 @@ const refHighlight = HAS_HL ? new Highlight() : null;
 if (refHighlight) CSS.highlights.set("yuku-ref", refHighlight);
 const declHighlight = HAS_HL ? new Highlight() : null;
 if (declHighlight) CSS.highlights.set("yuku-decl", declHighlight);
+// one registry per rendered severity, squiggles are rebuilt every render
+const diagHighlights = HAS_HL ? {} : null;
+if (diagHighlights) {
+  for (const level of ["error", "warning", "info"]) {
+    const h = new Highlight();
+    CSS.highlights.set(`yuku-diag-${level}`, h);
+    diagHighlights[level] = h;
+  }
+}
 
 let suppressCaret = false;
 
@@ -622,6 +775,18 @@ document.addEventListener("selectionchange", () => {
 codeView.addEventListener("click", () => mapCaret(true, true));
 codeView.addEventListener("blur", removeHit);
 
+let tipFrame;
+codeView.addEventListener("mousemove", (e) => {
+  cancelAnimationFrame(tipFrame);
+  tipFrame = requestAnimationFrame(() => showDiagTip(e.clientX, e.clientY));
+});
+codeView.addEventListener("mouseleave", () => {
+  diagTip.hidden = true;
+});
+codeView.addEventListener("scroll", () => {
+  diagTip.hidden = true;
+});
+
 astView.addEventListener(
   "toggle",
   (e) => {
@@ -663,7 +828,11 @@ const STATE_KEY = "yuku-state";
 const CONTROLS = ["lang", "sourceType", "preserveParens", "semanticErrors", "attachComments", "strip", "minify", "format", "quotes", "comments", "indent", "view"];
 
 function snapshot() {
-  const s = { code: jar.toString(), theme: document.documentElement.dataset.theme };
+  const s = {
+    code: jar.toString(),
+    theme: document.documentElement.dataset.theme,
+    problems: problemsOpen,
+  };
   for (const id of CONTROLS) {
     const c = $(id);
     s[id] = c.type === "checkbox" ? c.checked : c.value;
@@ -728,6 +897,7 @@ function applyState(s) {
     else c.value = s[id];
   }
   if (s.op === "strip" || s.op === "minify") $(s.op).checked = true;
+  if (s.problems !== undefined) problemsOpen = !!s.problems;
   if (s.theme === "dark" || s.theme === "light") {
     document.documentElement.dataset.theme = s.theme;
     localStorage.setItem("yuku-theme", s.theme);
@@ -764,7 +934,20 @@ themeBtn.addEventListener("click", () => {
 });
 labelTheme();
 
-jar.onUpdate(render);
+status.addEventListener("click", () => {
+  problemsOpen = !problemsOpen;
+  problemsPanel.hidden = !(problemsOpen && currentDiags.length > 0);
+  persist();
+});
+
+// codejar fires onupdate on every keyup, even caret-only moves like arrow
+// keys. gate on the text actually changing so those no longer reparse
+let lastCode = null;
+jar.onUpdate((code) => {
+  if (code === lastCode) return;
+  lastCode = code;
+  render();
+});
 
 // registered before the render listeners so render sees the synced values
 $("minify").addEventListener("change", (e) => {
