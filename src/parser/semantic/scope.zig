@@ -30,8 +30,7 @@ pub const Scope = struct {
     pub const Kind = enum(u8) {
         /// Section 16.1.7 GlobalDeclarationInstantiation.
         global,
-        /// Section 16.2.1.6 ModuleDeclarationEnvironmentSetup.
-        /// Modules are always strict.
+        /// Section 16.2.1.6 ModuleDeclarationEnvironmentSetup. Always strict.
         module,
         /// Section 10.2.11 FunctionDeclarationInstantiation.
         function,
@@ -41,39 +40,32 @@ pub const Scope = struct {
         class,
         /// Section 15.7.11 ClassStaticBlockDefinitionEvaluation.
         static_block,
-        /// Intermediate scope holding a named function/class expression's
-        /// name (sections 15.2.5 and 15.7.14). The name binds in its own
-        /// environment between the outer scope and the body, so it never
-        /// conflicts with same-named bindings inside the body:
+        /// The scope holding a named function or class expression's own
+        /// name, between the outer scope and the body (15.2.5, 15.7.14).
         ///
         ///   outer scope (x lives here)
         ///     expression_name scope (foo lives here)
         ///       function scope (body bindings live here)
         expression_name,
 
-        /// TS namespace body. Acts as a var-hoist target so vars
-        /// declared inside don't escape to the surrounding scope.
+        /// A TS namespace body, a hoist target so its `var`s do not escape.
         ts_module,
 
-        /// A function body's own scope, holding its lexical and type
-        /// declarations. The signature sits outside, so TypeScript
-        /// resolves a parameter annotation or a return type without
-        /// seeing a body-local type:
+        /// A function body's own scope. The signature sits outside it so a
+        /// parameter annotation cannot see a body-local type, and body `var`s
+        /// hoist past it unless the parameter list has expressions (10.2.11 step 28).
         ///
         ///   function f(a: T) { type T = {} }
         ///   //            ^ unresolved, T is local to the body
         ///
-        /// Body `var`s and function declarations hoist past it. It is
-        /// their hoist target itself only when the parameter list
-        /// contains expressions, the separate var environment of
-        /// 10.2.11 FunctionDeclarationInstantiation step 28:
+        /// 10.2.11 FunctionDeclarationInstantiation step 28
         ///
         ///   function f(a = () => x) { var x }
         ///   //                        ^ invisible to the default's closure
         function_body,
 
-        /// Returns whether `var` declarations can hoist to this kind.
-        /// `function_body` varies per instance, see `hoist_target`.
+        /// Whether `var` declarations can hoist to this kind. `function_body`
+        /// varies per instance, see `hoist_target`.
         pub fn isHoistTarget(self: Kind) bool {
             return switch (self) {
                 .global, .module, .function, .static_block, .ts_module, .function_body => true,
@@ -126,10 +118,8 @@ pub const ScopeTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .empty,
-    // active scope. follow the parent chain to walk the path.
     current: ScopeId = .root,
-    // scopes saved while a decorator subtree retargets `current`,
-    // one entry per nested decorator. see `enter` on `.decorator`.
+    // scopes saved while a decorator subtree retargets `current`
     decorator_saved: std.ArrayList(ScopeId) = .empty,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
@@ -143,7 +133,6 @@ pub const ScopeTracker = struct {
 
         self.pushRoot();
 
-        // exactly one root scope, plus the module wrapper when applicable
         std.debug.assert(self.scopes.items.len == if (tree.source_type == .module)
             @as(usize, 2)
         else
@@ -181,7 +170,6 @@ pub const ScopeTracker = struct {
         node: ast.NodeIndex,
         flags: Scope.Flags,
     ) Allocator.Error!void {
-        // scopes.len is the about-to-be-assigned id and must fit in u32
         std.debug.assert(self.scopes.items.len < std.math.maxInt(u32));
 
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
@@ -198,7 +186,6 @@ pub const ScopeTracker = struct {
     }
 
     fn popScope(self: *ScopeTracker) void {
-        // root and module are never popped
         std.debug.assert(self.current != .none);
         std.debug.assert(self.current != .root);
 
@@ -224,7 +211,6 @@ pub const ScopeTracker = struct {
                     else
                         self.inheritStrictFlag();
 
-                // the expression-name scope sits between outer and body
                 if (isNamedFunctionExpression(func))
                     try self.pushScope(.expression_name, index, flags);
 
@@ -246,19 +232,16 @@ pub const ScopeTracker = struct {
                     else => return,
                 };
                 try self.pushScope(.function_body, index, self.inheritStrictFlag());
-                // vars hoist past unless the parameter list has expressions
+                // a separate var environment exists only with parameter expressions (10.2.11)
                 if (!hasParameterExpression(self.tree, params)) {
                     const enclosing = self.currentScope().parent;
                     self.currentMut().hoist_target = self.get(enclosing).hoist_target;
                 }
             },
             .block_statement => {
-                // 14.15.2 CatchClauseEvaluation gives the parameter and
-                // the block separate environments. folding them into one
-                // scope is unobservable and lets single-scope lookups
-                // catch the 14.15.1 conflicts, except when the parameter
-                // contains an expression that runs before the block env
-                // exists:
+                // 14.15.2 CatchClauseEvaluation
+                // the catch parameter and block share one scope so 14.15.1 conflicts
+                // surface, unless a parameter expression runs before the block env exists
                 //
                 //   catch (e)       { let e }   // shared, conflict found
                 //   catch ([e = 1]) { let e }   // split, the default
@@ -271,10 +254,8 @@ pub const ScopeTracker = struct {
                     try self.pushScope(.block, index, self.inheritStrictFlag());
             },
             .switch_case => {
-                // one case-block scope per switch, shared by all cases,
-                // created at the first case. per 14.12.4 the discriminant
-                // evaluates (steps 1-2) before the case env exists
-                // (step 4):
+                // one case-block scope per switch, the discriminant evaluates
+                // before it exists (14.12.4)
                 //
                 //   switch (x) { case 1: let x }
                 //   //      ^ outer scope    ^ case-block scope
@@ -300,7 +281,7 @@ pub const ScopeTracker = struct {
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             .class => |cls| {
-                // classes are always strict mode (section 15.7.14)
+                // class code is always strict (15.7.14)
                 const flags = Scope.Flags{ .strict = true };
 
                 if (isNamedClassExpression(cls))
@@ -310,9 +291,8 @@ pub const ScopeTracker = struct {
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
             .decorator => {
-                // decorators evaluate in the scope enclosing the class:
-                // neither its type parameters nor an expression's own
-                // name are visible, so retarget `current` for the subtree
+                // decorators evaluate in the scope enclosing the class, seeing
+                // neither its type parameters nor its expression name
                 try self.decorator_saved.append(self.allocator, self.current);
                 self.current = self.decoratorEvalScope();
             },
@@ -320,8 +300,6 @@ pub const ScopeTracker = struct {
         }
     }
 
-    // the parent of the nearest class scope, past a named class
-    // expression's name scope
     fn decoratorEvalScope(self: *const ScopeTracker) ScopeId {
         var it = self.ancestors(self.current);
         while (it.next()) |id| {
@@ -337,9 +315,8 @@ pub const ScopeTracker = struct {
         return self.current;
     }
 
-    // "use strict" applies retroactively to the whole function including
-    // its parameter list, so peek into the body and set the flag at
-    // scope-creation time, before any parameter is visited
+    // "use strict" covers the parameter list too, so the flag is set before any
+    // parameter is visited
     fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
         if (body_index == .null) return false;
 
@@ -366,15 +343,12 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    // A node pops exactly the scopes recording it as creator: two for a
-    // named function or class expression (name + body), zero for a
-    // shared or never-created scope. Cannot drift from `enter`.
+    // a node pops exactly the scopes recording it as creator, so this cannot drift from `enter`
     pub fn exit(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) void {
         switch (data) {
             // the root and module scopes live for the whole walk
             .program => {},
             .decorator => {
-                // every decorator enter saved exactly one scope
                 std.debug.assert(self.decorator_saved.items.len > 0);
                 self.current = self.decorator_saved.pop().?;
             },
@@ -408,8 +382,6 @@ pub const ScopeTracker = struct {
         return self.get(self.current);
     }
 
-    // mutable view of the current scope, for the tracker's own
-    // strict-mode bookkeeping
     inline fn currentMut(self: *ScopeTracker) *Scope {
         std.debug.assert(self.current != .none);
         return &self.scopes.items[@intFromEnum(self.current)];

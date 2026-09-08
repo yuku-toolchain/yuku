@@ -7,7 +7,7 @@ test("strip and minify compose in a single call", () => {
       strip: true,
       minify: true,
     }),
-  ).toMatchInlineSnapshot(`"const x=1e6;if(!0){obj.foo=void 0}"`);
+  ).toMatchInlineSnapshot(`"const x=1e6;if(!0){obj.foo=undefined}"`);
 });
 
 test("minify: true forces maximum minification over format and quotes", () => {

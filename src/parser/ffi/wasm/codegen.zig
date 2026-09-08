@@ -1,9 +1,8 @@
-//! Freestanding WebAssembly codegen entry point for the yuku playground. Takes
-//! a v7 AST buffer (from encode.js) and returns generated source as a
-//! length-prefixed UTF-8 buffer `[u32 N][N bytes]`, or 0 on failure:
+//! Freestanding WebAssembly codegen entry point for the playground.
 //!
-//!   alloc(len)              -> ptr   buffer for the AST bytes
-//!   codegen(ptr, len, opts) -> ptr   opts packed: bit 0 strip, bit 1 minify,
+//!   alloc(len)              -> ptr   buffer for the v7 AST bytes
+//!   codegen(ptr, len, opts) -> ptr   generated source `[u32 N][N bytes]`, or 0
+//!                                    opts packed: bit 0 strip, bit 1 minify,
 //!                                    bit 2 compact, bits 3-4 quotes
 //!                                    (preserve/double/single/shortest),
 //!                                    bits 5-7 comments (none/all/some/line/

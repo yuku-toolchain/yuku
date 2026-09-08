@@ -28,14 +28,31 @@ const g = 1234.5;`,
   );
 });
 
-test("escapes script-close sequences in strings and templates", () => {
+test("escapes script-close sequences in strings, keeps template raw", () => {
   expect(
     gen(
       'const a = "</script>";\nconst b = "<!-- c -->";\nconst c = `</script>${1}`;\nconst d = "x-->y";',
       MINIFY,
     ),
   ).toMatchInlineSnapshot(
-    `"const a="<\\/script>";const b="<\\!-- c --\\>";const c=\`<\\/script>\${1}\`;const d="x--\\>y""`,
+    `"const a="<\\/script>";const b="<\\!-- c --\\>";const c=\`</script>\${1}\`;const d="x--\\>y""`,
+  );
+});
+
+test("rewrites only where the meaning is preserved", () => {
+  expect(
+    gen(
+      `function f(undefined) { return undefined; }
+const o = { undefined, Infinity, ["__proto__"]: a, "__proto__": b, "$ref": 1, ["_p"]: 2 };
+export { undefined };
+obj["_x"]; obj["$y"];
+b = 010; c = 08;
+const t = String.raw\`a\\nb\\x41\`; tag\`\\unicode\`;`,
+      MINIFY,
+      "input.js",
+    ),
+  ).toMatchInlineSnapshot(
+    `"function f(undefined){return undefined}const o={undefined,Infinity,["__proto__"]:a,__proto__:b,$ref:1,_p:2};export{undefined};obj._x;obj.$y;b=010;c=08;const t=String.raw\`a\\nb\\x41\`;tag\`\\unicode\`"`,
   );
 });
 

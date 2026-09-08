@@ -13,15 +13,9 @@ pub const Action = enum {
     stop,
 };
 
-/// Walks the AST tree, calling visitor hooks at each node.
-///
-/// `C` is the context type. It must have a `.tree` field (either a
-/// `*const Tree` or `*Tree`) so the walker can access
-/// child nodes. Contexts can also define `enter`, `exit`, and
-/// `post_enter` methods if used with `Layer`.
-///
-/// `V` is the visitor type. It can define hooks like `enter_function`,
-/// `exit_block_statement`, or the catch-all `enter_node`/`exit_node`.
+/// Walks the tree, calling visitor hooks at each node. `C` is the context
+/// type with a `.tree` field, `V` the visitor type with hooks such as
+/// `enter_function` or the catch-all `enter_node`.
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
     std.debug.assert(ctx.tree.root != .null);
@@ -41,9 +35,7 @@ fn walkNode(
 
     const action = try dispatch.enter(C, V, visitor, data, index, ctx);
 
-    // if a visitor replaced this node during enter, re-read so we walk
-    // the replacement's children. skip when the tree is const since no
-    // mutation is possible.
+    // re-read after enter so a replaced node walks the replacement's children
     const current = if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const)
         data
     else
@@ -54,9 +46,8 @@ fn walkNode(
     else
         Action.proceed;
 
-    // exits pair with enters unconditionally, they run when children
-    // were skipped and while a stop unwinds, so tracking contexts
-    // stay balanced.
+    // exits pair with enters even when children were skipped or a stop
+    // unwinds, so tracking contexts stay balanced
     dispatch.exit(C, V, visitor, current, index, ctx);
 
     return if (action == .stop) .stop else result;
@@ -97,13 +88,11 @@ fn walkStructFields(
         } else if (field.type == ast.IndexRange) {
             const range = @field(payload, field.name);
             if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const) {
-                // const tree: extras cannot move, iterate the slice directly
                 for (ctx.tree.extra(range)) |child| {
                     if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
                 }
             } else {
-                // mutable tree: a visitor may append extras and move the
-                // backing array, so re-read the slice every iteration
+                // a visitor may append extras and move the backing array
                 for (0..range.len) |i| {
                     const child = ctx.tree.extra(range)[i];
                     if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
@@ -115,12 +104,8 @@ fn walkStructFields(
     return .proceed;
 }
 
-/// Middleware that runs a context's tracking logic around user visitor hooks.
-///
-/// Each traverser module (`basic`, `scoped`, `semantic`, `transform`) defines
-/// a `Ctx` with its own tracking needs: path only, path + scopes,
-/// path + scopes + symbols, or path + mutation. `Layer` wraps the user's
-/// visitor so this tracking runs automatically at the right points:
+/// Wraps a visitor so the context's `enter`, optional `post_enter`, and
+/// `exit` run around the user hooks at each node.
 ///
 ///   1. `ctx.enter(index, data)`       - before user hooks (push path/scopes)
 ///   2. dispatch to inner visitor      - user's hooks fire here
@@ -130,8 +115,6 @@ fn walkStructFields(
 ///   ... walk children ...
 ///   4. dispatch to inner visitor      - user's exit hooks fire
 ///   5. `ctx.exit(data)`               - after user hooks (pop path/scopes)
-///
-/// `C` must have `enter` and `exit`. `post_enter` is optional.
 pub fn Layer(comptime C: type, comptime V: type) type {
     return struct {
         inner: *V,
@@ -240,8 +223,6 @@ inline fn unwrapAction(result: anytype) Allocator.Error!Action {
     return result;
 }
 
-// compile-time check that hook names match `ast.NodeData` fields and
-// have the right payload types
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;

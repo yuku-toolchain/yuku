@@ -1,5 +1,4 @@
-//! Corpus sweep. The walker enters every parent's children in source
-//! order, so any payload field declared out of order is caught.
+//! Corpus sweep checking that the walker enters every parent's children in source order.
 
 const std = @import("std");
 const parser = @import("parser");

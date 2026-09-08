@@ -4,8 +4,7 @@ const wk = @import("walk.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// Simplest traverser context. Only tracks the path from root to
-/// the current node. No scope or symbol tracking.
+/// Traverser context that tracks only the path from root to the current node.
 pub const Ctx = struct {
     tree: *const ast.Tree,
     path: wk.NodePath = .{},

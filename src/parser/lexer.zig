@@ -35,27 +35,24 @@ pub const LexicalError = error{
     IdentifierAfterNumericLiteral,
     InvalidUtf8,
     OutOfMemory,
-    // jsx-specific errors
     JsxIdentifierCannotContainEscapes,
     JsxIdentifierCannotStartWithBackslash,
 };
 
 pub const LexerMode = enum {
-    /// normal javascript mode
     normal,
-    /// jsx tag context: allows hyphens in identifiers, emits jsx_identifier tokens,
-    /// disables escape sequences in both identifiers and string literals,
-    /// allows newlines in string literals, and always scans '>' as a single token
+    /// Inside a JSX tag, where identifiers may contain hyphens, escapes are disabled,
+    /// strings may span lines, and `>` is always a single token.
     jsx_tag,
 };
 
 pub const LexerState = struct {
-    /// metadata that should be attached to the next emitted token.
+    /// Flags attached to the next emitted token.
     token_flags: u8 = 0,
 };
 
 pub const Lexer = struct {
-    /// comments in source order, populated only when `collect_comments` is true
+    /// Comments in source order, populated only when `collect_comments` is set.
     comments: std.ArrayList(ast.Comment),
     collect_comments: bool,
     allocator: std.mem.Allocator,
@@ -63,7 +60,6 @@ pub const Lexer = struct {
     mode: LexerMode = .normal,
 
     source: []const u8,
-    /// current byte index being scanned in the source
     cursor: u32,
 
     source_type: ast.SourceType,
@@ -75,7 +71,6 @@ pub const Lexer = struct {
         source_type: ast.SourceType,
         collect_comments: bool,
     ) error{OutOfMemory}!Lexer {
-        // span positions are u32
         std.debug.assert(source.len <= std.math.maxInt(u32));
 
         var self: Lexer = .{
@@ -95,7 +90,6 @@ pub const Lexer = struct {
     }
 
     fn skipHashbang(self: *Lexer) void {
-        // hashbang only legal at byte 0
         std.debug.assert(self.cursor == 0);
 
         if (self.source.len >= 2 and self.source[0] == '#' and self.source[1] == '!') {
@@ -128,8 +122,6 @@ pub const Lexer = struct {
 
         const current_char = self.source[self.cursor];
 
-        // fast path, plain ASCII identifier in normal mode. the escape and
-        // non-ASCII cases fall back to the unicode-aware scan.
         if (ident_start_table_ascii[current_char] and self.mode == .normal) {
             return self.scanAsciiIdentifier() orelse try self.scanIdentifierOrKeyword();
         }
@@ -172,7 +164,6 @@ pub const Lexer = struct {
         }
 
         const c0 = src[self.cursor];
-        // more whitespace or a comment opener: the full scan handles it.
         if (ws_class[c0] != 0) return null;
 
         if (ident_start_table_ascii[c0]) return self.scanAsciiIdentifier();
@@ -253,7 +244,6 @@ pub const Lexer = struct {
         const c2 = self.peek(2);
         const c3 = self.peek(3);
 
-        // dispatched from nextToken's punctuation lead-char set
         std.debug.assert(switch (c0) {
             '+', '-', '*', '/', '%', '<', '>', '=', '!', '&', '|', '^', '?' => true,
             else => false,
@@ -292,9 +282,8 @@ pub const Lexer = struct {
                 '=' => self.puncToken(2, .less_than_equal, start),
                 else => self.puncToken(1, .less_than, start),
             },
-            // inside a jsx tag `>` only ever closes the tag, so it never merges with what
-            // follows. `<div>=</div>` and the trailing `>>` of `<div attr=<e></e>></div>`
-            // both depend on this.
+            // inside a jsx tag `>` only closes the tag, so `<div>=</div>` and the
+            // trailing `>>` of `<div attr=<e></e>></div>` must not merge
             '>' => if (self.mode == .jsx_tag)
                 self.puncToken(1, .greater_than, start)
             else if (c1 == '>' and c2 == '=')
@@ -390,11 +379,8 @@ pub const Lexer = struct {
         return util.Utf.lineBreakLen(self.source, self.cursor) > 0;
     }
 
-    // functions exclusively called by the parser for context-specific lexing
-
-    /// scans template_middle or template_tail.
-    /// called by the parser when it expects a template continuation after parsing
-    /// an expression inside ${}.
+    /// Scans the `template_middle` or `template_tail` that starts at the `}` closing
+    /// a substitution.
     pub fn reScanTemplateContinuation(self: *Lexer, right_brace_start: u32) LexicalError!Token {
         std.debug.assert(right_brace_start < self.source.len);
         std.debug.assert(self.source[right_brace_start] == '}');
@@ -403,7 +389,6 @@ pub const Lexer = struct {
 
         const start = self.cursor;
 
-        // consume '}' of the expression
         self.cursor += 1;
 
         while (self.cursor < self.source.len) {
@@ -420,15 +405,15 @@ pub const Lexer = struct {
                 self.cursor += 2;
                 return self.createToken(.template_middle, start, self.cursor);
             }
-            // raw CR requires cooked value normalization
+            // a raw CR must be normalized in the cooked value, so it counts as escaped
             if (c == '\r') self.setTokenFlag(.escaped);
             self.cursor += 1;
         }
         return error.NonTerminatedTemplateLiteral;
     }
 
-    /// splits `>>`, `>>>`, `>=`, `>>=`, `>>>=` into a leading `>` so
-    /// nested type argument lists like `Foo<Bar<T>>` can close.
+    /// Splits a `>`-led token into a leading `>` so nested type argument lists like
+    /// `Foo<Bar<T>>` can close.
     pub fn reScanGreaterThan(self: *Lexer, token_start: u32) Token {
         std.debug.assert(token_start < self.source.len);
         std.debug.assert(self.source[token_start] == '>');
@@ -436,8 +421,7 @@ pub const Lexer = struct {
         return self.createToken(.greater_than, token_start, token_start + 1);
     }
 
-    /// splits `<<` into a leading `<` so nested generics like
-    /// `Foo<<T>(x: T) => R>` can open.
+    /// Splits `<<` into a leading `<` so nested generics like `Foo<<T>(x: T) => R>` can open.
     pub fn reScanLessThan(self: *Lexer, token_start: u32) Token {
         std.debug.assert(token_start < self.source.len);
         std.debug.assert(self.source[token_start] == '<');
@@ -445,7 +429,7 @@ pub const Lexer = struct {
         return self.createToken(.less_than, token_start, token_start + 1);
     }
 
-    /// scans JSX text content in JSX children
+    /// Scans a JSX text run.
     pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
         std.debug.assert(initial_cursor <= self.source.len);
         self.rewindTo(initial_cursor);
@@ -474,9 +458,7 @@ pub const Lexer = struct {
         flags: []const u8,
     };
 
-    /// re-scans a slash token as a regex literal
-    /// called by the parser when context determines that a '/' token should be interpreted
-    /// as the start of a regular expression rather than a division operator
+    /// Re-scans a `/` token as a regex literal once the parser knows it is not division.
     pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult {
         std.debug.assert(slash_token_start < self.source.len);
         std.debug.assert(self.source[slash_token_start] == '/');
@@ -485,7 +467,7 @@ pub const Lexer = struct {
 
         const start = self.cursor;
         var closing_delimeter_pos: u32 = 0;
-        self.cursor += 1; // consume '/'
+        self.cursor += 1;
         var in_class = false;
 
         while (self.cursor < self.source.len) {
@@ -496,7 +478,7 @@ pub const Lexer = struct {
             }
 
             if (c == '\\') {
-                self.cursor += 1; // consume '\'
+                self.cursor += 1;
 
                 if (self.cursor >= self.source.len) {
                     return error.UnterminatedRegexLiteral;
@@ -506,7 +488,7 @@ pub const Lexer = struct {
                     return error.InvalidRegexLineTerminator;
                 }
 
-                self.cursor += 1; // consume escaped char
+                self.cursor += 1;
                 continue;
             }
 
@@ -525,7 +507,6 @@ pub const Lexer = struct {
 
                 closing_delimeter_pos = self.cursor;
 
-                // 26 bits enough, 'a' to 'z'
                 var flags_seen: u32 = 0;
 
                 while (true) {
@@ -552,7 +533,6 @@ pub const Lexer = struct {
                     self.cursor += 1;
                 }
 
-                // u and v flags are mutually exclusive (ES2024)
                 const u_bit = @as(u32, 1) << ('u' - 'a');
                 const v_bit = @as(u32, 1) << ('v' - 'a');
 
@@ -577,8 +557,6 @@ pub const Lexer = struct {
         }
         return error.UnterminatedRegexLiteral;
     }
-
-    //
 
     fn scanString(self: *Lexer) LexicalError!Token {
         std.debug.assert(self.cursor < self.source.len);
@@ -614,7 +592,7 @@ pub const Lexer = struct {
                 pos += 1;
             }
         } else {
-            // jsx tag mode, no escapes, newlines allowed in attribute values
+            // jsx attribute values have no escapes and may span lines
             while (pos < src.len) {
                 if (src[pos] == quote) {
                     pos += 1;
@@ -654,7 +632,7 @@ pub const Lexer = struct {
                 return self.createToken(.template_head, start, self.cursor);
             }
 
-            // raw CR requires cooked value normalization
+            // a raw CR must be normalized in the cooked value, so it counts as escaped
             if (c == '\r') self.setTokenFlag(.escaped);
 
             self.cursor += 1;
@@ -668,9 +646,8 @@ pub const Lexer = struct {
         template,
     };
 
-    // string escapes are fatal; template escapes set `.invalid_escape` and keep lexing
-    // so tagged templates can still produce a token (cooked becomes null/undefined,
-    // untagged templates get a diagnostic later)
+    // a bad template escape is not fatal, tagged templates still get a token with an
+    // undefined cooked value
     fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         if (context == .template) {
             self.consumeEscapeImpl(context) catch |err| {
@@ -689,7 +666,7 @@ pub const Lexer = struct {
         std.debug.assert(self.cursor < self.source.len);
         std.debug.assert(self.source[self.cursor] == '\\');
 
-        self.cursor += 1; // skip backslash
+        self.cursor += 1;
         self.setTokenFlag(.escaped);
 
         if (self.cursor >= self.source.len) {
@@ -702,13 +679,12 @@ pub const Lexer = struct {
             '0' => {
                 const c1 = self.peek(1);
 
-                // null escape \0 [lookahead ∉ DecimalDigit]
+                // `\0` is a null escape only when no digit follows
                 if (!std.ascii.isDigit(c1)) {
                     self.cursor += 1;
                     break :brk;
                 }
 
-                // octal escape: \0 followed by a digit
                 if (context == .template) return error.InvalidOctalEscape;
                 try self.consumeOctal();
             },
@@ -716,13 +692,12 @@ pub const Lexer = struct {
             'u' => {
                 const cp = try self.consumeUnicodeEscape(.normal);
 
-                // check for lone surrogates
                 if (std.unicode.isSurrogateCodepoint(cp)) {
                     const is_high_paired = std.unicode.utf16IsHighSurrogate(@intCast(cp)) and
                         self.peek(0) == '\\' and
                         self.peek(1) == 'u';
                     if (is_high_paired) {
-                        self.cursor += 1; // skip backslash
+                        self.cursor += 1;
                         const next_cp = try self.consumeUnicodeEscape(.normal);
                         if (next_cp < 0xDC00 or next_cp > 0xDFFF) {
                             self.setTokenFlag(.lone_surrogates);
@@ -792,7 +767,6 @@ pub const Lexer = struct {
             return error.InvalidUnicodeEscape;
         }
 
-        // marks the token so the parser can reject escaped reserved keywords
         self.setTokenFlag(.escaped);
 
         const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse
@@ -883,7 +857,6 @@ pub const Lexer = struct {
             const c = src[pos];
 
             if (c == '\\') {
-                // jsx tag names don't support escape sequences
                 if (is_jsx_tag) {
                     self.cursor = pos;
                     return error.JsxIdentifierCannotContainEscapes;
@@ -891,7 +864,7 @@ pub const Lexer = struct {
 
                 has_escape = true;
 
-                self.cursor = pos + 1; // consume backslash to get to 'u'
+                self.cursor = pos + 1;
 
                 _ = try self.consumeUnicodeEscape(.identifier_continue);
 
@@ -940,14 +913,13 @@ pub const Lexer = struct {
             @branchHint(.likely);
 
             if (first_char == '\\') {
-                // jsx tag names don't support escape sequences
                 if (is_jsx_tag) {
                     return error.JsxIdentifierCannotStartWithBackslash;
                 }
 
                 has_escape = true;
 
-                self.cursor += 1; // consume backslash to get to 'u'
+                self.cursor += 1;
 
                 _ = try self.consumeUnicodeEscape(.identifier_start);
             } else {
@@ -989,11 +961,10 @@ pub const Lexer = struct {
         return self.createToken(tag, start, self.cursor);
     }
 
-    /// determines keyword type for an identifier that contains unicode escapes.
     fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
         @branchHint(.cold);
         std.debug.assert(lexeme.len > 0);
-        var buf: [11]u8 = undefined; // max keyword length
+        var buf: [11]u8 = undefined; // keyword_length_max
         var out: usize = 0;
         var i: usize = 0;
         while (i < lexeme.len) {
@@ -1015,36 +986,35 @@ pub const Lexer = struct {
     }
 
     const keyword_list = [_]struct { []const u8, TokenTag }{
-        .{ "if", .@"if" },          .{ "of", .of },             .{ "in", .in },
-        .{ "do", .do },             .{ "as", .as },             .{ "is", .is },
-        .{ "any", .any },           .{ "for", .@"for" },        .{ "get", .get },
-        .{ "let", .let },           .{ "new", .new },           .{ "out", .out },
-        .{ "set", .set },           .{ "try", .@"try" },        .{ "var", .@"var" },
-        .{ "case", .case },         .{ "this", .this },         .{ "else", .@"else" },
-        .{ "enum", .@"enum" },      .{ "void", .void },         .{ "with", .with },
-        .{ "null", .null_literal }, .{ "type", .type },         .{ "true", .true },
-        .{ "from", .from },         .{ "await", .await },       .{ "async", .async },
-        .{ "break", .@"break" },    .{ "const", .@"const" },    .{ "class", .class },
-        .{ "catch", .@"catch" },    .{ "defer", .@"defer" },    .{ "false", .false },
-        .{ "infer", .infer },       .{ "keyof", .keyof },       .{ "never", .never },
-        .{ "super", .super },       .{ "throw", .throw },       .{ "using", .using },
-        .{ "while", .@"while" },    .{ "yield", .yield },       .{ "assert", .assert },
-        .{ "bigint", .bigint },     .{ "delete", .delete },     .{ "export", .@"export" },
-        .{ "global", .global },     .{ "import", .import },     .{ "module", .module },
-        .{ "number", .number },     .{ "object", .object },     .{ "public", .public },
-        .{ "return", .@"return" },  .{ "string", .string },     .{ "symbol", .symbol },
-        .{ "switch", .@"switch" },  .{ "static", .static },     .{ "source", .source },
-        .{ "typeof", .typeof },     .{ "unique", .unique },     .{ "asserts", .asserts },
-        .{ "boolean", .boolean },   .{ "default", .default },   .{ "declare", .declare },
-        .{ "extends", .extends },   .{ "finally", .finally },   .{ "private", .private },
-        .{ "package", .package },   .{ "require", .require },   .{ "unknown", .unknown },
-        .{ "accessor", .accessor }, .{ "abstract", .abstract }, .{ "continue", .@"continue" },
-        .{ "debugger", .debugger }, .{ "function", .function }, .{ "override", .override },
-        .{ "readonly", .readonly }, .{ "interface", .interface },
-        .{ "intrinsic", .intrinsic },   .{ "namespace", .namespace },
-        .{ "protected", .protected },   .{ "satisfies", .satisfies },
-        .{ "undefined", .undefined },   .{ "instanceof", .instanceof },
-        .{ "implements", .implements }, .{ "constructor", .constructor },
+        .{ "if", .@"if" },                .{ "of", .of },                 .{ "in", .in },
+        .{ "do", .do },                   .{ "as", .as },                 .{ "is", .is },
+        .{ "any", .any },                 .{ "for", .@"for" },            .{ "get", .get },
+        .{ "let", .let },                 .{ "new", .new },               .{ "out", .out },
+        .{ "set", .set },                 .{ "try", .@"try" },            .{ "var", .@"var" },
+        .{ "case", .case },               .{ "this", .this },             .{ "else", .@"else" },
+        .{ "enum", .@"enum" },            .{ "void", .void },             .{ "with", .with },
+        .{ "null", .null_literal },       .{ "type", .type },             .{ "true", .true },
+        .{ "from", .from },               .{ "await", .await },           .{ "async", .async },
+        .{ "break", .@"break" },          .{ "const", .@"const" },        .{ "class", .class },
+        .{ "catch", .@"catch" },          .{ "defer", .@"defer" },        .{ "false", .false },
+        .{ "infer", .infer },             .{ "keyof", .keyof },           .{ "never", .never },
+        .{ "super", .super },             .{ "throw", .throw },           .{ "using", .using },
+        .{ "while", .@"while" },          .{ "yield", .yield },           .{ "assert", .assert },
+        .{ "bigint", .bigint },           .{ "delete", .delete },         .{ "export", .@"export" },
+        .{ "global", .global },           .{ "import", .import },         .{ "module", .module },
+        .{ "number", .number },           .{ "object", .object },         .{ "public", .public },
+        .{ "return", .@"return" },        .{ "string", .string },         .{ "symbol", .symbol },
+        .{ "switch", .@"switch" },        .{ "static", .static },         .{ "source", .source },
+        .{ "typeof", .typeof },           .{ "unique", .unique },         .{ "asserts", .asserts },
+        .{ "boolean", .boolean },         .{ "default", .default },       .{ "declare", .declare },
+        .{ "extends", .extends },         .{ "finally", .finally },       .{ "private", .private },
+        .{ "package", .package },         .{ "require", .require },       .{ "unknown", .unknown },
+        .{ "accessor", .accessor },       .{ "abstract", .abstract },     .{ "continue", .@"continue" },
+        .{ "debugger", .debugger },       .{ "function", .function },     .{ "override", .override },
+        .{ "readonly", .readonly },       .{ "interface", .interface },   .{ "intrinsic", .intrinsic },
+        .{ "namespace", .namespace },     .{ "protected", .protected },   .{ "satisfies", .satisfies },
+        .{ "undefined", .undefined },     .{ "instanceof", .instanceof }, .{ "implements", .implements },
+        .{ "constructor", .constructor },
     };
 
     const keyword_length_min = 2;
@@ -1056,9 +1026,8 @@ pub const Lexer = struct {
         tag: TokenTag,
     };
 
-    // perfect hash over (first, second, last, length). the multipliers were
-    // found by offline search so that every keyword lands in a distinct slot
-    // of the 512-entry table, making the lookup a single probe
+    // perfect hash over (first, second, last, length). the multipliers were found by
+    // offline search so every keyword lands in a distinct slot of the 512-entry table
     inline fn keywordHash(c0: u8, c1: u8, c_last: u8, length: usize) u32 {
         const h = @as(u32, c0) * 56 + @as(u32, c1) * 97 +
             @as(u32, c_last) * 108 + @as(u32, @intCast(length)) * 117;
@@ -1094,7 +1063,6 @@ pub const Lexer = struct {
 
     fn scanNumber(self: *Lexer) LexicalError!Token {
         std.debug.assert(self.cursor < self.source.len);
-        // dispatched from nextToken or scanDot, both gate on a digit (or `.<digit>`)
         const lead = self.source[self.cursor];
         std.debug.assert(lead == '.' or std.ascii.isDigit(lead));
 
@@ -1130,8 +1098,7 @@ pub const Lexer = struct {
                 },
                 '0'...'9' => {
                     is_leading_zero = true;
-                    // legacy octal (077) or decimal with leading zero (089)
-                    // no separators allowed in legacy syntax
+                    // legacy octal `077` or decimal `089`, neither allows separators
                     var is_legacy_octal = true;
                     while (self.cursor < self.source.len) {
                         const c = self.source[self.cursor];
@@ -1179,7 +1146,6 @@ pub const Lexer = struct {
     inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
         std.debug.assert(self.cursor <= self.source.len);
 
-        // a separator cannot start a digit sequence
         if (self.cursor < self.source.len and self.source[self.cursor] == '_') {
             return error.NumericSeparatorMisuse;
         }
@@ -1233,9 +1199,8 @@ pub const Lexer = struct {
         std.debug.assert(self.cursor < self.source.len);
         std.debug.assert(self.source[self.cursor] == 'e' or self.source[self.cursor] == 'E');
 
-        self.cursor += 1; // skip 'e' or 'E'
+        self.cursor += 1;
 
-        // handle optional sign: + or -
         const c = self.peek(0);
 
         if (c == '+' or c == '-') {
@@ -1250,7 +1215,6 @@ pub const Lexer = struct {
         }
     }
 
-    // byte classification for whitespace/comment scanning
     const ws_class: [256]u8 = blk: {
         var t: [256]u8 = @splat(0);
         t[' '] = 1;
@@ -1270,8 +1234,7 @@ pub const Lexer = struct {
         return switch (cp) {
             '\u{FEFF}',
             '\u{00A0}',
-            // U+0085 NEXT LINE is not WhiteSpace in the spec, but tsc
-            // scans it as a space (not a line break, so no ASI)
+            // U+0085 NEXT LINE is not WhiteSpace in the spec, but tsc scans it as a space (not a line break, so no ASI)
             '\u{0085}',
             '\u{2000}',
             '\u{2001}'...'\u{200A}',
@@ -1325,7 +1288,7 @@ pub const Lexer = struct {
                     pos = self.cursor;
                 },
                 4 => {
-                    // html-style `<!--` only valid outside modules
+                    // annex B html comments are script-only
                     if (self.source_type == .module or pos + 3 >= src.len or
                         src[pos + 1] != '!' or src[pos + 2] != '-' or src[pos + 3] != '-') break;
                     self.cursor = pos;
@@ -1333,7 +1296,7 @@ pub const Lexer = struct {
                     pos = self.cursor;
                 },
                 5 => {
-                    // html-style `-->` only valid at line start outside modules
+                    // `-->` closes only at line start
                     if (self.source_type == .module or
                         !can_be_html_close_comment or
                         pos + 2 >= src.len or
@@ -1375,7 +1338,7 @@ pub const Lexer = struct {
         std.debug.assert(start < end);
         std.debug.assert(end <= self.source.len);
         if (!self.collect_comments) return;
-        // delimiter widths: `//` `/*` are 2, `<!--` is 4, `-->` is 3 (no tail)
+        // `<!--` is 4 wide, `-->` is 3 with no tail, `//` and `/*` are 2
         const head: u32 = switch (self.source[start]) {
             '<' => 4,
             '-' => 3,

@@ -96,8 +96,6 @@ const { code } = generate(program, { minify: { syntax: true } });
 The `syntax` rewrites:
 
 - `true` and `false` rewrite to `!0` and `!1`.
-- `undefined` rewrites to `void 0` (in expression position).
-- `Infinity` rewrites to `1/0`.
 - Numeric literals shorten to their shortest form (`1000000` becomes `1e6`, `0.5` becomes `.5`).
 - `obj["foo"]` rewrites to `obj.foo` when the key is a valid identifier.
 - `{ "foo": x }` rewrites to `{ foo: x }` when safe.

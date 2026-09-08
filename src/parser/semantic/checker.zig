@@ -43,8 +43,7 @@ pub const Checker = struct {
         const name = ctx.tree.string(id.name);
         const flags = ctx.symbols.pending.flags;
 
-        // type-position binding identifiers are parameter labels, not
-        // real bindings. only type parameters are real here.
+        // type-position identifiers are labels unless they are type parameters
         if (ctx.inTypePosition() and !flags.type_parameter) return .proceed;
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
@@ -69,9 +68,7 @@ pub const Checker = struct {
         const existing = ctx.symbols.binding(ctx.symbols.pending.scope, name);
         try self.checkRedeclaration(id, node_index, name, flags, ctx, existing);
 
-        // ts loosens duplicate-export for declaration merges (interface
-        // +class, namespace+value, function overloads, var redeclares).
-        // skip in ts when the name is already in scope.
+        // ts declaration merging makes a second export of an in-scope name legal
         if (ctx.symbols.export_state == .named) {
             const skip = existing != null and ctx.tree.isTs();
             if (!skip) try self.recordExportedName(name, node_index, ctx);
@@ -103,10 +100,8 @@ pub const Checker = struct {
                 return;
             }
 
+            // duplicate params are legal only in sloppy simple-parameter-list functions (15.1.1)
             // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
-            // duplicate params are allowed in sloppy simple-param-list
-            // functions. re-add the conflict for strict, unique, arrow,
-            // and non-simple cases.
             if (existing.flags.parameter and flags.parameter) {
                 if (findFormalParameters(ctx)) |params| {
                     const must_be_unique = ctx.scope.isStrict() or
@@ -119,10 +114,8 @@ pub const Checker = struct {
             }
         }
 
-        // 15.2.1 and 14.15.1: a body's lexical names may not duplicate
-        // the parameters one scope up, and TypeScript extends that to
-        // type parameters. `excludes` decides which pairs collide, so a
-        // type parameter conflicts with a local type but not a `let`
+        // a body's lexical names may not duplicate the signature one scope up
+        // (14.15.1, 15.2.1), `excludes` decides which pairs collide
         if (!flags.function_scoped_var and !flags.function) {
             const target_scope = ctx.scope.get(target);
             const outer = target_scope.parent;
@@ -144,9 +137,8 @@ pub const Checker = struct {
             }
         }
 
-        // 14.2.1 and 15.2.1: a hoisting name conflicts with lexical
-        // names in every scope it passes through. function declarations
-        // are var-scoped at a body's top level
+        // a hoisting name conflicts with lexical names in every scope it
+        // passes through (14.2.1, 15.2.1)
         if (flags.isHoistingVar() or flags.function) {
             var iter = ctx.scope.ancestors(ctx.scope.current);
             while (iter.next()) |scope_id| {
@@ -158,11 +150,8 @@ pub const Checker = struct {
                         break;
                     }
 
+                    // a var may collide with a simple catch parameter, the annex B.3.4 carve-out
                     // https://tc39.es/ecma262/#sec-variablestatements-in-catch-blocks
-                    // (14.15.1): a var colliding with a catch
-                    // parameter is a syntax error, unless the parameter
-                    // is a plain binding identifier, the Annex B.3.4
-                    // web-compat carve-out.
                     if (existing.flags.catch_var) {
                         const catch_node = ctx.scope.get(scope_id).node;
                         const param = ctx.tree.data(catch_node).catch_clause.param;
@@ -185,8 +174,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        // type-position identifiers are ts type references, not js
-        // identifier references. js early-error rules don't apply.
+        // type-position identifiers are ts type references, js rules don't apply
         if (ctx.inTypePosition()) return .proceed;
 
         const name = ctx.tree.string(id.name);
@@ -221,7 +209,6 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        // type-position strings are type-level, no strict escape rules
         if (ctx.inTypePosition() or !ctx.scope.isStrict()) return .proceed;
 
         const span = ctx.tree.span(node_index);
@@ -311,12 +298,11 @@ pub const Checker = struct {
         return .proceed;
     }
 
+    // labelled functions per 14.13.1 and B.3.1, IsLabelledFunction per 14.6.1,
+    // functions as if bodies per B.3.3
     // https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors (14.13.1)
-    //   LabelledItem : FunctionDeclaration - syntax error unless non-strict + web host (B.3.1).
     // https://tc39.es/ecma262/#sec-if-statement-static-semantics-early-errors (14.6.1)
-    //   IsLabelledFunction check prevents labelled functions in if/iteration/with bodies.
     // https://tc39.es/ecma262/#sec-functiondeclarations-in-ifstatement-statement-clauses (B.3.3)
-    //   Bare FunctionDeclaration in if/else is allowed in non-strict code only.
     pub fn enter_function(
         self: *Self,
         func: ast.Function,
@@ -328,7 +314,7 @@ pub const Checker = struct {
         const is_strict = ctx.scope.isStrict();
         var through_labels = false;
         var iter = ctx.path.ancestors();
-        _ = iter.next(); // skip the function itself
+        _ = iter.next(); // skip self
 
         const parent = while (iter.next()) |idx| {
             const d = ctx.tree.data(idx);
@@ -345,7 +331,6 @@ pub const Checker = struct {
             .switch_case,
             .export_named_declaration,
             .export_default_declaration,
-            // ts namespace bodies host function declarations
             .ts_module_block,
             => !is_strict or !through_labels,
             .if_statement => !is_strict and !through_labels,
@@ -574,11 +559,10 @@ pub const Checker = struct {
             );
         }
 
-        // 13.3.7 SuperProperty only allows `super . IdentifierName`
-        // and `super [ Expression ]`, not `super . PrivateIdentifier`.
+        // 13.3.7 SuperProperty admits no PrivateIdentifier, and 15.7.7
+        // AllPrivateIdentifiersValid requires a declaring class
         // https://tc39.es/ecma262/#sec-super-keyword
         //
-        // 15.7.7 AllPrivateIdentifiersValid (for undeclared names):
         //   MemberExpression : MemberExpression . PrivateIdentifier
         //   "If names contains the StringValue of PrivateIdentifier, [recurse].
         //    Return false."
@@ -733,9 +717,8 @@ pub const Checker = struct {
         const exported_name = getModuleExportName(ctx.tree, spec.exported);
         try self.recordExportedName(exported_name, node_index, ctx);
 
-        // collect for unresolved check (local exports only). skip
-        // type-only exports and exports inside ts namespaces (the
-        // checker tracks the value scope, not type or namespace).
+        // only local value exports get the unresolved check, the checker
+        // tracks the value scope alone
         if (spec.export_kind == .type) return .proceed;
         if (ctx.inTsNamespace()) return .proceed;
         if (ctx.path.parent()) |parent| {
@@ -976,10 +959,7 @@ pub const Checker = struct {
         for (children, 0..) |child, j| {
             const child_data = ctx.tree.data(child);
 
-            // a body-less method is a typescript overload signature,
-            // abstract member, or ambient method. it has no
-            // implementation, so it does not count toward the
-            // duplicate-constructor check.
+            // a body-less method is a ts overload, abstract, or ambient signature
             if (child_data == .method_definition) {
                 const md = child_data.method_definition;
                 const has_body = ctx.tree.data(md.value).function.body != .null;
@@ -1001,7 +981,7 @@ pub const Checker = struct {
                 }
             }
 
-            // check PrivateBoundIdentifiers for duplicates:
+            // duplicate PrivateBoundIdentifiers
             //   class C { #x; #x; }             (duplicate field)
             //   class C { #m; #m() {} }         (field + method conflict)
             //   class C { get #x(){} }
@@ -1037,7 +1017,6 @@ pub const Checker = struct {
 
     const PrivateElementKind = enum { field, method, getter, setter };
 
-    /// returns the StringValue of a class element's PrivateIdentifier key, if any.
     fn privateElementName(tree: *const ast.Tree, data: ast.NodeData) ?[]const u8 {
         const key = switch (data) {
             .property_definition => |pd| pd.key,
@@ -1068,8 +1047,7 @@ pub const Checker = struct {
         };
     }
 
-    /// 15.7.7 AllPrivateIdentifiersValid. Walks ancestor ClassBody
-    /// nodes, collecting PrivateBoundIdentifiers at each level.
+    // 15.7.7 AllPrivateIdentifiersValid
     fn isPrivateNameDeclared(ctx: *SemanticCtx, name: []const u8) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1101,7 +1079,7 @@ pub const Checker = struct {
         );
     }
 
-    /// https://tc39.es/ecma262/#sec-keywords-and-reserved-words
+    // https://tc39.es/ecma262/#sec-keywords-and-reserved-words
     fn matchStrictReserved(name: []const u8) ?[]const u8 {
         return switch (name.len) {
             3 => check(name, "let"),
@@ -1118,8 +1096,7 @@ pub const Checker = struct {
         return if (eql(u8, name, keyword)) keyword else null;
     }
 
-    /// 14.7.5.1 ForBinding must contain exactly one BoundName, and (outside
-    /// Annex B 3.5) may not have an Initializer.
+    // 14.7.5.1 allows one ForBinding and, outside annex B 3.5, no initializer
     fn checkForInOfInitializer(
         self: *Self,
         ctx: *SemanticCtx,
@@ -1170,7 +1147,6 @@ pub const Checker = struct {
             isEvalOrArguments(tree.string(tree.data(node).identifier_reference.name));
     }
 
-    /// walks a destructuring assignment target to find eval/arguments references.
     fn checkAssignTargetEvalArguments(
         self: *Self,
         node: ast.NodeIndex,
@@ -1209,8 +1185,7 @@ pub const Checker = struct {
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
         std.debug.assert(node != .null);
         var current = node;
-        // parser builds at most one paren per syntactic level, so the chain
-        // is bounded by source nesting depth
+        // at most one paren node per syntactic level, so nesting depth bounds the chain
         var depth: u32 = 0;
         while (true) : (depth += 1) {
             std.debug.assert(depth < 1_000_000);
@@ -1221,15 +1196,13 @@ pub const Checker = struct {
         }
     }
 
-    /// leading zero followed by digits, legacy octal (077) or leading-zero decimal (089).
     fn isLegacyNumericLiteral(raw: []const u8) bool {
         return raw.len >= 2 and raw[0] == '0' and raw[1] >= '0' and raw[1] <= '9';
     }
 
     const SuperCallValidity = enum { valid, not_in_constructor, no_extends };
 
-    /// super() is only permitted inside a constructor of a derived class.
-    /// Arrow functions are transparent (Section 8.5.1), regular functions are opaque.
+    // arrow functions are transparent (8.5.1), regular functions are opaque
     fn superCallValidity(ctx: *SemanticCtx) SuperCallValidity {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1258,8 +1231,6 @@ pub const Checker = struct {
         return .not_in_constructor;
     }
 
-    /// super.property is valid in class methods, object methods, field
-    /// initializers, static blocks, and arrow functions inheriting from those.
     fn isSuperPropertyValid(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1374,7 +1345,6 @@ pub const Checker = struct {
         return .not_found;
     }
 
-    // true when the nearest enclosing boundary is a static block
     fn isInsideStaticBlock(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1387,8 +1357,6 @@ pub const Checker = struct {
         return false;
     }
 
-    /// `arguments` is available inside regular functions but not in class field
-    /// initializers or static blocks (arrow functions are transparent).
     fn isArgumentsAvailable(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -1418,8 +1386,6 @@ pub const Checker = struct {
         return null;
     }
 
-    /// Extracts the name from a ModuleExportName, which is an
-    /// IdentifierName, an IdentifierReference, or a StringLiteral.
     fn getModuleExportName(tree: *const ast.Tree, node: ast.NodeIndex) []const u8 {
         return switch (tree.data(node)) {
             .identifier_name => |id| tree.string(id.name),
@@ -1456,7 +1422,6 @@ pub const Checker = struct {
         }
     }
 
-    /// Records an exported name and reports a duplicate if one already exists.
     fn recordExportedName(
         self: *Self,
         name: []const u8,
@@ -1465,7 +1430,7 @@ pub const Checker = struct {
     ) AnalysisError!void {
         std.debug.assert(node_index != .null);
         if (!ctx.tree.isModule()) return;
-        // exports inside a TS namespace are namespace-scoped, not module-scoped
+        // exports inside a ts namespace are namespace-scoped
         if (ctx.inTsNamespace()) return;
         const gop = try self.exported_names.getOrPut(self.allocator, name);
         if (gop.found_existing) {
@@ -1482,7 +1447,8 @@ pub const Checker = struct {
         }
     }
 
-    /// Post-traversal check that all local export specifiers refer to declared bindings.
+    /// Reports local export specifiers that name no declared binding.
+    /// Runs after the traversal.
     pub fn checkUnresolvedExports(self: *Self, sem: Semantic) AnalysisError!void {
         if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |spec| {

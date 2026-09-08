@@ -1,5 +1,4 @@
-//! Shared helpers for the Zig-side parser tests. Inline-source analysis
-//! with name and tag lookups, plus corpus iteration.
+//! Shared helpers for the Zig-side parser tests.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -155,10 +154,8 @@ fn isSourceFile(basename: []const u8) bool {
     return false;
 }
 
-/// Parses every corpus file that parses cleanly and calls
-/// `checker.check(path, &tree)`. Paths resolve relative to the repo
-/// root, where `zig build test` runs. Skips with `error.SkipZigTest`
-/// when the corpus has not been fetched by the fixtures script.
+/// Calls `checker.check(path, &tree)` for every corpus file that parses cleanly, or skips
+/// the test when the corpus has not been fetched.
 pub fn forEachCorpusTree(gpa: Allocator, checker: anytype) !void {
     const io = std.testing.io;
     var checked: usize = 0;

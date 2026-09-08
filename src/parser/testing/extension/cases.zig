@@ -7,7 +7,7 @@ const Point = parser.extension.Point;
 
 const Case = struct { source: []const u8, lang: ast.Lang = .js };
 
-/// between them these reach every point, and none is a parse error
+// together these reach every point without a parse error
 const corpus = [_]Case{
     .{ .source =
     \\let x = 1;

@@ -1,7 +1,5 @@
-// post-parse pass that assigns each lexer-collected raw comment to a
-// host node and a position. one forward sweep through the comments
-// array driven by a dfs of the tree in source order. at each gap we
-// claim every comment whose start lies in that gap, with this rule:
+// one forward sweep over the comments driven by a source-order dfs, then a
+// counting sort by host into a prefix-sum offsets array
 //
 //   between siblings a and b, block comment ending same-line as b.start:
 //     `before b`, sameLine = true (covers `/*#__PURE__*/ foo()`)
@@ -12,9 +10,6 @@
 //   leading a node:           `before node`
 //   trailing a node:          `after node`
 //   inside a childless host:  `inside host`
-//
-// after assignment we counting-sort by host into a flat prefix-sum
-// offsets array, producing the public `Comment` shape.
 
 const std = @import("std");
 const ast = @import("ast.zig");
@@ -63,7 +58,6 @@ pub fn attach(tree: *ast.Tree, raw: []const ast.Comment) Error!void {
 
     try ctx.walkAt(tree.root, ctx.spans[@intFromEnum(tree.root)]);
 
-    // anything left over attaches as inside-root
     while (ctx.cursor < raw.len) : (ctx.cursor += 1) {
         ctx.write(@intFromEnum(tree.root), .inside, false);
     }
@@ -129,8 +123,7 @@ const Ctx = struct {
 
     fn collectChildren(self: *Ctx, node: ast.NodeIndex) Error!void {
         switch (self.data_items[@intFromEnum(node)]) {
-            // quasis are literal text, never comment hosts. a comment inside a
-            // `${ }` belongs to the interpolated expression or type.
+            // quasis are literal text, never comment hosts
             .template_literal => |t| try self.pushRange(t.expressions),
             .ts_template_literal_type => |t| try self.pushRange(t.types),
             inline else => |payload| {
@@ -209,7 +202,7 @@ const Ctx = struct {
         };
     }
 
-    // a and b are always close, so a direct newline scan between them is cheap.
+    // a and b are always close, so a direct newline scan is cheap
     inline fn sameLine(self: *const Ctx, a: u32, b: u32) bool {
         const lo = if (a < b) a else b;
         const hi = if (a < b) b else a;
@@ -217,7 +210,7 @@ const Ctx = struct {
     }
 };
 
-// children are usually <16 and almost always already in source order.
+// children are few and almost always already in source order
 fn sortByStart(children: []ChildInfo) void {
     var i: usize = 1;
     while (i < children.len) : (i += 1) {

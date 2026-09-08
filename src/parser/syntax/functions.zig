@@ -13,11 +13,8 @@ const extension = @import("../extension.zig");
 const ParseFunctionOpts = struct {
     is_async: bool = false,
     is_expression: bool = false,
-    /// sets the `declare` flag on the resulting `Function`. ambient
-    /// policy comes from `parser.ts_context.ambient`.
     is_declare: bool = false,
-    /// `export default function`: name is optional but the result is
-    /// still a `FunctionDeclaration`.
+    // `export default function` may omit the name yet stays a declaration
     is_default_export: bool = false,
 };
 
@@ -26,8 +23,6 @@ pub fn parseFunction(
     opts: ParseFunctionOpts,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
-    // entry token is either `function` directly, or one of the modifiers
-    // (`async`/`declare`/...) that the caller consumed before passing `start_from_param`
     std.debug.assert(start_from_param != null or parser.current_token.tag == .function);
 
     const start = start_from_param orelse parser.current_token.span.start;
@@ -55,8 +50,7 @@ pub fn parseFunction(
         parser.context.await = outer_await_is_keyword;
     }
 
-    // yield rules differ for declarations vs expressions. inside a
-    // generator body:
+    // yield rules differ for declarations vs expressions inside a generator body
     //   function yield(){}        declaration. invalid.
     //   (function yield(){})      expression. ok.
     //   (function* yield(){})     invalid.
@@ -65,11 +59,9 @@ pub fn parseFunction(
     else
         outer_yield_is_keyword;
 
-    // await rules also differ. in script code:
+    // await rules also differ in script code
     //   async function await(){}     declaration. valid.
     //   (async function await(){})   expression. invalid.
-    // declarations inherit the outer Await context. async expressions
-    // force Await for their own name.
     parser.context.await = if (is_function_expression)
         opts.is_async
     else
@@ -80,13 +72,10 @@ pub fn parseFunction(
     else
         .null;
 
-    // params and body run under the function's own generator context.
-    // `function* yield(){}` is fine but `function* f(yield){}` is not.
+    // `function* yield(){}` is fine but `function* f(yield){}` is not
     parser.context.yield = is_generator;
     parser.context.await = opts.is_async;
 
-    // name is required for plain declarations. optional for function
-    // expressions and `export default function`.
     if (!opts.is_expression and !opts.is_default_export and id == .null) {
         try parser.report(
             parser.current_token.span,
@@ -97,7 +86,6 @@ pub fn parseFunction(
 
     const is_ts = parser.tree.isTs();
 
-    // `function f<T, U extends V>(...)`
     const type_parameters: ast.NodeIndex = if (is_ts)
         try ts.parseTypeParameters(parser)
     else
@@ -110,7 +98,6 @@ pub fn parseFunction(
     const params = try parseFormalParameters(parser, params_kind, false) orelse return null;
     const params_end = parser.tree.span(params).end;
 
-    // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
     if (is_ts and parser.current_token.tag == .colon) {
@@ -118,7 +105,7 @@ pub fn parseFunction(
         return_type_end = parser.tree.span(return_type).end;
     }
 
-    // function expressions always carry a body, only declarations obey ambient rules.
+    // only declarations obey ambient rules, expressions always carry a body
     const is_ambient_declaration = parser.ts_context.ambient and !is_function_expression;
     if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
         try parser.report(
@@ -129,7 +116,7 @@ pub fn parseFunction(
         return null;
     }
 
-    // ts ambient declarations and overload signatures are body-less.
+    // ambient declarations and overload signatures have no body
     var has_body = !is_ambient_declaration and
         (!is_ts or is_function_expression or parser.current_token.tag == .left_brace);
     if (extension.at(.function_has_body, .{parser})) |answer| has_body = answer;
@@ -222,9 +209,8 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// parses a parenthesised parameter list. `allow_parameter_properties` is
-/// set only for class constructor parameters and enables ts parameter
-/// property shorthand (`constructor(public x: T)`).
+/// Parses a parenthesised parameter list.
+/// `allow_parameter_properties` enables the constructor-only `constructor(public x: T)` shorthand.
 pub fn parseFormalParameters(
     parser: *Parser,
     kind: ast.FormalParameterKind,
@@ -254,7 +240,7 @@ pub fn parseFormalParameters(
             if (parser.current_token.tag == .comma and rest != .null) {
                 const after_comma = parser.peekAhead();
                 if (after_comma.tag == .right_paren) {
-                    // ts allows `(...rest,)` in ambient contexts only
+                    // tsc allows `(...rest,)` in ambient contexts only
                     if (!parser.ts_context.ambient) {
                         try parser.report(
                             .{
@@ -303,9 +289,6 @@ pub fn parseFormalParameters(
     } }, .{ .start = start, .end = end });
 }
 
-/// ts-only parameter property prefix: `public`, `private`, `protected`,
-/// `readonly`, `override` in any combination. `present` records whether
-/// any modifier was consumed and triggers the `TSParameterProperty` wrap.
 const ParameterPropertyModifiers = struct {
     accessibility: ast.Accessibility = .none,
     readonly: bool = false,
@@ -313,7 +296,7 @@ const ParameterPropertyModifiers = struct {
     present: bool = false,
 };
 
-/// `decorators` and `start` are pre-collected by `parseFormalParameters`
+/// Parses one parameter after the caller has collected its `decorators` and `start`.
 pub fn parseFormalParameter(
     parser: *Parser,
     allow_parameter_properties: bool,
@@ -333,8 +316,7 @@ pub fn parseFormalParameter(
 
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    // a parameter property declares a class field named after the parameter,
-    // and a destructuring pattern has no single name to lend it
+    // a parameter property declares a field named after the parameter, a pattern has no name
     if (pp.present and patterns.isDestructuringPattern(parser, pattern)) {
         try parser.report(
             parser.tree.span(pattern),
@@ -398,9 +380,8 @@ fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModi
 
 const AccessorSpec = struct { arity: u32, msg: []const u8, help: []const u8 };
 
-/// `true` when valid or `kind` is not `.get`/`.set`. a leading `this:`
-/// is a ts type-only parameter and never counts. `anytype` so class
-/// `MethodDefinitionKind` and object `PropertyKind` share one helper.
+/// Returns whether `params` has the arity an accessor of `kind` requires, ignoring a leading `this` parameter.
+/// Always true when `kind` is not an accessor.
 pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex) Error!bool {
     const spec: AccessorSpec = switch (kind) {
         .get => .{
@@ -427,11 +408,7 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
     return false;
 }
 
-// `this` or `this: Type` as a parameter. wrapped in the regular
-// `formal_parameter` node so signature walks, span tracking, and the
-// decoder's formal_parameter unwrap rule keep working. the inner
-// `ts_this_parameter` renders in ESTree as an `Identifier` named `this`,
-// matching the typescript-estree convention.
+// wrapped in `formal_parameter` so signature walks and the decoder unwrap rule keep working
 fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
@@ -454,10 +431,7 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// true when the current token is a parameter-property modifier and the
-/// next token can start a binding pattern or another modifier. without
-/// this lookahead, `constructor(readonly)` would eat `readonly` as a
-/// modifier and then fail on the missing name.
+// `constructor(readonly)` names a parameter, not a modifier
 fn isParameterPropertyModifierStart(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
     if (!isParameterPropertyModifierTag(tag)) return false;
@@ -471,7 +445,6 @@ inline fn isParameterPropertyModifierTag(tag: TokenTag) bool {
         tag == .readonly or tag == .override;
 }
 
-/// tokens that can legally follow a parameter property modifier.
 inline fn canFollowParameterPropertyModifier(tag: TokenTag) bool {
     return tag.isIdentifierLike() or
         tag == .left_bracket or

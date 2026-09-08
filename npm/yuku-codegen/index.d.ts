@@ -36,7 +36,7 @@ export interface MinifyOptions {
   /** Emit compact whitespace. @default false */
   whitespace?: boolean;
   /**
-   * Apply size-reducing syntax rewrites (`!0`, `void 0`, `1e6`, `obj.foo`, ...).
+   * Apply size-reducing syntax rewrites (`!0`, `1e6`, `obj.foo`, ...).
    * @default false
    */
   syntax?: boolean;

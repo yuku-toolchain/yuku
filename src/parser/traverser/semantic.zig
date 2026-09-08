@@ -18,18 +18,13 @@ pub const Reference = bi.Reference;
 pub const Semantic = bi.Semantic;
 pub const SymbolTracker = bi.SymbolTracker;
 
-/// Walk context combining the path stack, scope tracker, and symbol
-/// tracker. Visitor hooks receive `*Ctx` and use it to inspect the
-/// surrounding source structure (`scope`, `path`, `inTypePosition`) or
-/// to query and contribute symbols (`symbols`).
+/// Walk context combining the path stack, scope tracker, and symbol tracker.
 pub const Ctx = struct {
     tree: *const ast.Tree,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
-    // depth of ts type-only context. inspect via `inTypePosition()`.
     type_position_depth: u32 = 0,
-    // per-node tables carried into the final `Semantic`
     node_scopes: []ScopeId,
     node_parents: []ast.NodeIndex,
 
@@ -114,8 +109,7 @@ pub fn refSpace(
 ) Reference.Space {
     std.debug.assert(path.depth() > 0);
 
-    // only the leftmost name of a dotted chain is a reference, so
-    // crossing a qualified name marks this reference as the qualifier
+    // crossing a qualified name makes this the qualifier of a dotted name
     var qualified_left = false;
     var child = path.ancestor(0) orelse return .value;
     var n: usize = 1;
@@ -125,7 +119,7 @@ pub fn refSpace(
                 qualified_left = true;
                 child = parent;
             },
-            // computed keys of type members are value positions:
+            // computed keys of type members are value positions
             //   interface I { [key]: string }
             //   //             ^ resolves as typeof, not type
             .ts_property_signature => |sig| {
@@ -163,9 +157,7 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
         switch (tree.data(parent)) {
             .assignment_expression => |a| return a.left == child,
             .update_expression => |u| return u.argument == child,
-            // assignment form only. the declaration form holds a
-            // variable_declaration whose leaves are binding identifiers,
-            // never references.
+            // the declaration form's leaves are binding identifiers, never references
             .for_in_statement => |f| return f.left == child,
             .for_of_statement => |f| return f.left == child,
             .array_pattern => child = parent,
@@ -184,7 +176,7 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
                 if (r.argument != child) return false;
                 child = parent;
             },
-            // transparent wrappers: `(a) += 1`, `a!++`, `(a as T) = b`
+            // transparent wrappers such as `(a) += 1` and `a!++`
             .parenthesized_expression => child = parent,
             .ts_non_null_expression => child = parent,
             .ts_as_expression => |e| {
@@ -199,16 +191,14 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
                 if (e.expression != child) return false;
                 child = parent;
             },
-            // member objects, call arguments, initializers: reads
             else => return false,
         }
     }
     return false;
 }
 
-/// Walks the tree with full path, scope, and symbol tracking. Returns
-/// the complete `Semantic` model, with scopes, symbols, and references
-/// fully resolved and cross-indexed.
+/// Walks the tree with path, scope, and symbol tracking and returns the
+/// resolved `Semantic` model.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
     std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree);

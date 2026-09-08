@@ -1,32 +1,16 @@
-// Semantic transfer sections, the analyzer buffer format.
+// the analyzer buffer is the core AST buffer with FLAG_SEMANTIC set, then 4-byte-aligned
+// tables after the diagnostics section, the decoder derives use lists itself
 //
-// `serializeInto` writes the standard AST buffer via the core format,
-// sets FLAG_SEMANTIC in its header, then appends the semantic tables.
-// Decoders that do not know the flag stop after diagnostics and never
-// see the extra bytes.
+//   sub-header   SUBHEADER_SIZE bytes, section counts
+//   scopes       scope_count * SCOPE_SIZE, one PackedScope each
+//   symbols      symbol_count * SYMBOL_SIZE, one PackedSymbol each
+//   decl_nodes   decl_node_count * 4, flat NodeIndex array backing `PackedSymbol.decls_start/len`
+//   references   reference_count * REFERENCE_SIZE, one PackedReference each, resolution folded in
+//   imports      import_count * IMPORT_SIZE, one PackedImport each
+//   exports      export_count * EXPORT_SIZE, one PackedExport each
+//   node_scopes  node_scope_count * 4, one ScopeId per node indexed by node index
 //
-// Sections, in order, starting at the first 4-byte-aligned offset after
-// the diagnostics section (zero padding fills the gap so every table
-// can be read through a plain Uint32Array view):
-//
-//   sub-header   SUBHEADER_SIZE bytes. Section counts, see SubHeader.
-//   scopes       scope_count * SCOPE_SIZE.       One PackedScope each.
-//   symbols      symbol_count * SYMBOL_SIZE.     One PackedSymbol each.
-//   decl_nodes   decl_node_count * 4.            Flat NodeIndex array
-//                backing `PackedSymbol.decls_start/len` ranges.
-//   references   reference_count * REFERENCE_SIZE. One PackedReference
-//                each, resolution folded in.
-//   imports      import_count * IMPORT_SIZE.     One PackedImport each.
-//   exports      export_count * EXPORT_SIZE.     One PackedExport each.
-//   node_scopes  node_scope_count * 4.           One ScopeId per node,
-//                indexed by node index. The node's lexical scope.
-//
-// Sentinels: ScopeId.none, SymbolId.none, and NodeIndex.null all encode
-// as 0xFFFFFFFF. String handles are (start, end) pairs resolved against
-// the source/pool sections of the core buffer, exactly like node string
-// fields. Per-symbol reference lists and per-scope binding maps are NOT
-// shipped: the decoder derives them in one pass over `references` and
-// `symbols`, which keeps the wire minimal and the producer simple.
+// ScopeId.none, SymbolId.none and NodeIndex.null all encode as 0xFFFFFFFF
 
 const std = @import("std");
 const parser = @import("parser");
@@ -42,7 +26,7 @@ const Reference = semantic.Reference;
 const Semantic = semantic.Semantic;
 const Records = module_record.Records;
 
-/// fixed-size counts block.
+/// Section counts.
 pub const SubHeader = extern struct {
     scope_count: u32,
     symbol_count: u32,
@@ -50,11 +34,9 @@ pub const SubHeader = extern struct {
     decl_node_count: u32,
     import_count: u32,
     export_count: u32,
-    /// one ScopeId per node, indexed by node index.
+    /// One ScopeId per node.
     node_scope_count: u32,
-    /// raw `module_record.Flags` bitset (CJS classification), layout
-    /// frozen by the comptime asserts below. was a reserved
-    /// always-zero slot before, so old decoders read `.{}` flags.
+    /// Raw `module_record.Flags` bitset.
     module_flags: u32 = 0,
 };
 
@@ -69,17 +51,15 @@ pub const PackedScope = extern struct {
 pub const PackedSymbol = extern struct {
     name_start: u32,
     name_end: u32,
-    /// raw `Symbol.Flags` bitset, layout frozen by the comptime asserts
-    /// below.
+    /// Raw `Symbol.Flags` bitset.
     flags: u32,
     scope: u32,
     decls_start: u32,
     decls_len: u32,
 };
 
-/// `bits` is the raw `Reference.Flags` bitset: write (bit 0) and
-/// space (bits 1-3). `symbol` is the resolved SymbolId or the none
-/// sentinel.
+/// `bits` is the raw `Reference.Flags` bitset. `symbol` is the resolved SymbolId or the
+/// none sentinel.
 pub const PackedReference = extern struct {
     name_start: u32,
     name_end: u32,
@@ -89,8 +69,8 @@ pub const PackedReference = extern struct {
     symbol: u32,
 };
 
-/// `bits` packs kind (bits 0-2), type_only (bit 3), has_phase (bit 4),
-/// and phase (bit 5: 0 source, 1 defer).
+/// `bits` packs kind (bits 0-2), type_only (bit 3), has_phase (bit 4), and phase
+/// (bit 5, 0 source, 1 defer).
 pub const PackedImport = extern struct {
     symbol: u32,
     bits: u32,
@@ -116,7 +96,6 @@ pub const PackedExport = extern struct {
     reserved: u32 = 0,
 };
 
-// section entry sizes.
 pub const SUBHEADER_SIZE: u32 = @sizeOf(SubHeader);
 pub const SCOPE_SIZE: u32 = @sizeOf(PackedScope);
 pub const SYMBOL_SIZE: u32 = @sizeOf(PackedSymbol);
@@ -124,7 +103,6 @@ pub const REFERENCE_SIZE: u32 = @sizeOf(PackedReference);
 pub const IMPORT_SIZE: u32 = @sizeOf(PackedImport);
 pub const EXPORT_SIZE: u32 = @sizeOf(PackedExport);
 
-// bit positions inside the packed `bits` words, for the JS decoder.
 pub const SCOPE_KIND_MASK: u32 = 0xFF;
 pub const SCOPE_STRICT_BIT: u5 = 8;
 pub const REFERENCE_WRITE_BIT: u5 = 0;
@@ -146,8 +124,7 @@ comptime {
     std.debug.assert(IMPORT_SIZE == 8 * 4);
     std.debug.assert(EXPORT_SIZE == 10 * 4);
 
-    // the symbol flags bitset crosses the wire as a raw u32, so its bit
-    // layout is a contract with the JS SymbolFlags constants. freeze it.
+    // the raw bitset layout is a contract with the JS SymbolFlags constants
     std.debug.assert(@bitSizeOf(Symbol.Flags) == 32);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "function_scoped_var") == 0);
     std.debug.assert(@bitOffsetOf(Symbol.Flags, "block_scoped_var") == 1);
@@ -191,9 +168,7 @@ comptime {
     std.debug.assert(@intFromEnum(Scope.Kind.ts_module) == 7);
     std.debug.assert(@intFromEnum(Scope.Kind.function_body) == 8);
 
-    // record kinds cross as raw bits inside the import/export `bits`
-    // words, a contract with the JS IMPORT_KINDS and EXPORT_KINDS
-    // tables. freeze the order.
+    // record kinds cross as raw bits, a contract with the JS IMPORT_KINDS and EXPORT_KINDS tables
     std.debug.assert(@intFromEnum(module_record.Import.Kind.named) == 0);
     std.debug.assert(@intFromEnum(module_record.Import.Kind.namespace) == 1);
     std.debug.assert(@intFromEnum(module_record.Import.Kind.side_effect) == 2);
@@ -207,8 +182,7 @@ comptime {
     std.debug.assert(@intFromEnum(module_record.Export.Kind.equals) == 4);
     std.debug.assert(@intFromEnum(module_record.Export.Kind.global) == 5);
 
-    // module flags cross as a raw bitset in the sub-header, a contract
-    // with the JS moduleFlags accessors. freeze the layout.
+    // module flags cross as a raw bitset, a contract with the JS moduleFlags accessors
     std.debug.assert(@bitSizeOf(module_record.Flags) == 8);
     std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_require") == 0);
     std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_module") == 1);
@@ -216,8 +190,7 @@ comptime {
     std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_import_meta") == 3);
 }
 
-/// Total buffer size for the core AST sections plus the semantic
-/// sections, including the alignment padding between them.
+/// Total buffer size for the core AST sections plus the semantic sections.
 pub fn bufferSize(
     tree: *const ast.Tree,
     sem: *const Semantic,
@@ -235,8 +208,7 @@ pub fn bufferSize(
         sem.node_scopes.len * 4;
 }
 
-/// Serializes the core AST buffer followed by the semantic sections.
-/// Returns bytes written.
+/// Serializes the core AST buffer followed by the semantic sections, returning the bytes written.
 pub fn serializeInto(
     tree: *const ast.Tree,
     sem: *const Semantic,
@@ -247,7 +219,6 @@ pub fn serializeInto(
 
     const base = transfer.serializeInto(tree, buf);
 
-    // flip FLAG_SEMANTIC in the already-written core header
     const flags_offset = transfer.HDR_FLAGS_U32 * 4;
     const flags = std.mem.readInt(u32, buf[flags_offset..][0..4], .little);
     std.mem.writeInt(u32, buf[flags_offset..][0..4], flags | transfer.FLAG_SEMANTIC, .little);
@@ -351,7 +322,6 @@ pub fn serializeInto(
     @memcpy(buf[pos..][0..node_scope_bytes.len], node_scope_bytes);
     pos += node_scope_bytes.len;
 
-    // writer and size calculation must agree exactly
     std.debug.assert(pos == bufferSize(tree, sem, records));
     return pos;
 }

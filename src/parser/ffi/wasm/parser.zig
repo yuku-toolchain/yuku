@@ -1,11 +1,9 @@
-//! Freestanding WebAssembly entry point:
+//! Freestanding WebAssembly parser entry point.
 //!
 //!   alloc(len)             -> ptr   buffer for the source bytes
 //!   parse(ptr, len, flags) -> ptr   length-prefixed result `[u32 N][N bytes]`
 //!                                   (the v7 AST buffer decode.js reads), or 0
 //!   free(ptr, len)         -> void
-//!
-//! The buffer format and decode.js are shared with the native binding.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -13,10 +11,10 @@ const transfer = @import("transfer");
 
 const gpa = std.heap.wasm_allocator;
 
-// Option bits packed by index.js `packFlags`.
+// packed by index.js `packFlags`
 const flag = struct {
-    const source_type_mask = 0b11; // bits 0..1: ast.SourceType index
-    const lang_shift = 2; // bits 2..4: ast.Lang index
+    const source_type_mask = 0b11;
+    const lang_shift = 2;
     const preserve_parens = 1 << 5;
     const semantic = 1 << 6;
     const attach_comments = 1 << 7;

@@ -22,14 +22,12 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     return parseImportDeclarationFrom(parser, parser.current_token.span.start);
 }
 
-// explicit start for `export` wrapped import equals so span includes the legacy
-// modifier not only `import`
+// `start` lets `export public import x =` span from the legacy modifier
 pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .import);
     const is_ts = parser.tree.isTs();
     try parser.advance() orelse return null;
 
-    // import 'module' side effect only
     if (parser.current_token.tag == .string_literal) {
         return parseSideEffectImport(parser, start, null);
     }
@@ -39,16 +37,13 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
 
     const next = parser.peekAhead();
 
-    // ts `import type { }` etc not `import type from`
     if (is_ts and parser.current_token.tag == .type and
         isTypeImportModifier(parser, next))
     {
         import_kind = .type;
         try parser.advance() orelse return null;
     }
-    // ts import x = rhs when id then assign, covers import type x = too.
-    // checked before the phase forms so `import source = require("m")`
-    // binds `source` and `import source x = ...` keeps its phase to fail
+    // before the phase forms so `import source = require("m")` binds `source`
     if (is_ts and parser.current_token.tag.isIdentifierLike()) {
         const after_id = parser.peekAhead();
         if (after_id.tag == .assign) {
@@ -57,18 +52,13 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     }
 
     if (import_kind == .value) {
-        // import source x from
         if (parser.current_token.tag == .source and isPhaseImportBinding(parser, next)) {
             phase = .source;
             try parser.advance() orelse return null;
-        }
-        // import defer * as x from
-        else if (parser.current_token.tag == .@"defer" and next.tag == .star) {
+        } else if (parser.current_token.tag == .@"defer" and next.tag == .star) {
             phase = .@"defer";
             try parser.advance() orelse return null;
-        }
-        // import defer x from, a phase attempt with the wrong clause
-        else if (parser.current_token.tag == .@"defer" and isPhaseImportBinding(parser, next)) {
+        } else if (parser.current_token.tag == .@"defer" and isPhaseImportBinding(parser, next)) {
             try parser.report(
                 parser.current_token.span,
                 "'import defer' only supports a namespace import",
@@ -112,7 +102,6 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     }, .{ .start = start, .end = end });
 }
 
-// `import type` modifier vs default binding named type
 fn isTypeImportModifier(parser: *Parser, after_type: Token) bool {
     if (after_type.tag == .left_brace or after_type.tag == .star) return true;
     if (!after_type.tag.isIdentifierLike()) return false;
@@ -141,7 +130,6 @@ fn isPhaseImportBinding(parser: *Parser, next: Token) bool {
     return after_from.tag == .from;
 }
 
-// import 'm' only, no bindings
 fn parseSideEffectImport(
     parser: *Parser,
     start: u32,
@@ -162,7 +150,6 @@ fn parseSideEffectImport(
     }, .{ .start = start, .end = end });
 }
 
-// ImportClause: default, * as, { }, default comma star, default comma braces
 fn parseImportClause(parser: *Parser, import_kind: ast.ImportOrExportKind) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -181,7 +168,6 @@ fn parseImportClause(parser: *Parser, import_kind: ast.ImportOrExportKind) Error
 
     try parser.scratch_a.append(parser.allocator(), default_import);
 
-    // import foo, * as bar / import foo, { bar }
     if (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
 
@@ -227,7 +213,6 @@ fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-// * as name
 fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -251,7 +236,6 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-// { foo, bar as baz }
 fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -274,13 +258,11 @@ fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-// member: name, rename, string rename, ts type forms
 fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const parts = try parseSpecifierParts(parser) orelse return null;
 
-    // module export name is property_name slot when rename or type as as split it
     const imported = if (parts.property_name != .null) parts.property_name else parts.name;
 
     const name_data = parser.tree.data(parts.name);
@@ -319,32 +301,23 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-// import: property_name is exported id when renamed. export: property_name is local when renamed
+// property_name is the imported name for imports and the local name for exports
 const SpecifierParts = struct {
     property_name: ast.NodeIndex = .null,
     name: ast.NodeIndex,
-    // token for reserved checks on `name`
     name_token: Token,
     kind: ast.ImportOrExportKind = .value,
 };
 
-// head of import export specifier, ts `type` modifier tables:
-// ```
-// { type }             -> kind=value, name=type
-// { type as }          -> kind=type,  name=as
-// { type as as }       -> kind=value, propertyName=type, name=as
-// { type as as X }     -> kind=type,  propertyName=as,   name=X
-// { type as X }        -> kind=value, propertyName=type, name=X
-// { type X }           -> kind=type,                     name=X
-// { type X as Y }      -> kind=type,  propertyName=X,    name=Y
-// ```
+// `type` is a modifier only when a name follows, so `{ type as }` imports `as` type-only
+// and `{ type as as X }` renames `as` to `X` type-only
 fn parseSpecifierParts(parser: *Parser) Error!?SpecifierParts {
     const first_token = parser.current_token;
     const first = try parseModuleExportName(parser) orelse return null;
 
     var parts: SpecifierParts = .{ .name = first, .name_token = first_token };
 
-    // parseTypeSpecifierTail may eat the rename, then skip outer as
+    // parseTypeSpecifierTail may consume the rename
     const tail = if (parser.tree.isTs() and
         first_token.tag == .type and
         parser.tree.data(first) == .identifier_name)
@@ -364,13 +337,10 @@ fn parseSpecifierParts(parser: *Parser) Error!?SpecifierParts {
 
 const TypeTailResult = enum {
     no_type_modifier,
-    // rename done inside helper
     consumed_rename,
-    // still need outer as name if present
     keep_outer_rename,
 };
 
-// ts only. mutates parts fields
 fn parseTypeSpecifierTail(
     parser: *Parser,
     parts: *SpecifierParts,
@@ -422,7 +392,7 @@ fn parseTypeSpecifierTail(
         return .keep_outer_rename;
     }
 
-    // bare type token as name
+    // `type` alone is the name
     return .keep_outer_rename;
 }
 
@@ -430,7 +400,6 @@ fn canStartModuleExportName(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .string_literal;
 }
 
-// local name in import clause, usual binding id rules
 fn parseImportedBinding(parser: *Parser) Error!?ast.NodeIndex {
     return literals.parseBindingIdentifier(parser);
 }
@@ -444,7 +413,6 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     if (is_ts) switch (parser.current_token.tag) {
         .assign => return parseTSExportAssignment(parser, start),
         .as => return parseTSNamespaceExportDeclaration(parser, start),
-        // export type { } / export type *
         .type => {
             const next = parser.peekAhead();
             if (next.tag == .left_brace) {
@@ -467,7 +435,6 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-// export = expr
 fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
@@ -484,7 +451,6 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-// export as namespace foo
 fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
@@ -507,19 +473,16 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     }, .{ .start = start, .end = end });
 }
 
-// abstract then class on same line, like ts decl probe
 fn isAbstractClassNext(parser: *Parser) Error!bool {
     const next = parser.peekAhead();
     return next.tag == .class and !next.hasLineTerminatorBefore();
 }
 
-// legacy `export public import x =`, only import after modifier matters here
 fn isLegacyAccessibilityImport(parser: *Parser) Error!bool {
     const next = parser.peekAhead();
     return next.tag == .import and !next.hasLineTerminatorBefore();
 }
 
-// expr gets eaten semicolon after, decl does not
 const DefaultExportPart = struct { declaration: ast.NodeIndex, needs_semi: bool };
 
 fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
@@ -615,7 +578,6 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
     return .{ .declaration = expr, .needs_semi = true };
 }
 
-// export * from m, optional as export name
 fn parseExportAllDeclaration(
     parser: *Parser,
     start: u32,
@@ -652,7 +614,7 @@ fn parseExportAllDeclaration(
     }, .{ .start = start, .end = end });
 }
 
-// export { } or export { } from m. caller already ate export type if needed
+// caller already consumed `export` and any `type`
 fn parseExportNamedFromClause(
     parser: *Parser,
     start: u32,
@@ -665,7 +627,6 @@ fn parseExportNamedFromClause(
     var attributes: ast.IndexRange = ast.IndexRange.empty;
     var end = parser.prev_token_end;
 
-    // from m reexports. no from means local names, rewrite id names to refs
     if (parser.current_token.tag == .from) {
         try parser.advance() orelse return null;
         source = try parseModuleSpecifier(parser) orelse return null;
@@ -688,7 +649,6 @@ fn parseExportNamedFromClause(
     }, .{ .start = start, .end = end });
 }
 
-// export decl statement
 fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
 
@@ -722,7 +682,6 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             ) orelse return null;
         },
         .class => try class.parseClass(parser, .{}, null) orelse return null,
-        // inner class span starts at @
         .at => blk: {
             const decorators_start = parser.current_token.span.start;
             const decorators = try extensions.parseDecorators(parser) orelse return null;
@@ -737,7 +696,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             try parseImportDeclaration(parser) orelse return null
         else
             return reportMissingExportDeclaration(parser),
-        // export public import x =, modifier is noise span kept from modifier token
+        // `export public import x =`, the legacy modifier is noise but starts the span
         .public, .private, .static => blk: {
             if (!is_ts or !try isLegacyAccessibilityImport(parser))
                 return reportMissingExportDeclaration(parser);
@@ -768,7 +727,6 @@ fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-// precollection skips leading @ on both export wrapper and inner class
 pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
@@ -797,7 +755,6 @@ pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?
     }, span);
 }
 
-// interface and type alias always type export kind. rest type only if declare
 fn exportKindForDeclaration(parser: *Parser, declaration: ast.NodeIndex) ast.ImportOrExportKind {
     const declared = switch (parser.tree.data(declaration)) {
         .ts_interface_declaration, .ts_type_alias_declaration => return .type,
@@ -817,7 +774,6 @@ const ExportSpecifiersResult = struct {
     local_tags: ast.IndexRange,
 };
 
-// export { } without from, locals become identifier refs in scope
 fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult) Error!void {
     const specs = parser.tree.extra(result.specifiers);
     const local_tags = parser.tree.extra(result.local_tags);
@@ -868,7 +824,6 @@ fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult)
     }
 }
 
-// { foo, bar as baz } plus parallel local tag list
 fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -904,13 +859,11 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     };
 }
 
-// local before as, exported after, ts type split like import
 fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const parts = try parseSpecifierParts(parser) orelse return null;
 
-    // local is before as slot, exported after, one node if no rename
     const local = if (parts.property_name != .null) parts.property_name else parts.name;
     const exported = parts.name;
 
@@ -925,7 +878,6 @@ fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-// string or id
 fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
@@ -951,7 +903,6 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-// module string
 fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .string_literal) {
         if (try extension.at(.module_specifier, .{parser})) |outcome| return outcome.node;
@@ -964,7 +915,6 @@ fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     return literals.parseStringLiteral(parser);
 }
 
-// import attributes with { } or legacy assert { }
 fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
     if (parser.current_token.tag == .assert and parser.current_token.hasLineTerminatorBefore()) {
         return ast.IndexRange.empty;
@@ -1001,7 +951,6 @@ fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
     return parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-// attr key string value
 fn parseImportAttribute(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -1041,7 +990,6 @@ fn parseAttributeKey(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-// import(), import(,opts), import.source, import.defer
 pub fn parseDynamicImport(
     parser: *Parser,
     import_keyword: ast.NodeIndex,
@@ -1059,7 +1007,6 @@ pub fn parseDynamicImport(
 
     var options: ast.NodeIndex = .null;
 
-    // the ImportCall grammar takes the same optional second argument.
     if (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
 

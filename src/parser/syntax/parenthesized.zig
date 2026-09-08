@@ -11,19 +11,17 @@ const expressions = @import("expressions.zig");
 const array = @import("array.zig");
 const object = @import("object.zig");
 
-/// cover grammar result for parenthesized expressions and arrow parameters.
+/// Cover grammar result for a parenthesized expression or an arrow parameter list.
 /// https://tc39.es/ecma262/#prod-CoverParenthesizedExpressionAndArrowParameterList
 pub const ParenthesizedCover = struct {
-    /// parsed elements (expressions + spread elements)
     elements: ast.IndexRange,
     start: u32,
     end: u32,
-    /// trailing comma present (valid for arrow params, not for parenthesized expr)
+    /// Only valid when the cover becomes arrow parameters.
     has_trailing_comma: bool,
 };
 
-/// parse CoverParenthesizedExpressionAndArrowParameterList.
-/// returns the cover which can be converted to either parenthesized expression or arrow params.
+/// Parses CoverParenthesizedExpressionAndArrowParameterList.
 pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     std.debug.assert(parser.current_token.tag == .left_paren);
     const start = parser.current_token.span.start;
@@ -35,7 +33,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     var end = start + 1;
     var has_trailing_comma = false;
 
-    // empty parens: ()
     if (parser.current_token.tag == .right_paren) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
@@ -49,7 +46,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     }
 
     while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
-        // rest element: (...x)
         if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
@@ -61,7 +57,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
             const spread_end = parser.tree.span(argument).end;
 
-            // for now, store as spread_element. will convert to rest param for arrow functions
             const rest = try parser.tree.addNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
@@ -79,7 +74,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
             continue;
         }
 
-        // regular element
         const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse
             return null;
 
@@ -87,7 +81,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
         end = parser.tree.span(element).end;
 
-        // comma or end
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
             has_trailing_comma = parser.current_token.tag == .right_paren;
@@ -129,14 +122,13 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     };
 }
 
-/// convert cover to CallExpression.
+/// Converts the cover to a CallExpression.
 pub fn coverToCallExpression(
     parser: *Parser,
     cover: ParenthesizedCover,
     callee: ast.NodeIndex,
 ) Error!?ast.NodeIndex {
     const elements = parser.tree.extra(cover.elements);
-    // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
         try grammar.validateNoCoverInitializedSyntax(parser, elem);
     }
@@ -151,13 +143,12 @@ pub fn coverToCallExpression(
     );
 }
 
-/// convert cover to ParenthesizedExpression.
+/// Converts the cover to a ParenthesizedExpression.
 pub fn coverToParenthesizedExpression(
     parser: *Parser,
     cover: ParenthesizedCover,
 ) Error!?ast.NodeIndex {
     const elements = parser.tree.extra(cover.elements);
-    // empty parens () without arrow is invalid
     if (elements.len == 0) {
         try parser.report(
             .{ .start = cover.start, .end = cover.end },
@@ -176,7 +167,6 @@ pub fn coverToParenthesizedExpression(
         return null;
     }
 
-    // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
         if (parser.tree.data(elem) == .spread_element) {
             try parser.report(
@@ -212,9 +202,8 @@ pub fn coverToParenthesizedExpression(
     );
 }
 
-/// converts the cover into `ArrowFunctionExpression` parameters and body.
-/// the cover path is js-only, since all ts arrows go through `parseArrow`,
-/// so no type parameters or return type need to thread through here.
+/// Converts the cover into an `ArrowFunctionExpression`.
+/// Only JavaScript arrows take this path, since TypeScript arrows go through `parseArrow`.
 pub fn coverToArrowFunction(
     parser: *Parser,
     cover: ParenthesizedCover,
@@ -225,7 +214,7 @@ pub fn coverToArrowFunction(
     return buildArrowFunction(parser, params, is_async, arrow_start, .null, .null);
 }
 
-/// convert a single identifier to arrow function (x => body case).
+/// Converts a lone identifier into an arrow function for `x => body`.
 pub fn identifierToArrowFunction(
     parser: *Parser,
     id: ast.NodeIndex,
@@ -289,12 +278,10 @@ const ArrowBodyResult = struct {
 
 pub fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
     if (parser.current_token.tag == .left_brace) {
-        // block body: () => { ... }
         const body = try functions.parseFunctionBody(parser) orelse return null;
         return .{ .body = body, .is_expression = false };
     }
 
-    // expression body: () => expr
     const expr = try expressions.parseExpression(
         parser,
         Precedence.Assignment,
@@ -323,7 +310,6 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
         }
 
         if (parser.tree.data(elem) == .spread_element) {
-            // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, elem, .binding);
             rest = elem;
 
@@ -357,10 +343,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 }
 
 fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.NodeIndex {
-    // convert expression to binding pattern
     try grammar.expressionToPattern(parser, expr, .binding);
-
-    // expr is now pattern
 
     return try parser.tree.addNode(
         .{ .formal_parameter = .{ .pattern = expr } },

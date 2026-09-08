@@ -1,14 +1,10 @@
-//! Freestanding WebAssembly analyzer entry point:
+//! Freestanding WebAssembly analyzer entry point whose flag bits match wasm/parser.zig.
 //!
 //!   alloc(len)               -> ptr   buffer for the source bytes
 //!   analyze(ptr, len, flags) -> ptr   length-prefixed analyzer buffer
 //!                                     `[u32 N][N bytes]` (v7 AST sections
 //!                                     plus semantic sections), or 0
 //!   free(ptr, len)           -> void
-//!
-//! The buffer format and decode.js are shared with the native binding.
-//! Flag bits match wasm/parser.zig; the semantic bit is ignored because
-//! analysis always runs.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -17,8 +13,8 @@ const transfer = @import("transfer");
 const gpa = std.heap.wasm_allocator;
 
 const flag = struct {
-    const source_type_mask = 0b11; // bits 0..1: ast.SourceType index
-    const lang_shift = 2; // bits 2..4: ast.Lang index
+    const source_type_mask = 0b11;
+    const lang_shift = 2;
     const preserve_parens = 1 << 5;
     const attach_comments = 1 << 7;
 };
@@ -46,7 +42,7 @@ fn run(source: []const u8, flags: u32) ![]u8 {
     defer tree.deinit();
 
     const sem = try parser.semantic.analyze(&tree);
-    // collect before sizing: records may intern "default" into the pool
+    // collect before sizing, records may intern "default" into the pool
     const records = try parser.semantic.module_record.collect(&tree, &sem);
 
     const size = transfer.semantic.bufferSize(&tree, &sem, records);

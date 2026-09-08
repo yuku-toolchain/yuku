@@ -19,8 +19,6 @@ const ts_decl = @import("ts/statements.zig");
 const extension = @import("../extension.zig");
 
 const ParseStatementOpts = struct {
-    /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
-    /// where lexical declarations (`let`, `const`) are not allowed without a block.
     can_be_single_statement_context: bool = false,
 };
 
@@ -74,7 +72,6 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     };
 }
 
-/// `@dec class C` or `@dec export [default] class C`.
 fn parseDecoratedStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .at);
     if (try extension.at(.at_statement, .{parser})) |outcome| return outcome.node;
@@ -100,7 +97,6 @@ fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.Node
         return parseDirective(parser, expression);
     }
 
-    // labeled statement: identifier ':'
     if (expression_data == .identifier_reference and parser.current_token.tag == .colon) {
         return parseLabeledStatement(parser, expression);
     }
@@ -132,8 +128,7 @@ fn parseExpressionStatementWithExpression(
 fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeIndex {
     const string_literal_span = parser.tree.span(expression);
 
-    // directive value is the raw source text without quotes (escape sequences preserved).
-    // per spec, "use strict" recognition uses exact code unit sequences, not decoded values.
+    // per spec, "use strict" recognition uses exact code unit sequences, not decoded values
     const value_start = string_literal_span.start + 1;
     const value_end = string_literal_span.end - 1;
 
@@ -148,25 +143,19 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeInd
     });
 }
 
-/// 'let' can be either a keyword or an identifier depending on context.
-/// check if it should be parsed as an identifier (eg, `let;`) before treating it as a declaration.
 fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .let);
     const is_identifier = try variables.isLetIdentifier(parser);
 
     if (!is_identifier) {
-        // parse as variable declaration: let x = 5;
         return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
-    // otherwise, fall through to parse 'let' as an identifier in an expression statement.
     return parseExpressionStatement(parser);
 }
 
-/// `using` declaration, or fall through to expression statement.
 fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .using);
-    // determine if 'using' is an identifier or a keyword
     const is_using_identifier = try variables.isUsingIdentifier(parser);
 
     if (!is_using_identifier) {
@@ -176,7 +165,6 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     return parseExpressionStatement(parser);
 }
 
-/// `await using` declaration, or fall through to expression statement.
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .await);
 
@@ -190,14 +178,11 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
-/// import declaration, or fall through to import expression statement (`import(` / `import.`).
 fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .import);
     const next = parser.peekAhead();
 
     return switch (next.tag) {
-        // `import(` and `import.` are expression forms
-        // (dynamic import / import.meta / phase imports)
         .left_paren, .dot => parseExpressionStatement(parser),
         else => modules.parseImportDeclaration(parser),
     };
@@ -218,7 +203,6 @@ fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
     return variables.parseVariableDeclaration(parser, .{}, null);
 }
 
-/// `async function` declaration, or fall through to expression statement.
 fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .async);
     const next = parser.peekAhead();
@@ -239,7 +223,6 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
     const id_data = parser.tree.data(identifier);
     const id_span = parser.tree.span(identifier);
 
-    // IdentifierReference to LabelIdentifier
     const label = try parser.tree.addNode(.{
         .label_identifier = .{
             .name = id_data.identifier_reference.name,
@@ -258,6 +241,7 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
     }, .{ .start = id_span.start, .end = parser.tree.span(body).end });
 }
 
+/// Parses a braced block statement.
 /// https://tc39.es/ecma262/#prod-BlockStatement
 pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
@@ -285,6 +269,7 @@ pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
+/// Parses a `switch` statement.
 /// https://tc39.es/ecma262/#sec-switch-statement
 pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"switch");
@@ -323,8 +308,7 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
         if (try parseSwitchCase(parser)) |case_node| {
             try parser.scratch_a.append(parser.allocator(), case_node);
         } else {
-            // a failed case leaves the cursor parked on a lexical error, resync
-            // to the next case or the closing brace so the loop can't spin.
+            // a failed case parks the cursor on a lexical error, resync so the loop cannot spin
             try parser.recover(.right_brace);
         }
     }
@@ -403,6 +387,7 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
     return parser.flushToExtras(&parser.scratch_b, checkpoint);
 }
 
+/// Parses an `if` statement.
 /// https://tc39.es/ecma262/#sec-if-statement
 pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"if");
@@ -537,7 +522,6 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
-/// EmptyStatement: `;`
 fn parseEmptyStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .semicolon);
     const span = parser.current_token.span;
@@ -707,7 +691,6 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'catch'
 
-    // optional catch binding: catch (param) or catch
     var param: ast.NodeIndex = .null;
     if (parser.current_token.tag == .left_paren) {
         try parser.advance() orelse return null; // consume '('

@@ -1,6 +1,4 @@
-//! Binder and semantic model. Symbol flags per declaration kind,
-//! declaration merging, hoisting tables, reference resolution and
-//! classification, synthesized references, and the Semantic queries.
+//! Binder and semantic model, from symbol flags and merging to reference resolution.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -402,8 +400,7 @@ test "references resolve regardless of source order" {
     try testing.expectEqual((try a.symbolNamed("hoisted")).id, ref.reference.symbol);
 }
 
-// the signature resolves outside the body scope, so a body-local type
-// is invisible to it while body positions still see it (issue #187)
+// a body-local type is invisible to the signature, which resolves outside the body scope (issue #187)
 test "body type declarations are invisible to the signature" {
     var a = try analyze(
         "function foo(arg0: T): T { type T = {}; let x: T; }",
@@ -418,14 +415,12 @@ test "body type declarations are invisible to the signature" {
     var buf: [4]Semantic.ReferenceEntry = undefined;
     const refs = referencesNamed(&a, "T", &buf);
     try testing.expectEqual(@as(usize, 3), refs.len);
-    // parameter annotation and return type, then the body annotation
     try testing.expectEqual(SymbolId.none, refs[0].reference.symbol);
     try testing.expectEqual(SymbolId.none, refs[1].reference.symbol);
     try testing.expectEqual(alias.id, refs[2].reference.symbol);
 }
 
-// the excludes decide which signature and body pairs collide. both
-// spaces are verified against tsc
+// which signature and body pairs collide, verified against tsc
 test "body declarations collide with the signature where their spaces overlap" {
     const conflicting = [_][]const u8{
         "function f(a) { let a; }",
@@ -434,7 +429,6 @@ test "body declarations collide with the signature where their spaces overlap" {
         "function f<T>() { class T {} }",
         "function f<T>(a = 1) { interface T {} }",
         "function f() { var v; let v; }",
-        // a hoisting function conflicts in either order
         "function f() { let x; function x() {} }",
         "function f() { function y() {} let y; }",
     };
@@ -467,8 +461,7 @@ test "body declarations collide with the signature where their spaces overlap" {
     }
 }
 
-// they hoist past the body scope, so they keep merging with vars and
-// parameters in the function scope
+// they hoist past the body scope, so they merge with vars and parameters
 test "body-top-level function declarations stay var-scoped" {
     var a = try analyze(
         "function f(a) { var g; function g() {} function a() {} }",
@@ -675,7 +668,6 @@ test "a value binding does not shadow an outer type for type-position references
     try testing.expectEqual(.value, value_ref.flags.space);
     try testing.expectEqual(local.id, value_ref.symbol);
 
-    // the space-aware lookup mirrors resolution from the same scope
     const scope = a.sem.reference(refs[0].id).scope;
     try testing.expectEqual(alias.id, a.sem.lookup(scope, "T", .type).?);
     try testing.expectEqual(local.id, a.sem.lookup(scope, "T", .value).?);
@@ -839,7 +831,7 @@ test "a reference with no binding in its space anywhere is unresolved" {
     const refs = referencesNamed(&a, "T", &buf);
     try testing.expectEqual(@as(usize, 2), refs.len);
     try testing.expectEqual(.none, refs[0].reference.symbol); // `x: T`
-    try testing.expectEqual((try a.symbolNamed("T")).id, refs[1].reference.symbol); // the bare statement use
+    try testing.expectEqual((try a.symbolNamed("T")).id, refs[1].reference.symbol);
 
     // no use is recorded for the unresolved type-position reference
     try testing.expectEqual(@as(usize, 1), a.sem.uses((try a.symbolNamed("T")).id).len);

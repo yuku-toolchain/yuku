@@ -6,7 +6,7 @@ const progress_every = 250_000;
 const oom_every = 20_000;
 const oom_max_len = 256;
 
-// the input currently under test, published for the panic handler.
+// published for the panic handler
 var current_input: []const u8 = &.{};
 var current_mode: core.Mode = .{ .lang = .js, .source_type = .module };
 var current_iter: u64 = 0;
@@ -63,7 +63,6 @@ pub fn main() void {
         .{ current_seed, iterations, core.modes.len },
     );
 
-    // exhaustive oom + invariant pass over the curated corpus before mutating.
     for (core.seeds ++ core.fragments ++ core.regressions) |s| for (core.modes) |m| {
         current_input = s;
         current_mode = m;
@@ -79,7 +78,7 @@ pub fn main() void {
     while (iter < iterations) : (iter += 1) {
         current_iter = iter;
         const input = mutator.produce(&buf, gpa) catch {
-            // transient oom in the mutator itself is not a finding.
+            // oom in the mutator itself is not a finding
             continue;
         };
         const mode = core.modes[mutator.rng.uintLessThan(usize, core.modes.len)];

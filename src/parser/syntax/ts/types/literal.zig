@@ -33,7 +33,6 @@ pub fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// unary plus or minus then numeric literal in a `UnaryExpression`
 fn parseSignedNumericLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const sign_token = parser.current_token;
     const next = parser.peekAhead();
@@ -76,7 +75,7 @@ pub fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
         const ty = try core.parseType(parser) orelse return null;
         try parser.scratch_b.append(parser.allocator(), ty);
 
-        // `}` rescanned so tail stays template not stray text
+        // the lexer emits `}` as a punctuator, rescan it as template continuation
         if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
                 parser.current_token.span,

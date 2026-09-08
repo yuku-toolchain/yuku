@@ -15,20 +15,14 @@ const ts = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
 const ecmascript = @import("../ecmascript.zig");
 
-//
 // class declaration or expression
 // https://tc39.es/ecma262/#sec-class-definitions
-//
 
 pub const ParseClassOpts = struct {
-    // class appears in expression position
     is_expression: bool = false,
-    // `export default class` allows an optional name but still produces a
-    // `ClassDeclaration` in the AST.
+    /// Set for `export default class`, which may omit the name yet stays a declaration.
     is_default_export: bool = false,
-    // `declare class Foo {}`
     is_declare: bool = false,
-    // `abstract class Foo {}`
     is_abstract: bool = false,
 };
 
@@ -91,16 +85,13 @@ pub fn parseClassDecorated(
         return null;
     }
 
-    // `class Foo<T, U extends V> ...`
     const type_parameters: ast.NodeIndex = if (is_ts)
         try ts.parseTypeParameters(parser)
     else
         .null;
 
-    // `extends Expr<T>`. lhs may commit a `ts_instantiation_expression` when
-    // a `<T>` is followed by something other than `(` or a template, peel it
-    // back into the dedicated `super_type_arguments` slot. when the lhs
-    // rewinds on a same-line `{`, the unconsumed `<T>` sits at the cursor.
+    // `extends Expr<T>` may commit a `ts_instantiation_expression`, so peel the `<T>` back out
+    // and a lhs rewinding on a same-line `{` leaves the unconsumed `<T>` at the cursor
     var super_class: ast.NodeIndex = .null;
     var super_type_arguments: ast.NodeIndex = .null;
 
@@ -120,8 +111,6 @@ pub fn parseClassDecorated(
         };
     }
 
-    // `implements A, B.C<T>, ...`. may appear with or without a preceding
-    // `extends` clause.
     const implements: ast.IndexRange = if (is_ts)
         try ts_decl.parseImplementsClause(parser) orelse return null
     else
@@ -143,8 +132,7 @@ pub fn parseClassDecorated(
     } }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
-// `abstract` is a contextual keyword, treat it as a class modifier only when a
-// `class` keyword follows on the same line.
+// `abstract` is a contextual keyword
 inline fn isAbstractClassNext(parser: *Parser) bool {
     const next = parser.peekAhead();
     return next.tag == .class and !next.hasLineTerminatorBefore();
@@ -172,7 +160,6 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     defer parser.scratch_a.reset(checkpoint);
 
     while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
-        // stray `;` between elements.
         if (parser.current_token.tag == .semicolon) {
             try parser.advance() orelse return null;
             continue;
@@ -201,12 +188,9 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     else
         ast.IndexRange.empty;
 
-    // `static { ... }` short-circuits before modifier parsing
     if (try tryStaticBlock(parser, decorators)) |block| return block;
 
-    // gather modifiers. a modifier word is reinterpreted as the element key
-    // when followed by a token that cannot continue a modifier, a line
-    // terminator where ts forbids one, or a duplicate modifier
+    // a modifier word becomes the key when what follows cannot continue a modifier
     var mods: Modifiers = .{};
     var key: ast.NodeIndex = .null;
     while (true) switch (try consumeModifier(parser, &mods)) {
@@ -218,13 +202,12 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         .none => break,
     };
 
-    // `*` generator mark
     if (key == .null and parser.current_token.tag == .star) {
         mods.is_generator = true;
         try parser.advance() orelse return null;
     }
 
-    // `[k: T]: V` index signature shares the `[` opener with computed keys.
+    // an index signature shares the `[` opener with computed keys
     if (key == .null and
         is_ts and
         parser.current_token.tag == .left_bracket and
@@ -233,7 +216,6 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         return parseIndexSignatureElement(parser, elem_start, decorators, mods);
     }
 
-    // key
     var computed = false;
     if (key == .null) {
         const parsed = try parseClassElementKey(parser) orelse return null;
@@ -241,7 +223,6 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         computed = parsed.computed;
     }
 
-    // post-key markers `?` (optional) and `!` (definite assignment).
     var optional = false;
     var definite = false;
     if (is_ts) switch (parser.current_token.tag) {
@@ -259,9 +240,6 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     try validatePrivateConstructor(parser, key, computed);
     try detectConstructorKind(parser, key, &mods, computed);
 
-    // dispatch on the shape of what follows the key. `(` always starts a
-    // method parameter list. in ts a leading `<` is a generic method's
-    // type parameter list, so dispatch there too.
     const is_method_start = parser.current_token.tag == .left_paren or
         (is_ts and parser.current_token.tag == .less_than);
 
@@ -343,7 +321,6 @@ fn parseIndexSignatureElement(
         .static = mods.is_static,
     }) orelse return null;
 
-    // fold the trailing `;` into the span
     if (parser.current_token.tag == .semicolon) {
         const span = parser.tree.span(node);
         parser.tree.setSpan(node, .{ .start = span.start, .end = parser.current_token.span.end });
@@ -353,13 +330,6 @@ fn parseIndexSignatureElement(
     return node;
 }
 
-//
-// modifier parsing
-//
-
-// every modifier a class element can carry. `static`, `is_async`,
-// `is_generator`, `is_accessor` and the `get` / `set` kinds apply to
-// plain js, the remaining fields plus `accessibility` are ts only.
 const Modifiers = struct {
     is_static: bool = false,
     is_async: bool = false,
@@ -373,7 +343,7 @@ const Modifiers = struct {
     accessibility: ast.Accessibility = .none,
 
     fn conflicts(m: Modifiers, tag: TokenTag) bool {
-        // `accessor` sits directly before the key, a following modifier word is the key
+        // `accessor` sits directly before the key, so a following modifier word is the key
         if (m.is_accessor) return true;
         return switch (tag) {
             .async, .get, .set => m.is_async or m.kind != .method,
@@ -388,8 +358,6 @@ const Modifiers = struct {
         };
     }
 
-    // commits a modifier tag. mirrors the tag set handled by `has` and
-    // `isModifier`.
     fn set(m: *Modifiers, tag: TokenTag) void {
         switch (tag) {
             .static => m.is_static = true,
@@ -410,24 +378,18 @@ const Modifiers = struct {
 };
 
 const ModifierStep = union(enum) {
-    // a modifier was consumed, keep looping.
     consumed,
-    // a modifier-like word was actually the element key. stop.
     key: ast.NodeIndex,
-    // the current token is not a modifier at all. stop.
     none,
 };
 
-// consumes one class element modifier, or recognizes a modifier-like
-// word as the element key.
 fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
     const token = parser.current_token;
     if (!isModifier(token.tag, parser.tree.isTs())) return .none;
 
     const next = parser.peekAhead();
 
-    // a getter or setter can never be a generator, so `get *`/`set *`
-    // keeps get/set as a field key before a generator method
+    // an accessor can never be a generator, so `get *` keeps `get` as a field key
     const accessor_before_star = next.tag == .star and
         (token.tag == .get or token.tag == .set);
 
@@ -452,8 +414,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
     return .consumed;
 }
 
-// `static { ... }` fires before any modifier is consumed, so a decorated
-// static block is a parse error, reported here so the block still parses.
+// runs before modifiers so a decorated static block still parses
 fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .static) return null;
     const next = parser.peekAhead();
@@ -473,8 +434,6 @@ fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIn
     return parseStaticBlock(parser, static_token.span.start);
 }
 
-// tags that could serve as a class element modifier. `static`, `async`,
-// `get`, `set`, and `accessor` are plain js, everything else requires ts.
 inline fn isModifier(tag: TokenTag, is_ts: bool) bool {
     return switch (tag) {
         .static, .async, .get, .set, .accessor => true,
@@ -483,9 +442,6 @@ inline fn isModifier(tag: TokenTag, is_ts: bool) bool {
     };
 }
 
-// tokens that can legally start a class element key, including `*` for
-// a generator method and `[` for a computed key. these are also the
-// tokens that may legitimately follow a modifier.
 inline fn canStartElementKey(tag: TokenTag) bool {
     return tag.isIdentifierLike() or
         tag.isNumericLiteral() or
@@ -548,9 +504,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     return .{ .key = key, .computed = false };
 }
 
-// method, getter, setter, or constructor. in ts mode a missing body is
-// valid and produces a bodyless `TSEmptyBodyFunctionExpression`, which
-// covers overload signatures, ambient members, and abstract methods.
+// in ts a missing body is an overload signature, ambient member, or abstract method
 fn parseMethodDefinition(
     parser: *Parser,
     elem_start: u32,
@@ -577,14 +531,12 @@ fn parseMethodDefinition(
     const is_ts = parser.tree.isTs();
     const func_start = parser.current_token.span.start;
 
-    // `m<T, U extends V>(...)`
     const type_parameters: ast.NodeIndex = if (is_ts)
         try ts.parseTypeParameters(parser)
     else
         .null;
 
-    // a constructor is invoked through the class, which owns the type
-    // parameters, so it has nowhere of its own to bind them
+    // the class owns the type parameters a constructor is invoked through
     if (mods.kind == .constructor and type_parameters != .null) try parser.report(
         parser.tree.span(type_parameters),
         "Type parameters cannot appear on a constructor declaration",
@@ -598,7 +550,6 @@ fn parseMethodDefinition(
     ) orelse return null;
     _ = try functions.checkAccessorArity(parser, mods.kind, params);
 
-    // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = parser.tree.span(params).end;
     if (is_ts and parser.current_token.tag == .colon) {
@@ -606,8 +557,6 @@ fn parseMethodDefinition(
         return_type_end = parser.tree.span(return_type).end;
     }
 
-    // body. required in js. in ts a missing body folds into a bodyless
-    // function terminated by `;` or ASI.
     var body: ast.NodeIndex = .null;
     var function_type: ast.FunctionType = .function_expression;
     var end: u32 = return_type_end;
@@ -659,8 +608,6 @@ fn parseMethodDefinition(
     } }, .{ .start = elem_start, .end = end });
 }
 
-// an `abstract` member declares a shape a subclass has to fill in, so a body
-// here contradicts the modifier.
 fn reportAbstractImplementation(
     parser: *Parser,
     body: ast.NodeIndex,
@@ -672,7 +619,6 @@ fn reportAbstractImplementation(
     }, .{ .help = "Remove the body, or drop the 'abstract' modifier." });
 }
 
-// class field or auto-accessor (`accessor x = 1`).
 fn parsePropertyDefinition(
     parser: *Parser,
     elem_start: u32,
@@ -692,7 +638,6 @@ fn parsePropertyDefinition(
 
     var end = parser.prev_token_end;
 
-    // optional `: Type` annotation.
     const is_ts = parser.tree.isTs();
     var type_annotation: ast.NodeIndex = .null;
     if (is_ts and parser.current_token.tag == .colon) {
@@ -700,11 +645,11 @@ fn parsePropertyDefinition(
         end = parser.tree.span(type_annotation).end;
     }
 
-    // `= initializer`
     var value: ast.NodeIndex = .null;
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
 
+        // field initializers reset [Await] and [Yield]
         // https://github.com/tc39/ecma262/issues/3333
         // https://github.com/tc39/ecma262/issues/2437
         const saved_await = parser.context.await;
@@ -734,7 +679,6 @@ fn parsePropertyDefinition(
         value != .null,
     );
 
-    // terminator
     switch (parser.current_token.tag) {
         .semicolon => {
             end = parser.current_token.span.end;
@@ -772,7 +716,7 @@ fn parsePropertyDefinition(
 fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
 
-    // ClassStaticBlockStatementList: StatementList[~Yield, +Await, ~Return]
+    // ClassStaticBlockStatementList is [~Yield, +Await, ~Return]
     const saved_await = parser.context.await;
     const saved_yield = parser.context.yield;
     const saved_return = parser.context.@"return";
@@ -795,7 +739,6 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     );
 }
 
-// `#constructor` is not allowed as a private field name
 fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: bool) Error!void {
     if (computed) return;
     const data = parser.tree.data(key);
@@ -808,8 +751,6 @@ fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: boo
     );
 }
 
-// detects an unqualified `constructor` name and promotes `kind` from
-// `.method` to `.constructor`. `static` and computed keys never count
 fn detectConstructorKind(
     parser: *Parser,
     key: ast.NodeIndex,
@@ -831,8 +772,6 @@ fn detectConstructorKind(
     }
 }
 
-// forbids the field-only ts modifiers on anything callable, `async` / `*` on
-// constructors, and `*` on getters / setters.
 fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, mods: Modifiers) Error!void {
     const span = parser.tree.span(key);
 
@@ -871,8 +810,6 @@ fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, mods: Modifiers)
     }
 }
 
-// static members may not be named `prototype`, static fields may not be
-// named `constructor`
 fn validateStaticPrototypeOrConstructor(
     parser: *Parser,
     key: ast.NodeIndex,
@@ -890,7 +827,6 @@ fn validateStaticPrototypeOrConstructor(
     );
 }
 
-// non-static fields may not be named `constructor`
 fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
     if (!prop.eql("constructor")) return;

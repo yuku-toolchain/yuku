@@ -6,15 +6,12 @@ const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");
 const array = @import("syntax/array.zig");
 
-/// parse an expression within a cover grammar context without validation.
-/// validation is deferred until the top-level context is known.
+/// Parses an expression inside a cover grammar, deferring validation until the context is known.
 pub inline fn parseExpressionInCover(parser: *Parser, precedence: u8) Error!?ast.NodeIndex {
     return expressions.parseExpression(parser, precedence, .{ .in_cover = true });
 }
 
-/// validate that an expression doesn't contain CoverInitializedName.
-/// only called when `state.cover_has_init_name` is set during parsing,
-/// so the recursive walk here is bounded to cases that actually need it.
+/// Reports every CoverInitializedName (`{ a = 1 }`) left inside an expression.
 pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Error!void {
     const data = parser.tree.data(expr);
 
@@ -68,8 +65,7 @@ pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Er
     }
 }
 
-/// check if a node is a CoverInitializedName (assignment expression with = operator).
-/// CoverInitializedName: { a = 1 } where the value is AssignmentExpression
+/// Whether a shorthand property value is a CoverInitializedName (`{ a = 1 }`).
 pub inline fn isCoverInitializedName(parser: *Parser, node: ast.NodeIndex) bool {
     const data = parser.tree.data(node);
     return data == .assignment_expression and data.assignment_expression.operator == .assign;
@@ -84,22 +80,19 @@ pub inline fn reportCoverInitializedNameError(parser: *Parser, node: ast.NodeInd
 }
 
 pub const PatternContext = enum {
-    /// binding patterns for function parameters, variable declarations, etc.
+    /// Binding patterns, as in parameters and variable declarations.
     binding,
-    /// assignable patterns for assignment expressions.
+    /// Assignment targets.
     assignable,
 };
 
-/// convert an expression node to a destructuring pattern (mutates in-place).
-/// the context determines what syntax is allowed.
+/// Converts an expression node in place into a destructuring pattern allowed by `context`.
 pub fn expressionToPattern(
     parser: *Parser,
     expr: ast.NodeIndex,
     comptime context: PatternContext,
 ) Error!void {
-    // `(a) = b` is a valid assignment, so the `.assignable` pass stripped
-    // the paren in-place. in binding position that paren is a syntax error,
-    // visible only through the recorded evidence.
+    // the `.assignable` pass stripped a legal `(a) = b` paren that is illegal here
     if (context == .binding and parser.state.stripped_paren == expr) {
         try parser.report(
             parser.tree.span(expr),
@@ -247,7 +240,6 @@ pub fn expressionToPattern(
                 return;
             }
 
-            // recurse for nested patterns (`(({a = 1}))`)
             switch (parser.tree.data(paren.expression)) {
                 .ts_as_expression,
                 .ts_satisfies_expression,
@@ -257,10 +249,7 @@ pub fn expressionToPattern(
                 else => try expressionToPattern(parser, paren.expression, context),
             }
 
-            // strip the parenthesized wrapper, assignment targets don't
-            // preserve outer parens regardless of `preserveParens`. record
-            // the node first, a later `.binding` pass must still reject
-            // the elided paren.
+            // assignment targets drop outer parens regardless of `preserve_parens`
             parser.state.stripped_paren = expr;
             parser.tree.setData(expr, parser.tree.data(paren.expression));
             parser.tree.setSpan(expr, parser.tree.span(paren.expression));
@@ -268,19 +257,13 @@ pub fn expressionToPattern(
 
         .binding_identifier => {},
 
-        // this pattern was already converted at its `=` under the looser
-        // `.assignable` rules, while "assignment or arrow head?" was
-        // still unknown:
+        // `.binding` re-descends every target already converted at `=` under `.assignable` rules
         //
         //   ([a.b] = []) => {}
         //   at `=`  : valid as an assignment, the array becomes array_pattern
         //   at `=>` : the same node is now a parameter, where `a.b` is
         //             illegal, a stripped `(a)` is illegal, and `a` must
         //             become a declaring binding_identifier
-        //
-        // so `.binding` re-descends every target and judges it again.
-        // defaults and computed keys stay expressions and are skipped.
-        // a second `.assignable` visit has nothing stricter to add, no-op.
         .assignment_pattern => |pattern| if (context == .binding) {
             try expressionToPattern(parser, pattern.left, context);
         },
@@ -298,10 +281,7 @@ pub fn expressionToPattern(
         .object_pattern => |pattern| if (context == .binding) {
             for (parser.tree.extra(pattern.properties)) |property| {
                 const property_data = parser.tree.data(property);
-                // a property the `.assignable` pass could not convert
-                // (a method or getter/setter) keeps its object_property
-                // shape and is already diagnosed. only binding_property
-                // carries a converted value.
+                // a method or accessor keeps its object_property shape and is already diagnosed
                 if (property_data != .binding_property) continue;
                 try expressionToPattern(parser, property_data.binding_property.value, context);
             }

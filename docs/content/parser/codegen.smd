@@ -242,8 +242,6 @@ defer result.deinit(allocator);
 The substitutions.
 
 - `true` / `false` → `!0` / `!1`
-- `undefined` → `void 0` (in expression position)
-- `Infinity` → `1/0`
 - numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe

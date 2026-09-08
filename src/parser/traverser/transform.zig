@@ -1,10 +1,6 @@
-//! Transform traverser. Walks a `Tree` and lets visitor hooks mutate
-//! the AST in place through `ctx.tree` (`setData`, `addNode`, `addExtra`).
-//!
-//! The walker re-reads node data after every enter, so replacing a
-//! node's data also walks the replacement's children. For the same
-//! reason, never point a node's child back to its own index. Move the
-//! original data to a new node first, then point the wrapper at it.
+//! Transform traverser whose visitor hooks mutate the tree in place through
+//! `ctx.tree`. The walker re-reads a node after enter, so never point a
+//! node's child back to its own index.
 
 const std = @import("std");
 const ast = @import("../ast.zig");

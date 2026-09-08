@@ -1,6 +1,4 @@
-//! Walker mechanics. Hook dispatch order, Action semantics, enter and
-//! exit pairing, NodePath, Layer ordering, and transform-traverser
-//! mutation.
+//! Walker mechanics, from hook dispatch order to transform-traverser mutation.
 
 const std = @import("std");
 const parser = @import("parser");

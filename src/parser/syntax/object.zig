@@ -11,15 +11,14 @@ const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
 const ts = @import("ts/types.zig");
 
-/// result from parsing object cover grammar: {a, b: c, ...d}
+/// Properties parsed by the object cover grammar, before classification as an expression or a pattern.
 pub const ObjectCover = struct {
     properties: ast.IndexRange,
     start: u32,
     end: u32,
 };
 
-/// parse object literal permissively using cover grammar: {a, b: c, ...d}
-/// returns raw properties for later conversion to ObjectExpression or ObjectPattern.
+/// Parses an object literal permissively under the cover grammar that also covers ObjectAssignmentPattern.
 /// https://tc39.es/ecma262/#sec-object-initializer (covers ObjectAssignmentPattern)
 pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     std.debug.assert(parser.current_token.tag == .left_brace);
@@ -32,7 +31,6 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     var end = start + 1;
 
     while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
-        // spread: {...x}
         if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
@@ -49,16 +47,13 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
             try parser.scratch_cover.append(parser.allocator(), spread);
             end = spread_end;
         } else {
-            // property
             const prop = try parseCoverProperty(parser) orelse return null;
             try parser.scratch_cover.append(parser.allocator(), prop);
             end = parser.tree.span(prop).end;
         }
 
-        // comma or end
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
-            // then it's a trailing comma
             if (parser.current_token.tag == .right_brace) {
                 parser.state.cover_has_trailing_comma = start;
             }
@@ -98,7 +93,6 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     };
 }
 
-/// parse a single property in object cover grammar.
 fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     const prop_start = parser.current_token.span.start;
     var is_async = false;
@@ -109,7 +103,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     var key: ast.NodeIndex = .null;
     var key_identifier_token: ?Token = null;
 
-    // check for async, consume it, then decide if it's a modifier or key based on what follows
     if (parser.current_token.tag == .async) {
         const async_token = parser.current_token;
 
@@ -122,7 +115,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             try parser.reportIfEscapedKeyword(async_token);
             is_async = true;
         } else {
-            // it's a key named "async"
             key = try parser.tree.addNode(
                 .{ .identifier_name = .{ .name = try parser.identifierName(async_token) } },
                 async_token.span,
@@ -130,13 +122,11 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // check for generator, only if we don't already have a key
     if (key == .null and parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
 
-    // check for get/set, only if no async/generator modifiers and no key yet
     if (key == .null and !is_async and !is_generator) {
         const cur_tag = parser.current_token.tag;
         if (cur_tag == .get or cur_tag == .set) {
@@ -156,7 +146,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // parse property key if not already determined
     if (key == .null) {
         if (parser.current_token.tag == .left_bracket) {
             computed = true;
@@ -210,7 +199,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         );
     }
 
-    // if we had async, generator, or get/set prefix but no (, it's an error
     if (is_async or is_generator or kind != .init) {
         try parser.reportExpected(
             parser.current_token.span,
@@ -220,7 +208,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    // regular property: key: value
     if (parser.current_token.tag == .colon) {
         try parser.advance() orelse return null;
         const value = try grammar.parseExpressionInCover(
@@ -241,7 +228,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         );
     }
 
-    // CoverInitializedName: a = default
+    // CoverInitializedName `a = default`
     if (parser.current_token.tag == .assign) {
         if (computed) {
             try parser.report(
@@ -308,8 +295,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    // shorthand property: { a }
-
     if (key_identifier_token) |key_token| {
         try literals.validateIdentifier(parser, "an identifier", key_token);
     }
@@ -351,7 +336,6 @@ inline fn isPropertyKeyStart(tag: TokenTag) bool {
         tag.isNumericLiteral();
 }
 
-/// parse a method definition: key(...) { ... }
 fn parseObjectMethodProperty(
     parser: *Parser,
     prop_start: u32,
@@ -393,7 +377,6 @@ fn parseObjectMethodProperty(
     const is_ts = parser.tree.isTs();
     const func_start = parser.current_token.span.start;
 
-    // `m<T, U extends V>(...)`
     const type_parameters: ast.NodeIndex = if (is_ts)
         try ts.parseTypeParameters(parser)
     else
@@ -406,7 +389,6 @@ fn parseObjectMethodProperty(
     ) orelse return null;
     if (!try functions.checkAccessorArity(parser, kind, params)) return null;
 
-    // `: ReturnType`
     var return_type: ast.NodeIndex = .null;
     if (is_ts and parser.current_token.tag == .colon) {
         return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
@@ -442,8 +424,7 @@ fn parseObjectMethodProperty(
     );
 }
 
-/// convert object cover to ObjectExpression.
-/// validates that the expression does not contain CoverInitializedName when validate=true.
+/// Converts an object cover to an ObjectExpression, rejecting CoverInitializedName when `validate` is set.
 pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Error!?ast.NodeIndex {
     const object_expression = try parser.tree.addNode(
         .{ .object_expression = .{ .properties = cover.properties } },
@@ -455,7 +436,7 @@ pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Er
     return object_expression;
 }
 
-/// convert object cover to ObjectPattern.
+/// Converts an object cover to an ObjectPattern.
 pub fn coverToPattern(
     parser: *Parser,
     cover: ObjectCover,
@@ -470,7 +451,7 @@ pub fn coverToPattern(
     );
 }
 
-/// convert ObjectExpression to ObjectPattern (mutates in-place).
+/// Converts an ObjectExpression node to an ObjectPattern in place.
 pub fn toObjectPattern(
     parser: *Parser,
     expr_node: ast.NodeIndex,
@@ -516,10 +497,9 @@ fn toObjectPatternImpl(
                 );
             }
 
-            // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, prop, context);
 
-            // BindingRestProperty[Yield, Await] : ... BindingIdentifier[?Yield, ?Await]
+            // BindingRestProperty only allows a BindingIdentifier
             const argument = parser.tree.data(prop).binding_rest_element.argument;
             switch (parser.tree.data(argument)) {
                 .array_pattern, .object_pattern => try parser.report(

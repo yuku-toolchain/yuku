@@ -11,7 +11,6 @@ const expressions = @import("../expressions.zig");
 const core = @import("types/core.zig");
 const generics = @import("types/generics.zig");
 
-// `<Type>expr` unary precedence operand
 pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
@@ -37,7 +36,6 @@ pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// `expr as T` / `expr satisfies T`
 pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const keyword_tag = parser.current_token.tag;
     std.debug.assert(keyword_tag == .as or keyword_tag == .satisfies);
@@ -57,7 +55,7 @@ pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!
     });
 }
 
-// postfix `!` here, optional chain handles its own bang
+// optional chains handle their own `!`
 pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .logical_not);
 
@@ -70,8 +68,6 @@ pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     );
 }
 
-// `<>` after callee becomes call template tag or `InstantiationExpression`, else null
-// if `<` is compare
 pub fn parseTypeArgumentedCallOrInstantiation(
     parser: *Parser,
     callee: ast.NodeIndex,
@@ -111,8 +107,7 @@ pub fn parseTypeArgumentedCallOrInstantiation(
     };
 }
 
-// try `<>` args, rewind so `<` can stay relational compare. callers must
-// already be in ts mode.
+// rewind so `<` can stay a relational compare
 pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     if (!generics.isAngleOpen(parser.current_token.tag)) return .null;
 
@@ -130,7 +125,6 @@ pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     return args;
 }
 
-// after committed `<>` in expr position
 fn canFollowTypeArgumentsInExpression(token: Token) bool {
     return switch (token.tag) {
         .left_paren, .no_substitution_template, .template_head => true,

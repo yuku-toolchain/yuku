@@ -42,7 +42,6 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
 
-    // bigint literal is a separate node
     if (token.tag == .bigint_literal) {
         return try parser.tree.addNode(.{
             .bigint_literal = .{
@@ -126,8 +125,7 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
             return null;
         try parser.scratch_b.append(parser.allocator(), expr);
 
-        // after parsing the expression, we expect '}' which closes the ${} substitution.
-        // we need to explicitly scan for template continuation (middle or tail).
+        // the lexer emits `}` as a punctuator, rescan it as template continuation
         if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
                 parser.current_token.span,

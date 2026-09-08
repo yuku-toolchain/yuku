@@ -50,17 +50,14 @@ pub const State = struct {
     options: Options,
     source: []const u8,
     cursor: SourceCursor = .{},
-    // vlq mappings string, encoded as segments are recorded
     out: std.ArrayList(u8) = .empty,
     gen_line: u32 = 0,
     gen_col: u32 = 0,
 
-    // most recent segment, held until one at a different generated position
-    // arrives so a deeper node can overwrite it in place
+    // held until a different generated position arrives so a deeper node can overwrite it
     pending: Segment = undefined,
     has_pending: bool = false,
 
-    // vlq deltas of the last segment flushed to out
     prev_gen_col: i32 = 0,
     prev_orig_line: i32 = 0,
     prev_orig_col: i32 = 0,
@@ -94,8 +91,7 @@ pub const State = struct {
         return self.cursor.resolve(self.source, offset);
     }
 
-    /// Advances the generated position over `bytes` just written, counting
-    /// columns in UTF-16 code units.
+    /// Advances the generated position over `bytes` just written.
     pub fn advance(self: *State, bytes: []const u8) void {
         if (isPlainAscii(bytes)) {
             self.gen_col += @intCast(bytes.len);
@@ -161,7 +157,6 @@ pub const State = struct {
         self.has_pending = true;
     }
 
-    // encodes the pending segment into out and folds it into the running deltas
     fn flush(self: *State, allocator: Allocator) Allocator.Error!void {
         const seg = self.pending;
         const gen_line: i32 = @intCast(seg.gen_line);
@@ -206,7 +201,7 @@ pub const State = struct {
         self.out.items.len += @intFromPtr(dst) - @intFromPtr(base);
     }
 
-    /// Returns the most recently recorded segment, or null if none.
+    /// The most recently recorded segment, if any.
     pub fn lastMapping(self: *const State) ?Segment {
         return if (self.has_pending) self.pending else null;
     }
@@ -240,8 +235,7 @@ pub const State = struct {
         self.first_in_line = s.first_in_line;
     }
 
-    /// Finalizes the map. Output buffers are owned by `allocator` and freed by
-    /// `SourceMap.deinit`.
+    /// Finalizes the map. Free with `SourceMap.deinit`.
     pub fn build(self: *State, allocator: Allocator) Allocator.Error!SourceMap {
         if (self.has_pending) {
             try self.flush(allocator);
@@ -271,8 +265,8 @@ pub const State = struct {
     }
 };
 
-/// Maps a UTF-16 offset into a UTF-8 source to a zero-based `(line, col)`,
-/// columns in UTF-16 code units. Scans incrementally from the last position.
+/// Maps UTF-16 offsets in a UTF-8 source to zero-based `(line, col)`, scanning
+/// incrementally from the last position.
 pub const SourceCursor = struct {
     byte: u32 = 0,
     utf16: u32 = 0,
@@ -304,7 +298,7 @@ pub const SourceCursor = struct {
                 while (self.byte > 0 and isContinuation(source[self.byte])) self.byte -= 1;
                 const lead = source[self.byte];
                 self.utf16 -= utf16Width(std.unicode.utf8ByteSequenceLength(lead) catch 1);
-                // count a crlf once: its lf belongs to the preceding cr
+                // count a crlf once, its lf belongs to the preceding cr
                 const is_break = if (lead == '\n')
                     self.byte == 0 or source[self.byte - 1] != '\r'
                 else
@@ -341,7 +335,7 @@ inline fn utf16Width(utf8_len: u8) u32 {
 
 const VLQ_CHARS: [64]u8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".*;
 
-// writes one signed vlq integer. caller ensures at least 7 bytes of headroom.
+// caller ensures at least 7 bytes of headroom
 inline fn writeVlq(dst: [*]u8, v: i32) [*]u8 {
     var bits: u32 = if (v < 0) (@as(u32, @intCast(-v)) << 1) | 1 else @as(u32, @intCast(v)) << 1;
     var p = dst;

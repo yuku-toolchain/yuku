@@ -1,6 +1,5 @@
-//! Scope tree construction. Kinds, strict-mode propagation, hoist
-//! targets, catch-body sharing, expression-name scopes, decorator
-//! retargeting, and ancestor iteration.
+//! Scope tree construction, from kinds and strict-mode propagation to hoist targets and
+//! ancestor iteration.
 
 const std = @import("std");
 const parser = @import("parser");

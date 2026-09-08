@@ -24,9 +24,7 @@ fn classifyParenArrowHead(parser: *Parser) ArrowHead {
 
     switch (second.tag) {
         .spread => return .yes,
-        // could be array or object expr
         .left_bracket, .left_brace => return .maybe,
-        // bare `()` needs `=>` or `:` after
         .right_paren => {
             const third = peek.next();
             return switch (third.tag) {
@@ -34,7 +32,6 @@ fn classifyParenArrowHead(parser: *Parser) ArrowHead {
                 else => .no,
             };
         },
-        // `this` param only when `:T` follows
         .this => {
             const third = peek.next();
             return if (third.tag == .colon) .yes else .no;
@@ -51,7 +48,6 @@ fn classifyParenArrowHead(parser: *Parser) ArrowHead {
                         else => .no,
                     };
                 },
-                // could be paren expr or comma sequence
                 .comma, .assign, .right_paren => .maybe,
                 else => .no,
             };
@@ -95,8 +91,7 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
     );
 }
 
-// rewind on fail so cover grammar jsx or `<T>` assertion wins. also when return type
-// parsed but `allow_arrow_return_type` is off and next `:` is outer ternary case label
+// rewind on failure so jsx or a `<T>` assertion can win
 pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     const cp = parser.checkpoint();
 
@@ -105,7 +100,7 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
         return null;
     };
 
-    // annotated arrow in no return type context give `:` to outer ternary case
+    // the `:` after an annotated arrow may belong to an enclosing conditional
     const return_type = parser.tree.data(arrow).arrow_function_expression.return_type;
     if (!parser.ts_context.allow_arrow_return_type and
         return_type != .null and
@@ -118,7 +113,7 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
     return arrow;
 }
 
-// fast path, skip checkpoint when jsx or type assertion likely
+// skip the checkpoint when jsx or a type assertion is likelier
 pub fn tryParseGenericArrow(
     parser: *Parser,
     is_async: bool,

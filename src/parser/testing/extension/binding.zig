@@ -1,9 +1,8 @@
-//! Reference `parser_extension` binding. Implements every extension point, and
-//! handles marker syntax stock JS, TS, and JSX reject.
+//! Reference `parser_extension` binding that implements every extension point.
 
 const std = @import("std");
 
-/// Points reached so far, deduplicated. `cases.zig` checks it covers `Point`.
+/// Points reached so far, deduplicated.
 pub var visited: [64][]const u8 = undefined;
 pub var visited_len: u32 = 0;
 
@@ -31,7 +30,7 @@ pub fn expression_prefix(comptime R: type, parser: anytype) R {
     return .failed;
 }
 
-/// eats an `@tail` clause and declines, legal only here.
+/// Eats an `@tail` clause and declines, which only this point may do.
 pub fn for_of_tail(comptime R: type, parser: anytype, head: anytype) R {
     visit("for_of_tail");
     _ = head;
@@ -67,7 +66,7 @@ pub fn jsx_fragment_tail(comptime R: type, parser: anytype, opening: anytype) R 
     return decline(R, .{ parser, opening });
 }
 
-/// accepts a bare identifier as a specifier.
+/// Accepts a bare identifier as a specifier.
 pub fn module_specifier(comptime R: type, parser: anytype) R {
     visit("module_specifier");
     if (parser.current_token.tag != .identifier) return null;
@@ -131,7 +130,7 @@ fn decline(comptime R: type, unused: anytype) R {
     return null;
 }
 
-/// hooks name themselves, `@src().fn_name` mangles generic instantiations
+// hooks name themselves since `@src().fn_name` mangles generic instantiations
 fn visit(comptime point: []const u8) void {
     comptime std.debug.assert(@hasDecl(@This(), point));
 

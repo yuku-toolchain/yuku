@@ -1,7 +1,4 @@
-//! Corpus sweep. Semantic-model invariants must hold for every fixture
-//! that parses cleanly, covering scope-tree shape, symbol and scope-map
-//! agreement, reference resolution agreeing with `lookup`, and the decl
-//! and use cross-indexes.
+//! Corpus sweep checking the semantic model invariants on every fixture that parses cleanly.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -102,8 +99,7 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
 
         const name = tree.string(ref.name);
         const expected = sem.lookup(ref.scope, name, ref.flags.space);
-        // resolution applies the arguments barrier and type parameter
-        // visibility rules, which a plain lookup does not know
+        // resolution knows the arguments barrier and type parameter visibility, lookup does not
         const rules_may_differ = std.mem.eql(u8, name, "arguments") or
             (expected != null and sem.symbol(expected.?).flags.type_parameter);
         if (ref.symbol == .none) {

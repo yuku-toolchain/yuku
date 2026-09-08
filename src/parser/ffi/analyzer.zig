@@ -10,9 +10,8 @@ const Options = struct {
     attach_comments: bool = false,
 };
 
-/// Parses and semantically analyzes one file, returning the analyzer
-/// buffer: the v7 AST sections followed by the semantic sections
-/// (scopes, symbols, resolved references, module records).
+/// Parses and analyzes one file into the analyzer buffer, the AST sections followed by
+/// the semantic sections.
 pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     var tree = parser.parse(std.heap.smp_allocator, source, .{
         .source_type = options.source_type,
@@ -22,11 +21,10 @@ pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     }) catch return error.AnalyzeFailed;
     defer tree.deinit();
 
-    // analysis is error tolerant: a tree with syntax errors still
-    // produces scopes, symbols, and diagnostics
+    // analysis is error tolerant, a tree with syntax errors still yields scopes and symbols
     const sem = parser.semantic.analyze(&tree) catch return error.AnalyzeFailed;
 
-    // collect before sizing: records may intern "default" into the pool
+    // collect before sizing, records may intern into the string pool
     const records = parser.semantic.module_record.collect(
         &tree,
         &sem,

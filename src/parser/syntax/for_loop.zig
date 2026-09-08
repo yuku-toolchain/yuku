@@ -11,6 +11,7 @@ const statements = @import("statements.zig");
 const ecmascript = @import("../ecmascript.zig");
 const extension = @import("../extension.zig");
 
+/// Parses `for`, `for-in`, `for-of`, and `for await` statements.
 /// https://tc39.es/ecma262/#sec-for-statement
 /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
 pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeIndex {
@@ -60,7 +61,6 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
         .let => {
             const next = parser.peekAhead();
 
-            // `let` heads a declaration only when a binding can follow.
             if (!variables.canStartLetBinding(next.tag)) {
                 return parseForWithExpression(parser, start, is_for_await);
             }
@@ -79,8 +79,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                 return parseForWithExpression(parser, start, is_for_await);
             }
 
-            // `using of` binds `of` only when `=`, `;`, or `:` follows,
-            // else `using` is the expression of a for-of loop
+            // `for (using of x)` is an expression head, `using of = x` a binding
             if (next.tag == .of) {
                 const after_of = blk: {
                     var peek = parser.beginPeek();
@@ -116,7 +115,6 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
     }
 }
 
-/// for loop starting with `var`/`let`/`const`/`using`/`await using`
 fn parseForWithDeclaration(
     parser: *Parser,
     start: u32,
@@ -183,10 +181,8 @@ fn parseForWithDeclaration(
     return parseForStatementRest(parser, start, decl, is_for_await);
 }
 
-/// for loop starting with an expression.
 fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
-    // escaped `let` is a different token sequence, exempt from the
-    // for-of lookahead restriction below
+    // escaped `let` is exempt from the for-of lookahead restriction
     const head = parser.current_token;
     const head_is_let = head.tag == .let and !head.isEscaped();
 
@@ -221,7 +217,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     }
 
     if (parser.current_token.tag == .of) {
-        // for ( [lookahead ∉ { let }] LeftHandSideExpression of AssignmentExpression )
+        // for ( [lookahead ∉ { let }] LeftHandSideExpression of ... )
         if (head_is_let) {
             try parser.report(
                 head.span,
@@ -231,7 +227,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
             );
         }
 
-        // for ( [lookahead ∉ { async of }] LeftHandSideExpression of AssignmentExpression )
+        // for ( [lookahead ∉ { async of }] LeftHandSideExpression of ... )
         if (!is_for_await and isAsyncIdentifier(parser, expr)) {
             try parser.report(
                 parser.tree.span(expr),
@@ -249,7 +245,6 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     return parseForStatementRest(parser, start, expr, is_for_await);
 }
 
-/// for(init; test; update) body
 fn parseForStatementRest(
     parser: *Parser,
     start: u32,
@@ -302,7 +297,6 @@ fn parseForStatementRest(
     }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
-/// for(left in right) body
 fn parseForInStatementRest(
     parser: *Parser,
     start: u32,
@@ -339,7 +333,6 @@ fn parseForInStatementRest(
     }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
-/// for(left of right) body
 fn parseForOfStatementRest(
     parser: *Parser,
     start: u32,
@@ -382,7 +375,7 @@ fn parseForOfStatementRest(
 fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
     if (parser.tree.data(expr) != .identifier_reference) return false;
 
-    // compare raw source text, escaped `\u0061sync` should not match
+    // raw source, escaped `\u0061sync` must not match
     const span = parser.tree.span(expr);
     return std.mem.eql(u8, parser.source[span.start..span.end], "async");
 }

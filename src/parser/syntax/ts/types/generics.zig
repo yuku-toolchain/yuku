@@ -13,14 +13,12 @@ pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .arguments, .peel);
 }
 
-// expression position accepts only a lone `>` close, a fused `>=` or `>>`
-// keeps the operator parse, so `f<T>= x` stays relational like tsc
+// a fused `>=` or `>>` fails so `f<T>= x` stays relational like tsc
 pub inline fn parseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .arguments, .exact);
 }
 
-// `<>` after name in ref or typeof. newline before `<` keeps `typeof a` away from a
-// generic fn type that follows
+// a newline before `<` keeps `typeof a` apart from a generic function type after it
 pub inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
     if (!isAngleOpen(parser.current_token.tag) or
         parser.current_token.hasLineTerminatorBefore()) return .null;
@@ -34,20 +32,17 @@ pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
 }
 
 const AngleListKind = enum {
-    // `Foo<T, U>` at call or instantiation site
     arguments,
-    // `<T, U extends V>` at declaration
     parameters,
 };
 
 const AngleClose = enum {
-    // type context, one `>` peels off a fused `>>` or `>=`
+    // one `>` peels off a fused `>>` or `>=`
     peel,
-    // expression position, a fused closer fails the speculation
+    // a fused closer fails the speculation
     exact,
 };
 
-// null when no opening `<`
 fn parseAngleList(
     parser: *Parser,
     comptime kind: AngleListKind,
@@ -70,7 +65,6 @@ fn parseAngleList(
         try parser.advance() orelse return .null;
     }
 
-    // `<>` is a syntax error in typescript, in either close form (`<>` or `<>>`).
     if (!parsed_any) try parser.report(parser.current_token.span, switch (kind) {
         .arguments => "A type argument list cannot be empty",
         .parameters => "A type parameter list cannot be empty",
@@ -86,13 +80,12 @@ fn parseAngleList(
     return try parser.tree.addNode(data, .{ .start = start, .end = end });
 }
 
-// `<` or fused `<<` for nested instantiations eg `Foo<<T>(x: T) => R>`
+// fused `<<` opens nested instantiations like `Foo<<T>(x: T) => R>`
 pub inline fn isAngleOpen(tag: TokenTag) bool {
     return tag == .less_than or tag == .left_shift;
 }
 
-// `>` or any token that begins with one (`>>`, `>=`, ...), since nested closers
-// fuse into a single token that consumeAngleClose later peels apart.
+// nested closers fuse into one token that consumeAngleClose peels apart
 inline fn isAngleClose(tag: TokenTag) bool {
     return switch (tag) {
         .greater_than,
@@ -106,7 +99,6 @@ inline fn isAngleClose(tag: TokenTag) bool {
     };
 }
 
-// `<` pos or null. peel fused `<<`
 fn consumeAngleOpen(parser: *Parser) Error!?u32 {
     const start = parser.current_token.span.start;
     switch (parser.current_token.tag) {
@@ -120,7 +112,6 @@ fn consumeAngleOpen(parser: *Parser) Error!?u32 {
     return start;
 }
 
-// `>` end or error report. peel one `>` from `>>` `>>=` style
 fn consumeAngleClose(
     parser: *Parser,
     comptime kind: AngleListKind,
@@ -160,13 +151,12 @@ fn consumeAngleClose(
 // const in out T extends U = V
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
-    // want `const` then `in` then `out`, step tracks that
     var flags: struct { @"const": bool = false, in: bool = false, out: bool = false } = .{};
     var step: u8 = 0;
     var start: u32 = parser.current_token.span.start;
     var start_set = false;
 
-    // word is a modifier only when an actual name follows, else `<out>` is a type param named out
+    // a modifier only when a name follows, else `<out>` is a parameter named out
     while (true) {
         const token = parser.current_token;
         const this_step: u8, const seen_ptr: *bool = switch (token.tag) {

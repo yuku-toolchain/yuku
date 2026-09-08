@@ -34,9 +34,7 @@ pub fn propName(tree: *const ast.Tree, key: ast.NodeIndex) ?PropName {
 
 /// https://tc39.es/ecma262/#sec-static-semantics-containsexpression
 ///
-/// The first expression contained in the parameter list, a default
-/// initializer or a computed property key. Plain destructuring without
-/// either contains no expression.
+/// The first default initializer or computed key in a parameter list.
 pub fn findParameterExpression(tree: *const ast.Tree, params: ast.FormalParameters) ?ast.NodeIndex {
     for (tree.extra(params.items)) |param_idx| {
         const pattern = switch (tree.data(param_idx)) {
@@ -52,12 +50,10 @@ pub fn findParameterExpression(tree: *const ast.Tree, params: ast.FormalParamete
 
 /// https://tc39.es/ecma262/#sec-static-semantics-containsexpression
 ///
-/// The first expression contained in one binding pattern, see
-/// `findParameterExpression`. Safe to call with `.null`.
+/// The first expression contained in one binding pattern. Safe to call with `.null`.
 pub fn findPatternExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) ?ast.NodeIndex {
     if (pattern == .null) return null;
     switch (tree.data(pattern)) {
-        // the initializer is the contained expression
         .assignment_pattern => return pattern,
         .binding_rest_element => |rest| return findPatternExpression(tree, rest.argument),
         .array_pattern => |arr| {
@@ -76,9 +72,7 @@ pub fn findPatternExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) ?ast
                     else => {},
                 }
             }
-            // object rest is never inspected, BindingRestProperty is
-            // always `...BindingIdentifier`, so it cannot contain an
-            // expression (15.1.2 ObjectBindingPattern productions)
+            // BindingRestProperty is always `...BindingIdentifier` (15.1.2 ObjectBindingPattern productions)
             return null;
         },
         else => return null,
@@ -110,8 +104,7 @@ pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameter
             else => return param_idx,
         };
         switch (tree.data(pattern)) {
-            // `this: T` is not a runtime parameter, erased at emit, so the
-            // ECMAScript "simple parameter list" rule does not apply to it.
+            // `this: T` is erased at emit, so the "simple parameter list" rule does not apply to it
             .binding_identifier, .ts_this_parameter => {},
             else => return pattern,
         }

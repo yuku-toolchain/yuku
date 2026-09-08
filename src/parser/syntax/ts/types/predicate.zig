@@ -38,7 +38,7 @@ pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// only bare `id is T` needs lookahead here, other preds route via parseType
+// only bare `id is T` needs lookahead, `this is T` and `asserts` go through parseType
 pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     if (!try isIdentifierPredicateStart(parser)) return core.parseType(parser);
 
@@ -79,7 +79,6 @@ pub fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     return finishTypePredicate(parser, start, parameter_name, true);
 }
 
-// asserts target is `this` as node or identifier name
 fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .this) return literals.parseIdentifierName(parser);
 
@@ -88,7 +87,6 @@ fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.addNode(.{ .ts_this_type = .{} }, token.span);
 }
 
-// optional `is T` tail then predicate node
 fn finishTypePredicate(
     parser: *Parser,
     start: u32,
@@ -118,7 +116,6 @@ fn finishTypePredicate(
     );
 }
 
-// asserts keyword then this or id on same line
 pub fn isAssertsPredicateStart(parser: *Parser) Error!bool {
     if (parser.current_token.tag != .asserts or parser.current_token.isEscaped()) return false;
 
@@ -128,7 +125,7 @@ pub fn isAssertsPredicateStart(parser: *Parser) Error!bool {
     return next.tag == .this or next.tag.isIdentifierLike();
 }
 
-// `id is T` same line. `this is T` lives in primary type path already
+// `this is T` is handled by the primary type path
 fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     const current = parser.current_token;
     if (current.isEscaped() or current.tag == .this or !current.tag.isIdentifierLike()) {
@@ -139,7 +136,6 @@ fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
-// write type annotation into pattern node and grow span, noop if no field for it
 pub fn applyTypeAnnotationToPattern(
     parser: *Parser,
     pattern: ast.NodeIndex,
@@ -158,8 +154,7 @@ pub fn applyTypeAnnotationToPattern(
     extendSpanTo(parser, pattern, parser.tree.span(annotation).end);
 }
 
-// decorators hang on the pattern node. only a rest element grows to cover them,
-// which is how TS-ESTree ranges a decorated parameter. empty range noop
+// only a rest element grows to cover its decorators, matching TS-ESTree ranges
 pub fn applyDecoratorsToPattern(
     parser: *Parser,
     pattern: ast.NodeIndex,
@@ -184,8 +179,6 @@ pub fn applyDecoratorsToPattern(
     }
 }
 
-// `x!` promises an assignment the checker cannot see, so it needs a declared
-// type to describe and no initializer that would already prove the point.
 pub fn checkDefiniteAssignment(
     parser: *Parser,
     span: ast.Span,
@@ -207,7 +200,6 @@ pub fn checkDefiniteAssignment(
     }
 }
 
-// marks `x?`, `[...]?`, `{...}?` optional and stretches the span to `end`.
 pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) void {
     var data = parser.tree.data(pattern);
     switch (data) {

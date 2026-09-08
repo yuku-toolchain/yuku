@@ -29,7 +29,7 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-// `extends` arm in conditional type, no nested `? :` here
+// the `extends` arm of a conditional type cannot nest another conditional
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
         return parseFunctionOrConstructorType(parser);
@@ -51,7 +51,7 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null;
 
-    // no inner conditional in this slot. infer constraint sticks. nested paren resets in parseType
+    // parentheses reset the flag through parseType
     const saved = parser.ts_context.disallow_conditional_types;
     parser.ts_context.disallow_conditional_types = true;
     defer parser.ts_context.disallow_conditional_types = saved;
@@ -101,7 +101,6 @@ fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
 
 const BinaryTypeKind = enum { union_type, intersection_type };
 
-// optional leading `|` or `&`, flattens repeats, else unwraps one operand
 fn parseBinaryTypeChain(
     parser: *Parser,
     comptime separator: TokenTag,
@@ -207,7 +206,7 @@ fn parseJSDocPostfix(
     );
 }
 
-// postfix `?` only when no type follows, else outer conditional eats it
+// a postfix `?` only when no type follows, else the outer conditional owns it
 fn isPostfixNullable(parser: *Parser) Error!bool {
     const next = parser.peekAhead();
     return !isStartOfType(next.tag);
@@ -231,8 +230,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
         .minus,
         .plus,
         => return literal.parseLiteralType(parser),
-        // an escape in the head is template text, not an escaped spelling,
-        // so this must stay outside the `isEscaped` guard below
+        // an escape in the head is template text, so this stays outside the `isEscaped` guard
         .template_head => return literal.parseTemplateLiteralType(parser),
         else => {},
     }
@@ -282,7 +280,6 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-// more qualified name when `.` same line after keyword type
 fn isQualifiedTypeContinuation(parser: *Parser) Error!bool {
     const next = parser.peekAhead();
     return next.tag == .dot and !next.hasLineTerminatorBefore();
@@ -314,7 +311,7 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.addNode(data, token.span);
 }
 
-// only `type Name = intrinsic` uses `TSIntrinsicKeyword`, else normal ref
+// only a bare `type Name = intrinsic` is `TSIntrinsicKeyword`
 pub fn parseTypeAliasBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .intrinsic and !parser.current_token.isEscaped()) {
         const next = parser.peekAhead();
@@ -327,7 +324,6 @@ pub fn parseTypeAliasBody(parser: *Parser) Error!?ast.NodeIndex {
     return parseType(parser);
 }
 
-// postfix starters after a primary type
 fn continuesType(tag: TokenTag) bool {
     return switch (tag) {
         .dot,
@@ -367,7 +363,7 @@ fn parseJSDocNullableOrUnknownType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// `!` then primary so `!T[]` is `(!T)[]`
+// prefix `!` binds tighter than postfix, so `!T[]` is `(!T)[]`
 fn parseJSDocNonNullableType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .logical_not);
 
@@ -398,7 +394,6 @@ fn jsdocNodeData(inner: ast.NodeIndex, comptime kind: JSDocKind, postfix: bool) 
 
 pub fn isStartOfType(tag: TokenTag) bool {
     return switch (tag) {
-        // primitives
         .any,
         .bigint,
         .boolean,
@@ -412,7 +407,6 @@ pub fn isStartOfType(tag: TokenTag) bool {
         .undefined,
         .unknown,
         .void,
-        // literals
         .true,
         .false,
         .string_literal,
@@ -425,13 +419,11 @@ pub fn isStartOfType(tag: TokenTag) bool {
         .template_head,
         .minus,
         .plus,
-        // grouping starters
         .left_paren,
         .left_bracket,
         .left_brace,
         .less_than,
         .left_shift,
-        // prefix ops
         .keyof,
         .unique,
         .readonly,
@@ -444,7 +436,7 @@ pub fn isStartOfType(tag: TokenTag) bool {
         .question,
         .logical_not,
         .spread,
-        // leading separator of an intersection/union type: `& A & B`, `| A | B`
+        // leading `|` or `&`
         .bitwise_and,
         .bitwise_or,
         => true,
@@ -507,8 +499,7 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// `extends` bound after `infer Name`. parsed with conditionals off. may rewind when outer
-// needs `? :`
+// rewinds when the `extends` belongs to an enclosing conditional
 fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .extends) return .null;
 
@@ -522,7 +513,6 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     };
     parser.ts_context.disallow_conditional_types = cp.ts_context.disallow_conditional_types;
 
-    // if this `extends` is really start of `?` branch, rewind and let outer parse it
     const yields_to_conditional =
         !cp.ts_context.disallow_conditional_types and
         parser.current_token.tag == .question;
@@ -564,7 +554,7 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
             const t2 = peek.next();
             return t2.tag == .colon;
         },
-        // object or tuple pattern head might be value param or type tuple
+        // `{` or `[` may head a parameter pattern or a type
         .left_brace, .left_bracket => {
             peek.end();
             return isFunctionTypeAfterPattern(parser);
@@ -586,7 +576,6 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     };
 }
 
-// peek `(pattern` and use follow set to see function type not paren type
 fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
     const cp = parser.checkpoint();
     defer parser.rewind(cp);
@@ -724,9 +713,7 @@ fn tupleElementKind(parser: *Parser, element: ast.NodeIndex) TupleElementKind {
     };
 }
 
-// arity is read left to right, so an element that must be present cannot sit
-// behind one that may be absent. A rest element spreads an unknown number of
-// slots and neither satisfies nor clears the optional that came before it.
+// a rest element neither satisfies nor clears a preceding optional
 fn checkTupleElementOrder(parser: *Parser, element_types: ast.IndexRange) Error!void {
     var seen_optional = false;
 
@@ -743,7 +730,6 @@ fn checkTupleElementOrder(parser: *Parser, element_types: ast.IndexRange) Error!
     }
 }
 
-// `...T` rest, named `label[?]: T`, or a plain type.
 fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .spread) {
         const start = parser.current_token.span.start;
@@ -759,7 +745,7 @@ fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
     return parseTupleElementBody(parser);
 }
 
-// tuple slot rewrites postfix jsdoc `?` to optional type
+// a postfix jsdoc `?` in a tuple slot is an optional element
 fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
     if (isNamedTupleElement(parser)) return parseNamedTupleMember(parser);
 
@@ -849,7 +835,7 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
     else
         try parseEntityName(parser) orelse return null;
 
-    // import type parsed its own `<>` already
+    // an import type parses its own `<>`
     const type_arguments = if (parser.tree.data(expr_name) == .ts_import_type)
         .null
     else
@@ -914,7 +900,6 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// optional second `import()` arg, null when skipped or `, )` empty slot
 fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .comma) return ast.NodeIndex.null;
     try parser.advance() orelse return null;
@@ -930,7 +915,6 @@ fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
     return options;
 }
 
-// dotted tail after import parens
 fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
     const head = try parseQualifiedSegment(
         parser,
@@ -940,7 +924,6 @@ fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
     return extendQualifiedName(parser, head);
 }
 
-// first id or this then qualified tail
 fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
     const first_token = parser.current_token;
     if (!first_token.tag.isIdentifierLike()) {
@@ -964,7 +947,6 @@ fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
     return extendQualifiedName(parser, head);
 }
 
-// one `IdentifierName` step
 fn parseQualifiedSegment(
     parser: *Parser,
     comptime message: []const u8,
@@ -983,7 +965,6 @@ fn parseQualifiedSegment(
     return node;
 }
 
-// nest `TSQualifiedName` for each `.foo`
 pub fn extendQualifiedName(parser: *Parser, head: ast.NodeIndex) Error!?ast.NodeIndex {
     var name = head;
     while (parser.current_token.tag == .dot) {

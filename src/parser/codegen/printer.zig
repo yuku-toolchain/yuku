@@ -14,16 +14,14 @@ const IndexRange = ast.IndexRange;
 const Precedence = @import("../token.zig").Precedence;
 
 const Ctx = struct {
-    /// minimum precedence allowed unparenthesized
     prec: u8 = Precedence.Lowest,
-    /// in a `for` head, where a top-level `in` reads as `for (a in b)`
+    // in a `for` head a top-level `in` would read as `for (a in b)`
     no_in: bool = false,
-    /// in a `new` callee, where a call would bind to the `new`
+    // in a `new` callee a call would bind to the `new`
     no_call: bool = false,
 };
 
-/// Leading-edge position, where `{`/`function`/`class`/`let[` misparses as a
-/// block or declaration.
+// at a leading edge `{`/`function`/`class`/`let[` would misparse as a block or declaration
 const Lead = enum { none, stmt, arrow };
 
 pub const SourceMap = sourcemap.SourceMap;
@@ -38,8 +36,7 @@ pub const Format = enum {
 };
 
 /// Quote style for string literals. `preserve` keeps each literal's source
-/// quote (synthetic nodes get double); `shortest` picks the quote with fewer
-/// escapes, double on a tie.
+/// quote and `shortest` picks the quote with fewer escapes (double on a tie).
 pub const Quotes = enum { preserve, double, single, shortest };
 
 /// Comment passthrough filter.
@@ -48,8 +45,7 @@ pub const Comments = enum {
     none,
     /// Emit every comment.
     all,
-    /// Emit legal headers, JSDoc, and tree-shaking annotations
-    /// (`__PURE__`, `__NO_SIDE_EFFECTS__`, `@`/`#` annotations).
+    /// Emit legal headers, JSDoc, and tree-shaking annotations only.
     some,
     /// Emit `// ...` only.
     line,
@@ -58,7 +54,6 @@ pub const Comments = enum {
 };
 
 /// Codegen options. Transformations are independent flags and compose freely.
-/// Maximum minification: `.minify = true, .format = .compact, .quotes = .shortest`.
 pub const Options = struct {
     /// Drop TypeScript-only syntax.
     strip: bool = false,
@@ -82,8 +77,7 @@ pub const Diagnostic = struct {
     end: u32,
 };
 
-/// Output of a codegen run. Buffers are owned by the allocator passed to
-/// `generate`; free with `deinit`.
+/// Output of a codegen run. Free with `deinit`.
 pub const Result = struct {
     code: []const u8,
     /// Empty when codegen succeeded cleanly.
@@ -125,32 +119,22 @@ const Printer = struct {
     options: Options,
     allocator: Allocator,
     indent_depth: u32 = 0,
-    /// set while emitting a destructuring/assignment target so nested
-    /// array/object literals know to re-paren ts `as`/`satisfies`/
-    /// type-assertion leaves the parser elided.
+    // nested literals in a target must re-paren the ts casts the parser elided
     in_assign_target: bool = false,
-    /// In compact mode, statement terminators are deferred via this flag
-    /// rather than emitted immediately. The next statement flushes it,
-    /// a closing `}` clears it, eliminating the trailing `;` for free.
+    // compact mode defers `;` so a closing `}` can drop it for free
     pending_semi: bool = false,
-    /// Source-map state. Present if `options.source_map != null`.
     sm: ?sourcemap.State = null,
-    /// node currently being emitted, used by container helpers to look
-    /// up inside-comments without threading the index through every call
+    // lets container helpers find inside-comments without threading the index through
     current_idx: NodeIndex = .null,
-    /// a declarator's `!` parked so the binding target emits it next to `?`,
-    /// before its nested type annotation. consumed by `takeDefinite`
+    // a declarator `!` parked so the binding emits it before its type annotation
     definite_pending: bool = false,
-    /// a key whose leading comments `hoistKeyComments` already emitted, so
-    /// `emitLeadingComments` skips them. set and `defer`-cleared by the member
-    /// emitter, so it can't dangle if the key's emit is bypassed (minify).
+    // key whose leading comments hoistKeyComments already emitted
     skip_leading_of: NodeIndex = .null,
-    /// leading edge of a statement or arrow body, cleared by the first real
-    /// token (`writeByte`/`writeStr`) but preserved across comments
+    // cleared by the first real token, preserved across comments
     at_lead: Lead = .none,
-    /// within a directive prologue, where a bare string would reparse as one
+    // a bare string here would reparse as a directive
     in_prologue: bool = false,
-    /// `in` forbidden in the current declarator init (a `for` head)
+    // `in` forbidden in the current declarator init (a `for` head)
     decl_no_in: bool = false,
 
     fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
@@ -206,7 +190,7 @@ const Printer = struct {
 
     inline fn writeByte(self: *Self, b: u8) Error!void {
         self.dropPendingKeywordSpace(b);
-        self.at_lead = .none; // real token ends the leading edge
+        self.at_lead = .none;
         try self.pushByte(b);
         if (comptime source_maps) if (self.sm) |*sm| {
             if (b == '\n') {
@@ -219,15 +203,12 @@ const Printer = struct {
     inline fn writeStr(self: *Self, s: []const u8) Error!void {
         if (s.len == 0) return;
         self.dropPendingKeywordSpace(s[0]);
-        self.at_lead = .none; // real token ends the leading edge
+        self.at_lead = .none;
         try self.pushSlice(s);
         if (comptime source_maps) if (self.sm) |*sm| sm.advance(s);
     }
 
-    /// In compact mode, drop the trailing ` ` from a just-written `keyword `
-    /// when the upcoming byte is punctuation (`else { … }` → `else{…}`,
-    /// `return"x"` → `return"x"`). Preserved when the next byte extends an
-    /// identifier (`return foo`, `case 5:`).
+    // keywords write their trailing space speculatively, compact mode drops it before punctuation
     inline fn dropPendingKeywordSpace(self: *Self, next: u8) void {
         if (self.pretty()) return;
         const items = self.code.items;
@@ -248,20 +229,17 @@ const Printer = struct {
         if (self.pretty()) try self.writeByte(' ');
     }
 
-    /// `, ` list separator (just `,` in compact mode).
     inline fn comma(self: *Self) Error!void {
         try self.writeByte(',');
         try self.space();
     }
 
-    /// ` = ` with surrounding spaces (just `=` in compact mode).
     inline fn printEq(self: *Self) Error!void {
         try self.space();
         try self.writeByte('=');
         try self.space();
     }
 
-    /// Emits `items` as a `, `-separated list.
     fn emitList(self: *Self, items: IndexRange) Error!void {
         for (self.tree.extra(items), 0..) |x, i| {
             if (i > 0) try self.comma();
@@ -269,16 +247,13 @@ const Printer = struct {
         }
     }
 
-    /// Trailing `?`/`!`/type-annotation shared by binding identifiers and
-    /// array/object patterns.
     fn printBindingSuffix(self: *Self, optional: bool, definite: bool, annotation: NodeIndex) Error!void {
         if (!self.options.strip) if (optional) try self.writeByte('?');
         if (definite) try self.writeByte('!');
         try self.emit(annotation);
     }
 
-    /// takes the parked `!`, clearing it so it never leaks into a nested
-    /// binding (`let {x}!` keeps `!` after `}`)
+    // cleared so the parked `!` never leaks into a nested binding
     inline fn takeDefinite(self: *Self) bool {
         if (self.options.strip) return false;
         const d = self.definite_pending;
@@ -286,7 +261,6 @@ const Printer = struct {
         return d;
     }
 
-    // pretty-mode-only break with indent (no-op in compact)
     fn newline(self: *Self) Error!void {
         if (!self.pretty()) return;
         try self.breakLine();
@@ -301,7 +275,6 @@ const Printer = struct {
         self.code.shrinkRetainingCapacity(pos);
     }
 
-    /// Snapshot of the state needed to undo a speculative `tryEmit`.
     const Cursor = struct {
         code: usize,
         sm: ?sourcemap.State.Snapshot,
@@ -328,8 +301,7 @@ const Printer = struct {
         return start > 0 and self.code.items[start - 1] != tail;
     }
 
-    /// Emits `idx` in a position where a statement is grammatically required.
-    /// Substitutes an empty statement when the emit produces no output.
+    // a required statement slot gets `;` when the emit strips to nothing
     fn emitStmt(self: *Self, idx: NodeIndex) Error!void {
         if (!try self.tryEmit(idx)) try self.writeByte(';');
     }
@@ -419,8 +391,7 @@ const Printer = struct {
         if (wrap) try self.writeByte(')');
     }
 
-    /// Precedence of `idx` as an operand. Primaries return `Grouping` and
-    /// never wrap. Minify rewrites are accounted for so they regroup right.
+    // minify rewrites (`true` as `!0`) are accounted for so they regroup right
     fn precedenceOf(self: *const Self, idx: NodeIndex) u8 {
         return switch (self.nodeData(idx)) {
             .sequence_expression => Precedence.Comma,
@@ -444,20 +415,10 @@ const Printer = struct {
             .ts_instantiation_expression,
             => Precedence.Call,
             .boolean_literal => if (self.options.minify) Precedence.Unary else Precedence.Grouping,
-            // minify rewrites `undefined` and `Infinity`
-            .identifier_reference => |id| blk: {
-                if (!self.options.minify or self.in_assign_target) break :blk Precedence.Grouping;
-                const s = self.tree.string(id.name);
-                if (std.mem.eql(u8, s, "undefined")) break :blk Precedence.Unary;
-                if (std.mem.eql(u8, s, "Infinity")) break :blk Precedence.Multiplicative;
-                break :blk Precedence.Grouping;
-            },
             else => Precedence.Grouping,
         };
     }
 
-    /// Whether `idx` needs parentheses in slot `ctx`, by precedence plus the
-    /// positional rules the grammar forces regardless.
     fn needsParens(self: *const Self, idx: NodeIndex, ctx: Ctx) bool {
         const data = self.nodeData(idx);
 
@@ -552,15 +513,13 @@ const Printer = struct {
     }
 
     fn emitLeadingComments(self: *Self, idx: NodeIndex) Error!void {
-        if (idx == self.skip_leading_of) return; // already hoisted, see hoistKeyComments
+        if (idx == self.skip_leading_of) return;
         for (self.tree.commentsOf(idx)) |c| {
             if (c.position == .before and self.allowComment(c)) try self.writeLeading(c);
         }
     }
 
-    /// emits a class-member key's leading comments before the member's
-    /// modifiers, so a comment cannot land between a no-line-terminator
-    /// modifier (`get`/`set`/`async`/`accessor`) and the key and split it
+    // a comment between a no-line-terminator modifier (`get`/`async`) and its key would split them
     fn hoistKeyComments(self: *Self, key: NodeIndex) Error!void {
         if (self.options.comments == .none) return;
         if (key == .null) return;
@@ -571,8 +530,7 @@ const Printer = struct {
     fn emitTrailingComments(self: *Self, idx: NodeIndex) Error!void {
         for (self.tree.commentsOf(idx)) |c| {
             if (c.position == .after and self.allowComment(c)) {
-                // flush a deferred `;` first, so it lands before the comment
-                // rather than after it where a reparse would re-home it
+                // a deferred `;` landing after the comment would re-home it on reparse
                 try self.flushSemi();
                 try self.writeTrailing(c);
             }
@@ -580,7 +538,6 @@ const Printer = struct {
     }
 
     fn writeLeading(self: *Self, c: ast.AttachedComment) Error!void {
-        // same-line block (`function /* x */ foo`) stays inline
         if (c.type == .block and c.same_line) {
             const last = self.lastByte();
             if (self.pretty() and last != 0 and last != ' ' and last != '\n') {
@@ -590,8 +547,7 @@ const Printer = struct {
             if (self.pretty()) try self.writeByte(' ');
             return;
         }
-        // everything else lands on its own line above the host so jsdoc
-        // stays resolvable by language servers
+        // its own line above the host keeps jsdoc resolvable by language servers
         try self.breakLine();
         try self.writeCommentBody(c);
         try self.breakLine();
@@ -622,10 +578,7 @@ const Printer = struct {
         }
     }
 
-    // writes a block comment's interior. jsdoc-shaped bodies have their
-    // continuation lines re-indented under the reformatted `/*`, so the
-    // star column survives a change of nesting depth. anything else is
-    // emitted verbatim.
+    // jsdoc bodies are re-indented so the star column survives a change of nesting depth
     fn writeBlockBody(self: *Self, value: []const u8) Error!void {
         if (!self.pretty() or !utils.isJsdocBody(value)) {
             try self.pushSlice(value);
@@ -633,17 +586,15 @@ const Printer = struct {
             return;
         }
         var it = std.mem.splitScalar(u8, value, '\n');
-        try self.writeStr(it.first()); // first line follows `/*`
+        try self.writeStr(it.first());
         while (it.next()) |line| {
-            try self.breakLine(); // newline at the current indent
-            try self.writeByte(' '); // align the star under the opener
+            try self.breakLine();
+            try self.writeByte(' ');
             try self.writeStr(std.mem.trimStart(u8, line, " \t"));
         }
     }
 
-    // idempotent line break with indent in pretty mode. strips stale
-    // trailing indent so repeated calls collapse, and re-indents at the
-    // current depth. no-op at the very start of the output.
+    // idempotent, repeated calls collapse into one break at the current depth
     fn breakLine(self: *Self) Error!void {
         var i = self.code.items.len;
         while (i > 0 and self.code.items[i - 1] == ' ') i -= 1;
@@ -665,11 +616,10 @@ const Printer = struct {
         };
     }
 
-    // records a source-map segment for idx, skipping synthetic spans
     fn recordMapping(self: *Self, idx: NodeIndex) Error!void {
         const sm = &self.sm.?;
         const span = self.tree.span(idx);
-        if (span.start == 0 and span.end == 0) return;
+        if (span.start == 0 and span.end == 0) return; // synthetic
 
         const orig = sm.resolve(span.start);
 
@@ -696,10 +646,8 @@ const Printer = struct {
         if (self.options.comments != .none) try self.emitInsideComments(self.current_idx);
     }
 
-    /// Emits a list of statements, flushing the deferred `;` between each.
-    /// On strip-to-nothing, rewinds the buffer and restores `pending_semi`
-    /// so the preceding statement's terminator is not lost. `prologue` marks
-    /// a program or function body whose leading string statements are directives.
+    // a statement that strips to nothing is rewound with pending_semi restored
+    // prologue marks a body whose leading string statements are directives
     fn printStmtList(self: *Self, items: IndexRange, prologue: bool) Error!void {
         var first = true;
         var prol = prologue;
@@ -741,7 +689,6 @@ const Printer = struct {
         try self.writeByte('}');
     }
 
-    // emits inside-host comments between an empty container's delimiters
     fn emitInsideComments(self: *Self, idx: NodeIndex) Error!void {
         var any = false;
         for (self.tree.commentsOf(idx)) |c| {
@@ -759,13 +706,10 @@ const Printer = struct {
         }
     }
 
-    /// Statement-terminator `;`. In compact mode, defers via `pending_semi`
-    /// so the next `flushSemi` writes it or a closing `}` drops it for free.
     inline fn softSemi(self: *Self) Error!void {
         if (self.pretty()) try self.writeByte(';') else self.pending_semi = true;
     }
 
-    /// Emits any deferred `;` and clears the flag.
     inline fn flushSemi(self: *Self) Error!void {
         if (self.pending_semi) {
             self.pending_semi = false;
@@ -788,8 +732,7 @@ const Printer = struct {
     }
 
     fn emit_directive(self: *Self, d: *const ast.Directive) Error!void {
-        // a directive's meaning depends on its exact code units (an escaped
-        // `"use strict"` is not one), so emit the original lexeme verbatim
+        // an escaped `"use strict"` is not a directive, so the raw lexeme must survive
         switch (self.nodeData(d.expression)) {
             .string_literal => |lit| try self.writeString(lit.raw),
             else => try self.emit(d.expression),
@@ -798,9 +741,7 @@ const Printer = struct {
     }
 
     fn emit_empty_statement(self: *Self, _: *const ast.EmptyStatement) Error!void {
-        // direct `;` (not deferred): when this is the body of an outer
-        // control-flow construct like `if(x);`, `for(;;);`, or `lbl:;`,
-        // the parser requires the `;` to materialize the body.
+        // not deferred, `if(x);` needs the `;` to materialize the body
         try self.writeByte(';');
     }
 
@@ -852,9 +793,7 @@ const Printer = struct {
         try self.softSemi();
     }
 
-    /// Emits the space-prefixed operand of a newline-restricted keyword
-    /// (`return`/`throw`/`yield`). If a leading comment broke it onto its own
-    /// line, ASI would sever it, so it is re-emitted parenthesized.
+    // asi would sever a `return`/`throw`/`yield` operand a comment broke onto its own line
     fn emitRestrictedArg(self: *Self, idx: NodeIndex, prec: u8) Error!void {
         if (idx == .null) return;
         const cur = self.cursor();
@@ -967,7 +906,7 @@ const Printer = struct {
         if (s.await) try self.writeStr(" await");
         try self.space();
         try self.writeByte('(');
-        // `for (async of …)` is forbidden, disambiguates from `for await`.
+        // `for (async of …)` is forbidden, it would read as `for await`
         const wrap_async = !s.await and isBareAsyncIdentifier(self.tree, s.left);
         if (wrap_async) try self.writeByte('(');
         try self.printForLeft(s.left);
@@ -1069,8 +1008,7 @@ const Printer = struct {
     }
 
     fn emit_variable_declarator(self: *Self, d: *const ast.VariableDeclarator) Error!void {
-        // park `!` so the binding emits it as `let x!: T`, not `let x: T!`.
-        // `d.id` is always a binding pattern, whose takeDefinite() consumes it.
+        // parked so the binding emits `let x!: T`, not `let x: T!`
         if (!self.options.strip) self.definite_pending = d.definite;
         try self.emit(d.id);
         std.debug.assert(!self.definite_pending);
@@ -1117,8 +1055,7 @@ const Printer = struct {
             try self.space();
             try self.writeStr(op);
             try self.space();
-            // guard token merges like `++`, `--`, `//` comment, `<!--`. a
-            // wrapped right operand starts with `(` and cannot merge
+            // a bare right operand could merge into `++`, `--`, `//` or `<!--`
             if (!self.pretty() and op.len == 1 and !self.needsParens(e.right, right_ctx)) {
                 switch (op[0]) {
                     '+', '-', '/' => if (leftmostByteIs(self.tree, e.right, op[0])) {
@@ -1167,7 +1104,7 @@ const Printer = struct {
         const op = e.operator.toString();
         try self.writeStr(op);
         if (utils.isWordOp(op)) try self.writeByte(' ');
-        // `+ +x` would print as `++x` and re-lex as a prefix update.
+        // `+ +x` would print as `++x` and re-lex as a prefix update
         if (op.len == 1 and (op[0] == '+' or op[0] == '-')) {
             if (leftmostByteIs(self.tree, e.argument, op[0])) try self.writeByte(' ');
         }
@@ -1194,15 +1131,13 @@ const Printer = struct {
         try self.emitExpr(e.right, .{ .prec = Precedence.Assignment, .no_in = ctx.no_in });
     }
 
-    /// `x!=…` would re-lex `!` (non-null assertion) into `!=`. pad if needed.
+    // `x!=…` would re-lex the non-null `!` into `!=`
     inline fn separateBangFromAssign(self: *Self) Error!void {
         if (self.pretty()) return;
         if (self.lastByte() == '!') try self.writeByte(' ');
     }
 
-    /// emits `idx` as an assignment/destructuring target, wrapping a bare
-    /// ts `as`/`satisfies`/type-assertion in parens (the parser elides
-    /// them, the grammar doesn't).
+    // a bare ts cast as a target needs the parens the parser elided
     fn emitAssignTarget(self: *Self, idx: NodeIndex) Error!void {
         if (idx == .null) return;
         const prev = self.in_assign_target;
@@ -1223,8 +1158,7 @@ const Printer = struct {
         if (self.in_assign_target) try self.emitAssignTarget(idx) else try self.emitValue(idx);
     }
 
-    /// Emits an element-slot expression (argument, array element, property
-    /// value, default), an AssignmentExpression, so a comma sequence wraps.
+    // assignment precedence so a comma sequence wraps
     inline fn emitValue(self: *Self, idx: NodeIndex) Error!void {
         try self.emitExpr(idx, .{ .prec = Precedence.Assignment });
     }
@@ -1246,8 +1180,7 @@ const Printer = struct {
     }
 
     fn emit_object_expression(self: *Self, e: *const ast.ObjectExpression) Error!void {
-        // re-set per-property so a value's recursion can't strip the flag
-        // from later siblings.
+        // re-set per property so a value's recursion can't strip the flag from later siblings
         const in_target = self.in_assign_target;
         defer self.in_assign_target = in_target;
 
@@ -1301,7 +1234,6 @@ const Printer = struct {
         const head_start = self.mark();
         try self.emitExpr(e.object, .{ .prec = Precedence.Call, .no_call = ctx.no_call });
 
-        // `obj["foo"]` → `obj.foo` when the key names a valid identifier.
         const static_key: ?[]const u8 = if (self.options.minify)
             (if (e.computed) simpleStringKey(self.tree, e.property) else null)
         else
@@ -1313,8 +1245,7 @@ const Printer = struct {
             try self.emit(e.property);
             try self.writeByte(']');
         } else {
-            // a bare integer head would eat the member `.` as a fraction dot.
-            // pretty pads (`1 .x`, keeping `raw`), compact doubles it (`1..x`)
+            // `1.x` would lex the `.` as a fraction dot, so pad (`1 .x`) or double (`1..x`)
             const head = self.code.items[head_start..];
             if (!e.optional and isBareIntegerHead(head))
                 try self.writeByte(if (self.pretty()) ' ' else '.');
@@ -1449,7 +1380,6 @@ const Printer = struct {
         if (start < s.len) try self.writeStr(s[start..]);
     }
 
-    /// writes `\uXXXX` for a 16-bit code unit
     fn writeUnicodeEscape(self: *Self, cp: u32) Error!void {
         const hex = "0123456789abcdef";
         const buf = [_]u8{
@@ -1473,6 +1403,9 @@ const Printer = struct {
         var src_buf: [128]u8 = undefined;
         const cleaned = utils.stripUnderscores(raw, &src_buf) orelse return self.writeStr(raw);
         if (lit.kind != .decimal) return self.writeStr(cleaned);
+        // `010` is legacy octal and `08` sloppy decimal, so the zero stays whatever `kind` says
+        if (cleaned.len > 1 and cleaned[0] == '0' and std.ascii.isDigit(cleaned[1]))
+            return self.writeStr(cleaned);
 
         var dst_buf: [128]u8 = undefined;
         try self.writeStr(utils.shortestDecimal(cleaned, &dst_buf));
@@ -1502,8 +1435,6 @@ const Printer = struct {
         try self.printTemplate(lit.quasis, lit.expressions);
     }
 
-    /// Emits a `` `…${…}…` `` template; `subs` are the expressions (value
-    /// template) or types (type template) interleaved between `quasis`.
     fn printTemplate(self: *Self, quasis: IndexRange, subs: IndexRange) Error!void {
         try self.writeByte('`');
         const xs = self.tree.extra(subs);
@@ -1519,13 +1450,8 @@ const Printer = struct {
     }
 
     fn emit_template_element(self: *Self, el: *const ast.TemplateElement) Error!void {
-        // print/strip emit the raw verbatim to keep the exact escapes (the
-        // tag of a tagged template sees them). minify recomputes from cooked,
-        // as do synthetic nodes with no raw.
-        if (!self.options.minify) {
-            const raw = self.tree.string(el.raw);
-            if (raw.len != 0) return self.writeStr(raw);
-        }
+        const raw = self.tree.string(el.raw);
+        if (raw.len != 0) return self.writeStr(raw);
         const s = self.tree.string(el.cooked);
         var i: usize = 0;
         var start: usize = 0;
@@ -1562,13 +1488,6 @@ const Printer = struct {
     }
 
     fn emit_identifier_reference(self: *Self, id: *const ast.IdentifierReference) Error!void {
-        if (self.options.minify) {
-            if (!self.in_assign_target) {
-                const name = self.tree.string(id.name);
-                if (std.mem.eql(u8, name, "undefined")) return self.writeStr("void 0");
-                if (std.mem.eql(u8, name, "Infinity")) return self.writeStr("1/0");
-            }
-        }
         try self.writeString(id.name);
     }
 
@@ -1671,21 +1590,21 @@ const Printer = struct {
         }
     }
 
+    // computed `["__proto__"]` defines an own property, bare `__proto__` sets the prototype
     fn printObjectKey(self: *Self, key: NodeIndex, computed: bool) Error!void {
         if (self.options.minify) {
-            if (simpleStringKey(self.tree, key)) |s| return self.writeStr(s);
+            if (simpleStringKey(self.tree, key)) |s| {
+                const proto_clash = computed and std.mem.eql(u8, s, "__proto__");
+                if (!proto_clash) return self.writeStr(s);
+            }
         }
         try self.printPropertyKey(key, computed);
     }
 
-    /// class member key. non-computed string keys collapse to bare
-    /// identifiers the same way object keys do. computed `["…"]` collapses
-    /// are gated to avoid the cases ECMA reinterprets or rejects.
-    ///   `["constructor"]` on a non-static method becomes the actual
-    ///     constructor (different `kind`)
-    ///   `["constructor"]` on a non-static get/set is a SyntaxError per ECMA
-    ///   `["constructor"]` on a field is a SyntaxError per ECMA
-    ///   `["prototype"]` on any static member is a SyntaxError per ECMA
+    // computed collapses ECMA reinterprets or rejects are gated
+    //   `["constructor"]` on a non-static method becomes the real constructor
+    //   `["constructor"]` on a non-static get/set or a field is a SyntaxError
+    //   `["prototype"]` on any static member is a SyntaxError
     fn printClassKey(
         self: *Self,
         key: NodeIndex,
@@ -1759,8 +1678,7 @@ const Printer = struct {
         try self.writeByte(')');
     }
 
-    /// writes `, ` then emits `idx`. rolls back the separator if emit
-    /// produced no output. returns the new value of `first`.
+    // the separator is rolled back when idx emits nothing, returns the new first
     fn emitSeparated(self: *Self, idx: NodeIndex, first: bool) Error!bool {
         const cur = self.cursor();
         if (!first) {
@@ -1825,7 +1743,6 @@ const Printer = struct {
             self.pending_semi = false;
             try self.newline();
         } else if (self.options.comments != .none) {
-            // no member emitted, but the empty body may still hold comments
             try self.emitInsideComments(self.current_idx);
         }
         try self.writeByte('}');
@@ -1909,13 +1826,11 @@ const Printer = struct {
     fn printDecorators(self: *Self, decs: IndexRange) Error!void {
         const list = self.tree.extra(decs);
         if (list.len == 0) return;
-        // capture the parent node's mapping before decorator content
-        // writes its own and re-record it after, so the text that
-        // follows the decorators still maps back to the parent.
+        // decorator content overwrites the parent's mapping, so it is re-recorded after
         const carry: ?sourcemap.Segment = if (comptime source_maps) (if (self.sm) |*sm| sm.lastMapping() else null) else null;
         for (list, 0..) |d, i| {
             try self.emit(d);
-            // `@a.b class` would fuse to `@a.bclass` without a separator.
+            // `@a.b class` would fuse to `@a.bclass` without a separator
             if (self.pretty()) {
                 try self.newline();
             } else if (i + 1 == list.len) {
@@ -2035,7 +1950,7 @@ const Printer = struct {
 
         const cur = self.cursor();
         try self.writeStr("export");
-        // for `export type Foo = …`, the declaration emits its own `type`.
+        // for `export type Foo = …` the declaration emits its own `type`
         if (d.export_kind == .type and d.declaration == .null) try self.writeStr(" type");
         if (d.declaration != .null) {
             try self.writeByte(' ');
@@ -2128,19 +2043,19 @@ const Printer = struct {
     }
 
     fn emit_ts_type_reference(self: *Self, t: *const ast.TSTypeReference) Error!void {
-        try self.emitEntityName(t.type_name);
+        try self.emit(t.type_name);
         try self.emit(t.type_arguments);
     }
 
     fn emit_ts_qualified_name(self: *Self, q: *const ast.TSQualifiedName) Error!void {
-        try self.emitEntityName(q.left);
+        try self.emit(q.left);
         try self.writeByte('.');
-        try self.emitEntityName(q.right);
+        try self.emit(q.right);
     }
 
     fn emit_ts_type_query(self: *Self, q: *const ast.TSTypeQuery) Error!void {
         try self.writeStr("typeof ");
-        try self.emitEntityName(q.expr_name);
+        try self.emit(q.expr_name);
         try self.emit(q.type_arguments);
     }
 
@@ -2155,25 +2070,9 @@ const Printer = struct {
         try self.writeByte(')');
         if (t.qualifier != .null) {
             try self.writeByte('.');
-            try self.emitEntityName(t.qualifier);
+            try self.emit(t.qualifier);
         }
         try self.emit(t.type_arguments);
-    }
-
-    /// emits `idx` as a TS entity name (Identifier | QualifiedName | this |
-    /// ImportType). Suppresses `undefined`/`Infinity` rewrites that the
-    /// expression-context emitter applies, since type queries and type
-    /// references require a bare entity name.
-    fn emitEntityName(self: *Self, idx: NodeIndex) Error!void {
-        if (idx == .null) return;
-        const data = self.nodeData(idx);
-        switch (data) {
-            .identifier_reference => |id| {
-                if (comptime source_maps) if (self.sm != null) try self.recordMapping(idx);
-                try self.writeString(id.name);
-            },
-            else => try self.emit(idx),
-        }
     }
 
     fn emit_ts_type_parameter(self: *Self, p: *const ast.TSTypeParameter) Error!void {
@@ -2191,7 +2090,6 @@ const Printer = struct {
         }
     }
 
-    /// `<…>` comma-separated type parameter/argument list.
     fn printAngleList(self: *Self, params: IndexRange) Error!void {
         try self.writeByte('<');
         try self.emitList(params);
@@ -2213,10 +2111,7 @@ const Printer = struct {
     }
 
     fn emit_ts_literal_type(self: *Self, t: *const ast.TSLiteralType) Error!void {
-        // in a type position `true`/`false` are literal types, not expressions:
-        // the minify-mode `!0`/`!1` shorthand is invalid syntax here. emit the
-        // keyword form directly and let everything else (string/number/bigint/
-        // template) fall through to its normal emitter.
+        // `true`/`false` are literal types here, the minify `!0`/`!1` shorthand is invalid syntax
         switch (self.nodeData(t.literal)) {
             .boolean_literal => |b| try self.writeStr(if (b.value) "true" else "false"),
             else => try self.emit(t.literal),
@@ -2305,9 +2200,7 @@ const Printer = struct {
         try self.emitTypeList(t.types, '&');
     }
 
-    /// emits a `|`- or `&`-separated type list. a single-member list only
-    /// comes from a leading operator (`type X = | A`), re-emitted so reparse
-    /// keeps the union/intersection wrapper instead of collapsing to `A`
+    // a single-member list comes from a leading operator (`type X = | A`), kept so reparse keeps the wrapper
     fn emitTypeList(self: *Self, types: IndexRange, comptime op: u8) Error!void {
         const list = self.tree.extra(types);
         if (list.len == 1) {
@@ -2366,7 +2259,6 @@ const Printer = struct {
         try self.printArrowType(t.type_parameters, t.params, t.return_type);
     }
 
-    /// `<T>(params) => Return` shared by function and constructor types.
     fn printArrowType(self: *Self, type_parameters: NodeIndex, params: NodeIndex, return_type: NodeIndex) Error!void {
         try self.emit(type_parameters);
         try self.emit(params);
@@ -2376,9 +2268,7 @@ const Printer = struct {
         try self.emitUnwrappedType(return_type);
     }
 
-    /// strips the `ts_type_annotation` wrapper before emitting. used for
-    /// arrow-form return types and `is`-predicates where the wrapper's
-    /// leading `:` would be wrong.
+    // the annotation wrapper's leading `:` is wrong for arrow return types and `is` predicates
     fn emitUnwrappedType(self: *Self, idx: NodeIndex) Error!void {
         if (idx == .null) return;
         const data = self.nodeData(idx);
@@ -2479,7 +2369,6 @@ const Printer = struct {
         try self.printSignatureTail(s.type_parameters, s.params, s.return_type);
     }
 
-    /// `<T>(params): Return;` tail shared by call/construct/method signatures.
     fn printSignatureTail(self: *Self, type_parameters: NodeIndex, params: NodeIndex, return_type: NodeIndex) Error!void {
         try self.emit(type_parameters);
         try self.emit(params);
@@ -2512,7 +2401,6 @@ const Printer = struct {
         try self.softSemi();
     }
 
-    /// emits a `{ … }` block of ts signatures (type literal or interface body).
     fn printSignatureBody(self: *Self, items: IndexRange) Error!void {
         try self.writeByte('{');
         if (self.tree.extra(items).len > 0) {
@@ -2546,8 +2434,6 @@ const Printer = struct {
         if (cond) try self.writeByte(')');
     }
 
-    /// Whether `idx`'s leftmost type is a bare `intrinsic` reference, distinct
-    /// from the keyword.
     fn isLeftmostIntrinsicReference(self: *const Self, idx: NodeIndex) bool {
         return switch (self.nodeData(idx)) {
             .ts_type_reference => |r| r.type_arguments == .null and switch (self.nodeData(r.type_name)) {
@@ -2638,9 +2524,7 @@ const Printer = struct {
         if (d.declare) try self.writeStr("declare ");
         try self.writeStr(d.kind.toString());
         try self.writeByte(' ');
-        // route through emitEntityName so the minify-mode `undefined ->
-        // void 0` rewrite never fires on a declaration name.
-        try self.emitEntityName(d.id);
+        try self.emit(d.id);
         if (d.body != .null) {
             try self.space();
             try self.emit(d.body);
@@ -2655,7 +2539,7 @@ const Printer = struct {
 
     fn emit_ts_global_declaration(self: *Self, d: *const ast.TSGlobalDeclaration) Error!void {
         if (d.declare) try self.writeStr("declare ");
-        try self.emitEntityName(d.id);
+        try self.emit(d.id);
         try self.space();
         try self.emit(d.body);
     }
@@ -2674,7 +2558,7 @@ const Printer = struct {
 
     fn emit_ts_type_assertion(self: *Self, e: *const ast.TSTypeAssertion) Error!void {
         try self.writeByte('<');
-        // `<<T>` would re-lex as `<<` (left shift).
+        // `<<T>` would re-lex as `<<`
         if (typeStartsWithLeftAngle(self.tree, e.type_annotation)) try self.writeByte(' ');
         try self.emit(e.type_annotation);
         try self.writeByte('>');
@@ -2801,8 +2685,7 @@ const Printer = struct {
         try self.emit(a.name);
         if (a.value != .null) {
             try self.writeByte('=');
-            // jsx attribute strings have no escape processing, so emit the
-            // raw lexeme verbatim rather than re-escaping the cooked value
+            // jsx attribute strings have no escape processing, so the raw lexeme goes out verbatim
             switch (self.nodeData(a.value)) {
                 .string_literal => |lit| try self.writeString(lit.raw),
                 else => try self.emit(a.value),
@@ -2903,13 +2786,8 @@ fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     return std.mem.eql(u8, tree.string(an), tree.string(bn));
 }
 
-// whether an object property / binding property can stay in shorthand form
-// (`{ name }`) at emit time. the parser sets `shorthand = true` when the
-// source was written that way, but a later rename pass (the mangler) may
-// have changed the value-side binding without touching the key. at that
-// point `{ name: a }` is required to preserve which property is being
-// read/destructured. peels through `assignment_pattern` so `{ name = 1 }`
-// is still considered shorthand when the binding kept the same name.
+// the mangler may rename the value binding without touching the key, then `{ name: a }` is required
+// peels assignment_pattern so `{ name = 1 }` still counts
 fn shorthandStillValid(tree: *const Tree, key: NodeIndex, value: NodeIndex) bool {
     var v = value;
     if (tree.data(v) == .assignment_pattern) v = tree.data(v).assignment_pattern.left;
@@ -2970,7 +2848,7 @@ fn typeStartsWithLeftAngle(tree: *const Tree, idx: NodeIndex) bool {
     };
 }
 
-/// Whether `??` is mixed with `&&`/`||`, which must be parenthesized.
+// `??` mixed with `&&`/`||` must be parenthesized
 fn logicalMismatch(tree: *const Tree, parent: ast.LogicalOperator, child: NodeIndex) bool {
     const child_op = switch (tree.data(child)) {
         .logical_expression => |l| l.operator,
@@ -2979,9 +2857,6 @@ fn logicalMismatch(tree: *const Tree, parent: ast.LogicalOperator, child: NodeIn
     return (parent == .nullish_coalescing) != (child_op == .nullish_coalescing);
 }
 
-/// returns the decoded value of `idx` if it's a string literal whose
-/// contents form a valid IdentifierName. used by the `obj["foo"]` to
-/// `obj.foo` and `{"foo": x}` to `{foo: x}` rewrites.
 fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
     const lit = switch (tree.data(idx)) {
         .string_literal => |l| l,
@@ -2991,17 +2866,13 @@ fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
     return if (utils.isIdentifierName(s)) s else null;
 }
 
-/// Whether an emitted head is a bare integer (digit-led, only digits and `_`)
-/// that would fuse with a following `.` into a float.
 fn isBareIntegerHead(head: []const u8) bool {
     if (head.len == 0 or !std.ascii.isDigit(head[0])) return false;
     for (head[1..]) |c| if (!std.ascii.isDigit(c) and c != '_') return false;
     return true;
 }
 
-// true when the last token emitted for `idx` closes a `as`/`satisfies` type. a
-// following `<` would then bind as that type's argument list, so the caller
-// must parenthesize. recurses down the right edge since the cast can be nested.
+// a `<` after a trailing `as`/`satisfies` type would bind as its argument list
 fn endsWithTsCast(tree: *const Tree, idx: NodeIndex) bool {
     return switch (tree.data(idx)) {
         .ts_as_expression, .ts_satisfies_expression => true,

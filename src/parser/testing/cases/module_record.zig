@@ -1,5 +1,4 @@
-//! Module records. Every import and export form, resolved against the
-//! semantic model.
+//! Module records for every import and export form.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -233,7 +232,6 @@ test "exported declarations expose every bound name" {
         try testing.expectEqual(want.type_only, record.type_only);
         try testing.expectEqualStrings("", c.str(record.specifier));
         try testing.expectEqual(try c.symbolIdOf(want.name), record.symbol);
-        // the record points at the binding identifier naming it
         try testing.expect(c.analyzed.tree.data(record.node) == .binding_identifier);
     }
 }

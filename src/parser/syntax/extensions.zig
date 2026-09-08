@@ -5,7 +5,7 @@ const Error = @import("../parser.zig").Error;
 
 const expressions = @import("expressions.zig");
 
-/// parses a contiguous run of `@expression` decorators (possibly empty).
+/// Parses a possibly empty run of `@expression` decorators.
 pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_decorators.begin();
     defer parser.scratch_decorators.reset(checkpoint);

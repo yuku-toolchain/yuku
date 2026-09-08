@@ -8,8 +8,7 @@ const util = @import("util");
 const statements = @import("syntax/statements.zig");
 const comments = @import("comments.zig");
 
-/// How comments are collected: not at all, as a flat list (`Tree.comments`),
-/// attached to host nodes (`Tree.commentsOf`), or both.
+/// How comments are collected. Not at all, as a flat list, attached to host nodes, or both.
 pub const CommentMode = enum {
     none,
     flat,
@@ -28,20 +27,13 @@ pub const CommentMode = enum {
 };
 
 pub const Options = struct {
-    /// Source type determines how the code is parsed and evaluated.
-    /// Defaults to `.module` (ES module semantics, strict mode enabled).
-    /// `.commonjs` parses script code whose top level behaves like a
-    /// function body (top-level `return`, `new.target`, `using`).
+    /// How the source is parsed. `.commonjs` treats the top level as a function body.
     source_type: ast.SourceType = .module,
-    /// Language variant determines which syntax features are enabled.
-    /// Defaults to `.js` (plain JavaScript).
+    /// Language variant that decides which syntax features are enabled.
     lang: ast.Lang = .js,
-    /// When true (default), parenthesized expressions are represented as
-    /// `ParenthesizedExpression` nodes in the AST. When false,
-    /// parentheses are stripped and only the inner expression is kept.
+    /// Whether parenthesized expressions are kept as `ParenthesizedExpression` nodes.
     preserve_parens: bool = true,
-    /// Whether and how comments are collected. Defaults to `.flat`: comments
-    /// land in the flat `tree.comments` list with no per-node attachment.
+    /// Whether and how comments are collected.
     comments: CommentMode = .flat,
 };
 
@@ -54,37 +46,29 @@ pub const Context = packed struct {
     await: bool = false,
     /// `[Return]`
     @"return": bool = false,
-    /// body of `if`, `while`, `for`, `with`, or a labelled statement,
-    /// where lexical declarations (`let`, `const`) need a block.
+    /// Body of `if`, `while`, `for`, `with`, or a labelled statement, where lexical
+    /// declarations need a block.
     single_statement: bool = false,
-    /// directive prologue at the start of a script, module, function,
-    /// or module-block body.
+    /// Inside a directive prologue.
     directive_prologue: bool = false,
 };
 
 pub const TsContext = packed struct {
-    /// inside any `declare`-prefixed declaration. nested declarations
-    /// inherit ambient-context rules (body-less functions, initializer-
-    /// less `const`, etc).
+    /// Inside a `declare`-prefixed declaration, where nested declarations inherit ambient rules.
     ambient: bool = false,
-    /// trailing `?` after a type does not start a new conditional.
+    /// A trailing `?` after a type does not start a new conditional.
     disallow_conditional_types: bool = false,
-    /// a speculatively parsed arrow with a return type must be followed
-    /// by an outer `:` to commit. set to `false` only while the conditional
-    /// expression re-parses its consequent after a `(x): T => ...` arrow ate
-    /// the ternary `:`. read by `tryParseArrow` in ts/arrows.zig.
+    /// Whether a speculatively parsed arrow may carry a return type. Cleared only while a
+    /// conditional expression re-parses its consequent after a `(x): T => ...` arrow ate
+    /// the ternary `:`.
     allow_arrow_return_type: bool = true,
 };
 
 const ParserState = struct {
-    /// Tracks if the cover (array or object) we are parsing has a trailing comma
-    /// value is the start index of the cover
+    // start index of the cover that had a trailing comma
     cover_has_trailing_comma: ?u32 = null,
-    /// Tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
-    /// Target node whose paren the `.assignable` conversion stripped
-    /// (`(a) = b`). Legal there, a syntax error if the node later lands
-    /// in binding position. See `expressionToPattern`.
+    // `(a) = b` is legal, but the same node is a syntax error in binding position
     stripped_paren: ?ast.NodeIndex = null,
 };
 
@@ -101,20 +85,15 @@ pub const Parser = struct {
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
     current_token: Token,
-    /// end position of the most recently consumed token. useful for span
-    /// computations when a closing delimiter has been eaten but the parent
-    /// node's span must stop there (not at the next token, which may lie
-    /// past whitespace or newlines).
+    // spans must stop at a consumed delimiter, not at the next token past trivia
     prev_token_end: u32 = 0,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
     scratch_decorators: ScratchBuffer = .{},
 
-    // multiple scratches to handle multiple extras at the same time
     scratch_a: ScratchBuffer = .{},
     scratch_b: ScratchBuffer = .{},
-    //
 
     context: Context = .{},
     ts_context: TsContext = .{},
@@ -155,17 +134,14 @@ pub const Parser = struct {
             self.comment_mode.collects(),
         );
 
-        // ScriptBody: StatementList[~Yield, ~Await, ~Return]
-        // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
-        // commonjs top level is a function body, so [+Return]
+        // ScriptBody is [~Yield, ~Await, ~Return], ModuleItemList is [+Await], and a
+        // commonjs body is [+Return]
         self.context.yield = false;
         self.context.await = self.tree.isModule();
         self.context.@"return" = self.source_type == .commonjs;
 
-        // a `.d.ts` file is ambient throughout
         self.ts_context.ambient = self.lang == .dts;
 
-        // let's begin
         try self.advance() orelse {
             self.current_token = Token.eof(0);
         };
@@ -237,8 +213,8 @@ pub const Parser = struct {
             (terminator != null and self.current_token.tag == terminator.?);
     }
 
-    /// returns the resolved name for any identifier-like token.
-    /// strips '#' for private identifiers, decodes unicode escapes if present.
+    /// Returns the resolved name of an identifier-like token, without a private `#` and
+    /// with escapes decoded.
     pub inline fn identifierName(self: *Parser, token: Token) Error!ast.String {
         const is_private = token.tag == .private_identifier;
         const start = token.span.start + @as(u32, @intFromBool(is_private));
@@ -246,7 +222,7 @@ pub const Parser = struct {
         return self.tree.sourceSlice(start, token.span.end);
     }
 
-    /// returns the decoded string value without surrounding quotes.
+    /// Returns the decoded string value without surrounding quotes.
     pub inline fn stringValue(self: *Parser, token: Token) Error!ast.String {
         if (!token.isEscaped()) {
             return self.tree.sourceSlice(token.span.start + 1, token.span.end - 1);
@@ -254,7 +230,7 @@ pub const Parser = struct {
         return self.decodeEscapedString(token.span.start + 1, token.span.end - 1);
     }
 
-    /// returns the decoded content of a template quasi span.
+    /// Returns the decoded content of a template quasi span.
     pub inline fn templateElementValue(
         self: *Parser,
         token: Token,
@@ -287,8 +263,6 @@ pub const Parser = struct {
         if (token.tag == .eof) return "end of file";
         return token.tag.toString() orelse token.text(self.source);
     }
-
-    // utils
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
         self.lexer.mode = mode;
@@ -336,8 +310,7 @@ pub const Parser = struct {
         );
     }
 
-    /// advance to the next token. reports an error if the current token
-    /// is an escaped keyword being consumed in a keyword position.
+    /// Advances to the next token, reporting an escaped keyword consumed in keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
         self.prev_token_end = self.current_token.span.end;
@@ -348,7 +321,7 @@ pub const Parser = struct {
         }
     }
 
-    /// advance without the escaped-keyword check.
+    /// Advances without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.prev_token_end = self.current_token.span.end;
         if (self.lexer.tryNextToken()) |token| {
@@ -376,22 +349,20 @@ pub const Parser = struct {
         });
     }
 
-    /// reports an escaped-keyword error if the given token has the escaped flag.
-    /// use for deferred checks where the token was consumed before its role was known.
+    /// Reports an escaped-keyword error for a token consumed before its role was known.
     pub inline fn reportIfEscapedKeyword(self: *Parser, token: Token) Error!void {
         if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
     }
 
-    /// peeks the token immediately after `current_token` without advancing.
-    /// for multi-token lookahead, use `beginPeek`.
+    /// Peeks the token after `current_token` without advancing. Use `beginPeek` for
+    /// multi-token lookahead.
     pub inline fn peekAhead(self: *Parser) Token {
         var peek = self.beginPeek();
         defer peek.end();
         return peek.next();
     }
 
-    /// captures a snapshot of parser state. pair with `rewind` to
-    /// commit or discard a speculative parse.
+    /// Captures a snapshot of parser state for `rewind`.
     pub fn checkpoint(self: *const Parser) Checkpoint {
         return .{
             .lexer_cursor = self.lexer.cursor,
@@ -409,7 +380,7 @@ pub const Parser = struct {
         };
     }
 
-    /// restores parser state captured by `checkpoint`.
+    /// Restores parser state captured by `checkpoint`.
     pub fn rewind(self: *Parser, cp: Checkpoint) void {
         self.lexer.cursor = cp.lexer_cursor;
         self.lexer.state = cp.lexer_state;
@@ -452,14 +423,13 @@ pub const Parser = struct {
         };
     }
 
-    /// sets current token from a re-scanned token and advances to the next token.
-    /// use after lexer re-scan functions (reScanJsxText, reScanTemplateContinuation, etc.)
+    /// Replaces the current token with a re-scanned one and advances past it.
     pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
         self.current_token = token;
         return self.advance();
     }
 
-    /// re-tokenizes the current token in the current lexer mode.
+    /// Re-tokenizes the current token in the current lexer mode.
     pub inline fn reScanCurrent(self: *Parser) Error!?void {
         self.lexer.rewindTo(self.current_token.span.start);
         self.current_token = try self.nextToken() orelse return null;
@@ -500,12 +470,7 @@ pub const Parser = struct {
         return end;
     }
 
-    /// lenient semicolon consumption for statements with special ASI exceptions.
-    ///
-    /// ES2015+ ASI: "The previous token is ) and the inserted semicolon would
-    /// then be parsed as the terminating semicolon of a do-while statement (14.7.2)"
-    ///
-    /// allows `do {} while (false) foo()`, semicolon optional after the `)`.
+    /// Consumes an optional semicolon. ASI always inserts one after the `)` of `do-while`.
     pub fn eatSemicolonLenient(self: *Parser, end: u32) Error!?u32 {
         if (self.current_token.tag == .semicolon) {
             const semicolon_end = self.current_token.span.end;
@@ -530,7 +495,6 @@ pub const Parser = struct {
                 else => continue,
             };
 
-            // resolve to the innermost non-paren node
             while (true) {
                 switch (datas[inner]) {
                     .parenthesized_expression => |p| inner = @intFromEnum(p.expression),
@@ -606,8 +570,6 @@ pub const Parser = struct {
         }
     }
 
-    /// Advances to the next token during error recovery, skipping characters that
-    /// cause lexical errors.
     fn recoverNextToken(self: *Parser) Error!Token {
         while (true) {
             return self.lexer.nextToken() catch |e| {
@@ -651,22 +613,18 @@ pub const Parser = struct {
 };
 
 pub const Checkpoint = struct {
-    // lexer state
     lexer_cursor: u32,
     lexer_state: lexer.LexerState,
     lexer_mode: lexer.LexerMode,
     lexer_comments_len: usize,
 
-    // parser token stream
     current_token: Token,
     prev_token_end: u32,
 
-    // tree-backed append-only storage
     nodes_len: usize,
     extra_len: usize,
     diagnostics_len: usize,
 
-    // parser flags, small structs copied by value.
     context: Context,
     ts_context: TsContext,
     state: ParserState,
@@ -696,8 +654,7 @@ const ScratchBuffer = struct {
     }
 };
 
-/// Parses JavaScript/TypeScript source into a `Tree`.
-/// Call `deinit()` when done to free all memory.
+/// Parses JavaScript or TypeScript source into a `Tree`. Call `deinit()` to free it.
 pub fn parse(
     child_allocator: std.mem.Allocator,
     source: []const u8,

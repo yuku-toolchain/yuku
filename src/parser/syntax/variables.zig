@@ -11,21 +11,17 @@ const extension = @import("../extension.zig");
 
 pub const ParseVariableDeclarationOpts = struct {
     await_using: bool = false,
-    /// sets the `declare` flag on the resulting `VariableDeclaration`.
-    /// ambient policy is driven by `parser.ts_context.ambient`.
+    /// Sets the `declare` flag on the resulting `VariableDeclaration`.
     is_declare: bool = false,
 };
 
-/// surrounding syntactic context of a `VariableDeclarator`. controls which
-/// initializer-presence rules apply.
+/// Syntactic context of a `VariableDeclarator`, which selects the initializer rules that apply.
 pub const DeclaratorCtx = enum {
-    /// regular `var`/`let`/`const`/`using` declaration statement.
+    /// A regular declaration statement.
     normal,
-    /// inside an ambient `declare` declaration: `const`, destructuring, and
-    /// `using` may omit their initializer.
+    /// An ambient `declare` declaration, where initializers may be omitted.
     declare,
-    /// inside a for-loop init: the for-loop dispatcher emits loop-aware
-    /// diagnostics once the head shape (regular / for-in / for-of) is known.
+    /// A for-loop head, where the loop parser reports initializer errors itself.
     for_loop,
 };
 
@@ -34,8 +30,6 @@ pub fn parseVariableDeclaration(
     opts: ParseVariableDeclarationOpts,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
-    // entry is on `var`/`let`/`const`/`using` directly (or the caller already
-    // consumed an `await` and passed `start_from_param`)
     std.debug.assert(start_from_param != null or switch (parser.current_token.tag) {
         .@"var", .let, .@"const", .using => true,
         else => false,
@@ -54,7 +48,6 @@ pub fn parseVariableDeclaration(
 
     var end = parser.tree.span(first_declarator).end;
 
-    // additional declarators: let a, b, c;
     while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
         const declarator = try parseVariableDeclarator(parser, kind, ctx) orelse return null;
@@ -65,7 +58,6 @@ pub fn parseVariableDeclaration(
     const semi_end = try parser.eatSemicolon(end) orelse return null;
     const span: ast.Span = .{ .start = start, .end = semi_end };
 
-    // lexical declarations are only allowed inside block statements
     if (parser.context.single_statement and
         (kind == .let or kind == .@"const" or kind == .using or kind == .await_using))
     {
@@ -124,7 +116,6 @@ pub fn parseVariableDeclarator(
     var end = id_span.end;
 
     if (is_ts) {
-        // `let x!: T` definite assignment assertion.
         if (parser.current_token.tag == .logical_not and
             !parser.current_token.hasLineTerminatorBefore())
         {
@@ -133,7 +124,6 @@ pub fn parseVariableDeclarator(
             try parser.advance() orelse return null;
         }
 
-        // `let x: Type = ...`. annotation attaches to the inner binding pattern.
         if (parser.current_token.tag == .colon) {
             const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
             ts.applyTypeAnnotationToPattern(parser, id, annotation);
@@ -154,8 +144,7 @@ pub fn parseVariableDeclarator(
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
 
-        // honor `allow_in` so for-loop init Annex B 3.5 (`for (var x = 0 in obj)`)
-        // stops at `in`. outside for-loop init, `allow_in` is true so this is a no-op.
+        // Annex B 3.5 `for (var x = 0 in obj)` must stop at `in`
         init = try expressions.parseExpression(
             parser,
             Precedence.Assignment,
@@ -164,9 +153,7 @@ pub fn parseVariableDeclarator(
 
         end = parser.tree.span(init).end;
     } else switch (ctx) {
-        // for-loop dispatcher emits loop-aware diagnostics once the head is known.
         .for_loop => {},
-        // ambient bindings legally omit their initializer.
         .declare => {},
         .normal => {
             if (is_destructuring) {
@@ -202,21 +189,18 @@ pub fn parseVariableDeclarator(
     );
 }
 
-/// returns `true` when `tag` can begin a `BindingIdentifier` or destructuring
-/// pattern, i.e. the head of a variable declarator.
+/// Returns whether `tag` can begin a `BindingIdentifier` or a destructuring pattern.
 pub fn canStartBinding(tag: TokenTag) bool {
     if (extension.at(.binding_start, .{tag})) |answer| return answer;
     return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
-/// non-reserved identifier-like tokens can begin a `BindingIdentifier`.
+/// Returns whether `tag` can begin a `BindingIdentifier`.
 pub fn canStartBindingIdentifier(tag: TokenTag) bool {
     return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
 }
 
-/// like `canStartBinding`, but resolving the `let` ambiguity. reserved words
-/// can never bind, so `let in obj` keeps `let` as an identifier instead of
-/// committing to a declaration that cannot parse.
+/// Like `canStartBinding`, but rejects reserved words so that `let in obj` keeps `let` as an identifier.
 pub fn canStartLetBinding(tag: TokenTag) bool {
     return canStartBinding(tag) and !tag.isUnconditionallyReserved();
 }
@@ -231,11 +215,8 @@ test "canStartLetBinding matches the longhand it replaced" {
     }
 }
 
-/// Determines if 'let' should be parsed as an identifier rather than a variable
-/// declaration keyword. the only ExpressionStatement lookahead restriction is
-/// `let [`, so sloppy-mode `let = 1`, `let.foo`, or `let in obj` are
-/// expression statements. strict-mode misuse is the checker's reserved-word
-/// error.
+/// Returns whether `let` begins an expression statement rather than a declaration.
+/// Only `let [` is a lookahead restriction, so sloppy-mode `let = 1` and `let in obj` are expressions.
 pub fn isLetIdentifier(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .let);
 
@@ -244,11 +225,7 @@ pub fn isLetIdentifier(parser: *Parser) Error!bool {
     return !canStartLetBinding(next.tag);
 }
 
-/// returns whether the current `using` token is an `IdentifierReference`
-/// (expression path) or the contextual keyword for a declaration.
-///
-/// implements the cover-grammar disambiguation from:
-/// - CoverAwaitExpressionAndAwaitUsingDeclarationHead
+/// Returns whether the current `using` token is an `IdentifierReference` rather than a declaration keyword.
 pub fn isUsingIdentifier(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .using);
 
@@ -258,8 +235,8 @@ pub fn isUsingIdentifier(parser: *Parser) Error!bool {
     return next.hasLineTerminatorBefore() or !canStartBindingIdentifier(next.tag);
 }
 
+/// Returns whether `await using x` on one line heads an `AwaitUsingDeclaration` in an [+Await] context.
 /// `await [no LineTerminator here] using [no LineTerminator here] Binding`
-/// in an [+Await] context heads an AwaitUsingDeclaration.
 pub fn isAwaitUsingDeclarationAhead(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .await);
 

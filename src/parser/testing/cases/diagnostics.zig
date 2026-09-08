@@ -30,8 +30,7 @@ fn expectFirstSpan(source: []const u8, start: u32, end: u32) !void {
     try testing.expectEqual(end, span.end);
 }
 
-// `let`, `using`, `async` and `import` each decide between a declaration and
-// an expression on one token of lookahead, and `await using` on two.
+// declaration keywords decide on one token of lookahead, `await using` on two
 test "a lexical error behind a lookahead-driven keyword is reported" {
     const script = [_][]const u8{
         "function f() { let 1x; return 42; }",
@@ -50,8 +49,7 @@ test "a lexical error behind a lookahead-driven keyword is reported" {
     try expectRejected("await using 1x;", .{ .source_type = .module, .lang = .js });
 }
 
-// the same lookahead shape guards TypeScript declaration heads and the
-// `<` of a type-argument list.
+// the same lookahead guards TypeScript declaration heads and type-argument lists
 test "a lexical error behind a typescript lookahead is reported" {
     const sources = [_][]const u8{
         "declare 1x",
@@ -66,8 +64,7 @@ test "a lexical error behind a typescript lookahead is reported" {
     }
 }
 
-// the positive space: valid programs that hit the same lookahead paths must
-// keep parsing clean, so the fix cannot be a blanket "report something".
+// the positive space, the same lookahead paths must stay clean on valid input, so the fix cannot be a blanket "report something"
 test "lookahead-driven keywords still parse cleanly when the next token is valid" {
     const sources = [_][]const u8{
         "let x = 1;",

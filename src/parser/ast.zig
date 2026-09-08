@@ -1396,7 +1396,6 @@ pub const NumericLiteral = struct {
     pub fn value(self: NumericLiteral, tree: *const Tree) f64 {
         const raw = tree.string(self.raw);
         if (raw.len == 0) return 0;
-        // strip numeric separators
         var buf: [128]u8 = undefined;
         var len: usize = 0;
         for (raw) |c| {
@@ -1412,7 +1411,7 @@ pub const NumericLiteral = struct {
             .decimal => std.fmt.parseFloat(f64, s) catch 0,
             .hex => parseIntOrFloat(s[2..], 16),
             .octal => blk: {
-                // modern: 0o/0O prefix. legacy: bare 0 prefix
+                // legacy octal has a bare 0 prefix
                 const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
                 break :blk parseIntOrFloat(digits, 8);
             },
@@ -4116,7 +4115,6 @@ pub const NodeData = union(enum) {
     export_all_declaration: ExportAllDeclaration,
     export_specifier: ExportSpecifier,
 
-    // typescript
     ts_type_annotation: TSTypeAnnotation,
     ts_any_keyword: TSAnyKeyword,
     ts_unknown_keyword: TSUnknownKeyword,
@@ -4189,7 +4187,6 @@ pub const NodeData = union(enum) {
     ts_import_equals_declaration: TSImportEqualsDeclaration,
     ts_external_module_reference: TSExternalModuleReference,
 
-    // jsx
     jsx_element: JSXElement,
     jsx_opening_element: JSXOpeningElement,
     jsx_closing_element: JSXClosingElement,

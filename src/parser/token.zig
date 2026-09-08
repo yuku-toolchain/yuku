@@ -7,9 +7,7 @@ pub const Mask = struct {
     pub const IsUnaryOp: u32 = 1 << 16;
     pub const IsAssignmentOp: u32 = 1 << 17;
     pub const IsIdentifierLike: u32 = 1 << 18;
-    /// reserved words that are always reserved
     pub const IsUnconditionallyReserved: u32 = 1 << 19;
-    /// reserved words that are only reserved in strict mode
     pub const IsStrictModeReserved: u32 = 1 << 20;
     pub const IsKeyword: u32 = 1 << 21;
 
@@ -21,7 +19,6 @@ pub const TokenTag = enum(u32) {
     // literals
     numeric_literal = 1 | Mask.IsNumericLiteral, // e.g., "123", "45.67"
     hex_literal = 2 | Mask.IsNumericLiteral, // e.g., "0xFF", "0x1A"
-    /// modern octal literal
     octal_literal = 3 | Mask.IsNumericLiteral, // e.g., "0o777", "0o12"
     binary_literal = 4 | Mask.IsNumericLiteral, // e.g., "0b1010", "0b11"
     bigint_literal = 5 | Mask.IsNumericLiteral, // e.g., "123n", "456n"
@@ -223,9 +220,8 @@ pub const TokenTag = enum(u32) {
     jsx_text = 158,
 
     eof = 159, // end of file
-    /// input the lexer could not turn into a token. produced only by
-    /// lookahead, and matches no production, so a disambiguation that sees
-    /// it falls through to the real parse path.
+    /// Input the lexer could not tokenize during lookahead. Matches no production, so a
+    /// disambiguation that sees it falls through to the real parse path.
     invalid = 160,
 
     pub fn precedence(self: TokenTag) u5 {
@@ -256,8 +252,7 @@ pub const TokenTag = enum(u32) {
         return self.hasMask(Mask.IsAssignmentOp);
     }
 
-    /// returns true for identifier-like tokens.
-    /// includes: identifiers, all keywords, literal keywords.
+    /// Whether the token is an identifier or any keyword.
     pub fn isIdentifierLike(self: TokenTag) bool {
         return self.hasMask(Mask.IsIdentifierLike);
     }
@@ -266,20 +261,17 @@ pub const TokenTag = enum(u32) {
         return self.hasMask(Mask.IsKeyword);
     }
 
-    /// returns true for unconditionally reserved keywords.
-    /// these can NEVER be used as identifiers.
+    /// Whether the token is a keyword that can never be an identifier.
     pub fn isUnconditionallyReserved(self: TokenTag) bool {
         return self.hasMask(Mask.IsUnconditionallyReserved);
     }
 
-    /// returns true for keywords reserved ONLY in strict mode.
-    /// these can be identifiers in sloppy mode but not in strict mode.
-    /// includes: let, static, implements, interface, package, private, protected, public, yield
+    /// Whether the token is a keyword reserved only in strict mode.
     pub fn isStrictModeReserved(self: TokenTag) bool {
         return self.hasMask(Mask.IsStrictModeReserved);
     }
 
-    /// returns true for any reserved keyword (unconditional or strict-mode-only).
+    /// Whether the token is reserved unconditionally or in strict mode.
     pub fn isReserved(self: TokenTag) bool {
         return self.hasMask(Mask.IsUnconditionallyReserved) or
             self.hasMask(Mask.IsStrictModeReserved);
@@ -516,25 +508,22 @@ pub const Token = struct {
         return (self.flags & flagMask(flag)) != 0;
     }
 
-    /// true when skipped trivia before this token contained a line terminator.
-    /// parser uses this for ASI and newline-restricted grammar rules.
+    /// Whether the trivia before this token contained a line terminator.
     pub inline fn hasLineTerminatorBefore(self: Token) bool {
         return self.has(.line_terminator_before);
     }
 
-    /// true when scanning this token encountered an invalid escape.
-    /// currently consumed by template literal parsing (tagged vs untagged behavior).
+    /// Whether scanning this token met an invalid escape, which only tagged templates tolerate.
     pub inline fn hasInvalidEscape(self: Token) bool {
         return self.has(.invalid_escape);
     }
 
-    /// true when token text came from an escaped spelling
-    /// (for example, identifier/keyword escapes).
+    /// Whether the token text contains unicode escapes.
     pub inline fn isEscaped(self: Token) bool {
         return self.has(.escaped);
     }
 
-    /// whether the string/template token have lone surrogates
+    /// Whether a string or template token contains lone surrogates.
     pub inline fn hasLoneSurrogates(self: Token) bool {
         return self.has(.lone_surrogates);
     }

@@ -1,8 +1,6 @@
-//! Compile-time extension points, where a build teaches the parser syntax the
-//! ECMAScript and TypeScript grammars do not have.
-//!
-//! `-Dparser-extension=path` binds one file to the `parser_extension` module.
-//! A `pub fn` named after a `Point` runs there. Unbound points compile away.
+//! Compile-time extension points that teach the parser syntax outside the ECMAScript and
+//! TypeScript grammars. `-Dparser-extension=path` binds a file whose `pub fn`s named after
+//! a `Point` run there.
 
 const std = @import("std");
 const ast = @import("ast.zig");
@@ -50,8 +48,7 @@ pub const ForOfTail = struct {
     is_await: bool,
 };
 
-/// Runs the hook at `point`, or answers "nothing bound" in its kind's shape.
-/// `args` excludes the `comptime R` that `at` supplies.
+/// Runs the hook bound at `point`, or answers "nothing bound" in its kind's shape.
 pub inline fn at(comptime point: Point, args: anytype) Return(point) {
     comptime validateCall(point, @TypeOf(args));
     comptime if (bound(point)) validateHook(point);
@@ -75,7 +72,7 @@ inline fn bound(comptime point: Point) bool {
 
 const Spec = struct {
     kind: Kind,
-    /// call-site arguments, excluding the comptime `R`
+    // call-site arguments, excluding the comptime `R`
     args: u8,
     Value: type = void,
     note: []const u8,
@@ -166,8 +163,7 @@ fn validateHook(comptime point: Point) void {
     ));
 }
 
-// a typo must not compile to a hook that never runs. non-hook helpers stay
-// private, or use any casing but snake_case
+// a typo must not compile to a hook that never runs
 comptime {
     const decls = @typeInfo(binding).@"struct".decls;
     @setEvalBranchQuota(1000 + 64 * decls.len * @typeInfo(Point).@"enum".fields.len);

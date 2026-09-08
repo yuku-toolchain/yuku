@@ -23,9 +23,8 @@ pub const Import = struct {
     type_only: bool = false,
     /// Phase modifier, `null` for regular imports.
     phase: ?ast.ImportPhase = null,
-    /// The smallest node identifying the record. The import specifier,
-    /// the call expression for `.dynamic` and `.require`, or the whole
-    /// declaration for `.side_effect` and `.import_equals`.
+    /// The smallest node identifying the record, the specifier, the call,
+    /// or the whole declaration.
     node: ast.NodeIndex,
 
     pub const Kind = enum(u3) {
@@ -58,9 +57,8 @@ pub const Export = struct {
     specifier: ast.String = .empty,
     /// True for type only exports.
     type_only: bool = false,
-    /// The smallest node identifying the record. The export specifier,
-    /// the binding identifier of an exported declaration, or the whole
-    /// declaration.
+    /// The smallest node identifying the record, the specifier, the binding
+    /// identifier, or the whole declaration.
     node: ast.NodeIndex,
 
     pub const Kind = enum(u3) {
@@ -214,8 +212,7 @@ const Collector = struct {
         }
     }
 
-    /// Only the external module reference form is a dependency edge.
-    /// The qualified name form aliases a namespace, not a module.
+    // the qualified name form aliases a namespace, not a module
     fn importEquals(
         self: *Collector,
         decl: ast.TSImportEqualsDeclaration,
@@ -269,8 +266,6 @@ const Collector = struct {
         }
     }
 
-    /// Every name bound by an exported declaration is exported under
-    /// its own name.
     fn declarationNames(
         self: *Collector,
         declaration: ast.NodeIndex,
@@ -302,7 +297,6 @@ const Collector = struct {
         }
     }
 
-    /// Exports every identifier bound by a binding pattern.
     fn patternNames(
         self: *Collector,
         pattern: ast.NodeIndex,
@@ -354,7 +348,6 @@ const Collector = struct {
         });
     }
 
-    /// Only named declarations and identifiers bind a symbol.
     fn exportDefault(
         self: *Collector,
         decl: ast.ExportDefaultDeclaration,
@@ -413,7 +406,6 @@ const Collector = struct {
         });
     }
 
-    /// Collects the records and flags that can appear at any depth.
     fn sweep(self: *Collector) Allocator.Error!void {
         for (0..self.tree.nodes.len) |i| {
             const index: ast.NodeIndex = @enumFromInt(@as(u32, @intCast(i)));
@@ -438,7 +430,6 @@ const Collector = struct {
         }
     }
 
-    /// Only a literal specifier is a statically known edge.
     fn dynamicImport(
         self: *Collector,
         expr: ast.ImportExpression,
@@ -453,7 +444,7 @@ const Collector = struct {
         });
     }
 
-    /// A local binding named `require` makes the call an ordinary call.
+    // a local binding named `require` makes the call an ordinary call
     fn requireCall(
         self: *Collector,
         call: ast.CallExpression,
@@ -480,17 +471,14 @@ const Collector = struct {
         }
     }
 
-    /// The symbol bound by a binding identifier in the top level scope.
     fn bindingSymbol(self: *const Collector, binding: ast.NodeIndex) SymbolId {
         return self.moduleBinding(self.tree.data(binding).binding_identifier.name);
     }
 
-    /// Looks up a name in the top level scope, hoisted vars included.
     fn moduleBinding(self: *const Collector, name: ast.String) SymbolId {
         return self.sem.binding(self.top_scope, self.tree.string(name)) orelse .none;
     }
 
-    /// String literal text, or null for anything computed.
     fn literal(self: *const Collector, node: ast.NodeIndex) ?ast.String {
         if (node == .null) return null;
         return switch (self.tree.data(node)) {
@@ -499,7 +487,6 @@ const Collector = struct {
         };
     }
 
-    /// Name text of an identifier or string literal shaped node.
     fn stringOf(self: *const Collector, node: ast.NodeIndex) ast.String {
         std.debug.assert(node != .null);
         return switch (self.tree.data(node)) {

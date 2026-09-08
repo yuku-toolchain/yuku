@@ -9,12 +9,9 @@ pub const module_record = @import("module_record.zig");
 pub const Semantic = semantic.Semantic;
 pub const AnalysisError = checker.AnalysisError;
 
-/// Runs semantic analysis on a tree. Builds the complete `Semantic`
-/// model and reports the scope-dependent early errors.
-///
-/// Diagnostics are appended directly to the tree alongside parse
-/// errors. All allocations use the tree's arena, so the returned
-/// model is valid as long as the tree is alive.
+/// Runs semantic analysis on a tree, building the `Semantic` model and
+/// reporting scope-dependent early errors. Diagnostics go on the tree and
+/// all allocations use its arena.
 pub fn analyze(tree: *ast.Tree) AnalysisError!Semantic {
     std.debug.assert(tree.root != .null);
 

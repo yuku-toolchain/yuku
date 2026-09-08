@@ -18,8 +18,6 @@ pub const modes = [_]Mode{
     .{ .lang = .dts, .source_type = .module },
 };
 
-// adversarial fragments. surrogate and overlong escapes, unterminated literals,
-// numeric and regex corners, raw wtf-8 bytes, and nesting openers.
 pub const fragments = [_][]const u8{
     "'\\uD800",              "\"\\uDBFF",              "`\\uD800",
     "'\\uD800\\uDC00'",      "'\\u{",                  "'\\u{110000}'",
@@ -47,7 +45,7 @@ pub const fragments = [_][]const u8{
     "\xFF\xFE",
 };
 
-// structurally complete programs, so one mutation lands in deep parser state.
+// complete programs, so one mutation lands in deep parser state
 pub const seeds = [_][]const u8{
     "const x = 1 + 2 * 3;",
     "function f(a, b = 1, ...rest) { return a ? b : rest; }",
@@ -71,8 +69,7 @@ pub const seeds = [_][]const u8{
     "const u = '\\u{1F600}\\uD83D\\uDE00\\n\\t\\x41';",
 };
 
-// caps a runaway allocation as an attributable panic instead of a silent oom
-// kill, so a non-advancing loop or overflowed size shows up as a finding.
+// a runaway allocation panics attributably instead of a silent oom kill
 pub const memory_cap = 512 * 1024 * 1024;
 
 const Guard = struct {
@@ -126,7 +123,6 @@ const Guard = struct {
     }
 };
 
-// inputs the fuzzer has caught, kept as fixed regressions.
 pub const regressions = [_][]const u8{
     "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
     "switch (x) { case \xa01: break; default", // lex error spun parseSwitchCases
@@ -141,8 +137,7 @@ pub const regressions = [_][]const u8{
     "class C{async get x(){await 0}}", // async getter whose async the printer dropped
 };
 
-// parse one (input, mode) and assert the invariants. violations panic so the
-// driver can dump the reproducer.
+// violations panic so the driver can dump the reproducer
 pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
     var guard = Guard{ .backing = gpa };
     const a = guard.allocator();
@@ -157,12 +152,9 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
 
     checkSpans(&tree, src);
 
-    // round-trip only the syntactically valid programs, captured before
-    // semantic analysis folds its early-error diagnostics into the tree.
+    // captured before semantic analysis adds its early-error diagnostics
     const parse_clean = !tree.hasErrors();
 
-    // exercise semantic analysis on every parse. it must never panic, and the
-    // diagnostics it appends must stay within the source bounds.
     _ = parser.semantic.analyze(&tree) catch |e| switch (e) {
         error.OutOfMemory => return,
     };
@@ -208,9 +200,7 @@ fn checkRoundTrip(gpa: Allocator, tree: *ast.Tree, mode: Mode, src: []const u8) 
     );
 }
 
-// fail at each successive allocation. every point must yield error.OutOfMemory
-// or success, never a panic. the arena absorbs any error-path leak, while the
-// safety-checked build still traps a bad free.
+// every allocation failure point must yield error.OutOfMemory or success, never a panic
 pub fn oomSweep(src: []const u8, mode: Mode) void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -226,11 +216,8 @@ pub fn oomSweep(src: []const u8, mode: Mode) void {
         })) |tree| {
             var t = tree;
             defer t.deinit();
-            // semantic analysis allocates too, and it must also yield OOM or
-            // success at every failure point, never a panic.
             if (parser.semantic.analyze(&t)) |_| {
-                // neither parse nor analysis induced a failure, so the fail
-                // index is past the last allocation, so every point is covered.
+                // no induced failure means the fail index is past the last allocation
                 if (!failing.has_induced_failure) break;
             } else |e| switch (e) {
                 error.OutOfMemory => {},
@@ -241,8 +228,7 @@ pub fn oomSweep(src: []const u8, mode: Mode) void {
     }
 }
 
-// rewrites buf from a random seed, weighted toward eof truncation and fragment
-// injection (the two operators that find the most).
+// weighted toward eof truncation and fragment injection, the operators that find the most
 pub const Mutator = struct {
     rng: std.Random,
     max_len: usize = 64 * 1024,
@@ -264,36 +250,29 @@ pub const Mutator = struct {
         if (buf.items.len == 0) try buf.append(gpa, 'x');
         const len = buf.items.len;
         switch (self.rng.uintLessThan(usize, 13)) {
-            // eof truncation, double-weighted, since most past bugs were token-at-eof.
+            // double-weighted, most past bugs were token-at-eof
             0, 1 => buf.shrinkRetainingCapacity(self.rng.intRangeAtMost(usize, 0, len)),
-            // cut just past an escape backslash to strand an incomplete escape.
+            // strand an incomplete escape
             2 => {
                 if (std.mem.lastIndexOfScalar(u8, buf.items, '\\')) |bs| {
                     const keep = @min(buf.items.len, bs + 1 + self.rng.uintLessThan(usize, 5));
                     buf.shrinkRetainingCapacity(keep);
                 }
             },
-            // inject an adversarial fragment.
             3, 4 => try buf.insertSlice(gpa, self.rng.intRangeAtMost(usize, 0, len), self.fragment()),
-            // append a fragment then truncate inside it (escape/template at eof).
             5 => {
                 const f = self.fragment();
                 try buf.appendSlice(gpa, f);
                 buf.shrinkRetainingCapacity(buf.items.len - self.rng.intRangeAtMost(usize, 0, f.len));
             },
-            // overwrite a byte with an interesting one.
             6 => buf.items[self.rng.uintLessThan(usize, len)] = self.interesting(),
-            // bit flip.
             7 => buf.items[self.rng.uintLessThan(usize, len)] ^= @as(u8, 1) << self.rng.int(u3),
-            // insert an interesting byte.
             8 => try buf.insert(gpa, self.rng.intRangeAtMost(usize, 0, len), self.interesting()),
-            // delete a span.
             9 => {
                 const a = self.rng.uintLessThan(usize, len);
                 const b = self.rng.intRangeAtMost(usize, a, len);
                 buf.replaceRangeAssumeCapacity(a, b - a, &.{});
             },
-            // duplicate a span to stress repetition and growth.
             10 => {
                 const a = self.rng.uintLessThan(usize, len);
                 const b = self.rng.intRangeAtMost(usize, a, len);
@@ -301,7 +280,7 @@ pub const Mutator = struct {
                 defer gpa.free(dup);
                 try buf.insertSlice(gpa, self.rng.intRangeAtMost(usize, 0, buf.items.len), dup);
             },
-            // nesting bomb. a parser must reject depth, never overflow the stack.
+            // nesting bomb, the parser must reject depth rather than overflow the stack
             11, 12 => {
                 const openers = [_][]const u8{ "(", "[", "{", "`${", "/", "a&", "a?b:", "typeof " };
                 const op = openers[self.rng.uintLessThan(usize, openers.len)];

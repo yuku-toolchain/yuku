@@ -6,7 +6,7 @@ const meta = @import("meta.zig");
 
 const Writer = std.Io.Writer;
 
-// generates encode.js, the inverse of decode.js, walks ESTree and writes the v7 wire-format buffer
+// generates encode.js, the inverse of decode.js
 pub fn generate(w: *Writer) !void {
     @setEvalBranchQuota(500_000);
     try writePrologue(w);
@@ -92,8 +92,7 @@ fn writeInverseObject(w: *Writer, name: []const u8, items: []const []const u8) !
     try w.writeAll("};\n");
 }
 
-// encStr's second copy loop emits a wtf-8 tail: lone surrogates are
-// kept as ED A0..BF rather than replaced with U+FFFD.
+// encStr's second copy loop emits wtf-8, lone surrogates stay as ED A0..BF rather than U+FFFD
 fn writeRuntime(w: *Writer) !void {
     try w.writeAll(
         \\function encode(program) {
@@ -258,7 +257,7 @@ fn writeNodeEncoders(w: *Writer) !void {
     }
 }
 
-// function_body (tag 5) and block_statement (tag 4) both decode to BlockStatement, the encoder emits block_statement
+// function_body and block_statement both decode to BlockStatement, only block_statement is emitted
 fn skipGeneration(comptime name: []const u8) bool {
     @setEvalBranchQuota(20_000);
     return std.mem.eql(u8, name, "function_body");
@@ -507,6 +506,7 @@ fn writeSpecialNumericLit(w: *Writer, comptime tag: usize) !void {
         \\      if (c === 120 || c === 88) kind = 1;
         \\      else if (c === 111 || c === 79) kind = 2;
         \\      else if (c === 98 || c === 66) kind = 3;
+        \\      else if (/^0[0-7]+$/.test(raw)) kind = 2; // legacy octal, `010` is 8
         \\    }}
         \\    const r = encStr(raw);
         \\    const idx = alloc();
