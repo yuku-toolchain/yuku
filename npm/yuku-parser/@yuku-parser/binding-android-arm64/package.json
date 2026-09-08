@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/binding-android-arm64",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "license": "MIT",
   "os": [
     "android"
