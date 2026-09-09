@@ -26,10 +26,17 @@ if (packages.length === 0) {
   process.exit(1);
 }
 
+const wasm = packages.find((pkg) => pkg.name === "@yuku-parser/wasm");
+const sha = wasm?.url.split("@").pop();
+const playground = sha ? `https://playground.yuku.fyi/?pr=${sha}` : null;
+
 const body = [
   MARKER,
   "### Preview packages",
   "",
+  ...(playground
+    ? [`Try this PR in the [playground](${playground}).`, ""]
+    : []),
   "| Package | Install |",
   "| --- | --- |",
   ...packages

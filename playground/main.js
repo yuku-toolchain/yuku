@@ -1154,15 +1154,21 @@ function applyState(s) {
 
 async function showVersion() {
   const el = $("version");
+  const pr = new URLSearchParams(location.search).get("pr");
+  if (pr) {
+    el.textContent = `pr ${pr.slice(0, 7)}`;
+    el.title = `preview packages of yuku-toolchain/yuku@${pr}`;
+    return;
+  }
   try {
-    const res = await fetch(el.dataset.pkg);
+    const url = import.meta.resolve("@yuku-parser/wasm");
+    const res = await fetch(url);
     const match = res.headers.get("x-esm-path")?.match(/@(\d[^/]*)/);
     if (match) {
       el.textContent = match[1];
       return;
     }
-    const pkgUrl = new URL("./package.json", new URL(el.dataset.pkg, location.href));
-    const { version } = await (await fetch(pkgUrl)).json();
+    const { version } = await (await fetch(new URL("./package.json", url))).json();
     if (version) el.textContent = version;
   } catch {}
 }

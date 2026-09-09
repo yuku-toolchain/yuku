@@ -52,7 +52,7 @@ hook, or swap `strip` for `print` / `minify`. For a tight loop, use watch mode:
 zig build run --watch -fincremental
 ```
 
-`bun run playground` serves the web playground instead.
+`bun run playground` serves the web playground instead. Every pull request publishes preview packages, and `https://playground.yuku.fyi/?pr=<commit>` loads them, so a change can be tried in the playground before it merges.
 
 ## Testing
 
