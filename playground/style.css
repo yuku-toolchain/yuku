@@ -246,6 +246,17 @@ main {
   color: var(--dim);
 }
 
+.tok-text {
+  padding: 0 5px;
+  border-radius: 3px;
+  white-space: pre;
+  background: color-mix(in srgb, var(--line) 45%, transparent);
+}
+
+.tok-count {
+  padding: 1px 4px;
+}
+
 .sem-err {
   color: var(--dim);
   padding: 12px;
