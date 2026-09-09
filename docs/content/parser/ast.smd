@@ -12,7 +12,7 @@ The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/pa
 - **JavaScript / JSX** is fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript** conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
 
-Comments can be attached to the AST nodes they belong to, exposed as a flat offset-indexed array, or both. See [Comments](#comments).
+Comments can be attached to the AST nodes they belong to, exposed as a flat offset-indexed array, or both. See [Comments](#comments). The tokens the parser consumed can be kept as well. See [Tokens](#tokens).
 
 On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
@@ -688,3 +688,37 @@ pub const AttachedComment = struct {
 - `.inside` sits interior to an otherwise empty host, like `function f() { /* hi */ }`.
 
 `same_line` is true when the comment shares a source line with the host's adjacent edge (host start for `.before`, host end for `.after`). For `.inside` it is always false.
+
+## [Tokens]($section.id('tokens'))
+
+The `tokens` option keeps every token the parser consumed in `tree.tokens`, a slice in source order. Off by default.
+
+```zig
+var tree = try parser.parse(allocator, source, .{ .tokens = true });
+defer tree.deinit();
+
+for (tree.tokens) |token| {
+    std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
+}
+```
+
+A `Token` is its `span`, its `tag`, and a few flags, read through methods.
+
+```zig
+token.span                       // byte range in the source
+token.text(tree.source)          // the source text
+token.tag                        // one of the 160 TokenTag variants, .identifier, .arrow, ...
+token.tag.isKeyword()            // and isReserved, isIdentifierLike, isBinaryOperator, ...
+token.tag.precedence()           // binary precedence, 0 when none
+token.tag.toString()             // "=>" for .arrow, null for tokens with free text
+token.hasLineTerminatorBefore()  // what ASI looks at
+token.isEscaped()                // `\u0061sync` is an .async token with this set
+token.hasInvalidEscape()         // a template chunk whose cooked value is undefined
+token.hasLoneSurrogates()        // a string with an unpaired surrogate
+```
+
+`TokenTag` is defined in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig), one variant per punctuator, literal form, keyword, and identifier form.
+
+The tokens are final. The lexer cannot tell `/` from a regular expression, `}` from a template continuation, or `>>` from two closing angle brackets, so the parser rescans those once it knows, and the list holds the result: one `regex_literal`, a template's head, middle, and tail around the interpolated expressions, two `greater_than`. Abandoned speculative parses leave nothing behind. Keywords keep their tag wherever they appear, so `type` in `let type = 1` is a `type` token. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
+
+Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous slice found by binary search on `span.start`.

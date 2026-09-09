@@ -6,4 +6,5 @@ test {
     _ = @import("cases/symbol.zig");
     _ = @import("cases/module_record.zig");
     _ = @import("cases/corpus.zig");
+    _ = @import("cases/tokens.zig");
 }

@@ -2,6 +2,18 @@
 
 A high-performance, spec-compliant JavaScript/TypeScript parser written in Zig, powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
+- [Install](#install)
+- [Usage](#usage)
+- [ESTree / TypeScript-ESTree](#estree--typescript-estree)
+- [AST Types](#ast-types)
+- [Path helpers](#path-helpers)
+- [Tokens](#tokens)
+- [Walking the AST](#walking-the-ast)
+- [Semantic analysis](#semantic-analysis)
+- [Options](#options)
+- [Result](#result)
+- [Comments](#comments)
+
 ## Install
 
 ```bash
@@ -57,6 +69,59 @@ langFromPath("types.d.ts");        // "dts"
 sourceTypeFromPath("foo.cjs");     // "commonjs"
 sourceTypeFromPath("foo.mjs");     // "module"
 ```
+
+## Tokens
+
+`tokens: true` keeps every token the parser consumed. The result carries a `TokenList`, a view over the parser's token table. Nothing is decoded up front, a token is an index, and each accessor is one typed-array read.
+
+```ts
+import { parse, TokenKind } from "yuku-parser";
+
+const { program, tokens } = parse(source, { tokens: true });
+
+for (let i = 0; i < tokens.length; i++) {
+  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
+}
+```
+
+```ts
+tokens.kind(i)            // one of the 160 kinds in TokenKind, see the list below
+tokens.text(i)            // source text, a string literal keeps its quotes
+tokens.start(i)           // UTF-16 offsets, like nodes
+tokens.end(i)
+
+tokens.isKeyword(i)       // reserved words and contextual keywords
+tokens.isReserved(i)      // can never be an identifier
+tokens.isIdentifierLike(i)
+tokens.isNumericLiteral(i)
+tokens.isBinaryOperator(i)
+tokens.isLogicalOperator(i)
+tokens.isUnaryOperator(i)
+tokens.isAssignmentOperator(i)
+tokens.precedence(i)      // binary precedence, 0 when none
+
+tokens.newlineBefore(i)   // a line terminator precedes it, what ASI looks at
+tokens.escaped(i)         // \u0061sync is an async token with this set
+tokens.invalidEscape(i)   // a template chunk whose cooked value is undefined
+tokens.loneSurrogate(i)   // a string with an unpaired surrogate
+```
+
+The queries take a node and answer with an index, `-1` when there is none. They are binary searches, so they replace a token store without building one.
+
+```ts
+tokens.range(node)       // [from, to) of the node's tokens
+tokens.first(node)
+tokens.last(node)
+tokens.before(node)      // last token ending at or before it, also takes an offset
+tokens.after(node)       // first token starting at or after it, also takes an offset
+tokens.at(offset)        // the token containing an offset
+```
+
+Why an index and not an array of token objects? A 1 MB file has about 215,000 tokens. Building an object for each takes about 8 ms, more than parsing the file, and leaves those objects on the heap for the garbage collector. The `TokenList` is a view over the 16 bytes per token the parser already wrote, so `tokens: true` adds under half a millisecond to the parse, and every accessor is one typed-array read with nothing allocated.
+
+`TokenKind` has 160 kinds, one per punctuator, literal form, keyword, and identifier form. The full list is [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts).
+
+The tokens are final: a regular expression is one `RegexLiteral`, a template is its `TemplateHead`, `TemplateMiddle`, and `TemplateTail` around the interpolated expressions, and the `>>` closing a nested generic is two `GreaterThan`. Keywords keep their kind wherever they appear, so `type` in `let type = 1` is `TokenKind.Type`. Comments are not tokens, they stay in `comments`. `TokenKind` values may change between versions, compare by name.
 
 ## Walking the AST
 

@@ -1472,6 +1472,7 @@ fn writeAssemble(w: *Writer) !void {
         \\  outU32[{[u_src]d}] = 0;
         \\  outU32[{[u_cc]d}] = 0;
         \\  outU32[{[u_acc]d}] = attachedCount;
+        \\  outU32[{[u_tc]d}] = 0;
         \\  outU32[{[u_dc]d}] = 0;
         \\  outU32[{[u_pi]d}] = progIdx;
         \\  outU32[{[u_fl]d}] = attached ? FLAG_ATTACHED_COMMENTS : 0;
@@ -1496,6 +1497,7 @@ fn writeAssemble(w: *Writer) !void {
         .u_src = rt.HDR_SOURCE_LEN_U32,
         .u_cc = rt.HDR_COMMENT_COUNT_U32,
         .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
+        .u_tc = rt.HDR_TOKEN_COUNT_U32,
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_fl = rt.HDR_FLAGS_U32,

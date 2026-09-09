@@ -419,3 +419,10 @@ test "Scope.Kind.isHoistTarget matches the spec hoist boundaries" {
     try testing.expect(!Scope.Kind.isHoistTarget(.class));
     try testing.expect(!Scope.Kind.isHoistTarget(.expression_name));
 }
+
+test "nesting deeper than the path capacity analyzes without a parent" {
+    const source = ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }";
+    var result = try helpers.analyzeAllowErrors(std.testing.allocator, source, .{});
+    defer result.deinit();
+    try std.testing.expect(result.sem.scopes.list.len >= 2);
+}

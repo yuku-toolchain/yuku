@@ -2,10 +2,22 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 0,
+    "end": 6,
     "sourceType": "script",
     "hashbang": null,
-    "body": []
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 5,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 5,
+          "name": "_7"
+        }
+      }
+    ]
   },
   "comments": [],
   "diagnostics": [

@@ -55,6 +55,7 @@ def.module.path; // "lib.ts"
 - **A semantic walk** and `walkAsync`, every handler receiving the current scope, symbol, and reference.
 - **Closure analysis** via `capturesOf`, shadowing- and alias-correct.
 - **Cross-file linking**: `definition()`, `referencesOf`, `exportedNames`, and spec-true `ResolveExport` across the graph.
+- **Tokens** with `tokens: true`, the same `TokenList` as [`yuku-parser`](https://www.npmjs.com/package/yuku-parser#tokens).
 
 Node identity is exact throughout: the node a semantic query returns is the same object you reach by walking `module.ast`, so a rename is a plain assignment and [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen) prints it back.
 

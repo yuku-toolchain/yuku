@@ -36,6 +36,12 @@ describe("@yuku-analyzer/wasm", () => {
     expect(greeting?.references.length).toBeGreaterThan(0);
   });
 
+  test("lists tokens when requested", () => {
+    const mod = analyze("const x = 1;", { path: "input.js", tokens: true });
+    expect(mod.tokens!.length).toBe(5);
+    expect(mod.tokens!.text(1)).toBe("x");
+  });
+
   test("resolves TS-only symbols", () => {
     const mod = analyze(tsSource, { path: "input.ts" });
     const names = mod.symbols.map((s) => s.name);

@@ -35,6 +35,8 @@ pub const Options = struct {
     preserve_parens: bool = true,
     /// Whether and how comments are collected.
     comments: CommentMode = .flat,
+    /// Whether to keep every consumed token in `Tree.tokens`.
+    tokens: bool = false,
 };
 
 pub const Context = packed struct {
@@ -81,8 +83,11 @@ pub const Parser = struct {
     lang: ast.Lang,
     preserve_parens: bool,
     comment_mode: CommentMode,
+    collect_tokens: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
+    // the tokens the committed parse advanced past, `current_token` is never in it
+    tokens: std.ArrayList(Token) = .empty,
 
     current_token: Token,
     // spans must stop at a consumed delimiter, not at the next token past trivia
@@ -110,6 +115,7 @@ pub const Parser = struct {
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
             .comment_mode = options.comments,
+            .collect_tokens = options.tokens,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -143,7 +149,7 @@ pub const Parser = struct {
         self.ts_context.ambient = self.lang == .dts;
 
         try self.advance() orelse {
-            self.current_token = Token.eof(0);
+            self.current_token = try self.recoverNextToken();
         };
 
         errdefer self.tree.arena.deinit();
@@ -151,6 +157,9 @@ pub const Parser = struct {
         try self.ensureCapacity();
 
         const body = try self.parseBody(null, .program);
+
+        std.debug.assert(self.current_token.tag == .eof);
+        try self.commitEof();
 
         const end = self.current_token.span.end;
 
@@ -179,6 +188,26 @@ pub const Parser = struct {
         if (self.comment_mode.isFlat()) {
             self.tree.comments = self.lexer.comments.items;
         }
+        if (self.collect_tokens) {
+            self.tree.tokens = self.tokens.items;
+        }
+    }
+
+    inline fn commitToken(self: *Parser, token: Token) Error!void {
+        if (!self.collect_tokens) return;
+        // the initial placeholder or an empty jsx text run
+        if (token.span.start == token.span.end) return;
+        if (self.tokens.items.len < self.tokens.capacity) {
+            self.tokens.appendAssumeCapacity(token);
+        } else {
+            try self.tokens.append(self.allocator(), token);
+        }
+    }
+
+    fn commitEof(self: *Parser) Error!void {
+        if (!self.collect_tokens) return;
+        std.debug.assert(self.current_token.tag == .eof);
+        try self.tokens.append(self.allocator(), self.current_token);
     }
 
     const BodyKind = enum {
@@ -313,22 +342,19 @@ pub const Parser = struct {
     /// Advances to the next token, reporting an escaped keyword consumed in keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
-        self.prev_token_end = self.current_token.span.end;
-        if (self.lexer.tryNextToken()) |token| {
-            self.current_token = token;
-        } else {
-            self.current_token = try self.nextToken() orelse return null;
-        }
+        return self.advanceWithoutEscapeCheck();
     }
 
     /// Advances without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
-        self.prev_token_end = self.current_token.span.end;
+        const leaving = self.current_token;
+        self.prev_token_end = leaving.span.end;
         if (self.lexer.tryNextToken()) |token| {
             self.current_token = token;
         } else {
             self.current_token = try self.nextToken() orelse return null;
         }
+        try self.commitToken(leaving);
     }
 
     pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
@@ -374,6 +400,7 @@ pub const Parser = struct {
             .nodes_len = self.tree.nodes.len,
             .extra_len = self.tree.extras.items.len,
             .diagnostics_len = self.diagnostics.items.len,
+            .tokens_len = self.tokens.items.len,
             .context = self.context,
             .ts_context = self.ts_context,
             .state = self.state,
@@ -391,6 +418,7 @@ pub const Parser = struct {
         self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
         self.tree.extras.shrinkRetainingCapacity(cp.extra_len);
         self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
+        self.tokens.shrinkRetainingCapacity(cp.tokens_len);
         self.context = cp.context;
         self.ts_context = cp.ts_context;
         self.state = cp.state;
@@ -425,6 +453,10 @@ pub const Parser = struct {
 
     /// Replaces the current token with a re-scanned one and advances past it.
     pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
+        // a rescan past the current token completes it, one inside it supersedes it
+        if (token.span.start >= self.current_token.span.end) {
+            try self.commitToken(self.current_token);
+        }
         self.current_token = token;
         return self.advance();
     }
@@ -557,6 +589,10 @@ pub const Parser = struct {
 
     pub fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
         while (self.current_token.tag != .eof) {
+            // a failed rescan leaves the lexer inside the current token, which is then stale
+            if (self.current_token.span.end <= self.lexer.cursor) {
+                try self.commitToken(self.current_token);
+            }
             self.current_token = try self.recoverNextToken();
 
             if (self.current_token.tag == .eof) break;
@@ -609,6 +645,9 @@ pub const Parser = struct {
         try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
+        if (self.collect_tokens) {
+            try self.tokens.ensureTotalCapacity(alloc, @max(64, source_len / 3));
+        }
     }
 };
 
@@ -624,6 +663,7 @@ pub const Checkpoint = struct {
     nodes_len: usize,
     extra_len: usize,
     diagnostics_len: usize,
+    tokens_len: usize,
 
     context: Context,
     ts_context: TsContext,

@@ -23,6 +23,8 @@ pub fn generate(w: *Writer, mode: Mode) !void {
         \\
     );
     try writeLookupTables(w);
+    try writeTokenTables(w);
+    try writeTokenList(w);
     if (mode == .analyzer) try writeSemanticConstants(w);
     if (mode == .analyzer) try writeChildTables(w);
     try writeBuildPosMap(w);
@@ -30,8 +32,8 @@ pub fn generate(w: *Writer, mode: Mode) !void {
     try writeNodeFunction(w, mode);
     try writeDecodeBody(w, mode);
     switch (mode) {
-        .parser => try w.writeAll("export { decode };\n"),
-        .analyzer => try w.writeAll("export { decode, SymbolFlags };\n"),
+        .parser => try w.writeAll("export { decode, TokenKind };\n"),
+        .analyzer => try w.writeAll("export { decode, SymbolFlags, TokenKind };\n"),
     }
 }
 
@@ -139,6 +141,135 @@ fn writeSemanticConstants(w: *Writer) !void {
     try w.writeAll("});\n");
 }
 
+const TokenTag = parser.ast.TokenTag;
+
+/// `left_paren` to `LeftParen`, `jsx_text` to `JSXText`.
+pub fn tokenName(comptime snake: []const u8) []const u8 {
+    comptime {
+        var out: []const u8 = "";
+        var upper = true;
+        for (snake) |c| {
+            if (c == '_') {
+                upper = true;
+                continue;
+            }
+            out = out ++ &[_]u8{if (upper) std.ascii.toUpper(c) else c};
+            upper = false;
+        }
+        if (std.mem.startsWith(u8, out, "Jsx")) out = "JSX" ++ out[3..];
+        if (std.mem.eql(u8, out, "Eof")) out = "EOF";
+        return out;
+    }
+}
+
+fn writeTokenTables(w: *Writer) !void {
+    @setEvalBranchQuota(50_000);
+    try w.writeAll("const TokenKind = Object.freeze({\n");
+    inline for (@typeInfo(TokenTag).@"enum".fields) |field| {
+        try w.print("  {s}: {d},\n", .{ comptime tokenName(field.name), field.value });
+    }
+    try w.writeAll("});\n");
+}
+
+fn tokenFlagBit(comptime flag: parser.ast.TokenFlag) u8 {
+    return 1 << @intFromEnum(flag);
+}
+
+fn writeTokenList(w: *Writer) !void {
+    const Mask = parser.ast.TokenMask;
+    try w.print(
+        \\class TokenList {{
+        \\  constructor(u32, base, count, p, str) {{
+        \\    this._u32 = u32;
+        \\    this._base = base;
+        \\    this.length = count;
+        \\    this._p = p;
+        \\    this._str = str;
+        \\  }}
+        \\  _at(i) {{
+        \\    if (i !== (i | 0) || i < 0 || i >= this.length) throw new RangeError("token " + i);
+        \\    return this._base + i * {[stride]d};
+        \\  }}
+        \\  kind(i) {{ return this._u32[this._at(i) + {[tag]d}]; }}
+        \\  _flags(i) {{ return this._u32[this._at(i) + {[flags]d}]; }}
+        \\  start(i) {{ return this._p(this._u32[this._at(i) + {[start]d}]); }}
+        \\  end(i) {{ return this._p(this._u32[this._at(i) + {[end]d}]); }}
+        \\  text(i) {{
+        \\    const o = this._at(i);
+        \\    return this._str(this._u32[o + {[start]d}], this._u32[o + {[end]d}]);
+        \\  }}
+        \\  isKeyword(i) {{ return (this.kind(i) & {[keyword]d}) !== 0; }}
+        \\  isReserved(i) {{ return (this.kind(i) & {[reserved]d}) !== 0; }}
+        \\  isIdentifierLike(i) {{ return (this.kind(i) & {[ident]d}) !== 0; }}
+        \\  isNumericLiteral(i) {{ return (this.kind(i) & {[numeric]d}) !== 0; }}
+        \\  isBinaryOperator(i) {{ return (this.kind(i) & {[binary]d}) !== 0; }}
+        \\  isLogicalOperator(i) {{ return (this.kind(i) & {[logical]d}) !== 0; }}
+        \\  isUnaryOperator(i) {{ return (this.kind(i) & {[unary]d}) !== 0; }}
+        \\  isAssignmentOperator(i) {{ return (this.kind(i) & {[assign]d}) !== 0; }}
+        \\  precedence(i) {{ return (this.kind(i) >> {[prec_shift]d}) & {[prec_mask]d}; }}
+        \\  newlineBefore(i) {{ return (this._flags(i) & {[newline]d}) !== 0; }}
+        \\  escaped(i) {{ return (this._flags(i) & {[escaped]d}) !== 0; }}
+        \\  invalidEscape(i) {{ return (this._flags(i) & {[invalid]d}) !== 0; }}
+        \\  loneSurrogate(i) {{ return (this._flags(i) & {[lone]d}) !== 0; }}
+        \\  // first index whose column is past offset, or length
+        \\  _search(column, offset) {{
+        \\    let lo = 0, hi = this.length;
+        \\    while (lo < hi) {{
+        \\      const mid = (lo + hi) >>> 1;
+        \\      if (this._p(this._u32[this._base + mid * {[stride]d} + column]) <= offset) lo = mid + 1;
+        \\      else hi = mid;
+        \\    }}
+        \\    return lo;
+        \\  }}
+        \\  range(node) {{
+        \\    const from = this._search({[start]d}, node.start - 1);
+        \\    const to = this._search({[end]d}, node.end);
+        \\    return [from, to > from ? to : from];
+        \\  }}
+        \\  first(node) {{
+        \\    const [from, to] = this.range(node);
+        \\    return to > from ? from : -1;
+        \\  }}
+        \\  last(node) {{
+        \\    const [from, to] = this.range(node);
+        \\    return to > from ? to - 1 : -1;
+        \\  }}
+        \\  before(at) {{
+        \\    return this._search({[end]d}, (typeof at === "number" ? at : at.start) - 1) - 1;
+        \\  }}
+        \\  after(at) {{
+        \\    const i = this._search({[start]d}, (typeof at === "number" ? at : at.end) - 1);
+        \\    return i < this.length ? i : -1;
+        \\  }}
+        \\  at(offset) {{
+        \\    const i = this._search({[start]d}, offset) - 1;
+        \\    return i >= 0 && this.end(i) > offset ? i : -1;
+        \\  }}
+        \\}}
+        \\
+    , .{
+        .stride = rt.TOKEN_SIZE / 4,
+        .start = rt.TOKEN_START_U32,
+        .end = rt.TOKEN_END_U32,
+        .tag = rt.TOKEN_TAG_U32,
+        .flags = rt.TOKEN_FLAGS_U32,
+        .keyword = Mask.IsKeyword,
+        .reserved = Mask.IsUnconditionallyReserved | Mask.IsStrictModeReserved,
+        .ident = Mask.IsIdentifierLike,
+        .numeric = Mask.IsNumericLiteral,
+        .binary = Mask.IsBinaryOp,
+        .logical = Mask.IsLogicalOp,
+        .unary = Mask.IsUnaryOp,
+        .assign = Mask.IsAssignmentOp,
+        .prec_shift = Mask.PrecShift,
+        .prec_mask = Mask.PrecOverlap,
+        .newline = tokenFlagBit(.line_terminator_before),
+        .escaped = tokenFlagBit(.escaped),
+        .invalid = tokenFlagBit(.invalid_escape),
+        .lone = tokenFlagBit(.lone_surrogates),
+    });
+}
+
 fn writeBuildPosMap(w: *Writer) !void {
     try w.writeAll(
         \\function buildPosMap(src, byteLen, startByte) {
@@ -191,6 +322,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\        diagCount = _u32[{[u_dc]d}],
         \\        progIdx = _u32[{[u_pi]d}];
         \\  const attachedCommentCount = _u32[{[u_acc]d}];
+        \\  const tokenCount = _u32[{[u_tc]d}];
         \\  const _flags = _u32[{[u_fl]d}];
         \\  const _isTs = !!(_flags & {[ts]d});
         \\  const _attached = !!(_flags & {[ac]d});
@@ -202,6 +334,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const _aoOff = _spOff + ((spLen + 3) & ~3);
         \\  const _acOff = _attached ? _aoOff + (nodeCount + 1) * 4 : _aoOff;
         \\  const _cOff = _acOff + attachedCommentCount * {[acsize]d};
+        \\  const _tOff = _cOff + commentCount * {[csize]d};
         \\  function _poolDecode(s, e) {{
         \\    const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
         \\    let hasEd = false;
@@ -272,6 +405,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
         .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
+        .u_tc = rt.HDR_TOKEN_COUNT_U32,
         .u_fl = rt.HDR_FLAGS_U32,
         .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
         .ts = rt.FLAG_TS,
@@ -279,6 +413,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
         .acsize = rt.ATTACHED_COMMENT_SIZE,
+        .csize = rt.COMMENT_SIZE,
         .stride = rt.NODE_SIZE / 4,
         .hdr_u32 = rt.HEADER_SIZE / 4,
         .len_expr = comptime u16At(
@@ -1308,7 +1443,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     comptime std.debug.assert(rt.COMMENT_FLAGS_OFFSET == 0);
     comptime std.debug.assert(rt.COMMENT_SIZE % 4 == 0);
     try w.print(
-        \\  const dOff = _cOff + commentCount * {[csize]d};
+        \\  const dOff = _tOff + tokenCount * {[tsize]d};
         \\  function _decodeComments() {{
         \\    const out = new Array(commentCount);
         \\    for (let j = 0; j < commentCount; j++) {{
@@ -1360,7 +1495,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\  }}
         \\
     , .{
-        .csize = rt.COMMENT_SIZE,
+        .tsize = rt.TOKEN_SIZE,
         .c_stride = rt.COMMENT_SIZE / 4,
         .c_vs = rt.COMMENT_VALUE_START_OFFSET / 4,
         .c_ve = rt.COMMENT_VALUE_END_OFFSET / 4,
@@ -1374,10 +1509,15 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     }
 
     try w.writeAll(
-        \\  let _program, _diagnostics, _comments;
+        \\  let _program, _diagnostics, _comments, _tokens;
         \\  return {
         \\    get program() {
         \\      return _program !== undefined ? _program : (_program = node(progIdx));
+        \\    },
+        \\    get tokens() {
+        \\      // the list closes with eof, which is not a token of the source
+        \\      if (tokenCount === 0) return undefined;
+        \\      return _tokens ??= new TokenList(_u32, _tOff >> 2, tokenCount - 1, _p, str);
         \\    },
         \\    get comments() {
         \\      return _comments !== undefined

@@ -8,6 +8,7 @@ const Options = struct {
     lang: parser.ast.Lang = .js,
     preserve_parens: bool = true,
     attach_comments: bool = false,
+    tokens: bool = false,
 };
 
 /// Parses and analyzes one file into the analyzer buffer, the AST sections followed by
@@ -18,6 +19,7 @@ pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,
         .comments = if (options.attach_comments) .both else .flat,
+        .tokens = options.tokens,
     }) catch return error.AnalyzeFailed;
     defer tree.deinit();
 

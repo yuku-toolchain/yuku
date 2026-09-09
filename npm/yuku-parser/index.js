@@ -2,6 +2,8 @@ import { walk as astWalk } from "yuku-ast";
 import binding from "./binding.js";
 import { decode } from "./decode.js";
 
+export { TokenKind } from "./decode.js";
+
 const _enc = new TextEncoder();
 
 export function parse(source, options) {

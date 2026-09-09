@@ -7,6 +7,8 @@ import type {
   Program,
   SourceLang,
   SourceType,
+  TokenKindMap,
+  TokenList,
   WalkContext,
 } from "@yuku-toolchain/types";
 
@@ -51,6 +53,11 @@ interface ParseOptions {
    * @default false
    */
   attachComments?: boolean;
+  /**
+   * Keep every token, see {@link ParseResult.tokens}.
+   * @default false
+   */
+  tokens?: boolean;
 }
 
 /** The result returned by the parser. */
@@ -59,6 +66,8 @@ interface ParseResult {
   program: Program;
   /** Every comment in source order, each with its source span. */
   comments: Comment[];
+  /** Every token in source order, with {@link ParseOptions.tokens}. */
+  tokens?: TokenList;
   /** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
   diagnostics: Diagnostic[];
 }
@@ -67,6 +76,9 @@ interface ParseResult {
  * Parse JS/TS source code and return an ESTree / TypeScript-ESTree compatible AST.
  */
 export function parse(source: string, options?: ParseOptions): ParseResult;
+
+/** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
+export const TokenKind: TokenKindMap;
 
 // Deprecated walking surface. Walking moved to the yuku-ast package,
 // these delegate there and will be removed in an upcoming minor version.
