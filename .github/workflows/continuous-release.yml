@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      deployments: read
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
@@ -69,5 +70,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           METADATA_PATH: preview-packages.json
         run: bun .github/scripts/comment-preview-packages.ts

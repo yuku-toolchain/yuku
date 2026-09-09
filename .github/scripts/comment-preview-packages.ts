@@ -11,7 +11,7 @@ interface PreviewMetadata {
 
 const MARKER = "<!-- preview-packages -->";
 
-const { GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER, METADATA_PATH } = process.env;
+const { GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER, METADATA_PATH, HEAD_SHA } = process.env;
 
 if (!PR_NUMBER) {
   console.log("not a pull request, skipping the preview comment");
@@ -26,9 +26,39 @@ if (packages.length === 0) {
   process.exit(1);
 }
 
+const api = `https://api.github.com/repos/${GITHUB_REPOSITORY}`;
+const headers = {
+  authorization: `Bearer ${GITHUB_TOKEN}`,
+  accept: "application/vnd.github+json",
+  "content-type": "application/json",
+};
+
+// the playground preview Vercel deployed for this commit, recorded as a GitHub deployment
+async function previewPlayground(): Promise<string | null> {
+  if (!HEAD_SHA) return null;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const res = await fetch(`${api}/deployments?sha=${HEAD_SHA}`, { headers });
+    if (res.ok) {
+      const deployments = (await res.json()) as { environment: string; statuses_url: string }[];
+      for (const deployment of deployments) {
+        if (!deployment.environment.startsWith("Preview")) continue;
+        const statuses = await fetch(deployment.statuses_url, { headers });
+        if (!statuses.ok) continue;
+        const done = ((await statuses.json()) as { state: string; environment_url?: string }[]).find(
+          (status) => status.state === "success" && status.environment_url,
+        );
+        if (done) return done.environment_url!;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+  }
+  return null;
+}
+
 const wasm = packages.find((pkg) => pkg.name === "@yuku-parser/wasm");
 const sha = wasm?.url.split("@").pop();
-const playground = sha ? `https://playground.yuku.fyi/?pr=${sha}` : null;
+const origin = (await previewPlayground()) ?? "https://playground.yuku.fyi";
+const playground = sha ? `${origin}/?pr=${sha}` : null;
 
 const body = [
   MARKER,
@@ -43,13 +73,6 @@ const body = [
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((pkg) => `| \`${pkg.name}\` | \`npm i ${pkg.url}\` |`),
 ].join("\n");
-
-const api = `https://api.github.com/repos/${GITHUB_REPOSITORY}`;
-const headers = {
-  authorization: `Bearer ${GITHUB_TOKEN}`,
-  accept: "application/vnd.github+json",
-  "content-type": "application/json",
-};
 
 const listed = await fetch(`${api}/issues/${PR_NUMBER}/comments?per_page=100`, { headers });
 if (!listed.ok) {
