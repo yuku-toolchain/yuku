@@ -1522,7 +1522,9 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\    get tokens() {
         \\      // the list closes with eof, which is not a token of the source
         \\      if (tokenCount === 0) return undefined;
-        \\      return _tokens ??= new TokenList(_u32, _tOff >> 2, tokenCount - 1, _p, str);
+        \\      return _tokens !== undefined
+        \\        ? _tokens
+        \\        : (_tokens = new TokenList(_u32, _tOff >> 2, tokenCount - 1, _p, str));
         \\    },
         \\    get comments() {
         \\      return _comments !== undefined
