@@ -72,6 +72,23 @@ describe("tokens", () => {
     expect(tokens.loneSurrogate(3)).toBe(false);
   });
 
+  test("a rescanned token keeps the newline before the token it replaces", () => {
+    expect(list("x =\n/a/;").newlineBefore(2)).toBe(true);
+    expect(list("`a${b\n}c`;").newlineBefore(2)).toBe(true);
+    const generic = list("let x: A<B<C\n>> = y;", { lang: "ts" });
+    expect(generic.newlineBefore(8)).toBe(true);
+    expect(generic.newlineBefore(9)).toBe(false);
+    expect(list("<C<T>\nfoo />;", { lang: "tsx" }).newlineBefore(5)).toBe(true);
+  });
+
+  test("lone surrogates keep every span in UTF-16", () => {
+    const source = `const s = "\uD800\uD800"; after;`;
+    const { program, tokens } = parse(source, { tokens: true });
+    const spans = Array.from({ length: tokens!.length }, (_, i) => [tokens!.start(i), tokens!.end(i)]);
+    expect(spans).toEqual([[0, 5], [6, 7], [8, 9], [10, 14], [14, 15], [16, 21], [21, 22]]);
+    expect(program.body[1]).toMatchObject({ start: 16, end: 22 });
+  });
+
   test("offsets are UTF-16 like nodes", () => {
     const source = `const s = "😀"; s;`;
     const { program, tokens } = parse(source, { tokens: true });

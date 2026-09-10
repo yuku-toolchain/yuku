@@ -1,6 +1,7 @@
 const std = @import("std");
 const Token = @import("token.zig").Token;
 const TokenTag = @import("token.zig").TokenTag;
+const flagMask = @import("token.zig").flagMask;
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
 const util = @import("util");
@@ -453,18 +454,28 @@ pub const Parser = struct {
 
     /// Replaces the current token with a re-scanned one and advances past it.
     pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
+        var rescanned = token;
         // a rescan past the current token completes it, one inside it supersedes it
         if (token.span.start >= self.current_token.span.end) {
             try self.commitToken(self.current_token);
+        } else {
+            rescanned.flags |= newlineFlag(self.current_token);
         }
-        self.current_token = token;
+        self.current_token = rescanned;
         return self.advance();
     }
 
     /// Re-tokenizes the current token in the current lexer mode.
     pub inline fn reScanCurrent(self: *Parser) Error!?void {
-        self.lexer.rewindTo(self.current_token.span.start);
+        const replaced = self.current_token;
+        self.lexer.rewindTo(replaced.span.start);
         self.current_token = try self.nextToken() orelse return null;
+        self.current_token.flags |= newlineFlag(replaced);
+    }
+
+    // a rescan starts at the token it replaces, past the trivia that set the flag
+    inline fn newlineFlag(token: Token) u8 {
+        return token.flags & flagMask(.line_terminator_before);
     }
 
     pub fn expect(

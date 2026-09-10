@@ -292,7 +292,8 @@ fn writeBuildPosMap(w: *Writer) !void {
         \\    m[bp] = u16p;
         \\    if (cu < 0x80) { bp++; u16p++; i++; }
         \\    else if (cu < 0x800) { m[bp + 1] = u16p + 1; bp += 2; u16p++; i++; }
-        \\    else if (cu < 0xD800 || cu >= 0xE000) {
+        \\    // a lone surrogate encodes as U+FFFD, three bytes and one unit
+        \\    else if (cu < 0xD800 || cu >= 0xDC00 || (src.charCodeAt(i + 1) & 0xFC00) !== 0xDC00) {
         \\      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1;
         \\      bp += 3; u16p++; i++;
         \\    }
