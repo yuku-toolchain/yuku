@@ -15,7 +15,8 @@
     "url": "https://github.com/yuku-toolchain/yuku"
   },
   "files": [
-    "index.d.ts"
+    "index.d.ts",
+    "tokens.d.ts"
   ],
   "type": "module",
   "sideEffects": false,

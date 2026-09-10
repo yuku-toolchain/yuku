@@ -16,7 +16,7 @@
   "scripts": {
     "test": "bun fetch:fixtures && bun build:local && bun build:wasm && bun typecheck && bun test:parser && bun test:codegen && bun test:ast && bun test:analyzer && bun test:wasm && bun test:sourcemap",
     "typecheck": "tsc --noEmit",
-    "test:parser": "bun test/parser/run.ts",
+    "test:parser": "bun test/parser/run.ts && bun test test/parser",
     "test:codegen": "bun test test/codegen",
     "test:ast": "bun test test/ast",
     "test:analyzer": "bun test test/analyzer",
@@ -32,7 +32,7 @@
     "build:wasm": "zig build wasm && bun gen:wasm",
     "release:npm": "napi-zig bump",
     "fetch:fixtures": "bun test/parser/load test/parser/suite",
-    "gen:npm": "zig build gen-parser-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-codegen-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen && zig build gen-analyzer-decoder && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./src/parser/ffi/analyzer.d.ts ./npm/yuku-analyzer/index.d.ts && zig build gen-walk-tables && cp ./zig-out/walk-tables.ts ./npm/yuku-ast/src/generated.ts && bun run --cwd npm/yuku-ast build",
+    "gen:npm": "zig build gen-token-types && cp ./zig-out/tokens.d.ts ./npm/yuku-types && zig build gen-parser-decoder && cp ./zig-out/decode.js ./npm/yuku-parser && zig build gen-codegen-encoder && cp ./zig-out/encode.js ./npm/yuku-codegen && zig build gen-analyzer-decoder && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./src/parser/ffi/analyzer.d.ts ./npm/yuku-analyzer/index.d.ts && zig build gen-walk-tables && cp ./zig-out/walk-tables.ts ./npm/yuku-ast/src/generated.ts && bun run --cwd npm/yuku-ast build",
     "gen:wasm": "zig build gen-parser-decoder && zig build gen-codegen-encoder && zig build gen-analyzer-decoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-codegen.wasm ./zig-out/encode.js ./npm/yuku-codegen-wasm/ && cp ./zig-out/bin/yuku-analyzer.wasm ./npm/yuku-analyzer-wasm/ && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer-wasm/decode.js && cp ./npm/yuku-analyzer/index.js ./npm/yuku-analyzer/analyzer.js ./npm/yuku-analyzer/module.js ./npm/yuku-analyzer/walk.js ./npm/yuku-analyzer/index.d.ts ./npm/yuku-analyzer-wasm/"
   },
   "devDependencies": {

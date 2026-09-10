@@ -18,19 +18,11 @@ pub const Analyzed = struct {
     }
 
     pub fn bindingNamed(self: *const Analyzed, name: []const u8) !ast.NodeIndex {
-        return self.nthBindingNamed(name, 0);
-    }
-
-    pub fn nthBindingNamed(self: *const Analyzed, name: []const u8, n: usize) !ast.NodeIndex {
-        return findNamed(&self.tree, .binding_identifier, name, n) orelse error.BindingNotFound;
+        return findNamed(&self.tree, .binding_identifier, name, 0) orelse error.BindingNotFound;
     }
 
     pub fn referenceNamed(self: *const Analyzed, name: []const u8) !ast.NodeIndex {
-        return self.nthReferenceNamed(name, 0);
-    }
-
-    pub fn nthReferenceNamed(self: *const Analyzed, name: []const u8, n: usize) !ast.NodeIndex {
-        return findNamed(&self.tree, .identifier_reference, name, n) orelse error.ReferenceNotFound;
+        return findNamed(&self.tree, .identifier_reference, name, 0) orelse error.ReferenceNotFound;
     }
 
     pub fn nthNode(self: *const Analyzed, tag: NodeTag, n: usize) !ast.NodeIndex {

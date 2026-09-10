@@ -118,6 +118,7 @@ analyzer.addFile("legacy.cjs", source, {
   // sourceType "commonjs", inferred from the extension
   preserveParens: true,
   attachComments: false,
+  tokens: false,
 });
 ```
 
@@ -159,7 +160,10 @@ module.source;      // the original source text
 module.ast;         // ESTree / TS-ESTree Program, lazily decoded
 module.diagnostics; // syntax and semantic errors for this file
 module.comments;    // every comment in source order
+module.tokens;      // TokenList, present when added with tokens: true
 ```
+
+`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](/parser/#tokens).
 
 The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, and nodes are plain mutable objects. Edit them, run them through any ESTree tool, print them with `yuku-codegen`.
 

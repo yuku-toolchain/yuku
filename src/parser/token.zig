@@ -465,7 +465,7 @@ pub const TokenTag = enum(u32) {
     }
 };
 
-pub const Span = struct {
+pub const Span = extern struct {
     start: u32,
     end: u32,
 
@@ -483,10 +483,12 @@ pub inline fn flagMask(comptime flag: TokenFlag) u8 {
     return @as(u8, 1) << @intFromEnum(flag);
 }
 
-pub const Token = struct {
+// extern, the token list is copied to the wire as is
+pub const Token = extern struct {
     span: Span,
     tag: TokenTag,
     flags: u8 = 0,
+    _pad: [3]u8 = .{ 0, 0, 0 },
 
     pub inline fn eof(pos: u32) Token {
         return .{ .span = .{ .start = pos, .end = pos }, .tag = .eof };
@@ -552,5 +554,5 @@ pub const Precedence = struct {
 };
 
 comptime {
-    std.debug.assert((@sizeOf(Token) <= 16));
+    std.debug.assert(@sizeOf(Token) == 16);
 }

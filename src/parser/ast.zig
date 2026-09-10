@@ -6,12 +6,16 @@
 const std = @import("std");
 const strings = @import("strings.zig");
 const TokenSpan = @import("token.zig").Span;
-const TokenTag = @import("token.zig").TokenTag;
+pub const TokenTag = @import("token.zig").TokenTag;
 
 pub const String = strings.String;
 pub const StringPool = strings.ASTStringPool;
 
 pub const Span = TokenSpan;
+
+pub const Token = @import("token.zig").Token;
+pub const TokenFlag = @import("token.zig").TokenFlag;
+pub const TokenMask = @import("token.zig").Mask;
 
 pub const Severity = enum {
     @"error",
@@ -180,6 +184,9 @@ pub const Tree = struct {
     attached_comments: []const AttachedComment = &.{},
     /// Prefix-sum index into `attached_comments`, of length `nodes.len + 1`.
     attached_comment_offsets: []const u32 = &.{},
+    /// Every token the parser consumed, in source order, closed by `eof`.
+    /// Empty unless `Options.tokens` is set.
+    tokens: []const Token = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
     /// The original source text passed to the parser.

@@ -1,3 +1,5 @@
+import type { TokenKindMap } from "./tokens.js";
+
 /** How the source code should be parsed. */
 type SourceType = "script" | "module" | "commonjs";
 
@@ -45,6 +47,67 @@ interface AttachedComment {
   sameLine: boolean;
   /** Comment text without the delimiters. */
   value: string;
+}
+
+/** The kind of a token, one of the values of `TokenKind`. */
+type TokenKind = TokenKindMap[keyof TokenKindMap];
+
+/**
+ * The tokens of a file in source order, read on demand from the parser's
+ * token table. A token is an index below `length`. Comments are not tokens.
+ */
+interface TokenList {
+  readonly length: number;
+  /** `tokens.kind(i) === TokenKind.Arrow` */
+  kind(index: number): TokenKind;
+  /** Source text, a string literal keeps its quotes. */
+  text(index: number): string;
+  /** UTF-16 offset, like nodes. */
+  start(index: number): number;
+  end(index: number): number;
+
+  /** A reserved word or a contextual keyword the lexer knows. */
+  isKeyword(index: number): boolean;
+  /** Reserved unconditionally or in strict mode, so `let` and `yield` count. */
+  isReserved(index: number): boolean;
+  /** A word that can never be an identifier. */
+  isUnconditionallyReserved(index: number): boolean;
+  /** Reserved in strict mode only, such as `let`, `static`, and `implements`. */
+  isStrictModeReserved(index: number): boolean;
+  /** An identifier or any keyword. */
+  isIdentifierLike(index: number): boolean;
+  isNumericLiteral(index: number): boolean;
+  isBinaryOperator(index: number): boolean;
+  isLogicalOperator(index: number): boolean;
+  isUnaryOperator(index: number): boolean;
+  isAssignmentOperator(index: number): boolean;
+  /** Binary precedence, 0 when none. */
+  precedence(index: number): number;
+
+  /** A line terminator precedes the token, what ASI looks at. */
+  newlineBefore(index: number): boolean;
+  /** The text has a unicode escape. */
+  escaped(index: number): boolean;
+  /** A template chunk whose cooked value is undefined. */
+  invalidEscape(index: number): boolean;
+  /** A string with an unpaired surrogate. */
+  loneSurrogate(index: number): boolean;
+
+  /**
+   * The half-open index range of the tokens inside a node's span. A node that
+   * sits inside one token, such as a template element, has an empty range.
+   */
+  range(node: Span): [from: number, to: number];
+  /** The first token inside a node, or -1. */
+  first(node: Span): number;
+  /** The last token inside a node, or -1. */
+  last(node: Span): number;
+  /** The last token ending at or before a node or offset, or -1. */
+  before(at: number | Span): number;
+  /** The first token starting at or after a node or offset, or -1. */
+  after(at: number | Span): number;
+  /** The token containing an offset, or -1. */
+  at(offset: number): number;
 }
 
 /** A labeled source span attached to a {@link Diagnostic}. */
@@ -1721,6 +1784,9 @@ type Node =
 
 export { WalkContext };
 export type {
+  TokenKind,
+  TokenKindMap,
+  TokenList,
   NodeOfType,
   NodeType,
   Comment,

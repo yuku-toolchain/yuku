@@ -135,6 +135,8 @@ pub const regressions = [_][]const u8{
     "import x = require(1)", // require() with a non-string arg hit unreachable
     "x as T\r[1, 2]", // member access on a cast reprinted as a type index T[1,2]
     "class C{async get x(){await 0}}", // async getter whose async the printer dropped
+    "0x; let a = 1;", // a lexical error in the first token dropped the rest of the file
+    ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
 };
 
 // violations panic so the driver can dump the reproducer
@@ -145,12 +147,14 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
     var tree = parser.parse(a, src, .{
         .lang = mode.lang,
         .source_type = mode.source_type,
+        .tokens = true,
     }) catch |e| switch (e) {
         error.OutOfMemory => return,
     };
     defer tree.deinit();
 
     checkSpans(&tree, src);
+    checkTokens(&tree, src);
 
     // captured before semantic analysis adds its early-error diagnostics
     const parse_clean = !tree.hasErrors();
@@ -178,6 +182,42 @@ fn checkSpans(tree: *const ast.Tree, src: []const u8) void {
             .{ d.span.start, d.span.end, src.len },
         );
     }
+}
+
+fn checkTokens(tree: *const ast.Tree, src: []const u8) void {
+    const tokens = tree.tokens;
+    if (tokens.len == 0) std.debug.panic("token list is empty, expected at least eof", .{});
+
+    var prev_end: u32 = 0;
+    for (tokens, 0..) |t, i| {
+        if (t.span.start > t.span.end or t.span.end > src.len) std.debug.panic(
+            "token span out of bounds: token {d}/{d} is {d}..{d}, src.len {d}",
+            .{ i, tokens.len, t.span.start, t.span.end, src.len },
+        );
+        if (t.span.start < prev_end) std.debug.panic(
+            "token {d}/{d} at {d}..{d} overlaps the token ending at {d}",
+            .{ i, tokens.len, t.span.start, t.span.end, prev_end },
+        );
+        const is_last = i + 1 == tokens.len;
+        if (t.tag == .eof and !is_last) std.debug.panic("eof token {d} is not last", .{i});
+        if (t.span.start == t.span.end and !is_last) std.debug.panic(
+            "token {d}/{d} at {d} is empty",
+            .{ i, tokens.len, t.span.start },
+        );
+        prev_end = t.span.end;
+    }
+
+    const last = tokens[tokens.len - 1];
+    if (last.tag != .eof) std.debug.panic("last token is {t}, expected eof", .{last.tag});
+    if (last.span.start != src.len) std.debug.panic(
+        "eof at {d}, expected {d}",
+        .{ last.span.start, src.len },
+    );
+    const program_end = tree.span(tree.root).end;
+    if (program_end != last.span.end) std.debug.panic(
+        "program ends at {d}, eof at {d}",
+        .{ program_end, last.span.end },
+    );
 }
 
 fn checkRoundTrip(gpa: Allocator, tree: *ast.Tree, mode: Mode, src: []const u8) void {

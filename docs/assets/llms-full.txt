@@ -66,7 +66,7 @@ import { parse } from "yuku-parser";
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm. Alongside the options below it takes `attachComments` (the JS spelling of the `comments` mode) and `semanticErrors`, which folds the [semantic pass](https://yuku.fyi/parser/semantic/) into the call so early errors arrive in the same `diagnostics` array. `langFromPath` and `sourceTypeFromPath` are exported too. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
+Outputs an [ESTree](https://github.com/estree/estree) / [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm. See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
 ## WebAssembly
 
@@ -135,6 +135,7 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](https://yuku.fyi/parser/ast/#comments) |
+| `tokens`                        | `true`, `false`                      | `false`   | Keep every token the parser consumed in `tree.tokens`. See [Tokens](#tokens)  |
 
 Both fields can be inferred from a file path.
 
@@ -196,6 +197,42 @@ for (tree.diagnostics.items) |d| {
 
 Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `message`, a source `span`, optional `labels` pointing to related code regions, and optional `help` text.
 
+## Tokens
+
+`tokens` keeps every token the parser consumed, in source order. Off by default.
+
+```zig
+var tree = try parser.parse(allocator, "let x = a / b;", .{ .tokens = true });
+defer tree.deinit();
+
+for (tree.tokens) |token| {
+    std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
+}
+```
+
+Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. See [Tokens](https://yuku.fyi/parser/ast/#tokens) for the `Token` layout.
+
+In JavaScript the same option returns a `TokenList`, a view over the parser's token table. A token is an index, and every accessor is one typed-array read.
+
+```js
+import { parse, TokenKind } from "yuku-parser";
+
+const { program, tokens } = parse(source, { tokens: true });
+
+for (let i = 0; i < tokens.length; i++) {
+  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
+}
+
+tokens.isKeyword(i);              // and isReserved, isBinaryOperator, precedence, ...
+tokens.newlineBefore(i);          // what ASI looks at
+tokens.range(program.body[0]);    // [from, to) of the node's tokens
+tokens.before(program.body[1]);   // the token ending before it, -1 when none
+```
+
+See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser#tokens) for the full API, and [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts) for the 160 kinds in `TokenKind`.
+
+Why an index and not an array of objects? On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. Building an object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
+
 ## Going Further
 
 - [Semantic Analysis](https://yuku.fyi/parser/semantic/) documents the semantic model of a tree, with scopes, symbols, resolved references, early errors, and module records.
@@ -213,7 +250,7 @@ The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/pa
 - **JavaScript / JSX** is fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript** conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
 
-Comments can be attached to the AST nodes they belong to, exposed as a flat offset-indexed array, or both. See [Comments](#comments).
+Comments can be attached to the AST nodes they belong to, exposed as a flat offset-indexed array, or both. See [Comments](#comments). The tokens the parser consumed can be kept as well. See [Tokens](#tokens).
 
 On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
@@ -889,6 +926,40 @@ pub const AttachedComment = struct {
 - `.inside` sits interior to an otherwise empty host, like `function f() { /* hi */ }`.
 
 `same_line` is true when the comment shares a source line with the host's adjacent edge (host start for `.before`, host end for `.after`). For `.inside` it is always false.
+
+## Tokens
+
+The `tokens` option keeps every token the parser consumed in `tree.tokens`, a slice in source order. Off by default.
+
+```zig
+var tree = try parser.parse(allocator, source, .{ .tokens = true });
+defer tree.deinit();
+
+for (tree.tokens) |token| {
+    std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
+}
+```
+
+A `Token` is its `span`, its `tag`, and a few flags, read through methods.
+
+```zig
+token.span                       // byte range in the source
+token.text(tree.source)          // the source text
+token.tag                        // one of the 160 TokenTag variants, .identifier, .arrow, ...
+token.tag.isKeyword()            // and isReserved, isIdentifierLike, isBinaryOperator, ...
+token.tag.precedence()           // binary precedence, 0 when none
+token.tag.toString()             // "=>" for .arrow, null for tokens with free text
+token.hasLineTerminatorBefore()  // what ASI looks at
+token.isEscaped()                // `\u0061sync` is an .async token with this set
+token.hasInvalidEscape()         // a template chunk whose cooked value is undefined
+token.hasLoneSurrogates()        // a string with an unpaired surrogate
+```
+
+`TokenTag` is defined in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig), one variant per punctuator, literal form, keyword, and identifier form.
+
+Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
+
+Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous slice found by binary search on `span.start`.
 
 # Semantic Analysis
 
@@ -2317,8 +2388,6 @@ defer result.deinit(allocator);
 The substitutions.
 
 - `true` / `false` → `!0` / `!1`
-- `undefined` → `void 0` (in expression position)
-- `Infinity` → `1/0`
 - numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe
@@ -2440,6 +2509,7 @@ analyzer.addFile("legacy.cjs", source, {
   // sourceType "commonjs", inferred from the extension
   preserveParens: true,
   attachComments: false,
+  tokens: false,
 });
 ```
 
@@ -2481,7 +2551,10 @@ module.source;      // the original source text
 module.ast;         // ESTree / TS-ESTree Program, lazily decoded
 module.diagnostics; // syntax and semantic errors for this file
 module.comments;    // every comment in source order
+module.tokens;      // TokenList, present when added with tokens: true
 ```
+
+`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](https://yuku.fyi/parser/#tokens).
 
 The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, and nodes are plain mutable objects. Edit them, run them through any ESTree tool, print them with `yuku-codegen`.
 

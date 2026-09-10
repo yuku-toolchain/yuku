@@ -226,6 +226,8 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.function, index, flags);
             },
             .function_body => {
+                // unknown past the path's capacity
+                if (parent == .null) return;
                 const params = switch (self.tree.data(parent)) {
                     .function => |f| f.params,
                     .arrow_function_expression => |a| a.params,
@@ -259,6 +261,7 @@ pub const ScopeTracker = struct {
                 //
                 //   switch (x) { case 1: let x }
                 //   //      ^ outer scope    ^ case-block scope
+                if (parent == .null) return;
                 if (self.currentScope().node != parent)
                     try self.pushScope(.block, parent, self.inheritStrictFlag());
             },

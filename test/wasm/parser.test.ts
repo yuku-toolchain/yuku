@@ -55,6 +55,15 @@ describe("@yuku-parser/wasm", () => {
     expect(types).toContain("TSModuleDeclaration");
   });
 
+  test("lists tokens when requested", () => {
+    const { program, tokens } = parse("const x = 1 + y;", { lang: "js", tokens: true });
+    expect(Array.from({ length: tokens!.length }, (_, i) => tokens!.text(i))).toEqual([
+      "const", "x", "=", "1", "+", "y", ";",
+    ]);
+    expect(tokens!.range(program.body[0]!)).toEqual([0, 7]);
+    expect(parse("const x = 1;", { lang: "js" }).tokens).toBeUndefined();
+  });
+
   test("attaches comments when requested", () => {
     const { program } = parse(jsSource, { lang: "js", attachComments: true });
     const first = program.body[0];

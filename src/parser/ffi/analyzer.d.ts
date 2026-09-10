@@ -10,6 +10,8 @@ import type {
   Program,
   SourceLang,
   SourceType,
+  TokenKindMap,
+  TokenList,
   WalkContext as BaseWalkContext,
 } from "@yuku-toolchain/types";
 
@@ -46,6 +48,11 @@ interface AddFileOptions {
    * @default false
    */
   attachComments?: boolean;
+  /**
+   * Keep every token, see {@link Module.tokens}.
+   * @default false
+   */
+  tokens?: boolean;
 }
 
 /** Options for {@link Analyzer}. */
@@ -66,6 +73,11 @@ interface AnalyzerOptions {
  * question about a symbol is `symbol.has(SymbolFlags.X)` (any of the
  * bits) or `symbol.hasAll(...)` (all of them); there is one way to ask.
  */
+/** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
+declare const TokenKind: TokenKindMap;
+/** The kind of a token, one of the values of `TokenKind`. */
+type TokenKind = TokenKindMap[keyof TokenKindMap];
+
 declare const SymbolFlags: {
   /** `var`, parameter, or catch variable. */
   readonly FunctionScopedVariable: number;
@@ -452,6 +464,8 @@ interface Module {
   readonly diagnostics: Diagnostic[];
   /** Every comment in source order. */
   readonly comments: Comment[];
+  /** Every token in source order, with {@link AddFileOptions.tokens}. */
+  readonly tokens?: TokenList;
 
   /** Every lexical scope; index is the scope id. `scopes[0]` is global. */
   readonly scopes: Scope[];
@@ -669,6 +683,7 @@ export {
   analyze,
   Analyzer,
   SymbolFlags,
+  TokenKind,
   langFromPath,
   sourceTypeFromPath,
   type AddFileOptions,

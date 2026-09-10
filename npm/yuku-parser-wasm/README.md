@@ -30,3 +30,4 @@ Options:
 | `preserveParens`             | `true`     | Keep `ParenthesizedExpression` nodes      |
 | `semanticErrors`             | `false`    | Also run semantic analysis                |
 | `attachComments`             | `false`    | Attach comments to their host node        |
+| `tokens`                     | `false`    | Keep every token, see [Tokens](https://www.npmjs.com/package/yuku-parser#tokens) |

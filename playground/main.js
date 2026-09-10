@@ -1,4 +1,4 @@
-import { parse } from "@yuku-parser/wasm";
+import { parse, TokenKind } from "@yuku-parser/wasm";
 import { generate } from "@yuku-codegen/wasm";
 import { analyze, SymbolFlags } from "@yuku-analyzer/wasm";
 import { CodeJar } from "https://esm.sh/codejar@4.2.0";
@@ -277,6 +277,41 @@ function exportRow(ex) {
   if (ex.fromName && ex.fromName !== ex.name) label += ` ← ${ex.fromName}`;
   const spans = ex.local ? spansOf(ex.local) : { decl: [[ex.node.start, ex.node.end]], refs: [] };
   return recordRow(label, badgeList, ex.specifier, spans, [ex.node.start, ex.node.end]);
+}
+
+const KIND_NAMES = new Map(Object.entries(TokenKind).map(([name, kind]) => [kind, name]));
+
+function tokenText(text) {
+  const shown = text.replace(/\r?\n/g, "\\n");
+  return shown.length > 48 ? `${shown.slice(0, 47)}…` : shown;
+}
+
+function tokenRow(tokens, i) {
+  const start = tokens.start(i);
+  const end = tokens.end(i);
+  const r = el("div", "sem-sym");
+  r.append(el("span", "ast-meta", String(i)));
+  r.append(el("span", "ast-type", KIND_NAMES.get(tokens.kind(i))));
+  r.append(el("span", "tok-text", tokenText(tokens.text(i))));
+  if (tokens.newlineBefore(i)) r.append(el("span", "sem-flag", "newline before"));
+  if (tokens.escaped(i)) r.append(el("span", "sem-flag", "escaped"));
+  if (tokens.invalidEscape(i)) r.append(el("span", "sem-flag", "invalid escape"));
+  if (tokens.loneSurrogate(i)) r.append(el("span", "sem-flag", "lone surrogate"));
+  if (tokens.isBinaryOperator(i) || tokens.isLogicalOperator(i)) {
+    r.append(el("span", "sem-flag", `prec ${tokens.precedence(i)}`));
+  }
+  r.append(el("span", "ast-span", `${start}:${end}`));
+  r.__spans = { decl: [[start, end]], refs: [] };
+  r.__focus = [start, end];
+  semTargets.push({ start, end, row: r, spans: r.__spans });
+  return r;
+}
+
+function tokenList(tokens) {
+  const frag = document.createDocumentFragment();
+  frag.append(el("div", "ast-meta tok-count", `${tokens.length} tokens`));
+  for (let i = 0; i < tokens.length; i++) frag.append(tokenRow(tokens, i));
+  return frag;
 }
 
 function semTree(m) {
@@ -657,10 +692,11 @@ function render() {
   clearCodeHighlight();
 
   const source = jar.toString();
+  const view = $("view").value;
   let result;
   const t0 = performance.now();
   try {
-    result = parse(source, options());
+    result = parse(source, { ...options(), tokens: view === "tokens" });
   } catch (e) {
     astView.replaceChildren();
     outView.textContent = "";
@@ -673,8 +709,8 @@ function render() {
 
   let diags = result.diagnostics;
   const astScroll = astView.scrollTop;
-  $("paneTitle").textContent = $("view").value;
-  if ($("view").value === "semantics") {
+  $("paneTitle").textContent = view;
+  if (view === "semantics") {
     try {
       const m = analyze(source, options());
       diags = m.diagnostics;
@@ -682,6 +718,10 @@ function render() {
     } catch (e) {
       astView.replaceChildren(el("div", "sem-err", String(e)));
     }
+  } else if (view === "tokens") {
+    astView.replaceChildren(
+      result.tokens ? tokenList(result.tokens) : el("div", "sem-err", "this yuku-parser has no tokens"),
+    );
   } else {
     astView.replaceChildren(
       value_(null, result.program, 0, ""),
@@ -949,8 +989,8 @@ function mapCaretToSem(scroll) {
 }
 
 function mapCaret(scroll, collapseRest) {
-  if ($("view").value === "semantics") mapCaretToSem(scroll);
-  else mapCaretToAst(scroll, collapseRest);
+  if ($("view").value === "ast") mapCaretToAst(scroll, collapseRest);
+  else mapCaretToSem(scroll);
 }
 
 let caretFrame;
@@ -1116,15 +1156,21 @@ function applyState(s) {
 
 async function showVersion() {
   const el = $("version");
+  const pr = new URLSearchParams(location.search).get("pr");
+  if (pr) {
+    el.textContent = `pr ${pr.slice(0, 7)}`;
+    el.title = `preview packages of yuku-toolchain/yuku@${pr}`;
+    return;
+  }
   try {
-    const res = await fetch(el.dataset.pkg);
+    const url = import.meta.resolve("@yuku-parser/wasm");
+    const res = await fetch(url);
     const match = res.headers.get("x-esm-path")?.match(/@(\d[^/]*)/);
     if (match) {
       el.textContent = match[1];
       return;
     }
-    const pkgUrl = new URL("./package.json", new URL(el.dataset.pkg, location.href));
-    const { version } = await (await fetch(pkgUrl)).json();
+    const { version } = await (await fetch(new URL("./package.json", url))).json();
     if (version) el.textContent = version;
   } catch {}
 }

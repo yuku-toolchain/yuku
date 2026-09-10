@@ -64,3 +64,18 @@ test("keeps banner comments around a leading semicolon", () => {
       b()"
     `);
 });
+
+test("a string literal keeps its trailing space in compact output", () => {
+  expect(gen(`throw new RangeError("token index " + i + " is out of range");`, MINIFY))
+    .toMatchInlineSnapshot(`"throw new RangeError("token index "+i+" is out of range")"`);
+});
+
+test("template text keeps a space before an interpolation and the closing backtick", () => {
+  expect(gen("const s = `a ${b} c `;", MINIFY)).toMatchInlineSnapshot(
+    '"const s=`a ${b} c `"',
+  );
+});
+
+test("a regex pattern ending in a space keeps it before the closing slash", () => {
+  expect(gen("const r = /a /g;", MINIFY)).toMatchInlineSnapshot('"const r=/a /g"');
+});

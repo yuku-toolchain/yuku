@@ -1,6 +1,8 @@
 import { walk as astWalk } from "yuku-ast";
 import { decode } from "./decode.js";
 
+export { TokenKind } from "./decode.js";
+
 const wasmUrl = new URL("./yuku-parser.wasm", import.meta.url);
 
 async function instantiate() {
@@ -27,6 +29,7 @@ function packFlags(o = {}) {
   if (o.preserveParens !== false) f |= 1 << 5;
   if (o.semanticErrors) f |= 1 << 6;
   if (o.attachComments) f |= 1 << 7;
+  if (o.tokens) f |= 1 << 8;
   return f;
 }
 

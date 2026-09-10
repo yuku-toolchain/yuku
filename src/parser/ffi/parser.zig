@@ -9,6 +9,7 @@ const Options = struct {
     preserve_parens: bool = true,
     semantic_errors: bool = false,
     attach_comments: bool = false,
+    tokens: bool = false,
 };
 
 pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
@@ -17,6 +18,7 @@ pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,
         .comments = if (options.attach_comments) .both else .flat,
+        .tokens = options.tokens,
     }) catch return error.ParseFailed;
     defer tree.deinit();
 

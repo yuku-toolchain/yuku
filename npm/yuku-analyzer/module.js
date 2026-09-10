@@ -1,6 +1,6 @@
 // one analyzed file, its AST plus a lazily built semantic graph
 import binding from "./binding.js";
-import { decode, SymbolFlags } from "./decode.js";
+import { decode, SymbolFlags, TokenKind } from "./decode.js";
 import { walkModule, walkModuleAsync } from "./walk.js";
 
 const _enc = new TextEncoder();
@@ -273,6 +273,7 @@ export class Module {
         sourceType: options.sourceType ?? sourceTypeFromPath(path),
         preserveParens: options.preserveParens,
         attachComments: options.attachComments,
+        tokens: options.tokens,
       }),
       source,
     );
@@ -287,6 +288,9 @@ export class Module {
   }
   get comments() {
     return this.#r.comments;
+  }
+  get tokens() {
+    return this.#r.tokens;
   }
 
   get scopes() {
@@ -544,4 +548,4 @@ export class Module {
   }
 }
 
-export { SymbolFlags };
+export { SymbolFlags, TokenKind };

@@ -273,6 +273,12 @@ pub fn build(b: *std.Build) void {
             .root = "tools/gen_walk_tables.zig",
             .output = "walk-tables.ts",
         },
+        .{
+            .step = "gen-token-types",
+            .description = "Generate tokens.d.ts for @yuku-toolchain/types",
+            .root = "tools/gen_token_types.zig",
+            .output = "tokens.d.ts",
+        },
     }) |cfg| {
         const generator_module = b.createModule(.{
             .root_source_file = b.path(cfg.root),

@@ -88,6 +88,7 @@ const tree = try parser.parse(allocator, source, .{
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
 | `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](/parser/ast/#comments) |
+| `tokens`                        | `true`, `false`                      | `false`   | Keep every token the parser consumed in `tree.tokens`. See [Tokens](#tokens)  |
 
 Both fields can be inferred from a file path.
 
@@ -148,6 +149,42 @@ for (tree.diagnostics.items) |d| {
 ```
 
 Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `message`, a source `span`, optional `labels` pointing to related code regions, and optional `help` text.
+
+## [Tokens]($section.id('tokens'))
+
+`tokens` keeps every token the parser consumed, in source order. Off by default.
+
+```zig
+var tree = try parser.parse(allocator, "let x = a / b;", .{ .tokens = true });
+defer tree.deinit();
+
+for (tree.tokens) |token| {
+    std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
+}
+```
+
+Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. See [Tokens](/parser/ast/#tokens) for the `Token` layout.
+
+In JavaScript the same option returns a `TokenList`, a view over the parser's token table. A token is an index, and every accessor is one typed-array read.
+
+```js
+import { parse, TokenKind } from "yuku-parser";
+
+const { program, tokens } = parse(source, { tokens: true });
+
+for (let i = 0; i < tokens.length; i++) {
+  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
+}
+
+tokens.isKeyword(i);              // and isReserved, isBinaryOperator, precedence, ...
+tokens.newlineBefore(i);          // what ASI looks at
+tokens.range(program.body[0]);    // [from, to) of the node's tokens
+tokens.before(program.body[1]);   // the token ending before it, -1 when none
+```
+
+See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser#tokens) for the full API, and [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts) for the 160 kinds in `TokenKind`.
+
+Why an index and not an array of objects? On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. Building an object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
 
 ## [Going Further]($section.id('going-further'))
 

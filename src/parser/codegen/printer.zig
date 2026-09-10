@@ -208,6 +208,20 @@ const Printer = struct {
         if (comptime source_maps) if (self.sm) |*sm| sm.advance(s);
     }
 
+    // literal text is opaque to the keyword-space drop
+    inline fn writeRawByte(self: *Self, b: u8) Error!void {
+        self.at_lead = .none;
+        try self.pushByte(b);
+        if (comptime source_maps) if (self.sm) |*sm| sm.advance(&.{b});
+    }
+
+    inline fn writeRawStr(self: *Self, s: []const u8) Error!void {
+        if (s.len == 0) return;
+        self.at_lead = .none;
+        try self.pushSlice(s);
+        if (comptime source_maps) if (self.sm) |*sm| sm.advance(s);
+    }
+
     // keywords write their trailing space speculatively, compact mode drops it before punctuation
     inline fn dropPendingKeywordSpace(self: *Self, next: u8) void {
         if (self.pretty()) return;
@@ -1322,7 +1336,7 @@ const Printer = struct {
         const q = self.pickQuote(s, single_quoted);
         try self.writeByte(q);
         try self.writeEscapedString(s, q);
-        try self.writeByte(q);
+        try self.writeRawByte(q);
     }
 
     inline fn pickQuote(self: *const Self, s: []const u8, single_quoted: bool) u8 {
@@ -1346,7 +1360,7 @@ const Printer = struct {
             if (c >= 0x80) {
                 if (c == 0xED) {
                     if (util.Utf.loneSurrogateAt(s, i)) |cp| {
-                        if (i > start) try self.writeStr(s[start..i]);
+                        if (i > start) try self.writeRawStr(s[start..i]);
                         try self.writeUnicodeEscape(cp);
                         i += 2;
                         start = i + 1;
@@ -1372,12 +1386,12 @@ const Printer = struct {
                 };
             };
             if (esc) |e| {
-                if (i > start) try self.writeStr(s[start..i]);
-                try self.writeStr(e);
+                if (i > start) try self.writeRawStr(s[start..i]);
+                try self.writeRawStr(e);
                 start = i + 1;
             }
         }
-        if (start < s.len) try self.writeStr(s[start..]);
+        if (start < s.len) try self.writeRawStr(s[start..]);
     }
 
     fn writeUnicodeEscape(self: *Self, cp: u32) Error!void {
@@ -1387,7 +1401,7 @@ const Printer = struct {
             hex[(cp >> 12) & 0xF], hex[(cp >> 8) & 0xF],
             hex[(cp >> 4) & 0xF],  hex[cp & 0xF],
         };
-        try self.writeStr(&buf);
+        try self.writeRawStr(&buf);
     }
 
     fn emit_numeric_literal(self: *Self, lit: *const ast.NumericLiteral) Error!void {
@@ -1426,9 +1440,9 @@ const Printer = struct {
 
     fn emit_regexp_literal(self: *Self, lit: *const ast.RegExpLiteral) Error!void {
         try self.writeByte('/');
-        try self.writeString(lit.pattern);
-        try self.writeByte('/');
-        try self.writeString(lit.flags);
+        try self.writeRawStr(self.tree.string(lit.pattern));
+        try self.writeRawByte('/');
+        try self.writeRawStr(self.tree.string(lit.flags));
     }
 
     fn emit_template_literal(self: *Self, lit: *const ast.TemplateLiteral) Error!void {
@@ -1441,24 +1455,24 @@ const Printer = struct {
         for (self.tree.extra(quasis), 0..) |q, i| {
             try self.emit(q);
             if (i < xs.len) {
-                try self.writeStr("${");
+                try self.writeRawStr("${");
                 try self.emit(xs[i]);
                 try self.writeByte('}');
             }
         }
-        try self.writeByte('`');
+        try self.writeRawByte('`');
     }
 
     fn emit_template_element(self: *Self, el: *const ast.TemplateElement) Error!void {
         const raw = self.tree.string(el.raw);
-        if (raw.len != 0) return self.writeStr(raw);
+        if (raw.len != 0) return self.writeRawStr(raw);
         const s = self.tree.string(el.cooked);
         var i: usize = 0;
         var start: usize = 0;
         while (i < s.len) : (i += 1) {
             const c = s[i];
             if (util.Utf.loneSurrogateAt(s, i)) |cp| {
-                if (i > start) try self.writeStr(s[start..i]);
+                if (i > start) try self.writeRawStr(s[start..i]);
                 try self.writeUnicodeEscape(cp);
                 i += 2;
                 start = i + 1;
@@ -1479,12 +1493,12 @@ const Printer = struct {
                 };
             };
             if (esc) |e| {
-                if (i > start) try self.writeStr(s[start..i]);
-                try self.writeStr(e);
+                if (i > start) try self.writeRawStr(s[start..i]);
+                try self.writeRawStr(e);
                 start = i + 1;
             }
         }
-        if (start < s.len) try self.writeStr(s[start..]);
+        if (start < s.len) try self.writeRawStr(s[start..]);
     }
 
     fn emit_identifier_reference(self: *Self, id: *const ast.IdentifierReference) Error!void {
