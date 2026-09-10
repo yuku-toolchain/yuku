@@ -206,11 +206,11 @@ var tree = try parser.parse(allocator, "let x = a / b;", .{ .tokens = true });
 defer tree.deinit();
 
 for (tree.tokens) |token| {
-    std.debug.print("{t} {s}\n", .{ token.tag, tree.source[token.span.start..token.span.end] });
+    std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
 }
 ```
 
-The tokens are final. A regular expression is one `regex_literal`, a template is its head, middle, and tail chunks around the interpolated expressions, and the `>>` closing a nested generic is two `greater_than`. Abandoned speculative parses leave nothing behind. See [Tokens](https://yuku.fyi/parser/ast/#tokens) for the `Token` layout.
+Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. See [Tokens](https://yuku.fyi/parser/ast/#tokens) for the `Token` layout.
 
 In JavaScript the same option returns a `TokenList`, a view over the parser's token table. A token is an index, and every accessor is one typed-array read.
 
@@ -231,7 +231,7 @@ tokens.before(program.body[1]);   // the token ending before it, -1 when none
 
 See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser#tokens) for the full API, and [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts) for the 160 kinds in `TokenKind`.
 
-Why an index and not an array of token objects? A 1 MB file has about 215,000 tokens. Building an object for each takes about 8 ms, more than parsing the file, and leaves those objects on the heap for the garbage collector. The `TokenList` is a view over the 16 bytes per token the parser already wrote, so `tokens: true` adds under half a millisecond to the parse, and every accessor is one typed-array read with nothing allocated. You get the whole token stream for less than the cost of decoding one large node.
+Why an index and not an array of objects? On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. Building an object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
 
 ## Going Further
 
@@ -957,7 +957,7 @@ token.hasLoneSurrogates()        // a string with an unpaired surrogate
 
 `TokenTag` is defined in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig), one variant per punctuator, literal form, keyword, and identifier form.
 
-The tokens are final. The lexer cannot tell `/` from a regular expression, `}` from a template continuation, or `>>` from two closing angle brackets, so the parser rescans those once it knows, and the list holds the result: one `regex_literal`, a template's head, middle, and tail around the interpolated expressions, two `greater_than`. Abandoned speculative parses leave nothing behind. Keywords keep their tag wherever they appear, so `type` in `let type = 1` is a `type` token. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
+Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
 
 Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous slice found by binary search on `span.start`.
 

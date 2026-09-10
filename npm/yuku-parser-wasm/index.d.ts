@@ -79,6 +79,8 @@ export function parse(source: string, options?: ParseOptions): ParseResult;
 
 /** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
 export const TokenKind: TokenKindMap;
+/** The kind of a token, one of the values of `TokenKind`. */
+export type TokenKind = TokenKindMap[keyof TokenKindMap];
 
 // Deprecated walking surface. Walking moved to the yuku-ast package,
 // these delegate there and will be removed in an upcoming minor version.

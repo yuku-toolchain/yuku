@@ -719,7 +719,9 @@ function render() {
       astView.replaceChildren(el("div", "sem-err", String(e)));
     }
   } else if (view === "tokens") {
-    astView.replaceChildren(tokenList(result.tokens));
+    astView.replaceChildren(
+      result.tokens ? tokenList(result.tokens) : el("div", "sem-err", "this yuku-parser has no tokens"),
+    );
   } else {
     astView.replaceChildren(
       value_(null, result.program, 0, ""),

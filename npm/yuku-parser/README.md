@@ -91,9 +91,9 @@ tokens.start(i)           // UTF-16 offsets, like nodes
 tokens.end(i)
 
 tokens.isKeyword(i)       // reserved words and contextual keywords
-tokens.isReserved(i)      // reserved unconditionally or in strict mode, split by
-tokens.isUnconditionallyReserved(i)
-tokens.isStrictModeReserved(i)
+tokens.isReserved(i)      // reserved unconditionally or in strict mode
+tokens.isUnconditionallyReserved(i)   // can never be an identifier
+tokens.isStrictModeReserved(i)        // let, static, implements, ...
 tokens.isIdentifierLike(i)
 tokens.isNumericLiteral(i)
 tokens.isBinaryOperator(i)
@@ -119,11 +119,11 @@ tokens.after(node)       // first token starting at or after it, also takes an o
 tokens.at(offset)        // the token containing an offset
 ```
 
-Why an index and not an array of token objects? A 1 MB file has about 215,000 tokens. Building an object for each takes about 8 ms, more than parsing the file, and leaves those objects on the heap for the garbage collector. The `TokenList` is a view over the 16 bytes per token the parser already wrote, so `tokens: true` adds under half a millisecond to the parse, and every accessor is one typed-array read with nothing allocated.
+Why an index and not an array of objects? On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. Building an object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
 
 `TokenKind` has 160 kinds, one per punctuator, literal form, keyword, and identifier form. The full list is [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts).
 
-The tokens are final: a regular expression is one `RegexLiteral`, a template is its `TemplateHead`, `TemplateMiddle`, and `TemplateTail` around the interpolated expressions, and the `>>` closing a nested generic is two `GreaterThan`. Keywords keep their kind wherever they appear, so `type` in `let type = 1` is `TokenKind.Type`. Comments are not tokens, they stay in `comments`. `TokenKind` values may change between versions, compare by name.
+Tokens are as the parser resolved them: a regex is one `RegexLiteral`, and the `>>` closing a nested generic is two `GreaterThan`. Comments are not tokens.
 
 ## Walking the AST
 

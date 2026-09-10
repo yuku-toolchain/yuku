@@ -719,6 +719,6 @@ token.hasLoneSurrogates()        // a string with an unpaired surrogate
 
 `TokenTag` is defined in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig), one variant per punctuator, literal form, keyword, and identifier form.
 
-The tokens are final. The lexer cannot tell `/` from a regular expression, `}` from a template continuation, or `>>` from two closing angle brackets, so the parser rescans those once it knows, and the list holds the result: one `regex_literal`, a template's head, middle, and tail around the interpolated expressions, two `greater_than`. Abandoned speculative parses leave nothing behind. Keywords keep their tag wherever they appear, so `type` in `let type = 1` is a `type` token. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
+Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
 
 Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous slice found by binary search on `span.start`.

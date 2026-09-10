@@ -75,6 +75,8 @@ interface AnalyzerOptions {
  */
 /** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
 declare const TokenKind: TokenKindMap;
+/** The kind of a token, one of the values of `TokenKind`. */
+type TokenKind = TokenKindMap[keyof TokenKindMap];
 
 declare const SymbolFlags: {
   /** `var`, parameter, or catch variable. */
