@@ -1,6 +1,6 @@
 test/parser/suite/js/pass
 =========================
-Passed:       38727/38727 (100.00%)
+Passed:       38732/38732 (100.00%)
 Failed:       0
 AST mismatch: 0/38725
 
@@ -3270,6 +3270,7 @@ AST mismatch: 0/38725
 ✓ test/parser/suite/js/pass/15bad074afc7121e.js
 ✓ test/parser/suite/js/pass/15bb71cc75d190b8.js
 ✓ test/parser/suite/js/pass/15bbdc04be2858b8.js
+✓ test/parser/suite/js/pass/15bc09725d596b8f.js
 ✓ test/parser/suite/js/pass/15bc7569d5cbebbb.js
 ✓ test/parser/suite/js/pass/15c4fa7afa030ac0.js
 ✓ test/parser/suite/js/pass/15c500c6f8948486.js
@@ -6959,6 +6960,7 @@ AST mismatch: 0/38725
 ✓ test/parser/suite/js/pass/2de5eb3b5849cccb.js
 ✓ test/parser/suite/js/pass/2de5fe90678e3339.js
 ✓ test/parser/suite/js/pass/2de813b4055add65.js
+✓ test/parser/suite/js/pass/2deb127c6646b1f1.js
 ✓ test/parser/suite/js/pass/2deb2bcde3721ba1.js
 ✓ test/parser/suite/js/pass/2deed686b655cc9c.js
 ✓ test/parser/suite/js/pass/2df15630b313a1a5.js
@@ -16758,6 +16760,7 @@ AST mismatch: 0/38725
 ✓ test/parser/suite/js/pass/6f42cfce457eed9a.js
 ✓ test/parser/suite/js/pass/6f4559285fb8d84f.js
 ✓ test/parser/suite/js/pass/6f45d737ca8ecd23.js
+✓ test/parser/suite/js/pass/6f49fd6ad8761674.js
 ✓ test/parser/suite/js/pass/6f4a4bad171d6707.js
 ✓ test/parser/suite/js/pass/6f4a8c679728f504.js
 ✓ test/parser/suite/js/pass/6f4b96011ab0595a.js
@@ -26130,6 +26133,7 @@ AST mismatch: 0/38725
 ✓ test/parser/suite/js/pass/ad8c19d5c43ab137.js
 ✓ test/parser/suite/js/pass/ad8e7c110b934a14.js
 ✓ test/parser/suite/js/pass/ad915fc803782667.js
+✓ test/parser/suite/js/pass/ad94682f23f86678.js
 ✓ test/parser/suite/js/pass/ad981e8b12ce5832.js
 ✓ test/parser/suite/js/pass/ad9bba1548da7e0b.js
 ✓ test/parser/suite/js/pass/ad9f96e52b721430.js
@@ -26401,6 +26405,7 @@ AST mismatch: 0/38725
 ✓ test/parser/suite/js/pass/af3741d462ce884a.js
 ✓ test/parser/suite/js/pass/af3ae485d2a89c80.js
 ✓ test/parser/suite/js/pass/af3c9a7cb5ab527d.js
+✓ test/parser/suite/js/pass/af3edebbf065ff51.js
 ✓ test/parser/suite/js/pass/af44d80d9a166203.js
 ✓ test/parser/suite/js/pass/af492a5f6ff83c56.js
 ✓ test/parser/suite/js/pass/af4a4a0759d24f06.js

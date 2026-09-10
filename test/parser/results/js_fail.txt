@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       4998/4998 (100.00%)
+Passed:       4999/4999 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -32788,6 +32788,16 @@ error: Invalid element in assignment pattern
    | ^^^
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
+
+✓ test/parser/suite/js/fail/ad83203cde96a633.js
+error: BigInt literal cannot contain decimal point or exponent
+   |
+ 1 | 0e0n;
+   |    ^
+ 2 | 
+   |
+   = help: Try removing the 'n' suffix here, or remove the decimal point/exponent from the number
 
 
 ✓ test/parser/suite/js/fail/ada1b8e3d05fe93d.js
