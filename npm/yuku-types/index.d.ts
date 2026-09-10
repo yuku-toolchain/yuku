@@ -68,8 +68,12 @@ interface TokenList {
 
   /** A reserved word or a contextual keyword the lexer knows. */
   isKeyword(index: number): boolean;
-  /** A word that can never be an identifier. */
+  /** Reserved unconditionally or in strict mode, so `let` and `yield` count. */
   isReserved(index: number): boolean;
+  /** A word that can never be an identifier. */
+  isUnconditionallyReserved(index: number): boolean;
+  /** Reserved in strict mode only, such as `let`, `static`, and `implements`. */
+  isStrictModeReserved(index: number): boolean;
   /** An identifier or any keyword. */
   isIdentifierLike(index: number): boolean;
   isNumericLiteral(index: number): boolean;
@@ -89,7 +93,10 @@ interface TokenList {
   /** A string with an unpaired surrogate. */
   loneSurrogate(index: number): boolean;
 
-  /** The half-open index range of a node's tokens. */
+  /**
+   * The half-open index range of the tokens inside a node's span. A node that
+   * sits inside one token, such as a template element, has an empty range.
+   */
   range(node: Span): [from: number, to: number];
   /** The first token inside a node, or -1. */
   first(node: Span): number;

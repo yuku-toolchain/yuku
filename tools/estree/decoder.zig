@@ -200,6 +200,8 @@ fn writeTokenList(w: *Writer) !void {
         \\  }}
         \\  isKeyword(i) {{ return (this.kind(i) & {[keyword]d}) !== 0; }}
         \\  isReserved(i) {{ return (this.kind(i) & {[reserved]d}) !== 0; }}
+        \\  isUnconditionallyReserved(i) {{ return (this.kind(i) & {[unconditional]d}) !== 0; }}
+        \\  isStrictModeReserved(i) {{ return (this.kind(i) & {[strict]d}) !== 0; }}
         \\  isIdentifierLike(i) {{ return (this.kind(i) & {[ident]d}) !== 0; }}
         \\  isNumericLiteral(i) {{ return (this.kind(i) & {[numeric]d}) !== 0; }}
         \\  isBinaryOperator(i) {{ return (this.kind(i) & {[binary]d}) !== 0; }}
@@ -235,7 +237,7 @@ fn writeTokenList(w: *Writer) !void {
         \\    return to > from ? to - 1 : -1;
         \\  }}
         \\  before(at) {{
-        \\    return this._search({[end]d}, (typeof at === "number" ? at : at.start) - 1) - 1;
+        \\    return this._search({[end]d}, typeof at === "number" ? at : at.start) - 1;
         \\  }}
         \\  after(at) {{
         \\    const i = this._search({[start]d}, (typeof at === "number" ? at : at.end) - 1);
@@ -255,6 +257,8 @@ fn writeTokenList(w: *Writer) !void {
         .flags = rt.TOKEN_FLAGS_U32,
         .keyword = Mask.IsKeyword,
         .reserved = Mask.IsUnconditionallyReserved | Mask.IsStrictModeReserved,
+        .unconditional = Mask.IsUnconditionallyReserved,
+        .strict = Mask.IsStrictModeReserved,
         .ident = Mask.IsIdentifierLike,
         .numeric = Mask.IsNumericLiteral,
         .binary = Mask.IsBinaryOp,

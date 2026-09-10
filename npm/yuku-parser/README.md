@@ -91,7 +91,9 @@ tokens.start(i)           // UTF-16 offsets, like nodes
 tokens.end(i)
 
 tokens.isKeyword(i)       // reserved words and contextual keywords
-tokens.isReserved(i)      // can never be an identifier
+tokens.isReserved(i)      // reserved unconditionally or in strict mode, split by
+tokens.isUnconditionallyReserved(i)
+tokens.isStrictModeReserved(i)
 tokens.isIdentifierLike(i)
 tokens.isNumericLiteral(i)
 tokens.isBinaryOperator(i)
@@ -109,7 +111,7 @@ tokens.loneSurrogate(i)   // a string with an unpaired surrogate
 The queries take a node and answer with an index, `-1` when there is none. They are binary searches, so they replace a token store without building one.
 
 ```ts
-tokens.range(node)       // [from, to) of the node's tokens
+tokens.range(node)       // [from, to) of the tokens inside the node, empty for a node inside one token
 tokens.first(node)
 tokens.last(node)
 tokens.before(node)      // last token ending at or before it, also takes an offset

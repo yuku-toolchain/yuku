@@ -37,6 +37,8 @@ describe("tokens", () => {
     const tokens = list("let x = 1 + y;");
     expect(tokens.isKeyword(0)).toBe(true);
     expect(tokens.isReserved(0)).toBe(true);
+    expect(tokens.isUnconditionallyReserved(0)).toBe(false);
+    expect(tokens.isStrictModeReserved(0)).toBe(true);
     expect(tokens.isKeyword(1)).toBe(false);
     expect(tokens.isIdentifierLike(1)).toBe(true);
     expect(tokens.isNumericLiteral(3)).toBe(true);
@@ -110,6 +112,11 @@ describe("tokens", () => {
     expect(t.after(decl)).toBe(5);
     expect(t.before(decl)).toBe(-1);
     expect(t.after(call)).toBe(-1);
+
+    const paren = list("foo(a)");
+    expect(paren.text(paren.before(4))).toBe("(");
+    expect(paren.text(paren.before({ start: 4, end: 5 }))).toBe("(");
+    expect(paren.text(paren.after(4))).toBe("a");
 
     const foo = source.indexOf("foo");
     expect(t.at(foo)).toBe(5);
