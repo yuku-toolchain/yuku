@@ -424,23 +424,35 @@ pub const Lexer = struct {
 
         self.cursor += 1;
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-            if (c == '\\') {
-                try self.consumeEscape(.template);
-                continue;
+        const src = self.source;
+        var pos = self.cursor;
+        while (true) {
+            pos = findAnyPos("`\\$\r", src, pos);
+            if (pos >= src.len) break;
+            switch (src[pos]) {
+                '`' => {
+                    self.cursor = pos + 1;
+                    return self.createToken(.template_tail, start, self.cursor);
+                },
+                '\\' => {
+                    self.cursor = pos;
+                    try self.consumeEscape(.template);
+                    pos = self.cursor;
+                },
+                '$' => {
+                    if (pos + 1 < src.len and src[pos + 1] == '{') {
+                        self.cursor = pos + 2;
+                        return self.createToken(.template_middle, start, self.cursor);
+                    }
+                    pos += 1;
+                },
+                // a raw CR must be normalized in the cooked value, so it counts as escaped
+                '\r' => {
+                    self.setTokenFlag(.escaped);
+                    pos += 1;
+                },
+                else => unreachable,
             }
-            if (c == '`') {
-                self.cursor += 1;
-                return self.createToken(.template_tail, start, self.cursor);
-            }
-            if (c == '$' and self.peek(1) == '{') {
-                self.cursor += 2;
-                return self.createToken(.template_middle, start, self.cursor);
-            }
-            // a raw CR must be normalized in the cooked value, so it counts as escaped
-            if (c == '\r') self.setTokenFlag(.escaped);
-            self.cursor += 1;
         }
         return error.NonTerminatedTemplateLiteral;
     }
@@ -646,32 +658,39 @@ pub const Lexer = struct {
         std.debug.assert(self.source[self.cursor] == '`');
 
         const start = self.cursor;
-        self.cursor += 1;
+        const src = self.source;
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-
-            if (c == '\\') {
-                try self.consumeEscape(.template);
-                continue;
+        var pos = start + 1;
+        while (true) {
+            pos = findAnyPos("`\\$\r", src, pos);
+            if (pos >= src.len) break;
+            switch (src[pos]) {
+                '`' => {
+                    self.cursor = pos + 1;
+                    return self.createToken(.no_substitution_template, start, self.cursor);
+                },
+                '\\' => {
+                    self.cursor = pos;
+                    try self.consumeEscape(.template);
+                    pos = self.cursor;
+                },
+                '$' => {
+                    if (pos + 1 < src.len and src[pos + 1] == '{') {
+                        self.cursor = pos + 2;
+                        return self.createToken(.template_head, start, self.cursor);
+                    }
+                    pos += 1;
+                },
+                // a raw CR must be normalized in the cooked value, so it counts as escaped
+                '\r' => {
+                    self.setTokenFlag(.escaped);
+                    pos += 1;
+                },
+                else => unreachable,
             }
-
-            if (c == '`') {
-                self.cursor += 1;
-                return self.createToken(.no_substitution_template, start, self.cursor);
-            }
-
-            if (c == '$' and self.peek(1) == '{') {
-                self.cursor += 2;
-                return self.createToken(.template_head, start, self.cursor);
-            }
-
-            // a raw CR must be normalized in the cooked value, so it counts as escaped
-            if (c == '\r') self.setTokenFlag(.escaped);
-
-            self.cursor += 1;
         }
 
+        self.cursor = @intCast(src.len);
         return error.NonTerminatedTemplateLiteral;
     }
 
