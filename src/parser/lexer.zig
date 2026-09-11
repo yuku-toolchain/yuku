@@ -46,6 +46,39 @@ pub const LexerMode = enum {
     jsx_tag,
 };
 
+/// First offset >= `from` at which `src` holds one of the comptime
+/// `chars`, searched 16 bytes at a time; `src.len` on a miss.
+fn findAnyPos(comptime chars: []const u8, src: []const u8, from: u32) u32 {
+    const Vec = @Vector(16, u8);
+
+    var i: usize = from;
+    while (i + 16 <= src.len) : (i += 16) {
+        const v: Vec = src[i..][0..16].*;
+        var hit: @Vector(16, bool) = @splat(false);
+        inline for (chars) |ch| {
+            hit = hit | (v == @as(Vec, @splat(ch)));
+        }
+        const mask: u16 = @bitCast(hit);
+        if (mask != 0) return @intCast(i + @ctz(mask));
+    }
+    if (i + 8 <= src.len) {
+        const v: @Vector(8, u8) = src[i..][0..8].*;
+        var hit: @Vector(8, bool) = @splat(false);
+        inline for (chars) |ch| {
+            hit = hit | (v == @as(@Vector(8, u8), @splat(ch)));
+        }
+        const mask: u8 = @bitCast(hit);
+        if (mask != 0) return @intCast(i + @ctz(mask));
+        i += 8;
+    }
+    while (i < src.len) : (i += 1) {
+        inline for (chars) |ch| {
+            if (src[i] == ch) return @intCast(i);
+        }
+    }
+    return @intCast(src.len);
+}
+
 pub const LexerState = struct {
     /// Flags attached to the next emitted token.
     token_flags: u8 = 0,
@@ -1359,7 +1392,9 @@ pub const Lexer = struct {
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
-        while (pos < src.len) {
+        while (true) {
+            pos = findAnyPos("\r\n\xe2", src, pos);
+            if (pos >= src.len) break;
             const c = src[pos];
             if (c == '\n' or c == '\r') break;
             if (c == 0xE2 and util.Utf.unicodeSeparatorLen(src, pos) > 0) break;
