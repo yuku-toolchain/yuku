@@ -1391,18 +1391,46 @@ pub const Lexer = struct {
                 '\n', '\r' => {
                     self.setTokenFlag(.line_terminator_before);
                     pos += 1;
+                    break;
                 },
                 0x80...0xFF => {
                     const lt_len = util.Utf.unicodeSeparatorLen(src, pos);
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
                         pos += lt_len;
+                        break;
                     } else pos += 1;
                 },
                 else => pos += 1,
             }
         }
-        self.cursor = pos;
+        // multi-line body: vectorized search for the two-byte '*/'
+        // sequence (star and slash masks combined per lane). line leads
+        // are " * " - star without a slash - so they never restart the
+        // scan. windows overlap by one byte to catch a straddling '*/'.
+        var w = pos - 1;
+        while (w + 16 <= src.len) {
+            const v: @Vector(16, u8) = src[w..][0..16].*;
+            var stars: @Vector(16, bool) = @splat(false);
+            var slashes: @Vector(16, bool) = @splat(false);
+            stars = stars | (v == @as(@Vector(16, u8), @splat('*')));
+            slashes = slashes | (v == @as(@Vector(16, u8), @splat('/')));
+            const ends: u16 = @as(u16, @bitCast(stars)) & (@as(u16, @bitCast(slashes)) >> 1);
+            if (ends != 0) {
+                self.cursor = @intCast(w + @ctz(ends) + 2);
+                try self.recordComment(.block, start, self.cursor);
+                return;
+            }
+            w += 15;
+        }
+        while (w + 1 < src.len) : (w += 1) {
+            if (src[w] == '*' and src[w + 1] == '/') {
+                self.cursor = @intCast(w + 2);
+                try self.recordComment(.block, start, self.cursor);
+                return;
+            }
+        }
+        self.cursor = @intCast(src.len);
         return error.UnterminatedMultiLineComment;
     }
 
