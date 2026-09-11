@@ -602,27 +602,28 @@ pub const Lexer = struct {
 
         if (self.mode == .normal) {
             while (pos < src.len) {
-                const c = src[pos];
-
-                if (c == quote) {
-                    pos += 1;
+                const hit = if (quote == '"')
+                    findAnyPos("\"\\\n\r", src, pos)
+                else
+                    findAnyPos("'\\\n\r", src, pos);
+                if (hit >= src.len) {
+                    pos = hit;
+                    break;
+                }
+                if (src[hit] == quote) {
+                    pos = hit + 1;
                     self.cursor = pos;
                     return self.createToken(.string_literal, start, pos);
                 }
-
-                if (c == '\\') {
-                    self.cursor = pos;
+                if (src[hit] == '\\') {
+                    self.cursor = hit;
                     try self.consumeEscape(.string);
                     pos = self.cursor;
                     continue;
                 }
-
-                if (c == '\n' or c == '\r') {
-                    self.cursor = pos;
-                    return error.UnterminatedString;
-                }
-
-                pos += 1;
+                // '\n' or '\r'
+                self.cursor = hit;
+                return error.UnterminatedString;
             }
         } else {
             // jsx attribute values have no escapes and may span lines
