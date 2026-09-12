@@ -46,6 +46,39 @@ pub const LexerMode = enum {
     jsx_tag,
 };
 
+/// First offset >= `from` at which `src` holds one of the comptime
+/// `chars`, searched 16 bytes at a time; `src.len` on a miss.
+fn findAnyPos(comptime chars: []const u8, src: []const u8, from: u32) u32 {
+    const Vec = @Vector(16, u8);
+
+    var i: usize = from;
+    while (i + 16 <= src.len) : (i += 16) {
+        const v: Vec = src[i..][0..16].*;
+        var hit: @Vector(16, bool) = @splat(false);
+        inline for (chars) |ch| {
+            hit = hit | (v == @as(Vec, @splat(ch)));
+        }
+        const mask: u16 = @bitCast(hit);
+        if (mask != 0) return @intCast(i + @ctz(mask));
+    }
+    if (i + 8 <= src.len) {
+        const v: @Vector(8, u8) = src[i..][0..8].*;
+        var hit: @Vector(8, bool) = @splat(false);
+        inline for (chars) |ch| {
+            hit = hit | (v == @as(@Vector(8, u8), @splat(ch)));
+        }
+        const mask: u8 = @bitCast(hit);
+        if (mask != 0) return @intCast(i + @ctz(mask));
+        i += 8;
+    }
+    while (i < src.len) : (i += 1) {
+        inline for (chars) |ch| {
+            if (src[i] == ch) return @intCast(i);
+        }
+    }
+    return @intCast(src.len);
+}
+
 pub const LexerState = struct {
     /// Flags attached to the next emitted token.
     token_flags: u8 = 0,
@@ -391,23 +424,35 @@ pub const Lexer = struct {
 
         self.cursor += 1;
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-            if (c == '\\') {
-                try self.consumeEscape(.template);
-                continue;
+        const src = self.source;
+        var pos = self.cursor;
+        while (true) {
+            pos = findAnyPos("`\\$\r", src, pos);
+            if (pos >= src.len) break;
+            switch (src[pos]) {
+                '`' => {
+                    self.cursor = pos + 1;
+                    return self.createToken(.template_tail, start, self.cursor);
+                },
+                '\\' => {
+                    self.cursor = pos;
+                    try self.consumeEscape(.template);
+                    pos = self.cursor;
+                },
+                '$' => {
+                    if (pos + 1 < src.len and src[pos + 1] == '{') {
+                        self.cursor = pos + 2;
+                        return self.createToken(.template_middle, start, self.cursor);
+                    }
+                    pos += 1;
+                },
+                // a raw CR must be normalized in the cooked value, so it counts as escaped
+                '\r' => {
+                    self.setTokenFlag(.escaped);
+                    pos += 1;
+                },
+                else => unreachable,
             }
-            if (c == '`') {
-                self.cursor += 1;
-                return self.createToken(.template_tail, start, self.cursor);
-            }
-            if (c == '$' and self.peek(1) == '{') {
-                self.cursor += 2;
-                return self.createToken(.template_middle, start, self.cursor);
-            }
-            // a raw CR must be normalized in the cooked value, so it counts as escaped
-            if (c == '\r') self.setTokenFlag(.escaped);
-            self.cursor += 1;
         }
         return error.NonTerminatedTemplateLiteral;
     }
@@ -569,27 +614,28 @@ pub const Lexer = struct {
 
         if (self.mode == .normal) {
             while (pos < src.len) {
-                const c = src[pos];
-
-                if (c == quote) {
-                    pos += 1;
+                const hit = if (quote == '"')
+                    findAnyPos("\"\\\n\r", src, pos)
+                else
+                    findAnyPos("'\\\n\r", src, pos);
+                if (hit >= src.len) {
+                    pos = hit;
+                    break;
+                }
+                if (src[hit] == quote) {
+                    pos = hit + 1;
                     self.cursor = pos;
                     return self.createToken(.string_literal, start, pos);
                 }
-
-                if (c == '\\') {
-                    self.cursor = pos;
+                if (src[hit] == '\\') {
+                    self.cursor = hit;
                     try self.consumeEscape(.string);
                     pos = self.cursor;
                     continue;
                 }
-
-                if (c == '\n' or c == '\r') {
-                    self.cursor = pos;
-                    return error.UnterminatedString;
-                }
-
-                pos += 1;
+                // '\n' or '\r'
+                self.cursor = hit;
+                return error.UnterminatedString;
             }
         } else {
             // jsx attribute values have no escapes and may span lines
@@ -612,32 +658,39 @@ pub const Lexer = struct {
         std.debug.assert(self.source[self.cursor] == '`');
 
         const start = self.cursor;
-        self.cursor += 1;
+        const src = self.source;
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-
-            if (c == '\\') {
-                try self.consumeEscape(.template);
-                continue;
+        var pos = start + 1;
+        while (true) {
+            pos = findAnyPos("`\\$\r", src, pos);
+            if (pos >= src.len) break;
+            switch (src[pos]) {
+                '`' => {
+                    self.cursor = pos + 1;
+                    return self.createToken(.no_substitution_template, start, self.cursor);
+                },
+                '\\' => {
+                    self.cursor = pos;
+                    try self.consumeEscape(.template);
+                    pos = self.cursor;
+                },
+                '$' => {
+                    if (pos + 1 < src.len and src[pos + 1] == '{') {
+                        self.cursor = pos + 2;
+                        return self.createToken(.template_head, start, self.cursor);
+                    }
+                    pos += 1;
+                },
+                // a raw CR must be normalized in the cooked value, so it counts as escaped
+                '\r' => {
+                    self.setTokenFlag(.escaped);
+                    pos += 1;
+                },
+                else => unreachable,
             }
-
-            if (c == '`') {
-                self.cursor += 1;
-                return self.createToken(.no_substitution_template, start, self.cursor);
-            }
-
-            if (c == '$' and self.peek(1) == '{') {
-                self.cursor += 2;
-                return self.createToken(.template_head, start, self.cursor);
-            }
-
-            // a raw CR must be normalized in the cooked value, so it counts as escaped
-            if (c == '\r') self.setTokenFlag(.escaped);
-
-            self.cursor += 1;
         }
 
+        self.cursor = @intCast(src.len);
         return error.NonTerminatedTemplateLiteral;
     }
 
@@ -1359,7 +1412,9 @@ pub const Lexer = struct {
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
-        while (pos < src.len) {
+        while (true) {
+            pos = findAnyPos("\r\n\xe2", src, pos);
+            if (pos >= src.len) break;
             const c = src[pos];
             if (c == '\n' or c == '\r') break;
             if (c == 0xE2 and util.Utf.unicodeSeparatorLen(src, pos) > 0) break;
@@ -1391,18 +1446,46 @@ pub const Lexer = struct {
                 '\n', '\r' => {
                     self.setTokenFlag(.line_terminator_before);
                     pos += 1;
+                    break;
                 },
                 0x80...0xFF => {
                     const lt_len = util.Utf.unicodeSeparatorLen(src, pos);
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
                         pos += lt_len;
+                        break;
                     } else pos += 1;
                 },
                 else => pos += 1,
             }
         }
-        self.cursor = pos;
+        // multi-line body: vectorized search for the two-byte '*/'
+        // sequence (star and slash masks combined per lane). line leads
+        // are " * " - star without a slash - so they never restart the
+        // scan. windows overlap by one byte to catch a straddling '*/'.
+        var w = pos - 1;
+        while (w + 16 <= src.len) {
+            const v: @Vector(16, u8) = src[w..][0..16].*;
+            var stars: @Vector(16, bool) = @splat(false);
+            var slashes: @Vector(16, bool) = @splat(false);
+            stars = stars | (v == @as(@Vector(16, u8), @splat('*')));
+            slashes = slashes | (v == @as(@Vector(16, u8), @splat('/')));
+            const ends: u16 = @as(u16, @bitCast(stars)) & (@as(u16, @bitCast(slashes)) >> 1);
+            if (ends != 0) {
+                self.cursor = @intCast(w + @ctz(ends) + 2);
+                try self.recordComment(.block, start, self.cursor);
+                return;
+            }
+            w += 15;
+        }
+        while (w + 1 < src.len) : (w += 1) {
+            if (src[w] == '*' and src[w + 1] == '/') {
+                self.cursor = @intCast(w + 2);
+                try self.recordComment(.block, start, self.cursor);
+                return;
+            }
+        }
+        self.cursor = @intCast(src.len);
         return error.UnterminatedMultiLineComment;
     }
 

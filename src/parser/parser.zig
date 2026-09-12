@@ -432,6 +432,9 @@ pub const Parser = struct {
         comments_len: usize,
 
         pub inline fn next(self: *Peek) Token {
+            // the inline fast path covers idents and simple punctuation,
+            // which is most of what multi-token lookahead fetches
+            if (self.parser.lexer.tryNextToken()) |token| return token;
             return self.parser.lexer.nextToken() catch
                 Token.invalid(self.parser.lexer.cursor);
         }
