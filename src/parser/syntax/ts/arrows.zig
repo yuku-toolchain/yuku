@@ -93,10 +93,14 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
 
 // rewind on failure so jsx or a `<T>` assertion can win
 pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+    const head = parser.current_token.span.start;
+    if (parser.ts_rejected_speculations.contains(head)) return null;
+
     const cp = parser.checkpoint();
 
     const arrow = (try parseArrow(parser, is_async, arrow_start)) orelse {
         parser.rewind(cp);
+        try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {});
         return null;
     };
 

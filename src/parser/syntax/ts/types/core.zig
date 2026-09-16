@@ -503,6 +503,12 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
 fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .extends) return .null;
 
+    const extends_offset = parser.current_token.span.start;
+    const conditional_allowed = !parser.ts_context.disallow_conditional_types;
+    if (conditional_allowed and parser.ts_rejected_speculations.contains(extends_offset)) {
+        return .null;
+    }
+
     const cp = parser.checkpoint();
     try parser.advance() orelse return .null;
 
@@ -513,12 +519,11 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     };
     parser.ts_context.disallow_conditional_types = cp.ts_context.disallow_conditional_types;
 
-    const yields_to_conditional =
-        !cp.ts_context.disallow_conditional_types and
-        parser.current_token.tag == .question;
+    const yields_to_conditional = conditional_allowed and parser.current_token.tag == .question;
 
     if (yields_to_conditional) {
         parser.rewind(cp);
+        try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), extends_offset, {});
         return .null;
     }
 

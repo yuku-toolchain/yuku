@@ -105,6 +105,9 @@ pub const Parser = struct {
     ts_context: TsContext = .{},
     state: ParserState = .{},
 
+    // token offsets whose speculation failed, so a rewinding ancestor never re-parses them
+    ts_rejected_speculations: std.AutoHashMapUnmanaged(u32, void) = .empty,
+
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         var b = ast.Tree.init(child_allocator, source);
         b.source_type = options.source_type;
