@@ -1,4 +1,6 @@
 import { expect, test } from "bun:test";
+import { parse, type Program } from "yuku-parser";
+import { generate } from "yuku-codegen";
 import { gen } from "./helpers";
 
 test("strip and minify compose in a single call", () => {
@@ -24,4 +26,18 @@ test("a minify object enables switches individually", () => {
   expect(gen(source, { minify: { whitespace: true, quotes: true } })).toMatchInlineSnapshot(
     `"const x=1000000;const s="plain""`,
   );
+});
+
+test("lists longer than a u16 survive the round trip", () => {
+  const n = 65_536;
+  const lengths = ({ body }: Program) => {
+    const last = body.at(-1);
+    if (last?.type !== "ExpressionStatement" || last.expression.type !== "ArrayExpression") {
+      throw new Error("expected a trailing array");
+    }
+    return [body.length, last.expression.elements.length];
+  };
+  const { program } = parse(`${"x;".repeat(n)}[${"0,".repeat(n)}];`);
+  expect(lengths(program)).toEqual([n + 1, n]);
+  expect(lengths(parse(generate(program).code).program)).toEqual([n + 1, n]);
 });

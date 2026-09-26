@@ -26,8 +26,6 @@ fn writePrologue(w: *Writer) !void {
         \\const NODE_SIZE = {[node_size]d};
         \\const HEADER_SIZE = {[hdr_size]d};
         \\const NODE_FLAGS_OFFSET = {[flags_off]d};
-        \\const NODE_FIELD0_OFFSET = {[f0_off]d};
-        \\const NODE_FIELD0B_OFFSET = {[f0b_off]d};
         \\const NODE_HEADER_U32S = {[hdr_u32s]d};
         \\const NODE_DATA_SLOTS = {[data_slots]d};
         \\const NODE_SPAN_START_U32 = {[ss_u32]d};
@@ -42,8 +40,6 @@ fn writePrologue(w: *Writer) !void {
         .node_size = rt.NODE_SIZE,
         .hdr_size = rt.HEADER_SIZE,
         .flags_off = rt.NODE_FLAGS_OFFSET,
-        .f0_off = rt.NODE_FIELD0_OFFSET,
-        .f0b_off = rt.NODE_FIELD0B_OFFSET,
         .hdr_u32s = rt.NODE_HEADER_U32S,
         .data_slots = rt.NODE_DATA_SLOTS,
         .ss_u32 = rt.NODE_SPAN_START_U32,
@@ -127,16 +123,11 @@ fn writeRuntime(w: *Writer) !void {
         \\    const o = idx * NODE_SIZE + NODE_FLAGS_OFFSET;
         \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
         \\  }
-        \\  function f0At(idx, v) {
-        \\    const o = idx * NODE_SIZE + NODE_FIELD0_OFFSET;
-        \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
-        \\  }
-        \\  function f0bAt(idx, v) {
-        \\    const o = idx * NODE_SIZE + NODE_FIELD0B_OFFSET;
-        \\    nU8[o] = v & 0xFF; nU8[o + 1] = (v >>> 8) & 0xFF;
-        \\  }
         \\  function slotAt(idx, slot, v) {
         \\    nU32[((idx * NODE_SIZE) >>> 2) + NODE_HEADER_U32S + slot] = v >>> 0;
+        \\  }
+        \\  function rangeAt(idx, slot, r) {
+        \\    slotAt(idx, slot, r.start); slotAt(idx, slot + 1, r.len);
         \\  }
         \\  function spanAt(idx, s, e) {
         \\    const b = (idx * NODE_SIZE) >>> 2;
@@ -318,20 +309,7 @@ fn writeGenericEncoder(
         if (f.type == ast.NodeIndex) {
             try w.print("    slotAt(idx, {d}, c_{s});\n", .{ slot, f.name });
         } else if (f.type == ast.IndexRange) {
-            switch (comptime rt.rangeIndexOf(T, i)) {
-                0 => try w.print(
-                    "    f0At(idx, c_{s}.len);\n    slotAt(idx, {d}, c_{s}.start);\n",
-                    .{ f.name, slot, f.name },
-                ),
-                1 => try w.print(
-                    "    f0bAt(idx, c_{s}.len);\n    slotAt(idx, {d}, c_{s}.start);\n",
-                    .{ f.name, slot, f.name },
-                ),
-                else => try w.print(
-                    "    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.len);\n",
-                    .{ slot, f.name, slot + 1, f.name },
-                ),
-            }
+            try w.print("    rangeAt(idx, {d}, c_{s});\n", .{ slot, f.name });
         } else if (f.type == ast.String) {
             try w.print(
                 "    slotAt(idx, {d}, c_{s}.start);\n    slotAt(idx, {d}, c_{s}.end);\n",
@@ -735,15 +713,9 @@ fn writeSpecialFormalParameters(w: *Writer, comptime tag: usize) !void {
     const sr = comptime slotOf(ast.FormalParameters, "rest");
     try w.print(
         \\  function encFormalParameters(params) {{
-        \\    if (!params) {{
-        \\      const idx = alloc();
-        \\      tagAt(idx, {d});
-        \\      spanAt(idx, 0, 0);
-        \\      return idx;
-        \\    }}
         \\    const items = [];
         \\    let rest = NULL;
-        \\    for (let i = 0; i < params.length; i++) {{
+        \\    for (let i = 0; params && i < params.length; i++) {{
         \\      const p = params[i];
         \\      if (p && p.type === "RestElement") rest = enc_binding_rest_element(p);
         \\      else if (p && p.type === "TSParameterProperty") items.push(encNode(p));
@@ -756,14 +728,13 @@ fn writeSpecialFormalParameters(w: *Writer, comptime tag: usize) !void {
         \\    for (let i = 0; i < ids.length; i++) pushExtra(ids[i]);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, ids.length);
-        \\    slotAt(idx, {d}, start);
+        \\    rangeAt(idx, {d}, {{ start, len: ids.length }});
         \\    slotAt(idx, {d}, rest);
         \\    spanAt(idx, 0, 0);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, tag, si, sr });
+    , .{ tag, si, sr });
 }
 
 fn writeSpecialClass(w: *Writer, comptime tag: usize) !void {
@@ -779,7 +750,6 @@ fn writeSpecialClass(w: *Writer, comptime tag: usize) !void {
     const tm = comptime enumMask(ast.ClassType);
     const mab = comptime flagMask(T, "abstract");
     const mdc = comptime flagMask(T, "declare");
-    _ = sd;
     try w.print(
         \\  function enc_class(n, kind) {{
         \\    const decs = encArr(n.decorators, encNode);
@@ -791,26 +761,25 @@ fn writeSpecialClass(w: *Writer, comptime tag: usize) !void {
         \\    const imps = encArr(n.implements, encNode);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, decs.len);
-        \\    slotAt(idx, 0, decs.start);
+        \\    rangeAt(idx, {d}, decs);
         \\    slotAt(idx, {d}, id);
         \\    slotAt(idx, {d}, sc);
         \\    slotAt(idx, {d}, body);
         \\    slotAt(idx, {d}, tp);
         \\    slotAt(idx, {d}, sta);
-        \\    f0bAt(idx, imps.len);
-        \\    slotAt(idx, {d}, imps.start);
+        \\    rangeAt(idx, {d}, imps);
         \\    flagsAt(idx, ((kind & {d}) << {d}) | (n.abstract ? {d} : 0) | (n.declare ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
         \\    recordComments(n, idx);
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, si, ss, sb, stp, ssta, simp, tm, bt, mab, mdc });
+    , .{ tag, sd, si, ss, sb, stp, ssta, simp, tm, bt, mab, mdc });
 }
 
 fn writeSpecialMethodDef(w: *Writer, comptime tag: usize) !void {
     const T = ast.MethodDefinition;
+    const sd = comptime slotOf(T, "decorators");
     const sk = comptime slotOf(T, "key");
     const sv = comptime slotOf(T, "value");
     const bk = comptime flagBit(T, "kind");
@@ -827,8 +796,7 @@ fn writeSpecialMethodDef(w: *Writer, comptime tag: usize) !void {
         \\    const v = encNode(n.value);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, decs.len);
-        \\    slotAt(idx, 0, decs.start);
+        \\    rangeAt(idx, {d}, decs);
         \\    slotAt(idx, {d}, k);
         \\    slotAt(idx, {d}, v);
         \\    flagsAt(idx,
@@ -844,11 +812,12 @@ fn writeSpecialMethodDef(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sk, sv, bk, mc, ms, mo, mp, mab, ba });
+    , .{ tag, sd, sk, sv, bk, mc, ms, mo, mp, mab, ba });
 }
 
 fn writeSpecialPropertyDef(w: *Writer, comptime tag: usize) !void {
     const T = ast.PropertyDefinition;
+    const sd = comptime slotOf(T, "decorators");
     const sk = comptime slotOf(T, "key");
     const sv = comptime slotOf(T, "value");
     const sta = comptime slotOf(T, "type_annotation");
@@ -870,8 +839,7 @@ fn writeSpecialPropertyDef(w: *Writer, comptime tag: usize) !void {
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, decs.len);
-        \\    slotAt(idx, 0, decs.start);
+        \\    rangeAt(idx, {d}, decs);
         \\    slotAt(idx, {d}, k);
         \\    slotAt(idx, {d}, v);
         \\    slotAt(idx, {d}, ta);
@@ -891,7 +859,7 @@ fn writeSpecialPropertyDef(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sk, sv, sta, mc, ms, macc, md, mo, mp, mdef, mr, mab, bacc });
+    , .{ tag, sd, sk, sv, sta, mc, ms, macc, md, mo, mp, mdef, mr, mab, bacc });
 }
 
 fn writeSpecialObjectProperty(w: *Writer, comptime tag: usize) !void {
@@ -970,10 +938,8 @@ fn writeSpecialArrayPattern(w: *Writer, comptime tag: usize) !void {
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, decs.len);
-        \\    slotAt(idx, {d}, decs.start);
-        \\    f0bAt(idx, r.len);
-        \\    slotAt(idx, {d}, r.start);
+        \\    rangeAt(idx, {d}, decs);
+        \\    rangeAt(idx, {d}, r);
         \\    slotAt(idx, {d}, rest);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
@@ -1007,10 +973,8 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, decs.len);
-        \\    slotAt(idx, {d}, decs.start);
-        \\    f0bAt(idx, r.len);
-        \\    slotAt(idx, {d}, r.start);
+        \\    rangeAt(idx, {d}, decs);
+        \\    rangeAt(idx, {d}, r);
         \\    slotAt(idx, {d}, rest);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, n.optional ? {d} : 0);
@@ -1036,8 +1000,7 @@ fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {
         \\      : null;
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, body.len);
-        \\    slotAt(idx, {d}, body.start);
+        \\    rangeAt(idx, {d}, body);
         \\    if (hb) {{ slotAt(idx, {d}, hb.start); slotAt(idx, {d}, hb.end); }}
         \\    flagsAt(idx, (n.sourceType === "script" ? 0 : 1) | (hb ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
@@ -1324,15 +1287,13 @@ fn writeSpecialTSIndexSig(w: *Writer, comptime tag: usize) !void {
     const sta = comptime slotOf(T, "type_annotation");
     const mr = comptime flagMask(T, "readonly");
     const ms = comptime flagMask(T, "static");
-    _ = sp;
     try w.print(
         \\  function enc_ts_index_signature(n) {{
         \\    const ps = encArr(n.parameters, encBindingTarget);
         \\    const ta = n.typeAnnotation == null ? NULL : encNode(n.typeAnnotation);
         \\    const idx = alloc();
         \\    tagAt(idx, {d});
-        \\    f0At(idx, ps.len);
-        \\    slotAt(idx, 0, ps.start);
+        \\    rangeAt(idx, {d}, ps);
         \\    slotAt(idx, {d}, ta);
         \\    flagsAt(idx, (n.readonly ? {d} : 0) | (n.static ? {d} : 0));
         \\    spanAt(idx, asStart(n), asEnd(n));
@@ -1340,7 +1301,7 @@ fn writeSpecialTSIndexSig(w: *Writer, comptime tag: usize) !void {
         \\    return idx;
         \\  }}
         \\
-    , .{ tag, sta, mr, ms });
+    , .{ tag, sp, sta, mr, ms });
 }
 
 fn writeDispatcher(w: *Writer) !void {

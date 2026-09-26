@@ -96,7 +96,7 @@ pub const Lexer = struct {
     cursor: u32,
 
     source_type: ast.SourceType,
-    hashbang: ?struct { start: u32, len: u16 } = null,
+    hashbang: ?struct { start: u32, len: u32 } = null,
 
     pub fn init(
         source: []const u8,
@@ -135,7 +135,7 @@ pub const Lexer = struct {
             }
             std.debug.assert(end >= 2);
             std.debug.assert(end <= self.source.len);
-            self.hashbang = .{ .start = 2, .len = @intCast(end - 2) };
+            self.hashbang = .{ .start = 2, .len = end - 2 };
             self.cursor = end;
         }
     }
