@@ -142,4 +142,12 @@ describe("tokens", () => {
     expect(() => tokens.kind(1)).toThrow(RangeError);
     expect(() => tokens.text(-1)).toThrow(RangeError);
   });
+
+  test("a UTF-8 byte source reads back like its string", () => {
+    const source = "\uFEFFlet après = '🎉'; // ü";
+    const bytes = new TextEncoder().encode(source) as unknown as string;
+    expect(parse(bytes).program).toEqual(parse(source).program);
+    expect(values(list(bytes))).toEqual(values(list(source)));
+    expect(() => parse(new Uint8Array([0xff]) as unknown as string)).toThrow(TypeError);
+  });
 });

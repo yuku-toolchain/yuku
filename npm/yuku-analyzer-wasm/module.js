@@ -4,6 +4,7 @@ import { decode, SymbolFlags, TokenKind } from "./decode.js";
 import { walkModule, walkModuleAsync } from "./walk.js";
 
 const _enc = new TextEncoder();
+const _dec = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 
 export function langFromPath(path) {
   if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";
@@ -266,7 +267,7 @@ export class Module {
   constructor(analyzer, path, source, options = {}) {
     this.analyzer = analyzer;
     this.path = path;
-    this.source = source;
+    this.source = typeof source === "string" ? source : _dec.decode(source);
     this.#r = decode(
       binding.analyze(typeof source === "string" ? _enc.encode(source) : source, {
         lang: options.lang ?? langFromPath(path),
@@ -275,7 +276,7 @@ export class Module {
         attachComments: options.attachComments,
         tokens: options.tokens,
       }),
-      source,
+      this.source,
     );
     this.#sem = this.#r.semantic;
   }

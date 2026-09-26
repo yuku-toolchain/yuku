@@ -19,6 +19,7 @@ async function instantiate() {
 
 const { memory, alloc, free, parse: wasmParse } = (await instantiate()).exports;
 const _enc = new TextEncoder();
+const _dec = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 
 const SOURCE_TYPES = { script: 0, module: 1, commonjs: 2 };
 const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
@@ -33,6 +34,7 @@ function packFlags(o = {}) {
 }
 
 export function parse(source, options) {
+  const text = typeof source === "string" ? source : _dec.decode(source);
   const bytes = typeof source === "string" ? _enc.encode(source) : source;
   const srcLen = bytes.length;
   const srcPtr = alloc(srcLen || 1);
@@ -47,7 +49,7 @@ export function parse(source, options) {
   const buffer = memory.buffer.slice(ptr + 4, ptr + 4 + len);
   free(ptr, 4 + len);
 
-  return decode(buffer, source);
+  return decode(buffer, text);
 }
 
 export function langFromPath(path) {
