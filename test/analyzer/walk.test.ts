@@ -249,6 +249,16 @@ describe("node queries", () => {
     expect(module.parentOf(b.Identifier({ name: "x" }))).toBeNull();
   });
 
+  test("parentOf reaches the last child of a list longer than a u16", () => {
+    const module = analyze(`[${"0,".repeat(65_536)}];`);
+    const first = module.ast.body[0];
+    if (first?.type !== "ExpressionStatement" || first.expression.type !== "ArrayExpression") {
+      throw new Error("expected an array");
+    }
+    const array = first.expression;
+    expect(module.parentOf(array.elements.at(-1)!)).toBe(array);
+  });
+
   test("a parameter declaration resolves back through symbolOf", () => {
     // covers params nested in a decorator expression, where the node index is
     // easy to lose

@@ -393,7 +393,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  }}
         \\  function fnParams(idx) {{
         \\    const pb = idx * {[stride]d} + {[hdr_u32]d};
-        \\    const len = {[len_expr]s};
+        \\    const len = _u32[pb + {[items_len]d}];
         \\    const iStart = _u32[pb + {[items]d}], rest = _u32[pb + {[rest]d}];
         \\    const p = new Array(rest !== NULL ? len + 1 : len);
         \\    for (let j = 0, base = _extraBase + iStart; j < len; j++) p[j] = node(_u32[base + j]);
@@ -421,11 +421,8 @@ fn writeDecodeOpen(w: *Writer) !void {
         .csize = rt.COMMENT_SIZE,
         .stride = rt.NODE_SIZE / 4,
         .hdr_u32 = rt.HEADER_SIZE / 4,
-        .len_expr = comptime u16At(
-            std.fmt.comptimePrint("_u32[pb + {d}]", .{rt.NODE_FIELD0_OFFSET / 4}),
-            rt.NODE_FIELD0_OFFSET % 4,
-        ),
         .items = comptime u32IndexOf(ast.FormalParameters, "items"),
+        .items_len = comptime u32IndexOf(ast.FormalParameters, "items") + 1,
         .rest = comptime u32IndexOf(ast.FormalParameters, "rest"),
     });
 }
@@ -711,8 +708,7 @@ pub fn generateWalkTables(w: *Writer) !void {
 
 fn writeChildTables(w: *Writer) !void {
     @setEvalBranchQuota(1_000_000);
-    // kinds: 0 NodeIndex, 1 range with length in slot+1,
-    //        2 range with length in field0, 3 range with length in field0b
+    // kinds: 0 NodeIndex, 1 range with length in slot+1
     try w.writeAll("const CHILD_SLOTS = [\n");
     inline for (@typeInfo(ast.NodeData).@"union".fields) |field| {
         try w.writeAll("  [");
@@ -721,13 +717,7 @@ fn writeChildTables(w: *Writer) !void {
             inline for (std.meta.fields(field.type), 0..) |f, i| {
                 if (f.type == ast.NodeIndex or f.type == ast.IndexRange) {
                     if (!first) try w.writeAll(", ");
-                    const kind: u32 = if (f.type == ast.NodeIndex)
-                        0
-                    else switch (comptime rt.rangeIndexOf(field.type, i)) {
-                        0 => 2,
-                        1 => 3,
-                        else => 1,
-                    };
+                    const kind: u32 = if (f.type == ast.NodeIndex) 0 else 1;
                     try w.print("{d}, {d}", .{
                         kind,
                         comptime rt.u32SlotForField(field.type, i) + rt.NODE_HEADER_U32S,
@@ -751,25 +741,13 @@ fn writeChildTables(w: *Writer) !void {
     try w.writeAll("];\n");
 }
 
-/// number of IndexRange fields in struct T.
-fn rangeCount(comptime T: type) usize {
-    comptime {
-        if (@typeInfo(T) != .@"struct") return 0;
-        var n: usize = 0;
-        for (std.meta.fields(T)) |f| {
-            if (f.type == ast.IndexRange) n += 1;
-        }
-        return n;
-    }
-}
-
 fn isIdentChar(c: u8) bool {
     return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
         (c >= '0' and c <= '9') or c == '_' or c == '$';
 }
 
-/// whether `body` references `name` as a standalone identifier, so that
-/// e.g. `f0` does not match inside `f0b`.
+/// whether `body` references `name` as a standalone identifier, so a slot
+/// name never matches inside a longer identifier.
 fn usesIdent(body: []const u8, name: []const u8) bool {
     var i: usize = 0;
     while (std.mem.indexOfPos(u8, body, i, name)) |p| : (i = p + 1) {
@@ -782,26 +760,12 @@ fn usesIdent(body: []const u8, name: []const u8) bool {
 }
 
 /// opens `case N: {` and declares only the u32 slots the rendered case
-/// body references: `f0`/`f0b` (the packed u16 lengths of the first and
-/// second IndexRange) and `f1..fn` for the type's data slots. cases
-/// therefore only load the words they read, and special-cased bodies
-/// that skip fields never see dead declarations.
+/// body references, `f1..fn` for the type's data slots. cases therefore
+/// only load the words they read, and special-cased bodies that skip
+/// fields never see dead declarations.
 fn writeCaseOpen(w: *Writer, comptime tag: usize, comptime T: type, body: []const u8) !void {
     try w.print("    case {d}: {{", .{tag});
     if (@typeInfo(T) == .@"struct") {
-        const ranges = comptime rangeCount(T);
-        if (ranges >= 1 and usesIdent(body, "f0")) {
-            try w.print(" const f0 = {s};", .{comptime u16At(
-                std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0_OFFSET / 4}),
-                rt.NODE_FIELD0_OFFSET % 4,
-            )});
-        }
-        if (ranges >= 2 and usesIdent(body, "f0b")) {
-            try w.print(" const f0b = {s};", .{comptime u16At(
-                std.fmt.comptimePrint("_u32[b + {d}]", .{rt.NODE_FIELD0B_OFFSET / 4}),
-                rt.NODE_FIELD0B_OFFSET % 4,
-            )});
-        }
         const n = comptime rt.totalU32Slots(T);
         var first = true;
         inline for (0..n) |k| {
@@ -891,11 +855,7 @@ fn writeFieldExpr(
         try w.print("f{d} !== NULL ? node(f{d}) : null", .{ s, s });
     } else if (F == ast.IndexRange) {
         const fn_name = comptime if (meta.isHoleyArray(tag_name, field_name)) "nodeArrHoles" else "nodeArr";
-        switch (comptime rt.rangeIndexOf(T, i)) {
-            0 => try w.print("{s}(f{d}, f0)", .{ fn_name, s }),
-            1 => try w.print("{s}(f{d}, f0b)", .{ fn_name, s }),
-            else => try w.print("{s}(f{d}, f{d})", .{ fn_name, s, s + 1 }),
-        }
+        try w.print("{s}(f{d}, f{d})", .{ fn_name, s, s + 1 });
     } else if (F == ast.String) {
         try w.print("str(f{d}, f{d})", .{ s, s + 1 });
     } else if (F == bool) {
@@ -1007,9 +967,9 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\        start: _p(f{d} - 2), end: _p(f{d}),
             \\        value: str(f{d}, f{d}),
             \\      }} : null,
-            \\      body: nodeArr(f{d}, f0),
+            \\      body: nodeArr(f{d}, f{d}),
             \\    }};
-        , .{ comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, hs, hs + 1, sb });
+        , .{ comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, hs, hs + 1, sb, sb + 1 });
     } else if (comptime eql(u8, name, "directive")) {
         const se = comptime slotOf(ast.Directive, "expression");
         const sv = comptime slotOf(ast.Directive, "value");
@@ -1110,11 +1070,14 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
         const stp = comptime slotOf(ast.Class, "type_parameters");
         const ssta = comptime slotOf(ast.Class, "super_type_arguments");
         const simp = comptime slotOf(ast.Class, "implements");
+        const tm = comptime enumMask(ast.ClassType);
+        const mab = comptime flagMask(ast.Class, "abstract");
+        const mdc = comptime flagMask(ast.Class, "declare");
         try emit(w,
             \\
             \\      const r = {{
             \\        type: CLASS_TYPES[flags & {d}], start, end,
-            \\        decorators: nodeArr(f{d}, f0),
+            \\        decorators: nodeArr(f{d}, f{d}),
             \\        id: f{d} !== NULL ? node(f{d}) : null,
             \\        superClass: f{d} !== NULL ? node(f{d}) : null,
             \\        body: node(f{d}),
@@ -1122,21 +1085,12 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      if (_isTs) {{
             \\        r.typeParameters = f{d} !== NULL ? node(f{d}) : null;
             \\        r.superTypeArguments = f{d} !== NULL ? node(f{d}) : null;
-            \\        r.implements = nodeArr(f{d}, f0b);
+            \\        r.implements = nodeArr(f{d}, f{d});
             \\        r.abstract = !!(flags & {d});
             \\        r.declare = !!(flags & {d});
             \\      }}
             \\      return r;
-        , .{
-            comptime enumMask(ast.ClassType),
-            sd,                                       si,
-            si,                                       ss,
-            ss,                                       sb,
-            stp,                                      stp,
-            ssta,                                     ssta,
-            simp,
-            comptime flagMask(ast.Class, "abstract"), comptime flagMask(ast.Class, "declare"),
-        });
+        , .{ tm, sd, sd + 1, si, si, ss, ss, sb, stp, stp, ssta, ssta, simp, simp + 1, mab, mdc });
     } else if (comptime eql(u8, name, "method_definition")) {
         const M = ast.MethodDefinition;
         const sd = comptime slotOf(M, "decorators");
@@ -1146,7 +1100,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\
             \\      const r = {{
             \\        type: "MethodDefinition", start, end,
-            \\        decorators: nodeArr(f{d}, f0),
+            \\        decorators: nodeArr(f{d}, f{d}),
             \\        key: node(f{d}), value: node(f{d}),
             \\        kind: METHOD_KINDS[flags & {d}],
             \\        computed: !!(flags & {d}), static: !!(flags & {d}),
@@ -1161,6 +1115,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      return r;
         , .{
             sd,
+            sd + 1,
             sk,
             sv,
             comptime enumMask(ast.MethodDefinitionKind),
@@ -1184,7 +1139,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
             \\      const r = {{
             \\        type: _acc ? "AccessorProperty" : "PropertyDefinition",
             \\        start, end,
-            \\        decorators: nodeArr(f{d}, f0),
+            \\        decorators: nodeArr(f{d}, f{d}),
             \\        key: node(f{d}),
             \\        value: f{d} !== NULL ? node(f{d}) : null,
             \\        computed: !!(flags & {d}), static: !!(flags & {d}),
@@ -1207,6 +1162,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
         , .{
             comptime flagMask(P, "accessor"),
             sd,
+            sd + 1,
             sk,
             sv,
             sv,
@@ -1259,45 +1215,37 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
         const sr = comptime slotOf(ast.ArrayPattern, "rest");
         const sdec = comptime slotOf(ast.ArrayPattern, "decorators");
         const sta = comptime slotOf(ast.ArrayPattern, "type_annotation");
+        const mo = comptime flagMask(ast.ArrayPattern, "optional");
         try emit(w,
             \\
-            \\      const el = nodeArrHoles(f{d}, f0b);
+            \\      const el = nodeArrHoles(f{d}, f{d});
             \\      if (f{d} !== NULL) el.push(node(f{d}));
             \\      const r = {{ type: "ArrayPattern", start, end, elements: el }};
             \\      if (_isTs) {{
-            \\        r.decorators = nodeArr(f{d}, f0);
+            \\        r.decorators = nodeArr(f{d}, f{d});
             \\        r.optional = !!(flags & {d});
             \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
             \\      }}
             \\      return r;
-        , .{
-            se,  sr,
-            sr,  sdec,
-            comptime flagMask(ast.ArrayPattern, "optional"),
-            sta, sta,
-        });
+        , .{ se, se + 1, sr, sr, sdec, sdec + 1, mo, sta, sta });
     } else if (comptime eql(u8, name, "object_pattern")) {
         const sp = comptime slotOf(ast.ObjectPattern, "properties");
         const sr = comptime slotOf(ast.ObjectPattern, "rest");
         const sdec = comptime slotOf(ast.ObjectPattern, "decorators");
         const sta = comptime slotOf(ast.ObjectPattern, "type_annotation");
+        const mo = comptime flagMask(ast.ObjectPattern, "optional");
         try emit(w,
             \\
-            \\      const pr = nodeArr(f{d}, f0b);
+            \\      const pr = nodeArr(f{d}, f{d});
             \\      if (f{d} !== NULL) pr.push(node(f{d}));
             \\      const r = {{ type: "ObjectPattern", start, end, properties: pr }};
             \\      if (_isTs) {{
-            \\        r.decorators = nodeArr(f{d}, f0);
+            \\        r.decorators = nodeArr(f{d}, f{d});
             \\        r.optional = !!(flags & {d});
             \\        r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null;
             \\      }}
             \\      return r;
-        , .{
-            sp,  sr,
-            sr,  sdec,
-            comptime flagMask(ast.ObjectPattern, "optional"),
-            sta, sta,
-        });
+        , .{ sp, sp + 1, sr, sr, sdec, sdec + 1, mo, sta, sta });
     } else if (comptime eql(u8, name, "jsx_text")) {
         const sv = comptime slotOf(ast.JSXText, "value");
         try emit(w,
@@ -1573,12 +1521,7 @@ fn writeParentBody(w: *Writer) !void {
         \\          const c = _u32[b + slot];
         \\          if (c !== NULL) visit(c, parent);
         \\        }} else {{
-        \\          const s = _u32[b + slot];
-        \\          const len = ops[q] === 1
-        \\            ? _u32[b + slot + 1]
-        \\            : ops[q] === 2
-        \\              ? _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8)
-        \\              : _u8[o + {[f0b]d}] | (_u8[o + {[f0b1]d}] << 8);
+        \\          const s = _u32[b + slot], len = _u32[b + slot + 1];
         \\          for (let j = 0; j < len; j++) {{
         \\            const c = _u32[_extraBase + s + j];
         \\            if (c !== NULL) visit(c, parent);
@@ -1589,13 +1532,7 @@ fn writeParentBody(w: *Writer) !void {
         \\    return (_parentArr = p);
         \\  }}
         \\
-    , .{
-        .size = rt.NODE_SIZE,
-        .f0 = rt.NODE_FIELD0_OFFSET,
-        .f01 = rt.NODE_FIELD0_OFFSET + 1,
-        .f0b = rt.NODE_FIELD0B_OFFSET,
-        .f0b1 = rt.NODE_FIELD0B_OFFSET + 1,
-    });
+    , .{ .size = rt.NODE_SIZE });
 }
 
 fn writeSemanticBody(w: *Writer) !void {
