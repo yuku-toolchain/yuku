@@ -274,20 +274,39 @@ fn parseJsxClosingElement(
     );
 }
 
-fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool {
-    if (extension.at(.jsx_names_match, .{ parser, a, b })) |matches| return matches;
-    const span_a = parser.tree.span(a);
-    const span_b = parser.tree.span(b);
+fn jsxNamesMatch(parser: *const Parser, opening: ast.NodeIndex, closing: ast.NodeIndex) bool {
+    if (extension.at(.jsx_names_match, .{ parser, opening, closing })) |matches| return matches;
+    const tree = &parser.tree;
+    var a = opening;
+    var b = closing;
+    while (true) switch (tree.data(a)) {
+        .jsx_identifier => return jsxIdentifiersMatch(tree, a, b),
+        .jsx_namespaced_name => |x| {
+            if (tree.data(b) != .jsx_namespaced_name) return false;
+            const y = tree.data(b).jsx_namespaced_name;
+            return jsxIdentifiersMatch(tree, x.namespace, y.namespace) and
+                jsxIdentifiersMatch(tree, x.name, y.name);
+        },
+        .jsx_member_expression => |x| {
+            if (tree.data(b) != .jsx_member_expression) return false;
+            const y = tree.data(b).jsx_member_expression;
+            if (!jsxIdentifiersMatch(tree, x.property, y.property)) return false;
+            a = x.object;
+            b = y.object;
+        },
+        else => return std.mem.eql(
+            u8,
+            parser.spanText(tree.span(a)),
+            parser.spanText(tree.span(b)),
+        ),
+    };
+}
 
-    const len_a = span_a.end - span_a.start;
-    const len_b = span_b.end - span_b.start;
-
-    if (len_a != len_b) return false;
-
-    const text_a = parser.spanText(span_a);
-    const text_b = parser.spanText(span_b);
-
-    return std.mem.eql(u8, text_a, text_b);
+fn jsxIdentifiersMatch(tree: *const ast.Tree, a: ast.NodeIndex, b: ast.NodeIndex) bool {
+    if (tree.data(a) != .jsx_identifier or tree.data(b) != .jsx_identifier) return false;
+    const name_a = tree.string(tree.data(a).jsx_identifier.name);
+    const name_b = tree.string(tree.data(b).jsx_identifier.name);
+    return std.mem.eql(u8, name_a, name_b);
 }
 
 // https://facebook.github.io/jsx/#prod-JSXChildren

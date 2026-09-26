@@ -69,6 +69,25 @@ describe("diagnostics", () => {
     accepts("for (var a = 1 in b);");
   });
 
+  test("a closing tag matches its opening tag name across whitespace and comments", () => {
+    const jsx: ParseOptions = { lang: "jsx" };
+    for (const source of [
+      "<a.b></a . b>;",
+      "<a . b></a.b>;",
+      "<a.b.c></a .b\n.c>;",
+      "<a.b></a./* c */b>;",
+      "<a:b></a : b>;",
+    ]) accepts(source, jsx);
+    for (const source of [
+      "<a.b></a.c>;",
+      "<a.b.c></a.c.b>;",
+      "<a.b></b.b>;",
+      "<a.b></a>;",
+      "<a:b></a:c>;",
+      "<a:b></a.b>;",
+    ]) rejects(source, jsx);
+  });
+
   test("a lexical diagnostic points at the cursor", () => {
     expect(firstSpan("let x = 0x_ab")).toEqual([10, 11]);
     expect(firstSpan("let x =   0x_ab")).toEqual([12, 13]);
