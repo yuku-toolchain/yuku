@@ -61,6 +61,19 @@ describe("string pool", () => {
   });
 });
 
+describe("byte source", () => {
+  test("a UTF-8 byte source analyzes like its string", () => {
+    const source = "\uFEFFconst après = '🎉'; après;";
+    const bytes = new TextEncoder().encode(source) as unknown as string;
+    const module = new Analyzer().addFile("input.js", bytes);
+    expect(module.source).toBe(source);
+    expect(module.ast).toEqual(new Analyzer().addFile("input.js", source).ast);
+    expect(module.references[0]!.symbol?.name).toBe("après");
+    expect(() => new Analyzer().addFile("bad.js", new Uint8Array([0xff]) as unknown as string))
+      .toThrow(TypeError);
+  });
+});
+
 describe("import equals", () => {
   test("a qualified-name alias binds a symbol but is not a graph edge", () => {
     expect(summary(`namespace NS { export const B = 1; } import A = NS.B; A;`))

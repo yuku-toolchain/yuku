@@ -72,11 +72,12 @@ describe("@yuku-parser/wasm", () => {
   });
 
   test("accepts pre-encoded UTF-8 bytes like the native parser", () => {
-    const bytes = new TextEncoder().encode("const x = 1;\nconst y = x;");
-    const { program, diagnostics } = parse(bytes as unknown as string, { lang: "js" });
+    const source = "\uFEFFconst après = '🎉'; // ü";
+    const bytes = new TextEncoder().encode(source) as unknown as string;
+    const { program, diagnostics } = parse(bytes, { lang: "js" });
     expect(diagnostics).toEqual([]);
-    expect(program.type).toBe("Program");
-    expect(program.body).toHaveLength(2);
+    expect(program).toEqual(parse(source, { lang: "js" }).program);
+    expect(() => parse(new Uint8Array([0xff]) as unknown as string)).toThrow(TypeError);
   });
 
   test("maps byte offsets to UTF-16 offsets in non-ASCII sources", () => {
