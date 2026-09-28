@@ -109,11 +109,11 @@ pub const Parser = struct {
     ts_rejected_speculations: std.AutoHashMapUnmanaged(u32, void) = .empty,
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
-        var b = ast.Tree.init(child_allocator, source);
-        b.source_type = options.source_type;
-        b.lang = options.lang;
+        var tree = ast.Tree.init(child_allocator, source);
+        tree.source_type = options.source_type;
+        tree.lang = options.lang;
         return .{
-            .tree = b,
+            .tree = tree,
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
@@ -135,12 +135,11 @@ pub const Parser = struct {
     }
 
     fn parseInner(self: *Parser) Error!void {
-        const alloc = self.allocator();
         errdefer self.tree.arena.deinit();
 
-        self.lexer = try lexer.Lexer.init(
+        self.lexer = lexer.Lexer.init(
             self.source,
-            alloc,
+            self.allocator(),
             self.source_type,
             self.comment_mode.collects(),
         );
@@ -307,7 +306,7 @@ pub const Parser = struct {
         scratch_checkpoint: usize,
     ) Error!ast.IndexRange {
         const start: u32 = @intCast(self.tree.extras.items.len);
-        const slice = scratch.items.items[scratch_checkpoint..scratch.items.items.len];
+        const slice = scratch.items.items[scratch_checkpoint..];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
@@ -402,7 +401,7 @@ pub const Parser = struct {
             .current_token = self.current_token,
             .prev_token_end = self.prev_token_end,
             .nodes_len = self.tree.nodes.len,
-            .extra_len = self.tree.extras.items.len,
+            .extras_len = self.tree.extras.items.len,
             .diagnostics_len = self.diagnostics.items.len,
             .tokens_len = self.tokens.items.len,
             .context = self.context,
@@ -420,7 +419,7 @@ pub const Parser = struct {
         self.current_token = cp.current_token;
         self.prev_token_end = cp.prev_token_end;
         self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
-        self.tree.extras.shrinkRetainingCapacity(cp.extra_len);
+        self.tree.extras.shrinkRetainingCapacity(cp.extras_len);
         self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
         self.tokens.shrinkRetainingCapacity(cp.tokens_len);
         self.context = cp.context;
@@ -584,11 +583,10 @@ pub const Parser = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Error!void {
-        const expected_message = try std.fmt.allocPrint(self.allocator(), "{s}, but found '{s}'", .{
+        const expected_message = try self.fmt("{s}, but found '{s}'", .{
             message,
             self.describeToken(self.current_token),
         });
-
         try self.report(span, expected_message, opts);
     }
 
@@ -678,7 +676,7 @@ pub const Checkpoint = struct {
     prev_token_end: u32,
 
     nodes_len: usize,
-    extra_len: usize,
+    extras_len: usize,
     diagnostics_len: usize,
     tokens_len: usize,
 

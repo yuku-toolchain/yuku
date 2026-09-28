@@ -55,11 +55,11 @@ All AST node types are exported directly from this package:
 import type { Node, Statement, Expression, Identifier } from "yuku-parser";
 ```
 
-The `Node` union type covers every possible AST node. Individual types like `Statement`, `Expression`, `Declaration`, etc. are also available. See the full list in the [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-parser/index.d.ts).
+The `Node` union covers every AST node, alongside individual types like `Statement`, `Expression`, and `Declaration`. See the full list in the [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/index.d.ts).
 
 ## Path helpers
 
-Two small helpers are exported for resolving the `lang` and `sourceType` options from a file path:
+Two helpers resolve the `lang` and `sourceType` options from a file path:
 
 ```ts
 import { langFromPath, sourceTypeFromPath } from "yuku-parser";
@@ -72,7 +72,7 @@ sourceTypeFromPath("foo.mjs");     // "module"
 
 ## Tokens
 
-`tokens: true` keeps every token the parser consumed. The result carries a `TokenList`, a view over the parser's token table. Nothing is decoded up front, a token is an index, and each accessor is one typed-array read.
+`tokens: true` keeps every token the parser consumed. The result carries a `TokenList`, a view over the parser's token table: nothing is decoded up front, a token is an index, and each accessor is one typed-array read.
 
 ```ts
 import { parse, TokenKind } from "yuku-parser";
@@ -85,7 +85,7 @@ for (let i = 0; i < tokens.length; i++) {
 ```
 
 ```ts
-tokens.kind(i)            // one of the 160 kinds in TokenKind, see the list below
+tokens.kind(i)            // one of the 160 kinds in TokenKind
 tokens.text(i)            // source text, a string literal keeps its quotes
 tokens.start(i)           // UTF-16 offsets, like nodes
 tokens.end(i)
@@ -121,13 +121,11 @@ tokens.at(offset)        // the token containing an offset
 
 Why an index and not an array of objects? On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. Building an object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
 
-`TokenKind` has 160 kinds, one per punctuator, literal form, keyword, and identifier form. The full list is [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts).
-
-Tokens are as the parser resolved them: a regex is one `RegexLiteral`, and the `>>` closing a nested generic is two `GreaterThan`. Comments are not tokens.
+`TokenKind` has one kind per punctuator, literal form, keyword, and identifier form, listed in [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts). Tokens are as the parser resolved them: a regex is one `RegexLiteral`, and the `>>` closing a nested generic is two `GreaterThan`. Comments are not tokens.
 
 ## Walking the AST
 
-The AST is standard ESTree, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks it with typed visitors, alias groups, in-place mutation, and syntactic utilities.:
+The AST is standard ESTree, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks it with typed visitors, alias groups, in-place mutation, and syntactic utilities:
 
 ```ts
 import { parse } from "yuku-parser";
@@ -144,7 +142,7 @@ walk(program, {
 
 ## Semantic analysis
 
-[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) builds on this parser and adds full semantics: scopes, symbols, resolved references, closure analysis, and cross-file module linking, computed natively in the same pass. Its walk carries the semantic model in context (`ctx.scope`, `ctx.symbol`, `ctx.reference`). See the [analyzer documentation](https://yuku.fyi/analyzer).
+[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) builds on this parser and adds full semantics: scopes, symbols, resolved references, closure analysis, and cross-file module linking, computed natively in the same pass. See the [analyzer documentation](https://yuku.fyi/analyzer).
 
 ## Options
 
@@ -157,6 +155,7 @@ const result = parse(source, {
   preserveParens: true,
   semanticErrors: false,
   attachComments: false,
+  tokens: false,
 });
 ```
 
@@ -167,6 +166,7 @@ const result = parse(source, {
 | `preserveParens`             | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
 | `semanticErrors`             | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
 | `attachComments`             | `true`, `false`                           | `false`    | Also attach each comment to its host AST node. The flat `result.comments` list is always present. See [Comments](#comments). |
+| `tokens`                     | `true`, `false`                           | `false`    | Keep every token in `result.tokens`. See [Tokens](#tokens).                                                                  |
 
 ## Result
 
@@ -176,6 +176,7 @@ const result = parse(source, {
 interface ParseResult {
   program: Program;
   comments: Comment[]; // every comment in source order
+  tokens?: TokenList;  // with tokens: true
   diagnostics: Diagnostic[];
 }
 ```
@@ -184,26 +185,26 @@ The parser is error-tolerant: an AST is always produced even when diagnostics ar
 
 ### Diagnostics
 
-Diagnostics cover both syntax errors found during parsing and, when `semanticErrors` is enabled, semantic errors that require scope and binding information (e.g. duplicate `let` declarations, `break` outside a loop, unresolved private fields).
+Diagnostics cover syntax errors and, when `semanticErrors` is enabled, semantic errors that require scope and binding information (e.g. duplicate `let` declarations, `break` outside a loop, unresolved private fields).
 
 Each diagnostic includes:
 
 - `severity`: `"error"`, `"warning"`, `"hint"`, or `"info"`
 - `message`: description of the issue
 - `help`: fix suggestion, or `null`
-- `start` / `end`: byte offsets into the source
+- `start` / `end`: source offsets, in the same UTF-16 units as node positions
 - `labels`: additional source spans with messages for context
 
 ### Semantic Errors
 
-By default, the parser only reports syntax errors. Semantic errors require resolving scopes and bindings, which is done in a separate AST pass. Enable this with the `semanticErrors` option:
+By default, the parser only reports syntax errors. Semantic errors require resolving scopes and bindings in a separate AST pass, enabled with `semanticErrors`:
 
 ```js
 const result = parse(`let x = 1; let x = 2;`, { semanticErrors: true });
-// result.diagnostics will include "Identifier `x` has already been declared", etc.
+// result.diagnostics includes "Identifier 'x' has already been declared"
 ```
 
-This incurs a very small performance overhead. If your build pipeline already handles semantic validation (e.g. through a linter or type checker), you can leave this off for faster parsing.
+The pass is cheap. Leave it off when a linter or type checker already validates the code.
 
 ## Comments
 
@@ -225,26 +226,26 @@ Each entry is:
 interface Comment {
   type: "Line" | "Block";
   value: string; // body without delimiters
-  start: number; // byte offset, delimiter included
-  end: number;   // byte offset, delimiter included
+  start: number; // offset, delimiter included
+  end: number;   // offset, delimiter included
 }
 ```
 
-The span (`start`/`end`) covers the whole comment, delimiters included, so `source.slice(c.start, c.end)` returns the raw text.
+The span covers the whole comment, so `source.slice(c.start, c.end)` returns the raw text.
 
 ### Attaching comments to nodes
 
-Set `attachComments: true` to also hang each comment on the AST node it sits next to, read off `node.comments`. This is what a codegen pass needs, since attached comments move with their node through transforms.
+Set `attachComments: true` to also hang each comment on the AST node it sits next to, read off `node.comments`. Attached comments move with their node through transforms, which is what `yuku-codegen` needs to print them.
 
 ```js
 const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
 
 const fn = program.body[0];
 for (const c of fn.comments ?? []) {
-  console.log(c.position, c.type, c.value);
+  console.log(c.position, c.type, JSON.stringify(c.value));
 }
 // before Line " header"
-// after  Line " trailing"
+// after Line " trailing"
 ```
 
 Each attached comment is:

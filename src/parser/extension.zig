@@ -157,10 +157,12 @@ fn validateHook(comptime point: Point) void {
     const s = spec(point);
     const want = s.args + @intFromBool(s.kind != .predicate);
     const found = @typeInfo(@TypeOf(@field(binding, @tagName(point)))).@"fn".params.len;
-    if (found != want) @compileError(std.fmt.comptimePrint(
-        "parser_extension.{s} declares {d} parameters, a {s} hook there takes {d}",
-        .{ @tagName(point), found, @tagName(s.kind), want },
-    ));
+    if (found != want) {
+        @compileError(std.fmt.comptimePrint(
+            "parser_extension.{s} declares {d} parameters, a {s} hook there takes {d}",
+            .{ @tagName(point), found, @tagName(s.kind), want },
+        ));
+    }
 }
 
 // a typo must not compile to a hook that never runs

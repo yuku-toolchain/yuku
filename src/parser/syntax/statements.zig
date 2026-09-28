@@ -1,9 +1,9 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
+
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
 const literals = @import("literals.zig");
@@ -11,7 +11,6 @@ const patterns = @import("patterns.zig");
 const functions = @import("functions.zig");
 const class = @import("class.zig");
 const extensions = @import("extensions.zig");
-const grammar = @import("../grammar.zig");
 const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
 const ts_types = @import("ts/types.zig");
@@ -56,7 +55,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
-        .@"for" => for_loop.parseForStatement(parser, false),
+        .@"for" => for_loop.parseForStatement(parser),
         .@"while" => parseWhileStatement(parser),
         .do => parseDoWhileStatement(parser),
         .with => parseWithStatement(parser),
@@ -145,31 +144,20 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeInd
 
 fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .let);
-    const is_identifier = try variables.isLetIdentifier(parser);
-
-    if (!is_identifier) {
-        return variables.parseVariableDeclaration(parser, .{}, null);
-    }
-
-    return parseExpressionStatement(parser);
+    if (variables.isLetIdentifier(parser)) return parseExpressionStatement(parser);
+    return variables.parseVariableDeclaration(parser, .{}, null);
 }
 
 fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .using);
-    const is_using_identifier = try variables.isUsingIdentifier(parser);
-
-    if (!is_using_identifier) {
-        return variables.parseVariableDeclaration(parser, .{}, null);
-    }
-
-    return parseExpressionStatement(parser);
+    if (variables.isUsingIdentifier(parser)) return parseExpressionStatement(parser);
+    return variables.parseVariableDeclaration(parser, .{}, null);
 }
 
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .await);
 
-    const is_declaration = try variables.isAwaitUsingDeclarationAhead(parser);
-    if (is_declaration) {
+    if (variables.isAwaitUsingDeclarationAhead(parser)) {
         const start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'await'
         return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
@@ -189,8 +177,7 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    if (ts_decl.isStartOfTsDeclaration(parser))
-        return ts_decl.parseTsDeclaration(parser);
+    if (ts_decl.isStartOfTsDeclaration(parser)) return ts_decl.parseTsDeclaration(parser);
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
@@ -362,10 +349,7 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         if (try parseStatement(parser, .{})) |stmt| {
             const stmt_data = parser.tree.data(stmt);
 
-            // a using declaration can appear in the following contexts:
-            //  - the top level of a Module anywhere a VariableStatement is allowed,
-            //    as long as it is not immediately nested inside of a `CaseClause`
-            //    or `DefaultClause`.
+            // a using declaration may not sit directly in a `CaseClause` or `DefaultClause`
             if (stmt_data == .variable_declaration) {
                 const kind = stmt_data.variable_declaration.kind;
 
@@ -470,8 +454,9 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
         .{ .can_be_single_statement_context = true },
     ) orelse return null;
 
-    if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null))
+    if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) {
         return null;
+    }
     if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
 
     const test_expr = try expressions.parseExpression(
@@ -538,12 +523,11 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     var label: ast.NodeIndex = .null;
 
-    // break [no LineTerminator here] LabelIdentifier;
+    // break [no LineTerminator here] LabelIdentifier
     const can_insert_semi = parser.canInsertImplicitSemicolon(parser.current_token);
     if (!can_insert_semi and parser.current_token.tag != .semicolon) {
-        const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
-        label = label_node;
-        end = parser.tree.span(label_node).end;
+        label = try literals.parseLabelIdentifier(parser) orelse return null;
+        end = parser.tree.span(label).end;
     }
 
     end = try parser.eatSemicolon(end) orelse return null;
@@ -563,12 +547,11 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     var label: ast.NodeIndex = .null;
 
-    // continue [no LineTerminator here] LabelIdentifier;
+    // continue [no LineTerminator here] LabelIdentifier
     const can_insert_semi = parser.canInsertImplicitSemicolon(parser.current_token);
     if (!can_insert_semi and parser.current_token.tag != .semicolon) {
-        const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
-        label = label_node;
-        end = parser.tree.span(label_node).end;
+        label = try literals.parseLabelIdentifier(parser) orelse return null;
+        end = parser.tree.span(label).end;
     }
 
     end = try parser.eatSemicolon(end) orelse return null;
@@ -701,8 +684,9 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
             ts_types.applyTypeAnnotationToPattern(parser, param, annotation);
         }
 
-        if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null))
+        if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) {
             return null;
+        }
     }
 
     const body = try parseBlockStatement(parser) orelse return null;

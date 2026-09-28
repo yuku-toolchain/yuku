@@ -13,7 +13,7 @@ export class Analyzer {
   #linking = false;
   // origin defining symbol -> importing local symbols that resolve to it,
   // across every module. built once per link so referencesOf is a lookup
-  // rather than a per-call walk over every import in the graph.
+  // rather than a per-call walk over every import in the graph
   #importersByOrigin = new Map();
 
   constructor(options = {}) {
@@ -83,9 +83,6 @@ export class Analyzer {
     this.#linking = false;
   }
 
-  // buckets every importing local under the origin symbol it resolves to,
-  // computing each definitionOf once. referencesOf then reads the bucket
-  // instead of re-walking the whole import graph on every call.
   #indexImporters() {
     this.#importersByOrigin = new Map();
     for (const module of this.#modules.values()) {
@@ -94,7 +91,7 @@ export class Analyzer {
         if (local === null) continue;
         const definition = this.definitionOf(local);
         // a symbol object is unique to its (module, id), so the origin
-        // symbol alone keys the bucket; the module is implied.
+        // symbol alone keys the bucket
         if (definition === null || definition.symbol === null) continue;
         let importers = this.#importersByOrigin.get(definition.symbol);
         if (importers === undefined) {

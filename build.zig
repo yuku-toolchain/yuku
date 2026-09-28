@@ -19,6 +19,8 @@ pub fn build(b: *std.Build) void {
 
     const codegen_options = b.addOptions();
     codegen_options.addOption(bool, "source_maps", enable_source_maps);
+    const codegen_options_module = codegen_options.createModule();
+
     const parser_extension_source = b.option(
         []const u8,
         "parser-extension",
@@ -26,7 +28,10 @@ pub fn build(b: *std.Build) void {
     );
     // pins neither target nor optimize, so the fuzz graph below can share the instance
     const parser_extension = if (parser_extension_source) |source| b.createModule(.{
-        .root_source_file = if (std.fs.path.isAbsolute(source)) .{ .cwd_relative = source } else b.path(source),
+        .root_source_file = if (std.fs.path.isAbsolute(source))
+            .{ .cwd_relative = source }
+        else
+            b.path(source),
     }) else b.addOptions().createModule();
 
     const parser_module = b.addModule("parser", .{
@@ -36,7 +41,7 @@ pub fn build(b: *std.Build) void {
     });
 
     parser_module.addImport("util", util_module);
-    parser_module.addImport("codegen_options", codegen_options.createModule());
+    parser_module.addImport("codegen_options", codegen_options_module);
     parser_module.addImport("parser_extension", parser_extension);
 
     const gen_unicode_id_table = b.addExecutable(.{
@@ -49,7 +54,10 @@ pub fn build(b: *std.Build) void {
     });
 
     const run_gen_unicode_id_table = b.addRunArtifact(gen_unicode_id_table);
-    const gen_unicode_id_table_step = b.step("generate-unicode-id", "Generate unicode identifier tables");
+    const gen_unicode_id_table_step = b.step(
+        "generate-unicode-id",
+        "Generate unicode identifier tables",
+    );
     gen_unicode_id_table_step.dependOn(&run_gen_unicode_id_table.step);
 
     const tools_tests = b.addTest(.{
@@ -91,7 +99,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     extension_parser.addImport("util", util_module);
-    extension_parser.addImport("codegen_options", codegen_options.createModule());
+    extension_parser.addImport("codegen_options", codegen_options_module);
     extension_parser.addImport("parser_extension", reference_extension);
     const extension_tests = b.createModule(.{
         .root_source_file = b.path("src/parser/testing/extension/cases.zig"),
@@ -113,7 +121,7 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSafe,
     });
     fuzz_parser.addImport("util", fuzz_util);
-    fuzz_parser.addImport("codegen_options", codegen_options.createModule());
+    fuzz_parser.addImport("codegen_options", codegen_options_module);
     fuzz_parser.addImport("parser_extension", parser_extension);
     const fuzz_driver = b.createModule(.{
         .root_source_file = b.path("src/parser/testing/fuzz/main.zig"),
@@ -129,59 +137,32 @@ pub fn build(b: *std.Build) void {
 
     const napi_dep = b.dependency("napi_zig", .{});
 
-    napi_zig.addLib(b, napi_dep, .{
-        .name = "yuku-parser",
-        .root = b.path("src/parser/ffi/parser.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "parser", .module = parser_module },
-        },
-        .npm = .{
-            .scope = "@yuku-parser",
-            .description = "High-performance JavaScript/TypeScript parser written in Zig",
-            .dts = .{
-                .file = b.path("src/parser/ffi/parser.d.ts"),
+    for ([_]struct { name: []const u8, tool: []const u8 }{
+        .{ .name = "parser", .tool = "parser" },
+        .{ .name = "codegen", .tool = "code generator" },
+        .{ .name = "analyzer", .tool = "semantic analyzer" },
+    }) |lib| {
+        napi_zig.addLib(b, napi_dep, .{
+            .name = b.fmt("yuku-{s}", .{lib.name}),
+            .root = b.path(b.fmt("src/parser/ffi/{s}.zig", .{lib.name})),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "parser", .module = parser_module },
             },
-            .repository = "https://github.com/yuku-toolchain/yuku",
-        },
-    });
-
-    napi_zig.addLib(b, napi_dep, .{
-        .name = "yuku-codegen",
-        .root = b.path("src/parser/ffi/codegen.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "parser", .module = parser_module },
-        },
-        .npm = .{
-            .scope = "@yuku-codegen",
-            .description = "High-performance JavaScript/TypeScript code generator written in Zig",
-            .dts = .{
-                .file = b.path("src/parser/ffi/codegen.d.ts"),
+            .npm = .{
+                .scope = b.fmt("@yuku-{s}", .{lib.name}),
+                .description = b.fmt(
+                    "High-performance JavaScript/TypeScript {s} written in Zig",
+                    .{lib.tool},
+                ),
+                .dts = .{
+                    .file = b.path(b.fmt("src/parser/ffi/{s}.d.ts", .{lib.name})),
+                },
+                .repository = "https://github.com/yuku-toolchain/yuku",
             },
-            .repository = "https://github.com/yuku-toolchain/yuku",
-        },
-    });
-
-    napi_zig.addLib(b, napi_dep, .{
-        .name = "yuku-analyzer",
-        .root = b.path("src/parser/ffi/analyzer.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "parser", .module = parser_module },
-        },
-        .npm = .{
-            .scope = "@yuku-analyzer",
-            .description = "High-performance JavaScript/TypeScript semantic analyzer written in Zig",
-            .dts = .{
-                .file = b.path("src/parser/ffi/analyzer.d.ts"),
-            },
-            .repository = "https://github.com/yuku-toolchain/yuku",
-        },
-    });
+        });
+    }
 
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
@@ -202,7 +183,7 @@ pub fn build(b: *std.Build) void {
     });
     wasm_transfer_module.addImport("parser", parser_module);
 
-    inline for ([_]struct { name: []const u8, root: []const u8 }{
+    for ([_]struct { name: []const u8, root: []const u8 }{
         .{ .name = "yuku-parser", .root = "src/parser/ffi/wasm/parser.zig" },
         .{ .name = "yuku-codegen", .root = "src/parser/ffi/wasm/codegen.zig" },
         .{ .name = "yuku-analyzer", .root = "src/parser/ffi/wasm/analyzer.zig" },
@@ -243,7 +224,7 @@ pub fn build(b: *std.Build) void {
     });
     ast_transfer_module.addImport("parser", parser_module);
 
-    inline for ([_]struct {
+    for ([_]struct {
         step: []const u8,
         description: []const u8,
         root: []const u8,

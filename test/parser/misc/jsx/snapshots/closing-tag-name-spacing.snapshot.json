@@ -1,0 +1,412 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 213,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 14,
+        "expression": {
+          "type": "JSXElement",
+          "start": 0,
+          "end": 13,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 0,
+            "end": 5,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 1,
+              "end": 4,
+              "object": {
+                "type": "JSXIdentifier",
+                "start": 1,
+                "end": 2,
+                "name": "a"
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 3,
+                "end": 4,
+                "name": "b"
+              }
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 5,
+            "end": 13,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 7,
+              "end": 12,
+              "object": {
+                "type": "JSXIdentifier",
+                "start": 7,
+                "end": 8,
+                "name": "a"
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 11,
+                "end": 12,
+                "name": "b"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 15,
+        "end": 29,
+        "expression": {
+          "type": "JSXElement",
+          "start": 15,
+          "end": 28,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 15,
+            "end": 22,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 16,
+              "end": 21,
+              "object": {
+                "type": "JSXIdentifier",
+                "start": 16,
+                "end": 17,
+                "name": "a"
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 20,
+                "end": 21,
+                "name": "b"
+              }
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 22,
+            "end": 28,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 24,
+              "end": 27,
+              "object": {
+                "type": "JSXIdentifier",
+                "start": 24,
+                "end": 25,
+                "name": "a"
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 26,
+                "end": 27,
+                "name": "b"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 30,
+        "end": 48,
+        "expression": {
+          "type": "JSXElement",
+          "start": 30,
+          "end": 47,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 30,
+            "end": 37,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 31,
+              "end": 36,
+              "object": {
+                "type": "JSXMemberExpression",
+                "start": 31,
+                "end": 34,
+                "object": {
+                  "type": "JSXIdentifier",
+                  "start": 31,
+                  "end": 32,
+                  "name": "a"
+                },
+                "property": {
+                  "type": "JSXIdentifier",
+                  "start": 33,
+                  "end": 34,
+                  "name": "b"
+                }
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 35,
+                "end": 36,
+                "name": "c"
+              }
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 37,
+            "end": 47,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 39,
+              "end": 46,
+              "object": {
+                "type": "JSXMemberExpression",
+                "start": 39,
+                "end": 43,
+                "object": {
+                  "type": "JSXIdentifier",
+                  "start": 39,
+                  "end": 40,
+                  "name": "a"
+                },
+                "property": {
+                  "type": "JSXIdentifier",
+                  "start": 42,
+                  "end": 43,
+                  "name": "b"
+                }
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 45,
+                "end": 46,
+                "name": "c"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 49,
+        "end": 68,
+        "expression": {
+          "type": "JSXElement",
+          "start": 49,
+          "end": 67,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 49,
+            "end": 54,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 50,
+              "end": 53,
+              "object": {
+                "type": "JSXIdentifier",
+                "start": 50,
+                "end": 51,
+                "name": "a"
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 52,
+                "end": 53,
+                "name": "b"
+              }
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 54,
+            "end": 67,
+            "name": {
+              "type": "JSXMemberExpression",
+              "start": 56,
+              "end": 66,
+              "object": {
+                "type": "JSXIdentifier",
+                "start": 56,
+                "end": 57,
+                "name": "a"
+              },
+              "property": {
+                "type": "JSXIdentifier",
+                "start": 65,
+                "end": 66,
+                "name": "b"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 69,
+        "end": 83,
+        "expression": {
+          "type": "JSXElement",
+          "start": 69,
+          "end": 82,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 69,
+            "end": 74,
+            "name": {
+              "type": "JSXNamespacedName",
+              "start": 70,
+              "end": 73,
+              "namespace": {
+                "type": "JSXIdentifier",
+                "start": 70,
+                "end": 71,
+                "name": "a"
+              },
+              "name": {
+                "type": "JSXIdentifier",
+                "start": 72,
+                "end": 73,
+                "name": "b"
+              }
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 74,
+            "end": 82,
+            "name": {
+              "type": "JSXNamespacedName",
+              "start": 76,
+              "end": 81,
+              "namespace": {
+                "type": "JSXIdentifier",
+                "start": 76,
+                "end": 77,
+                "name": "a"
+              },
+              "name": {
+                "type": "JSXIdentifier",
+                "start": 80,
+                "end": 81,
+                "name": "b"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " c ",
+      "start": 58,
+      "end": 65
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Expected closing tag for '<a.b>' but found '</a.c>'",
+      "start": 100,
+      "end": 103,
+      "help": "JSX opening and closing tags must have matching names",
+      "labels": [
+        {
+          "start": 94,
+          "end": 97,
+          "message": "opening tag"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected closing tag for '<a.b.c>' but found '</a.c.b>'",
+      "start": 123,
+      "end": 128,
+      "help": "JSX opening and closing tags must have matching names",
+      "labels": [
+        {
+          "start": 115,
+          "end": 120,
+          "message": "opening tag"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected closing tag for '<a.b>' but found '</b.b>'",
+      "start": 146,
+      "end": 149,
+      "help": "JSX opening and closing tags must have matching names",
+      "labels": [
+        {
+          "start": 140,
+          "end": 143,
+          "message": "opening tag"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected closing tag for '<a.b>' but found '</a>'",
+      "start": 167,
+      "end": 168,
+      "help": "JSX opening and closing tags must have matching names",
+      "labels": [
+        {
+          "start": 161,
+          "end": 164,
+          "message": "opening tag"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected closing tag for '<a:b>' but found '</a:c>'",
+      "start": 186,
+      "end": 189,
+      "help": "JSX opening and closing tags must have matching names",
+      "labels": [
+        {
+          "start": 180,
+          "end": 183,
+          "message": "opening tag"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected closing tag for '<a:b>' but found '</a.b>'",
+      "start": 207,
+      "end": 210,
+      "help": "JSX opening and closing tags must have matching names",
+      "labels": [
+        {
+          "start": 201,
+          "end": 204,
+          "message": "opening tag"
+        }
+      ]
+    }
+  ]
+}

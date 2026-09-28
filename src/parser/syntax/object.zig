@@ -12,15 +12,15 @@ const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
 const ts = @import("ts/types.zig");
 
-/// Properties parsed by the object cover grammar, before classification as an expression or a pattern.
+/// Properties parsed by the object cover grammar, before they become an expression or a pattern.
 pub const ObjectCover = struct {
     properties: ast.IndexRange,
     start: u32,
     end: u32,
 };
 
-/// Parses an object literal permissively under the cover grammar that also covers ObjectAssignmentPattern.
-/// https://tc39.es/ecma262/#sec-object-initializer (covers ObjectAssignmentPattern)
+/// Parses an object literal permissively, covering ObjectAssignmentPattern as well.
+/// https://tc39.es/ecma262/#sec-object-initializer
 pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
@@ -32,27 +32,12 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     var end = start + 1;
 
     while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
-        if (parser.current_token.tag == .spread) {
-            const spread_start = parser.current_token.span.start;
-            try parser.advance() orelse return null;
-            const argument = try expressions.parseExpression(
-                parser,
-                Precedence.Assignment,
-                .{},
-            ) orelse
-                return null;
-            const spread_end = parser.tree.span(argument).end;
-            const spread = try parser.tree.addNode(
-                .{ .spread_element = .{ .argument = argument } },
-                .{ .start = spread_start, .end = spread_end },
-            );
-            try parser.scratch_cover.append(parser.allocator(), spread);
-            end = spread_end;
-        } else {
-            const prop = try parseCoverProperty(parser) orelse return null;
-            try parser.scratch_cover.append(parser.allocator(), prop);
-            end = parser.tree.span(prop).end;
-        }
+        const property = if (parser.current_token.tag == .spread)
+            try expressions.parseSpreadElement(parser) orelse return null
+        else
+            try parseCoverProperty(parser) orelse return null;
+        try parser.scratch_cover.append(parser.allocator(), property);
+        end = parser.tree.span(property).end;
 
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
@@ -154,12 +139,11 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
                 return null;
             parser.state.stripped_paren = outer_stripped_paren;
-            const ok = try parser.expect(
+            if (!try parser.expect(
                 .right_bracket,
                 "Expected ']' after computed property key",
                 null,
-            );
-            if (!ok) return null;
+            )) return null;
         } else if (parser.current_token.tag.isIdentifierLike()) {
             key_identifier_token = parser.current_token;
             key = try literals.parseIdentifierName(parser) orelse return null;
@@ -421,8 +405,8 @@ fn parseObjectMethodProperty(
 }
 
 /// Converts an object cover to an ObjectExpression.
-pub fn coverToExpression(parser: *Parser, cover: ObjectCover) Error!?ast.NodeIndex {
-    return try parser.tree.addNode(
+pub fn coverToExpression(parser: *Parser, cover: ObjectCover) Error!ast.NodeIndex {
+    return parser.tree.addNode(
         .{ .object_expression = .{ .properties = cover.properties } },
         .{ .start = cover.start, .end = cover.end },
     );

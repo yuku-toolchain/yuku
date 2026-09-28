@@ -1,0 +1,32 @@
+test/parser/misc/js/semantic
+============================
+Passed:       2/2 (100.00%)
+Failed:       0
+AST mismatch: 0/2
+
+✓ test/parser/misc/js/semantic/redeclare-block-functions.js
+error: Identifier 'g' has already been declared
+   |
+ 6 | 
+ 7 | { async function g() {} function g() {} }
+   |                                  ^
+   |                  ~ 'g' was first declared as a function here
+   |                                  ~ cannot be redeclared here
+ 8 | { function h() {} function* h() {} }
+   |
+   = help: Consider removing or renaming this declaration of 'g'
+
+
+✓ test/parser/misc/js/semantic/redeclare-class-function.js
+error: Identifier 'A' has already been declared
+   |
+ 1 | class A {}
+   |       ~ 'A' was first declared as a class here
+ 2 | function A() {}
+   |          ^
+   |          ~ cannot be redeclared here
+ 3 | 
+   |
+   = help: Consider removing or renaming this declaration of 'A'
+
+

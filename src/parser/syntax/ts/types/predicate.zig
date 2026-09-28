@@ -40,7 +40,7 @@ pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
 
 // only bare `id is T` needs lookahead, `this is T` and `asserts` go through parseType
 pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try isIdentifierPredicateStart(parser)) return core.parseType(parser);
+    if (!isIdentifierPredicateStart(parser)) return core.parseType(parser);
 
     const parameter_name = try literals.parseIdentifierName(parser) orelse return null;
     return finishTypePredicate(
@@ -116,17 +116,18 @@ fn finishTypePredicate(
     );
 }
 
-pub fn isAssertsPredicateStart(parser: *Parser) Error!bool {
-    if (parser.current_token.tag != .asserts or parser.current_token.isEscaped()) return false;
+pub fn isAssertsPredicateStart(parser: *Parser) bool {
+    std.debug.assert(parser.current_token.tag == .asserts);
+    std.debug.assert(!parser.current_token.isEscaped());
 
     const next = parser.peekAhead();
     if (next.hasLineTerminatorBefore()) return false;
 
-    return next.tag == .this or next.tag.isIdentifierLike();
+    return next.tag.isIdentifierLike();
 }
 
 // `this is T` is handled by the primary type path
-fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
+fn isIdentifierPredicateStart(parser: *Parser) bool {
     const current = parser.current_token;
     if (current.isEscaped() or current.tag == .this or !current.tag.isIdentifierLike()) {
         return false;

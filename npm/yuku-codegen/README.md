@@ -55,12 +55,12 @@ const { code, map } = generate(program, {
 | `format`    | `"pretty" \| "compact"`                                          | `"pretty"`   | Whitespace mode. `"compact"` emits only the separators the grammar requires.      |
 | `indent`    | `number`                                                         | `2`          | Spaces per indentation level. Applies in pretty mode only.                        |
 | `quotes`    | `"preserve" \| "double" \| "single" \| "shortest"`               | `"preserve"` | Quote style for string literals. See [Quotes](#quotes).                           |
-| `comments`  | `boolean \| "some" \| "none" \| "line" \| "block"`               | `"some"`     | Comment passthrough filter. See [Comments](#comments).                            |
+| `comments`  | `boolean \| "all" \| "some" \| "none" \| "line" \| "block"`      | `"some"`     | Comment passthrough filter. See [Comments](#comments).                            |
 | `sourceMap` | `SourceMapOptions`                                               | `undefined`  | Pass an object to emit a Source Map V3. See [Source maps](#source-maps).          |
 
 ## TypeScript stripping
 
-`strip: true` rewrites the AST as plain JavaScript.
+`strip: true` prints a TypeScript AST as plain JavaScript.
 
 ```js
 import { parse } from "yuku-parser";
@@ -70,7 +70,7 @@ const { program } = parse(`const x: number = 1;`, { lang: "ts" });
 console.log(generate(program, { strip: true }).code); // "const x = 1;"
 ```
 
-Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that have no clean JavaScript equivalent (`enum`, `namespace`, `import = require()`, `export =`) are reported in `errors` and elided. The output is always syntactically valid JavaScript.
+Type annotations, type aliases, interfaces, and other type-only constructs are dropped. Constructs that emit runtime code (`enum`, `namespace`, `import = require()`, `export =`, parameter properties) are reported in `errors` and left out, and a parameter property keeps its plain parameter. The output is always syntactically valid JavaScript.
 
 ## Minification
 
@@ -99,6 +99,7 @@ The `syntax` rewrites:
 - Numeric literals shorten to their shortest form (`1000000` becomes `1e6`, `0.5` becomes `.5`).
 - `obj["foo"]` rewrites to `obj.foo` when the key is a valid identifier.
 - `{ "foo": x }` rewrites to `{ foo: x }` when safe.
+- `</script`, `<!--`, and `-->` are escaped in strings and untagged template literals, so the output is safe to inline in a `<script>` tag. Tagged templates keep their raw text, since the tag reads it.
 
 ## Quotes
 
@@ -111,22 +112,15 @@ The `syntax` rewrites:
 
 ## Comments
 
-Comments live on the AST nodes they were attached to during parsing. To preserve them, parse with `attachComments: true`:
+Comments live on the AST nodes they were attached to during parsing, so parse with `attachComments: true` to keep them. The `comments` option then selects which attached comments are emitted. The default, `"some"`, follows the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations.
 
-```js
-const { program } = parse(source, { attachComments: true });
-generate(program).code;
-```
-
-The `comments` option then selects which attached comments are emitted. The default is `"some"`, which matches the bundler convention of keeping legal banners, JSDoc, and tree-shaking annotations while dropping plain noise.
-
-| Value     | Behavior                                                        |
-| --------- | --------------------------------------------------------------- |
-| `"some"`  | Emit legal headers, JSDoc, and `@`/`#` annotations. _(default)_ |
-| `true`    | Emit every comment.                                             |
-| `false`   | Drop every comment.                                             |
-| `"line"`  | Emit `// ...` only.                                             |
-| `"block"` | Emit `/* ... */` only.                                          |
+| Value              | Behavior                                                        |
+| ------------------ | --------------------------------------------------------------- |
+| `"some"`           | Emit legal headers, JSDoc, and `@`/`#` annotations. _(default)_ |
+| `"all"` or `true`  | Emit every comment.                                             |
+| `"none"` or `false`| Drop every comment.                                             |
+| `"line"`           | Emit `// ...` only.                                             |
+| `"block"`          | Emit `/* ... */` only.                                          |
 
 ```js
 const { program } = parse(`// hello\nconst x = 1;`, { attachComments: true });
@@ -138,9 +132,10 @@ Because comments are attached to nodes, they survive AST transforms: move or rep
 
 ## Source maps
 
-Pass a `SourceMapOptions` object to emit a Source Map V3. Its `source` field is required: feed it the original source text (this is what maps generated positions back to the source). Without it, no map is produced and `map` is `null`. The remaining fields (`file`, `sources`, `sourcesContent`, `sourceRoot`) are optional metadata.
+Pass a `SourceMapOptions` object to emit a Source Map V3. Its `source` field is the original source text, which positions map back to. Without it, no map is produced and `map` is `null`. The other fields (`file`, `sourceFileName`, `sourceRoot`, `sourcesContent`) are optional metadata.
 
 ```js
+import { writeFileSync } from "node:fs";
 import { parse } from "yuku-parser";
 import { generate } from "yuku-codegen";
 
@@ -156,8 +151,8 @@ const { code, map } = generate(program, {
   },
 });
 
-await Bun.write("out.js", `${code}\n//# sourceMappingURL=out.js.map`);
-await Bun.write("out.js.map", JSON.stringify(map));
+writeFileSync("out.js", `${code}\n//# sourceMappingURL=out.js.map`);
+writeFileSync("out.js.map", JSON.stringify(map));
 ```
 
 ### `SourceMapOptions`

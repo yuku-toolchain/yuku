@@ -19,9 +19,9 @@ interface Comment {
   type: CommentType;
   /** Comment text without the delimiters. */
   value: string;
-  /** Byte offset of the comment start (delimiter included). */
+  /** UTF-16 offset of the comment start (delimiter included). */
   start: number;
-  /** Byte offset of the comment end (delimiter included). */
+  /** UTF-16 offset of the comment end (delimiter included). */
   end: number;
 }
 
@@ -112,9 +112,9 @@ interface TokenList {
 
 /** A labeled source span attached to a {@link Diagnostic}. */
 interface DiagnosticLabel {
-  /** Byte offset. */
+  /** UTF-16 offset. */
   start: number;
-  /** Byte offset. */
+  /** UTF-16 offset. */
   end: number;
   message: string;
 }
@@ -131,9 +131,9 @@ interface Diagnostic {
   message: string;
   /** Fix suggestion, or `null` if unavailable. */
   help: string | null;
-  /** Byte offset. */
+  /** UTF-16 offset. */
   start: number;
-  /** Byte offset. */
+  /** UTF-16 offset. */
   end: number;
   /** Additional source spans providing context. */
   labels: DiagnosticLabel[];

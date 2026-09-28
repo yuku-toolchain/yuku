@@ -16,10 +16,14 @@ export interface SummaryOptions extends AddFileOptions {
   path?: string;
 }
 
+function analyzeOne(source: string, options: SummaryOptions): Module {
+  const { path = "input.ts", ...rest } = options;
+  return new Analyzer().addFile(path, source, rest);
+}
+
 /** Analyzes one file and renders its full semantic model as canonical text. */
 export function summary(source: string, options: SummaryOptions = {}): string {
-  const { path = "input.ts", ...rest } = options;
-  const module = new Analyzer().addFile(path, source, rest);
+  const module = analyzeOne(source, options);
   const lines: string[] = [];
 
   if (module.diagnostics.length > 0) {
@@ -65,8 +69,7 @@ function renderScope(
   }
 }
 
-// `[strict]` marks only the scope where strictness turns on (it never turns off
-// in a child), so the dump shows the transition instead of repeating it.
+// strictness never turns off in a child, so `[strict]` marks only the scope where it turns on
 function scopeHeader(scope: Scope): string {
   const strict = scope.strict && !(scope.parent?.strict ?? false) ? " [strict]" : "";
   return scopeLabel(scope) + strict;
@@ -107,9 +110,7 @@ function referenceRow(reference: Reference): string {
   return `${reference.name} → ${target}${write}${space}`;
 }
 
-// Decodes the raw flag bitset into canonical words. The variable kind folds its
-// modifiers in (a parameter is function-scoped, `const` implies block-scoped),
-// so each binding reads as one primary kind plus any qualifiers.
+// the variable kind folds in its modifiers, so each binding reads as one kind plus qualifiers
 function flagWords(flags: number): string {
   const words: string[] = [];
   if (flags & SymbolFlags.FunctionScopedVariable) {
@@ -192,8 +193,7 @@ const FUNCTION_TYPES = [
 
 /** Dumps the free variables of every function in the file, in source order. */
 export function captures(source: string, options: SummaryOptions = {}): string {
-  const { path = "input.ts", ...rest } = options;
-  const module = new Analyzer().addFile(path, source, rest);
+  const module = analyzeOne(source, options);
   const lines: string[] = [];
   for (const fn of module.findAll(FUNCTION_TYPES)) {
     const caps = module
@@ -218,8 +218,10 @@ export function project(files: Record<string, string>): Analyzer {
   return analyzer;
 }
 
-// renders the graph-level model. link diagnostics, the dependency edges, and
-// each module's exported names with `export *` chains followed.
+/**
+ * Renders link diagnostics, dependency edges, and each module's exported names with `export *`
+ * chains followed.
+ */
 export function links(files: Record<string, string>): string {
   const analyzer = project(files);
   analyzer.link();

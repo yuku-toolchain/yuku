@@ -15,7 +15,6 @@ describe("re-adding a path", () => {
     expect(definition(analyzer, "b.ts", "value")).toBe("a.ts:value");
     expect(messages(analyzer)).toEqual([]);
 
-    // a.ts changes: the export is renamed away
     analyzer.addFile("a.ts", `export const renamed = 1;`);
     expect(definition(analyzer, "b.ts", "value")).toBe("(none)");
     expect(messages(analyzer)).toEqual(["b.ts: Module './a.ts' has no export 'value'"]);
@@ -29,7 +28,6 @@ describe("re-adding a path", () => {
     expect(messages(analyzer)).toEqual(["b.ts: Module './a.ts' has no export 'missing'"]);
     expect(definition(analyzer, "b.ts", "missing")).toBe("(none)");
 
-    // a.ts changes: the missing export now exists
     analyzer.addFile("a.ts", `export const present = 1; export const missing = 2;`);
     expect(messages(analyzer)).toEqual([]);
     expect(definition(analyzer, "b.ts", "missing")).toBe("a.ts:missing");

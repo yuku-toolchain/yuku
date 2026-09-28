@@ -7,9 +7,7 @@
 ---
 `yuku-analyzer` is full semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
-**No single library gives you all of this.** Scopes and resolved references mean `eslint-scope` or `@typescript-eslint/scope-manager`. Cross-file go-to-definition means the TypeScript compiler or `ts-morph`. A parser sits underneath both. `yuku-analyzer` is all of them in one native pass behind one API.
-
-**At native speed.** Up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with zero per-query cost after the single native call. Stitch those separate tools together yourself and the gap only widens. Each re-walks the AST, you re-parse to resolve across files, and you keep the indexes between them in sync by hand. `yuku-analyzer` pays all of that once, in Zig.
+Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with no per-query cost after the native call.
 
 ```bash
 npm install yuku-analyzer
@@ -31,7 +29,7 @@ module.walk({
 module.rootScope.find("double").references.length; // 1
 ```
 
-`analyze` takes the same options as `addFile`, plus `path` (default `"input.js"`), which names the module and supplies the default `lang` and `sourceType`. The module still carries its own import and export records, but nothing links, since the analyzer behind it holds a single file. Reach for `Analyzer` the moment there is more than one.
+`analyze` takes the same options as `addFile`, plus `path` (default `"input.js"`), which names the module and supplies the default `lang` and `sourceType`. The module carries its own import and export records, but nothing links, since the analyzer behind it holds a single file. Use `Analyzer` for more than one.
 
 For a project, `Analyzer` adds files and links them:
 
@@ -53,11 +51,9 @@ def.module.path; // "math.ts"
 def.symbol.has(SymbolFlags.Const); // true
 
 a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
-
-// and many more
 ```
 
-That is real cross-file resolution, not a string search. It follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
+Resolution follows import, re-export, and `export *` chains to the binding that defines the name, like an editor's go-to-definition.
 
 ## [WebAssembly]($section.id('webassembly'))
 
@@ -75,25 +71,17 @@ module.rootScope.find("double").references.length; // 1
 
 The same API and semantic model as `yuku-analyzer`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
 
-## [The problem it solves]($section.id('the-problem-it-solves'))
-
-Assembling this yourself is not only slower, it is harder to get right. The lightweight tools give you a scope stack but leave the binding rules to you, meaning hoisting, catch clauses, named function expressions, TypeScript declaration merging, and value space versus type space. Each tool implements a subset, and each subset has its own bugs.
-
-`yuku-analyzer` computes none of that in JavaScript. The binder, scope tree, reference resolution, and module records all come from the same well-tested native analyzer that powers the rest of Yuku, so there is one implementation to keep correct, not a JavaScript copy that drifts from it. JavaScript receives a finished model to query, not events to track.
-
 ## [Architecture]($section.id('architecture'))
 
-The design rests on one observation. A semantic model is mostly integers. Scopes point to parents, symbols point to scopes, references point to symbols, and everything points to AST nodes. Integers serialize for free.
+The binder, scope tree, reference resolution, and module records come from the same native analyzer that powers the rest of Yuku. JavaScript receives a finished model to query and reimplements none of the binding rules (hoisting, catch scopes, named function expressions, declaration merging, declaration spaces).
 
-**One native call.** `addFile` parses the source, runs scope construction, binding, and reference resolution in Zig, and serializes the result into a single binary buffer, the AST in Yuku's flat transfer format followed by the semantic tables as fixed-stride sections. One FFI crossing per file, total.
+**One native call.** `addFile` parses the source, builds scopes, binds, and resolves references in Zig, then serializes everything into one buffer: the AST in Yuku's flat transfer format, followed by the semantic tables as fixed-stride sections.
 
-**Zero-copy decode.** On the JavaScript side, the semantic sections are read through typed-array views directly over the transferred buffer. Nothing is parsed, nothing is copied. A symbol's name, flags, scope, and declaration list are reads at computed offsets.
+**Zero-copy decode.** The semantic tables are read through typed-array views over that buffer. A symbol's name, flags, scope, and declarations are reads at computed offsets.
 
-**Lazy objects, eager answers.** `Scope`, `Symbol`, `Reference`, `Import`, and `Export` are flyweight objects over the tables, tiny, allocated once per row on first access, with getters that read the buffer. Cross-indexes (which references belong to which symbol, which symbols belong to which scope) build lazily on first use and amortize across every later query.
+**Lazy objects.** `Scope`, `Symbol`, `Reference`, `Import`, and `Export` are flyweight objects created once per row on first access. Cross-indexes, such as the references of each symbol, build on first use.
 
-**Node identity.** AST nodes decode lazily and are memoized by node index. The node you reach by walking `module.ast` and the node a semantic query hands back are the same JavaScript object. `symbol.declarations[0] === someNodeYouWalkedTo` is a meaningful comparison, and a `WeakMap` resolves any node back to its index, which is what makes `symbolOf(node)` a lookup instead of a search.
-
-The result is native-code analysis speed, JavaScript-object ergonomics, and a wire format that is provably synchronized with the code that reads it.
+**Node identity.** AST nodes decode lazily and are memoized by index, so the node you reach by walking `module.ast` and the node a semantic query returns are the same object. A `WeakMap` maps any node back to its index, which makes `symbolOf(node)` a lookup instead of a search.
 
 ## [The Analyzer]($section.id('the-analyzer'))
 
@@ -110,7 +98,7 @@ analyzer.module("src/app.tsx");     // Module | undefined
 analyzer.modules;                   // ReadonlyMap<string, Module>
 ```
 
-`addFile` accepts the same options as `yuku-parser`'s `parse`, with `lang` and `sourceType` defaulting from the file extension.
+`addFile` accepts the options of `yuku-parser`'s `parse`, except `semanticErrors` since semantic errors are always reported. `lang` and `sourceType` default from the file extension.
 
 ```js
 analyzer.addFile("legacy.cjs", source, {
@@ -122,7 +110,7 @@ analyzer.addFile("legacy.cjs", source, {
 });
 ```
 
-The two functions behind those defaults are exported, so a host that needs the same mapping never has to re-derive it.
+The functions behind those defaults are exported:
 
 ```js
 import { langFromPath, sourceTypeFromPath } from "yuku-analyzer";
@@ -132,11 +120,11 @@ langFromPath("app.tsx");      // "tsx"; .ts/.mts/.cts give "ts", .jsx gives "jsx
 sourceTypeFromPath("a.cjs");  // "commonjs" for .cjs and .cts, "module" for everything else
 ```
 
-Adding a path that already exists replaces the module and marks the graph for relinking. The call returns a new `Module`, and any scopes, symbols, or nodes you held from the previous version belong to that earlier parse. A change in `analyzer.module(path)` identity is the signal to drop a cache keyed on the old one.
+Adding a path that already exists replaces the module and marks the graph for relinking. The call returns a new `Module`, and scopes, symbols, or nodes held from the previous version belong to that earlier parse. A change in `analyzer.module(path)` identity is the signal to drop a cache keyed on the old one.
 
 ### [Module resolution]($section.id('module-resolution'))
 
-Cross-file linking needs to map import specifiers to added files. The default resolver handles relative specifiers with standard extension probing (`./util` matches `util.ts`, `util/index.ts`, and so on). For anything else, supply your own.
+Linking maps import specifiers to added files. The default resolver handles relative specifiers with standard extension probing (`./util` matches `util.ts`, `util/index.ts`, and so on). For anything else, supply your own.
 
 ```js
 const analyzer = new Analyzer({
@@ -151,7 +139,7 @@ Returning `null` marks the import as external. `import.resolvedModule` stays `nu
 
 ## [The Module]($section.id('the-module'))
 
-`addFile` returns a `Module`, the per-file unit of the analysis. Everything on it is local JavaScript. No native calls happen after `addFile` returns.
+`addFile` returns a `Module`, the per-file unit of the analysis. No native calls happen after `addFile` returns.
 
 ```js
 module.analyzer;    // the Analyzer that owns it
@@ -163,11 +151,9 @@ module.comments;    // every comment in source order
 module.tokens;      // TokenList, present when added with tokens: true
 ```
 
-`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](/parser/#tokens).
+`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](/parser/#tokens). The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, made of plain mutable objects that any ESTree tool accepts and `yuku-codegen` prints.
 
-The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, and nodes are plain mutable objects. Edit them, run them through any ESTree tool, print them with `yuku-codegen`.
-
-The semantic surface.
+The semantic surface:
 
 ```js
 module.scopes;               // Scope[], index is the scope id
@@ -228,21 +214,21 @@ sym.flags;        // the raw SymbolFlags bitset behind has / hasAll
 sym.id;           // stable index into module.symbols
 ```
 
-One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
+One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, as go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
 
 ### [Flags]($section.id('flags'))
 
-What a symbol is lives in a bitset. There is exactly one way to query it, `has` (any of the given flags) and `hasAll` (all of them), against the exported `SymbolFlags` constants. No parallel boolean getters, so the API stays small and predictable.
+A symbol's kinds and modifiers live in a bitset, queried with `has` (any of the given flags) and `hasAll` (all of them) against the exported `SymbolFlags` constants.
 
 ```js
 import { SymbolFlags } from "yuku-analyzer";
 
 sym.has(SymbolFlags.Function);                           // is it a function?
 sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
-sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // an exported function?
+sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // `export function`?
 ```
 
-Alongside the single-bit flags, five **composites** answer the common categorical questions directly.
+Five **composites** answer the common categorical questions directly.
 
 ```js
 sym.has(SymbolFlags.Variable);       // var / let / const, parameters and catch bindings included
@@ -252,9 +238,9 @@ sym.has(SymbolFlags.TypeSpace);      // referencable from a TS type position
 sym.has(SymbolFlags.NamespaceSpace); // a dotted type name (`ns.T`) can start from it
 ```
 
-Beyond `has` and `hasAll`, one method is left: `sym.visibleIn(space)`, the acceptance rule of name resolution: whether a reference resolving in `space` may bind to this symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
+`sym.visibleIn(space)` tells whether a reference resolving in `space` may bind to the symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
 
-A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
+A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what lets a class be used as a type. The flag values, composites included, are generated from the native binder's bit layout at build time, so they always agree with the binder.
 
 ## [References]($section.id('references'))
 
@@ -285,13 +271,13 @@ function f() {
 }
 ```
 
-`inTypePosition` collapses the space to the question rename and dead-code tools ask, whether the use is erased at compile time, so a value and a same-named type stay independent. `isWrite` is computed structurally in the native pass.
+`inTypePosition` tells whether the use is erased at compile time, so rename and dead-code tools can keep a value and a same-named type independent.
 
-`module.unresolvedReferences` is the complement, every name whose space has no binding anywhere in scope. That list is precisely what a no-undef lint rule or a globals collector wants.
+`module.unresolvedReferences` holds every name with no visible binding anywhere in scope, the input for a no-undef rule or a globals collector.
 
 ## [Node queries]($section.id('node-queries'))
 
-These methods connect AST nodes to the semantic model. All of them work on node object identity, not positions or names.
+These methods connect AST nodes to the semantic model by node object identity, not positions or names.
 
 ```js
 module.symbolOf(node);    // the symbol a node declares or references, or null
@@ -303,15 +289,15 @@ module.resolve("x", someScope);           // or from any scope, like the engine 
 module.resolve("T", someScope, "type");   // or in another space ("any" is by name alone)
 ```
 
-`symbolOf` is the workhorse. Hand it a declaration identifier and you get the symbol it declares, hand it a reference identifier and you get the symbol it resolves to.
+`symbolOf` gives the symbol a declaration identifier declares, or the symbol a reference identifier resolves to.
 
-`parentOf` walks upward from a node you already hold, with no ancestor stack and no full walk. Because nodes are memoized by index, it is the same constant-time lookup as the others. It returns `null` at the program root and for any node that is not part of this module's AST.
+`parentOf` walks upward from a node you already hold, in constant time, with no ancestor stack. It returns `null` at the program root and for any node that is not part of this module's AST.
 
-`scopeOf` never returns `null`. A node this module's analysis never saw, such as one you built during a transform, falls back to the root scope. `resolve` walks the chain the way the engine would, with `from` defaulting to the root scope and `space` to `"value"`: a binding outside the requested space does not stop the walk, `"any"` matches by name alone, and a value-position `arguments` lookup stops at the first non-arrow function or static block, where the implicit arguments object shadows any outer binding of that name.
+`scopeOf` never returns `null`. A node this module's analysis never saw, such as one you built during a transform, falls back to the root scope. `resolve` walks the chain the way the engine would, with `from` defaulting to the root scope and `space` to `"value"`. A binding outside the requested space does not stop the walk, `"any"` matches by name alone, and a value-position `arguments` lookup stops at the first non-arrow function or static block, where the implicit arguments object shadows any outer binding of that name.
 
 ## [Editing the AST]($section.id('editing-the-ast'))
 
-Node identity is what makes the analyzer a refactoring engine, not just a query layer. The `node` on every symbol and reference is the same object you reach by walking `module.ast` (`===` holds), so a transform is a plain assignment, and [`yuku-codegen`](/parser/codegen/) prints the mutated tree back to source.
+The `node` on every symbol and reference is the same object you reach by walking `module.ast`, so a rename is a plain assignment, and [`yuku-codegen`](/parser/codegen/) prints the mutated tree back to source.
 
 ```js
 import { generate } from "yuku-codegen";
@@ -360,11 +346,11 @@ module.walk({
 
 Per node, the order is catch-all `enter`, typed enter, children, typed leave, catch-all `leave`. Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`.
 
-`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Reach for it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
+`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Use it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
 
 ### [The context]($section.id('the-context'))
 
-One context object is reused across the whole walk (do not store it). It carries the position and the semantics.
+One context object is reused across the whole walk, so do not store it. It carries the position and the semantics.
 
 ```js
 ctx.node;      // the current node
@@ -379,11 +365,11 @@ ctx.reference; // shorthand for module.referenceOf(node)
 ctx.module;    // the module being walked
 ```
 
-`ctx.scope` is not tracked during the walk. The binder records the scope at every node and ships it as a per-node table, so `ctx.scope` (like `module.scopeOf`) is a single read off that table. No scoping rule is evaluated in JavaScript, and the answer is exact even where scopes do not nest with spans, such as decorators.
+`ctx.scope` is not tracked during the walk. The binder records the scope of every node in a per-node table, so `ctx.scope`, like `module.scopeOf`, is a single read. The answer is exact even where scopes do not nest with spans, such as decorators.
 
 ### [Mutation]($section.id('mutation'))
 
-The walk mutates the AST in place, with precise semantics.
+Handlers can mutate the AST in place.
 
 | Operation               | Effect                                                                                                        |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -407,11 +393,11 @@ module.walk({
 });
 ```
 
-One rule to remember. The semantic tables are a snapshot of the parsed source. Nodes you create have no symbols or references of their own. Analyze, transform, print, and re-analyze the output if you need fresh semantics for the transformed code.
+The semantic tables are a snapshot of the parsed source, so nodes you create have no symbols or references. For fresh semantics after a transform, print the result and analyze the output.
 
 ## [findAll]($section.id('findall'))
 
-For the simplest queries there is a one-liner.
+`findAll` collects every node of the given types, in source order.
 
 ```js
 module.findAll("FunctionDeclaration");          // FunctionDeclaration[]
@@ -444,9 +430,9 @@ for (const capture of module.capturesOf(tick)) {
 
 Each `Capture` carries the outer `symbol`, the capturing `references` inside the function, and `isWritten`. Type-only references are excluded, since they do not exist at runtime. Only bindings appear. `this`, `arguments`, and unresolved globals carry no symbol and are never reported, while module-scope and imported bindings count like any other outer binding.
 
-`capturesOf` throws a `TypeError` when the node is not part of this module's AST, or when it is a node that creates no function scope. Ask it about a function or arrow, nothing else.
+`capturesOf` throws a `TypeError` for a node that is not a function or arrow of this module's AST.
 
-Because the computation rides the resolved reference table, it is shadowing-correct and alias-correct by construction. A local `count` declared inside the function does not produce a false capture, and a reference is attributed to the binding it actually resolves to, not to the nearest matching name.
+Captures come from the resolved reference table, so they are shadowing- and alias-correct. A local `count` declared inside the function produces no capture, and each reference is attributed to the binding it resolves to, not the nearest matching name.
 
 ## [Cross-file analysis]($section.id('cross-file-analysis'))
 
@@ -499,9 +485,9 @@ for (const exp of module.exports) {
 }
 ```
 
-`kind` is the field everything else hangs off. A `name` exists only where the kind has one, `fromName` only on a `reExport`, `globalName` only on a `global` record, and the `is*` getters are that one classification asked as a predicate. Read `kind` when you want to switch, read a predicate when you want a branch.
+Every other field follows from `kind`. A `name` exists only where the kind has one, `fromName` only on a `reExport`, `globalName` only on a `global` record, and the `is*` getters ask the same classification as a predicate.
 
-Import records cover every statically known dependency edge. Dynamic `import("m")` and CommonJS `require("m")` anywhere in the file produce records like static declarations do, and link into the graph the same way. Only literal specifiers become records, and a `require` call counts only when `require` is a free name, so every edge is sound.
+Import records cover every statically known dependency edge. Dynamic `import("m")` and CommonJS `require("m")` anywhere in the file produce records and link into the graph like static declarations. Only literal specifiers become records, and a `require` call counts only when `require` is a free name, so every edge is sound.
 
 Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. CommonJS exports are runtime assignments with no sound static shape, so they never become export records. `module.moduleFlags` (`usesRequire`, `usesModule`, `usesExports`, `usesImportMeta`) classifies the file instead.
 
@@ -511,7 +497,7 @@ Following the specification, `default` is modeled as an export *name*, not a sep
 
 Name resolution implements the spec's `ResolveExport`. Renaming re-export chains are followed per name, `default` is never satisfied by `export *`, and a name supplied by multiple `export *` declarations through different bindings is reported as ambiguous, the same conditions an engine raises at link time.
 
-Calling it is optional. Every cross-file surface links on demand after files change, so reading `import.resolvedModule` or `module.dependencies` is always correct. Call `link()` explicitly when you want to control when the work happens and collect the diagnostics at a known point.
+Calling it is optional. Every cross-file surface links on demand after files change, so reading `import.resolvedModule` or `module.dependencies` is always correct. Call `link()` to control when the work happens and collect the diagnostics at a known point.
 
 ```js
 analyzer.link();
@@ -547,7 +533,7 @@ Chains with cycles terminate safely. A circular request is detected per (module,
 
 ### [References across modules]($section.id('references-across-modules'))
 
-The inverse direction gives every use of a symbol anywhere in the graph, with imports followed back to the definition.
+`referencesOf` gives every use of a symbol anywhere in the graph, with imports followed back to the definition. It is the basis for cross-file rename, unused-export detection, and impact analysis.
 
 ```js
 const uses = analyzer.referencesOf(def.symbol);
@@ -555,8 +541,6 @@ for (const { module, reference } of uses) {
   console.log(module.path, reference.name, reference.isWrite);
 }
 ```
-
-This is find-all-references as a compiler primitive, powering rename across files, unused-export detection, and impact analysis.
 
 ```js
 // unused exports, whole project
@@ -581,8 +565,6 @@ analyzer.module("lib.ts").exportedNames(); // ["two", "default", "one"]
 analyzer.module("a.ts").exportedNames();   // ["one"]
 ```
 
-This is what namespace-member completion and re-export expansion build on.
-
 ## [SymbolFlags reference]($section.id('symbolflags-reference'))
 
 The full bitset, generated from the native binder's layout.
@@ -606,11 +588,11 @@ The full bitset, generated from the native binder's layout.
 | `Ambient`               | TS `declare`                                     |
 | `Parameter`             | function or method parameter                     |
 | `CatchVariable`         | `catch (e)` binding                              |
-| `Exported`              | exported from its module                         |
-| `Default`               | the default export                               |
+| `Exported`              | declared by `export <declaration>` (not `export { x }`) |
+| `Default`               | declared by `export default`                     |
 | `EnumMember`            | a TS enum member, declared in its enum's body scope |
 
-Plus five composites (unions of the above), for the common categorical questions.
+Plus five composites, unions of the above:
 
 | Composite        | Matches                                                            |
 | ---------------- | ------------------------------------------------------------------ |
@@ -622,13 +604,13 @@ Plus five composites (unions of the above), for the common categorical questions
 
 ## [Performance]($section.id('performance'))
 
-Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against every file in the [parser test corpus](/testing/).
+Analysis runs in the same native call as the parse, and full semantics cost roughly half of parsing time on top of it. It is validated against every file in the [parser test corpus](/testing/).
 
-Concretely, on an Apple M-series machine, parsing plus complete semantic analysis of a typical source file lands well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
+On an Apple M-series machine, parsing plus complete semantic analysis of a typical source file takes well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
 
 ## [TypeScript]($section.id('typescript'))
 
-Everything is fully typed. Visitor handlers receive exact node types, and every type in the model is exported, so a function that takes a piece of the analysis can name it.
+Visitor handlers receive exact node types, and every type in the model is exported:
 
 ```ts
 import type {

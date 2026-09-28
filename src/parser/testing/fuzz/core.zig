@@ -69,8 +69,26 @@ pub const seeds = [_][]const u8{
     "const u = '\\u{1F600}\\uD83D\\uDE00\\n\\t\\x41';",
 };
 
+pub const regressions = [_][]const u8{
+    "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
+    "switch (x) { case \xa01: break; default", // lex error spun parseSwitchCases
+    "'\\uD83D\\u{1F600}'", // astral \u{} after a high surrogate overflowed a u16
+    "const x = 1 .awai", // member `.` on a bare int reprinted as a fraction dot
+    "const el = <di<a>v\\u{61} a={1}/>", // jsx rewind inverted a lex-error span
+    "let x = [1, 2, 3] as c\n< st", // (x as T) < y reprinted with < as type args
+    "type T<U> = U extends string\r ? & B : C | D", // leading-& cond-type true arm
+    "type T = import(a).X", // import-type with a non-string arg hit unreachable
+    "import x = require(1)", // require() with a non-string arg hit unreachable
+    "x as T\r[1, 2]", // member access on a cast reprinted as a type index T[1,2]
+    "class C{async get x(){await 0}}", // async getter whose async the printer dropped
+    "0x; let a = 1;", // a lexical error in the first token dropped the rest of the file
+    ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
+    "type T<U> = U extends string ? ? & B : C0", // compact printed `??`
+    "f<T> == x", // compact fused the type argument closer into `>=`
+};
+
 // a runaway allocation panics attributably instead of a silent oom kill
-pub const memory_cap = 512 * 1024 * 1024;
+const memory_cap = 512 * 1024 * 1024;
 
 const Guard = struct {
     backing: Allocator,
@@ -86,10 +104,12 @@ const Guard = struct {
     }
 
     fn trip(self: *Guard, add: usize) void {
-        if (self.live + add > memory_cap) std.debug.panic(
-            "pathological allocation: {d} bytes live, +{d} exceeds the {d} byte cap",
-            .{ self.live, add, memory_cap },
-        );
+        if (self.live + add > memory_cap) {
+            std.debug.panic(
+                "pathological allocation: {d} bytes live, +{d} exceeds the {d} byte cap",
+                .{ self.live, add, memory_cap },
+            );
+        }
     }
 
     fn alloc(ctx: *anyopaque, len: usize, a: std.mem.Alignment, ra: usize) ?[*]u8 {
@@ -123,22 +143,6 @@ const Guard = struct {
     }
 };
 
-pub const regressions = [_][]const u8{
-    "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
-    "switch (x) { case \xa01: break; default", // lex error spun parseSwitchCases
-    "'\\uD83D\\u{1F600}'", // astral \u{} after a high surrogate overflowed a u16
-    "const x = 1 .awai", // member `.` on a bare int reprinted as a fraction dot
-    "const el = <di<a>v\\u{61} a={1}/>", // jsx rewind inverted a lex-error span
-    "let x = [1, 2, 3] as c\n< st", // (x as T) < y reprinted with < as type args
-    "type T<U> = U extends string\r ? & B : C | D", // leading-& cond-type true arm
-    "type T = import(a).X", // import-type with a non-string arg hit unreachable
-    "import x = require(1)", // require() with a non-string arg hit unreachable
-    "x as T\r[1, 2]", // member access on a cast reprinted as a type index T[1,2]
-    "class C{async get x(){await 0}}", // async getter whose async the printer dropped
-    "0x; let a = 1;", // a lexical error in the first token dropped the rest of the file
-    ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
-};
-
 // violations panic so the driver can dump the reproducer
 pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
     var guard = Guard{ .backing = gpa };
@@ -164,23 +168,27 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
     };
     checkSpans(&tree, src);
 
-    if (parse_clean) checkRoundTrip(a, &tree, mode, src);
+    if (parse_clean) checkRoundTrip(a, mode, src);
 }
 
 fn checkSpans(tree: *const ast.Tree, src: []const u8) void {
-    var i: usize = 0;
+    var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
-        const sp = tree.span(@enumFromInt(@as(u32, @intCast(i))));
-        if (sp.start > sp.end or sp.end > src.len) std.debug.panic(
-            "node span out of bounds: node {d}/{d} is {d}..{d}, src.len {d}",
-            .{ i, tree.nodes.len, sp.start, sp.end, src.len },
-        );
+        const sp = tree.span(@enumFromInt(i));
+        if (sp.start > sp.end or sp.end > src.len) {
+            std.debug.panic(
+                "node span out of bounds: node {d}/{d} is {d}..{d}, src.len {d}",
+                .{ i, tree.nodes.len, sp.start, sp.end, src.len },
+            );
+        }
     }
     for (tree.diagnostics.items) |d| {
-        if (d.span.start > d.span.end or d.span.end > src.len) std.debug.panic(
-            "diagnostic span out of bounds: {d}..{d}, src.len {d}",
-            .{ d.span.start, d.span.end, src.len },
-        );
+        if (d.span.start > d.span.end or d.span.end > src.len) {
+            std.debug.panic(
+                "diagnostic span out of bounds: {d}..{d}, src.len {d}",
+                .{ d.span.start, d.span.end, src.len },
+            );
+        }
     }
 }
 
@@ -190,54 +198,78 @@ fn checkTokens(tree: *const ast.Tree, src: []const u8) void {
 
     var prev_end: u32 = 0;
     for (tokens, 0..) |t, i| {
-        if (t.span.start > t.span.end or t.span.end > src.len) std.debug.panic(
-            "token span out of bounds: token {d}/{d} is {d}..{d}, src.len {d}",
-            .{ i, tokens.len, t.span.start, t.span.end, src.len },
-        );
-        if (t.span.start < prev_end) std.debug.panic(
-            "token {d}/{d} at {d}..{d} overlaps the token ending at {d}",
-            .{ i, tokens.len, t.span.start, t.span.end, prev_end },
-        );
+        if (t.span.start > t.span.end or t.span.end > src.len) {
+            std.debug.panic(
+                "token span out of bounds: token {d}/{d} is {d}..{d}, src.len {d}",
+                .{ i, tokens.len, t.span.start, t.span.end, src.len },
+            );
+        }
+        if (t.span.start < prev_end) {
+            std.debug.panic(
+                "token {d}/{d} at {d}..{d} overlaps the token ending at {d}",
+                .{ i, tokens.len, t.span.start, t.span.end, prev_end },
+            );
+        }
         const is_last = i + 1 == tokens.len;
         if (t.tag == .eof and !is_last) std.debug.panic("eof token {d} is not last", .{i});
-        if (t.span.start == t.span.end and !is_last) std.debug.panic(
-            "token {d}/{d} at {d} is empty",
-            .{ i, tokens.len, t.span.start },
-        );
+        if (t.span.start == t.span.end and !is_last) {
+            std.debug.panic(
+                "token {d}/{d} at {d} is empty",
+                .{ i, tokens.len, t.span.start },
+            );
+        }
         prev_end = t.span.end;
     }
 
     const last = tokens[tokens.len - 1];
     if (last.tag != .eof) std.debug.panic("last token is {t}, expected eof", .{last.tag});
-    if (last.span.start != src.len) std.debug.panic(
-        "eof at {d}, expected {d}",
-        .{ last.span.start, src.len },
-    );
+    if (last.span.start != src.len) {
+        std.debug.panic(
+            "eof at {d}, expected {d}",
+            .{ last.span.start, src.len },
+        );
+    }
     const program_end = tree.span(tree.root).end;
-    if (program_end != last.span.end) std.debug.panic(
-        "program ends at {d}, eof at {d}",
-        .{ program_end, last.span.end },
-    );
+    if (program_end != last.span.end) {
+        std.debug.panic(
+            "program ends at {d}, eof at {d}",
+            .{ program_end, last.span.end },
+        );
+    }
 }
 
-fn checkRoundTrip(gpa: Allocator, tree: *ast.Tree, mode: Mode, src: []const u8) void {
-    var res = codegen.generate(gpa, tree, .{}) catch |e| switch (e) {
-        error.OutOfMemory => return,
-    };
-    defer res.deinit(gpa);
-
-    var reparsed = parser.parse(gpa, res.code, .{
+fn checkRoundTrip(gpa: Allocator, mode: Mode, src: []const u8) void {
+    var tree = parser.parse(gpa, src, .{
         .lang = mode.lang,
         .source_type = mode.source_type,
+        .preserve_parens = false,
     }) catch |e| switch (e) {
         error.OutOfMemory => return,
     };
-    defer reparsed.deinit();
+    defer tree.deinit();
 
-    if (reparsed.hasErrors()) std.debug.panic(
-        "round trip: a clean parse printed to output that fails to reparse\n--- src ---\n{s}\n--- printed ---\n{s}",
-        .{ src, res.code },
-    );
+    for ([_]codegen.Format{ .pretty, .compact }) |format| {
+        var res = codegen.generate(gpa, &tree, .{ .format = format }) catch |e| switch (e) {
+            error.OutOfMemory => return,
+        };
+        defer res.deinit(gpa);
+
+        var reparsed = parser.parse(gpa, res.code, .{
+            .lang = mode.lang,
+            .source_type = mode.source_type,
+        }) catch |e| switch (e) {
+            error.OutOfMemory => return,
+        };
+        defer reparsed.deinit();
+
+        if (reparsed.hasErrors()) {
+            std.debug.panic(
+                "round trip: a clean parse printed to output that fails to reparse\n" ++
+                    "--- src ---\n{s}\n--- printed ---\n{s}",
+                .{ src, res.code },
+            );
+        }
+    }
 }
 
 // every allocation failure point must yield error.OutOfMemory or success, never a panic
@@ -273,7 +305,11 @@ pub const Mutator = struct {
     rng: std.Random,
     max_len: usize = 64 * 1024,
 
-    pub fn produce(self: *Mutator, buf: *std.ArrayList(u8), gpa: Allocator) Allocator.Error![]const u8 {
+    pub fn produce(
+        self: *Mutator,
+        buf: *std.ArrayList(u8),
+        gpa: Allocator,
+    ) Allocator.Error![]const u8 {
         buf.clearRetainingCapacity();
         try buf.appendSlice(gpa, seeds[self.rng.uintLessThan(usize, seeds.len)]);
 
@@ -299,11 +335,17 @@ pub const Mutator = struct {
                     buf.shrinkRetainingCapacity(keep);
                 }
             },
-            3, 4 => try buf.insertSlice(gpa, self.rng.intRangeAtMost(usize, 0, len), self.fragment()),
+            3, 4 => try buf.insertSlice(
+                gpa,
+                self.rng.intRangeAtMost(usize, 0, len),
+                self.fragment(),
+            ),
             5 => {
                 const f = self.fragment();
                 try buf.appendSlice(gpa, f);
-                buf.shrinkRetainingCapacity(buf.items.len - self.rng.intRangeAtMost(usize, 0, f.len));
+                buf.shrinkRetainingCapacity(
+                    buf.items.len - self.rng.intRangeAtMost(usize, 0, f.len),
+                );
             },
             6 => buf.items[self.rng.uintLessThan(usize, len)] = self.interesting(),
             7 => buf.items[self.rng.uintLessThan(usize, len)] ^= @as(u8, 1) << self.rng.int(u3),

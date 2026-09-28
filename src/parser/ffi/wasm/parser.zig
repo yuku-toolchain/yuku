@@ -2,7 +2,7 @@
 //!
 //!   alloc(len)             -> ptr   buffer for the source bytes
 //!   parse(ptr, len, flags) -> ptr   length-prefixed result `[u32 N][N bytes]`
-//!                                   (the v7 AST buffer decode.js reads), or 0
+//!                                   (the AST buffer decode.js reads), or 0
 //!   free(ptr, len)         -> void
 
 const std = @import("std");

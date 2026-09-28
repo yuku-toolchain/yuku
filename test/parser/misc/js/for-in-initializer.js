@@ -7,3 +7,5 @@ for (var { f } = 1 in b);
 
 for (var g = 1 of b);
 for (let h = 1 of b);
+for (const i = 1 of b);
+async function j() { for await (var k = 1 of b); }

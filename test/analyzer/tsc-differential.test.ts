@@ -159,9 +159,9 @@ describe("type-space resolution agrees with tsc", () => {
 
 // Triaged divergences. Mostly namespace bodies and aliases merging
 // across declare module blocks, which tsc resolves between blocks.
-// Two yuku gaps: typeof of a signature-type parameter label, and infer
-// shadowing an outer type parameter across nested conditionals. One
-// tsc limit: getSymbolAtLocation returns nothing in JSX type arguments.
+// Two yuku gaps are typeof of a signature-type parameter label and infer
+// shadowing an outer type parameter across nested conditionals. One tsc
+// limit is that getSymbolAtLocation returns nothing in JSX type arguments.
 const KNOWN_DIVERGENCES = new Set(
   [
     "07165d29762103ba.ts",

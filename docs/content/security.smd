@@ -6,7 +6,7 @@
 .layout = "page.shtml",
 ---
 
-Yuku's core job is to process untrusted input. The source code it parses may be attacker controlled, so we take its security seriously.
+Yuku's core job is processing source code that may be attacker controlled, so it treats every input as untrusted.
 
 ## [Reporting a vulnerability]($section.id('reporting-a-vulnerability'))
 
@@ -16,7 +16,7 @@ We aim to acknowledge reports within 72 hours. Please give us a reasonable windo
 
 ## [Our practices]($section.id('our-practices'))
 
-- **Zero runtime dependencies.** Every Yuku package published to npm ships with no runtime dependencies, and installing one runs no lifecycle scripts. There is no transitive tree to audit or to be compromised through, only Yuku's own code.
+- **No third-party dependencies.** Yuku's npm packages depend only on each other, and installing one runs no lifecycle scripts. There is no third-party tree to audit or to be compromised through, only Yuku's own code.
 - **Provenance publishing.** Packages are published to npm with provenance over an OIDC trusted-publisher flow, with no long-lived tokens, so each release is cryptographically tied to the workflow that built it.
 - **Hardened CI.** Every GitHub Actions step is pinned to a full commit hash and kept current by Dependabot, which holds new releases for a cooldown period before adopting them. The workflow token defaults to read-only, our workflows are statically analyzed with [zizmor](https://github.com/zizmorcore/zizmor), the project is continuously graded by [OpenSSF Scorecard](https://securityscorecards.dev), and outbound network on release runners is monitored.
 - **Reproducible builds.** Dependencies install from a frozen lockfile, and the one Zig build dependency is pinned by content hash.

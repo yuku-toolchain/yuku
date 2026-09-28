@@ -19,7 +19,10 @@ pub fn main(init: std.process.Init) !void {
         \\
     );
     inline for (@typeInfo(parser.ast.TokenTag).@"enum".fields) |field| {
-        try w.print("  readonly {s}: {d};\n", .{ comptime decoder.tokenName(field.name), field.value });
+        try w.print("  readonly {s}: {d};\n", .{
+            comptime decoder.tokenName(field.name),
+            field.value,
+        });
     }
     try w.writeAll("}\n");
     try fw.flush();

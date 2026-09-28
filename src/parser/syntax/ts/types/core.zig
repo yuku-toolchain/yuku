@@ -149,7 +149,7 @@ fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
         switch (parser.current_token.tag) {
             .left_bracket => ty = try parseArrayOrIndexedAccessType(parser, ty) orelse return null,
             .question => {
-                if (!try isPostfixNullable(parser)) return ty;
+                if (!isPostfixNullable(parser)) return ty;
                 ty = try parseJSDocPostfix(parser, ty, .nullable) orelse return null;
             },
             .logical_not => ty = try parseJSDocPostfix(parser, ty, .non_nullable) orelse
@@ -207,7 +207,7 @@ fn parseJSDocPostfix(
 }
 
 // a postfix `?` only when no type follows, else the outer conditional owns it
-fn isPostfixNullable(parser: *Parser) Error!bool {
+fn isPostfixNullable(parser: *Parser) bool {
     const next = parser.peekAhead();
     return !isStartOfType(next.tag);
 }
@@ -249,10 +249,10 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .undefined,
             .unknown,
             .void,
-            => if (!try isQualifiedTypeContinuation(parser)) return parseTypeKeyword(parser),
+            => if (!isQualifiedTypeContinuation(parser)) return parseTypeKeyword(parser),
             .this => return predicate.parseThisTypeOrPredicate(parser),
             .asserts => {
-                if (try predicate.isAssertsPredicateStart(parser)) {
+                if (predicate.isAssertsPredicateStart(parser)) {
                     return predicate.parseAssertsTypePredicate(parser);
                 }
                 return parseTypeReference(parser);
@@ -280,7 +280,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-fn isQualifiedTypeContinuation(parser: *Parser) Error!bool {
+fn isQualifiedTypeContinuation(parser: *Parser) bool {
     const next = parser.peekAhead();
     return next.tag == .dot and !next.hasLineTerminatorBefore();
 }
@@ -906,10 +906,10 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.tag != .comma) return ast.NodeIndex.null;
+    if (parser.current_token.tag != .comma) return .null;
     try parser.advance() orelse return null;
 
-    if (parser.current_token.tag == .right_paren) return ast.NodeIndex.null;
+    if (parser.current_token.tag == .right_paren) return .null;
 
     const options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;

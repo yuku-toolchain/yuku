@@ -27,11 +27,7 @@ pub fn parseFunction(
 
     const start = start_from_param orelse parser.current_token.span.start;
 
-    if (!try parser.expect(
-        .function,
-        "Expected 'function' keyword",
-        null,
-    )) return null;
+    if (!try parser.expect(.function, "Expected 'function' keyword", null)) return null;
 
     const is_function_expression = opts.is_expression and !opts.is_default_export;
 
@@ -186,12 +182,8 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     )) return null;
 
     const saved_allow_return_statement = parser.context.@"return";
-
     parser.context.@"return" = true;
-
-    defer {
-        parser.context.@"return" = saved_allow_return_statement;
-    }
+    defer parser.context.@"return" = saved_allow_return_statement;
 
     const body = try parser.parseBody(.right_brace, .function);
 
@@ -209,7 +201,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// Parses a parenthesised parameter list.
+/// Parses a parenthesized parameter list.
 /// `allow_parameter_properties` enables the constructor-only `constructor(public x: T)` shorthand.
 pub fn parseFormalParameters(
     parser: *Parser,
@@ -309,7 +301,7 @@ pub fn parseFormalParameter(
         return parseThisParameter(parser);
     }
 
-    const pp = if (is_ts and allow_parameter_properties)
+    const modifiers = if (is_ts and allow_parameter_properties)
         try parseParameterPropertyModifiers(parser) orelse return null
     else
         ParameterPropertyModifiers{};
@@ -317,7 +309,7 @@ pub fn parseFormalParameter(
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
     // a parameter property declares a field named after the parameter, a pattern has no name
-    if (pp.present and patterns.isDestructuringPattern(parser, pattern)) {
+    if (modifiers.present and patterns.isDestructuringPattern(parser, pattern)) {
         try parser.report(
             parser.tree.span(pattern),
             "A parameter property may not be declared using a binding pattern",
@@ -341,13 +333,13 @@ pub fn parseFormalParameter(
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
-    if (pp.present) {
+    if (modifiers.present) {
         return try parser.tree.addNode(.{ .ts_parameter_property = .{
             .decorators = decorators,
             .parameter = pattern,
-            .override = pp.override,
-            .readonly = pp.readonly,
-            .accessibility = pp.accessibility,
+            .override = modifiers.override,
+            .readonly = modifiers.readonly,
+            .accessibility = modifiers.accessibility,
         } }, .{ .start = start, .end = parser.tree.span(pattern).end });
     }
 
@@ -360,38 +352,38 @@ pub fn parseFormalParameter(
 }
 
 fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModifiers {
-    var mods: ParameterPropertyModifiers = .{};
-    while (try isParameterPropertyModifierStart(parser)) {
+    var modifiers: ParameterPropertyModifiers = .{};
+    while (isParameterPropertyModifierStart(parser)) {
         const token = parser.current_token;
         try parser.advanceWithoutEscapeCheck() orelse return null;
         try parser.reportIfEscapedKeyword(token);
         switch (token.tag) {
-            .public => mods.accessibility = .public,
-            .private => mods.accessibility = .private,
-            .protected => mods.accessibility = .protected,
-            .readonly => mods.readonly = true,
-            .override => mods.override = true,
+            .public => modifiers.accessibility = .public,
+            .private => modifiers.accessibility = .private,
+            .protected => modifiers.accessibility = .protected,
+            .readonly => modifiers.readonly = true,
+            .override => modifiers.override = true,
             else => unreachable,
         }
-        mods.present = true;
+        modifiers.present = true;
     }
-    return mods;
+    return modifiers;
 }
 
-const AccessorSpec = struct { arity: u32, msg: []const u8, help: []const u8 };
+const AccessorSpec = struct { arity: u32, message: []const u8, help: []const u8 };
 
-/// Returns whether `params` has the arity an accessor of `kind` requires, ignoring a leading `this` parameter.
-/// Always true when `kind` is not an accessor.
+/// Returns whether `params` has the arity an accessor of `kind` requires, ignoring a leading
+/// `this` parameter. Always true when `kind` is not an accessor.
 pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex) Error!bool {
     const spec: AccessorSpec = switch (kind) {
         .get => .{
             .arity = 0,
-            .msg = "Getter must have no parameters",
+            .message = "Getter must have no parameters",
             .help = "Remove all parameters from the getter.",
         },
         .set => .{
             .arity = 1,
-            .msg = "Setter must have exactly one parameter",
+            .message = "Setter must have exactly one parameter",
             .help = "Setters accept exactly one argument.",
         },
         else => return true,
@@ -404,7 +396,7 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
     const arity = data.items.len - @intFromBool(has_this);
     if (arity == spec.arity and data.rest == .null) return true;
 
-    try parser.report(parser.tree.span(params), spec.msg, .{ .help = spec.help });
+    try parser.report(parser.tree.span(params), spec.message, .{ .help = spec.help });
     return false;
 }
 
@@ -432,7 +424,7 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // `constructor(readonly)` names a parameter, not a modifier
-fn isParameterPropertyModifierStart(parser: *Parser) Error!bool {
+fn isParameterPropertyModifierStart(parser: *Parser) bool {
     const tag = parser.current_token.tag;
     if (!isParameterPropertyModifierTag(tag)) return false;
     const next = parser.peekAhead();

@@ -1,0 +1,256 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 210,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 10,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 9,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "x"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 8,
+              "end": 9,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 11,
+        "end": 24,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 15,
+            "end": 23,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 15,
+              "end": 18,
+              "elements": [
+                {
+                  "type": "Identifier",
+                  "start": 16,
+                  "end": 17,
+                  "name": "a"
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 21,
+              "end": 23,
+              "name": "xs"
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 25,
+        "end": 39,
+        "kind": "using",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 31,
+            "end": 38,
+            "id": {
+              "type": "Identifier",
+              "start": 31,
+              "end": 32,
+              "name": "y"
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 35,
+              "end": 38,
+              "name": "res"
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 40,
+        "end": 46,
+        "expression": {
+          "type": "Identifier",
+          "start": 40,
+          "end": 45,
+          "name": "using"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 47,
+        "end": 61,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 47,
+          "end": 60,
+          "id": null,
+          "generator": false,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "Literal",
+            "start": 59,
+            "end": 60,
+            "value": 1,
+            "raw": "1"
+          },
+          "expression": true
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 62,
+        "end": 68,
+        "expression": {
+          "type": "Identifier",
+          "start": 62,
+          "end": 67,
+          "name": "async"
+        }
+      },
+      {
+        "type": "ForOfStatement",
+        "start": 69,
+        "end": 89,
+        "left": {
+          "type": "VariableDeclaration",
+          "start": 74,
+          "end": 79,
+          "kind": "let",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 78,
+              "end": 79,
+              "id": {
+                "type": "Identifier",
+                "start": 78,
+                "end": 79,
+                "name": "z"
+              },
+              "init": null
+            }
+          ]
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 83,
+          "end": 85,
+          "name": "xs"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 87,
+          "end": 89,
+          "body": []
+        },
+        "await": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 91,
+        "end": 126,
+        "id": {
+          "type": "Identifier",
+          "start": 100,
+          "end": 101,
+          "name": "f"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 104,
+          "end": 126,
+          "body": []
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 111,
+      "end": 112,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 132,
+      "end": 133,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 142,
+      "end": 143,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 152,
+      "end": 153,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 163,
+      "end": 164,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 176,
+      "end": 177,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 198,
+      "end": 199,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    }
+  ]
+}

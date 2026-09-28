@@ -13,19 +13,17 @@ A high-performance JavaScript/TypeScript compiler toolchain written in Zig, brin
 
 ## Why Yuku
 
-Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is designed for correctness, performance, and clarity.
+**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes the entire [parser test suite](https://github.com/yuku-toolchain/parser-test-suite), tens of thousands of cases from [Test262](https://github.com/tc39/test262), TypeScript, and Babel, with zero failures and zero AST mismatches. Read [how Yuku is tested](https://yuku.fyi/testing/).
 
-**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes the entire [parser test suite](https://github.com/yuku-toolchain/parser-test-suite), tens of thousands of cases from [Test262](https://github.com/tc39/test262), TypeScript, and Babel, with exact AST matching. Zero failures, zero AST mismatches. Read [how Yuku is tested](https://yuku.fyi/testing/).
+**Fast by design.** The parser is built on data-oriented design, with a flat AST and a single arena per parse.
 
-**Fast by design.** The parser is built using data-oriented design principles and generous performance engineering.
+**Pure Zig, zero dependencies.** No external C libraries or runtime dependencies, so it is easy to build, embed, and cross-compile.
 
-**Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
-
-**Modern JavaScript.** Full support for modern and experimental features including decorators, source phase imports, deferred imports, `using`/`await using` declarations, and more.
+**Modern JavaScript.** Full support for modern and experimental features, including decorators, source phase imports, deferred imports, and `using`/`await using` declarations.
 
 ## Current Status
 
-The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node.js and Zig. The API is stable, the implementation is 100% spec-compliant, and the AST output is fully validated against the [parser test suite](https://yuku.fyi/testing/). The [semantic model](https://yuku.fyi/parser/semantic/) and [traverser](https://yuku.fyi/parser/traverse/) are stable and power Yuku's semantic checker in production.
+The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node.js and Zig. Its AST output is fully validated against the [parser test suite](https://yuku.fyi/testing/). The [semantic model](https://yuku.fyi/parser/semantic/) and [traverser](https://yuku.fyi/parser/traverse/) are stable and power Yuku's semantic checker.
 
 ## Performance
 
@@ -33,20 +31,18 @@ On native (Zig/Rust) parsing, Yuku is faster than Oxc and roughly 2× faster tha
 
 ![Parsing `typescript.js` (7.8 MB) · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js")
 
-On the JavaScript side (npm), Yuku is **3-10x faster** than alternatives.
+On npm, Yuku is **3-10x faster** than alternatives.
 
 ![Parsing `react.js` (72 KB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing react.js")
 
-But does it scale? Yes.
+The lead holds on large files.
 
 ![Parsing `typescript.js` (7.8 MB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing typescript.js")
 
 > **A note on Oxc's npm performance**
->You may wonder why Oxc is slower in this npm benchmark, even slower than Babel. This is because Oxc's npm package has the overhead of passing the AST from Rust to JavaScript. What it does is serialize the AST to a JSON string on the Rust side and then call `JSON.parse` on the JavaScript side. This overhead makes it slower, even though Oxc is very fast at raw parsing speed.
+>Oxc is very fast at raw parsing, but its npm package serializes the AST to a JSON string in Rust and calls `JSON.parse` in JavaScript. That deserialization is the bottleneck, and it grows with the size of the source. Oxc's `program` field is a getter that only runs `JSON.parse` on access, so benchmarking bare `parse` calls hides the cost. The benchmarks above measure the time to obtain the full AST for every parser.
 >
->If you benchmark Babel and Oxc by just calling their `parse` functions, Oxc will appear faster than Babel. This is because the `program` field returned by Oxc's parse call is a getter that only runs `JSON.parse` when you actually access it. That deserialization is the main bottleneck, and it grows as the AST gets larger (i.e., as the source file gets longer). The npm benchmarks above measure the time to actually obtain the full AST for all parsers.
->
->Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly, flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing the entire [parser test suite](https://yuku.fyi/testing/) with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
+>Yuku's AST is flat, compact, and near-binary by design, so passing it from Zig to JavaScript is fast and allocates only what the source needs, without changes to the core parser. The transfer is validated by the [parser test suite](https://yuku.fyi/testing/), with exact AST matching between Zig and JavaScript.
 
 # Parser
 
@@ -108,7 +104,6 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main() !void {
-    // the smp allocator is used as the backing allocator for the tree's internal arena
     var tree = try parser.parse(std.heap.smp_allocator, "const x = 5;", .{});
     defer tree.deinit();
 
@@ -120,7 +115,7 @@ pub fn main() !void {
 
 ## Options
 
-`parse` takes an `Options` struct to configure the parsing mode.
+`parse` takes an `Options` struct.
 
 ```zig
 const tree = try parser.parse(allocator, source, .{
@@ -134,23 +129,23 @@ const tree = try parser.parse(allocator, source, .{
 | `source_type`                   | `.script`, `.module`, `.commonjs`    | `.module` | Script mode, ES module mode (strict mode), or CommonJS mode, where the top level behaves like a function body (top-level `return`, `new.target`, `using`) |
 | `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable                                    |
 | `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST                                   |
-| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Collect comments as a flat list (`tree.comments`), attached to host nodes (`tree.commentsOf`), or both. See [Comments](https://yuku.fyi/parser/ast/#comments) |
+| `comments`                      | `.none`, `.flat`, `.attached`, `.both` | `.flat` | Skip comments, collect a flat list (`tree.comments`), attach them to host nodes (`tree.commentsOf`), or both. See [Comments](https://yuku.fyi/parser/ast/#comments) |
 | `tokens`                        | `true`, `false`                      | `false`   | Keep every token the parser consumed in `tree.tokens`. See [Tokens](#tokens)  |
 
-Both fields can be inferred from a file path.
+`source_type` and `lang` can be inferred from a file path.
 
 ```zig
 const tree = try parser.parse(allocator, source, .{
     .source_type = .fromPath("app.cjs"), // .commonjs
-    .lang = .fromPath("app.tsx"),               // .tsx
+    .lang = .fromPath("app.tsx"), // .tsx
 });
 ```
 
 ## The Tree
 
-`parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. The allocator passed to `parse` is used as the backing allocator for the tree's internal arena, so `tree.deinit()` frees everything at once.
+`parse` returns a `Tree` holding the AST, diagnostics, and source metadata. The allocator passed to `parse` backs the tree's arena, so `tree.deinit()` frees everything at once.
 
-The AST is a flat array of nodes referenced by integer index. `tree.root` is always a `program` node, so unpack it directly. Everything below it is a tagged union you `switch` on.
+The AST is a flat array of nodes referenced by integer index. `tree.root` is always a `program` node. Everything below it is a tagged union you `switch` on.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -173,11 +168,11 @@ for (tree.extra(program.body)) |child_idx| {
 }
 ```
 
-The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](https://yuku.fyi/parser/ast/) for the full node catalog, the field conventions, and the eight categorical predicates on `NodeData`.
+The four read primitives are `tree.data(idx)` for a node's payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a child list, and `tree.string(handle)` for string content. See the [AST reference](https://yuku.fyi/parser/ast/) for the full node catalog.
 
 ## Diagnostics
 
-The parser recovers from errors and continues, so a single parse produces the full AST alongside all diagnostics.
+The parser recovers from errors, so a single parse produces the full AST alongside every diagnostic.
 
 ```zig
 for (tree.diagnostics.items) |d| {
@@ -199,7 +194,7 @@ Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `me
 
 ## Tokens
 
-`tokens` keeps every token the parser consumed, in source order. Off by default.
+`tokens` keeps every token the parser consumed, in source order.
 
 ```zig
 var tree = try parser.parse(allocator, "let x = a / b;", .{ .tokens = true });
@@ -210,7 +205,7 @@ for (tree.tokens) |token| {
 }
 ```
 
-Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. See [Tokens](https://yuku.fyi/parser/ast/#tokens) for the `Token` layout.
+See [Tokens](https://yuku.fyi/parser/ast/#tokens) for the `Token` layout.
 
 In JavaScript the same option returns a `TokenList`, a view over the parser's token table. A token is an index, and every accessor is one typed-array read.
 
@@ -231,21 +226,19 @@ tokens.before(program.body[1]);   // the token ending before it, -1 when none
 
 See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser#tokens) for the full API, and [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts) for the 160 kinds in `TokenKind`.
 
-Why an index and not an array of objects? On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. Building an object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
-
 ## Going Further
 
-- [Semantic Analysis](https://yuku.fyi/parser/semantic/) documents the semantic model of a tree, with scopes, symbols, resolved references, early errors, and module records.
-- [Traverse](https://yuku.fyi/parser/traverse/) walks the AST with typed visitor hooks in four modes (basic, scoped, semantic, transform).
-- [Codegen](https://yuku.fyi/parser/codegen/) prints a tree back to JavaScript/TypeScript source.
+- [Semantic Analysis](https://yuku.fyi/parser/semantic/): scopes, symbols, resolved references, early errors, and module records.
+- [Traverse](https://yuku.fyi/parser/traverse/): typed visitor hooks in four modes (basic, scoped, semantic, transform).
+- [Codegen](https://yuku.fyi/parser/codegen/): print a tree back to JavaScript/TypeScript source.
 
 # AST
 
 Source: https://yuku.fyi/parser/ast/
 
-The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
+The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index.
 
-The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs).
+Through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, the same tree becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs).
 
 - **JavaScript / JSX** is fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript** conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
@@ -255,9 +248,7 @@ Comments can be attached to the AST nodes they belong to, exposed as a flat offs
 On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
 > **Building tools on the AST?**
->The [traverser](https://yuku.fyi/parser/traverse/) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
->
->This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
+>Reach for the [traverser](https://yuku.fyi/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. This page covers the AST itself, its node types and fields, and how to read them directly.
 
 ## Memory model
 
@@ -282,8 +273,10 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the enti
 | ------------- | ----------------------- | ---------------------------------------------------------- |
 | `root`        | `NodeIndex`             | Index of the root node (a `program`)                       |
 | `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints                              |
+| `comments`    | `[]const Comment`       | Flat comment list, empty unless collected. See [Comments](#comments) |
+| `tokens`      | `[]const Token`         | Consumed tokens, empty unless kept. See [Tokens](#tokens)  |
 | `source`      | `[]const u8`            | Original source text                                       |
-| `source_type` | `SourceType`            | `.script` or `.module`                                     |
+| `source_type` | `SourceType`            | `.script`, `.module`, or `.commonjs`                       |
 | `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                    |
 
 Everything else is reached through methods.
@@ -306,7 +299,7 @@ tree.addNode(data, span) // append a node, returns its NodeIndex
 tree.addString("x")      // intern text; sourceSlice(a, b) points into the source instead
 ```
 
-Every enum a node field holds also carries `toString()`, returning the construct's source text (`decl.kind.toString()` is `"const"`, `expr.operator.toString()` is `"==="`).
+Operator and keyword enums such as `VariableKind` and `BinaryOperator` carry `toString()`, returning the construct's source text (`decl.kind.toString()` is `"const"`, `expr.operator.toString()` is `"==="`).
 
 ## Core types
 
@@ -421,45 +414,30 @@ switch (tree.data(idx)) {
 }
 ```
 
-For tree-wide walks, use the [traverser](https://yuku.fyi/parser/traverse/) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
+For tree-wide walks, use the [traverser](https://yuku.fyi/parser/traverse/) instead of writing recursion by hand.
 
 ## Predicates
 
-Eight methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
+Eight methods on `NodeData` collapse a family of tags into a single boolean.
 
-| Method            | True for                                                                                                                                                                                                                                                                                                                                  |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isExpression()`  | Any node that produces a value at runtime, meaning literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers.                                                                                                                    |
-| `isStatement()`   | Any node valid at statement position, meaning control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included, expression forms are not.                                                                                                            |
-| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                                                           |
-| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                                                       |
-| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                                                            |
+| Method            | True for |
+| ----------------- | -------- |
+| `isExpression()`  | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers. |
+| `isStatement()`   | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included, expression forms are not. |
+| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`. |
+| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field. |
+| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`. |
 | `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
-| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                                                         |
-| `isTypeContext()` | Any node that roots a TypeScript type-only subtree, meaning type annotations, type references, function and constructor types, conditional and mapped types, type literals, interface heritage, and the various TS signatures. The semantic traverser uses this to drive its `inTypePosition()` context flag.                                     |
+| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. |
+| `isTypeContext()` | Any node that roots a TypeScript type-only subtree: type annotations, type references, function and constructor types, conditional and mapped types, type literals, interface heritage, and the TS signatures. The semantic traverser uses it for `inTypePosition()`. |
 
-For dual-purpose nodes (`function` and `class`) the predicates consult the `type` field internally, so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
+For the dual-purpose `function` and `class` nodes, the predicates consult the `type` field, so `isExpression()` is true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms. For anything narrower, `switch` on the tag.
 
 ```zig
 const data = tree.data(idx);
 
-if (data.isExpression()) {
-    // any value-producing node
-}
-
 if (data.isCallable()) {
     // function or arrow_function_expression
-    // The body, params, etc. are still type-specific,
-    // so switch on the tag to access them.
-}
-```
-
-For anything narrower than these eight, `switch` directly.
-
-```zig
-switch (data) {
-    .arrow_function_expression => |arrow| { /* ... */ },
-    else => {},
 }
 ```
 
@@ -577,7 +555,7 @@ class_expression                    // const x = class {}
 
 ### Identifiers
 
-Five tags, all carrying a single `name: String` field. They are structurally identical but appear in different syntactic positions and resolve differently.
+Five tags, each carrying a `name: String` field. They appear in different syntactic positions and resolve differently.
 
 | Tag                    | Used for                                                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -613,15 +591,15 @@ const foo = bar.baz;
 
 ```zig
 pub const Function = struct {
-    type: FunctionType,    // declaration, expression, or TS forms
-    id: NodeIndex,         // binding_identifier (.null for anonymous)
-    generator: bool,       // true for function*
-    async: bool,           // true for async function
-    declare: bool,         // true for declare function
-    params: NodeIndex,     // formal_parameters
-    body: NodeIndex,       // function_body (.null for TS overloads / abstract)
+    type: FunctionType,          // declaration, expression, or TS forms
+    id: NodeIndex,               // binding_identifier (.null for anonymous)
     type_parameters: NodeIndex,  // ts_type_parameter_declaration or .null
+    params: NodeIndex,           // formal_parameters
     return_type: NodeIndex,      // ts_type_annotation or .null
+    body: NodeIndex,             // function_body (.null for TS overloads / abstract)
+    generator: bool,             // true for function*
+    async: bool,                 // true for async function
+    declare: bool,               // true for declare function
 };
 ```
 
@@ -635,16 +613,16 @@ pub const Function = struct {
 
 ```zig
 pub const Class = struct {
-    type: ClassType,           // class_declaration or class_expression
-    decorators: IndexRange,    // decorator[] (empty if none)
-    id: NodeIndex,             // binding_identifier (.null for anonymous expressions)
-    super_class: NodeIndex,    // any expression (.null if no extends clause)
-    body: NodeIndex,           // class_body
-    type_parameters: NodeIndex,    // ts_type_parameter_declaration or .null
-    super_type_arguments: NodeIndex, // ts_type_parameter_instantiation or .null
-    implements: IndexRange,    // ts_class_implements[] (empty if none)
-    abstract: bool,            // true for abstract class
-    declare: bool,             // true for declare class
+    type: ClassType,                  // class_declaration or class_expression
+    decorators: IndexRange,           // decorator[] (empty if none)
+    id: NodeIndex,                    // binding_identifier (.null for anonymous expressions)
+    type_parameters: NodeIndex,       // ts_type_parameter_declaration or .null
+    super_class: NodeIndex,           // any expression (.null if no extends clause)
+    super_type_arguments: NodeIndex,  // ts_type_parameter_instantiation or .null
+    implements: IndexRange,           // ts_class_implements[] (empty if none)
+    body: NodeIndex,                  // class_body
+    abstract: bool,                   // true for abstract class
+    declare: bool,                    // true for declare class
 };
 ```
 
@@ -656,7 +634,6 @@ pub const Class = struct {
 | `property_definition` | A class field or auto-accessor declaration.               |
 | `static_block`        | A `static { ... }` initialization block inside a class.   |
 | `decorator`           | A decorator (`@expr`) applied to a class or class member. |
-| `super`               | The `super` keyword used as an expression head.           |
 
 ### Modules
 
@@ -965,13 +942,13 @@ Every node other than `program`, `template_element`, and `jsx_empty_expression` 
 
 Source: https://yuku.fyi/parser/semantic/
 
-Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
+Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, declared symbol, and reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
 
-Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs.
+It runs as a separate pass over the parsed tree, so parsing stays fast and each consumer opts in only to the work it needs.
 
 ## Analyzing a Tree
 
-`semantic.analyze` is the entry point. It returns the complete `Semantic` model and appends any early-error diagnostics to the tree:
+`semantic.analyze` returns the complete `Semantic` model and appends any early-error diagnostics to the tree:
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -984,16 +961,16 @@ semantic.uses(symbol_id);         // every use site of a symbol
 semantic.lookup(scope_id, "x", .value); // name resolution from any scope
 ```
 
-Semantic diagnostics land in `tree.diagnostics` alongside parse errors. After analysis, `tree.hasErrors()` reflects both. Together, parsing and semantic analysis cover the full set of early errors required by the specification.
+Semantic diagnostics land in `tree.diagnostics` alongside parse errors, so `tree.hasErrors()` reflects both. Together, parsing and semantic analysis cover every early error the specification requires.
 
-All allocations use the tree's arena, so the model is valid for the lifetime of the tree and freed by `tree.deinit()`.
+All allocations use the tree's arena, so the model lives as long as the tree and is freed by `tree.deinit()`.
 
 > **Note**
->If you want the model without the early-error checks, or you want to run your own hooks during the analysis walk, use the [semantic traverser](https://yuku.fyi/parser/traverse/#semantic-traverser) directly. `semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a visitor that emits the early-error diagnostics.
+>For the model without the early-error checks, or to run your own hooks during the analysis walk, use the [semantic traverser](https://yuku.fyi/parser/traverse/#semantic-traverser) directly. `semantic.analyze` is [built that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a visitor that emits the early-error diagnostics.
 
 ## The Semantic Model
 
-`Semantic` is one object that answers every scope, symbol, and reference question about a tree. References are already resolved and all indexes are already built, so every query below works immediately. Queries that may have no answer return optionals.
+`Semantic` answers every scope, symbol, and reference question about a tree. References are resolved and every index is built, so each query below works immediately. Queries that may have no answer return optionals.
 
 Ids are dense indexes with defined orders. `SymbolId` orders symbols by first declaration, `ReferenceId` orders references by source position, and `ScopeId` orders scopes by creation during the walk (`ScopeId.root` is always `0`, and in modules `ScopeId.module` is always `1`). Every slice and iterator preserves these orders, so "first declaration", "earliest use", and "outermost scope" are index comparisons.
 
@@ -1180,7 +1157,7 @@ Every construct in the spec that introduces a new lexical environment creates a 
 | Block statement                                              | `block`                                                       |
 | `for` / `for...in` / `for...of`                              | `block`                                                       |
 | `catch` clause                                               | `block` (the body block reuses this scope)                    |
-| `switch` statement                                           | `block`                                                       |
+| `switch` case block                                          | `block` (the discriminant stays outside)                      |
 | Class declaration / expression                               | `class` (always strict per spec)                              |
 | Class static block                                           | `static_block`                                                |
 | Named function or class expression                           | `expression_name` wrapping a `function` / `class` scope       |
@@ -1188,11 +1165,12 @@ Every construct in the spec that introduces a new lexical environment creates a 
 | TS function/constructor type, call/construct/index signature | `block`                                                       |
 | TS method signature                                          | `block`                                                       |
 | TS mapped / conditional type                                 | `block` (conditional isolates `infer T` per branch)           |
+| TS enum body                                                 | `block` (members are visible to each other)                   |
 | TS namespace body                                            | `ts_module` (its own kind, see below)                         |
 
 A few details worth knowing:
 
-**Catch clauses share their body block.** Per spec section 14.15.2 the catch parameter and the block body live in the same environment. One `block` scope is created on `catch_clause`, and the body's `block_statement` reuses it. This is what lets the single-scope `binding` lookup detect the early-error case where a `var` inside the body collides with the parameter.
+**Catch clauses share their body block.** Per spec section 14.15.2 the catch parameter and the block body live in the same environment. One `block` scope is created on `catch_clause`, and the body's `block_statement` reuses it, which lets the single-scope `binding` lookup detect a body declaration colliding with the parameter. A parameter pattern containing an expression, such as a default (`catch ([e = 1])`), gets a separate body block, since the expression must not see the body's bindings.
 
 **Named function and class expressions create two scopes.** For `const x = function foo() { ... }`, ECMAScript section 15.2.5 wraps the body in an extra environment that holds an immutable binding for `foo`:
 
@@ -1228,17 +1206,18 @@ Each declared binding is a `Symbol`:
 pub const Symbol = struct {
     name: String,   // index into the tree's string pool
     flags: Flags,   // declaration kind + modifiers (see below)
-    scope: ScopeId, // the scope this symbol was declared in
+    scope: ScopeId, // the scope the binding lives in
+    decls: Range,   // read through semantic.decls(id)
 };
 ```
 
-`scope` is where the binding actually lives. For a hoisting `var` that is the hoist target it lands in (function, module, or global scope), not the block it is written in.
+For a hoisting `var`, `scope` is its hoist target, not the block it is written in.
 
 A single symbol can collect multiple declarations when the language allows merging, such as `var` redeclarations, TS function overloads, `class` + `interface` merging, `namespace` + `enum` merging, and ambient module patterns. The `binding_identifier` node of every declaration is recorded and `semantic.decls(id)` returns them all, so a renamer or a "go to definition" feature can show each one.
 
 ### Symbol Flags
 
-`Symbol.Flags` describes everything semantic analysis knows about a binding. A single symbol can carry several flags at once. A `class` lives in both value and type space, an exported `var` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into a single symbol that satisfies both kinds.
+`Symbol.Flags` describes everything semantic analysis knows about a binding, and a symbol can carry several flags at once. `export var x` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into one symbol that carries both kinds.
 
 The flags group into three categories.
 
@@ -1268,15 +1247,17 @@ symbol.flags.const_var   // const or using binding
 symbol.flags.parameter   // function/method parameter
 symbol.flags.catch_var   // catch (e) binding
 symbol.flags.ambient     // TS `declare`
-symbol.flags.exported    // exported from a module
-symbol.flags.is_default  // default export
+symbol.flags.exported    // declared by `export <declaration>`
+symbol.flags.is_default  // declared by `export default`
 ```
+
+`exported` marks declarations only. Names exported through `export { x }` are in the [module records](#module-records).
 
 **Helpers** on the flag struct itself:
 
 ```zig
 flags.intersects(other)     // true if `flags` and `other` share at least one flag
-flags.merge(other)          // union of two flag sets (used when merging compatible declarations)
+flags.merge(other)          // union of two flag sets
 flags.isHoistingVar()       // true for a real `var` (not a parameter, not a catch_var)
 flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
                             // (block_scoped_var, class, function)
@@ -1294,9 +1275,9 @@ Each declaration kind has a precomputed `Symbol.Excludes.X` flag set. The rule i
 > A new declaration with `Excludes.X` conflicts with any existing symbol whose flags **intersect** `Excludes.X`. Otherwise the two declarations merge into a single symbol with the union of their flags.
 
 ```zig
-Symbol.Excludes.block_scoped_var    // let / const / using
-Symbol.Excludes.function_scoped_var // var
-Symbol.Excludes.function         // function (allows overloads in TS, var-merge in sloppy)
+Symbol.Excludes.block_scoped_var    // let / const / using, a JS function in a block or module
+Symbol.Excludes.function_scoped_var // var, a JS function atop a function or script
+Symbol.Excludes.function            // a TS function (merges overloads, var, namespace, class)
 Symbol.Excludes.class
 Symbol.Excludes.interface
 Symbol.Excludes.type_alias
@@ -1311,7 +1292,7 @@ Symbol.Excludes.type_parameter
 Symbol.Excludes.enum_member
 ```
 
-This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching.
+This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching. The one exception is Annex B, which lets a sloppy-mode block repeat a plain `function` declaration.
 
 ## Declaration Spaces
 
@@ -1334,7 +1315,7 @@ A **reference resolves in** exactly one space, decided by its syntactic position
 | `.value`     | runtime uses                                                         | value space                    |
 | `.type`      | annotations, heritage clauses, type arguments                        | type space                     |
 | `.namespace` | the qualifier of a dotted type name (`ns.T`, `E.A`)                  | namespaces and enums           |
-| `.typeof`    | the entity of a `typeof` query, a type-predicate parameter           | value space                    |
+| `.typeof`    | the entity of a `typeof` query, a computed type-member key, a type-predicate parameter | value space |
 | `.any`       | `export { x }`, `export default x`, `export = x`, `import a = x`     | every space                    |
 
 Resolution connects the two. Walking up the scope chain, a name match counts only when the symbol is visible in the reference's space (`Symbol.Flags.visibleIn`), so a binding outside the space does not shadow:
@@ -1374,7 +1355,7 @@ pub const Reference = struct {
 };
 ```
 
-`symbol` is the resolution, the binding this reference refers to. Resolution is scope-based, exactly like name binding in the language: a reference resolves to the nearest binding of its name up the scope chain that is visible in its space (see [Declaration Spaces](#declaration-spaces)), regardless of where in those scopes the declaration appears (a use above a `let` still resolves to it, and the temporal dead zone is a runtime concern, not a binding concern). `.none` means the reference's space has no binding of that name anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
+`symbol` is the binding this reference resolves to: the nearest binding of its name up the scope chain that is visible in its space (see [Declaration Spaces](#declaration-spaces)), wherever in those scopes the declaration appears. A use above a `let` still resolves to it, since the temporal dead zone is a runtime concern. `.none` means no binding of that name is visible anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
 
 Language-provided names are not bindings. `this`, `super`, and (unless user-declared) `arguments` produce no symbols, so a reference to `arguments` inside a function is unresolved. Labels are their own namespace and produce neither symbols nor references.
 
@@ -1473,7 +1454,7 @@ records.flags.uses_import_meta // `import.meta` appears
 
 Source: https://yuku.fyi/parser/traverse/
 
-The traverser is how you do real work on a Yuku AST. It walks the tree for you, calls your visitor hooks at every node, and (depending on the mode you pick) hands you the surrounding lexical scopes, the full [semantic model](https://yuku.fyi/parser/semantic/), or a mutable handle on the tree itself.
+The traverser walks the tree, calls your visitor hooks at every node, and, depending on the mode, hands you the surrounding lexical scopes, the full [semantic model](https://yuku.fyi/parser/semantic/), or a mutable handle on the tree.
 
 | Mode          | What you get                                      | Returns     |
 | ------------- | ------------------------------------------------- | ----------- |
@@ -1482,16 +1463,13 @@ The traverser is how you do real work on a Yuku AST. It walks the tree for you, 
 | **Semantic**  | Path + scopes + symbols and references            | `Semantic`  |
 | **Transform** | Path + a mutable `*Tree` for in-place rewrites    | nothing     |
 
-The three read-only modes (basic, scoped, semantic) hand your visitor a `*const Tree`, so the type system guarantees you cannot accidentally mutate the AST while analysing it. Transform is the only mode that gives you `*Tree`. This is intentional. Tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass, so the API splits them.
+The three read-only modes hand your visitor a `*const Tree`, so the type system rules out mutating the AST while analysing it. Transform is the only mode that gives you `*Tree`, because tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass.
 
-This page covers the hooks, the path, the four modes, and the transform patterns. The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](https://yuku.fyi/parser/semantic/).
-
-> **Note**
->The traverser is stable and powers Yuku's semantic checker in production. Breaking changes are called out in release notes.
+The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](https://yuku.fyi/parser/semantic/).
 
 ## Your First Visitor
 
-A visitor is just a struct with `enter_*` and `exit_*` methods. Pick a node type, write a method named after it, and the walker will call you when it gets there.
+A visitor is a struct with `enter_*` and `exit_*` methods named after node types. The walker calls each one when it reaches that node type.
 
 ```zig
 const std = @import("std");
@@ -1523,11 +1501,9 @@ try basic.traverse(Counter, &tree, &counter);
 std.debug.print("found {d} functions\n", .{counter.functions});
 ```
 
-That is the entire shape of every traverser-based tool you will write. The rest of this page is "what else you can do inside a hook".
-
 ## Hooks
 
-Every hook follows the same four-argument shape:
+Every hook takes the same four arguments:
 
 ```zig
 pub fn enter_<node_type>(
@@ -1545,15 +1521,13 @@ pub fn exit_<node_type>(
 ) void { ... }
 ```
 
-The hook name must match a field in `ast.NodeData`. Misspell it (`enter_funciton`) or use the wrong payload type and Zig produces a clear compile error at the `traverse` call site. There are no silent mismatches, and no runtime "method not found" surprises.
+The hook name must match a field in `ast.NodeData`. Misspell it (`enter_funciton`) or use the wrong payload type and Zig reports a compile error at the `traverse` call site.
 
-Enter hooks may return either `traverser.Action` or `Allocator.Error!traverser.Action`. Both are accepted, so a hook that never allocates can write `return .proceed;` directly, while one that calls `addNode` writes `return .proceed;` from inside a `try` block.
-
-Exit hooks always return `void`.
+Enter hooks return `traverser.Action`, or `!traverser.Action` when they allocate (for example with `addNode`), with `error.OutOfMemory` as the only error. Exit hooks return `void`.
 
 ### Receiving the Payload Already Unpacked
 
-Each typed hook receives its node's payload pre-extracted from the tagged union, so you never write a `switch` to "unwrap" the node you just matched on:
+Each typed hook receives its node's payload already unpacked from the tagged union:
 
 ```zig
 pub fn enter_binary_expression(
@@ -1596,7 +1570,7 @@ See the [AST reference](https://yuku.fyi/parser/ast/) for every node type and it
 
 ### Catch-All Hooks
 
-If you want one hook that fires for every node regardless of type, define `enter_node` and/or `exit_node`. The payload is `ast.NodeData` (the full union):
+`enter_node` and `exit_node` fire for every node. Their payload is the full `ast.NodeData` union:
 
 ```zig
 pub fn enter_node(
@@ -1621,11 +1595,11 @@ When both a typed hook and a catch-all are defined, the order is:
 - **Enter**: `enter_node` first, then `enter_<type>`
 - **Exit**: `exit_<type>` first, then `exit_node`
 
-That ordering lets a catch-all enter "gate" a subtree (return `.skip` to opt out before the typed hooks run) and a catch-all exit "summarise" what just happened.
+So a catch-all enter can gate a subtree (returning `.skip` before the typed hooks run), and a catch-all exit sees the node after its typed exit.
 
 ### Walk Order
 
-The walk is a depth-first, source-order traversal with two guarantees you can build on:
+The walk is depth-first, with two guarantees:
 
 - **Enter hooks fire pre-order, exit hooks post-order.** A parent's enter runs before any of its children, and a parent's exit runs after all of its children.
 - **Siblings are visited in source order.** Node payloads declare their child fields in source order and the walker visits fields in declaration order, an invariant enforced across the whole parser corpus. The one exception is template literals, whose quasis and expressions interleave in the source but are visited field by field, matching every ESTree walker.
@@ -1640,13 +1614,13 @@ Every enter hook returns one of three actions:
 | `.skip`    | Do not descend, move to the next sibling      |
 | `.stop`    | No further enter hooks fire anywhere          |
 
-Enter and exit hooks are always paired. Once a node's enter hooks have run, its exit hooks run too. `.skip` skips the children but still fires the node's own exit hooks. After a `.stop`, the exit hooks of every already-entered node still run as the walk unwinds to the root. The pairing is what keeps path, scope, and symbol tracking balanced, so a scoped or semantic traversal that skipped or stopped still returns a consistent result covering everything that was visited.
+Enter and exit hooks are always paired. `.skip` skips the children but still fires the node's own exit hooks, and after a `.stop` the exit hooks of every entered node run as the walk unwinds. The pairing keeps path, scope, and symbol tracking balanced, so a scoped or semantic traversal that skipped or stopped still returns a consistent result for everything visited.
 
-`.skip` is what you return after hand-walking a subtree yourself, or after a transform that should not be re-entered. `.stop` is how you implement "find the first X and exit".
+Return `.skip` after hand-walking a subtree or after a transform that should not be re-entered, and `.stop` to finish at the first match.
 
 ### Running Without Hooks
 
-Sometimes the only thing you want from the traverser is its output, a `ScopeTree` from the scoped mode or the full [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model from the semantic mode. In that case you do not need to define any hooks. Pass an empty struct as the visitor and the walker still runs end-to-end, the trackers still produce their result, and nothing fires in between.
+To get only the output of a walk, a `ScopeTree` from scoped mode or the full [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model from semantic mode, pass an empty struct as the visitor.
 
 ```zig
 const NoopVisitor = struct {};
@@ -1659,18 +1633,16 @@ const scope_tree = try scoped.traverse(NoopVisitor, &tree, &noop);
 const semantic = try sem.traverse(NoopVisitor, &tree, &noop);
 ```
 
-The empty struct makes the absence of hooks explicit. A tool that wants the result of a walk without any per-node logic spells that out at the call site.
-
 ## The Path
 
-Every mode tracks the path from the root down to the current node. The path is a small fixed-capacity stack of `NodeIndex` values you can read at any time through `ctx.path`.
+Every mode tracks the path from the root down to the current node, a fixed-capacity stack of `NodeIndex` values read through `ctx.path`.
 
 ```zig
 ctx.path.parent()        // immediate parent NodeIndex, or null at root
 ctx.path.ancestor(0)     // current node
 ctx.path.ancestor(1)     // parent (same as parent())
 ctx.path.ancestor(2)     // grandparent
-ctx.path.depth()         // 0 at root, grows as you descend
+ctx.path.depth()         // nodes on the path, 1 at the root
 
 var it = ctx.path.ancestors();
 while (it.next()) |idx| {
@@ -1678,7 +1650,7 @@ while (it.next()) |idx| {
 }
 ```
 
-Combined with the full tree (always available as `ctx.tree`), the path lets you navigate freely:
+With the tree, always available as `ctx.tree`, the path answers questions about a node's surroundings:
 
 ```zig
 pub fn enter_identifier_reference(
@@ -1698,18 +1670,11 @@ pub fn enter_identifier_reference(
 }
 ```
 
-The path records up to 256 entries. Deeper nodes are still walked and `depth()` stays accurate, but `parent()` and `ancestor()` return `null` past the recorded depth. 256 levels is far beyond any realistic ECMAScript nesting, so in practice you can treat the path as unbounded.
+The path records up to 256 entries. Deeper nodes are still walked and `depth()` stays accurate, but `parent()` and `ancestor()` return `null` past the recorded depth.
 
 ## Basic Traverser
 
-The lightest mode, with path tracking plus the full immutable tree. No allocator needed, nothing returned.
-
-Use it for tools that only need structural pattern matching:
-
-- `eslint`-style rules that look at "this node and its parent"
-- counters and statistics
-- AST-shape assertions in tests
-- pretty-printers that read but never write the tree
+The lightest mode: path tracking and the immutable tree, with no allocator and no result. Use it for structural pattern matching, such as lint rules that look at a node and its parent, counters, and AST-shape assertions.
 
 ```zig
 const basic = traverser.basic;
@@ -1725,11 +1690,9 @@ ctx.tree    // *const ast.Tree, full read access
 ctx.path    // NodePath, the current path stack
 ```
 
-That is it. Step up to scoped or semantic when you need to know what bindings are in scope.
-
 ## Scoped Traverser
 
-Scoped mode adds automatic lexical scope tracking. Whenever the walker enters a scope-creating node, the tracker pushes a new scope. On exit, it pops. Your hooks see `ctx.scope.currentScope()` already pointing at the right place.
+Scoped mode adds lexical scope tracking. The tracker pushes a scope when the walker enters a scope-creating node and pops it on exit, so your hooks see `ctx.scope.currentScope()` already pointing at the right scope.
 
 ```zig
 const scoped = traverser.scoped;
@@ -1739,7 +1702,7 @@ const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor);
 // scope_tree contains every scope the walk produced
 ```
 
-The tracker pushes a scope for every construct that introduces a lexical environment and tracks strict mode as it goes. [Scopes](https://yuku.fyi/parser/semantic/#scopes) documents the full list of scope-creating constructs, the scope kinds, and the strict-mode rules.
+[Scopes](https://yuku.fyi/parser/semantic/#scopes) lists the scope-creating constructs, the scope kinds, and the strict-mode rules.
 
 ### Querying the Tracker
 
@@ -1785,11 +1748,11 @@ while (it.next()) |id| {
 }
 ```
 
-The tree is backed by the parser's arena, so it lives as long as the source `Tree` does. Calling `tree.deinit()` invalidates it.
+The scope tree lives in the tree's arena, so `tree.deinit()` invalidates it.
 
 ## Semantic Traverser
 
-Semantic mode is the full-power one, with path, scopes, symbols, references, redeclaration handling, and TypeScript context tracking.
+Semantic mode tracks the path, scopes, symbols, references, redeclarations, and TypeScript context.
 
 ```zig
 const sem = traverser.semantic;
@@ -1798,7 +1761,7 @@ var visitor = MyVisitor{};
 const semantic = try sem.traverse(MyVisitor, &tree, &visitor);
 ```
 
-It returns a [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model), the complete model of the tree with every reference resolved to its declaring symbol. This is the same model `semantic.analyze` returns. Drive the traverser directly when you want your own hooks to run during the analysis walk.
+It returns the same [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model as `semantic.analyze`, with every reference resolved. Drive the traverser directly to run your own hooks during the analysis walk.
 
 `sem.Ctx` exposes:
 
@@ -1807,6 +1770,7 @@ ctx.tree          // *const ast.Tree
 ctx.path          // NodePath
 ctx.scope         // ScopeTracker (same API as scoped mode)
 ctx.symbols       // SymbolTracker
+ctx.parentOf(node)    // parent of an already entered node, null at the root
 ctx.inTypePosition()  // true inside a TS type-only subtree
 ctx.inTsNamespace()   // true inside a TS `namespace` body
 ```
@@ -1852,20 +1816,17 @@ ctx.symbols.firstDeclOf(id)         // binding_identifier node of the
 ```
 
 > **Note**
->The trackers are live, so they know only what the walk has visited so far. A name declared later in the file is not bound yet, and the full [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model (resolved references, use indexes, node queries) exists only after `traverse` returns. Query the trackers for the mid-walk view. Run the traversal first and query the model when a tool needs whole-file answers.
+>The trackers know only what the walk has visited so far, so a name declared later in the file is not bound yet. The full [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model (resolved references, use indexes, node queries) exists only after `traverse` returns.
 
 ### Two-Phase Binding
 
 Symbol declaration is split across two phases per node:
 
-1. **Phase 1, on enter**: when entering a parent declaration node (`variable_declaration`, `function`, `class`, `import_declaration`, `formal_parameters`, `catch_clause`, `ts_interface_declaration`, etc.), the tracker records _what kind_ of binding the next `binding_identifier` should produce: its flags, its redeclaration excludes, and its target scope. This happens **before** your enter hook runs.
+1. **On enter**: when entering a declaration node (`variable_declaration`, `function`, `class`, `import_declaration`, `formal_parameters`, `catch_clause`, `ts_interface_declaration`, etc.), the tracker records what the next `binding_identifier` should produce: its flags, its redeclaration excludes, and its target scope. This happens **before** your enter hook runs.
 
-2. **Phase 2, on `post_enter`**: after your enter hook returns, but before the walker descends into children, the tracker materialises the actual symbol or reference. `binding_identifier` becomes a `Symbol`, `identifier_reference` becomes a `Reference`.
+2. **On `post_enter`**: after your enter hook returns, and before the walker descends into children, the tracker creates the symbol or reference. A `binding_identifier` becomes a `Symbol`, an `identifier_reference` a `Reference`.
 
-Why the split? It guarantees a useful invariant for your visitor:
-
-> **Note**
->Your enter hook on a `binding_identifier` sees the scope state **before** that binding has been declared. You can inspect what is _about to_ be declared, look up whether something with the same name already exists, and decide what to do, before the tracker commits the new symbol.
+So your enter hook on a `binding_identifier` sees the scope state **before** that binding is declared. It can inspect what is about to be declared and look up an existing binding of the same name before the tracker commits the new symbol.
 
 ```zig
 pub fn enter_binding_identifier(
@@ -1895,11 +1856,11 @@ pub fn enter_binding_identifier(
 }
 ```
 
-`ctx.symbols.pending` is the pending state. Reading it inside an enter hook on a `binding_identifier` is always safe. Reading it at any other node is undefined. The flags and excludes it carries are documented in [Symbol Flags](https://yuku.fyi/parser/semantic/#symbol-flags) and [Redeclaration Excludes](https://yuku.fyi/parser/semantic/#redeclaration-excludes).
+`ctx.symbols.pending` is meaningful only inside an enter hook on a `binding_identifier`. Its flags and excludes are documented in [Symbol Flags](https://yuku.fyi/parser/semantic/#symbol-flags) and [Redeclaration Excludes](https://yuku.fyi/parser/semantic/#redeclaration-excludes).
 
 ### TypeScript Context Flags
 
-Two booleans on `sem.Ctx` track whether the walker is currently inside TS-only territory:
+Two methods on `sem.Ctx` tell whether the walker is inside TS-only territory:
 
 ```zig
 pub fn enter_identifier_reference(
@@ -1909,25 +1870,24 @@ pub fn enter_identifier_reference(
     ctx: *sem.Ctx,
 ) traverser.Action {
     if (ctx.inTypePosition()) {
-        // Inside a type annotation, type reference, type parameter,
-        // type literal, mapped/conditional type, etc.
-        // References here are tagged as `.type` automatically.
+        // inside a type annotation, type reference, type literal,
+        // mapped or conditional type, etc.
     }
     if (ctx.inTsNamespace()) {
-        // Inside a TS `namespace` body.
+        // inside a TS `namespace` body
     }
     _ = id;
     return .proceed;
 }
 ```
 
-`sem.refSpace(tree, &ctx.path, ctx.inTypePosition())` and `sem.isWriteTarget(tree, &ctx.path)` are the two rules exported, so a hook can classify an identifier position itself. They are what fill `Reference.flags.space` and `flags.write`.
+`sem.refSpace(tree, &ctx.path, ctx.inTypePosition())` and `sem.isWriteTarget(tree, &ctx.path)` are the rules that fill `Reference.flags.space` and `flags.write`, exported so a hook can classify an identifier position itself.
 
-`inTypePosition()` is also what the tracker uses internally to decide that a `binding_identifier` inside a function-type or index signature is a parameter _label_ (not a real declaration). Only `type_parameter` bindings are real in type position.
+The tracker also uses the type position to treat a `binding_identifier` inside a function type or signature as a parameter label rather than a declaration. Only type parameters declare in type position.
 
 ## Transform Traverser
 
-Transform mode is for rewrites such as codemods, desugaring passes, and AST-level optimisations. Your visitor receives `*Tree` (mutable) and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from inside any hook.
+Transform mode is for rewrites such as codemods, desugaring passes, and AST-level optimisations. Your visitor receives a mutable `*Tree` and can call `setData`, `setSpan`, `setIdentifierName`, `addNode`, and `addExtra` from any hook.
 
 ```zig
 const transform = traverser.transform;
@@ -1936,20 +1896,20 @@ var visitor = MyTransform{};
 try transform.traverse(MyTransform, &tree, &visitor);
 ```
 
-`transform.Ctx` is intentionally minimal:
+`transform.Ctx` carries:
 
 ```zig
-ctx.tree    // *ast.Tree, full read AND write access
+ctx.tree    // *ast.Tree, read and write access
 ctx.path    // NodePath
 ```
 
-There is no scope or symbol tracking in this mode. Mutating the tree would invalidate any tracked state mid-walk, so the design splits "analyse" from "rewrite" at the type level. If you need both, run two passes (see [Combining Modes](#combining-modes) below).
+There is no scope or symbol tracking in this mode, since mutating the tree would invalidate tracked state mid-walk. To both analyse and rewrite, run two passes (see [Combining Modes](#combining-modes)).
 
-A [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model built before a transform describes the tree as it was, so nodes you add and rewrites you make are not in it. Run `analyze` again after mutating when a later pass needs fresh semantics.
+A [`Semantic`](https://yuku.fyi/parser/semantic/#the-semantic-model) model built before a transform describes the tree as it was. Run `analyze` again after mutating when a later pass needs fresh semantics.
 
 ### Replacing a Node In Place
 
-The simplest transform replaces a node's data inside its enter hook. The walker re-reads the node after every enter, so the replacement's children are walked automatically:
+The simplest transform replaces a node's data inside its enter hook. The walker re-reads the node after every enter, so the replacement's children are walked:
 
 ```zig
 pub fn enter_binary_expression(
@@ -1978,26 +1938,27 @@ const new_name = try ctx.tree.addString("a");
 ctx.tree.setIdentifierName(node_index, new_name);
 ```
 
-This is the primitive Yuku's minifier uses to rename every site of a symbol in lock-step. Combined with `decls` and `uses` on the semantic model, you can rewrite a whole binding in a few lines.
+Combined with `decls` and `uses` on the semantic model, it renames every site of a binding (see [From a Symbol](https://yuku.fyi/parser/semantic/#from-a-symbol)).
 
 ### Creating New Nodes
 
-Use `addNode` to append a brand-new node and get its index. Use `addExtra` to allocate variable-length child lists for fields typed as `IndexRange`:
+`addNode` appends a node and returns its index. `addExtra` allocates a child list for a field typed as `IndexRange`. A node with no source location takes an empty span:
 
 ```zig
+const raw = try ctx.tree.addString("42");
 const lit = try ctx.tree.addNode(
-    .{ .numeric_literal = .{ .raw = "42" } },
-    .none,                              // span: .none if it has no source location
+    .{ .numeric_literal = .{ .kind = .decimal, .raw = raw } },
+    .{ .start = 0, .end = 0 },
 );
 
 const args = try ctx.tree.addExtra(&.{ child1, child2, child3 });
 ```
 
-Both are safe to call during traversal and use the tree's arena, so there is nothing to free.
+Both are safe to call during traversal and allocate in the tree's arena, so there is nothing to free.
 
 ### Wrapping a Node
 
-A common pattern is "take this node, move it to a fresh node, replace this one with a wrapper pointing at the moved copy". Useful for parenthesising expressions, wrapping in `await`, etc.
+To wrap a node, move its data to a fresh node and replace the original with a wrapper pointing at the copy. This is how you parenthesise an expression or wrap it in `await`.
 
 ```zig
 pub fn enter_binary_expression(
@@ -2022,7 +1983,7 @@ pub fn enter_binary_expression(
 }
 ```
 
-Returning `.skip` here is essential. If you let the walker descend, it will re-read the new wrapper, find its child (the moved copy), and call `enter_binary_expression` again on the same data, infinitely.
+Returning `.skip` is essential. Otherwise the walker descends into the wrapper, finds the moved copy, and calls `enter_binary_expression` on it again, forever.
 
 ### Self-Reference Safety
 
@@ -2044,38 +2005,30 @@ ctx.tree.setData(index, .{ .parenthesized_expression = .{ .expression = inner } 
 
 ## Building ASTs From Scratch
 
-`Tree.initEmpty(allocator)` creates a tree with no source text, intended for programmatic AST construction. Because there is no source backing it, every string must be created with `tree.addString(...)`.
-
-A valid tree starts from a `program` root node:
+`Tree.initEmpty(allocator)` creates a tree with no source text, for building an AST in code. With no source behind it, every string comes from `tree.addString(...)`. A valid tree has a `program` root:
 
 ```zig
 var out = ast.Tree.initEmpty(allocator);
 defer out.deinit();
 
+const no_span: ast.Span = .{ .start = 0, .end = 0 };
+
 const hello = try out.addString("hello");
-const lit = try out.addNode(
-    .{ .string_literal = .{ .value = hello } },
-    .none,
-);
-
-const stmt = try out.addNode(
-    .{ .expression_statement = .{ .expression = lit } },
-    .none,
-);
-
+const lit = try out.addNode(.{ .string_literal = .{ .value = hello } }, no_span);
+const stmt = try out.addNode(.{ .expression_statement = .{ .expression = lit } }, no_span);
 const body = try out.addExtra(&.{stmt});
 
 out.root = try out.addNode(
     .{ .program = .{ .source_type = .module, .body = body } },
-    .none,
+    no_span,
 );
 ```
 
-That is enough for a tree that any read-only consumer (a printer, an emitter, another traverser pass) will accept.
+Any read-only consumer, such as codegen or another traverser pass, accepts the result.
 
 ### Building One Tree While Walking Another
 
-A particularly powerful pattern, central to transpilers and source-to-source compilers, is walking an _input_ tree with full semantic context (scopes, symbols, path) while building a completely separate _output_ tree:
+Transpilers walk an _input_ tree with full semantic context while building a separate _output_ tree:
 
 ```zig
 const sem = traverser.semantic;
@@ -2089,13 +2042,13 @@ const Transpiler = struct {
         index: ast.NodeIndex,
         ctx: *sem.Ctx,
     ) !traverser.Action {
-        // Read context from the *source* tree:
+        // read context from the source tree
         const is_strict = ctx.scope.isStrict();
         const span = ctx.tree.span(index);
         _ = is_strict;
         _ = func;
 
-        // Build into the *output* tree:
+        // build into the output tree
         const name = try self.out.addString("transpiledFn");
         const id = try self.out.addNode(
             .{ .binding_identifier = .{ .name = name } },
@@ -2115,20 +2068,17 @@ defer out.deinit();
 
 var transpiler = Transpiler{ .out = &out };
 _ = try sem.traverse(Transpiler, &source_tree, &transpiler);
-
-// `out` is a fresh AST you built using full knowledge of the source's
-// scopes, symbols, and structure. The two trees have independent arenas.
 ```
 
-The two trees never touch each other's storage, and either can be freed independently. This is the recommended structure for any tool that produces a transformed AST from an input AST without mutating the input.
+The two trees have independent arenas, so either can be freed on its own, and the input is never mutated.
 
 ## Your Own Mode
 
-The four modes are four context types over one walker. `traverser.walk(C, V, &visitor, &ctx)` drives any context with a `.tree` field, and `traverser.Layer(C, V)` wraps a visitor so the context's own `enter`, `post_enter`, and `exit` run around each hook. That is all a built-in mode is, in [about thirty lines](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/traverser/basic.zig).
+The four modes are four context types over one walker. `traverser.walk(C, V, &visitor, &ctx)` drives any context with a `.tree` field, and `traverser.Layer(C, V)` wraps a visitor so the context's own `enter`, `post_enter`, and `exit` run around each hook. A built-in mode is [about thirty lines](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/traverser/basic.zig).
 
 ## Combining Modes
 
-The four modes compose via multiple passes. A typical pipeline looks like:
+The modes compose as separate passes:
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -2145,13 +2095,11 @@ const semantic = try sem.traverse(MyAnalyser, &tree, &analyser);
 // Pass 3: emit, lint, minify, etc.
 ```
 
-Because read-only modes hand visitors a `*const Tree` and transform hands a `*Tree`, the type system keeps analysis and mutation apart. A function that takes `*const Tree` cannot change the AST.
-
 # Codegen
 
 Source: https://yuku.fyi/parser/codegen/
 
-The codegen takes a `Tree` and writes it back as source code. It walks the AST directly and emits each node from its tag, so the output is always syntactically valid and faithful to the tree's structure.
+The codegen writes a `Tree` back as source code. It emits each node from its tag in a single walk, so the output is always syntactically valid and faithful to the tree's structure.
 
 ## Node.js
 
@@ -2167,7 +2115,7 @@ const { program } = parse("const x = 1 + 2;");
 const { code } = generate(program);
 ```
 
-`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMap: { source }`. `minify` also takes an object there (`{ syntax, whitespace, quotes }`) to pick individual switches, and `comments` accepts `true` / `false` as sugar for `"all"` / `"none"`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`generate` takes the `Program` node returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMap: { source }`. In JavaScript, `minify` also takes an object (`{ syntax, whitespace, quotes }`) to pick individual switches, and `comments` accepts `true` / `false` for `"all"` / `"none"`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## WebAssembly
 
@@ -2183,7 +2131,7 @@ const { program } = parse("const x = 1 + 2;");
 const code = generate(program);
 ```
 
-The same options as `yuku-codegen`, except that `generate` returns the code string directly and source maps are unavailable. Paired with `@yuku-parser/wasm`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
+The same options as `yuku-codegen`, except that `generate` returns the code string directly and source maps are unavailable. It pairs with `@yuku-parser/wasm` for browsers and other environments without native bindings. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
 
 ## Zig
 
@@ -2208,7 +2156,7 @@ pub fn main() !void {
 }
 ```
 
-`generate` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
+`generate` writes into a fresh buffer and leaves the `Tree` unchanged. The returned `Result` owns its buffers, freed with `result.deinit(allocator)`.
 
 ## Result
 
@@ -2220,15 +2168,15 @@ pub const Result = struct {
 };
 ```
 
-| Field    | Type           | Description                                         |
-| -------- | -------------- | --------------------------------------------------- |
-| `code`   | `[]const u8`   | Generated source                                    |
-| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean run    |
-| `map`    | `?SourceMap`   | Source Map V3 when `source_map` was set, else null  |
+| Field    | Type                 | Description                                         |
+| -------- | -------------------- | --------------------------------------------------- |
+| `code`   | `[]const u8`         | Generated source                                    |
+| `errors` | `[]const Diagnostic` | Codegen-detected problems, empty for a clean run    |
+| `map`    | `?SourceMap`         | Source Map V3 when `source_map` was set, else null  |
 
-The only return-value error from `generate` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain run, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
+The only error `generate` returns is `error.OutOfMemory`. Codegen-detected problems go to `errors` and do not abort the run. They only occur when stripping (see [Type stripping](#type-stripping)).
 
-A `Diagnostic` carries.
+A `Diagnostic` carries:
 
 ```zig
 pub const Diagnostic = struct {
@@ -2297,6 +2245,7 @@ pub const SourceMapOptions = struct {
     source_file_name: ?[]const u8 = null,
     source_root: ?[]const u8 = null,
     sources_content: ?[]const u8 = null,
+    utf16_offsets: bool = false,
 };
 ```
 
@@ -2307,6 +2256,7 @@ pub const SourceMapOptions = struct {
 | `source_file_name` | `?[]const u8` | Source filename, embedded as the single entry of `sources`           |
 | `source_root`      | `?[]const u8` | Prefix embedded as `sourceRoot`                                      |
 | `sources_content`  | `?[]const u8` | When set, embedded as the single entry of the map's `sourcesContent` |
+| `utf16_offsets`    | `bool`        | Whether node spans count UTF-16 code units instead of UTF-8 bytes    |
 
 ### Result shape
 
@@ -2346,7 +2296,7 @@ Because comments are attached to nodes, they survive AST transforms. Move or rep
 
 ## Type stripping
 
-Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same options, with TypeScript-only nodes and fields removed from the output.
+`strip` prints a TypeScript `Tree` as JavaScript, with the same codegen and options.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .lang = .ts });
@@ -2358,23 +2308,17 @@ defer result.deinit(allocator);
 std.debug.print("{s}", .{result.code});
 ```
 
-### How it works
-
-Stripping is not regex, not a separate transform pass, not a whitespace overlay on top of the original source. It is the codegen with one extra rule per node visit. Skip nodes that are TypeScript-only, and skip TypeScript-only fields on shared nodes.
-
-That makes it always accurate and reliable. Nothing is parsed by hand a second time. The parser already classified every byte, and the codegen reads that classification directly. Comments, whitespace, nested template literal types, generic call expressions, conditional types, and every other awkward boundary case are tree nodes like any other, not regex edge cases. And it is extremely fast, one traversal of the parsed tree, writing directly into an output buffer.
+Stripping is not a regex pass or a separate transform. The codegen skips TypeScript-only nodes and the TypeScript-only fields of shared nodes during its one walk, so every boundary case (comments, generic calls, nested template literal types) is a tree node the parser already classified.
 
 ### What stripping does not do
 
-A few TypeScript features (`enum`, `namespace`, `module`, `export =`, `import = require()`, parameter properties) emit JavaScript runtime values. Converting them to JavaScript equivalents is a transpilation step, not a syntax-stripping step. The stripper does exactly what its name says, it strips TypeScript syntax. When a runtime-emitting construct is encountered, it is reported as a `Diagnostic` and skipped, and the rest of the file is still emitted.
+A few TypeScript features emit runtime values: `enum`, `namespace`, `module`, `export =`, `import = require()`, and parameter properties. Converting them is transpilation, not stripping. Each one is reported as a `Diagnostic` and left out of the output (a parameter property keeps its plain parameter), and the rest of the file is still emitted.
 
-The ambient forms of these constructs (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime, and are stripped silently along with the rest of the type system.
-
-All other TypeScript syntax (types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, `abstract`) strips cleanly today.
+Their ambient forms (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime, so they strip silently. All other TypeScript syntax, including types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, and `abstract`, strips cleanly.
 
 ## Minification
 
-`minify` applies size-reducing syntax rewrites. Combine with `format` and `quotes` for maximum minification.
+`minify` applies size-reducing syntax rewrites. Combine it with `format` and `quotes` for maximum minification.
 
 ```zig
 const result = try parser.codegen.generate(allocator, &tree, .{
@@ -2385,12 +2329,14 @@ const result = try parser.codegen.generate(allocator, &tree, .{
 defer result.deinit(allocator);
 ```
 
-The substitutions.
+The rewrites:
 
 - `true` / `false` → `!0` / `!1`
 - numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe
+
+Minified output is also safe to inline in a `<script>` tag. `</script`, `<!--`, and `-->` are escaped in strings and untagged template literals. Tagged templates keep their raw text, since the tag reads it.
 
 # Analyzer
 
@@ -2398,9 +2344,7 @@ Source: https://yuku.fyi/analyzer/
 
 `yuku-analyzer` is full semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
-**No single library gives you all of this.** Scopes and resolved references mean `eslint-scope` or `@typescript-eslint/scope-manager`. Cross-file go-to-definition means the TypeScript compiler or `ts-morph`. A parser sits underneath both. `yuku-analyzer` is all of them in one native pass behind one API.
-
-**At native speed.** Up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with zero per-query cost after the single native call. Stitch those separate tools together yourself and the gap only widens. Each re-walks the AST, you re-parse to resolve across files, and you keep the indexes between them in sync by hand. `yuku-analyzer` pays all of that once, in Zig.
+Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with no per-query cost after the native call.
 
 ```bash
 npm install yuku-analyzer
@@ -2422,7 +2366,7 @@ module.walk({
 module.rootScope.find("double").references.length; // 1
 ```
 
-`analyze` takes the same options as `addFile`, plus `path` (default `"input.js"`), which names the module and supplies the default `lang` and `sourceType`. The module still carries its own import and export records, but nothing links, since the analyzer behind it holds a single file. Reach for `Analyzer` the moment there is more than one.
+`analyze` takes the same options as `addFile`, plus `path` (default `"input.js"`), which names the module and supplies the default `lang` and `sourceType`. The module carries its own import and export records, but nothing links, since the analyzer behind it holds a single file. Use `Analyzer` for more than one.
 
 For a project, `Analyzer` adds files and links them:
 
@@ -2444,11 +2388,9 @@ def.module.path; // "math.ts"
 def.symbol.has(SymbolFlags.Const); // true
 
 a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
-
-// and many more
 ```
 
-That is real cross-file resolution, not a string search. It follows import, re-export, and `export *` chains to the binding that actually defines the name, the same as an editor's go-to-definition, in plain JavaScript.
+Resolution follows import, re-export, and `export *` chains to the binding that defines the name, like an editor's go-to-definition.
 
 ## WebAssembly
 
@@ -2466,25 +2408,17 @@ module.rootScope.find("double").references.length; // 1
 
 The same API and semantic model as `yuku-analyzer`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
 
-## The problem it solves
-
-Assembling this yourself is not only slower, it is harder to get right. The lightweight tools give you a scope stack but leave the binding rules to you, meaning hoisting, catch clauses, named function expressions, TypeScript declaration merging, and value space versus type space. Each tool implements a subset, and each subset has its own bugs.
-
-`yuku-analyzer` computes none of that in JavaScript. The binder, scope tree, reference resolution, and module records all come from the same well-tested native analyzer that powers the rest of Yuku, so there is one implementation to keep correct, not a JavaScript copy that drifts from it. JavaScript receives a finished model to query, not events to track.
-
 ## Architecture
 
-The design rests on one observation. A semantic model is mostly integers. Scopes point to parents, symbols point to scopes, references point to symbols, and everything points to AST nodes. Integers serialize for free.
+The binder, scope tree, reference resolution, and module records come from the same native analyzer that powers the rest of Yuku. JavaScript receives a finished model to query and reimplements none of the binding rules (hoisting, catch scopes, named function expressions, declaration merging, declaration spaces).
 
-**One native call.** `addFile` parses the source, runs scope construction, binding, and reference resolution in Zig, and serializes the result into a single binary buffer, the AST in Yuku's flat transfer format followed by the semantic tables as fixed-stride sections. One FFI crossing per file, total.
+**One native call.** `addFile` parses the source, builds scopes, binds, and resolves references in Zig, then serializes everything into one buffer: the AST in Yuku's flat transfer format, followed by the semantic tables as fixed-stride sections.
 
-**Zero-copy decode.** On the JavaScript side, the semantic sections are read through typed-array views directly over the transferred buffer. Nothing is parsed, nothing is copied. A symbol's name, flags, scope, and declaration list are reads at computed offsets.
+**Zero-copy decode.** The semantic tables are read through typed-array views over that buffer. A symbol's name, flags, scope, and declarations are reads at computed offsets.
 
-**Lazy objects, eager answers.** `Scope`, `Symbol`, `Reference`, `Import`, and `Export` are flyweight objects over the tables, tiny, allocated once per row on first access, with getters that read the buffer. Cross-indexes (which references belong to which symbol, which symbols belong to which scope) build lazily on first use and amortize across every later query.
+**Lazy objects.** `Scope`, `Symbol`, `Reference`, `Import`, and `Export` are flyweight objects created once per row on first access. Cross-indexes, such as the references of each symbol, build on first use.
 
-**Node identity.** AST nodes decode lazily and are memoized by node index. The node you reach by walking `module.ast` and the node a semantic query hands back are the same JavaScript object. `symbol.declarations[0] === someNodeYouWalkedTo` is a meaningful comparison, and a `WeakMap` resolves any node back to its index, which is what makes `symbolOf(node)` a lookup instead of a search.
-
-The result is native-code analysis speed, JavaScript-object ergonomics, and a wire format that is provably synchronized with the code that reads it.
+**Node identity.** AST nodes decode lazily and are memoized by index, so the node you reach by walking `module.ast` and the node a semantic query returns are the same object. A `WeakMap` maps any node back to its index, which makes `symbolOf(node)` a lookup instead of a search.
 
 ## The Analyzer
 
@@ -2501,7 +2435,7 @@ analyzer.module("src/app.tsx");     // Module | undefined
 analyzer.modules;                   // ReadonlyMap<string, Module>
 ```
 
-`addFile` accepts the same options as `yuku-parser`'s `parse`, with `lang` and `sourceType` defaulting from the file extension.
+`addFile` accepts the options of `yuku-parser`'s `parse`, except `semanticErrors` since semantic errors are always reported. `lang` and `sourceType` default from the file extension.
 
 ```js
 analyzer.addFile("legacy.cjs", source, {
@@ -2513,7 +2447,7 @@ analyzer.addFile("legacy.cjs", source, {
 });
 ```
 
-The two functions behind those defaults are exported, so a host that needs the same mapping never has to re-derive it.
+The functions behind those defaults are exported:
 
 ```js
 import { langFromPath, sourceTypeFromPath } from "yuku-analyzer";
@@ -2523,11 +2457,11 @@ langFromPath("app.tsx");      // "tsx"; .ts/.mts/.cts give "ts", .jsx gives "jsx
 sourceTypeFromPath("a.cjs");  // "commonjs" for .cjs and .cts, "module" for everything else
 ```
 
-Adding a path that already exists replaces the module and marks the graph for relinking. The call returns a new `Module`, and any scopes, symbols, or nodes you held from the previous version belong to that earlier parse. A change in `analyzer.module(path)` identity is the signal to drop a cache keyed on the old one.
+Adding a path that already exists replaces the module and marks the graph for relinking. The call returns a new `Module`, and scopes, symbols, or nodes held from the previous version belong to that earlier parse. A change in `analyzer.module(path)` identity is the signal to drop a cache keyed on the old one.
 
 ### Module resolution
 
-Cross-file linking needs to map import specifiers to added files. The default resolver handles relative specifiers with standard extension probing (`./util` matches `util.ts`, `util/index.ts`, and so on). For anything else, supply your own.
+Linking maps import specifiers to added files. The default resolver handles relative specifiers with standard extension probing (`./util` matches `util.ts`, `util/index.ts`, and so on). For anything else, supply your own.
 
 ```js
 const analyzer = new Analyzer({
@@ -2542,7 +2476,7 @@ Returning `null` marks the import as external. `import.resolvedModule` stays `nu
 
 ## The Module
 
-`addFile` returns a `Module`, the per-file unit of the analysis. Everything on it is local JavaScript. No native calls happen after `addFile` returns.
+`addFile` returns a `Module`, the per-file unit of the analysis. No native calls happen after `addFile` returns.
 
 ```js
 module.analyzer;    // the Analyzer that owns it
@@ -2554,11 +2488,9 @@ module.comments;    // every comment in source order
 module.tokens;      // TokenList, present when added with tokens: true
 ```
 
-`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](https://yuku.fyi/parser/#tokens).
+`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](https://yuku.fyi/parser/#tokens). The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, made of plain mutable objects that any ESTree tool accepts and `yuku-codegen` prints.
 
-The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, and nodes are plain mutable objects. Edit them, run them through any ESTree tool, print them with `yuku-codegen`.
-
-The semantic surface.
+The semantic surface:
 
 ```js
 module.scopes;               // Scope[], index is the scope id
@@ -2619,21 +2551,21 @@ sym.flags;        // the raw SymbolFlags bitset behind has / hasAll
 sym.id;           // stable index into module.symbols
 ```
 
-One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, which is exactly what go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
+One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, as go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
 
 ### Flags
 
-What a symbol is lives in a bitset. There is exactly one way to query it, `has` (any of the given flags) and `hasAll` (all of them), against the exported `SymbolFlags` constants. No parallel boolean getters, so the API stays small and predictable.
+A symbol's kinds and modifiers live in a bitset, queried with `has` (any of the given flags) and `hasAll` (all of them) against the exported `SymbolFlags` constants.
 
 ```js
 import { SymbolFlags } from "yuku-analyzer";
 
 sym.has(SymbolFlags.Function);                           // is it a function?
 sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
-sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // an exported function?
+sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // `export function`?
 ```
 
-Alongside the single-bit flags, five **composites** answer the common categorical questions directly.
+Five **composites** answer the common categorical questions directly.
 
 ```js
 sym.has(SymbolFlags.Variable);       // var / let / const, parameters and catch bindings included
@@ -2643,9 +2575,9 @@ sym.has(SymbolFlags.TypeSpace);      // referencable from a TS type position
 sym.has(SymbolFlags.NamespaceSpace); // a dotted type name (`ns.T`) can start from it
 ```
 
-Beyond `has` and `hasAll`, one method is left: `sym.visibleIn(space)`, the acceptance rule of name resolution: whether a reference resolving in `space` may bind to this symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
+`sym.visibleIn(space)` tells whether a reference resolving in `space` may bind to the symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
 
-A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what makes "use a class as a type" work without special cases. The flag values, composites included, are generated from the native binder's bit layout at build time, so they can never disagree with what the binder wrote.
+A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what lets a class be used as a type. The flag values, composites included, are generated from the native binder's bit layout at build time, so they always agree with the binder.
 
 ## References
 
@@ -2676,13 +2608,13 @@ function f() {
 }
 ```
 
-`inTypePosition` collapses the space to the question rename and dead-code tools ask, whether the use is erased at compile time, so a value and a same-named type stay independent. `isWrite` is computed structurally in the native pass.
+`inTypePosition` tells whether the use is erased at compile time, so rename and dead-code tools can keep a value and a same-named type independent.
 
-`module.unresolvedReferences` is the complement, every name whose space has no binding anywhere in scope. That list is precisely what a no-undef lint rule or a globals collector wants.
+`module.unresolvedReferences` holds every name with no visible binding anywhere in scope, the input for a no-undef rule or a globals collector.
 
 ## Node queries
 
-These methods connect AST nodes to the semantic model. All of them work on node object identity, not positions or names.
+These methods connect AST nodes to the semantic model by node object identity, not positions or names.
 
 ```js
 module.symbolOf(node);    // the symbol a node declares or references, or null
@@ -2694,15 +2626,15 @@ module.resolve("x", someScope);           // or from any scope, like the engine 
 module.resolve("T", someScope, "type");   // or in another space ("any" is by name alone)
 ```
 
-`symbolOf` is the workhorse. Hand it a declaration identifier and you get the symbol it declares, hand it a reference identifier and you get the symbol it resolves to.
+`symbolOf` gives the symbol a declaration identifier declares, or the symbol a reference identifier resolves to.
 
-`parentOf` walks upward from a node you already hold, with no ancestor stack and no full walk. Because nodes are memoized by index, it is the same constant-time lookup as the others. It returns `null` at the program root and for any node that is not part of this module's AST.
+`parentOf` walks upward from a node you already hold, in constant time, with no ancestor stack. It returns `null` at the program root and for any node that is not part of this module's AST.
 
-`scopeOf` never returns `null`. A node this module's analysis never saw, such as one you built during a transform, falls back to the root scope. `resolve` walks the chain the way the engine would, with `from` defaulting to the root scope and `space` to `"value"`: a binding outside the requested space does not stop the walk, `"any"` matches by name alone, and a value-position `arguments` lookup stops at the first non-arrow function or static block, where the implicit arguments object shadows any outer binding of that name.
+`scopeOf` never returns `null`. A node this module's analysis never saw, such as one you built during a transform, falls back to the root scope. `resolve` walks the chain the way the engine would, with `from` defaulting to the root scope and `space` to `"value"`. A binding outside the requested space does not stop the walk, `"any"` matches by name alone, and a value-position `arguments` lookup stops at the first non-arrow function or static block, where the implicit arguments object shadows any outer binding of that name.
 
 ## Editing the AST
 
-Node identity is what makes the analyzer a refactoring engine, not just a query layer. The `node` on every symbol and reference is the same object you reach by walking `module.ast` (`===` holds), so a transform is a plain assignment, and [`yuku-codegen`](https://yuku.fyi/parser/codegen/) prints the mutated tree back to source.
+The `node` on every symbol and reference is the same object you reach by walking `module.ast`, so a rename is a plain assignment, and [`yuku-codegen`](https://yuku.fyi/parser/codegen/) prints the mutated tree back to source.
 
 ```js
 import { generate } from "yuku-codegen";
@@ -2751,11 +2683,11 @@ module.walk({
 
 Per node, the order is catch-all `enter`, typed enter, children, typed leave, catch-all `leave`. Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`.
 
-`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Reach for it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
+`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Use it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
 
 ### The context
 
-One context object is reused across the whole walk (do not store it). It carries the position and the semantics.
+One context object is reused across the whole walk, so do not store it. It carries the position and the semantics.
 
 ```js
 ctx.node;      // the current node
@@ -2770,11 +2702,11 @@ ctx.reference; // shorthand for module.referenceOf(node)
 ctx.module;    // the module being walked
 ```
 
-`ctx.scope` is not tracked during the walk. The binder records the scope at every node and ships it as a per-node table, so `ctx.scope` (like `module.scopeOf`) is a single read off that table. No scoping rule is evaluated in JavaScript, and the answer is exact even where scopes do not nest with spans, such as decorators.
+`ctx.scope` is not tracked during the walk. The binder records the scope of every node in a per-node table, so `ctx.scope`, like `module.scopeOf`, is a single read. The answer is exact even where scopes do not nest with spans, such as decorators.
 
 ### Mutation
 
-The walk mutates the AST in place, with precise semantics.
+Handlers can mutate the AST in place.
 
 | Operation               | Effect                                                                                                        |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -2798,11 +2730,11 @@ module.walk({
 });
 ```
 
-One rule to remember. The semantic tables are a snapshot of the parsed source. Nodes you create have no symbols or references of their own. Analyze, transform, print, and re-analyze the output if you need fresh semantics for the transformed code.
+The semantic tables are a snapshot of the parsed source, so nodes you create have no symbols or references. For fresh semantics after a transform, print the result and analyze the output.
 
 ## findAll
 
-For the simplest queries there is a one-liner.
+`findAll` collects every node of the given types, in source order.
 
 ```js
 module.findAll("FunctionDeclaration");          // FunctionDeclaration[]
@@ -2835,9 +2767,9 @@ for (const capture of module.capturesOf(tick)) {
 
 Each `Capture` carries the outer `symbol`, the capturing `references` inside the function, and `isWritten`. Type-only references are excluded, since they do not exist at runtime. Only bindings appear. `this`, `arguments`, and unresolved globals carry no symbol and are never reported, while module-scope and imported bindings count like any other outer binding.
 
-`capturesOf` throws a `TypeError` when the node is not part of this module's AST, or when it is a node that creates no function scope. Ask it about a function or arrow, nothing else.
+`capturesOf` throws a `TypeError` for a node that is not a function or arrow of this module's AST.
 
-Because the computation rides the resolved reference table, it is shadowing-correct and alias-correct by construction. A local `count` declared inside the function does not produce a false capture, and a reference is attributed to the binding it actually resolves to, not to the nearest matching name.
+Captures come from the resolved reference table, so they are shadowing- and alias-correct. A local `count` declared inside the function produces no capture, and each reference is attributed to the binding it resolves to, not the nearest matching name.
 
 ## Cross-file analysis
 
@@ -2890,9 +2822,9 @@ for (const exp of module.exports) {
 }
 ```
 
-`kind` is the field everything else hangs off. A `name` exists only where the kind has one, `fromName` only on a `reExport`, `globalName` only on a `global` record, and the `is*` getters are that one classification asked as a predicate. Read `kind` when you want to switch, read a predicate when you want a branch.
+Every other field follows from `kind`. A `name` exists only where the kind has one, `fromName` only on a `reExport`, `globalName` only on a `global` record, and the `is*` getters ask the same classification as a predicate.
 
-Import records cover every statically known dependency edge. Dynamic `import("m")` and CommonJS `require("m")` anywhere in the file produce records like static declarations do, and link into the graph the same way. Only literal specifiers become records, and a `require` call counts only when `require` is a free name, so every edge is sound.
+Import records cover every statically known dependency edge. Dynamic `import("m")` and CommonJS `require("m")` anywhere in the file produce records and link into the graph like static declarations. Only literal specifiers become records, and a `require` call counts only when `require` is a free name, so every edge is sound.
 
 Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. CommonJS exports are runtime assignments with no sound static shape, so they never become export records. `module.moduleFlags` (`usesRequire`, `usesModule`, `usesExports`, `usesImportMeta`) classifies the file instead.
 
@@ -2902,7 +2834,7 @@ Following the specification, `default` is modeled as an export *name*, not a sep
 
 Name resolution implements the spec's `ResolveExport`. Renaming re-export chains are followed per name, `default` is never satisfied by `export *`, and a name supplied by multiple `export *` declarations through different bindings is reported as ambiguous, the same conditions an engine raises at link time.
 
-Calling it is optional. Every cross-file surface links on demand after files change, so reading `import.resolvedModule` or `module.dependencies` is always correct. Call `link()` explicitly when you want to control when the work happens and collect the diagnostics at a known point.
+Calling it is optional. Every cross-file surface links on demand after files change, so reading `import.resolvedModule` or `module.dependencies` is always correct. Call `link()` to control when the work happens and collect the diagnostics at a known point.
 
 ```js
 analyzer.link();
@@ -2938,7 +2870,7 @@ Chains with cycles terminate safely. A circular request is detected per (module,
 
 ### References across modules
 
-The inverse direction gives every use of a symbol anywhere in the graph, with imports followed back to the definition.
+`referencesOf` gives every use of a symbol anywhere in the graph, with imports followed back to the definition. It is the basis for cross-file rename, unused-export detection, and impact analysis.
 
 ```js
 const uses = analyzer.referencesOf(def.symbol);
@@ -2946,8 +2878,6 @@ for (const { module, reference } of uses) {
   console.log(module.path, reference.name, reference.isWrite);
 }
 ```
-
-This is find-all-references as a compiler primitive, powering rename across files, unused-export detection, and impact analysis.
 
 ```js
 // unused exports, whole project
@@ -2972,8 +2902,6 @@ analyzer.module("lib.ts").exportedNames(); // ["two", "default", "one"]
 analyzer.module("a.ts").exportedNames();   // ["one"]
 ```
 
-This is what namespace-member completion and re-export expansion build on.
-
 ## SymbolFlags reference
 
 The full bitset, generated from the native binder's layout.
@@ -2997,11 +2925,11 @@ The full bitset, generated from the native binder's layout.
 | `Ambient`               | TS `declare`                                     |
 | `Parameter`             | function or method parameter                     |
 | `CatchVariable`         | `catch (e)` binding                              |
-| `Exported`              | exported from its module                         |
-| `Default`               | the default export                               |
+| `Exported`              | declared by `export <declaration>` (not `export { x }`) |
+| `Default`               | declared by `export default`                     |
 | `EnumMember`            | a TS enum member, declared in its enum's body scope |
 
-Plus five composites (unions of the above), for the common categorical questions.
+Plus five composites, unions of the above:
 
 | Composite        | Matches                                                            |
 | ---------------- | ------------------------------------------------------------------ |
@@ -3013,13 +2941,13 @@ Plus five composites (unions of the above), for the common categorical questions
 
 ## Performance
 
-Analysis runs in the native parser pass, so full semantics cost roughly half of parsing time on top of the parse itself. Validated against every file in the [parser test corpus](https://yuku.fyi/testing/).
+Analysis runs in the same native call as the parse, and full semantics cost roughly half of parsing time on top of it. It is validated against every file in the [parser test corpus](https://yuku.fyi/testing/).
 
-Concretely, on an Apple M-series machine, parsing plus complete semantic analysis of a typical source file lands well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
+On an Apple M-series machine, parsing plus complete semantic analysis of a typical source file takes well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
 
 ## TypeScript
 
-Everything is fully typed. Visitor handlers receive exact node types, and every type in the model is exported, so a function that takes a piece of the analysis can name it.
+Visitor handlers receive exact node types, and every type in the model is exported:
 
 ```ts
 import type {
@@ -3039,7 +2967,7 @@ import type {
 
 Source: https://yuku.fyi/testing/
 
-Correctness in Yuku is not an afterthought. A large share of the work behind the toolchain went into the test suite and the infrastructure around it, built and maintained with the same care as the parser itself. It covers everything from spec conformance and exact AST shapes to codegen soundness, source map accuracy, and memory behavior under simulated out-of-memory conditions. This page describes how it all works.
+Yuku's test suites cover spec conformance, exact AST shapes, codegen soundness, source map accuracy, and memory behavior under simulated out-of-memory conditions. This page describes how each works.
 
 ## The parser test suite
 
@@ -3049,9 +2977,9 @@ The parser is validated against a dedicated repository, [parser-test-suite](http
 - [microsoft/TypeScript](https://github.com/microsoft/TypeScript) compiler test fixtures.
 - [babel](https://github.com/babel/babel) parser test fixtures, across JavaScript, TypeScript, and JSX.
 
-The suite holds over 55,000 tests, and it grows as upstream grows. As a rough shape, JavaScript makes up the bulk with around 48,000 cases, TypeScript adds around 9,000, and JSX contributes a smaller set of focused cases.
+The suite holds over 55,000 tests and grows with upstream. JavaScript makes up around 48,000 of them, TypeScript around 9,000, and JSX a smaller set of focused cases.
 
-Each language suite splits into three categories.
+Tests fall into three categories. JavaScript and JSX have all three, TypeScript has `pass` and `semantic`.
 
 | Category   | Expectation                                                        |
 | ---------- | ------------------------------------------------------------------ |
@@ -3067,30 +2995,30 @@ A `pass` test is much stricter than "it parses".
 - **Exact AST match.** The full parse result, the program, every node type, every field, every position, plus comments, is compared structurally against a snapshot, ESTree for JS/JSX and TypeScript-ESTree for TS.
 - **Walk order.** Traversing the tree must visit children in source order, an invariant every ESTree walker relies on.
 
-Pass files also run with [semantic analysis](https://yuku.fyi/parser/semantic/) enabled, so the early-error checker is simultaneously validated for zero false positives on valid code.
+Pass files also run with [semantic analysis](https://yuku.fyi/parser/semantic/) enabled, which validates the early-error checker for zero false positives on valid code.
 
-`fail` tests cover syntax the parser must reject. `semantic` tests cover the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that cannot be caught from local context alone, such as strict mode violations, duplicate lexical bindings, unresolved exports, and private fields used outside their class. These files parse fine, but must fail once semantic analysis runs.
+`fail` tests cover syntax the parser must reject. `semantic` tests cover the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that local context alone cannot catch, such as strict mode violations, duplicate lexical bindings, unresolved exports, and private fields used outside their class. These files parse, but must fail once semantic analysis runs.
 
 ## Where the snapshots come from
 
-The expected ASTs are not produced by Yuku. Snapshots are generated with an independent reference parser, [Oxc](https://oxc.rs), which emits ESTree output for JS/JSX and TypeScript-ESTree output for TS. This keeps Yuku from grading its own homework. Matching an independently generated AST proves Yuku produces the exact tree shape the ESTree ecosystem agrees on, not just output consistent with itself.
+The expected ASTs are not produced by Yuku. Snapshots come from an independent reference parser, [Oxc](https://oxc.rs), which emits ESTree output for JS/JSX and TypeScript-ESTree output for TS. Matching them shows Yuku produces the tree shape the ESTree ecosystem agrees on, not just output consistent with itself.
 
 ## Synced with the spec, daily
 
-Test262, the TypeScript compiler, and Babel are moving targets, with new proposals and features landing in them continuously. An automated job in the suite repository checks upstream every day and adds the new tests, and Yuku's test runner refreshes its local copy of the suite daily. When a proposal reaches Test262, Yuku is tested against it almost immediately.
+An automated job in the suite repository checks Test262, the TypeScript compiler, and Babel every day and adds their new tests. Yuku's test runner downloads the suite again whenever its upstream revision changes, so a proposal that reaches Test262 is tested almost immediately.
 
 ## Conformance status
 
-Yuku is 100% ECMAScript spec compliant. It passes the entire suite, every `pass`, `fail`, and `semantic` test, with zero failures and zero AST mismatches. Per-file results are generated on every run and published in [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results).
+Yuku is 100% ECMAScript spec compliant. It passes every `pass`, `fail`, and `semantic` test in the suite, with zero failures and zero AST mismatches. Every run writes per-file results to [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results), and the runner exits non-zero on any failure.
 
-The suites run through the published npm packages, built from the local Zig source. So every run validates not just the Zig core but the whole chain, from the parser through the native bridge to the JavaScript API, with exact AST matching between Zig and JavaScript.
+The suites run through the npm packages, built from the local Zig source. Every run validates the whole chain, from the parser through the native bridge to the JavaScript API.
 
 ## Codegen
 
-Curated inline-snapshot tests pin the exact output of `generate` on inputs chosen by hand, across its option sets (plain, `strip`, `minify`). On top of that, the corpus suite runs all three option sets over every parseable file in the parser test suite and checks a set of invariants.
+Curated inline-snapshot tests pin the exact output of `generate` on hand-picked inputs, across plain, `strip`, and `minify` output. On top of that, the corpus suite runs four option sets (plain, compact, `strip`, `minify`) over every parseable file in the parser test suite and checks these invariants.
 
 - Every option set's output parses cleanly again.
-- A plain `generate` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
+- A plain or compact `generate` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
 - Every option set is a fixed point on its own output, and no comment is lost or duplicated.
 
 ## Source maps
@@ -3099,11 +3027,11 @@ Every corpus file is round-tripped through `generate` with source maps enabled, 
 
 ## Fuzzing
 
-Beyond the fixed suites, a Zig-side fuzzer throws millions of randomized inputs per run at the parser, adversarial fragments (malformed surrogate escapes, unterminated literals, numeric and regex corner cases, raw invalid UTF-8 bytes) and mutations of structurally complete programs, across every language mode, with simulated out-of-memory conditions injected along the way. The parser must never crash, whatever the input. Any failure dumps a self-contained reproducer.
+A Zig-side fuzzer throws millions of randomized inputs per run at the parser, across every language mode, with simulated out-of-memory conditions injected along the way. Inputs are adversarial fragments (malformed surrogate escapes, unterminated literals, numeric and regex corner cases, raw invalid UTF-8 bytes) and mutations of complete programs. The parser must never crash, and any failure dumps a self-contained reproducer.
 
 ## Memory
 
-The parser is deliberate about memory. Everything a parse allocates, the nodes, spans, strings, and diagnostics, lives in a single arena owned by the tree, and `tree.deinit()` is a single free. There are no per-node allocations to leak and no ownership graph to get wrong. The fuzzer's simulated allocation failures exercise exactly this pattern, so the expectation holds even when memory runs out. No crashes, no segfaults, no leaks. Yuku is memory safe and memory efficient by construction, and it is tested to stay that way.
+Everything a parse allocates, the nodes, spans, strings, and diagnostics, lives in a single arena owned by the tree, and `tree.deinit()` frees it in one step. There are no per-node allocations to leak and no ownership graph to get wrong. The fuzzer's simulated allocation failures exercise this pattern, so it holds even when memory runs out.
 
 ## Running the suites
 
@@ -3111,13 +3039,13 @@ The parser is deliberate about memory. Everything a parse allocates, the nodes, 
 bun run test
 ```
 
-On first run this downloads the parser test suite (cached for a day), builds the native addons from your local Zig, then runs every suite. Each suite can also be run on its own, and you can add your own cases. See [CONTRIBUTING.md](https://github.com/yuku-toolchain/yuku/blob/main/CONTRIBUTING.md) for the details.
+This downloads the parser test suite when upstream has changed, builds the packages from your local Zig, then runs every suite. See [CONTRIBUTING.md](https://github.com/yuku-toolchain/yuku/blob/main/CONTRIBUTING.md) to run a suite on its own or add your own cases.
 
 # Security
 
 Source: https://yuku.fyi/security/
 
-Yuku's core job is to process untrusted input. The source code it parses may be attacker controlled, so we take its security seriously.
+Yuku's core job is processing source code that may be attacker controlled, so it treats every input as untrusted.
 
 ## Reporting a vulnerability
 
@@ -3127,7 +3055,7 @@ We aim to acknowledge reports within 72 hours. Please give us a reasonable windo
 
 ## Our practices
 
-- **Zero runtime dependencies.** Every Yuku package published to npm ships with no runtime dependencies, and installing one runs no lifecycle scripts. There is no transitive tree to audit or to be compromised through, only Yuku's own code.
+- **No third-party dependencies.** Yuku's npm packages depend only on each other, and installing one runs no lifecycle scripts. There is no third-party tree to audit or to be compromised through, only Yuku's own code.
 - **Provenance publishing.** Packages are published to npm with provenance over an OIDC trusted-publisher flow, with no long-lived tokens, so each release is cryptographically tied to the workflow that built it.
 - **Hardened CI.** Every GitHub Actions step is pinned to a full commit hash and kept current by Dependabot, which holds new releases for a cooldown period before adopting them. The workflow token defaults to read-only, our workflows are statically analyzed with [zizmor](https://github.com/zizmorcore/zizmor), the project is continuously graded by [OpenSSF Scorecard](https://securityscorecards.dev), and outbound network on release runners is monitored.
 - **Reproducible builds.** Dependencies install from a frozen lockfile, and the one Zig build dependency is pinned by content hash.

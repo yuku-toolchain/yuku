@@ -28,14 +28,20 @@ const g = 1234.5;`,
   );
 });
 
-test("escapes script-close sequences in strings, keeps template raw", () => {
+test("escapes script-close sequences in strings and untagged templates", () => {
   expect(
     gen(
-      'const a = "</script>";\nconst b = "<!-- c -->";\nconst c = `</script>${1}`;\nconst d = "x-->y";',
+      'const a = "</script>";\nconst b = "<!-- c -->";\nconst c = `</script>${1}<!-- -->`;\nconst d = "x-->y";',
       MINIFY,
     ),
   ).toMatchInlineSnapshot(
-    `"const a="<\\/script>";const b="<\\!-- c --\\>";const c=\`</script>\${1}\`;const d="x--\\>y""`,
+    `"const a="<\\/script>";const b="<\\!-- c --\\>";const c=\`<\\/script>\${1}<\\!-- --\\>\`;const d="x--\\>y""`,
+  );
+});
+
+test("keeps tagged template raw text", () => {
+  expect(gen("tag`</script>${`</script>`}`;", MINIFY)).toMatchInlineSnapshot(
+    `"tag\`</script>\${\`<\\/script>\`}\`"`,
   );
 });
 

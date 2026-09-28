@@ -6,10 +6,8 @@ const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
-const patterns = @import("patterns.zig");
 const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
-const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
 const ts = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
@@ -71,7 +69,7 @@ pub fn parseClassDecorated(
         );
     }
 
-    const id: ast.NodeIndex = if (try canStartClassName(parser))
+    const id: ast.NodeIndex = if (canStartClassName(parser))
         try literals.parseBindingIdentifier(parser) orelse .null
     else
         .null;
@@ -132,13 +130,14 @@ pub fn parseClassDecorated(
     } }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
-// `abstract` is a contextual keyword
-inline fn isAbstractClassNext(parser: *Parser) bool {
+/// Returns whether the current `abstract` modifies a `class` on the same line.
+pub inline fn isAbstractClassNext(parser: *Parser) bool {
+    std.debug.assert(parser.current_token.tag == .abstract);
     const next = parser.peekAhead();
     return next.tag == .class and !next.hasLineTerminatorBefore();
 }
 
-inline fn canStartClassName(parser: *Parser) Error!bool {
+inline fn canStartClassName(parser: *Parser) bool {
     const tag = parser.current_token.tag;
     if (!tag.isIdentifierLike() or tag == .extends) return false;
     if (parser.tree.isTs() and tag == .implements) {
@@ -252,11 +251,13 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             );
             return null;
         }
-        if (definite) try parser.report(
-            parser.tree.span(key),
-            "Method cannot have a definite assignment assertion",
-            .{ .help = "Remove the '!' or declare a property instead." },
-        );
+        if (definite) {
+            try parser.report(
+                parser.tree.span(key),
+                "Method cannot have a definite assignment assertion",
+                .{ .help = "Remove the '!' or declare a property instead." },
+            );
+        }
         return parseMethodDefinition(parser, elem_start, decorators, key, computed, mods, optional);
     }
 
@@ -467,12 +468,11 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try parser.advance() orelse return null;
         const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
             return null;
-        const ok = try parser.expect(
+        if (!try parser.expect(
             .right_bracket,
             "Expected ']' after computed property key",
             null,
-        );
-        if (!ok) return null;
+        )) return null;
         return .{ .key = key, .computed = true };
     }
 
@@ -537,11 +537,13 @@ fn parseMethodDefinition(
         .null;
 
     // the class owns the type parameters a constructor is invoked through
-    if (mods.kind == .constructor and type_parameters != .null) try parser.report(
-        parser.tree.span(type_parameters),
-        "Type parameters cannot appear on a constructor declaration",
-        .{ .help = "Declare the type parameters on the class instead." },
-    );
+    if (mods.kind == .constructor and type_parameters != .null) {
+        try parser.report(
+            parser.tree.span(type_parameters),
+            "Type parameters cannot appear on a constructor declaration",
+            .{ .help = "Declare the type parameters on the class instead." },
+        );
+    }
 
     const params = try functions.parseFormalParameters(
         parser,
@@ -630,10 +632,11 @@ fn parsePropertyDefinition(
     definite: bool,
 ) Error!?ast.NodeIndex {
     if (!computed) {
-        if (mods.is_static)
-            try validateStaticPrototypeOrConstructor(parser, key, .field)
-        else
+        if (mods.is_static) {
+            try validateStaticPrototypeOrConstructor(parser, key, .field);
+        } else {
             try validateFieldConstructor(parser, key);
+        }
     }
 
     var end = parser.prev_token_end;
@@ -665,19 +668,23 @@ fn parsePropertyDefinition(
             return null;
         end = parser.tree.span(value).end;
 
-        if (mods.abstract) try parser.report(
-            parser.tree.span(value),
-            "An abstract property cannot have an initializer",
-            .{ .help = "Remove the initializer, or drop the 'abstract' modifier." },
-        );
+        if (mods.abstract) {
+            try parser.report(
+                parser.tree.span(value),
+                "An abstract property cannot have an initializer",
+                .{ .help = "Remove the initializer, or drop the 'abstract' modifier." },
+            );
+        }
     }
 
-    if (definite) try ts.checkDefiniteAssignment(
-        parser,
-        parser.tree.span(key),
-        type_annotation != .null,
-        value != .null,
-    );
+    if (definite) {
+        try ts.checkDefiniteAssignment(
+            parser,
+            parser.tree.span(key),
+            type_annotation != .null,
+            value != .null,
+        );
+    }
 
     switch (parser.current_token.tag) {
         .semicolon => {
@@ -775,16 +782,20 @@ fn detectConstructorKind(
 fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, mods: Modifiers) Error!void {
     const span = parser.tree.span(key);
 
-    if (mods.declare) try parser.report(
-        span,
-        "A 'declare' modifier cannot appear on a class element of this kind",
-        .{ .help = "Remove 'declare'. Only class fields carry it." },
-    );
-    if (mods.readonly) try parser.report(
-        span,
-        "A 'readonly' modifier can only appear on a property declaration or index signature",
-        .{ .help = "Remove 'readonly' from this method." },
-    );
+    if (mods.declare) {
+        try parser.report(
+            span,
+            "A 'declare' modifier cannot appear on a class element of this kind",
+            .{ .help = "Remove 'declare'. Only class fields carry it." },
+        );
+    }
+    if (mods.readonly) {
+        try parser.report(
+            span,
+            "A 'readonly' modifier can only appear on a property declaration or index signature",
+            .{ .help = "Remove 'readonly' from this method." },
+        );
+    }
 
     if (mods.kind == .constructor) {
         if (mods.abstract) try parser.report(span, "Constructor cannot be abstract", .{
@@ -816,15 +827,19 @@ fn validateStaticPrototypeOrConstructor(
     kind: enum { method, field },
 ) Error!void {
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
-    if (prop.eql("prototype")) try parser.report(
-        prop.span,
-        "Classes may not have a static property named 'prototype'",
-        .{ .help = "Remove 'static' or rename the property." },
-    ) else if (kind == .field and prop.eql("constructor")) try parser.report(
-        prop.span,
-        "Classes may not have a static field named 'constructor'",
-        .{ .help = "Remove 'static' or rename the field." },
-    );
+    if (prop.eql("prototype")) {
+        try parser.report(
+            prop.span,
+            "Classes may not have a static property named 'prototype'",
+            .{ .help = "Remove 'static' or rename the property." },
+        );
+    } else if (kind == .field and prop.eql("constructor")) {
+        try parser.report(
+            prop.span,
+            "Classes may not have a static field named 'constructor'",
+            .{ .help = "Remove 'static' or rename the field." },
+        );
+    }
 }
 
 fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {

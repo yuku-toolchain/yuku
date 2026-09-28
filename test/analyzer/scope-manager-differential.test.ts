@@ -131,7 +131,7 @@ function compare(
 }
 
 // Triaged divergences. 96e92c0f is a yuku gap (import Y = A prefers
-// the namespace in tsc). The rest are scope-manager gaps: f2131ad8
+// the namespace in tsc). The rest are scope-manager gaps. f2131ad8
 // merges a parameter with a same-named body var, the others leave
 // import equals aliases and type-only export specifiers unresolved.
 const KNOWN_DIVERGENCES = new Set(

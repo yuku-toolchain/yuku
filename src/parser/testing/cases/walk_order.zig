@@ -10,7 +10,7 @@ const Allocator = std.mem.Allocator;
 
 const Ctx = struct { tree: *const ast.Tree };
 
-const NodeTag = std.meta.Tag(ast.NodeData);
+const NodeTag = helpers.NodeTag;
 
 const Frame = struct {
     tag: NodeTag,

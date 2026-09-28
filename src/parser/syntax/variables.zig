@@ -1,12 +1,13 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const Precedence = @import("../token.zig").Precedence;
 const TokenTag = @import("../token.zig").TokenTag;
+
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 const ts = @import("ts/types.zig");
-const std = @import("std");
 const extension = @import("../extension.zig");
 
 pub const ParseVariableDeclarationOpts = struct {
@@ -90,13 +91,7 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
         .let => .let,
         .@"const" => .@"const",
         .@"var" => .@"var",
-        .using => blk: {
-            if (await_using) {
-                break :blk .await_using;
-            } else {
-                break :blk .using;
-            }
-        },
+        .using => if (await_using) .await_using else .using,
         else => null,
     };
 }
@@ -153,8 +148,7 @@ pub fn parseVariableDeclarator(
 
         end = parser.tree.span(init).end;
     } else switch (ctx) {
-        .for_loop => {},
-        .declare => {},
+        .for_loop, .declare => {},
         .normal => {
             if (is_destructuring) {
                 try parser.report(
@@ -200,12 +194,12 @@ pub fn canStartBindingIdentifier(tag: TokenTag) bool {
     return tag.isIdentifierLike() and !tag.isUnconditionallyReserved();
 }
 
-/// Like `canStartBinding`, but rejects reserved words so that `let in obj` keeps `let` as an identifier.
+/// Like `canStartBinding`, but rejects reserved words so `let in obj` keeps `let` an identifier.
 pub fn canStartLetBinding(tag: TokenTag) bool {
     return canStartBinding(tag) and !tag.isUnconditionallyReserved();
 }
 
-test "canStartLetBinding matches the longhand it replaced" {
+test "canStartLetBinding accepts patterns and non-reserved identifiers" {
     inline for (@typeInfo(TokenTag).@"enum".fields) |field| {
         const tag = @field(TokenTag, field.name);
         try std.testing.expectEqual(
@@ -215,18 +209,15 @@ test "canStartLetBinding matches the longhand it replaced" {
     }
 }
 
-/// Returns whether `let` begins an expression statement rather than a declaration.
-/// Only `let [` is a lookahead restriction, so sloppy-mode `let = 1` and `let in obj` are expressions.
-pub fn isLetIdentifier(parser: *Parser) Error!bool {
+/// Returns whether `let` begins an expression statement rather than a declaration. Only `let [`
+/// is a lookahead restriction, so sloppy-mode `let = 1` and `let in obj` are expressions.
+pub fn isLetIdentifier(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .let);
-
-    const next = parser.peekAhead();
-
-    return !canStartLetBinding(next.tag);
+    return !canStartLetBinding(parser.peekAhead().tag);
 }
 
-/// Returns whether the current `using` token is an `IdentifierReference` rather than a declaration keyword.
-pub fn isUsingIdentifier(parser: *Parser) Error!bool {
+/// Returns whether the current `using` is an `IdentifierReference`, not a declaration keyword.
+pub fn isUsingIdentifier(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .using);
 
     const next = parser.peekAhead();
@@ -235,9 +226,9 @@ pub fn isUsingIdentifier(parser: *Parser) Error!bool {
     return next.hasLineTerminatorBefore() or !canStartBindingIdentifier(next.tag);
 }
 
-/// Returns whether `await using x` on one line heads an `AwaitUsingDeclaration` in an [+Await] context.
+/// Returns whether `await using x` on one line heads an `AwaitUsingDeclaration` under [+Await].
 /// `await [no LineTerminator here] using [no LineTerminator here] Binding`
-pub fn isAwaitUsingDeclarationAhead(parser: *Parser) Error!bool {
+pub fn isAwaitUsingDeclarationAhead(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .await);
 
     if (!parser.context.await) return false;

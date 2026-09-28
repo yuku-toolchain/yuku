@@ -10,11 +10,9 @@ const extension = @import("extension.zig");
 
 pub const LexicalError = error{
     UnterminatedString,
-    UnterminatedRegex,
     NonTerminatedTemplateLiteral,
     UnterminatedRegexLiteral,
     InvalidRegexLineTerminator,
-    InvalidRegex,
     InvalidRegexFlag,
     DuplicateRegexFlag,
     IncompatibleRegexFlags,
@@ -30,7 +28,6 @@ pub const LexicalError = error{
     InvalidExponentPart,
     NumericSeparatorMisuse,
     ConsecutiveNumericSeparators,
-    MultipleDecimalPoints,
     InvalidBigIntSuffix,
     IdentifierAfterNumericLiteral,
     InvalidUtf8,
@@ -103,7 +100,7 @@ pub const Lexer = struct {
         allocator: std.mem.Allocator,
         source_type: ast.SourceType,
         collect_comments: bool,
-    ) error{OutOfMemory}!Lexer {
+    ) Lexer {
         std.debug.assert(source.len <= std.math.maxInt(u32));
 
         var self: Lexer = .{
@@ -225,8 +222,10 @@ pub const Lexer = struct {
         self.cursor = pos;
         const first = src[start];
         const len = pos - start;
-        const tag: TokenTag = if (first >= 'a' and first <= 'z' and len >= 2 and len <= 11)
-            self.getKeywordType(src[start..pos])
+        const is_keyword_candidate = first >= 'a' and first <= 'z' and
+            len >= keyword_length_min and len <= keyword_length_max;
+        const tag: TokenTag = if (is_keyword_candidate)
+            getKeywordType(src[start..pos])
         else
             .identifier;
         return self.createToken(tag, start, pos);
@@ -511,7 +510,6 @@ pub const Lexer = struct {
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
-        var closing_delimeter_pos: u32 = 0;
         self.cursor += 1;
         var in_class = false;
 
@@ -549,11 +547,9 @@ pub const Lexer = struct {
             }
             if (c == '/' and !in_class) {
                 self.cursor += 1;
-
-                closing_delimeter_pos = self.cursor;
+                const flags_start = self.cursor;
 
                 var flags_seen: u32 = 0;
-
                 while (true) {
                     const flag = self.peek(0);
                     if (!std.ascii.isAlphabetic(flag)) break;
@@ -562,39 +558,29 @@ pub const Lexer = struct {
                         'g', 'i', 'm', 's', 'u', 'y', 'd', 'v' => true,
                         else => false,
                     };
-
                     if (!is_valid_flag) {
                         return error.InvalidRegexFlag;
                     }
 
-                    const bit: u5 = @intCast(flag - 'a');
-
-                    if ((flags_seen & (@as(u32, 1) << bit)) != 0) {
+                    const flag_bit = @as(u32, 1) << @intCast(flag - 'a');
+                    if (flags_seen & flag_bit != 0) {
                         return error.DuplicateRegexFlag;
                     }
-
-                    flags_seen |= (@as(u32, 1) << bit);
+                    flags_seen |= flag_bit;
 
                     self.cursor += 1;
                 }
 
                 const u_bit = @as(u32, 1) << ('u' - 'a');
                 const v_bit = @as(u32, 1) << ('v' - 'a');
-
                 if (flags_seen & u_bit != 0 and flags_seen & v_bit != 0) {
                     return error.IncompatibleRegexFlags;
                 }
 
-                const end = self.cursor;
-
-                const pattern = self.source[start + 1 .. closing_delimeter_pos - 1];
-
-                const flags = self.source[closing_delimeter_pos..end];
-
                 return .{
-                    .span = .{ .start = start, .end = end },
-                    .pattern = pattern,
-                    .flags = flags,
+                    .span = .{ .start = start, .end = self.cursor },
+                    .pattern = self.source[start + 1 .. flags_start - 1],
+                    .flags = self.source[flags_start..self.cursor],
                 };
             }
 
@@ -1007,17 +993,17 @@ pub const Lexer = struct {
         else if (is_private)
             .private_identifier
         else if (has_escape)
-            self.getEscapedKeywordType(lexeme)
+            getEscapedKeywordType(lexeme)
         else
-            self.getKeywordType(lexeme);
+            getKeywordType(lexeme);
 
         return self.createToken(tag, start, self.cursor);
     }
 
-    fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
+    fn getEscapedKeywordType(lexeme: []const u8) TokenTag {
         @branchHint(.cold);
         std.debug.assert(lexeme.len > 0);
-        var buf: [11]u8 = undefined; // keyword_length_max
+        var buf: [keyword_length_max]u8 = undefined;
         var out: usize = 0;
         var i: usize = 0;
         while (i < lexeme.len) {
@@ -1035,40 +1021,8 @@ pub const Lexer = struct {
                 i += 1;
             }
         }
-        return self.getKeywordType(buf[0..out]);
+        return getKeywordType(buf[0..out]);
     }
-
-    const keyword_list = [_]struct { []const u8, TokenTag }{
-        .{ "if", .@"if" },                .{ "of", .of },                 .{ "in", .in },
-        .{ "do", .do },                   .{ "as", .as },                 .{ "is", .is },
-        .{ "any", .any },                 .{ "for", .@"for" },            .{ "get", .get },
-        .{ "let", .let },                 .{ "new", .new },               .{ "out", .out },
-        .{ "set", .set },                 .{ "try", .@"try" },            .{ "var", .@"var" },
-        .{ "case", .case },               .{ "this", .this },             .{ "else", .@"else" },
-        .{ "enum", .@"enum" },            .{ "void", .void },             .{ "with", .with },
-        .{ "null", .null_literal },       .{ "type", .type },             .{ "true", .true },
-        .{ "from", .from },               .{ "await", .await },           .{ "async", .async },
-        .{ "break", .@"break" },          .{ "const", .@"const" },        .{ "class", .class },
-        .{ "catch", .@"catch" },          .{ "defer", .@"defer" },        .{ "false", .false },
-        .{ "infer", .infer },             .{ "keyof", .keyof },           .{ "never", .never },
-        .{ "super", .super },             .{ "throw", .throw },           .{ "using", .using },
-        .{ "while", .@"while" },          .{ "yield", .yield },           .{ "assert", .assert },
-        .{ "bigint", .bigint },           .{ "delete", .delete },         .{ "export", .@"export" },
-        .{ "global", .global },           .{ "import", .import },         .{ "module", .module },
-        .{ "number", .number },           .{ "object", .object },         .{ "public", .public },
-        .{ "return", .@"return" },        .{ "string", .string },         .{ "symbol", .symbol },
-        .{ "switch", .@"switch" },        .{ "static", .static },         .{ "source", .source },
-        .{ "typeof", .typeof },           .{ "unique", .unique },         .{ "asserts", .asserts },
-        .{ "boolean", .boolean },         .{ "default", .default },       .{ "declare", .declare },
-        .{ "extends", .extends },         .{ "finally", .finally },       .{ "private", .private },
-        .{ "package", .package },         .{ "require", .require },       .{ "unknown", .unknown },
-        .{ "accessor", .accessor },       .{ "abstract", .abstract },     .{ "continue", .@"continue" },
-        .{ "debugger", .debugger },       .{ "function", .function },     .{ "override", .override },
-        .{ "readonly", .readonly },       .{ "interface", .interface },   .{ "intrinsic", .intrinsic },
-        .{ "namespace", .namespace },     .{ "protected", .protected },   .{ "satisfies", .satisfies },
-        .{ "undefined", .undefined },     .{ "instanceof", .instanceof }, .{ "implements", .implements },
-        .{ "constructor", .constructor },
-    };
 
     const keyword_length_min = 2;
     const keyword_length_max = 11;
@@ -1090,8 +1044,9 @@ pub const Lexer = struct {
     const keyword_table: [512]KeywordEntry = blk: {
         @setEvalBranchQuota(20_000);
         var t: [512]KeywordEntry = @splat(.{ .name = @splat(0), .len = 0, .tag = .identifier });
-        for (keyword_list) |kv| {
-            const name, const keyword_tag = kv;
+        for (std.enums.values(TokenTag)) |keyword_tag| {
+            if (!keyword_tag.isIdentifierLike()) continue;
+            const name = keyword_tag.toString() orelse continue;
             std.debug.assert(name.len >= keyword_length_min);
             std.debug.assert(name.len <= keyword_length_max);
             const h = keywordHash(name[0], name[1], name[name.len - 1], name.len);
@@ -1103,7 +1058,7 @@ pub const Lexer = struct {
         break :blk t;
     };
 
-    fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
+    fn getKeywordType(lexeme: []const u8) TokenTag {
         if (lexeme.len < keyword_length_min or lexeme.len > keyword_length_max) {
             return .identifier;
         }
@@ -1287,7 +1242,7 @@ pub const Lexer = struct {
         return switch (cp) {
             '\u{FEFF}',
             '\u{00A0}',
-            // U+0085 NEXT LINE is not WhiteSpace in the spec, but tsc scans it as a space (not a line break, so no ASI)
+            // not WhiteSpace in the spec, but tsc scans NEL as a space and not a line break
             '\u{0085}',
             '\u{2000}',
             '\u{2001}'...'\u{200A}',
@@ -1398,11 +1353,11 @@ pub const Lexer = struct {
             else => 2,
         };
         const tail: u32 = if (@"type" == .block) 2 else 0;
-        self.comments.append(self.allocator, .{
+        try self.comments.append(self.allocator, .{
             .type = @"type",
             .value = .{ .start = start + head, .end = end - tail },
             .span = .{ .start = start, .end = end },
-        }) catch return error.OutOfMemory;
+        });
     }
 
     fn scanLineComment(self: *Lexer) LexicalError!void {
@@ -1459,18 +1414,14 @@ pub const Lexer = struct {
                 else => pos += 1,
             }
         }
-        // multi-line body: vectorized search for the two-byte '*/'
-        // sequence (star and slash masks combined per lane). line leads
-        // are " * ", star without a slash, so they never restart the
-        // scan. windows overlap by one byte to catch a straddling '*/'.
+        // past the first line, search 16 bytes at a time with windows overlapping by one byte
+        // so a `*/` straddling two windows is still found
         var w = pos - 1;
         while (w + 16 <= src.len) {
             const v: @Vector(16, u8) = src[w..][0..16].*;
-            var stars: @Vector(16, bool) = @splat(false);
-            var slashes: @Vector(16, bool) = @splat(false);
-            stars = stars | (v == @as(@Vector(16, u8), @splat('*')));
-            slashes = slashes | (v == @as(@Vector(16, u8), @splat('/')));
-            const ends: u16 = @as(u16, @bitCast(stars)) & (@as(u16, @bitCast(slashes)) >> 1);
+            const stars: u16 = @bitCast(v == @as(@Vector(16, u8), @splat('*')));
+            const slashes: u16 = @bitCast(v == @as(@Vector(16, u8), @splat('/')));
+            const ends = stars & (slashes >> 1);
             if (ends != 0) {
                 self.cursor = @intCast(w + @ctz(ends) + 2);
                 try self.recordComment(.block, start, self.cursor);
@@ -1538,12 +1489,10 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
     return switch (error_type) {
         error.InvalidHexEscape => "Invalid hexadecimal escape sequence",
         error.UnterminatedString => "Unterminated string literal",
-        error.UnterminatedRegex => "Unterminated regular expression",
         error.NonTerminatedTemplateLiteral => "Unterminated template literal",
         error.UnterminatedRegexLiteral => "Unterminated regular expression literal",
         error.InvalidRegexLineTerminator => "Line terminator not allowed in regular expression" ++
             " literal",
-        error.InvalidRegex => "Invalid regular expression",
         error.InvalidRegexFlag => "Invalid regular expression flag",
         error.DuplicateRegexFlag => "Duplicate regular expression flag",
         error.IncompatibleRegexFlags => "The 'u' and 'v' regular expression flags cannot be" ++
@@ -1560,7 +1509,6 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.NumericSeparatorMisuse => "Numeric separator is only allowed between two digits",
         error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive" ++
             " separators",
-        error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
         error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
         error.IdentifierAfterNumericLiteral => "Identifier cannot immediately follow a" ++
             " numeric literal",
@@ -1577,15 +1525,12 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
     return switch (error_type) {
         error.InvalidHexEscape => "Try adding two hexadecimal digits here (e.g., \\x41 for 'A')",
         error.UnterminatedString => "Try adding a closing quote here to complete the string",
-        error.UnterminatedRegex => "Try adding a closing slash (/) here to complete the regex",
         error.NonTerminatedTemplateLiteral => "Try adding a closing backtick (`) here to" ++
             " complete the template",
         error.UnterminatedRegexLiteral => "Try adding a closing slash (/) here, optionally" ++
             " followed by flags (g, i, m, etc.)",
         error.InvalidRegexLineTerminator => "Try removing the line break here or escaping" ++
             " it within the regex pattern",
-        error.InvalidRegex => "Try checking the regex syntax here for unclosed groups," ++
-            " invalid escapes, or malformed patterns",
         error.InvalidRegexFlag => "Valid regex flags are: `g` (global), `i` (ignoreCase)," ++
             " `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices)," ++
             " `v` (setNotation)",
@@ -1614,7 +1559,6 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
             " or removing it",
         error.ConsecutiveNumericSeparators => "Try removing one of the consecutive underscores" ++
             " here",
-        error.MultipleDecimalPoints => "Try removing the extra decimal point here",
         error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal" ++
             " point/exponent from the number",
         error.IdentifierAfterNumericLiteral => "Try adding whitespace here between the number" ++

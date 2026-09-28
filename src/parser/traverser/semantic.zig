@@ -3,9 +3,9 @@ const ast = @import("../ast.zig");
 const wk = @import("walk.zig");
 const sc = @import("../semantic/scope.zig");
 const bi = @import("../semantic/binder.zig");
-const NodePath = wk.NodePath;
 
 const Allocator = std.mem.Allocator;
+const NodePath = wk.NodePath;
 
 pub const Scope = sc.Scope;
 pub const ScopeId = sc.ScopeId;
@@ -21,7 +21,7 @@ pub const SymbolTracker = bi.SymbolTracker;
 /// Walk context combining the path stack, scope tracker, and symbol tracker.
 pub const Ctx = struct {
     tree: *const ast.Tree,
-    path: wk.NodePath = .{},
+    path: NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
     type_position_depth: u32 = 0,
@@ -47,6 +47,12 @@ pub const Ctx = struct {
         return self.type_position_depth > 0;
     }
 
+    /// The parent of `node`, or `null` at the root.
+    pub inline fn parentOf(self: *const Ctx, node: ast.NodeIndex) ?ast.NodeIndex {
+        const parent = self.node_parents[@intFromEnum(node)];
+        return if (parent != .null) parent else null;
+    }
+
     /// True when the walker is currently inside a TS namespace body.
     pub inline fn inTsNamespace(self: *const Ctx) bool {
         var it = self.scope.ancestors(self.scope.current);
@@ -58,14 +64,15 @@ pub const Ctx = struct {
 
     pub inline fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
-        try self.scope.enter(index, self.path.parent() orelse .null, data);
+        const parent = self.path.parent() orelse .null;
+        try self.scope.enter(index, parent, data);
 
         self.node_scopes[@intFromEnum(index)] = self.scope.current;
-        self.node_parents[@intFromEnum(index)] = self.path.parent() orelse .null;
+        self.node_parents[@intFromEnum(index)] = parent;
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 
-        try self.symbols.setBindingContext(data, self.path.parent() orelse .null, &self.scope);
+        try self.symbols.setBindingContext(data, parent, &self.scope);
     }
 
     pub inline fn post_enter(
@@ -118,30 +125,24 @@ pub fn refSpace(
             .ts_qualified_name => {
                 qualified_left = true;
                 child = parent;
+                continue;
             },
             // computed keys of type members are value positions
             //   interface I { [key]: string }
             //   //             ^ resolves as typeof, not type
-            .ts_property_signature => |sig| {
+            inline .ts_property_signature, .ts_method_signature => |sig| {
                 if (sig.computed and sig.key == child) return .typeof;
-                return if (!in_type_position) .value else if (qualified_left) .namespace else .type;
-            },
-            .ts_method_signature => |sig| {
-                if (sig.computed and sig.key == child) return .typeof;
-                return if (!in_type_position) .value else if (qualified_left) .namespace else .type;
             },
             .ts_type_query => return .typeof,
             .export_specifier => |s| return if (s.local == child) .any else .value,
-            .export_default_declaration => return .any,
-            .ts_export_assignment => return .any,
-            .ts_import_equals_declaration => return .any,
-            else => return if (!in_type_position)
-                .value
-            else if (qualified_left)
-                .namespace
-            else
-                .type,
+            .export_default_declaration,
+            .ts_export_assignment,
+            .ts_import_equals_declaration,
+            => return .any,
+            else => {},
         }
+        if (!in_type_position) return .value;
+        return if (qualified_left) .namespace else .type;
     }
     return .value;
 }
@@ -158,10 +159,8 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
             .assignment_expression => |a| return a.left == child,
             .update_expression => |u| return u.argument == child,
             // the declaration form's leaves are binding identifiers, never references
-            .for_in_statement => |f| return f.left == child,
-            .for_of_statement => |f| return f.left == child,
-            .array_pattern => child = parent,
-            .object_pattern => child = parent,
+            inline .for_in_statement, .for_of_statement => |f| return f.left == child,
+            .array_pattern, .object_pattern => child = parent,
             // computed keys are reads
             .binding_property => |bp| {
                 if (bp.value != child) return false;
@@ -177,17 +176,8 @@ pub fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
                 child = parent;
             },
             // transparent wrappers such as `(a) += 1` and `a!++`
-            .parenthesized_expression => child = parent,
-            .ts_non_null_expression => child = parent,
-            .ts_as_expression => |e| {
-                if (e.expression != child) return false;
-                child = parent;
-            },
-            .ts_satisfies_expression => |e| {
-                if (e.expression != child) return false;
-                child = parent;
-            },
-            .ts_type_assertion => |e| {
+            .parenthesized_expression, .ts_non_null_expression => child = parent,
+            inline .ts_as_expression, .ts_satisfies_expression, .ts_type_assertion => |e| {
                 if (e.expression != child) return false;
                 child = parent;
             },

@@ -1,4 +1,3 @@
-const std = @import("std");
 const ast = @import("../../../ast.zig");
 const Parser = @import("../../../parser.zig").Parser;
 const Error = @import("../../../parser.zig").Error;
@@ -151,10 +150,9 @@ fn consumeAngleClose(
 // const in out T extends U = V
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
     var flags: struct { @"const": bool = false, in: bool = false, out: bool = false } = .{};
     var step: u8 = 0;
-    var start: u32 = parser.current_token.span.start;
-    var start_set = false;
 
     // a modifier only when a name follows, else `<out>` is a parameter named out
     while (true) {
@@ -189,18 +187,12 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
         seen_ptr.* = true;
         step = @max(step, this_step);
 
-        if (!start_set) {
-            start = token.span.start;
-            start_set = true;
-        }
-
         try parser.advance() orelse return null;
     }
 
     const name_token = parser.current_token;
     const name = try literals.parseBindingIdentifier(parser) orelse return null;
 
-    if (!start_set) start = name_token.span.start;
     var end = name_token.span.end;
 
     var constraint: ast.NodeIndex = .null;

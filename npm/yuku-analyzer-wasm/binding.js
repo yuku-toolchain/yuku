@@ -32,7 +32,7 @@ export default {
     const bytes = typeof source === "string" ? _enc.encode(source) : source;
     const srcLen = bytes.length;
     const srcPtr = alloc(srcLen || 1);
-    // Growing wasm memory detaches memory.buffer, so re-view after every call.
+    // growing wasm memory detaches memory.buffer, so re-view after every call
     new Uint8Array(memory.buffer, srcPtr, srcLen).set(bytes);
 
     const ptr = analyze(srcPtr, srcLen, packFlags(options));

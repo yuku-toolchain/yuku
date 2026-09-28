@@ -14,7 +14,7 @@ const extension = @import("../extension.zig");
 /// Parses `for`, `for-in`, `for-of`, and `for await` statements.
 /// https://tc39.es/ecma262/#sec-for-statement
 /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
-pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeIndex {
+pub fn parseForStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"for");
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'for'
@@ -36,7 +36,7 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
     }
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'for'", null)) return null;
-    return parseForHead(parser, start, is_for_await);
+    return parseForHead(parser, start, false);
 }
 
 fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
@@ -59,9 +59,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             return parseForWithDeclaration(parser, start, is_for_await, kind, decl_start);
         },
         .let => {
-            const next = parser.peekAhead();
-
-            if (!variables.canStartLetBinding(next.tag)) {
+            if (variables.isLetIdentifier(parser)) {
                 return parseForWithExpression(parser, start, is_for_await);
             }
 
@@ -100,9 +98,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
         },
         .await => {
-            const is_declaration = try variables.isAwaitUsingDeclarationAhead(parser);
-
-            if (!is_declaration) {
+            if (!variables.isAwaitUsingDeclarationAhead(parser)) {
                 return parseForWithExpression(parser, start, is_for_await);
             }
 

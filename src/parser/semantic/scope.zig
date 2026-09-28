@@ -57,9 +57,6 @@ pub const Scope = struct {
         ///
         ///   function f(a: T) { type T = {} }
         ///   //            ^ unresolved, T is local to the body
-        ///
-        /// 10.2.11 FunctionDeclarationInstantiation step 28
-        ///
         ///   function f(a = () => x) { var x }
         ///   //                        ^ invisible to the default's closure
         function_body,
@@ -265,8 +262,6 @@ pub const ScopeTracker = struct {
                 if (self.currentScope().node != parent)
                     try self.pushScope(.block, parent, self.inheritStrictFlag());
             },
-            // tsc resolves unqualified member references inside the body
-            .ts_enum_body => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .for_statement,
             .for_in_statement,
             .for_of_statement,
@@ -281,6 +276,8 @@ pub const ScopeTracker = struct {
             .ts_index_signature,
             .ts_mapped_type,
             .ts_conditional_type,
+            // tsc resolves unqualified member references inside the body
+            .ts_enum_body,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             .class => |cls| {
@@ -322,23 +319,13 @@ pub const ScopeTracker = struct {
     // parameter is visited
     fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
         if (body_index == .null) return false;
-
         const body = self.tree.data(body_index);
-
         if (body != .function_body) return false;
-
-        const function_body = body.function_body;
-
-        for (self.tree.extra(function_body.body)) |s| {
-            const d = self.tree.data(s);
-
-            if (d != .directive) break;
-
-            if (std.mem.eql(u8, self.tree.string(d.directive.value), "use strict")) {
-                return true;
-            }
+        for (self.tree.extra(body.function_body.body)) |statement| {
+            const data = self.tree.data(statement);
+            if (data != .directive) break;
+            if (std.mem.eql(u8, self.tree.string(data.directive.value), "use strict")) return true;
         }
-
         return false;
     }
 

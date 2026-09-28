@@ -2,11 +2,8 @@ const std = @import("std");
 const parser = @import("parser");
 const helpers = @import("../helpers.zig");
 
-const ast = parser.ast;
-const semantic = parser.semantic;
-const sc = parser.traverser.scoped;
-const ScopeId = sc.ScopeId;
-const Scope = sc.Scope;
+const Scope = parser.traverser.scoped.Scope;
+const ScopeId = parser.traverser.scoped.ScopeId;
 
 const testing = std.testing;
 
@@ -36,7 +33,7 @@ test "scopeOf maps scope-creating nodes to the scope they create" {
     var a = try analyze("function f() {}", .{});
     defer a.deinit();
 
-    const func_node = try a.nthNode(.function, 0);
+    const func_node = try a.firstNode(.function);
     const func_scope = a.sem.scope(a.sem.scopeOf(func_node));
     try testing.expectEqual(Scope.Kind.function, func_scope.kind);
     try testing.expectEqual(func_node, func_scope.node);
@@ -58,7 +55,7 @@ test "Scope.Kind.isHoistTarget matches the spec hoist boundaries" {
 
 test "nesting deeper than the path capacity analyzes without a parent" {
     const source = ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }";
-    var result = try helpers.analyzeAllowErrors(std.testing.allocator, source, .{});
+    var result = try helpers.analyzeAllowErrors(testing.allocator, source, .{});
     defer result.deinit();
-    try std.testing.expect(result.sem.scopes.list.len >= 2);
+    try testing.expect(result.sem.scopes.list.len >= 2);
 }

@@ -360,7 +360,7 @@ export class Module {
     return parent < 0 ? null : this.#r.nodeOf(parent);
   }
 
-  // mirrors reference resolution: a binding outside the space does not
+  // mirrors reference resolution. a binding outside the space does not
   // shadow, "any" matches by name alone, and a value-position arguments
   // lookup stops where the implicit arguments object shadows
   resolve(name, from = this.rootScope, space = "value") {

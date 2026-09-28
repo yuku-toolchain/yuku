@@ -1,3 +1,4 @@
+const std = @import("std");
 const Parser = @import("parser.zig").Parser;
 const Error = @import("parser.zig").Error;
 const ast = @import("ast.zig");
@@ -12,7 +13,12 @@ pub fn reportCoverInitializedNames(parser: *Parser) Error!void {
         if (data != .object_property) continue;
         const prop = data.object_property;
         if (!prop.shorthand or !isCoverInitializedName(parser, prop.value)) continue;
-        try reportCoverInitializedNameError(parser, @enumFromInt(i));
+        try parser.report(
+            parser.tree.span(@enumFromInt(i)),
+            "Shorthand property cannot have a default value in object expression",
+            .{ .help = "Use '{ a: a = 1 }' syntax or this is only valid in destructuring" ++
+                " patterns." },
+        );
     }
 }
 
@@ -20,14 +26,6 @@ pub fn reportCoverInitializedNames(parser: *Parser) Error!void {
 pub inline fn isCoverInitializedName(parser: *Parser, node: ast.NodeIndex) bool {
     const data = parser.tree.data(node);
     return data == .assignment_expression and data.assignment_expression.operator == .assign;
-}
-
-pub inline fn reportCoverInitializedNameError(parser: *Parser, node: ast.NodeIndex) Error!void {
-    try parser.report(
-        parser.tree.span(node),
-        "Shorthand property cannot have a default value in object expression",
-        .{ .help = "Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns." },
-    );
 }
 
 /// Whether a comma directly follows `node` in the source.
@@ -51,19 +49,21 @@ pub fn expressionToPattern(
     expr: ast.NodeIndex,
     comptime context: PatternContext,
 ) Error!void {
-    // the `.assignable` pass stripped a legal `(a) = b` paren that is illegal here
-    if (context == .binding and parser.state.stripped_paren == expr) {
-        try parser.report(
-            parser.tree.span(expr),
-            "Parentheses are not allowed in this binding pattern",
-            .{ .help = "Remove the extra parentheses. Binding patterns can only be" ++
-                " identifiers, destructuring patterns, or assignment patterns, not" ++
-                " parenthesized expressions." },
-        );
-        return;
-    }
-
     const data = parser.tree.data(expr);
+
+    if (context == .binding) {
+        // including a paren the `.assignable` pass stripped from a legal `(a) = b`
+        if (data == .parenthesized_expression or parser.state.stripped_paren == expr) {
+            try parser.report(
+                parser.tree.span(expr),
+                "Parentheses are not allowed in this binding pattern",
+                .{ .help = "Remove the extra parentheses. Binding patterns can only be" ++
+                    " identifiers, destructuring patterns, or assignment patterns, not" ++
+                    " parenthesized expressions." },
+            );
+            return;
+        }
+    }
 
     switch (data) {
         .identifier_reference => |id| {
@@ -176,16 +176,7 @@ pub fn expressionToPattern(
         },
 
         .parenthesized_expression => |paren| {
-            if (context != .assignable) {
-                try parser.report(
-                    parser.tree.span(expr),
-                    "Parentheses are not allowed in this binding pattern",
-                    .{ .help = "Remove the extra parentheses. Binding patterns can only be" ++
-                        " identifiers, destructuring patterns, or assignment patterns, not" ++
-                        " parenthesized expressions." },
-                );
-                return;
-            }
+            std.debug.assert(context == .assignable);
 
             if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
@@ -216,13 +207,10 @@ pub fn expressionToPattern(
 
         .binding_identifier => {},
 
-        // `.binding` re-descends every target already converted at `=` under `.assignable` rules
-        //
-        //   ([a.b] = []) => {}
-        //   at `=`  : valid as an assignment, the array becomes array_pattern
-        //   at `=>` : the same node is now a parameter, where `a.b` is
-        //             illegal, a stripped `(a)` is illegal, and `a` must
-        //             become a declaring binding_identifier
+        // `.binding` re-descends every target already converted at `=` under `.assignable`
+        // rules. in `([a.b] = []) => {}` the array becomes an array_pattern at `=`, then at
+        // `=>` it is a parameter where `a.b` and a stripped `(a)` are illegal and `a` must
+        // become a declaring binding_identifier
         .assignment_pattern => |pattern| if (context == .binding) {
             try expressionToPattern(parser, pattern.left, context);
         },

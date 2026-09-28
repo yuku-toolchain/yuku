@@ -1,6 +1,6 @@
-import { readdir, rm, stat, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import Bun from "bun";
 
 const TEST_SUITE_REPO_URL = "https://github.com/yuku-toolchain/parser-test-suite";
 const INCLUDE_FOLDERS = ["js", "jsx", "ts"];
@@ -38,16 +38,7 @@ function resolveRemoteRev(): RevResult {
   return /^[0-9a-f]{40}$/.test(sha) ? { kind: "ok", sha } : { kind: "missing-ref" };
 }
 
-async function exists(target: string): Promise<boolean> {
-  try {
-    await stat(target);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const haveSuite = await exists(dest);
+const haveSuite = existsSync(dest);
 const localRev = await Bun.file(revPath)
   .text()
   .then((text) => text.trim())
@@ -76,7 +67,7 @@ if (haveSuite && localRev === wanted) {
 }
 
 if (haveSuite) {
-  console.log(localRev ? "\nsuite changed upstream, re-downloading" : "\nsuite revision unknown, re-downloading");
+  console.log(`\nsuite ${localRev ? "changed upstream" : "revision unknown"}, re-downloading`);
   await rm(dest, { recursive: true, force: true });
 }
 

@@ -51,7 +51,8 @@ fn scriptOpenAt(s: []const u8, i: usize) bool {
     return rest.len == 7 or std.ascii.isWhitespace(rest[7]) or rest[7] == '/' or rest[7] == '>';
 }
 
-/// Removes numeric separators, returning `raw` unchanged when it has none and null when `buf` is too small.
+/// Removes numeric separators. Returns `raw` unchanged when it has none and
+/// null when `buf` is too small.
 pub fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
     if (std.mem.findScalar(u8, raw, '_') == null) return raw;
     if (raw.len > buf.len) return null;
@@ -145,7 +146,8 @@ fn writeFixed(scratch: []u8, d: []const u8, exp: i64) ?[]const u8 {
     return scratch[0 .. 1 + f];
 }
 
-/// True when a block comment's continuation lines are all blank or `*`-prefixed, so re-indenting cannot disturb them.
+/// True when a block comment's continuation lines are all blank or
+/// `*`-prefixed, so re-indenting cannot disturb them.
 pub fn isJsdocBody(value: []const u8) bool {
     var it = std.mem.splitScalar(u8, value, '\n');
     _ = it.next(); // the first line follows `/*` and is never re-indented

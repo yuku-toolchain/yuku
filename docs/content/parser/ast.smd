@@ -5,9 +5,9 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
+The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index.
 
-The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs).
+Through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, the same tree becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs).
 
 - **JavaScript / JSX** is fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript** conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
@@ -17,9 +17,7 @@ Comments can be attached to the AST nodes they belong to, exposed as a flat offs
 On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
 
 ># [Building tools on the AST?]($block.attrs('tip'))
->The [traverser](/parser/traverse/) is the recommended way to work with the AST. It gives you ergonomic visitor hooks, scopes, symbols, and transforms, everything you need to walk, analyze, and rewrite the tree without managing indices yourself. Reach for it first when building lints, codemods, or any pass over the tree.
->
->This page covers the AST itself, the node types, their fields, and how to read them directly when you need to.
+>Reach for the [traverser](/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. This page covers the AST itself, its node types and fields, and how to read them directly.
 
 ## [Memory model]($section.id('memory-model'))
 
@@ -44,8 +42,10 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the enti
 | ------------- | ----------------------- | ---------------------------------------------------------- |
 | `root`        | `NodeIndex`             | Index of the root node (a `program`)                       |
 | `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints                              |
+| `comments`    | `[]const Comment`       | Flat comment list, empty unless collected. See [Comments](#comments) |
+| `tokens`      | `[]const Token`         | Consumed tokens, empty unless kept. See [Tokens](#tokens)  |
 | `source`      | `[]const u8`            | Original source text                                       |
-| `source_type` | `SourceType`            | `.script` or `.module`                                     |
+| `source_type` | `SourceType`            | `.script`, `.module`, or `.commonjs`                       |
 | `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                    |
 
 Everything else is reached through methods.
@@ -68,7 +68,7 @@ tree.addNode(data, span) // append a node, returns its NodeIndex
 tree.addString("x")      // intern text; sourceSlice(a, b) points into the source instead
 ```
 
-Every enum a node field holds also carries `toString()`, returning the construct's source text (`decl.kind.toString()` is `"const"`, `expr.operator.toString()` is `"==="`).
+Operator and keyword enums such as `VariableKind` and `BinaryOperator` carry `toString()`, returning the construct's source text (`decl.kind.toString()` is `"const"`, `expr.operator.toString()` is `"==="`).
 
 ## [Core types]($section.id('core-types'))
 
@@ -183,45 +183,30 @@ switch (tree.data(idx)) {
 }
 ```
 
-For tree-wide walks, use the [traverser](/parser/traverse/) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
+For tree-wide walks, use the [traverser](/parser/traverse/) instead of writing recursion by hand.
 
 ## [Predicates]($section.id('predicates'))
 
-Eight methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
+Eight methods on `NodeData` collapse a family of tags into a single boolean.
 
-| Method            | True for                                                                                                                                                                                                                                                                                                                                  |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isExpression()`  | Any node that produces a value at runtime, meaning literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers.                                                                                                                    |
-| `isStatement()`   | Any node valid at statement position, meaning control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included, expression forms are not.                                                                                                            |
-| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                                                           |
-| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                                                       |
-| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                                                            |
+| Method            | True for |
+| ----------------- | -------- |
+| `isExpression()`  | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers. |
+| `isStatement()`   | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included, expression forms are not. |
+| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`. |
+| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field. |
+| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`. |
 | `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
-| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                                                         |
-| `isTypeContext()` | Any node that roots a TypeScript type-only subtree, meaning type annotations, type references, function and constructor types, conditional and mapped types, type literals, interface heritage, and the various TS signatures. The semantic traverser uses this to drive its `inTypePosition()` context flag.                                     |
+| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. |
+| `isTypeContext()` | Any node that roots a TypeScript type-only subtree: type annotations, type references, function and constructor types, conditional and mapped types, type literals, interface heritage, and the TS signatures. The semantic traverser uses it for `inTypePosition()`. |
 
-For dual-purpose nodes (`function` and `class`) the predicates consult the `type` field internally, so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
+For the dual-purpose `function` and `class` nodes, the predicates consult the `type` field, so `isExpression()` is true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms. For anything narrower, `switch` on the tag.
 
 ```zig
 const data = tree.data(idx);
 
-if (data.isExpression()) {
-    // any value-producing node
-}
-
 if (data.isCallable()) {
     // function or arrow_function_expression
-    // The body, params, etc. are still type-specific,
-    // so switch on the tag to access them.
-}
-```
-
-For anything narrower than these eight, `switch` directly.
-
-```zig
-switch (data) {
-    .arrow_function_expression => |arrow| { /* ... */ },
-    else => {},
 }
 ```
 
@@ -339,7 +324,7 @@ class_expression                    // const x = class {}
 
 ### [Identifiers]($section.id('identifiers'))
 
-Five tags, all carrying a single `name: String` field. They are structurally identical but appear in different syntactic positions and resolve differently.
+Five tags, each carrying a `name: String` field. They appear in different syntactic positions and resolve differently.
 
 | Tag                    | Used for                                                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -375,15 +360,15 @@ const foo = bar.baz;
 
 ```zig
 pub const Function = struct {
-    type: FunctionType,    // declaration, expression, or TS forms
-    id: NodeIndex,         // binding_identifier (.null for anonymous)
-    generator: bool,       // true for function*
-    async: bool,           // true for async function
-    declare: bool,         // true for declare function
-    params: NodeIndex,     // formal_parameters
-    body: NodeIndex,       // function_body (.null for TS overloads / abstract)
+    type: FunctionType,          // declaration, expression, or TS forms
+    id: NodeIndex,               // binding_identifier (.null for anonymous)
     type_parameters: NodeIndex,  // ts_type_parameter_declaration or .null
+    params: NodeIndex,           // formal_parameters
     return_type: NodeIndex,      // ts_type_annotation or .null
+    body: NodeIndex,             // function_body (.null for TS overloads / abstract)
+    generator: bool,             // true for function*
+    async: bool,                 // true for async function
+    declare: bool,               // true for declare function
 };
 ```
 
@@ -397,16 +382,16 @@ pub const Function = struct {
 
 ```zig
 pub const Class = struct {
-    type: ClassType,           // class_declaration or class_expression
-    decorators: IndexRange,    // decorator[] (empty if none)
-    id: NodeIndex,             // binding_identifier (.null for anonymous expressions)
-    super_class: NodeIndex,    // any expression (.null if no extends clause)
-    body: NodeIndex,           // class_body
-    type_parameters: NodeIndex,    // ts_type_parameter_declaration or .null
-    super_type_arguments: NodeIndex, // ts_type_parameter_instantiation or .null
-    implements: IndexRange,    // ts_class_implements[] (empty if none)
-    abstract: bool,            // true for abstract class
-    declare: bool,             // true for declare class
+    type: ClassType,                  // class_declaration or class_expression
+    decorators: IndexRange,           // decorator[] (empty if none)
+    id: NodeIndex,                    // binding_identifier (.null for anonymous expressions)
+    type_parameters: NodeIndex,       // ts_type_parameter_declaration or .null
+    super_class: NodeIndex,           // any expression (.null if no extends clause)
+    super_type_arguments: NodeIndex,  // ts_type_parameter_instantiation or .null
+    implements: IndexRange,           // ts_class_implements[] (empty if none)
+    body: NodeIndex,                  // class_body
+    abstract: bool,                   // true for abstract class
+    declare: bool,                    // true for declare class
 };
 ```
 
@@ -418,7 +403,6 @@ pub const Class = struct {
 | `property_definition` | A class field or auto-accessor declaration.               |
 | `static_block`        | A `static { ... }` initialization block inside a class.   |
 | `decorator`           | A decorator (`@expr`) applied to a class or class member. |
-| `super`               | The `super` keyword used as an expression head.           |
 
 ### [Modules]($section.id('modules'))
 

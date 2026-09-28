@@ -1,6 +1,6 @@
 import type { Node, NodeOfType, NodeType } from "@yuku-toolchain/types";
 import { ALIAS_GROUPS, type AliasMap, type AliasName } from "./aliases.js";
-import { WalkContext } from "./context.js";
+import { type Frame, WalkContext } from "./context.js";
 import { CHILD_KEYS } from "./generated.js";
 
 /** A visitor function for one node type or alias. */
@@ -136,7 +136,7 @@ function position(
   node: Node,
   key: string | null,
   list: Node[] | null,
-  frame: { i: number } | null,
+  frame: Frame | null,
 ): void {
   ctx._node = node;
   ctx._key = key;
@@ -149,7 +149,7 @@ function applyReplace(
   parent: Node | null,
   key: string | null,
   list: Node[] | null,
-  frame: { i: number } | null,
+  frame: Frame | null,
 ): Node {
   const next = ctx._replacement!;
   ctx._replacement = null;
@@ -163,7 +163,7 @@ function applyRemove(
   parent: Node | null,
   key: string | null,
   list: Node[] | null,
-  frame: { i: number } | null,
+  frame: Frame | null,
 ): void {
   ctx._removed = false;
   if (list !== null) {
@@ -188,7 +188,7 @@ export function _walk(
     node: Node,
     key: string | null,
     list: Node[] | null,
-    frame: { i: number } | null,
+    frame: Frame | null,
   ): boolean {
     let typed = d.typed(node.type);
     const parent = ctx.parent;
@@ -272,7 +272,7 @@ export async function _walkAsync(
     node: Node,
     key: string | null,
     list: Node[] | null,
-    frame: { i: number } | null,
+    frame: Frame | null,
   ): Promise<boolean> {
     let typed = d.typed(node.type);
     const parent = ctx.parent;

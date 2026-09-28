@@ -2,7 +2,7 @@
 //!
 //!   alloc(len)               -> ptr   buffer for the source bytes
 //!   analyze(ptr, len, flags) -> ptr   length-prefixed analyzer buffer
-//!                                     `[u32 N][N bytes]` (v7 AST sections
+//!                                     `[u32 N][N bytes]` (AST sections
 //!                                     plus semantic sections), or 0
 //!   free(ptr, len)           -> void
 

@@ -48,9 +48,9 @@ describe("write detection in loop heads", () => {
 
 describe("string pool", () => {
   test("a lone surrogate in a module specifier round-trips", () => {
-    // an escaped surrogate cannot be sliced from source, so it crosses the
-    // wire through the WTF-8 string pool and the decoder must rebuild it.
-    // built via fromCharCode so the source file holds no raw surrogate.
+    // an escaped surrogate cannot be sliced from source, so it crosses the wire through the
+    // WTF-8 string pool and the decoder must rebuild it. fromCharCode keeps a raw surrogate out
+    // of this file
     const surrogate = String.fromCharCode(0xd800);
     const module = new Analyzer().addFile(
       "input.js",

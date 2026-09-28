@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       57/57 (100.00%)
+Passed:       60/60 (100.00%)
 Failed:       0
-AST mismatch: 0/57
+AST mismatch: 0/60
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -67,6 +67,17 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/misc/js/await-id-in-non-async-arrow-function.js
 ✓ test/parser/misc/js/await-using-contexts.js
+✓ test/parser/misc/js/await-using-lexical-error.module.js
+error: Identifier cannot immediately follow a numeric literal
+   |
+ 2 | 
+ 3 | await using 1x;
+   |              ^
+ 4 | 
+   |
+   = help: Try adding whitespace here between the number and identifier
+
+
 ✓ test/parser/misc/js/bigint-class-property-key.js
 ✓ test/parser/misc/js/bigint-object-key.js
 ✓ test/parser/misc/js/binary-literal-with-separator.js
@@ -189,6 +200,27 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/misc/js/let-identifier-contexts.js
+✓ test/parser/misc/js/lookahead-keyword-lexical-error.js
+error: Identifier cannot immediately follow a numeric literal
+   |
+ 8 | 
+ 9 | function f() { let 1x; return 42; }
+   |                     ^
+10 | let 1x;
+   |
+   = help: Try adding whitespace here between the number and identifier
+
+
+✓ test/parser/misc/js/module-for-in-initializer.module.js
+error: for-in loop variable declaration may not have an initializer
+   |
+ 1 | for (var a = 1 in b);
+   |          ^^^^^
+ 2 | 
+   |
+   = help: Remove the initializer from the loop variable.
+
+
 ✓ test/parser/misc/js/octal-literal-with-separator.js
 ✓ test/parser/misc/js/rest-trailing-comma-nested.js
 error: Rest element cannot have a trailing comma in array destructuring.

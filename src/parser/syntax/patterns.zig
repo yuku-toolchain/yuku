@@ -49,8 +49,6 @@ fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(left != .null);
-    const start = parser.tree.span(left).start;
-
     if (parser.current_token.tag != .assign) return left;
 
     try parser.advance() orelse return null;
@@ -60,7 +58,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     return try parser.tree.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
-        .{ .start = start, .end = parser.tree.span(right).end },
+        .{ .start = parser.tree.span(left).start, .end = parser.tree.span(right).end },
     );
 }
 

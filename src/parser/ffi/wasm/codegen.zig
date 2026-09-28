@@ -1,6 +1,6 @@
-//! Freestanding WebAssembly codegen entry point for the playground.
+//! Freestanding WebAssembly codegen entry point.
 //!
-//!   alloc(len)              -> ptr   buffer for the v7 AST bytes
+//!   alloc(len)              -> ptr   buffer for the AST bytes
 //!   codegen(ptr, len, opts) -> ptr   generated source `[u32 N][N bytes]`, or 0
 //!                                    opts packed: bit 0 strip, bit 1 minify,
 //!                                    bit 2 compact, bits 3-4 quotes

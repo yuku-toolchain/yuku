@@ -7,15 +7,15 @@ const Precedence = @import("../token.zig").Precedence;
 const grammar = @import("../grammar.zig");
 const expressions = @import("expressions.zig");
 
-/// Elements parsed by the array cover grammar, before classification as an expression or a pattern.
+/// Elements parsed by the array cover grammar, before they become an expression or a pattern.
 pub const ArrayCover = struct {
     elements: ast.IndexRange,
     start: u32,
     end: u32,
 };
 
-/// Parses an array literal permissively under the cover grammar that also covers ArrayAssignmentPattern.
-/// https://tc39.es/ecma262/#sec-array-initializer (covers ArrayAssignmentPattern)
+/// Parses an array literal permissively, covering ArrayAssignmentPattern as well.
+/// https://tc39.es/ecma262/#sec-array-initializer
 pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     const start = parser.current_token.span.start;
@@ -33,30 +33,12 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             continue;
         }
 
-        if (parser.current_token.tag == .spread) {
-            const spread_start = parser.current_token.span.start;
-            try parser.advance() orelse return null;
-            const argument = try expressions.parseExpression(
-                parser,
-                Precedence.Assignment,
-                .{},
-            ) orelse return null;
-            const spread_end = parser.tree.span(argument).end;
-            const spread = try parser.tree.addNode(
-                .{ .spread_element = .{ .argument = argument } },
-                .{ .start = spread_start, .end = spread_end },
-            );
-            try parser.scratch_cover.append(parser.allocator(), spread);
-            end = spread_end;
-        } else {
-            const element = try expressions.parseExpression(
-                parser,
-                Precedence.Assignment,
-                .{},
-            ) orelse return null;
-            try parser.scratch_cover.append(parser.allocator(), element);
-            end = parser.tree.span(element).end;
-        }
+        const element = if (parser.current_token.tag == .spread)
+            try expressions.parseSpreadElement(parser) orelse return null
+        else
+            try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        try parser.scratch_cover.append(parser.allocator(), element);
+        end = parser.tree.span(element).end;
 
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
@@ -97,8 +79,8 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 }
 
 /// Converts an array cover to an ArrayExpression.
-pub fn coverToExpression(parser: *Parser, cover: ArrayCover) Error!?ast.NodeIndex {
-    return try parser.tree.addNode(
+pub fn coverToExpression(parser: *Parser, cover: ArrayCover) Error!ast.NodeIndex {
+    return parser.tree.addNode(
         .{ .array_expression = .{ .elements = cover.elements } },
         .{ .start = cover.start, .end = cover.end },
     );
@@ -145,9 +127,7 @@ fn toArrayPatternImpl(
     for (elements, 0..) |elem, i| {
         if (elem == .null) continue;
 
-        const elem_data = parser.tree.data(elem);
-
-        if (elem_data == .spread_element) {
+        if (parser.tree.data(elem) == .spread_element) {
             if (i == elements_len - 1 and grammar.isFollowedByComma(parser, elem)) {
                 try parser.report(
                     span,

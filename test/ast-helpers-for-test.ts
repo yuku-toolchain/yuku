@@ -4,10 +4,9 @@ const BIG_INT_PREFIX = "(BigInt) ";
 const REGEXP_PREFIX = "(RegExp) ";
 const NUMBER_PREFIX = "(Number) ";
 const REGEXP_LITERAL = /^\/(.+)\/([dgimsuyv]*)$/;
+const TAB_WIDTH = 4;
 
-// JSON can't represent BigInt, RegExp, or non-finite number values natively,
-// so we use tagged strings in test snapshots to preserve them.
-
+// json has no bigint, regexp, or non-finite number, so snapshots store them as tagged strings
 export function serializeAstJson(obj: unknown, space?: string | number): string {
   return JSON.stringify(
     obj,
@@ -30,7 +29,7 @@ export function serializeAstJson(obj: unknown, space?: string | number): string 
   );
 }
 
-export function deserializeAstJson<T = unknown>(jsonString: string): T {
+export function deserializeAstJson(jsonString: string): unknown {
   return JSON.parse(jsonString, (_, value) => {
     if (typeof value === "object" && value !== null && typeof value.value === "bigint") {
       value.bigint = value.value.toString();
@@ -64,13 +63,14 @@ export function deserializeAstJson<T = unknown>(jsonString: string): T {
     }
 
     return value;
-  }) as T;
+  });
 }
 
-// compares two asts, ignoring what codegen legitimately normalizes: `start`,
-// `end`, `comments`, and `raw` on string/bigint/regexp literals (their cooked
-// value/flags are still compared). returns null when equivalent, else the path
-// of the first mismatch, e.g. `program.body[3].declarations[0].init: "a" != "b"`.
+/**
+ * Returns the path of the first difference between two ASTs, or null when they are equivalent.
+ * Ignores what codegen normalizes, which is `start`, `end`, `comments`, and the `raw` of string,
+ * bigint, and regexp literals.
+ */
 export function astDiffPath(a: unknown, b: unknown, path = "program"): string | null {
   if (a === b) return null;
   if (typeof a === "number" && Number.isNaN(a) && typeof b === "number" && Number.isNaN(b)) {
@@ -165,11 +165,11 @@ function offsetToPos(source: string, offset: number): Pos {
   return { line, col };
 }
 
-function expandTabs(text: string, tw = 4): string {
+function expandTabs(text: string): string {
   let out = "";
   for (const ch of text) {
     if (ch === "\t") {
-      out += " ".repeat(tw - (out.length % tw));
+      out += " ".repeat(TAB_WIDTH - (out.length % TAB_WIDTH));
     } else {
       out += ch;
     }
@@ -177,12 +177,12 @@ function expandTabs(text: string, tw = 4): string {
   return out;
 }
 
-function mapCol(text: string, col: number, tw = 4): number {
+function mapCol(text: string, col: number): number {
   let expanded = 0;
   const end = Math.min(col, text.length);
   for (let i = 0; i < end; i++) {
     if (text[i] === "\t") {
-      expanded += tw - (expanded % tw);
+      expanded += TAB_WIDTH - (expanded % TAB_WIDTH);
     } else {
       expanded++;
     }
@@ -353,12 +353,4 @@ export function formatDiagnostics(
   }
 
   return output.join("\n");
-}
-
-export function printDiagnostics(
-  source: string,
-  diagnostics: Diagnostic[],
-  filename: string,
-): void {
-  console.log(formatDiagnostics(source, diagnostics, filename));
 }

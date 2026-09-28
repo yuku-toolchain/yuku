@@ -85,9 +85,9 @@ pub fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
-        const right_brace = parser.current_token;
-        const rescan = parser.lexer.reScanTemplateContinuation(right_brace.span.start);
-        const template_token = rescan catch |e| {
+        const template_token = parser.lexer.reScanTemplateContinuation(
+            parser.current_token.span.start,
+        ) catch |e| {
             try parser.reportLexicalError(e);
             return null;
         };

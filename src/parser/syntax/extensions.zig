@@ -18,10 +18,10 @@ pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
     return try parser.flushToExtras(&parser.scratch_decorators, checkpoint);
 }
 
-pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
+fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .at);
     const start = parser.current_token.span.start;
-    if (!try parser.expect(.at, "Expected '@' to start a decorator", null)) return null;
+    try parser.advance() orelse return null; // consume '@'
 
     const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse
         return null;

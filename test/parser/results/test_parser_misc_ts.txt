@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       60/60 (100.00%)
+Passed:       62/62 (100.00%)
 Failed:       0
-AST mismatch: 0/60
+AST mismatch: 0/62
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -135,6 +135,16 @@ error: Computed property names are not allowed in enums
 ✓ test/parser/misc/ts/enum-declaration-line-terminator.ts
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
+✓ test/parser/misc/ts/for-in-initializer.ts
+error: for-in loop variable declaration may not have an initializer
+   |
+ 1 | for (var a = 1 in b);
+   |          ^^^^^
+ 2 | 
+   |
+   = help: Remove the initializer from the loop variable.
+
+
 ✓ test/parser/misc/ts/function-overloads.ts
 ✓ test/parser/misc/ts/import-type-clause-invalid.module.ts
 error: A type-only import can specify a default import or named bindings, but not both
@@ -182,6 +192,17 @@ error: An instantiation expression cannot be followed by a property access
 
 
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
+✓ test/parser/misc/ts/lookahead-keyword-lexical-error.ts
+error: Identifier cannot immediately follow a numeric literal
+   |
+ 6 | 
+ 7 | declare 1x
+   |          ^
+ 8 | const enum 1x {}
+   |
+   = help: Try adding whitespace here between the number and identifier
+
+
 ✓ test/parser/misc/ts/module-declaration-body.ts
 error: A namespace declaration requires a body
    |

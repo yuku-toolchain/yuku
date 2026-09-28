@@ -72,7 +72,7 @@ pub fn findPatternExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) ?ast
                     else => {},
                 }
             }
-            // BindingRestProperty is always `...BindingIdentifier` (15.1.2 ObjectBindingPattern productions)
+            // a BindingRestProperty is always `...BindingIdentifier`
             return null;
         },
         else => return null,

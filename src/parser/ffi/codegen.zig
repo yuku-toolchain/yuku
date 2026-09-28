@@ -13,7 +13,9 @@ pub fn generate(
     var tree = transfer.deserializeFromBuf(allocator, bytes, "") catch return error.DecodeFailed;
     defer tree.deinit();
 
-    return parser.codegen.generate(allocator, &tree, options);
+    var js_options = options;
+    if (js_options.source_map) |*source_map| source_map.utf16_offsets = true;
+    return parser.codegen.generate(allocator, &tree, js_options);
 }
 
 comptime {

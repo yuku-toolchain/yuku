@@ -71,15 +71,17 @@ function check(path: string, source: string): void {
   let ownedReferences = 0;
   for (const symbol of module.symbols) {
     for (const reference of symbol.references) {
-      if (reference.symbol !== symbol)
+      if (reference.symbol !== symbol) {
         note(violations.crossIndex, `${path}: ${symbol.name} back-ref`);
+      }
     }
     ownedReferences += symbol.references.length;
   }
   for (const scope of module.scopes) {
     for (const binding of scope.bindings) {
-      if (binding.scope !== scope)
+      if (binding.scope !== scope) {
         note(violations.crossIndex, `${path}: ${binding.name} scope back-ref`);
+      }
     }
   }
   const resolved = module.references.filter((r) => r.symbol !== null).length;
@@ -128,7 +130,10 @@ function check(path: string, source: string): void {
       walkOrder.set(node, walkOrder.size);
       const reference = ctx.reference;
       if (reference !== null && ctx.scope !== reference.scope) {
-        note(violations.scopeMatch, `${path}: ${reference.name} ctx ${ctx.scope.id} vs ref ${reference.scope.id}`);
+        note(
+          violations.scopeMatch,
+          `${path}: ${reference.name} ctx ${ctx.scope.id} vs ref ${reference.scope.id}`,
+        );
       }
       if (module.parentOf(node) !== (ctx.parent ?? null)) {
         note(violations.parentMatch, `${path}: ${node.type} parentOf disagrees with ctx.parent`);

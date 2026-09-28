@@ -5,8 +5,22 @@ const parser = @import("parser");
 
 const Writer = std.Io.Writer;
 
-/// parses `js`, prints it minified
-pub fn minified(allocator: std.mem.Allocator, w: *Writer, js: []const u8) !void {
+/// Runs `generate` and prints the JS it writes to stdout, minified.
+pub fn minifiedToStdout(io: std.Io, generate: *const fn (*Writer) Writer.Error!void) !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    var generated: Writer.Allocating = .init(allocator);
+    try generate(&generated.writer);
+
+    var buf: [64 * 1024]u8 = undefined;
+    var stdout = std.Io.File.stdout().writer(io, &buf);
+    try minified(allocator, &stdout.interface, generated.written());
+    try stdout.interface.flush();
+}
+
+fn minified(allocator: std.mem.Allocator, w: *Writer, js: []const u8) !void {
     var tree = try parser.parse(allocator, js, .{});
     defer tree.deinit();
     if (tree.hasErrors()) return error.GeneratedJsDoesNotParse;

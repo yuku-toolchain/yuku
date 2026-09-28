@@ -104,18 +104,12 @@ fn walkStructFields(
     return .proceed;
 }
 
-/// Wraps a visitor so the context's `enter`, optional `post_enter`, and
-/// `exit` run around the user hooks at each node.
-///
-///   1. `ctx.enter(index, data)`       - before user hooks (push path/scopes)
-///   2. dispatch to inner visitor      - user's hooks fire here
-///   3. `ctx.post_enter(index, data)`  - after user hooks, before children
-///                                       (e.g. declare symbols, so users see
-///                                       the scope state before the declaration)
-///   ... walk children ...
-///   4. dispatch to inner visitor      - user's exit hooks fire
-///   5. `ctx.exit(data)`               - after user hooks (pop path/scopes)
+/// Wraps a visitor so the context's hooks run around the user hooks at each
+/// node. `ctx.enter` runs before the user's enter hooks, the optional
+/// `ctx.post_enter` after them and before the children, and `ctx.exit` after
+/// the user's exit hooks.
 pub fn Layer(comptime C: type, comptime V: type) type {
+    comptime validateHooks(V);
     return struct {
         inner: *V,
 

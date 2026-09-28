@@ -275,7 +275,7 @@ const Collector = struct {
             .variable_declaration => |decl| {
                 for (self.tree.extra(decl.declarators)) |declarator| {
                     const id = self.tree.data(declarator).variable_declarator.id;
-                    try self.patternNames(id, type_only, 0);
+                    try self.patternNames(id, type_only);
                 }
             },
             .function => |func| {
@@ -301,33 +301,27 @@ const Collector = struct {
         self: *Collector,
         pattern: ast.NodeIndex,
         type_only: bool,
-        depth: u32,
     ) Allocator.Error!void {
-        std.debug.assert(depth < 256);
         if (pattern == .null) return;
 
         switch (self.tree.data(pattern)) {
             .binding_identifier => try self.exportLocal(pattern, type_only),
-            .assignment_pattern => |p| {
-                try self.patternNames(p.left, type_only, depth + 1);
-            },
-            .binding_rest_element => |p| {
-                try self.patternNames(p.argument, type_only, depth + 1);
-            },
+            .assignment_pattern => |p| try self.patternNames(p.left, type_only),
+            .binding_rest_element => |p| try self.patternNames(p.argument, type_only),
             .array_pattern => |p| {
                 for (self.tree.extra(p.elements)) |element| {
-                    try self.patternNames(element, type_only, depth + 1);
+                    try self.patternNames(element, type_only);
                 }
-                try self.patternNames(p.rest, type_only, depth + 1);
+                try self.patternNames(p.rest, type_only);
             },
             .object_pattern => |p| {
                 for (self.tree.extra(p.properties)) |property| {
                     if (self.tree.data(property) == .binding_property) {
                         const value = self.tree.data(property).binding_property.value;
-                        try self.patternNames(value, type_only, depth + 1);
+                        try self.patternNames(value, type_only);
                     }
                 }
-                try self.patternNames(p.rest, type_only, depth + 1);
+                try self.patternNames(p.rest, type_only);
             },
             else => {},
         }

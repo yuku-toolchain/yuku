@@ -221,12 +221,11 @@ fn parseJsxClosingElement(
 
     try parser.advance() orelse return null; // consume '<'
 
-    const slash_ok = try parser.expect(
+    if (!try parser.expect(
         .slash,
         "Expected '/' in JSX closing element",
         "Add '/' after '<' to close the element",
-    );
-    if (!slash_ok) return null;
+    )) return null;
 
     const name = try parseJsxElementName(parser) orelse return null;
 
@@ -381,8 +380,11 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .spread) {
         try parser.advance() orelse return null; // consume '...'
 
-        const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-            return null;
+        const expression = try expressions.parseExpression(
+            parser,
+            Precedence.Assignment,
+            .{},
+        ) orelse return null;
         const end = try expectJsxChildRightBrace(parser, "JSX spread") orelse return null;
 
         return try parser.tree.addNode(
@@ -463,42 +465,15 @@ fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
 // https://facebook.github.io/jsx/#prod-JSXAttributeName
 fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    var name = try parser.tree.addNode(.{
-        .jsx_identifier = .{
-            .name = try parser.identifierName(parser.current_token),
-        },
-    }, parser.current_token.span);
+    const name = try parseJsxIdentifier(parser) orelse return null;
+    if (parser.current_token.tag != .colon) return name;
 
-    try parser.advance() orelse return null;
-
-    if (parser.current_token.tag == .colon) {
-        try parser.advance() orelse return null; // consume ':'
-
-        if (parser.current_token.tag != .jsx_identifier) {
-            try parser.reportExpected(
-                parser.current_token.span,
-                "Expected identifier after ':' in namespaced attribute",
-                .{ .help = "Namespaced attributes must have the form 'namespace:name'" },
-            );
-            return null;
-        }
-
-        const local = try parser.tree.addNode(.{
-            .jsx_identifier = .{
-                .name = try parser.identifierName(parser.current_token),
-            },
-        }, parser.current_token.span);
-        const end = parser.current_token.span.end;
-
-        try parser.advance() orelse return null;
-
-        name = try parser.tree.addNode(.{
-            .jsx_namespaced_name = .{ .namespace = name, .name = local },
-        }, .{ .start = start, .end = end });
-    }
-
-    return name;
+    return parseJsxNamespacedName(
+        parser,
+        name,
+        "Expected identifier after ':' in namespaced attribute",
+        "Namespaced attributes must have the form 'namespace:name'",
+    );
 }
 
 // https://facebook.github.io/jsx/#prod-JSXAttributeValue
@@ -567,12 +542,11 @@ fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
     // restore jsx_tag before `}` so the next attribute is scanned in tag mode
     enterJsxTag(parser);
 
-    const brace_ok = try parser.expect(
+    if (!try parser.expect(
         .right_brace,
         "Expected '}' to close JSX expression",
         "Add '}' to close the expression",
-    );
-    if (!brace_ok) return null;
+    )) return null;
 
     return try parser.tree.addNode(
         .{ .jsx_expression_container = .{ .expression = expression } },
@@ -588,12 +562,11 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume '{'
 
-    const spread_ok = try parser.expect(
+    if (!try parser.expect(
         .spread,
         "Expected '...' after '{' in JSX spread",
         "Add '...' to spread the expression",
-    );
-    if (!spread_ok) return null;
+    )) return null;
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
@@ -601,12 +574,11 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     enterJsxTag(parser);
 
-    const brace_ok = try parser.expect(
+    if (!try parser.expect(
         .right_brace,
         "Expected '}' to close JSX spread",
         "Add '}' to close the spread expression",
-    );
-    if (!brace_ok) return null;
+    )) return null;
 
     return try parser.tree.addNode(
         .{ .jsx_spread_attribute = .{ .argument = expression } },
@@ -627,15 +599,17 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     const start = parser.current_token.span.start;
-    var name = try parser.tree.addNode(.{
-        .jsx_identifier = .{
-            .name = try parser.identifierName(parser.current_token),
-        },
-    }, parser.current_token.span);
+    var name = try parseJsxIdentifier(parser) orelse return null;
 
-    try parser.advance() orelse return null;
+    if (parser.current_token.tag == .colon) {
+        return parseJsxNamespacedName(
+            parser,
+            name,
+            "Expected identifier after ':' in namespaced element name",
+            "Namespaced element names must have the form 'namespace:name'",
+        );
+    }
 
-    var is_member = false;
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null; // consume '.'
 
@@ -648,46 +622,42 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
-        is_member = true;
-        const property = try parser.tree.addNode(.{
-            .jsx_identifier = .{
-                .name = try parser.identifierName(parser.current_token),
-            },
-        }, parser.current_token.span);
-        const end = parser.current_token.span.end;
-
-        try parser.advance() orelse return null;
-
+        const property = try parseJsxIdentifier(parser) orelse return null;
         name = try parser.tree.addNode(.{
             .jsx_member_expression = .{ .object = name, .property = property },
-        }, .{ .start = start, .end = end });
-    }
-
-    if (parser.current_token.tag == .colon and !is_member) {
-        try parser.advance() orelse return null; // consume ':'
-
-        if (parser.current_token.tag != .jsx_identifier) {
-            try parser.reportExpected(
-                parser.current_token.span,
-                "Expected identifier after ':' in namespaced element name",
-                .{ .help = "Namespaced element names must have the form 'namespace:name'" },
-            );
-            return null;
-        }
-
-        const local = try parser.tree.addNode(.{
-            .jsx_identifier = .{
-                .name = try parser.identifierName(parser.current_token),
-            },
-        }, parser.current_token.span);
-        const end = parser.current_token.span.end;
-
-        try parser.advance() orelse return null;
-
-        name = try parser.tree.addNode(.{
-            .jsx_namespaced_name = .{ .namespace = name, .name = local },
-        }, .{ .start = start, .end = end });
+        }, .{ .start = start, .end = parser.tree.span(property).end });
     }
 
     return name;
+}
+
+fn parseJsxNamespacedName(
+    parser: *Parser,
+    namespace: ast.NodeIndex,
+    comptime message: []const u8,
+    comptime help: []const u8,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .colon);
+    try parser.advance() orelse return null; // consume ':'
+
+    if (parser.current_token.tag != .jsx_identifier) {
+        try parser.reportExpected(parser.current_token.span, message, .{ .help = help });
+        return null;
+    }
+
+    const name = try parseJsxIdentifier(parser) orelse return null;
+    return try parser.tree.addNode(.{
+        .jsx_namespaced_name = .{ .namespace = namespace, .name = name },
+    }, .{ .start = parser.tree.span(namespace).start, .end = parser.tree.span(name).end });
+}
+
+fn parseJsxIdentifier(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .jsx_identifier);
+    const token = parser.current_token;
+    const identifier = try parser.tree.addNode(
+        .{ .jsx_identifier = .{ .name = try parser.identifierName(token) } },
+        token.span,
+    );
+    try parser.advance() orelse return null;
+    return identifier;
 }

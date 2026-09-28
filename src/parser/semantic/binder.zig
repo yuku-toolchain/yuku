@@ -194,8 +194,7 @@ pub const Symbol = struct {
             break :blk f;
         };
 
-        /// A function in a hoist scope, where TS overloads and sloppy `var`
-        /// merge with it. Lexical scopes use `block_scoped_var` instead.
+        /// A TypeScript function.
         pub const function: Flags = blk: {
             var f = value_space;
             f.function_scoped_var = false;
@@ -639,6 +638,14 @@ pub const SymbolTracker = struct {
         scope: sc.ScopeId = .root,
     };
 
+    /// Per-node facts computed by the walker for `declareBindings`.
+    pub const RefContext = struct {
+        /// The node is an identifier in assignment-target position.
+        is_write: bool,
+        /// The declaration space the identifier resolves in.
+        space: Reference.Space = .value,
+    };
+
     const DeclPair = struct { sid: SymbolId, node: ast.NodeIndex };
 
     const SavedContext = struct {
@@ -688,6 +695,7 @@ pub const SymbolTracker = struct {
 
             .variable_declaration => |decl| {
                 try self.pushSavedContext();
+                const ambient = decl.declare or self.ambient;
                 switch (decl.kind) {
                     .@"var" => {
                         const target = scope.hoistTarget();
@@ -697,27 +705,16 @@ pub const SymbolTracker = struct {
                             excludes.function = true;
                         }
                         self.pending = .{
-                            .flags = .{
-                                .function_scoped_var = true,
-                                .ambient = decl.declare or self.ambient,
-                            },
+                            .flags = .{ .function_scoped_var = true, .ambient = ambient },
                             .excludes = excludes,
                             .scope = target,
                         };
                     },
-                    .@"const", .using, .await_using => self.pending = .{
+                    .let, .@"const", .using, .await_using => self.pending = .{
                         .flags = .{
                             .block_scoped_var = true,
-                            .const_var = true,
-                            .ambient = decl.declare or self.ambient,
-                        },
-                        .excludes = Symbol.Excludes.block_scoped_var,
-                        .scope = scope.current,
-                    },
-                    .let => self.pending = .{
-                        .flags = .{
-                            .block_scoped_var = true,
-                            .ambient = decl.declare or self.ambient,
+                            .const_var = decl.kind != .let,
+                            .ambient = ambient,
                         },
                         .excludes = Symbol.Excludes.block_scoped_var,
                         .scope = scope.current,
@@ -735,18 +732,18 @@ pub const SymbolTracker = struct {
                     func.type == .ts_declare_function;
                 const target = if (is_decl) declNameScope(scope) else exprNameScope(scope);
 
-                // annex B 3.2 and ts overloads merge in hoist scopes, not lexical ones
-                const k = scope.get(target).kind;
-                const allow_overload = self.tree.isTs() or
-                    k == .function or
-                    k == .function_body or
-                    k == .global or
-                    k == .static_block;
+                const kind = scope.get(target).kind;
+                const var_like = kind == .function or
+                    kind == .function_body or
+                    kind == .global or
+                    kind == .static_block;
 
                 self.pending = .{
                     .flags = .{ .function = true, .ambient = ambient },
-                    .excludes = if (allow_overload)
+                    .excludes = if (self.tree.isTs())
                         Symbol.Excludes.function
+                    else if (var_like)
+                        Symbol.Excludes.function_scoped_var
                     else
                         Symbol.Excludes.block_scoped_var,
                     .scope = target,
@@ -844,19 +841,16 @@ pub const SymbolTracker = struct {
 
             .ts_enum_declaration => |decl| {
                 try self.pushSavedContext();
-                self.pending = if (decl.is_const) .{
+                self.pending = .{
                     .flags = .{
-                        .const_enum = true,
+                        .regular_enum = !decl.is_const,
+                        .const_enum = decl.is_const,
                         .ambient = decl.declare or self.ambient,
                     },
-                    .excludes = Symbol.Excludes.const_enum,
-                    .scope = scope.current,
-                } else .{
-                    .flags = .{
-                        .regular_enum = true,
-                        .ambient = decl.declare or self.ambient,
-                    },
-                    .excludes = Symbol.Excludes.regular_enum,
+                    .excludes = if (decl.is_const)
+                        Symbol.Excludes.const_enum
+                    else
+                        Symbol.Excludes.regular_enum,
                     .scope = scope.current,
                 };
             },
@@ -942,14 +936,6 @@ pub const SymbolTracker = struct {
             .ambient = self.ambient,
         });
     }
-
-    /// Per-node facts computed by the walker for `declareBindings`.
-    pub const RefContext = struct {
-        /// The node is an identifier in assignment-target position.
-        is_write: bool,
-        /// The declaration space the identifier resolves in.
-        space: Reference.Space = .value,
-    };
 
     /// Declares the pending binding at a `binding_identifier` or records
     /// a reference. Called for every node after its enter hook, before its children.
@@ -1093,7 +1079,11 @@ pub const SymbolTracker = struct {
     /// Declares the pending binding for `name` at `node`, merging into a
     /// compatible existing symbol. A conflicting name leaves the existing
     /// flags unchanged but still records `node` as a declarator for error recovery.
-    pub fn declare(self: *SymbolTracker, name: String, node: ast.NodeIndex) Allocator.Error!SymbolId {
+    pub fn declare(
+        self: *SymbolTracker,
+        name: String,
+        node: ast.NodeIndex,
+    ) Allocator.Error!SymbolId {
         const target = self.pending.scope;
         std.debug.assert(target != .none);
         std.debug.assert(@intFromEnum(target) < self.scope_maps.items.len);
@@ -1322,7 +1312,12 @@ fn typeParameterVisible(
     if (!sym.flags.type_parameter) return true;
     const scope_node = scopes.get(sym.scope).node;
     return switch (tree.data(scope_node)) {
-        .ts_conditional_type => |cond| inSubtree(node_parents, ref_node, scope_node, cond.true_type),
+        .ts_conditional_type => |cond| inSubtree(
+            node_parents,
+            ref_node,
+            scope_node,
+            cond.true_type,
+        ),
         .class => !classTypeParameterHidden(tree, node_parents, ref_node, scope_node),
         else => true,
     };
@@ -1358,10 +1353,10 @@ fn classTypeParameterHidden(
         parent = node_parents[@intFromEnum(parent)];
     }) {
         switch (tree.data(parent)) {
-            .method_definition => |m| if (m.computed and m.key == child and
-                memberOwner(node_parents, parent) == class_node) return true,
-            .property_definition => |p| if (p.computed and p.key == child and
-                memberOwner(node_parents, parent) == class_node) return true,
+            inline .method_definition, .property_definition => |member| {
+                if (member.computed and member.key == child and
+                    memberOwner(node_parents, parent) == class_node) return true;
+            },
             .class_body => {
                 if (node_parents[@intFromEnum(parent)] != class_node) continue;
                 return switch (tree.data(child)) {
@@ -1401,18 +1396,18 @@ fn isArgumentsBarrier(tree: *const ast.Tree, scope: sc.Scope) bool {
 }
 
 fn jsxTagRoot(tree: *const ast.Tree, name: ast.NodeIndex) ?ast.NodeIndex {
-    var cur = name;
-    while (true) switch (tree.data(cur)) {
-        .jsx_identifier => return cur,
-        .jsx_member_expression => |m| cur = m.object,
-        .jsx_namespaced_name => return null,
+    var current = name;
+    while (true) switch (tree.data(current)) {
+        .jsx_identifier => return current,
+        .jsx_member_expression => |m| current = m.object,
         else => return null,
     };
 }
 
 fn exprNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
-    const cur = scope.currentScope();
-    return if (cur.kind == .function or cur.kind == .class) cur.parent else scope.current;
+    const current = scope.currentScope();
+    if (current.kind == .function or current.kind == .class) return current.parent;
+    return scope.current;
 }
 
 // at a body's top level a function declaration is var-scoped and hoists past
@@ -1427,8 +1422,7 @@ fn declNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
 // body-less ambient modules are instantiated by spec
 fn isNamespaceInstantiated(tree: *const ast.Tree, body_node: ast.NodeIndex) bool {
     if (body_node == .null) return true;
-    const body = tree.data(body_node);
-    const block = switch (body) {
+    const block = switch (tree.data(body_node)) {
         .ts_module_block => |b| b,
         else => return true,
     };

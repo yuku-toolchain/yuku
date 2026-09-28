@@ -18,7 +18,8 @@ function walkOrderViolation(program: Node): string | null {
       if (parent === null || INTERLEAVED_TYPES.has(parent.type)) return;
       const prev = lastStart.get(parent);
       if (prev !== undefined && node.start < prev) {
-        violation = `${node.type} at ${node.start} entered after a sibling at ${prev} inside ${parent.type}`;
+        violation =
+          `${node.type} at ${node.start} entered after a sibling at ${prev} inside ${parent.type}`;
         ctx.stop();
         return;
       }

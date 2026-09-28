@@ -20,9 +20,9 @@ Yuku is a high-performance JavaScript and TypeScript compiler toolchain written 
 
 </div>
 
-## 📖 Documentation
+## Documentation
 
-Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
+Visit [yuku.fyi](https://yuku.fyi) for the full documentation and API reference.
 
 ## Parser
 
@@ -107,8 +107,6 @@ Scopes, symbols, resolved references, closures, and cross-file module linking, c
 
 ## Performance
 
-Yuku prioritizes correctness while delivering top-tier speed and efficiency.
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png" alt="Parsing typescript.js (7.8 MB) · macOS (ARM), Apple M3, 16 GB · native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers">
 </p>
@@ -118,14 +116,14 @@ Yuku prioritizes correctness while delivering top-tier speed and efficiency.
 
 ## Testing
 
-Correctness in Yuku is not an afterthought. Yuku is 100% ECMAScript spec compliant. The parser is validated against a dedicated [parser test suite](https://github.com/yuku-toolchain/parser-test-suite): over 55,000 cases sourced from [Test262](https://github.com/tc39/test262), the TypeScript compiler, and Babel, with exact AST matching against independently generated ESTree / TS-ESTree snapshots. The suite syncs with upstream daily, and Yuku passes all of it with zero failures and zero AST mismatches.
+Yuku is 100% ECMAScript spec compliant. The parser is validated against a dedicated [parser test suite](https://github.com/yuku-toolchain/parser-test-suite): over 55,000 cases sourced from [Test262](https://github.com/tc39/test262), the TypeScript compiler, and Babel, with exact AST matching against independently generated ESTree / TS-ESTree snapshots. The suite syncs with upstream daily, and Yuku passes all of it with zero failures and zero AST mismatches.
 
 [Read how Yuku is tested →](https://yuku.fyi/testing)
 
-## 🤝 Contributing
+## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
 
-## ⚖️ License
+## License
 
 Yuku is free and open-source software licensed under the [MIT License](LICENSE).

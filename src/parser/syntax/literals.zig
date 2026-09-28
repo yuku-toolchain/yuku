@@ -135,9 +135,9 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
             return null;
         }
 
-        const right_brace = parser.current_token;
-        const rescan = parser.lexer.reScanTemplateContinuation(right_brace.span.start);
-        const template_token = rescan catch |e| {
+        const template_token = parser.lexer.reScanTemplateContinuation(
+            parser.current_token.span.start,
+        ) catch |e| {
             try parser.reportLexicalError(e);
             return null;
         };
@@ -195,7 +195,7 @@ pub inline fn addTemplateElement(
     }, span);
 }
 
-inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span {
+inline fn getTemplateElementSpan(token: Token) ast.Span {
     return switch (token.tag) {
         .template_head, .template_middle => .{
             .start = token.span.start + 1,
@@ -224,13 +224,13 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try validateIdentifier(parser, "a binding identifier", parser.current_token);
 
-    const current = parser.current_token;
+    const token = parser.current_token;
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.tree.addNode(
-        .{ .binding_identifier = .{ .name = try parser.identifierName(current) } },
-        current.span,
+        .{ .binding_identifier = .{ .name = try parser.identifierName(token) } },
+        token.span,
     );
 }
 
@@ -257,12 +257,12 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try validateIdentifier(parser, "a label", parser.current_token);
 
-    const current = parser.current_token;
+    const token = parser.current_token;
     try parser.advance() orelse return null;
 
     return try parser.tree.addNode(.{
-        .label_identifier = .{ .name = try parser.identifierName(current) },
-    }, current.span);
+        .label_identifier = .{ .name = try parser.identifierName(token) },
+    }, token.span);
 }
 
 pub inline fn validateIdentifier(

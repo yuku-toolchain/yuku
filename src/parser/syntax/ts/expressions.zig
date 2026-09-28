@@ -146,7 +146,6 @@ fn isBinaryOperatorLike(tag: TokenTag) bool {
 
 fn isStartOfExpression(tag: TokenTag) bool {
     return switch (tag) {
-        .identifier,
         .private_identifier,
         .string_literal,
         .no_substitution_template,

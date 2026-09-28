@@ -10,6 +10,7 @@ export const CORPUS_DIRS = [
 ];
 
 const CORPUS_GLOB = "**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}";
+const BATCH_SIZE = 256;
 
 export interface CorpusFile {
   path: string;
@@ -42,20 +43,14 @@ export function corpusFiles(): CorpusFile[] {
 
 /**
  * Runs `fn` over every corpus file, reading sources in batches so thousands of
- * files do not open at once. Returns every result in file order.
+ * files do not open at once.
  */
-export async function forEachCorpusFile<R>(
-  fn: (file: CorpusFile, source: string) => Promise<R> | R,
-  batchSize = 256,
-): Promise<R[]> {
+export async function forEachCorpusFile(
+  fn: (file: CorpusFile, source: string) => void,
+): Promise<void> {
   const files = corpusFiles();
-  const results: R[] = [];
-  for (let i = 0; i < files.length; i += batchSize) {
-    const batch = files.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map(async (file) => fn(file, await Bun.file(file.path).text())),
-    );
-    results.push(...batchResults);
+  for (let i = 0; i < files.length; i += BATCH_SIZE) {
+    const batch = files.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map(async (file) => fn(file, await Bun.file(file.path).text())));
   }
-  return results;
 }

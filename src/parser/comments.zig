@@ -1,15 +1,5 @@
 // one forward sweep over the comments driven by a source-order dfs, then a
 // counting sort by host into a prefix-sum offsets array
-//
-//   between siblings a and b, block comment ending same-line as b.start:
-//     `before b`, sameLine = true (covers `/*#__PURE__*/ foo()`)
-//   between siblings, comment starting same-line as a.end:
-//     `after a`, sameLine = true
-//   between siblings, gap with newlines on both sides:
-//     `before b`, sameLine = false
-//   leading a node:           `before node`
-//   trailing a node:          `after node`
-//   inside a childless host:  `inside host`
 
 const std = @import("std");
 const ast = @import("ast.zig");
@@ -62,7 +52,7 @@ pub fn attach(tree: *ast.Tree, raw: []const ast.Comment) Error!void {
         ctx.write(@intFromEnum(tree.root), .inside, false);
     }
 
-    var counts = try alloc.alloc(u32, node_count);
+    const counts = try alloc.alloc(u32, node_count);
     defer alloc.free(counts);
     @memset(counts, 0);
     for (host) |h| counts[h] += 1;

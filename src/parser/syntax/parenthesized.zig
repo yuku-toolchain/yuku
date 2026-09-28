@@ -2,14 +2,11 @@ const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
-const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
-const array = @import("array.zig");
-const object = @import("object.zig");
 
 /// Cover grammar result for a parenthesized expression or an arrow parameter list.
 /// https://tc39.es/ecma262/#prod-CoverParenthesizedExpressionAndArrowParameterList
@@ -33,39 +30,11 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     var end = start + 1;
     var has_trailing_comma = false;
 
-    if (parser.current_token.tag == .right_paren) {
-        end = parser.current_token.span.end;
-        try parser.advance() orelse return null;
-        const elements = try parser.flushToExtras(&parser.scratch_cover, checkpoint);
-        return .{
-            .elements = elements,
-            .start = start,
-            .end = end,
-            .has_trailing_comma = false,
-        };
-    }
-
     while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
         if (parser.current_token.tag == .spread) {
-            const spread_start = parser.current_token.span.start;
-            try parser.advance() orelse return null;
-
-            const argument = try expressions.parseExpression(
-                parser,
-                Precedence.Assignment,
-                .{},
-            ) orelse return null;
-
-            const spread_end = parser.tree.span(argument).end;
-
-            const rest = try parser.tree.addNode(
-                .{ .spread_element = .{ .argument = argument } },
-                .{ .start = spread_start, .end = spread_end },
-            );
-
+            const rest = try expressions.parseSpreadElement(parser) orelse return null;
             try parser.scratch_cover.append(parser.allocator(), rest);
-
-            end = spread_end;
+            end = parser.tree.span(rest).end;
 
             if (parser.current_token.tag == .comma) {
                 try parser.advance() orelse return null;
@@ -128,8 +97,8 @@ pub fn coverToCallExpression(
     parser: *Parser,
     cover: ParenthesizedCover,
     callee: ast.NodeIndex,
-) Error!?ast.NodeIndex {
-    return try parser.tree.addNode(
+) Error!ast.NodeIndex {
+    return parser.tree.addNode(
         .{ .call_expression = .{
             .callee = callee,
             .arguments = cover.elements,
@@ -215,11 +184,7 @@ pub fn identifierToArrowFunction(
     is_async: bool,
     start: u32,
 ) Error!?ast.NodeIndex {
-    try grammar.expressionToPattern(parser, id, .binding);
-
-    const id_span = parser.tree.span(id);
-
-    const param = try parser.tree.addNode(.{ .formal_parameter = .{ .pattern = id } }, id_span);
+    const param = try convertToFormalParameter(parser, id);
     const items = try parser.tree.addExtra(&.{param});
     const params = try parser.tree.addNode(
         .{ .formal_parameters = .{
@@ -227,7 +192,7 @@ pub fn identifierToArrowFunction(
             .rest = .null,
             .kind = .arrow_formal_parameters,
         } },
-        id_span,
+        parser.tree.span(id),
     );
 
     return buildArrowFunction(parser, params, is_async, start, .null, .null);
@@ -270,7 +235,7 @@ const ArrowBodyResult = struct {
     is_expression: bool,
 };
 
-pub fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
+fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
     if (parser.current_token.tag == .left_brace) {
         const body = try functions.parseFunctionBody(parser) orelse return null;
         return .{ .body = body, .is_expression = false };
@@ -319,7 +284,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             continue;
         }
 
-        const param = try convertToFormalParameter(parser, elem) orelse return null;
+        const param = try convertToFormalParameter(parser, elem);
 
         try parser.scratch_cover.append(parser.allocator(), param);
     }
@@ -336,7 +301,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
     );
 }
 
-fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.NodeIndex {
+fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!ast.NodeIndex {
     try grammar.expressionToPattern(parser, expr, .binding);
 
     return try parser.tree.addNode(
@@ -346,11 +311,9 @@ fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Nod
 }
 
 pub fn unwrapParens(parser: *Parser, node: ast.NodeIndex) ast.NodeIndex {
-    const data = parser.tree.data(node);
-
-    if (data == .parenthesized_expression) {
-        return unwrapParens(parser, data.parenthesized_expression.expression);
-    }
-
-    return node;
+    var current = node;
+    while (true) switch (parser.tree.data(current)) {
+        .parenthesized_expression => |paren| current = paren.expression,
+        else => return current,
+    };
 }

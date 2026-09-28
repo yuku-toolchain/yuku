@@ -236,14 +236,18 @@ fn validateAllNodeLayouts() void {
     for (@typeInfo(ast.NodeData).@"union".fields) |field| {
         const T = field.type;
         if (@typeInfo(T) != .@"struct") continue;
-        if (totalU32Slots(T) > NODE_DATA_SLOTS) @compileError(std.fmt.comptimePrint(
-            "node '{s}' needs more than {d} u32 slots",
-            .{ field.name, NODE_DATA_SLOTS },
-        ));
-        if (totalFlagBits(T) > NODE_FLAG_BITS) @compileError(std.fmt.comptimePrint(
-            "node '{s}' needs more than {d} flag bits",
-            .{ field.name, NODE_FLAG_BITS },
-        ));
+        if (totalU32Slots(T) > NODE_DATA_SLOTS) {
+            @compileError(std.fmt.comptimePrint(
+                "node '{s}' needs more than {d} u32 slots",
+                .{ field.name, NODE_DATA_SLOTS },
+            ));
+        }
+        if (totalFlagBits(T) > NODE_FLAG_BITS) {
+            @compileError(std.fmt.comptimePrint(
+                "node '{s}' needs more than {d} flag bits",
+                .{ field.name, NODE_FLAG_BITS },
+            ));
+        }
     }
 }
 
@@ -549,11 +553,15 @@ pub fn deserializeFromBuf(
     const attached_bytes: usize = @as(usize, hdr.attached_comment_count) * ATTACHED_COMMENT_SIZE;
     if (buf.len < pos + attached_bytes) return error.InvalidBuffer;
     if (hdr.attached_comment_count > 0) {
-        const attached = try tree.allocator().alloc(ast.AttachedComment, hdr.attached_comment_count);
+        const attached = try tree.allocator().alloc(
+            ast.AttachedComment,
+            hdr.attached_comment_count,
+        );
         const attached_in: [*]const PackedAttachedComment = @ptrCast(@alignCast(buf.ptr + pos));
         for (attached, 0..) |*out, i| {
             const ce = attached_in[i];
-            const pos_bits = (ce.flags & ATTACHED_COMMENT_POSITION_MASK) >> ATTACHED_COMMENT_POSITION_SHIFT;
+            const pos_bits = (ce.flags & ATTACHED_COMMENT_POSITION_MASK) >>
+                ATTACHED_COMMENT_POSITION_SHIFT;
             out.* = .{
                 .type = if ((ce.flags >> COMMENT_TYPE_BIT) & 1 == 0) .line else .block,
                 .position = @enumFromInt(pos_bits),

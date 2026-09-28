@@ -22,7 +22,10 @@ const QUOTES = { preserve: 0, double: 1, single: 2, shortest: 3 };
 const COMMENTS = { none: 0, false: 0, all: 1, true: 1, some: 2, line: 3, block: 4 };
 
 export function generate(program, options = {}) {
-  const m = options.minify === true ? { whitespace: true, syntax: true, quotes: true } : (options.minify ?? {});
+  const m =
+    options.minify === true
+      ? { whitespace: true, syntax: true, quotes: true }
+      : (options.minify ?? {});
   const flags =
     (options.strip ? 1 : 0) |
     (m.syntax ? 2 : 0) |
@@ -30,9 +33,9 @@ export function generate(program, options = {}) {
     ((m.quotes ? 3 : (QUOTES[options.quotes] ?? 0)) << 3) |
     ((COMMENTS[options.comments] ?? 2) << 5) |
     (((options.indent ?? 2) & 0xff) << 8);
-  const ast = new Uint8Array(encode(program, null));
+  const ast = new Uint8Array(encode(program));
   const inPtr = alloc(ast.length || 1);
-  // Growing wasm memory detaches memory.buffer, so re-view after every call.
+  // growing wasm memory detaches memory.buffer, so re-view after every call
   new Uint8Array(memory.buffer, inPtr, ast.length).set(ast);
 
   const ptr = codegen(inPtr, ast.length, flags);

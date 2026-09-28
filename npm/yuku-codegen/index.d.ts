@@ -77,9 +77,9 @@ export interface GenerateOptions {
 /** A codegen-detected problem in the input AST. */
 export interface Diagnostic {
   message: string;
-  /** Byte offset where the problem starts. */
+  /** Offset where the problem starts, in the same units as the input AST's `start`. */
   start: number;
-  /** Byte offset where the problem ends. */
+  /** Offset where the problem ends, in the same units as the input AST's `end`. */
   end: number;
 }
 

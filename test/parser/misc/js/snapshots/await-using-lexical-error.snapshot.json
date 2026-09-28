@@ -1,0 +1,47 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 20,
+        "kind": "await using",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 12,
+            "end": 19,
+            "id": {
+              "type": "Identifier",
+              "start": 12,
+              "end": 13,
+              "name": "x"
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 16,
+              "end": 19,
+              "name": "res"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 35,
+      "end": 36,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    }
+  ]
+}

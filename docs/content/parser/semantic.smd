@@ -5,13 +5,13 @@
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",
 ---
-Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, every declared symbol, and every reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
+Semantic analysis turns a parsed tree into a queryable model of the program. It records every lexical scope, declared symbol, and reference, and resolves each reference to the binding it names, space-aware the way TypeScript resolves names. The same pass reports the scope-dependent [early errors](https://tc39.es/ecma262/#early-error) that parsing alone cannot detect, such as redeclarations, unresolved exports, and private fields used outside their class.
 
-Yuku runs this as a separate pass over the parsed tree. This keeps parsing fast and lets each consumer opt in only to the work it needs.
+It runs as a separate pass over the parsed tree, so parsing stays fast and each consumer opts in only to the work it needs.
 
 ## [Analyzing a Tree]($section.id('analyzing-a-tree'))
 
-`semantic.analyze` is the entry point. It returns the complete `Semantic` model and appends any early-error diagnostics to the tree:
+`semantic.analyze` returns the complete `Semantic` model and appends any early-error diagnostics to the tree:
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -24,16 +24,16 @@ semantic.uses(symbol_id);         // every use site of a symbol
 semantic.lookup(scope_id, "x", .value); // name resolution from any scope
 ```
 
-Semantic diagnostics land in `tree.diagnostics` alongside parse errors. After analysis, `tree.hasErrors()` reflects both. Together, parsing and semantic analysis cover the full set of early errors required by the specification.
+Semantic diagnostics land in `tree.diagnostics` alongside parse errors, so `tree.hasErrors()` reflects both. Together, parsing and semantic analysis cover every early error the specification requires.
 
-All allocations use the tree's arena, so the model is valid for the lifetime of the tree and freed by `tree.deinit()`.
+All allocations use the tree's arena, so the model lives as long as the tree and is freed by `tree.deinit()`.
 
 >[]($block.attrs('note'))
->If you want the model without the early-error checks, or you want to run your own hooks during the analysis walk, use the [semantic traverser](/parser/traverse/#semantic-traverser) directly. `semantic.analyze` is built [exactly that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a visitor that emits the early-error diagnostics.
+>For the model without the early-error checks, or to run your own hooks during the analysis walk, use the [semantic traverser](/parser/traverse/#semantic-traverser) directly. `semantic.analyze` is [built that way](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic/root.zig), with a visitor that emits the early-error diagnostics.
 
 ## [The Semantic Model]($section.id('the-semantic-model'))
 
-`Semantic` is one object that answers every scope, symbol, and reference question about a tree. References are already resolved and all indexes are already built, so every query below works immediately. Queries that may have no answer return optionals.
+`Semantic` answers every scope, symbol, and reference question about a tree. References are resolved and every index is built, so each query below works immediately. Queries that may have no answer return optionals.
 
 Ids are dense indexes with defined orders. `SymbolId` orders symbols by first declaration, `ReferenceId` orders references by source position, and `ScopeId` orders scopes by creation during the walk (`ScopeId.root` is always `0`, and in modules `ScopeId.module` is always `1`). Every slice and iterator preserves these orders, so "first declaration", "earliest use", and "outermost scope" are index comparisons.
 
@@ -220,7 +220,7 @@ Every construct in the spec that introduces a new lexical environment creates a 
 | Block statement                                              | `block`                                                       |
 | `for` / `for...in` / `for...of`                              | `block`                                                       |
 | `catch` clause                                               | `block` (the body block reuses this scope)                    |
-| `switch` statement                                           | `block`                                                       |
+| `switch` case block                                          | `block` (the discriminant stays outside)                      |
 | Class declaration / expression                               | `class` (always strict per spec)                              |
 | Class static block                                           | `static_block`                                                |
 | Named function or class expression                           | `expression_name` wrapping a `function` / `class` scope       |
@@ -228,11 +228,12 @@ Every construct in the spec that introduces a new lexical environment creates a 
 | TS function/constructor type, call/construct/index signature | `block`                                                       |
 | TS method signature                                          | `block`                                                       |
 | TS mapped / conditional type                                 | `block` (conditional isolates `infer T` per branch)           |
+| TS enum body                                                 | `block` (members are visible to each other)                   |
 | TS namespace body                                            | `ts_module` (its own kind, see below)                         |
 
 A few details worth knowing:
 
-**Catch clauses share their body block.** Per spec section 14.15.2 the catch parameter and the block body live in the same environment. One `block` scope is created on `catch_clause`, and the body's `block_statement` reuses it. This is what lets the single-scope `binding` lookup detect the early-error case where a `var` inside the body collides with the parameter.
+**Catch clauses share their body block.** Per spec section 14.15.2 the catch parameter and the block body live in the same environment. One `block` scope is created on `catch_clause`, and the body's `block_statement` reuses it, which lets the single-scope `binding` lookup detect a body declaration colliding with the parameter. A parameter pattern containing an expression, such as a default (`catch ([e = 1])`), gets a separate body block, since the expression must not see the body's bindings.
 
 **Named function and class expressions create two scopes.** For `const x = function foo() { ... }`, ECMAScript section 15.2.5 wraps the body in an extra environment that holds an immutable binding for `foo`:
 
@@ -268,17 +269,18 @@ Each declared binding is a `Symbol`:
 pub const Symbol = struct {
     name: String,   // index into the tree's string pool
     flags: Flags,   // declaration kind + modifiers (see below)
-    scope: ScopeId, // the scope this symbol was declared in
+    scope: ScopeId, // the scope the binding lives in
+    decls: Range,   // read through semantic.decls(id)
 };
 ```
 
-`scope` is where the binding actually lives. For a hoisting `var` that is the hoist target it lands in (function, module, or global scope), not the block it is written in.
+For a hoisting `var`, `scope` is its hoist target, not the block it is written in.
 
 A single symbol can collect multiple declarations when the language allows merging, such as `var` redeclarations, TS function overloads, `class` + `interface` merging, `namespace` + `enum` merging, and ambient module patterns. The `binding_identifier` node of every declaration is recorded and `semantic.decls(id)` returns them all, so a renamer or a "go to definition" feature can show each one.
 
 ### [Symbol Flags]($section.id('symbol-flags'))
 
-`Symbol.Flags` describes everything semantic analysis knows about a binding. A single symbol can carry several flags at once. A `class` lives in both value and type space, an exported `var` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into a single symbol that satisfies both kinds.
+`Symbol.Flags` describes everything semantic analysis knows about a binding, and a symbol can carry several flags at once. `export var x` is both `function_scoped_var` and `exported`, and an interface and a class of the same name merge into one symbol that carries both kinds.
 
 The flags group into three categories.
 
@@ -308,15 +310,17 @@ symbol.flags.const_var   // const or using binding
 symbol.flags.parameter   // function/method parameter
 symbol.flags.catch_var   // catch (e) binding
 symbol.flags.ambient     // TS `declare`
-symbol.flags.exported    // exported from a module
-symbol.flags.is_default  // default export
+symbol.flags.exported    // declared by `export <declaration>`
+symbol.flags.is_default  // declared by `export default`
 ```
+
+`exported` marks declarations only. Names exported through `export { x }` are in the [module records](#module-records).
 
 **Helpers** on the flag struct itself:
 
 ```zig
 flags.intersects(other)     // true if `flags` and `other` share at least one flag
-flags.merge(other)          // union of two flag sets (used when merging compatible declarations)
+flags.merge(other)          // union of two flag sets
 flags.isHoistingVar()       // true for a real `var` (not a parameter, not a catch_var)
 flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
                             // (block_scoped_var, class, function)
@@ -334,9 +338,9 @@ Each declaration kind has a precomputed `Symbol.Excludes.X` flag set. The rule i
 > A new declaration with `Excludes.X` conflicts with any existing symbol whose flags **intersect** `Excludes.X`. Otherwise the two declarations merge into a single symbol with the union of their flags.
 
 ```zig
-Symbol.Excludes.block_scoped_var    // let / const / using
-Symbol.Excludes.function_scoped_var // var
-Symbol.Excludes.function         // function (allows overloads in TS, var-merge in sloppy)
+Symbol.Excludes.block_scoped_var    // let / const / using, a JS function in a block or module
+Symbol.Excludes.function_scoped_var // var, a JS function atop a function or script
+Symbol.Excludes.function            // a TS function (merges overloads, var, namespace, class)
 Symbol.Excludes.class
 Symbol.Excludes.interface
 Symbol.Excludes.type_alias
@@ -351,7 +355,7 @@ Symbol.Excludes.type_parameter
 Symbol.Excludes.enum_member
 ```
 
-This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching.
+This single mechanism handles function overloads, `class` + `interface` declaration merging, `namespace` + `enum` merging, and ambient module patterns without any per-construct branching. The one exception is Annex B, which lets a sloppy-mode block repeat a plain `function` declaration.
 
 ## [Declaration Spaces]($section.id('declaration-spaces'))
 
@@ -374,7 +378,7 @@ A **reference resolves in** exactly one space, decided by its syntactic position
 | `.value`     | runtime uses                                                         | value space                    |
 | `.type`      | annotations, heritage clauses, type arguments                        | type space                     |
 | `.namespace` | the qualifier of a dotted type name (`ns.T`, `E.A`)                  | namespaces and enums           |
-| `.typeof`    | the entity of a `typeof` query, a type-predicate parameter           | value space                    |
+| `.typeof`    | the entity of a `typeof` query, a computed type-member key, a type-predicate parameter | value space |
 | `.any`       | `export { x }`, `export default x`, `export = x`, `import a = x`     | every space                    |
 
 Resolution connects the two. Walking up the scope chain, a name match counts only when the symbol is visible in the reference's space (`Symbol.Flags.visibleIn`), so a binding outside the space does not shadow:
@@ -414,7 +418,7 @@ pub const Reference = struct {
 };
 ```
 
-`symbol` is the resolution, the binding this reference refers to. Resolution is scope-based, exactly like name binding in the language: a reference resolves to the nearest binding of its name up the scope chain that is visible in its space (see [Declaration Spaces](#declaration-spaces)), regardless of where in those scopes the declaration appears (a use above a `let` still resolves to it, and the temporal dead zone is a runtime concern, not a binding concern). `.none` means the reference's space has no binding of that name anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
+`symbol` is the binding this reference resolves to: the nearest binding of its name up the scope chain that is visible in its space (see [Declaration Spaces](#declaration-spaces)), wherever in those scopes the declaration appears. A use above a `let` still resolves to it, since the temporal dead zone is a runtime concern. `.none` means no binding of that name is visible anywhere in the chain, which makes it a global, an undeclared name, or a free variable.
 
 Language-provided names are not bindings. `this`, `super`, and (unless user-declared) `arguments` produce no symbols, so a reference to `arguments` inside a function is unresolved. Labels are their own namespace and produce neither symbols nor references.
 

@@ -26,7 +26,7 @@ pub fn isOctalDigit(digit: u8) bool {
     return digit >= '0' and digit <= '7';
 }
 
-/// check if the byte sequence at `pos` is U+2028 (Line Separator) or U+2029 (Paragraph Separator)
+/// Returns 3 if a U+2028 LINE SEPARATOR or U+2029 PARAGRAPH SEPARATOR starts at `pos`, else 0.
 pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     if (pos + 2 < source.len and source[pos] == 0xE2 and source[pos + 1] == 0x80) {
         if (source[pos + 2] == 0xA8 or source[pos + 2] == 0xA9) {
@@ -36,9 +36,8 @@ pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     return 0;
 }
 
-/// byte length of the line terminator beginning at `pos`, or 0 if there is
-/// none. Recognizes LF, CR, CRLF (a single terminator), and the U+2028 and
-/// U+2029 separators.
+/// Returns the byte length of the line terminator at `pos`, or 0 if there is none. CRLF
+/// counts as a single terminator.
 pub fn lineBreakLen(source: []const u8, pos: usize) u8 {
     std.debug.assert(pos < source.len);
     return switch (source[pos]) {
@@ -87,7 +86,7 @@ pub inline fn parseHex4(input: []const u8, start: usize) ?struct { value: u21, e
     return .{ .value = value, .end = start + 4 };
 }
 
-/// validates the value is <= 0x10FFFF
+/// Returns null when there are no digits or the value exceeds U+10FFFF.
 pub fn parseHexVariable(
     input: []const u8,
     start: usize,
@@ -113,9 +112,8 @@ pub fn parseHexVariable(
     return .{ .value = @intCast(value), .end = i };
 }
 
-/// parse a unicode escape after the `\u` prefix.
-/// `start` points at `{` (braced form) or the first hex digit (4-digit form).
-/// returns the decoded code point and position after the escape.
+/// Parses a Unicode escape after its `\u` prefix. `start` points at `{` for the braced form
+/// or at the first of four hex digits.
 pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21, end: usize } {
     if (start < input.len and input[start] == '{') {
         const digit_start = start + 1;
@@ -134,7 +132,8 @@ pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21,
     return .{ .value = r.value, .end = r.end };
 }
 
-/// resolves \uHHHH / \u{HHHH} escapes in an identifier to their UTF-8 form.
+/// Decodes the Unicode escapes of an identifier into `buf`, or returns `raw` when they do
+/// not fit or are malformed.
 pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
     var out: usize = 0;
     var i: usize = 0;
@@ -161,9 +160,7 @@ pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
     return buf[0..out];
 }
 
-/// decodes all JavaScript string escape sequences from `raw` into `out`.
-/// handles standard escapes (\n, \t, etc.), hex (\xHH), unicode (\uHHHH, \u{H}),
-/// octal, line continuations, and CR normalization for template values.
+/// Appends the cooked value of a string or template body to `out`.
 pub fn decodeStringEscapes(
     raw: []const u8,
     out: *std.ArrayList(u8),
@@ -178,15 +175,14 @@ pub fn decodeStringEscapes(
         if (i > run_start) try out.appendSlice(alloc, raw[run_start..i]);
         if (i >= raw.len) break;
 
-        // CR normalization per ECMAScript TV semantics:
-        // \r\n -> \n, standalone \r -> \n
+        // a raw CR or CRLF cooks to LF
         if (raw[i] == '\r') {
             try out.append(alloc, '\n');
             i += 1;
             if (i < raw.len and raw[i] == '\n') i += 1;
             continue;
         }
-        i += 1; // skip backslash
+        i += 1;
         if (i >= raw.len) break;
         switch (raw[i]) {
             'n' => {
@@ -241,14 +237,11 @@ pub fn decodeStringEscapes(
                 if (parseUnicodeEscape(raw, i + 1)) |r| {
                     var cp = r.value;
                     var end = r.end;
-                    // combine surrogate pair if both halves are present
                     if (cp >= 0xD800 and cp <= 0xDBFF and
                         end + 1 < raw.len and raw[end] == '\\' and raw[end + 1] == 'u')
                     {
                         if (parseUnicodeEscape(raw, end + 2)) |r2| {
                             if (r2.value >= 0xDC00 and r2.value <= 0xDFFF) {
-                                // decode surrogate pair:
-                                //   U+10000 + (high - 0xD800) * 0x400 + (low - 0xDC00)
                                 cp = 0x10000 +
                                     (@as(u21, cp) - 0xD800) * 0x400 +
                                     (@as(u21, r2.value) - 0xDC00);
@@ -273,7 +266,7 @@ pub fn decodeStringEscapes(
                 if (us_len > 0) {
                     i += us_len; // line continuation \<LS> or \<PS>
                 } else {
-                    try out.append(alloc, raw[i]); // unknown escape: pass through as-is
+                    try out.append(alloc, raw[i]); // any other escaped character is itself
                     i += 1;
                 }
             },
@@ -281,8 +274,8 @@ pub fn decodeStringEscapes(
     }
 }
 
-/// if a wtf-8 lone surrogate (`ED A0..BF 80..BF`) starts at `s[i]`, returns its
-/// code unit, else null. these are the only sequences `codePointAt` rejects.
+/// Returns the code unit of a WTF-8 lone surrogate (`ED A0..BF 80..BF`) at `s[i]`, else
+/// null. These are the only sequences `codePointAt` rejects.
 pub fn loneSurrogateAt(s: []const u8, i: usize) ?u21 {
     if (s[i] != 0xED or i + 2 >= s.len or s[i + 1] < 0xA0) return null;
     return (@as(u21, s[i] & 0x0F) << 12) |
@@ -290,7 +283,7 @@ pub fn loneSurrogateAt(s: []const u8, i: usize) ?u21 {
         @as(u21, s[i + 2] & 0x3F);
 }
 
-/// writes a Unicode code point as UTF-8. lone surrogates use WTF-8 encoding.
+/// Appends a code point as UTF-8, or as WTF-8 for a lone surrogate.
 fn appendCodePoint(
     out: *std.ArrayList(u8),
     alloc: std.mem.Allocator,
@@ -310,8 +303,8 @@ fn appendCodePoint(
     }
 }
 
-/// checks whether a string contains a legacy octal escape
-/// (\0n, \1-\7) or non-octal decimal escape (\8, \9).
+/// Whether a string contains a legacy octal escape (`\0n`, `\1` to `\7`) or a non-octal
+/// decimal escape (`\8`, `\9`).
 pub fn hasOctalEscape(str: []const u8) bool {
     var pos: usize = 0;
     while (std.mem.findScalarPos(u8, str, pos, '\\')) |i| {

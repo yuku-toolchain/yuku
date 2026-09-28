@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { parse, type Program } from "yuku-parser";
 import { generate } from "yuku-codegen";
+import { TraceMap, decodedMappings } from "@jridgewell/trace-mapping";
 import { gen } from "./helpers";
 
 test("strip and minify compose in a single call", () => {
@@ -40,4 +41,17 @@ test("lists longer than a u16 survive the round trip", () => {
   const { program } = parse(`${"x;".repeat(n)}[${"0,".repeat(n)}];`);
   expect(lengths(program)).toEqual([n + 1, n]);
   expect(lengths(parse(generate(program).code).program)).toEqual([n + 1, n]);
+});
+
+test("a compact source map starts each mapping on its token", () => {
+  for (const [source, token] of [
+    ["function f() { return [1]; }", "["],
+    ["x = a - -b;", "-b"],
+  ] as const) {
+    const options = { format: "compact", sourceMap: { source } } as const;
+    const { code, map } = generate(parse(source).program, options);
+    const segments = decodedMappings(new TraceMap(JSON.stringify(map)))[0] ?? [];
+    const segment = segments.find(([column]) => column === code.indexOf(token));
+    expect(segment?.[3], source).toBe(source.indexOf(token));
+  }
 });

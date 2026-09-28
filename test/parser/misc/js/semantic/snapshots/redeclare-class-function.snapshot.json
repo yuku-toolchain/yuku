@@ -1,0 +1,132 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 10,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "A"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 8,
+          "end": 10,
+          "body": []
+        }
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 11,
+        "end": 26,
+        "id": {
+          "type": "Identifier",
+          "start": 20,
+          "end": 21,
+          "name": "A"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 24,
+          "end": 26,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 28,
+        "end": 43,
+        "id": {
+          "type": "Identifier",
+          "start": 37,
+          "end": 38,
+          "name": "B"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 41,
+          "end": 43,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 44,
+        "end": 54,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 50,
+          "end": 51,
+          "name": "B"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 52,
+          "end": 54,
+          "body": []
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'A' has already been declared",
+      "start": 20,
+      "end": 21,
+      "help": "Consider removing or renaming this declaration of 'A'",
+      "labels": [
+        {
+          "start": 6,
+          "end": 7,
+          "message": "'A' was first declared as a class here"
+        },
+        {
+          "start": 20,
+          "end": 21,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'B' has already been declared",
+      "start": 50,
+      "end": 51,
+      "help": "Consider removing or renaming this declaration of 'B'",
+      "labels": [
+        {
+          "start": 37,
+          "end": 38,
+          "message": "'B' was first declared as a function here"
+        },
+        {
+          "start": 50,
+          "end": 51,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    }
+  ]
+}

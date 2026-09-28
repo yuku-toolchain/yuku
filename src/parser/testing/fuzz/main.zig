@@ -88,9 +88,13 @@ pub fn main() void {
         core.check(gpa, input, mode);
         if (iter % oom_every == 0 and input.len <= oom_max_len) core.oomSweep(input, mode);
 
-        if (iter % progress_every == 0 and iter != 0)
+        if (iter % progress_every == 0 and iter != 0) {
             std.debug.print("  {d}/{d} iterations clean\n", .{ iter, iterations });
+        }
     }
 
-    std.debug.print("done: {d} iterations, no findings (seed 0x{x})\n", .{ iterations, current_seed });
+    std.debug.print(
+        "done: {d} iterations, no findings (seed 0x{x})\n",
+        .{ iterations, current_seed },
+    );
 }

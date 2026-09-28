@@ -163,3 +163,9 @@ test("comments:false drops everything", () => {
     `"const x = 1;"`,
   );
 });
+
+test("a compact block comment after `/` does not open a line comment", () => {
+  expect(gen(`x = a / /*c*/ b;`, { ...ALL, format: "compact" }, "input.js")).toMatchInlineSnapshot(
+    `"x=a/ /*c*/b"`,
+  );
+});

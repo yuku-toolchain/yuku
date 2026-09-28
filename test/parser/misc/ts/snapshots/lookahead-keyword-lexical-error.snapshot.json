@@ -1,0 +1,235 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 198,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 24,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 14,
+            "end": 23,
+            "id": {
+              "type": "Identifier",
+              "start": 14,
+              "end": 23,
+              "name": "x",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 15,
+                "end": 23,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 17,
+                  "end": 23
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 25,
+        "end": 40,
+        "id": {
+          "type": "Identifier",
+          "start": 36,
+          "end": 37,
+          "name": "E",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 38,
+          "end": 40,
+          "members": []
+        },
+        "const": true,
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 41,
+        "end": 52,
+        "id": {
+          "type": "Identifier",
+          "start": 46,
+          "end": 47,
+          "name": "T",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSLiteralType",
+          "start": 50,
+          "end": 51,
+          "literal": {
+            "type": "Literal",
+            "start": 50,
+            "end": 51,
+            "value": 2,
+            "raw": "2"
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 53,
+        "end": 72,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 68,
+          "end": 69,
+          "name": "A",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 70,
+          "end": 72,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": true,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 73,
+        "end": 103,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 79,
+          "end": 80,
+          "name": "C",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 81,
+          "end": 103,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 83,
+              "end": 101,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 92,
+                "end": 93,
+                "name": "y",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": null,
+              "computed": false,
+              "static": false,
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 93,
+                "end": 101,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 95,
+                  "end": 101
+                }
+              },
+              "declare": false,
+              "override": false,
+              "optional": false,
+              "definite": false,
+              "readonly": true,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 114,
+      "end": 115,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 128,
+      "end": 129,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 139,
+      "end": 140,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'class'",
+      "start": 154,
+      "end": 159,
+      "help": "Try inserting a semicolon here",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 186,
+      "end": 187,
+      "help": "Try adding whitespace here between the number and identifier",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Expected ';' after class field, but found 'x'",
+      "start": 186,
+      "end": 187,
+      "help": "Add a semicolon after the field declaration.",
+      "labels": []
+    }
+  ]
+}

@@ -66,6 +66,11 @@ interface AnalyzerOptions {
   resolve?: (specifier: string, importerPath: string) => string | null;
 }
 
+/** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
+declare const TokenKind: TokenKindMap;
+/** The kind of a token, one of the values of `TokenKind`. */
+type TokenKind = TokenKindMap[keyof TokenKindMap];
+
 /**
  * Bit flags describing a {@link Symbol}: which declaration kinds it
  * carries (one symbol can merge several under TS declaration merging)
@@ -73,11 +78,6 @@ interface AnalyzerOptions {
  * question about a symbol is `symbol.has(SymbolFlags.X)` (any of the
  * bits) or `symbol.hasAll(...)` (all of them); there is one way to ask.
  */
-/** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
-declare const TokenKind: TokenKindMap;
-/** The kind of a token, one of the values of `TokenKind`. */
-type TokenKind = TokenKindMap[keyof TokenKindMap];
-
 declare const SymbolFlags: {
   /** `var`, parameter, or catch variable. */
   readonly FunctionScopedVariable: number;

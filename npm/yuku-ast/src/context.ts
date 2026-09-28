@@ -1,6 +1,6 @@
 import type { Node } from "@yuku-toolchain/types";
 
-interface Frame {
+export interface Frame {
   i: number;
 }
 

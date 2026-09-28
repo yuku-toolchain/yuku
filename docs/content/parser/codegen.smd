@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The codegen takes a `Tree` and writes it back as source code. It walks the AST directly and emits each node from its tag, so the output is always syntactically valid and faithful to the tree's structure.
+The codegen writes a `Tree` back as source code. It emits each node from its tag in a single walk, so the output is always syntactically valid and faithful to the tree's structure.
 
 ## [Node.js]($section.id('nodejs'))
 
@@ -21,7 +21,7 @@ const { program } = parse("const x = 1 + 2;");
 const { code } = generate(program);
 ```
 
-`generate` takes the `Program` node off the `ParseResult` returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMap: { source }`. `minify` also takes an object there (`{ syntax, whitespace, quotes }`) to pick individual switches, and `comments` accepts `true` / `false` as sugar for `"all"` / `"none"`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+`generate` takes the `Program` node returned by [yuku-parser](https://www.npmjs.com/package/yuku-parser). For source maps, pass the original source text via `sourceMap: { source }`. In JavaScript, `minify` also takes an object (`{ syntax, whitespace, quotes }`) to pick individual switches, and `comments` accepts `true` / `false` for `"all"` / `"none"`. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## [WebAssembly]($section.id('webassembly'))
 
@@ -37,7 +37,7 @@ const { program } = parse("const x = 1 + 2;");
 const code = generate(program);
 ```
 
-The same options as `yuku-codegen`, except that `generate` returns the code string directly and source maps are unavailable. Paired with `@yuku-parser/wasm`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
+The same options as `yuku-codegen`, except that `generate` returns the code string directly and source maps are unavailable. It pairs with `@yuku-parser/wasm` for browsers and other environments without native bindings. See [@yuku-codegen/wasm on npm](https://www.npmjs.com/package/@yuku-codegen/wasm).
 
 ## [Zig]($section.id('zig'))
 
@@ -62,7 +62,7 @@ pub fn main() !void {
 }
 ```
 
-`generate` reads from the tree, writes a fresh buffer, and never mutates anything. The `Tree` remains valid after the call. The returned `Result` owns its buffers, freed via `result.deinit(allocator)`.
+`generate` writes into a fresh buffer and leaves the `Tree` unchanged. The returned `Result` owns its buffers, freed with `result.deinit(allocator)`.
 
 ## [Result]($section.id('result'))
 
@@ -74,15 +74,15 @@ pub const Result = struct {
 };
 ```
 
-| Field    | Type           | Description                                         |
-| -------- | -------------- | --------------------------------------------------- |
-| `code`   | `[]const u8`   | Generated source                                    |
-| `errors` | `[]Diagnostic` | Codegen-detected problems, empty for a clean run    |
-| `map`    | `?SourceMap`   | Source Map V3 when `source_map` was set, else null  |
+| Field    | Type                 | Description                                         |
+| -------- | -------------------- | --------------------------------------------------- |
+| `code`   | `[]const u8`         | Generated source                                    |
+| `errors` | `[]const Diagnostic` | Codegen-detected problems, empty for a clean run    |
+| `map`    | `?SourceMap`         | Source Map V3 when `source_map` was set, else null  |
 
-The only return-value error from `generate` is allocation failure. Codegen-detected problems are reported in `errors` and do not abort the run. For a plain run, `errors` is always empty. They appear only when stripping (see [Type stripping](#type-stripping)).
+The only error `generate` returns is `error.OutOfMemory`. Codegen-detected problems go to `errors` and do not abort the run. They only occur when stripping (see [Type stripping](#type-stripping)).
 
-A `Diagnostic` carries.
+A `Diagnostic` carries:
 
 ```zig
 pub const Diagnostic = struct {
@@ -151,6 +151,7 @@ pub const SourceMapOptions = struct {
     source_file_name: ?[]const u8 = null,
     source_root: ?[]const u8 = null,
     sources_content: ?[]const u8 = null,
+    utf16_offsets: bool = false,
 };
 ```
 
@@ -161,6 +162,7 @@ pub const SourceMapOptions = struct {
 | `source_file_name` | `?[]const u8` | Source filename, embedded as the single entry of `sources`           |
 | `source_root`      | `?[]const u8` | Prefix embedded as `sourceRoot`                                      |
 | `sources_content`  | `?[]const u8` | When set, embedded as the single entry of the map's `sourcesContent` |
+| `utf16_offsets`    | `bool`        | Whether node spans count UTF-16 code units instead of UTF-8 bytes    |
 
 ### [Result shape]($section.id('result-shape'))
 
@@ -200,7 +202,7 @@ Because comments are attached to nodes, they survive AST transforms. Move or rep
 
 ## [Type stripping]($section.id('type-stripping'))
 
-Strip TypeScript syntax from a `Tree`, leaving JavaScript. Same codegen, same options, with TypeScript-only nodes and fields removed from the output.
+`strip` prints a TypeScript `Tree` as JavaScript, with the same codegen and options.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .lang = .ts });
@@ -212,23 +214,17 @@ defer result.deinit(allocator);
 std.debug.print("{s}", .{result.code});
 ```
 
-### [How it works]($section.id('how-it-works'))
-
-Stripping is not regex, not a separate transform pass, not a whitespace overlay on top of the original source. It is the codegen with one extra rule per node visit. Skip nodes that are TypeScript-only, and skip TypeScript-only fields on shared nodes.
-
-That makes it always accurate and reliable. Nothing is parsed by hand a second time. The parser already classified every byte, and the codegen reads that classification directly. Comments, whitespace, nested template literal types, generic call expressions, conditional types, and every other awkward boundary case are tree nodes like any other, not regex edge cases. And it is extremely fast, one traversal of the parsed tree, writing directly into an output buffer.
+Stripping is not a regex pass or a separate transform. The codegen skips TypeScript-only nodes and the TypeScript-only fields of shared nodes during its one walk, so every boundary case (comments, generic calls, nested template literal types) is a tree node the parser already classified.
 
 ### [What stripping does not do]($section.id('what-stripping-does-not-do'))
 
-A few TypeScript features (`enum`, `namespace`, `module`, `export =`, `import = require()`, parameter properties) emit JavaScript runtime values. Converting them to JavaScript equivalents is a transpilation step, not a syntax-stripping step. The stripper does exactly what its name says, it strips TypeScript syntax. When a runtime-emitting construct is encountered, it is reported as a `Diagnostic` and skipped, and the rest of the file is still emitted.
+A few TypeScript features emit runtime values: `enum`, `namespace`, `module`, `export =`, `import = require()`, and parameter properties. Converting them is transpilation, not stripping. Each one is reported as a `Diagnostic` and left out of the output (a parameter property keeps its plain parameter), and the rest of the file is still emitted.
 
-The ambient forms of these constructs (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime, and are stripped silently along with the rest of the type system.
-
-All other TypeScript syntax (types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, `abstract`) strips cleanly today.
+Their ambient forms (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime, so they strip silently. All other TypeScript syntax, including types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, and `abstract`, strips cleanly.
 
 ## [Minification]($section.id('minification'))
 
-`minify` applies size-reducing syntax rewrites. Combine with `format` and `quotes` for maximum minification.
+`minify` applies size-reducing syntax rewrites. Combine it with `format` and `quotes` for maximum minification.
 
 ```zig
 const result = try parser.codegen.generate(allocator, &tree, .{
@@ -239,9 +235,11 @@ const result = try parser.codegen.generate(allocator, &tree, .{
 defer result.deinit(allocator);
 ```
 
-The substitutions.
+The rewrites:
 
 - `true` / `false` → `!0` / `!1`
 - numeric literals shortened to their shortest form (`1000000` → `1e6`, `0.5` → `.5`, etc.)
 - `obj["foo"]` → `obj.foo` when the key is a valid identifier
 - `{ "foo": x }` → `{ foo: x }` when safe
+
+Minified output is also safe to inline in a `<script>` tag. `</script`, `<!--`, and `-->` are escaped in strings and untagged template literals. Tagged templates keep their raw text, since the tag reads it.

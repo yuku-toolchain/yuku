@@ -1,18 +1,18 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
-
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
+const Token = @import("../../token.zig").Token;
 const TokenTag = @import("../../token.zig").TokenTag;
 const Precedence = @import("../../token.zig").Precedence;
-const Token = @import("../../token.zig").Token;
 
-const types = @import("types.zig");
 const literals = @import("../literals.zig");
 const functions = @import("../functions.zig");
 const expressions = @import("../expressions.zig");
 const variables = @import("../variables.zig");
 const class = @import("../class.zig");
+
+const types = @import("types.zig");
 
 /// Declaration modifiers. `is_const` only applies to enums.
 pub const Modifiers = struct {
@@ -236,7 +236,7 @@ fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-pub fn parseTypeAliasDeclaration(
+fn parseTypeAliasDeclaration(
     parser: *Parser,
     mods: Modifiers,
     start: u32,
@@ -370,7 +370,7 @@ fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     return expression;
 }
 
-pub fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"enum");
     try parser.advance() orelse return null;
 
@@ -518,7 +518,7 @@ fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // namespace Foo { ... }    namespace A.B.C { ... }    module "./m" { ... }
-pub fn parseModuleDeclaration(
+fn parseModuleDeclaration(
     parser: *Parser,
     mods: Modifiers,
     start: u32,
@@ -531,7 +531,10 @@ pub fn parseModuleDeclaration(
     else
         try parseModuleName(parser) orelse return null;
 
-    const body = try parseOptionalModuleBlock(parser) orelse return null;
+    const body: ast.NodeIndex = if (parser.current_token.tag == .left_brace)
+        try parseModuleBlock(parser) orelse return null
+    else
+        .null;
 
     // only an ambient `declare module "m"` may omit its body
     if (body == .null and parser.tree.data(id) != .string_literal) {
@@ -561,7 +564,7 @@ pub fn parseModuleDeclaration(
     );
 }
 
-pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .global);
 
     const id = try literals.parseIdentifierName(parser) orelse return null;
@@ -580,11 +583,6 @@ pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Erro
 fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
     const head = try literals.parseBindingIdentifier(parser) orelse return null;
     return types.extendQualifiedName(parser, head);
-}
-
-fn parseOptionalModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.tag != .left_brace) return .null;
-    return parseModuleBlock(parser);
 }
 
 fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {

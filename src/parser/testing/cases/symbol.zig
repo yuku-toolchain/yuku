@@ -7,16 +7,11 @@ const semantic = parser.semantic;
 const Semantic = semantic.Semantic;
 const traverser = parser.traverser;
 const SymbolId = traverser.semantic.SymbolId;
-const ScopeId = traverser.semantic.ScopeId;
 
 const testing = std.testing;
 
 fn analyze(source: []const u8, opts: parser.Options) !helpers.Analyzed {
     return helpers.analyze(testing.allocator, source, opts);
-}
-
-fn analyzeAllowErrors(source: []const u8, opts: parser.Options) !helpers.Analyzed {
-    return helpers.analyzeAllowErrors(testing.allocator, source, opts);
 }
 
 test "lookup agrees with resolution when a var passes through a catch scope" {
@@ -160,7 +155,7 @@ const CtxProbeVisitor = struct {
         id: ast.IdentifierReference,
         index: ast.NodeIndex,
         ctx: *traverser.semantic.Ctx,
-    ) parser.traverser.Action {
+    ) traverser.Action {
         _ = index;
         const name = ctx.tree.string(id.name);
         if (std.mem.eql(u8, name, "probe")) {
@@ -177,7 +172,7 @@ const CtxProbeVisitor = struct {
         ref: ast.TSTypeReference,
         index: ast.NodeIndex,
         ctx: *traverser.semantic.Ctx,
-    ) parser.traverser.Action {
+    ) traverser.Action {
         _ = ref;
         _ = index;
         self.saw_type_ref = true;
@@ -228,4 +223,12 @@ test "the semantic Ctx exposes type position, namespace state, and the tracker" 
     try testing.expect(visitor.saw_probe);
     try testing.expect(visitor.saw_type_ref);
     if (visitor.failure) |err| return err;
+}
+
+test "module records collect an export pattern of any depth" {
+    const depth = 300;
+    var a = try analyze("export const " ++ "[" ** depth ++ "a" ++ "]" ** depth ++ " = x;", .{});
+    defer a.deinit();
+    const records = try semantic.module_record.collect(&a.tree, &a.sem);
+    try testing.expectEqual(@as(usize, 1), records.exports.len);
 }

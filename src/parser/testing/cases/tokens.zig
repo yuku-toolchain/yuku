@@ -5,7 +5,6 @@ const helpers = @import("../helpers.zig");
 const ast = parser.ast;
 const Token = ast.Token;
 
-// except the program, which starts before leading trivia, and the two nodes inside one token
 const AlignmentChecker = struct {
     pub fn check(self: AlignmentChecker, path: []const u8, tree: *ast.Tree) !void {
         _ = self;
@@ -21,6 +20,7 @@ const AlignmentChecker = struct {
         while (i < with_tokens.nodes.len) : (i += 1) {
             const index: ast.NodeIndex = @enumFromInt(i);
             switch (with_tokens.data(index)) {
+                // the program starts before leading trivia, the other two sit inside one token
                 .program, .template_element, .jsx_empty_expression => continue,
                 else => {},
             }

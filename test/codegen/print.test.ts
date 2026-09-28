@@ -113,6 +113,47 @@ test("TS leading union and intersection operators", () => {
     `);
 });
 
+test("an export default value keeps the parens that stop it reading as a declaration", () => {
+  const source = [
+    "export default (function () {})();",
+    "export default (class {}).name;",
+    "export default (async function () {})();",
+    "export default (function f() {});",
+    "export default { a: 1 };",
+  ].join("\n");
+  expect(gen(source, {}, "input.js", { preserveParens: false })).toMatchInlineSnapshot(`
+    "export default (function() {})();
+    export default (class {}).name;
+    export default (async function() {})();
+    export default (function f() {});
+    export default { a: 1 };"
+  `);
+});
+
+test("an `in` inside a for-init arrow body or yield keeps its parens", () => {
+  const source = [
+    "for (let f = () => (a in b); ; );",
+    "for (g = async (x) => (a in b); ; );",
+    "function* h() {",
+    "  for (let x = yield (a in b); ; );",
+    "}",
+  ].join("\n");
+  expect(gen(source, {}, "input.js", { preserveParens: false })).toMatchInlineSnapshot(`
+    "for (let f = () => (a in b);;) ;
+    for (g = async (x) => (a in b);;) ;
+    function* h() {
+      for (let x = yield (a in b);;) ;
+    }"
+  `);
+});
+
+test("compact output keeps the trailing space of JSX text", () => {
+  const source = `const a = <p>hello {name}</p>;\nconst b = <p>a <b /> c </p>;`;
+  expect(gen(source, { format: "compact" }, "input.jsx")).toMatchInlineSnapshot(
+    `"const a=<p>hello {name}</p>;const b=<p>a <b/> c </p>"`,
+  );
+});
+
 test("an arrow's lone type parameter keeps a trailing comma", () => {
   expect(
     gen(`<T>(x: T) => x;\n<T = U>() => 0;\n<T extends U>() => 0;\nfunction f<T>() {}`),
@@ -122,4 +163,10 @@ test("an arrow's lone type parameter keeps a trailing comma", () => {
     <T extends U>() => 0;
     function f<T>() {}"
   `);
+});
+
+test("compact output keeps a type argument closer apart from `>` and `=` operators", () => {
+  expect(
+    gen(`f<T> == x;\nf<T> >= x;\nf<T> >>> x;\na.b<T> === c;`, { format: "compact" }),
+  ).toMatchInlineSnapshot(`"f<T> ==x;f<T> >=x;f<T> >>>x;a.b<T> ===c"`);
 });

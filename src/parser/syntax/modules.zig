@@ -7,9 +7,7 @@ const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const expressions = @import("expressions.zig");
-const statements = @import("statements.zig");
 const literals = @import("literals.zig");
-const patterns = @import("patterns.zig");
 const functions = @import("functions.zig");
 const class = @import("class.zig");
 const extensions = @import("extensions.zig");
@@ -29,7 +27,7 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     try parser.advance() orelse return null;
 
     if (parser.current_token.tag == .string_literal) {
-        return parseSideEffectImport(parser, start, null);
+        return parseSideEffectImport(parser, start);
     }
 
     var phase: ?ast.ImportPhase = null;
@@ -110,8 +108,8 @@ fn isTypeImportModifier(parser: *Parser, after_type: Token) bool {
         var peek = parser.beginPeek();
         defer peek.end();
         _ = peek.next();
-        const a2 = peek.next();
-        return a2.tag == .from or a2.tag == .assign;
+        const after_from = peek.next();
+        return after_from.tag == .from or after_from.tag == .assign;
     }
 
     return true;
@@ -130,11 +128,7 @@ fn isPhaseImportBinding(parser: *Parser, next: Token) bool {
     return after_from.tag == .from;
 }
 
-fn parseSideEffectImport(
-    parser: *Parser,
-    start: u32,
-    phase: ?ast.ImportPhase,
-) Error!?ast.NodeIndex {
+fn parseSideEffectImport(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
     const end = try parser.eatSemicolon(parser.prev_token_end) orelse return null;
@@ -144,7 +138,7 @@ fn parseSideEffectImport(
             .specifiers = ast.IndexRange.empty,
             .source = source,
             .attributes = attributes,
-            .phase = phase,
+            .phase = null,
             .import_kind = .value,
         },
     }, .{ .start = start, .end = end });
@@ -205,7 +199,7 @@ fn parseImportClause(parser: *Parser, import_kind: ast.ImportOrExportKind) Error
 fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    const local = try parseImportedBinding(parser) orelse return null;
+    const local = try literals.parseBindingIdentifier(parser) orelse return null;
     const end = parser.tree.span(local).end;
 
     return try parser.tree.addNode(.{
@@ -228,7 +222,7 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }
     try parser.advance() orelse return null;
 
-    const local = try parseImportedBinding(parser) orelse return null;
+    const local = try literals.parseBindingIdentifier(parser) orelse return null;
     const end = parser.tree.span(local).end;
 
     return try parser.tree.addNode(.{
@@ -400,10 +394,6 @@ fn canStartModuleExportName(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .string_literal;
 }
 
-fn parseImportedBinding(parser: *Parser) Error!?ast.NodeIndex {
-    return literals.parseBindingIdentifier(parser);
-}
-
 pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"export");
     const is_ts = parser.tree.isTs();
@@ -473,12 +463,7 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     }, .{ .start = start, .end = end });
 }
 
-fn isAbstractClassNext(parser: *Parser) Error!bool {
-    const next = parser.peekAhead();
-    return next.tag == .class and !next.hasLineTerminatorBefore();
-}
-
-fn isLegacyAccessibilityImport(parser: *Parser) Error!bool {
+fn isLegacyAccessibilityImport(parser: *Parser) bool {
     const next = parser.peekAhead();
     return next.tag == .import and !next.hasLineTerminatorBefore();
 }
@@ -550,7 +535,7 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
     }
 
     if (is_ts) {
-        if (tag == .abstract and try isAbstractClassNext(parser)) {
+        if (tag == .abstract and class.isAbstractClassNext(parser)) {
             const abstract_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             const decl = try class.parseClass(parser, .{
@@ -698,8 +683,9 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             return reportMissingExportDeclaration(parser),
         // `export public import x =`, the legacy modifier is noise but starts the span
         .public, .private, .static => blk: {
-            if (!is_ts or !try isLegacyAccessibilityImport(parser))
+            if (!is_ts or !isLegacyAccessibilityImport(parser)) {
                 return reportMissingExportDeclaration(parser);
+            }
             const modifier_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             break :blk try parseImportDeclarationFrom(parser, modifier_start) orelse return null;
@@ -830,8 +816,9 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     const token_checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(token_checkpoint);
 
-    if (!try parser.expect(.left_brace, "Expected '{' to start export specifiers", null))
+    if (!try parser.expect(.left_brace, "Expected '{' to start export specifiers", null)) {
         return null;
+    }
 
     while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
         const local_tag = parser.current_token.tag;
@@ -840,8 +827,7 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
 
         try parser.scratch_a.append(parser.allocator(), spec);
 
-        const tag_value: u32 = @intFromEnum(local_tag);
-        try parser.scratch_b.append(parser.allocator(), @enumFromInt(tag_value));
+        try parser.scratch_b.append(parser.allocator(), @enumFromInt(@intFromEnum(local_tag)));
 
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
@@ -850,8 +836,9 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
         }
     }
 
-    if (!try parser.expect(.right_brace, "Expected '}' to close export specifiers", null))
+    if (!try parser.expect(.right_brace, "Expected '}' to close export specifiers", null)) {
         return null;
+    }
 
     return .{
         .specifiers = try parser.flushToExtras(&parser.scratch_a, checkpoint),

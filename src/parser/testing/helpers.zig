@@ -18,15 +18,15 @@ pub const Analyzed = struct {
     }
 
     pub fn bindingNamed(self: *const Analyzed, name: []const u8) !ast.NodeIndex {
-        return findNamed(&self.tree, .binding_identifier, name, 0) orelse error.BindingNotFound;
+        return findNamed(&self.tree, .binding_identifier, name) orelse error.BindingNotFound;
     }
 
     pub fn referenceNamed(self: *const Analyzed, name: []const u8) !ast.NodeIndex {
-        return findNamed(&self.tree, .identifier_reference, name, 0) orelse error.ReferenceNotFound;
+        return findNamed(&self.tree, .identifier_reference, name) orelse error.ReferenceNotFound;
     }
 
-    pub fn nthNode(self: *const Analyzed, tag: NodeTag, n: usize) !ast.NodeIndex {
-        return findNth(&self.tree, tag, n) orelse error.NodeNotFound;
+    pub fn firstNode(self: *const Analyzed, tag: NodeTag) !ast.NodeIndex {
+        return findFirst(&self.tree, tag) orelse error.NodeNotFound;
     }
 
     pub fn symbolNamed(self: *const Analyzed, name: []const u8) !semantic.Semantic.SymbolEntry {
@@ -77,7 +77,9 @@ pub fn analyze(gpa: Allocator, source: []const u8, opts: parser.Options) !Analyz
     var result = try analyzeAllowErrors(gpa, source, opts);
     errdefer result.deinit();
     if (result.tree.hasErrors()) {
-        dumpDiagnostics(&result.tree);
+        for (result.tree.diagnostics.items) |diagnostic| {
+            std.debug.print("diagnostic: {s}\n", .{diagnostic.message});
+        }
         return error.UnexpectedParseOrAnalysisErrors;
     }
     return result;
@@ -90,45 +92,28 @@ pub fn analyzeAllowErrors(gpa: Allocator, source: []const u8, opts: parser.Optio
     return .{ .tree = tree, .sem = sem };
 }
 
-fn dumpDiagnostics(tree: *const ast.Tree) void {
-    for (tree.diagnostics.items) |diag| {
-        std.debug.print("diagnostic: {s}\n", .{diag.message});
-    }
-}
-
-fn findNamed(
-    tree: *const ast.Tree,
-    comptime tag: NodeTag,
-    name: []const u8,
-    n: usize,
-) ?ast.NodeIndex {
-    var seen: usize = 0;
+fn findNamed(tree: *const ast.Tree, comptime tag: NodeTag, name: []const u8) ?ast.NodeIndex {
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
         const index: ast.NodeIndex = @enumFromInt(i);
         const data = tree.data(index);
         if (std.meta.activeTag(data) != tag) continue;
         const node_name = @field(data, @tagName(tag)).name;
-        if (!std.mem.eql(u8, tree.string(node_name), name)) continue;
-        if (seen == n) return index;
-        seen += 1;
+        if (std.mem.eql(u8, tree.string(node_name), name)) return index;
     }
     return null;
 }
 
-fn findNth(tree: *const ast.Tree, tag: NodeTag, n: usize) ?ast.NodeIndex {
-    var seen: usize = 0;
+fn findFirst(tree: *const ast.Tree, tag: NodeTag) ?ast.NodeIndex {
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
         const index: ast.NodeIndex = @enumFromInt(i);
-        if (std.meta.activeTag(tree.data(index)) != tag) continue;
-        if (seen == n) return index;
-        seen += 1;
+        if (std.meta.activeTag(tree.data(index)) == tag) return index;
     }
     return null;
 }
 
-pub const corpus_dirs = [_][]const u8{
+const corpus_dirs = [_][]const u8{
     "test/parser/suite/js/pass",
     "test/parser/suite/jsx/pass",
     "test/parser/suite/ts/pass",

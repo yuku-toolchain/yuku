@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 164,
+    "end": 239,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -330,6 +330,114 @@
           "end": 163
         },
         "await": false
+      },
+      {
+        "type": "ForOfStatement",
+        "start": 164,
+        "end": 187,
+        "left": {
+          "type": "VariableDeclaration",
+          "start": 169,
+          "end": 180,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 175,
+              "end": 180,
+              "id": {
+                "type": "Identifier",
+                "start": 175,
+                "end": 176,
+                "name": "i"
+              },
+              "init": {
+                "type": "Literal",
+                "start": 179,
+                "end": 180,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 184,
+          "end": 185,
+          "name": "b"
+        },
+        "body": {
+          "type": "EmptyStatement",
+          "start": 186,
+          "end": 187
+        },
+        "await": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 188,
+        "end": 238,
+        "id": {
+          "type": "Identifier",
+          "start": 203,
+          "end": 204,
+          "name": "j"
+        },
+        "generator": false,
+        "async": true,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 207,
+          "end": 238,
+          "body": [
+            {
+              "type": "ForOfStatement",
+              "start": 209,
+              "end": 236,
+              "left": {
+                "type": "VariableDeclaration",
+                "start": 220,
+                "end": 229,
+                "kind": "var",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 224,
+                    "end": 229,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 224,
+                      "end": 225,
+                      "name": "k"
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 228,
+                      "end": 229,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
+                ]
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 233,
+                "end": 234,
+                "name": "b"
+              },
+              "body": {
+                "type": "EmptyStatement",
+                "start": 235,
+                "end": 236
+              },
+              "await": true
+            }
+          ]
+        },
+        "expression": false
       }
     ]
   },
@@ -380,6 +488,22 @@
       "message": "for-of loop variable declaration may not have an initializer",
       "start": 151,
       "end": 156,
+      "help": "Remove the initializer from the loop variable.",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "for-of loop variable declaration may not have an initializer",
+      "start": 175,
+      "end": 180,
+      "help": "Remove the initializer from the loop variable.",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "for-of loop variable declaration may not have an initializer",
+      "start": 224,
+      "end": 229,
       "help": "Remove the initializer from the loop variable.",
       "labels": []
     }

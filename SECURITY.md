@@ -1,6 +1,6 @@
 # Security Policy
 
-Please refer to https://yuku.fyi/security/ for our established security practices.
+See https://yuku.fyi/security/ for Yuku's security practices.
 
 ## Reporting a vulnerability
 

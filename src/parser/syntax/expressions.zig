@@ -1,18 +1,15 @@
-// pure pratt parser for javascript expressions
-// developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence
+// pratt parser for JavaScript expressions
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence
 // https://tdop.github.io/
 
+const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const TokenTag = @import("../token.zig").TokenTag;
 const Token = @import("../token.zig").Token;
-const std = @import("std");
 const Precedence = @import("../token.zig").Precedence;
 
 const jsx = @import("jsx/root.zig");
-const statements = @import("statements.zig");
-const variables = @import("variables.zig");
 const array = @import("array.zig");
 const object = @import("object.zig");
 const literals = @import("literals.zig");
@@ -20,7 +17,6 @@ const functions = @import("functions.zig");
 const class = @import("class.zig");
 const extensions = @import("extensions.zig");
 const parenthesized = @import("parenthesized.zig");
-const patterns = @import("patterns.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
 const extension = @import("../extension.zig");
@@ -45,7 +41,7 @@ pub fn parseExpression(
         // f<T>(x)
         //  ^ dispatched before the binary precedence gate so it can
         //    act as a call-level postfix (generic call/instantiation)
-        //    instead of the relational `f < T`.
+        //    instead of the relational `f < T`
         if (is_ts and ts.isAngleOpen(current_token.tag) and
             maxLeftPrecedence(parser.tree.data(left)) >= Precedence.Call)
         {
@@ -72,12 +68,12 @@ pub fn parseExpression(
     return left;
 }
 
-/// a few infix-capable tokens degrade to 0 to encode the ecmascript "[no LineTerminator here]" restricted productions
+/// Returns the infix precedence of `token`, or 0 when a line break before it ends the
+/// expression under a `[no LineTerminator here]` restriction.
 ///
 /// - `a [no LineTerminator here] ++` / `--` (postfix update).
-/// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
-/// - `a [no LineTerminator here] !` (ts non-null assertion).
-/// `!` is also infix only in TypeScript, in plain JS it is purely prefix.
+/// - `a [no LineTerminator here] as T` / `satisfies T` (TypeScript narrowing).
+/// - `a [no LineTerminator here] !` (TypeScript non-null assertion, prefix only in JavaScript).
 inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
     switch (token.tag) {
         .increment, .decrement, .as, .satisfies => {
@@ -272,12 +268,13 @@ fn parseParenthesizedOrArrowFunction(
 ) Error!?ast.NodeIndex {
     const start = arrow_start orelse parser.current_token.span.start;
 
-    if (parser.tree.isTs() and precedence <= Precedence.Assignment)
+    if (parser.tree.isTs() and precedence <= Precedence.Assignment) {
         switch (ts.classifyArrowHead(parser)) {
             .yes => return ts.parseArrow(parser, false, start),
             .maybe => if (try ts.tryParseArrow(parser, false, start)) |arrow| return arrow,
             .no => {},
-        };
+        }
+    }
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
@@ -378,7 +375,7 @@ fn parseAsyncArrowFunctionOrCall(
         return ts.parseArrow(parser, true, start);
     }
 
-    return parenthesized.coverToCallExpression(parser, cover, async_id);
+    return try parenthesized.coverToCallExpression(parser, cover, async_id);
 }
 
 inline fn isArrowNext(parser: *Parser, precedence: u8) bool {
@@ -441,7 +438,6 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     var delegate = false;
-
     var argument: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .star and !parser.current_token.hasLineTerminatorBefore()) {
@@ -458,14 +454,11 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
         if (can_start_yield_argument) {
             // YieldExpression[?In]
-            const expr = try parseExpression(
+            argument = try parseExpression(
                 parser,
                 Precedence.Assignment,
                 .{ .respect_allow_in = true },
             ) orelse return null;
-
-            argument = expr;
-
             end = parser.tree.span(argument).end;
         }
     }
@@ -724,38 +717,16 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
     const operator = ast.UpdateOperator.fromToken(operator_token.tag);
     try parser.advance() orelse return null;
 
-    if (prefix) {
-        const argument = try parseExpression(parser, Precedence.Unary, .{}) orelse return null;
-        const span = parser.tree.span(argument);
-
-        const unwrapped = parenthesized.unwrapParens(parser, argument);
-
-        if (!isSimpleAssignmentTarget(parser, unwrapped)) {
-            try parser.report(
-                span,
-                "Invalid operand for increment/decrement operator",
-                .{ .help = "The '++' and '--' operators require a variable or " ++
-                    "property reference, not a literal or complex expression." },
-            );
-            return null;
-        }
-
-        return try parser.tree.addNode(
-            .{ .update_expression = .{
-                .argument = unwrapped,
-                .operator = operator,
-                .prefix = true,
-            } },
-            .{ .start = operator_token.span.start, .end = span.end },
-        );
-    }
-
-    const unwrapped = parenthesized.unwrapParens(parser, left);
+    const argument = if (prefix)
+        try parseExpression(parser, Precedence.Unary, .{}) orelse return null
+    else
+        left;
+    const argument_span = parser.tree.span(argument);
+    const unwrapped = parenthesized.unwrapParens(parser, argument);
 
     if (!isSimpleAssignmentTarget(parser, unwrapped)) {
-        const span = parser.tree.span(left);
         try parser.report(
-            span,
+            argument_span,
             "Invalid operand for increment/decrement operator",
             .{ .help = "The '++' and '--' operators require a variable or " ++
                 "property reference, not a literal or complex expression." },
@@ -763,9 +734,18 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
         return null;
     }
 
+    const span: ast.Span = if (prefix)
+        .{ .start = operator_token.span.start, .end = argument_span.end }
+    else
+        .{ .start = argument_span.start, .end = operator_token.span.end };
+
     return try parser.tree.addNode(
-        .{ .update_expression = .{ .argument = unwrapped, .operator = operator, .prefix = false } },
-        .{ .start = parser.tree.span(left).start, .end = operator_token.span.end },
+        .{ .update_expression = .{
+            .argument = unwrapped,
+            .operator = operator,
+            .prefix = prefix,
+        } },
+        span,
     );
 }
 
@@ -923,10 +903,10 @@ fn parseConditionalExpression(
     parser.context.in = true;
 
     // cond ? (a): T => b : alt
-    //           ^ a ts arrow return type can eat the ternary `:`.
+    //           ^ a ts arrow return type can eat the ternary `:`, so
     //             parse permissively, and only if the `:` went missing
     //             rewind and re-parse with return types restricted so
-    //             the arrow yields it (see `tryParseArrow`).
+    //             the arrow yields it (see `tryParseArrow`)
     const consequent = if (!parser.tree.isTs())
         try parseExpression(parser, precedence, .{}) orelse return null
     else consequent: {
@@ -987,13 +967,13 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
 pub fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     const cover = try array.parseCover(parser) orelse return null;
-    return array.coverToExpression(parser, cover);
+    return try array.coverToExpression(parser, cover);
 }
 
 pub fn parseObjectExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const cover = try object.parseCover(parser) orelse return null;
-    return object.coverToExpression(parser, cover);
+    return try object.coverToExpression(parser, cover);
 }
 
 fn parseStaticMemberExpression(
@@ -1014,9 +994,9 @@ fn parseMemberProperty(
     const tag = parser.current_token.tag;
 
     const property = if (tag.isIdentifierLike())
-        try literals.parseIdentifierName(parser)
+        try literals.parseIdentifierName(parser) orelse return null
     else if (tag == .private_identifier)
-        try literals.parsePrivateIdentifier(parser)
+        try literals.parsePrivateIdentifier(parser) orelse return null
     else {
         try parser.reportExpected(
             parser.current_token.span,
@@ -1026,16 +1006,14 @@ fn parseMemberProperty(
         return null;
     };
 
-    const prop = property orelse return null;
-
     return try parser.tree.addNode(.{
         .member_expression = .{
             .object = object_node,
-            .property = prop,
+            .property = property,
             .computed = false,
             .optional = optional,
         },
-    }, .{ .start = parser.tree.span(object_node).start, .end = parser.tree.span(prop).end });
+    }, .{ .start = parser.tree.span(object_node).start, .end = parser.tree.span(property).end });
 }
 
 fn parseComputedMemberExpression(
@@ -1055,7 +1033,7 @@ fn parseComputedMemberExpression(
     };
     parser.context.in = saved_allow_in;
 
-    const end = parser.current_token.span.end; // ']' position
+    const end = parser.current_token.span.end;
     if (parser.current_token.tag != .right_bracket) {
         try parser.reportExpected(
             parser.current_token.span,
@@ -1093,7 +1071,7 @@ pub fn parseCallExpression(
 
     const args = try parseArguments(parser) orelse return null;
 
-    const end = parser.current_token.span.end; // ')' position
+    const end = parser.current_token.span.end;
     if (parser.current_token.tag != .right_paren) {
         try parser.reportExpected(
             parser.current_token.span,
@@ -1160,6 +1138,20 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
+/// Parses a `...argument` spread element.
+pub fn parseSpreadElement(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .spread);
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume '...'
+
+    const argument = try parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
+    return try parser.tree.addNode(
+        .{ .spread_element = .{ .argument = argument } },
+        .{ .start = start, .end = parser.tree.span(argument).end },
+    );
+}
+
 /// Parses a tagged template. `type_arguments` is `.null` for a plain tag.
 pub fn parseTaggedTemplateExpression(
     parser: *Parser,
@@ -1169,21 +1161,17 @@ pub fn parseTaggedTemplateExpression(
     const start = parser.tree.span(tag_node).start;
 
     const quasi = if (parser.current_token.tag == .no_substitution_template)
-        try literals.parseNoSubstitutionTemplate(parser, true)
+        try literals.parseNoSubstitutionTemplate(parser, true) orelse return null
     else
-        try literals.parseTemplateLiteral(parser, true);
-
-    if (quasi == null) return null;
-
-    const quasi_span = parser.tree.span(quasi.?);
+        try literals.parseTemplateLiteral(parser, true) orelse return null;
 
     return try parser.tree.addNode(.{
         .tagged_template_expression = .{
             .tag = tag_node,
-            .quasi = quasi.?,
+            .quasi = quasi,
             .type_arguments = type_arguments,
         },
-    }, .{ .start = start, .end = quasi_span.end });
+    }, .{ .start = start, .end = parser.tree.span(quasi).end });
 }
 
 fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
@@ -1268,8 +1256,8 @@ fn parseOptionalChainElement(
     }
 
     // a?.<T>(args)
-    //    ^~^ generic call right after `?.` is the only valid form here.
-    //        a?.<T>`tpl` and a bare a?.<T> rewind instead.
+    //    ^~^ generic call right after `?.` is the only valid form here,
+    //        a?.<T>`tpl` and a bare a?.<T> rewind instead
     if (parser.tree.isTs() and ts.isAngleOpen(tag)) {
         const checkpoint = parser.checkpoint();
         const type_arguments = try ts.tryParseTypeArgumentsInExpression(parser);

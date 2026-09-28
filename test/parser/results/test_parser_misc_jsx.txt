@@ -1,8 +1,20 @@
 test/parser/misc/jsx
 ====================
-Passed:       2/2 (100.00%)
+Passed:       3/3 (100.00%)
 Failed:       0
-AST mismatch: 0/2
+AST mismatch: 0/3
+
+✓ test/parser/misc/jsx/closing-tag-name-spacing.jsx
+error: Expected closing tag for '<a.b>' but found '</a.c>'
+   |
+ 7 | 
+ 8 | let a = <a.b></a.c>;
+   |                ^^^
+   |          ~~~ opening tag
+ 9 | let b = <a.b.c></a.c.b>;
+   |
+   = help: JSX opening and closing tags must have matching names
+
 
 ✓ test/parser/misc/jsx/self-closing-element-attribute-value.jsx
 ✓ test/parser/misc/jsx/tag-close-followed-by-equals.jsx

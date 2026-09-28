@@ -6,8 +6,8 @@ const meta = @import("meta.zig");
 
 const Writer = std.Io.Writer;
 
-// generates encode.js, the inverse of decode.js
-pub fn generate(w: *Writer) !void {
+/// Generates encode.js, the inverse of decode.js.
+pub fn generate(w: *Writer) Writer.Error!void {
     @setEvalBranchQuota(500_000);
     try writePrologue(w);
     try writeInverseMaps(w);
@@ -336,8 +336,7 @@ fn writeGenericEncoder(
     if (any_flag) {
         try w.writeAll("    flagsAt(idx, 0");
         inline for (std.meta.fields(T), 0..) |f, i| {
-            _ = i;
-            const bit = comptime rt.flagBitForField(T, std.meta.fieldIndex(T, f.name).?);
+            const bit = comptime rt.flagBitForField(T, i);
             const jsf = comptime meta.estreeField(name, f.name);
             if (f.type == bool) {
                 const mask: u32 = @as(u32, 1) << @intCast(bit);
@@ -405,14 +404,15 @@ fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
     else if (comptime eql(u8, name, "array_pattern")) try writeSpecialArrayPattern(w, tag) //
     else if (comptime eql(u8, name, "object_pattern")) try writeSpecialObjectPattern(w, tag) //
     else if (comptime eql(u8, name, "jsx_text")) try writeSpecialJSXText(w, tag) //
-    else if (comptime eql(u8, name, "ts_function_type")) try writeSpecialTSFunctionType(w, tag) //
+    else if (comptime eql(u8, name, "ts_function_type"))
+        try writeSigParams(w, name, tag, ast.TSFunctionType) //
     else if (comptime eql(u8, name, "ts_constructor_type"))
         try writeSpecialTSConstructorType(w, tag) //
     else if (comptime eql(u8, name, "ts_method_signature")) try writeSpecialTSMethodSig(w, tag) //
     else if (comptime eql(u8, name, "ts_call_signature_declaration"))
-        try writeSpecialTSCallSig(w, tag) //
+        try writeSigParams(w, name, tag, ast.TSCallSignatureDeclaration) //
     else if (comptime eql(u8, name, "ts_construct_signature_declaration"))
-        try writeSpecialTSConstructSig(w, tag) //
+        try writeSigParams(w, name, tag, ast.TSConstructSignatureDeclaration) //
     else if (comptime eql(u8, name, "ts_mapped_type")) try writeSpecialTSMappedType(w, tag) //
     else if (comptime eql(u8, name, "ts_module_declaration"))
         try writeSpecialTSModuleDecl(w, tag) //
@@ -427,11 +427,7 @@ fn writeSpecialEncoder(w: *Writer, comptime name: []const u8, comptime tag: usiz
 }
 
 fn isFlagField(comptime F: type) bool {
-    if (F == bool) return true;
-    if (F == ?ast.ImportPhase) return true;
-    if (F == ?ast.Hashbang) return true;
-    if (F == ast.NodeIndex or F == ast.IndexRange or F == ast.String) return false;
-    return @typeInfo(F) == .@"enum";
+    return F == bool or F == ?ast.ImportPhase or F == ?ast.Hashbang or isEnumFlag(F);
 }
 
 fn isEnumFlag(comptime F: type) bool {
@@ -989,9 +985,7 @@ fn writeSpecialObjectPattern(w: *Writer, comptime tag: usize) !void {
 fn writeSpecialProgram(w: *Writer, comptime tag: usize) !void {
     const sb = comptime slotOf(ast.Program, "body");
     const sh = comptime slotOf(ast.Program, "hashbang");
-    const bh = comptime flagBit(ast.Program, "hashbang");
     const mh = comptime flagMask(ast.Program, "hashbang");
-    _ = bh;
     try w.print(
         \\  function enc_program(n) {{
         \\    const body = encArr(n.body, encNode);
@@ -1071,10 +1065,6 @@ fn writeSigParams(
     , .{ label, tag, stp, sp, srt });
 }
 
-fn writeSpecialTSFunctionType(w: *Writer, comptime tag: usize) !void {
-    try writeSigParams(w, "ts_function_type", tag, ast.TSFunctionType);
-}
-
 fn writeSpecialTSConstructorType(w: *Writer, comptime tag: usize) !void {
     const T = ast.TSConstructorType;
     const stp = comptime slotOf(T, "type_parameters");
@@ -1129,19 +1119,6 @@ fn writeSpecialTSMethodSig(w: *Writer, comptime tag: usize) !void {
         \\  }}
         \\
     , .{ tag, sk, stp, sp, srt, mc, mo, bk });
-}
-
-fn writeSpecialTSCallSig(w: *Writer, comptime tag: usize) !void {
-    try writeSigParams(w, "ts_call_signature_declaration", tag, ast.TSCallSignatureDeclaration);
-}
-
-fn writeSpecialTSConstructSig(w: *Writer, comptime tag: usize) !void {
-    try writeSigParams(
-        w,
-        "ts_construct_signature_declaration",
-        tag,
-        ast.TSConstructSignatureDeclaration,
-    );
 }
 
 fn writeSpecialTSMappedType(w: *Writer, comptime tag: usize) !void {

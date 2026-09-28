@@ -502,7 +502,7 @@ const PathCheckVisitor = struct {
         self: *PathCheckVisitor,
         id: ast.IdentifierReference,
         index: ast.NodeIndex,
-        ctx: *parser.traverser.basic.Ctx,
+        ctx: *traverser.basic.Ctx,
     ) Action {
         _ = id;
         self.checked = true;
@@ -515,7 +515,7 @@ const PathCheckVisitor = struct {
     fn check(
         self: *PathCheckVisitor,
         index: ast.NodeIndex,
-        ctx: *parser.traverser.basic.Ctx,
+        ctx: *traverser.basic.Ctx,
     ) !void {
         _ = self;
         try testing.expectEqual(@as(usize, 5), ctx.path.depth());
@@ -537,7 +537,7 @@ test "basic traverser tracks the root-to-current path" {
     defer tree.deinit();
 
     var visitor = PathCheckVisitor{};
-    try parser.traverser.basic.traverse(PathCheckVisitor, &tree, &visitor);
+    try traverser.basic.traverse(PathCheckVisitor, &tree, &visitor);
     try testing.expect(visitor.checked);
     if (visitor.failure) |err| return err;
 }
@@ -549,7 +549,7 @@ const FoldVisitor = struct {
         self: *FoldVisitor,
         expr: ast.BinaryExpression,
         index: ast.NodeIndex,
-        ctx: *parser.traverser.transform.Ctx,
+        ctx: *traverser.transform.Ctx,
     ) Action {
         _ = self;
         ctx.tree.setData(index, ctx.tree.data(expr.left));
@@ -560,7 +560,7 @@ const FoldVisitor = struct {
         self: *FoldVisitor,
         lit: ast.NumericLiteral,
         index: ast.NodeIndex,
-        ctx: *parser.traverser.transform.Ctx,
+        ctx: *traverser.transform.Ctx,
     ) Action {
         _ = lit;
         _ = index;
@@ -575,7 +575,7 @@ test "transform traverser walks the replacement after setData" {
     defer tree.deinit();
 
     var visitor = FoldVisitor{};
-    try parser.traverser.transform.traverse(FoldVisitor, &tree, &visitor);
+    try traverser.transform.traverse(FoldVisitor, &tree, &visitor);
 
     var replaced = false;
     var i: u32 = 0;
@@ -597,7 +597,7 @@ const ExtrasGrowingVisitor = struct {
         self: *ExtrasGrowingVisitor,
         id: ast.IdentifierReference,
         index: ast.NodeIndex,
-        ctx: *parser.traverser.transform.Ctx,
+        ctx: *traverser.transform.Ctx,
     ) Allocator.Error!Action {
         _ = index;
         const name = ctx.tree.string(id.name);
@@ -627,7 +627,7 @@ test "transform traverser survives extras reallocation mid-iteration" {
 
     var visitor = ExtrasGrowingVisitor{ .gpa = testing.allocator };
     defer visitor.deinit();
-    try parser.traverser.transform.traverse(ExtrasGrowingVisitor, &tree, &visitor);
+    try traverser.transform.traverse(ExtrasGrowingVisitor, &tree, &visitor);
 
     try testing.expectEqualStrings("abc", visitor.visited.items);
 }

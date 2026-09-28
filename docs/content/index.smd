@@ -11,19 +11,17 @@ A high-performance JavaScript/TypeScript compiler toolchain written in Zig, brin
 
 ## [Why Yuku]($section.id('why-yuku'))
 
-Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is designed for correctness, performance, and clarity.
+**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes the entire [parser test suite](https://github.com/yuku-toolchain/parser-test-suite), tens of thousands of cases from [Test262](https://github.com/tc39/test262), TypeScript, and Babel, with zero failures and zero AST mismatches. Read [how Yuku is tested](/testing/).
 
-**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes the entire [parser test suite](https://github.com/yuku-toolchain/parser-test-suite), tens of thousands of cases from [Test262](https://github.com/tc39/test262), TypeScript, and Babel, with exact AST matching. Zero failures, zero AST mismatches. Read [how Yuku is tested](/testing/).
+**Fast by design.** The parser is built on data-oriented design, with a flat AST and a single arena per parse.
 
-**Fast by design.** The parser is built using data-oriented design principles and generous performance engineering.
+**Pure Zig, zero dependencies.** No external C libraries or runtime dependencies, so it is easy to build, embed, and cross-compile.
 
-**Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
-
-**Modern JavaScript.** Full support for modern and experimental features including decorators, source phase imports, deferred imports, `using`/`await using` declarations, and more.
+**Modern JavaScript.** Full support for modern and experimental features, including decorators, source phase imports, deferred imports, and `using`/`await using` declarations.
 
 ## [Current Status]($section.id('current-status'))
 
-The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node.js and Zig. The API is stable, the implementation is 100% spec-compliant, and the AST output is fully validated against the [parser test suite](/testing/). The [semantic model](/parser/semantic/) and [traverser](/parser/traverse/) are stable and power Yuku's semantic checker in production.
+The `.js(x)`/`.ts(x)` parser is stable and ready for production use in both Node.js and Zig. Its AST output is fully validated against the [parser test suite](/testing/). The [semantic model](/parser/semantic/) and [traverser](/parser/traverse/) are stable and power Yuku's semantic checker.
 
 ## [Performance]($section.id('performance'))
 
@@ -31,17 +29,15 @@ On native (Zig/Rust) parsing, Yuku is faster than Oxc and roughly 2× faster tha
 
 ![Parsing `typescript.js` (7.8 MB) · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js")
 
-On the JavaScript side (npm), Yuku is **3-10x faster** than alternatives.
+On npm, Yuku is **3-10x faster** than alternatives.
 
 ![Parsing `react.js` (72 KB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing react.js")
 
-But does it scale? Yes.
+The lead holds on large files.
 
 ![Parsing `typescript.js` (7.8 MB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing typescript.js")
 
 ># [A note on Oxc's npm performance]($block.collapsible(false))
->You may wonder why Oxc is slower in this npm benchmark, even slower than Babel. This is because Oxc's npm package has the overhead of passing the AST from Rust to JavaScript. What it does is serialize the AST to a JSON string on the Rust side and then call `JSON.parse` on the JavaScript side. This overhead makes it slower, even though Oxc is very fast at raw parsing speed.
+>Oxc is very fast at raw parsing, but its npm package serializes the AST to a JSON string in Rust and calls `JSON.parse` in JavaScript. That deserialization is the bottleneck, and it grows with the size of the source. Oxc's `program` field is a getter that only runs `JSON.parse` on access, so benchmarking bare `parse` calls hides the cost. The benchmarks above measure the time to obtain the full AST for every parser.
 >
->If you benchmark Babel and Oxc by just calling their `parse` functions, Oxc will appear faster than Babel. This is because the `program` field returned by Oxc's parse call is a getter that only runs `JSON.parse` when you actually access it. That deserialization is the main bottleneck, and it grows as the AST gets larger (i.e., as the source file gets longer). The npm benchmarks above measure the time to actually obtain the full AST for all parsers.
->
->Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly, flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing the entire [parser test suite](/testing/) with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
+>Yuku's AST is flat, compact, and near-binary by design, so passing it from Zig to JavaScript is fast and allocates only what the source needs, without changes to the core parser. The transfer is validated by the [parser test suite](/testing/), with exact AST matching between Zig and JavaScript.

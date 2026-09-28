@@ -2,9 +2,7 @@
 
 Full semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects. Powered by [Yuku](https://github.com/yuku-toolchain/yuku).
 
-**No single library gives you all of this.** Scopes and resolved references mean `eslint-scope` or `@typescript-eslint/scope-manager`. Cross-file go-to-definition means the TypeScript compiler or `ts-morph`. A parser sits under both. `yuku-analyzer` is all of them in one native pass behind one API.
-
-**At native speed.** Up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with zero per-query cost after the single native call. Stitch those separate tools together yourself and the gap only widens: each re-walks the AST, you re-parse to resolve across files, and you keep the indexes between them in sync by hand. `yuku-analyzer` pays all of that once, in Zig.
+Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`.
 
 ## Install
 
@@ -61,7 +59,7 @@ Node identity is exact throughout: the node a semantic query returns is the same
 
 ## Documentation
 
-The full guide, with the architecture, every API, and the design decisions: **[yuku.fyi/analyzer](https://yuku.fyi/analyzer)**.
+The full guide and API reference: **[yuku.fyi/analyzer](https://yuku.fyi/analyzer)**.
 
 ## License
 

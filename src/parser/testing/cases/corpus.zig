@@ -39,8 +39,9 @@ fn verifyScopes(tree: *const ast.Tree, sem: *const Semantic) !void {
             if (scope.kind != .global) return error.RootScopeNotGlobal;
         } else {
             if (scope.parent == .none) return error.OrphanScope;
-            if (@intFromEnum(scope.parent) >= @intFromEnum(entry.id))
+            if (@intFromEnum(scope.parent) >= @intFromEnum(entry.id)) {
                 return error.ParentScopeCreatedAfterChild;
+            }
         }
 
         const target = sem.scope(scope.hoist_target);
@@ -49,12 +50,15 @@ fn verifyScopes(tree: *const ast.Tree, sem: *const Semantic) !void {
             // its own var environment only with parameter expressions
             if (scope.hoist_target != entry.id and
                 scope.hoist_target != sem.scope(scope.parent).hoist_target)
+            {
                 return error.FunctionBodyHoistTargetInvalid;
+            }
         } else if (scope.kind.isHoistTarget()) {
             if (scope.hoist_target != entry.id) return error.HoistTargetNotSelf;
         } else {
-            if (scope.hoist_target != sem.scope(scope.parent).hoist_target)
+            if (scope.hoist_target != sem.scope(scope.parent).hoist_target) {
                 return error.HoistTargetSkipsParent;
+            }
         }
 
         var steps: usize = 0;
@@ -109,8 +113,7 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
         resolved_count += 1;
 
         const symbol = sem.symbol(ref.symbol);
-        if (!std.mem.eql(u8, tree.string(symbol.name), name))
-            return error.ResolvedNameMismatch;
+        if (!std.mem.eql(u8, tree.string(symbol.name), name)) return error.ResolvedNameMismatch;
         if (expected != ref.symbol and !rules_may_differ) return error.ResolvedToWrongBinding;
 
         var on_chain = false;
@@ -139,8 +142,9 @@ fn verifyNodeTables(tree: *const ast.Tree, sem: *const Semantic) !void {
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
         const node: ast.NodeIndex = @enumFromInt(i);
-        if (@intFromEnum(sem.scopeOf(node)) >= sem.scopes.list.len)
+        if (@intFromEnum(sem.scopeOf(node)) >= sem.scopes.list.len) {
             return error.NodeScopeOutOfBounds;
+        }
         if (sem.parentOf(node)) |p| {
             if (@intFromEnum(p) >= tree.nodes.len) return error.NodeParentOutOfBounds;
         }

@@ -53,7 +53,6 @@ pub const ASTStringPool = struct {
     }
 
     /// Interns a string into the extra buffer with deduplication.
-    /// Used for programmatic AST building.
     pub fn addString(
         self: *ASTStringPool,
         alloc: std.mem.Allocator,
@@ -82,7 +81,6 @@ pub const ASTStringPool = struct {
         return id;
     }
 
-    // resolves a String handle to bytes in the extra buffer.
     inline fn resolve(extra: []const u8, src_len: u32, id: String) []const u8 {
         return extra[id.start - src_len .. id.end - src_len];
     }

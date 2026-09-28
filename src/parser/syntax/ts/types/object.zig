@@ -79,21 +79,19 @@ pub fn isStartOfMappedType(parser: *Parser) bool {
     var peek = parser.beginPeek();
     defer peek.end();
 
-    var t = peek.next();
-    if (t.tag == .plus or t.tag == .minus) {
-        const ro = peek.next();
-        if (ro.tag != .readonly) return false;
-        t = peek.next();
-    } else if (t.tag == .readonly) {
-        t = peek.next();
+    var token = peek.next();
+    if (token.tag == .plus or token.tag == .minus) {
+        if (peek.next().tag != .readonly) return false;
+        token = peek.next();
+    } else if (token.tag == .readonly) {
+        token = peek.next();
     }
-    if (t.tag != .left_bracket) return false;
+    if (token.tag != .left_bracket) return false;
 
     const name = peek.next();
     if (!name.tag.isIdentifierLike()) return false;
 
-    const in_tok = peek.next();
-    return in_tok.tag == .in;
+    return peek.next().tag == .in;
 }
 
 // { [K in T]: V }   { readonly [K in T]?: V }   { -readonly [K in T as U]-?: V }
@@ -195,6 +193,7 @@ fn parseMappedModifier(
 
 fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
+    const start = parser.current_token.span.start;
 
     if (tag == .left_paren or tag == .less_than) {
         return parseCallOrConstructSignature(parser, false);
@@ -211,21 +210,18 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     if (tag == .readonly) {
         const next = parser.peekAhead();
         if (!next.hasLineTerminatorBefore() and canFollowReadonlyModifier(next.tag)) {
-            const readonly_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             if (parser.current_token.tag == .left_bracket and isIndexSignatureStart(parser)) {
-                return parseIndexSignature(parser, readonly_start, .{ .readonly = true });
+                return parseIndexSignature(parser, start, .{ .readonly = true });
             }
-            return parsePropertyOrMethodSignature(parser, readonly_start, true);
+            return parsePropertyOrMethodSignature(parser, start, true);
         }
     }
 
     if (tag == .left_bracket and isIndexSignatureStart(parser)) {
-        const start = parser.current_token.span.start;
         return parseIndexSignature(parser, start, .{});
     }
 
-    const start = parser.current_token.span.start;
     return parsePropertyOrMethodSignature(parser, start, false);
 }
 
@@ -398,11 +394,14 @@ fn parsePropertyOrMethodSignature(
         parser.current_token.tag == .left_paren or
         parser.current_token.tag == .less_than;
     if (enter_method) {
-        if (is_readonly) try parser.report(
-            .{ .start = start, .end = parser.tree.span(key).end },
-            "A 'readonly' modifier can only appear on a property declaration or index signature",
-            .{ .help = "Remove 'readonly' from this signature." },
-        );
+        if (is_readonly) {
+            try parser.report(
+                .{ .start = start, .end = parser.tree.span(key).end },
+                "A 'readonly' modifier can only appear on a property declaration or index" ++
+                    " signature",
+                .{ .help = "Remove 'readonly' from this signature." },
+            );
+        }
         return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
     }
 

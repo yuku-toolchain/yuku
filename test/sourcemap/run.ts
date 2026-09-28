@@ -11,6 +11,8 @@ import { generate, type SourceMap } from "yuku-codegen";
 import { TraceMap, originalPositionFor, type EncodedSourceMap } from "@jridgewell/trace-mapping";
 import { CORPUS_DIRS, corpusFilesUnder } from "../corpus";
 
+const OUT_FILE = "out.js";
+
 let totalFiles = 0;
 let totalSkip = 0;
 let totalFail = 0;
@@ -37,7 +39,7 @@ for (const dir of CORPUS_DIRS) {
       comments: true,
       sourceMap: {
         source,
-        file: "out.js",
+        file: OUT_FILE,
         sourceFileName: f,
         sourcesContent: source,
       },
@@ -49,21 +51,10 @@ for (const dir of CORPUS_DIRS) {
     }
 
     const output = parse(result.code, { lang, sourceType });
-    if (output.diagnostics.length > 0) {
-      // codegen produced unparseable output. that is a codegen defect,
-      // caught by test/codegen, and there is nothing to round-trip here.
-      continue;
-    }
+    // unparseable output is a codegen defect, caught by test/codegen
+    if (output.diagnostics.length > 0) continue;
 
-    const errs = verify(
-      source,
-      input.program,
-      result.code,
-      output.program,
-      result.map,
-      "out.js",
-      f,
-    );
+    const errs = verify(source, input.program, result.code, output.program, result.map, f);
     if (errs.length > 0) {
       dirFail++;
       if (sampleErrs.length < 8) sampleErrs.push(`${file}: ${errs[0]}`);
@@ -81,9 +72,8 @@ for (const dir of CORPUS_DIRS) {
 
 console.log();
 for (const e of sampleErrs) console.log(`  ✗ ${e}`);
-console.log(
-  `\n  total: ${totalFiles - totalFail}/${totalFiles} round-trips verified${totalSkip ? `, ${totalSkip} skipped` : ""}`,
-);
+const skipped = totalSkip ? `, ${totalSkip} skipped` : "";
+console.log(`\n  total: ${totalFiles - totalFail}/${totalFiles} round-trips verified${skipped}`);
 process.exit(totalFail > 0 ? 1 : 0);
 
 function verify(
@@ -92,21 +82,22 @@ function verify(
   code: string,
   outputAst: Program,
   map: SourceMap,
-  expectFile: string,
   expectSourceFileName: string,
 ): string[] {
   const errs: string[] = [];
 
   if (map.version !== 3) errs.push(`version: ${map.version}`);
-  if (map.file !== expectFile) errs.push(`file: ${map.file}`);
+  if (map.file !== OUT_FILE) errs.push(`file: ${map.file}`);
   if (
     !Array.isArray(map.sources) ||
     map.sources.length !== 1 ||
     map.sources[0] !== expectSourceFileName
-  )
+  ) {
     errs.push(`sources: ${JSON.stringify(map.sources)}`);
-  if (!map.sourcesContent || map.sourcesContent.length !== 1 || map.sourcesContent[0] !== source)
+  }
+  if (!map.sourcesContent || map.sourcesContent.length !== 1 || map.sourcesContent[0] !== source) {
     errs.push(`sourcesContent mismatch`);
+  }
 
   let tracer: TraceMap;
   try {
@@ -124,16 +115,12 @@ function verify(
     if (!orig.source) {
       errs.push(`no mapping for ${node.type} "${node.name}" at gen ${line + 1}:${col}`);
     } else {
-      const off = offsetOf(source, orig.line - 1, orig.column);
-      const input = inputIds.get(off);
+      const input = inputIds.get(offsetOf(source, orig.line - 1, orig.column));
+      const at = `gen "${node.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column}`;
       if (!input) {
-        errs.push(
-          `gen "${node.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column}: no input identifier there`,
-        );
+        errs.push(`${at}: no input identifier there`);
       } else if (input.name !== node.name) {
-        errs.push(
-          `gen "${node.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column} has "${input.name}"`,
-        );
+        errs.push(`${at} has "${input.name}"`);
       }
     }
     if (errs.length > 4) return errs;
@@ -179,7 +166,7 @@ function toEncodedSourceMap(map: SourceMap): EncodedSourceMap {
   };
 }
 
-// length of the line terminator at `i` (LF, CR, CRLF, U+2028, U+2029), else 0.
+// length of the line terminator at `i`, else 0
 function lineBreakLen(s: string, i: number): number {
   const c = s.charCodeAt(i);
   if (c === 13) return s.charCodeAt(i + 1) === 10 ? 2 : 1;
