@@ -1,0 +1,120 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 104,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 56,
+        "end": 103,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 78,
+            "end": 102,
+            "id": {
+              "type": "ObjectPattern",
+              "start": 78,
+              "end": 102,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 80,
+                  "end": 83,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 80,
+                    "end": 83,
+                    "name": "foo",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 80,
+                    "end": 83,
+                    "name": "foo",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false,
+                  "optional": false
+                }
+              ],
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 85,
+                "end": 102,
+                "typeAnnotation": {
+                  "type": "TSTypeLiteral",
+                  "start": 87,
+                  "end": 102,
+                  "members": [
+                    {
+                      "type": "TSPropertySignature",
+                      "start": 89,
+                      "end": 100,
+                      "key": {
+                        "type": "Identifier",
+                        "start": 89,
+                        "end": 92,
+                        "name": "foo",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "typeAnnotation": {
+                        "type": "TSTypeAnnotation",
+                        "start": 92,
+                        "end": 100,
+                        "typeAnnotation": {
+                          "type": "TSStringKeyword",
+                          "start": 94,
+                          "end": 100
+                        }
+                      },
+                      "computed": false,
+                      "optional": false,
+                      "readonly": false,
+                      "accessibility": null,
+                      "static": false
+                    }
+                  ]
+                }
+              }
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks before ambient variable bindings",
+      "start": 0,
+      "end": 55
+    },
+    {
+      "type": "Line",
+      "value": " marker",
+      "start": 68,
+      "end": 77
+    }
+  ],
+  "diagnostics": []
+}

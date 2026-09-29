@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       62/62 (100.00%)
+Passed:       88/88 (100.00%)
 Failed:       0
-AST mismatch: 0/62
+AST mismatch: 0/88
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -76,6 +76,32 @@ error: Type parameters cannot appear on a constructor declaration
    = help: Declare the type parameters on the class instead.
 
 
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-array-binding.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-block-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-const.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-contextual-binding.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-let.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-line-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-newline.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-object-binding.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-var.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-const-enum-ambient.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-const-enum-block-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-const-enum-export.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-const-enum-line-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-const-enum-newline.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-global-block-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-global-line-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-global-newline.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-abstract-class-block-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-abstract-class-line-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-abstract-class-newline.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-abstract-method-block-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-abstract-method-line-comment.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-abstract-method-newline.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-ambient-class.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-ambient-function.module.ts
+✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-export-ambient-class.module.ts
 ✓ test/parser/misc/ts/declare-function-overloads.ts
 ✓ test/parser/misc/ts/decorated-abstract-class-expression-invalid.ts
 error: Expected 'class' keyword, but found 'abstract'

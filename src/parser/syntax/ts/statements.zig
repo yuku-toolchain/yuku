@@ -45,18 +45,8 @@ pub fn isStartOfTsDeclaration(parser: *Parser) bool {
         has_abstract = true;
     }
 
-    if (cur.tag == .@"const") {
-        const next = peek.next();
-        if (isConstEnumHead(next)) {
-            cur = next;
-        } else if (has_declare) {
-            return !next.hasLineTerminatorBefore() and variables.canStartBinding(next.tag);
-        } else {
-            return false;
-        }
-    }
-
     switch (cur.tag) {
+        .@"const" => return has_declare or isConstEnumHead(peek.next()),
         .@"enum" => return true,
         .type, .interface, .namespace => {
             const name = peek.next();
@@ -69,17 +59,10 @@ pub fn isStartOfTsDeclaration(parser: *Parser) bool {
         },
         .global => {
             const next = peek.next();
-            return next.tag == .left_brace and !next.hasLineTerminatorBefore();
+            return next.tag == .left_brace;
         },
-        .@"var", .let, .function, .class => {
-            if (!has_declare and !has_abstract) return false;
-            const name = peek.next();
-            if (name.hasLineTerminatorBefore()) return false;
-            return switch (cur.tag) {
-                .@"var", .let => variables.canStartBinding(name.tag),
-                else => isDeclarationName(name),
-            };
-        },
+        .class => return has_declare or has_abstract,
+        .function, .@"var", .let => return has_declare,
         .async => {
             if (!has_declare) return false;
             const fn_token = peek.next();
@@ -99,7 +82,7 @@ pub fn isStartOfTsDeclaration(parser: *Parser) bool {
 }
 
 pub fn isConstEnumHead(after_const: Token) bool {
-    return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
+    return after_const.tag == .@"enum";
 }
 
 fn isDeclarationName(token: Token) bool {

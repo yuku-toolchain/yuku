@@ -1,0 +1,71 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 87,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSEnumDeclaration",
+        "start": 46,
+        "end": 86,
+        "id": {
+          "type": "Identifier",
+          "start": 75,
+          "end": 76,
+          "name": "E",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 77,
+          "end": 86,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 79,
+              "end": 84,
+              "id": {
+                "type": "Identifier",
+                "start": 79,
+                "end": 80,
+                "name": "A",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 83,
+                "end": 84,
+                "value": 1,
+                "raw": "1"
+              },
+              "computed": false
+            }
+          ]
+        },
+        "const": true,
+        "declare": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks between const and enum",
+      "start": 0,
+      "end": 45
+    },
+    {
+      "type": "Line",
+      "value": " marker",
+      "start": 60,
+      "end": 69
+    }
+  ],
+  "diagnostics": []
+}
