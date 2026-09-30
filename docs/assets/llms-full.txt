@@ -42,7 +42,7 @@ npm install yuku-parser
 
 ### WebAssembly
 
-Runtimes that load native addons run a native binary for their platform. Browsers, edge runtimes, and platforms without a native binary run the WebAssembly build instead, with the same API and byte-identical results. It needs WebAssembly SIMD and reference types, which every current browser and edge runtime supports. Install it and load it once, and every Yuku package runs on it.
+Runtimes that load native addons run a native binary for their platform. Browsers, edge runtimes, and platforms without a native binary run the WebAssembly build instead, with the same API and byte-identical results. Install it and load it once, and every Yuku package runs on it.
 
 ```bash
 npm install @yuku-engine/wasm
