@@ -12,7 +12,7 @@ import type {
   SourceType,
   TokenKindMap,
   TokenList,
-  WalkContext as BaseWalkContext,
+  WalkContext,
 } from "@yuku-toolchain/types";
 
 /** A diagnostic produced by {@link Analyzer.link}. */
@@ -261,7 +261,7 @@ interface Reference {
 }
 
 /**
- * The semantic walk context: the toolchain's {@link BaseWalkContext} (the
+ * The semantic walk context: the toolchain's {@link WalkContext} (the
  * same position info and mutation operations, exact same semantics)
  * plus the module's semantic surface. One object is reused across the
  * whole walk; do not hold onto it across nodes.
@@ -271,7 +271,7 @@ interface Reference {
  * Analyze, transform, then print (or re-analyze the printed output for
  * fresh semantics).
  */
-declare class WalkContext<T extends Node = Node> extends BaseWalkContext<T> {
+declare class SemanticWalkContext<T extends Node = Node> extends WalkContext<T> {
   /** The module being walked. Every semantic query is in reach. */
   readonly module: Module;
   /**
@@ -287,41 +287,49 @@ declare class WalkContext<T extends Node = Node> extends BaseWalkContext<T> {
 }
 
 /** Handler invoked with the precisely-typed node and the walk context. */
-type WalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext<T>) => void;
+type SemanticWalkHandler<T extends Node = Node> = (
+  node: T,
+  ctx: SemanticWalkContext<T>,
+) => void;
 
 /** Enter/leave pair for one node type. */
-interface WalkHooks<T extends Node = Node> {
-  enter?: WalkHandler<T>;
-  leave?: WalkHandler<T>;
+interface SemanticWalkHooks<T extends Node = Node> {
+  enter?: SemanticWalkHandler<T>;
+  leave?: SemanticWalkHandler<T>;
 }
 
 /**
- * Visitors passed to {@link Module.walk}: keys are node `type` strings, plus optional `enter` /
- * `leave` catch-alls. Order per node: catch-all `enter`, typed enter,
- * children, typed leave, catch-all `leave`.
+ * Visitors passed to {@link Module.walk}: keys are node `type` strings, plus optional `enter` and
+ * `leave` catch-alls. Order per node: catch-all `enter`, typed enter, children, typed leave,
+ * catch-all `leave`.
  */
-type Visitors = {
-  [K in NodeType]?: WalkHandler<NodeOfType<K>> | WalkHooks<NodeOfType<K>>;
+type SemanticVisitors = {
+  [K in NodeType]?: SemanticWalkHandler<NodeOfType<K>> | SemanticWalkHooks<NodeOfType<K>>;
 } & {
-  enter?: WalkHandler;
-  leave?: WalkHandler;
+  enter?: SemanticWalkHandler;
+  leave?: SemanticWalkHandler;
 };
 
 /** Handler for one node type in an async walk, free to return a promise. */
-type AsyncWalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext<T>) => void | Promise<void>;
+type AsyncSemanticWalkHandler<T extends Node = Node> = (
+  node: T,
+  ctx: SemanticWalkContext<T>,
+) => void | Promise<void>;
 
 /** Enter/leave pair for one node type in an async walk. */
-interface AsyncWalkHooks<T extends Node = Node> {
-  enter?: AsyncWalkHandler<T>;
-  leave?: AsyncWalkHandler<T>;
+interface AsyncSemanticWalkHooks<T extends Node = Node> {
+  enter?: AsyncSemanticWalkHandler<T>;
+  leave?: AsyncSemanticWalkHandler<T>;
 }
 
-/** {@link Visitors}, with handlers that may return promises. */
-type AsyncVisitors = {
-  [K in NodeType]?: AsyncWalkHandler<NodeOfType<K>> | AsyncWalkHooks<NodeOfType<K>>;
+/** {@link SemanticVisitors}, with handlers that may return promises. */
+type AsyncSemanticVisitors = {
+  [K in NodeType]?:
+    | AsyncSemanticWalkHandler<NodeOfType<K>>
+    | AsyncSemanticWalkHooks<NodeOfType<K>>;
 } & {
-  enter?: AsyncWalkHandler;
-  leave?: AsyncWalkHandler;
+  enter?: AsyncSemanticWalkHandler;
+  leave?: AsyncSemanticWalkHandler;
 };
 
 /** A free variable of a function, as reported by {@link Module.capturesOf}. */
@@ -540,14 +548,14 @@ interface Module {
    * Scope information is replayed from the native scope tree, so
    * non-scope nodes pay a single type lookup and nothing else.
    */
-  walk(visitors: Visitors, root?: Node): void;
+  walk(visitors: SemanticVisitors, root?: Node): void;
 
   /**
    * The async counterpart of {@link Module.walk}: identical traversal
    * order and mutation semantics, with every handler awaited before
    * the walk moves on.
    */
-  walkAsync(visitors: AsyncVisitors, root?: Node): Promise<void>;
+  walkAsync(visitors: AsyncSemanticVisitors, root?: Node): Promise<void>;
 
   /** Collects every node of the given type(s), in source order. */
   findAll<K extends NodeType>(type: K): NodeOfType<K>[];
@@ -689,9 +697,9 @@ export {
   type AddFileOptions,
   type AnalyzeOptions,
   type AnalyzerOptions,
-  type AsyncVisitors,
-  type AsyncWalkHandler,
-  type AsyncWalkHooks,
+  type AsyncSemanticVisitors,
+  type AsyncSemanticWalkHandler,
+  type AsyncSemanticWalkHooks,
   type Capture,
   type Definition,
   type Export,
@@ -707,10 +715,10 @@ export {
   type Reference,
   type Scope,
   type ScopeKind,
+  type SemanticVisitors,
+  type SemanticWalkContext,
+  type SemanticWalkHandler,
+  type SemanticWalkHooks,
   type Space,
   type Symbol,
-  type Visitors,
-  type WalkContext,
-  type WalkHandler,
-  type WalkHooks,
 };
