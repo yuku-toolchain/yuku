@@ -1,0 +1,471 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 280,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 12,
+          "value": "use strict",
+          "raw": "\"use strict\""
+        },
+        "directive": "use strict"
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 15,
+        "end": 44,
+        "id": {
+          "type": "Identifier",
+          "start": 24,
+          "end": 35,
+          "name": "declaration"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 36,
+            "end": 37,
+            "name": "a"
+          },
+          {
+            "type": "Identifier",
+            "start": 39,
+            "end": 40,
+            "name": "a"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 42,
+          "end": 44,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 45,
+        "end": 84,
+        "id": {
+          "type": "Identifier",
+          "start": 55,
+          "end": 75,
+          "name": "generatorDeclaration"
+        },
+        "generator": true,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 76,
+            "end": 77,
+            "name": "a"
+          },
+          {
+            "type": "Identifier",
+            "start": 79,
+            "end": 80,
+            "name": "a"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 82,
+          "end": 84,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 85,
+        "end": 125,
+        "id": {
+          "type": "Identifier",
+          "start": 100,
+          "end": 116,
+          "name": "asyncDeclaration"
+        },
+        "generator": false,
+        "async": true,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 117,
+            "end": 118,
+            "name": "a"
+          },
+          {
+            "type": "Identifier",
+            "start": 120,
+            "end": 121,
+            "name": "a"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 123,
+          "end": 125,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 126,
+        "end": 176,
+        "id": {
+          "type": "Identifier",
+          "start": 142,
+          "end": 167,
+          "name": "asyncGeneratorDeclaration"
+        },
+        "generator": true,
+        "async": true,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 168,
+            "end": 169,
+            "name": "a"
+          },
+          {
+            "type": "Identifier",
+            "start": 171,
+            "end": 172,
+            "name": "a"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 174,
+          "end": 176,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 178,
+        "end": 199,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 178,
+          "end": 198,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 179,
+            "end": 197,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 189,
+                "end": 190,
+                "name": "a"
+              },
+              {
+                "type": "Identifier",
+                "start": 192,
+                "end": 193,
+                "name": "a"
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 195,
+              "end": 197,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 200,
+        "end": 222,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 200,
+          "end": 221,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 201,
+            "end": 220,
+            "id": null,
+            "generator": true,
+            "async": false,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 212,
+                "end": 213,
+                "name": "a"
+              },
+              {
+                "type": "Identifier",
+                "start": 215,
+                "end": 216,
+                "name": "a"
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 218,
+              "end": 220,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 223,
+        "end": 250,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 223,
+          "end": 249,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 224,
+            "end": 248,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 240,
+                "end": 241,
+                "name": "a"
+              },
+              {
+                "type": "Identifier",
+                "start": 243,
+                "end": 244,
+                "name": "a"
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 246,
+              "end": 248,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 251,
+        "end": 279,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 251,
+          "end": 278,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 252,
+            "end": 277,
+            "id": null,
+            "generator": true,
+            "async": true,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 269,
+                "end": 270,
+                "name": "a"
+              },
+              {
+                "type": "Identifier",
+                "start": 272,
+                "end": 273,
+                "name": "a"
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 275,
+              "end": 277,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 39,
+      "end": 40,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 36,
+          "end": 37,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 39,
+          "end": 40,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 79,
+      "end": 80,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 76,
+          "end": 77,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 79,
+          "end": 80,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 120,
+      "end": 121,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 117,
+          "end": 118,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 120,
+          "end": 121,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 171,
+      "end": 172,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 168,
+          "end": 169,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 171,
+          "end": 172,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 192,
+      "end": 193,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 189,
+          "end": 190,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 192,
+          "end": 193,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 215,
+      "end": 216,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 212,
+          "end": 213,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 215,
+          "end": 216,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 243,
+      "end": 244,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 240,
+          "end": 241,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 243,
+          "end": 244,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "start": 272,
+      "end": 273,
+      "help": "Consider removing or renaming this declaration of 'a'",
+      "labels": [
+        {
+          "start": 269,
+          "end": 270,
+          "message": "'a' was first declared as a parameter here"
+        },
+        {
+          "start": 272,
+          "end": 273,
+          "message": "cannot be redeclared here"
+        }
+      ]
+    }
+  ]
+}

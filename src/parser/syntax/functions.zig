@@ -87,11 +87,7 @@ pub fn parseFunction(
     else
         .null;
 
-    const params_kind: ast.FormalParameterKind = if (is_generator or opts.is_async)
-        .unique_formal_parameters
-    else
-        .formal_parameters;
-    const params = try parseFormalParameters(parser, params_kind, false) orelse return null;
+    const params = try parseFormalParameters(parser, .formal_parameters, false) orelse return null;
     const params_end = parser.tree.span(params).end;
 
     var return_type: ast.NodeIndex = .null;

@@ -1,8 +1,70 @@
 test/parser/misc/js/semantic
 ============================
-Passed:       2/2 (100.00%)
+Passed:       8/8 (100.00%)
 Failed:       0
-AST mismatch: 0/2
+AST mismatch: 0/8
+
+✓ test/parser/misc/js/semantic/duplicate-parameters-methods-arrows.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | ({ method(a, a) {} });
+   |              ^
+   |           ~ 'a' was first declared as a parameter here
+   |              ~ cannot be redeclared here
+ 2 | ({ *generatorMethod(a, a) {} });
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/misc/js/semantic/duplicate-parameters-non-simple.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | function initializer(a, a, b = 0) {}
+   |                         ^
+   |                      ~ 'a' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+ 2 | function* leadingInitializer(a = 0, a) {}
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/misc/js/semantic/duplicate-parameters-sloppy.js
+✓ test/parser/misc/js/semantic/duplicate-parameters-strict-script.js
+error: Identifier 'a' has already been declared
+   |
+ 2 | 
+ 3 | function declaration(a, a) {}
+   |                         ^
+   |                      ~ 'a' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+ 4 | function* generatorDeclaration(a, a) {}
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/misc/js/semantic/duplicate-parameters-strict.module.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | function declaration(a, a) {}
+   |                         ^
+   |                      ~ 'a' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+ 2 | function* generatorDeclaration(a, a) {}
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/misc/js/semantic/duplicate-parameters-use-strict.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | function declaration(a, a) { "use strict"; }
+   |                         ^
+   |                      ~ 'a' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+ 2 | function* generatorDeclaration(a, a) { "use strict"; }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
 
 ✓ test/parser/misc/js/semantic/redeclare-block-functions.js
 error: Identifier 'g' has already been declared

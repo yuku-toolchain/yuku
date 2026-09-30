@@ -133,6 +133,17 @@ test("an export default value keeps the parens that stop it reading as a declara
   `);
 });
 
+test("an async function as a new callee or class heritage prints without parens", () => {
+  const source = [
+    "new (async function () {})();",
+    "class C extends (async function () {}) {}",
+  ].join("\n");
+  expect(gen(source, {}, "input.js", { preserveParens: false })).toMatchInlineSnapshot(`
+    "new async function() {}();
+    class C extends async function() {} {}"
+  `);
+});
+
 test("an `in` inside a for-init arrow body or yield keeps its parens", () => {
   const source = [
     "for (let f = () => (a in b); ; );",

@@ -1,0 +1,305 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 275,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 23,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 22,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 4,
+            "end": 22,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 20,
+              "end": 22,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 24,
+        "end": 49,
+        "expression": {
+          "type": "NewExpression",
+          "start": 24,
+          "end": 48,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 28,
+            "end": 46,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 44,
+              "end": 46,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 50,
+        "end": 79,
+        "expression": {
+          "type": "NewExpression",
+          "start": 50,
+          "end": 78,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 54,
+            "end": 78,
+            "id": {
+              "type": "Identifier",
+              "start": 69,
+              "end": 74,
+              "name": "named"
+            },
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 76,
+              "end": 78,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 80,
+        "end": 104,
+        "expression": {
+          "type": "NewExpression",
+          "start": 80,
+          "end": 103,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 84,
+            "end": 103,
+            "id": null,
+            "generator": true,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 101,
+              "end": 103,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 105,
+        "end": 135,
+        "expression": {
+          "type": "NewExpression",
+          "start": 105,
+          "end": 134,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 109,
+            "end": 134,
+            "id": {
+              "type": "Identifier",
+              "start": 125,
+              "end": 130,
+              "name": "named"
+            },
+            "generator": true,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 132,
+              "end": 134,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 136,
+        "end": 183,
+        "expression": {
+          "type": "NewExpression",
+          "start": 136,
+          "end": 182,
+          "callee": {
+            "type": "MemberExpression",
+            "start": 140,
+            "end": 170,
+            "object": {
+              "type": "FunctionExpression",
+              "start": 140,
+              "end": 158,
+              "id": null,
+              "generator": false,
+              "async": true,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 156,
+                "end": 158,
+                "body": []
+              },
+              "expression": false
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 159,
+              "end": 170,
+              "name": "constructor"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 171,
+              "end": 181,
+              "value": "return 1",
+              "raw": "\"return 1\""
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 184,
+        "end": 222,
+        "expression": {
+          "type": "NewExpression",
+          "start": 184,
+          "end": 221,
+          "callee": {
+            "type": "MemberExpression",
+            "start": 188,
+            "end": 219,
+            "object": {
+              "type": "FunctionExpression",
+              "start": 188,
+              "end": 207,
+              "id": null,
+              "generator": true,
+              "async": true,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 205,
+                "end": 207,
+                "body": []
+              },
+              "expression": false
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 208,
+              "end": 219,
+              "name": "constructor"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 223,
+        "end": 260,
+        "expression": {
+          "type": "NewExpression",
+          "start": 223,
+          "end": 259,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 227,
+            "end": 259,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 257,
+              "end": 259,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 261,
+        "end": 274,
+        "expression": {
+          "type": "NewExpression",
+          "start": 261,
+          "end": 273,
+          "callee": {
+            "type": "Identifier",
+            "start": 265,
+            "end": 270,
+            "name": "async"
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 271,
+              "end": 272,
+              "value": 1,
+              "raw": "1"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " comment ",
+      "start": 233,
+      "end": 246
+    }
+  ],
+  "diagnostics": []
+}
