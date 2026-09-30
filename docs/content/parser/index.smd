@@ -9,24 +9,17 @@ Yuku's parser turns JavaScript and TypeScript source into an [AST](/parser/ast/)
 
 ## [JavaScript]($section.id('javascript'))
 
+```bash
+npm install yuku-parser
+```
+
 ```js
 import { parse } from "yuku-parser";
 
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-`parse` returns a `ParseResult`.
-
-```ts
-interface ParseResult {
-  program: Program;          // the ESTree / TypeScript-ESTree AST
-  comments: Comment[];       // every comment in source order
-  tokens?: TokenList;        // with tokens: true
-  diagnostics: Diagnostic[];
-}
-```
-
-The AST is described in [AST](/parser/ast/#javascript), and the other fields in [Comments](/parser/ast/#comments), [Tokens](/parser/ast/#tokens), and [Diagnostics](#diagnostics).
+Outputs an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) AST matching [Oxc](https://oxc.rs). See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
 ## [Zig]($section.id('zig'))
 
@@ -66,35 +59,25 @@ for (tree.extra(program.body)) |child_idx| {
 }
 ```
 
-The four read primitives are `tree.data(idx)` for a node's payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a child list, and `tree.string(handle)` for string content. See the [AST reference](/parser/ast/) for the full node catalog.
+The four read primitives are `tree.data(idx)` for a node's payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a child list, and `tree.string(handle)` for string content. See [AST](/parser/ast/) for how the tree is laid out and read.
 
 ## [Options]($section.id('options'))
 
-```js
-parse(source, { lang: "tsx", sourceType: "module" });
-```
+`parse` takes an `Options` struct.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .lang = .tsx, .source_type = .module });
 ```
 
-| JavaScript       | Zig               | Default          | Description                                                                                                                                                                                      |
-| ---------------- | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sourceType`     | `source_type`     | `module`         | `script`, `module`, or `commonjs`. Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. CommonJS mode allows top-level `return`, `new.target`, and `using`. |
-| `lang`           | `lang`            | `js`             | `js`, `ts`, `jsx`, `tsx`, or `dts`, the syntax extensions to enable.                                                                                                                             |
-| `preserveParens` | `preserve_parens` | `true`           | Keep `ParenthesizedExpression` nodes. When off, only the inner expression is kept.                                                                                                               |
-| `attachComments` | `comments`        | `false`, `.flat` | Attach each comment to its host node. The Zig field also selects whether comments are collected at all. See [Comments](/parser/ast/#comments).                                                   |
-| `tokens`         | `tokens`          | `false`          | Keep every token. See [Tokens](/parser/ast/#tokens).                                                                                                                                             |
-| `semanticErrors` |                   | `false`          | Also report semantic errors. See [Semantic errors](#semantic-errors).                                                                                                                            |
+| Field             | Values                                 | Default   | Description                                                                                                                                                              |
+| ----------------- | -------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `source_type`     | `.script`, `.module`, `.commonjs`      | `.module` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. CommonJS mode allows top-level `return`, `new.target`, and `using`.             |
+| `lang`            | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts`   | `.js`     | The syntax extensions to enable.                                                                                                                                         |
+| `preserve_parens` | `true`, `false`                        | `true`    | Keep `parenthesized_expression` nodes. When off, only the inner expression is kept.                                                                                      |
+| `comments`        | `.none`, `.flat`, `.attached`, `.both` | `.flat`   | Skip comments, collect a flat list, attach them to their host nodes, or both. See [Comments](/parser/ast/#comments).                                                     |
+| `tokens`          | `true`, `false`                        | `false`   | Keep every token. See [Tokens](/parser/ast/#tokens).                                                                                                                     |
 
-`sourceType` and `lang` can be inferred from a file path. `.d.ts`, `.tsx`, `.ts`, and `.jsx` select their language, and `.cjs` and `.cts` select CommonJS.
-
-```js
-import { langFromPath, sourceTypeFromPath } from "yuku-parser";
-
-langFromPath("app.tsx");        // "tsx"
-sourceTypeFromPath("app.cjs");  // "commonjs"
-```
+`source_type` and `lang` can be inferred from a file path. `.d.ts`, `.tsx`, `.ts`, and `.jsx` select their language, and `.cjs` and `.cts` select CommonJS.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{
@@ -105,20 +88,7 @@ var tree = try parser.parse(allocator, source, .{
 
 ## [Diagnostics]($section.id('diagnostics'))
 
-Each diagnostic has a severity (`error`, `warning`, `hint`, or `info`), a message, a source range, optional labels pointing to related code, and optional help text. Every Yuku tool reports diagnostics in this shape.
-
-```ts
-interface Diagnostic {
-  severity: "error" | "warning" | "hint" | "info";
-  message: string;
-  help: string | null;
-  start: number; // UTF-16 offsets, like nodes
-  end: number;
-  labels: { start: number; end: number; message: string }[];
-}
-```
-
-In Zig, the range is a byte `span`.
+Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, or `.info`), a `message`, a byte `span`, optional `labels` pointing to related code, and optional `help` text.
 
 ```zig
 for (tree.diagnostics.items) |d| {
@@ -138,18 +108,11 @@ for (tree.diagnostics.items) |d| {
 
 ### [Semantic errors]($section.id('semantic-errors'))
 
-The parser reports syntax errors. Errors that need scopes and bindings, such as duplicate `let` declarations, `break` outside a loop, and unresolved private fields, come from semantic analysis, a separate and cheap pass. Leave it off when a linter or type checker already validates the code.
-
-```js
-parse(`let x = 1; let x = 2;`, { semanticErrors: true }).diagnostics;
-// includes "Identifier 'x' has already been declared"
-```
-
-In Zig, [`semantic.analyze`](/parser/semantic/#analyzing-a-tree) appends them to `tree.diagnostics`.
+The parser reports syntax errors. Errors that need scopes and bindings, such as duplicate `let` declarations, `break` outside a loop, and unresolved private fields, come from [semantic analysis](/parser/semantic/#analyzing-a-tree), a separate and cheap pass that appends them to `tree.diagnostics`.
 
 ## [Going Further]($section.id('going-further'))
 
-- [AST](/parser/ast/): the tree in JavaScript and Zig, with comments and tokens.
+- [AST](/parser/ast/): the tree, its comments, and tokens.
 - [Semantic Analysis](/parser/semantic/): scopes, symbols, resolved references, early errors, and module records.
 - [Traverse](/parser/traverse/): walking and transforming the tree.
 - [Codegen](/parser/codegen/): print a tree back to JavaScript or TypeScript source.

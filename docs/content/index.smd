@@ -25,36 +25,16 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 ### [JavaScript]($section.id('javascript'))
 
-Each tool is its own package. Install the ones you need.
+Each tool is its own npm package, documented in its README.
 
-| Package                               | For                                                 |
-| ------------------------------------- | --------------------------------------------------- |
-| [`yuku-parser`](/parser/)             | Parsing to an ESTree / TypeScript-ESTree AST        |
-| [`yuku-analyzer`](/analyzer/)         | Scopes, symbols, references, and cross-file linking |
-| [`yuku-codegen`](/parser/codegen/)    | Printing an AST back to source, with source maps    |
-| [`yuku-ast`](/parser/ast/#javascript) | Walking, building, and checking AST nodes           |
+| Package                                                        | For                                                 |
+| -------------------------------------------------------------- | --------------------------------------------------- |
+| [`yuku-parser`](https://www.npmjs.com/package/yuku-parser)     | Parsing to an ESTree / TypeScript-ESTree AST        |
+| [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) | Scopes, symbols, references, and cross-file linking |
+| [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen)   | Printing an AST back to source, with source maps    |
+| [`yuku-ast`](https://www.npmjs.com/package/yuku-ast)           | Walking, building, and checking AST nodes           |
 
-```bash
-npm install yuku-parser
-```
-
-### [WebAssembly]($section.id('webassembly'))
-
-Runtimes that load native addons run a native binary for their platform. Browsers, edge runtimes, and platforms without a native binary run the WebAssembly build instead, with the same API and byte-identical results. Install it and load it once, and every Yuku package runs on it.
-
-```bash
-npm install @yuku-engine/wasm
-```
-
-```js
-import { init } from "@yuku-engine/wasm";
-import { parse } from "yuku-parser";
-
-await init();
-parse("const x = 1;");
-```
-
-`init` fetches `@yuku-engine/wasm/yuku-engine.wasm` by default, or takes a URL, a `Response`, the module's bytes, or a compiled `WebAssembly.Module` for runtimes that import `.wasm` files as modules. Runtimes with `node:fs` need no `init`, and where the native binary is missing or native addons are disabled, switch to the WebAssembly build if they can `require()` ES modules.
+The parser and analyzer run on a native binary for each platform. In browsers, edge runtimes, and on platforms without one, they run on [`@yuku-engine/wasm`](https://www.npmjs.com/package/@yuku-engine/wasm), with the same API and byte-identical results.
 
 ### [Zig]($section.id('zig'))
 

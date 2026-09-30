@@ -22,7 +22,7 @@ Yuku is a high-performance JavaScript and TypeScript compiler toolchain written 
 
 ## Documentation
 
-Visit [yuku.fyi](https://yuku.fyi) for the full documentation and API reference.
+Visit [yuku.fyi](https://yuku.fyi) for the documentation. Each npm package documents its JavaScript API in its README.
 
 ## Parser
 
@@ -38,7 +38,7 @@ import { parse } from "yuku-parser";
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-Outputs an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm, and in browsers with [`@yuku-engine/wasm`](https://yuku.fyi/#webassembly).
+Outputs an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree)-compatible AST matching [Oxc](https://oxc.rs). Runs 3-10x faster than alternatives on npm, and in browsers with [`@yuku-engine/wasm`](https://www.npmjs.com/package/@yuku-engine/wasm).
 
 ### Zig
 
@@ -80,7 +80,7 @@ const { program } = parse(source);
 const { code, map } = generate(program, { sourceMap: { source } });
 ```
 
-[Read the codegen documentation →](https://yuku.fyi/parser/codegen)
+[Read the yuku-codegen documentation →](https://www.npmjs.com/package/yuku-codegen)
 
 ## Analyzer
 
@@ -103,7 +103,7 @@ project.module("c.ts").rootScope.find("renamed").definition().symbol.name;
 
 Scopes, symbols, resolved references, closures, and cross-file module linking, computed in one native pass.
 
-[Read the analyzer documentation →](https://yuku.fyi/analyzer)
+[Read the yuku-analyzer documentation →](https://www.npmjs.com/package/yuku-analyzer)
 
 ## Performance
 

@@ -1,4 +1,4 @@
-//! AST node definitions. See [AST reference](https://yuku.fyi/parser/ast).
+//! AST node definitions. See [AST](https://yuku.fyi/parser/ast) for how to read the tree.
 //!
 //! Child fields (`NodeIndex`/`IndexRange`) of every node struct are declared
 //! in source order.

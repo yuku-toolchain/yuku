@@ -27,36 +27,16 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 ### JavaScript
 
-Each tool is its own package. Install the ones you need.
+Each tool is its own npm package, documented in its README.
 
-| Package                               | For                                                 |
-| ------------------------------------- | --------------------------------------------------- |
-| [`yuku-parser`](https://yuku.fyi/parser/)             | Parsing to an ESTree / TypeScript-ESTree AST        |
-| [`yuku-analyzer`](https://yuku.fyi/analyzer/)         | Scopes, symbols, references, and cross-file linking |
-| [`yuku-codegen`](https://yuku.fyi/parser/codegen/)    | Printing an AST back to source, with source maps    |
-| [`yuku-ast`](https://yuku.fyi/parser/ast/#javascript) | Walking, building, and checking AST nodes           |
+| Package                                                        | For                                                 |
+| -------------------------------------------------------------- | --------------------------------------------------- |
+| [`yuku-parser`](https://www.npmjs.com/package/yuku-parser)     | Parsing to an ESTree / TypeScript-ESTree AST        |
+| [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) | Scopes, symbols, references, and cross-file linking |
+| [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen)   | Printing an AST back to source, with source maps    |
+| [`yuku-ast`](https://www.npmjs.com/package/yuku-ast)           | Walking, building, and checking AST nodes           |
 
-```bash
-npm install yuku-parser
-```
-
-### WebAssembly
-
-Runtimes that load native addons run a native binary for their platform. Browsers, edge runtimes, and platforms without a native binary run the WebAssembly build instead, with the same API and byte-identical results. Install it and load it once, and every Yuku package runs on it.
-
-```bash
-npm install @yuku-engine/wasm
-```
-
-```js
-import { init } from "@yuku-engine/wasm";
-import { parse } from "yuku-parser";
-
-await init();
-parse("const x = 1;");
-```
-
-`init` fetches `@yuku-engine/wasm/yuku-engine.wasm` by default, or takes a URL, a `Response`, the module's bytes, or a compiled `WebAssembly.Module` for runtimes that import `.wasm` files as modules. Runtimes with `node:fs` need no `init`, and where the native binary is missing or native addons are disabled, switch to the WebAssembly build if they can `require()` ES modules.
+The parser and analyzer run on a native binary for each platform. In browsers, edge runtimes, and on platforms without one, they run on [`@yuku-engine/wasm`](https://www.npmjs.com/package/@yuku-engine/wasm), with the same API and byte-identical results.
 
 ### Zig
 
@@ -120,24 +100,17 @@ Yuku's parser turns JavaScript and TypeScript source into an [AST](https://yuku.
 
 ## JavaScript
 
+```bash
+npm install yuku-parser
+```
+
 ```js
 import { parse } from "yuku-parser";
 
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-`parse` returns a `ParseResult`.
-
-```ts
-interface ParseResult {
-  program: Program;          // the ESTree / TypeScript-ESTree AST
-  comments: Comment[];       // every comment in source order
-  tokens?: TokenList;        // with tokens: true
-  diagnostics: Diagnostic[];
-}
-```
-
-The AST is described in [AST](https://yuku.fyi/parser/ast/#javascript), and the other fields in [Comments](https://yuku.fyi/parser/ast/#comments), [Tokens](https://yuku.fyi/parser/ast/#tokens), and [Diagnostics](#diagnostics).
+Outputs an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) AST matching [Oxc](https://oxc.rs). See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
 ## Zig
 
@@ -177,35 +150,25 @@ for (tree.extra(program.body)) |child_idx| {
 }
 ```
 
-The four read primitives are `tree.data(idx)` for a node's payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a child list, and `tree.string(handle)` for string content. See the [AST reference](https://yuku.fyi/parser/ast/) for the full node catalog.
+The four read primitives are `tree.data(idx)` for a node's payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a child list, and `tree.string(handle)` for string content. See [AST](https://yuku.fyi/parser/ast/) for how the tree is laid out and read.
 
 ## Options
 
-```js
-parse(source, { lang: "tsx", sourceType: "module" });
-```
+`parse` takes an `Options` struct.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .lang = .tsx, .source_type = .module });
 ```
 
-| JavaScript       | Zig               | Default          | Description                                                                                                                                                                                      |
-| ---------------- | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sourceType`     | `source_type`     | `module`         | `script`, `module`, or `commonjs`. Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. CommonJS mode allows top-level `return`, `new.target`, and `using`. |
-| `lang`           | `lang`            | `js`             | `js`, `ts`, `jsx`, `tsx`, or `dts`, the syntax extensions to enable.                                                                                                                             |
-| `preserveParens` | `preserve_parens` | `true`           | Keep `ParenthesizedExpression` nodes. When off, only the inner expression is kept.                                                                                                               |
-| `attachComments` | `comments`        | `false`, `.flat` | Attach each comment to its host node. The Zig field also selects whether comments are collected at all. See [Comments](https://yuku.fyi/parser/ast/#comments).                                                   |
-| `tokens`         | `tokens`          | `false`          | Keep every token. See [Tokens](https://yuku.fyi/parser/ast/#tokens).                                                                                                                                             |
-| `semanticErrors` |                   | `false`          | Also report semantic errors. See [Semantic errors](#semantic-errors).                                                                                                                            |
+| Field             | Values                                 | Default   | Description                                                                                                                                                              |
+| ----------------- | -------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `source_type`     | `.script`, `.module`, `.commonjs`      | `.module` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. CommonJS mode allows top-level `return`, `new.target`, and `using`.             |
+| `lang`            | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts`   | `.js`     | The syntax extensions to enable.                                                                                                                                         |
+| `preserve_parens` | `true`, `false`                        | `true`    | Keep `parenthesized_expression` nodes. When off, only the inner expression is kept.                                                                                      |
+| `comments`        | `.none`, `.flat`, `.attached`, `.both` | `.flat`   | Skip comments, collect a flat list, attach them to their host nodes, or both. See [Comments](https://yuku.fyi/parser/ast/#comments).                                                     |
+| `tokens`          | `true`, `false`                        | `false`   | Keep every token. See [Tokens](https://yuku.fyi/parser/ast/#tokens).                                                                                                                     |
 
-`sourceType` and `lang` can be inferred from a file path. `.d.ts`, `.tsx`, `.ts`, and `.jsx` select their language, and `.cjs` and `.cts` select CommonJS.
-
-```js
-import { langFromPath, sourceTypeFromPath } from "yuku-parser";
-
-langFromPath("app.tsx");        // "tsx"
-sourceTypeFromPath("app.cjs");  // "commonjs"
-```
+`source_type` and `lang` can be inferred from a file path. `.d.ts`, `.tsx`, `.ts`, and `.jsx` select their language, and `.cjs` and `.cts` select CommonJS.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{
@@ -216,20 +179,7 @@ var tree = try parser.parse(allocator, source, .{
 
 ## Diagnostics
 
-Each diagnostic has a severity (`error`, `warning`, `hint`, or `info`), a message, a source range, optional labels pointing to related code, and optional help text. Every Yuku tool reports diagnostics in this shape.
-
-```ts
-interface Diagnostic {
-  severity: "error" | "warning" | "hint" | "info";
-  message: string;
-  help: string | null;
-  start: number; // UTF-16 offsets, like nodes
-  end: number;
-  labels: { start: number; end: number; message: string }[];
-}
-```
-
-In Zig, the range is a byte `span`.
+Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, or `.info`), a `message`, a byte `span`, optional `labels` pointing to related code, and optional `help` text.
 
 ```zig
 for (tree.diagnostics.items) |d| {
@@ -249,18 +199,11 @@ for (tree.diagnostics.items) |d| {
 
 ### Semantic errors
 
-The parser reports syntax errors. Errors that need scopes and bindings, such as duplicate `let` declarations, `break` outside a loop, and unresolved private fields, come from semantic analysis, a separate and cheap pass. Leave it off when a linter or type checker already validates the code.
-
-```js
-parse(`let x = 1; let x = 2;`, { semanticErrors: true }).diagnostics;
-// includes "Identifier 'x' has already been declared"
-```
-
-In Zig, [`semantic.analyze`](https://yuku.fyi/parser/semantic/#analyzing-a-tree) appends them to `tree.diagnostics`.
+The parser reports syntax errors. Errors that need scopes and bindings, such as duplicate `let` declarations, `break` outside a loop, and unresolved private fields, come from [semantic analysis](https://yuku.fyi/parser/semantic/#analyzing-a-tree), a separate and cheap pass that appends them to `tree.diagnostics`.
 
 ## Going Further
 
-- [AST](https://yuku.fyi/parser/ast/): the tree in JavaScript and Zig, with comments and tokens.
+- [AST](https://yuku.fyi/parser/ast/): the tree, its comments, and tokens.
 - [Semantic Analysis](https://yuku.fyi/parser/semantic/): scopes, symbols, resolved references, early errors, and module records.
 - [Traverse](https://yuku.fyi/parser/traverse/): walking and transforming the tree.
 - [Codegen](https://yuku.fyi/parser/codegen/): print a tree back to JavaScript or TypeScript source.
@@ -269,109 +212,12 @@ In Zig, [`semantic.analyze`](https://yuku.fyi/parser/semantic/#analyzing-a-tree)
 
 Source: https://yuku.fyi/parser/ast/
 
-The parser produces one tree, read two ways. JavaScript receives it as an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) AST, and Zig reads the flat, data-oriented tree directly. [Comments](#comments) and [tokens](#tokens) come alongside in both.
+The parser produces a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index. [Comments](#comments) and [tokens](#tokens) come alongside the tree.
 
-## JavaScript
-
-For JavaScript and JSX, the AST is fully conformant with ESTree, identical to what [Acorn](https://www.npmjs.com/package/acorn) produces. For TypeScript, it conforms to the TypeScript-ESTree format used by `@typescript-eslint`. For both, it matches the AST [Oxc](https://oxc.rs) produces.
-
-On top of the base specs, the AST carries:
-
-- Stage 3 [decorators](https://github.com/tc39/proposal-decorators).
-- Stage 3 [import defer](https://github.com/tc39/proposal-defer-import-eval) and [import source](https://github.com/tc39/proposal-source-phase-imports). The dynamic forms are an `ImportExpression` with `phase` set to `"defer"` or `"source"`.
-- A `hashbang` field on `Program` for `#!/usr/bin/env node` lines.
-
-Any other deviation from Acorn's ESTree or `@typescript-eslint`'s TypeScript-ESTree is a bug.
-
-Every node type is exported, from the `Node` union down to individual types, listed in the [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/index.d.ts).
-
-```ts
-import type { Expression, Identifier, Node, Statement } from "yuku-parser";
-```
-
-The utilities below come from `yuku-ast` and work on any ESTree AST, whichever parser produced it.
-
-### Builders
-
-`b` has one typed constructor per node type. Spans default to 0, which [`ctx.replace`](https://yuku.fyi/parser/traverse/#mutation) fills from the replaced node.
-
-```ts
-import { b } from "yuku-ast";
-
-b.CallExpression({ callee: b.Identifier({ name: "f" }), arguments: [], optional: false });
-```
-
-### Guards
-
-`is` has one guard per node type, per alias group (`Expression`, `Function`, ...), and for the shapes ESTree folds into one type: literal kinds, member expression kinds, and directives. Every guard accepts `null` and `undefined` and narrows.
-
-```ts
-import { is } from "yuku-ast";
-
-is.CallExpression(node);
-is.Identifier(node, "require");
-is.oneOf(node, ["FunctionDeclaration", "ClassDeclaration"]);
-is.Expression(node);
-is.StringLiteral(node);
-is.StaticMemberExpression(node);
-```
-
-### Helpers
-
-```ts
-import {
-  bindingIdentifiers, // every binding Identifier a pattern introduces
-  isCallOf,           // isCallOf(node, "require")
-  isWrapper,          // true for the wrappers unwrap strips
-  literalValue,       // string | number | boolean | bigint | RegExp | null
-  nameOf,             // Identifier name or string Literal value
-  unwrap,             // strips parens and erased TypeScript assertion wrappers
-} from "yuku-ast";
-```
-
-### Imports and exports
-
-`collectImports` and `collectExports` read a module's import and export declarations, one record per bound name, destructuring included.
-
-```ts
-import { collectExports, collectImports } from "yuku-ast";
-
-for (const record of collectImports(program)) {
-  record.source;   // "./m"
-  record.local;    // the local binding name
-  record.imported; // "default", "*", or the export name
-  record.typeOnly; // import type / import { type x }
-  record.phase;    // "source" | "defer" | null
-}
-
-for (const record of collectExports(program)) {
-  record.exported; // the exported name, null for a bare export *
-  record.local;    // the backing local name, when there is one
-  record.source;   // the re-export specifier, when there is one
-  record.typeOnly;
-}
-```
-
-`collectImportDeclaration` and `collectExportDeclaration` return the records of a single statement, for use inside a [walk](https://yuku.fyi/parser/traverse/#javascript).
-
-### Identifier names
-
-```ts
-import { isIdentifierName, isValidIdentifier } from "yuku-ast";
-
-isValidIdentifier("foo");   // true
-isValidIdentifier("class"); // false, reserved
-isIdentifierName("class");  // true, syntactically an IdentifierName
-```
-
-Plus `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, `isStrictBindReservedWord`, and `isStrictBindOnlyReservedWord`.
-
-## Zig
-
-The Zig tree is a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index.
+In JavaScript, [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) returns the same tree as an ESTree / TypeScript-ESTree AST, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks, builds, and checks it.
 
 > **Building tools on the AST?**
->Reach for the [traverser](https://yuku.fyi/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. The sections below cover the tree itself, its node types and fields, and how to read them directly.
+>Reach for the [traverser](https://yuku.fyi/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. The sections below cover the tree itself and how to read it directly.
 
 ## Memory model
 
@@ -492,7 +338,7 @@ const text = tree.source[span.start..span.end];
 
 ## Reading a node
 
-`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(idx)` returns one. `switch` on the tag and unpack.
+`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...), and [ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every one with its fields. `tree.data(idx)` returns one. `switch` on the tag and unpack.
 
 ```zig
 switch (tree.data(idx)) {
@@ -564,425 +410,11 @@ if (data.isCallable()) {
 }
 ```
 
-## Node reference
-
-Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.data()` switches and visitor hooks (`enter_<tag>`).
-
-Optional child fields are noted with `.null`. Optional child lists are noted with `.empty`.
-
-### Program
-
-The root of every tree. There is always exactly one `program` node at `tree.root`.
-
-```zig
-pub const Program = struct {
-    source_type: SourceType,    // .script or .module
-    body: IndexRange,           // (any statement | directive)[]
-    hashbang: ?Hashbang,        // non-null for #!/usr/bin/env node lines
-};
-```
-
-`directive` nodes (such as `"use strict";`) appear at the start of the body. Imports and exports appear in source order alongside other statements.
-
-### Statements
-
-| Tag                    | Syntax                          | Description                                                                |
-| ---------------------- | ------------------------------- | -------------------------------------------------------------------------- |
-| `expression_statement` | `expr;`                         | An expression used as a statement.                                         |
-| `block_statement`      | `{ ... }`                       | A braced block.                                                            |
-| `empty_statement`      | `;`                             | A standalone semicolon.                                                    |
-| `debugger_statement`   | `debugger;`                     | A debugger breakpoint.                                                     |
-| `if_statement`         | `if (test) cons else alt`       | An `if` / `else` branch.                                                   |
-| `switch_statement`     | `switch (d) { cases }`          | A `switch` with one or more `case` and `default` clauses.                  |
-| `switch_case`          | `case x: ...` / `default: ...`  | A single clause inside a `switch`.                                         |
-| `for_statement`        | `for (init; test; update) body` | A C-style `for` loop.                                                      |
-| `for_in_statement`     | `for (x in y) body`             | A `for ... in` loop iterating over enumerable property keys.               |
-| `for_of_statement`     | `for (x of y) body`             | A `for ... of` or `for await ... of` loop iterating over an iterable.      |
-| `while_statement`      | `while (test) body`             | A `while` loop.                                                            |
-| `do_while_statement`   | `do body while (test)`          | A `do ... while` loop.                                                     |
-| `break_statement`      | `break;` / `break label;`       | A `break` exiting the nearest loop, switch, or labeled statement.          |
-| `continue_statement`   | `continue;` / `continue label;` | A `continue` jumping to the next iteration of the nearest or labeled loop. |
-| `labeled_statement`    | `label: stmt`                   | A statement prefixed with a label that `break` and `continue` can target.  |
-| `return_statement`     | `return;` / `return expr;`      | A `return` from the enclosing function.                                    |
-| `throw_statement`      | `throw expr;`                   | A `throw` raising an exception.                                            |
-| `try_statement`        | `try {} catch {} finally {}`    | A `try` with optional `catch` and `finally` clauses.                       |
-| `catch_clause`         | `catch (e) { body }`            | The `catch` clause of a `try`, with an optional binding.                   |
-| `with_statement`       | `with (obj) body`               | A `with` block. Forbidden in strict mode.                                  |
-
-### Declarations
-
-| Tag                    | Syntax                        | Description                                                                  |
-| ---------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
-| `variable_declaration` | `var/let/const/using x = ...` | A `var`, `let`, `const`, `using`, or `await using` declaration.              |
-| `variable_declarator`  | `x = init`                    | A single binding inside a variable declaration.                              |
-| `directive`            | `"use strict";`               | A directive prologue, only valid at the top of a function or module body.    |
-| `function`             | `function foo() {}`           | Every function form (declaration, expression, ambient, body-less signature). |
-| `class`                | `class Foo {}`                | Both class declarations and class expressions.                               |
-
-`function` and `class` are dual-purpose nodes. The `type` field distinguishes the form.
-
-```zig
-// FunctionType
-function_declaration                // function foo() {}
-function_expression                 // const x = function () {}
-ts_declare_function                 // declare function foo(): void
-                                    // also plain overload signatures
-ts_empty_body_function_expression   // body-less class methods (overloads,
-                                    // abstract, ambient)
-
-// ClassType
-class_declaration                   // class Foo {}
-class_expression                    // const x = class {}
-```
-
-### Expressions
-
-| Tag                          | Syntax                                  | Description                                                                      |
-| ---------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `binary_expression`          | `a + b`, `a === b`, `a instanceof b`    | A non-logical, non-assignment binary operation.                                  |
-| `logical_expression`         | `a && b`, `a \|\| b`, `a ?? b`          | A short-circuiting logical operation.                                            |
-| `unary_expression`           | `!x`, `typeof x`, `void x`, `delete x`  | A unary prefix operation.                                                        |
-| `update_expression`          | `x++`, `++x`, `x--`                     | A prefix or postfix increment or decrement.                                      |
-| `assignment_expression`      | `x = y`, `x += y`, `x ??= y`            | An assignment or compound assignment.                                            |
-| `conditional_expression`     | `test ? a : b`                          | A ternary expression.                                                            |
-| `sequence_expression`        | `a, b, c`                               | A comma-separated sequence of expressions.                                       |
-| `parenthesized_expression`   | `(expr)`                                | An expression wrapped in parentheses, preserved in the tree.                     |
-| `member_expression`          | `obj.prop`, `obj[x]`, `obj.#priv`       | Property access, in static, computed, or optional form.                          |
-| `call_expression`            | `fn(args)`, `fn?.()`                    | A function call, optionally with type arguments or optional invocation.          |
-| `new_expression`             | `new Foo(args)`                         | A `new` constructor invocation.                                                  |
-| `chain_expression`           | `a?.b`, `a?.()`                         | A wrapper that scopes optional-chain short-circuiting to a member or call chain. |
-| `tagged_template_expression` | `` tag`hello` ``                        | A template literal preceded by a tag function.                                   |
-| `await_expression`           | `await expr`                            | An `await` of a promise inside an async context.                                 |
-| `yield_expression`           | `yield expr`, `yield* expr`             | A `yield` or delegating `yield*` inside a generator.                             |
-| `meta_property`              | `import.meta`, `new.target`             | A meta property reference such as `import.meta` or `new.target`.                 |
-| `array_expression`           | `[a, , b, ...c]`                        | An array literal, including holes and spread elements.                           |
-| `object_expression`          | `{a: 1, b, ...c}`                       | An object literal, including spread elements.                                    |
-| `object_property`            | `key: value`, getters, setters, methods | A property entry inside an object literal.                                       |
-| `spread_element`             | `...expr`                               | A spread element used in arrays, calls, and object literals.                     |
-| `import_expression`          | `import(src)`, `import.source(src)`     | A dynamic `import()` call or phased import.                                      |
-| `this_expression`            | `this`                                  | The `this` keyword used as an expression.                                        |
-| `super`                      | `super`                                 | The `super` keyword used as an expression head.                                  |
-
-### Literals
-
-| Tag                | Syntax                        | Description                                          |
-| ------------------ | ----------------------------- | ---------------------------------------------------- |
-| `string_literal`   | `"hello"`, `'world'`          | A string literal with escape sequences resolved.     |
-| `numeric_literal`  | `42`, `0xFF`, `0o7`, `0b1010` | A numeric literal in decimal, hex, octal, or binary. |
-| `bigint_literal`   | `42n`                         | A BigInt literal.                                    |
-| `boolean_literal`  | `true`, `false`               | The `true` or `false` keyword as a value.            |
-| `null_literal`     | `null`                        | The `null` literal.                                  |
-| `regexp_literal`   | `/pattern/flags`              | A regular expression literal.                        |
-| `template_literal` | `` `hello ${name}` ``         | A template literal with zero or more interpolations. |
-| `template_element` | text part between `${...}`    | A static text span inside a template literal.        |
-
-### Identifiers
-
-Five tags, each carrying a `name: String` field. They appear in different syntactic positions and resolve differently.
-
-| Tag                    | Used for                                                                                                                   |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `identifier_reference` | A name used as a value, like `x`, `console`, `Math`                                                                             |
-| `binding_identifier`   | A name being declared, like `const x`, `function foo`, `import { x }`                                                           |
-| `identifier_name`      | A bare name in non-expression position, like object keys (`{foo: 1}`), member access right-hand side (`obj.foo`), `import.meta` |
-| `label_identifier`     | A label name in `break label`, `continue label`, or `label: stmt`                                                          |
-| `private_identifier`   | A private class member, like `#field` (the `#` is not part of `name`)                                                           |
-
-```js
-const foo = bar.baz;
-//    ^^^   ^^^ ^^^
-//    |     |   identifier_name (property, never resolved)
-//    |     identifier_reference (variable use, resolved by scope chain)
-//    binding_identifier (declaration, recorded as a symbol)
-```
-
-`binding_identifier` additionally carries decorators, an optional type annotation, and an optional `?` flag when it appears in a parameter position.
-
-### Patterns (destructuring)
-
-| Tag                    | Syntax                          | Description                                                                        |
-| ---------------------- | ------------------------------- | ---------------------------------------------------------------------------------- |
-| `array_pattern`        | `[a, , b, ...rest]`             | An array destructuring pattern.                                                    |
-| `object_pattern`       | `{a, b: c, ...rest}`            | An object destructuring pattern.                                                   |
-| `binding_property`     | `key: value` or shorthand `key` | A single property inside an object pattern.                                        |
-| `assignment_pattern`   | `x = default`                   | A binding pattern with a default value, used in destructuring and parameter lists. |
-| `binding_rest_element` | `...rest`                       | A `...rest` element inside a binding pattern or parameter list.                    |
-| `formal_parameters`    | `(a, b = 1, ...rest)`           | The parameter list of a function.                                                  |
-| `formal_parameter`     | a single parameter slot         | A single parameter slot wrapping a binding pattern.                                |
-
-### Functions
-
-```zig
-pub const Function = struct {
-    type: FunctionType,          // declaration, expression, or TS forms
-    id: NodeIndex,               // binding_identifier (.null for anonymous)
-    type_parameters: NodeIndex,  // ts_type_parameter_declaration or .null
-    params: NodeIndex,           // formal_parameters
-    return_type: NodeIndex,      // ts_type_annotation or .null
-    body: NodeIndex,             // function_body (.null for TS overloads / abstract)
-    generator: bool,             // true for function*
-    async: bool,                 // true for async function
-    declare: bool,               // true for declare function
-};
-```
-
-| Tag                         | Description                                                                    |
-| --------------------------- | ------------------------------------------------------------------------------ |
-| `function`                  | Every named and anonymous function form, including ambient and body-less ones. |
-| `function_body`             | The braced body of a function.                                                 |
-| `arrow_function_expression` | An arrow function, with either an expression or a block body.                  |
-
-### Classes
-
-```zig
-pub const Class = struct {
-    type: ClassType,                  // class_declaration or class_expression
-    decorators: IndexRange,           // decorator[] (empty if none)
-    id: NodeIndex,                    // binding_identifier (.null for anonymous expressions)
-    type_parameters: NodeIndex,       // ts_type_parameter_declaration or .null
-    super_class: NodeIndex,           // any expression (.null if no extends clause)
-    super_type_arguments: NodeIndex,  // ts_type_parameter_instantiation or .null
-    implements: IndexRange,           // ts_class_implements[] (empty if none)
-    body: NodeIndex,                  // class_body
-    abstract: bool,                   // true for abstract class
-    declare: bool,                    // true for declare class
-};
-```
-
-| Tag                   | Description                                               |
-| --------------------- | --------------------------------------------------------- |
-| `class`               | Both class declarations and class expressions.            |
-| `class_body`          | The braced body of a class, holding its members.          |
-| `method_definition`   | A method, getter, setter, or constructor inside a class.  |
-| `property_definition` | A class field or auto-accessor declaration.               |
-| `static_block`        | A `static { ... }` initialization block inside a class.   |
-| `decorator`           | A decorator (`@expr`) applied to a class or class member. |
-
-### Modules
-
-| Tag                          | Syntax                         | Description                                                                  |
-| ---------------------------- | ------------------------------ | ---------------------------------------------------------------------------- |
-| `import_declaration`         | `import x from 'y'`            | A static `import` declaration, including side-effect and phased forms.       |
-| `import_specifier`           | `{ imported as local }`        | A named binding specifier in an import declaration.                          |
-| `import_default_specifier`   | `import x from ...`            | The default-binding specifier in an import declaration.                      |
-| `import_namespace_specifier` | `import * as x from ...`       | A `* as local` namespace import specifier.                                   |
-| `import_attribute`           | `{ type: "json" }`             | A single attribute in a `with { ... }` clause on an import or export.        |
-| `export_named_declaration`   | `export { x }`, `export var x` | An `export { ... }` or `export <decl>` declaration, with optional re-export. |
-| `export_default_declaration` | `export default expr`          | An `export default` declaration.                                             |
-| `export_all_declaration`     | `export * from 'y'`            | An `export * from "m"` or `export * as ns from "m"` declaration.             |
-| `export_specifier`           | `{ local as exported }`        | A named binding specifier in an export declaration.                          |
-
-### JSX
-
-JSX nodes are only present in `.jsx` and `.tsx` trees.
-
-| Tag                        | Syntax                      | Description                                              |
-| -------------------------- | --------------------------- | -------------------------------------------------------- |
-| `jsx_element`              | `<Foo>...</Foo>`            | A JSX element, possibly self-closing.                    |
-| `jsx_opening_element`      | `<Foo ...>`                 | The opening tag of a JSX element.                        |
-| `jsx_closing_element`      | `</Foo>`                    | The closing tag of a JSX element.                        |
-| `jsx_fragment`             | `<>...</>`                  | A JSX fragment.                                          |
-| `jsx_opening_fragment`     | `<>`                        | The opening `<>` of a JSX fragment.                      |
-| `jsx_closing_fragment`     | `</>`                       | The closing `</>` of a JSX fragment.                     |
-| `jsx_identifier`           | `Foo` in JSX position       | An identifier used as a JSX tag or attribute name.       |
-| `jsx_namespaced_name`      | `namespace:name`            | A namespaced JSX name.                                   |
-| `jsx_member_expression`    | `Foo.Bar.Baz`               | A dotted JSX tag name.                                   |
-| `jsx_attribute`            | `foo="bar"` or `foo={expr}` | A single JSX attribute, including boolean-only forms.    |
-| `jsx_spread_attribute`     | `{...props}`                | A spread attribute on a JSX element.                     |
-| `jsx_expression_container` | `{expression}`              | An `{ expression }` slot inside JSX.                     |
-| `jsx_empty_expression`     | `{}`                        | The empty `{}` placeholder inside a JSX expression slot. |
-| `jsx_text`                 | text content between tags   | A span of raw text inside a JSX element or fragment.     |
-| `jsx_spread_child`         | `{...children}`             | A spread child inside a JSX element.                     |
-
-A JSX tag name (the `name` field on `jsx_opening_element`, `jsx_closing_element`, and one form of `jsx_attribute`) is one of `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`.
-
-A JSX child (entries in the `children` list on `jsx_element` and `jsx_fragment`) is one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
-
-## TypeScript
-
-TypeScript nodes are present in `.ts`, `.tsx`, and `.dts` trees.
-
-### Type wrapper
-
-| Tag                  | Syntax | Description                                                                  |
-| -------------------- | ------ | ---------------------------------------------------------------------------- |
-| `ts_type_annotation` | `: T`  | A `: T` annotation wrapping an inner type. The span starts at the `:` token. |
-
-### Keyword types
-
-Each keyword is its own zero-field node.
-
-| Tag                    | Syntax      |
-| ---------------------- | ----------- |
-| `ts_any_keyword`       | `any`       |
-| `ts_unknown_keyword`   | `unknown`   |
-| `ts_never_keyword`     | `never`     |
-| `ts_void_keyword`      | `void`      |
-| `ts_null_keyword`      | `null`      |
-| `ts_undefined_keyword` | `undefined` |
-| `ts_string_keyword`    | `string`    |
-| `ts_number_keyword`    | `number`    |
-| `ts_bigint_keyword`    | `bigint`    |
-| `ts_boolean_keyword`   | `boolean`   |
-| `ts_symbol_keyword`    | `symbol`    |
-| `ts_object_keyword`    | `object`    |
-| `ts_intrinsic_keyword` | `intrinsic` |
-| `ts_this_type`         | `this`      |
-
-### Type references
-
-| Tag                 | Syntax               | Description                                                                  |
-| ------------------- | -------------------- | ---------------------------------------------------------------------------- |
-| `ts_type_reference` | `Foo`, `Promise<T>`  | A reference to a named type, optionally with type arguments.                 |
-| `ts_qualified_name` | `A.B.C`              | A left-associative dotted type name.                                         |
-| `ts_type_query`     | `typeof console.log` | The `typeof` type operator applied to a value reference.                     |
-| `ts_import_type`    | `import("m").Foo<T>` | A reference to a type imported from a module path, written in type position. |
-
-### Type parameters and arguments
-
-| Tag                               | Syntax                 | Description                                                                    |
-| --------------------------------- | ---------------------- | ------------------------------------------------------------------------------ |
-| `ts_type_parameter`               | `T`, `T extends U = V` | A single type parameter introduced by a generic declaration.                   |
-| `ts_type_parameter_declaration`   | `<T, U>`               | The `<...>` parameter list introduced by a generic declaration.                |
-| `ts_type_parameter_instantiation` | `<number, string>`     | The `<...>` argument list applied at a call site, reference, or instantiation. |
-
-### Literal and template types
-
-| Tag                        | Syntax                        | Description                                                          |
-| -------------------------- | ----------------------------- | -------------------------------------------------------------------- |
-| `ts_literal_type`          | `"hello"`, `42`, `true`, `-1` | A literal value used in type position.                               |
-| `ts_template_literal_type` | `` `Hello, ${N}!` ``          | A template literal in type position with one or more interpolations. |
-
-### Composite types
-
-| Tag                      | Syntax                  | Description                                                                  |
-| ------------------------ | ----------------------- | ---------------------------------------------------------------------------- |
-| `ts_array_type`          | `T[]`                   | A postfix array type.                                                        |
-| `ts_indexed_access_type` | `T[K]`                  | An indexed access type that looks up a property type.                        |
-| `ts_tuple_type`          | `[T, U?, ...V[]]`       | A fixed-length tuple type with positional, optional, rest, or named entries. |
-| `ts_named_tuple_member`  | `label: T`, `label?: T` | A labeled element inside a tuple type.                                       |
-| `ts_optional_type`       | `T?` (in tuple slot)    | An optional element inside a tuple type.                                     |
-| `ts_rest_type`           | `...T` (in tuple slot)  | A rest element inside a tuple type.                                          |
-
-### Set-operation types
-
-| Tag                    | Syntax                              | Description                                                        |
-| ---------------------- | ----------------------------------- | ------------------------------------------------------------------ |
-| `ts_union_type`        | `A \| B \| C`                       | A union of two or more types.                                      |
-| `ts_intersection_type` | `A & B & C`                         | An intersection of two or more types.                              |
-| `ts_conditional_type`  | `T extends U ? X : Y`               | A conditional type selecting between two branches.                 |
-| `ts_infer_type`        | `infer R`, `infer R extends string` | An `infer` placeholder inside a conditional type's extends branch. |
-
-### Type operators
-
-| Tag                     | Syntax                                     | Description                                                 |
-| ----------------------- | ------------------------------------------ | ----------------------------------------------------------- |
-| `ts_type_operator`      | `keyof T`, `unique symbol`, `readonly T[]` | A `keyof`, `unique`, or `readonly` prefix on an inner type. |
-| `ts_parenthesized_type` | `(T)`                                      | A parenthesized type used for grouping or precedence.       |
-
-### Callable types
-
-| Tag                   | Syntax                                  | Description                                                                   |
-| --------------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
-| `ts_function_type`    | `(x: T) => U`                           | A callable signature in type position.                                        |
-| `ts_constructor_type` | `new (x: T) => U`, `abstract new ...`   | A constructor signature in type position, optionally `abstract`.              |
-| `ts_type_predicate`   | `x is T`, `asserts x is T`, `asserts x` | A type predicate that narrows a parameter or `this` in control-flow analysis. |
-
-### Object-shape types
-
-| Tag               | Syntax            | Description                                                              |
-| ----------------- | ----------------- | ------------------------------------------------------------------------ |
-| `ts_type_literal` | `{ x: T; y: U }`  | An anonymous object type holding a list of signatures.                   |
-| `ts_mapped_type`  | `{ [K in T]: V }` | A mapped type that projects every key in a union to a new property type. |
-
-### JSDoc types
-
-| Tag                          | Syntax            | Description                                                     |
-| ---------------------------- | ----------------- | --------------------------------------------------------------- |
-| `ts_jsdoc_nullable_type`     | `?T` or `T?`      | A JSDoc-style nullable type marker.                             |
-| `ts_jsdoc_non_nullable_type` | `!T` or `T!`      | A JSDoc-style non-nullable type marker.                         |
-| `ts_jsdoc_unknown_type`      | `?` (in `Foo<?>`) | A JSDoc-style unknown type, valid only in a type argument slot. |
-
-### Signature members
-
-These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
-
-| Tag                                  | Syntax                                    | Description                                                                      |
-| ------------------------------------ | ----------------------------------------- | -------------------------------------------------------------------------------- |
-| `ts_property_signature`              | `key: T`, `readonly key?: T`              | A property declaration inside a type literal or interface body.                  |
-| `ts_method_signature`                | `m(x: T): U`, `get x(): T`, `set x(v: T)` | A method, getter, or setter declaration inside a type literal or interface body. |
-| `ts_call_signature_declaration`      | `(x: T): U`                               | A bare call signature inside a type literal or interface body.                   |
-| `ts_construct_signature_declaration` | `new (x: T): U`                           | A bare construct signature inside a type literal or interface body.              |
-| `ts_index_signature`                 | `[k: K]: V`, `readonly [...]: V`          | An index signature inside a type literal, interface body, or class body.         |
-
-### Type, interface, and enum declarations
-
-| Tag                         | Syntax                                 | Description                                                            |
-| --------------------------- | -------------------------------------- | ---------------------------------------------------------------------- |
-| `ts_type_alias_declaration` | `type Maybe<T> = T \| null`            | A `type` alias declaration, optionally generic and optionally ambient. |
-| `ts_interface_declaration`  | `interface Foo<T> extends Bar { ... }` | An `interface` declaration, optionally generic and optionally ambient. |
-| `ts_interface_body`         | `{ ... }` of an interface              | The body of an interface, holding its signature members.               |
-| `ts_interface_heritage`     | one entry of an `extends` clause       | A single parent listed in an interface's `extends` clause.             |
-| `ts_class_implements`       | one entry of an `implements` clause    | A single interface listed in a class's `implements` clause.            |
-| `ts_enum_declaration`       | `enum Color { ... }`                   | An `enum` declaration, optionally `const` and optionally ambient.      |
-| `ts_enum_body`              | `{ ... }` of an enum                   | The body of an enum, holding its members in source order.              |
-| `ts_enum_member`            | `A = 1` inside an enum body            | A single member of an enum body, with an optional initializer.         |
-
-### Module and namespace declarations
-
-| Tag                     | Syntax                                   | Description                                                           |
-| ----------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
-| `ts_module_declaration` | `namespace Foo { ... }`, `module "x" {}` | A `namespace` or `module` declaration, optionally ambient.            |
-| `ts_module_block`       | the `{ ... }` of a module                | The body of a `namespace`, `module`, or `declare global` declaration. |
-| `ts_global_declaration` | `declare global { ... }`                 | A `declare global` augmentation block.                                |
-
-### Parameters and `this`
-
-| Tag                     | Syntax                        | Description                                                                     |
-| ----------------------- | ----------------------------- | ------------------------------------------------------------------------------- |
-| `ts_parameter_property` | `constructor(public x: T) {}` | A constructor parameter that implicitly declares a class field.                 |
-| `ts_this_parameter`     | `function f(this: T)`         | An explicit `this` parameter declaring the type of `this` in the function body. |
-
-### TypeScript expressions
-
-| Tag                           | Syntax             | Description                                               |
-| ----------------------------- | ------------------ | --------------------------------------------------------- |
-| `ts_as_expression`            | `expr as T`        | A postfix `as` type assertion.                            |
-| `ts_satisfies_expression`     | `expr satisfies T` | A postfix `satisfies` constraint check.                   |
-| `ts_type_assertion`           | `<T>expr`          | A prefix `<T>` type assertion. Forbidden in `.tsx`.       |
-| `ts_non_null_expression`      | `expr!`            | A postfix non-null assertion.                             |
-| `ts_instantiation_expression` | `expr<T>`          | A type instantiation expression without call parentheses. |
-
-### TypeScript module forms
-
-| Tag                               | Syntax                                          | Description                                                                       |
-| --------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
-| `ts_export_assignment`            | `export = expr`                                 | A CommonJS-style ambient export.                                                  |
-| `ts_namespace_export_declaration` | `export as namespace Name`                      | A UMD ambient namespace export.                                                   |
-| `ts_import_equals_declaration`    | `import x = require("m")`, `import x = Foo.Bar` | An `import =` declaration binding to a require or entity name.                    |
-| `ts_external_module_reference`    | `require("m")`                                  | The `require("module")` form on the right-hand side of `import x = require(...)`. |
 ## Comments
 
 Comments come two ways. The flat list holds every comment in source order with its source span. Attached comments hang on the AST node they sit next to, so they move with their node through transforms, which is what [codegen](https://yuku.fyi/parser/codegen/#comments) prints from.
 
-In JavaScript, `result.comments` is always the flat list, and `attachComments: true` also attaches them, read off `node.comments`.
-
-```js
-const { comments, program } = parse(`// header\nfunction foo() {} // trailing`, {
-  attachComments: true,
-});
-
-comments[0];
-// { type: "Line", value: " header", start: 0, end: 9 }
-
-program.body[0].comments;
-// [
-//   { type: "Line", position: "before", sameLine: false, value: " header" },
-//   { type: "Line", position: "after", sameLine: true, value: " trailing" },
-// ]
-```
-
-In Zig, the `comments` option selects `.flat` (the default), `.attached`, `.both`, or `.none`, read with `tree.comments` and `tree.commentsOf(idx)`.
+The `comments` option selects `.flat` (the default), `.attached`, `.both`, or `.none`, read with `tree.comments` and `tree.commentsOf(idx)`.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .comments = .both });
@@ -1005,25 +437,13 @@ An attached comment also records where it sits relative to its host.
 - `after` trails the host node.
 - `inside` sits interior to an otherwise empty host, like `function f() { /* hi */ }`.
 
-`sameLine` (`same_line` in Zig) is true when the comment shares a source line with the host's adjacent edge, the start for `before` and the end for `after`. It is always false for `inside`.
+`same_line` is true when the comment shares a source line with the host's adjacent edge, the start for `before` and the end for `after`. It is always false for `inside`.
 
 ## Tokens
 
 The `tokens` option keeps every token the parser consumed, in source order. Tokens are as the parser resolved them: a regex is one token, and the `>>` closing a nested generic is two `>` tokens. Comments are not tokens.
 
-In JavaScript, `result.tokens` is a `TokenList`, a view over the parser's token table. A token is an index, and every accessor is one typed-array read.
-
-```js
-import { parse, TokenKind } from "yuku-parser";
-
-const { tokens } = parse(source, { tokens: true });
-
-for (let i = 0; i < tokens.length; i++) {
-  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
-}
-```
-
-In Zig, `tree.tokens` is a slice of `Token`, closed by one zero-length `eof`.
+`tree.tokens` is a slice of `Token`, closed by one zero-length `eof`.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .tokens = true });
@@ -1034,36 +454,25 @@ for (tree.tokens) |token| {
 }
 ```
 
-| JavaScript                            | Zig                                     | Meaning                                                                          |
-| ------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `tokens.kind(i)`                      | `token.tag`                             | One of 160 kinds, one per punctuator, literal form, keyword, and identifier form |
-| `tokens.text(i)`                      | `token.text(tree.source)`               | The source text. A string literal keeps its quotes                               |
-| `tokens.start(i)`, `tokens.end(i)`    | `token.span`                            | The range, in UTF-16 offsets in JavaScript and bytes in Zig                      |
-| `tokens.isKeyword(i)`                 | `token.tag.isKeyword()`                 | Reserved words and contextual keywords                                           |
-| `tokens.isReserved(i)`                | `token.tag.isReserved()`                | Reserved unconditionally or in strict mode                                       |
-| `tokens.isUnconditionallyReserved(i)` | `token.tag.isUnconditionallyReserved()` | Never an identifier                                                              |
-| `tokens.isStrictModeReserved(i)`      | `token.tag.isStrictModeReserved()`      | Reserved in strict mode only, like `let` and `static`                            |
-| `tokens.isIdentifierLike(i)`          | `token.tag.isIdentifierLike()`          | An identifier or any keyword                                                     |
-| `tokens.precedence(i)`                | `token.tag.precedence()`                | Binary precedence, 0 when none                                                   |
-| `tokens.newlineBefore(i)`             | `token.hasLineTerminatorBefore()`       | A line terminator precedes it, what ASI looks at                                 |
-| `tokens.escaped(i)`                   | `token.isEscaped()`                     | `async` is an `async` token with this set                                        |
-| `tokens.invalidEscape(i)`             | `token.hasInvalidEscape()`              | A template chunk whose cooked value is undefined                                 |
-| `tokens.loneSurrogate(i)`             | `token.hasLoneSurrogates()`             | A string with an unpaired surrogate                                              |
+| Accessor                                | Meaning                                                                          |
+| --------------------------------------- | -------------------------------------------------------------------------------- |
+| `token.tag`                             | One of 160 kinds, one per punctuator, literal form, keyword, and identifier form |
+| `token.text(tree.source)`               | The source text. A string literal keeps its quotes                               |
+| `token.span`                            | The range, in bytes                                                              |
+| `token.tag.isKeyword()`                 | Reserved words and contextual keywords                                           |
+| `token.tag.isReserved()`                | Reserved unconditionally or in strict mode                                       |
+| `token.tag.isUnconditionallyReserved()` | Never an identifier                                                              |
+| `token.tag.isStrictModeReserved()`      | Reserved in strict mode only, like `let` and `static`                            |
+| `token.tag.isIdentifierLike()`          | An identifier or any keyword                                                     |
+| `token.tag.precedence()`                | Binary precedence, 0 when none                                                   |
+| `token.hasLineTerminatorBefore()`       | A line terminator precedes it, what ASI looks at                                 |
+| `token.isEscaped()`                     | `async` is an `async` token with this set                                        |
+| `token.hasInvalidEscape()`              | A template chunk whose cooked value is undefined                                 |
+| `token.hasLoneSurrogates()`             | A string with an unpaired surrogate                                              |
 
-Both also classify `isNumericLiteral`, `isBinaryOperator`, `isLogicalOperator`, `isUnaryOperator`, and `isAssignmentOperator`. The kinds are listed in [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts) as `TokenKind` and in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig) as `TokenTag`, where `token.tag.toString()` gives the fixed text of a kind, `"=>"` for `.arrow`.
+Tags also classify `isNumericLiteral`, `isBinaryOperator`, `isLogicalOperator`, `isUnaryOperator`, and `isAssignmentOperator`. The kinds are listed in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig) as `TokenTag`, where `token.tag.toString()` gives the fixed text of a kind, `"=>"` for `.arrow`.
 
-Every node other than `Program`, `TemplateElement`, and `JSXEmptyExpression` starts on a token start and ends on a token end, so a node's tokens are a contiguous run found by binary search. In JavaScript, these queries take a node and answer with an index, `-1` when there is none.
-
-```js
-tokens.range(node)   // [from, to) of the tokens inside the node, empty for a node inside one token
-tokens.first(node)
-tokens.last(node)
-tokens.before(node)  // last token ending at or before it, also takes an offset
-tokens.after(node)   // first token starting at or after it, also takes an offset
-tokens.at(offset)    // the token containing an offset
-```
-
-On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. An object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
+Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous run, found by binary search on its span.
 
 # Semantic Analysis
 
@@ -1391,7 +800,7 @@ flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
 flags.toString()            // human-readable category for diagnostics
 ```
 
-`Symbol.variable`, `Symbol.any_import`, `Symbol.value_space`, `Symbol.type_space`, and `Symbol.namespace_space` are ready-made masks for `intersects`, the same sets the JS decoder mirrors as [`SymbolFlags`](https://yuku.fyi/analyzer/#flags) composites.
+`Symbol.variable`, `Symbol.any_import`, `Symbol.value_space`, `Symbol.type_space`, and `Symbol.namespace_space` are ready-made masks for `intersects`, the same sets the JS decoder mirrors as [`SymbolFlags`](https://www.npmjs.com/package/yuku-analyzer#flags) composites.
 
 The space predicates (`inValueSpace`, `inTypeSpace`, `inNamespaceSpace`, `visibleIn`) answer which declaration spaces a symbol occupies. They drive reference resolution and have their own section: [Declaration Spaces](#declaration-spaces).
 
@@ -1581,85 +990,6 @@ records.flags.uses_import_meta // `import.meta` appears
 
 Source: https://yuku.fyi/parser/traverse/
 
-Walk the tree, visit every node, and edit it in place. JavaScript walks any ESTree AST with `walk` from `yuku-ast`. Zig has four traverser modes over the flat tree, from plain visits to scopes, symbols, and transforms.
-
-## JavaScript
-
-```ts
-import { parse } from "yuku-parser";
-import { walk } from "yuku-ast";
-
-const { program } = parse(source);
-
-walk(program, {
-  Identifier(node) {
-    console.log(node.name);
-  },
-  CallExpression: {
-    enter(node, ctx) {},
-    leave(node, ctx) {},
-  },
-  Function(node) {
-    // function declarations, expressions, and arrows
-  },
-  enter(node) {},
-});
-```
-
-Handlers are keyed by node `type`, by alias group, or by the universal `enter` / `leave`, and receive the exact node type. The alias groups are `Expression`, `Statement`, `Declaration`, `ModuleDeclaration`, `Function`, `Class`, `Method`, `Loop`, `Pattern`, `JSX`, and `TSType`. Per node, the order is the universal `enter`, alias enters, the typed enter, the children, then the same in reverse for leave.
-
-An optional third argument threads state to every handler as `ctx.state`. `walkAsync` is the async counterpart, with the same traversal order and mutation semantics and every handler awaited before the walk moves on.
-
-### The context
-
-One context object is reused across the whole walk, so do not store it.
-
-```js
-ctx.node;        // the current node
-ctx.parent;      // its parent, or null at the walk root
-ctx.key;         // the field on the parent holding this node
-ctx.index;       // position in an array field, or null
-ctx.ancestors(); // a copy of the ancestor chain, root first
-```
-
-### Mutation
-
-Handlers can mutate the AST in place.
-
-| Operation                | Effect                                                                                                         |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `ctx.skip()`             | Do not descend into this node's children. `leave` still fires.                                                 |
-| `ctx.stop()`             | End the walk immediately.                                                                                      |
-| `ctx.replace(node)`      | Swap the current node. The walk continues into the replacement's children and `leave` fires for its new type. |
-| `ctx.remove()`           | Splice the node out of an array field, or null a plain field. Children are not walked, `leave` does not fire.  |
-| `ctx.insertBefore(node)` | Insert a sibling before the current node. The inserted node is not visited.                                    |
-| `ctx.insertAfter(node)`  | Insert a sibling after the current node. The walk visits it.                                                   |
-
-A replacement created with `start: 0, end: 0`, such as a [builder](https://yuku.fyi/parser/ast/#builders) node, inherits the original node's span, which keeps source maps meaningful through [`generate`](https://yuku.fyi/parser/codegen/).
-
-```js
-walk(program, {
-  DebuggerStatement(node, ctx) {
-    ctx.remove();
-  },
-});
-```
-
-### findAll
-
-`findAll` collects every node of the given types, in source order.
-
-```js
-import { findAll } from "yuku-ast";
-
-findAll(program, "CallExpression");
-findAll(program, ["ClassDeclaration", "TSInterfaceDeclaration"]);
-```
-
-`CHILD_KEYS` maps each node type to its child fields in traversal order, for walkers of your own.
-
-## Zig
-
 The traverser walks the tree, calls your visitor hooks at every node, and, depending on the mode, hands you the surrounding lexical scopes, the full [semantic model](https://yuku.fyi/parser/semantic/), or a mutable handle on the tree.
 
 | Mode          | What you get                                      | Returns     |
@@ -1672,6 +1002,8 @@ The traverser walks the tree, calls your visitor hooks at every node, and, depen
 The three read-only modes hand your visitor a `*const Tree`, so the type system rules out mutating the AST while analysing it. Transform is the only mode that gives you `*Tree`, because tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass.
 
 The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](https://yuku.fyi/parser/semantic/).
+
+In JavaScript, [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks any ESTree AST, and [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) adds the semantic model to the walk.
 
 ## Your First Visitor
 
@@ -1772,7 +1104,7 @@ pub fn enter_call_expression(
 }
 ```
 
-See the [AST reference](https://yuku.fyi/parser/ast/) for every node type and its fields.
+[ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every node type and its fields.
 
 ### Catch-All Hooks
 
@@ -2305,9 +1637,13 @@ const semantic = try sem.traverse(MyAnalyser, &tree, &analyser);
 
 Source: https://yuku.fyi/parser/codegen/
 
-The codegen prints an AST back to source in a single walk, so the output is always syntactically valid and faithful to the tree's structure. The JavaScript and Zig printers produce [byte-identical output](https://yuku.fyi/testing/#codegen), source maps included.
+The codegen prints a `Tree` back to source in a single walk, so the output is always syntactically valid and faithful to the tree's structure.
 
 ## JavaScript
+
+```bash
+npm install yuku-codegen
+```
 
 ```js
 import { generate } from "yuku-codegen";
@@ -2316,15 +1652,7 @@ import { parse } from "yuku-parser";
 const { code, map, diagnostics } = generate(parse("const x = 1 + 2;").program);
 ```
 
-It is plain JavaScript, prints any ESTree AST whichever parser produced it, and runs 2.6x faster than `@babel/generator`, or 3x with source maps on. Numbers, bigints, and regular expression flags print from their `raw` lexeme when present, so delete `raw` after changing one of those values.
-
-```ts
-interface GenerateResult {
-  code: string;
-  diagnostics: Diagnostic[]; // empty on a clean run
-  map: SourceMap | null;     // with sourceMap
-}
-```
+The same printer in plain JavaScript, for any ESTree AST, with [byte-identical output](https://yuku.fyi/testing/#codegen), source maps included. It runs 2.6x faster than `@babel/generator`, or 3x with source maps on. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## Zig
 
@@ -2357,34 +1685,25 @@ pub const Result = struct {
 
 ## Options
 
-```js
-generate(program, { strip: true, minify: true });
-```
-
 ```zig
 const result = try parser.codegen.generate(allocator, &tree, .{ .strip = true, .minify = true });
 ```
 
-| JavaScript  | Zig          | Default    | Description                                                          |
-| ----------- | ------------ | ---------- | -------------------------------------------------------------------- |
-| `strip`     | `strip`      | `false`    | Drop TypeScript-only syntax. See [Type stripping](#type-stripping).  |
-| `minify`    | `minify`     | `false`    | Minify the output. See [Minification](#minification).                |
-| `format`    | `format`     | `pretty`   | `pretty`, or `compact` for only the separators the grammar requires. |
-| `indent`    | `indent`     | `2`        | Spaces per level in pretty format, from 0 to 255.                    |
-| `quotes`    | `quotes`     | `preserve` | Quote style for string literals. See [Quotes](#quotes).              |
-| `comments`  | `comments`   | `some`     | Which attached comments to emit. See [Comments](#comments).          |
-| `sourceMap` | `source_map` | none       | Emit a Source Map V3. See [Source maps](#source-maps).               |
+| Field        | Default     | Description                                                             |
+| ------------ | ----------- | ----------------------------------------------------------------------- |
+| `strip`      | `false`     | Drop TypeScript-only syntax. See [Type stripping](#type-stripping).     |
+| `minify`     | `false`     | Apply size-reducing syntax rewrites. See [Minification](#minification). |
+| `format`     | `.pretty`   | `.pretty`, or `.compact` for only the separators the grammar requires.  |
+| `indent`     | `2`         | Spaces per level in pretty format.                                      |
+| `quotes`     | `.preserve` | Quote style for string literals. See [Quotes](#quotes).                 |
+| `comments`   | `.some`     | Which attached comments to emit. See [Comments](#comments).             |
+| `source_map` | `null`      | Emit a Source Map V3. See [Source maps](#source-maps).                  |
 
 Every transformation is an independent flag, so they compose freely.
 
 ## Type stripping
 
-`strip` prints a TypeScript AST as JavaScript. It is not a regex pass or a separate transform. The codegen skips TypeScript-only nodes and fields during its one walk, so every boundary case (comments, generic calls, nested template literal types) is a node the parser already classified.
-
-```js
-generate(parse(`const x: number = 1;`, { lang: "ts" }).program, { strip: true }).code;
-// "const x = 1;"
-```
+`strip` prints a TypeScript `Tree` as JavaScript. It is not a regex pass or a separate transform. The codegen skips TypeScript-only nodes and fields during its one walk, so every boundary case (comments, generic calls, nested template literal types) is a node the parser already classified.
 
 Types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, and `abstract` strip cleanly. A few TypeScript features emit runtime values: `enum`, `namespace`, `module`, `export =`, `import = require()`, and parameter properties. Converting them is transpilation, not stripping, so each one is reported in `diagnostics` and left out, a parameter property keeps its plain parameter, and the rest of the file is still emitted. Their ambient forms (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime and strip silently.
 
@@ -2398,55 +1717,32 @@ Types, interfaces, type aliases, generics, type assertions, `satisfies`, non-nul
 - `{ "foo": x }` becomes `{ foo: x }` when safe.
 - `</script`, `<!--`, and `-->` are escaped in strings and untagged template literals, so the output is safe to inline in a `<script>` tag. Tagged templates keep their raw text, since the tag reads it.
 
-In JavaScript, `minify: true` also emits compact whitespace and the shortest quotes. An object picks the switches, `whitespace`, `syntax`, and `quotes`, and enabled switches override `format` and `quotes`.
-
-```js
-generate(program, { minify: { syntax: true } }); // rewrites only, readable output
-```
-
-In Zig, `minify` is the syntax rewrites alone. Combine it with `.format = .compact` and `.quotes = .shortest` for maximum minification.
+Combine it with `.format = .compact` and `.quotes = .shortest` for maximum minification.
 
 ## Quotes
 
-| Value      | Behavior                                                               |
-| ---------- | ---------------------------------------------------------------------- |
-| `preserve` | Keep each literal's source quote style, re-escaping the content.       |
-| `double`   | Force double quotes.                                                   |
-| `single`   | Force single quotes.                                                   |
-| `shortest` | Pick whichever quote needs fewer escapes per literal, double on a tie. |
+| Value       | Behavior                                                               |
+| ----------- | ---------------------------------------------------------------------- |
+| `.preserve` | Keep each literal's source quote style, re-escaping the content.       |
+| `.double`   | Force double quotes.                                                   |
+| `.single`   | Force single quotes.                                                   |
+| `.shortest` | Pick whichever quote needs fewer escapes per literal, double on a tie. |
 
 ## Comments
 
-Comments print from the nodes they are [attached](https://yuku.fyi/parser/ast/#comments) to, so parse with `attachComments: true` (`.comments = .attached` in Zig) to keep them.
+Comments print from the nodes they are [attached](https://yuku.fyi/parser/ast/#comments) to, so parse with `.comments = .attached` or `.both` to keep them.
 
-| Value   | Behavior                                                                            |
-| ------- | ----------------------------------------------------------------------------------- |
-| `some`  | Legal headers, JSDoc, and `@`/`#` annotations, the bundler convention. The default. |
-| `all`   | Every comment. `true` in JavaScript.                                                |
-| `none`  | No comments. `false` in JavaScript.                                                 |
-| `line`  | `// ...` only.                                                                      |
-| `block` | `/* ... */` only.                                                                   |
-
-```js
-const { program } = parse(`// hello\nconst x = 1;`, { attachComments: true });
-generate(program, { comments: true }).code;
-// "// hello\nconst x = 1;"
-```
+| Value    | Behavior                                                                            |
+| -------- | ----------------------------------------------------------------------------------- |
+| `.some`  | Legal headers, JSDoc, and `@`/`#` annotations, the bundler convention. The default. |
+| `.all`   | Every comment.                                                                      |
+| `.none`  | No comments.                                                                        |
+| `.line`  | `// ...` only.                                                                      |
+| `.block` | `/* ... */` only.                                                                   |
 
 ## Source maps
 
 Pass the original source to emit a Source Map V3 alongside the code.
-
-```js
-import { writeFileSync } from "node:fs";
-
-const { code, map } = generate(program, {
-  sourceMap: { source, file: "out.js", sourceFileName: "in.js", sourcesContent: source },
-});
-
-writeFileSync("out.js", `${code}\n//# sourceMappingURL=out.js.map`);
-writeFileSync("out.js.map", JSON.stringify(map));
-```
 
 ```zig
 const result = try parser.codegen.generate(allocator, &tree, .{
@@ -2462,43 +1758,27 @@ defer result.deinit(allocator);
 const map = result.map.?; // set whenever a source was given
 ```
 
-| JavaScript       | Zig                | Description                                       |
-| ---------------- | ------------------ | ------------------------------------------------- |
-| `source`         | `source`           | The original source text. Required to emit a map. |
-| `file`           | `file`             | Output filename, embedded as `file`.              |
-| `sourceFileName` | `source_file_name` | Source filename, the single entry of `sources`.   |
-| `sourceRoot`     | `source_root`      | Embedded as `sourceRoot`.                         |
-| `sourcesContent` | `sources_content`  | The single entry of `sourcesContent`.             |
+| Field              | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| `source`           | The original source text. Required to emit a map. |
+| `file`             | Output filename, embedded as `file`.              |
+| `source_file_name` | Source filename, the single entry of `sources`.   |
+| `source_root`      | Embedded as `sourceRoot`.                         |
+| `sources_content`  | The single entry of `sourcesContent`.             |
 
-The map is the Source Map V3 wire format, ready to serialize, with the same fields in snake_case in Zig. Columns are 0-indexed UTF-16 code units, the convention of browser devtools and source map libraries.
+`map` holds the Source Map V3 fields in snake_case, `mappings` already encoded. Columns are 0-indexed UTF-16 code units, the convention of browser devtools and source map libraries.
 
 # Analyzer
 
 Source: https://yuku.fyi/analyzer/
 
-`yuku-analyzer` is full semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
+`yuku-analyzer` is semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
-Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with no per-query cost after the native call. Its native binary is shared with the other Yuku packages, see [Size](https://yuku.fyi/#size).
+Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`.
 
-For one file, `analyze` returns the full per-file semantics in a call:
-
-```js
-import { analyze } from "yuku-analyzer";
-
-const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lang: "ts" });
-
-module.walk({
-  Identifier(node, ctx) {
-    console.log(node.name, ctx.scope.kind, ctx.symbol, ctx.reference);
-  },
-});
-
-module.rootScope.find("double").references.length; // 1
+```bash
+npm install yuku-analyzer
 ```
-
-`analyze` takes the same options as `addFile`, plus `path` (default `"input.js"`), which names the module and supplies the default `lang` and `sourceType`. The module carries its own import and export records, but nothing links, since the analyzer behind it holds a single file. Use `Analyzer` for more than one.
-
-For a project, `Analyzer` adds files and links them:
 
 ```js
 import { Analyzer, SymbolFlags } from "yuku-analyzer";
@@ -2506,518 +1786,13 @@ import { Analyzer, SymbolFlags } from "yuku-analyzer";
 const a = new Analyzer();
 a.addFile("math.ts", `export const add = (x: number, y: number) => x + y;`);
 a.addFile("app.ts", `import { add } from "./math.ts"; add(1, 2);`);
-a.addFile("ui.ts", `import { add } from "./math.ts"; add(3, 4);`);
 
-const app = a.module("app.ts");
-
-const add = app.rootScope.find("add");
+const add = a.module("app.ts").rootScope.find("add");
 add.has(SymbolFlags.Import); // true
-
-const def = add.definition();
-def.module.path; // "math.ts"
-def.symbol.has(SymbolFlags.Const); // true
-
-a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
+add.definition().module.path; // "math.ts"
 ```
 
-Resolution follows import, re-export, and `export *` chains to the binding that defines the name, like an editor's go-to-definition.
-
-## Architecture
-
-The binder, scope tree, reference resolution, and module records come from the same native analyzer that powers the rest of Yuku. JavaScript receives a finished model to query and reimplements none of the binding rules (hoisting, catch scopes, named function expressions, declaration merging, declaration spaces).
-
-**One native call.** `addFile` parses the source, builds scopes, binds, and resolves references in Zig, then serializes everything into one buffer: the AST in Yuku's flat transfer format, followed by the semantic tables as fixed-stride sections.
-
-**Zero-copy decode.** The semantic tables are read through typed-array views over that buffer. A symbol's name, flags, scope, and declarations are reads at computed offsets.
-
-**Lazy objects.** `Scope`, `Symbol`, `Reference`, `Import`, and `Export` are flyweight objects created once per row on first access. Cross-indexes, such as the references of each symbol, build on first use.
-
-**Node identity.** AST nodes decode lazily and are memoized by index, so the node you reach by walking `module.ast` and the node a semantic query returns are the same object. A `WeakMap` maps any node back to its index, which makes `symbolOf(node)` a lookup instead of a search.
-
-## The Analyzer
-
-The `Analyzer` is the project, a set of modules plus the links between them.
-
-```js
-import { Analyzer } from "yuku-analyzer";
-
-const analyzer = new Analyzer();
-
-const module = analyzer.addFile("src/app.tsx", source);
-analyzer.removeFile("src/app.tsx"); // true if it existed
-analyzer.module("src/app.tsx");     // Module | undefined
-analyzer.modules;                   // ReadonlyMap<string, Module>
-```
-
-`addFile` accepts the options of `parse`, except `semanticErrors` since semantic errors are always reported. `lang` and `sourceType` default from the file extension.
-
-```js
-analyzer.addFile("legacy.cjs", source, {
-  // lang "js", inferred from the extension
-  // sourceType "commonjs", inferred from the extension
-  preserveParens: true,
-  attachComments: false,
-  tokens: false,
-});
-```
-
-The functions behind those defaults come from `yuku-parser`:
-
-```js
-import { langFromPath, sourceTypeFromPath } from "yuku-parser";
-
-langFromPath("types.d.ts");   // "dts"  (.d.ts, .d.mts, .d.cts)
-langFromPath("app.tsx");      // "tsx"; .ts/.mts/.cts give "ts", .jsx gives "jsx", else "js"
-sourceTypeFromPath("a.cjs");  // "commonjs" for .cjs and .cts, "module" for everything else
-```
-
-Adding a path that already exists replaces the module and marks the graph for relinking. The call returns a new `Module`, and scopes, symbols, or nodes held from the previous version belong to that earlier parse. A change in `analyzer.module(path)` identity is the signal to drop a cache keyed on the old one.
-
-### Module resolution
-
-Linking maps import specifiers to added files. The default resolver handles relative specifiers with standard extension probing (`./util` matches `util.ts`, `util/index.ts`, and so on). For anything else, supply your own.
-
-```js
-const analyzer = new Analyzer({
-  resolve(specifier, importerPath) {
-    // return the path of an added file, or null for external modules
-    return myAliasMap.get(specifier) ?? null;
-  },
-});
-```
-
-Returning `null` marks the import as external. `import.resolvedModule` stays `null` and definition chains stop there, without diagnostics.
-
-## The Module
-
-`addFile` returns a `Module`, the per-file unit of the analysis. No native calls happen after `addFile` returns.
-
-```js
-module.analyzer;    // the Analyzer that owns it
-module.path;        // the path it was added under
-module.source;      // the original source text
-module.ast;         // ESTree / TypeScript-ESTree Program, lazily decoded
-module.diagnostics; // syntax and semantic errors for this file
-module.comments;    // every comment in source order
-module.tokens;      // TokenList, present when added with tokens: true
-```
-
-`tokens` is the same `TokenList` as `parse` returns, see [Tokens](https://yuku.fyi/parser/ast/#tokens). The AST is the same ESTree / TypeScript-ESTree output as `parse`, made of plain mutable objects that any ESTree tool accepts and `generate` prints.
-
-The semantic surface:
-
-```js
-module.scopes;               // Scope[], index is the scope id
-module.rootScope;            // the scope top-level code runs in
-module.symbols;              // Symbol[], index is the symbol id
-module.references;           // Reference[], in source order
-module.unresolvedReferences; // references that resolve to no binding
-module.imports;              // Import[], dynamic import() and require() included
-module.exports;              // Export[], in source order
-module.moduleFlags;          // CommonJS classification signals
-module.dependencies;         // Module[], the files this one imports from
-module.dependents;           // Module[], the files that import this one
-```
-
-The last two are the graph edges rather than per-file semantics, and they link on demand (see [Linking](#linking)). Everything above them is answered from this file alone.
-
-Ids are stable within a parse, so `(module.path, symbol.id)` is a persistable key for caches and incremental tooling. Re-adding a path reparses it into a new `Module` and can renumber, so pair the key with module identity and invalidate when `analyzer.module(path)` changes.
-
-## Scopes
-
-Every lexical environment in the file, as a tree.
-
-```js
-const scope = module.scopes[3];
-
-scope.id;          // stable index into module.scopes
-scope.module;      // the owning Module
-scope.kind;        // "global" | "module" | "function" | "block" | "class"
-                   // | "staticBlock" | "expressionName" | "tsModule" | "functionBody"
-scope.node;        // the AST node that created the scope
-scope.parent;      // parent Scope, or null at the global scope
-scope.strict;      // strict mode, propagated per spec
-scope.hoistTarget; // the scope where a `var` declared here actually lands
-scope.bindings;    // symbols declared directly in this scope
-
-scope.find("x");          // direct binding lookup, no chain walk
-scope.contains(other);    // is `other` this scope or a descendant?
-for (const s of scope.ancestors()) { /* this scope up to global */ }
-```
-
-Most kinds map one to one onto the construct that created them. `block` covers every lexical environment: braced blocks, loop heads, catch clauses, the case block a `switch` shares across its cases (its discriminant sits outside, in the enclosing scope), and TypeScript enum bodies, where members are lexically visible (`enum E { a, b = a }` resolves `a` to the member). `functionBody` is the body's own scope, matching tsc's block locals: body-level `let`/`const`/`class` and local types live there, invisible to the signature, so in `function f(a: T) { type T = {} }` the parameter annotation stays unresolved. Body `var`s hoist past it into the function scope, unless the parameter list contains expressions, which makes the body a separate `var` environment: in `function f(a = () => x) { var x = 2 }` the default's closure then resolves `x` to the outer scope.
-
-The scope tree is the native binder's exact output, and resolution applies the rules the spec and TypeScript layer on top of it: `arguments` in a value position never resolves past the enclosing non-arrow function, where the implicit arguments object shadows any outer binding of that name, `infer` variables are visible only in their conditional's true branch, and class type parameters are out of scope in static members and computed member keys.
-
-## Symbols
-
-A `Symbol` is one declared binding.
-
-```js
-const sym = module.rootScope.find("render");
-
-sym.name;         // "render"
-sym.module;       // the owning Module
-sym.scope;        // the Scope it is declared in
-sym.declarations; // every declarator node, in source order
-sym.references;   // every resolved use site in this module
-sym.flags;        // the raw SymbolFlags bitset behind has / hasAll
-sym.id;           // stable index into module.symbols
-```
-
-One symbol can have several declarations when the language merges them, such as TypeScript function overloads, `class` + `interface` merging, and `namespace` + `enum` merging. The analyzer records every declarator, as go-to-definition and rename need. Enum members are ordinary symbols (`SymbolFlags.EnumMember`), declared in their enum's body scope.
-
-### Flags
-
-A symbol's kinds and modifiers live in a bitset, queried with `has` (any of the given flags) and `hasAll` (all of them) against the exported `SymbolFlags` constants.
-
-```js
-import { SymbolFlags } from "yuku-analyzer";
-
-sym.has(SymbolFlags.Function);                           // is it a function?
-sym.has(SymbolFlags.TypeAlias | SymbolFlags.Interface);  // either kind?
-sym.hasAll(SymbolFlags.Function | SymbolFlags.Exported); // `export function`?
-```
-
-Five **composites** answer the common categorical questions directly.
-
-```js
-sym.has(SymbolFlags.Variable);       // var / let / const, parameters and catch bindings included
-sym.has(SymbolFlags.Import);         // any import binding, value or `import type`
-sym.has(SymbolFlags.ValueSpace);     // visible at runtime
-sym.has(SymbolFlags.TypeSpace);      // referencable from a TS type position
-sym.has(SymbolFlags.NamespaceSpace); // a dotted type name (`ns.T`) can start from it
-```
-
-`sym.visibleIn(space)` tells whether a reference resolving in `space` may bind to the symbol (see [References](#references)). Import bindings alias another module's symbol, whose space one file cannot know, so they are visible in every space.
-
-A `class` satisfies both `ValueSpace` and `TypeSpace`, which is what lets a class be used as a type. The flag values, composites included, are generated from the native binder's bit layout at build time, so they always agree with the binder.
-
-## References
-
-A `Reference` is one identifier in use position, already resolved.
-
-```js
-const ref = module.references[0];
-
-ref.name;           // the identifier text
-ref.module;         // the owning Module
-ref.id;             // stable index into module.references
-ref.node;           // the Identifier node, identity-shared with the AST
-ref.scope;          // the scope the use occurs in
-ref.symbol;         // the resolved Symbol, or null for free names
-ref.space;          // "value" | "type" | "namespace" | "typeof" | "any"
-ref.inTypePosition; // true inside a type-only subtree
-ref.isWrite;        // true when this use (re)assigns the binding
-```
-
-Resolution is space-aware, the way TypeScript resolves names. `space` is the declaration space the position resolves in: `"value"` for runtime uses, `"type"` for annotations and other type positions, `"namespace"` for the qualifier of a dotted type name (`ns.T`, `E.A`), `"typeof"` for value uses inside a type (the entity of `typeof x`, `x is T` parameters), and `"any"` for alias positions that accept every space (`export { x }`, `export default x`, `export = x`, `import a = x`). A binding outside the reference's space does not shadow:
-
-```ts
-type T = string;
-function f() {
-  const T = 1;
-  let x: T; // resolves to the outer `type T`, exactly like tsc
-  T;        // resolves to the inner `const T`
-}
-```
-
-`inTypePosition` tells whether the use is erased at compile time, so rename and dead-code tools can keep a value and a same-named type independent.
-
-`module.unresolvedReferences` holds every name with no visible binding anywhere in scope, the input for a no-undef rule or a globals collector.
-
-## Node queries
-
-These methods connect AST nodes to the semantic model by node object identity, not positions or names.
-
-```js
-module.symbolOf(node);    // the symbol a node declares or references, or null
-module.referenceOf(node); // the Reference for an identifier node, or null
-module.scopeOf(node);     // the innermost scope whose extent contains the node
-module.parentOf(node);    // the node that structurally contains it, or null
-module.resolve("fetch");                  // scope-chain lookup from the root scope
-module.resolve("x", someScope);           // or from any scope, like the engine would
-module.resolve("T", someScope, "type");   // or in another space ("any" is by name alone)
-```
-
-`symbolOf` gives the symbol a declaration identifier declares, or the symbol a reference identifier resolves to.
-
-`parentOf` walks upward from a node you already hold, in constant time, with no ancestor stack. It returns `null` at the program root and for any node that is not part of this module's AST.
-
-`scopeOf` never returns `null`. A node this module's analysis never saw, such as one you built during a transform, falls back to the root scope. `resolve` walks the chain the way the engine would, with `from` defaulting to the root scope and `space` to `"value"`. A binding outside the requested space does not stop the walk, `"any"` matches by name alone, and a value-position `arguments` lookup stops at the first non-arrow function or static block, where the implicit arguments object shadows any outer binding of that name.
-
-## Editing the AST
-
-The `node` on every symbol and reference is the same object you reach by walking `module.ast`, so a rename is a plain assignment, and [`generate`](https://yuku.fyi/parser/codegen/) prints the mutated tree back to source.
-
-```js
-import { generate } from "yuku-codegen";
-
-const m = analyzer.addFile("util.ts", `const tmp = load();\nexport const data = tmp.value + tmp.size;`);
-const tmp = m.rootScope.find("tmp");
-
-tmp.declarations[0].name = "raw"; // rename the binding
-for (const ref of tmp.references) ref.node.name = "raw"; // and every resolved use
-
-// across files, analyzer.referencesOf(symbol) returns these same live nodes for every use
-generate(m.ast).code;
-// const raw = load();
-// export const data = raw.value + raw.size;
-```
-
-The uses come from resolved references, not a name search, so a shadowing inner `tmp` is left untouched. The walk in the next section is the same edit applied with full context at every node.
-
-## Walking
-
-`module.walk` is the [walker](https://yuku.fyi/parser/traverse/#javascript) with the semantic model in its context. Handlers, walk order, and [mutation](https://yuku.fyi/parser/traverse/#mutation) work the same, and the context adds four fields.
-
-```js
-module.walk({
-  CallExpression(node, ctx) {
-    if (node.callee.type === "Identifier") {
-      const target = ctx.module.symbolOf(node.callee);
-      if (target?.has(SymbolFlags.Import)) console.log(`calls imported ${node.callee.name}`);
-    }
-  },
-  Identifier(node, ctx) {
-    if (ctx.symbol === legacyName) node.name = "modernName";
-  },
-});
-```
-
-```js
-ctx.scope;     // the innermost Scope at this node
-ctx.symbol;    // shorthand for module.symbolOf(node)
-ctx.reference; // shorthand for module.referenceOf(node)
-ctx.module;    // the module being walked
-```
-
-Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`. `module.walkAsync` is the async counterpart, and `module.findAll(types)` collects nodes like [`findAll`](https://yuku.fyi/parser/traverse/#findall).
-
-`ctx.scope` is not tracked during the walk. The binder records the scope of every node in a per-node table, so `ctx.scope`, like `module.scopeOf`, is a single read. The answer is exact even where scopes do not nest with spans, such as decorators.
-
-The semantic tables are a snapshot of the parsed source, so nodes you create have no symbols or references. For fresh semantics after a transform, print the result and analyze the output.
-
-## Closure analysis
-
-`capturesOf` computes the free variables of a function, every binding referenced inside it (nested closures included) that is declared outside it.
-
-```js
-const source = `
-  let count = 0;
-  const step = 2;
-  export function tick() {
-    count += step;
-    return () => count;
-  }
-`;
-
-const module = analyzer.addFile("counter.ts", source);
-const [tick] = module.findAll("FunctionDeclaration");
-
-for (const capture of module.capturesOf(tick)) {
-  console.log(capture.symbol.name, capture.isWritten);
-}
-// count true     (tick writes to it)
-// step  false    (read only)
-```
-
-Each `Capture` carries the outer `symbol`, the capturing `references` inside the function, and `isWritten`. Type-only references are excluded, since they do not exist at runtime. Only bindings appear. `this`, `arguments`, and unresolved globals carry no symbol and are never reported, while module-scope and imported bindings count like any other outer binding.
-
-`capturesOf` throws a `TypeError` for a node that is not a function or arrow of this module's AST.
-
-Captures come from the resolved reference table, so they are shadowing- and alias-correct. A local `count` declared inside the function produces no capture, and each reference is attributed to the binding it resolves to, not the nearest matching name.
-
-## Cross-file analysis
-
-### Import and export records
-
-Each module carries records of its module surface, computed natively. Every record has one `kind` that pins down its form.
-
-```js
-for (const imp of module.imports) {
-  imp.kind;           // "named" | "namespace" | "sideEffect"
-                      // | "importEquals" | "dynamic" | "require"
-  imp.specifier;      // "./lib.ts"
-  imp.name;           // imported name of a named record, "default" for
-                      // default imports, null otherwise
-  imp.local;          // the local binding Symbol, or null when nothing binds
-  imp.typeOnly;       // import type / import { type x }
-  imp.phase;          // "source" | "defer" | null (stage 3 phase imports)
-  imp.node;           // the specifier, the declaration, or the
-                      // import() / require() call itself
-  imp.module;         // the importing Module
-  imp.id;             // stable index into module.imports
-  imp.resolvedModule; // the defining Module, or null when external
-
-  // the same question as `kind`, asked as a predicate
-  imp.isNamespace;    // "namespace" or "importEquals": binds a whole module
-  imp.isSideEffect;   // "sideEffect"
-  imp.isDynamic;      // "dynamic"
-  imp.isRequire;      // "require"
-}
-
-for (const exp of module.exports) {
-  exp.kind;           // "named" | "reExport" | "namespace"
-                      // | "star" | "equals" | "global"
-  exp.name;           // exported name, "default" included, null for
-                      // star, equals, and global records
-  exp.local;          // backing local Symbol, when there is one
-  exp.specifier;      // re-export source, or null for local exports
-  exp.fromName;       // the name a reExport takes from its source module
-  exp.globalName;     // TS export as namespace N, else null
-  exp.typeOnly;       // export type
-  exp.node;           // the specifier, declaration, or statement node
-  exp.module;         // the exporting Module
-  exp.id;             // stable index into module.exports
-  exp.resolvedModule; // the source Module for re-exports
-
-  // the same question as `kind`, asked as a predicate
-  exp.isStar;              // "star": export * from "m"
-  exp.isExportEquals;      // "equals": TS export = expr
-  exp.isNamespaceReexport; // "namespace": export * as ns from "m"
-}
-```
-
-Every other field follows from `kind`. A `name` exists only where the kind has one, `fromName` only on a `reExport`, `globalName` only on a `global` record, and the `is*` getters ask the same classification as a predicate.
-
-Import records cover every statically known dependency edge. Dynamic `import("m")` and CommonJS `require("m")` anywhere in the file produce records and link into the graph like static declarations. Only literal specifiers become records, and a `require` call counts only when `require` is a free name, so every edge is sound.
-
-Following the specification, `default` is modeled as an export *name*, not a separate kind, and `export *` never forwards `default`. CommonJS exports are runtime assignments with no sound static shape, so they never become export records. `module.moduleFlags` (`usesRequire`, `usesModule`, `usesExports`, `usesImportMeta`) classifies the file instead.
-
-### Linking
-
-`analyzer.link()` joins the graph. It resolves every specifier through the resolver, populates `resolvedModule` on imports and re-exports, builds `dependencies` / `dependents`, and validates every imported name and named re-export.
-
-Name resolution implements the spec's `ResolveExport`. Renaming re-export chains are followed per name, `default` is never satisfied by `export *`, and a name supplied by multiple `export *` declarations through different bindings is reported as ambiguous, the same conditions an engine raises at link time.
-
-Calling it is optional. Every cross-file surface links on demand after files change, so reading `import.resolvedModule` or `module.dependencies` is always correct. Call `link()` to control when the work happens and collect the diagnostics at a known point.
-
-```js
-analyzer.link();
-
-for (const d of analyzer.diagnostics) {
-  console.log(`${d.module}: ${d.message}`);
-  // "main.ts: Module './lib.ts' has no export 'helpr'"
-}
-```
-
-Each record carries `severity`, `message`, `module` (the path of the file it belongs to), and the `start` / `end` offsets of the offending import or re-export. Severity is `"error"` for a name the source module does not export or supplies ambiguously, and `"warning"` when the host resolver returns a path that was never added, which is a host configuration problem rather than a broken source file.
-
-### Definitions across modules
-
-`definitionOf` follows import, re-export, and `export *` chains to the place a binding is actually defined, however many files away.
-
-```js
-// a.ts   export const value = 1;
-// b.ts   export { value as renamed } from "./a.ts";
-// c.ts   import { renamed } from "./b.ts";
-
-const c = analyzer.module("c.ts");
-const sym = c.rootScope.find("renamed");
-
-const def = analyzer.definitionOf(sym);
-def.module.path;  // "a.ts"
-def.symbol.name;  // "value"
-```
-
-`symbol.definition()` is the instance-method shorthand. A result with `symbol: null` means the definition is a whole module namespace, which is what `import * as ns`, `import ns = require("m")`, and a re-exported `export * as ns` all bind. A `null` result means the chain leaves the added file set (an external package, by design not an error), cannot be resolved, or is ambiguous.
-
-Chains with cycles terminate safely. A circular request is detected per (module, name) pair, so a chain may legitimately pass through the same module twice under different names.
-
-### References across modules
-
-`referencesOf` gives every use of a symbol anywhere in the graph, with imports followed back to the definition. It is the basis for cross-file rename, unused-export detection, and impact analysis.
-
-```js
-const uses = analyzer.referencesOf(def.symbol);
-for (const { module, reference } of uses) {
-  console.log(module.path, reference.name, reference.isWrite);
-}
-```
-
-```js
-// unused exports, whole project
-for (const module of analyzer.modules.values()) {
-  for (const exp of module.exports) {
-    if (exp.local && analyzer.referencesOf(exp.local).length === 0) {
-      console.log(`${module.path}: '${exp.name}' is exported but never used`);
-    }
-  }
-}
-```
-
-### Exported names
-
-`module.exportedNames()` lists everything a module exports with `export *` chains followed, the spec's `GetExportedNames`. Per the spec, ambiguous star names are included (ambiguity is a resolution error, not an enumeration one) and `default` never arrives through a star.
-
-```js
-// a.ts    export const one = 1;
-// lib.ts  export const two = 2; export default x; export * from "./a.ts";
-
-analyzer.module("lib.ts").exportedNames(); // ["two", "default", "one"]
-analyzer.module("a.ts").exportedNames();   // ["one"]
-```
-
-## SymbolFlags reference
-
-The full bitset, generated from the native binder's layout.
-
-| Flag                    | Meaning                                          |
-| ----------------------- | ------------------------------------------------ |
-| `FunctionScopedVariable`| `var`, parameter, or catch variable              |
-| `BlockScopedVariable`   | `let`, `const`, `using`, `await using`           |
-| `Function`              | function declaration or expression               |
-| `Class`                 | class declaration or expression                  |
-| `RegularEnum`           | TS `enum`                                        |
-| `ConstEnum`             | TS `const enum`                                  |
-| `ValueModule`           | TS namespace with runtime content                |
-| `Interface`             | TS `interface`                                   |
-| `TypeAlias`             | TS `type` alias                                  |
-| `TypeParameter`         | TS `<T>`, `infer T`, mapped-type key             |
-| `NamespaceModule`       | TS namespace of any kind                         |
-| `ValueImport`           | a value import binding (`import x` / `import { x }`) |
-| `TypeImport`            | `import type` / `import { type x }` binding      |
-| `Const`                 | `const` or `using` binding                       |
-| `Ambient`               | TS `declare`                                     |
-| `Parameter`             | function or method parameter                     |
-| `CatchVariable`         | `catch (e)` binding                              |
-| `Exported`              | declared by `export <declaration>` (not `export { x }`) |
-| `Default`               | declared by `export default`                     |
-| `EnumMember`            | a TS enum member, declared in its enum's body scope |
-
-Plus five composites, unions of the above:
-
-| Composite        | Matches                                                            |
-| ---------------- | ------------------------------------------------------------------ |
-| `Variable`       | `var` / `let` / `const`, parameters and catch bindings included    |
-| `Import`         | any import binding, value or `import type`                         |
-| `ValueSpace`     | visible at runtime (var, function, class, enum and its members, value namespace) |
-| `TypeSpace`      | referencable from a type position (class, enum and its members, interface, alias, type param) |
-| `NamespaceSpace` | what a dotted type name can start from (namespace of any kind, enum) |
-
-## Performance
-
-Analysis runs in the same native call as the parse, and full semantics cost roughly half of parsing time on top of it. It is validated against every file in the [parser test corpus](https://yuku.fyi/testing/).
-
-On an Apple M-series machine, parsing plus complete semantic analysis of a typical source file takes well under a millisecond, walking sustains tens of millions of nodes per second, and linking a 2,000-module graph takes about a millisecond.
-
-## TypeScript
-
-Visitor handlers receive exact node types, and every type in the model is exported:
-
-```ts
-import type {
-  Module, Scope, Symbol, Reference, Import, Export, Capture,
-  Definition, ModuleReference, LinkDiagnostic, ModuleFlags,
-  Space, ScopeKind, ImportKind, ExportKind,
-  SemanticVisitors, SemanticWalkHandler, SemanticWalkHooks, SemanticWalkContext,
-  AsyncSemanticVisitors, AsyncSemanticWalkHandler, AsyncSemanticWalkHooks,
-  AnalyzerOptions, AddFileOptions, AnalyzeOptions,
-} from "yuku-analyzer";
-```
-
-AST node types come from `yuku-parser`.
+The model it exposes is the one [semantic analysis](https://yuku.fyi/parser/semantic/) builds in Zig. See [yuku-analyzer on npm](https://www.npmjs.com/package/yuku-analyzer) for the full API.
 
 # Testing
 
@@ -3077,7 +1852,7 @@ Curated inline-snapshot tests pin the exact output of `generate` on hand-picked 
 - A plain or compact `generate` is semantics-preserving, meaning the reparsed AST equals the original, modulo positions.
 - Every option set is a fixed point on its own output, and no comment is lost or duplicated.
 
-These suites run through the `yuku-codegen` package, the JavaScript implementation of the codegen. A conformance suite prints every corpus file with it and with the Zig codegen under a matrix of option sets and requires identical code, source map mappings, and errors, so every guarantee above holds for both.
+These suites run through the `yuku-codegen` package, the JavaScript implementation of the codegen. A conformance suite prints every corpus file with it and with the Zig codegen under a matrix of option sets and requires identical code, source map mappings, and diagnostics, so every guarantee above holds for both.
 
 ## Source maps
 

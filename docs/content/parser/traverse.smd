@@ -1,89 +1,10 @@
 ---
 .title = "Traverse",
-.description = "Walk, analyze, and transform JavaScript and TypeScript ASTs, with the walker in JavaScript and the traverser modes in Zig.",
+.description = "Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-Walk the tree, visit every node, and edit it in place. JavaScript walks any ESTree AST with `walk` from `yuku-ast`. Zig has four traverser modes over the flat tree, from plain visits to scopes, symbols, and transforms.
-
-## [JavaScript]($section.id('javascript'))
-
-```ts
-import { parse } from "yuku-parser";
-import { walk } from "yuku-ast";
-
-const { program } = parse(source);
-
-walk(program, {
-  Identifier(node) {
-    console.log(node.name);
-  },
-  CallExpression: {
-    enter(node, ctx) {},
-    leave(node, ctx) {},
-  },
-  Function(node) {
-    // function declarations, expressions, and arrows
-  },
-  enter(node) {},
-});
-```
-
-Handlers are keyed by node `type`, by alias group, or by the universal `enter` / `leave`, and receive the exact node type. The alias groups are `Expression`, `Statement`, `Declaration`, `ModuleDeclaration`, `Function`, `Class`, `Method`, `Loop`, `Pattern`, `JSX`, and `TSType`. Per node, the order is the universal `enter`, alias enters, the typed enter, the children, then the same in reverse for leave.
-
-An optional third argument threads state to every handler as `ctx.state`. `walkAsync` is the async counterpart, with the same traversal order and mutation semantics and every handler awaited before the walk moves on.
-
-### [The context]($section.id('the-context'))
-
-One context object is reused across the whole walk, so do not store it.
-
-```js
-ctx.node;        // the current node
-ctx.parent;      // its parent, or null at the walk root
-ctx.key;         // the field on the parent holding this node
-ctx.index;       // position in an array field, or null
-ctx.ancestors(); // a copy of the ancestor chain, root first
-```
-
-### [Mutation]($section.id('mutation'))
-
-Handlers can mutate the AST in place.
-
-| Operation                | Effect                                                                                                         |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `ctx.skip()`             | Do not descend into this node's children. `leave` still fires.                                                 |
-| `ctx.stop()`             | End the walk immediately.                                                                                      |
-| `ctx.replace(node)`      | Swap the current node. The walk continues into the replacement's children and `leave` fires for its new type. |
-| `ctx.remove()`           | Splice the node out of an array field, or null a plain field. Children are not walked, `leave` does not fire.  |
-| `ctx.insertBefore(node)` | Insert a sibling before the current node. The inserted node is not visited.                                    |
-| `ctx.insertAfter(node)`  | Insert a sibling after the current node. The walk visits it.                                                   |
-
-A replacement created with `start: 0, end: 0`, such as a [builder](/parser/ast/#builders) node, inherits the original node's span, which keeps source maps meaningful through [`generate`](/parser/codegen/).
-
-```js
-walk(program, {
-  DebuggerStatement(node, ctx) {
-    ctx.remove();
-  },
-});
-```
-
-### [findAll]($section.id('findall'))
-
-`findAll` collects every node of the given types, in source order.
-
-```js
-import { findAll } from "yuku-ast";
-
-findAll(program, "CallExpression");
-findAll(program, ["ClassDeclaration", "TSInterfaceDeclaration"]);
-```
-
-`CHILD_KEYS` maps each node type to its child fields in traversal order, for walkers of your own.
-
-## [Zig]($section.id('zig'))
-
 The traverser walks the tree, calls your visitor hooks at every node, and, depending on the mode, hands you the surrounding lexical scopes, the full [semantic model](/parser/semantic/), or a mutable handle on the tree.
 
 | Mode          | What you get                                      | Returns     |
@@ -96,6 +17,8 @@ The traverser walks the tree, calls your visitor hooks at every node, and, depen
 The three read-only modes hand your visitor a `*const Tree`, so the type system rules out mutating the AST while analysing it. Transform is the only mode that gives you `*Tree`, because tracked state (scopes, symbols) and tree mutation cannot safely coexist in a single pass.
 
 The data the walks produce, with scopes, symbols, and resolved references, is documented in [Semantic Analysis](/parser/semantic/).
+
+In JavaScript, [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks any ESTree AST, and [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) adds the semantic model to the walk.
 
 ## [Your First Visitor]($section.id('your-first-visitor'))
 
@@ -196,7 +119,7 @@ pub fn enter_call_expression(
 }
 ```
 
-See the [AST reference](/parser/ast/) for every node type and its fields.
+[ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every node type and its fields.
 
 ### [Catch-All Hooks]($section.id('catch-all-hooks'))
 

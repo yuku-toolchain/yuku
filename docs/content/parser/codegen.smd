@@ -1,13 +1,17 @@
 ---
 .title = "Codegen",
-.description = "Print an AST back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.",
+.description = "Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The codegen prints an AST back to source in a single walk, so the output is always syntactically valid and faithful to the tree's structure. The JavaScript and Zig printers produce [byte-identical output](/testing/#codegen), source maps included.
+The codegen prints a `Tree` back to source in a single walk, so the output is always syntactically valid and faithful to the tree's structure.
 
 ## [JavaScript]($section.id('javascript'))
+
+```bash
+npm install yuku-codegen
+```
 
 ```js
 import { generate } from "yuku-codegen";
@@ -16,15 +20,7 @@ import { parse } from "yuku-parser";
 const { code, map, diagnostics } = generate(parse("const x = 1 + 2;").program);
 ```
 
-It is plain JavaScript, prints any ESTree AST whichever parser produced it, and runs 2.6x faster than `@babel/generator`, or 3x with source maps on. Numbers, bigints, and regular expression flags print from their `raw` lexeme when present, so delete `raw` after changing one of those values.
-
-```ts
-interface GenerateResult {
-  code: string;
-  diagnostics: Diagnostic[]; // empty on a clean run
-  map: SourceMap | null;     // with sourceMap
-}
-```
+The same printer in plain JavaScript, for any ESTree AST, with [byte-identical output](/testing/#codegen), source maps included. It runs 2.6x faster than `@babel/generator`, or 3x with source maps on. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## [Zig]($section.id('zig'))
 
@@ -57,34 +53,25 @@ pub const Result = struct {
 
 ## [Options]($section.id('options'))
 
-```js
-generate(program, { strip: true, minify: true });
-```
-
 ```zig
 const result = try parser.codegen.generate(allocator, &tree, .{ .strip = true, .minify = true });
 ```
 
-| JavaScript  | Zig          | Default    | Description                                                          |
-| ----------- | ------------ | ---------- | -------------------------------------------------------------------- |
-| `strip`     | `strip`      | `false`    | Drop TypeScript-only syntax. See [Type stripping](#type-stripping).  |
-| `minify`    | `minify`     | `false`    | Minify the output. See [Minification](#minification).                |
-| `format`    | `format`     | `pretty`   | `pretty`, or `compact` for only the separators the grammar requires. |
-| `indent`    | `indent`     | `2`        | Spaces per level in pretty format, from 0 to 255.                    |
-| `quotes`    | `quotes`     | `preserve` | Quote style for string literals. See [Quotes](#quotes).              |
-| `comments`  | `comments`   | `some`     | Which attached comments to emit. See [Comments](#comments).          |
-| `sourceMap` | `source_map` | none       | Emit a Source Map V3. See [Source maps](#source-maps).               |
+| Field        | Default     | Description                                                             |
+| ------------ | ----------- | ----------------------------------------------------------------------- |
+| `strip`      | `false`     | Drop TypeScript-only syntax. See [Type stripping](#type-stripping).     |
+| `minify`     | `false`     | Apply size-reducing syntax rewrites. See [Minification](#minification). |
+| `format`     | `.pretty`   | `.pretty`, or `.compact` for only the separators the grammar requires.  |
+| `indent`     | `2`         | Spaces per level in pretty format.                                      |
+| `quotes`     | `.preserve` | Quote style for string literals. See [Quotes](#quotes).                 |
+| `comments`   | `.some`     | Which attached comments to emit. See [Comments](#comments).             |
+| `source_map` | `null`      | Emit a Source Map V3. See [Source maps](#source-maps).                  |
 
 Every transformation is an independent flag, so they compose freely.
 
 ## [Type stripping]($section.id('type-stripping'))
 
-`strip` prints a TypeScript AST as JavaScript. It is not a regex pass or a separate transform. The codegen skips TypeScript-only nodes and fields during its one walk, so every boundary case (comments, generic calls, nested template literal types) is a node the parser already classified.
-
-```js
-generate(parse(`const x: number = 1;`, { lang: "ts" }).program, { strip: true }).code;
-// "const x = 1;"
-```
+`strip` prints a TypeScript `Tree` as JavaScript. It is not a regex pass or a separate transform. The codegen skips TypeScript-only nodes and fields during its one walk, so every boundary case (comments, generic calls, nested template literal types) is a node the parser already classified.
 
 Types, interfaces, type aliases, generics, type assertions, `satisfies`, non-null `!`, `declare`, and `abstract` strip cleanly. A few TypeScript features emit runtime values: `enum`, `namespace`, `module`, `export =`, `import = require()`, and parameter properties. Converting them is transpilation, not stripping, so each one is reported in `diagnostics` and left out, a parameter property keeps its plain parameter, and the rest of the file is still emitted. Their ambient forms (`declare enum`, `declare namespace`, `declare module`, `import type X = require(...)`) carry no runtime and strip silently.
 
@@ -98,55 +85,32 @@ Types, interfaces, type aliases, generics, type assertions, `satisfies`, non-nul
 - `{ "foo": x }` becomes `{ foo: x }` when safe.
 - `</script`, `<!--`, and `-->` are escaped in strings and untagged template literals, so the output is safe to inline in a `<script>` tag. Tagged templates keep their raw text, since the tag reads it.
 
-In JavaScript, `minify: true` also emits compact whitespace and the shortest quotes. An object picks the switches, `whitespace`, `syntax`, and `quotes`, and enabled switches override `format` and `quotes`.
-
-```js
-generate(program, { minify: { syntax: true } }); // rewrites only, readable output
-```
-
-In Zig, `minify` is the syntax rewrites alone. Combine it with `.format = .compact` and `.quotes = .shortest` for maximum minification.
+Combine it with `.format = .compact` and `.quotes = .shortest` for maximum minification.
 
 ## [Quotes]($section.id('quotes'))
 
-| Value      | Behavior                                                               |
-| ---------- | ---------------------------------------------------------------------- |
-| `preserve` | Keep each literal's source quote style, re-escaping the content.       |
-| `double`   | Force double quotes.                                                   |
-| `single`   | Force single quotes.                                                   |
-| `shortest` | Pick whichever quote needs fewer escapes per literal, double on a tie. |
+| Value       | Behavior                                                               |
+| ----------- | ---------------------------------------------------------------------- |
+| `.preserve` | Keep each literal's source quote style, re-escaping the content.       |
+| `.double`   | Force double quotes.                                                   |
+| `.single`   | Force single quotes.                                                   |
+| `.shortest` | Pick whichever quote needs fewer escapes per literal, double on a tie. |
 
 ## [Comments]($section.id('comments'))
 
-Comments print from the nodes they are [attached](/parser/ast/#comments) to, so parse with `attachComments: true` (`.comments = .attached` in Zig) to keep them.
+Comments print from the nodes they are [attached](/parser/ast/#comments) to, so parse with `.comments = .attached` or `.both` to keep them.
 
-| Value   | Behavior                                                                            |
-| ------- | ----------------------------------------------------------------------------------- |
-| `some`  | Legal headers, JSDoc, and `@`/`#` annotations, the bundler convention. The default. |
-| `all`   | Every comment. `true` in JavaScript.                                                |
-| `none`  | No comments. `false` in JavaScript.                                                 |
-| `line`  | `// ...` only.                                                                      |
-| `block` | `/* ... */` only.                                                                   |
-
-```js
-const { program } = parse(`// hello\nconst x = 1;`, { attachComments: true });
-generate(program, { comments: true }).code;
-// "// hello\nconst x = 1;"
-```
+| Value    | Behavior                                                                            |
+| -------- | ----------------------------------------------------------------------------------- |
+| `.some`  | Legal headers, JSDoc, and `@`/`#` annotations, the bundler convention. The default. |
+| `.all`   | Every comment.                                                                      |
+| `.none`  | No comments.                                                                        |
+| `.line`  | `// ...` only.                                                                      |
+| `.block` | `/* ... */` only.                                                                   |
 
 ## [Source maps]($section.id('source-maps'))
 
 Pass the original source to emit a Source Map V3 alongside the code.
-
-```js
-import { writeFileSync } from "node:fs";
-
-const { code, map } = generate(program, {
-  sourceMap: { source, file: "out.js", sourceFileName: "in.js", sourcesContent: source },
-});
-
-writeFileSync("out.js", `${code}\n//# sourceMappingURL=out.js.map`);
-writeFileSync("out.js.map", JSON.stringify(map));
-```
 
 ```zig
 const result = try parser.codegen.generate(allocator, &tree, .{
@@ -162,12 +126,12 @@ defer result.deinit(allocator);
 const map = result.map.?; // set whenever a source was given
 ```
 
-| JavaScript       | Zig                | Description                                       |
-| ---------------- | ------------------ | ------------------------------------------------- |
-| `source`         | `source`           | The original source text. Required to emit a map. |
-| `file`           | `file`             | Output filename, embedded as `file`.              |
-| `sourceFileName` | `source_file_name` | Source filename, the single entry of `sources`.   |
-| `sourceRoot`     | `source_root`      | Embedded as `sourceRoot`.                         |
-| `sourcesContent` | `sources_content`  | The single entry of `sourcesContent`.             |
+| Field              | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| `source`           | The original source text. Required to emit a map. |
+| `file`             | Output filename, embedded as `file`.              |
+| `source_file_name` | Source filename, the single entry of `sources`.   |
+| `source_root`      | Embedded as `sourceRoot`.                         |
+| `sources_content`  | The single entry of `sourcesContent`.             |
 
-The map is the Source Map V3 wire format, ready to serialize, with the same fields in snake_case in Zig. Columns are 0-indexed UTF-16 code units, the convention of browser devtools and source map libraries.
+`map` holds the Source Map V3 fields in snake_case, `mappings` already encoded. Columns are 0-indexed UTF-16 code units, the convention of browser devtools and source map libraries.

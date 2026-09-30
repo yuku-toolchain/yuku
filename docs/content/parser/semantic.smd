@@ -327,7 +327,7 @@ flags.isBlockScopedLike()   // names a hoisting `var` cannot pass through
 flags.toString()            // human-readable category for diagnostics
 ```
 
-`Symbol.variable`, `Symbol.any_import`, `Symbol.value_space`, `Symbol.type_space`, and `Symbol.namespace_space` are ready-made masks for `intersects`, the same sets the JS decoder mirrors as [`SymbolFlags`](/analyzer/#flags) composites.
+`Symbol.variable`, `Symbol.any_import`, `Symbol.value_space`, `Symbol.type_space`, and `Symbol.namespace_space` are ready-made masks for `intersects`, the same sets the JS decoder mirrors as [`SymbolFlags`](https://www.npmjs.com/package/yuku-analyzer#flags) composites.
 
 The space predicates (`inValueSpace`, `inTypeSpace`, `inNamespaceSpace`, `visibleIn`) answer which declaration spaces a symbol occupies. They drive reference resolution and have their own section: [Declaration Spaces](#declaration-spaces).
 
