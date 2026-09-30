@@ -1,22 +1,11 @@
 // one analyzed file, its AST plus a lazily built semantic graph
-import binding from "./binding.js";
-import { decode, SymbolFlags, TokenKind } from "./decode.js";
+
+import { analyze as analyzeSource, langFromPath, sourceTypeFromPath } from "yuku-engine";
+import { decode, SymbolFlags } from "./decode.js";
 import { walkModule, walkModuleAsync } from "./walk.js";
 
 const _enc = new TextEncoder();
 const _dec = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
-
-export function langFromPath(path) {
-  if (path.endsWith(".d.ts") || path.endsWith(".d.mts") || path.endsWith(".d.cts")) return "dts";
-  if (path.endsWith(".tsx")) return "tsx";
-  if (path.endsWith(".ts") || path.endsWith(".mts") || path.endsWith(".cts")) return "ts";
-  if (path.endsWith(".jsx")) return "jsx";
-  return "js";
-}
-
-export function sourceTypeFromPath(path) {
-  return path.endsWith(".cjs") || path.endsWith(".cts") ? "commonjs" : "module";
-}
 
 class Scope {
   #sem;
@@ -269,7 +258,7 @@ export class Module {
     this.path = path;
     this.source = typeof source === "string" ? source : _dec.decode(source);
     this.#r = decode(
-      binding.analyze(typeof source === "string" ? _enc.encode(source) : source, {
+      analyzeSource(typeof source === "string" ? _enc.encode(source) : source, {
         lang: options.lang ?? langFromPath(path),
         sourceType: options.sourceType ?? sourceTypeFromPath(path),
         preserveParens: options.preserveParens,
@@ -553,4 +542,4 @@ export class Module {
   }
 }
 
-export { SymbolFlags, TokenKind };
+export { SymbolFlags };

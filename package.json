@@ -29,11 +29,10 @@
     "docs:llms": "bun docs/generate-llms.ts",
     "build:local": "napi-zig build --release --current && bun gen:npm",
     "build:npm": "napi-zig build --release && bun gen:npm",
-    "build:wasm": "zig build wasm && bun gen:wasm",
+    "build:wasm": "zig build wasm && cp ./zig-out/bin/yuku-engine.wasm ./npm/yuku-engine-wasm/",
     "release:npm": "napi-zig bump",
     "fetch:fixtures": "bun test/parser/load test/parser/suite",
-    "gen:npm": "zig build gen-token-types gen-parser-decoder gen-analyzer-decoder gen-walk-tables && cp ./zig-out/tokens.d.ts ./npm/yuku-types && cp ./zig-out/decode.js ./npm/yuku-parser && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./src/parser/ffi/analyzer.d.ts ./npm/yuku-analyzer/index.d.ts && cp ./zig-out/walk-tables.ts ./npm/yuku-ast/src/generated.ts && bun run --cwd npm/yuku-ast build && bun run --cwd npm/yuku-codegen build",
-    "gen:wasm": "zig build gen-parser-decoder gen-analyzer-decoder && cp ./zig-out/bin/yuku-parser.wasm ./zig-out/decode.js ./npm/yuku-parser-wasm/ && cp ./npm/yuku-parser/index.d.ts ./npm/yuku-parser-wasm/ && cp ./zig-out/bin/yuku-analyzer.wasm ./npm/yuku-analyzer-wasm/ && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer-wasm/decode.js && cp ./npm/yuku-analyzer/index.js ./npm/yuku-analyzer/analyzer.js ./npm/yuku-analyzer/module.js ./npm/yuku-analyzer/walk.js ./npm/yuku-analyzer/index.d.ts ./npm/yuku-analyzer-wasm/"
+    "gen:npm": "zig build gen-token-types gen-parser-decoder gen-analyzer-decoder gen-walk-tables && cp ./zig-out/tokens.d.ts ./npm/yuku-types && cp ./zig-out/decode.js ./npm/yuku-parser && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./zig-out/walk-tables.ts ./npm/yuku-ast/src/generated.ts && bun run --cwd npm/yuku-ast build && bun run --cwd npm/yuku-codegen build"
   },
   "devDependencies": {
     "@jridgewell/trace-mapping": "^0.3.31",
@@ -41,14 +40,16 @@
     "@types/node": "^26.6.2",
     "@typescript-eslint/scope-manager": "^8.70.1",
     "@typescript-eslint/typescript-estree": "^8.70.1",
+    "@yuku-engine/wasm": "workspace:*",
     "fast-deep-equal": "^3.1.3",
     "jest-diff": "^30.5.2",
-    "napi-zig": "^0.2.8",
+    "napi-zig": "^0.3.1",
     "pkg-pr-new": "0.0.88",
     "typescript": "^6.0.3",
     "yuku-analyzer": "workspace:*",
     "yuku-ast": "workspace:*",
     "yuku-codegen": "workspace:*",
+    "yuku-engine": "workspace:*",
     "yuku-parser": "workspace:*"
   }
 }

@@ -55,8 +55,8 @@ async function previewPlayground(): Promise<string | null> {
   return null;
 }
 
-const wasm = packages.find((pkg) => pkg.name === "@yuku-parser/wasm");
-const sha = wasm?.url.split("@").pop();
+const parser = packages.find((pkg) => pkg.name === "yuku-parser");
+const sha = parser?.url.split("@").pop();
 const origin = (await previewPlayground()) ?? "https://playground.yuku.fyi";
 const playground = sha ? `${origin}/?pr=${sha}` : null;
 

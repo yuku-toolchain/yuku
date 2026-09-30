@@ -1,0 +1,22 @@
+{
+  "name": "@yuku-engine/binding-linux-arm-gnu",
+  "version": "0.13.0",
+  "license": "MIT",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "main": "yuku-engine.node",
+  "files": [
+    "yuku-engine.node"
+  ]
+}

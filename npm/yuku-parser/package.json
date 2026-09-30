@@ -1,7 +1,7 @@
 {
   "name": "yuku-parser",
   "version": "0.13.0",
-  "description": "High-performance JavaScript/TypeScript parser",
+  "description": "A fast, spec-compliant JavaScript and TypeScript parser, producing an ESTree / TypeScript-ESTree AST",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,25 +13,11 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "binding.js",
     "decode.js"
   ],
-  "optionalDependencies": {
-    "@yuku-parser/binding-linux-x64-gnu": "0.13.0",
-    "@yuku-parser/binding-linux-arm64-gnu": "0.13.0",
-    "@yuku-parser/binding-linux-arm-gnu": "0.13.0",
-    "@yuku-parser/binding-linux-x64-musl": "0.13.0",
-    "@yuku-parser/binding-linux-arm64-musl": "0.13.0",
-    "@yuku-parser/binding-linux-arm-musl": "0.13.0",
-    "@yuku-parser/binding-darwin-x64": "0.13.0",
-    "@yuku-parser/binding-darwin-arm64": "0.13.0",
-    "@yuku-parser/binding-win32-x64": "0.13.0",
-    "@yuku-parser/binding-win32-arm64": "0.13.0",
-    "@yuku-parser/binding-freebsd-x64": "0.13.0",
-    "@yuku-parser/binding-android-arm64": "0.13.0"
-  },
   "dependencies": {
-    "@yuku-toolchain/types": "workspace:^"
+    "@yuku-toolchain/types": "workspace:^",
+    "yuku-engine": "workspace:*"
   },
   "keywords": [
     "acorn",
@@ -45,7 +31,6 @@
     "js",
     "jsx",
     "lexer",
-    "napi",
     "oxc",
     "parser",
     "rust",

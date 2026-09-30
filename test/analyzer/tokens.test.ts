@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
-import { analyze, TokenKind } from "yuku-analyzer";
+import { analyze } from "yuku-analyzer";
+import { TokenKind } from "yuku-parser";
 
 test("module tokens agree with the semantic model", () => {
   expect(analyze("let x = 1;", { path: "a.js" }).tokens).toBeUndefined();

@@ -10,10 +10,10 @@ import type {
   Program,
   SourceLang,
   SourceType,
-  TokenKindMap,
   TokenList,
   WalkContext,
 } from "@yuku-toolchain/types";
+import type { langFromPath, sourceTypeFromPath } from "yuku-engine";
 
 /** A diagnostic produced by {@link Analyzer.link}. */
 interface LinkDiagnostic {
@@ -65,11 +65,6 @@ interface AnalyzerOptions {
    */
   resolve?: (specifier: string, importerPath: string) => string | null;
 }
-
-/** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
-declare const TokenKind: TokenKindMap;
-/** The kind of a token, one of the values of `TokenKind`. */
-type TokenKind = TokenKindMap[keyof TokenKindMap];
 
 /**
  * Bit flags describing a {@link Symbol}: which declaration kinds it
@@ -124,9 +119,9 @@ declare const SymbolFlags: {
   readonly Variable: number;
   /** Composite: any import binding, value or `import type`. */
   readonly Import: number;
-  /** Composite: visible at runtime (var, function, class, enum and its members, value namespace). */
+  /** Composite: visible at runtime, as a var, function, class, enum, or value namespace. */
   readonly ValueSpace: number;
-  /** Composite: referencable from a type position (class, enum and its members, interface, alias, type param). */
+  /** Composite: usable as a type, as a class, enum, interface, alias, or type parameter. */
   readonly TypeSpace: number;
   /** Composite: what a dotted type name starts from (namespace, enum). */
   readonly NamespaceSpace: number;
@@ -681,19 +676,10 @@ declare class Analyzer {
   referencesOf(symbol: Symbol): ModuleReference[];
 }
 
-/** Resolves a {@link SourceLang} from a file path's extension. */
-declare function langFromPath(path: string): SourceLang;
-
-/** Resolves a {@link SourceType} from a file path's extension. */
-declare function sourceTypeFromPath(path: string): SourceType;
-
 export {
   analyze,
   Analyzer,
   SymbolFlags,
-  TokenKind,
-  langFromPath,
-  sourceTypeFromPath,
   type AddFileOptions,
   type AnalyzeOptions,
   type AnalyzerOptions,
@@ -710,8 +696,6 @@ export {
   type Module,
   type ModuleFlags,
   type ModuleReference,
-  type NodeOfType,
-  type NodeType,
   type Reference,
   type Scope,
   type ScopeKind,

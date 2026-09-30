@@ -1,7 +1,7 @@
 {
   "name": "yuku-analyzer",
   "version": "0.13.0",
-  "description": "Full JavaScript and TypeScript semantic analysis: scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects",
+  "description": "Semantic analysis for JavaScript and TypeScript: scopes, symbols, resolved references, closures, and cross-file module linking",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,23 +16,8 @@
     "analyzer.js",
     "module.js",
     "walk.js",
-    "binding.js",
     "decode.js"
   ],
-  "optionalDependencies": {
-    "@yuku-analyzer/binding-linux-x64-gnu": "0.13.0",
-    "@yuku-analyzer/binding-linux-arm64-gnu": "0.13.0",
-    "@yuku-analyzer/binding-linux-arm-gnu": "0.13.0",
-    "@yuku-analyzer/binding-linux-x64-musl": "0.13.0",
-    "@yuku-analyzer/binding-linux-arm64-musl": "0.13.0",
-    "@yuku-analyzer/binding-linux-arm-musl": "0.13.0",
-    "@yuku-analyzer/binding-darwin-x64": "0.13.0",
-    "@yuku-analyzer/binding-darwin-arm64": "0.13.0",
-    "@yuku-analyzer/binding-win32-x64": "0.13.0",
-    "@yuku-analyzer/binding-win32-arm64": "0.13.0",
-    "@yuku-analyzer/binding-freebsd-x64": "0.13.0",
-    "@yuku-analyzer/binding-android-arm64": "0.13.0"
-  },
   "keywords": [
     "analyzer",
     "ast",
@@ -50,6 +35,7 @@
   ],
   "dependencies": {
     "@yuku-toolchain/types": "workspace:^",
-    "yuku-ast": "workspace:^"
+    "yuku-ast": "workspace:^",
+    "yuku-engine": "workspace:*"
   }
 }

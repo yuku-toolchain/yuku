@@ -1,0 +1,19 @@
+{
+  "name": "@yuku-engine/binding-darwin-x64",
+  "version": "0.13.0",
+  "license": "MIT",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "main": "yuku-engine.node",
+  "files": [
+    "yuku-engine.node"
+  ]
+}

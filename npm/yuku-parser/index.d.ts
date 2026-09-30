@@ -69,7 +69,7 @@ interface ParseResult {
 }
 
 /**
- * Parse JS/TS source code and return an ESTree / TypeScript-ESTree compatible AST.
+ * Parses JavaScript or TypeScript source into an ESTree / TypeScript-ESTree AST.
  */
 export function parse(source: string, options?: ParseOptions): ParseResult;
 
@@ -78,23 +78,6 @@ export const TokenKind: TokenKindMap;
 /** The kind of a token, one of the values of `TokenKind`. */
 export type TokenKind = TokenKindMap[keyof TokenKindMap];
 
-/**
- * Resolves a {@link SourceLang} from a file path's extension.
- *
- * - `.d.ts`, `.d.mts`, `.d.cts` → `"dts"`
- * - `.tsx` → `"tsx"`
- * - `.ts`, `.mts`, `.cts` → `"ts"`
- * - `.jsx` → `"jsx"`
- * - everything else → `"js"`
- */
-export function langFromPath(path: string): SourceLang;
-
-/**
- * Resolves a {@link SourceType} from a file path's extension.
- *
- * - `.cjs`, `.cts` → `"commonjs"`
- * - everything else → `"module"`
- */
-export function sourceTypeFromPath(path: string): SourceType;
+export { langFromPath, sourceTypeFromPath } from "yuku-engine";
 
 export type { ParseOptions, ParseResult };

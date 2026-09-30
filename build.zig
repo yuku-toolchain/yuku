@@ -154,31 +154,20 @@ pub fn build(b: *std.Build) void {
 
     const napi_dep = b.dependency("napi_zig", .{});
 
-    for ([_]struct { name: []const u8, tool: []const u8 }{
-        .{ .name = "parser", .tool = "parser" },
-        .{ .name = "analyzer", .tool = "semantic analyzer" },
-    }) |lib| {
-        napi_zig.addLib(b, napi_dep, .{
-            .name = b.fmt("yuku-{s}", .{lib.name}),
-            .root = b.path(b.fmt("src/parser/ffi/{s}.zig", .{lib.name})),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "parser", .module = parser_module },
-            },
-            .npm = .{
-                .scope = b.fmt("@yuku-{s}", .{lib.name}),
-                .description = b.fmt(
-                    "High-performance JavaScript/TypeScript {s} written in Zig",
-                    .{lib.tool},
-                ),
-                .dts = .{
-                    .file = b.path(b.fmt("src/parser/ffi/{s}.d.ts", .{lib.name})),
-                },
-                .repository = "https://github.com/yuku-toolchain/yuku",
-            },
-        });
-    }
+    napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-engine",
+        .root = b.path("src/parser/ffi/napi.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "parser", .module = parser_module },
+        },
+        .npm = .{
+            .scope = "@yuku-engine",
+            .description = "The native binary that the Yuku packages run on",
+            .repository = "https://github.com/yuku-toolchain/yuku",
+        },
+    });
 
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
@@ -190,33 +179,20 @@ pub fn build(b: *std.Build) void {
             .simd128,
         }),
     });
-    const wasm_step = b.step("wasm", "Build the WebAssembly modules");
+    const wasm_step = b.step("wasm", "Build the WebAssembly engine");
 
-    const wasm_transfer_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
+    const wasm_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/ffi/wasm.zig"),
         .target = wasm_target,
         .optimize = .ReleaseSmall,
+        .strip = true,
     });
-    wasm_transfer_module.addImport("parser", parser_module);
+    wasm_module.addImport("parser", parser_module);
 
-    for ([_]struct { name: []const u8, root: []const u8 }{
-        .{ .name = "yuku-parser", .root = "src/parser/ffi/wasm/parser.zig" },
-        .{ .name = "yuku-analyzer", .root = "src/parser/ffi/wasm/analyzer.zig" },
-    }) |cfg| {
-        const wasm_module = b.createModule(.{
-            .root_source_file = b.path(cfg.root),
-            .target = wasm_target,
-            .optimize = .ReleaseSmall,
-            .strip = true,
-        });
-        wasm_module.addImport("parser", parser_module);
-        wasm_module.addImport("transfer", wasm_transfer_module);
-
-        const wasm = b.addExecutable(.{ .name = cfg.name, .root_module = wasm_module });
-        wasm.entry = .disabled;
-        wasm.rdynamic = true;
-        wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
-    }
+    const wasm = b.addExecutable(.{ .name = "yuku-engine", .root_module = wasm_module });
+    wasm.entry = .disabled;
+    wasm.rdynamic = true;
+    wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
 
     const main_module = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),

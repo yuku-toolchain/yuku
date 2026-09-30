@@ -1,0 +1,36 @@
+{
+  "name": "@yuku-engine/wasm",
+  "version": "0.13.0",
+  "description": "The WebAssembly build of the Yuku toolchain, for browsers, edge runtimes, and platforms without a native binary",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "browser": "./index.js",
+      "node": "./node.js",
+      "default": "./index.js"
+    },
+    "./yuku-engine.wasm": "./yuku-engine.wasm",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "core.js",
+    "node.js",
+    "yuku-engine.wasm"
+  ],
+  "keywords": [
+    "wasm",
+    "webassembly",
+    "yuku"
+  ]
+}

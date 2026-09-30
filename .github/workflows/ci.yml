@@ -108,7 +108,7 @@ jobs:
       - name: Zig build
         run: zig build
 
-      - name: Build wasm packages
+      - name: Build the WebAssembly engine
         run: bun run build:wasm
 
       - name: Zig tests
