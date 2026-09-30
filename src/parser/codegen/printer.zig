@@ -57,13 +57,13 @@ pub const Diagnostic = struct {
 pub const Result = struct {
     code: []const u8,
     /// Empty when codegen succeeded cleanly.
-    errors: []const Diagnostic,
+    diagnostics: []const Diagnostic,
     /// Populated when `Options.source_map` was set.
     map: ?SourceMap = null,
 
     pub fn deinit(self: Result, allocator: Allocator) void {
         allocator.free(self.code);
-        allocator.free(self.errors);
+        allocator.free(self.diagnostics);
         if (self.map) |m| m.deinit(allocator);
     }
 };
@@ -82,13 +82,13 @@ pub fn generate(allocator: Allocator, tree: *Tree, options: Options) Error!Resul
 
     const code = try p.out.code.toOwnedSlice(allocator);
     errdefer allocator.free(code);
-    const errors = try p.errors.toOwnedSlice(allocator);
-    errdefer allocator.free(errors);
+    const diagnostics = try p.diagnostics.toOwnedSlice(allocator);
+    errdefer allocator.free(diagnostics);
     const map = if (comptime source_maps)
         (if (p.out.map) |*map| try map.build(allocator) else null)
     else
         null;
-    return .{ .code = code, .errors = errors, .map = map };
+    return .{ .code = code, .diagnostics = diagnostics, .map = map };
 }
 
 const Ctx = struct {
@@ -106,7 +106,7 @@ const Printer = struct {
     node_data: []const NodeData,
     options: Options,
     out: Output,
-    errors: std.ArrayList(Diagnostic) = .empty,
+    diagnostics: std.ArrayList(Diagnostic) = .empty,
 
     indent_depth: u32 = 0,
     pending_semi: bool = false,
@@ -155,7 +155,7 @@ const Printer = struct {
 
     fn deinit(self: *Self) void {
         self.out.deinit();
-        self.errors.deinit(self.allocator);
+        self.diagnostics.deinit(self.allocator);
         self.links.deinit(self.allocator);
     }
 
@@ -852,7 +852,7 @@ const Printer = struct {
 
     fn diagnose(self: *Self, idx: NodeIndex, message: []const u8) Error!void {
         const span = self.tree.span(idx);
-        try self.errors.append(self.allocator, .{
+        try self.diagnostics.append(self.allocator, .{
             .message = message,
             .start = span.start,
             .end = span.end,

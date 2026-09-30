@@ -40,15 +40,6 @@ import {
 type Node = T.Node;
 type Comment = T.AttachedComment;
 
-/** A codegen-detected problem in the input AST. */
-export interface Diagnostic {
-  message: string;
-  /** Offset where the problem starts, in the units of the input AST's `start`. */
-  start: number;
-  /** Offset where the problem ends, in the units of the input AST's `end`. */
-  end: number;
-}
-
 export interface PrintOptions {
   strip: boolean;
   minify: boolean;
@@ -60,7 +51,7 @@ export interface PrintOptions {
 
 export interface PrintResult {
   code: string;
-  errors: Diagnostic[];
+  diagnostics: T.Diagnostic[];
 }
 
 const PREC_LOWEST = 0;
@@ -215,7 +206,7 @@ export function print(
 ): PrintResult {
   const printer = new Printer(options, mappings);
   printer.emit(program);
-  return { code: printer.finish(), errors: printer.errors };
+  return { code: printer.finish(), diagnostics: printer.diagnostics };
 }
 
 class Printer extends Output {
@@ -224,7 +215,7 @@ class Printer extends Output {
   readonly indentWidth: number;
   readonly quotes: PrintOptions["quotes"];
   readonly comments: PrintOptions["comments"];
-  errors: Diagnostic[] = [];
+  diagnostics: T.Diagnostic[] = [];
 
   indentDepth = 0;
   pendingSemi = false;
@@ -266,7 +257,14 @@ class Printer extends Output {
   }
 
   diagnose(node: Node, message: string): void {
-    this.errors.push({ message, start: node.start, end: node.end });
+    this.diagnostics.push({
+      severity: "error",
+      message,
+      help: null,
+      start: node.start,
+      end: node.end,
+      labels: [],
+    });
   }
 
   emit(node: Node | null | undefined): void {

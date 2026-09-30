@@ -1,5 +1,5 @@
 // Prints every corpus file and the deep chains with the Zig and the JS printer and compares
-// code, mappings, and errors byte for byte.
+// code, mappings, and diagnostics byte for byte.
 //
 //   bun test/codegen/conformance.ts [plan...] [--file <path>] [--show <n>]
 
@@ -113,7 +113,7 @@ export const PLANS: Plan[] = [
 
 export interface Mismatch {
   path: string;
-  what: "code" | "map" | "errors" | "skip" | "threw";
+  what: "code" | "map" | "diagnostics" | "skip" | "threw";
   expected: string;
   actual: string;
 }
@@ -128,7 +128,7 @@ interface Reference {
   printed: boolean;
   code: string;
   mappings: string;
-  errors: { start: number; end: number; message: string }[];
+  diagnostics: { start: number; end: number; message: string }[];
 }
 
 /** A file to print, read from `path` unless `source` is given. */
@@ -205,10 +205,10 @@ export function runPlan(plan: Plan, files: Input[]): PlanResult {
       });
       continue;
     }
-    const expected = referenceErrors(reference, source);
-    const actual = result.errors.map((e) => `${e.start}-${e.end} ${e.message}`).join("\n");
+    const expected = referenceDiagnostics(reference, source);
+    const actual = result.diagnostics.map((d) => `${d.start}-${d.end} ${d.message}`).join("\n");
     if (actual !== expected) {
-      mismatches.push({ path: file.path, what: "errors", expected, actual });
+      mismatches.push({ path: file.path, what: "diagnostics", expected, actual });
     }
   }
   return { plan: plan.name, compared, mismatches };
@@ -254,28 +254,30 @@ function readReference(output: Buffer, count: number): Reference[] {
   for (let i = 0; i < count; i++) {
     const status = output[offset++];
     if (status !== 0) {
-      references.push({ printed: false, code: "", mappings: "", errors: [] });
+      references.push({ printed: false, code: "", mappings: "", diagnostics: [] });
       continue;
     }
     const code = readString();
     const mappings = readString();
-    const errors = [];
+    const diagnostics = [];
     for (let remaining = readU32(); remaining > 0; remaining--) {
       const start = readU32();
       const end = readU32();
-      errors.push({ start, end, message: readString() });
+      diagnostics.push({ start, end, message: readString() });
     }
-    references.push({ printed: true, code, mappings, errors });
+    references.push({ printed: true, code, mappings, diagnostics });
   }
   if (offset !== output.length) throw new Error("codegen-reference output has trailing bytes");
   return references;
 }
 
 // the Zig side counts UTF-8 bytes, the JS side UTF-16 units
-function referenceErrors(reference: Reference, source: string): string {
-  if (reference.errors.length === 0) return "";
+function referenceDiagnostics(reference: Reference, source: string): string {
+  if (reference.diagnostics.length === 0) return "";
   const units = utf16Offsets(source);
-  return reference.errors.map((e) => `${units[e.start]}-${units[e.end]} ${e.message}`).join("\n");
+  return reference.diagnostics
+    .map((d) => `${units[d.start]}-${units[d.end]} ${d.message}`)
+    .join("\n");
 }
 
 function utf16Offsets(source: string): number[] {

@@ -1,8 +1,7 @@
 // The JS printer against the Zig printer over the whole corpus and the deep chains, one test per
-// plan of `conformance.ts`. Code, source map mappings, and errors must match byte for byte.
+// plan of `conformance.ts`. Code, source map mappings, and diagnostics must match byte for byte.
 //
-// Skips when the corpus has not been downloaded so a bare `bun test` stays green. The Zig side
-// is `zig build codegen-reference`, which `bun test:codegen` builds first.
+// The Zig side is `zig build codegen-reference`, which `bun test:codegen` builds first.
 
 import { describe, expect, test } from "bun:test";
 import { corpusPresent } from "../corpus";

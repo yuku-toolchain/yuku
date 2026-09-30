@@ -95,8 +95,8 @@ fn printFile(
     try out.writeByte(0);
     try writeBytes(out, result.code);
     try writeBytes(out, if (result.map) |map| map.mappings else "");
-    try out.writeInt(u32, @intCast(result.errors.len), .little);
-    for (result.errors) |e| {
+    try out.writeInt(u32, @intCast(result.diagnostics.len), .little);
+    for (result.diagnostics) |e| {
         std.debug.assert(e.start <= e.end);
         try out.writeInt(u32, e.start, .little);
         try out.writeInt(u32, e.end, .little);

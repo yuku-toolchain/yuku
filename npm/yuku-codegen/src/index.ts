@@ -1,6 +1,6 @@
-import type { Comment, Program } from "@yuku-toolchain/types";
+import type { Comment, Diagnostic, Program } from "@yuku-toolchain/types";
 
-import { type Diagnostic, print, type PrintOptions } from "./printer.js";
+import { print, type PrintOptions } from "./printer.js";
 import { encodeMappings, Mappings } from "./sourcemap.js";
 
 /** Whitespace mode for the generated output. */
@@ -48,7 +48,7 @@ export interface MinifyOptions {
 export interface GenerateOptions {
   /**
    * Drop TypeScript-only syntax and emit plain JavaScript. Constructs with no JavaScript
-   * equivalent (`enum`, `namespace`, ...) are reported in `errors` and elided.
+   * equivalent (`enum`, `namespace`, ...) are reported in `diagnostics` and elided.
    * @default false
    */
   strip?: boolean;
@@ -85,7 +85,7 @@ export interface SourceMap {
 export interface GenerateResult {
   code: string;
   /** Empty when codegen succeeded cleanly. */
-  errors: Diagnostic[];
+  diagnostics: Diagnostic[];
   /** `null` unless `sourceMap` was enabled. */
   map: SourceMap | null;
 }
@@ -105,7 +105,7 @@ export function generate(program: Program, options: GenerateOptions = {}): Gener
     throw new TypeError("`sourceMap.source` must be the original source text");
   }
   const mappings = new Mappings(Math.max(sourceMap.source.length >>> 3, 1024));
-  const { code, errors } = print(program, printOptions, mappings);
+  const { code, diagnostics } = print(program, printOptions, mappings);
   const map: SourceMap = {
     version: 3,
     file: sourceMap.file ?? null,
@@ -115,7 +115,7 @@ export function generate(program: Program, options: GenerateOptions = {}): Gener
     names: [],
     mappings: encodeMappings(code, sourceMap.source, mappings),
   };
-  return { code, errors, map };
+  return { code, diagnostics, map };
 }
 
 function resolveOptions(options: GenerateOptions): PrintOptions {
