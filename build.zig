@@ -181,13 +181,28 @@ pub fn build(b: *std.Build) void {
     });
     const wasm_step = b.step("wasm", "Build the WebAssembly engine");
 
+    const wasm_optimize: std.builtin.OptimizeMode = .ReleaseSmall;
+    const wasm_util = b.createModule(.{
+        .root_source_file = b.path("src/util/root.zig"),
+        .target = wasm_target,
+        .optimize = wasm_optimize,
+    });
+    const wasm_parser = b.createModule(.{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = wasm_target,
+        .optimize = wasm_optimize,
+    });
+    wasm_parser.addImport("util", wasm_util);
+    wasm_parser.addImport("codegen_options", codegen_options_module);
+    wasm_parser.addImport("parser_extension", parser_extension);
+
     const wasm_module = b.createModule(.{
         .root_source_file = b.path("src/parser/ffi/wasm.zig"),
         .target = wasm_target,
-        .optimize = .ReleaseSmall,
+        .optimize = wasm_optimize,
         .strip = true,
     });
-    wasm_module.addImport("parser", parser_module);
+    wasm_module.addImport("parser", wasm_parser);
 
     const wasm = b.addExecutable(.{ .name = "yuku-engine", .root_module = wasm_module });
     wasm.entry = .disabled;
