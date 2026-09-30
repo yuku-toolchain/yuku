@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-Yuku's parser turns JavaScript and TypeScript source into an [AST](/parser/ast/). It recovers from errors, so every parse returns the full tree alongside every diagnostic.
+Yuku's parser turns JavaScript and TypeScript into an [AST](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns a tree of everything it could read.
 
 ## [JavaScript]($section.id('javascript'))
 
@@ -19,7 +19,7 @@ import { parse } from "yuku-parser";
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-Outputs an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) AST matching [Oxc](https://oxc.rs). See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
+An [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) AST, matching [Oxc](https://oxc.rs). See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
 ## [Zig]($section.id('zig'))
 
@@ -28,7 +28,7 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main() !void {
-    var tree = try parser.parse(std.heap.smp_allocator, "const x = 5;", .{});
+    var tree = try parser.parse(std.heap.smp_allocator, "const x: number = 1;", .{ .lang = .ts });
     defer tree.deinit();
 
     for (tree.diagnostics.items) |d| {
@@ -37,82 +37,38 @@ pub fn main() !void {
 }
 ```
 
-`parse` returns a `Tree` holding the AST, diagnostics, and source metadata. The allocator passed to `parse` backs the tree's arena, so `tree.deinit()` frees everything at once.
-
-The AST is a flat array of nodes referenced by integer index. `tree.root` is always a `program` node. Everything below it is a tagged union you `switch` on.
-
-```zig
-const program = tree.data(tree.root).program;
-
-for (tree.extra(program.body)) |child_idx| {
-    switch (tree.data(child_idx)) {
-        .variable_declaration => |decl| {
-            for (tree.extra(decl.declarators)) |d| {
-                _ = d;
-            }
-        },
-        .function => |func| {
-            _ = func;
-        },
-        else => {},
-    }
-}
-```
-
-The four read primitives are `tree.data(idx)` for a node's payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a child list, and `tree.string(handle)` for string content. See [AST](/parser/ast/) for how the tree is laid out and read.
+`parse` returns a `Tree` holding the AST, its diagnostics, and the source. Everything lives in one arena, so `tree.deinit()` frees it all at once. [AST](/parser/ast/) shows how to read it.
 
 ## [Options]($section.id('options'))
 
-`parse` takes an `Options` struct.
+| Field             | Default   | Description                                                                                    |
+| ----------------- | --------- | ---------------------------------------------------------------------------------------------- |
+| `source_type`     | `.module` | `.script`, `.module` (strict, with `import` and `export`), or `.commonjs` (top-level `return`) |
+| `lang`            | `.js`     | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                        |
+| `preserve_parens` | `true`    | Keep `parenthesized_expression` nodes, or only their inner expression                          |
+| `comments`        | `.flat`   | `.none`, `.flat`, `.attached`, or `.both`, see [Comments](/parser/ast/#comments)               |
+| `tokens`          | `false`   | Keep every token, see [Tokens](/parser/ast/#tokens)                                            |
 
-```zig
-var tree = try parser.parse(allocator, source, .{ .lang = .tsx, .source_type = .module });
-```
-
-| Field             | Values                                 | Default   | Description                                                                                                                                                              |
-| ----------------- | -------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `source_type`     | `.script`, `.module`, `.commonjs`      | `.module` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. CommonJS mode allows top-level `return`, `new.target`, and `using`.             |
-| `lang`            | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts`   | `.js`     | The syntax extensions to enable.                                                                                                                                         |
-| `preserve_parens` | `true`, `false`                        | `true`    | Keep `parenthesized_expression` nodes. When off, only the inner expression is kept.                                                                                      |
-| `comments`        | `.none`, `.flat`, `.attached`, `.both` | `.flat`   | Skip comments, collect a flat list, attach them to their host nodes, or both. See [Comments](/parser/ast/#comments).                                                     |
-| `tokens`          | `true`, `false`                        | `false`   | Keep every token. See [Tokens](/parser/ast/#tokens).                                                                                                                     |
-
-`source_type` and `lang` can be inferred from a file path. `.d.ts`, `.tsx`, `.ts`, and `.jsx` select their language, and `.cjs` and `.cts` select CommonJS.
-
-```zig
-var tree = try parser.parse(allocator, source, .{
-    .source_type = .fromPath("app.cjs"), // .commonjs
-    .lang = .fromPath("app.tsx"), // .tsx
-});
-```
+`.fromPath` infers `source_type` and `lang` from a file name, as in `.lang = .fromPath("app.tsx")`.
 
 ## [Diagnostics]($section.id('diagnostics'))
 
-Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, or `.info`), a `message`, a byte `span`, optional `labels` pointing to related code, and optional `help` text.
+The parser reports a syntax error and parses on past it.
+
+```zig
+var tree = try parser.parse(allocator, "const a = 1;\nlet x = ;\nconst y = 2;", .{});
+// one diagnostic, "Unexpected token ';'", and a tree holding `a` and `y`
+```
+
+Every Yuku tool reports diagnostics in one shape: a `severity`, a `message`, a byte `span`, `labels` pointing at related code, and optional `help`.
 
 ```zig
 for (tree.diagnostics.items) |d| {
     std.debug.print("[{s}] {s} at {d}..{d}\n", .{
         d.severity.toString(), d.message, d.span.start, d.span.end,
     });
-
-    for (d.labels) |label| {
-        std.debug.print("  {d}..{d}: {s}\n", .{ label.span.start, label.span.end, label.message });
-    }
-
-    if (d.help) |help| {
-        std.debug.print("  help: {s}\n", .{help});
-    }
+    if (d.help) |help| std.debug.print("  help: {s}\n", .{help});
 }
 ```
 
-### [Semantic errors]($section.id('semantic-errors'))
-
-The parser reports syntax errors. Errors that need scopes and bindings, such as duplicate `let` declarations, `break` outside a loop, and unresolved private fields, come from [semantic analysis](/parser/semantic/#analyzing-a-tree), a separate and cheap pass that appends them to `tree.diagnostics`.
-
-## [Going Further]($section.id('going-further'))
-
-- [AST](/parser/ast/): the tree, its comments, and tokens.
-- [Semantic Analysis](/parser/semantic/): scopes, symbols, resolved references, early errors, and module records.
-- [Traverse](/parser/traverse/): walking and transforming the tree.
-- [Codegen](/parser/codegen/): print a tree back to JavaScript or TypeScript source.
+`tree.hasErrors()` tells whether any error occurred. [Semantic analysis](/parser/semantic/) adds the early errors that need scopes, such as duplicate `let` declarations and `break` outside a loop.

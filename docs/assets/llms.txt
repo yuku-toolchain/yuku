@@ -7,11 +7,11 @@
 - [Introduction](https://yuku.fyi/): Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 - [Parser](https://yuku.fyi/parser/): A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
 - [AST](https://yuku.fyi/parser/ast/): The flat, data-oriented AST Yuku's parser produces, with its comments and tokens.
-- [Semantic Analysis](https://yuku.fyi/parser/semantic/): The semantic model of a JavaScript or TypeScript tree: scopes, symbols, resolved references, scope-dependent early errors, and module records.
-- [Traverse](https://yuku.fyi/parser/traverse/): Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
-- [Codegen](https://yuku.fyi/parser/codegen/): Print a parsed Tree back to JavaScript or TypeScript source, with configurable formatting, type stripping, minification, and Source Map V3 output.
+- [Semantic Analysis](https://yuku.fyi/parser/semantic/): Scopes, symbols, resolved references, early errors, and module records for a parsed tree.
+- [Traverse](https://yuku.fyi/parser/traverse/): Walk and transform a tree with typed visitor hooks, in four modes from plain visits to full semantics.
+- [Codegen](https://yuku.fyi/parser/codegen/): Print a tree back to JavaScript or TypeScript source, with type stripping, minification, and source maps.
 - [Analyzer](https://yuku.fyi/analyzer/): Semantic analysis for JavaScript and TypeScript on npm, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
-- [Testing](https://yuku.fyi/testing/): How Yuku is tested: the parser test suite, spec conformance, exact AST validation, fuzzing, and the corpus-driven suites behind codegen and source maps.
+- [Testing](https://yuku.fyi/testing/): How Yuku is tested: the parser test suite, exact AST validation, codegen conformance, and fuzzing.
 - [Security](https://yuku.fyi/security/): How to report a vulnerability in Yuku, and the security practices behind the toolchain and its releases.
 
 ## Resources

@@ -5,9 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-`yuku-analyzer` is semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
-
-Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`.
+`yuku-analyzer` brings Yuku's [semantic analysis](/parser/semantic/) to JavaScript, computed natively in one pass and queried as plain objects. It replaces `eslint-scope` or `@typescript-eslint/scope-manager` and a cross-file resolver, up to ~15× faster per file.
 
 ```bash
 npm install yuku-analyzer
@@ -25,4 +23,14 @@ add.has(SymbolFlags.Import); // true
 add.definition().module.path; // "math.ts"
 ```
 
-The model it exposes is the one [semantic analysis](/parser/semantic/) builds in Zig. See [yuku-analyzer on npm](https://www.npmjs.com/package/yuku-analyzer) for the full API.
+For a single file, `analyze(source)` returns the same module in one call.
+
+- **Scopes** as a tree, with hoisting, catch clauses, and named expressions exact.
+- **Symbols** with TypeScript declaration merging, queried through one `SymbolFlags` bitset.
+- **References** resolved and space-aware, so a value never captures a same-named type.
+- **Node queries** on object identity, such as `symbolOf`, `scopeOf`, and `parentOf`.
+- **A semantic walk**, with the scope, symbol, and reference of every node in its context.
+- **Closure analysis** with `capturesOf`, shadowing and alias correct.
+- **Cross-file linking**, with definitions, references, and exported names across the module graph.
+
+The AST is the same plain ESTree `yuku-parser` returns, so a rename is an assignment and `yuku-codegen` prints it back. See [yuku-analyzer on npm](https://www.npmjs.com/package/yuku-analyzer) for the full API.

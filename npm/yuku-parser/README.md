@@ -93,7 +93,7 @@ interface ParseResult {
 }
 ```
 
-The parser recovers from errors, so every parse returns the full tree alongside every diagnostic.
+The parser recovers from errors, so a parse with diagnostics still returns a tree of everything it could read.
 
 ### Diagnostics
 

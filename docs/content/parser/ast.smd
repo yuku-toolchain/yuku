@@ -5,264 +5,77 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The parser produces a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index. [Comments](#comments) and [tokens](#tokens) come alongside the tree.
+The parser produces a flat, data-oriented tree. There are no boxed structs and no pointers to chase, every read is a tagged-union switch and a slice index, and `tree.deinit()` frees the whole tree at once.
 
 In JavaScript, [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) returns the same tree as an ESTree / TypeScript-ESTree AST, and [`yuku-ast`](https://www.npmjs.com/package/yuku-ast) walks, builds, and checks it.
 
-># [Building tools on the AST?]($block.attrs('tip'))
->Reach for the [traverser](/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. The sections below cover the tree itself and how to read it directly.
+## [Memory layout]($section.id('memory-layout'))
 
-## [Memory model]($section.id('memory-model'))
-
-The AST is not a graph of heap-allocated structs. Every node lives in a single flat array (`Tree.nodes`), and child references are indices into that array. Variable-length child lists live in a second flat array (`Tree.extras`), and string content lives in a string pool. Three arrays, one arena.
+Three arrays in one arena hold the whole tree.
 
 ```
 Tree
- nodes    NodeList         flat array of all nodes (data + span, struct-of-arrays)
- extras   []NodeIndex      variable-length child lists (IndexRange points here)
- strings  StringPool       all string content (source refs + interned extras)
+ nodes    every node, its payload and span stored as separate columns
+ extras   child lists, as runs of node indices
+ strings  text, sliced from the source or interned
 ```
 
-`NodeList` is a `MultiArrayList(Node)`, so `data` and `span` are stored in two separate parallel arrays. Code that only reads spans, or only reads data, touches one array.
+Four small types carry every reference inside it.
 
-All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the entire tree at once.
+| Type         | Is                                                                           |
+| ------------ | ---------------------------------------------------------------------------- |
+| `NodeIndex`  | A node's position in `nodes`, `.null` for an absent child                    |
+| `IndexRange` | A child list, a start and length in `extras`                                 |
+| `String`     | Text, a zero-copy slice of the source or an entry in the pool                |
+| `Span`       | A source range in bytes                                                      |
 
-## [The Tree]($section.id('the-tree'))
+## [Reading the tree]($section.id('reading-the-tree'))
 
-`Tree` is the root container returned by `parser.parse()`. The fields you read directly.
-
-| Field         | Type                    | Description                                                |
-| ------------- | ----------------------- | ---------------------------------------------------------- |
-| `root`        | `NodeIndex`             | Index of the root node (a `program`)                       |
-| `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints                              |
-| `comments`    | `[]const Comment`       | Flat comment list, empty unless collected. See [Comments](#comments) |
-| `tokens`      | `[]const Token`         | Consumed tokens, empty unless kept. See [Tokens](#tokens)  |
-| `source`      | `[]const u8`            | Original source text                                       |
-| `source_type` | `SourceType`            | `.script`, `.module`, or `.commonjs`                       |
-| `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                    |
-
-Everything else is reached through methods.
+`tree.root` is the `program` node, and four calls read everything below it.
 
 ```zig
-tree.data(idx)           // NodeData for the node at idx
-tree.span(idx)           // Span (source byte range) for the node at idx
-tree.extra(range)        // []const NodeIndex for an IndexRange
-tree.string(handle)      // []const u8 for a String handle
-tree.commentsOf(idx)     // []const AttachedComment attached to the node at idx
-
-tree.isTs()              // language is .ts, .tsx, or .dts
-tree.isJsx()             // language is .jsx or .tsx
-tree.isModule()          // source_type is .module
-tree.hasErrors()         // any diagnostic with severity .error
-tree.hasDiagnostics()    // any diagnostic at all
-
-tree.setData(idx, data)  // write API, see the transform traverser
-tree.addNode(data, span) // append a node, returns its NodeIndex
-tree.addString("x")      // intern text; sourceSlice(a, b) points into the source instead
+tree.data(idx)    // a node's payload, a tagged union
+tree.span(idx)    // its source range
+tree.extra(range) // a list of child nodes
+tree.string(text) // the bytes of a string
 ```
 
-Operator and keyword enums such as `VariableKind` and `BinaryOperator` carry `toString()`, returning the construct's source text (`decl.kind.toString()` is `"const"`, `expr.operator.toString()` is `"==="`).
-
-## [Core types]($section.id('core-types'))
-
-Four small types carry every reference inside the AST.
-
-### [NodeIndex]($section.id('nodeindex'))
-
-```zig
-pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
-```
-
-Every node is identified by its position in `Tree.nodes`. Optional child slots use `.null` to signal absence.
-
-```zig
-// if_statement.alternate is .null when there is no else branch
-if (node.alternate != .null) {
-    const else_data = tree.data(node.alternate);
-}
-```
-
-### [IndexRange]($section.id('indexrange'))
-
-```zig
-pub const IndexRange = struct { start: u32, len: u32 };
-```
-
-Variable-length children are stored as a contiguous slice in `Tree.extras`. An `IndexRange` is a `(start, len)` window into that array. Resolve it with `tree.extra(range)`.
-
-```zig
-const children = tree.extra(node.body); // []const NodeIndex
-for (children) |child| {
-    const child_data = tree.data(child);
-}
-```
-
-`IndexRange.empty` is the zero-length range.
-
-### [String]($section.id('string'))
-
-```zig
-pub const String = struct { start: u32, end: u32 };
-```
-
-`String` is a lightweight handle to text. It points into one of two backing stores.
-
-- **Source slice (zero-copy)** holds most identifiers and string literals parsed from input. The bytes live inside `tree.source` directly.
-- **Pool entry** holds interned strings such as escaped identifiers and names produced by transforms. These live in the string pool's extra buffer.
-
-`tree.string(handle)` resolves both transparently and always returns `[]const u8`.
-
-```zig
-const name = tree.string(node.name);
-```
-
-### [Span]($section.id('span'))
-
-```zig
-pub const Span = struct { start: u32, end: u32 };
-```
-
-Byte offsets into the source text. `start` is inclusive, `end` is exclusive.
-
-```zig
-const span = tree.span(idx);
-const text = tree.source[span.start..span.end];
-```
-
-## [Reading a node]($section.id('reading-a-node'))
-
-`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...), and [ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every one with its fields. `tree.data(idx)` returns one. `switch` on the tag and unpack.
+A payload is a `switch` away. Tags are snake_case, and [ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every one with its fields.
 
 ```zig
 switch (tree.data(idx)) {
-    .binary_expression => |expr| {
-        // expr.left and expr.right are NodeIndex (recurse with data)
-        // expr.operator is a BinaryOperator enum
-        const left = tree.data(expr.left);
-    },
     .variable_declaration => |decl| {
-        // decl.kind is VariableKind (.var, .let, .const, .using, .await_using)
-        // decl.declarators is IndexRange (read with extra)
-        for (tree.extra(decl.declarators)) |d| { /* ... */ }
+        for (tree.extra(decl.declarators)) |declarator| {
+            _ = declarator;
+        }
     },
     .identifier_reference => |id| {
-        // id.name is a String (resolve with string)
-        const text = tree.string(id.name);
+        std.debug.print("{s}\n", .{tree.string(id.name)});
     },
     else => {},
 }
 ```
 
-The same snake_case tag names are used as visitor hook names. A method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse/) enters that node kind.
-
-### [Reading children]($section.id('reading-children'))
-
-A node's children sit in two kinds of fields.
-
-- **Single child** fields are `NodeIndex`, either a real index or `.null` for an absent optional slot. Read with `tree.data(field)`.
-- **Variadic children** fields are `IndexRange`. Resolve with `tree.extra(range)` to get `[]const NodeIndex`, then iterate.
-
-```zig
-switch (tree.data(idx)) {
-    .function => |func| {
-        // single child
-        const body = tree.data(func.body);
-
-        // variadic children, function params -> formal_parameters -> items
-        const params = tree.data(func.params).formal_parameters;
-        for (tree.extra(params.items)) |param| { /* ... */ }
-    },
-    else => {},
-}
-```
-
-For tree-wide walks, use the [traverser](/parser/traverse/) instead of writing recursion by hand.
-
-## [Predicates]($section.id('predicates'))
-
-Eight methods on `NodeData` collapse a family of tags into a single boolean.
-
-| Method            | True for |
-| ----------------- | -------- |
-| `isExpression()`  | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers. |
-| `isStatement()`   | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included, expression forms are not. |
-| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`. |
-| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field. |
-| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`. |
-| `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
-| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. |
-| `isTypeContext()` | Any node that roots a TypeScript type-only subtree: type annotations, type references, function and constructor types, conditional and mapped types, type literals, interface heritage, and the TS signatures. The semantic traverser uses it for `inTypePosition()`. |
-
-For the dual-purpose `function` and `class` nodes, the predicates consult the `type` field, so `isExpression()` is true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms. For anything narrower, `switch` on the tag.
-
-```zig
-const data = tree.data(idx);
-
-if (data.isCallable()) {
-    // function or arrow_function_expression
-}
-```
+Predicates classify a payload in one call: `isExpression`, `isStatement`, `isDeclaration`, `isLiteral`, `isPattern`, `isCallable`, `isIteration`, and `isTypeContext`. To walk the whole tree, use the [traverser](/parser/traverse/).
 
 ## [Comments]($section.id('comments'))
 
-Comments come two ways. The flat list holds every comment in source order with its source span. Attached comments hang on the AST node they sit next to, so they move with their node through transforms, which is what [codegen](/parser/codegen/#comments) prints from.
-
-The `comments` option selects `.flat` (the default), `.attached`, `.both`, or `.none`, read with `tree.comments` and `tree.commentsOf(idx)`.
+The `comments` option collects every comment into `tree.comments`, attaches each to its node, or both. An attached comment records whether it sits `before`, `after`, or `inside` its node, so comments move with their nodes through transforms and [codegen](/parser/codegen/) prints them in place.
 
 ```zig
-var tree = try parser.parse(allocator, source, .{ .comments = .both });
-defer tree.deinit();
-
-for (tree.comments) |c| {
-    std.debug.print("{s} @ {d}..{d}\n", .{ tree.string(c.value), c.span.start, c.span.end });
-}
-
-for (tree.commentsOf(some_node_idx)) |c| {
-    std.debug.print("{t} {t} {s}\n", .{ c.position, c.type, tree.string(c.value) });
+for (tree.commentsOf(idx)) |c| {
+    std.debug.print("{t} {s}\n", .{ c.position, tree.string(c.value) });
 }
 ```
 
-A comment's `value` is its body without the `//` or `/* */` delimiters. The span of a flat comment covers the whole comment, delimiters included, so slicing the source by it returns the raw text.
-
-An attached comment also records where it sits relative to its host.
-
-- `before` leads the host node.
-- `after` trails the host node.
-- `inside` sits interior to an otherwise empty host, like `function f() { /* hi */ }`.
-
-`same_line` is true when the comment shares a source line with the host's adjacent edge, the start for `before` and the end for `after`. It is always false for `inside`.
-
 ## [Tokens]($section.id('tokens'))
 
-The `tokens` option keeps every token the parser consumed, in source order. Tokens are as the parser resolved them: a regex is one token, and the `>>` closing a nested generic is two `>` tokens. Comments are not tokens.
-
-`tree.tokens` is a slice of `Token`, closed by one zero-length `eof`.
+`.tokens = true` keeps every token in `tree.tokens`, as the parser resolved it.
 
 ```zig
-var tree = try parser.parse(allocator, source, .{ .tokens = true });
-defer tree.deinit();
-
 for (tree.tokens) |token| {
     std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
 }
 ```
 
-| Accessor                                | Meaning                                                                          |
-| --------------------------------------- | -------------------------------------------------------------------------------- |
-| `token.tag`                             | One of 160 kinds, one per punctuator, literal form, keyword, and identifier form |
-| `token.text(tree.source)`               | The source text. A string literal keeps its quotes                               |
-| `token.span`                            | The range, in bytes                                                              |
-| `token.tag.isKeyword()`                 | Reserved words and contextual keywords                                           |
-| `token.tag.isReserved()`                | Reserved unconditionally or in strict mode                                       |
-| `token.tag.isUnconditionallyReserved()` | Never an identifier                                                              |
-| `token.tag.isStrictModeReserved()`      | Reserved in strict mode only, like `let` and `static`                            |
-| `token.tag.isIdentifierLike()`          | An identifier or any keyword                                                     |
-| `token.tag.precedence()`                | Binary precedence, 0 when none                                                   |
-| `token.hasLineTerminatorBefore()`       | A line terminator precedes it, what ASI looks at                                 |
-| `token.isEscaped()`                     | `async` is an `async` token with this set                                        |
-| `token.hasInvalidEscape()`              | A template chunk whose cooked value is undefined                                 |
-| `token.hasLoneSurrogates()`             | A string with an unpaired surrogate                                              |
-
-Tags also classify `isNumericLiteral`, `isBinaryOperator`, `isLogicalOperator`, `isUnaryOperator`, and `isAssignmentOperator`. The kinds are listed in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig) as `TokenTag`, where `token.tag.toString()` gives the fixed text of a kind, `"=>"` for `.arrow`.
-
-Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous run, found by binary search on its span.
+A tag answers what a tool needs, such as `isKeyword()`, `isReserved()`, and `precedence()`, and a token knows whether a line break precedes it, which is what ASI reads. Every node other than `program`, `template_element`, and `jsx_empty_expression` starts and ends on a token boundary, so its tokens are a contiguous run.
