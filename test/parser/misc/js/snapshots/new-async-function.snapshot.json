@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 249,
+    "end": 275,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -36,19 +36,46 @@
       {
         "type": "ExpressionStatement",
         "start": 24,
-        "end": 53,
+        "end": 49,
         "expression": {
           "type": "NewExpression",
           "start": 24,
-          "end": 52,
+          "end": 48,
           "callee": {
             "type": "FunctionExpression",
             "start": 28,
-            "end": 52,
+            "end": 46,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 44,
+              "end": 46,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 50,
+        "end": 79,
+        "expression": {
+          "type": "NewExpression",
+          "start": 50,
+          "end": 78,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 54,
+            "end": 78,
             "id": {
               "type": "Identifier",
-              "start": 43,
-              "end": 48,
+              "start": 69,
+              "end": 74,
               "name": "named"
             },
             "generator": false,
@@ -56,8 +83,8 @@
             "params": [],
             "body": {
               "type": "BlockStatement",
-              "start": 50,
-              "end": 52,
+              "start": 76,
+              "end": 78,
               "body": []
             },
             "expression": false
@@ -67,24 +94,24 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 54,
-        "end": 78,
+        "start": 80,
+        "end": 104,
         "expression": {
           "type": "NewExpression",
-          "start": 54,
-          "end": 77,
+          "start": 80,
+          "end": 103,
           "callee": {
             "type": "FunctionExpression",
-            "start": 58,
-            "end": 77,
+            "start": 84,
+            "end": 103,
             "id": null,
             "generator": true,
             "async": true,
             "params": [],
             "body": {
               "type": "BlockStatement",
-              "start": 75,
-              "end": 77,
+              "start": 101,
+              "end": 103,
               "body": []
             },
             "expression": false
@@ -94,20 +121,20 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 79,
-        "end": 109,
+        "start": 105,
+        "end": 135,
         "expression": {
           "type": "NewExpression",
-          "start": 79,
-          "end": 108,
+          "start": 105,
+          "end": 134,
           "callee": {
             "type": "FunctionExpression",
-            "start": 83,
-            "end": 108,
+            "start": 109,
+            "end": 134,
             "id": {
               "type": "Identifier",
-              "start": 99,
-              "end": 104,
+              "start": 125,
+              "end": 130,
               "name": "named"
             },
             "generator": true,
@@ -115,8 +142,8 @@
             "params": [],
             "body": {
               "type": "BlockStatement",
-              "start": 106,
-              "end": 108,
+              "start": 132,
+              "end": 134,
               "body": []
             },
             "expression": false
@@ -126,36 +153,36 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 110,
-        "end": 157,
+        "start": 136,
+        "end": 183,
         "expression": {
           "type": "NewExpression",
-          "start": 110,
-          "end": 156,
+          "start": 136,
+          "end": 182,
           "callee": {
             "type": "MemberExpression",
-            "start": 114,
-            "end": 144,
+            "start": 140,
+            "end": 170,
             "object": {
               "type": "FunctionExpression",
-              "start": 114,
-              "end": 132,
+              "start": 140,
+              "end": 158,
               "id": null,
               "generator": false,
               "async": true,
               "params": [],
               "body": {
                 "type": "BlockStatement",
-                "start": 130,
-                "end": 132,
+                "start": 156,
+                "end": 158,
                 "body": []
               },
               "expression": false
             },
             "property": {
               "type": "Identifier",
-              "start": 133,
-              "end": 144,
+              "start": 159,
+              "end": 170,
               "name": "constructor"
             },
             "computed": false,
@@ -164,8 +191,8 @@
           "arguments": [
             {
               "type": "Literal",
-              "start": 145,
-              "end": 155,
+              "start": 171,
+              "end": 181,
               "value": "return 1",
               "raw": "\"return 1\""
             }
@@ -174,36 +201,36 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 158,
-        "end": 196,
+        "start": 184,
+        "end": 222,
         "expression": {
           "type": "NewExpression",
-          "start": 158,
-          "end": 195,
+          "start": 184,
+          "end": 221,
           "callee": {
             "type": "MemberExpression",
-            "start": 162,
-            "end": 193,
+            "start": 188,
+            "end": 219,
             "object": {
               "type": "FunctionExpression",
-              "start": 162,
-              "end": 181,
+              "start": 188,
+              "end": 207,
               "id": null,
               "generator": true,
               "async": true,
               "params": [],
               "body": {
                 "type": "BlockStatement",
-                "start": 179,
-                "end": 181,
+                "start": 205,
+                "end": 207,
                 "body": []
               },
               "expression": false
             },
             "property": {
               "type": "Identifier",
-              "start": 182,
-              "end": 193,
+              "start": 208,
+              "end": 219,
               "name": "constructor"
             },
             "computed": false,
@@ -214,24 +241,24 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 197,
-        "end": 234,
+        "start": 223,
+        "end": 260,
         "expression": {
           "type": "NewExpression",
-          "start": 197,
-          "end": 233,
+          "start": 223,
+          "end": 259,
           "callee": {
             "type": "FunctionExpression",
-            "start": 201,
-            "end": 233,
+            "start": 227,
+            "end": 259,
             "id": null,
             "generator": false,
             "async": true,
             "params": [],
             "body": {
               "type": "BlockStatement",
-              "start": 231,
-              "end": 233,
+              "start": 257,
+              "end": 259,
               "body": []
             },
             "expression": false
@@ -241,23 +268,23 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 235,
-        "end": 248,
+        "start": 261,
+        "end": 274,
         "expression": {
           "type": "NewExpression",
-          "start": 235,
-          "end": 247,
+          "start": 261,
+          "end": 273,
           "callee": {
             "type": "Identifier",
-            "start": 239,
-            "end": 244,
+            "start": 265,
+            "end": 270,
             "name": "async"
           },
           "arguments": [
             {
               "type": "Literal",
-              "start": 245,
-              "end": 246,
+              "start": 271,
+              "end": 272,
               "value": 1,
               "raw": "1"
             }
@@ -270,8 +297,8 @@
     {
       "type": "Block",
       "value": " comment ",
-      "start": 207,
-      "end": 220
+      "start": 233,
+      "end": 246
     }
   ],
   "diagnostics": []

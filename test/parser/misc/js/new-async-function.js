@@ -1,4 +1,5 @@
 new async function(){};
+new async function(){}();
 new async function named(){};
 new async function*(){};
 new async function* named(){};
