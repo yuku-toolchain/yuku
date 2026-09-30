@@ -1,0 +1,247 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 257,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 37,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "A"
+        },
+        "superClass": {
+          "type": "FunctionExpression",
+          "start": 16,
+          "end": 34,
+          "id": null,
+          "generator": false,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 32,
+            "end": 34,
+            "body": []
+          },
+          "expression": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 35,
+          "end": 37,
+          "body": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 38,
+        "end": 87,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 44,
+          "end": 45,
+          "name": "B"
+        },
+        "superClass": {
+          "type": "MemberExpression",
+          "start": 54,
+          "end": 84,
+          "object": {
+            "type": "FunctionExpression",
+            "start": 54,
+            "end": 72,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 70,
+              "end": 72,
+              "body": []
+            },
+            "expression": false
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 73,
+            "end": 84,
+            "name": "constructor"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 85,
+          "end": 87,
+          "body": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 88,
+        "end": 126,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 94,
+          "end": 95,
+          "name": "C"
+        },
+        "superClass": {
+          "type": "FunctionExpression",
+          "start": 104,
+          "end": 123,
+          "id": null,
+          "generator": true,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 121,
+            "end": 123,
+            "body": []
+          },
+          "expression": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 124,
+          "end": 126,
+          "body": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 127,
+        "end": 177,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 133,
+          "end": 134,
+          "name": "D"
+        },
+        "superClass": {
+          "type": "MemberExpression",
+          "start": 143,
+          "end": 174,
+          "object": {
+            "type": "FunctionExpression",
+            "start": 143,
+            "end": 162,
+            "id": null,
+            "generator": true,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 160,
+              "end": 162,
+              "body": []
+            },
+            "expression": false
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 163,
+            "end": 174,
+            "name": "constructor"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 175,
+          "end": 177,
+          "body": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 178,
+        "end": 229,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 184,
+          "end": 185,
+          "name": "E"
+        },
+        "superClass": {
+          "type": "FunctionExpression",
+          "start": 194,
+          "end": 226,
+          "id": null,
+          "generator": false,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 224,
+            "end": 226,
+            "body": []
+          },
+          "expression": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 227,
+          "end": 229,
+          "body": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 230,
+        "end": 256,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 236,
+          "end": 237,
+          "name": "F"
+        },
+        "superClass": {
+          "type": "CallExpression",
+          "start": 246,
+          "end": 253,
+          "callee": {
+            "type": "Identifier",
+            "start": 246,
+            "end": 251,
+            "name": "async"
+          },
+          "arguments": [],
+          "optional": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 254,
+          "end": 256,
+          "body": []
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " comment ",
+      "start": 200,
+      "end": 213
+    }
+  ],
+  "diagnostics": []
+}

@@ -223,6 +223,16 @@ pub inline fn parsePrimaryExpression(parser: *Parser, precedence: u8) Error!?ast
         .no_substitution_template => literals.parseNoSubstitutionTemplate(parser, false),
         .left_bracket => parseArrayExpression(parser),
         .left_brace => parseObjectExpression(parser),
+        .async => blk: {
+            const async_token = parser.current_token;
+            const async_id = try literals.parseIdentifier(parser) orelse break :blk null;
+            if (parser.current_token.tag == .function) {
+                if (!parser.current_token.hasLineTerminatorBefore()) {
+                    break :blk try parseAsyncFunctionExpression(parser, &async_token);
+                }
+            }
+            break :blk async_id;
+        },
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
         .at => blk: {
@@ -301,8 +311,22 @@ fn parseSimpleArrowFunction(parser: *Parser, left: ast.NodeIndex) Error!?ast.Nod
     return parenthesized.identifierToArrowFunction(parser, left, false, start);
 }
 
+fn parseAsyncFunctionExpression(parser: *Parser, async_token: *const Token) Error!?ast.NodeIndex {
+    std.debug.assert(async_token.tag == .async);
+    std.debug.assert(parser.current_token.tag == .function);
+    std.debug.assert(!parser.current_token.hasLineTerminatorBefore());
+
+    if (async_token.isEscaped()) try parser.reportEscapedKeyword(async_token.span);
+    return functions.parseFunction(
+        parser,
+        .{ .is_expression = true, .is_async = true },
+        async_token.span.start,
+    );
+}
+
 fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeIndex {
-    const is_escaped = parser.current_token.isEscaped();
+    const async_token = parser.current_token;
+    const is_escaped = async_token.isEscaped();
 
     const async_id = try literals.parseIdentifier(parser) orelse return null;
     const async_span = parser.tree.span(async_id);
@@ -313,12 +337,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     const next = parser.current_token;
 
     if (next.tag == .function) {
-        if (is_escaped) try parser.reportEscapedKeyword(async_span);
-        return functions.parseFunction(
-            parser,
-            .{ .is_expression = true, .is_async = true },
-            async_span.start,
-        );
+        return parseAsyncFunctionExpression(parser, &async_token);
     }
 
     if (next.tag == .left_paren) {

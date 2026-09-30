@@ -1,0 +1,145 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 104,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 28,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 27,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 4,
+            "end": 27,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 19,
+                "end": 24,
+                "name": "await"
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 25,
+              "end": 27,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 29,
+        "end": 59,
+        "expression": {
+          "type": "NewExpression",
+          "start": 29,
+          "end": 58,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 33,
+            "end": 58,
+            "id": null,
+            "generator": true,
+            "async": true,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 50,
+                "end": 55,
+                "name": "yield"
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 56,
+              "end": 58,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 60,
+        "end": 103,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 66,
+          "end": 67,
+          "name": "C"
+        },
+        "superClass": {
+          "type": "FunctionExpression",
+          "start": 76,
+          "end": 100,
+          "id": {
+            "type": "Identifier",
+            "start": 91,
+            "end": 96,
+            "name": "await"
+          },
+          "generator": false,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 98,
+            "end": 100,
+            "body": []
+          },
+          "expression": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 101,
+          "end": 103,
+          "body": []
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "'await' is reserved in an async/module context and cannot be used as a binding identifier",
+      "start": 19,
+      "end": 24,
+      "help": null,
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "'yield' is reserved in a generator context and cannot be used as a binding identifier",
+      "start": 50,
+      "end": 55,
+      "help": null,
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "'await' is reserved in an async/module context and cannot be used as a binding identifier",
+      "start": 91,
+      "end": 96,
+      "help": null,
+      "labels": []
+    }
+  ]
+}
