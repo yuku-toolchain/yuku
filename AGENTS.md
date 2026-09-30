@@ -238,6 +238,23 @@ When writing a script, prefer one of the codebase's primary languages (Zig or Ty
 
 Standardization reduces dimensionality as the team grows. Slower in the short term, faster in the long term.
 
+## Testing
+
+Test at the layer that changed, in the form that layer already uses. Every layer has a home for new cases, so a fix almost never needs a new test file. A new file is for a new capability or topic, never for a single bug.
+
+### Where Tests Go
+
+| What changed | Where the test goes |
+| --- | --- |
+| What the parser accepts or rejects, AST shape, diagnostic messages | A fixture in `test/parser/misc/` |
+| The token API, or diagnostic spans across many one-line inputs | `test/parser/tokens.test.ts`, `test/parser/diagnostics.test.ts` |
+| Codegen output | An inline snapshot in `test/codegen/`: `print` (default and compact), `strip`, `minify`, `comments`, `quotes`, or `generate` for option composition and source map output |
+| Scopes, symbols, references, imports, exports | An inline snapshot of `summary()` in `test/analyzer/<topic>.test.ts`, or `project()` for cross-file behavior |
+| AST helpers and walkers | `test/ast/` |
+| The wasm packages | `test/wasm/`, as smoke tests only |
+| Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
+| A small pure Zig helper | An inline `test` block next to the function |
+
 ---
 
 These rules will feel like a seat-belt at first, a little uncomfortable. After a while, using them becomes second nature, and not using them becomes unimaginable.

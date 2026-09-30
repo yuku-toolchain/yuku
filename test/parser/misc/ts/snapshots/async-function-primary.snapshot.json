@@ -1,0 +1,151 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 112,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 23,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 22,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 4,
+            "end": 22,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 20,
+              "end": 22,
+              "body": []
+            },
+            "expression": false,
+            "typeParameters": null,
+            "returnType": null,
+            "declare": false
+          },
+          "arguments": [],
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 24,
+        "end": 61,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 30,
+          "end": 31,
+          "name": "A",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": {
+          "type": "FunctionExpression",
+          "start": 40,
+          "end": 58,
+          "id": null,
+          "generator": false,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 56,
+            "end": 58,
+            "body": []
+          },
+          "expression": false,
+          "typeParameters": null,
+          "returnType": null,
+          "declare": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 59,
+          "end": 61,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 62,
+        "end": 111,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 68,
+          "end": 69,
+          "name": "B",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": {
+          "type": "MemberExpression",
+          "start": 78,
+          "end": 108,
+          "object": {
+            "type": "FunctionExpression",
+            "start": 78,
+            "end": 96,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 94,
+              "end": 96,
+              "body": []
+            },
+            "expression": false,
+            "typeParameters": null,
+            "returnType": null,
+            "declare": false
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 97,
+            "end": 108,
+            "name": "constructor",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "computed": false,
+          "optional": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 109,
+          "end": 111,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

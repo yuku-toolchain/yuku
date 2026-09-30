@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       60/60 (100.00%)
+Passed:       71/71 (100.00%)
 Failed:       0
-AST mismatch: 0/60
+AST mismatch: 0/71
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -41,8 +41,26 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 ✓ test/parser/misc/js/async-function-call-with-arguments.js
 ✓ test/parser/misc/js/async-function-call-with-spread-arguments.js
 ✓ test/parser/misc/js/async-function-call.js
+✓ test/parser/misc/js/async-function-escaped-keyword.js
+error: Keywords cannot contain escape characters
+   |
+ 1 | new as\u0079nc function(){};
+   |     ^^^^^^^^^^
+ 2 | class C extends as\u0079nc function(){} {}
+   |
+   = help: Remove the escape characters
+
+
 ✓ test/parser/misc/js/async-function-line-terminator-1.js
 ✓ test/parser/misc/js/async-function-line-terminator-2.js
+✓ test/parser/misc/js/async-function-reserved-binding.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | new async function(await){};
+   |                    ^^^^^
+ 2 | new async function* (yield){};
+   |
+
 ✓ test/parser/misc/js/async-function.js
 ✓ test/parser/misc/js/await-exponentiation-left.module.js
 error: The left-hand side of '**' cannot be an unparenthesized await expression
@@ -83,6 +101,49 @@ error: Identifier cannot immediately follow a numeric literal
 ✓ test/parser/misc/js/binary-literal-with-separator.js
 ✓ test/parser/misc/js/class-accessor-modifier-names.js
 ✓ test/parser/misc/js/class-async-line-terminator.js
+✓ test/parser/misc/js/class-extends-async-arrow-function-1.js
+error: Expected '{' to start class body, but found '=>'
+   |
+ 1 | class C extends async () => {} {}
+   |                          ^^
+ 2 | 
+   |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
+
+✓ test/parser/misc/js/class-extends-async-arrow-function-2.js
+error: Expected '{' to start class body, but found 'x'
+   |
+ 1 | class C extends async x => x {}
+   |                       ^
+ 2 | 
+   |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
+
+✓ test/parser/misc/js/class-extends-async-function-line-terminator-1.js
+error: Expected '{' to start class body, but found 'function'
+   |
+ 1 | class C extends async
+ 2 | function(){} {}
+   | ^^^^^^^^
+ 3 | 
+   |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
+
+✓ test/parser/misc/js/class-extends-async-function-line-terminator-2.js
+error: Expected '{' to start class body, but found 'function'
+   |
+ 1 | class C extends async /*
+ 2 | */ function(){} {}
+   |    ^^^^^^^^
+ 3 | 
+   |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
+
+✓ test/parser/misc/js/class-extends-async-function.js
 ✓ test/parser/misc/js/class-extends-simple-arrow-function.js
 error: Expected '{' to start class body, but found '=>'
    |
@@ -221,6 +282,28 @@ error: for-in loop variable declaration may not have an initializer
    = help: Remove the initializer from the loop variable.
 
 
+✓ test/parser/misc/js/new-async-arrow-function-1.js
+error: Unexpected '=>'
+   |
+ 1 | new async () => {};
+   | ^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
+✓ test/parser/misc/js/new-async-arrow-function-2.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+   |
+ 1 | new async x => x;
+   |           ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
+✓ test/parser/misc/js/new-async-function-line-terminator.js
+✓ test/parser/misc/js/new-async-function.js
 ✓ test/parser/misc/js/octal-literal-with-separator.js
 ✓ test/parser/misc/js/rest-trailing-comma-nested.js
 error: Rest element cannot have a trailing comma in array destructuring.

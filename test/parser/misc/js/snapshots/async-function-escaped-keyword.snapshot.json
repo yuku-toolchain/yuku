@@ -1,0 +1,125 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 99,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 28,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 27,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 4,
+            "end": 27,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 25,
+              "end": 27,
+              "body": []
+            },
+            "expression": false
+          },
+          "arguments": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 29,
+        "end": 71,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 35,
+          "end": 36,
+          "name": "C"
+        },
+        "superClass": {
+          "type": "FunctionExpression",
+          "start": 45,
+          "end": 68,
+          "id": null,
+          "generator": false,
+          "async": true,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 66,
+            "end": 68,
+            "body": []
+          },
+          "expression": false
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 69,
+          "end": 71,
+          "body": []
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 72,
+        "end": 98,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 72,
+          "end": 97,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 73,
+            "end": 96,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 94,
+              "end": 96,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Keywords cannot contain escape characters",
+      "start": 4,
+      "end": 14,
+      "help": "Remove the escape characters",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Keywords cannot contain escape characters",
+      "start": 45,
+      "end": 55,
+      "help": "Remove the escape characters",
+      "labels": []
+    },
+    {
+      "severity": "error",
+      "message": "Keywords cannot contain escape characters",
+      "start": 73,
+      "end": 83,
+      "help": "Remove the escape characters",
+      "labels": []
+    }
+  ]
+}

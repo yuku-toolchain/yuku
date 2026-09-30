@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": []
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Unexpected '=>'",
+      "start": 0,
+      "end": 12,
+      "help": "'=>' is only valid after a single identifier or a parenthesized parameter list",
+      "labels": []
+    }
+  ]
+}
