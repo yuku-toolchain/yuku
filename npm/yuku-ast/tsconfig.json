@@ -5,6 +5,7 @@
     "declaration": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM"],
     "allowImportingTsExtensions": false,
     "rootDir": "src",
     "outDir": "dist",

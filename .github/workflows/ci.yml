@@ -129,3 +129,21 @@ jobs:
       - name: Sourcemap conformance
         if: ${{ !cancelled() }}
         run: bun run test:sourcemap
+
+      - name: Runtime floor declarations
+        if: ${{ !cancelled() }}
+        run: bun .github/scripts/check-engines.ts
+
+      - name: Resolve the minimum runtime
+        id: floor
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        run: echo "version=$(bun -e 'console.log(require("./package.json").engines.node.slice(2))')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        with:
+          node-version: ${{ steps.floor.outputs.version }}
+
+      - name: Run on the minimum runtime
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        run: bun run test:runtime

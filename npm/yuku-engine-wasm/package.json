@@ -10,6 +10,9 @@
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
     ".": {
       "types": "./index.d.ts",

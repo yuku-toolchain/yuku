@@ -70,6 +70,12 @@ Assertions detect programmer errors. Unlike operating errors, which are expected
 
 - Use the toolchain's **strictest warning setting** from day one. Treat all warnings as errors. This applies equally to Zig, TypeScript, and any other language used in this repository.
 
+### Runtime Baseline
+
+- Shipped JavaScript runs on **one floor**: ECMAScript 2020, on the runtime version in the root `package.json` `engines.node`. Tools downstream support older runtimes than we might, and a newer syntax or built-in breaks them silently. Every package declares that same floor, and CI runs the packages on exactly that version.
+- The WebAssembly build also needs WebAssembly SIMD and reference types, which `@yuku-engine/wasm` declares as its own, higher floor.
+- **Raising the floor is a breaking change.** Change the root `engines.node` on purpose, let every package follow it, and say so in the release notes. Never raise it implicitly by reaching for a newer feature.
+
 ### Branches and Conditions
 
 - Compound conditions are hard to verify. Split them into nested `if/else` branches. Split complex `else if` chains into `else { if { } }` trees. This makes branches and cases explicit.

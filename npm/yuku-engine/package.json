@@ -30,6 +30,9 @@
     "@yuku-engine/binding-freebsd-x64": "0.13.0",
     "@yuku-engine/binding-android-arm64": "0.13.0"
   },
+  "engines": {
+    "node": ">=14.18.0"
+  },
   "imports": {
     "#engine": {
       "browser": "@yuku-engine/wasm",
