@@ -273,7 +273,6 @@ class Printer extends Output {
     this.emitExpr(node, 0);
   }
 
-  // a required statement slot gets `;` when the statement strips to nothing
   emitStmt(node: Node): void {
     if (this.strip && this.stripsToNothing(node)) {
       this.emitNothing(node);
@@ -882,7 +881,6 @@ class Printer extends Output {
     }
   }
 
-  // past the recursion budget a chain is walked down its heads with an explicit stack
   emitChainIteratively(head: Node, headCtx: number): void {
     const first = this.stripped(head);
     if (!isChainLink(first)) return this.emitExpr(head, headCtx);
@@ -1121,7 +1119,6 @@ class Printer extends Output {
       this.writeCommentBody(c);
       if (this.pretty) this.writeToken(" ");
     } else {
-      // on its own line so jsdoc stays attached for language servers
       this.breakLine();
       this.writeCommentBody(c);
       this.breakLine();
@@ -1153,7 +1150,6 @@ class Printer extends Output {
     this.writeComment("*/");
   }
 
-  // re-indented so the jsdoc star column follows the nesting depth
   writeBlockBody(value: string): void {
     if (!this.pretty || !isJsdocBody(value)) {
       this.writeComment(value);
@@ -1464,7 +1460,6 @@ class Printer extends Output {
     if (owed !== null) this.emitTrailingComments(owed.comments!);
     if (!separated) return;
     if (hangDepth >= 0 && this.indentDepth === hangDepth && this.atLineStart()) {
-      // the rest of the list hangs one level deeper than the line it opened on
       this.indentDepth = hangDepth + 1;
       this.breakLine();
     }
@@ -2023,7 +2018,6 @@ class Printer extends Output {
     this.writeToken(")");
   }
 
-  // strip may leave nothing of an item, so separators go only between the items that print
   emitKeptItems(items: readonly Node[]): void {
     let end = items.length;
     if (this.strip) {
@@ -2166,7 +2160,6 @@ class Printer extends Output {
 
   emitDecorator(d: T.Decorator): void {
     this.writeToken("@");
-    // a non-simple decorator like `@(x!)` must wrap
     const simple = decoratorIsSimple(d.expression);
     this.emitExpr(d.expression, simple ? PREC_LOWEST : PREC_GROUPING);
   }
@@ -2770,7 +2763,6 @@ class Printer extends Output {
       for (let i = 0; i < list.length; i++) {
         this.newline();
         this.emitExpr(list[i], CTX_ITEM);
-        // members own their lines, so the list never hangs
         this.closeItem(i + 1 < list.length, -1);
       }
       this.indentDepth--;
@@ -2860,7 +2852,6 @@ function sameIdentifier(a: Node | null | undefined, b: Node | null | undefined):
   return an === identifierName(b);
 }
 
-// a renamed binding keeps `{ name: a }` long
 function shorthandStillValid(key: Node, value: Node): boolean {
   const v = value.type === "AssignmentPattern" ? value.left : value;
   return sameIdentifier(key, v);
@@ -2916,7 +2907,6 @@ function simpleStringKey(node: Node): string | null {
   return isIdentifierName(node.value) ? node.value : null;
 }
 
-// a `<` after a trailing `as`/`satisfies` type would bind as its argument list
 function endsWithTsCast(node: Node): boolean {
   let n = node;
   for (;;) {

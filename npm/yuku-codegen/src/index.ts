@@ -3,7 +3,6 @@ import type { Comment, Diagnostic, Program } from "@yuku-toolchain/types";
 import { print, type PrintOptions } from "./printer.js";
 import { encodeMappings, Mappings } from "./sourcemap.js";
 
-/** Whitespace mode for the generated output. */
 export type Format = "pretty" | "compact";
 
 /**
@@ -20,7 +19,6 @@ export type Comments = boolean | "all" | "some" | "none" | "line" | "block";
 
 export type { Comment, Diagnostic };
 
-/** Source map configuration. Pass to `GenerateOptions.sourceMap` to enable. */
 export interface SourceMapOptions {
   /** The original source text. Required to emit a map. */
   source: string;
@@ -44,7 +42,6 @@ export interface MinifyOptions {
   quotes?: boolean;
 }
 
-/** Options for `generate`. Transformations are independent flags and compose freely. */
 export interface GenerateOptions {
   /**
    * Drop TypeScript-only syntax and emit plain JavaScript. Constructs with no JavaScript
@@ -66,11 +63,9 @@ export interface GenerateOptions {
   quotes?: Quotes;
   /** @default "some" */
   comments?: Comments;
-  /** Pass to emit a Source Map V3. Omit to disable. */
   sourceMap?: SourceMapOptions;
 }
 
-/** Source Map V3. */
 export interface SourceMap {
   version: 3;
   file: string | null;
@@ -81,19 +76,15 @@ export interface SourceMap {
   mappings: string;
 }
 
-/** Result of a codegen run. */
 export interface GenerateResult {
   code: string;
-  /** Empty when codegen succeeded cleanly. */
   diagnostics: Diagnostic[];
-  /** `null` unless `sourceMap` was enabled. */
   map: SourceMap | null;
 }
 
 const QUOTES: readonly Quotes[] = ["preserve", "double", "single", "shortest"];
 const COMMENTS = ["none", "all", "some", "line", "block"] as const;
 
-/** Renders the AST back to source code. */
 export function generate(program: Program, options: GenerateOptions = {}): GenerateResult {
   if (program?.type !== "Program") {
     throw new TypeError("Expected a `Program` node, such as `parse(source).program`");

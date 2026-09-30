@@ -175,8 +175,6 @@ test("compact output keeps a type argument closer apart from `>` and `=` operato
 });
 
 test("an instantiation expression keeps the parens that end its type arguments", () => {
-  // each case prints as written from a tree without parens. compact and minified output reparse
-  // to the same tree and print the same again, and stripped output parses as JavaScript
   const parseOptions: ParseOptions = { lang: "ts", preserveParens: false };
   const layouts: GenerateOptions[] = [{ format: "compact" }, { minify: true }];
   for (const source of INSTANTIATIONS) {

@@ -9,7 +9,7 @@
 //!   u8    status, 0 when printed and 1 when skipped for parse diagnostics
 //!   u32   code length, then the code
 //!   u32   source map mappings length, then the mappings
-//!   u32   error count, then per error a u32 start, u32 end, u32 message length, message
+//!   u32   diagnostic count, then per diagnostic a u32 start, u32 end, u32 message length, message
 //!
 //! Only the status is written for a skipped file. The options mirror `codegen.Options`, and
 //! `--no-preserve-parens` parses without parenthesized expressions.

@@ -50,7 +50,6 @@
 const std = @import("std");
 const ast = @import("parser").ast;
 
-/// The analyzer's semantic sections, layered on this format.
 pub const semantic = @import("semantic.zig");
 
 // field order defines the wire layout
@@ -147,7 +146,6 @@ pub const ATTACHED_COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedAttachedComment, "
 pub const ATTACHED_COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_start");
 pub const ATTACHED_COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_end");
 
-// u32 columns of a token entry
 pub const TOKEN_START_U32: u8 = (@offsetOf(ast.Token, "span") + @offsetOf(ast.Span, "start")) / 4;
 pub const TOKEN_END_U32: u8 = (@offsetOf(ast.Token, "span") + @offsetOf(ast.Span, "end")) / 4;
 pub const TOKEN_TAG_U32: u8 = @offsetOf(ast.Token, "tag") / 4;
@@ -164,7 +162,6 @@ comptime {
 
 // layout helpers shared with the decoder generator in tools/estree/decoder.zig
 
-/// Flag bits consumed by field `field_idx` of struct `T`.
 pub fn flagBitCount(comptime T: type, comptime field_idx: usize) u8 {
     const f = std.meta.fields(T)[field_idx];
     if (f.type == bool) return 1;
@@ -175,7 +172,6 @@ pub fn flagBitCount(comptime T: type, comptime field_idx: usize) u8 {
     @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
 }
 
-/// First flag bit of field `target` in struct `T`.
 pub fn flagBitForField(comptime T: type, comptime target: usize) u8 {
     comptime {
         var bit: u8 = 0;
@@ -184,7 +180,6 @@ pub fn flagBitForField(comptime T: type, comptime target: usize) u8 {
     }
 }
 
-/// The u32 slots consumed by field `field_idx` of struct `T`.
 pub fn fieldU32Count(comptime T: type, comptime field_idx: usize) u8 {
     const f = std.meta.fields(T)[field_idx];
     if (f.type == ast.NodeIndex) return 1;
@@ -194,7 +189,6 @@ pub fn fieldU32Count(comptime T: type, comptime field_idx: usize) u8 {
     @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
 }
 
-/// First u32 slot of field `target` in struct `T`.
 pub fn u32SlotForField(comptime T: type, comptime target: usize) u8 {
     comptime {
         var slot: u8 = 0;
@@ -203,7 +197,6 @@ pub fn u32SlotForField(comptime T: type, comptime target: usize) u8 {
     }
 }
 
-/// Flag bits needed to hold every variant of `E`.
 pub fn enumBitWidth(comptime E: type) u8 {
     return std.math.log2_int_ceil(usize, @typeInfo(E).@"enum".fields.len);
 }
@@ -212,7 +205,6 @@ pub fn isEnumType(comptime T: type) bool {
     return @typeInfo(T) == .@"enum";
 }
 
-/// Total u32 slots used by struct `T`.
 pub fn totalU32Slots(comptime T: type) u8 {
     comptime {
         var total: u8 = 0;
@@ -221,7 +213,6 @@ pub fn totalU32Slots(comptime T: type) u8 {
     }
 }
 
-/// Total flag bits used by struct `T`.
 pub fn totalFlagBits(comptime T: type) u8 {
     comptime {
         var total: u8 = 0;
@@ -250,7 +241,6 @@ fn validateAllNodeLayouts() void {
     }
 }
 
-/// String pool length rounded up to the 4-byte boundary it occupies on the wire.
 pub inline fn alignPool(len: usize) usize {
     return (len + 3) & ~@as(usize, 3);
 }

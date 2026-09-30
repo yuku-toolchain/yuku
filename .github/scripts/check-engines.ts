@@ -12,7 +12,6 @@ const root = join(import.meta.dir, "..", "..");
 
 const readJson = (path: string): PackageManifest => JSON.parse(readFileSync(path, "utf8"));
 
-// the root package.json holds the one runtime floor every package declares
 const floor = readJson(join(root, "package.json")).engines?.node;
 if (floor === undefined) {
   console.error("the root package.json declares no engines.node floor");

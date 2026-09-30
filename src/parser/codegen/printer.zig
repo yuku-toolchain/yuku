@@ -29,7 +29,6 @@ pub const Quotes = enum { preserve, double, single, shortest };
 /// Comment passthrough filter. `some` keeps legal headers, JSDoc, and annotations.
 pub const Comments = enum { none, all, some, line, block };
 
-/// Codegen options. Transformations are independent flags and compose freely.
 pub const Options = struct {
     /// Drop TypeScript-only syntax.
     strip: bool = false,
@@ -39,12 +38,10 @@ pub const Options = struct {
     /// Spaces per level in pretty format.
     indent: u8 = 2,
     quotes: Quotes = .preserve,
-    /// Set to emit a Source Map V3 alongside the code.
     source_map: ?SourceMapOptions = null,
     comments: Comments = .some,
 };
 
-/// A codegen-detected problem in the input AST.
 pub const Diagnostic = struct {
     message: []const u8,
     /// Byte offset where the problem starts.
@@ -53,12 +50,9 @@ pub const Diagnostic = struct {
     end: u32,
 };
 
-/// Output of a codegen run. Free with `deinit`.
 pub const Result = struct {
     code: []const u8,
-    /// Empty when codegen succeeded cleanly.
     diagnostics: []const Diagnostic,
-    /// Populated when `Options.source_map` was set.
     map: ?SourceMap = null,
 
     pub fn deinit(self: Result, allocator: Allocator) void {
@@ -70,7 +64,6 @@ pub const Result = struct {
 
 pub const Error = error{OutOfMemory};
 
-/// Renders a `Tree` to source code.
 pub fn generate(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     std.debug.assert(tree.root != .null);
     var p = try Printer.init(allocator, tree, options);
@@ -206,7 +199,6 @@ const Printer = struct {
         if (owed != .null) try self.emitTrailingComments(self.tree.commentsOf(owed));
         if (!separated) return;
         if (hang_depth) |depth| if (self.indent_depth == depth and self.out.atLineStart()) {
-            // the rest of the list hangs one level deeper than the line it opened on
             self.indent_depth = depth + 1;
             try self.breakLine();
         };
@@ -243,7 +235,6 @@ const Printer = struct {
         if (self.pretty()) try self.breakLine();
     }
 
-    // a required statement slot gets `;` when the statement strips to nothing
     fn emitStmt(self: *Self, idx: NodeIndex) Error!void {
         if (self.options.strip and self.stripsToNothing(idx)) {
             try self.emitNothing(idx);
@@ -403,7 +394,6 @@ const Printer = struct {
         try self.emitLinkSuffix(tag, node, ctx);
     }
 
-    // past the recursion budget a chain is walked down its heads with an explicit stack
     noinline fn emitChainIteratively(self: *Self, head: Head) Error!void {
         std.debug.assert(@frameAddress() <= self.stack_floor);
         const first = self.stripped(head.idx);
@@ -819,7 +809,6 @@ const Printer = struct {
             try self.writeCommentBody(c);
             if (self.pretty()) try self.out.writeByte(' ');
         } else {
-            // on its own line so jsdoc stays attached for language servers
             try self.breakLine();
             try self.writeCommentBody(c);
             try self.breakLine();
@@ -851,7 +840,6 @@ const Printer = struct {
         }
     }
 
-    // re-indented so the jsdoc star column follows the nesting depth
     fn writeBlockBody(self: *Self, value: []const u8) Error!void {
         if (!self.pretty() or !utils.isJsdocBody(value)) {
             try self.out.writeComment(value);
@@ -1897,7 +1885,6 @@ const Printer = struct {
         try self.out.writeByte(')');
     }
 
-    // strip may leave nothing of an item, so separators go only between the items that print
     fn emitKeptItems(self: *Self, items: []const NodeIndex, rest: NodeIndex) Error!void {
         var end = items.len;
         if (self.options.strip) {
@@ -2039,7 +2026,6 @@ const Printer = struct {
 
     fn emit_decorator(self: *Self, d: *const ast.Decorator) Error!void {
         try self.out.writeByte('@');
-        // a non-simple decorator like `@(x!)` must wrap
         const simple = self.decoratorIsSimple(d.expression);
         try self.emitExpr(d.expression, .{
             .prec = if (simple) Precedence.Lowest else Precedence.Grouping,
@@ -2721,7 +2707,6 @@ const Printer = struct {
             for (list, 0..) |m, i| {
                 try self.newline();
                 try self.emitExpr(m, .{ .item = true });
-                // members own their lines, so the list never hangs
                 try self.closeItem(i + 1 < list.len, null);
             }
             self.indent_depth -= 1;
@@ -2953,7 +2938,6 @@ fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     return std.mem.eql(u8, tree.string(an), tree.string(bn));
 }
 
-// a renamed binding keeps `{ name: a }` long
 fn shorthandStillValid(tree: *const Tree, key: NodeIndex, value: NodeIndex) bool {
     var v = value;
     if (tree.data(v) == .assignment_pattern) v = tree.data(v).assignment_pattern.left;
@@ -3054,7 +3038,6 @@ fn hasLineTerminator(text: []const u8) bool {
     return false;
 }
 
-// a `<` after a trailing `as`/`satisfies` type would bind as its argument list
 fn endsWithTsCast(tree: *const Tree, idx: NodeIndex) bool {
     var node = idx;
     for (0..tree.nodes.len) |_| {

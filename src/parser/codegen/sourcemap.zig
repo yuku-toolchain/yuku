@@ -3,7 +3,6 @@ const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 
-/// Source Map V3 output.
 pub const SourceMap = struct {
     version: u8 = 3,
     file: ?[]const u8 = null,
@@ -20,7 +19,6 @@ pub const SourceMap = struct {
     }
 };
 
-/// Configures source map generation.
 pub const Options = struct {
     /// The original source text. Required to emit a map.
     source: ?[]const u8 = null,
@@ -37,7 +35,6 @@ pub const Options = struct {
 /// A zero-based source position, with `col` counted in UTF-16 code units.
 pub const LineCol = struct { line: u32, col: u32 };
 
-/// A mapping from a generated position to its original position.
 pub const Segment = struct {
     gen_line: u32,
     gen_col: u32,
@@ -45,7 +42,6 @@ pub const Segment = struct {
     orig_col: u32,
 };
 
-/// Source map generation state for one codegen run.
 pub const State = struct {
     options: Options,
     source: []const u8,
@@ -71,12 +67,10 @@ pub const State = struct {
         self.out.deinit(allocator);
     }
 
-    /// Resolves a source offset to a zero-based `(line, col)` pair.
     pub fn resolve(self: *State, offset: u32) LineCol {
         return self.cursor.resolve(self.source, offset);
     }
 
-    /// Advances the generated position over `bytes` just written.
     pub fn advance(self: *State, bytes: []const u8) void {
         if (isPlainAscii(bytes)) {
             self.gen_col += @intCast(bytes.len);
@@ -193,7 +187,6 @@ pub const State = struct {
         self.out.items.len += @intFromPtr(dst) - @intFromPtr(base);
     }
 
-    /// Finalizes the map. Free with `SourceMap.deinit`.
     pub fn build(self: *State, allocator: Allocator) Allocator.Error!SourceMap {
         if (self.has_pending) {
             try self.flush(allocator);

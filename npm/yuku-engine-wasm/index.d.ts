@@ -1,4 +1,3 @@
-/** Where {@link init} loads the WebAssembly build from. */
 type InitInput =
   | string
   | URL

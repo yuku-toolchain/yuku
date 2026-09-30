@@ -26,7 +26,7 @@ pub fn build(b: *std.Build) void {
         "parser-extension",
         "Path to a Zig source file supplying parser extension points (default: none)",
     );
-    // pins neither target nor optimize, so the host tool graph below can share the instance
+    // pins neither target nor optimize, so the host tool and wasm graphs can share the instance
     const parser_extension = if (parser_extension_source) |source| b.createModule(.{
         .root_source_file = if (std.fs.path.isAbsolute(source))
             .{ .cwd_relative = source }

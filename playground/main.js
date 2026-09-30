@@ -1004,9 +1004,7 @@ document.addEventListener("selectionchange", () => {
 codeView.addEventListener("click", () => mapCaret(true, true));
 codeView.addEventListener("blur", removeHit);
 
-// CodeJar's addClosing inserts the closer after the caret but never types over
-// it, so typing the matching closer would duplicate the character. Move the
-// caret instead when the next character already is that closer.
+// CodeJar's addClosing never types over a closer, so step past an existing one instead
 const CLOSERS = ")]}'\"";
 codeView.addEventListener("keydown", (e) => {
   if (e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return;

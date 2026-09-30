@@ -18,7 +18,6 @@ function current() {
   return engine;
 }
 
-// the native binary for this platform, or the WebAssembly build where none loads
 function open() {
   try {
     return load();

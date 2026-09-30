@@ -1,7 +1,6 @@
 const std = @import("std");
 const util = @import("util");
 
-/// True when `op` is a word operator such as `in` or `typeof`.
 pub fn isWordOp(op: []const u8) bool {
     return std.mem.eql(u8, op, "in") or std.mem.eql(u8, op, "instanceof") or
         std.mem.eql(u8, op, "typeof") or std.mem.eql(u8, op, "void") or
@@ -13,7 +12,6 @@ pub inline fn isIdCont(c: u8) bool {
     return c == '$' or c >= 0x80 or util.UnicodeId.canContinueId(c);
 }
 
-/// True when `s` is a valid IdentifierName.
 pub fn isIdentifierName(s: []const u8) bool {
     if (s.len == 0) return false;
     var i: usize = 0;
@@ -50,7 +48,6 @@ fn scriptOpenAt(s: []const u8, i: usize) bool {
     return rest.len == 7 or std.ascii.isWhitespace(rest[7]) or rest[7] == '/' or rest[7] == '>';
 }
 
-/// Removes numeric separators, null when `buf` is too small.
 pub fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
     if (std.mem.findScalar(u8, raw, '_') == null) return raw;
     if (raw.len > buf.len) return null;

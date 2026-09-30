@@ -25,7 +25,6 @@ interface LinkDiagnostic {
   end: number;
 }
 
-/** Options for {@link Analyzer.addFile}. */
 interface AddFileOptions {
   /**
    * Language variant. Defaults to the file extension via
@@ -55,7 +54,6 @@ interface AddFileOptions {
   tokens?: boolean;
 }
 
-/** Options for {@link Analyzer}. */
 interface AnalyzerOptions {
   /**
    * Host module resolution. Maps an import specifier and the importing
@@ -108,7 +106,6 @@ declare const SymbolFlags: {
   readonly Parameter: number;
   /** `catch (e)` binding. */
   readonly CatchVariable: number;
-  /** Exported from its module. */
   readonly Exported: number;
   /** The default export. */
   readonly Default: number;
@@ -142,7 +139,6 @@ declare const SymbolFlags: {
  */
 type Space = "value" | "type" | "namespace" | "typeof" | "any";
 
-/** What kind of construct created a {@link Scope}. */
 type ScopeKind =
   | "global"
   | "module"
@@ -154,18 +150,14 @@ type ScopeKind =
   | "tsModule"
   | "functionBody";
 
-/** A lexical scope in a module's scope tree. */
 interface Scope {
-  /** The owning module. */
   readonly module: Module;
   /** Stable id, the index into {@link Module.scopes}. */
   readonly id: number;
   readonly kind: ScopeKind;
-  /** Whether this scope is in strict mode. */
   readonly strict: boolean;
   /** The AST node that created this scope. */
   readonly node: Node;
-  /** The parent scope, or null for the global scope. */
   readonly parent: Scope | null;
   /** The nearest scope (or self) where `var` declarations land. */
   readonly hoistTarget: Scope;
@@ -185,7 +177,6 @@ interface Scope {
  * merges).
  */
 interface Symbol {
-  /** The owning module. */
   readonly module: Module;
   /**
    * Stable id, the index into {@link Module.symbols}. Deterministic per
@@ -195,7 +186,6 @@ interface Symbol {
   readonly name: string;
   /** Raw {@link SymbolFlags} bitset. */
   readonly flags: number;
-  /** The scope this symbol is declared in. */
   readonly scope: Scope;
   /** Every declarator node, in source order. */
   readonly declarations: Node[];
@@ -207,7 +197,6 @@ interface Symbol {
    * `symbol.has(SymbolFlags.ValueSpace)`.
    */
   has(mask: number): boolean;
-  /** True when every flag in `mask` is set. */
   hasAll(mask: number): boolean;
   /**
    * True when a reference resolving in `space` may bind to this
@@ -224,12 +213,10 @@ interface Symbol {
 
 /** One use of a name: a single identifier in reference position. */
 interface Reference {
-  /** The owning module. */
   readonly module: Module;
   /** Stable id, the index into {@link Module.references}. */
   readonly id: number;
   readonly name: string;
-  /** The scope the reference occurs in. */
   readonly scope: Scope;
   /** The identifier node, the same object as in the walked AST. */
   readonly node: Identifier | JSXIdentifier;
@@ -281,13 +268,11 @@ declare class SemanticWalkContext<T extends Node = Node> extends WalkContext<T> 
   readonly reference: Reference | null;
 }
 
-/** Handler invoked with the precisely-typed node and the walk context. */
 type SemanticWalkHandler<T extends Node = Node> = (
   node: T,
   ctx: SemanticWalkContext<T>,
 ) => void;
 
-/** Enter/leave pair for one node type. */
 interface SemanticWalkHooks<T extends Node = Node> {
   enter?: SemanticWalkHandler<T>;
   leave?: SemanticWalkHandler<T>;
@@ -305,19 +290,16 @@ type SemanticVisitors = {
   leave?: SemanticWalkHandler;
 };
 
-/** Handler for one node type in an async walk, free to return a promise. */
 type AsyncSemanticWalkHandler<T extends Node = Node> = (
   node: T,
   ctx: SemanticWalkContext<T>,
 ) => void | Promise<void>;
 
-/** Enter/leave pair for one node type in an async walk. */
 interface AsyncSemanticWalkHooks<T extends Node = Node> {
   enter?: AsyncSemanticWalkHandler<T>;
   leave?: AsyncSemanticWalkHandler<T>;
 }
 
-/** {@link SemanticVisitors}, with handlers that may return promises. */
 type AsyncSemanticVisitors = {
   [K in NodeType]?:
     | AsyncSemanticWalkHandler<NodeOfType<K>>
@@ -352,11 +334,9 @@ type ImportKind = "named" | "namespace" | "sideEffect" | "importEquals" | "dynam
 
 /** One imported binding (or side-effect import) of a module. */
 interface Import {
-  /** The importing module. */
   readonly module: Module;
   /** Stable id, the index into {@link Module.imports}. */
   readonly id: number;
-  /** The form of this record; every other field follows from it. */
   readonly kind: ImportKind;
   /**
    * The local binding symbol, or null when nothing binds (side-effect,
@@ -374,15 +354,11 @@ interface Import {
    * and `"importEquals"`.
    */
   readonly isNamespace: boolean;
-  /** True for bare `import "m"`. */
   readonly isSideEffect: boolean;
-  /** True for a literal-specifier `import("m")`. */
   readonly isDynamic: boolean;
-  /** True for a `require("m")` call on a free `require`. */
   readonly isRequire: boolean;
   /** True for `import type` / `import { type x }`. */
   readonly typeOnly: boolean;
-  /** Stage 3 phase modifier, or null. */
   readonly phase: "source" | "defer" | null;
   readonly specifier: string;
   /**
@@ -409,13 +385,10 @@ interface Import {
  */
 type ExportKind = "named" | "reExport" | "namespace" | "star" | "equals" | "global";
 
-/** One exported name of a module. */
 interface Export {
-  /** The exporting module. */
   readonly module: Module;
   /** Stable id, the index into {@link Module.exports}. */
   readonly id: number;
-  /** The form of this record; every other field follows from it. */
   readonly kind: ExportKind;
   /**
    * The exported name (`"default"` included), or null for `export *`,
@@ -493,7 +466,6 @@ interface Module {
    * for nodes that are neither, or for unresolved references.
    */
   symbolOf(node: Node): Symbol | null;
-  /** The reference recorded for an identifier node, or null. */
   referenceOf(node: Node): Reference | null;
   /**
    * The innermost scope whose extent contains `node`, or the module's
@@ -566,7 +538,6 @@ interface Module {
   readonly dependents: Module[];
 }
 
-/** CommonJS usage signals, as reported by {@link Module.moduleFlags}. */
 interface ModuleFlags {
   /** The file calls a free `require`. */
   readonly usesRequire: boolean;
@@ -574,7 +545,6 @@ interface ModuleFlags {
   readonly usesModule: boolean;
   /** The file references a free `exports`. */
   readonly usesExports: boolean;
-  /** The file uses `import.meta`. */
   readonly usesImportMeta: boolean;
 }
 
@@ -588,13 +558,11 @@ interface Definition {
   readonly symbol: Symbol | null;
 }
 
-/** A cross-module reference, as reported by {@link Analyzer.referencesOf}. */
 interface ModuleReference {
   readonly module: Module;
   readonly reference: Reference;
 }
 
-/** Options for {@link analyze}: {@link AddFileOptions} plus the module path. */
 interface AnalyzeOptions extends AddFileOptions {
   /**
    * The path recorded on the module, also the default source of
@@ -638,7 +606,6 @@ declare class Analyzer {
   addFile(path: string, source: string, options?: AddFileOptions): Module;
   /** Removes a file. Returns whether it existed. */
   removeFile(path: string): boolean;
-  /** The module added under `path`, if any. */
   module(path: string): Module | undefined;
   /** All modules, keyed by path. */
   readonly modules: ReadonlyMap<string, Module>;

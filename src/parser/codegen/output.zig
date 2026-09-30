@@ -103,7 +103,6 @@ pub const Output = struct {
         if (self.pretty) try self.writeByte(' ');
     }
 
-    /// Ends the line unless it is empty and holds `indent` spaces for the next one.
     pub fn endLine(self: *Output, indent: u32) Error!void {
         const items = self.code.items;
         if (items.len == 0) return;

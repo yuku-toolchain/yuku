@@ -1,8 +1,4 @@
-// The JS printer against the Zig printer over the whole corpus, the deep chains, and the
-// instantiation expressions, one test per plan of `conformance.ts`. Code, source map mappings, and
-// diagnostics must match byte for byte.
-//
-// The Zig side is `zig build codegen-reference`, which `bun test:codegen` builds first.
+// needs `zig build codegen-reference`, which `bun test:codegen` builds first
 
 import { describe, expect, test } from "bun:test";
 import { corpusPresent } from "../corpus";

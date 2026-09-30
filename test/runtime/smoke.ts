@@ -1,5 +1,4 @@
-// Runs every package on the minimum supported runtime, which CI uses to execute this file once
-// compiled to JavaScript. The packages must load and run there on the native binary.
+// CI runs this, compiled to JavaScript, on the minimum supported runtime
 
 import { strict as assert } from "node:assert";
 import { createRequire } from "node:module";

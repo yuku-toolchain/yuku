@@ -111,8 +111,6 @@ function stripLang(lang: SourceLang): SourceLang {
 }
 
 describe.skipIf(!corpusPresent())("codegen corpus invariants", () => {
-  // the whole corpus runs through three plans with reparse and idempotency
-  // checks, so the setup needs far more than the default hook timeout
   beforeAll(async () => {
     await forEachCorpusFile((file, source) => checkFile(file, source));
   }, 300_000);

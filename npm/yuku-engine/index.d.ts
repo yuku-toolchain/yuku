@@ -1,6 +1,5 @@
 import type { SourceLang, SourceType } from "@yuku-toolchain/types";
 
-/** The options the engine reads, as the Yuku packages pass them. */
 interface EngineOptions {
   sourceType?: SourceType;
   lang?: SourceLang;

@@ -33,7 +33,6 @@ const headers = {
   "content-type": "application/json",
 };
 
-// the playground preview Vercel deployed for this commit, recorded as a GitHub deployment
 async function previewPlayground(): Promise<string | null> {
   if (!HEAD_SHA) return null;
   for (let attempt = 0; attempt < 6; attempt++) {

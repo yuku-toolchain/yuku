@@ -1,5 +1,3 @@
-// one analyzed file, its AST plus a lazily built semantic graph
-
 import { analyze as analyzeSource, langFromPath, sourceTypeFromPath } from "yuku-engine";
 import { decode, SymbolFlags } from "./decode.js";
 import { walkModule, walkModuleAsync } from "./walk.js";
@@ -341,7 +339,6 @@ export class Module {
     return this.scopes[this.#sem.nodeScope(index)];
   }
 
-  // structural parent, or null at the root or for a foreign node
   parentOf(node) {
     // the synthesized hashbang has no native index, its parent is the program
     if (node?.type === "Hashbang") {
@@ -388,7 +385,6 @@ export class Module {
     return [...names];
   }
 
-  // outer bindings a function closes over, deduped by symbol
   capturesOf(fn) {
     const index = this.#r.indexOf(fn);
     if (index === undefined) {

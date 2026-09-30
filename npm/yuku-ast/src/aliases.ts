@@ -175,7 +175,6 @@ type GroupType<A extends AliasName> = (typeof ALIAS_GROUPS)[A][number];
 /** The node union each alias covers, e.g. `AliasMap["Function"]`. */
 export type AliasMap = { [A in AliasName]: NodeOfType<GroupType<A>> };
 
-// exact two-way agreement with the @yuku-toolchain/types unions
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type Expect<T extends true> = T;
 type _expression = Expect<Same<GroupType<"Expression">, Expression["type"]>>;

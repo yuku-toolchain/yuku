@@ -11,7 +11,7 @@ const transfer = @import("transfer/root.zig");
 
 const gpa = std.heap.wasm_allocator;
 
-// packed by `@yuku-engine/wasm`'s index.js
+// packed by `@yuku-engine/wasm`'s core.js
 const flag = struct {
     const source_type_mask = 0b11;
     const lang_shift = 2;

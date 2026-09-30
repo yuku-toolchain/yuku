@@ -1,6 +1,3 @@
-// The WebAssembly engine against the native one. Both must return byte-identical parse and
-// analyze buffers.
-
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import * as wasm from "@yuku-engine/wasm";

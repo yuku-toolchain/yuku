@@ -14,7 +14,6 @@ const Options = struct {
     tokens: bool = false,
 };
 
-/// Parses one source into the AST buffer.
 pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     var tree = parseTree(source, options) catch return error.ParseFailed;
     defer tree.deinit();
@@ -26,7 +25,6 @@ pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     return buffer.val;
 }
 
-/// Parses and analyzes one source into the analyzer buffer.
 pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     var tree = parseTree(source, options) catch return error.AnalyzeFailed;
     defer tree.deinit();
