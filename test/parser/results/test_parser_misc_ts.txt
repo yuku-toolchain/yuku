@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       89/89 (100.00%)
+Passed:       91/91 (100.00%)
 Failed:       0
-AST mismatch: 0/89
+AST mismatch: 0/91
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -137,6 +137,19 @@ error: A declaration with a definite assignment assertion must also have a type 
  6 | }
    |
    = help: Annotate the declaration, for example 'x!: string'.
+
+
+✓ test/parser/misc/ts/duplicate-parameters-sloppy.ts
+✓ test/parser/misc/ts/duplicate-parameters-strict.module.ts
+error: Identifier 'a' has already been declared
+   |
+ 1 | function declaration(a, a) {}
+   |                         ^
+   |                      ~ 'a' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+ 2 | function* generatorDeclaration(a, a) {}
+   |
+   = help: Consider removing or renaming this declaration of 'a'
 
 
 ✓ test/parser/misc/ts/empty-type-argument-list.ts

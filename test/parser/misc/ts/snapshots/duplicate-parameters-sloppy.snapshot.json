@@ -1,0 +1,513 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 353,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 40,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 20,
+          "name": "declaration",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 21,
+            "end": 22,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          {
+            "type": "Identifier",
+            "start": 24,
+            "end": 25,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 27,
+          "end": 40,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 29,
+              "end": 38,
+              "argument": {
+                "type": "Identifier",
+                "start": 36,
+                "end": 37,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 41,
+        "end": 91,
+        "id": {
+          "type": "Identifier",
+          "start": 51,
+          "end": 71,
+          "name": "generatorDeclaration",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": true,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 72,
+            "end": 73,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          {
+            "type": "Identifier",
+            "start": 75,
+            "end": 76,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 78,
+          "end": 91,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 80,
+              "end": 89,
+              "argument": {
+                "type": "Identifier",
+                "start": 87,
+                "end": 88,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 92,
+        "end": 143,
+        "id": {
+          "type": "Identifier",
+          "start": 107,
+          "end": 123,
+          "name": "asyncDeclaration",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": true,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 124,
+            "end": 125,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          {
+            "type": "Identifier",
+            "start": 127,
+            "end": 128,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 130,
+          "end": 143,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 132,
+              "end": 141,
+              "argument": {
+                "type": "Identifier",
+                "start": 139,
+                "end": 140,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 144,
+        "end": 205,
+        "id": {
+          "type": "Identifier",
+          "start": 160,
+          "end": 185,
+          "name": "asyncGeneratorDeclaration",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": true,
+        "async": true,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 186,
+            "end": 187,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          {
+            "type": "Identifier",
+            "start": 189,
+            "end": 190,
+            "name": "a",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 192,
+          "end": 205,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 194,
+              "end": 203,
+              "argument": {
+                "type": "Identifier",
+                "start": 201,
+                "end": 202,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 207,
+        "end": 239,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 207,
+          "end": 238,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 208,
+            "end": 237,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 218,
+                "end": 219,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              {
+                "type": "Identifier",
+                "start": 221,
+                "end": 222,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 224,
+              "end": 237,
+              "body": [
+                {
+                  "type": "ReturnStatement",
+                  "start": 226,
+                  "end": 235,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 233,
+                    "end": 234,
+                    "name": "a",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                }
+              ]
+            },
+            "expression": false,
+            "typeParameters": null,
+            "returnType": null,
+            "declare": false
+          }
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 240,
+        "end": 273,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 240,
+          "end": 272,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 241,
+            "end": 271,
+            "id": null,
+            "generator": true,
+            "async": false,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 252,
+                "end": 253,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              {
+                "type": "Identifier",
+                "start": 255,
+                "end": 256,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 258,
+              "end": 271,
+              "body": [
+                {
+                  "type": "ReturnStatement",
+                  "start": 260,
+                  "end": 269,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 267,
+                    "end": 268,
+                    "name": "a",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                }
+              ]
+            },
+            "expression": false,
+            "typeParameters": null,
+            "returnType": null,
+            "declare": false
+          }
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 274,
+        "end": 312,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 274,
+          "end": 311,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 275,
+            "end": 310,
+            "id": null,
+            "generator": false,
+            "async": true,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 291,
+                "end": 292,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              {
+                "type": "Identifier",
+                "start": 294,
+                "end": 295,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 297,
+              "end": 310,
+              "body": [
+                {
+                  "type": "ReturnStatement",
+                  "start": 299,
+                  "end": 308,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 306,
+                    "end": 307,
+                    "name": "a",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                }
+              ]
+            },
+            "expression": false,
+            "typeParameters": null,
+            "returnType": null,
+            "declare": false
+          }
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 313,
+        "end": 352,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 313,
+          "end": 351,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 314,
+            "end": 350,
+            "id": null,
+            "generator": true,
+            "async": true,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 331,
+                "end": 332,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              {
+                "type": "Identifier",
+                "start": 334,
+                "end": 335,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 337,
+              "end": 350,
+              "body": [
+                {
+                  "type": "ReturnStatement",
+                  "start": 339,
+                  "end": 348,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 346,
+                    "end": 347,
+                    "name": "a",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                }
+              ]
+            },
+            "expression": false,
+            "typeParameters": null,
+            "returnType": null,
+            "declare": false
+          }
+        },
+        "directive": null
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
