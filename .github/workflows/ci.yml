@@ -130,6 +130,18 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:sourcemap
 
+      - name: AST tests
+        if: ${{ !cancelled() }}
+        run: bun run test:ast
+
+      - name: WebAssembly parity
+        if: ${{ !cancelled() }}
+        run: bun run test:wasm
+
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        run: bun run typecheck
+
       - name: Runtime floor declarations
         if: ${{ !cancelled() }}
         run: bun .github/scripts/check-engines.ts
