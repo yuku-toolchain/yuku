@@ -1,11 +1,9 @@
 # @yuku-toolchain/types
 
-Shared TypeScript type definitions for the [yuku](https://github.com/yuku-toolchain/yuku)
-toolchain: the ESTree / TypeScript-ESTree AST node types, comments, diagnostics,
-tokens, and the base walk context.
+The TypeScript types shared by the Yuku packages: the ESTree / TypeScript-ESTree AST, comments, diagnostics, tokens, and the walk context. `yuku-parser` re-exports them.
 
 ```ts
-import type { Program, Node, Comment, Diagnostic } from "@yuku-toolchain/types";
+import type { Comment, Diagnostic, Node, Program } from "@yuku-toolchain/types";
 ```
 
 ## License

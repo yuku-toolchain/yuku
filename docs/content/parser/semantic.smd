@@ -1,6 +1,6 @@
 ---
 .title = "Semantic Analysis",
-.description = "The semantic model of a JavaScript/TypeScript tree: scopes, symbols, resolved references, scope-dependent early errors, and module records.",
+.description = "The semantic model of a JavaScript or TypeScript tree: scopes, symbols, resolved references, scope-dependent early errors, and module records.",
 .author = "Arshad Yaseen",
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",

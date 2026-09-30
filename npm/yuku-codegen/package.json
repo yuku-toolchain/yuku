@@ -1,7 +1,7 @@
 {
   "name": "yuku-codegen",
   "version": "0.13.0",
-  "description": "JavaScript and TypeScript code generator for ESTree and TypeScript-ESTree ASTs: formatting, minification, TypeScript stripping, and source maps",
+  "description": "A fast code generator for any ESTree / TypeScript-ESTree AST, with type stripping, minification, and source maps",
   "license": "MIT",
   "repository": {
     "type": "git",

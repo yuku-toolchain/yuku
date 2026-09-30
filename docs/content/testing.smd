@@ -49,7 +49,7 @@ An automated job in the suite repository checks Test262, the TypeScript compiler
 
 Yuku is 100% ECMAScript spec compliant. It passes every `pass`, `fail`, and `semantic` test in the suite, with zero failures and zero AST mismatches. Every run writes per-file results to [test/parser/results](https://github.com/yuku-toolchain/yuku/tree/main/test/parser/results), and the runner exits non-zero on any failure.
 
-The suites run through the npm packages, built from the local Zig source. Every run validates the whole chain, from the parser through the native bridge to the JavaScript API.
+The suites run through the npm packages, built from the local Zig source. Every run validates the whole chain, from the parser through the native bridge to the JavaScript API, and the WebAssembly build must return byte-identical results to the native binary on every corpus file.
 
 ## [Codegen]($section.id('codegen'))
 

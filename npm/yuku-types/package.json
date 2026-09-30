@@ -1,7 +1,7 @@
 {
   "name": "@yuku-toolchain/types",
   "version": "0.13.0",
-  "description": "Shared AST, diagnostic, and traversal type definitions for the yuku toolchain",
+  "description": "The TypeScript types shared by the Yuku packages",
   "keywords": [
     "ast",
     "estree",

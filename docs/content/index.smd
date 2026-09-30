@@ -5,19 +5,75 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-A high-performance JavaScript/TypeScript compiler toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
+A high-performance JavaScript and TypeScript compiler toolchain written in Zig, usable from JavaScript through npm and from Zig as a package.
 
 [Try it in the playground →](https://playground.yuku.fyi)
 
 ## [Why Yuku]($section.id('why-yuku'))
 
-**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes the entire [parser test suite](https://github.com/yuku-toolchain/parser-test-suite), tens of thousands of cases from [Test262](https://github.com/tc39/test262), TypeScript, and Babel, with zero failures and zero AST mismatches. Read [how Yuku is tested](/testing/).
+**Correctness first.** Yuku is 100% ECMAScript spec compliant, with zero failures and zero AST mismatches across the [parser test suite](/testing/).
 
 **Fast by design.** The parser is built on data-oriented design, with a flat AST and a single arena per parse.
+
+**Small.** The parser installs in 730 kB, against 4.7 MB for Oxc's and 4.8 MB for Babel's. See [Size](#size).
 
 **Pure Zig, zero dependencies.** No external C libraries or runtime dependencies, so it is easy to build, embed, and cross-compile.
 
 **Modern JavaScript.** Full support for modern and experimental features, including decorators, source phase imports, deferred imports, and `using`/`await using` declarations.
+
+## [Install]($section.id('install'))
+
+### [JavaScript]($section.id('javascript'))
+
+Each tool is its own package. Install the ones you need. Each package's `engines` field lists its minimum runtime.
+
+| Package                               | For                                                 |
+| ------------------------------------- | --------------------------------------------------- |
+| [`yuku-parser`](/parser/)             | Parsing to an ESTree / TypeScript-ESTree AST        |
+| [`yuku-analyzer`](/analyzer/)         | Scopes, symbols, references, and cross-file linking |
+| [`yuku-codegen`](/parser/codegen/)    | Printing an AST back to source, with source maps    |
+| [`yuku-ast`](/parser/ast/#javascript) | Walking, building, and checking AST nodes           |
+
+```bash
+npm install yuku-parser
+```
+
+### [WebAssembly]($section.id('webassembly'))
+
+Runtimes that load native addons run a native binary for their platform. Browsers, edge runtimes, and platforms without a native binary run the WebAssembly build instead, with the same API and byte-identical results. It needs WebAssembly SIMD and reference types, which every current browser and edge runtime supports. Install it and load it once, and every Yuku package runs on it.
+
+```bash
+npm install @yuku-engine/wasm
+```
+
+```js
+import { init } from "@yuku-engine/wasm";
+import { parse } from "yuku-parser";
+
+await init();
+parse("const x = 1;");
+```
+
+`init` fetches `@yuku-engine/wasm/yuku-engine.wasm` by default, or takes a URL, a `Response`, the module's bytes, or a compiled `WebAssembly.Module` for runtimes that import `.wasm` files as modules. Runtimes with `node:fs` need no `init`, and where the native binary is missing or native addons are disabled, switch to the WebAssembly build if they can `require()` ES modules.
+
+### [Zig]($section.id('zig'))
+
+```bash
+zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
+```
+
+In your `build.zig`.
+
+```zig
+const yuku_dep = b.dependency("yuku", .{
+    .target = target,
+    .optimize = optimize,
+});
+my_module.addImport("parser", yuku_dep.module("parser"));
+```
+
+>[]($block.attrs('note'))
+>Yuku requires Zig 0.16.0 or later.
 
 ## [Current Status]($section.id('current-status'))
 
@@ -41,3 +97,15 @@ The lead holds on large files.
 >Oxc is very fast at raw parsing, but its npm package serializes the AST to a JSON string in Rust and calls `JSON.parse` in JavaScript. That deserialization is the bottleneck, and it grows with the size of the source. Oxc's `program` field is a getter that only runs `JSON.parse` on access, so benchmarking bare `parse` calls hides the cost. The benchmarks above measure the time to obtain the full AST for every parser.
 >
 >Yuku's AST is flat, compact, and near-binary by design, so passing it from Zig to JavaScript is fast and allocates only what the source needs, without changes to the core parser. The transfer is validated by the [parser test suite](/testing/), with exact AST matching between Zig and JavaScript.
+
+## [Size]($section.id('size'))
+
+Latest releases, installed with npm on macOS arm64, dependencies included:
+
+| To                            | Yuku                       | Others                                                                                      |
+| ----------------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+| Parse                         | `yuku-parser` **730 kB**   | `oxc-parser` 4.7 MB, `@babel/parser` 4.8 MB, `@typescript-eslint/typescript-estree` 26.3 MB |
+| Analyze scopes and references | `yuku-analyzer` **860 kB** | `@typescript-eslint/typescript-estree` + `@typescript-eslint/scope-manager` 26.7 MB         |
+| Print an AST                  | `yuku-codegen` **200 kB**  | `astring` 270 kB, `@babel/generator` 2.5 MB                                                 |
+
+The total stays small as packages are added. Every package that needs native code runs on one 610 kB binary from `yuku-engine`, installed once however many of them a project uses, so adding `yuku-analyzer` to `yuku-parser` costs only its 190 kB of JavaScript. `yuku-codegen` and `yuku-ast` are plain JavaScript with no binary. The 610 kB WebAssembly build is installed only where it runs.

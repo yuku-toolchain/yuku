@@ -7,11 +7,7 @@
 ---
 `yuku-analyzer` is full semantic analysis for JavaScript and TypeScript, with scopes, symbols, resolved references, closures, and cross-file module linking, computed natively in Zig and queried as plain JavaScript objects.
 
-Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with no per-query cost after the native call.
-
-```bash
-npm install yuku-analyzer
-```
+Scopes and resolved references usually mean `eslint-scope` or `@typescript-eslint/scope-manager`, and cross-file go-to-definition means the TypeScript compiler or `ts-morph`, each with its own parse and walk. `yuku-analyzer` does all of it in one native pass behind one API, up to ~15× faster per file than `eslint-scope`, `@typescript-eslint/scope-manager`, and `@babel/traverse`, with no per-query cost after the native call. Its native binary is shared with the other Yuku packages, see [Size](/#size).
 
 For one file, `analyze` returns the full per-file semantics in a call:
 
@@ -55,22 +51,6 @@ a.referencesOf(def.symbol).map((r) => r.module.path); // ["app.ts", "ui.ts"]
 
 Resolution follows import, re-export, and `export *` chains to the binding that defines the name, like an editor's go-to-definition.
 
-## [WebAssembly]($section.id('webassembly'))
-
-```bash
-npm install @yuku-analyzer/wasm
-```
-
-```js
-import { analyze } from "@yuku-analyzer/wasm";
-
-const module = analyze(`const double = (n: number) => n * 2; double(21);`, { lang: "ts" });
-
-module.rootScope.find("double").references.length; // 1
-```
-
-The same API and semantic model as `yuku-analyzer`, as a single portable WebAssembly module for browsers and other environments without native bindings. See [@yuku-analyzer/wasm on npm](https://www.npmjs.com/package/@yuku-analyzer/wasm).
-
 ## [Architecture]($section.id('architecture'))
 
 The binder, scope tree, reference resolution, and module records come from the same native analyzer that powers the rest of Yuku. JavaScript receives a finished model to query and reimplements none of the binding rules (hoisting, catch scopes, named function expressions, declaration merging, declaration spaces).
@@ -98,7 +78,7 @@ analyzer.module("src/app.tsx");     // Module | undefined
 analyzer.modules;                   // ReadonlyMap<string, Module>
 ```
 
-`addFile` accepts the options of `yuku-parser`'s `parse`, except `semanticErrors` since semantic errors are always reported. `lang` and `sourceType` default from the file extension.
+`addFile` accepts the options of `parse`, except `semanticErrors` since semantic errors are always reported. `lang` and `sourceType` default from the file extension.
 
 ```js
 analyzer.addFile("legacy.cjs", source, {
@@ -110,10 +90,10 @@ analyzer.addFile("legacy.cjs", source, {
 });
 ```
 
-The functions behind those defaults are exported:
+The functions behind those defaults come from `yuku-parser`:
 
 ```js
-import { langFromPath, sourceTypeFromPath } from "yuku-analyzer";
+import { langFromPath, sourceTypeFromPath } from "yuku-parser";
 
 langFromPath("types.d.ts");   // "dts"  (.d.ts, .d.mts, .d.cts)
 langFromPath("app.tsx");      // "tsx"; .ts/.mts/.cts give "ts", .jsx gives "jsx", else "js"
@@ -145,13 +125,13 @@ Returning `null` marks the import as external. `import.resolvedModule` stays `nu
 module.analyzer;    // the Analyzer that owns it
 module.path;        // the path it was added under
 module.source;      // the original source text
-module.ast;         // ESTree / TS-ESTree Program, lazily decoded
+module.ast;         // ESTree / TypeScript-ESTree Program, lazily decoded
 module.diagnostics; // syntax and semantic errors for this file
 module.comments;    // every comment in source order
 module.tokens;      // TokenList, present when added with tokens: true
 ```
 
-`tokens` is the same `TokenList` as `yuku-parser`'s, see [Tokens](/parser/#tokens). The AST is the same ESTree / TypeScript-ESTree output as `yuku-parser`, made of plain mutable objects that any ESTree tool accepts and `yuku-codegen` prints.
+`tokens` is the same `TokenList` as `parse` returns, see [Tokens](/parser/ast/#tokens). The AST is the same ESTree / TypeScript-ESTree output as `parse`, made of plain mutable objects that any ESTree tool accepts and `generate` prints.
 
 The semantic surface:
 
@@ -297,7 +277,7 @@ module.resolve("T", someScope, "type");   // or in another space ("any" is by na
 
 ## [Editing the AST]($section.id('editing-the-ast'))
 
-The `node` on every symbol and reference is the same object you reach by walking `module.ast`, so a rename is a plain assignment, and [`yuku-codegen`](/parser/codegen/) prints the mutated tree back to source.
+The `node` on every symbol and reference is the same object you reach by walking `module.ast`, so a rename is a plain assignment, and [`generate`](/parser/codegen/) prints the mutated tree back to source.
 
 ```js
 import { generate } from "yuku-codegen";
@@ -318,74 +298,15 @@ The uses come from resolved references, not a name search, so a shadowing inner 
 
 ## [Walking]($section.id('walking'))
 
-`module.walk` is a typed visitor walk with the semantic model in context. Handlers are keyed by node type and receive the exact node type, not a generic node.
+`module.walk` is the [walker](/parser/traverse/#javascript) with the semantic model in its context. Handlers, walk order, and [mutation](/parser/traverse/#mutation) work the same, and the context adds four fields.
 
 ```js
 module.walk({
-  // bare function = enter handler
   CallExpression(node, ctx) {
     if (node.callee.type === "Identifier") {
       const target = ctx.module.symbolOf(node.callee);
-      if (target?.has(SymbolFlags.Import)) {
-        console.log(`calls imported ${node.callee.name}`);
-      }
+      if (target?.has(SymbolFlags.Import)) console.log(`calls imported ${node.callee.name}`);
     }
-  },
-
-  // or an enter/leave pair
-  FunctionDeclaration: {
-    enter(node, ctx) { console.log("entering", node.id.name); },
-    leave(node, ctx) { console.log("leaving", node.id.name); },
-  },
-
-  // universal catch-alls
-  enter(node, ctx) {},
-  leave(node, ctx) {},
-});
-```
-
-Per node, the order is catch-all `enter`, typed enter, children, typed leave, catch-all `leave`. Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`.
-
-`module.walkAsync` is the async counterpart: same traversal order, mutation semantics, and semantic context, with every handler awaited before the walk moves on. Use it when a handler needs I/O mid-walk, such as checking the filesystem before rewriting an import.
-
-### [The context]($section.id('the-context'))
-
-One context object is reused across the whole walk, so do not store it. It carries the position and the semantics.
-
-```js
-ctx.node;      // the current node
-ctx.parent;    // its parent, or null at the walk root
-ctx.key;       // the field on the parent holding this node
-ctx.index;     // position in an array field, or null
-ctx.ancestors(); // a copy of the ancestor chain, root first
-
-ctx.scope;     // the innermost Scope at this node
-ctx.symbol;    // shorthand for module.symbolOf(node)
-ctx.reference; // shorthand for module.referenceOf(node)
-ctx.module;    // the module being walked
-```
-
-`ctx.scope` is not tracked during the walk. The binder records the scope of every node in a per-node table, so `ctx.scope`, like `module.scopeOf`, is a single read. The answer is exact even where scopes do not nest with spans, such as decorators.
-
-### [Mutation]($section.id('mutation'))
-
-Handlers can mutate the AST in place.
-
-| Operation               | Effect                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `ctx.skip()`            | Do not descend into this node's children. `leave` still fires.                                                |
-| `ctx.stop()`            | End the walk immediately.                                                                                      |
-| `ctx.replace(node)`     | Swap the current node. The walk continues into the replacement's children and `leave` fires for its new type. |
-| `ctx.remove()`          | Splice the node out of an array field, or null a plain field. Children are not walked, `leave` does not fire.  |
-| `ctx.insertBefore(node)`| Insert a sibling before the current node. The inserted node is not visited.                                    |
-| `ctx.insertAfter(node)` | Insert a sibling after the current node. The walk visits it.                                                  |
-
-A replacement node created with `start: 0, end: 0` inherits the original node's span, which keeps source maps meaningful through `yuku-codegen`.
-
-```js
-module.walk({
-  DebuggerStatement(node, ctx) {
-    ctx.remove();
   },
   Identifier(node, ctx) {
     if (ctx.symbol === legacyName) node.name = "modernName";
@@ -393,16 +314,18 @@ module.walk({
 });
 ```
 
-The semantic tables are a snapshot of the parsed source, so nodes you create have no symbols or references. For fresh semantics after a transform, print the result and analyze the output.
-
-## [findAll]($section.id('findall'))
-
-`findAll` collects every node of the given types, in source order.
-
 ```js
-module.findAll("FunctionDeclaration");          // FunctionDeclaration[]
-module.findAll(["ClassDeclaration", "TSInterfaceDeclaration"]);
+ctx.scope;     // the innermost Scope at this node
+ctx.symbol;    // shorthand for module.symbolOf(node)
+ctx.reference; // shorthand for module.referenceOf(node)
+ctx.module;    // the module being walked
 ```
+
+Pass a node as the second argument to walk only a subtree, as in `module.walk(visitors, someFunction)`. `module.walkAsync` is the async counterpart, and `module.findAll(types)` collects nodes like [`findAll`](/parser/traverse/#findall).
+
+`ctx.scope` is not tracked during the walk. The binder records the scope of every node in a per-node table, so `ctx.scope`, like `module.scopeOf`, is a single read. The answer is exact even where scopes do not nest with spans, such as decorators.
+
+The semantic tables are a snapshot of the parsed source, so nodes you create have no symbols or references. For fresh semantics after a transform, print the result and analyze the output.
 
 ## [Closure analysis]($section.id('closure-analysis'))
 
@@ -617,11 +540,10 @@ import type {
   Module, Scope, Symbol, Reference, Import, Export, Capture,
   Definition, ModuleReference, LinkDiagnostic, ModuleFlags,
   Space, ScopeKind, ImportKind, ExportKind,
-  Visitors, WalkHandler, WalkHooks, WalkContext,
-  AsyncVisitors, AsyncWalkHandler, AsyncWalkHooks,
+  SemanticVisitors, SemanticWalkHandler, SemanticWalkHooks, SemanticWalkContext,
+  AsyncSemanticVisitors, AsyncSemanticWalkHandler, AsyncSemanticWalkHooks,
   AnalyzerOptions, AddFileOptions, AnalyzeOptions,
-  NodeType, NodeOfType,
 } from "yuku-analyzer";
 ```
 
-`NodeType` and `NodeOfType` are re-exported from the toolchain's AST types, so visitor keys and `findAll` stay in step with the parser without a second import.
+AST node types come from `yuku-parser`.

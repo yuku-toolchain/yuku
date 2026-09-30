@@ -1,7 +1,7 @@
 {
   "name": "yuku-ast",
   "version": "0.13.0",
-  "description": "Typed AST toolkit for JavaScript and TypeScript ESTree trees: walker, builders, guards, and syntactic utilities",
+  "description": "Walk, build, and check any ESTree / TypeScript-ESTree AST, with typed visitors, builders, and guards",
   "license": "MIT",
   "repository": {
     "type": "git",

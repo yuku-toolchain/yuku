@@ -1,23 +1,113 @@
 ---
 .title = "AST",
-.description = "The flat, data-oriented AST returned by Yuku's parser, with the full node reference.",
+.description = "The AST returned by Yuku's parser, as ESTree / TypeScript-ESTree in JavaScript and as a flat, data-oriented tree in Zig, with the full node reference.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index.
+The parser produces one tree, read two ways. JavaScript receives it as an [ESTree](https://github.com/estree/estree) / [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) AST, and Zig reads the flat, data-oriented tree directly. [Comments](#comments) and [tokens](#tokens) come alongside in both.
 
-Through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, the same tree becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs).
+## [JavaScript]($section.id('javascript'))
 
-- **JavaScript / JSX** is fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
-- **TypeScript** conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
+For JavaScript and JSX, the AST is fully conformant with ESTree, identical to what [Acorn](https://www.npmjs.com/package/acorn) produces. For TypeScript, it conforms to the TypeScript-ESTree format used by `@typescript-eslint`. For both, it matches the AST [Oxc](https://oxc.rs) produces.
 
-Comments can be attached to the AST nodes they belong to, exposed as a flat offset-indexed array, or both. See [Comments](#comments). The tokens the parser consumed can be kept as well. See [Tokens](#tokens).
+On top of the base specs, the AST carries:
 
-On top of the base specs, the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`. These extensions are present in Oxc as well.
+- Stage 3 [decorators](https://github.com/tc39/proposal-decorators).
+- Stage 3 [import defer](https://github.com/tc39/proposal-defer-import-eval) and [import source](https://github.com/tc39/proposal-source-phase-imports). The dynamic forms are an `ImportExpression` with `phase` set to `"defer"` or `"source"`.
+- A `hashbang` field on `Program` for `#!/usr/bin/env node` lines.
+
+Any other deviation from Acorn's ESTree or `@typescript-eslint`'s TypeScript-ESTree is a bug.
+
+Every node type is exported, from the `Node` union down to individual types, listed in the [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/index.d.ts).
+
+```ts
+import type { Expression, Identifier, Node, Statement } from "yuku-parser";
+```
+
+The utilities below come from `yuku-ast` and work on any ESTree AST, whichever parser produced it.
+
+### [Builders]($section.id('builders'))
+
+`b` has one typed constructor per node type. Spans default to 0, which [`ctx.replace`](/parser/traverse/#mutation) fills from the replaced node.
+
+```ts
+import { b } from "yuku-ast";
+
+b.CallExpression({ callee: b.Identifier({ name: "f" }), arguments: [], optional: false });
+```
+
+### [Guards]($section.id('guards'))
+
+`is` has one guard per node type, per alias group (`Expression`, `Function`, ...), and for the shapes ESTree folds into one type: literal kinds, member expression kinds, and directives. Every guard accepts `null` and `undefined` and narrows.
+
+```ts
+import { is } from "yuku-ast";
+
+is.CallExpression(node);
+is.Identifier(node, "require");
+is.oneOf(node, ["FunctionDeclaration", "ClassDeclaration"]);
+is.Expression(node);
+is.StringLiteral(node);
+is.StaticMemberExpression(node);
+```
+
+### [Helpers]($section.id('helpers'))
+
+```ts
+import {
+  bindingIdentifiers, // every binding Identifier a pattern introduces
+  isCallOf,           // isCallOf(node, "require")
+  isWrapper,          // true for the wrappers unwrap strips
+  literalValue,       // string | number | boolean | bigint | RegExp | null
+  nameOf,             // Identifier name or string Literal value
+  unwrap,             // strips parens and erased TypeScript assertion wrappers
+} from "yuku-ast";
+```
+
+### [Imports and exports]($section.id('imports-and-exports'))
+
+`collectImports` and `collectExports` read a module's import and export declarations, one record per bound name, destructuring included.
+
+```ts
+import { collectExports, collectImports } from "yuku-ast";
+
+for (const record of collectImports(program)) {
+  record.source;   // "./m"
+  record.local;    // the local binding name
+  record.imported; // "default", "*", or the export name
+  record.typeOnly; // import type / import { type x }
+  record.phase;    // "source" | "defer" | null
+}
+
+for (const record of collectExports(program)) {
+  record.exported; // the exported name, null for a bare export *
+  record.local;    // the backing local name, when there is one
+  record.source;   // the re-export specifier, when there is one
+  record.typeOnly;
+}
+```
+
+`collectImportDeclaration` and `collectExportDeclaration` return the records of a single statement, for use inside a [walk](/parser/traverse/#javascript).
+
+### [Identifier names]($section.id('identifier-names'))
+
+```ts
+import { isIdentifierName, isValidIdentifier } from "yuku-ast";
+
+isValidIdentifier("foo");   // true
+isValidIdentifier("class"); // false, reserved
+isIdentifierName("class");  // true, syntactically an IdentifierName
+```
+
+Plus `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, `isStrictBindReservedWord`, and `isStrictBindOnlyReservedWord`.
+
+## [Zig]($section.id('zig'))
+
+The Zig tree is a flat array of nodes that reference each other by integer index. There are no boxed structs and no virtual dispatch. Every read is a tagged-union switch and a slice index.
 
 ># [Building tools on the AST?]($block.attrs('tip'))
->Reach for the [traverser](/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. This page covers the AST itself, its node types and fields, and how to read them directly.
+>Reach for the [traverser](/parser/traverse/) first. It gives you visitor hooks, scopes, symbols, and transforms without managing indices yourself. The sections below cover the tree itself, its node types and fields, and how to read them directly.
 
 ## [Memory model]($section.id('memory-model'))
 
@@ -607,75 +697,69 @@ These appear inside `ts_type_literal.members` and `ts_interface_body.body`.
 | `ts_namespace_export_declaration` | `export as namespace Name`                      | A UMD ambient namespace export.                                                   |
 | `ts_import_equals_declaration`    | `import x = require("m")`, `import x = Foo.Bar` | An `import =` declaration binding to a require or entity name.                    |
 | `ts_external_module_reference`    | `require("m")`                                  | The `require("module")` form on the right-hand side of `import x = require(...)`. |
-
 ## [Comments]($section.id('comments'))
 
-The `comments` option controls collection. It has four modes.
+Comments come two ways. The flat list holds every comment in source order with its source span. Attached comments hang on the AST node they sit next to, so they move with their node through transforms, which is what [codegen](/parser/codegen/#comments) prints from.
 
-- `.flat` (default) puts every comment in a flat, source-ordered list, `tree.comments`, each carrying its source span. No per-node attachment.
-- `.attached` attaches each comment to the AST node it sits next to, read with `tree.commentsOf(idx)`.
-- `.both` produces the flat list and per-node attachment.
-- `.none` skips comments like whitespace.
+In JavaScript, `result.comments` is always the flat list, and `attachComments: true` also attaches them, read off `node.comments`.
+
+```js
+const { comments, program } = parse(`// header\nfunction foo() {} // trailing`, {
+  attachComments: true,
+});
+
+comments[0];
+// { type: "Line", value: " header", start: 0, end: 9 }
+
+program.body[0].comments;
+// [
+//   { type: "Line", position: "before", sameLine: false, value: " header" },
+//   { type: "Line", position: "after", sameLine: true, value: " trailing" },
+// ]
+```
+
+In Zig, the `comments` option selects `.flat` (the default), `.attached`, `.both`, or `.none`, read with `tree.comments` and `tree.commentsOf(idx)`.
 
 ```zig
-var tree = try parser.parse(allocator, source, .{ .comments = .flat });
+var tree = try parser.parse(allocator, source, .{ .comments = .both });
 defer tree.deinit();
 
 for (tree.comments) |c| {
-    // c.span is the whole comment, delimiters included
     std.debug.print("{s} @ {d}..{d}\n", .{ tree.string(c.value), c.span.start, c.span.end });
 }
-```
-
-Each entry is a `Comment`.
-
-```zig
-pub const Comment = struct {
-    type: Type,    // .line or .block
-    value: String, // body without `//` or `/* */` delimiters
-    span: Span,    // full comment span, delimiters included
-};
-```
-
-### [Attached comments]($section.id('attached-comments'))
-
-`.attached` (and `.both`) bind each comment to its host node, read with `tree.commentsOf(idx)`.
-
-```zig
-var tree = try parser.parse(allocator, source, .{ .comments = .attached });
-defer tree.deinit();
 
 for (tree.commentsOf(some_node_idx)) |c| {
-    std.debug.print("{s} {s} {s}\n", .{
-        @tagName(c.position),
-        @tagName(c.type),
-        tree.string(c.value),
-    });
+    std.debug.print("{t} {t} {s}\n", .{ c.position, c.type, tree.string(c.value) });
 }
 ```
 
-Each is an `AttachedComment`.
+A comment's `value` is its body without the `//` or `/* */` delimiters. The span of a flat comment covers the whole comment, delimiters included, so slicing the source by it returns the raw text.
 
-```zig
-pub const AttachedComment = struct {
-    type: Comment.Type,  // .line or .block
-    position: Position,  // .before, .after, or .inside (relative to host)
-    same_line: bool,     // shares a source line with the host's adjacent edge
-    value: String,       // body without `//` or `/* */` delimiters
-};
-```
+An attached comment also records where it sits relative to its host.
 
-`position` tells you where the comment sits relative to its host.
+- `before` leads the host node.
+- `after` trails the host node.
+- `inside` sits interior to an otherwise empty host, like `function f() { /* hi */ }`.
 
-- `.before` leads the host node.
-- `.after` trails the host node.
-- `.inside` sits interior to an otherwise empty host, like `function f() { /* hi */ }`.
-
-`same_line` is true when the comment shares a source line with the host's adjacent edge (host start for `.before`, host end for `.after`). For `.inside` it is always false.
+`sameLine` (`same_line` in Zig) is true when the comment shares a source line with the host's adjacent edge, the start for `before` and the end for `after`. It is always false for `inside`.
 
 ## [Tokens]($section.id('tokens'))
 
-The `tokens` option keeps every token the parser consumed in `tree.tokens`, a slice in source order. Off by default.
+The `tokens` option keeps every token the parser consumed, in source order. Tokens are as the parser resolved them: a regex is one token, and the `>>` closing a nested generic is two `>` tokens. Comments are not tokens.
+
+In JavaScript, `result.tokens` is a `TokenList`, a view over the parser's token table. A token is an index, and every accessor is one typed-array read.
+
+```js
+import { parse, TokenKind } from "yuku-parser";
+
+const { tokens } = parse(source, { tokens: true });
+
+for (let i = 0; i < tokens.length; i++) {
+  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
+}
+```
+
+In Zig, `tree.tokens` is a slice of `Token`, closed by one zero-length `eof`.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{ .tokens = true });
@@ -686,23 +770,33 @@ for (tree.tokens) |token| {
 }
 ```
 
-A `Token` is its `span`, its `tag`, and a few flags, read through methods.
+| JavaScript                            | Zig                                     | Meaning                                                                          |
+| ------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
+| `tokens.kind(i)`                      | `token.tag`                             | One of 160 kinds, one per punctuator, literal form, keyword, and identifier form |
+| `tokens.text(i)`                      | `token.text(tree.source)`               | The source text. A string literal keeps its quotes                               |
+| `tokens.start(i)`, `tokens.end(i)`    | `token.span`                            | The range, in UTF-16 offsets in JavaScript and bytes in Zig                      |
+| `tokens.isKeyword(i)`                 | `token.tag.isKeyword()`                 | Reserved words and contextual keywords                                           |
+| `tokens.isReserved(i)`                | `token.tag.isReserved()`                | Reserved unconditionally or in strict mode                                       |
+| `tokens.isUnconditionallyReserved(i)` | `token.tag.isUnconditionallyReserved()` | Never an identifier                                                              |
+| `tokens.isStrictModeReserved(i)`      | `token.tag.isStrictModeReserved()`      | Reserved in strict mode only, like `let` and `static`                            |
+| `tokens.isIdentifierLike(i)`          | `token.tag.isIdentifierLike()`          | An identifier or any keyword                                                     |
+| `tokens.precedence(i)`                | `token.tag.precedence()`                | Binary precedence, 0 when none                                                   |
+| `tokens.newlineBefore(i)`             | `token.hasLineTerminatorBefore()`       | A line terminator precedes it, what ASI looks at                                 |
+| `tokens.escaped(i)`                   | `token.isEscaped()`                     | `async` is an `async` token with this set                                        |
+| `tokens.invalidEscape(i)`             | `token.hasInvalidEscape()`              | A template chunk whose cooked value is undefined                                 |
+| `tokens.loneSurrogate(i)`             | `token.hasLoneSurrogates()`             | A string with an unpaired surrogate                                              |
 
-```zig
-token.span                       // byte range in the source
-token.text(tree.source)          // the source text
-token.tag                        // one of the 160 TokenTag variants, .identifier, .arrow, ...
-token.tag.isKeyword()            // and isReserved, isIdentifierLike, isBinaryOperator, ...
-token.tag.precedence()           // binary precedence, 0 when none
-token.tag.toString()             // "=>" for .arrow, null for tokens with free text
-token.hasLineTerminatorBefore()  // what ASI looks at
-token.isEscaped()                // `\u0061sync` is an .async token with this set
-token.hasInvalidEscape()         // a template chunk whose cooked value is undefined
-token.hasLoneSurrogates()        // a string with an unpaired surrogate
+Both also classify `isNumericLiteral`, `isBinaryOperator`, `isLogicalOperator`, `isUnaryOperator`, and `isAssignmentOperator`. The kinds are listed in [tokens.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/npm/yuku-types/tokens.d.ts) as `TokenKind` and in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig) as `TokenTag`, where `token.tag.toString()` gives the fixed text of a kind, `"=>"` for `.arrow`.
+
+Every node other than `Program`, `TemplateElement`, and `JSXEmptyExpression` starts on a token start and ends on a token end, so a node's tokens are a contiguous run found by binary search. In JavaScript, these queries take a node and answer with an index, `-1` when there is none.
+
+```js
+tokens.range(node)   // [from, to) of the tokens inside the node, empty for a node inside one token
+tokens.first(node)
+tokens.last(node)
+tokens.before(node)  // last token ending at or before it, also takes an offset
+tokens.after(node)   // first token starting at or after it, also takes an offset
+tokens.at(offset)    // the token containing an offset
 ```
 
-`TokenTag` is defined in [token.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/token.zig), one variant per punctuator, literal form, keyword, and identifier form.
-
-Tokens are as the parser resolved them: a regex is one `regex_literal`, and the `>>` closing a nested generic is two `greater_than`. The list closes with one zero-length `eof`. Comments are not tokens, see [Comments](#comments).
-
-Every node other than `program`, `template_element`, and `jsx_empty_expression` starts on a token start and ends on a token end, so a node's tokens are a contiguous slice found by binary search on `span.start`.
+On a 1 MB file, about 215,000 tokens, `tokens: true` adds 1 ms to the parse and scanning every `kind(i)` another 0.4 ms. An object per token would add 8 ms and 20 to 50 MB of heap, which is what tokens cost in espree, acorn, and Babel, and 70 ms in typescript-estree.
