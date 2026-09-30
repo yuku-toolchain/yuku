@@ -1313,9 +1313,11 @@ pub const BlockStatement = struct {
 /// The grammar production a parameter list comes from. It decides whether
 /// duplicate parameter names are an error.
 ///
-/// `formal_parameters` belongs to a plain function, `unique_formal_parameters`
-/// to a generator, async function, or method, `arrow_formal_parameters` to an
-/// arrow function, and `signature` to a TypeScript function type or signature.
+/// `formal_parameters` belongs to function declarations and expressions,
+/// including generator, async, and async generator functions.
+/// `unique_formal_parameters` belongs to methods and setters.
+/// `arrow_formal_parameters` belongs to arrow functions, and `signature` to
+/// TypeScript function types and signatures.
 pub const FormalParameterKind = enum {
     formal_parameters,
     unique_formal_parameters,
