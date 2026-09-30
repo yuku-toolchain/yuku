@@ -27,7 +27,7 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 ### JavaScript
 
-Each tool is its own package. Install the ones you need. Each package's `engines` field lists its minimum runtime.
+Each tool is its own package. Install the ones you need.
 
 | Package                               | For                                                 |
 | ------------------------------------- | --------------------------------------------------- |
