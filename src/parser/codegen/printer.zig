@@ -108,6 +108,8 @@ const Ctx = struct {
     no_in: bool = false,
     // in a `new` callee a call would bind to the `new`
     no_call: bool = false,
+    // a bare instantiation can absorb a postfix or become relational syntax
+    no_instantiation: bool = false,
     // an arrow's type parameters
     no_jsx_tag: bool = false,
     // a tag reads `strings.raw`, so its quasis print verbatim
@@ -500,7 +502,7 @@ const Printer = struct {
     fn needsParens(self: *const Self, idx: NodeIndex, ctx: Ctx) bool {
         // nothing ranks below comma
         if (self.at_lead == .none and ctx.prec <= Precedence.Comma and
-            !ctx.no_call and !ctx.no_in) return false;
+            !ctx.no_call and !ctx.no_in and !ctx.no_instantiation) return false;
 
         const data = self.nodeData(idx);
 
@@ -531,6 +533,7 @@ const Printer = struct {
             else => {},
         };
         if (ctx.prec >= Precedence.Call and data == .chain_expression) return true;
+        if (ctx.no_instantiation and data == .ts_instantiation_expression) return true;
 
         if (ctx.no_in and data == .binary_expression and
             data.binary_expression.operator == .in) return true;
@@ -1331,7 +1334,11 @@ const Printer = struct {
 
     fn emit_member_expression(self: *Self, e: *const ast.MemberExpression, ctx: Ctx) Error!void {
         const head_start = self.mark();
-        try self.emitExpr(e.object, .{ .prec = Precedence.Call, .no_call = ctx.no_call });
+        try self.emitExpr(e.object, .{
+            .prec = Precedence.Call,
+            .no_call = ctx.no_call,
+            .no_instantiation = !e.optional,
+        });
 
         const static_key = if (self.options.minify and e.computed)
             simpleStringKey(self.tree, e.property)
@@ -1353,7 +1360,10 @@ const Printer = struct {
     }
 
     fn emit_call_expression(self: *Self, e: *const ast.CallExpression) Error!void {
-        try self.emitExpr(e.callee, .{ .prec = Precedence.Call });
+        try self.emitExpr(e.callee, .{
+            .prec = Precedence.Call,
+            .no_instantiation = !e.optional,
+        });
         if (e.optional) try self.writeStr("?.");
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
@@ -1365,7 +1375,11 @@ const Printer = struct {
 
     fn emit_new_expression(self: *Self, e: *const ast.NewExpression) Error!void {
         try self.writeStr("new ");
-        try self.emitExpr(e.callee, .{ .prec = Precedence.New, .no_call = true });
+        try self.emitExpr(e.callee, .{
+            .prec = Precedence.New,
+            .no_call = true,
+            .no_instantiation = true,
+        });
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
     }
@@ -1375,7 +1389,11 @@ const Printer = struct {
         e: *const ast.TaggedTemplateExpression,
         ctx: Ctx,
     ) Error!void {
-        try self.emitExpr(e.tag, .{ .prec = Precedence.Call, .no_call = ctx.no_call });
+        try self.emitExpr(e.tag, .{
+            .prec = Precedence.Call,
+            .no_call = ctx.no_call,
+            .no_instantiation = true,
+        });
         try self.emit(e.type_arguments);
         try self.emitExpr(e.quasi, .{ .tagged = true });
     }
@@ -1835,7 +1853,10 @@ const Printer = struct {
         try self.emit(c.type_parameters);
         if (c.super_class != .null) {
             try self.writeStr(" extends ");
-            try self.emitExpr(c.super_class, .{ .prec = Precedence.Call });
+            try self.emitExpr(c.super_class, .{
+                .prec = Precedence.Call,
+                .no_instantiation = true,
+            });
             try self.emit(c.super_type_arguments);
         }
         if (!self.options.strip) {
@@ -2683,7 +2704,10 @@ const Printer = struct {
     }
 
     fn emit_ts_non_null_expression(self: *Self, e: *const ast.TSNonNullExpression) Error!void {
-        try self.emitExpr(e.expression, .{ .prec = Precedence.Postfix });
+        try self.emitExpr(e.expression, .{
+            .prec = Precedence.Postfix,
+            .no_instantiation = true,
+        });
         try self.writeByte('!');
     }
 
@@ -2691,7 +2715,10 @@ const Printer = struct {
         self: *Self,
         e: *const ast.TSInstantiationExpression,
     ) Error!void {
-        try self.emitExpr(e.expression, .{ .prec = Precedence.Postfix });
+        try self.emitExpr(e.expression, .{
+            .prec = Precedence.Postfix,
+            .no_instantiation = true,
+        });
         try self.emit(e.type_arguments);
     }
 
