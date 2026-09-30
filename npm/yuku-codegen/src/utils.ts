@@ -187,7 +187,7 @@ function parseExponent(text: string): number | null {
 export function stripUnderscores(raw: string): string | null {
   if (!raw.includes("_")) return raw;
   if (raw.length > DIGITS_MAX) return null;
-  return raw.replaceAll("_", "");
+  return raw.replace(/_/g, "");
 }
 
 export function isJsdocBody(value: string): boolean {

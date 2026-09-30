@@ -295,25 +295,29 @@ export class Module {
   }
 
   get scopes() {
-    return (this.#scopes ??= this.#rows(Scope, this.#sem.scope.count));
+    return this.#scopes ?? (this.#scopes = this.#rows(Scope, this.#sem.scope.count));
   }
   get symbols() {
-    return (this.#symbols ??= this.#rows(Symbol, this.#sem.symbol.count));
+    return this.#symbols ?? (this.#symbols = this.#rows(Symbol, this.#sem.symbol.count));
   }
   get references() {
-    return (this.#references ??= this.#rows(Reference, this.#sem.reference.count));
+    return (
+      this.#references ?? (this.#references = this.#rows(Reference, this.#sem.reference.count))
+    );
   }
   get imports() {
-    return (this.#imports ??= this.#rows(Import, this.#sem.import.count));
+    return this.#imports ?? (this.#imports = this.#rows(Import, this.#sem.import.count));
   }
   get exports() {
-    return (this.#exports ??= this.#rows(Export, this.#sem.export.count));
+    return this.#exports ?? (this.#exports = this.#rows(Export, this.#sem.export.count));
   }
   get moduleFlags() {
     return this.#sem.moduleFlags;
   }
   get unresolvedReferences() {
-    return (this.#unresolved ??= this.references.filter((r) => r.symbol === null));
+    return (
+      this.#unresolved ?? (this.#unresolved = this.references.filter((r) => r.symbol === null))
+    );
   }
 
   get rootScope() {
