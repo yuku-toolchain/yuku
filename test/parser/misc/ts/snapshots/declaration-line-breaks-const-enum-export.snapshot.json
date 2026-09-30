@@ -1,0 +1,80 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 100,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 46,
+        "end": 99,
+        "declaration": {
+          "type": "TSEnumDeclaration",
+          "start": 53,
+          "end": 99,
+          "id": {
+            "type": "Identifier",
+            "start": 88,
+            "end": 89,
+            "name": "E",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "body": {
+            "type": "TSEnumBody",
+            "start": 90,
+            "end": 99,
+            "members": [
+              {
+                "type": "TSEnumMember",
+                "start": 92,
+                "end": 97,
+                "id": {
+                  "type": "Identifier",
+                  "start": 92,
+                  "end": 93,
+                  "name": "A",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "initializer": {
+                  "type": "Literal",
+                  "start": 96,
+                  "end": 97,
+                  "value": 1,
+                  "raw": "1"
+                },
+                "computed": false
+              }
+            ]
+          },
+          "const": true,
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks between const and enum",
+      "start": 0,
+      "end": 45
+    },
+    {
+      "type": "Block",
+      "value": " marker\n continued ",
+      "start": 59,
+      "end": 82
+    }
+  ],
+  "diagnostics": []
+}

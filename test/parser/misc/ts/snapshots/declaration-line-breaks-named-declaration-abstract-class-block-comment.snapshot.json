@@ -1,0 +1,128 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 171,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 57,
+        "end": 170,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 96,
+          "end": 99,
+          "name": "Foo",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 100,
+          "end": 170,
+          "body": [
+            {
+              "type": "TSAbstractPropertyDefinition",
+              "start": 102,
+              "end": 142,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 130,
+                "end": 133,
+                "name": "foo",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": null,
+              "computed": false,
+              "static": false,
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 133,
+                "end": 141,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 135,
+                  "end": 141
+                }
+              },
+              "declare": false,
+              "override": false,
+              "optional": false,
+              "definite": false,
+              "readonly": true,
+              "accessibility": "protected"
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 143,
+              "end": 168,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 157,
+                "end": 163,
+                "name": "method",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 163,
+                "end": 168,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 166,
+                  "end": 168,
+                  "body": []
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": true,
+              "override": false,
+              "optional": false,
+              "accessibility": "public"
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": true,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks before modified declaration names",
+      "start": 0,
+      "end": 56
+    },
+    {
+      "type": "Block",
+      "value": " marker\n continued ",
+      "start": 72,
+      "end": 95
+    }
+  ],
+  "diagnostics": []
+}

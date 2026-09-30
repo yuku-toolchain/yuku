@@ -209,10 +209,10 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'class'",
-      "start": 154,
-      "end": 159,
-      "help": "Try inserting a semicolon here",
+      "message": "Identifier cannot immediately follow a numeric literal",
+      "start": 161,
+      "end": 162,
+      "help": "Try adding whitespace here between the number and identifier",
       "labels": []
     },
     {

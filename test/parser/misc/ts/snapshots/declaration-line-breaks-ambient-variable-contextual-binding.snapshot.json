@@ -1,0 +1,60 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 96,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 56,
+        "end": 95,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 80,
+            "end": 94,
+            "id": {
+              "type": "Identifier",
+              "start": 80,
+              "end": 94,
+              "name": "global",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 86,
+                "end": 94,
+                "typeAnnotation": {
+                  "type": "TSStringKeyword",
+                  "start": 88,
+                  "end": 94
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks before ambient variable bindings",
+      "start": 0,
+      "end": 55
+    },
+    {
+      "type": "Line",
+      "value": " marker",
+      "start": 70,
+      "end": 79
+    }
+  ],
+  "diagnostics": []
+}

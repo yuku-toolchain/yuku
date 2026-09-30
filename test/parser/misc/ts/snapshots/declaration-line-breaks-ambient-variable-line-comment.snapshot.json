@@ -1,0 +1,69 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 100,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 56,
+        "end": 99,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 63,
+          "end": 99,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 87,
+              "end": 98,
+              "id": {
+                "type": "Identifier",
+                "start": 87,
+                "end": 98,
+                "name": "foo",
+                "decorators": [],
+                "typeAnnotation": {
+                  "type": "TSTypeAnnotation",
+                  "start": 90,
+                  "end": 98,
+                  "typeAnnotation": {
+                    "type": "TSStringKeyword",
+                    "start": 92,
+                    "end": 98
+                  }
+                },
+                "optional": false
+              },
+              "init": null,
+              "definite": false
+            }
+          ],
+          "declare": true
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks before ambient variable bindings",
+      "start": 0,
+      "end": 55
+    },
+    {
+      "type": "Line",
+      "value": " marker",
+      "start": 77,
+      "end": 86
+    }
+  ],
+  "diagnostics": []
+}

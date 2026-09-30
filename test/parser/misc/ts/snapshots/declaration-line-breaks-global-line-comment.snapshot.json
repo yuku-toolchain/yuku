@@ -1,0 +1,73 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 102,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSModuleDeclaration",
+        "start": 56,
+        "end": 101,
+        "id": {
+          "type": "Identifier",
+          "start": 64,
+          "end": 70,
+          "name": "global",
+          "decorators": [],
+          "optional": false,
+          "typeAnnotation": null
+        },
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 81,
+          "end": 101,
+          "body": [
+            {
+              "type": "TSInterfaceDeclaration",
+              "start": 83,
+              "end": 99,
+              "id": {
+                "type": "Identifier",
+                "start": 93,
+                "end": 96,
+                "name": "Foo",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "typeParameters": null,
+              "extends": [],
+              "body": {
+                "type": "TSInterfaceBody",
+                "start": 97,
+                "end": 99,
+                "body": []
+              },
+              "declare": false
+            }
+          ]
+        },
+        "kind": "global",
+        "declare": true,
+        "global": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks inside global augmentation heads",
+      "start": 0,
+      "end": 55
+    },
+    {
+      "type": "Line",
+      "value": " marker",
+      "start": 71,
+      "end": 80
+    }
+  ],
+  "diagnostics": []
+}

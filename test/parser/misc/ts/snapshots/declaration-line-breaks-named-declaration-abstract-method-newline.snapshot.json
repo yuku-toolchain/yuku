@@ -1,0 +1,156 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 109,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 57,
+        "end": 108,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 75,
+          "name": "Foo",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 76,
+          "end": 108,
+          "body": [
+            {
+              "type": "TSAbstractMethodDefinition",
+              "start": 78,
+              "end": 106,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 87,
+                "end": 93,
+                "name": "method",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 93,
+                "end": 106,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 97,
+                    "end": 101,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 98,
+                      "end": 101,
+                      "typeAnnotation": {
+                        "type": "TSTypeReference",
+                        "start": 100,
+                        "end": 101,
+                        "typeName": {
+                          "type": "Identifier",
+                          "start": 100,
+                          "end": 101,
+                          "name": "T",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "typeArguments": null
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": null,
+                "expression": false,
+                "typeParameters": {
+                  "type": "TSTypeParameterDeclaration",
+                  "start": 93,
+                  "end": 96,
+                  "params": [
+                    {
+                      "type": "TSTypeParameter",
+                      "start": 94,
+                      "end": 95,
+                      "name": {
+                        "type": "Identifier",
+                        "start": 94,
+                        "end": 95,
+                        "name": "T",
+                        "decorators": [],
+                        "typeAnnotation": null,
+                        "optional": false
+                      },
+                      "constraint": null,
+                      "default": null,
+                      "in": false,
+                      "out": false,
+                      "const": false
+                    }
+                  ]
+                },
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 102,
+                  "end": 105,
+                  "typeAnnotation": {
+                    "type": "TSTypeReference",
+                    "start": 104,
+                    "end": 105,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 104,
+                      "end": 105,
+                      "name": "T",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": true,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " accepts line breaks before modified declaration names",
+      "start": 0,
+      "end": 56
+    }
+  ],
+  "diagnostics": []
+}
