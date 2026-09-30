@@ -24,7 +24,7 @@
     "test:ast": "bun test test/ast",
     "test:analyzer": "bun test test/analyzer",
     "test:wasm": "bun test test/wasm",
-    "test:runtime": "bun build test/runtime/smoke.ts --target=node --packages=external --outfile=zig-out/runtime-smoke.mjs && node zig-out/runtime-smoke.mjs",
+    "test:runtime": "bun build ./test/runtime/smoke.ts --target=node --packages=external --outfile=zig-out/runtime-smoke.mjs && node zig-out/runtime-smoke.mjs",
     "test:sourcemap": "bun test/sourcemap/run.ts",
     "test:tools": "zig build test-tools",
     "test:fuzz": "zig build fuzz",
