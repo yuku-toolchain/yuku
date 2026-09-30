@@ -1,5 +1,8 @@
 import { expect, test } from "bun:test";
-import { deepChains, gen } from "./helpers";
+import { parse, type ParseOptions } from "yuku-parser";
+import { generate, type GenerateOptions } from "yuku-codegen";
+import { astDiffPath } from "../ast-helpers-for-test";
+import { deepChains, gen, INSTANTIATIONS } from "./helpers";
 
 test("array holes keep their elisions", () => {
   expect(
@@ -167,8 +170,28 @@ test("an arrow's lone type parameter keeps a trailing comma", () => {
 
 test("compact output keeps a type argument closer apart from `>` and `=` operators", () => {
   expect(
-    gen(`f<T> == x;\nf<T> >= x;\nf<T> >>> x;\na.b<T> === c;`, { format: "compact" }),
-  ).toMatchInlineSnapshot(`"f<T> ==x;f<T> >=x;f<T> >>>x;a.b<T> ===c"`);
+    gen(`f<T> == x;\nx as A<T> > y;\nx as A<T> >= y;\na.b<T> === c;`, { format: "compact" }),
+  ).toMatchInlineSnapshot(`"f<T> ==x;x as A<T> >y;x as A<T> >=y;a.b<T> ===c"`);
+});
+
+test("an instantiation expression keeps the parens that end its type arguments", () => {
+  // each case prints as written from a tree without parens. compact and minified output reparse
+  // to the same tree and print the same again, and stripped output parses as JavaScript
+  const parseOptions: ParseOptions = { lang: "ts", preserveParens: false };
+  const layouts: GenerateOptions[] = [{ format: "compact" }, { minify: true }];
+  for (const source of INSTANTIATIONS) {
+    expect(gen(source, {}, "input.ts", { preserveParens: false })).toBe(source);
+    const { program } = parse(source, parseOptions);
+    for (const options of layouts) {
+      const code = generate(program, options).code;
+      const reparsed = parse(code, parseOptions);
+      expect(reparsed.diagnostics, code).toEqual([]);
+      expect(astDiffPath(program, reparsed.program), code).toBeNull();
+      expect(generate(reparsed.program, options).code, code).toBe(code);
+    }
+    const stripped = generate(program, { strip: true }).code;
+    expect(parse(stripped, { lang: "js" }).diagnostics, stripped).toEqual([]);
+  }
 });
 
 test("each switch case statement starts on its own line, and compact keeps them inline", () => {
@@ -208,6 +231,7 @@ test("each switch case statement starts on its own line, and compact keeps them 
 test("chains past the recursion budget print as written", () => {
   for (const { source, lang } of deepChains()) {
     expect(gen(source, {}, `input.${lang}`)).toBe(source);
+    expect(gen(source, {}, `input.${lang}`, { preserveParens: false })).toBe(source);
   }
 });
 

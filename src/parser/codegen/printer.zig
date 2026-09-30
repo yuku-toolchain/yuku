@@ -95,6 +95,8 @@ const Ctx = struct {
     prec: u8 = Precedence.Lowest,
     no_in: bool = false,
     no_call: bool = false,
+    // the next token would change how TypeScript reads a trailing `f<T>`
+    no_instantiation: bool = false,
     no_jsx_tag: bool = false,
     tagged: bool = false,
     item: bool = false,
@@ -478,7 +480,11 @@ const Printer = struct {
         return switch (tag) {
             .binary_expression => .{
                 .idx = node.left,
-                .ctx = .{ .prec = binaryLeftPrecedence(self.tree, node.*), .no_in = ctx.no_in },
+                .ctx = .{
+                    .prec = binaryLeftPrecedence(self.tree, node.*),
+                    .no_in = ctx.no_in,
+                    .no_instantiation = !canFollowTypeArguments(node.operator),
+                },
             },
             .logical_expression => .{
                 .idx = node.left,
@@ -491,19 +497,32 @@ const Printer = struct {
                     .no_in = ctx.no_in,
                 },
             },
+            // TypeScript rejects `f<T>?.x`, and minify prints `?.["x"]` as `?.x`
             .member_expression => .{
                 .idx = node.object,
-                .ctx = .{ .prec = Precedence.Call, .no_call = ctx.no_call },
+                .ctx = .{
+                    .prec = Precedence.Call,
+                    .no_call = ctx.no_call,
+                    .no_instantiation = true,
+                },
             },
-            .call_expression => .{ .idx = node.callee, .ctx = .{ .prec = Precedence.Call } },
+            // `f<T>?.()` keeps its type arguments where `f<T>()` takes them as the call's own
+            .call_expression => .{
+                .idx = node.callee,
+                .ctx = .{ .prec = Precedence.Call, .no_instantiation = !node.optional },
+            },
             .tagged_template_expression => .{
                 .idx = node.tag,
-                .ctx = .{ .prec = Precedence.Call, .no_call = ctx.no_call },
+                .ctx = .{
+                    .prec = Precedence.Call,
+                    .no_call = ctx.no_call,
+                    .no_instantiation = true,
+                },
             },
             .chain_expression => .{ .idx = node.expression, .ctx = ctx },
             .ts_non_null_expression, .ts_instantiation_expression => .{
                 .idx = node.expression,
-                .ctx = .{ .prec = Precedence.Postfix },
+                .ctx = .{ .prec = Precedence.Postfix, .no_instantiation = true },
             },
             .ts_as_expression, .ts_satisfies_expression => .{
                 .idx = node.expression,
@@ -537,7 +556,11 @@ const Printer = struct {
                     try self.out.writeStr(op);
                     try self.out.space();
                 }
-                try self.emitExpr(node.right, .{ .prec = right_min, .no_in = ctx.no_in });
+                try self.emitExpr(node.right, .{
+                    .prec = right_min,
+                    .no_in = ctx.no_in,
+                    .no_instantiation = ctx.no_instantiation,
+                });
             },
             .logical_expression => {
                 const p: u8 = node.operator.toToken().precedence();
@@ -659,6 +682,8 @@ const Printer = struct {
     }
 
     inline fn needsParens(self: *const Self, idx: NodeIndex, ctx: Ctx) bool {
+        // anything ranked below relational wraps, so only operators above it pass the flag on
+        if (ctx.no_instantiation) std.debug.assert(ctx.prec >= Precedence.Relational);
         if (self.out.lead == .none and ctx.prec <= Precedence.Comma and
             !ctx.no_call and !ctx.no_in) return false;
 
@@ -689,6 +714,7 @@ const Printer = struct {
             .call_expression, .import_expression, .chain_expression => return true,
             else => {},
         };
+        if (ctx.no_instantiation and data == .ts_instantiation_expression) return true;
         if (ctx.prec >= Precedence.Call and data == .chain_expression) return true;
 
         if (ctx.no_in and data == .binary_expression and
@@ -1300,11 +1326,14 @@ const Printer = struct {
         try self.emitExpr(e.alternate, .{ .prec = Precedence.Assignment, .no_in = ctx.no_in });
     }
 
-    fn emit_unary_expression(self: *Self, e: *const ast.UnaryExpression) Error!void {
+    fn emit_unary_expression(self: *Self, e: *const ast.UnaryExpression, ctx: Ctx) Error!void {
         const op = e.operator.toString();
         try self.out.writeStr(op);
         if (utils.isWordOp(op)) try self.out.writeByte(' ');
-        try self.emitExpr(e.argument, .{ .prec = Precedence.Unary });
+        try self.emitExpr(e.argument, .{
+            .prec = Precedence.Unary,
+            .no_instantiation = ctx.no_instantiation,
+        });
     }
 
     fn emit_update_expression(self: *Self, e: *const ast.UpdateExpression) Error!void {
@@ -1430,14 +1459,21 @@ const Printer = struct {
 
     fn emit_new_expression(self: *Self, e: *const ast.NewExpression) Error!void {
         try self.out.writeStr("new ");
-        try self.emitExpr(e.callee, .{ .prec = Precedence.New, .no_call = true });
+        try self.emitExpr(e.callee, .{
+            .prec = Precedence.New,
+            .no_call = true,
+            .no_instantiation = true,
+        });
         try self.emit(e.type_arguments);
         try self.printArgList(e.arguments);
     }
 
-    fn emit_await_expression(self: *Self, e: *const ast.AwaitExpression) Error!void {
+    fn emit_await_expression(self: *Self, e: *const ast.AwaitExpression, ctx: Ctx) Error!void {
         try self.out.writeStr("await ");
-        try self.emitExpr(e.argument, .{ .prec = Precedence.Unary });
+        try self.emitExpr(e.argument, .{
+            .prec = Precedence.Unary,
+            .no_instantiation = ctx.no_instantiation,
+        });
     }
 
     fn emit_yield_expression(self: *Self, e: *const ast.YieldExpression, ctx: Ctx) Error!void {
@@ -1901,7 +1937,10 @@ const Printer = struct {
         try self.emit(c.type_parameters);
         if (c.super_class != .null) {
             try self.out.writeStr(" extends ");
-            try self.emitExpr(c.super_class, .{ .prec = Precedence.Call });
+            try self.emitExpr(c.super_class, .{
+                .prec = Precedence.Call,
+                .no_instantiation = true,
+            });
             try self.emit(c.super_type_arguments);
         }
         if (!self.options.strip) {
@@ -2729,13 +2768,16 @@ const Printer = struct {
         try self.emit(d.body);
     }
 
-    fn emit_ts_type_assertion(self: *Self, e: *const ast.TSTypeAssertion) Error!void {
+    fn emit_ts_type_assertion(self: *Self, e: *const ast.TSTypeAssertion, ctx: Ctx) Error!void {
         try self.out.writeByte('<');
         // `<<T>` would re-lex as `<<`
         if (typeStartsWithLeftAngle(self.tree, e.type_annotation)) try self.out.writeByte(' ');
         try self.emit(e.type_annotation);
         try self.out.writeByte('>');
-        try self.emitExpr(e.expression, .{ .prec = Precedence.Unary });
+        try self.emitExpr(e.expression, .{
+            .prec = Precedence.Unary,
+            .no_instantiation = ctx.no_instantiation,
+        });
     }
 
     fn emit_ts_export_assignment(self: *Self, e: *const ast.TSExportAssignment) Error!void {
@@ -3035,6 +3077,22 @@ fn binaryLeftPrecedence(tree: *const Tree, e: ast.BinaryExpression) u8 {
     const op = e.operator.toString();
     if (op[0] == '<' and endsWithTsCast(tree, e.left)) return Precedence.Grouping;
     return p;
+}
+
+// TypeScript reads `f<T>` as comparisons before `<`, `>`, `+`, or `-`, and its scanner starts
+// `>=` and `>>` with `>`
+fn canFollowTypeArguments(operator: ast.BinaryOperator) bool {
+    return switch (operator) {
+        .less_than,
+        .greater_than,
+        .greater_than_or_equal,
+        .right_shift,
+        .unsigned_right_shift,
+        .add,
+        .subtract,
+        => false,
+        else => true,
+    };
 }
 
 const chain_stack_bytes_max = 256 * 1024;

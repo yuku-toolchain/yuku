@@ -108,9 +108,11 @@ const LEAD_SPACED_OPERATOR = table(
 const CTX_PREC = 0x1f;
 const CTX_NO_IN = 1 << 5;
 const CTX_NO_CALL = 1 << 6;
-const CTX_NO_JSX_TAG = 1 << 7;
-const CTX_TAGGED = 1 << 8;
-const CTX_ITEM = 1 << 9;
+// the next token would change how TypeScript reads a trailing `f<T>`
+const CTX_NO_INSTANTIATION = 1 << 7;
+const CTX_NO_JSX_TAG = 1 << 8;
+const CTX_TAGGED = 1 << 9;
+const CTX_ITEM = 1 << 10;
 
 const TPREC_TRAILING = 1;
 const TPREC_UNION = 2;
@@ -551,7 +553,8 @@ class Printer extends Output {
   needsParens(node: Node, type: string, ctx: number): boolean {
     const prec = ctx & CTX_PREC;
     if (this.lead !== LEAD_NONE && this.leadNeedsParens(node, type)) return true;
-    if ((ctx & (CTX_NO_CALL | CTX_NO_IN)) !== 0 && this.flagNeedsParens(node, type, ctx)) {
+    const flags = CTX_NO_CALL | CTX_NO_IN | CTX_NO_INSTANTIATION;
+    if ((ctx & flags) !== 0 && this.flagNeedsParens(node, type, ctx)) {
       return true;
     }
     if (prec <= PREC_ASSIGNMENT) return prec === PREC_ASSIGNMENT && type === "SequenceExpression";
@@ -592,6 +595,7 @@ class Printer extends Output {
           return true;
       }
     }
+    if ((ctx & CTX_NO_INSTANTIATION) !== 0 && type === "TSInstantiationExpression") return true;
     return (
       (ctx & CTX_NO_IN) !== 0 &&
       type === "BinaryExpression" &&
@@ -622,14 +626,14 @@ class Printer extends Output {
     switch (type) {
       case "MemberExpression": {
         const e = node as T.MemberExpression;
-        this.emitLinkHead(e.object, PREC_CALL | (ctx & CTX_NO_CALL));
+        this.emitLinkHead(e.object, PREC_CALL | (ctx & CTX_NO_CALL) | CTX_NO_INSTANTIATION);
         return this.emitMemberSuffix(e);
       }
       case "Literal":
         return this.emitLiteral(node as T.Literal);
       case "CallExpression": {
         const e = node as T.CallExpression;
-        this.emitLinkHead(e.callee, PREC_CALL);
+        this.emitLinkHead(e.callee, PREC_CALL | (e.optional ? 0 : CTX_NO_INSTANTIATION));
         return this.emitCallSuffix(e);
       }
       case "BlockStatement":
@@ -645,7 +649,10 @@ class Printer extends Output {
         return this.emitVariableDeclaration(node as T.VariableDeclaration);
       case "BinaryExpression": {
         const e = node as T.BinaryExpression;
-        const headCtx = binaryLeftPrecedence(e) | (ctx & CTX_NO_IN);
+        const headCtx =
+          binaryLeftPrecedence(e) |
+          (ctx & CTX_NO_IN) |
+          (canFollowTypeArguments(e.operator) ? 0 : CTX_NO_INSTANTIATION);
         this.emitLinkHead(e.left as Node, headCtx);
         return this.emitBinarySuffix(e, ctx);
       }
@@ -660,7 +667,7 @@ class Printer extends Output {
       case "IfStatement":
         return this.emitIfStatement(node as T.IfStatement);
       case "UnaryExpression":
-        return this.emitUnaryExpression(node as T.UnaryExpression);
+        return this.emitUnaryExpression(node as T.UnaryExpression, ctx);
       case "LogicalExpression": {
         const e = node as T.LogicalExpression;
         const headCtx =
@@ -753,7 +760,7 @@ class Printer extends Output {
         return this.emitValue(node.argument);
       case "AwaitExpression":
         this.writeKeyword("await");
-        return this.emitExpr(node.argument, PREC_UNARY);
+        return this.emitExpr(node.argument, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
       case "YieldExpression":
         return this.emitYieldExpression(node, ctx);
       case "ImportExpression":
@@ -949,7 +956,11 @@ class Printer extends Output {
   linkHeadCtx(node: Node, ctx: number): number {
     switch (node.type) {
       case "BinaryExpression":
-        return binaryLeftPrecedence(node) | (ctx & CTX_NO_IN);
+        return (
+          binaryLeftPrecedence(node) |
+          (ctx & CTX_NO_IN) |
+          (canFollowTypeArguments(node.operator) ? 0 : CTX_NO_INSTANTIATION)
+        );
       case "LogicalExpression":
         return (
           this.logicalOperandPrecedence(
@@ -959,16 +970,18 @@ class Printer extends Output {
           ) |
           (ctx & CTX_NO_IN)
         );
+      // TypeScript rejects `f<T>?.x`, and minify prints `?.["x"]` as `?.x`
       case "MemberExpression":
       case "TaggedTemplateExpression":
-        return PREC_CALL | (ctx & CTX_NO_CALL);
+        return PREC_CALL | (ctx & CTX_NO_CALL) | CTX_NO_INSTANTIATION;
+      // `f<T>?.()` keeps its type arguments where `f<T>()` takes them as the call's own
       case "CallExpression":
-        return PREC_CALL;
+        return PREC_CALL | (node.optional ? 0 : CTX_NO_INSTANTIATION);
       case "ChainExpression":
         return ctx;
       case "TSNonNullExpression":
       case "TSInstantiationExpression":
-        return PREC_POSTFIX;
+        return PREC_POSTFIX | CTX_NO_INSTANTIATION;
       case "TSAsExpression":
       case "TSSatisfiesExpression":
         return PREC_RELATIONAL | (ctx & CTX_NO_IN);
@@ -1021,7 +1034,7 @@ class Printer extends Output {
       if (extendsAngle && this.lastByte() === CHAR_GT) this.writeToken(" ");
       this.writeToken(op);
     }
-    this.emitExpr(e.right, (op === "**" ? p : p + 1) | (ctx & CTX_NO_IN));
+    this.emitExpr(e.right, (op === "**" ? p : p + 1) | (ctx & (CTX_NO_IN | CTX_NO_INSTANTIATION)));
   }
 
   emitLogicalSuffix(e: T.LogicalExpression, ctx: number): void {
@@ -1480,10 +1493,10 @@ class Printer extends Output {
     this.emitExpr(e.alternate, PREC_ASSIGNMENT | noIn);
   }
 
-  emitUnaryExpression(e: T.UnaryExpression): void {
+  emitUnaryExpression(e: T.UnaryExpression, ctx: number): void {
     if (isWordOp(e.operator)) this.writeKeyword(e.operator);
     else this.writeToken(e.operator);
-    this.emitExpr(e.argument, PREC_UNARY);
+    this.emitExpr(e.argument, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
   }
 
   emitUpdateExpression(e: T.UpdateExpression): void {
@@ -1608,7 +1621,7 @@ class Printer extends Output {
 
   emitNewExpression(e: T.NewExpression): void {
     this.writeKeyword("new");
-    this.emitExpr(e.callee, PREC_NEW | CTX_NO_CALL);
+    this.emitExpr(e.callee, PREC_NEW | CTX_NO_CALL | CTX_NO_INSTANTIATION);
     this.emit(e.typeArguments);
     this.printArgList(e.arguments);
   }
@@ -2045,7 +2058,7 @@ class Printer extends Output {
     this.emit(c.typeParameters);
     if (c.superClass != null) {
       this.writeKeyword(" extends");
-      this.emitExpr(c.superClass, PREC_CALL);
+      this.emitExpr(c.superClass, PREC_CALL | CTX_NO_INSTANTIATION);
       this.emit(c.superTypeArguments);
     }
     if (!this.strip && c.implements != null && c.implements.length > 0) {
@@ -2550,7 +2563,7 @@ class Printer extends Output {
         if (typeStartsWithLeftAngle(node.typeAnnotation)) this.writeToken(" ");
         this.emit(node.typeAnnotation);
         this.writeToken(">");
-        return this.emitExpr(node.expression, PREC_UNARY);
+        return this.emitExpr(node.expression, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
       case "TSExportAssignment":
         this.writeToken("export");
         this.printEq();
@@ -2922,6 +2935,22 @@ function endsWithTsCast(node: Node): boolean {
     }
     return false;
   }
+}
+
+// TypeScript reads `f<T>` as comparisons before `<`, `>`, `+`, or `-`, and its scanner starts
+// `>=` and `>>` with `>`
+function canFollowTypeArguments(operator: string): boolean {
+  switch (operator) {
+    case "<":
+    case ">":
+    case ">=":
+    case ">>":
+    case ">>>":
+    case "+":
+    case "-":
+      return false;
+  }
+  return true;
 }
 
 // `x as T < y` would re-lex as the type arguments `T<y>`

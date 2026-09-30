@@ -1,5 +1,5 @@
-// Prints every corpus file and the deep chains with the Zig and the JS printer and compares
-// code, mappings, and diagnostics byte for byte.
+// Prints every corpus file, the deep chains, and the instantiation expressions with the Zig and
+// the JS printer and compares code, mappings, and diagnostics byte for byte.
 //
 //   bun test/codegen/conformance.ts [plan...] [--file <path>] [--show <n>]
 
@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { parse, sourceTypeFromPath, type ParseOptions } from "yuku-parser";
 import { generate, type GenerateOptions } from "yuku-codegen";
 import { corpusFiles, type CorpusFile } from "../corpus";
-import { deepChains } from "./helpers";
+import { deepChains, INSTANTIATIONS } from "./helpers";
 
 const REFERENCE = join(
   "zig-out",
@@ -136,13 +136,20 @@ export interface Input extends CorpusFile {
   source?: string;
 }
 
-/** Every corpus file and the deep chains. */
+/** Every corpus file, the deep chains, and the instantiation expressions. */
 export function conformanceInputs(): Input[] {
   const chains = deepChains().map(({ source, lang }, i) => {
     const path = `chain-${i}.${lang}`;
     return { path, relative: path, lang, sourceType: sourceTypeFromPath(path), source };
   });
-  return [...corpusFiles(), ...chains];
+  const instantiations: Input = {
+    path: "instantiations.ts",
+    relative: "instantiations.ts",
+    lang: "ts",
+    sourceType: "module",
+    source: INSTANTIATIONS.join("\n"),
+  };
+  return [...corpusFiles(), ...chains, instantiations];
 }
 
 /** Prints `files` with both printers under `plan`. */
