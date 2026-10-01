@@ -4,6 +4,14 @@ Scopes, bindings, resolved references, closures, and cross-file linking for Java
 
 It does the work of `eslint-scope` or `@typescript-eslint/scope-manager` and a cross-file resolver, up to 15× faster per file.
 
+It is as accurate as it is fast, tested on more than 50,000 files, including the TypeScript compiler, Vue, and three.js.
+
+- 1.2 million references resolve to the same declarations as in the TypeScript checker.
+- 1.6 million references and declarations match `@typescript-eslint/scope-manager`, including which references write.
+- 65,000 imports and exports across eight real codebases link as in a TypeScript program.
+
+[Read how it is tested →](https://yuku.fyi/testing/#semantic-analysis)
+
 - [Install](#install)
 - [Usage](#usage)
 - [Analyzer](#analyzer)

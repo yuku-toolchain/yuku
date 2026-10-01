@@ -27,11 +27,11 @@ Every parseable file in the suite is printed under several option sets. Each out
 
 ## [Semantic analysis]($section.id('semantic-analysis'))
 
-Every file in the suite is analyzed, along with eight real codebases pinned to a commit: the TypeScript compiler, Vue, Svelte, Preact, three.js, Zod, date-fns, and Excalidraw. Two independent oracles check the result. The TypeScript checker must resolve every reference, in values and types alike, to the same declaration Yuku does, and [@typescript-eslint/scope-manager](https://typescript-eslint.io/packages/scope-manager) must agree on every runtime reference, write, and declaration, over a million comparisons each.
+Every file in the suite is analyzed, along with eight real codebases pinned to a commit: the TypeScript compiler, Vue, Svelte, Preact, three.js, Zod, date-fns, and Excalidraw. The TypeScript checker must resolve every reference, values and types alike, to the same declaration Yuku does, and [@typescript-eslint/scope-manager](https://typescript-eslint.io/packages/scope-manager) must agree on every runtime reference, write, and declaration, over a million comparisons each.
 
-Each codebase is also linked as one project and compared with a TypeScript program over it: where every import lands, the binding behind every re-export, the names every module exports, and where every relative specifier resolves.
+Each codebase is also linked as one project, and every import, re-export, exported name, and relative path must resolve as in a TypeScript program.
 
-Where an oracle models the language differently, the answer is normalized by a rule, such as a name inside `with`, which only resolves at runtime. The handful of files that still differ are listed with their reason, and a listed file that starts agreeing fails the run, so the list never outlives its reasons.
+A rule normalizes what an oracle models differently, such as a name inside `with`, which resolves only at runtime. The few files that still differ are listed with their reason, and a listed file that starts agreeing fails the run.
 
 ## [Fuzzing]($section.id('fuzzing'))
 
