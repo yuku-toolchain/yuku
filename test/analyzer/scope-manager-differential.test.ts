@@ -1,9 +1,9 @@
-// Compares runtime resolutions, writes, and declarations with @typescript-eslint/scope-manager.
+// Compares references, writes, declarations, and scopes with @typescript-eslint/scope-manager.
 
 import { describe, expect, test } from "bun:test";
-import { analyze } from "@typescript-eslint/scope-manager";
+import { analyze, type Scope as TheirScope } from "@typescript-eslint/scope-manager";
 import { parse as tsParse } from "@typescript-eslint/typescript-estree";
-import { analyze as analyzeFile, type Binding, type Module } from "yuku-analyzer";
+import { analyze as analyzeFile, type Binding, type Module, type Scope } from "yuku-analyzer";
 import type { Node, SourceLang, SourceType } from "yuku-parser";
 import { corpusFiles, projectFiles, type CorpusFile } from "../corpus";
 import { differential, type Comparison, type Known } from "./utils/differential";
@@ -28,7 +28,7 @@ function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) 
   const tree = tsParse(source, { range: true, sourceType, jsx, allowInvalidAST: false });
   const manager = analyze(tree, { sourceType });
   const references = new Map<number, Resolution>();
-  const declarations = new Set<number>();
+  const declarations = new Map<number, string[]>();
   for (const scope of manager.scopes) {
     for (const reference of scope.references) {
       const starts = (reference.resolved?.defs ?? [])
@@ -49,11 +49,43 @@ function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) 
         if (def.type === "TSEnumMemberName" && !named) continue;
         const isThis = name.type === "Identifier" && name.name === "this";
         if (def.type === "Parameter" && isThis) continue;
-        declarations.add(position);
+        const owners = declarations.get(position) ?? [];
+        owners.push(theirOwner(scope));
+        declarations.set(position, owners);
       }
     }
   }
   return { references, declarations };
+}
+
+function theirOwner(scope: TheirScope): string {
+  if (scope.block.type === "Program") return scope.type;
+  if (scope.block.type === "TSModuleDeclaration" && scope.block.kind === "global") return "global";
+  const upper = scope.upper;
+  if (scope.type === "block" && upper?.type === "catch" && upper.block.body === scope.block) {
+    return String(upper.block.range[0]);
+  }
+  return String(scope.block.range[0]);
+}
+
+const BODIES = new Set(["TSModuleBlock", "TSEnumBody"]);
+
+function ownerOf(module: Module, scope: Scope): string {
+  const node = scope.node;
+  if (node.type === "Program") return scope.kind;
+  const parent = module.parentOf(node)!;
+  const isBody =
+    scope.kind === "functionBody" || BODIES.has(node.type) || parent.type === "CatchClause";
+  return String((isBody ? parent : node).start);
+}
+
+function declarationOwner(module: Module, binding: Binding, node: Node): string | null {
+  if (module.parentOf(module.parentOf(node)!)?.type === "TSInferType") return null;
+  if (binding.scope.kind !== "tsModule") return ownerOf(module, binding.scope);
+  for (const ancestor of module.ancestors(node)) {
+    if (ancestor.type === "TSModuleBlock") return String(module.parentOf(ancestor)!.start);
+  }
+  return ownerOf(module, binding.scope);
 }
 
 // `B` in `namespace A.B {}`, `s` in `[s: string]: T`, `N` in `export as namespace N`
@@ -107,17 +139,22 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
     }
   }
 
-  const ours = new Set<number>();
+  const ours = new Map<number, string | null>();
   for (const binding of module.bindings) {
     for (const node of binding.declarations) {
-      if (!isUnmodeled(module, node)) ours.add(node.start);
+      if (!isUnmodeled(module, node)) ours.set(node.start, declarationOwner(module, binding, node));
     }
   }
-  for (const position of theirs.declarations) {
+  for (const [position, owners] of theirs.declarations) {
     compared++;
-    if (!ours.has(position)) mismatches.push(`declaration@${position}: scope-manager only`);
+    const owner = ours.get(position);
+    if (owner === undefined) {
+      mismatches.push(`declaration@${position}: scope-manager only`);
+    } else if (owner !== null && !owners.includes(owner)) {
+      mismatches.push(`declaration@${position}: yuku scope ${owner}, scope-manager ${owners}`);
+    }
   }
-  for (const position of ours) {
+  for (const position of ours.keys()) {
     if (!theirs.declarations.has(position)) mismatches.push(`declaration@${position}: yuku only`);
   }
   return { compared, mismatches };
@@ -136,6 +173,12 @@ const KNOWN: Known = {
     `${SUITE}/9c854a266a3d8cc0.module.ts`,
   ],
   "scope-manager merges a parameter with a same-named body var": [`${SUITE}/f2131ad89bc9a8ba.ts`],
+  "scope-manager scopes a declaration in statement position apart from tsc": [
+    `${SUITE}/4d85c34e00391b61.ts`,
+  ],
+  "a var and a function share a name in one catch block, which ECMAScript rejects": [
+    `${SUITE}/a81cfbc1c9405b6b.ts`,
+  ],
 };
 
 type Snippet = [name: string, source: string, sourceType?: SourceType, lang?: SourceLang];
@@ -181,6 +224,13 @@ const SNIPPETS: Snippet[] = [
   ],
   ["switch discriminants resolve outside", `let x = 1; switch (x) { case 1: let x = 2; }`],
   ["signature parameters declare", `type F = (a: number, b: string) => void;`, "script", "ts"],
+  [
+    "declarations land in the same scopes",
+    `function f(a, d = 1) { var x; { let y; var z; } try {} catch (e) { let c; } }
+    namespace N { export const n = 1; } enum E { A } const g = function named() {};`,
+    "script",
+    "ts",
+  ],
 ];
 
 describe("resolution agrees with @typescript-eslint/scope-manager", () => {
