@@ -10,7 +10,7 @@
 - [Semantic Analysis](https://yuku.fyi/parser/semantic/): Scopes, symbols, resolved references, early errors, and module records for a parsed tree.
 - [Traverse](https://yuku.fyi/parser/traverse/): Walk and transform a tree with typed visitor hooks, in four modes from plain visits to full semantics.
 - [Codegen](https://yuku.fyi/parser/codegen/): Print a tree back to JavaScript or TypeScript source, with type stripping, minification, and source maps.
-- [Testing](https://yuku.fyi/testing/): How Yuku is tested: the parser test suite, exact AST validation, codegen conformance, and fuzzing.
+- [Testing](https://yuku.fyi/testing/): How Yuku is tested: the parser test suite, exact AST validation, codegen conformance, semantic analysis against TypeScript, and fuzzing.
 - [Security](https://yuku.fyi/security/): How to report a vulnerability in Yuku, and the security practices behind the toolchain and its releases.
 
 ## Resources

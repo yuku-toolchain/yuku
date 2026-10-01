@@ -15,7 +15,7 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 **Fast.** Data-oriented from the ground up, with a flat AST and one arena per parse.
 
-**Small.** A fraction of the install size of other parsers, see [Size](#size).
+**Small.** A fraction of the install size of the alternatives, see [Size](#size).
 
 **Zero dependencies.** Pure Zig, easy to build, embed, and cross-compile.
 

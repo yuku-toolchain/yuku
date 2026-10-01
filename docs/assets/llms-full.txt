@@ -17,7 +17,7 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 **Fast.** Data-oriented from the ground up, with a flat AST and one arena per parse.
 
-**Small.** A fraction of the install size of other parsers, see [Size](#size).
+**Small.** A fraction of the install size of the alternatives, see [Size](#size).
 
 **Zero dependencies.** Pure Zig, easy to build, embed, and cross-compile.
 
@@ -325,6 +325,8 @@ Semantic analysis turns a tree into a model of the program: every scope, symbol,
 
 It is a separate pass, so the parse stays fast and only the tools that need semantics pay for them.
 
+Across more than 50,000 files, including the TypeScript compiler, Vue, and three.js, 1.2 million references resolve to the same declarations as in the TypeScript checker, and over 500,000 declarations land in the same scopes and over a million references resolve and write as in `@typescript-eslint/scope-manager`. See [how it is tested](https://yuku.fyi/testing/#semantic-analysis).
+
 > **From JavaScript**
 >[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) brings this model to JavaScript, computed natively and queried as plain objects, with cross-file linking across a module graph. Its README documents the full API.
 
@@ -389,13 +391,13 @@ while (references.next()) |entry| {
 
 ## Scopes
 
-The scope tree follows the specification exactly. A catch clause shares its scope with its body, a named function or class expression gets a scope of its own for the name, every function body scopes its `let` and `const` apart from the parameters as TypeScript does, and a decorator sees the scope around its class. Strict mode flows from modules, classes, and `"use strict"` directives.
+The scope tree follows the specification exactly. A catch clause shares its scope with its body, a named function or class expression gets a scope of its own for the name, every function body scopes its `let` and `const` apart from the parameters as TypeScript does, a class decorator sees the scope around its class, and a member decorator the class scope. Strict mode flows from modules, classes, and `"use strict"` directives.
 
 ## Symbols
 
 A symbol's `flags` record its declaration kinds, such as `function_scoped_var`, `block_scoped_var`, `function`, `class`, `interface`, `regular_enum`, and `import`, and its modifiers, such as `const_var`, `exported`, and `ambient`. Masks answer a category in one call, as `flags.intersects(Symbol.value_space)` does, with `variable`, `any_import`, `value_space`, `type_space`, and `namespace_space`. `flags.visibleIn(space)` tells whether a reference in a space can bind to it.
 
-One rule decides both merging and redeclaration. Each declaration kind carries an exclusion mask in `Symbol.Excludes`, and a new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way.
+One rule decides both merging and redeclaration. Each declaration kind carries an exclusion mask in `Symbol.Excludes`, and a new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way. A namespace or enum declared in several blocks merges too, and each block sees the exports or members of the others.
 
 ## Declaration spaces
 
@@ -421,7 +423,7 @@ const records = try parser.semantic.module_record.collect(&tree, &semantic);
 // records.imports, records.exports, records.flags
 ```
 
-An import has a `kind`, `name`, `symbol`, `specifier`, `type_only`, `phase`, and `node`. Its kind is `named`, `namespace`, `side_effect`, `import_equals`, `dynamic`, or `require`, and dynamic `import()` and `require()` calls count when their specifier is a string literal. An export has a `kind`, `name`, `symbol`, `from_name`, `specifier`, `type_only`, and `node`, and its kind is `named`, `re_export`, `namespace`, `star`, `equals`, or `global`. CommonJS exports have no static shape, so `records.flags` records whether the file uses `require`, `module`, `exports`, or `import.meta`.
+An import has a `kind`, `name`, `symbol`, `specifier`, `type_only`, `phase`, and `node`. Its kind is `named`, `namespace`, `side_effect`, `import_equals`, `dynamic`, or `require`, and dynamic `import()` and `require()` calls count when their specifier is a string literal. An export has a `kind`, `name`, `symbol`, `from_name`, `specifier`, `type_only`, and `node`, and its kind is `named`, `re_export`, `namespace`, `star`, `equals`, or `global`. As in TypeScript, a declaration file that is a module but has no export statement exports every declaration but its imports. CommonJS exports have no static shape, so `records.flags` records whether the file uses `require`, `module`, `exports`, or `import.meta`.
 
 # Traverse
 
@@ -682,7 +684,7 @@ const yuku = b.dependency("yuku", .{ .@"codegen-source-maps" = false });
 
 Source: https://yuku.fyi/testing/
 
-Yuku is tested for spec conformance, exact AST shapes, codegen soundness, and behavior under memory pressure.
+Yuku is tested for spec conformance, exact AST shapes, codegen soundness, name resolution, and behavior under memory pressure.
 
 ## The parser test suite
 
@@ -701,6 +703,12 @@ The suite runs through the npm packages built from local source, so every run ch
 ## Codegen
 
 Every parseable file in the suite is printed under several option sets. Each output must parse again, plain output must reparse to the same AST, and printing must be a fixed point with no comment lost or duplicated. The Zig and JavaScript printers must agree byte for byte, and every identifier in a source map must trace back to its original name and position.
+
+## Semantic analysis
+
+Every file in the suite is analyzed, along with eight real codebases pinned to a commit: the TypeScript compiler, Vue, Svelte, Preact, three.js, Zod, date-fns, and Excalidraw. The TypeScript checker must resolve every reference, values and types alike, to the same declaration Yuku does, and [@typescript-eslint/scope-manager](https://typescript-eslint.io/packages/scope-manager) must agree on every runtime reference and write, and on every declaration and its scope, over a million comparisons each.
+
+Each codebase is also linked as one project, and every import, re-export, exported name, and relative path must resolve as in a TypeScript program.
 
 ## Fuzzing
 
