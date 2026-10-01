@@ -63,7 +63,7 @@ declare const BindingFlags: {
   readonly Ambient: number;
   readonly Parameter: number;
   readonly CatchVariable: number;
-  /** Declared by `export <declaration>`. */
+  /** Declared by `export`, or implicitly in ambient code with no export statement. */
   readonly Exported: number;
   /** Declared by `export default`. */
   readonly Default: number;

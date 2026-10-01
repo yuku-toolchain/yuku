@@ -142,9 +142,7 @@ describe("TypeScript declarations", () => {
   });
 
   test("a declare namespace makes its whole body ambient", () => {
-    // ts treats everything inside an ambient context as ambient without its
-    // own declare keyword, which also exempts ambient bindings from strict
-    // reserved-word checks (`export var static` is legal here)
+    // an ambient binding skips strict reserved-word checks
     expect(summary(`declare namespace Foo { export var static: any; namespace Inner { var y; } }`))
       .toMatchInlineSnapshot(`
         "global
@@ -152,9 +150,9 @@ describe("TypeScript declarations", () => {
             Foo#0  namespace value-module ambient
             tsModule
               static#1  var ambient exported
-              Inner#2  namespace value-module ambient
+              Inner#2  namespace value-module ambient exported
               tsModule
-                y#3  var ambient"
+                y#3  var ambient exported"
       `);
   });
 });

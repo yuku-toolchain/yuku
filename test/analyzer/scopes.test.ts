@@ -150,8 +150,6 @@ describe("hoist targets", () => {
     const blockScope = module.scopes.find((s) => s.kind === "block")!;
     const v = module.bindings.find((s) => s.name === "v")!;
 
-    // the block does not own the var, its hoist target is the function scope,
-    // and the binding is declared directly in that function scope
     expect(blockScope.hoistTarget).toBe(fnScope);
     expect(v.scope).toBe(fnScope);
   });

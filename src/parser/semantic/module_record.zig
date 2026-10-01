@@ -115,6 +115,7 @@ pub fn collect(tree: *ast.Tree, sem: *const Semantic) Allocator.Error!Records {
         .default_name = try tree.addString("default"),
         // scripts bind top level names in the global scope
         .top_scope = if (tree.isModule()) .module else .root,
+        .exports_implicitly = binder.exportsImplicitly(tree),
     };
 
     for (tree.extra(tree.data(tree.root).program.body)) |statement| {
@@ -135,6 +136,7 @@ const Collector = struct {
     allocator: Allocator,
     default_name: ast.String,
     top_scope: sc.ScopeId,
+    exports_implicitly: bool,
     imports: std.ArrayList(Import) = .empty,
     exports: std.ArrayList(Export) = .empty,
     flags: Flags = .{},
@@ -156,7 +158,8 @@ const Collector = struct {
             .export_all_declaration => |decl| try self.exportAll(decl, index),
             .ts_export_assignment => |decl| try self.exportAssignment(decl, index),
             .ts_namespace_export_declaration => |decl| try self.namespaceExport(decl, index),
-            else => {},
+            // type only, as `export declare` is
+            else => if (self.exports_implicitly) try self.declarationNames(index, true),
         }
     }
 
@@ -234,7 +237,13 @@ const Collector = struct {
         decl: ast.ExportNamedDeclaration,
     ) Allocator.Error!void {
         if (decl.declaration != .null) {
-            return self.declarationNames(decl.declaration, decl.export_kind == .type);
+            const type_only = decl.export_kind == .type;
+            if (self.tree.data(decl.declaration) == .ts_import_equals_declaration) {
+                const alias = self.tree.data(decl.declaration).ts_import_equals_declaration;
+                try self.importEquals(alias, decl.declaration);
+                return self.exportLocal(alias.id, type_only or alias.import_kind == .type);
+            }
+            return self.declarationNames(decl.declaration, type_only);
         }
 
         const has_source = decl.source != .null;

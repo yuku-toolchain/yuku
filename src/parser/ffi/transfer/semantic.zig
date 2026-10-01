@@ -46,6 +46,8 @@ pub const PackedScope = extern struct {
     parent: u32,
     hoist_target: u32,
     bits: u32,
+    /// See `Semantic.next_bodies`.
+    next_body: u32,
 };
 
 pub const PackedSymbol = extern struct {
@@ -118,7 +120,7 @@ pub const EXPORT_TYPE_BIT: u5 = 3;
 comptime {
     // every entry is whole u32s, no padding to leak
     std.debug.assert(SUBHEADER_SIZE == 8 * 4);
-    std.debug.assert(SCOPE_SIZE == 4 * 4);
+    std.debug.assert(SCOPE_SIZE == 5 * 4);
     std.debug.assert(SYMBOL_SIZE == 6 * 4);
     std.debug.assert(REFERENCE_SIZE == 6 * 4);
     std.debug.assert(IMPORT_SIZE == 8 * 4);
@@ -239,13 +241,15 @@ pub fn serializeInto(
     @memcpy(buf[pos..][0..SUBHEADER_SIZE], std.mem.asBytes(&sub));
     pos += SUBHEADER_SIZE;
 
-    for (sem.scopes.list) |scope| {
+    std.debug.assert(sem.next_bodies.len == sem.scopes.list.len);
+    for (sem.scopes.list, sem.next_bodies) |scope, next_body| {
         const entry = PackedScope{
             .node = @intFromEnum(scope.node),
             .parent = @intFromEnum(scope.parent),
             .hoist_target = @intFromEnum(scope.hoist_target),
             .bits = @as(u32, @intFromEnum(scope.kind)) |
                 (@as(u32, @intFromBool(scope.flags.strict)) << SCOPE_STRICT_BIT),
+            .next_body = @intFromEnum(next_body),
         };
         @memcpy(buf[pos..][0..SCOPE_SIZE], std.mem.asBytes(&entry));
         pos += SCOPE_SIZE;

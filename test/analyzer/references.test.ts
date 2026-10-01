@@ -209,8 +209,6 @@ describe("declaration spaces", () => {
 
 describe("decorators", () => {
   test("a class decorator resolves outside the class, blind to its type parameters", () => {
-    // tc39 decorators evaluate in the scope enclosing the class, so `@dec`
-    // must reach the outer declare var even when a type parameter shadows it
     expect(summary(`declare var dec: any; @dec class C<dec> {}`)).toMatchInlineSnapshot(`
       "global
         module [strict]
@@ -222,19 +220,19 @@ describe("decorators", () => {
     `);
   });
 
-  test("a member decorator's inner functions parent outside the class", () => {
+  test("a member decorator evaluates in the class scope", () => {
     expect(summary(`const v = 1; class C { @((x) => v + x) m() {} }`)).toMatchInlineSnapshot(`
       "global
         module [strict]
           v#0  const
           C#1  class
           class "C"
+            function =>
+              x#2  param
+              v → #0
+              x → #2
             function <anonymous>
-              functionBody BlockStatement
-          function =>
-            x#2  param
-            v → #0
-            x → #2"
+              functionBody BlockStatement"
     `);
   });
 });

@@ -30,12 +30,13 @@ It reruns on every save. For a browser playground, run `bun run playground`.
 bun run test
 ```
 
-This builds everything from your Zig and runs every suite. To run a single one,
-use `test:parser`, `test:codegen`, `test:analyzer`, `test:sourcemap`,
-`test:ast`, `test:wasm`, or `test:runtime`, which runs every package with the
-`node` on your path. CI runs it on the minimum runtime, see AGENTS.md. After
-editing Zig, run `bun run build:local` and `bun run build:wasm` first so the
-suites see your change.
+This builds everything from your Zig and runs every suite, fetching the parser
+test suite and a few pinned open-source projects on the first run. To run a
+single one, use `test:parser`, `test:codegen`, `test:analyzer`,
+`test:sourcemap`, `test:ast`, `test:wasm`, or `test:runtime`, which runs every
+package with the `node` on your path. CI runs it on the minimum runtime, see
+AGENTS.md. After editing Zig, run `bun run build:local` and `bun run build:wasm`
+first so the suites see your change.
 
 ### Add a test
 

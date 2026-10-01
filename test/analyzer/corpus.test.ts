@@ -9,7 +9,7 @@ const SAMPLE_MAX = 8;
 const violations = {
   crashed: [] as string[],
   crossIndex: [] as string[],
-  resolutionScope: [] as string[],
+  resolution: [] as string[],
   nodeIdentity: [] as string[],
   scopeMatch: [] as string[],
   parentMatch: [] as string[],
@@ -19,6 +19,10 @@ const violations = {
   ordering: [] as string[],
 };
 let analyzed = 0;
+
+// resolution can differ from lookup for these
+const POSITION_DEPENDENT =
+  BindingFlags.TypeParameter | BindingFlags.Parameter | BindingFlags.FunctionScopedVariable;
 
 function note(list: string[], detail: string): void {
   if (list.length < SAMPLE_MAX) list.push(detail);
@@ -53,7 +57,7 @@ function check(path: string, source: string): void {
   let module: Module;
   try {
     module = new Analyzer().setFile(path, source);
-    // touch every section so a decode fault throws here, not later
+    // a decode fault throws here, not later
     void module.ast;
     void module.scopes;
     void module.bindings;
@@ -66,8 +70,7 @@ function check(path: string, source: string): void {
   }
   analyzed++;
 
-  // cross-index symmetry. back-references agree and the reference set
-  // partitions cleanly into resolved (owned by one binding) and unresolved
+  // back-references agree, and each reference is unresolved or owned by one binding
   let ownedReferences = 0;
   for (const binding of module.bindings) {
     for (const reference of binding.references) {
@@ -92,17 +95,16 @@ function check(path: string, source: string): void {
     note(violations.crossIndex, `${path}: partition mismatch`);
   }
 
-  // resolution soundness. a resolved binding is visible from the use site,
-  // its scope an ancestor-or-self of the reference scope
+  // resolution agrees with lookup
   for (const reference of module.references) {
-    if (reference.binding && !reference.binding.scope.contains(reference.scope)) {
-      note(violations.resolutionScope, `${path}: ${reference.name} resolves out of scope`);
-    }
+    const { name, scope, space } = reference;
+    const expected = module.lookup(name, { from: scope, space });
+    if (expected === reference.binding || name === "arguments") continue;
+    if (expected !== null && expected.has(POSITION_DEPENDENT)) continue;
+    note(violations.resolution, `${path}: ${name} resolves apart from lookup`);
   }
 
-  // node identity round-trips, exact in both directions. materialize the
-  // whole AST first so the registration holds no matter which path built a
-  // node first
+  // node identity round-trips both ways
   void module.ast;
   for (const binding of module.bindings) {
     const decl = binding.declarations[0];
@@ -141,8 +143,7 @@ function check(path: string, source: string): void {
     },
   });
 
-  // bindings and references are recorded in walk order, and the walk is
-  // source-ordered (see the ast.zig module doc), so ids ascend with source
+  // ids ascend with source
   let prevRef = -1;
   for (const reference of module.references) {
     const at = walkOrder.get(reference.node);
@@ -199,7 +200,7 @@ function check(path: string, source: string): void {
     }
   }
 
-  // determinism. a second independent analysis yields an identical model
+  // a second analysis yields an identical model
   const again = new Analyzer().setFile(path, source);
   if (fingerprint(module) !== fingerprint(again)) {
     note(violations.determinism, `${path}: non-deterministic`);
@@ -223,8 +224,8 @@ describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
     expect(violations.crossIndex).toEqual([]);
   });
 
-  test("every resolved reference is in scope of its binding", () => {
-    expect(violations.resolutionScope).toEqual([]);
+  test("every reference resolves to what lookup finds from its scope", () => {
+    expect(violations.resolution).toEqual([]);
   });
 
   test("node-to-model lookups round-trip", () => {

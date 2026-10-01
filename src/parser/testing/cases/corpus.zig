@@ -8,6 +8,8 @@ const ast = parser.ast;
 const semantic = parser.semantic;
 const Semantic = semantic.Semantic;
 const ScopeId = parser.traverser.semantic.ScopeId;
+const Symbol = parser.traverser.semantic.Symbol;
+const Reference = parser.traverser.semantic.Reference;
 
 const InvariantChecker = struct {
     pub fn check(self: InvariantChecker, path: []const u8, tree: *ast.Tree) !void {
@@ -105,7 +107,7 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
         const expected = sem.lookup(ref.scope, name, ref.flags.space);
         // resolution knows the arguments barrier and type parameter visibility, lookup does not
         const rules_may_differ = std.mem.eql(u8, name, "arguments") or
-            (expected != null and sem.symbol(expected.?).flags.type_parameter);
+            (expected != null and positionDependent(sem.symbol(expected.?).flags));
         if (ref.symbol == .none) {
             if (expected != null and !rules_may_differ) return error.UnresolvedButBound;
             continue;
@@ -115,22 +117,37 @@ fn verifyReferences(tree: *const ast.Tree, sem: *const Semantic) !void {
         const symbol = sem.symbol(ref.symbol);
         if (!std.mem.eql(u8, tree.string(symbol.name), name)) return error.ResolvedNameMismatch;
         if (expected != ref.symbol and !rules_may_differ) return error.ResolvedToWrongBinding;
-
-        var on_chain = false;
-        var chain = sem.scopes.ancestors(ref.scope);
-        while (chain.next()) |scope_id| {
-            if (scope_id == symbol.scope) {
-                on_chain = true;
-                break;
-            }
-        }
-        if (!on_chain) return error.SymbolScopeNotOnChain;
+        if (!isOnChain(sem, &ref, name)) return error.SymbolScopeNotOnChain;
     }
 
     var use_total: usize = 0;
     var symbols = sem.iterSymbols();
     while (symbols.next()) |entry| use_total += sem.uses(entry.id).len;
     if (use_total != resolved_count) return error.UseIndexNotPartition;
+}
+
+fn positionDependent(flags: Symbol.Flags) bool {
+    return flags.type_parameter or flags.parameter or flags.isHoistingVar();
+}
+
+fn isOnChain(sem: *const Semantic, ref: *const Reference, name: []const u8) bool {
+    const scope = sem.symbol(ref.symbol).scope;
+    var chain = sem.scopes.ancestors(ref.scope);
+    while (chain.next()) |scope_id| {
+        if (scope_id == scope) return true;
+        if (sem.binding(scope_id, name) == ref.symbol) return true;
+        if (isOtherBody(sem, scope_id, scope)) return true;
+    }
+    return false;
+}
+
+fn isOtherBody(sem: *const Semantic, body: ScopeId, other: ScopeId) bool {
+    var next = sem.next_bodies[@intFromEnum(body)];
+    if (next == .none) return false;
+    while (next != body) : (next = sem.next_bodies[@intFromEnum(next)]) {
+        if (next == other) return true;
+    }
+    return false;
 }
 
 fn verifyNodeTables(tree: *const ast.Tree, sem: *const Semantic) !void {

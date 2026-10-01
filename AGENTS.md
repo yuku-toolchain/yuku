@@ -263,6 +263,8 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | The token API, or diagnostic spans across many one-line inputs | `test/parser/tokens.test.ts`, `test/parser/diagnostics.test.ts` |
 | Codegen output | An inline snapshot in `test/codegen/`: `print` (default and compact), `strip`, `minify`, `comments`, `quotes`, or `generate` for option composition and source map output |
 | Scopes, bindings, references, imports, exports | An inline snapshot of `summary()` in `test/analyzer/<topic>.test.ts`, or `project()` for cross-file behavior |
+| Resolution as tsc or scope-manager defines it | A snippet in `test/analyzer/tsc-differential.test.ts` or `scope-manager-differential.test.ts` |
+| A real codebase to analyze | An entry in `test/projects/manifest.ts`, pinned to a commit |
 | AST helpers and walkers | `test/ast/` |
 | The wasm packages | `test/wasm/`, as smoke tests only |
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |

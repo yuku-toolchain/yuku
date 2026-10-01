@@ -13,6 +13,7 @@ jsx-roadmap.md
 docs/public/
 
 test/**/suite
+test/projects/*/
 zig-pkg
 yuku-*.*
 .node

@@ -1,11 +1,11 @@
 ---
 .title = "Testing",
-.description = "How Yuku is tested: the parser test suite, exact AST validation, codegen conformance, and fuzzing.",
+.description = "How Yuku is tested: the parser test suite, exact AST validation, codegen conformance, semantic analysis against TypeScript, and fuzzing.",
 .author = "Arshad Yaseen",
 .date = @date("2026-07-14T00:00:00"),
 .layout = "page.shtml",
 ---
-Yuku is tested for spec conformance, exact AST shapes, codegen soundness, and behavior under memory pressure.
+Yuku is tested for spec conformance, exact AST shapes, codegen soundness, name resolution, and behavior under memory pressure.
 
 ## [The parser test suite]($section.id('parser-test-suite'))
 
@@ -24,6 +24,14 @@ The suite runs through the npm packages built from local source, so every run ch
 ## [Codegen]($section.id('codegen'))
 
 Every parseable file in the suite is printed under several option sets. Each output must parse again, plain output must reparse to the same AST, and printing must be a fixed point with no comment lost or duplicated. The Zig and JavaScript printers must agree byte for byte, and every identifier in a source map must trace back to its original name and position.
+
+## [Semantic analysis]($section.id('semantic-analysis'))
+
+Every file in the suite is analyzed, along with eight real codebases pinned to a commit: the TypeScript compiler, Vue, Svelte, Preact, three.js, Zod, date-fns, and Excalidraw. Two independent oracles check the result. The TypeScript checker must resolve every reference, in values and types alike, to the same declaration Yuku does, and [@typescript-eslint/scope-manager](https://typescript-eslint.io/packages/scope-manager) must agree on every runtime reference, write, and declaration, over a million comparisons each.
+
+Each codebase is also linked as one project and compared with a TypeScript program over it: where every import lands, the binding behind every re-export, the names every module exports, and where every relative specifier resolves.
+
+Where an oracle models the language differently, the answer is normalized by a rule, such as a name inside `with`, which only resolves at runtime. The handful of files that still differ are listed with their reason, and a listed file that starts agreeing fails the run, so the list never outlives its reasons.
 
 ## [Fuzzing]($section.id('fuzzing'))
 

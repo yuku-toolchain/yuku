@@ -1,24 +1,41 @@
-// Compares type-space resolution against the TypeScript checker,
-// which is the authority on TypeScript meaning rules.
+// Compares every reference's binding with the one the TypeScript checker resolves.
 
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
-import { analyze as analyzeFile } from "yuku-analyzer";
+import { analyze } from "yuku-analyzer";
 import type { SourceLang } from "yuku-parser";
-import { corpusFilesUnder } from "../corpus";
+import { corpusFiles, projectFiles, type CorpusFile } from "../corpus";
+import { differential, type Comparison, type Known } from "./utils/differential";
 
-const UNRESOLVED = -1;
+const FILE_NAMES: Record<SourceLang, string> = {
+  js: "input.js",
+  jsx: "input.jsx",
+  ts: "input.ts",
+  tsx: "input.tsx",
+  dts: "input.d.ts",
+};
 
-function tscResolutions(source: string, fileName: string): Map<number, number[]> {
-  const sourceFile = ts.createSourceFile(
-    fileName,
-    source,
-    ts.ScriptTarget.ESNext,
-    true,
-    fileName.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-  );
+const SCRIPT_KINDS: Record<SourceLang, ts.ScriptKind> = {
+  js: ts.ScriptKind.JS,
+  jsx: ts.ScriptKind.JSX,
+  ts: ts.ScriptKind.TS,
+  tsx: ts.ScriptKind.TSX,
+  dts: ts.ScriptKind.TS,
+};
+
+interface Checker {
+  /** Declaration starts, or null to skip. */
+  resolve(position: number): number[] | null;
+  /** Whether tsc reports an error naming `name` at a position. */
+  rejects(name: string, positions: number[]): boolean;
+}
+
+function checker(source: string, lang: SourceLang): Checker {
+  const fileName = FILE_NAMES[lang];
+  const kind = SCRIPT_KINDS[lang];
+  const file = ts.createSourceFile(fileName, source, ts.ScriptTarget.ESNext, true, kind);
   const host: ts.CompilerHost = {
-    getSourceFile: (name) => (name === fileName ? sourceFile : undefined),
+    getSourceFile: (name) => (name === fileName ? file : undefined),
     getDefaultLibFileName: () => "lib.d.ts",
     writeFile: () => {},
     getCurrentDirectory: () => "",
@@ -28,191 +45,250 @@ function tscResolutions(source: string, fileName: string): Map<number, number[]>
     fileExists: (name) => name === fileName,
     readFile: () => undefined,
   };
-  const program = ts.createProgram([fileName], { noLib: true, noResolve: true }, host);
-  const checker = program.getTypeChecker();
+  const options = { noLib: true, noResolve: true, allowJs: true };
+  const program = ts.createProgram([fileName], options, host);
+  const typeChecker = program.getTypeChecker();
 
-  const map = new Map<number, number[]>();
+  const identifiers = new Map<number, ts.Identifier>();
   (function visit(node: ts.Node): void {
-    if (ts.isIdentifier(node)) {
-      const starts: number[] = [];
-      for (const decl of checker.getSymbolAtLocation(node)?.declarations ?? []) {
-        const name = ts.getNameOfDeclaration(decl);
-        if (name !== undefined && name.getSourceFile() === sourceFile) {
-          starts.push(name.getStart(sourceFile));
-        }
-      }
-      map.set(node.getStart(sourceFile), starts);
-    }
+    if (ts.isIdentifier(node)) identifiers.set(node.getStart(file), node);
     ts.forEachChild(node, visit);
-  })(sourceFile);
-  return map;
+  })(file);
+
+  let errors: ts.Diagnostic[] | null = null;
+
+  return {
+    resolve(position) {
+      const node = identifiers.get(position);
+      if (node === undefined || insideWith(node)) return null;
+      const starts: number[] = [];
+      for (const declaration of symbolOf(typeChecker, node)?.declarations ?? []) {
+        if (isAssignmentDeclaration(declaration)) continue;
+        const name = ts.getNameOfDeclaration(declaration);
+        if (name?.getSourceFile() === file) starts.push(name.getStart(file));
+      }
+      return starts;
+    },
+    rejects(name, positions) {
+      errors ??= [
+        ...program.getSyntacticDiagnostics(file),
+        ...program.getSemanticDiagnostics(file),
+      ];
+      const quoted = `'${name}'`;
+      return errors.some(({ start, length, messageText }) => {
+        if (start === undefined || length === undefined) return false;
+        if (!ts.flattenDiagnosticMessageText(messageText, "\n").includes(quoted)) return false;
+        return positions.some((position) => position >= start && position < start + length);
+      });
+    },
+  };
 }
 
-function compare(
-  label: string,
-  source: string,
-  lang: SourceLang = "ts",
-): { mismatches: string[]; compared: number } {
-  const fileName = lang === "tsx" ? "input.tsx" : "input.ts";
-  const module = analyzeFile(source, { path: fileName, sourceType: "module", lang });
-  const tsc = tscResolutions(source, fileName);
-  const enums = module.findAll("TSEnumDeclaration");
+function symbolOf(typeChecker: ts.TypeChecker, node: ts.Identifier): ts.Symbol | undefined {
+  const parent = node.parent;
+  if (ts.isShorthandPropertyAssignment(parent) && parent.name === node) {
+    return typeChecker.getShorthandAssignmentValueSymbol(parent);
+  }
+  if (ts.isExportSpecifier(parent) && !parent.parent.parent.moduleSpecifier) {
+    return typeChecker.getExportSpecifierLocalTargetSymbol(parent);
+  }
+  if (inClassExtends(node)) {
+    return typeChecker
+      .getSymbolsInScope(node, ts.SymbolFlags.Value | ts.SymbolFlags.Alias)
+      .find((symbol) => symbol.name === node.text);
+  }
+  return typeChecker.getSymbolAtLocation(node);
+}
+
+// `X.y = 1`, a declaration to tsc's JavaScript binder
+function isAssignmentDeclaration(declaration: ts.Declaration): boolean {
+  return (
+    ts.isIdentifier(declaration) ||
+    ts.isBinaryExpression(declaration) ||
+    ts.isPropertyAccessExpression(declaration) ||
+    ts.isElementAccessExpression(declaration) ||
+    ts.isCallExpression(declaration)
+  );
+}
+
+function insideWith(node: ts.Node): boolean {
+  for (let current = node; current.parent !== undefined; current = current.parent) {
+    if (ts.isWithStatement(current.parent) && current.parent.statement === current) return true;
+  }
+  return false;
+}
+
+// `a` in `class C extends a.b.c`
+function inClassExtends(node: ts.Identifier): boolean {
+  let current: ts.Node = node;
+  while (ts.isPropertyAccessExpression(current.parent) && current.parent.expression === current) {
+    current = current.parent;
+  }
+  const clause = current.parent?.parent;
+  return (
+    current !== node &&
+    ts.isExpressionWithTypeArguments(current.parent) &&
+    clause !== undefined &&
+    ts.isHeritageClause(clause) &&
+    clause.token === ts.SyntaxKind.ExtendsKeyword &&
+    ts.isClassLike(clause.parent)
+  );
+}
+
+function compare(source: string, lang: SourceLang, path = FILE_NAMES[lang]): Comparison {
+  const module = analyze(source, { path, lang });
+  const tsc = checker(source, lang);
   const mismatches: string[] = [];
   let compared = 0;
   for (const reference of module.references) {
-    if (!reference.inTypePosition) continue;
     const position = reference.node.start;
-    const theirDefs = tsc.get(position);
-    if (theirDefs === undefined) continue;
-    const binding = reference.binding;
-    const ourDef =
-      binding === null ? UNRESOLVED : Math.min(...binding.declarations.map((d) => d.start));
-    // tsc merges declarations, agreement is membership in its set
-    const agree =
-      ourDef === UNRESOLVED ? theirDefs.length === 0 : theirDefs.includes(ourDef);
-    if (!agree) {
-      // getSymbolAtLocation returns symbols the checker rejects with
-      // wrong-space errors, unresolved with a name in some space is that
-      const named = module.lookup(reference.name, { from: reference.scope, space: "any" });
-      if (ourDef === UNRESOLVED && named !== null) {
-        continue;
-      }
-      // merged enum declarations resolve members across blocks
-      if (ourDef === UNRESOLVED && enums.some((e) => position >= e.start && position < e.end)) {
-        continue;
-      }
-      mismatches.push(
-        `${label} ref@${position}: yuku def@${ourDef}, tsc def@${theirDefs.join(",") || UNRESOLVED}`,
-      );
-    }
+    const theirs = tsc.resolve(position);
+    if (theirs === null) continue;
     compared++;
+    const ours = reference.binding?.declarations.map((declaration) => declaration.start) ?? [];
+    const agree = ours.length === 0 ? theirs.length === 0 : ours.some((d) => theirs.includes(d));
+    if (agree || tsc.rejects(reference.name, [position, ...ours, ...theirs])) continue;
+    const yuku = ours.join(",") || "unresolved";
+    const expected = theirs.join(",") || "unresolved";
+    mismatches.push(`${reference.name}@${position}: yuku ${yuku}, tsc ${expected}`);
   }
-  return { mismatches, compared };
+  return { compared, mismatches };
 }
 
-describe("type-space resolution agrees with tsc", () => {
-  const SNIPPETS: [name: string, source: string][] = [
-    ["type alias reference", `type T = string; let x: T;`],
-    [
-      "a value binding does not shadow a type",
-      `type T = string; function f() { const T = 1; let x: T; return T; }`,
-    ],
-    ["interface heritage", `interface A {} interface B extends A {}`],
-    ["typeof resolves the value side", `const point = { x: 1 }; type P = typeof point;`],
-    ["namespace qualifier", `namespace N { export type T = string; } let x: N.T;`],
-    ["enum as a type and a qualifier", `enum E { a } let x: E; let y: E.a;`],
-    ["type parameters and defaults", `type Box<T, U = T> = { v: T; u: U };`],
-    ["infer binds in the conditional", `type El<T> = T extends (infer U)[] ? U : never;`],
-    ["mapped type key", `type Keys<T> = { [K in keyof T]: K };`],
-    ["class as a type", `class C {} let c: C;`],
-    ["import binding in a type", `import type { A } from "m"; let x: A;`],
-    ["type predicate parameter", `function isS(v: unknown): v is string { return true; }`],
-    ["generic function annotations", `function id<T>(v: T): T { return v; }`],
-    ["shadowed type parameter", `type T = number; class C<T> { v: T; }`],
-    [
-      "class type parameters are out of scope in static members",
-      `class C<T> { m(v: T): T { return v } static s(): T { return null as T } }`,
-    ],
-    [
-      "class type parameters are out of scope in computed keys",
-      `declare function k<X>(): string; class C<T> { [k<T>()]() {} m(v: T) {} }`,
-    ],
-    ["infer is visible in the true branch only", `type R<T> = T extends (infer U)[] ? U : U;`],
-    ["unresolved stays unresolved", `let x: Missing;`],
-  ];
+function compareFile(file: CorpusFile, source: string): Comparison {
+  return compare(source, file.lang, file.path);
+}
 
-  for (const [name, source] of SNIPPETS) {
+const SUITE = "test/parser/suite/ts/pass";
+
+const KNOWN: Known = {
+  "tsc parses `A extends (x: B extends C ? D : E) => 0 ? F : G` differently": [
+    `${SUITE}/7abadbdb73780802.ts`,
+  ],
+};
+
+const SNIPPETS: [name: string, source: string, lang?: SourceLang][] = [
+  ["type alias reference", `type T = string; let x: T;`],
+  [
+    "a value binding does not shadow a type",
+    `type T = string; function f() { const T = 1; let x: T; return T; }`,
+  ],
+  ["interface heritage", `interface A {} interface B extends A {}`],
+  ["typeof resolves the value side", `const point = { x: 1 }; type P = typeof point;`],
+  ["namespace qualifier", `namespace N { export type T = string; } let x: N.T;`],
+  ["enum as a type and a qualifier", `enum E { a } let x: E; let y: E.a;`],
+  ["type parameters and defaults", `type Box<T, U = T> = { v: T; u: U };`],
+  ["mapped type key", `type Keys<T> = { [K in keyof T]: K };`],
+  ["class as a type", `class C {} let c: C;`],
+  ["import binding in a type", `import type { A } from "m"; let x: A;`],
+  ["type predicate parameter", `function isS(v: unknown): v is string { return true; }`],
+  ["generic function annotations", `function id<T>(v: T): T { return v; }`],
+  ["shadowed type parameter", `type T = number; class C<T> { v: T; }`],
+  [
+    "class type parameters are out of scope in static members",
+    `class C<T> { m(v: T): T { return v } static s(): T { return null as T } }`,
+  ],
+  [
+    "class type parameters are out of scope in computed keys",
+    `declare function k<X>(): string; class C<T> { [k<T>()]() {} m(v: T) {} }`,
+  ],
+  ["unresolved stays unresolved", `let x: Missing;`],
+  [
+    "namespace blocks share their exports, not their locals",
+    `namespace N { export var x = 1; var y = 2; } namespace N { x; y; }`,
+  ],
+  [
+    "a dotted namespace declares each part",
+    `namespace A.B.C { export var v = 1; A; B; C; } namespace A.B { C.v; }`,
+  ],
+  ["enum blocks share their members", `enum E { a } enum E { b = a }`],
+  [
+    "the blocks of one ambient module share their exports",
+    `declare module "m" { export var x: number; } declare module "m" { let y: typeof x; }`,
+  ],
+  [
+    "a merged enum and namespace share nothing",
+    `enum F { b } namespace F { export var x = b }
+    namespace G { export let y = 1 } enum G { z = y }`,
+  ],
+  [
+    "an ambient namespace exports every declaration",
+    `declare namespace N { var x: number; class C {} }
+    declare namespace N { let y: typeof x; let c: C; }`,
+  ],
+  [
+    "a namespace of ambient values or const enums is a value",
+    `namespace M { export declare var n: any; }
+    namespace E { export const enum K { X } } ~M; E.K.X;`,
+  ],
+  [
+    "signature parameters bind in the signature",
+    `type F = (x: number) => typeof x; interface I { m(a: string): typeof a; }
+    type M = { [s: string]: typeof s };`,
+  ],
+  [
+    "infer belongs to the conditional whose extends clause holds it",
+    `type X<U, T> = T extends (infer U extends number ? U : T) ? U : T;`,
+  ],
+  [
+    "an import alias target resolves as a namespace",
+    `namespace A { export namespace X {} } namespace M { var A = 2; import Z = A.X; }`,
+  ],
+  [
+    "a computed key in a type is a value",
+    `var obj = { c: "k" }; const sym = Symbol(); interface I { [obj.c]: number }
+    type F = ({ [sym]: s }: object) => void;`,
+  ],
+  [
+    "an interface hides its type parameters from computed keys",
+    `declare function foo<T>(): string; interface I<T> { [foo<T>()](): void; }`,
+  ],
+  [
+    "a heritage qualifier is a namespace",
+    `namespace N { export interface I {} } class C implements N.I {}`,
+  ],
+  [
+    "a class extends expression does not see its type parameters",
+    `declare function base<T>(): any;
+    class Gen<T> extends base<T>() {} class Ok<T> extends Array<T> {}`,
+  ],
+  [
+    "a signature sees neither its parameters from its type parameters nor its body vars",
+    `function f<T extends typeof a>(a: T) {}
+    function g(p: typeof b): typeof b { var b = 1; return b; }`,
+  ],
+  [
+    "a type parameter merged with a parameter stays visible",
+    `declare function f<Foo extends Bar, Bar>(Bar: any): void`,
+  ],
+  [
+    "declare global declares globally",
+    `export {}; declare global { interface Box<T> {} } function f<T>(p: Box<T>) {}`,
+  ],
+  [
+    "a member decorator sees the class type parameters and name",
+    `declare function y(a: any): any; type T = number;
+    class C<T> { m(@y(null as T) y: number) {} } const D = class E { @y(E) m() {} };`,
+  ],
+  [
+    "a UMD global names the module in its own declarations",
+    `export as namespace lib; export interface P {} export interface C { p: lib.P }`,
+    "dts",
+  ],
+  [
+    "a bodiless function merges with a class",
+    `declare function B(p: string): B; declare class B {} function F(): F; class F {}`,
+  ],
+];
+
+describe("resolution agrees with tsc", () => {
+  for (const [name, source, lang = "ts"] of SNIPPETS) {
     test(name, () => {
-      const { mismatches, compared } = compare(name, source);
+      const { mismatches, compared } = compare(source, lang);
       expect(mismatches).toEqual([]);
       expect(compared).toBeGreaterThan(0);
     });
   }
 
-  const corpus = corpusFilesUnder("test/parser/suite/ts/pass");
-  const SAMPLE_TARGET = Number(process.env.TSC_DIFFERENTIAL_SAMPLE ?? 150);
-  const MISMATCH_SAMPLE_MAX = 12;
-  const step = Math.max(1, Math.floor(corpus.length / SAMPLE_TARGET));
-
-  test.skipIf(corpus.length === 0)("sampled ts corpus resolves identically", async () => {
-    const mismatchSamples: string[] = [];
-    let compared = 0;
-    let filesCompared = 0;
-    for (let i = 0; i < corpus.length; i += step) {
-      const file = corpus[i]!;
-      // corpus paths use backslashes on windows
-      if (KNOWN_DIVERGENCES.has(file.path.replaceAll("\\", "/"))) continue;
-      const source = await Bun.file(file.path).text();
-      // non-ascii offsets differ between bytes and UTF-16
-      if (Buffer.byteLength(source) !== source.length) continue;
-      const result = compare(file.path, source, file.lang);
-      filesCompared++;
-      compared += result.compared;
-      for (const mismatch of result.mismatches) {
-        if (mismatchSamples.length < MISMATCH_SAMPLE_MAX) mismatchSamples.push(mismatch);
-      }
-    }
-    console.log(`tsc differential: ${compared} type references agreed across ${filesCompared} files`);
-    expect(mismatchSamples).toEqual([]);
-    expect(compared).toBeGreaterThan(100);
-  }, 600_000);
+  differential("corpus and projects", [...corpusFiles(), ...projectFiles()], compareFile, KNOWN);
 });
-
-// Triaged divergences. Mostly namespace bodies and aliases merging
-// across declare module blocks, which tsc resolves between blocks.
-// Two yuku gaps are typeof of a signature-type parameter label and infer
-// shadowing an outer type parameter across nested conditionals. One tsc
-// limit is that getSymbolAtLocation returns nothing in JSX type arguments.
-const KNOWN_DIVERGENCES = new Set(
-  [
-    "07165d29762103ba.ts",
-    "0a4086de64f759e6.ts",
-    "19ccfc7b636f7919.ts",
-    "1af3dcf81f26daee.ts",
-    "1b3a909a7815cda3.ts",
-    "233e2d9059f64ac6.ts",
-    "236bce9a7054558e.ts",
-    "254e4b2327e2d9d4.ts",
-    "343c11f6a5f686f7.ts",
-    "3a66bcb0ff2adb2c.module.ts",
-    "3e4f59684f533541.ts",
-    "589ae58b40931bd4.ts",
-    "5aa19aef1fb64e43.ts",
-    "5b34f29e3a099c02.ts",
-    "5cc943c9605bb9a0.ts",
-    "5fab12c3da9e3a70.ts",
-    "6036f7fdefa93a69.ts",
-    "60e70e729005101f.ts",
-    "644fb9551c9a9679.ts",
-    "67783a94665c9385.ts",
-    "6b163bc52d21bf7e.ts",
-    "7a3c907379ccee04.ts",
-    "7abadbdb73780802.ts",
-    "853d3a648c303cca.ts",
-    "872d1ece04ec2bd2.ts",
-    "8ce86193a732801b.ts",
-    "8d1f753780e6f4b6.module.ts",
-    "93b3aa21755294a6.ts",
-    "990149b3c230f0ac.ts",
-    "ac375a0163d54380.ts",
-    "ace124dedd033d76.ts",
-    "af44b354f11da7ea.ts",
-    "b0511888917d9e08.module.ts",
-    "c536dc0c8427a171.ts",
-    "c70923f25132380e.ts",
-    "cdb3932652e8bea5.ts",
-    "d3601d7911a8e96e.ts",
-    "d6e4a578a83afa49.ts",
-    "d761fdeea8ab3049.ts",
-    "e16bd3fcce61a2e8.ts",
-    "e4ccf9bf028d7e4c.ts",
-    "e79056dee69a8570.ts",
-    "e9ad3debe1501dc6.module.ts",
-    "f21309e4f1ed06c8.ts",
-    "f51bc2d6f2f77a88.ts",
-    "f948e2f4fdbf827c.ts",
-    "f9a6d4f7f53c8135.ts",
-    "fba9a71160c95c6a.ts",
-    "fe6dd15e338803c5.tsx",
-  ].map((name) => `test/parser/suite/ts/pass/${name}`),
-);

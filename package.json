@@ -35,7 +35,7 @@
     "build:npm": "napi-zig build --release && bun gen:npm",
     "build:wasm": "zig build wasm && cp ./zig-out/bin/yuku-engine.wasm ./npm/yuku-engine-wasm/",
     "release:npm": "napi-zig bump",
-    "fetch:fixtures": "bun test/parser/load test/parser/suite",
+    "fetch:fixtures": "bun test/parser/load test/parser/suite && bun test/projects/load.ts",
     "gen:npm": "zig build gen-token-types gen-parser-decoder gen-analyzer-decoder gen-walk-tables && cp ./zig-out/tokens.d.ts ./npm/yuku-types && cp ./zig-out/decode.js ./npm/yuku-parser && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./zig-out/walk-tables.ts ./npm/yuku-ast/src/generated.ts && bun run --cwd npm/yuku-ast build && bun run --cwd npm/yuku-codegen build"
   },
   "devDependencies": {

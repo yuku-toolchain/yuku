@@ -73,13 +73,13 @@ while (references.next()) |entry| {
 
 ## [Scopes]($section.id('scopes'))
 
-The scope tree follows the specification exactly. A catch clause shares its scope with its body, a named function or class expression gets a scope of its own for the name, every function body scopes its `let` and `const` apart from the parameters as TypeScript does, and a decorator sees the scope around its class. Strict mode flows from modules, classes, and `"use strict"` directives.
+The scope tree follows the specification exactly. A catch clause shares its scope with its body, a named function or class expression gets a scope of its own for the name, every function body scopes its `let` and `const` apart from the parameters as TypeScript does, a class decorator sees the scope around its class, and a member decorator the class scope. Strict mode flows from modules, classes, and `"use strict"` directives.
 
 ## [Symbols]($section.id('symbols'))
 
 A symbol's `flags` record its declaration kinds, such as `function_scoped_var`, `block_scoped_var`, `function`, `class`, `interface`, `regular_enum`, and `import`, and its modifiers, such as `const_var`, `exported`, and `ambient`. Masks answer a category in one call, as `flags.intersects(Symbol.value_space)` does, with `variable`, `any_import`, `value_space`, `type_space`, and `namespace_space`. `flags.visibleIn(space)` tells whether a reference in a space can bind to it.
 
-One rule decides both merging and redeclaration. Each declaration kind carries an exclusion mask in `Symbol.Excludes`, and a new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way.
+One rule decides both merging and redeclaration. Each declaration kind carries an exclusion mask in `Symbol.Excludes`, and a new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way. A namespace or enum declared in several blocks merges too, and each block sees the exports or members of the others.
 
 ## [Declaration spaces]($section.id('declaration-spaces'))
 
@@ -105,4 +105,4 @@ const records = try parser.semantic.module_record.collect(&tree, &semantic);
 // records.imports, records.exports, records.flags
 ```
 
-An import has a `kind`, `name`, `symbol`, `specifier`, `type_only`, `phase`, and `node`. Its kind is `named`, `namespace`, `side_effect`, `import_equals`, `dynamic`, or `require`, and dynamic `import()` and `require()` calls count when their specifier is a string literal. An export has a `kind`, `name`, `symbol`, `from_name`, `specifier`, `type_only`, and `node`, and its kind is `named`, `re_export`, `namespace`, `star`, `equals`, or `global`. CommonJS exports have no static shape, so `records.flags` records whether the file uses `require`, `module`, `exports`, or `import.meta`.
+An import has a `kind`, `name`, `symbol`, `specifier`, `type_only`, `phase`, and `node`. Its kind is `named`, `namespace`, `side_effect`, `import_equals`, `dynamic`, or `require`, and dynamic `import()` and `require()` calls count when their specifier is a string literal. An export has a `kind`, `name`, `symbol`, `from_name`, `specifier`, `type_only`, and `node`, and its kind is `named`, `re_export`, `namespace`, `star`, `equals`, or `global`. As in TypeScript, a declaration file that is a module but has no export statement exports every declaration but its imports. CommonJS exports have no static shape, so `records.flags` records whether the file uses `require`, `module`, `exports`, or `import.meta`.

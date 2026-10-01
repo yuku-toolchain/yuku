@@ -1607,6 +1607,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        nodeIndex: (i) => {[n]s},
         \\        parentId: (i) => _id({[p]s}),
         \\        hoistTargetId: (i) => {[h]s},
+        \\        nextBodyId: (i) => _id({[b]s}),
         \\        start: (i) => startOf({[n]s}),
         \\        end: (i) => endOf({[n]s}),
         \\      }},
@@ -1618,6 +1619,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         .n = comptime cell("scopes", Scope, "node"),
         .p = comptime cell("scopes", Scope, "parent"),
         .h = comptime cell("scopes", Scope, "hoist_target"),
+        .b = comptime cell("scopes", Scope, "next_body"),
     });
     try w.print(
         \\      symbol: {{

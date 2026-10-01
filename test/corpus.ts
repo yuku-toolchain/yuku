@@ -1,7 +1,8 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { Glob } from "bun";
 import { langFromPath, sourceTypeFromPath, type SourceLang, type SourceType } from "yuku-parser";
+import { PROJECTS, PROJECTS_DIR, type Project } from "./projects/manifest";
 
 export const CORPUS_DIRS = [
   "test/parser/suite/js/pass",
@@ -39,6 +40,33 @@ export function corpusFilesUnder(dir: string): CorpusFile[] {
 /** Every corpus file across all directories, with inferred language and type. */
 export function corpusFiles(): CorpusFile[] {
   return CORPUS_DIRS.flatMap(corpusFilesUnder);
+}
+
+/** A fetched project and its source files, see `test/projects/manifest.ts`. */
+export interface LoadedProject {
+  project: Project;
+  root: string;
+  files: CorpusFile[];
+}
+
+/** Every project fetched by `test/projects/load.ts`. */
+export function loadedProjects(): LoadedProject[] {
+  const loaded: LoadedProject[] = [];
+  for (const project of PROJECTS) {
+    const root = join(PROJECTS_DIR, project.name);
+    if (!existsSync(root)) continue;
+    const excluded = (project.exclude ?? []).map((path) => join(root, path) + sep);
+    const files = project.sources
+      .flatMap((source) => corpusFilesUnder(join(root, source)))
+      .filter((file) => !excluded.some((path) => file.path.startsWith(path)));
+    loaded.push({ project, root, files });
+  }
+  return loaded;
+}
+
+/** The source files of every fetched project. */
+export function projectFiles(): CorpusFile[] {
+  return loadedProjects().flatMap((loaded) => loaded.files);
 }
 
 /**

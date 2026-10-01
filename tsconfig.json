@@ -29,6 +29,7 @@
     "test/parser/suite",
     "test/parser/misc",
     "test/parser/results",
+    "test/projects/*/",
     "zig-out",
     "playground"
   ]

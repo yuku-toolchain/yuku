@@ -280,6 +280,14 @@ pub const ScopeTracker = struct {
             .ts_enum_body,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
+            // a scope per qualifier of `namespace A.B.C {}`
+            .ts_module_declaration => |decl| {
+                var name = decl.id;
+                while (self.tree.data(name) == .ts_qualified_name) {
+                    try self.pushScope(.ts_module, index, self.inheritStrictFlag());
+                    name = self.tree.data(name).ts_qualified_name.left;
+                }
+            },
             .class => |cls| {
                 // class code is always strict (15.7.14)
                 const flags = Scope.Flags{ .strict = true };
@@ -291,13 +299,21 @@ pub const ScopeTracker = struct {
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
             .decorator => {
-                // decorators evaluate in the scope enclosing the class, seeing
-                // neither its type parameters nor its expression name
+                // a class decorator evaluates outside the class, a member decorator inside
                 try self.decorator_saved.append(self.allocator, self.current);
-                self.current = self.decoratorEvalScope();
+                const on_class = parent != .null and self.tree.data(parent) == .class;
+                self.current = if (on_class) self.decoratorEvalScope() else self.classScope();
             },
             else => {},
         }
+    }
+
+    fn classScope(self: *const ScopeTracker) ScopeId {
+        var it = self.ancestors(self.current);
+        while (it.next()) |id| {
+            if (self.get(id).kind == .class) return id;
+        }
+        return self.current;
     }
 
     fn decoratorEvalScope(self: *const ScopeTracker) ScopeId {

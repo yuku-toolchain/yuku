@@ -127,18 +127,31 @@ pub fn refSpace(
                 child = parent;
                 continue;
             },
+            // `implements ns.I`
+            .member_expression => |m| if (in_type_position and m.object == child) {
+                qualified_left = true;
+                child = parent;
+                continue;
+            },
+            .call_expression => |c| if (in_type_position and c.callee == child) {
+                child = parent;
+                continue;
+            },
             // computed keys of type members are value positions
             //   interface I { [key]: string }
             //   //             ^ resolves as typeof, not type
-            inline .ts_property_signature, .ts_method_signature => |sig| {
-                if (sig.computed and sig.key == child) return .typeof;
+            inline .ts_property_signature, .ts_method_signature, .binding_property => |member| {
+                if (member.computed and member.key == child) {
+                    return if (in_type_position) .typeof else .value;
+                }
             },
             .ts_type_query => return .typeof,
             .export_specifier => |s| return if (s.local == child) .any else .value,
-            .export_default_declaration,
-            .ts_export_assignment,
-            .ts_import_equals_declaration,
-            => return .any,
+            .export_default_declaration, .ts_export_assignment => return .any,
+            // tsc resolves an alias target as a namespace
+            .ts_import_equals_declaration => |decl| {
+                return if (decl.module_reference == child) .namespace else .any;
+            },
             else => {},
         }
         if (!in_type_position) return .value;

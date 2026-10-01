@@ -64,7 +64,7 @@ function renderScope(
   }
 }
 
-// strictness never turns off in a child, so `[strict]` marks only the scope where it turns on
+// `[strict]` marks only where strictness turns on
 function scopeHeader(scope: Scope): string {
   const strict = scope.strict && !(scope.parent?.strict ?? false) ? " [strict]" : "";
   return scopeLabel(scope) + strict;
@@ -86,8 +86,7 @@ function scopeLabel(scope: Scope): string {
     case "class":
       return node.id?.name ? `${scope.kind} "${node.id.name}"` : `${scope.kind} <anonymous>`;
     default:
-      // block scopes come from many constructs (catch, for, switch, type
-      // declarations), so the node type disambiguates siblings
+      // the node type tells sibling block scopes apart
       return `${scope.kind} ${node.type}`;
   }
 }
@@ -105,7 +104,7 @@ function referenceRow(reference: Reference): string {
   return `${reference.name} → ${target}${write}${space}`;
 }
 
-// the variable kind folds in its modifiers, so each binding reads as one kind plus qualifiers
+// one kind plus qualifiers per binding
 function flagWords(flags: number): string {
   const words: string[] = [];
   if (flags & BindingFlags.FunctionScopedVariable) {

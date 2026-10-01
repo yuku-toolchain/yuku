@@ -48,9 +48,7 @@ describe("write detection in loop heads", () => {
 
 describe("string pool", () => {
   test("a lone surrogate in a module specifier round-trips", () => {
-    // an escaped surrogate cannot be sliced from source, so it crosses the wire through the
-    // WTF-8 string pool and the decoder must rebuild it. fromCharCode keeps a raw surrogate out
-    // of this file
+    // an escaped lone surrogate crosses the wire through the WTF-8 string pool
     const surrogate = String.fromCharCode(0xd800);
     const module = new Analyzer().setFile(
       "input.js",
@@ -82,7 +80,7 @@ describe("import equals", () => {
         module [strict]
           NS#0  namespace value-module
           A#2  import
-          NS → #0 any
+          NS → #0 namespace
           A → #2
           tsModule
             B#1  const exported"
@@ -94,10 +92,10 @@ describe("ambient global augmentation", () => {
   test("declare global opens an ambient block whose vars are ambient", () => {
     expect(summary(`declare global { var g: number; } g;`)).toMatchInlineSnapshot(`
       "global
+        g#0  var ambient
         module [strict]
-          g → free
-          tsModule
-            g#0  var ambient"
+          g → #0
+          tsModule"
     `);
   });
 });

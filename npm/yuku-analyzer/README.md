@@ -171,6 +171,8 @@ function f() {
 }
 ```
 
+The blocks of one namespace or enum see each other's exports and members, as one declaration.
+
 ## Imports and exports
 
 ```js
@@ -237,7 +239,7 @@ module.walk({
 | `Ambient`                | `declare`                                    |
 | `Parameter`              | a parameter                                  |
 | `CatchVariable`          | `catch (e)`                                  |
-| `Exported`               | `export <declaration>`                       |
+| `Exported`               | `export`, or implicitly in ambient code      |
 | `Default`                | `export default <declaration>`               |
 | `EnumMember`             | an enum member                               |
 | `Variable`               | any variable                                 |

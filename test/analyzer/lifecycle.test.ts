@@ -75,7 +75,7 @@ describe("deleteFile", () => {
 
     analyzer.deleteFile("a.ts");
     expect(analyzer.module("b.ts")!.dependencies).toEqual([]);
-    // the import now resolves to nothing added, i.e. an external module, by design
+    // the import resolves to nothing added, an external module
     expect(definition(analyzer, "b.ts", "value")).toBe("(none)");
   });
 
