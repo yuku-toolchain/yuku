@@ -13,21 +13,13 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 **Correct.** 100% ECMAScript spec compliant, with zero failures and zero AST mismatches across the [parser test suite](/testing/).
 
-**Fast.** Data-oriented from the ground up, with a flat AST and one arena per parse.
+**Fast.** Data-oriented from the ground up, with rigorous performance engineering.
 
 **Small.** A fraction of the install size of the alternatives, see [Size](#size).
 
 **Zero dependencies.** Pure Zig, easy to build, embed, and cross-compile.
 
 **Modern.** Full support for modern and experimental syntax, including decorators, source phase and deferred imports, and `using` declarations.
-
-## [The toolchain]($section.id('the-toolchain'))
-
-- [Parser](/parser/): JavaScript, TypeScript, JSX, and declaration files to an AST, recovering from errors.
-- [AST](/parser/ast/): a flat, data-oriented tree, with comments and tokens alongside.
-- [Semantic analysis](/parser/semantic/): scopes, symbols, resolved references, every early error, and module records.
-- [Traverser](/parser/traverse/): typed visitors in four modes, from plain walks to full semantics and in-place transforms.
-- [Codegen](/parser/codegen/): printing back to source, with type stripping, minification, and source maps.
 
 ## [At a glance]($section.id('at-a-glance'))
 
@@ -89,8 +81,6 @@ await init();
 parse("const x = 1;");
 ```
 
-Runtimes that can read files load it on first use, without `init`. Where they can `require()` ES modules, the packages also fall back to it when the native binary is missing.
-
 ### [Zig]($section.id('zig'))
 
 ```bash
@@ -104,10 +94,6 @@ my_module.addImport("parser", yuku.module("parser"));
 ```
 
 Yuku requires Zig 0.16.0 or later.
-
-## [Current status]($section.id('current-status'))
-
-The parser is stable and production ready, from Zig and from JavaScript. The [semantic model](/parser/semantic/) and [traverser](/parser/traverse/) are stable and power Yuku's semantic checker.
 
 ## [Performance]($section.id('performance'))
 
@@ -123,8 +109,6 @@ The lead holds on large files.
 
 ![Parsing `typescript.js` (7.8 MB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing typescript.js")
 
-The AST crosses from Zig to JavaScript as a compact binary buffer rather than JSON, and every parser is timed until its full AST is in hand. Oxc's npm package defers its `JSON.parse` to the first `program` access, so timing bare `parse` calls would hide that cost.
-
 ## [Size]($section.id('size'))
 
 Installed with npm, dependencies included:
@@ -135,4 +119,4 @@ Installed with npm, dependencies included:
 | Analyze scopes and references | `yuku-analyzer` **860 kB** | `@typescript-eslint/typescript-estree` + `@typescript-eslint/scope-manager` 26.7 MB         |
 | Print an AST                  | `yuku-codegen` **200 kB**  | `astring` 270 kB, `@babel/generator` 2.5 MB                                                 |
 
-The parser and analyzer share one 610 kB native binary, installed once however many packages use it. `yuku-codegen` and `yuku-ast` are plain JavaScript, and the WebAssembly build is installed only where it runs.
+The parser and analyzer share one 610 kB native binary, installed once however many packages use it.
