@@ -16,7 +16,7 @@ type InitInput =
 export function init(wasm?: InitInput): Promise<void>;
 
 /** The calls `yuku-engine` makes, returning the same buffers as the native binary. */
-export function parse(source: Uint8Array, options: object): ArrayBuffer;
-export function analyze(source: Uint8Array, options: object): ArrayBuffer;
+export function parse(source: string | Uint8Array, options: object): ArrayBuffer;
+export function analyze(source: string | Uint8Array, options: object): ArrayBuffer;
 
 export type { InitInput };

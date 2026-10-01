@@ -5,12 +5,12 @@ const require = createRequire(import.meta.url);
 
 let engine;
 
-export function parse(bytes, options) {
-  return current().parse(bytes, options);
+export function parse(source, options) {
+  return current().parse(source, options);
 }
 
-export function analyze(bytes, options) {
-  return current().analyze(bytes, options);
+export function analyze(source, options) {
+  return current().analyze(source, options);
 }
 
 function current() {

@@ -1,6 +1,7 @@
 const WASM_URL = new URL("./yuku-engine.wasm", import.meta.url);
 
 const SOURCE_TYPES = { script: 0, module: 1, commonjs: 2 };
+const _enc = new TextEncoder();
 const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
 
 // `readSync` returns the module's bytes where the runtime can read files, so no `init` is needed
@@ -34,13 +35,16 @@ export function createEngine(readSync) {
   };
 }
 
-function run(engine, entry, bytes, options = {}) {
+function run(engine, entry, source, options = {}) {
   const { memory, alloc, free } = engine;
-  const length = bytes.length;
-  const source = alloc(length || 1);
-  new Uint8Array(memory.buffer, source, length).set(bytes);
-  const result = engine[entry](source, length, flagsOf(options));
-  free(source, length || 1);
+  const capacity = (typeof source === "string" ? source.length * 3 : source.length) || 1;
+  const pointer = alloc(capacity);
+  const view = new Uint8Array(memory.buffer, pointer, capacity);
+  let length = source.length;
+  if (typeof source === "string") length = _enc.encodeInto(source, view).written;
+  else view.set(source);
+  const result = engine[entry](pointer, length, flagsOf(options));
+  free(pointer, capacity);
   if (result === 0) throw new Error("yuku-engine: the WebAssembly build ran out of memory");
   // a call can grow the memory, which detaches every earlier view of it
   const size = new DataView(memory.buffer).getUint32(result, true);

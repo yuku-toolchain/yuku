@@ -1,8 +1,7 @@
 import { CHILD_KEYS, findAll, WalkContext, _walk, _walkAsync } from "yuku-ast";
-import { analyze as analyzeBytes } from "yuku-engine";
+import { analyze as analyzeSource } from "yuku-engine";
 import { BindingFlags, decode } from "./decode.js";
 
-const _enc = new TextEncoder();
 const _dec = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 
 class Scope {
@@ -258,8 +257,7 @@ export class Module {
     this.analyzer = analyzer;
     this.path = path;
     this.source = typeof source === "string" ? source : _dec.decode(source);
-    const bytes = typeof source === "string" ? _enc.encode(source) : source;
-    this.#r = decode(analyzeBytes(bytes, { ...options, path }), this.source, path);
+    this.#r = decode(analyzeSource(source, { ...options, path }), this.source, path);
     this.#sem = this.#r.semantic;
   }
 

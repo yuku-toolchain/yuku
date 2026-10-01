@@ -368,13 +368,18 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    }}
         \\    return r;
         \\  }}
-        \\  const pm = _firstNa < _srcLen ? buildPosMap(_src, _srcLen, _firstNa) : null;
-        \\  const _p = v => v <= _firstNa ? v : pm[v - _firstNa];
+        \\  let pm = null;
+        \\  function _posMap() {{
+        \\    if (pm === null && _firstNa < _srcLen) pm = buildPosMap(_src, _srcLen, _firstNa);
+        \\    return pm;
+        \\  }}
+        \\  const _p = v => v <= _firstNa ? v : _posMap()[v - _firstNa];
         \\  const str = (s, e) => {{
         \\    if (s === e) return "";
         \\    if (s >= _srcLen) return _poolDecode(s, e);
         \\    if (e <= _firstNa) return _src.slice(s, e);
-        \\    return _src.slice(s < _firstNa ? s : pm[s - _firstNa], pm[e - _firstNa]);
+        \\    const m = _posMap();
+        \\    return _src.slice(s < _firstNa ? s : m[s - _firstNa], m[e - _firstNa]);
         \\  }};
         \\  function nodeArr(s, len) {{
         \\    const r = new Array(len);
@@ -495,9 +500,13 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
             \\    }
             \\  }
             \\  const _inner = _attached ? nodeWithComments : _decode;
-            \\  const _nodes = Array.from({ length: nodeCount });
-            \\  const _nodeIndexes = new WeakMap();
+            \\  let _nodes, _nodeIndexes;
             \\  function node(i) {
+            \\    if (_nodes === undefined) {
+            \\      _nodes = Array.from({ length: nodeCount });
+            \\      _nodeIndexes = new WeakMap();
+            \\      _posMap();
+            \\    }
             \\    const m = _nodes[i];
             \\    if (m !== undefined) return m;
             \\    const r = _inner(i);
@@ -1456,7 +1465,11 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\  let _program, _diagnostics, _comments, _tokens;
         \\  return {
         \\    get program() {
-        \\      return _program !== undefined ? _program : (_program = node(progIdx));
+        \\      if (_program === undefined) {
+        \\        _posMap();
+        \\        _program = node(progIdx);
+        \\      }
+        \\      return _program;
         \\    },
         \\    get tokens() {
         \\      // the list closes with eof, which is not a token of the source
@@ -1481,7 +1494,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     if (mode == .analyzer) {
         try w.writeAll(
             \\    nodeOf: node,
-            \\    indexOf: (n) => _nodeIndexes.get(n),
+            \\    indexOf: (n) => _nodeIndexes === undefined ? undefined : _nodeIndexes.get(n),
             \\    parentIndex: (i) => _parents()[i],
             \\    startOf, endOf, str,
             \\    get semantic() { return _semantic(); },
