@@ -101,7 +101,7 @@ project.module("c.ts").rootScope.find("renamed").definition().binding.name;
 // "value"
 ```
 
-Scopes, bindings, resolved references, closures, and cross-file module linking, computed in one native pass.
+Scopes, bindings, resolved references, closures, and cross-file module linking, computed in one native pass, 15–20× faster than `@typescript-eslint/scope-manager` and resolving names as the TypeScript checker does.
 
 [Read the yuku-analyzer documentation →](https://www.npmjs.com/package/yuku-analyzer)
 

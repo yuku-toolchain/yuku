@@ -2,13 +2,13 @@
 
 Scopes, bindings, resolved references, closures, and cross-file linking for JavaScript and TypeScript, computed natively in the same pass as the parse, part of [Yuku](https://yuku.fyi).
 
-It does the work of `eslint-scope` or `@typescript-eslint/scope-manager` and a cross-file resolver, up to 15× faster per file.
+It does the work of `eslint-scope` or `@typescript-eslint/scope-manager` and a cross-file resolver. On real code it is 15–20× faster than `@typescript-eslint/scope-manager` and 4–6× faster than `eslint-scope`, using up to 5× less memory.
 
 It is as accurate as it is fast, tested on more than 50,000 files, including the TypeScript compiler, Vue, and three.js.
 
-- 1.2 million references resolve to the same declarations as in the TypeScript checker.
-- 1.6 million references and declarations match `@typescript-eslint/scope-manager`, including which references write.
-- 65,000 imports and exports across eight real codebases link as in a TypeScript program.
+- 1.2 million references, values and types, resolve to the same declarations as in the TypeScript checker.
+- Over 500,000 declarations land in the same scopes, and over a million references resolve and write the same, as in `@typescript-eslint/scope-manager`.
+- 65,000 imports, re-exports, and exported names across eight real codebases link as in a TypeScript program.
 
 [Read how it is tested →](https://yuku.fyi/testing/#semantic-analysis)
 
