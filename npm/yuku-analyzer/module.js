@@ -348,6 +348,10 @@ export class Module {
     return parent < 0 ? null : this.#r.nodeOf(parent);
   }
 
+  *ancestors(node) {
+    for (let current = node; current !== null; current = this.parentOf(current)) yield current;
+  }
+
   nodeAt(offset) {
     let node = this.ast;
     if (!spans(node, offset)) return null;

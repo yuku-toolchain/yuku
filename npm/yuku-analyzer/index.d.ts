@@ -175,6 +175,8 @@ interface Module {
   /** The innermost scope around a node, the root scope for a node added later. */
   scopeOf(node: Node): Scope;
   parentOf(node: Node): Node | null;
+  /** The node, then each parent up to the root. */
+  ancestors(node: Node): IterableIterator<Node>;
   /** The innermost node containing a UTF-16 offset. */
   nodeAt(offset: number): Node | null;
   /** Resolves a name as code at `from` would. */

@@ -95,6 +95,7 @@ module.bindingOf(node);      // the binding a node declares or refers to
 module.referenceOf(node);
 module.scopeOf(node);
 module.parentOf(node);
+module.ancestors(node);      // the node, then each parent up to the root
 module.nodeAt(offset);       // the innermost node at a UTF-16 offset
 module.lookup("x", { from: scope, space: "value" }); // resolves a name as code there would
 module.capturesOf(fn);       // [{ binding, references, isWritten }], the outer bindings it uses

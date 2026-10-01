@@ -247,6 +247,18 @@ describe("node queries", () => {
     expect(module.parentOf(b.Identifier({ name: "x" }))).toBeNull();
   });
 
+  test("ancestors yields a node, then each parent up to the root", () => {
+    const module = analyze(`let x = f(1);`);
+    const literal = module.findAll("Literal")[0]!;
+    expect([...module.ancestors(literal)].map((node) => node.type)).toEqual([
+      "Literal",
+      "CallExpression",
+      "VariableDeclarator",
+      "VariableDeclaration",
+      "Program",
+    ]);
+  });
+
   test("nodeAt finds the innermost node at an offset", () => {
     const source = `const total = price + tax;`;
     const module = analyze(source);
