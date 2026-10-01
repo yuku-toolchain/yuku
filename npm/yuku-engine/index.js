@@ -1,14 +1,14 @@
-import { analyze as analyzeSource, parse as parseSource } from "#engine";
+import { analyze as analyzeBytes, parse as parseBytes } from "#engine";
 
 const LANGS = ["js", "jsx", "ts", "tsx", "dts"];
 const SOURCE_TYPES = ["module", "script", "commonjs"];
 
-export function parse(source, options) {
-  return parseSource(source, fileOptions(options));
+export function parse(bytes, options) {
+  return parseBytes(bytes, fileOptions(options));
 }
 
-export function analyze(source, options) {
-  return analyzeSource(source, fileOptions(options));
+export function analyze(bytes, options) {
+  return analyzeBytes(bytes, fileOptions(options));
 }
 
 export function langFromPath(path) {
