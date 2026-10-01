@@ -154,6 +154,28 @@ describe("resolution", () => {
     expect(main.dependencies.map((d) => d.path).sort()).toEqual(["src/index.ts", "src/util.ts"]);
   });
 
+  test("the default resolver finds a TypeScript source by the extension it compiles to", () => {
+    const analyzer = project({
+      "src/a.ts": `export const a = 1;`,
+      "src/b.tsx": `export const b = 2;`,
+      "src/c.d.ts": `export declare const c: 3;`,
+      "src/d.mts": `export const d = 4;`,
+      "src/e.js": `export const e = 5;`,
+      "src/e.ts": `export const e = 6;`,
+      "src/main.ts": `import { a } from "./a.js"; import { b } from "./b.jsx";
+        import { c } from "./c.js"; import { d } from "./d.mjs"; import { e } from "./e.js";`,
+    });
+    const main = analyzer.module("src/main.ts")!;
+    expect(main.imports.map((record) => record.resolvedModule?.path ?? null)).toEqual([
+      "src/a.ts",
+      "src/b.tsx",
+      "src/c.d.ts",
+      "src/d.mts",
+      // the named file wins
+      "src/e.js",
+    ]);
+  });
+
   test("a resolver returns false for an external module and null for an unresolved one", () => {
     const analyzer = new Analyzer({
       resolve: (specifier) => (specifier === "react" ? false : null),

@@ -64,7 +64,7 @@ project.link();                         // links now, cross-file queries link on
 
 The options are `lang` and `sourceType`, inferred from the path, and `preserveParens`, `attachComments`, and `tokens`, as in [`yuku-parser`](https://www.npmjs.com/package/yuku-parser#options). `analyze(source, options)` is a project of one file, with `path` among its options.
 
-The default resolver matches relative specifiers to files in the project, probing extensions and index files. A package or an asset such as `./app.css` is external, and a relative specifier with no match is reported.
+The default resolver matches relative specifiers to files in the project, probing extensions and index files as TypeScript does, so `./a.js` finds `a.ts`. A package or an asset such as `./app.css` is external, and a relative specifier with no match is reported.
 
 A diagnostic has the shape of [`yuku-parser`'s](https://www.npmjs.com/package/yuku-parser#diagnostics), with the `path` of its module.
 

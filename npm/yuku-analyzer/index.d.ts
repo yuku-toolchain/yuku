@@ -30,7 +30,8 @@ interface AnalyzerOptions {
   /**
    * Maps an import specifier to the path of a file in the project. Return `false` for a module
    * outside the project, such as a package, and `null` when it cannot be resolved, which is
-   * reported as a warning. Defaults to relative paths with extension and index probing.
+   * reported as a warning. Defaults to relative paths, probing extensions and index files as
+   * TypeScript does.
    */
   resolve?: (specifier: string, importer: string) => string | false | null;
 }

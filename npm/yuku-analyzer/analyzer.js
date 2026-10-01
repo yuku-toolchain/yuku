@@ -1,9 +1,17 @@
 import { BindingFlags } from "./decode.js";
 import { Module } from "./module.js";
 
-const EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mts", ".mjs", ".cts", ".cjs"];
+// probed in TypeScript's order
+const EXTENSIONS = [".ts", ".tsx", ".d.ts", ".js", ".jsx", ".mts", ".mjs", ".cts", ".cjs"];
 
-// a name supplied ambiguously by more than one export * (ResolveExport, 16.2.1.7.2.2)
+// `./a.js` imports `a.ts`
+const SOURCE_EXTENSIONS = new Map([
+  [".js", [".ts", ".tsx", ".d.ts"]],
+  [".jsx", [".tsx"]],
+  [".mjs", [".mts", ".d.mts"]],
+  [".cjs", [".cts", ".d.cts"]],
+]);
+
 const AMBIGUOUS = Symbol("ambiguous");
 
 export class Analyzer {
@@ -11,8 +19,7 @@ export class Analyzer {
   #resolve;
   #diagnostics = [];
   #dirty = false;
-  // origin binding to the import bindings that resolve to it, built once per
-  // link so findReferences is a lookup rather than a walk over every import
+  // defining binding to the import bindings that resolve to it
   #importers = new Map();
 
   constructor(options = {}) {
@@ -66,13 +73,11 @@ export class Analyzer {
       }
     }
     for (const module of this.#modules.values()) {
-      // namespace and side-effect imports name nothing to validate
       for (const record of module.imports) {
         if (record._resolved !== null && record.name !== null) {
           this.#validate(module, record, record.name, "Import", diagnostics);
         }
       }
-      // export * as ns resolves trivially, and a bare export * conflicts only at use sites
       for (const record of module.exports) {
         if (record._resolved !== null && record.fromName !== null) {
           this.#validate(module, record, record.fromName, "Re-export", diagnostics);
@@ -99,7 +104,6 @@ export class Analyzer {
     if (this.#dirty) this.link();
   }
 
-  // follows import bindings to the binding that defines them (InitializeEnvironment 7.c)
   _definitionOf(binding) {
     this._link(binding.module);
     const seen = new Set();
@@ -170,7 +174,6 @@ export class Analyzer {
         const local = direct.local;
         const record = local?.has(BindingFlags.Import) ? module._importOf(local) : undefined;
         if (record === undefined) return { module, binding: local, namespace: false };
-        // an exported import resolves through the module it imports from (ParseModule 10.a.ii)
         if (record._resolved === null) return null;
         if (record.isNamespace) {
           return { module: record._resolved, binding: null, namespace: true };
@@ -178,7 +181,6 @@ export class Analyzer {
         return this.#resolveExport(record._resolved, record.name, seen);
       }
       if (direct._resolved === null) return null;
-      // a namespace re-export binds the namespace, a named one follows the chain
       if (direct.kind === "namespace") {
         return { module: direct._resolved, binding: null, namespace: true };
       }
@@ -188,7 +190,6 @@ export class Analyzer {
     // default never crosses export *
     if (name === "default") return null;
 
-    // identical star bindings collapse, different ones are ambiguous
     let found = null;
     for (const star of module._starExports()) {
       if (star._resolved === null) continue;
@@ -226,7 +227,6 @@ function wire(from, to) {
   if (!to._dependents.includes(from)) to._dependents.push(from);
 }
 
-// the string literal that names the module
 function specifierNodeOf(module, node) {
   switch (node.type) {
     case "ImportSpecifier":
@@ -243,22 +243,25 @@ function specifierNodeOf(module, node) {
   }
 }
 
-// relative specifiers with extension and index probing. a bare specifier
-// is a package, and an unmatched asset path such as `./app.css` is external
+// a bare specifier is a package, and an unmatched asset such as `./app.css` is external
 function defaultResolve(modules) {
   return (specifier, importer) => {
     if (!specifier.startsWith(".")) return false;
     const slash = importer.lastIndexOf("/");
     const base = joinPath(slash === -1 ? "" : importer.slice(0, slash), specifier);
     if (modules.has(base)) return base;
-    for (const extension of EXTENSIONS) {
-      if (modules.has(base + extension)) return base + extension;
+    const extension = /\.[^./]+$/.exec(base)?.[0] ?? null;
+    for (const source of SOURCE_EXTENSIONS.get(extension) ?? []) {
+      const path = base.slice(0, -extension.length) + source;
+      if (modules.has(path)) return path;
     }
-    for (const extension of EXTENSIONS) {
-      if (modules.has(`${base}/index${extension}`)) return `${base}/index${extension}`;
+    for (const probe of EXTENSIONS) {
+      if (modules.has(base + probe)) return base + probe;
     }
-    const extension = /\.[^./]+$/.exec(base);
-    return extension === null || EXTENSIONS.includes(extension[0]) ? null : false;
+    for (const probe of EXTENSIONS) {
+      if (modules.has(`${base}/index${probe}`)) return `${base}/index${probe}`;
+    }
+    return extension === null || EXTENSIONS.includes(extension) ? null : false;
   };
 }
 
