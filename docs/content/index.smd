@@ -1,17 +1,30 @@
 ---
 .title = "Introduction",
-.description = "Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.",
+.description = "Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-A high-performance JavaScript and TypeScript compiler toolchain written in Zig, usable from Zig and from JavaScript through npm.
+Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig, usable from Zig and from JavaScript through npm.
 
 [Try it in the playground →](https://playground.yuku.fyi)
 
+## [Components]($section.id('components'))
+
+| Component                              | Purpose                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| [Parser](/parser/)                     | JavaScript, TypeScript, and JSX to an AST, recovering from errors           |
+| [AST](/parser/ast/)                    | The syntax tree, with comments and tokens alongside                         |
+| [Semantic analysis](/parser/semantic/) | Scopes, symbols, resolved references, early errors, and module records      |
+| [Traverse](/parser/traverse/)          | Typed visitors, from plain walks to full semantics and in-place transforms  |
+| [Codegen](/parser/codegen/)            | Printing back to source, with type stripping, minification, and source maps |
+
+># [About these docs]($block.attrs('note'))
+>These pages cover the surface: what each part does and the API you build on. Beneath it is far more, an engine built for exactness and speed down to the last detail. To go deeper, read the [source](https://github.com/yuku-toolchain/yuku). It is typed and documented throughout, and it answers you or your coding agent more precisely than any guide could. Each npm package documents its complete JavaScript API in its README.
+
 ## [Why Yuku]($section.id('why-yuku'))
 
-**Correct.** 100% ECMAScript spec compliant, with zero failures and zero AST mismatches across the [parser test suite](/testing/).
+**Correct.** 100% ECMAScript spec compliant, with zero failures and zero AST mismatches across the [parser test suite](/testing/), and every name resolved as the TypeScript checker resolves it.
 
 **Fast.** Data-oriented from the ground up, with rigorous performance engineering.
 
@@ -21,7 +34,7 @@ A high-performance JavaScript and TypeScript compiler toolchain written in Zig, 
 
 **Modern.** Full support for modern and experimental syntax, including decorators, source phase and deferred imports, and `using` declarations.
 
-## [At a glance]($section.id('at-a-glance'))
+## [Example]($section.id('example'))
 
 Parse TypeScript, analyze it, and print it back as minified JavaScript.
 
@@ -60,12 +73,12 @@ defer result.deinit(allocator);
 
 ### [JavaScript]($section.id('javascript'))
 
-| Package                                                        | For                                                 |
-| -------------------------------------------------------------- | --------------------------------------------------- |
-| [`yuku-parser`](https://www.npmjs.com/package/yuku-parser)     | Parsing to an ESTree / TypeScript-ESTree AST        |
-| [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) | Scopes, bindings, references, and module linking    |
-| [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen)   | Printing an AST back to source, with source maps    |
-| [`yuku-ast`](https://www.npmjs.com/package/yuku-ast)           | Walking, building, and checking AST nodes           |
+| Package                                                        | For                                              |
+| -------------------------------------------------------------- | ------------------------------------------------ |
+| [`yuku-parser`](https://www.npmjs.com/package/yuku-parser)     | Parsing to an ESTree / TypeScript-ESTree AST     |
+| [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) | Scopes, bindings, references, and module linking |
+| [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen)   | Printing an AST back to source, with source maps |
+| [`yuku-ast`](https://www.npmjs.com/package/yuku-ast)           | Walking, building, and checking AST nodes        |
 
 Each package documents its API in its README. The parser and analyzer run on a native binary for each platform.
 
@@ -97,17 +110,31 @@ Yuku requires Zig 0.16.0 or later.
 
 ## [Performance]($section.id('performance'))
 
-Parsing natively, Yuku is faster than Oxc and roughly 2× faster than SWC.
+Measured against the alternatives doing the same work, on an Apple M3.
 
-![Parsing `typescript.js` (7.8 MB) · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js")
+### [Parser]($section.id('parser-performance'))
 
-On npm, Yuku is **3-10x faster** than alternatives.
+Parsing natively, Yuku is faster than Oxc and about 2× faster than SWC.
 
-![Parsing `react.js` (72 KB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing react.js")
+![Parsing `typescript.js` (7.8 MB) natively · [benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and SWC parsing typescript.js")
+
+On npm, Yuku parses 3–10× faster than the alternatives.
+
+![Parsing `react.js` (72 KB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, SWC, Babel, and Acorn parsing react.js")
 
 The lead holds on large files.
 
-![Parsing `typescript.js` (7.8 MB) via npm · macOS (ARM), Apple M3, 16 GB · [benchmark source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, Acorn, and other parsers parsing typescript.js")
+![Parsing `typescript.js` (7.8 MB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, SWC, Babel, and Acorn parsing typescript.js")
+
+### [Analyzer]($section.id('analyzer-performance'))
+
+Analyzing a whole codebase, with every reference resolved and every import linked across files, Yuku is 5–11× faster than typescript-eslint, and 4–7× faster than TypeScript through its API.
+
+![Analyzing three.js (755 files) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/three.png "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing three.js")
+
+The lead holds on a single large file.
+
+![Analyzing `typescript.js` (7.8 MB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/typescript_js.png "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing typescript.js")
 
 ## [Size]($section.id('size'))
 

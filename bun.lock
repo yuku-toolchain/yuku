@@ -25,7 +25,7 @@
     },
     "npm/yuku-analyzer": {
       "name": "yuku-analyzer",
-      "version": "0.15.0",
+      "version": "0.15.1",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:^",
         "yuku-ast": "workspace:^",
@@ -34,37 +34,37 @@
     },
     "npm/yuku-ast": {
       "name": "yuku-ast",
-      "version": "0.15.0",
+      "version": "0.15.1",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:^",
       },
     },
     "npm/yuku-codegen": {
       "name": "yuku-codegen",
-      "version": "0.15.0",
+      "version": "0.15.1",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:^",
       },
     },
     "npm/yuku-engine": {
       "name": "yuku-engine",
-      "version": "0.15.0",
+      "version": "0.15.1",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:^",
       },
       "optionalDependencies": {
-        "@yuku-engine/binding-android-arm64": "0.15.0",
-        "@yuku-engine/binding-darwin-arm64": "0.15.0",
-        "@yuku-engine/binding-darwin-x64": "0.15.0",
-        "@yuku-engine/binding-freebsd-x64": "0.15.0",
-        "@yuku-engine/binding-linux-arm-gnu": "0.15.0",
-        "@yuku-engine/binding-linux-arm-musl": "0.15.0",
-        "@yuku-engine/binding-linux-arm64-gnu": "0.15.0",
-        "@yuku-engine/binding-linux-arm64-musl": "0.15.0",
-        "@yuku-engine/binding-linux-x64-gnu": "0.15.0",
-        "@yuku-engine/binding-linux-x64-musl": "0.15.0",
-        "@yuku-engine/binding-win32-arm64": "0.15.0",
-        "@yuku-engine/binding-win32-x64": "0.15.0",
+        "@yuku-engine/binding-android-arm64": "0.15.1",
+        "@yuku-engine/binding-darwin-arm64": "0.15.1",
+        "@yuku-engine/binding-darwin-x64": "0.15.1",
+        "@yuku-engine/binding-freebsd-x64": "0.15.1",
+        "@yuku-engine/binding-linux-arm-gnu": "0.15.1",
+        "@yuku-engine/binding-linux-arm-musl": "0.15.1",
+        "@yuku-engine/binding-linux-arm64-gnu": "0.15.1",
+        "@yuku-engine/binding-linux-arm64-musl": "0.15.1",
+        "@yuku-engine/binding-linux-x64-gnu": "0.15.1",
+        "@yuku-engine/binding-linux-x64-musl": "0.15.1",
+        "@yuku-engine/binding-win32-arm64": "0.15.1",
+        "@yuku-engine/binding-win32-x64": "0.15.1",
       },
       "peerDependencies": {
         "@yuku-engine/wasm": "workspace:*",
@@ -75,59 +75,59 @@
     },
     "npm/yuku-engine-wasm": {
       "name": "@yuku-engine/wasm",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-android-arm64": {
       "name": "@yuku-engine/binding-android-arm64",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-darwin-arm64": {
       "name": "@yuku-engine/binding-darwin-arm64",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-darwin-x64": {
       "name": "@yuku-engine/binding-darwin-x64",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-freebsd-x64": {
       "name": "@yuku-engine/binding-freebsd-x64",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-linux-arm-gnu": {
       "name": "@yuku-engine/binding-linux-arm-gnu",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-linux-arm-musl": {
       "name": "@yuku-engine/binding-linux-arm-musl",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-linux-arm64-gnu": {
       "name": "@yuku-engine/binding-linux-arm64-gnu",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-linux-arm64-musl": {
       "name": "@yuku-engine/binding-linux-arm64-musl",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-linux-x64-gnu": {
       "name": "@yuku-engine/binding-linux-x64-gnu",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-linux-x64-musl": {
       "name": "@yuku-engine/binding-linux-x64-musl",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-win32-arm64": {
       "name": "@yuku-engine/binding-win32-arm64",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-engine/@yuku-engine/binding-win32-x64": {
       "name": "@yuku-engine/binding-win32-x64",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
     "npm/yuku-parser": {
       "name": "yuku-parser",
-      "version": "0.15.0",
+      "version": "0.15.1",
       "dependencies": {
         "@yuku-toolchain/types": "workspace:^",
         "yuku-engine": "workspace:*",
@@ -135,7 +135,7 @@
     },
     "npm/yuku-types": {
       "name": "@yuku-toolchain/types",
-      "version": "0.15.0",
+      "version": "0.15.1",
     },
   },
   "packages": {
@@ -159,7 +159,7 @@
 
     "@types/bun": ["@types/bun@1.4.2", "", { "dependencies": { "bun-types": "1.4.2" } }, "sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ=="],
 
-    "@types/node": ["@types/node@26.6.3", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-dsqMQQoeTLqu9wynDD00q573mNzso3IdQOAfHRJqLCcmCFPoGo9A1bDpUcv/9tnKpErQWv9uKeGfl37EIS02Yg=="],
+    "@types/node": ["@types/node@26.6.4", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg=="],
 
     "@typescript-eslint/project-service": ["@typescript-eslint/project-service@8.71.0", "", { "dependencies": { "@typescript-eslint/tsconfig-utils": "^8.71.0", "@typescript-eslint/types": "^8.71.0", "debug": "^4.4.3" }, "peerDependencies": { "typescript": ">=4.8.4 <6.1.0" } }, "sha512-aABjw5rjBacYONVPaPiWOCjJu0vEF4a25iQuodlmQYL1trtLZ0X/y+2Vzl3BKI1odM4LnwLE1oUDXYp1wzx1TQ=="],
 

@@ -1,6 +1,6 @@
 {
   "name": "yuku-parser",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "A fast, spec-compliant JavaScript and TypeScript parser, producing an ESTree / TypeScript-ESTree AST",
   "license": "MIT",
   "repository": {

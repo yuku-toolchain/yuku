@@ -1,6 +1,6 @@
 {
   "name": "@yuku-engine/binding-freebsd-x64",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "license": "MIT",
   "os": [
     "freebsd"

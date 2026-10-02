@@ -1,10 +1,10 @@
 # Yuku, a JavaScript/TypeScript Compiler Toolchain in Zig
 
-> Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
+> Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig.
 
 ## Documentation
 
-- [Introduction](https://yuku.fyi/): Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
+- [Introduction](https://yuku.fyi/): Yuku is a high-performance JavaScript and TypeScript compiler toolchain written in Zig.
 - [Parser](https://yuku.fyi/parser/): A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
 - [AST](https://yuku.fyi/parser/ast/): The flat, data-oriented AST Yuku's parser produces, with its comments and tokens.
 - [Semantic Analysis](https://yuku.fyi/parser/semantic/): Scopes, symbols, resolved references, early errors, and module records for a parsed tree.

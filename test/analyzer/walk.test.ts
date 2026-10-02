@@ -210,6 +210,16 @@ describe("node queries", () => {
     expect(module.scopeOf(use.argument)).toBe(reference!.scope);
   });
 
+  test("node queries find nodes decoded after an earlier query", () => {
+    const module = analyze(`let inner = 1; function f() { return inner; }`);
+    const [reference] = module.references;
+    expect(module.referenceOf(reference!.node)).toBe(reference!);
+
+    const [fn] = module.findAll("FunctionDeclaration");
+    expect(module.bindingOf(fn!.id!)?.name).toBe("f");
+    expect(module.referenceOf(reference!.node)).toBe(reference!);
+  });
+
   test("resolve walks the scope chain from a starting scope", () => {
     const module = analyze(`let outer = 1; function f() { let local = 2; }`);
     const bodyScope = module.scopes.find((s) => s.kind === "functionBody")!;

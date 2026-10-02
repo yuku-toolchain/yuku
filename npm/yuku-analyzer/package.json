@@ -1,6 +1,6 @@
 {
   "name": "yuku-analyzer",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Scopes, bindings, resolved references, closures, and cross-file linking for JavaScript and TypeScript",
   "license": "MIT",
   "repository": {

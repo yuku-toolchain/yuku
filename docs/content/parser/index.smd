@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-Yuku's parser turns JavaScript and TypeScript into an [AST](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns a tree of everything it could read.
+Yuku's parser turns JavaScript, TypeScript, and JSX into an [AST](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns a tree of everything it could read.
 
 ## [JavaScript]($section.id('javascript'))
 

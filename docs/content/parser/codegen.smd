@@ -20,7 +20,7 @@ import { parse } from "yuku-parser";
 const { code, map, diagnostics } = generate(parse("const x = 1 + 2;").program);
 ```
 
-The same printer in plain JavaScript, for any ESTree AST, with [byte-identical output](/testing/#codegen), source maps included. It runs 2.6x faster than `@babel/generator`, or 3x with source maps on. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
+The same printer in plain JavaScript, for any ESTree AST, with [byte-identical output](/testing/#codegen), source maps included. It runs 2.6× faster than `@babel/generator`, or 3× with source maps on. See [yuku-codegen on npm](https://www.npmjs.com/package/yuku-codegen) for the full API.
 
 ## [Zig]($section.id('zig'))
 

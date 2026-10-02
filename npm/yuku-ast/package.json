@@ -1,6 +1,6 @@
 {
   "name": "yuku-ast",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Walk, build, and check any ESTree / TypeScript-ESTree AST, with typed visitors, builders, and guards",
   "license": "MIT",
   "repository": {

@@ -21,6 +21,7 @@ export class Analyzer {
   #dirty = false;
   // defining binding to the import bindings that resolve to it
   #importers = new Map();
+  #exportResolutions = new Map();
 
   constructor(options = {}) {
     this.#resolve = options.resolve ?? defaultResolve(this.#modules);
@@ -54,6 +55,7 @@ export class Analyzer {
 
   link() {
     this.#dirty = false;
+    this.#exportResolutions = new Map();
     const diagnostics = [];
     for (const module of this.#modules.values()) {
       diagnostics.push(...module.diagnostics);
@@ -114,7 +116,7 @@ export class Analyzer {
       const record = current.module._importOf(current);
       if (record === undefined || record._resolved === null) return null;
       if (record.isNamespace) return { module: record._resolved, binding: null };
-      const resolution = this.#resolveExport(record._resolved, record.name, []);
+      const resolution = this.#exportResolution(record._resolved, record.name);
       if (resolution === null || resolution === AMBIGUOUS) return null;
       if (resolution.namespace) return { module: resolution.module, binding: null };
       if (resolution.binding === null) return null;
@@ -132,7 +134,7 @@ export class Analyzer {
 
   _resolveExport(module, name) {
     this._link(module);
-    const resolution = this.#resolveExport(module, name, []);
+    const resolution = this.#exportResolution(module, name);
     if (resolution === null || resolution === AMBIGUOUS) return null;
     if (resolution.namespace) return { module: resolution.module, binding: null };
     if (resolution.binding === null) return null;
@@ -153,7 +155,7 @@ export class Analyzer {
   }
 
   #validate(module, record, name, what, diagnostics) {
-    const resolution = this.#resolveExport(record._resolved, name, []);
+    const resolution = this.#exportResolution(record._resolved, name);
     if (resolution !== null && resolution !== AMBIGUOUS) return;
     const message =
       resolution === null
@@ -161,6 +163,20 @@ export class Analyzer {
         : `${what} '${name}' of module '${record.specifier}' is ambiguous: ` +
           "multiple 'export *' declarations supply it";
     diagnostics.push(diagnostic("error", message, module, record.node));
+  }
+
+  #exportResolution(module, name) {
+    let resolutions = this.#exportResolutions.get(module);
+    if (resolutions === undefined) {
+      resolutions = new Map();
+      this.#exportResolutions.set(module, resolutions);
+    }
+    let resolution = resolutions.get(name);
+    if (resolution === undefined) {
+      resolution = this.#resolveExport(module, name, []);
+      resolutions.set(name, resolution);
+    }
+    return resolution;
   }
 
   // ResolveExport, 16.2.1.7.2.2

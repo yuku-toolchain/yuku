@@ -500,20 +500,29 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
             \\    }
             \\  }
             \\  const _inner = _attached ? nodeWithComments : _decode;
-            \\  let _nodes, _nodeIndexes;
+            \\  let _nodes, _decodeOrder, _nodeIndexes;
+            \\  let _decodedCount = 0, _indexedCount = 0;
             \\  function node(i) {
             \\    if (_nodes === undefined) {
             \\      _nodes = Array.from({ length: nodeCount });
-            \\      _nodeIndexes = new WeakMap();
+            \\      _decodeOrder = new Int32Array(nodeCount);
             \\      _posMap();
             \\    }
             \\    const m = _nodes[i];
             \\    if (m !== undefined) return m;
             \\    const r = _inner(i);
             \\    _nodes[i] = r;
-            \\    if (r !== null && typeof r === "object" && !_nodeIndexes.has(r))
-            \\      _nodeIndexes.set(r, i);
+            \\    if (r !== null && typeof r === "object") _decodeOrder[_decodedCount++] = i;
             \\    return r;
+            \\  }
+            \\  function indexOf(n) {
+            \\    if (_nodes === undefined) return undefined;
+            \\    if (_nodeIndexes === undefined) _nodeIndexes = new Map();
+            \\    for (; _indexedCount < _decodedCount; _indexedCount++) {
+            \\      const i = _decodeOrder[_indexedCount];
+            \\      if (!_nodeIndexes.has(_nodes[i])) _nodeIndexes.set(_nodes[i], i);
+            \\    }
+            \\    return _nodeIndexes.get(n);
             \\  }
             \\
         ),
@@ -1494,7 +1503,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
     if (mode == .analyzer) {
         try w.writeAll(
             \\    nodeOf: node,
-            \\    indexOf: (n) => _nodeIndexes === undefined ? undefined : _nodeIndexes.get(n),
+            \\    indexOf,
             \\    parentIndex: (i) => _parents()[i],
             \\    startOf, endOf, str,
             \\    get semantic() { return _semantic(); },

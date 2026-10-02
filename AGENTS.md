@@ -284,6 +284,7 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 - **Release notes are written by hand** in `CHANGELOG.md`, one `## <version>` section per release, newest first. Nothing generates them, so they say what a user needs to know and nothing else.
 - **Write them from the log, at release time.** `git log v<previous>..HEAD --format=%s` lists every subject since the last release. Keep the changes a user can observe, and leave out tests, CI, docs, and refactors.
 - **One line per change, written as its commit subject**, ending with its pull request and authors when it has them: `- parser: accept legal line breaks in TypeScript declarations (#218 by @author)`.
+- **Short, never an essay.** A line names the change, and a breaking one says what to do instead. Context, rationale, and internals belong in the commit.
 - **Breaking changes come first.** When a release has any, they go under `### Breaking`, each saying what a user must change, and the rest under `### Changes`.
 - **Commit the notes, then bump.** `bun run release:npm` commits only the new versions, then tags and pushes. The publish workflow stops before building when `CHANGELOG.md` has no section for the tag, and posts that section as the GitHub release once the packages are on npm.
 

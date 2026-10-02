@@ -9,10 +9,28 @@ Semantic analysis turns a tree into a model of the program: every scope, symbol,
 
 It is a separate pass, so the parse stays fast and only the tools that need semantics pay for them.
 
-># [From JavaScript]($block.attrs('note'))
->[`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) brings this model to JavaScript, computed natively and queried as plain objects, with cross-file linking across a module graph. Its README documents the full API.
+## [JavaScript]($section.id('javascript'))
 
-## [Analyzing a tree]($section.id('analyzing-a-tree'))
+```bash
+npm install yuku-analyzer
+```
+
+```js
+import { Analyzer } from "yuku-analyzer";
+
+const project = new Analyzer();
+
+project.setFile("a.ts", `export const value = 1;`);
+project.setFile("b.ts", `export { value as renamed } from "./a.ts";`);
+project.setFile("c.ts", `import { renamed } from "./b.ts"; renamed;`);
+
+project.module("c.ts").rootScope.find("renamed").definition().binding.name;
+// "value"
+```
+
+The same model as plain objects, computed natively, with every import linked across a project. See [yuku-analyzer on npm](https://www.npmjs.com/package/yuku-analyzer) for the full API.
+
+## [Zig]($section.id('zig'))
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});

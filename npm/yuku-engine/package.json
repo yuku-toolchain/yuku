@@ -1,6 +1,6 @@
 {
   "name": "yuku-engine",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "The native binary that the Yuku packages run on",
   "license": "MIT",
   "repository": {
@@ -17,18 +17,18 @@
     "native.js"
   ],
   "optionalDependencies": {
-    "@yuku-engine/binding-linux-x64-gnu": "0.15.0",
-    "@yuku-engine/binding-linux-arm64-gnu": "0.15.0",
-    "@yuku-engine/binding-linux-arm-gnu": "0.15.0",
-    "@yuku-engine/binding-linux-x64-musl": "0.15.0",
-    "@yuku-engine/binding-linux-arm64-musl": "0.15.0",
-    "@yuku-engine/binding-linux-arm-musl": "0.15.0",
-    "@yuku-engine/binding-darwin-x64": "0.15.0",
-    "@yuku-engine/binding-darwin-arm64": "0.15.0",
-    "@yuku-engine/binding-win32-x64": "0.15.0",
-    "@yuku-engine/binding-win32-arm64": "0.15.0",
-    "@yuku-engine/binding-freebsd-x64": "0.15.0",
-    "@yuku-engine/binding-android-arm64": "0.15.0"
+    "@yuku-engine/binding-linux-x64-gnu": "0.15.1",
+    "@yuku-engine/binding-linux-arm64-gnu": "0.15.1",
+    "@yuku-engine/binding-linux-arm-gnu": "0.15.1",
+    "@yuku-engine/binding-linux-x64-musl": "0.15.1",
+    "@yuku-engine/binding-linux-arm64-musl": "0.15.1",
+    "@yuku-engine/binding-linux-arm-musl": "0.15.1",
+    "@yuku-engine/binding-darwin-x64": "0.15.1",
+    "@yuku-engine/binding-darwin-arm64": "0.15.1",
+    "@yuku-engine/binding-win32-x64": "0.15.1",
+    "@yuku-engine/binding-win32-arm64": "0.15.1",
+    "@yuku-engine/binding-freebsd-x64": "0.15.1",
+    "@yuku-engine/binding-android-arm64": "0.15.1"
   },
   "engines": {
     "node": ">=14.18.0"
