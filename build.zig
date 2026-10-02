@@ -181,7 +181,8 @@ pub fn build(b: *std.Build) void {
     });
     const wasm_step = b.step("wasm", "Build the WebAssembly core");
 
-    const wasm_optimize: std.builtin.OptimizeMode = .ReleaseSmall;
+    // ReleaseSmall saves 85 kB at the cost of 10 to 15% of the speed
+    const wasm_optimize: std.builtin.OptimizeMode = .ReleaseFast;
     const wasm_util = b.createModule(.{
         .root_source_file = b.path("src/util/root.zig"),
         .target = wasm_target,
