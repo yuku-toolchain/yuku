@@ -19,7 +19,7 @@ if (floor === undefined) {
 }
 
 // the WebAssembly build uses WebAssembly SIMD and reference types, which raise its own floor
-const exceptions: Record<string, string> = { "@yuku-engine/wasm": ">=18.0.0" };
+const exceptions: Record<string, string> = { "@yuku-core/wasm": ">=18.0.0" };
 
 const mismatched: string[] = [];
 

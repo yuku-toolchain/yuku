@@ -1,4 +1,4 @@
-import { init } from "@yuku-engine/wasm";
+import { load } from "@yuku-core/wasm";
 import { parse, TokenKind } from "yuku-parser";
 import { generate } from "yuku-codegen";
 import { analyze, BindingFlags } from "yuku-analyzer";
@@ -7,7 +7,7 @@ import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
 import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
 
 hljs.registerLanguage("typescript", typescript);
-await init();
+const core = await load();
 
 const $ = (id) => document.getElementById(id);
 
@@ -348,6 +348,7 @@ function semTree(m) {
 
 function options() {
   return {
+    core,
     lang: $("lang").value,
     sourceType: $("sourceType").value,
     preserveParens: $("preserveParens").checked,

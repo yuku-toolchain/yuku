@@ -19,7 +19,7 @@ The parser runs against [parser-test-suite](https://github.com/yuku-toolchain/pa
 
 The snapshots come from an independent parser, [Oxc](https://oxc.rs), so a match means Yuku produces the tree the ESTree ecosystem agrees on, down to every field, position, and comment. Passing files must also walk in source order and pass semantic analysis without a false positive. Yuku passes every test, with zero failures and zero AST mismatches.
 
-The suite runs through the npm packages built from local source, so every run checks the whole chain from the Zig parser to the JavaScript AST, and the WebAssembly build must match the native binary byte for byte.
+The suite runs through the npm packages built from local source, so every run checks the whole chain from the Zig parser to the JavaScript AST, and the WebAssembly core must match the native core byte for byte.
 
 ## [Codegen]($section.id('codegen'))
 

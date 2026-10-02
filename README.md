@@ -31,8 +31,6 @@ Visit [yuku.fyi](https://yuku.fyi) for the documentation.
 | [`yuku-parser`](npm/yuku-parser)            | Parsing to an ESTree / TypeScript-ESTree AST     |
 | [`yuku-analyzer`](npm/yuku-analyzer)        | Scopes, bindings, references, and module linking |
 | [`yuku-codegen`](npm/yuku-codegen)          | Printing an AST back to source, with source maps |
-| [`yuku-ast`](npm/yuku-ast)                  | Walking, building, and checking AST nodes        |
-| [`@yuku-engine/wasm`](npm/yuku-engine-wasm) | Running every package on WebAssembly             |
 
 Each package documents its API in its README. From Zig, add the `parser` module as described in the [documentation](https://yuku.fyi/#zig).
 

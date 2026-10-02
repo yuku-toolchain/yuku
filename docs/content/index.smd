@@ -20,7 +20,7 @@ Yuku is a high-performance JavaScript and TypeScript compiler toolchain written 
 | [Codegen](/parser/codegen/)            | Printing back to source, with type stripping, minification, and source maps |
 
 ># [About these docs]($block.attrs('note'))
->These pages cover the surface: what each part does and the API you build on. Beneath it is far more, an engine built for exactness and speed down to the last detail. To go deeper, read the [source](https://github.com/yuku-toolchain/yuku). It is typed and documented throughout, and it answers you or your coding agent more precisely than any guide could. Each npm package documents its complete JavaScript API in its README.
+>These pages cover the surface: what each part does and the API you build on. Beneath it is far more, a core built for exactness and speed down to the last detail. To go deeper, read the [source](https://github.com/yuku-toolchain/yuku). It is typed and documented throughout, and it answers you or your coding agent more precisely than any guide could. Each npm package documents its complete JavaScript API in its README.
 
 ## [Why Yuku]($section.id('why-yuku'))
 
@@ -28,46 +28,11 @@ Yuku is a high-performance JavaScript and TypeScript compiler toolchain written 
 
 **Fast.** Data-oriented from the ground up, with rigorous performance engineering.
 
-**Small.** A fraction of the install size of the alternatives, see [Size](#size).
+**Small.** A fraction of the install size of the alternatives, with one [core](#javascript) shared by every package, see [Size](#size).
 
 **Zero dependencies.** Pure Zig, easy to build, embed, and cross-compile.
 
 **Modern.** Full support for modern and experimental syntax, including decorators, source phase and deferred imports, and `using` declarations.
-
-## [Example]($section.id('example'))
-
-Parse TypeScript, analyze it, and print it back as minified JavaScript.
-
-```js
-import { parse } from "yuku-parser";
-import { analyze } from "yuku-analyzer";
-import { generate } from "yuku-codegen";
-
-const source = "export const greet = (name: string) => `Hello, ${name}`;";
-
-generate(parse(source, { lang: "ts" }).program, { strip: true, minify: true }).code;
-// "export const greet=(name)=>`Hello, ${name}`"
-
-analyze(source, { lang: "ts" }).exports.map((e) => e.name);
-// ["greet"]
-```
-
-The same pipeline in Zig.
-
-```zig
-var tree = try parser.parse(allocator, source, .{ .lang = .ts });
-defer tree.deinit();
-
-const semantic = try parser.semantic.analyze(&tree);
-const records = try parser.semantic.module_record.collect(&tree, &semantic);
-
-const result = try parser.codegen.generate(allocator, &tree, .{
-    .strip = true,
-    .minify = true,
-    .format = .compact,
-});
-defer result.deinit(allocator);
-```
 
 ## [Install]($section.id('install'))
 
@@ -78,20 +43,38 @@ defer result.deinit(allocator);
 | [`yuku-parser`](https://www.npmjs.com/package/yuku-parser)     | Parsing to an ESTree / TypeScript-ESTree AST     |
 | [`yuku-analyzer`](https://www.npmjs.com/package/yuku-analyzer) | Scopes, bindings, references, and module linking |
 | [`yuku-codegen`](https://www.npmjs.com/package/yuku-codegen)   | Printing an AST back to source, with source maps |
-| [`yuku-ast`](https://www.npmjs.com/package/yuku-ast)           | Walking, building, and checking AST nodes        |
 
-Each package documents its API in its README. The parser and analyzer run on a native binary for each platform.
+Each package documents its API in its README.
+
+Yuku's compiled code, the core, is shared by every package rather than built into each one, so it is downloaded once however many packages you install. `yuku-parser` and `yuku-analyzer` together install 907 kB, where two packages with their own binaries would take 1.58 MB. Toolchains that build a binary per tool repeat the same parser inside every one.
 
 ### [WebAssembly]($section.id('webassembly'))
 
-In browsers, edge runtimes, and on platforms without a native binary, the packages run on [`@yuku-engine/wasm`](https://www.npmjs.com/package/@yuku-engine/wasm), with the same API and byte-identical results. Load it once, and every package uses it.
+The core comes in two builds, with the same API and byte-identical results. The native core is the fastest. It is installed for your platform with the packages, and they use it unless you pass another, so on Node.js and Bun there is nothing to set up.
+
+The WebAssembly core runs anywhere: in browsers, in edge runtimes, and on platforms without a native build. Install [`@yuku-core/wasm`](https://www.npmjs.com/package/@yuku-core/wasm), load it, and pass it in.
 
 ```js
-import { init } from "@yuku-engine/wasm";
+import { load } from "@yuku-core/wasm";
 import { parse } from "yuku-parser";
 
-await init();
-parse("const x = 1;");
+const core = await load();
+
+parse("const x = 1;", { core });
+```
+
+Load it once and pass the same core to every package, so your code always shows which core runs. To choose the native core explicitly, load it from `yuku-core` the same way.
+
+Runtimes that import `.wasm` files as compiled modules, such as Cloudflare Workers, load the core synchronously with `loadSync`.
+
+```js
+import { loadSync } from "@yuku-core/wasm";
+import wasm from "@yuku-core/wasm/yuku-core.wasm";
+import { parse } from "yuku-parser";
+
+const core = loadSync(wasm);
+
+parse("const x = 1;", { core });
 ```
 
 ### [Zig]($section.id('zig'))
@@ -145,5 +128,3 @@ Installed with npm, dependencies included:
 | Parse                         | `yuku-parser` **730 kB**   | `oxc-parser` 4.7 MB, `@babel/parser` 4.8 MB, `@typescript-eslint/typescript-estree` 26.3 MB |
 | Analyze scopes and references | `yuku-analyzer` **860 kB** | `@typescript-eslint/typescript-estree` + `@typescript-eslint/scope-manager` 26.7 MB         |
 | Print an AST                  | `yuku-codegen` **200 kB**  | `astring` 270 kB, `@babel/generator` 2.5 MB                                                 |
-
-The parser and analyzer share one 610 kB native binary, installed once however many packages use it.

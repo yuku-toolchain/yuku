@@ -4,6 +4,6 @@ export { Analyzer };
 export { BindingFlags } from "./decode.js";
 
 export function analyze(source, options = {}) {
-  const { path = "input.js", ...rest } = options;
-  return new Analyzer().setFile(path, source, rest);
+  const { path = "input.js", core, ...rest } = options;
+  return new Analyzer({ core }).setFile(path, source, rest);
 }

@@ -18,13 +18,12 @@
         "yuku-codegen": "yuku-codegen/dist/index.js",
         "yuku-analyzer": "yuku-analyzer/index.js",
         "yuku-ast": "yuku-ast/dist/index.js",
-        "yuku-engine": "yuku-engine/index.js",
-        "@yuku-engine/wasm": "yuku-engine-wasm/index.js",
+        "yuku-core": "yuku-core/browser.js",
+        "@yuku-core/wasm": "yuku-core-wasm/index.js",
       };
       // the packages import each other through this map, so all of them come from one source
       const external = `?external=${Object.keys(packages).join(",")}`;
-      // a browser reads no package.json, so the workspace build also maps the engine import
-      const imports = local ? { "#engine": "/pkg/yuku-engine-wasm/index.js" } : {};
+      const imports = {};
       for (const [name, path] of Object.entries(packages)) {
         imports[name] = local
           ? `/pkg/${path}`

@@ -21,8 +21,8 @@ for (const manifestPath of new Glob("npm/*/@*/binding-*/package.json").scanSync(
   if (!binary.size) missing.push(`${manifest.name}: ${manifest.main}`);
 }
 
-if (!Bun.file(join(root, "npm/yuku-engine-wasm/yuku-engine.wasm")).size) {
-  missing.push("@yuku-engine/wasm: yuku-engine.wasm");
+if (!Bun.file(join(root, "npm/yuku-core-wasm/yuku-core.wasm")).size) {
+  missing.push("@yuku-core/wasm: yuku-core.wasm");
 }
 
 if (checked === 0) {
@@ -31,7 +31,7 @@ if (checked === 0) {
 }
 
 if (missing.length > 0) {
-  console.error("engine packages are missing their binary:\n");
+  console.error("core packages are missing their binary:\n");
   for (const line of missing) console.error(`  ${line}`);
   console.error(
     "\nThe manifests are committed but the binaries are build output, so a target that failed" +
@@ -41,4 +41,4 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log(`all ${checked} binding packages and the WebAssembly engine carry their binary`);
+console.log(`all ${checked} binding packages and the WebAssembly core carry their binary`);

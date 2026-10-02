@@ -1,4 +1,4 @@
-//! The freestanding WebAssembly engine of `@yuku-engine/wasm`, with no host imports.
+//! The freestanding WebAssembly core of `@yuku-core/wasm`, with no host imports.
 //!
 //!   alloc(len)               -> ptr   buffer for the source bytes
 //!   parse(ptr, len, flags)   -> ptr   length-prefixed AST buffer `[u32 N][N bytes]`, or 0
@@ -11,7 +11,7 @@ const transfer = @import("transfer/root.zig");
 
 const gpa = std.heap.wasm_allocator;
 
-// packed by `@yuku-engine/wasm`'s core.js
+// packed by `@yuku-core/wasm`
 const flag = struct {
     const source_type_mask = 0b11;
     const lang_shift = 2;

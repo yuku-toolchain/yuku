@@ -24,6 +24,17 @@ interface FileOptions {
   sourceType?: SourceType;
 }
 
+/**
+ * Yuku's compiled code, which the packages call to parse and analyze. `load` from `yuku-core`
+ * loads the native core, and `load` from `@yuku-core/wasm` the WebAssembly core.
+ */
+interface Core {
+  /** Returns the buffer `yuku-parser` decodes. */
+  parse(source: Uint8Array, options: object): ArrayBuffer;
+  /** Returns the buffer `yuku-analyzer` decodes. */
+  analyze(source: Uint8Array, options: object): ArrayBuffer;
+}
+
 /** Whether a comment came from a line or block source comment. */
 type CommentType = "Line" | "Block";
 
@@ -1811,6 +1822,7 @@ export type {
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,
+  Core,
   FileOptions,
   SourceType,
   ModuleKind,

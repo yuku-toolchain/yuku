@@ -1,5 +1,6 @@
 import type {
   Comment,
+  Core,
   Diagnostic,
   FileOptions,
   Identifier,
@@ -24,9 +25,14 @@ interface ParseOptions {
 
 interface SetFileOptions extends Omit<FileOptions, "path">, ParseOptions {}
 
-interface AnalyzeOptions extends FileOptions, ParseOptions {}
+interface AnalyzeOptions extends FileOptions, ParseOptions, Pick<AnalyzerOptions, "core"> {}
 
 interface AnalyzerOptions {
+  /**
+   * The core that analyzes, from `load` in `yuku-core` or `@yuku-core/wasm`.
+   * @default the native core
+   */
+  core?: Core;
   /**
    * Maps an import specifier to the path of a file in the project. Return `false` for a module
    * outside the project, such as a package, and `null` when it cannot be resolved, which is

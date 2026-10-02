@@ -38,6 +38,6 @@
   "dependencies": {
     "@yuku-toolchain/types": "workspace:^",
     "yuku-ast": "workspace:^",
-    "yuku-engine": "workspace:*"
+    "yuku-core": "workspace:*"
   }
 }

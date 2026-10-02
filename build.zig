@@ -155,7 +155,7 @@ pub fn build(b: *std.Build) void {
     const napi_dep = b.dependency("napi_zig", .{});
 
     napi_zig.addLib(b, napi_dep, .{
-        .name = "yuku-engine",
+        .name = "yuku-core",
         .root = b.path("src/parser/ffi/napi.zig"),
         .target = target,
         .optimize = optimize,
@@ -163,8 +163,8 @@ pub fn build(b: *std.Build) void {
             .{ .name = "parser", .module = parser_module },
         },
         .npm = .{
-            .scope = "@yuku-engine",
-            .description = "The native binary that the Yuku packages run on",
+            .scope = "@yuku-core",
+            .description = "Yuku's native core, the compiled code every Yuku package runs on",
             .repository = "https://github.com/yuku-toolchain/yuku",
         },
     });
@@ -179,7 +179,7 @@ pub fn build(b: *std.Build) void {
             .simd128,
         }),
     });
-    const wasm_step = b.step("wasm", "Build the WebAssembly engine");
+    const wasm_step = b.step("wasm", "Build the WebAssembly core");
 
     const wasm_optimize: std.builtin.OptimizeMode = .ReleaseSmall;
     const wasm_util = b.createModule(.{
@@ -204,7 +204,7 @@ pub fn build(b: *std.Build) void {
     });
     wasm_module.addImport("parser", wasm_parser);
 
-    const wasm = b.addExecutable(.{ .name = "yuku-engine", .root_module = wasm_module });
+    const wasm = b.addExecutable(.{ .name = "yuku-core", .root_module = wasm_module });
     wasm.entry = .disabled;
     wasm.rdynamic = true;
     wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);

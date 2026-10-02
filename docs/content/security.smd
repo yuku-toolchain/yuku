@@ -19,5 +19,5 @@ We aim to acknowledge reports within 72 hours. Please allow a reasonable window 
 - **Provenance publishing.** Releases publish to npm with provenance through OIDC trusted publishing, with no long-lived tokens.
 - **Hardened CI.** Every action is pinned to a commit hash, workflow tokens are read-only by default, and the workflows are checked by [zizmor](https://github.com/zizmorcore/zizmor) and [OpenSSF Scorecard](https://securityscorecards.dev).
 - **Reproducible builds.** Installs use a frozen lockfile, and the one Zig dependency is pinned by content hash.
-- **Memory safety.** A parse allocates everything in one arena, and the WebAssembly build runs sandboxed from host memory.
+- **Memory safety.** A parse allocates everything in one arena, and the WebAssembly core runs sandboxed from host memory.
 - **Fuzzing.** Millions of adversarial inputs per run, see [Testing](/testing/#fuzzing).

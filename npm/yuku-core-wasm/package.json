@@ -1,0 +1,41 @@
+{
+  "name": "@yuku-core/wasm",
+  "version": "0.15.1",
+  "description": "Yuku's WebAssembly core, for browsers, edge runtimes, and platforms without a native build",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku"
+  },
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "browser": "./index.js",
+      "node": "./node.js",
+      "default": "./index.js"
+    },
+    "./yuku-core.wasm": "./yuku-core.wasm",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "node.js",
+    "yuku-core.wasm"
+  ],
+  "dependencies": {
+    "@yuku-toolchain/types": "workspace:^"
+  },
+  "keywords": [
+    "wasm",
+    "webassembly",
+    "yuku"
+  ]
+}

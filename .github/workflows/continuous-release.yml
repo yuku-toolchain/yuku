@@ -52,7 +52,7 @@ jobs:
       - name: Build native packages
         run: bun run build:npm
 
-      - name: Build the WebAssembly engine
+      - name: Build the WebAssembly core
         run: bun run build:wasm
 
       - name: Verify binding artifacts

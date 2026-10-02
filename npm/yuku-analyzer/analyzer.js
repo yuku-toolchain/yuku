@@ -1,3 +1,4 @@
+import { load } from "yuku-core";
 import { BindingFlags } from "./decode.js";
 import { Module } from "./module.js";
 
@@ -15,6 +16,7 @@ const SOURCE_EXTENSIONS = new Map([
 const AMBIGUOUS = Symbol("ambiguous");
 
 export class Analyzer {
+  #core;
   #modules = new Map();
   #resolve;
   #diagnostics = [];
@@ -24,11 +26,12 @@ export class Analyzer {
   #exportResolutions = new Map();
 
   constructor(options = {}) {
+    this.#core = options.core ?? load();
     this.#resolve = options.resolve ?? defaultResolve(this.#modules);
   }
 
   setFile(path, source, options) {
-    const module = new Module(this, path, source, options);
+    const module = new Module(this, this.#core, path, source, options);
     this.#modules.set(path, module);
     this.#dirty = true;
     return module;

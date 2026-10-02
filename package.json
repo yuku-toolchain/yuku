@@ -33,7 +33,7 @@
     "docs:llms": "bun docs/generate-llms.ts",
     "build:local": "napi-zig build --release --current && bun gen:npm",
     "build:npm": "napi-zig build --release && bun gen:npm",
-    "build:wasm": "zig build wasm && cp ./zig-out/bin/yuku-engine.wasm ./npm/yuku-engine-wasm/",
+    "build:wasm": "zig build wasm && cp ./zig-out/bin/yuku-core.wasm ./npm/yuku-core-wasm/",
     "release:npm": "napi-zig bump",
     "fetch:fixtures": "bun test/parser/load test/parser/suite && bun test/projects/load.ts",
     "gen:npm": "zig build gen-token-types gen-parser-decoder gen-analyzer-decoder gen-walk-tables && cp ./zig-out/tokens.d.ts ./npm/yuku-types && cp ./zig-out/decode.js ./npm/yuku-parser && cp ./zig-out/decode-analyzer.js ./npm/yuku-analyzer/decode.js && cp ./zig-out/walk-tables.ts ./npm/yuku-ast/src/generated.ts && bun run --cwd npm/yuku-ast build && bun run --cwd npm/yuku-codegen build"
@@ -44,7 +44,7 @@
     "@types/node": "^26.6.2",
     "@typescript-eslint/scope-manager": "^8.70.1",
     "@typescript-eslint/typescript-estree": "^8.70.1",
-    "@yuku-engine/wasm": "workspace:*",
+    "@yuku-core/wasm": "workspace:*",
     "fast-deep-equal": "^3.1.3",
     "jest-diff": "^30.5.2",
     "napi-zig": "^0.3.1",
@@ -53,7 +53,7 @@
     "yuku-analyzer": "workspace:*",
     "yuku-ast": "workspace:*",
     "yuku-codegen": "workspace:*",
-    "yuku-engine": "workspace:*",
+    "yuku-core": "workspace:*",
     "yuku-parser": "workspace:*"
   }
 }

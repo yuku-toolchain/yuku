@@ -4,13 +4,7 @@ Scopes, bindings, resolved references, closures, and cross-file linking for Java
 
 It does the work of `eslint-scope` or `@typescript-eslint/scope-manager` and a cross-file resolver. On [real codebases](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js) it is 5–11× faster than typescript-eslint and 4–7× faster than getting the same answers from TypeScript's API, using up to 5× less memory.
 
-It is as accurate as it is fast, tested on more than 50,000 files, including the TypeScript compiler, Vue, and three.js.
-
-- 1.2 million references, values and types, resolve to the same declarations as in the TypeScript checker.
-- Over 500,000 declarations land in the same scopes, and over a million references resolve and write the same, as in `@typescript-eslint/scope-manager`.
-- 65,000 imports, re-exports, and exported names across eight real codebases link as in a TypeScript program.
-
-[Read how it is tested →](https://yuku.fyi/testing/#semantic-analysis)
+It is as accurate as it is fast. [Read how it is tested →](https://yuku.fyi/testing/#semantic-analysis)
 
 - [Install](#install)
 - [Usage](#usage)
@@ -29,7 +23,7 @@ It is as accurate as it is fast, tested on more than 50,000 files, including the
 npm install yuku-analyzer
 ```
 
-It runs on a native binary for each platform, and on [`@yuku-engine/wasm`](https://www.npmjs.com/package/@yuku-engine/wasm) in browsers, edge runtimes, and on platforms without one.
+It runs on Yuku's native core, installed for your platform. In browsers and edge runtimes, load the WebAssembly core from [`@yuku-core/wasm`](https://www.npmjs.com/package/@yuku-core/wasm) and pass it in, with `new Analyzer({ core })` or `analyze(source, { core })`.
 
 ## Usage
 

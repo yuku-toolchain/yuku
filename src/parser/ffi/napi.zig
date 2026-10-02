@@ -1,4 +1,4 @@
-//! The Node-API engine of `yuku-engine`.
+//! The Node-API core of `yuku-core`.
 
 const std = @import("std");
 const napi = @import("napi-zig");

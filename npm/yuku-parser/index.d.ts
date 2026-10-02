@@ -1,5 +1,6 @@
 import type {
   Comment,
+  Core,
   Diagnostic,
   FileOptions,
   Program,
@@ -10,6 +11,11 @@ import type {
 export * from "@yuku-toolchain/types";
 
 interface ParseOptions extends FileOptions {
+  /**
+   * The core that parses, from `load` in `yuku-core` or `@yuku-core/wasm`.
+   * @default the native core
+   */
+  core?: Core;
   /**
    * Keep `ParenthesizedExpression` nodes. When false, only the inner expression is kept.
    * @default true
@@ -47,6 +53,6 @@ export function parse(source: string, options?: ParseOptions): ParseResult;
 export const TokenKind: TokenKindMap;
 export type TokenKind = TokenKindMap[keyof TokenKindMap];
 
-export { langFromPath, sourceTypeFromPath } from "yuku-engine";
+export { langFromPath, sourceTypeFromPath } from "yuku-core";
 
 export type { ParseOptions, ParseResult };

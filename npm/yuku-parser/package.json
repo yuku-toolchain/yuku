@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "@yuku-toolchain/types": "workspace:^",
-    "yuku-engine": "workspace:*"
+    "yuku-core": "workspace:*"
   },
   "keywords": [
     "acorn",

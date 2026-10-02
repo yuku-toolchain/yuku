@@ -28,7 +28,7 @@ assert.equal(analyze(source, { lang: "ts" }).rootScope.find("count")?.references
 
 const loaded = Object.keys(createRequire(import.meta.url).cache);
 assert.ok(
-  loaded.some((path) => path.endsWith("yuku-engine.node")),
+  loaded.some((path) => path.endsWith("yuku-core.node")),
   "the native binary did not load",
 );
 
