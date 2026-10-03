@@ -12,6 +12,7 @@ const extensions = @import("extensions.zig");
 const ts = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
 const ecmascript = @import("../ecmascript.zig");
+const extension = @import("../extension.zig");
 
 // class declaration or expression
 // https://tc39.es/ecma262/#sec-class-definitions
@@ -563,7 +564,10 @@ fn parseMethodDefinition(
     var function_type: ast.FunctionType = .function_expression;
     var end: u32 = return_type_end;
 
-    if (parser.current_token.tag == .left_brace) {
+    var has_body = parser.current_token.tag == .left_brace;
+    if (extension.at(.function_has_body, .{parser})) |answer| has_body = answer;
+
+    if (has_body) {
         body = try functions.parseFunctionBody(parser) orelse return null;
         end = parser.tree.span(body).end;
 

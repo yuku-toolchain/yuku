@@ -32,6 +32,10 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         return parseExpressionOrLabeledStatementOrDirective(parser);
     }
 
+    if (parser.current_token.tag == .less_than) {
+        if (try extension.at(.jsx_statement, .{parser})) |outcome| return outcome.node;
+    }
+
     return switch (parser.current_token.tag) {
         .at => parseDecoratedStatement(parser),
         .await => parseAwaitUsingOrExpression(parser),

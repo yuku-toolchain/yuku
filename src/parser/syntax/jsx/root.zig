@@ -318,7 +318,16 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
     var scan_from = gt_end;
 
     while (true) {
-        const text_token = parser.lexer.reScanJsxText(scan_from);
+        var text_token = parser.lexer.reScanJsxText(scan_from);
+
+        // a child the extension reads inside the text, such as a comment, ends the text there
+        var inner: ast.NodeIndex = .null;
+        if (try extension.at(.jsx_text_child, .{ parser, text_token.span })) |outcome| {
+            inner = outcome.node orelse return null;
+            std.debug.assert(parser.tree.span(inner).start >= text_token.span.start);
+            std.debug.assert(parser.tree.span(inner).end <= text_token.span.end);
+            text_token.span.end = parser.tree.span(inner).start;
+        }
 
         if (text_token.len() > 0) {
             var text_value = parser.tree.sourceSlice(text_token.span.start, text_token.span.end);
@@ -332,6 +341,12 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
             }, text_token.span);
 
             try parser.scratch_b.append(parser.allocator(), text_node);
+        }
+
+        if (inner != .null) {
+            try parser.scratch_b.append(parser.allocator(), inner);
+            scan_from = parser.tree.span(inner).end;
+            continue;
         }
 
         try parser.advanceWithRescannedToken(text_token) orelse return null;
@@ -443,6 +458,7 @@ fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 // https://react.github.io/jsx/#prod-JSXAttribute
 fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .left_brace) {
+        if (try extension.at(.jsx_attribute, .{parser})) |outcome| return outcome.node;
         return parseJsxSpreadAttribute(parser);
     }
 

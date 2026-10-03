@@ -25,6 +25,8 @@ const corpus = [_]Case{
     },
     .{ .source = "const el = <p>!!shout</p>;", .lang = .jsx },
     .{ .source = "const el = <div>x</_>;\nconst d = <Deprecated />;", .lang = .jsx },
+    .{ .source = "<b {...rest}>a #c# b</b>;\nx\n<p />;", .lang = .jsx },
+    .{ .source = "@typed x: number;\nclass C { m() { return 1; } }", .lang = .ts },
 };
 
 // an unimplemented point can never be reached, so report that separately
@@ -77,6 +79,57 @@ test "handled positions carry the extension's own values" {
     defer bare.deinit();
     const specifier = bare.data(try firstNode(&bare, .string_literal)).string_literal;
     try std.testing.expectEqualStrings("bare", bare.string(specifier.value));
+}
+
+test "a statement opening with a tag, and a spread attribute, keep the parser's nodes" {
+    var tree = try parse(corpus[7]);
+    defer tree.deinit();
+
+    try std.testing.expectEqual(@as(usize, 1), countNodes(&tree, .jsx_spread_attribute));
+    try std.testing.expectEqual(@as(usize, 3), countNodes(&tree, .expression_statement));
+}
+
+test "a child inside text splits the text around it" {
+    var tree = try parse(corpus[7]);
+    defer tree.deinit();
+
+    const element = tree.data(try firstNode(&tree, .jsx_element)).jsx_element;
+    const children = tree.extra(element.children);
+    try std.testing.expectEqual(@as(usize, 3), children.len);
+    try std.testing.expectEqualStrings("a ", tree.string(tree.data(children[0]).jsx_text.value));
+    try std.testing.expectEqual(.jsx_expression_container, std.meta.activeTag(tree.data(children[1])));
+    try std.testing.expectEqualStrings(" b", tree.string(tree.data(children[2]).jsx_text.value));
+}
+
+test "an extension types its own binding with the parser's annotation" {
+    var tree = try parse(corpus[8]);
+    defer tree.deinit();
+
+    const id = try firstNode(&tree, .binding_identifier);
+    const annotation = tree.data(id).binding_identifier.type_annotation;
+    try std.testing.expect(annotation != .null);
+    try std.testing.expectEqual(tree.span(annotation).end, tree.span(id).end);
+}
+
+test "a method body starts where the extension says, as a function's does" {
+    for ([_][]const u8{ "function f() %", "class C { m() % }" }) |source| {
+        var tree = try parser.parse(std.testing.allocator, source, .{});
+        defer tree.deinit();
+
+        try std.testing.expect(tree.hasErrors());
+        try std.testing.expectEqualStrings("'%' is not a body", tree.diagnostics.items[0].message);
+    }
+}
+
+test "a failed attribute hook reports instead of reading a spread" {
+    var tree = try parser.parse(std.testing.allocator, "const a = <a {} />;", .{ .lang = .jsx });
+    defer tree.deinit();
+
+    try std.testing.expect(tree.hasErrors());
+    try std.testing.expectEqualStrings(
+        "An attribute cannot be empty",
+        tree.diagnostics.items[0].message,
+    );
 }
 
 test "a failed hook reports instead of producing a node" {
