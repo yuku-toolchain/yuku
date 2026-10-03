@@ -320,8 +320,7 @@ pub fn parseFormalParameter(
             ts.markPatternOptional(parser, pattern, question_end);
         }
         if (parser.current_token.tag == .colon) {
-            const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
-            ts.applyTypeAnnotationToPattern(parser, pattern, annotation);
+            pattern = try ts.parsePatternTypeAnnotation(parser, pattern) orelse return null;
         }
     }
 

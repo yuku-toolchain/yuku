@@ -137,22 +137,27 @@ fn isIdentifierPredicateStart(parser: *Parser) bool {
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
-pub fn applyTypeAnnotationToPattern(
-    parser: *Parser,
-    pattern: ast.NodeIndex,
-    annotation: ast.NodeIndex,
-) void {
+pub fn parsePatternTypeAnnotation(parser: *Parser, pattern: ast.NodeIndex) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .colon);
+    std.debug.assert(@intFromEnum(pattern) + 1 == parser.tree.nodes.len);
+
     var data = parser.tree.data(pattern);
+    var span = parser.tree.span(pattern);
+    parser.tree.nodes.shrinkRetainingCapacity(@intFromEnum(pattern));
+
+    const annotation = try parseTypeAnnotation(parser) orelse return null;
     switch (data) {
         inline .binding_identifier,
         .object_pattern,
         .array_pattern,
         .assignment_pattern,
-        => |*v| v.type_annotation = annotation,
-        else => return,
+        => |*v| {
+            v.type_annotation = annotation;
+            span.end = @max(span.end, parser.tree.span(annotation).end);
+        },
+        else => {},
     }
-    parser.tree.setData(pattern, data);
-    extendSpanTo(parser, pattern, parser.tree.span(annotation).end);
+    return try parser.tree.addNode(data, span);
 }
 
 // only a rest element grows to cover its decorators, matching TS-ESTree ranges

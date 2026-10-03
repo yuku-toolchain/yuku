@@ -356,9 +356,7 @@ fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    const annotation = try predicate.parseTypeAnnotation(parser) orelse return null;
-    predicate.applyTypeAnnotationToPattern(parser, name, annotation);
-    return name;
+    return predicate.parsePatternTypeAnnotation(parser, name);
 }
 
 fn parsePropertyOrMethodSignature(

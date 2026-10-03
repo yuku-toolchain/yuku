@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer } from "yuku-analyzer";
+import { load } from "@yuku-core/wasm";
+import { Analyzer, analyze } from "yuku-analyzer";
 import { summary } from "./utils/summarize";
 
 describe("write detection through wrappers", () => {
@@ -97,5 +98,23 @@ describe("ambient global augmentation", () => {
           g → #0
           tsModule"
     `);
+  });
+});
+
+describe("deep trees", () => {
+  test("a private name deep in a chain resolves to its class", async () => {
+    const source = `class A { #a = 1; m() { return this.#a${".b(x)".repeat(1000)}; } }`;
+    for (const core of [undefined, await load()]) {
+      expect(analyze(source, { core, path: "input.js" }).diagnostics).toEqual([]);
+    }
+  });
+
+  test("parentOf climbs from the deepest node to the root", () => {
+    const module = analyze("a" + ".b".repeat(100_000), { path: "input.js" });
+    let node: any = (module.ast.body[0] as any).expression;
+    while (node.type === "MemberExpression") node = node.object;
+    let ancestors = 0;
+    for (let parent = module.parentOf(node); parent; parent = module.parentOf(parent)) ancestors++;
+    expect(ancestors).toBe(100_000 + 2);
   });
 });

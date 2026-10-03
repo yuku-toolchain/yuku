@@ -680,8 +680,7 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
         param = try patterns.parseBindingPattern(parser) orelse return null;
 
         if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
-            ts_types.applyTypeAnnotationToPattern(parser, param, annotation);
+            param = try ts_types.parsePatternTypeAnnotation(parser, param) orelse return null;
         }
 
         if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) {

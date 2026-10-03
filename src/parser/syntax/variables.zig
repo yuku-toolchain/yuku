@@ -103,7 +103,7 @@ pub fn parseVariableDeclarator(
 ) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
-    const id = try patterns.parseBindingPattern(parser) orelse return null;
+    var id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.span(id);
 
     var definite = false;
@@ -120,10 +120,9 @@ pub fn parseVariableDeclarator(
         }
 
         if (parser.current_token.tag == .colon) {
-            const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
-            ts.applyTypeAnnotationToPattern(parser, id, annotation);
+            id = try ts.parsePatternTypeAnnotation(parser, id) orelse return null;
             annotated = true;
-            end = parser.tree.span(annotation).end;
+            end = parser.tree.span(id).end;
         }
     }
 

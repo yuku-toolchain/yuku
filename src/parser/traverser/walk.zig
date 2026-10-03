@@ -19,35 +19,55 @@ pub const Action = enum {
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
     std.debug.assert(ctx.tree.root != .null);
-    _ = try walkNode(C, V, visitor, ctx.tree.root, ctx);
+
+    var path_buffer: [walk_depth_max]ast.NodeIndex = undefined;
+    if (comptime @hasField(C, "path")) ctx.path.items = &path_buffer;
+    defer if (comptime @hasField(C, "path")) {
+        ctx.path.items = &.{};
+    };
+
+    _ = try walkNode(C, V, visitor, ctx, ctx.tree.root, 0, undefined);
+}
+
+const walk_depth_max = 256;
+// walkDeep runs each half through walkNode, as a second hook call site stops inlining
+const walk_enter_only = walk_depth_max + 1;
+const walk_exit_only = walk_depth_max + 2;
+
+fn ExitData(comptime C: type) type {
+    return if (@typeInfo(@FieldType(C, "tree")).pointer.is_const) void else *const ast.NodeData;
 }
 
 fn walkNode(
     comptime C: type,
     comptime V: type,
     visitor: *V,
-    index: ast.NodeIndex,
     ctx: *C,
+    index: ast.NodeIndex,
+    depth: u32,
+    exit_data: ExitData(C),
 ) Allocator.Error!Action {
     if (index == .null) return .proceed;
+    const deep = depth >= walk_depth_max;
+    if (deep and depth == walk_depth_max) return walkDeep(C, V, visitor, ctx, index);
 
-    const data = ctx.tree.data(index);
+    var action: Action = .proceed;
+    var result: Action = .proceed;
+    var current: ast.NodeData = undefined;
+    if (!deep or depth == walk_enter_only) {
+        const data = ctx.tree.data(index);
+        action = try dispatch.enter(C, V, visitor, data, index, ctx);
 
-    const action = try dispatch.enter(C, V, visitor, data, index, ctx);
+        // re-read after enter so a replaced node walks the replacement's children
+        current = if (comptime ExitData(C) == void) data else ctx.tree.data(index);
 
-    // re-read after enter so a replaced node walks the replacement's children
-    const current = if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const)
-        data
-    else
-        ctx.tree.data(index);
+        if (deep) return action;
+        if (action == .proceed) result = try walkChildren(C, V, visitor, ctx, current, depth + 1);
+    } else {
+        std.debug.assert(depth == walk_exit_only);
+        current = if (comptime ExitData(C) == void) ctx.tree.data(index) else exit_data.*;
+    }
 
-    const result = if (action == .proceed)
-        try walkChildren(C, V, visitor, current, ctx)
-    else
-        Action.proceed;
-
-    // exits pair with enters even when children were skipped or a stop
-    // unwinds, so tracking contexts stay balanced
     dispatch.exit(C, V, visitor, current, index, ctx);
 
     return if (action == .stop) .stop else result;
@@ -57,14 +77,15 @@ fn walkChildren(
     comptime C: type,
     comptime V: type,
     visitor: *V,
-    data: ast.NodeData,
     ctx: *C,
+    data: ast.NodeData,
+    depth: u32,
 ) Allocator.Error!Action {
     switch (data) {
         inline else => |node| {
             const T = @TypeOf(node);
             if (@typeInfo(T) == .@"struct") {
-                return walkStructFields(C, V, visitor, T, node, ctx);
+                return walkStructFields(C, V, visitor, ctx, T, node, depth);
             }
             return .proceed;
         },
@@ -75,33 +96,113 @@ fn walkStructFields(
     comptime C: type,
     comptime V: type,
     visitor: *V,
+    ctx: *C,
     comptime T: type,
     payload: T,
-    ctx: *C,
+    depth: u32,
 ) Allocator.Error!Action {
     const fields = @typeInfo(T).@"struct".fields;
 
     inline for (fields) |field| {
         if (field.type == ast.NodeIndex) {
             const child = @field(payload, field.name);
-            if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
+            const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
+            if (action == .stop) return .stop;
         } else if (field.type == ast.IndexRange) {
             const range = @field(payload, field.name);
             if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const) {
                 for (ctx.tree.extra(range)) |child| {
-                    if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
+                    const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
+                    if (action == .stop) return .stop;
                 }
             } else {
                 // a visitor may append extras and move the backing array
                 for (0..range.len) |i| {
                     const child = ctx.tree.extra(range)[i];
-                    if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
+                    const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
+                    if (action == .stop) return .stop;
                 }
             }
         }
     }
 
     return .proceed;
+}
+
+noinline fn walkDeep(
+    comptime C: type,
+    comptime V: type,
+    visitor: *V,
+    ctx: *C,
+    root: ast.NodeIndex,
+) Allocator.Error!Action {
+    const gpa = ctx.tree.arena.child_allocator;
+    var steps: std.ArrayList(WalkStep) = .empty;
+    defer steps.deinit(gpa);
+
+    const outer_path = if (comptime @hasField(C, "path")) ctx.path.items else {};
+    if (comptime @hasField(C, "path")) ctx.path.items = try gpa.dupe(ast.NodeIndex, outer_path);
+    defer if (comptime @hasField(C, "path")) {
+        gpa.free(ctx.path.items);
+        ctx.path.items = outer_path;
+    };
+
+    var stopped = false;
+    try steps.append(gpa, .{ .index = root, .exit = null });
+    while (steps.pop()) |step| {
+        const index = step.index;
+        if (step.exit) |data| {
+            const exit_data = if (comptime ExitData(C) == void) {} else &data;
+            _ = try walkNode(C, V, visitor, ctx, index, walk_exit_only, exit_data);
+            continue;
+        }
+        if (stopped or index == .null) continue;
+
+        if (comptime @hasField(C, "path")) {
+            if (ctx.path.len == ctx.path.items.len) {
+                ctx.path.items = try gpa.realloc(ctx.path.items, 2 * ctx.path.len);
+            }
+        }
+
+        const action = try walkNode(C, V, visitor, ctx, index, walk_enter_only, undefined);
+        const current = ctx.tree.data(index);
+        try steps.append(gpa, .{ .index = index, .exit = current });
+        switch (action) {
+            .proceed => try walkDeepPushChildren(ctx.tree, current, &steps, gpa),
+            .skip => {},
+            .stop => stopped = true,
+        }
+    }
+    return if (stopped) .stop else .proceed;
+}
+
+const WalkStep = struct { index: ast.NodeIndex, exit: ?ast.NodeData };
+
+fn walkDeepPushChildren(
+    tree: anytype,
+    data: ast.NodeData,
+    steps: *std.ArrayList(WalkStep),
+    gpa: Allocator,
+) Allocator.Error!void {
+    const children_start = steps.items.len;
+    switch (data) {
+        inline else => |payload| {
+            const T = @TypeOf(payload);
+            if (@typeInfo(T) == .@"struct") {
+                inline for (@typeInfo(T).@"struct".fields) |field| {
+                    if (field.type == ast.NodeIndex) {
+                        const child = @field(payload, field.name);
+                        try steps.append(gpa, .{ .index = child, .exit = null });
+                    } else if (field.type == ast.IndexRange) {
+                        for (tree.extra(@field(payload, field.name))) |child| {
+                            try steps.append(gpa, .{ .index = child, .exit = null });
+                        }
+                    }
+                }
+            }
+        },
+    }
+    std.mem.reverse(WalkStep, steps.items[children_start..]);
 }
 
 /// Wraps a visitor so the context's hooks run around the user hooks at each
@@ -212,7 +313,6 @@ pub const dispatch = struct {
     }
 };
 
-// lets hooks return either `Action` or `Allocator.Error!Action`
 inline fn unwrapAction(result: anytype) Allocator.Error!Action {
     return result;
 }
@@ -253,9 +353,7 @@ fn validateHooks(comptime V: type) void {
 
 /// Tracks the path of node indices from root to the current position.
 pub const NodePath = struct {
-    const capacity = 256;
-
-    buf: [capacity]ast.NodeIndex = undefined,
+    items: []ast.NodeIndex = &.{},
     len: usize = 0,
 
     /// Returns the parent node index, or `null` if at the root.
@@ -266,8 +364,7 @@ pub const NodePath = struct {
     /// Returns the nth ancestor. 0 = current node, 1 = parent, 2 = grandparent, etc.
     pub inline fn ancestor(self: *const NodePath, n: usize) ?ast.NodeIndex {
         if (n >= self.len) return null;
-        const pos = self.len - 1 - n;
-        return if (pos < capacity) self.buf[pos] else null;
+        return self.items[self.len - 1 - n];
     }
 
     /// Returns the current nesting depth (1 at the root).
@@ -277,28 +374,26 @@ pub const NodePath = struct {
 
     /// Returns an iterator that walks from the current node up to the root.
     pub fn ancestors(self: *const NodePath) AncestorIterator {
-        return .{ .buf = &self.buf, .pos = self.len };
+        return .{ .items = self.items[0..self.len], .pos = self.len };
     }
 
     /// Walks up from the current node to root, yielding each node index.
     pub const AncestorIterator = struct {
-        buf: *const [capacity]ast.NodeIndex,
+        items: []const ast.NodeIndex,
         pos: usize,
 
         /// Returns the next ancestor node index, or `null` when the root has been passed.
         pub fn next(self: *AncestorIterator) ?ast.NodeIndex {
             if (self.pos == 0) return null;
             self.pos -= 1;
-            return if (self.pos < capacity) self.buf[self.pos] else null;
+            return self.items[self.pos];
         }
     };
 
     /// Adds a node to the path when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
         std.debug.assert(index != .null);
-        if (self.len < capacity) {
-            self.buf[self.len] = index;
-        }
+        self.items[self.len] = index;
         self.len += 1;
     }
 

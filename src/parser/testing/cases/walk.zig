@@ -31,7 +31,8 @@ test "NodePath starts empty" {
 }
 
 test "NodePath push/pop tracks depth, parent, and ancestors" {
-    var path = NodePath{};
+    var buffer: [3]ast.NodeIndex = undefined;
+    var path = NodePath{ .items = &buffer };
     const n0: ast.NodeIndex = @enumFromInt(10);
     const n1: ast.NodeIndex = @enumFromInt(20);
     const n2: ast.NodeIndex = @enumFromInt(30);
@@ -58,23 +59,32 @@ test "NodePath push/pop tracks depth, parent, and ancestors" {
     try testing.expectEqual(n0, path.parent().?);
 }
 
-test "NodePath degrades gracefully past its fixed capacity" {
-    var path = NodePath{};
-    var i: u32 = 0;
-    while (i < 300) : (i += 1) {
-        path.push(@enumFromInt(i));
-    }
+const deep_source = "let before; a" ++ (".b" ** 1000) ++ "; let after;";
 
-    try testing.expectEqual(@as(usize, 300), path.depth());
-    try testing.expectEqual(@as(?ast.NodeIndex, null), path.ancestor(0));
-    try testing.expectEqual(@as(?ast.NodeIndex, null), path.ancestor(43));
-    try testing.expectEqual(@as(ast.NodeIndex, @enumFromInt(249)), path.ancestor(50).?);
-    try testing.expectEqual(@as(ast.NodeIndex, @enumFromInt(0)), path.ancestor(299).?);
+test "the path holds every ancestor past the walk's recursion" {
+    var tree = try parseModule(deep_source);
+    defer tree.deinit();
 
-    i = 0;
-    while (i < 44) : (i += 1) path.pop();
-    try testing.expectEqual(@as(usize, 256), path.depth());
-    try testing.expectEqual(@as(ast.NodeIndex, @enumFromInt(255)), path.ancestor(0).?);
+    const Innermost = struct {
+        depth: usize = 0,
+        root: ?ast.NodeIndex = null,
+
+        pub fn enter_identifier_reference(
+            self: *@This(),
+            _: ast.IdentifierReference,
+            _: ast.NodeIndex,
+            ctx: *traverser.basic.Ctx,
+        ) Action {
+            self.depth = ctx.path.depth();
+            self.root = ctx.path.ancestor(self.depth - 1);
+            return .proceed;
+        }
+    };
+
+    var innermost: Innermost = .{};
+    try traverser.basic.traverse(Innermost, &tree, &innermost);
+    try testing.expectEqual(@as(usize, 1000 + 3), innermost.depth);
+    try testing.expectEqual(tree.root, innermost.root.?);
 }
 
 const CountingVisitor = struct {
@@ -145,6 +155,27 @@ test "walk visits every node with balanced enters and exits" {
     try testing.expect(visitor.sawBinding("a"));
     try testing.expect(visitor.sawBinding("b"));
     try testing.expect(visitor.sawBinding("f"));
+}
+
+test "a walk past the recursion pairs every enter with an exit, even on stop" {
+    var tree = try parseModule(deep_source);
+    defer tree.deinit();
+
+    for ([_]Action{ .proceed, .stop }) |action| {
+        var visitor = CountingVisitor{
+            .gpa = testing.allocator,
+            .trigger = .identifier_reference,
+            .action_on_trigger = action,
+        };
+        defer visitor.deinit();
+        var ctx = Ctx{ .tree = &tree };
+        try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx);
+
+        try testing.expectEqual(@as(usize, 1), visitor.triggered);
+        try testing.expectEqual(visitor.enters, visitor.exits);
+        try testing.expect(visitor.sawBinding("before"));
+        try testing.expectEqual(action == .proceed, visitor.sawBinding("after"));
+    }
 }
 
 test "skip suppresses the subtree but the node's exit still runs" {

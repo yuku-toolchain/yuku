@@ -381,27 +381,29 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    const m = _posMap();
         \\    return _src.slice(s < _firstNa ? s : m[s - _firstNa], m[e - _firstNa]);
         \\  }};
-        \\  function nodeArr(s, len) {{
+        \\  function nodeArr(s, len, depth) {{
         \\    const r = new Array(len);
         \\    const base = _extraBase + s;
-        \\    for (let j = 0; j < len; j++) r[j] = node(_u32[base + j]);
+        \\    for (let j = 0; j < len; j++) r[j] = node(_u32[base + j], depth);
         \\    return r;
         \\  }}
-        \\  function nodeArrHoles(s, len) {{
+        \\  function nodeArrHoles(s, len, depth) {{
         \\    const r = new Array(len);
         \\    for (let j = 0, base = _extraBase + s; j < len; j++) {{
         \\      const x = _u32[base + j];
-        \\      r[j] = x !== NULL ? node(x) : null;
+        \\      r[j] = x !== NULL ? node(x, depth) : null;
         \\    }}
         \\    return r;
         \\  }}
-        \\  function fnParams(idx) {{
+        \\  function fnParams(idx, depth) {{
         \\    const pb = idx * {[stride]d} + {[hdr_u32]d};
         \\    const len = _u32[pb + {[items_len]d}];
         \\    const iStart = _u32[pb + {[items]d}], rest = _u32[pb + {[rest]d}];
         \\    const p = new Array(rest !== NULL ? len + 1 : len);
-        \\    for (let j = 0, base = _extraBase + iStart; j < len; j++) p[j] = node(_u32[base + j]);
-        \\    if (rest !== NULL) p[len] = node(rest);
+        \\    for (let j = 0, base = _extraBase + iStart; j < len; j++) {{
+        \\      p[j] = node(_u32[base + j], depth);
+        \\    }}
+        \\    if (rest !== NULL) p[len] = node(rest, depth);
         \\    return p;
         \\  }}
         \\
@@ -459,8 +461,8 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  function nodeWithComments(i) {{
-        \\    const r = _decode(i);
+        \\  function nodeWithComments(i, depth) {{
+        \\    const r = _decode(i, depth);
         \\    if (r && r.type !== undefined && r.comments === undefined) {{
         \\      const off = (_aoOff >> 2) + i;
         \\      const a = _u32[off], e = _u32[off + 1];
@@ -468,7 +470,8 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
         \\    }}
         \\    return r;
         \\  }}
-        \\  function _decode(i) {{
+        \\  function _decode(i, depth) {{
+        \\{[deep]s}
         \\    const b = i * {[stride]d} + {[hdr_u32]d};
         \\    const h0 = _u32[b];
         \\    const tag = h0 & 255;
@@ -487,40 +490,40 @@ fn writeNodeFunction(w: *Writer, mode: Mode) !void {
         .fe = flags_expr,
         .ss = rt.NODE_SPAN_START_U32,
         .se = rt.NODE_SPAN_END_U32,
+        .deep = if (mode == .parser) "    if (depth >= DEPTH_MAX) return _deep(i);" else "",
     });
-    try writeNodeCases(w);
+    try writeNodeCases(w, mode);
+    // every node follows its children, so building nodes in index order needs no recursion
     switch (mode) {
         .parser => try w.writeAll(
             \\    }
             \\  }
             \\  const node = _attached ? nodeWithComments : _decode;
+            \\  const DEPTH_MAX = 128, _n = [];
+            \\  function _deep(i) {
+            \\    while (_n.length <= i) _n.push(node(_n.length, DEPTH_MAX - 1));
+            \\    return _n[i];
+            \\  }
             \\
         ),
         .analyzer => try w.writeAll(
             \\    }
             \\  }
             \\  const _inner = _attached ? nodeWithComments : _decode;
-            \\  let _nodes, _decodeOrder, _nodeIndexes;
-            \\  let _decodedCount = 0, _indexedCount = 0;
+            \\  const _n = [];
+            \\  let _nodeIndexes, _indexedCount = 0;
             \\  function node(i) {
-            \\    if (_nodes === undefined) {
-            \\      _nodes = Array.from({ length: nodeCount });
-            \\      _decodeOrder = new Int32Array(nodeCount);
-            \\      _posMap();
-            \\    }
-            \\    const m = _nodes[i];
-            \\    if (m !== undefined) return m;
-            \\    const r = _inner(i);
-            \\    _nodes[i] = r;
-            \\    if (r !== null && typeof r === "object") _decodeOrder[_decodedCount++] = i;
-            \\    return r;
+            \\    if (_n.length === 0) _posMap();
+            \\    while (_n.length <= i) _n.push(_inner(_n.length));
+            \\    return _n[i];
             \\  }
             \\  function indexOf(n) {
-            \\    if (_nodes === undefined) return undefined;
             \\    if (_nodeIndexes === undefined) _nodeIndexes = new Map();
-            \\    for (; _indexedCount < _decodedCount; _indexedCount++) {
-            \\      const i = _decodeOrder[_indexedCount];
-            \\      if (!_nodeIndexes.has(_nodes[i])) _nodeIndexes.set(_nodes[i], i);
+            \\    for (; _indexedCount < _n.length; _indexedCount++) {
+            \\      const r = _n[_indexedCount];
+            \\      if (r !== null && typeof r === "object" && !_nodeIndexes.has(r)) {
+            \\        _nodeIndexes.set(r, _indexedCount);
+            \\      }
             \\    }
             \\    return _nodeIndexes.get(n);
             \\  }
@@ -801,7 +804,7 @@ fn writeCaseOpen(w: *Writer, comptime tag: usize, comptime T: type, body: []cons
     if (body.len > 0 and body[0] != '\n') try w.writeAll(" ");
 }
 
-fn writeNodeCases(w: *Writer) !void {
+fn writeNodeCases(w: *Writer, mode: Mode) !void {
     @setEvalBranchQuota(100_000);
     var body_buf: [16 * 1024]u8 = undefined;
     inline for (@typeInfo(ast.NodeData).@"union".fields, 0..) |field, tag| {
@@ -813,9 +816,30 @@ fn writeNodeCases(w: *Writer) !void {
         }
         const body = body_w.buffered();
         try writeCaseOpen(w, tag, field.type, body);
-        try w.writeAll(body);
+        switch (mode) {
+            .parser => try writeChildCallsWithDepth(w, body),
+            .analyzer => try w.writeAll(body),
+        }
         try w.writeAll(" }\n");
     }
+}
+
+fn writeChildCallsWithDepth(w: *Writer, body: []const u8) !void {
+    const calls = [_][]const u8{ "node", "nodeArr", "nodeArrHoles", "fnParams" };
+    var written: usize = 0;
+    var open: usize = 0;
+    while (std.mem.indexOfScalarPos(u8, body, open, '(')) |paren| : (open = paren + 1) {
+        var name_start = paren;
+        while (name_start > 0 and isIdentChar(body[name_start - 1])) name_start -= 1;
+        for (calls) |call| {
+            if (!std.mem.eql(u8, body[name_start..paren], call)) continue;
+            const close = std.mem.indexOfScalarPos(u8, body, paren, ')').?;
+            std.debug.assert(std.mem.indexOfScalar(u8, body[paren + 1 .. close], '(') == null);
+            try w.print("{s}, depth + 1", .{body[written..close]});
+            written = close;
+        }
+    }
+    try w.writeAll(body[written..]);
 }
 
 fn writeGenericCase(
@@ -1476,7 +1500,7 @@ fn writeDecodeBody(w: *Writer, mode: Mode) !void {
         \\    get program() {
         \\      if (_program === undefined) {
         \\        _posMap();
-        \\        _program = node(progIdx);
+        \\        _program = node(progIdx, 0);
         \\      }
         \\      return _program;
         \\    },
@@ -1523,27 +1547,30 @@ fn writeParentBody(w: *Writer) !void {
         \\  let _parentArr;
         \\  function _parents() {{
         \\    if (_parentArr !== undefined) return _parentArr;
-        \\    const p = new Int32Array(nodeCount).fill(-1);
-        \\    (function visit(i, parent) {{
+        \\    const p = new Int32Array(nodeCount).fill(-2);
+        \\    p[progIdx] = -1;
+        \\    for (let i = progIdx; i >= 0; i--) {{
+        \\      if (p[i] === -2) {{ p[i] = -1; continue; }}
         \\      const o = _nodesOff + i * {[size]d};
         \\      const tag = _u8[o];
-        \\      if (IS_NODE[tag]) {{ p[i] = parent; parent = i; }}
+        \\      const parent = IS_NODE[tag] ? i : p[i];
+        \\      if (!IS_NODE[tag]) p[i] = -1;
         \\      const ops = CHILD_SLOTS[tag];
         \\      const b = o >> 2;
         \\      for (let q = 0; q < ops.length; q += 2) {{
         \\        const slot = ops[q + 1];
         \\        if (ops[q] === 0) {{
         \\          const c = _u32[b + slot];
-        \\          if (c !== NULL) visit(c, parent);
+        \\          if (c !== NULL) p[c] = parent;
         \\        }} else {{
         \\          const s = _u32[b + slot], len = _u32[b + slot + 1];
         \\          for (let j = 0; j < len; j++) {{
         \\            const c = _u32[_extraBase + s + j];
-        \\            if (c !== NULL) visit(c, parent);
+        \\            if (c !== NULL) p[c] = parent;
         \\          }}
         \\        }}
         \\      }}
-        \\    }})(progIdx, -1);
+        \\    }}
         \\    return (_parentArr = p);
         \\  }}
         \\

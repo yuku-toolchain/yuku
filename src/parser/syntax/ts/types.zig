@@ -14,7 +14,7 @@ pub const isAngleOpen = generics.isAngleOpen;
 
 pub const parseTypeAnnotation = predicate.parseTypeAnnotation;
 pub const parseReturnTypeAnnotation = predicate.parseReturnTypeAnnotation;
-pub const applyTypeAnnotationToPattern = predicate.applyTypeAnnotationToPattern;
+pub const parsePatternTypeAnnotation = predicate.parsePatternTypeAnnotation;
 pub const applyDecoratorsToPattern = predicate.applyDecoratorsToPattern;
 pub const markPatternOptional = predicate.markPatternOptional;
 pub const checkDefiniteAssignment = predicate.checkDefiniteAssignment;

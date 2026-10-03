@@ -275,6 +275,8 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     std.debug.assert(buf.len >= bufferSize(tree));
     std.debug.assert(tree.root != .null);
     std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
+    std.debug.assert(@intFromEnum(tree.root) + 1 == tree.nodes.len);
+    if (std.debug.runtime_safety) assertPostOrder(tree);
 
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
     const has_attached = tree.attached_comment_offsets.len != 0;
@@ -391,6 +393,31 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
 
     std.debug.assert(pos == bufferSize(tree));
     return pos;
+}
+
+fn assertPostOrder(tree: *const ast.Tree) void {
+    for (tree.nodes.items(.data), 0..) |data, index| {
+        switch (data) {
+            inline else => |payload| {
+                const T = @TypeOf(payload);
+                if (@typeInfo(T) == .@"struct") {
+                    inline for (@typeInfo(T).@"struct".fields) |field| {
+                        if (field.type == ast.NodeIndex) {
+                            assertChildBefore(@field(payload, field.name), index);
+                        } else if (field.type == ast.IndexRange) {
+                            for (tree.extra(@field(payload, field.name))) |child| {
+                                assertChildBefore(child, index);
+                            }
+                        }
+                    }
+                }
+            },
+        }
+    }
+}
+
+fn assertChildBefore(child: ast.NodeIndex, index: usize) void {
+    if (child != .null) std.debug.assert(@intFromEnum(child) < index);
 }
 
 fn packNode(data: *const ast.NodeData, span: ast.Span) PackedNode {

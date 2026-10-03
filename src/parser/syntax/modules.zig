@@ -796,15 +796,9 @@ fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult)
         }
 
         if (local_data == .identifier_name) {
-            const new_local = try parser.tree.addNode(.{
+            std.debug.assert(specifier.local != specifier.exported);
+            parser.tree.setData(specifier.local, .{
                 .identifier_reference = .{ .name = local_data.identifier_name.name },
-            }, local_span);
-            parser.tree.setData(spec_idx, .{
-                .export_specifier = .{
-                    .local = new_local,
-                    .exported = specifier.exported,
-                    .export_kind = specifier.export_kind,
-                },
             });
         }
     }
@@ -851,8 +845,11 @@ fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
     const parts = try parseSpecifierParts(parser) orelse return null;
 
-    const local = if (parts.property_name != .null) parts.property_name else parts.name;
     const exported = parts.name;
+    const local = if (parts.property_name != .null)
+        parts.property_name
+    else
+        try parser.tree.addNode(parser.tree.data(exported), parser.tree.span(exported));
 
     const end = parser.tree.span(exported).end;
 
