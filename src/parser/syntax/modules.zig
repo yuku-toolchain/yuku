@@ -720,6 +720,12 @@ pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?
     const is_default = parser.current_token.tag == .default;
     if (is_default) try parser.advance() orelse return null;
 
+    // decorators before `export` decorate only a class, which parseClassDecorated asserts
+    if (parser.current_token.tag != .class and parser.current_token.tag != .abstract) {
+        try parser.reportExpected(parser.current_token.span, "Expected 'class' keyword", .{});
+        return null;
+    }
+
     const declaration = try class.parseClassDecorated(
         parser,
         .{ .is_default_export = is_default },
