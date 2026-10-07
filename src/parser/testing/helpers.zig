@@ -124,6 +124,12 @@ const source_extensions = [_][]const u8{
     ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts",
 };
 
+fn corpusSourceType(path: []const u8) ast.SourceType {
+    if (std.mem.find(u8, path, "commonjs" ++ std.fs.path.sep_str) != null) return .commonjs;
+    if (std.mem.find(u8, path, ".module.") != null) return .module;
+    return .script;
+}
+
 fn isSourceFile(basename: []const u8) bool {
     for (source_extensions) |ext| {
         if (std.mem.endsWith(u8, basename, ext)) return true;
@@ -158,7 +164,7 @@ pub fn forEachCorpusTree(gpa: Allocator, checker: anytype) !void {
 
             var tree = try parser.parse(gpa, source, .{
                 .lang = ast.Lang.fromPath(entry.basename),
-                .source_type = ast.SourceType.fromPath(entry.basename),
+                .source_type = corpusSourceType(entry.path),
             });
             defer tree.deinit();
             if (tree.hasErrors()) continue;

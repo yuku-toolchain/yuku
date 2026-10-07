@@ -227,15 +227,15 @@ function runReference(plan: Plan, files: Input[]): Reference[] {
   }
   const dir = mkdtempSync(join(tmpdir(), "codegen-conformance-"));
   try {
-    const paths = files.map((file) => {
-      if (file.source === undefined) return file.path;
+    const lines = files.map((file) => {
+      if (file.source === undefined) return `${file.sourceType} ${file.path}`;
       const path = join(dir, file.path);
       writeFileSync(path, file.source);
-      return path;
+      return `${file.sourceType} ${path}`;
     });
     const list = join(dir, "list.txt");
     const out = join(dir, "out.bin");
-    writeFileSync(list, paths.join("\n") + "\n");
+    writeFileSync(list, lines.join("\n") + "\n");
     const run = spawnSync(REFERENCE, [list, out, ...plan.zig], { stdio: "inherit" });
     if (run.status !== 0) throw new Error(`codegen-reference failed for plan ${plan.name}`);
     return readReference(readFileSync(out), files.length);

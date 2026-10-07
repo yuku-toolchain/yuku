@@ -3,8 +3,9 @@
 //!
 //!   codegen-reference <list> <out> [option...]
 //!
-//! `list` holds one source path per line. `out` receives one record per path, in list order,
-//! with little endian integers.
+//! `list` holds one `<source type> <path>` pair per line, the source type being `script`,
+//! `module`, or `commonjs`. `out` receives one record per path, in list order, with little
+//! endian integers.
 //!
 //!   u8    status, 0 when printed and 1 when skipped for parse diagnostics
 //!   u32   code length, then the code
@@ -52,7 +53,11 @@ pub fn main(init: std.process.Init) !void {
     const out = &out_writer.interface;
 
     var lines = std.mem.tokenizeScalar(u8, list, '\n');
-    while (lines.next()) |path| {
+    while (lines.next()) |line| {
+        const space = std.mem.findScalar(u8, line, ' ') orelse return error.InvalidList;
+        const source_type = std.meta.stringToEnum(ast.SourceType, line[0..space]) orelse
+            return error.InvalidList;
+        const path = line[space + 1 ..];
         std.debug.assert(path.len > 0);
         const source = try std.Io.Dir.cwd().readFileAlloc(
             io,
@@ -61,7 +66,7 @@ pub fn main(init: std.process.Init) !void {
             .limited(source_bytes_max),
         );
         defer gpa.free(source);
-        try printFile(gpa, out, path, source, &plan);
+        try printFile(gpa, out, path, source, source_type, &plan);
     }
     try out.flush();
 }
@@ -71,11 +76,12 @@ fn printFile(
     out: *std.Io.Writer,
     path: []const u8,
     source: []const u8,
+    source_type: ast.SourceType,
     plan: *const Plan,
 ) !void {
     var tree = try parser.parse(gpa, source, .{
         .lang = ast.Lang.fromPath(path),
-        .source_type = ast.SourceType.fromPath(path),
+        .source_type = source_type,
         .preserve_parens = plan.preserve_parens,
         .comments = .both,
     });

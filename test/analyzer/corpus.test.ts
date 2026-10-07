@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { Analyzer, BindingFlags, type Module } from "yuku-analyzer";
-import type { Node } from "yuku-parser";
+import type { Node, SourceType } from "yuku-parser";
 import { corpusPresent, forEachCorpusFile } from "../corpus";
 
 const SAMPLE_MAX = 8;
@@ -53,10 +53,10 @@ function fingerprint(module: Module): string {
   ]);
 }
 
-function check(path: string, source: string): void {
+function check(path: string, source: string, sourceType: SourceType): void {
   let module: Module;
   try {
-    module = new Analyzer().setFile(path, source);
+    module = new Analyzer().setFile(path, source, { sourceType });
     // a decode fault throws here, not later
     void module.ast;
     void module.scopes;
@@ -201,7 +201,7 @@ function check(path: string, source: string): void {
   }
 
   // a second analysis yields an identical model
-  const again = new Analyzer().setFile(path, source);
+  const again = new Analyzer().setFile(path, source, { sourceType });
   if (fingerprint(module) !== fingerprint(again)) {
     note(violations.determinism, `${path}: non-deterministic`);
   }
@@ -209,7 +209,7 @@ function check(path: string, source: string): void {
 
 describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
   beforeAll(async () => {
-    await forEachCorpusFile((file, source) => check(file.path, source));
+    await forEachCorpusFile((file, source) => check(file.path, source, file.sourceType));
   }, 300_000);
 
   test("the corpus is non-empty", () => {

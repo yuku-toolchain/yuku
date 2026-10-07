@@ -26,7 +26,7 @@ interface Resolution {
 function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) {
   const jsx = lang === "jsx" || lang === "tsx";
   const tree = tsParse(source, { range: true, sourceType, jsx, allowInvalidAST: false });
-  const manager = analyze(tree, { sourceType });
+  const manager = analyze(tree, { sourceType, lib: [] });
   const references = new Map<number, Resolution>();
   const declarations = new Map<number, string[]>();
   for (const scope of manager.scopes) {

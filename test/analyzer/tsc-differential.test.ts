@@ -3,7 +3,7 @@
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
 import { analyze } from "yuku-analyzer";
-import type { SourceLang } from "yuku-parser";
+import type { SourceLang, SourceType } from "yuku-parser";
 import { corpusFiles, projectFiles, type CorpusFile } from "../corpus";
 import { differential, type Comparison, type Known } from "./utils/differential";
 
@@ -30,10 +30,29 @@ interface Checker {
   rejects(name: string, positions: number[]): boolean;
 }
 
-function checker(source: string, lang: SourceLang): Checker {
+const { getSetExternalModuleIndicator } = ts as unknown as {
+  getSetExternalModuleIndicator(options: ts.CompilerOptions): (file: ts.SourceFile) => void;
+};
+
+function checker(source: string, lang: SourceLang, sourceType: SourceType): Checker {
   const fileName = FILE_NAMES[lang];
-  const kind = SCRIPT_KINDS[lang];
-  const file = ts.createSourceFile(fileName, source, ts.ScriptTarget.ESNext, true, kind);
+  const options: ts.CompilerOptions = {
+    noLib: true,
+    noResolve: true,
+    allowJs: true,
+    moduleDetection:
+      sourceType === "module" ? ts.ModuleDetectionKind.Force : ts.ModuleDetectionKind.Legacy,
+  };
+  const file = ts.createSourceFile(
+    fileName,
+    source,
+    {
+      languageVersion: ts.ScriptTarget.ESNext,
+      setExternalModuleIndicator: getSetExternalModuleIndicator(options),
+    },
+    true,
+    SCRIPT_KINDS[lang],
+  );
   const host: ts.CompilerHost = {
     getSourceFile: (name) => (name === fileName ? file : undefined),
     getDefaultLibFileName: () => "lib.d.ts",
@@ -45,7 +64,6 @@ function checker(source: string, lang: SourceLang): Checker {
     fileExists: (name) => name === fileName,
     readFile: () => undefined,
   };
-  const options = { noLib: true, noResolve: true, allowJs: true };
   const program = ts.createProgram([fileName], options, host);
   const typeChecker = program.getTypeChecker();
 
@@ -135,9 +153,14 @@ function inClassExtends(node: ts.Identifier): boolean {
   );
 }
 
-function compare(source: string, lang: SourceLang, path = FILE_NAMES[lang]): Comparison {
-  const module = analyze(source, { path, lang });
-  const tsc = checker(source, lang);
+function compare(
+  source: string,
+  lang: SourceLang,
+  sourceType: SourceType = "module",
+  path = FILE_NAMES[lang],
+): Comparison {
+  const module = analyze(source, { path, lang, sourceType });
+  const tsc = checker(source, lang, sourceType);
   const mismatches: string[] = [];
   let compared = 0;
   for (const reference of module.references) {
@@ -156,7 +179,7 @@ function compare(source: string, lang: SourceLang, path = FILE_NAMES[lang]): Com
 }
 
 function compareFile(file: CorpusFile, source: string): Comparison {
-  return compare(source, file.lang, file.path);
+  return compare(source, file.lang, file.sourceType, file.path);
 }
 
 const SUITE = "test/parser/suite/ts/pass";

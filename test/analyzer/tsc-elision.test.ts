@@ -4,7 +4,7 @@
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
 import { analyze, BindingFlags, type Binding, type Module } from "yuku-analyzer";
-import type { Node, SourceLang, TSImportEqualsDeclaration } from "yuku-parser";
+import type { Node, SourceLang, SourceType, TSImportEqualsDeclaration } from "yuku-parser";
 import { corpusFiles, projectFiles, type CorpusFile } from "../corpus";
 import { differential, type Comparison, type Known } from "./utils/differential";
 
@@ -13,10 +13,31 @@ interface Emitted {
   rejects(name: string, positions: number[]): boolean;
 }
 
-function emit(source: string, lang: SourceLang): Emitted {
+const { getSetExternalModuleIndicator } = ts as unknown as {
+  getSetExternalModuleIndicator(options: ts.CompilerOptions): (file: ts.SourceFile) => void;
+};
+
+function emit(source: string, lang: SourceLang, sourceType: SourceType): Emitted {
   const fileName = lang === "tsx" ? "input.tsx" : "input.ts";
-  const kind = lang === "tsx" ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
-  const file = ts.createSourceFile(fileName, source, ts.ScriptTarget.ESNext, true, kind);
+  const options: ts.CompilerOptions = {
+    noLib: true,
+    noResolve: true,
+    module: ts.ModuleKind.Preserve,
+    target: ts.ScriptTarget.ESNext,
+    jsx: ts.JsxEmit.Preserve,
+    moduleDetection:
+      sourceType === "module" ? ts.ModuleDetectionKind.Force : ts.ModuleDetectionKind.Legacy,
+  };
+  const file = ts.createSourceFile(
+    fileName,
+    source,
+    {
+      languageVersion: ts.ScriptTarget.ESNext,
+      setExternalModuleIndicator: getSetExternalModuleIndicator(options),
+    },
+    true,
+    lang === "tsx" ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
   let output = "";
   const host: ts.CompilerHost = {
     getSourceFile: (name) => (name === fileName ? file : undefined),
@@ -28,13 +49,6 @@ function emit(source: string, lang: SourceLang): Emitted {
     getNewLine: () => "\n",
     fileExists: (name) => name === fileName,
     readFile: () => undefined,
-  };
-  const options: ts.CompilerOptions = {
-    noLib: true,
-    noResolve: true,
-    module: ts.ModuleKind.Preserve,
-    target: ts.ScriptTarget.ESNext,
-    jsx: ts.JsxEmit.Preserve,
   };
   const program = ts.createProgram([fileName], options, host);
   program.emit(file);
@@ -149,12 +163,17 @@ function jsxFactories(module: Module): Set<string> {
   return names;
 }
 
-function compare(source: string, lang: SourceLang, path?: string): Comparison | null {
-  const module = analyze(source, { path, lang });
+function compare(
+  source: string,
+  lang: SourceLang,
+  sourceType: SourceType = "module",
+  path?: string,
+): Comparison | null {
+  const module = analyze(source, { path, lang, sourceType });
   if (module.diagnostics.some((d) => d.severity === "error")) return null;
   const list = candidates(module);
   if (list.length === 0) return { compared: 0, mismatches: [] };
-  const tsc = emit(source, lang);
+  const tsc = emit(source, lang, sourceType);
   const factories = jsxFactories(module);
   const mismatches: string[] = [];
   let compared = 0;
@@ -175,7 +194,7 @@ function compare(source: string, lang: SourceLang, path?: string): Comparison | 
 }
 
 function compareFile(file: CorpusFile, source: string): Comparison | null {
-  return compare(source, file.lang, file.path);
+  return compare(source, file.lang, file.sourceType, file.path);
 }
 
 const SUITE = "test/parser/suite/ts/pass";
