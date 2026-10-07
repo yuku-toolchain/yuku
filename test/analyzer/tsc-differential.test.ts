@@ -28,6 +28,7 @@ interface Checker {
   resolve(position: number): number[] | null;
   /** Whether tsc reports an error naming `name` at a position. */
   rejects(name: string, positions: number[]): boolean;
+  resolvedUses(): [position: number, name: string][];
 }
 
 const { getSetExternalModuleIndicator } = ts as unknown as {
@@ -99,6 +100,20 @@ function checker(source: string, lang: SourceLang, sourceType: SourceType): Chec
         return positions.some((position) => position >= start && position < start + length);
       });
     },
+    resolvedUses() {
+      const uses: [position: number, name: string][] = [];
+      for (const [position, node] of identifiers) {
+        if (!isScopeLookup(node)) continue;
+        const local = (symbolOf(typeChecker, node)?.declarations ?? []).filter(
+          (declaration) =>
+            !isAssignmentDeclaration(declaration) &&
+            ts.getNameOfDeclaration(declaration)?.getSourceFile() === file,
+        );
+        if (local.some((declaration) => ts.getNameOfDeclaration(declaration) === node)) continue;
+        if (local.length > 0) uses.push([position, node.text]);
+      }
+      return uses;
+    },
   };
 }
 
@@ -126,6 +141,46 @@ function isAssignmentDeclaration(declaration: ts.Declaration): boolean {
     ts.isPropertyAccessExpression(declaration) ||
     ts.isElementAccessExpression(declaration) ||
     ts.isCallExpression(declaration)
+  );
+}
+
+function isScopeLookup(node: ts.Identifier): boolean {
+  if (node.text === "this" || insideWith(node)) return false;
+  let entity: ts.Node = node;
+  while (ts.isQualifiedName(entity.parent) && entity.parent.left === entity) entity = entity.parent;
+  if (ts.isImportTypeNode(entity.parent) && entity.parent.qualifier === entity) return false;
+  const parent = node.parent;
+  if (ts.isPropertyAccessExpression(parent)) return parent.name !== node;
+  if (ts.isQualifiedName(parent)) return parent.right !== node;
+  if (ts.isBindingElement(parent) || ts.isImportSpecifier(parent)) {
+    return parent.propertyName !== node;
+  }
+  if (ts.isExportSpecifier(parent)) {
+    if (parent.parent.parent.moduleSpecifier !== undefined) return false;
+    return parent.propertyName === undefined || parent.propertyName === node;
+  }
+  if (ts.isJsxOpeningLikeElement(parent) || ts.isJsxClosingElement(parent)) {
+    return parent.tagName !== node || !/^[a-z]|-/.test(node.text);
+  }
+  if (
+    ts.isPropertyAssignment(parent) ||
+    ts.isPropertyDeclaration(parent) ||
+    ts.isPropertySignature(parent) ||
+    ts.isMethodDeclaration(parent) ||
+    ts.isMethodSignature(parent) ||
+    ts.isAccessor(parent) ||
+    ts.isEnumMember(parent)
+  ) {
+    return parent.name !== node;
+  }
+  return !(
+    ts.isLabeledStatement(parent) ||
+    ts.isBreakOrContinueStatement(parent) ||
+    ts.isMetaProperty(parent) ||
+    ts.isNamespaceExportDeclaration(parent) ||
+    ts.isJsxNamespacedName(parent) ||
+    ts.isJsxAttribute(parent) ||
+    ts.isImportAttribute(parent)
   );
 }
 
@@ -174,6 +229,14 @@ function compare(
     const yuku = ours.join(",") || "unresolved";
     const expected = theirs.join(",") || "unresolved";
     mismatches.push(`${reference.name}@${position}: yuku ${yuku}, tsc ${expected}`);
+  }
+  const recorded = new Set([
+    ...module.references.map((reference) => reference.node.start),
+    ...module.bindings.flatMap((binding) => binding.declarations.map((node) => node.start)),
+  ]);
+  for (const [position, name] of tsc.resolvedUses()) {
+    compared++;
+    if (!recorded.has(position)) mismatches.push(`${name}@${position}: no yuku reference`);
   }
   return { compared, mismatches };
 }

@@ -19,6 +19,7 @@ const ERASED_WRAPPERS = new Set([
 ]);
 
 interface Resolution {
+  name: string;
   def: number;
   write: boolean;
 }
@@ -36,6 +37,7 @@ function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) 
         .filter((start): start is number => start !== undefined);
       // no named def means an implicit binding such as arguments
       references.set(reference.identifier.range[0], {
+        name: reference.identifier.name,
         def: starts.length === 0 ? UNRESOLVED : Math.min(...starts),
         write: reference.isWrite(),
       });
@@ -101,6 +103,14 @@ function isUnmodeled(module: Module, node: Node): boolean {
   return parent?.type === "TSModuleDeclaration" && parent.id.type === "TSQualifiedName";
 }
 
+function isIntrinsicTag(module: Module, position: number): boolean {
+  const node = module.nodeAt(position);
+  if (node?.type !== "JSXIdentifier") return false;
+  const parent = module.parentOf(node);
+  if (parent?.type === "JSXNamespacedName") return true;
+  return parent?.type !== "JSXMemberExpression" && /^[a-z]|-/.test(node.name);
+}
+
 function unmodeled(module: Module, binding: Binding): boolean {
   return binding.declarations.some((node) => isUnmodeled(module, node));
 }
@@ -137,6 +147,16 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
       if (reference.isWrite && parent !== null && ERASED_WRAPPERS.has(parent.type)) continue;
       mismatches.push(`${reference.name}@${position}: yuku write ${reference.isWrite}`);
     }
+  }
+
+  const recorded = new Set([
+    ...module.references.map((reference) => reference.node.start),
+    ...module.bindings.flatMap((binding) => binding.declarations.map((node) => node.start)),
+  ]);
+  for (const [position, their] of theirs.references) {
+    if (isIntrinsicTag(module, position)) continue;
+    compared++;
+    if (!recorded.has(position)) mismatches.push(`${their.name}@${position}: no yuku reference`);
   }
 
   const ours = new Map<number, string | null>();
@@ -176,6 +196,11 @@ const KNOWN: Known = {
   ],
   "a var and a function share a name in one catch block, which ECMAScript rejects": [
     `${SUITE}/a81cfbc1c9405b6b.ts`,
+  ],
+  "typescript-estree reads `<!--` in a script as operators, not an HTML-like comment": [
+    "test/parser/suite/js/pass/158dc2b44b1958390.js",
+    "test/parser/suite/js/pass/367c3d5dca7f95a5.js",
+    "test/parser/suite/js/pass/9361ed8ad34bb5b9.js",
   ],
 };
 
