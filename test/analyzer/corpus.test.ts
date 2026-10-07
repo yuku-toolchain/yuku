@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { Analyzer, BindingFlags, type Module } from "yuku-analyzer";
 import type { Node, SourceType } from "yuku-parser";
-import { corpusPresent, forEachCorpusFile } from "../corpus";
+import { corpusFiles, corpusPresent, forEachCorpusFile, projectFiles } from "../corpus";
 
 const SAMPLE_MAX = 8;
 
@@ -210,7 +210,10 @@ function check(path: string, source: string, sourceType: SourceType): void {
 
 describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
   beforeAll(async () => {
-    await forEachCorpusFile((file, source) => check(file.path, source, file.sourceType));
+    await forEachCorpusFile(
+      (file, source) => check(file.path, source, file.sourceType),
+      [...corpusFiles(), ...projectFiles()],
+    );
   }, 300_000);
 
   test("the corpus is non-empty", () => {

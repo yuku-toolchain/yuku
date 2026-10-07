@@ -74,13 +74,13 @@ export function projectFiles(): CorpusFile[] {
 }
 
 /**
- * Runs `fn` over every corpus file, reading sources in batches so thousands of
- * files do not open at once.
+ * Runs `fn` over `files`, every corpus file by default, reading sources in batches so
+ * thousands of files do not open at once.
  */
 export async function forEachCorpusFile(
   fn: (file: CorpusFile, source: string) => void,
+  files: CorpusFile[] = corpusFiles(),
 ): Promise<void> {
-  const files = corpusFiles();
   for (let i = 0; i < files.length; i += BATCH_SIZE) {
     const batch = files.slice(i, i + BATCH_SIZE);
     await Promise.all(batch.map(async (file) => fn(file, await Bun.file(file.path).text())));
