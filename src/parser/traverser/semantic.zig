@@ -153,7 +153,17 @@ pub fn refPosition(
                 }
             },
             .ts_type_query => return .{ .space = .typeof, .type_position = true },
-            .export_specifier => |s| return .{ .space = if (s.local == child) .any else .value },
+            .export_specifier => |s| {
+                if (s.local != child) return .{};
+                const in_type_export = if (path.ancestor(n + 1)) |declaration|
+                    tree.data(declaration).export_named_declaration.export_kind == .type
+                else
+                    false;
+                return .{
+                    .space = .any,
+                    .type_position = s.export_kind == .type or in_type_export,
+                };
+            },
             .export_default_declaration, .ts_export_assignment => return .{ .space = .any },
             // tsc resolves an alias target as a namespace
             .ts_import_equals_declaration => |decl| {

@@ -167,10 +167,8 @@ function compareFile(file: CorpusFile, source: string): Comparison | null {
 const SUITE = "test/parser/suite/ts/pass";
 
 const KNOWN: Known = {
-  "scope-manager resolves an import equals alias or type-only export specifier to nothing": [
+  "scope-manager resolves an import equals alias to nothing": [
     `${SUITE}/3a66bcb0ff2adb2c.module.ts`,
-    `${SUITE}/63bd218519f23e2b.module.ts`,
-    `${SUITE}/9c854a266a3d8cc0.module.ts`,
   ],
   "scope-manager merges a parameter with a same-named body var": [`${SUITE}/f2131ad89bc9a8ba.ts`],
   "scope-manager scopes a declaration in statement position apart from tsc": [

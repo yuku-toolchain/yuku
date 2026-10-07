@@ -185,6 +185,19 @@ describe("declaration spaces", () => {
     ]);
   });
 
+  test("a type-only export specifier is erased with the types", () => {
+    const module = new Analyzer().setFile(
+      "input.ts",
+      `import { A, B, C } from "./m"; export type { A }; export { type B, C };`,
+    );
+    const uses = module.references.map((r) => [r.name, r.space, r.inTypePosition]);
+    expect(uses).toEqual([
+      ["A", "any", true],
+      ["B", "any", true],
+      ["C", "any", false],
+    ]);
+  });
+
   test("a reference with no binding in its space anywhere is unresolved", () => {
     expect(summary(`function f() { const T = 1; let x: T; T; }`)).toMatchInlineSnapshot(`
       "global
