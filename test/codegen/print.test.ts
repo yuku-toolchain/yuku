@@ -270,3 +270,25 @@ test("line breaks in template text and JSDoc print as LF", () => {
     function f() {}"
   `);
 });
+
+test("decorators print on the side of `export` they were written on", () => {
+  const source = [
+    "@a export class A {}",
+    "@b export default class B {}",
+    "export @c class C {}",
+    "export default @d class D {}",
+  ].join("\n");
+  expect(gen(source)).toMatchInlineSnapshot(`
+    "@a
+    export class A {}
+    @b
+    export default class B {}
+    export @c
+    class C {}
+    export default @d
+    class D {}"
+  `);
+  expect(gen(source, { format: "compact" })).toMatchInlineSnapshot(
+    `"@a export class A{}@b export default class B{}export@c class C{}export default@d class D{}"`,
+  );
+});

@@ -113,6 +113,7 @@ const CTX_NO_INSTANTIATION = 1 << 7;
 const CTX_NO_JSX_TAG = 1 << 8;
 const CTX_TAGGED = 1 << 9;
 const CTX_ITEM = 1 << 10;
+const CTX_NO_DECORATORS = 1 << 11;
 
 const TPREC_TRAILING = 1;
 const TPREC_UNION = 2;
@@ -774,7 +775,7 @@ class Printer extends Output {
         return this.writeName(node.name);
       case "ClassDeclaration":
       case "ClassExpression":
-        return this.emitClass(node);
+        return this.emitClass(node, ctx);
       case "ClassBody":
         return this.emitClassBody(node);
       case "MethodDefinition":
@@ -2037,9 +2038,9 @@ class Printer extends Output {
     this.closeList(depth);
   }
 
-  emitClass(c: T.Class): void {
+  emitClass(c: T.Class, ctx: number): void {
     if (this.strip && c.declare === true) return;
-    this.printDecorators(c.decorators);
+    if ((ctx & CTX_NO_DECORATORS) === 0) this.printDecorators(c.decorators);
     if (!this.strip) {
       if (c.declare === true) this.writeKeyword("declare");
       if (c.abstract === true) this.writeKeyword("abstract");
@@ -2244,11 +2245,13 @@ class Printer extends Output {
     if (this.strip && d.declaration != null && this.stripsToNothing(d.declaration)) {
       return this.emitNothing(d.declaration);
     }
+    const hoisted = decoratorsBeforeExport(d.declaration);
+    if (hoisted !== null) this.printDecorators(hoisted);
     this.writeToken("export");
     if (d.exportKind === "type" && d.declaration == null) this.writeToken(" type");
     if (d.declaration != null) {
       this.writeToken(" ");
-      return this.emit(d.declaration);
+      return this.emitExpr(d.declaration, hoisted !== null ? CTX_NO_DECORATORS : 0);
     }
     this.writeSpaced(" {", "{");
     if (list.length > 0) {
@@ -2270,8 +2273,10 @@ class Printer extends Output {
       if (this.strip && this.stripsToNothing(d.declaration)) {
         return this.emitNothing(d.declaration);
       }
+      const hoisted = decoratorsBeforeExport(d.declaration);
+      if (hoisted !== null) this.printDecorators(hoisted);
       this.writeKeyword("export default");
-      return this.emit(d.declaration);
+      return this.emitExpr(d.declaration, hoisted !== null ? CTX_NO_DECORATORS : 0);
     }
     this.writeKeyword("export default");
     this.lead = LEAD_EXPORT_DEFAULT;
@@ -2837,6 +2842,16 @@ function isDeclaration(node: Node): boolean {
       return true;
   }
   return false;
+}
+
+function decoratorsBeforeExport(declaration: Node | null | undefined): readonly Node[] | null {
+  if (declaration == null) return null;
+  if (declaration.type !== "ClassDeclaration" && declaration.type !== "ClassExpression") {
+    return null;
+  }
+  const decorators = declaration.decorators;
+  if (decorators == null || decorators.length === 0) return null;
+  return decorators[0]!.start < declaration.start ? decorators : null;
 }
 
 function isNamed(node: Node, name: string): boolean {

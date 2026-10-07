@@ -87,6 +87,7 @@ const Ctx = struct {
     no_jsx_tag: bool = false,
     tagged: bool = false,
     item: bool = false,
+    no_decorators: bool = false,
 };
 
 const Printer = struct {
@@ -1902,9 +1903,9 @@ const Printer = struct {
         try self.closeList(depth);
     }
 
-    fn emit_class(self: *Self, c: *const ast.Class) Error!void {
+    fn emit_class(self: *Self, c: *const ast.Class, ctx: Ctx) Error!void {
         if (self.options.strip) if (c.declare) return;
-        try self.printDecorators(c.decorators);
+        if (!ctx.no_decorators) try self.printDecorators(c.decorators);
         if (!self.options.strip) {
             if (c.declare) try self.out.writeStr("declare ");
             if (c.abstract) try self.out.writeStr("abstract ");
@@ -2159,11 +2160,13 @@ const Printer = struct {
         if (self.options.strip and d.declaration != .null and self.stripsToNothing(d.declaration)) {
             return self.emitNothing(d.declaration);
         }
+        const hoisted = self.decoratorsBeforeExport(d.declaration);
+        if (hoisted) |decorators| try self.printDecorators(decorators);
         try self.out.writeStr("export");
         if (d.export_kind == .type and d.declaration == .null) try self.out.writeStr(" type");
         if (d.declaration != .null) {
             try self.out.writeByte(' ');
-            return self.emit(d.declaration);
+            return self.emitExpr(d.declaration, .{ .no_decorators = hoisted != null });
         }
         try self.out.space();
         try self.out.writeByte('{');
@@ -2189,13 +2192,27 @@ const Printer = struct {
             if (self.options.strip and self.stripsToNothing(d.declaration)) {
                 return self.emitNothing(d.declaration);
             }
+            const hoisted = self.decoratorsBeforeExport(d.declaration);
+            if (hoisted) |decorators| try self.printDecorators(decorators);
             try self.out.writeStr("export default ");
-            return self.emit(d.declaration);
+            return self.emitExpr(d.declaration, .{ .no_decorators = hoisted != null });
         }
         try self.out.writeStr("export default ");
         self.out.lead = .export_default;
         try self.emitExpr(d.declaration, .{ .prec = Precedence.Assignment });
         try self.softSemi();
+    }
+
+    fn decoratorsBeforeExport(self: *const Self, declaration: NodeIndex) ?IndexRange {
+        if (declaration == .null) return null;
+        const decorators = switch (self.nodeData(declaration)) {
+            .class => |c| c.decorators,
+            else => return null,
+        };
+        if (decorators.len == 0) return null;
+        const first = self.tree.extra(decorators)[0];
+        if (self.tree.span(first).start < self.tree.span(declaration).start) return decorators;
+        return null;
     }
 
     fn emit_export_all_declaration(self: *Self, d: *const ast.ExportAllDeclaration) Error!void {
