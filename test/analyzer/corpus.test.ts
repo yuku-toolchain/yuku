@@ -176,7 +176,8 @@ function check(path: string, source: string, sourceType: SourceType): void {
     let native: Set<number>;
     try {
       native = new Set(module.capturesOf(fn).map((c) => c.binding.id));
-    } catch {
+    } catch (error) {
+      note(violations.crashed, `${path}: capturesOf: ${(error as Error).message}`);
       continue;
     }
     const expected = expectedCaptures(module, fn);
