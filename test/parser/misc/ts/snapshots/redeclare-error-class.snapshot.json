@@ -405,6 +405,26 @@
     },
     {
       "severity": "error",
+      "message": "Identifier 'B4' has already been declared",
+      "path": null,
+      "start": 303,
+      "end": 305,
+      "labels": [
+        {
+          "start": 288,
+          "end": 290,
+          "message": "'B4' was first declared as a class here"
+        },
+        {
+          "start": 303,
+          "end": 305,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'B4'"
+    },
+    {
+      "severity": "error",
       "message": "Identifier 'B5' has already been declared",
       "path": null,
       "start": 370,

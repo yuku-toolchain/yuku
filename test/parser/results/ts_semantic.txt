@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       254/254 (100.00%)
+Passed:       280/280 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -28,6 +28,23 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |                ^^^^^^^^^^^^^^
  6 |     private bar(eval:any) {
    |
+
+✓ test/parser/suite/ts/semantic/04211725b8919f6f.ts
+error: Identifier 'StringHashTable' has already been declared
+   |
+16 |     }
+17 |     class StringHashTable<T> implements IHashTable<T> {
+   |           ~~~~~~~~~~~~~~~ 'StringHashTable' was first declared as a class here
+18 |         private itemCount;
+.. |
+55 |     }
+56 |     class StringHashTable<T> implements IHashTable<T> {
+   |           ^^^^^^^^^^^^^^^
+   |           ~~~~~~~~~~~~~~~ cannot be redeclared here
+57 |         private itemCount;
+   |
+   = help: Consider removing or renaming this declaration of 'StringHashTable'
+
 
 ✓ test/parser/suite/ts/semantic/0556245dd6080c76.ts
 error: Only a single variable declaration is allowed in a for-in/of statement
@@ -210,6 +227,21 @@ error: Identifier 'var1' has already been declared
    = help: Consider removing or renaming this declaration of 'var1'
 
 
+✓ test/parser/suite/ts/semantic/1436ae61f7a06758.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 2 | 
+ 3 | function Foo():Foo; // error
+   |          ~~~ 'Foo' was first declared as a function here
+ 4 | function Foo(s:string):Foo; // error
+ 5 | class Foo { // error
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+ 6 |     bar1() { /*WScript.Echo("bar1");*/ }
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
 ✓ test/parser/suite/ts/semantic/149e25c736add938.ts
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -233,6 +265,19 @@ error: Duplicate export of 'default'
  5 | 
    |
 
+✓ test/parser/suite/ts/semantic/15af09ecd27cc60c.ts
+error: Identifier 'bar' has already been declared
+   |
+ 1 | // @target: es2015
+ 2 | function bar(): string;
+   |          ~~~ 'bar' was first declared as a function here
+ 3 | class bar {}
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'bar'
+
+
 ✓ test/parser/suite/ts/semantic/171d4598153404a6.module.ts
 error: 'with' statements are not allowed in strict mode
    |
@@ -245,6 +290,20 @@ error: 'with' statements are not allowed in strict mode
    | ^
 72 | 
    |
+
+✓ test/parser/suite/ts/semantic/1735662326ce0638.ts
+error: Identifier 'fn1' has already been declared
+   |
+ 6 | namespace M {
+ 7 |     function fn1() { }
+   |              ~~~ 'fn1' was first declared as a function here
+ 8 |     var fn1;
+   |         ^^^
+   |         ~~~ cannot be redeclared here
+ 9 | 
+   |
+   = help: Consider removing or renaming this declaration of 'fn1'
+
 
 ✓ test/parser/suite/ts/semantic/17387757f7d1ac52.ts
 error: 'super' property access is only valid inside a method or class body
@@ -377,6 +436,51 @@ error: Identifier 'M' has already been declared
 13 | 
    |
    = help: Consider removing or renaming this declaration of 'M'
+
+
+✓ test/parser/suite/ts/semantic/20b190e03812c7f7.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 4 | 
+ 5 | class Foo { // error
+   |       ~~~ 'Foo' was first declared as a class here
+ 6 |     bar1() { /*WScript.Echo("bar1");*/ }
+.. |
+12 | 
+13 | function Foo(); // error
+   |          ^^^
+   |          ~~~ cannot be redeclared here
+14 | 
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
+✓ test/parser/suite/ts/semantic/2161d19d5017b837.ts
+error: Identifier 'Foo' has already been declared
+   |
+10 | // just want to make sure this one doesn't crash the compiler
+11 | function Foo();
+   |          ~~~ 'Foo' was first declared as a function here
+12 | class Foo {
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+13 |  static bar;
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
+✓ test/parser/suite/ts/semantic/21d3b2d1293f735e.ts
+error: Identifier 'foo' has already been declared
+   |
+ 1 | // @target: es2015
+ 2 | class foo { };
+   |       ~~~ 'foo' was first declared as a class here
+ 3 | function foo() {}
+   |          ^^^
+   |          ~~~ cannot be redeclared here
+ 4 | 
+   |
+   = help: Consider removing or renaming this declaration of 'foo'
 
 
 ✓ test/parser/suite/ts/semantic/22c720a519ecf008.ts
@@ -525,11 +629,11 @@ error: Identifier 'c2' has already been declared
    |
  2 | //// class then function
  3 | class c2 { public foo() { } } // error
-   |       ~~ 'c2' was first declared as a function here
+   |       ~~ 'c2' was first declared as a class here
  4 | function c2() { } // error
+   |          ^^
+   |          ~~ cannot be redeclared here
  5 | var c2 = () => { }
-   |     ^^
-   |     ~~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'c2'
 
@@ -751,6 +855,23 @@ error: Duplicate export of 'default'
  6 | export default interface Foo {}
    |
 
+✓ test/parser/suite/ts/semantic/3fc43370eef02c9f.ts
+error: Identifier 'x' has already been declared
+   |
+10 | namespace C {
+11 |     export var x = 1;
+   |                ~ 'x' was first declared as a variable here
+12 | }
+.. |
+14 |     export function foo() { }
+15 |     export function x() { }
+   |                     ^
+   |                     ~ cannot be redeclared here
+16 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/ts/semantic/3fd35eba4180a07d.ts
 error: Only a single variable declaration is allowed in a for-in/of statement
    |
@@ -855,6 +976,37 @@ error: Identifier 'Foo' has already been declared
    |      ~~~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'Foo'
+
+
+✓ test/parser/suite/ts/semantic/4af896b3a1ccef36.ts
+error: Identifier 'Point' has already been declared
+   |
+17 | namespace M2.X {
+18 |     export class Point {
+   |                  ~~~~~ 'Point' was first declared as a class here
+19 |         x: number; y: number;
+.. |
+24 |     export namespace X {
+25 |         export var Point: number; // Error
+   |                    ^^^^^^^^^^^^^
+   |                    ~~~~~~~~~~~~~ cannot be redeclared here
+26 |     }
+   |
+   = help: Consider removing or renaming this declaration of 'Point'
+
+
+✓ test/parser/suite/ts/semantic/4c16e6d1f4c0fef8.module.ts
+error: Identifier 'foo' has already been declared
+   |
+ 2 | // @target: es2015
+ 3 | export const foo = 1
+   |              ~~~ 'foo' was first declared as a variable here
+ 4 | export declare class foo {}
+   |                      ^^^
+   |                      ~~~ cannot be redeclared here
+ 5 | export interface foo {}
+   |
+   = help: Consider removing or renaming this declaration of 'foo'
 
 
 ✓ test/parser/suite/ts/semantic/4c7dd49b55c52bff.ts
@@ -1020,6 +1172,22 @@ error: for-of loop variable declaration may not have an initializer
    = help: Remove the initializer from the loop variable.
 
 
+✓ test/parser/suite/ts/semantic/64cfa2fba515a2b5.ts
+error: Identifier 'f' has already been declared
+   |
+10 | namespace M {
+11 |     export function f() { }
+   |                     ~ 'f' was first declared as a function here
+12 | }
+13 | namespace M {
+14 |     export class f { } // error
+   |                  ^
+   |                  ~ cannot be redeclared here
+15 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/ts/semantic/67476688495b7d49.ts
 error: Duplicate label 'target'
    |
@@ -1047,17 +1215,17 @@ error: Duplicate export of 'default'
    |
 
 ✓ test/parser/suite/ts/semantic/6aedbab4380f7b03.ts
-error: Identifier 'x4' has already been declared
+error: Identifier 'x2' has already been declared
    |
-13 | // var then class
-14 | var x4 = 1; // error
-   |     ~~ 'x4' was first declared as a variable here
-15 | class x4 { } // error
-   |       ^^
-   |       ~~ cannot be redeclared here
-16 | 
+ 6 | // var then function
+ 7 | var x2 = 1; // error
+   |     ~~ 'x2' was first declared as a variable here
+ 8 | function x2() { } // error
+   |          ^^
+   |          ~~ cannot be redeclared here
+ 9 | 
    |
-   = help: Consider removing or renaming this declaration of 'x4'
+   = help: Consider removing or renaming this declaration of 'x2'
 
 
 ✓ test/parser/suite/ts/semantic/6b1e94fe0cbfe05d.ts
@@ -1070,6 +1238,23 @@ error: Identifier 'X' has already been declared
    |       ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'X'
+
+
+✓ test/parser/suite/ts/semantic/6bd7e0bc469afc77.ts
+error: Identifier 'Point' has already been declared
+   |
+ 2 | namespace A {
+ 3 |     export class Point {
+   |                  ~~~~~ 'Point' was first declared as a class here
+ 4 |         x: number;
+.. |
+10 |     // expected error
+11 |     export class Point {
+   |                  ^^^^^
+   |                  ~~~~~ cannot be redeclared here
+12 |         origin: number;
+   |
+   = help: Consider removing or renaming this declaration of 'Point'
 
 
 ✓ test/parser/suite/ts/semantic/6d665615206122c2.ts
@@ -1170,17 +1355,17 @@ error: Duplicate export of 'default'
    |
 
 ✓ test/parser/suite/ts/semantic/77b20b7bc01d24a3.ts
-error: Identifier 'y3' has already been declared
+error: Identifier 'y1' has already been declared
    |
-13 | // function then class
-14 | function y3() { } // error
-   |          ~~ 'y3' was first declared as a function here
-15 | class y3 { } // error
-   |       ^^
-   |       ~~ cannot be redeclared here
-16 | 
+ 2 | // function then var
+ 3 | function y1() { } // error
+   |          ~~ 'y1' was first declared as a function here
+ 4 | var y1 = 1; // error
+   |     ^^
+   |     ~~ cannot be redeclared here
+ 5 | 
    |
-   = help: Consider removing or renaming this declaration of 'y3'
+   = help: Consider removing or renaming this declaration of 'y1'
 
 
 ✓ test/parser/suite/ts/semantic/79152c29b731eb7a.ts
@@ -1313,6 +1498,21 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |     ^^^^
    |
 
+✓ test/parser/suite/ts/semantic/8184cdac6ebbb56e.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 2 | // @strict: false
+ 3 | function Foo():Foo; // error
+   |          ~~~ 'Foo' was first declared as a function here
+ 4 | function Foo(s:string):Foo; // error
+ 5 | class Foo { // error
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+ 6 |     bar1(s:string);
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
 ✓ test/parser/suite/ts/semantic/8446ac2b67c4a712.ts
 error: Identifier 'Foo' has already been declared
    |
@@ -1388,6 +1588,22 @@ error: Yield expression is not allowed in formal parameters
  5 |   }
    |
 
+✓ test/parser/suite/ts/semantic/86c550bf657cd3b9.ts
+error: Identifier 'x' has already been declared
+   |
+ 8 | namespace C {
+ 9 |     export var x = 1;
+   |                ~ 'x' was first declared as a variable here
+10 | }
+11 | namespace C {
+12 |     export function x() { }
+   |                     ^
+   |                     ~ cannot be redeclared here
+13 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/ts/semantic/870fdd42cafb4a26.ts
 error: Use of undefined label 'target'
    |
@@ -1433,6 +1649,34 @@ error: Duplicate export of 'default'
    | ~~ exported again here
 10 | 
    |
+
+✓ test/parser/suite/ts/semantic/88fb41e1acf2f212.ts
+error: Identifier 'myFn' has already been declared
+   |
+ 1 | // @target: es2015
+ 2 | var myFn;
+   |     ~~~~ 'myFn' was first declared as a variable here
+ 3 | function myFn(): any { }
+   |          ^^^^
+   |          ~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'myFn'
+
+
+✓ test/parser/suite/ts/semantic/8b1b056e5080ea58.module.ts
+error: Identifier 'f' has already been declared
+   |
+ 3 | // @strict: false
+ 4 | var f = 10;
+   |     ~ 'f' was first declared as a variable here
+ 5 | 
+ 6 | export function f();
+   |                 ^
+   |                 ~ cannot be redeclared here
+ 7 | export function f() {
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
 
 ✓ test/parser/suite/ts/semantic/8c18a98da0904bb9.ts
 error: Identifier 'e0' has already been declared
@@ -1671,6 +1915,23 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
+✓ test/parser/suite/ts/semantic/9f1b583e9f3a0b6e.ts
+error: Identifier 'e' has already been declared
+    |
+194 | }
+195 | declare const e: string | boolean | undefined
+    |               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 'e' was first declared as a variable here
+196 | declare const u1: U1
+... |
+210 | declare var d: {a: number, b: string | undefined }
+211 | declare var e: {a: number, b?: string | undefined }
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ cannot be redeclared here
+212 | 
+    |
+    = help: Consider removing or renaming this declaration of 'e'
+
+
 ✓ test/parser/suite/ts/semantic/a3afa1befed26fab.ts
 error: Identifier 'number' has already been declared
    |
@@ -1759,6 +2020,35 @@ error: Private field '#prop' must be declared in an enclosing class
    |       ^^^^^
 14 | }
    |
+
+✓ test/parser/suite/ts/semantic/a6414c816df510dc.ts
+error: Identifier 'myFn' has already been declared
+   |
+ 3 | namespace myMod {
+ 4 |     var myFn;
+   |         ~~~~ 'myFn' was first declared as a variable here
+ 5 |     function myFn() {  }
+   |              ^^^^
+   |              ~~~~ cannot be redeclared here
+ 6 | }
+   |
+   = help: Consider removing or renaming this declaration of 'myFn'
+
+
+✓ test/parser/suite/ts/semantic/a81cfbc1c9405b6b.ts
+error: Identifier 'w' has already been declared
+   |
+ 6 | 
+ 7 | function w() { }
+   |          ~ 'w' was first declared as a function here
+ 8 | try { } catch (e) {
+ 9 |     var w;
+   |         ^
+   |         ~ cannot be redeclared here
+10 | }
+   |
+   = help: Consider removing or renaming this declaration of 'w'
+
 
 ✓ test/parser/suite/ts/semantic/a8e560cc3cd981b3.ts
 error: for-of loop variable declaration may not have an initializer
@@ -1879,6 +2169,20 @@ error: Deleting a variable in strict mode is not allowed
    |          ^^^^^^^^^
  8 |     set [[0, 1]](v) { }
    |
+
+✓ test/parser/suite/ts/semantic/b0a40fde7fb0c9d1.module.ts
+error: Identifier 'a' has already been declared
+   |
+ 2 | //@module: commonjs
+ 3 | export var a = 10;
+   |            ~ 'a' was first declared as a variable here
+ 4 | export function a() {
+   |                 ^
+   |                 ~ cannot be redeclared here
+ 5 | }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
 
 ✓ test/parser/suite/ts/semantic/b0bdc13752b79510.ts
 error: for-in loop variable declaration may not have an initializer
@@ -2152,6 +2456,23 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
+✓ test/parser/suite/ts/semantic/be561658267135f4.ts
+error: Identifier 'foo' has already been declared
+   |
+11 | }
+12 | declare function foo(x: () => Container<Ref<number>>): void;
+   |                  ~~~ 'foo' was first declared as a function here
+13 | declare let a: () => Container<Ref<string>>;
+.. |
+23 | 
+24 | const foo = { bar: 'a' };
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+25 | const x = ({ [foo.bar]: c }) => undefined;
+   |
+   = help: Consider removing or renaming this declaration of 'foo'
+
+
 ✓ test/parser/suite/ts/semantic/bee3156b346b5580.module.ts
 error: Duplicate export of 'Foo'
    |
@@ -2299,6 +2620,23 @@ error: Await expression is not allowed in formal parameters
    |                       ^^^^^^^^^^^
  9 |   }
    |
+
+✓ test/parser/suite/ts/semantic/cd60affbddf6b097.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 2 | // @strict: false
+ 3 | class Foo { // error
+   |       ~~~ 'Foo' was first declared as a class here
+ 4 |     bar1() { /*WScript.Echo("bar1");*/ }
+.. |
+10 | 
+11 | function Foo(); // error
+   |          ^^^
+   |          ~~~ cannot be redeclared here
+12 | function F1(s:string);
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
 
 ✓ test/parser/suite/ts/semantic/cd98ac0690e2442f.module.ts
 error: Duplicate export of 'default'
@@ -2477,6 +2815,20 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
  7 | }
    |
 
+✓ test/parser/suite/ts/semantic/d6cf5684c8472520.ts
+error: Identifier 'foo' has already been declared
+   |
+ 1 | // @target: es2015
+ 2 | var foo: string;
+   |     ~~~~~~~~~~~ 'foo' was first declared as a variable here
+ 3 | function foo(): number { }
+   |          ^^^
+   |          ~~~ cannot be redeclared here
+ 4 | function foo(): number { }
+   |
+   = help: Consider removing or renaming this declaration of 'foo'
+
+
 ✓ test/parser/suite/ts/semantic/d79924562c50ee11.ts
 error: Private field '#foo' must be declared in an enclosing class
    |
@@ -2485,6 +2837,21 @@ error: Private field '#foo' must be declared in an enclosing class
    |   ^^^^
 28 | a = b;                                    // Error
    |
+
+✓ test/parser/suite/ts/semantic/d8e2d57f12774180.ts
+error: Identifier 'console' has already been declared
+   |
+ 2 | // @lib: es5
+ 3 | declare var console: any;
+   |             ~~~~~~~~~~~~ 'console' was first declared as a variable here
+ 4 | 
+ 5 | namespace console {
+   |           ^^^^^^^
+   |           ~~~~~~~ cannot be redeclared here
+ 6 |     export var x = 2;
+   |
+   = help: Consider removing or renaming this declaration of 'console'
+
 
 ✓ test/parser/suite/ts/semantic/d914ad5837e60a91.ts
 error: Private field '#derivedProp' must be declared in an enclosing class
@@ -2521,6 +2888,21 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
+✓ test/parser/suite/ts/semantic/dceaa6f7ed6bb3bf.ts
+error: Identifier 'Point' has already been declared
+   |
+ 2 | // @strict: false
+ 3 | declare var Point: { new(x:number, y:number): {x: number; y: number; }; }
+   |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 'Point' was first declared as a variable here
+ 4 | 
+ 5 | function Point(x, y) {
+   |          ^^^^^
+   |          ~~~~~ cannot be redeclared here
+ 6 |     this.x = x;
+   |
+   = help: Consider removing or renaming this declaration of 'Point'
+
+
 ✓ test/parser/suite/ts/semantic/dd7653e174eb5aab.module.ts
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -2531,6 +2913,21 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |     ^^^^^^^^^^^^^
  6 | }
    |
+
+✓ test/parser/suite/ts/semantic/ddf5882a5ffbe502.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 2 | 
+ 3 | function Foo():Foo; // error
+   |          ~~~ 'Foo' was first declared as a function here
+ 4 | function Foo(s:string):Foo; // error
+ 5 | class Foo { // error
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+ 6 |     bar1() { /*WScript.Echo("bar1");*/ }
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
 
 ✓ test/parser/suite/ts/semantic/dea2072b716ebe6a.ts
 error: 'let' is not allowed as a variable name in a lexical declaration

@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       93/93 (100.00%)
+Passed:       96/96 (100.00%)
 Failed:       0
-AST mismatch: 0/93
+AST mismatch: 0/96
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -288,6 +288,20 @@ error: A parameter property may not be declared using a binding pattern
    = help: Name the parameter, then destructure it inside the constructor body.
 
 
+✓ test/parser/misc/ts/redeclare-error-ambient.ts
+error: Identifier 'A1' has already been declared
+   |
+ 3 | // declare let + let
+ 4 | declare let A1: number;
+   |             ~~~~~~~~~~ 'A1' was first declared as a variable here
+ 5 | let A1 = 0;
+   |     ^^
+   |     ~~ cannot be redeclared here
+ 6 | 
+   |
+   = help: Consider removing or renaming this declaration of 'A1'
+
+
 ✓ test/parser/misc/ts/redeclare-error-class.ts
 error: Identifier 'B1' has already been declared
    |
@@ -316,6 +330,20 @@ error: Identifier 'C1' has already been declared
  8 |   B,
    |
    = help: Consider removing or renaming this declaration of 'C1'
+
+
+✓ test/parser/misc/ts/redeclare-error-function.ts
+error: Identifier 'F1' has already been declared
+   |
+ 3 | // var + function
+ 4 | var F1 = 0;
+   |     ~~ 'F1' was first declared as a variable here
+ 5 | function F1() {}
+   |          ^^
+   |          ~~ cannot be redeclared here
+ 6 | 
+   |
+   = help: Consider removing or renaming this declaration of 'F1'
 
 
 ✓ test/parser/misc/ts/redeclare-error-namespace.ts
@@ -348,6 +376,7 @@ error: Identifier 'A1' has already been declared
    = help: Consider removing or renaming this declaration of 'A1'
 
 
+✓ test/parser/misc/ts/redeclare-merge-ambient.ts
 ✓ test/parser/misc/ts/redeclare-merge-class-interface.ts
 ✓ test/parser/misc/ts/redeclare-merge-cross-space.ts
 ✓ test/parser/misc/ts/redeclare-merge-enum.ts

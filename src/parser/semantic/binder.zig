@@ -197,10 +197,8 @@ pub const Symbol = struct {
         /// A TypeScript function.
         pub const function: Flags = blk: {
             var f = value_space;
-            f.function_scoped_var = false;
             f.function = false;
             f.value_module = false;
-            f.class = false;
             break :blk f;
         };
 
@@ -743,9 +741,9 @@ pub const SymbolTracker = struct {
                 switch (decl.kind) {
                     .@"var" => {
                         const target = scope.hoistTarget();
-                        // module-level functions are lexical, elsewhere (and in ts) `var` merges
+                        // ts and module-level functions never merge with `var`
                         var excludes = Symbol.Excludes.function_scoped_var;
-                        if (!self.tree.isTs() and scope.get(target).kind == .module) {
+                        if (self.tree.isTs() or scope.get(target).kind == .module) {
                             excludes.function = true;
                         }
                         self.pending = .{
@@ -1203,7 +1201,7 @@ pub const SymbolTracker = struct {
         node: ast.NodeIndex,
         scopes: []const sc.Scope,
     ) Allocator.Error!SymbolId {
-        const target = if (self.pending.scope == self.global_body) .root else self.pending.scope;
+        const target = self.pendingTarget();
         std.debug.assert(target != .none);
         std.debug.assert(@intFromEnum(target) < self.scope_maps.items.len);
         std.debug.assert(node != .null);
@@ -1211,26 +1209,17 @@ pub const SymbolTracker = struct {
         const name_str = self.tree.string(name);
         const target_idx = @intFromEnum(target);
 
-        const is_import = self.pending.flags.intersects(Symbol.any_import);
-        const export_context = target_idx < self.export_contexts.items.len and
-            self.export_contexts.items[target_idx];
-        const exported = self.export_state != .none or (export_context and !is_import);
+        const exported = self.pendingExported(target);
         // an export merges across the bodies of its namespace
         const own = self.binding(target, name_str);
-        const shared = if (own == null and exported and self.shares_members)
-            self.bodies(scopes).sharedMember(target, name_str, .any)
-        else
-            null;
+        const shared = if (own == null) self.sharedExport(target, name_str, scopes) else null;
         if (shared) |existing| {
             try self.scope_maps.items[target_idx].put(self.allocator, name_str, existing);
         }
 
         const id = if (own orelse shared) |existing| sid: {
             const sym = &self.symbols.items[@intFromEnum(existing)];
-            // an ambient class and function merge
-            var excludes = self.pending.excludes;
-            if (sym.flags.ambient or self.pending.flags.ambient) excludes.function = false;
-            if (!sym.flags.intersects(excludes)) {
+            if (!conflicts(self.pending, sym.flags)) {
                 var merged = sym.flags.merge(self.pending.flags);
                 merged.exported = merged.exported or exported;
                 merged.is_default = merged.is_default or self.export_state == .default;
@@ -1258,6 +1247,28 @@ pub const SymbolTracker = struct {
 
         try self.decl_pairs.append(self.allocator, .{ .sid = id, .node = node });
         return id;
+    }
+
+    fn pendingTarget(self: *const SymbolTracker) sc.ScopeId {
+        return if (self.pending.scope == self.global_body) .root else self.pending.scope;
+    }
+
+    fn pendingExported(self: *const SymbolTracker, target: sc.ScopeId) bool {
+        const target_idx = @intFromEnum(target);
+        const is_import = self.pending.flags.intersects(Symbol.any_import);
+        const export_context = target_idx < self.export_contexts.items.len and
+            self.export_contexts.items[target_idx];
+        return self.export_state != .none or (export_context and !is_import);
+    }
+
+    fn sharedExport(
+        self: *const SymbolTracker,
+        target: sc.ScopeId,
+        name: []const u8,
+        scopes: []const sc.Scope,
+    ) ?SymbolId {
+        if (!self.shares_members or !self.pendingExported(target)) return null;
+        return self.bodies(scopes).sharedMember(target, name, .any);
     }
 
     /// Records an identifier reference at `node` in `scope`.
@@ -1500,6 +1511,22 @@ pub const SymbolTracker = struct {
         };
     }
 };
+
+/// The symbol the pending declaration of `name` merges into, the scope's own binding or an
+/// export another body of its namespace shares.
+pub fn prior(tracker: *const SymbolTracker, name: []const u8, scopes: []const sc.Scope) ?SymbolId {
+    const target = tracker.pendingTarget();
+    return tracker.binding(target, name) orelse tracker.sharedExport(target, name, scopes);
+}
+
+/// Whether `pending` cannot merge into a symbol with `flags`.
+pub fn conflicts(pending: SymbolTracker.PendingBinding, flags: Symbol.Flags) bool {
+    var excludes = pending.excludes;
+    // a class and a function merge only when the class is ambient
+    if (pending.flags.class and pending.flags.ambient) excludes.function = false;
+    if (pending.flags.function and flags.class and flags.ambient) excludes.class = false;
+    return flags.intersects(excludes);
+}
 
 // infer variables exist only in their conditional's true branch, class type
 // parameters are hidden in static members (TS2302) and computed keys (TS2467)

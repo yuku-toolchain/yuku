@@ -6,6 +6,7 @@ const util = @import("util");
 const traverser = @import("../traverser/root.zig");
 const ast = @import("../ast.zig");
 const ecmascript = @import("../ecmascript.zig");
+const binder = @import("binder.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -67,7 +68,7 @@ pub const Checker = struct {
             );
         }
 
-        const existing = ctx.symbols.binding(ctx.symbols.pending.scope, name);
+        const existing = binder.prior(&ctx.symbols, name, ctx.scope.scopes.items);
         try self.checkRedeclaration(id, node_index, name, flags, ctx, existing);
 
         // ts declaration merging makes a second export of an in-scope name legal
@@ -91,15 +92,11 @@ pub const Checker = struct {
         std.debug.assert(node_index != .null);
         std.debug.assert(name.len > 0);
         const target = ctx.symbols.pending.scope;
-        const excludes = ctx.symbols.pending.excludes;
 
         if (existing_id) |sym| {
             const existing = ctx.symbols.symbol(sym);
-            const merging_with_ambient = flags.ambient or existing.flags.ambient;
-
-            if (!merging_with_ambient and existing.flags.intersects(excludes) and
-                !isAnnexBDuplicate(ctx, node_index, sym))
-            {
+            const conflicts = binder.conflicts(ctx.symbols.pending, existing.flags);
+            if (conflicts and !isAnnexBDuplicate(ctx, node_index, sym)) {
                 try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                 return;
             }
@@ -118,8 +115,7 @@ pub const Checker = struct {
             }
         }
 
-        // a body's lexical names may not duplicate the signature one scope up
-        // (14.15.1, 15.2.1), `excludes` decides which pairs collide
+        // a body's lexical names may not duplicate the signature one scope up (14.15.1, 15.2.1)
         if (!flags.function_scoped_var and !flags.function) {
             const target_scope = ctx.scope.get(target);
             const outer = target_scope.parent;
@@ -135,7 +131,7 @@ pub const Checker = struct {
             if (outer_holds_signature) {
                 if (ctx.symbols.ownBinding(outer, name)) |sym| {
                     const existing = ctx.symbols.symbol(sym);
-                    if (existing.flags.intersects(excludes))
+                    if (binder.conflicts(ctx.symbols.pending, existing.flags))
                         try self.reportRedeclaration(id, node_index, sym, existing, ctx);
                 }
             }

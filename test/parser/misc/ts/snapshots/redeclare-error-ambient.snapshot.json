@@ -1,0 +1,634 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 573,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 78,
+        "end": 101,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 90,
+            "end": 100,
+            "id": {
+              "type": "Identifier",
+              "start": 90,
+              "end": 100,
+              "name": "A1",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 92,
+                "end": 100,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 94,
+                  "end": 100
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 102,
+        "end": 113,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 106,
+            "end": 112,
+            "id": {
+              "type": "Identifier",
+              "start": 106,
+              "end": 108,
+              "name": "A1",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 111,
+              "end": 112,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 138,
+        "end": 163,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 152,
+            "end": 162,
+            "id": {
+              "type": "Identifier",
+              "start": 152,
+              "end": 162,
+              "name": "A2",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 154,
+                "end": 162,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 156,
+                  "end": 162
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 164,
+        "end": 175,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 168,
+            "end": 174,
+            "id": {
+              "type": "Identifier",
+              "start": 168,
+              "end": 170,
+              "name": "A2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 173,
+              "end": 174,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 202,
+        "end": 221,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 216,
+          "end": 218,
+          "name": "A3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 219,
+          "end": 221,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 222,
+        "end": 233,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 228,
+          "end": 230,
+          "name": "A3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 231,
+          "end": 233,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "TSDeclareFunction",
+        "start": 261,
+        "end": 289,
+        "id": {
+          "type": "Identifier",
+          "start": 278,
+          "end": 280,
+          "name": "A4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 282,
+          "end": 288,
+          "typeAnnotation": {
+            "type": "TSVoidKeyword",
+            "start": 284,
+            "end": 288
+          }
+        },
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 290,
+        "end": 301,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 294,
+            "end": 300,
+            "id": {
+              "type": "Identifier",
+              "start": 294,
+              "end": 296,
+              "name": "A4",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 299,
+              "end": 300,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 336,
+        "end": 355,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 350,
+          "end": 352,
+          "name": "A5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 353,
+          "end": 355,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 356,
+        "end": 375,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 370,
+          "end": 372,
+          "name": "A5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 373,
+          "end": 375,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 407,
+        "end": 431,
+        "id": {
+          "type": "Identifier",
+          "start": 420,
+          "end": 422,
+          "name": "A6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 423,
+          "end": 431,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 427,
+              "end": 428,
+              "id": {
+                "type": "Identifier",
+                "start": 427,
+                "end": 428,
+                "name": "A",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "initializer": null,
+              "computed": false
+            }
+          ]
+        },
+        "const": false,
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 432,
+        "end": 455,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 444,
+            "end": 454,
+            "id": {
+              "type": "Identifier",
+              "start": 444,
+              "end": 454,
+              "name": "A6",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 446,
+                "end": 454,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 448,
+                  "end": 454
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 532,
+        "end": 543,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 538,
+          "end": 540,
+          "name": "A7",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 541,
+          "end": 543,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "TSDeclareFunction",
+        "start": 544,
+        "end": 572,
+        "id": {
+          "type": "Identifier",
+          "start": 561,
+          "end": 563,
+          "name": "A7",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 565,
+          "end": 571,
+          "typeAnnotation": {
+            "type": "TSVoidKeyword",
+            "start": 567,
+            "end": 571
+          }
+        },
+        "declare": true
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Error: ambient declarations conflict like any other.",
+      "start": 0,
+      "end": 55
+    },
+    {
+      "type": "Line",
+      "value": " declare let + let",
+      "start": 57,
+      "end": 77
+    },
+    {
+      "type": "Line",
+      "value": " declare const + var",
+      "start": 115,
+      "end": 137
+    },
+    {
+      "type": "Line",
+      "value": " declare class + class",
+      "start": 177,
+      "end": 201
+    },
+    {
+      "type": "Line",
+      "value": " declare function + let",
+      "start": 235,
+      "end": 260
+    },
+    {
+      "type": "Line",
+      "value": " declare class + declare class",
+      "start": 303,
+      "end": 335
+    },
+    {
+      "type": "Line",
+      "value": " declare enum + declare let",
+      "start": 377,
+      "end": 406
+    },
+    {
+      "type": "Line",
+      "value": " class + declare function (only an ambient class merges with a function)",
+      "start": 457,
+      "end": 531
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'A1' has already been declared",
+      "path": null,
+      "start": 106,
+      "end": 108,
+      "labels": [
+        {
+          "start": 90,
+          "end": 100,
+          "message": "'A1' was first declared as a variable here"
+        },
+        {
+          "start": 106,
+          "end": 108,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A1'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A2' has already been declared",
+      "path": null,
+      "start": 168,
+      "end": 170,
+      "labels": [
+        {
+          "start": 152,
+          "end": 162,
+          "message": "'A2' was first declared as a variable here"
+        },
+        {
+          "start": 168,
+          "end": 170,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A2'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A3' has already been declared",
+      "path": null,
+      "start": 228,
+      "end": 230,
+      "labels": [
+        {
+          "start": 216,
+          "end": 218,
+          "message": "'A3' was first declared as a class here"
+        },
+        {
+          "start": 228,
+          "end": 230,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A3'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A4' has already been declared",
+      "path": null,
+      "start": 294,
+      "end": 296,
+      "labels": [
+        {
+          "start": 278,
+          "end": 280,
+          "message": "'A4' was first declared as a function here"
+        },
+        {
+          "start": 294,
+          "end": 296,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A4'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A5' has already been declared",
+      "path": null,
+      "start": 370,
+      "end": 372,
+      "labels": [
+        {
+          "start": 350,
+          "end": 352,
+          "message": "'A5' was first declared as a class here"
+        },
+        {
+          "start": 370,
+          "end": 372,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A5'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A6' has already been declared",
+      "path": null,
+      "start": 444,
+      "end": 454,
+      "labels": [
+        {
+          "start": 420,
+          "end": 422,
+          "message": "'A6' was first declared as an enum here"
+        },
+        {
+          "start": 444,
+          "end": 454,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A6'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'A7' has already been declared",
+      "path": null,
+      "start": 561,
+      "end": 563,
+      "labels": [
+        {
+          "start": 538,
+          "end": 540,
+          "message": "'A7' was first declared as a class here"
+        },
+        {
+          "start": 561,
+          "end": 563,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'A7'"
+    }
+  ]
+}

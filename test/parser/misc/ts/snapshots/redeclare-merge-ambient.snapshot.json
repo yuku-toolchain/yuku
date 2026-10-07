@@ -1,0 +1,469 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 501,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 72,
+        "end": 91,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 86,
+          "end": 88,
+          "name": "M1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 89,
+          "end": 91,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 92,
+        "end": 108,
+        "id": {
+          "type": "Identifier",
+          "start": 101,
+          "end": 103,
+          "name": "M1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 106,
+          "end": 108,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 138,
+        "end": 154,
+        "id": {
+          "type": "Identifier",
+          "start": 147,
+          "end": 149,
+          "name": "M2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 152,
+          "end": 154,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 155,
+        "end": 174,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 169,
+          "end": 171,
+          "name": "M2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 172,
+          "end": 174,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 212,
+        "end": 231,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 226,
+          "end": 228,
+          "name": "M3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 229,
+          "end": 231,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "TSDeclareFunction",
+        "start": 232,
+        "end": 260,
+        "id": {
+          "type": "Identifier",
+          "start": 249,
+          "end": 251,
+          "name": "M3",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 253,
+          "end": 259,
+          "typeAnnotation": {
+            "type": "TSVoidKeyword",
+            "start": 255,
+            "end": 259
+          }
+        },
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 283,
+        "end": 306,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 295,
+            "end": 305,
+            "id": {
+              "type": "Identifier",
+              "start": 295,
+              "end": 305,
+              "name": "M4",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 297,
+                "end": 305,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 299,
+                  "end": 305
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": true
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 307,
+        "end": 322,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 311,
+            "end": 321,
+            "id": {
+              "type": "Identifier",
+              "start": 311,
+              "end": 321,
+              "name": "M4",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 313,
+                "end": 321,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 315,
+                  "end": 321
+                }
+              },
+              "optional": false
+            },
+            "init": null,
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 353,
+        "end": 372,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 367,
+          "end": 369,
+          "name": "M5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 370,
+          "end": 372,
+          "body": []
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 373,
+        "end": 388,
+        "id": {
+          "type": "Identifier",
+          "start": 383,
+          "end": 385,
+          "name": "M5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 386,
+          "end": 388,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 423,
+        "end": 461,
+        "id": {
+          "type": "Identifier",
+          "start": 441,
+          "end": 443,
+          "name": "M6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": true,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 444,
+          "end": 461,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 448,
+              "end": 459,
+              "kind": "const",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 454,
+                  "end": 458,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 454,
+                    "end": 458,
+                    "name": "a",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 455,
+                      "end": 458,
+                      "typeAnnotation": {
+                        "type": "TSLiteralType",
+                        "start": 457,
+                        "end": 458,
+                        "literal": {
+                          "type": "Literal",
+                          "start": 457,
+                          "end": 458,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    },
+                    "optional": false
+                  },
+                  "init": null,
+                  "definite": false
+                }
+              ],
+              "declare": false
+            }
+          ]
+        }
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 462,
+        "end": 500,
+        "id": {
+          "type": "Identifier",
+          "start": 472,
+          "end": 474,
+          "name": "M6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 475,
+          "end": 500,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 479,
+              "end": 498,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 486,
+                "end": 498,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 492,
+                    "end": 497,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 492,
+                      "end": 493,
+                      "name": "b",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 496,
+                      "end": 497,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Valid: ambient declarations that merge.",
+      "start": 0,
+      "end": 42
+    },
+    {
+      "type": "Line",
+      "value": " declare class + function",
+      "start": 44,
+      "end": 71
+    },
+    {
+      "type": "Line",
+      "value": " function + declare class",
+      "start": 110,
+      "end": 137
+    },
+    {
+      "type": "Line",
+      "value": " declare class + declare function",
+      "start": 176,
+      "end": 211
+    },
+    {
+      "type": "Line",
+      "value": " declare var + var",
+      "start": 262,
+      "end": 282
+    },
+    {
+      "type": "Line",
+      "value": " declare class + interface",
+      "start": 324,
+      "end": 352
+    },
+    {
+      "type": "Line",
+      "value": " declare namespace + namespace",
+      "start": 390,
+      "end": 422
+    }
+  ],
+  "diagnostics": []
+}

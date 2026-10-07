@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 467,
+    "end": 704,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -453,6 +453,244 @@
             }
           ]
         }
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 530,
+        "end": 559,
+        "id": {
+          "type": "Identifier",
+          "start": 540,
+          "end": 542,
+          "name": "N5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 543,
+          "end": 559,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 547,
+              "end": 557,
+              "kind": "let",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 551,
+                  "end": 556,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 551,
+                    "end": 552,
+                    "name": "a",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 555,
+                    "end": 556,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "definite": false
+                }
+              ],
+              "declare": false
+            }
+          ]
+        }
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 560,
+        "end": 589,
+        "id": {
+          "type": "Identifier",
+          "start": 570,
+          "end": 572,
+          "name": "N5",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 573,
+          "end": 589,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 577,
+              "end": 587,
+              "kind": "let",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 581,
+                  "end": 586,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 581,
+                    "end": 582,
+                    "name": "a",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 585,
+                    "end": 586,
+                    "value": 2,
+                    "raw": "2"
+                  },
+                  "definite": false
+                }
+              ],
+              "declare": false
+            }
+          ]
+        }
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 630,
+        "end": 666,
+        "id": {
+          "type": "Identifier",
+          "start": 640,
+          "end": 642,
+          "name": "N6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 643,
+          "end": 666,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 647,
+              "end": 664,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 654,
+                "end": 664,
+                "kind": "var",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 658,
+                    "end": 663,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 658,
+                      "end": 659,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 662,
+                      "end": 663,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 667,
+        "end": 703,
+        "id": {
+          "type": "Identifier",
+          "start": 677,
+          "end": 679,
+          "name": "N6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 680,
+          "end": 703,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 684,
+              "end": 701,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 691,
+                "end": 701,
+                "kind": "var",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 695,
+                    "end": 700,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 695,
+                      "end": 696,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 699,
+                      "end": 700,
+                      "value": 2,
+                      "raw": "2"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
       }
     ]
   },
@@ -480,6 +718,18 @@
       "value": " Valid: namespace + enum merge.",
       "start": 365,
       "end": 398
+    },
+    {
+      "type": "Line",
+      "value": " Valid: unexported members of separate bodies are separate.",
+      "start": 468,
+      "end": 529
+    },
+    {
+      "type": "Line",
+      "value": " Valid: var across namespace bodies.",
+      "start": 591,
+      "end": 629
     }
   ],
   "diagnostics": []

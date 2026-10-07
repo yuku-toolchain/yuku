@@ -206,9 +206,6 @@ const KNOWN: Known = {
       "declaration@365: yuku scope global, scope-manager 335",
     ],
   },
-  "a var and a function share a name in one catch block, which ECMAScript rejects": {
-    [`${SUITE}/a81cfbc1c9405b6b.ts`]: ["declaration@178: yuku scope global, scope-manager 140"],
-  },
   "typescript-estree reads `<!--` in a script as operators, not an HTML-like comment": {
     "test/parser/suite/js/pass/158dc2b44b1958390.js": ["bar@8: no yuku reference"],
     "test/parser/suite/js/pass/367c3d5dca7f95a5.js": ["b@5: no yuku reference"],

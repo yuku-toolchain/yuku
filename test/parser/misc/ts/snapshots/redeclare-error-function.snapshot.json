@@ -1,0 +1,409 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 326,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 73,
+        "end": 84,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 77,
+            "end": 83,
+            "id": {
+              "type": "Identifier",
+              "start": 77,
+              "end": 79,
+              "name": "F1",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 82,
+              "end": 83,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 85,
+        "end": 101,
+        "id": {
+          "type": "Identifier",
+          "start": 94,
+          "end": 96,
+          "name": "F1",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 99,
+          "end": 101,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 121,
+        "end": 137,
+        "id": {
+          "type": "Identifier",
+          "start": 130,
+          "end": 132,
+          "name": "F2",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 135,
+          "end": 137,
+          "body": []
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 138,
+        "end": 149,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 142,
+            "end": 148,
+            "id": {
+              "type": "Identifier",
+              "start": 142,
+              "end": 144,
+              "name": "F2",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 147,
+              "end": 148,
+              "value": 0,
+              "raw": "0"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 188,
+        "end": 241,
+        "id": {
+          "type": "Identifier",
+          "start": 197,
+          "end": 202,
+          "name": "outer",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 205,
+          "end": 241,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 209,
+              "end": 220,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 213,
+                  "end": 219,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 213,
+                    "end": 215,
+                    "name": "F3",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 218,
+                    "end": 219,
+                    "value": 0,
+                    "raw": "0"
+                  },
+                  "definite": false
+                }
+              ],
+              "declare": false
+            },
+            {
+              "type": "FunctionDeclaration",
+              "start": 223,
+              "end": 239,
+              "id": {
+                "type": "Identifier",
+                "start": 232,
+                "end": 234,
+                "name": "F3",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 237,
+                "end": 239,
+                "body": []
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": null,
+              "declare": false
+            }
+          ]
+        },
+        "expression": false,
+        "typeParameters": null,
+        "returnType": null,
+        "declare": false
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 276,
+        "end": 325,
+        "id": {
+          "type": "Identifier",
+          "start": 286,
+          "end": 288,
+          "name": "F4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 289,
+          "end": 325,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 293,
+              "end": 304,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 297,
+                  "end": 303,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 297,
+                    "end": 299,
+                    "name": "F5",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 302,
+                    "end": 303,
+                    "value": 0,
+                    "raw": "0"
+                  },
+                  "definite": false
+                }
+              ],
+              "declare": false
+            },
+            {
+              "type": "FunctionDeclaration",
+              "start": 307,
+              "end": 323,
+              "id": {
+                "type": "Identifier",
+                "start": 316,
+                "end": 318,
+                "name": "F5",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 321,
+                "end": 323,
+                "body": []
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": null,
+              "declare": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Error: var and function never merge in TypeScript.",
+      "start": 0,
+      "end": 53
+    },
+    {
+      "type": "Line",
+      "value": " var + function",
+      "start": 55,
+      "end": 72
+    },
+    {
+      "type": "Line",
+      "value": " function + var",
+      "start": 103,
+      "end": 120
+    },
+    {
+      "type": "Line",
+      "value": " var + function in a function body",
+      "start": 151,
+      "end": 187
+    },
+    {
+      "type": "Line",
+      "value": " var + function in a namespace",
+      "start": 243,
+      "end": 275
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'F1' has already been declared",
+      "path": null,
+      "start": 94,
+      "end": 96,
+      "labels": [
+        {
+          "start": 77,
+          "end": 79,
+          "message": "'F1' was first declared as a variable here"
+        },
+        {
+          "start": 94,
+          "end": 96,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'F1'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'F2' has already been declared",
+      "path": null,
+      "start": 142,
+      "end": 144,
+      "labels": [
+        {
+          "start": 130,
+          "end": 132,
+          "message": "'F2' was first declared as a function here"
+        },
+        {
+          "start": 142,
+          "end": 144,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'F2'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'F3' has already been declared",
+      "path": null,
+      "start": 232,
+      "end": 234,
+      "labels": [
+        {
+          "start": 213,
+          "end": 215,
+          "message": "'F3' was first declared as a variable here"
+        },
+        {
+          "start": 232,
+          "end": 234,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'F3'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'F5' has already been declared",
+      "path": null,
+      "start": 316,
+      "end": 318,
+      "labels": [
+        {
+          "start": 297,
+          "end": 299,
+          "message": "'F5' was first declared as a variable here"
+        },
+        {
+          "start": 316,
+          "end": 318,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'F5'"
+    }
+  ]
+}

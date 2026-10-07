@@ -23,3 +23,27 @@ namespace D4 {
   export const a = 1;
 }
 const D4 = 0;
+
+// let across namespace bodies
+namespace D5 {
+  export let a = 1;
+}
+namespace D5 {
+  export let a = 2;
+}
+
+// var + function across namespace bodies
+namespace D6 {
+  export var a = 1;
+}
+namespace D6 {
+  export function a() {}
+}
+
+// class across declare namespace bodies (ambient members are exported)
+declare namespace D7 {
+  class a {}
+}
+declare namespace D7 {
+  class a {}
+}
