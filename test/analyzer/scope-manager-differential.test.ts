@@ -140,7 +140,8 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
     if (def !== their.def) {
       const node = their.def === UNRESOLVED ? null : module.nodeAt(their.def);
       const target = node === null ? null : module.bindingOf(node);
-      if (target !== null && !target.visibleIn(reference.space)) continue;
+      const consistent = binding === null || binding.visibleIn(reference.space);
+      if (consistent && target !== null && !target.visibleIn(reference.space)) continue;
       mismatches.push(`${reference.name}@${position}: yuku ${def}, scope-manager ${their.def}`);
     } else if (reference.isWrite !== their.write) {
       const parent = module.parentOf(reference.node);
