@@ -200,9 +200,9 @@ function compareFile(file: CorpusFile, source: string): Comparison | null {
 const SUITE = "test/parser/suite/ts/pass";
 
 const KNOWN: Known = {
-  "tsc keeps an import merged with an exported function, a conflict it does not report": [
-    `${SUITE}/1af1672d6a4bfcc3.module.ts`,
-  ],
+  "tsc keeps an import merged with an exported function, a conflict it does not report": {
+    [`${SUITE}/1af1672d6a4bfcc3.module.ts`]: ["Foo: yuku drops, tsc keeps"],
+  },
 };
 
 const SNIPPETS: [name: string, source: string, lang?: SourceLang][] = [

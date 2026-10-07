@@ -187,21 +187,32 @@ function compareFile(file: CorpusFile, source: string): Comparison | null {
 const SUITE = "test/parser/suite/ts/pass";
 
 const KNOWN: Known = {
-  "scope-manager resolves an import equals alias to nothing": [
-    `${SUITE}/3a66bcb0ff2adb2c.module.ts`,
-  ],
-  "scope-manager merges a parameter with a same-named body var": [`${SUITE}/f2131ad89bc9a8ba.ts`],
-  "scope-manager scopes a declaration in statement position apart from tsc": [
-    `${SUITE}/4d85c34e00391b61.ts`,
-  ],
-  "a var and a function share a name in one catch block, which ECMAScript rejects": [
-    `${SUITE}/a81cfbc1c9405b6b.ts`,
-  ],
-  "typescript-estree reads `<!--` in a script as operators, not an HTML-like comment": [
-    "test/parser/suite/js/pass/158dc2b44b1958390.js",
-    "test/parser/suite/js/pass/367c3d5dca7f95a5.js",
-    "test/parser/suite/js/pass/9361ed8ad34bb5b9.js",
-  ],
+  "scope-manager resolves an import equals alias to nothing": {
+    [`${SUITE}/3a66bcb0ff2adb2c.module.ts`]: ["x@268: yuku 175, scope-manager -1"],
+  },
+  "scope-manager merges a parameter with a same-named body var": {
+    [`${SUITE}/f2131ad89bc9a8ba.ts`]: [
+      "s@4207: yuku 4193, scope-manager 4172",
+      "s@4476: yuku 4462, scope-manager 4441",
+      "s@4762: yuku 4734, scope-manager 4710",
+      "t@1282: yuku 1219, scope-manager 1194",
+      "t@3315: yuku 3238, scope-manager 3213",
+    ],
+  },
+  "scope-manager scopes a declaration in statement position apart from tsc": {
+    [`${SUITE}/4d85c34e00391b61.ts`]: [
+      "declaration@196: yuku scope 170, scope-manager global",
+      "declaration@365: yuku scope global, scope-manager 335",
+    ],
+  },
+  "a var and a function share a name in one catch block, which ECMAScript rejects": {
+    [`${SUITE}/a81cfbc1c9405b6b.ts`]: ["declaration@178: yuku scope global, scope-manager 140"],
+  },
+  "typescript-estree reads `<!--` in a script as operators, not an HTML-like comment": {
+    "test/parser/suite/js/pass/158dc2b44b1958390.js": ["bar@8: no yuku reference"],
+    "test/parser/suite/js/pass/367c3d5dca7f95a5.js": ["b@5: no yuku reference"],
+    "test/parser/suite/js/pass/9361ed8ad34bb5b9.js": ["bar@8: no yuku reference"],
+  },
 };
 
 type Snippet = [name: string, source: string, sourceType?: SourceType, lang?: SourceLang];

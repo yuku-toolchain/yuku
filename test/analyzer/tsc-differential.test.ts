@@ -248,9 +248,9 @@ function compareFile(file: CorpusFile, source: string): Comparison {
 const SUITE = "test/parser/suite/ts/pass";
 
 const KNOWN: Known = {
-  "tsc parses `A extends (x: B extends C ? D : E) => 0 ? F : G` differently": [
-    `${SUITE}/7abadbdb73780802.ts`,
-  ],
+  "tsc parses `A extends (x: B extends C ? D : E) => 0 ? F : G` differently": {
+    [`${SUITE}/7abadbdb73780802.ts`]: ["D@42: yuku unresolved, tsc 42"],
+  },
 };
 
 const SNIPPETS: [name: string, source: string, lang?: SourceLang][] = [
