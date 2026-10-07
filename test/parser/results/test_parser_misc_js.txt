@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       73/73 (100.00%)
+Passed:       75/75 (100.00%)
 Failed:       0
-AST mismatch: 0/73
+AST mismatch: 0/75
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -168,6 +168,24 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 ✓ test/parser/misc/js/class-field-yield.js
 ✓ test/parser/misc/js/class-static-block-await-context.js
 ✓ test/parser/misc/js/decorated-class-expression.js
+✓ test/parser/misc/js/decorated-export-both-sides.module.js
+error: Decorators may not appear after 'export' or 'export default' if they also appear before 'export'
+   |
+ 1 | @a export @b class C {}
+   |           ^^
+ 2 | @c export default @d class D {}
+   |
+   = help: Keep the decorators on one side of 'export'.
+
+
+✓ test/parser/misc/js/decorated-export-non-class.module.js
+error: Expected 'class' keyword, but found 'const'
+   |
+ 1 | @a export const x = 1;
+   |           ^^^^^
+ 2 | let y;
+   |
+
 ✓ test/parser/misc/js/dynamic-import-in-script.js
 ✓ test/parser/misc/js/dynamic-import.module.js
 ✓ test/parser/misc/js/export-default-async-linebreak.module.js

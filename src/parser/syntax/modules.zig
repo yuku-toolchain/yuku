@@ -723,17 +723,35 @@ fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .@"export");
+    std.debug.assert(decorators.len > 0);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
 
     const is_default = parser.current_token.tag == .default;
     if (is_default) try parser.advance() orelse return null;
 
+    const class_decorators = if (parser.current_token.tag == .at) blk: {
+        const all = try extensions.parseDecoratorsAfter(parser, decorators) orelse return null;
+        try parser.report(
+            parser.tree.span(parser.tree.extra(all)[decorators.len]),
+            "Decorators may not appear after 'export' or 'export default' if they " ++
+                "also appear before 'export'",
+            .{ .help = "Keep the decorators on one side of 'export'." },
+        );
+        break :blk all;
+    } else decorators;
+
+    if (parser.current_token.tag != .class and parser.current_token.tag != .abstract) {
+        try parser.reportExpected(parser.current_token.span, "Expected 'class' keyword", .{});
+        return null;
+    }
+
     const declaration = try class.parseClassDecorated(
         parser,
         .{ .is_default_export = is_default },
         null,
-        decorators,
+        class_decorators,
     ) orelse return null;
     const span: ast.Span = .{ .start = start, .end = parser.tree.span(declaration).end };
 

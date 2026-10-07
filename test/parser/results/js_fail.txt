@@ -38297,12 +38297,14 @@ error: Unexpected token '=>'
 
 
 ✓ test/parser/suite/js/fail/cd68702919a533e0.module.js
-error: Expected 'class' keyword, but found '@'
+error: Decorators may not appear after 'export' or 'export default' if they also appear before 'export'
    |
  1 | @dec1 export @dec2 class Foo {}
-   |              ^
+   |              ^^^^^
  2 | 
    |
+   = help: Keep the decorators on one side of 'export'.
+
 
 ✓ test/parser/suite/js/fail/cd6ad2fbc29d1645.js
 error: 'instanceof' is reserved and cannot be used as an identifier

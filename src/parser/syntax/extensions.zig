@@ -7,8 +7,17 @@ const expressions = @import("expressions.zig");
 
 /// Parses a possibly empty run of `@expression` decorators.
 pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
+    return parseDecoratorsAfter(parser, ast.IndexRange.empty);
+}
+
+/// Parses a possibly empty run of decorators continuing `leading`, as one list.
+pub fn parseDecoratorsAfter(parser: *Parser, leading: ast.IndexRange) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_decorators.begin();
     defer parser.scratch_decorators.reset(checkpoint);
+
+    for (parser.tree.extra(leading)) |decorator| {
+        try parser.scratch_decorators.append(parser.allocator(), decorator);
+    }
 
     while (parser.current_token.tag == .at) {
         const decorator = try parseDecorator(parser) orelse return null;
