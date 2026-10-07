@@ -110,8 +110,10 @@ function identifierAt(file: ts.SourceFile, position: number): ts.Identifier | un
 }
 
 function exportsByAssignment(module: Module): boolean {
-  if (module.moduleFlags.usesModule || module.moduleFlags.usesExports) return true;
-  return module.exports.some((record) => record.kind === "equals");
+  if (module.exports.some((record) => record.kind === "equals")) return true;
+  if (!module.moduleFlags.usesModule && !module.moduleFlags.usesExports) return false;
+  if (module.exports.length > 0) return false;
+  return module.imports.every((record) => record.kind === "dynamic" || record.kind === "require");
 }
 
 function compareLinks(linked: Linked, module: Module, mismatches: string[]): number {
