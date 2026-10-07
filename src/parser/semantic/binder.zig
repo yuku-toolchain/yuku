@@ -664,6 +664,7 @@ pub const SymbolTracker = struct {
     /// `export` declaration.
     export_state: ExportState = .none,
     ambient: bool = false,
+    excluded_imports: Symbol.Flags,
 
     saved_stack: std.ArrayList(SavedContext) = .empty,
 
@@ -702,6 +703,7 @@ pub const SymbolTracker = struct {
             .tree = tree,
             .allocator = alloc,
             .ambient = tree.lang == .dts,
+            .excluded_imports = if (tree.isTs()) .{} else Symbol.any_import,
         };
 
         const nodes: u32 = @intCast(tree.nodes.len);
@@ -742,7 +744,8 @@ pub const SymbolTracker = struct {
                     .@"var" => {
                         const target = scope.hoistTarget();
                         // ts and module-level functions never merge with `var`
-                        var excludes = Symbol.Excludes.function_scoped_var;
+                        var excludes =
+                            Symbol.Excludes.function_scoped_var.merge(self.excluded_imports);
                         if (self.tree.isTs() or scope.get(target).kind == .module) {
                             excludes.function = true;
                         }
@@ -758,7 +761,7 @@ pub const SymbolTracker = struct {
                             .const_var = decl.kind != .let,
                             .ambient = ambient,
                         },
-                        .excludes = Symbol.Excludes.block_scoped_var,
+                        .excludes = Symbol.Excludes.block_scoped_var.merge(self.excluded_imports),
                         .scope = scope.current,
                     },
                 }
@@ -782,12 +785,12 @@ pub const SymbolTracker = struct {
 
                 self.pending = .{
                     .flags = .{ .function = true, .ambient = ambient },
-                    .excludes = if (self.tree.isTs())
+                    .excludes = (if (self.tree.isTs())
                         Symbol.Excludes.function
                     else if (var_like)
                         Symbol.Excludes.function_scoped_var
                     else
-                        Symbol.Excludes.block_scoped_var,
+                        Symbol.Excludes.block_scoped_var).merge(self.excluded_imports),
                     .scope = target,
                 };
 
@@ -803,7 +806,7 @@ pub const SymbolTracker = struct {
                         .class = true,
                         .ambient = cls.declare or self.ambient,
                     },
-                    .excludes = Symbol.Excludes.class,
+                    .excludes = Symbol.Excludes.class.merge(self.excluded_imports),
                     .scope = if (is_decl) scope.currentScope().parent else exprNameScope(scope),
                 };
                 // expression names are local
@@ -835,7 +838,10 @@ pub const SymbolTracker = struct {
                         .{ .type_import = true }
                     else
                         .{ .import = true },
-                    .excludes = Symbol.Excludes.import_binding,
+                    .excludes = if (self.tree.isTs())
+                        Symbol.Excludes.import_binding
+                    else
+                        Symbol.Excludes.import_binding.merge(Symbol.value_space),
                     .scope = scope.current,
                 };
             },

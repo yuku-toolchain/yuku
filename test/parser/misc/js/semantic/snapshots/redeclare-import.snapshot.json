@@ -1,0 +1,294 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 135,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 18,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 7,
+            "end": 8,
+            "local": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "a"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 14,
+          "end": 17,
+          "value": "m",
+          "raw": "\"m\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 19,
+        "end": 25,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 23,
+            "end": 24,
+            "id": {
+              "type": "Identifier",
+              "start": 23,
+              "end": 24,
+              "name": "a"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 26,
+        "end": 48,
+        "specifiers": [
+          {
+            "type": "ImportSpecifier",
+            "start": 35,
+            "end": 36,
+            "imported": {
+              "type": "Identifier",
+              "start": 35,
+              "end": 36,
+              "name": "b"
+            },
+            "local": {
+              "type": "Identifier",
+              "start": 35,
+              "end": 36,
+              "name": "b"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 44,
+          "end": 47,
+          "value": "m",
+          "raw": "\"m\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 49,
+        "end": 55,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 53,
+            "end": 54,
+            "id": {
+              "type": "Identifier",
+              "start": 53,
+              "end": 54,
+              "name": "b"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 56,
+        "end": 71,
+        "id": {
+          "type": "Identifier",
+          "start": 65,
+          "end": 66,
+          "name": "c"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 69,
+          "end": 71,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 72,
+        "end": 95,
+        "specifiers": [
+          {
+            "type": "ImportNamespaceSpecifier",
+            "start": 79,
+            "end": 85,
+            "local": {
+              "type": "Identifier",
+              "start": 84,
+              "end": 85,
+              "name": "c"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 91,
+          "end": 94,
+          "value": "m",
+          "raw": "\"m\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 96,
+        "end": 106,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 102,
+          "end": 103,
+          "name": "d"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 104,
+          "end": 106,
+          "body": []
+        }
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 107,
+        "end": 134,
+        "specifiers": [
+          {
+            "type": "ImportSpecifier",
+            "start": 116,
+            "end": 122,
+            "imported": {
+              "type": "Identifier",
+              "start": 116,
+              "end": 117,
+              "name": "e"
+            },
+            "local": {
+              "type": "Identifier",
+              "start": 121,
+              "end": 122,
+              "name": "d"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 130,
+          "end": 133,
+          "value": "m",
+          "raw": "\"m\""
+        },
+        "attributes": [],
+        "phase": null
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Identifier 'a' has already been declared",
+      "path": null,
+      "start": 23,
+      "end": 24,
+      "labels": [
+        {
+          "start": 7,
+          "end": 8,
+          "message": "'a' was first declared as an import here"
+        },
+        {
+          "start": 23,
+          "end": 24,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'a'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'b' has already been declared",
+      "path": null,
+      "start": 53,
+      "end": 54,
+      "labels": [
+        {
+          "start": 35,
+          "end": 36,
+          "message": "'b' was first declared as an import here"
+        },
+        {
+          "start": 53,
+          "end": 54,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'b'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'c' has already been declared",
+      "path": null,
+      "start": 84,
+      "end": 85,
+      "labels": [
+        {
+          "start": 65,
+          "end": 66,
+          "message": "'c' was first declared as a function here"
+        },
+        {
+          "start": 84,
+          "end": 85,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'c'"
+    },
+    {
+      "severity": "error",
+      "message": "Identifier 'd' has already been declared",
+      "path": null,
+      "start": 121,
+      "end": 122,
+      "labels": [
+        {
+          "start": 102,
+          "end": 103,
+          "message": "'d' was first declared as a class here"
+        },
+        {
+          "start": 121,
+          "end": 122,
+          "message": "cannot be redeclared here"
+        }
+      ],
+      "help": "Consider removing or renaming this declaration of 'd'"
+    }
+  ]
+}

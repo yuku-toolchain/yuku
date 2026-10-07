@@ -1,8 +1,8 @@
 test/parser/misc/js/semantic
 ============================
-Passed:       8/8 (100.00%)
+Passed:       9/9 (100.00%)
 Failed:       0
-AST mismatch: 0/8
+AST mismatch: 0/9
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-methods-arrows.js
 error: Identifier 'a' has already been declared
@@ -90,5 +90,18 @@ error: Identifier 'A' has already been declared
  3 | 
    |
    = help: Consider removing or renaming this declaration of 'A'
+
+
+✓ test/parser/misc/js/semantic/redeclare-import.module.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | import a from "m";
+   |        ~ 'a' was first declared as an import here
+ 2 | var a;
+   |     ^
+   |     ~ cannot be redeclared here
+ 3 | import { b } from "m";
+   |
+   = help: Consider removing or renaming this declaration of 'a'
 
 
