@@ -112,7 +112,7 @@ function f() {
 }
 ```
 
-A reference resolves in `.value` for runtime uses, `.type` for annotations, `.namespace` for the head of a dotted type name, `.typeof` for value uses inside a type, or `.any` for alias positions such as `export { x }`. A class and an enum live in both the value and type spaces, and every reference carries its space, so a rename can change a value without touching a same-named type.
+A reference resolves in `.value` for runtime uses, `.type` for annotations, `.namespace` for the head of a dotted name such as `ns.T` or `import x = ns.T`, `.typeof` for value uses inside a type, or `.any` for alias positions such as `export { x }`. A class and an enum live in both the value and type spaces, and every reference carries its space, so a rename can change a value without touching a same-named type.
 
 ## [Module records]($section.id('module-records'))
 

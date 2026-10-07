@@ -110,6 +110,7 @@ pub const SCOPE_STRICT_BIT: u5 = 8;
 pub const REFERENCE_WRITE_BIT: u5 = 0;
 pub const REFERENCE_SPACE_SHIFT: u5 = 1;
 pub const REFERENCE_SPACE_MASK: u32 = 0b111;
+pub const REFERENCE_TYPE_POSITION_BIT: u5 = 4;
 pub const IMPORT_KIND_MASK: u32 = 0b111;
 pub const IMPORT_TYPE_BIT: u5 = 3;
 pub const IMPORT_HAS_PHASE_BIT: u5 = 4;
@@ -153,6 +154,9 @@ comptime {
     std.debug.assert(@bitSizeOf(Reference.Flags) == 8);
     std.debug.assert(@bitOffsetOf(Reference.Flags, "write") == REFERENCE_WRITE_BIT);
     std.debug.assert(@bitOffsetOf(Reference.Flags, "space") == REFERENCE_SPACE_SHIFT);
+    std.debug.assert(
+        @bitOffsetOf(Reference.Flags, "type_position") == REFERENCE_TYPE_POSITION_BIT,
+    );
     std.debug.assert(@intFromEnum(Reference.Space.value) == 0);
     std.debug.assert(@intFromEnum(Reference.Space.type) == 1);
     std.debug.assert(@intFromEnum(Reference.Space.namespace) == 2);

@@ -421,7 +421,7 @@ const Collector = struct {
         }
 
         for (self.sem.references) |ref| {
-            if (ref.symbol != .none or ref.flags.space.inTypePosition()) continue;
+            if (ref.symbol != .none or ref.flags.type_position) continue;
             const name = self.tree.string(ref.name);
             if (std.mem.eql(u8, name, "require")) {
                 self.flags.uses_require = true;

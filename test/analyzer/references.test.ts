@@ -172,6 +172,19 @@ describe("declaration spaces", () => {
       `);
   });
 
+  test("an import alias target resolves as a namespace and is read at runtime", () => {
+    const module = new Analyzer().setFile(
+      "input.ts",
+      `import * as lib from "./lib"; import A = lib.A; import B = lib; let x: lib.T;`,
+    );
+    const uses = module.bindings.find((b) => b.name === "lib")!.references;
+    expect(uses.map((r) => [r.space, r.inTypePosition])).toEqual([
+      ["namespace", false],
+      ["namespace", false],
+      ["namespace", true],
+    ]);
+  });
+
   test("a reference with no binding in its space anywhere is unresolved", () => {
     expect(summary(`function f() { const T = 1; let x: T; T; }`)).toMatchInlineSnapshot(`
       "global

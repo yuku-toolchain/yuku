@@ -82,17 +82,18 @@ pub const Ctx = struct {
     ) Allocator.Error!void {
         const is_write = data == .identifier_reference and
             isWriteTarget(self.tree, &self.path);
-        const space = switch (data) {
-            .identifier_reference, .binding_identifier => refSpace(
+        const position: RefPosition = switch (data) {
+            .identifier_reference, .binding_identifier => refPosition(
                 self.tree,
                 &self.path,
                 self.inTypePosition(),
             ),
-            else => .value,
+            else => .{},
         };
         try self.symbols.declareBindings(index, data, &self.scope, .{
             .is_write = is_write,
-            .space = space,
+            .space = position.space,
+            .type_position = position.type_position,
         });
     }
 
@@ -107,18 +108,23 @@ pub const Ctx = struct {
     }
 };
 
-/// The declaration space an identifier position resolves in. The
-/// identifier is the top of `path`.
-pub fn refSpace(
+pub const RefPosition = struct {
+    space: Reference.Space = .value,
+    type_position: bool = false,
+};
+
+/// Where the identifier at the top of `path` resolves, and whether its use is erased with
+/// the types.
+pub fn refPosition(
     tree: *const ast.Tree,
     path: *const NodePath,
     in_type_position: bool,
-) Reference.Space {
+) RefPosition {
     std.debug.assert(path.depth() > 0);
 
     // crossing a qualified name makes this the qualifier of a dotted name
     var qualified_left = false;
-    var child = path.ancestor(0) orelse return .value;
+    var child = path.ancestor(0) orelse return .{};
     var n: usize = 1;
     while (path.ancestor(n)) |parent| : (n += 1) {
         switch (tree.data(parent)) {
@@ -142,22 +148,24 @@ pub fn refSpace(
             //   //             ^ resolves as typeof, not type
             inline .ts_property_signature, .ts_method_signature, .binding_property => |member| {
                 if (member.computed and member.key == child) {
-                    return if (in_type_position) .typeof else .value;
+                    if (in_type_position) return .{ .space = .typeof, .type_position = true };
+                    return .{};
                 }
             },
-            .ts_type_query => return .typeof,
-            .export_specifier => |s| return if (s.local == child) .any else .value,
-            .export_default_declaration, .ts_export_assignment => return .any,
+            .ts_type_query => return .{ .space = .typeof, .type_position = true },
+            .export_specifier => |s| return .{ .space = if (s.local == child) .any else .value },
+            .export_default_declaration, .ts_export_assignment => return .{ .space = .any },
             // tsc resolves an alias target as a namespace
             .ts_import_equals_declaration => |decl| {
-                return if (decl.module_reference == child) .namespace else .any;
+                if (decl.module_reference != child) return .{ .space = .any };
+                return .{ .space = .namespace, .type_position = decl.import_kind == .type };
             },
             else => {},
         }
-        if (!in_type_position) return .value;
-        return if (qualified_left) .namespace else .type;
+        if (!in_type_position) return .{};
+        return .{ .space = if (qualified_left) .namespace else .type, .type_position = true };
     }
-    return .value;
+    return .{};
 }
 
 /// https://tc39.es/ecma262/#sec-static-semantics-assignmenttargettype

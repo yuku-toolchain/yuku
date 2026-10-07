@@ -291,7 +291,9 @@ pub const Reference = struct {
         write: bool = false,
         /// The declaration space this position resolves in.
         space: Space = .value,
-        _: u4 = 0,
+        /// True when the use is erased with the types.
+        type_position: bool = false,
+        _: u3 = 0,
     };
 
     /// The declaration space a syntactic position resolves in, matching
@@ -315,20 +317,12 @@ pub const Reference = struct {
         value,
         /// A type use.
         type,
-        /// The qualifier of a dotted type name, `ns` in `ns.T`.
+        /// The qualifier of a dotted name, `ns` in `ns.T` and `import x = ns.T`.
         namespace,
         /// A value use inside a type, such as the entity of a `typeof` query.
         typeof,
         /// An alias position that accepts every space, such as `export { x }`.
         any,
-
-        /// True for positions inside a type-only subtree.
-        pub inline fn inTypePosition(self: Space) bool {
-            return switch (self) {
-                .type, .namespace, .typeof => true,
-                .value, .any => false,
-            };
-        }
     };
 };
 
@@ -690,6 +684,8 @@ pub const SymbolTracker = struct {
         is_write: bool,
         /// The declaration space the identifier resolves in.
         space: Reference.Space = .value,
+        /// The identifier is erased with the types.
+        type_position: bool = false,
     };
 
     const DeclPair = struct { sid: SymbolId, node: ast.NodeIndex };
@@ -1029,7 +1025,7 @@ pub const SymbolTracker = struct {
             .binding_identifier => |id| {
                 const flags = self.pending.flags;
                 // in a type, only type parameters and parameters declare
-                if (ref_ctx.space.inTypePosition() and !flags.type_parameter and !flags.parameter) {
+                if (ref_ctx.type_position and !flags.type_parameter and !flags.parameter) {
                     return;
                 }
 
@@ -1058,6 +1054,7 @@ pub const SymbolTracker = struct {
                 _ = try self.addReference(id.name, scope.current, index, .{
                     .write = ref_ctx.is_write,
                     .space = ref_ctx.space,
+                    .type_position = ref_ctx.type_position,
                 });
             },
             // `v is T` parses `v` as an identifier_name but it references the
@@ -1074,6 +1071,7 @@ pub const SymbolTracker = struct {
                 if (!self.symbol(param).flags.parameter) return;
                 _ = try self.addReference(name, scope.current, pred.parameter_name, .{
                     .space = .typeof,
+                    .type_position = true,
                 });
             },
             // members resolve lexically inside the body like tsc, and their
@@ -1524,7 +1522,7 @@ fn visibleAt(
             else => true,
         };
     }
-    if (!ref.flags.space.inTypePosition()) return true;
+    if (!ref.flags.type_position) return true;
     if (sym.flags.parameter) {
         const type_parameters = typeParametersOf(tree, scopes.get(sym.scope).node);
         if (type_parameters == .null) return true;

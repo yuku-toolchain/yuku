@@ -106,8 +106,7 @@ fn writeSemanticConstants(w: *Writer) !void {
         "named", "reExport", "namespace", "star", "equals", "global",
     });
 
-    // one entry per Reference.Space value, in enum order, plus the
-    // mirrored Space.inTypePosition lookup
+    // one entry per Reference.Space value, in enum order
     const space_fields = @typeInfo(Reference.Space).@"enum".fields;
     const space_names = comptime blk: {
         var names: [space_fields.len][]const u8 = undefined;
@@ -115,15 +114,6 @@ fn writeSemanticConstants(w: *Writer) !void {
         break :blk names;
     };
     try writeArray(w, "REFERENCE_SPACES", &space_names);
-    const space_type_position = comptime blk: {
-        var vals: [space_fields.len][]const u8 = undefined;
-        for (space_fields, 0..) |field, i| {
-            const space = @field(Reference.Space, field.name);
-            vals[i] = if (space.inTypePosition()) "true" else "false";
-        }
-        break :blk vals;
-    };
-    try writeArrayRaw(w, "REFERENCE_TYPE_POSITION", &space_type_position);
 
     try w.writeAll("const BindingFlags = Object.freeze({\n");
     inline for (@typeInfo(Symbol.Flags).@"struct".fields) |field| {
@@ -1696,8 +1686,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        node: (i) => node({[n]s}),
         \\        nodeIndex: (i) => {[n]s},
         \\        space: (i) => REFERENCE_SPACES[({[bits]s} >> {[sshift]d}) & {[smask]d}],
-        \\        inTypePosition: (i) =>
-        \\          REFERENCE_TYPE_POSITION[({[bits]s} >> {[sshift]d}) & {[smask]d}],
+        \\        inTypePosition: (i) => (({[bits]s} >> {[pbit]d}) & 1) !== 0,
         \\        isWrite: (i) => (({[bits]s} >> {[wbit]d}) & 1) !== 0,
         \\        symbolId: (i) => _id({[sym]s}),
         \\        start: (i) => startOf({[n]s}),
@@ -1711,6 +1700,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         .bits = comptime cell("references", Ref, "bits"),
         .sshift = sem_rt.REFERENCE_SPACE_SHIFT,
         .smask = sem_rt.REFERENCE_SPACE_MASK,
+        .pbit = sem_rt.REFERENCE_TYPE_POSITION_BIT,
         .wbit = sem_rt.REFERENCE_WRITE_BIT,
         .sym = comptime cell("references", Ref, "symbol"),
     });

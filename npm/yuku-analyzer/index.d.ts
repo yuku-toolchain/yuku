@@ -91,7 +91,7 @@ declare const BindingFlags: {
  *
  * - `"value"`: runtime uses
  * - `"type"`: type positions
- * - `"namespace"`: the start of a dotted type name, `ns` in `ns.T`
+ * - `"namespace"`: the start of a dotted name, `ns` in `ns.T` and `import x = ns.T`
  * - `"typeof"`: a value inside a type, `x` in `typeof x`
  * - `"any"`: alias positions, `x` in `export { x }`
  */
