@@ -155,6 +155,18 @@ describe("TypeScript declarations", () => {
                 y#3  var ambient exported"
       `);
   });
+
+  test("a declare enum makes its members ambient", () => {
+    expect(summary(`declare enum E { A }\nenum E { B }`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          E#0  enum ×2
+          block TSEnumBody
+            A#1  ambient
+          block TSEnumBody
+            B#2  "
+    `);
+  });
 });
 
 describe("declaration merging", () => {

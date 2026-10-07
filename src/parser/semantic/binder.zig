@@ -902,6 +902,7 @@ pub const SymbolTracker = struct {
                         Symbol.Excludes.regular_enum,
                     .scope = scope.current,
                 };
+                if (decl.declare) self.ambient = true;
             },
 
             .ts_module_declaration => |decl| {

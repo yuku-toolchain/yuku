@@ -22,6 +22,8 @@ export function loadSync(source) {
   return coreOf(new WebAssembly.Instance(module));
 }
 
+const encoder = new TextEncoder();
+
 function coreOf({ exports }) {
   return {
     parse: (source, options) => run(exports, exports.parse, source, options),
@@ -30,11 +32,14 @@ function coreOf({ exports }) {
 }
 
 function run({ memory, alloc, free }, entry, source, options) {
-  const length = source.length;
-  const pointer = alloc(length || 1);
-  new Uint8Array(memory.buffer, pointer, length).set(source);
-  const result = entry(pointer, length, flagsOf(options));
-  free(pointer, length || 1);
+  if (typeof source !== "string") {
+    throw new TypeError("@yuku-core/wasm: the source must be a string");
+  }
+  const capacity = source.length * 3 || 1;
+  const pointer = alloc(capacity);
+  const { written } = encoder.encodeInto(source, new Uint8Array(memory.buffer, pointer, capacity));
+  const result = entry(pointer, written, flagsOf(options));
+  free(pointer, capacity);
   if (result === 0) throw new Error("@yuku-core/wasm: out of memory");
   // a call can grow the memory, which detaches every earlier view of it
   const size = new DataView(memory.buffer).getUint32(result, true);

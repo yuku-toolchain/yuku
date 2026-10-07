@@ -30,9 +30,9 @@ interface FileOptions {
  */
 interface Core {
   /** Returns the buffer `yuku-parser` decodes. */
-  parse(source: Uint8Array, options: object): ArrayBuffer;
+  parse(source: string, options: object): ArrayBuffer;
   /** Returns the buffer `yuku-analyzer` decodes. */
-  analyze(source: Uint8Array, options: object): ArrayBuffer;
+  analyze(source: string, options: object): ArrayBuffer;
 }
 
 /** Whether a comment came from a line or block source comment. */

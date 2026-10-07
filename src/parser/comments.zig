@@ -12,6 +12,13 @@ const ChildInfo = struct {
     end: u32,
 };
 
+const Frame = struct {
+    host: ast.NodeIndex,
+    node_end: u32,
+    children_start: u32,
+    next_child: u32,
+};
+
 pub fn attach(tree: *ast.Tree, raw: []const ast.Comment) Error!void {
     std.debug.assert(tree.root != .null);
     const alloc = tree.allocator();
@@ -42,11 +49,14 @@ pub fn attach(tree: *ast.Tree, raw: []const ast.Comment) Error!void {
         .cursor = 0,
         .alloc = alloc,
         .scratch = .empty,
+        .frames = .empty,
     };
     defer ctx.scratch.deinit(alloc);
+    defer ctx.frames.deinit(alloc);
     try ctx.scratch.ensureTotalCapacity(alloc, 256);
+    try ctx.frames.ensureTotalCapacity(alloc, 64);
 
-    try ctx.walkAt(tree.root, ctx.spans[@intFromEnum(tree.root)], .null);
+    try ctx.walk(tree.root);
 
     while (ctx.cursor < raw.len) : (ctx.cursor += 1) {
         ctx.write(@intFromEnum(tree.root), .inside, false);
@@ -87,35 +97,52 @@ const Ctx = struct {
     cursor: usize,
     alloc: std.mem.Allocator,
     scratch: std.ArrayList(ChildInfo),
+    frames: std.ArrayList(Frame),
 
-    fn walkAt(
+    fn walk(self: *Ctx, root: ast.NodeIndex) Error!void {
+        std.debug.assert(self.frames.items.len == 0);
+        try self.walkEnter(root, self.spans[@intFromEnum(root)].end, .null);
+
+        while (self.frames.items.len > 0) {
+            const frame = &self.frames.items[self.frames.items.len - 1];
+            const prev: ChildInfo = if (frame.next_child > frame.children_start)
+                self.scratch.items[frame.next_child - 1]
+            else
+                .{ .idx = .null, .start = 0, .end = 0 };
+            if (frame.next_child < self.scratch.items.len) {
+                const child = self.scratch.items[frame.next_child];
+                frame.next_child += 1;
+                try self.consumeBetween(frame.host, prev.idx, prev.end, child.idx, child.start);
+                // invalidates `frame`
+                try self.walkEnter(child.idx, child.end, frame.host);
+            } else {
+                try self.consumeBetween(frame.host, prev.idx, prev.end, .null, frame.node_end);
+                self.scratch.shrinkRetainingCapacity(frame.children_start);
+                _ = self.frames.pop();
+            }
+        }
+    }
+
+    fn walkEnter(
         self: *Ctx,
         node: ast.NodeIndex,
-        node_span: ast.Span,
+        node_end: u32,
         parent_host: ast.NodeIndex,
     ) Error!void {
         if (self.cursor >= self.raw.len) return;
-        if (self.raw[self.cursor].span.start >= node_span.end) return;
+        if (self.raw[self.cursor].span.start >= node_end) return;
         const inside_host = if (self.hosts(node)) node else parent_host;
         std.debug.assert(self.hosts(inside_host));
 
-        const checkpoint = self.scratch.items.len;
-        defer self.scratch.shrinkRetainingCapacity(checkpoint);
-
+        const children_start: u32 = @intCast(self.scratch.items.len);
         try self.collectChildren(node);
-        const children = self.scratch.items[checkpoint..];
-        sortByStart(children);
-
-        var prev_idx: ast.NodeIndex = .null;
-        var prev_end: u32 = 0;
-        for (children) |child| {
-            try self.consumeBetween(inside_host, prev_idx, prev_end, child.idx, child.start);
-            try self.walkAt(child.idx, .{ .start = child.start, .end = child.end }, inside_host);
-            prev_idx = child.idx;
-            prev_end = child.end;
-        }
-
-        try self.consumeBetween(inside_host, prev_idx, prev_end, .null, node_span.end);
+        sortByStart(self.scratch.items[children_start..]);
+        try self.frames.append(self.alloc, .{
+            .host = inside_host,
+            .node_end = node_end,
+            .children_start = children_start,
+            .next_child = children_start,
+        });
     }
 
     // a parameter list has no ESTree node, so it bounds the comments inside its parens but
