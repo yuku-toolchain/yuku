@@ -1,0 +1,246 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 135,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 11,
+        "specifiers": [],
+        "source": {
+          "type": "Literal",
+          "start": 7,
+          "end": 10,
+          "value": "a",
+          "raw": "\"a\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 12,
+        "end": 30,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 19,
+            "end": 20,
+            "local": {
+              "type": "Identifier",
+              "start": 19,
+              "end": 20,
+              "name": "b"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 26,
+          "end": 29,
+          "value": "b",
+          "raw": "\"b\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 31,
+        "end": 41,
+        "declaration": null,
+        "specifiers": [],
+        "source": null,
+        "attributes": []
+      },
+      {
+        "type": "ExportDefaultDeclaration",
+        "start": 42,
+        "end": 59,
+        "declaration": {
+          "type": "Literal",
+          "start": 57,
+          "end": 58,
+          "value": 1,
+          "raw": "1"
+        }
+      },
+      {
+        "type": "ExportAllDeclaration",
+        "start": 60,
+        "end": 78,
+        "exported": null,
+        "source": {
+          "type": "Literal",
+          "start": 74,
+          "end": 77,
+          "value": "c",
+          "raw": "\"c\""
+        },
+        "attributes": []
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 79,
+        "end": 98,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 86,
+          "end": 98,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 92,
+              "end": 97,
+              "id": {
+                "type": "Identifier",
+                "start": 92,
+                "end": 93,
+                "name": "d"
+              },
+              "init": {
+                "type": "Literal",
+                "start": 96,
+                "end": 97,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": []
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 104,
+        "end": 121,
+        "declaration": {
+          "type": "ClassDeclaration",
+          "start": 111,
+          "end": 121,
+          "decorators": [
+            {
+              "type": "Decorator",
+              "start": 99,
+              "end": 103,
+              "expression": {
+                "type": "Identifier",
+                "start": 100,
+                "end": 103,
+                "name": "dec"
+              }
+            }
+          ],
+          "id": {
+            "type": "Identifier",
+            "start": 117,
+            "end": 118,
+            "name": "E"
+          },
+          "superClass": null,
+          "body": {
+            "type": "ClassBody",
+            "start": 119,
+            "end": 121,
+            "body": []
+          }
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": []
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 122,
+        "end": 134,
+        "expression": {
+          "type": "ImportExpression",
+          "start": 122,
+          "end": 133,
+          "source": {
+            "type": "Literal",
+            "start": 129,
+            "end": 132,
+            "value": "f",
+            "raw": "\"f\""
+          },
+          "options": null,
+          "phase": null
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Cannot use import statement outside a module",
+      "path": null,
+      "start": 0,
+      "end": 11,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Cannot use import statement outside a module",
+      "path": null,
+      "start": 12,
+      "end": 30,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Cannot use 'export' declaration outside a module",
+      "path": null,
+      "start": 31,
+      "end": 41,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Cannot use 'export default' declaration outside a module",
+      "path": null,
+      "start": 42,
+      "end": 59,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Cannot use 'export *' declaration outside a module",
+      "path": null,
+      "start": 60,
+      "end": 78,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Cannot use 'export' declaration outside a module",
+      "path": null,
+      "start": 79,
+      "end": 98,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Cannot use 'export' declaration outside a module",
+      "path": null,
+      "start": 104,
+      "end": 121,
+      "labels": [],
+      "help": null
+    }
+  ]
+}

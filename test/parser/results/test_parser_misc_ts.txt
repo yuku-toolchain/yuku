@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       91/91 (100.00%)
+Passed:       93/93 (100.00%)
 Failed:       0
-AST mismatch: 0/91
+AST mismatch: 0/93
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -173,6 +173,16 @@ error: Computed property names are not allowed in enums
 
 
 ✓ test/parser/misc/ts/enum-declaration-line-terminator.ts
+✓ test/parser/misc/ts/export-import-declaration.module.ts
+error: An import declaration cannot have modifiers
+   |
+ 1 | export import { a } from "b";
+   |        ^^^^^^^^^^^^^^^^^^^^^^
+ 2 | export import "c";
+   |
+   = help: Re-export with 'export { name } from "module"' instead.
+
+
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/for-in-initializer.ts
@@ -186,6 +196,15 @@ error: for-in loop variable declaration may not have an initializer
 
 
 ✓ test/parser/misc/ts/function-overloads.ts
+✓ test/parser/misc/ts/import-export-in-namespace.ts
+error: Cannot use 'export' declaration outside a module
+   |
+ 8 | }
+ 9 | export {};
+   | ^^^^^^^^^^
+10 | 
+   |
+
 ✓ test/parser/misc/ts/import-type-clause-invalid.module.ts
 error: A type-only import can specify a default import or named bindings, but not both
    |

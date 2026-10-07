@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       71/71 (100.00%)
+Passed:       73/73 (100.00%)
 Failed:       0
-AST mismatch: 0/71
+AST mismatch: 0/73
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -247,6 +247,23 @@ error: 'import defer' only supports a namespace import
 
 ✓ test/parser/misc/js/import-defer-normal.module.js
 ✓ test/parser/misc/js/import-defer-original.module.js
+✓ test/parser/misc/js/import-export-in-script.js
+error: Cannot use import statement outside a module
+   |
+ 1 | import "a";
+   | ^^^^^^^^^^^
+ 2 | import b from "b";
+   |
+
+✓ test/parser/misc/js/import-export-nested.module.js
+error: 'import' declaration may only appear at the top level
+   |
+ 4 | {
+ 5 |   import "b";
+   |   ^^^^^^^^^^^
+ 6 | }
+   |
+
 ✓ test/parser/misc/js/import-expression-call.js
 ✓ test/parser/misc/js/import-phase-call-options.module.js
 ✓ test/parser/misc/js/import-source-from-binding.module.js

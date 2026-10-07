@@ -19,6 +19,7 @@ const extension = @import("../extension.zig");
 
 const ParseStatementOpts = struct {
     can_be_single_statement_context: bool = false,
+    body: Parser.BodyKind = .other,
 };
 
 pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.NodeIndex {
@@ -33,9 +34,13 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     }
 
     return switch (parser.current_token.tag) {
-        .at => parseDecoratedStatement(parser),
+        .at => checkImportExportPosition(parser, try parseDecoratedStatement(parser), opts.body),
         .await => parseAwaitUsingOrExpression(parser),
-        .import => parseImportDeclarationOrExpression(parser),
+        .import => checkImportExportPosition(
+            parser,
+            try parseImportDeclarationOrExpression(parser),
+            opts.body,
+        ),
         .async => parseAsyncFunctionOrExpression(parser),
         .@"var" => variables.parseVariableDeclaration(parser, .{}, null),
         .@"const" => parseConstOrConstEnum(parser),
@@ -52,7 +57,11 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .declare,
         .abstract,
         => parseTsDeclarationOrExpression(parser),
-        .@"export" => modules.parseExportDeclaration(parser),
+        .@"export" => checkImportExportPosition(
+            parser,
+            try modules.parseExportDeclaration(parser),
+            opts.body,
+        ),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
         .@"for" => for_loop.parseForStatement(parser),
@@ -68,6 +77,54 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .debugger => parseDebuggerStatement(parser),
         .semicolon => parseEmptyStatement(parser),
         else => parseExpressionOrLabeledStatementOrDirective(parser),
+    };
+}
+
+fn checkImportExportPosition(
+    parser: *Parser,
+    statement: ?ast.NodeIndex,
+    body: Parser.BodyKind,
+) Error!?ast.NodeIndex {
+    const node = statement orelse return null;
+    const messages = importExportMessages(parser.tree.data(node)) orelse return node;
+    const span = parser.tree.span(node);
+    std.debug.assert(span.start < span.end);
+    if (body == .module_block) std.debug.assert(parser.tree.isTs());
+
+    switch (body) {
+        .program => if (!parser.tree.isModule()) {
+            try parser.report(span, messages.outside_module, .{});
+        },
+        .module_block => {},
+        .function, .other => try parser.report(span, messages.nested, .{}),
+    }
+    return node;
+}
+
+const ImportExportMessages = struct {
+    outside_module: []const u8,
+    nested: []const u8,
+};
+
+fn importExportMessages(data: ast.NodeData) ?ImportExportMessages {
+    return switch (data) {
+        .import_declaration => .{
+            .outside_module = "Cannot use import statement outside a module",
+            .nested = "'import' declaration may only appear at the top level",
+        },
+        .export_named_declaration => .{
+            .outside_module = "Cannot use 'export' declaration outside a module",
+            .nested = "'export' declaration may only appear at the top level",
+        },
+        .export_default_declaration => .{
+            .outside_module = "Cannot use 'export default' declaration outside a module",
+            .nested = "'export default' declaration may only appear at the top level",
+        },
+        .export_all_declaration => .{
+            .outside_module = "Cannot use 'export *' declaration outside a module",
+            .nested = "'export *' declaration may only appear at the top level",
+        },
+        else => null,
     };
 }
 

@@ -14473,14 +14473,13 @@ error: Unexpected token '>'
 
 
 ✓ test/parser/suite/js/fail/4c3d315248586caf.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '1'
+error: Cannot use import statement outside a module
    |
+ 2 | Promise.resolve().then(() => x = 'tick in the async evaluation');
  3 | import foo from './module-import-resolution_FIXTURE.js';
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  4 | await 1;
-   |       ^
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/4c3f75c2ad9dc102.js
 error: 'if' is reserved and cannot be used as an identifier
@@ -25988,14 +25987,12 @@ error: Expected ',' or ']' in array, but found 'this'
 
 
 ✓ test/parser/suite/js/fail/891976d15f449a28.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'import'
+error: Cannot use import statement outside a module
    |
  1 | import "./module-graphs-parent-tla_FIXTURE.js";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | await import("./module-graphs-grandparent-tla_FIXTURE.js");
-   |       ^^^^^^
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/891ba1838fc84b2b.js
 error: Rest parameter may not have a trailing comma
@@ -29637,15 +29634,12 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/9d61275c64056e3f.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'import'
+error: Cannot use import statement outside a module
    |
- 4 | import { depDeferredNamespace as nsDeferred3 } from "./dep-defer-ns_FIXTURE.js";
- 5 | const nsDeferred4 = await import.defer("./dep_FIXTURE.js");
-   |                           ^^^^^^
- 6 | assert.sameValue(nsDeferred1, nsDeferred2, "Deferred import of the same module twice gives the same object");
+ 1 | import * as nsEager from "./dep_FIXTURE.js";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 2 | import defer * as nsDeferred1 from "./dep_FIXTURE.js";
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/9d6998de60d477ba.js
 error: Expected property name after '.', but found ';'
@@ -32022,14 +32016,13 @@ error: Parentheses are not allowed in this binding pattern
 
 
 ✓ test/parser/suite/js/fail/a9d1aa8a45260017.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Promise'
+error: Cannot use import statement outside a module
    |
+ 2 | Promise.resolve().then(() => x = 'tick in the async evaluation');
  3 | import self from './module-self-import-async-resolution-ticks.js';
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  4 | export default await Promise.resolve(42);
-   |                      ^^^^^^^
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/a9e53eb53f26edd4.module.js
 error: Keywords cannot contain escape characters
@@ -35379,15 +35372,12 @@ error: Function declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/bc896d7fa0f02149.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+error: Cannot use import statement outside a module
    |
- 4 | try {
- 5 |   await x;
-   |         ^
- 6 | } catch (e) {
+ 1 | import mod from './module-import-unwrapped_FIXTURE.js';
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 2 | import {x, y} from './module-import-unwrapped_FIXTURE.js';
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/bc948b3aad548205.js
 error: Unexpected token ','

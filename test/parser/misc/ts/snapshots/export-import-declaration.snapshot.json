@@ -1,0 +1,143 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 81,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 0,
+        "end": 29,
+        "declaration": {
+          "type": "ImportDeclaration",
+          "start": 7,
+          "end": 29,
+          "specifiers": [
+            {
+              "type": "ImportSpecifier",
+              "start": 16,
+              "end": 17,
+              "imported": {
+                "type": "Identifier",
+                "start": 16,
+                "end": 17,
+                "name": "a",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "local": {
+                "type": "Identifier",
+                "start": 16,
+                "end": 17,
+                "name": "a",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "importKind": "value"
+            }
+          ],
+          "source": {
+            "type": "Literal",
+            "start": 25,
+            "end": 28,
+            "value": "b",
+            "raw": "\"b\""
+          },
+          "attributes": [],
+          "phase": null,
+          "importKind": "value"
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 30,
+        "end": 48,
+        "declaration": {
+          "type": "ImportDeclaration",
+          "start": 37,
+          "end": 48,
+          "specifiers": [],
+          "source": {
+            "type": "Literal",
+            "start": 44,
+            "end": 47,
+            "value": "c",
+            "raw": "\"c\""
+          },
+          "attributes": [],
+          "phase": null,
+          "importKind": "value"
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 49,
+        "end": 80,
+        "declaration": {
+          "type": "TSImportEqualsDeclaration",
+          "start": 56,
+          "end": 80,
+          "id": {
+            "type": "Identifier",
+            "start": 63,
+            "end": 64,
+            "name": "d",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "moduleReference": {
+            "type": "TSExternalModuleReference",
+            "start": 67,
+            "end": 79,
+            "expression": {
+              "type": "Literal",
+              "start": 75,
+              "end": 78,
+              "value": "e",
+              "raw": "\"e\""
+            }
+          },
+          "importKind": "value"
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "An import declaration cannot have modifiers",
+      "path": null,
+      "start": 7,
+      "end": 29,
+      "labels": [],
+      "help": "Re-export with 'export { name } from \"module\"' instead."
+    },
+    {
+      "severity": "error",
+      "message": "An import declaration cannot have modifiers",
+      "path": null,
+      "start": 37,
+      "end": 48,
+      "labels": [],
+      "help": "Re-export with 'export { name } from \"module\"' instead."
+    }
+  ]
+}

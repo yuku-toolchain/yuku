@@ -693,6 +693,15 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         else => return reportMissingExportDeclaration(parser),
     };
 
+    if (parser.tree.data(declaration) == .import_declaration) {
+        std.debug.assert(is_ts);
+        try parser.report(
+            parser.tree.span(declaration),
+            "An import declaration cannot have modifiers",
+            .{ .help = "Re-export with 'export { name } from \"module\"' instead." },
+        );
+    }
+
     return try parser.tree.addNode(.{
         .export_named_declaration = .{
             .declaration = declaration,

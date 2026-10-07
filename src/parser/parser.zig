@@ -214,7 +214,7 @@ pub const Parser = struct {
         try self.tokens.append(self.allocator(), self.current_token);
     }
 
-    const BodyKind = enum {
+    pub const BodyKind = enum {
         program,
         function,
         module_block,
@@ -231,7 +231,7 @@ pub const Parser = struct {
         defer self.scratch_statements.reset(statements_checkpoint);
 
         while (!self.isAtBodyEnd(terminator)) {
-            if (try statements.parseStatement(self, .{})) |statement| {
+            if (try statements.parseStatement(self, .{ .body = kind })) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
                 try self.recover(terminator);

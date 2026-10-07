@@ -619,15 +619,9 @@ pub const Checker = struct {
     pub fn enter_import_declaration(
         self: *Self,
         decl: ast.ImportDeclaration,
-        node_index: ast.NodeIndex,
+        _: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.checkImportExportPosition(
-            node_index,
-            "import statement",
-            "'import' declaration",
-            ctx,
-        );
         try self.checkDuplicateWithAttributes(decl.attributes, ctx);
         return .proceed;
     }
@@ -635,15 +629,9 @@ pub const Checker = struct {
     pub fn enter_export_named_declaration(
         self: *Self,
         decl: ast.ExportNamedDeclaration,
-        node_index: ast.NodeIndex,
+        _: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.checkImportExportPosition(
-            node_index,
-            "'export' declaration",
-            "'export' declaration",
-            ctx,
-        );
         try self.checkDuplicateWithAttributes(decl.attributes, ctx);
         return .proceed;
     }
@@ -654,12 +642,6 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.checkImportExportPosition(
-            node_index,
-            "'export default' declaration",
-            "'export default' declaration",
-            ctx,
-        );
         try self.recordExportedName("default", node_index, ctx);
         return .proceed;
     }
@@ -670,12 +652,6 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.checkImportExportPosition(
-            node_index,
-            "'export *' declaration",
-            "'export *' declaration",
-            ctx,
-        );
         if (decl.exported != .null) {
             try self.recordExportedName(
                 getModuleExportName(ctx.tree, decl.exported),
@@ -685,30 +661,6 @@ pub const Checker = struct {
         }
         try self.checkDuplicateWithAttributes(decl.attributes, ctx);
         return .proceed;
-    }
-
-    fn checkImportExportPosition(
-        self: *Self,
-        node_index: ast.NodeIndex,
-        comptime out_of_module_label: []const u8,
-        comptime top_level_label: []const u8,
-        ctx: *SemanticCtx,
-    ) AnalysisError!void {
-        const parent = ctx.path.parent() orelse return;
-        const span = ctx.tree.span(node_index);
-        switch (ctx.tree.data(parent)) {
-            .program => if (!ctx.tree.isModule()) try self.report(
-                span,
-                "Cannot use " ++ out_of_module_label ++ " outside a module",
-                .{},
-            ),
-            .ts_module_block => {},
-            else => try self.report(
-                span,
-                top_level_label ++ " may only appear at the top level",
-                .{},
-            ),
-        }
     }
 
     /// https://tc39.es/ecma262/#sec-exports-static-semantics-early-errors

@@ -1,0 +1,274 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 181,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 11,
+        "specifiers": [],
+        "source": {
+          "type": "Literal",
+          "start": 7,
+          "end": 10,
+          "value": "a",
+          "raw": "\"a\""
+        },
+        "attributes": [],
+        "phase": null
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 12,
+        "end": 33,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 19,
+          "end": 33,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 25,
+              "end": 32,
+              "id": {
+                "type": "Identifier",
+                "start": 25,
+                "end": 28,
+                "name": "top"
+              },
+              "init": {
+                "type": "Literal",
+                "start": 31,
+                "end": 32,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": []
+      },
+      {
+        "type": "BlockStatement",
+        "start": 35,
+        "end": 52,
+        "body": [
+          {
+            "type": "ImportDeclaration",
+            "start": 39,
+            "end": 50,
+            "specifiers": [],
+            "source": {
+              "type": "Literal",
+              "start": 46,
+              "end": 49,
+              "value": "b",
+              "raw": "\"b\""
+            },
+            "attributes": [],
+            "phase": null
+          }
+        ]
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 53,
+        "end": 89,
+        "id": {
+          "type": "Identifier",
+          "start": 62,
+          "end": 63,
+          "name": "f"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 66,
+          "end": 89,
+          "body": [
+            {
+              "type": "ExportDefaultDeclaration",
+              "start": 70,
+              "end": 87,
+              "declaration": {
+                "type": "Literal",
+                "start": 85,
+                "end": 86,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "IfStatement",
+        "start": 90,
+        "end": 117,
+        "test": {
+          "type": "Identifier",
+          "start": 94,
+          "end": 97,
+          "name": "top"
+        },
+        "consequent": {
+          "type": "ExportAllDeclaration",
+          "start": 99,
+          "end": 117,
+          "exported": null,
+          "source": {
+            "type": "Literal",
+            "start": 113,
+            "end": 116,
+            "value": "c",
+            "raw": "\"c\""
+          },
+          "attributes": []
+        },
+        "alternate": null
+      },
+      {
+        "type": "LabeledStatement",
+        "start": 118,
+        "end": 151,
+        "label": {
+          "type": "Identifier",
+          "start": 118,
+          "end": 123,
+          "name": "label"
+        },
+        "body": {
+          "type": "ExportNamedDeclaration",
+          "start": 125,
+          "end": 151,
+          "declaration": null,
+          "specifiers": [
+            {
+              "type": "ExportSpecifier",
+              "start": 134,
+              "end": 148,
+              "local": {
+                "type": "Identifier",
+                "start": 134,
+                "end": 137,
+                "name": "top"
+              },
+              "exported": {
+                "type": "Identifier",
+                "start": 141,
+                "end": 148,
+                "name": "renamed"
+              }
+            }
+          ],
+          "source": null,
+          "attributes": []
+        }
+      },
+      {
+        "type": "BlockStatement",
+        "start": 152,
+        "end": 180,
+        "body": [
+          {
+            "type": "ExportNamedDeclaration",
+            "start": 161,
+            "end": 178,
+            "declaration": {
+              "type": "ClassDeclaration",
+              "start": 168,
+              "end": 178,
+              "decorators": [
+                {
+                  "type": "Decorator",
+                  "start": 156,
+                  "end": 160,
+                  "expression": {
+                    "type": "Identifier",
+                    "start": 157,
+                    "end": 160,
+                    "name": "dec"
+                  }
+                }
+              ],
+              "id": {
+                "type": "Identifier",
+                "start": 174,
+                "end": 175,
+                "name": "C"
+              },
+              "superClass": null,
+              "body": {
+                "type": "ClassBody",
+                "start": 176,
+                "end": 178,
+                "body": []
+              }
+            },
+            "specifiers": [],
+            "source": null,
+            "attributes": []
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "'import' declaration may only appear at the top level",
+      "path": null,
+      "start": 39,
+      "end": 50,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "'export default' declaration may only appear at the top level",
+      "path": null,
+      "start": 70,
+      "end": 87,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "'export *' declaration may only appear at the top level",
+      "path": null,
+      "start": 99,
+      "end": 117,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "'export' declaration may only appear at the top level",
+      "path": null,
+      "start": 125,
+      "end": 151,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "'export' declaration may only appear at the top level",
+      "path": null,
+      "start": 161,
+      "end": 178,
+      "labels": [],
+      "help": null
+    }
+  ]
+}
