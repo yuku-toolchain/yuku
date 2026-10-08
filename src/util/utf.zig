@@ -323,7 +323,7 @@ fn jsxEntityAt(raw: []const u8, amp: usize) ?JsxEntity {
 }
 
 /// Returns the code unit of a WTF-8 lone surrogate (`ED A0..BF 80..BF`) at `s[i]`, else
-/// null. These are the only sequences `codePointAt` rejects.
+/// null.
 pub fn loneSurrogateAt(s: []const u8, i: usize) ?u21 {
     if (s[i] != 0xED or i + 2 >= s.len or s[i + 1] < 0xA0) return null;
     return (@as(u21, s[i] & 0x0F) << 12) |
