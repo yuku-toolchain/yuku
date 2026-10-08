@@ -330,7 +330,7 @@ pub const Mutator = struct {
             0, 1 => buf.shrinkRetainingCapacity(self.rng.intRangeAtMost(usize, 0, len)),
             // strand an incomplete escape
             2 => {
-                if (std.mem.lastIndexOfScalar(u8, buf.items, '\\')) |bs| {
+                if (std.mem.findScalarLast(u8, buf.items, '\\')) |bs| {
                     const keep = @min(buf.items.len, bs + 1 + self.rng.uintLessThan(usize, 5));
                     buf.shrinkRetainingCapacity(keep);
                 }

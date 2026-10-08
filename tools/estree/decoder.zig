@@ -766,7 +766,7 @@ fn isIdentChar(c: u8) bool {
 // whole-identifier match, so a slot name never matches inside a longer identifier
 fn usesIdent(body: []const u8, name: []const u8) bool {
     var i: usize = 0;
-    while (std.mem.indexOfPos(u8, body, i, name)) |p| : (i = p + 1) {
+    while (std.mem.findPos(u8, body, i, name)) |p| : (i = p + 1) {
         const before_ok = p == 0 or !isIdentChar(body[p - 1]);
         const after = p + name.len;
         const after_ok = after >= body.len or !isIdentChar(body[after]);
@@ -818,13 +818,13 @@ fn writeChildCallsWithDepth(w: *Writer, body: []const u8) !void {
     const calls = [_][]const u8{ "node", "nodeArr", "nodeArrHoles", "fnParams" };
     var written: usize = 0;
     var open: usize = 0;
-    while (std.mem.indexOfScalarPos(u8, body, open, '(')) |paren| : (open = paren + 1) {
+    while (std.mem.findScalarPos(u8, body, open, '(')) |paren| : (open = paren + 1) {
         var name_start = paren;
         while (name_start > 0 and isIdentChar(body[name_start - 1])) name_start -= 1;
         for (calls) |call| {
             if (!std.mem.eql(u8, body[name_start..paren], call)) continue;
-            const close = std.mem.indexOfScalarPos(u8, body, paren, ')').?;
-            std.debug.assert(std.mem.indexOfScalar(u8, body[paren + 1 .. close], '(') == null);
+            const close = std.mem.findScalarPos(u8, body, paren, ')').?;
+            std.debug.assert(std.mem.findScalar(u8, body[paren + 1 .. close], '(') == null);
             try w.print("{s}, depth + 1", .{body[written..close]});
             written = close;
         }
