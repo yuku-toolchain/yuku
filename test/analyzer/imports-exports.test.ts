@@ -43,6 +43,35 @@ describe("imports", () => {
       `);
   });
 
+  test("a module's declare module block augments the module it names", () => {
+    const augmentation = `declare module "./m" { interface I {} }`;
+    expect(summary(`export {}; ${augmentation}`, { lang: "ts" })).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          tsModule
+            I#0  interface ambient exported
+            block TSInterfaceDeclaration
+      imports
+        (augmentation) from "./m" type"
+    `);
+    expect(summary(`import.meta; ${augmentation}`, { lang: "ts" })).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          tsModule
+            I#0  interface ambient exported
+            block TSInterfaceDeclaration
+      imports
+        (augmentation) from "./m" type"
+    `);
+    expect(summary(augmentation, { lang: "ts" })).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          tsModule
+            I#0  interface ambient exported
+            block TSInterfaceDeclaration"
+    `);
+  });
+
   test("a defer phase import", () => {
     expect(summary(`import defer * as ns from "./m";`, { path: "input.js" }))
       .toMatchInlineSnapshot(`

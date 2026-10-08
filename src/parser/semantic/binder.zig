@@ -1785,7 +1785,7 @@ pub fn exportsImplicitly(tree: *const ast.Tree) bool {
     return hasModuleSyntax(tree, body) and !hasExportStatement(tree, body);
 }
 
-fn hasModuleSyntax(tree: *const ast.Tree, statements: []const ast.NodeIndex) bool {
+pub fn hasModuleSyntax(tree: *const ast.Tree, statements: []const ast.NodeIndex) bool {
     for (statements) |stmt| {
         switch (tree.data(stmt)) {
             .import_declaration,

@@ -100,7 +100,7 @@ fn writeSemanticConstants(w: *Writer) !void {
     });
     try writeArray(w, "IMPORT_PHASES", &.{ "source", "defer" });
     try writeArray(w, "IMPORT_KINDS", &.{
-        "named", "namespace", "sideEffect", "importEquals", "dynamic", "require",
+        "named", "namespace", "sideEffect", "importEquals", "dynamic", "require", "augmentation",
     });
     try writeArray(w, "EXPORT_KINDS", &.{
         "named", "reExport", "namespace", "star", "equals", "global",
@@ -1717,6 +1717,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\            ? IMPORT_PHASES[({[bits]s} >> {[pbit]d}) & 1]
         \\            : null,
         \\        node: (i) => node({[n]s}),
+        \\        scopeId: (i) => _id({[scope]s}),
         \\      }},
         \\
     , .{
@@ -1729,6 +1730,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         .hpbit = sem_rt.IMPORT_HAS_PHASE_BIT,
         .pbit = sem_rt.IMPORT_PHASE_BIT,
         .n = comptime cell("imports", Imp, "node"),
+        .scope = comptime cell("imports", Imp, "scope"),
     });
     try w.print(
         \\      export: {{

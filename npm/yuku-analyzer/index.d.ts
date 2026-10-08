@@ -115,8 +115,16 @@ type ScopeKind =
  * - `"importEquals"`: `import ns = require("m")`
  * - `"dynamic"`: `import("m")`
  * - `"require"`: `require("m")`
+ * - `"augmentation"`: `declare module "m" {}` in a module, merging its declarations into `m`
  */
-type ImportKind = "named" | "namespace" | "sideEffect" | "importEquals" | "dynamic" | "require";
+type ImportKind =
+  | "named"
+  | "namespace"
+  | "sideEffect"
+  | "importEquals"
+  | "dynamic"
+  | "require"
+  | "augmentation";
 
 /**
  * - `"named"`: `export const x`, `export { x }`, `export default x`
@@ -189,7 +197,7 @@ interface Module {
   lookup(name: string, options?: { from?: Scope; space?: Space }): Binding | null;
   /** The outer bindings a function uses. Throws for a node that is not a function. */
   capturesOf(fn: Node): Capture[];
-  /** Every name it exports, through `export *`. Links. */
+  /** Every name it exports, through `export *` and module augmentations. Links. */
   exportedNames(): string[];
   /** The binding behind one of its exports. Links. */
   resolveExport(name: string): Definition | null;
@@ -239,7 +247,10 @@ interface Binding {
   hasAll(mask: number): boolean;
   /** Whether a name resolving in `space` can bind to it. */
   visibleIn(space: Space): boolean;
-  /** Where it is defined, following imports across modules, itself when it is no import. Links. */
+  /**
+   * Where it is defined, following imports across modules and a module augmentation to the binding
+   * it merges into, itself otherwise. Links.
+   */
   definition(): Definition | null;
   /** Its uses across the project, through every import of it. Links. */
   findReferences(): Reference[];
@@ -313,6 +324,8 @@ interface ModuleFlags {
 interface Definition {
   readonly module: Module;
   readonly binding: Binding | null;
+  /** The bindings that `declare module` blocks in other modules merge into it. */
+  readonly augmentations: Binding[];
 }
 
 interface Capture {

@@ -64,7 +64,11 @@ describe("resolveExport", () => {
     const lib = analyzer.module("lib.ts")!;
     expect(lib.resolveExport("one")?.binding?.name).toBe("one");
     expect(lib.resolveExport("uno")?.binding?.name).toBe("one");
-    expect(lib.resolveExport("ns")).toEqual({ module: analyzer.module("a.ts")!, binding: null });
+    expect(lib.resolveExport("ns")).toEqual({
+      module: analyzer.module("a.ts")!,
+      binding: null,
+      augmentations: [],
+    });
     expect(lib.resolveExport("default")).toBeNull();
     expect(lib.resolveExport("missing")).toBeNull();
   });
@@ -78,6 +82,51 @@ describe("exportedNames", () => {
     });
     expect(analyzer.module("lib.ts")!.exportedNames().sort()).toEqual(["default", "one", "two"]);
     expect(analyzer.module("a.ts")!.exportedNames()).toEqual(["one"]);
+  });
+});
+
+describe("module augmentation", () => {
+  test("merges into the binding the augmented export resolves to", () => {
+    const analyzer = project({
+      "a.ts": `export interface I { a: 1 }`,
+      "b.ts": `export * from "./a.ts";`,
+      "c.ts": `export {}; declare module "./b.ts" { interface I { b: I } }`,
+      "d.ts": `import type { I } from "./a.ts"; let x: I;`,
+    });
+    expect(definition(analyzer, "d.ts", "I")).toBe("a.ts:I + c.ts:I");
+    expect(references(analyzer, "d.ts", "I")).toBe("c.ts:I, d.ts:I");
+    const augmentation = analyzer.module("c.ts")!.bindings.find((binding) => binding.name === "I");
+    expect(augmentation?.definition()?.binding?.module.path).toBe("a.ts");
+  });
+
+  test("adds a name the module lacks", () => {
+    const files = {
+      "a.ts": `export const a = 1;`,
+      "b.ts": `export {}; declare module "./a.ts" { interface J {} }`,
+      "c.ts": `import type { J } from "./a.ts"; let x: J;`,
+    };
+    expect(definition(project(files), "c.ts", "J")).toBe("b.ts:J");
+    expect(links(files)).toMatchInlineSnapshot(`
+      "diagnostics
+        (none)
+      graph
+        a.ts → (none)
+        b.ts → a.ts
+        c.ts → a.ts
+      exportedNames
+        a.ts: a, J
+        b.ts: (none)
+        c.ts: (none)"
+    `);
+  });
+
+  test("a script declares a module instead of augmenting one", () => {
+    const analyzer = project({
+      "a.ts": `export interface I {}`,
+      "b.ts": `declare module "./a.ts" { interface I { b: 1 } }`,
+      "c.ts": `import type { I } from "./a.ts"; let x: I;`,
+    });
+    expect(definition(analyzer, "c.ts", "I")).toBe("a.ts:I");
   });
 });
 

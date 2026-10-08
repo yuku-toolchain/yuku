@@ -109,8 +109,8 @@ module.ancestors(node);      // the node, then each parent up to the root
 module.nodeAt(offset);       // the innermost node at a UTF-16 offset
 module.lookup("x", { from: scope, space: "value" }); // resolves a name as code there would
 module.capturesOf(fn);       // [{ binding, references, isWritten }], the outer bindings it uses
-module.exportedNames();      // through export *
-module.resolveExport("x");   // { module, binding }, the binding behind an export
+module.exportedNames();      // through export * and module augmentations
+module.resolveExport("x");   // { module, binding, augmentations }, the binding behind an export
 module.walk(visitors, root);
 module.walkAsync(visitors, root);
 module.findAll(types);       // every node of the given types, in source order
@@ -151,11 +151,11 @@ binding.has(BindingFlags.Function);
 binding.hasAll(BindingFlags.Const | BindingFlags.Exported);
 binding.visibleIn("type");
 
-binding.definition();     // { module, binding } it imports, followed across modules
+binding.definition();     // { module, binding, augmentations } it imports, followed across modules
 binding.findReferences(); // its uses across the project
 ```
 
-A `definition` with a null `binding` is a whole module namespace, as `import * as ns` binds.
+A `definition` with a null `binding` is a whole module namespace, as `import * as ns` binds. Its `augmentations` are the bindings of `declare module "m"` blocks in other modules that merge into it.
 
 ## Reference
 
@@ -189,7 +189,7 @@ The blocks of one namespace or enum see each other's exports and members, as one
 ```js
 imp.id;
 imp.module;
-imp.kind;           // "named" | "namespace" | "sideEffect" | "importEquals" | "dynamic" | "require"
+imp.kind;           // "named" | "namespace" | "sideEffect" | "importEquals" | "dynamic" | "require" | "augmentation"
 imp.name;           // the imported name, "default" for a default import
 imp.local;          // the binding it declares
 imp.isNamespace;    // it binds a whole module, as namespace and importEquals do

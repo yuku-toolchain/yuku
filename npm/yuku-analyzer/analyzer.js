@@ -24,6 +24,10 @@ export class Analyzer {
   // defining binding to the import bindings that resolve to it
   #importers = new Map();
   #exportResolutions = new Map();
+  // each binding a module augmentation merges to the whole merge, the augmented binding first
+  #merged = new Map();
+  // the names module augmentations add to a module
+  #addedExports = new Map();
 
   constructor(options = {}) {
     this.#core = options.core ?? load();
@@ -59,6 +63,8 @@ export class Analyzer {
   link() {
     this.#dirty = false;
     this.#exportResolutions = new Map();
+    this.#merged = new Map();
+    this.#addedExports = new Map();
     const diagnostics = [];
     for (const module of this.#modules.values()) {
       diagnostics.push(...module.diagnostics);
@@ -75,6 +81,14 @@ export class Analyzer {
         }
         record._resolved = resolved.get(record.specifier);
         if (record._resolved !== null) wire(module, record._resolved);
+      }
+    }
+    for (const module of this.#modules.values()) {
+      for (const record of module.imports) {
+        if (record.kind !== "augmentation" || record._resolved === null) continue;
+        for (const binding of record._scope.bindings) {
+          if (binding.has(BindingFlags.Exported)) this.#augment(record._resolved, binding);
+        }
       }
     }
     for (const module of this.#modules.values()) {
@@ -118,30 +132,58 @@ export class Analyzer {
       seen.add(current);
       const record = current.module._importOf(current);
       if (record === undefined || record._resolved === null) return null;
-      if (record.isNamespace) return { module: record._resolved, binding: null };
+      if (record.isNamespace) return this.#definition(record._resolved, null);
       const resolution = this.#exportResolution(record._resolved, record.name);
       if (resolution === null || resolution === AMBIGUOUS) return null;
-      if (resolution.namespace) return { module: resolution.module, binding: null };
+      if (resolution.namespace) return this.#definition(resolution.module, null);
       if (resolution.binding === null) return null;
       current = resolution.binding;
     }
-    return { module: current.module, binding: current };
+    const target = this.#merged.get(current)?.[0] ?? current;
+    return this.#definition(target.module, target);
   }
 
   _referencesOf(binding) {
-    const origin = this._definitionOf(binding)?.binding ?? binding;
+    const definition = this._definitionOf(binding);
+    const origin = definition?.binding ?? binding;
     const references = [...origin.references];
+    for (const augmentation of definition?.augmentations ?? []) {
+      references.push(...augmentation.references);
+    }
     for (const local of this.#importers.get(origin) ?? []) references.push(...local.references);
     return references;
+  }
+
+  _addedExports(module) {
+    return this.#addedExports.get(module)?.keys() ?? [];
   }
 
   _resolveExport(module, name) {
     this._link(module);
     const resolution = this.#exportResolution(module, name);
     if (resolution === null || resolution === AMBIGUOUS) return null;
-    if (resolution.namespace) return { module: resolution.module, binding: null };
+    if (resolution.namespace) return this.#definition(resolution.module, null);
     if (resolution.binding === null) return null;
-    return { module: resolution.module, binding: resolution.binding };
+    return this.#definition(resolution.module, resolution.binding);
+  }
+
+  #definition(module, binding) {
+    const merged = binding === null ? undefined : this.#merged.get(binding);
+    return { module, binding, augmentations: merged === undefined ? [] : merged.slice(1) };
+  }
+
+  // a name the module lacks becomes its export
+  #augment(module, binding) {
+    const name = binding.has(BindingFlags.Default) ? "default" : binding.name;
+    const resolution = this.#resolveExport(module, name, []);
+    if (resolution === null) {
+      const added = this.#addedExports.get(module) ?? new Map();
+      this.#addedExports.set(module, added.set(name, binding));
+    } else if (resolution !== AMBIGUOUS && resolution.binding !== null) {
+      const merged = this.#merged.get(resolution.binding) ?? [resolution.binding];
+      merged.push(binding);
+      this.#merged.set(resolution.binding, merged).set(binding, merged);
+    }
   }
 
   #resolveModule(module, record, diagnostics) {
@@ -206,6 +248,9 @@ export class Analyzer {
       return this.#resolveExport(direct._resolved, direct.fromName, seen);
     }
 
+    const added = this.#addedExports.get(module)?.get(name);
+    if (added !== undefined) return { module: added.module, binding: added, namespace: false };
+
     // default never crosses export *
     if (name === "default") return null;
 
@@ -255,6 +300,8 @@ function specifierNodeOf(module, node) {
       return module.parentOf(node).source;
     case "TSImportEqualsDeclaration":
       return node.moduleReference.expression;
+    case "TSModuleDeclaration":
+      return node.id;
     case "CallExpression":
       return node.arguments[0];
     default:

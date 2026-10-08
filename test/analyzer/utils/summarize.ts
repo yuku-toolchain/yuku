@@ -136,6 +136,7 @@ function importRow(record: Import): string {
   const mods = (record.typeOnly ? " type" : "") + (record.phase ? ` phase:${record.phase}` : "");
   const specifier = `from "${record.specifier}"`;
   if (record.kind === "sideEffect") return `(side-effect) ${specifier}${mods}`;
+  if (record.kind === "augmentation") return `(augmentation) ${specifier}${mods}`;
   const local = record.local ? `#${record.local.id}` : "–";
   if (record.isNamespace) return `* as ${local} ${specifier}${mods}`;
   return `${record.name} → ${local} ${specifier}${mods}`;
@@ -244,11 +245,13 @@ function bindingOf(analyzer: Analyzer, path: string, name: string): Binding {
   return binding;
 }
 
-/** Formats `definition()` for the binding named `name` in module `path`. */
+/** Formats `definition()` for the binding named `name` in module `path`, augmentations after. */
 export function definition(analyzer: Analyzer, path: string, name: string): string {
   const def = bindingOf(analyzer, path, name).definition();
   if (def === null) return "(none)";
-  return `${def.module.path}:${def.binding ? def.binding.name : "(namespace)"}`;
+  const defined = `${def.module.path}:${def.binding ? def.binding.name : "(namespace)"}`;
+  const augmented = def.augmentations.map((binding) => `${binding.module.path}:${binding.name}`);
+  return [defined, ...augmented].join(" + ");
 }
 
 /** Formats `findReferences()` for the binding named `name` in module `path`. */
