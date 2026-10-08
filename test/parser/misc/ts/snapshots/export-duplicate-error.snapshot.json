@@ -1,0 +1,992 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 802,
+    "sourceType": "module",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 55,
+        "end": 67,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 61,
+            "end": 66,
+            "id": {
+              "type": "Identifier",
+              "start": 61,
+              "end": 62,
+              "name": "v",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "Literal",
+              "start": 65,
+              "end": 66,
+              "value": 1,
+              "raw": "1"
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 99,
+        "end": 124,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 108,
+            "end": 110,
+            "local": {
+              "type": "Identifier",
+              "start": 108,
+              "end": 110,
+              "name": "E1",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 108,
+              "end": 110,
+              "name": "E1",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 118,
+          "end": 123,
+          "value": "./a",
+          "raw": "\"./a\""
+        },
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 125,
+        "end": 155,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 139,
+            "end": 141,
+            "local": {
+              "type": "Identifier",
+              "start": 139,
+              "end": 141,
+              "name": "E1",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 139,
+              "end": 141,
+              "name": "E1",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 149,
+          "end": 154,
+          "value": "./b",
+          "raw": "\"./b\""
+        },
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 170,
+        "end": 188,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 177,
+          "end": 188,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 181,
+              "end": 187,
+              "id": {
+                "type": "Identifier",
+                "start": 181,
+                "end": 183,
+                "name": "E2",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "init": {
+                "type": "Literal",
+                "start": 186,
+                "end": 187,
+                "value": 1,
+                "raw": "1"
+              },
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 189,
+        "end": 207,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 196,
+          "end": 207,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 200,
+              "end": 206,
+              "id": {
+                "type": "Identifier",
+                "start": 200,
+                "end": 202,
+                "name": "E2",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "init": {
+                "type": "Literal",
+                "start": 205,
+                "end": 206,
+                "value": 2,
+                "raw": "2"
+              },
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 262,
+        "end": 285,
+        "declaration": {
+          "type": "FunctionDeclaration",
+          "start": 269,
+          "end": 285,
+          "id": {
+            "type": "Identifier",
+            "start": 278,
+            "end": 280,
+            "name": "E3",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "generator": false,
+          "async": false,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 283,
+            "end": 285,
+            "body": []
+          },
+          "expression": false,
+          "typeParameters": null,
+          "returnType": null,
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 286,
+        "end": 309,
+        "declaration": {
+          "type": "FunctionDeclaration",
+          "start": 293,
+          "end": 309,
+          "id": {
+            "type": "Identifier",
+            "start": 302,
+            "end": 304,
+            "name": "E3",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "generator": false,
+          "async": false,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "start": 307,
+            "end": 309,
+            "body": []
+          },
+          "expression": false,
+          "typeParameters": null,
+          "returnType": null,
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 351,
+        "end": 363,
+        "id": {
+          "type": "Identifier",
+          "start": 356,
+          "end": 358,
+          "name": "E4",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSLiteralType",
+          "start": 361,
+          "end": 362,
+          "literal": {
+            "type": "Literal",
+            "start": 361,
+            "end": 362,
+            "value": 1,
+            "raw": "1"
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 364,
+        "end": 378,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 373,
+            "end": 375,
+            "local": {
+              "type": "Identifier",
+              "start": 373,
+              "end": 375,
+              "name": "E4",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 373,
+              "end": 375,
+              "name": "E4",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 379,
+        "end": 399,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 386,
+          "end": 399,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 392,
+              "end": 398,
+              "id": {
+                "type": "Identifier",
+                "start": 392,
+                "end": 394,
+                "name": "E4",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "init": {
+                "type": "Literal",
+                "start": 397,
+                "end": 398,
+                "value": 1,
+                "raw": "1"
+              },
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 428,
+        "end": 447,
+        "declaration": {
+          "type": "TSTypeAliasDeclaration",
+          "start": 435,
+          "end": 447,
+          "id": {
+            "type": "Identifier",
+            "start": 440,
+            "end": 442,
+            "name": "E5",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "typeParameters": null,
+          "typeAnnotation": {
+            "type": "TSLiteralType",
+            "start": 445,
+            "end": 446,
+            "literal": {
+              "type": "Literal",
+              "start": 445,
+              "end": 446,
+              "value": 1,
+              "raw": "1"
+            }
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 448,
+        "end": 468,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 455,
+          "end": 468,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 461,
+              "end": 467,
+              "id": {
+                "type": "Identifier",
+                "start": 461,
+                "end": 463,
+                "name": "E5",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "init": {
+                "type": "Literal",
+                "start": 466,
+                "end": 467,
+                "value": 1,
+                "raw": "1"
+              },
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 469,
+        "end": 488,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 478,
+            "end": 485,
+            "local": {
+              "type": "Identifier",
+              "start": 478,
+              "end": 479,
+              "name": "v",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 483,
+              "end": 485,
+              "name": "E5",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "TSInterfaceDeclaration",
+        "start": 539,
+        "end": 554,
+        "id": {
+          "type": "Identifier",
+          "start": 549,
+          "end": 551,
+          "name": "E6",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "extends": [],
+        "body": {
+          "type": "TSInterfaceBody",
+          "start": 552,
+          "end": 554,
+          "body": []
+        },
+        "declare": false
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 555,
+        "end": 569,
+        "declaration": null,
+        "specifiers": [
+          {
+            "type": "ExportSpecifier",
+            "start": 564,
+            "end": 566,
+            "local": {
+              "type": "Identifier",
+              "start": 564,
+              "end": 566,
+              "name": "E6",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exported": {
+              "type": "Identifier",
+              "start": 564,
+              "end": 566,
+              "name": "E6",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "exportKind": "value"
+          }
+        ],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 570,
+        "end": 592,
+        "declaration": {
+          "type": "TSInterfaceDeclaration",
+          "start": 577,
+          "end": 592,
+          "id": {
+            "type": "Identifier",
+            "start": 587,
+            "end": 589,
+            "name": "E6",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "typeParameters": null,
+          "extends": [],
+          "body": {
+            "type": "TSInterfaceBody",
+            "start": 590,
+            "end": 592,
+            "body": []
+          },
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "type"
+      },
+      {
+        "type": "TSModuleDeclaration",
+        "start": 628,
+        "end": 665,
+        "id": {
+          "type": "Identifier",
+          "start": 638,
+          "end": 639,
+          "name": "N",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "kind": "namespace",
+        "declare": false,
+        "global": false,
+        "body": {
+          "type": "TSModuleBlock",
+          "start": 640,
+          "end": 665,
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "start": 644,
+              "end": 663,
+              "declaration": {
+                "type": "VariableDeclaration",
+                "start": 651,
+                "end": 663,
+                "kind": "const",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 657,
+                    "end": 662,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 657,
+                      "end": 658,
+                      "name": "a",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "init": {
+                      "type": "Literal",
+                      "start": 661,
+                      "end": 662,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "definite": false
+                  }
+                ],
+                "declare": false
+              },
+              "specifiers": [],
+              "source": null,
+              "attributes": [],
+              "exportKind": "value"
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 666,
+        "end": 686,
+        "declaration": {
+          "type": "VariableDeclaration",
+          "start": 673,
+          "end": 686,
+          "kind": "const",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 679,
+              "end": 685,
+              "id": {
+                "type": "Identifier",
+                "start": 679,
+                "end": 681,
+                "name": "E7",
+                "decorators": [],
+                "typeAnnotation": null,
+                "optional": false
+              },
+              "init": {
+                "type": "Literal",
+                "start": 684,
+                "end": 685,
+                "value": 1,
+                "raw": "1"
+              },
+              "definite": false
+            }
+          ],
+          "declare": false
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 687,
+        "end": 710,
+        "declaration": {
+          "type": "TSImportEqualsDeclaration",
+          "start": 694,
+          "end": 710,
+          "id": {
+            "type": "Identifier",
+            "start": 701,
+            "end": 703,
+            "name": "E7",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "moduleReference": {
+            "type": "TSQualifiedName",
+            "start": 706,
+            "end": 709,
+            "left": {
+              "type": "Identifier",
+              "start": 706,
+              "end": 707,
+              "name": "N",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            },
+            "right": {
+              "type": "Identifier",
+              "start": 708,
+              "end": 709,
+              "name": "a",
+              "decorators": [],
+              "optional": false,
+              "typeAnnotation": null
+            }
+          },
+          "importKind": "value"
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportDefaultDeclaration",
+        "start": 754,
+        "end": 783,
+        "declaration": {
+          "type": "TSInterfaceDeclaration",
+          "start": 769,
+          "end": 783,
+          "id": {
+            "type": "Identifier",
+            "start": 779,
+            "end": 780,
+            "name": "D",
+            "decorators": [],
+            "typeAnnotation": null,
+            "optional": false
+          },
+          "typeParameters": null,
+          "extends": [],
+          "body": {
+            "type": "TSInterfaceBody",
+            "start": 781,
+            "end": 783,
+            "body": []
+          },
+          "declare": false
+        },
+        "exportKind": "value"
+      },
+      {
+        "type": "ExportDefaultDeclaration",
+        "start": 784,
+        "end": 801,
+        "declaration": {
+          "type": "Literal",
+          "start": 799,
+          "end": 800,
+          "value": 1,
+          "raw": "1"
+        },
+        "exportKind": "value"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Error: exports of one name that TypeScript rejects.",
+      "start": 0,
+      "end": 54
+    },
+    {
+      "type": "Line",
+      "value": " re-export + type re-export",
+      "start": 69,
+      "end": 98
+    },
+    {
+      "type": "Line",
+      "value": " var + var",
+      "start": 157,
+      "end": 169
+    },
+    {
+      "type": "Line",
+      "value": " function implementation + function implementation",
+      "start": 209,
+      "end": 261
+    },
+    {
+      "type": "Line",
+      "value": " local type exported + exported const",
+      "start": 311,
+      "end": 350
+    },
+    {
+      "type": "Line",
+      "value": " type alias + two values",
+      "start": 401,
+      "end": 427
+    },
+    {
+      "type": "Line",
+      "value": " local interface exported + exported interface",
+      "start": 490,
+      "end": 538
+    },
+    {
+      "type": "Line",
+      "value": " exported const + export import",
+      "start": 594,
+      "end": 627
+    },
+    {
+      "type": "Line",
+      "value": " default interface + default expression",
+      "start": 712,
+      "end": 753
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E1'",
+      "path": null,
+      "start": 139,
+      "end": 141,
+      "labels": [
+        {
+          "start": 108,
+          "end": 110,
+          "message": "first exported here"
+        },
+        {
+          "start": 139,
+          "end": 141,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E2'",
+      "path": null,
+      "start": 200,
+      "end": 202,
+      "labels": [
+        {
+          "start": 181,
+          "end": 183,
+          "message": "first exported here"
+        },
+        {
+          "start": 200,
+          "end": 202,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E3'",
+      "path": null,
+      "start": 302,
+      "end": 304,
+      "labels": [
+        {
+          "start": 278,
+          "end": 280,
+          "message": "first exported here"
+        },
+        {
+          "start": 302,
+          "end": 304,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E4'",
+      "path": null,
+      "start": 392,
+      "end": 394,
+      "labels": [
+        {
+          "start": 373,
+          "end": 375,
+          "message": "first exported here"
+        },
+        {
+          "start": 392,
+          "end": 394,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E5'",
+      "path": null,
+      "start": 478,
+      "end": 485,
+      "labels": [
+        {
+          "start": 440,
+          "end": 442,
+          "message": "first exported here"
+        },
+        {
+          "start": 478,
+          "end": 485,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E6'",
+      "path": null,
+      "start": 587,
+      "end": 589,
+      "labels": [
+        {
+          "start": 564,
+          "end": 566,
+          "message": "first exported here"
+        },
+        {
+          "start": 587,
+          "end": 589,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'E7'",
+      "path": null,
+      "start": 701,
+      "end": 703,
+      "labels": [
+        {
+          "start": 679,
+          "end": 681,
+          "message": "first exported here"
+        },
+        {
+          "start": 701,
+          "end": 703,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate export of 'default'",
+      "path": null,
+      "start": 784,
+      "end": 801,
+      "labels": [
+        {
+          "start": 754,
+          "end": 783,
+          "message": "first exported here"
+        },
+        {
+          "start": 784,
+          "end": 801,
+          "message": "exported again here"
+        }
+      ],
+      "help": null
+    }
+  ]
+}

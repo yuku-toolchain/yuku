@@ -25,8 +25,33 @@ pub const Checker = struct {
     tree: *ast.Tree,
     allocator: Allocator,
 
-    exported_names: std.StringHashMapUnmanaged(ast.NodeIndex) = .empty,
+    exported_names: std.StringArrayHashMapUnmanaged(ExportedName) = .empty,
+    // kinds of the module-level names a ts module declares without `export`
+    local_kinds: std.StringHashMapUnmanaged(Symbol.Flags) = .empty,
     export_specifiers: std.ArrayList(ExportSpecifierInfo) = .empty,
+
+    // every export of one name, which ts judges once all are known
+    const ExportedName = struct {
+        first: ast.NodeIndex,
+        last: ast.NodeIndex,
+        // exports tsc counts, every one but interfaces and overload signatures
+        counted: u32 = 0,
+        // kinds of its exported declarations
+        flags: Symbol.Flags = .{},
+        alias: bool = false,
+        // what a local `export { x }` of it exports
+        local: ?[]const u8 = null,
+        // a conflict the order of its exports decides
+        conflict: bool = false,
+    };
+
+    const ExportForm = union(enum) {
+        // a specifier, `export * as`, or `export import`, with what a local specifier exports
+        alias: ?[]const u8,
+        // `export default` of an expression, which nothing before it merges with
+        default_expression,
+        declaration: struct { flags: Symbol.Flags, counted: bool },
+    };
 
     const ExportSpecifierInfo = struct {
         local_name: []const u8,
@@ -71,10 +96,10 @@ pub const Checker = struct {
         const existing = binder.prior(&ctx.symbols, name, ctx.scope.scopes.items);
         try self.checkRedeclaration(id, node_index, name, flags, ctx, existing);
 
-        // ts declaration merging makes a second export of an in-scope name legal
-        if (ctx.symbols.export_state == .named) {
-            const skip = existing != null and ctx.tree.isTs();
-            if (!skip) try self.recordExportedName(name, node_index, ctx);
+        switch (ctx.symbols.export_state) {
+            .named => try self.recordExportedName(name, node_index, ctx, exportForm(flags, ctx)),
+            .none => try self.recordLocalKinds(name, flags, ctx),
+            .default => {},
         }
 
         return .proceed;
@@ -634,11 +659,12 @@ pub const Checker = struct {
 
     pub fn enter_export_default_declaration(
         self: *Self,
-        _: ast.ExportDefaultDeclaration,
+        decl: ast.ExportDefaultDeclaration,
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        try self.recordExportedName("default", node_index, ctx);
+        const form = defaultExportForm(ctx.tree, decl.declaration);
+        try self.recordExportedName("default", node_index, ctx, form);
         return .proceed;
     }
 
@@ -653,6 +679,7 @@ pub const Checker = struct {
                 getModuleExportName(ctx.tree, decl.exported),
                 node_index,
                 ctx,
+                .{ .alias = null },
             );
         }
         try self.checkDuplicateWithAttributes(decl.attributes, ctx);
@@ -666,24 +693,23 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
+        const declaration = ctx.tree.data(ctx.path.parent().?).export_named_declaration;
+        const local = if (declaration.source == .null)
+            getModuleExportName(ctx.tree, spec.local)
+        else
+            null;
         const exported_name = getModuleExportName(ctx.tree, spec.exported);
-        try self.recordExportedName(exported_name, node_index, ctx);
+        try self.recordExportedName(exported_name, node_index, ctx, .{ .alias = local });
 
         // only local value exports get the unresolved check, the checker
         // tracks the value scope alone
-        if (spec.export_kind == .type) return .proceed;
+        if (spec.export_kind == .type or declaration.export_kind == .type) return .proceed;
         if (ctx.inTsNamespace()) return .proceed;
-        if (ctx.path.parent()) |parent| {
-            const parent_data = ctx.tree.data(parent);
-            if (parent_data == .export_named_declaration and
-                parent_data.export_named_declaration.source == .null and
-                parent_data.export_named_declaration.export_kind != .type)
-            {
-                try self.export_specifiers.append(self.allocator, .{
-                    .local_name = getModuleExportName(ctx.tree, spec.local),
-                    .node = node_index,
-                });
-            }
+        if (local) |local_name| {
+            try self.export_specifiers.append(self.allocator, .{
+                .local_name = local_name,
+                .node = node_index,
+            });
         }
         return .proceed;
     }
@@ -1361,6 +1387,30 @@ pub const Checker = struct {
         };
     }
 
+    // `export import x = y.z` is an alias
+    fn exportForm(flags: Symbol.Flags, ctx: *SemanticCtx) ExportForm {
+        if (flags.intersects(Symbol.any_import)) return .{ .alias = null };
+        const declaration = ctx.tree.data(ctx.path.parent().?);
+        const signature = declaration == .function and declaration.function.body == .null;
+        return .{ .declaration = .{ .flags = flags, .counted = !flags.interface and !signature } };
+    }
+
+    fn defaultExportForm(tree: *const ast.Tree, declaration: ast.NodeIndex) ExportForm {
+        return .{ .declaration = switch (tree.data(declaration)) {
+            .ts_interface_declaration => .{ .flags = .{ .interface = true }, .counted = false },
+            .function => |func| .{ .flags = .{ .function = true }, .counted = func.body != .null },
+            .class => .{ .flags = .{ .class = true }, .counted = true },
+            else => return .default_expression,
+        } };
+    }
+
+    fn sharesKind(a: Symbol.Flags, b: Symbol.Flags) bool {
+        inline for (.{ Symbol.value_space, Symbol.type_space, Symbol.namespace_space }) |space| {
+            if (a.intersects(space) and b.intersects(space)) return true;
+        }
+        return false;
+    }
+
     fn checkDuplicateWithAttributes(
         self: *Self,
         attributes: ast.IndexRange,
@@ -1393,29 +1443,59 @@ pub const Checker = struct {
         name: []const u8,
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
+        form: ExportForm,
     ) AnalysisError!void {
         std.debug.assert(node_index != .null);
         if (!ctx.tree.isModule()) return;
         // exports inside a ts namespace are namespace-scoped
         if (ctx.inTsNamespace()) return;
         const gop = try self.exported_names.getOrPut(self.allocator, name);
-        if (gop.found_existing) {
-            try self.report(
-                ctx.tree.span(node_index),
-                try self.fmt("Duplicate export of '{s}'", .{name}),
-                .{ .labels = try self.labels(&.{
-                    self.label(ctx.tree.span(gop.value_ptr.*), "first exported here"),
-                    self.label(ctx.tree.span(node_index), "exported again here"),
-                }) },
-            );
-        } else {
-            gop.value_ptr.* = node_index;
+        if (!gop.found_existing) gop.value_ptr.* = .{ .first = node_index, .last = node_index };
+        const exported = gop.value_ptr;
+
+        // https://tc39.es/ecma262/#sec-module-semantics-static-semantics-early-errors
+        if (!ctx.tree.isTs()) {
+            if (!gop.found_existing) return;
+            return self.reportDuplicateExport(name, exported.first, node_index);
+        }
+
+        exported.last = node_index;
+        switch (form) {
+            .alias => |local| {
+                exported.conflict = exported.conflict or exported.alias;
+                exported.alias = true;
+                exported.local = local orelse exported.local;
+                exported.counted += 1;
+            },
+            .default_expression => {
+                exported.conflict = exported.conflict or gop.found_existing;
+                exported.counted += 1;
+            },
+            .declaration => |declaration| {
+                exported.flags = exported.flags.merge(declaration.flags);
+                exported.counted += @intFromBool(declaration.counted);
+            },
         }
     }
 
-    /// Reports local export specifiers that name no declared binding.
+    fn recordLocalKinds(
+        self: *Self,
+        name: []const u8,
+        flags: Symbol.Flags,
+        ctx: *SemanticCtx,
+    ) AnalysisError!void {
+        if (!ctx.tree.isTs()) return;
+        if (ctx.scope.get(ctx.symbols.pending.scope).kind != .module) return;
+        // an import aliases kinds one file cannot know
+        if (flags.intersects(Symbol.any_import)) return;
+        const gop = try self.local_kinds.getOrPut(self.allocator, name);
+        gop.value_ptr.* = if (gop.found_existing) gop.value_ptr.merge(flags) else flags;
+    }
+
+    /// Reports local export specifiers that name no declared binding, and the
+    /// TypeScript duplicate exports, which depend on every export of a name.
     /// Runs after the traversal.
-    pub fn checkUnresolvedExports(self: *Self, sem: Semantic) AnalysisError!void {
+    pub fn checkExports(self: *Self, sem: Semantic) AnalysisError!void {
         if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |spec| {
             const found = sem.binding(.module, spec.local_name);
@@ -1427,6 +1507,40 @@ pub const Checker = struct {
                 );
             }
         }
+        if (!self.tree.isTs()) return;
+        for (self.exported_names.keys(), self.exported_names.values()) |name, *exported| {
+            if (self.tsExportsConflict(exported)) {
+                try self.reportDuplicateExport(name, exported.first, exported.last);
+            }
+        }
+    }
+
+    fn tsExportsConflict(self: *const Self, exported: *const ExportedName) bool {
+        if (exported.conflict) return true;
+        // a namespace or an enum merges with the rest, a type alias with one more
+        const merges = exported.flags.intersects(Symbol.namespace_space);
+        const allowed: u32 = if (exported.flags.type_alias) 2 else 1;
+        if (!merges and exported.counted > allowed) return true;
+        // a local `export { x }` cannot share a kind with an exported declaration
+        const local = self.local_kinds.get(exported.local orelse return false) orelse return false;
+        return sharesKind(exported.flags, local);
+    }
+
+    fn reportDuplicateExport(
+        self: *Self,
+        name: []const u8,
+        first: ast.NodeIndex,
+        again: ast.NodeIndex,
+    ) AnalysisError!void {
+        std.debug.assert(self.tree.span(first).start < self.tree.span(again).start);
+        try self.report(
+            self.tree.span(again),
+            try self.fmt("Duplicate export of '{s}'", .{name}),
+            .{ .labels = try self.labels(&.{
+                self.label(self.tree.span(first), "first exported here"),
+                self.label(self.tree.span(again), "exported again here"),
+            }) },
+        );
     }
 
     fn reportRedeclaration(

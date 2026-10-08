@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       96/96 (100.00%)
+Passed:       98/98 (100.00%)
 Failed:       0
-AST mismatch: 0/96
+AST mismatch: 0/98
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -173,6 +173,19 @@ error: Computed property names are not allowed in enums
 
 
 ✓ test/parser/misc/ts/enum-declaration-line-terminator.ts
+✓ test/parser/misc/ts/export-duplicate-error.module.ts
+error: Duplicate export of 'E1'
+   |
+ 4 | // re-export + type re-export
+ 5 | export { E1 } from "./a";
+   |          ~~ first exported here
+ 6 | export type { E1 } from "./b";
+   |               ^^
+   |               ~~ exported again here
+ 7 | 
+   |
+
+✓ test/parser/misc/ts/export-duplicate-merge.module.ts
 ✓ test/parser/misc/ts/export-import-declaration.module.ts
 error: An import declaration cannot have modifiers
    |

@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       280/280 (100.00%)
+Passed:       279/279 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -128,9 +128,10 @@ error: Duplicate export of 'default'
  7 | export default function () { }
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  8 | export { default } from './hi'
-   |          ^^^^^^^
-   |          ~~~~~~~ exported again here
  9 | export { aa as default } from './hi'
+   |          ^^^^^^^^^^^^^
+   |          ~~~~~~~~~~~~~ exported again here
+10 | 
    |
 
 ✓ test/parser/suite/ts/semantic/0d2185396fa29978.module.ts
@@ -415,6 +416,18 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
  5 | }
    |
 
+✓ test/parser/suite/ts/semantic/1e2da2bc48b1c713.module.ts
+error: Duplicate export of 'r5'
+   |
+21 | var i2: I;
+22 | export var r5: typeof i;
+   |            ~~~~~~~~~~~~ first exported here
+23 | export var r5: typeof i2;
+   |            ^^^^^^^^^^^^^
+   |            ~~~~~~~~~~~~~ exported again here
+24 | 
+   |
+
 ✓ test/parser/suite/ts/semantic/1f3ad3cb5eb2929b.ts
 error: Duplicate label 'target'
    |
@@ -510,9 +523,12 @@ error: Duplicate export of 'default'
  3 | export default function foo(value: number): number
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  4 | export default function foo(value: string): string
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | export default function foo(value: string | number): string | number {
+.. |
+ 8 | type Foo = {}
+ 9 | export default Foo
+   | ^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~ exported again here
+10 | 
    |
 
 ✓ test/parser/suite/ts/semantic/2770ef90e9c8f4e0.ts
@@ -588,21 +604,20 @@ error: Identifier 'e1' has already been declared
 
 
 ✓ test/parser/suite/ts/semantic/29dddac1cbff807a.module.ts
-error: Duplicate export of 'default'
+error: Identifier 'C' has already been declared
    |
  3 | 
  4 | export default class C {
-   | ~~~~~~~~~~~~~~~~~~~~~~~~
+   |                      ~ 'C' was first declared as a class here
  5 | }
-   | ~ first exported here
  6 | 
  7 | export default class C {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~
+   |                      ^
+   |                      ~ cannot be redeclared here
  8 | }
-   | ^
-   | ~ exported again here
    |
+   = help: Consider removing or renaming this declaration of 'C'
+
 
 ✓ test/parser/suite/ts/semantic/2ab8ff972e204808.ts
 error: for-of loop variable declaration may not have an initializer
@@ -850,9 +865,10 @@ error: Duplicate export of 'default'
  4 | export default foo
    | ~~~~~~~~~~~~~~~~~~ first exported here
  5 | export default class Foo {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
  6 | export default interface Foo {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 7 | 
    |
 
 ✓ test/parser/suite/ts/semantic/3fc43370eef02c9f.ts
@@ -1122,6 +1138,18 @@ error: Only a single variable declaration is allowed in a for-in/of statement
  3 | }
    |
 
+✓ test/parser/suite/ts/semantic/5e20d3f782d1f074.module.ts
+error: Duplicate export of 'r5'
+   |
+21 | var i2: I;
+22 | export var r5: typeof i;
+   |            ~~~~~~~~~~~~ first exported here
+23 | export var r5: typeof i2;
+   |            ^^^^^^^^^^^^^
+   |            ~~~~~~~~~~~~~ exported again here
+24 | 
+   |
+
 ✓ test/parser/suite/ts/semantic/5e8a0444bfde16f3.ts
 error: A class can only have one constructor
    |
@@ -1340,18 +1368,6 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
 18 | var public = 1;
    |     ^^^^^^
 19 | 
-   |
-
-✓ test/parser/suite/ts/semantic/7654b666a62fcfc5.module.ts
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default function foo(value: number): number
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 4 | export default function foo(value: string): string
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | export default function foo(value: string | number): string | number {
    |
 
 ✓ test/parser/suite/ts/semantic/77b20b7bc01d24a3.ts
@@ -1710,9 +1726,11 @@ error: Duplicate export of 'default'
  4 | export default foo
    | ~~~~~~~~~~~~~~~~~~ first exported here
  5 | export default class Foo {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
  6 | type Bar = {}
+ 7 | export default Bar
+   | ^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~ exported again here
+ 8 | 
    |
 
 ✓ test/parser/suite/ts/semantic/8e958aa177b9829f.ts
@@ -1800,9 +1818,10 @@ error: Duplicate export of 'default'
  3 | export default interface A { a: string; }
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  4 | export default function() { return 1; }
+ 5 | export default function() { return 2; }
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | export default function() { return 2; }
+ 6 | 
    |
 
 ✓ test/parser/suite/ts/semantic/95f56b8f996a942f.ts
@@ -2093,9 +2112,12 @@ error: Duplicate export of 'default'
  3 | export default function foo(value: number): number
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  4 | export default function foo(value: string): string
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | export default function foo(value: string | number): string | number {
+.. |
+ 9 | export default Foo
+10 | export default interface Bar {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+11 | 
    |
 
 ✓ test/parser/suite/ts/semantic/a9f61a643051bb0c.ts
@@ -2147,18 +2169,6 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
  3 | interface public { }
    |           ^^^^^^
  4 | interface implements {
-   |
-
-✓ test/parser/suite/ts/semantic/aefa17ca3c01c04e.module.ts
-error: Duplicate export of 'default'
-   |
- 4 | 
- 5 | export default function f();
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 6 | export default function f(x: string);
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 7 | export default function f(...args: any[]) {
    |
 
 ✓ test/parser/suite/ts/semantic/af60cec5ca84720e.ts
@@ -2214,18 +2224,6 @@ error: for-of loop variable declaration may not have an initializer
    |
    = help: Remove the initializer from the loop variable.
 
-
-✓ test/parser/suite/ts/semantic/b1794f4577729dee.module.ts
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default interface A { a: string; }
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 4 | export default function() { return 1; }
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | declare var x: A;
-   |
 
 ✓ test/parser/suite/ts/semantic/b338dd29b0fe5641.ts
 error: Illegal break statement
@@ -2524,9 +2522,11 @@ error: Duplicate export of 'default'
  5 | export default abstract class { }
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  6 | export default abstract class C4 { }
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
  7 | // `abstract class` is not valid as an expression.
+ 8 | export default abstract class C5 { abstract foo(): void; }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 9 | 
    |
 
 ✓ test/parser/suite/ts/semantic/c1fb3ef863086776.module.ts
@@ -3101,10 +3101,12 @@ error: Duplicate export of 'default'
  4 | export default class AA1 {}
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  5 | 
- 6 | export default class BB1 {}
+.. |
+ 7 | 
+ 8 | export default class CC1 {}
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 7 | 
+ 9 | 
    |
 
 ✓ test/parser/suite/ts/semantic/f02ff9c08aef9a56.module.ts

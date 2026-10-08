@@ -1,8 +1,8 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8644/8644 (100.00%)
+Passed:       8645/8645 (100.00%)
 Failed:       0
-AST mismatch: 0/8644
+AST mismatch: 0/8645
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -1005,7 +1005,6 @@ AST mismatch: 0/8644
 ✓ test/parser/suite/ts/pass/1e1e4ab3b80e876b.ts
 ✓ test/parser/suite/ts/pass/1e205d0164efb0fd.ts
 ✓ test/parser/suite/ts/pass/1e24b70484348c48.ts
-✓ test/parser/suite/ts/pass/1e2da2bc48b1c713.module.ts
 ✓ test/parser/suite/ts/pass/1e2f2b6e396e9791.ts
 ✓ test/parser/suite/ts/pass/1e3037086e240371.ts
 ✓ test/parser/suite/ts/pass/1e37b7d9bd37379a.ts
@@ -3180,7 +3179,6 @@ AST mismatch: 0/8644
 ✓ test/parser/suite/ts/pass/5de8fe76ff101a68.ts
 ✓ test/parser/suite/ts/pass/5e1cebe701fd8f28.ts
 ✓ test/parser/suite/ts/pass/5e1e5702d4f93f9d.ts
-✓ test/parser/suite/ts/pass/5e20d3f782d1f074.module.ts
 ✓ test/parser/suite/ts/pass/5e21a9979e0db299.module.ts
 ✓ test/parser/suite/ts/pass/5e2208ecd2f5dc78.ts
 ✓ test/parser/suite/ts/pass/5e24a905c56c4f38.module.ts
@@ -4012,6 +4010,7 @@ AST mismatch: 0/8644
 ✓ test/parser/suite/ts/pass/764bd435046446f7.ts
 ✓ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts
 ✓ test/parser/suite/ts/pass/765441ad39f393dc.ts
+✓ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts
 ✓ test/parser/suite/ts/pass/765b801b4a0505da.ts
 ✓ test/parser/suite/ts/pass/765fccb87149bb20.ts
 ✓ test/parser/suite/ts/pass/76682aa58bfe7c68.ts
@@ -5911,6 +5910,7 @@ AST mismatch: 0/8644
 ✓ test/parser/suite/ts/pass/aed4b51c6c5cff37.ts
 ✓ test/parser/suite/ts/pass/aeecc2cae933fedb.ts
 ✓ test/parser/suite/ts/pass/aef46a1a1215fb98.ts
+✓ test/parser/suite/ts/pass/aefa17ca3c01c04e.module.ts
 ✓ test/parser/suite/ts/pass/af13de08afcfa256.ts
 ✓ test/parser/suite/ts/pass/af19e5e68e97e91c.module.ts
 ✓ test/parser/suite/ts/pass/af345189c57af121.ts
@@ -5987,6 +5987,7 @@ AST mismatch: 0/8644
 ✓ test/parser/suite/ts/pass/b1698b122ef17449.module.ts
 ✓ test/parser/suite/ts/pass/b1737d6dac5443b9.ts
 ✓ test/parser/suite/ts/pass/b1771e434b440783.module.ts
+✓ test/parser/suite/ts/pass/b1794f4577729dee.module.ts
 ✓ test/parser/suite/ts/pass/b180c8fc794cd920.module.ts
 ✓ test/parser/suite/ts/pass/b186717db2d7fe88.ts
 ✓ test/parser/suite/ts/pass/b18a64029083cb48.ts

@@ -21,6 +21,6 @@ pub fn analyze(tree: *ast.Tree) AnalysisError!Semantic {
     };
 
     const sem = try semantic.traverse(checker.Checker, tree, &visitor);
-    try visitor.checkUnresolvedExports(sem);
+    try visitor.checkExports(sem);
     return sem;
 }
