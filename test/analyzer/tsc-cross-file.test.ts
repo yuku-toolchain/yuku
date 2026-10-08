@@ -10,9 +10,13 @@ import { SAMPLE_MAX } from "./utils/differential";
 
 const UNRESOLVED = "unresolved";
 
+interface Checker extends ts.TypeChecker {
+  getMergedSymbol(symbol: ts.Symbol): ts.Symbol;
+}
+
 interface Linked {
   program: ts.Program;
-  checker: ts.TypeChecker;
+  checker: Checker;
   analyzer: Analyzer;
   /** The project file tsc resolves a specifier to, or null. */
   resolveModule(specifier: string, importer: string): string | null;
@@ -60,15 +64,17 @@ function link(loaded: LoadedProject): Linked {
   });
   for (const file of files) analyzer.setFile(file, ts.sys.readFile(file) ?? "");
   const shown = (path: string) => relative(root, path).replaceAll("\\", "/");
-  return { program, checker: program.getTypeChecker(), analyzer, resolveModule, shown };
+  const checker = program.getTypeChecker() as Checker;
+  return { program, checker, analyzer, resolveModule, shown };
 }
 
 // `path:start` per declaration, or `module:path`
 function placesOf(linked: Linked, definition: Definition | null): string[] {
   if (definition === null) return [UNRESOLVED];
-  const path = linked.shown(definition.module.path);
-  if (definition.binding === null) return [`module:${path}`];
-  return definition.binding.declarations.map((node) => `${path}:${node.start}`);
+  if (definition.binding === null) return [`module:${linked.shown(definition.module.path)}`];
+  return [definition.binding, ...definition.augmentations].flatMap((binding) =>
+    binding.declarations.map((node) => `${linked.shown(binding.module.path)}:${node.start}`),
+  );
 }
 
 function isJSDoc(declaration: ts.Node): boolean {
@@ -83,10 +89,14 @@ function declaresInSyntax(symbol: ts.Symbol): boolean {
 function tscPlacesOf(linked: Linked, symbol: ts.Symbol | undefined): string[] | null {
   if (symbol === undefined) return [UNRESOLVED];
   const isAlias = (symbol.flags & ts.SymbolFlags.Alias) !== 0;
-  const target = isAlias ? linked.checker.getAliasedSymbol(symbol) : symbol;
+  const target = linked.checker.getMergedSymbol(
+    isAlias ? linked.checker.getAliasedSymbol(symbol) : symbol,
+  );
   if (target.declarations?.some(isJSDoc)) return null;
   const places: string[] = [];
   for (const declaration of target.declarations ?? []) {
+    // `X.y = …` declares `X` to tsc
+    if (ts.isIdentifier(declaration)) continue;
     const file = declaration.getSourceFile();
     const path = linked.shown(absolute(file.fileName));
     if (ts.isSourceFile(declaration)) {
@@ -123,7 +133,7 @@ function compareLinks(linked: Linked, module: Module, mismatches: string[]): num
   const check = (subject: string, ours: string[], theirs: string[] | null) => {
     if (theirs === null) return;
     compared++;
-    if (ours.some((place) => theirs.includes(place))) return;
+    if ([...ours].sort().join() === [...theirs].sort().join()) return;
     mismatches.push(`${shown} ${subject}: yuku ${ours}, tsc ${theirs}`);
   };
 
