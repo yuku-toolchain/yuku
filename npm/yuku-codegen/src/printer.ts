@@ -859,7 +859,7 @@ class Printer extends Output {
       case "JSXEmptyExpression":
         return;
       case "JSXText":
-        return this.writeLiteral(node.value);
+        return this.writeLiteral(node.raw || node.value);
       case "JSXSpreadChild":
         return this.printJSXSpread(node.expression);
     }

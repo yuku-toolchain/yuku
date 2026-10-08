@@ -4,7 +4,6 @@ const Precedence = @import("../../token.zig").Precedence;
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 
-const literals = @import("../literals.zig");
 const expressions = @import("../expressions.zig");
 const ts = @import("../ts/types.zig");
 const extension = @import("../../extension.zig");
@@ -321,15 +320,15 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         const text_token = parser.lexer.reScanJsxText(scan_from);
 
         if (text_token.len() > 0) {
-            var text_value = parser.tree.sourceSlice(text_token.span.start, text_token.span.end);
-            if (try extension.at(.jsx_text_value, .{ parser, text_token.span })) |value| {
-                text_value = value;
-            }
+            const span = text_token.span;
+            const value = try extension.at(.jsx_text_value, .{ parser, span }) orelse
+                try parser.jsxValue(span.start, span.end);
             const text_node = try parser.tree.addNode(.{
                 .jsx_text = .{
-                    .value = text_value,
+                    .value = value,
+                    .raw = parser.tree.sourceSlice(span.start, span.end),
                 },
-            }, text_token.span);
+            }, span);
 
             try parser.scratch_b.append(parser.allocator(), text_node);
         }
@@ -479,7 +478,16 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 // https://react.github.io/jsx/#prod-JSXAttributeValue
 fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     switch (parser.current_token.tag) {
-        .string_literal => return literals.parseStringLiteral(parser),
+        .string_literal => {
+            const span = parser.current_token.span;
+            try parser.advance() orelse return null;
+            return try parser.tree.addNode(.{
+                .string_literal = .{
+                    .value = try parser.jsxValue(span.start + 1, span.end - 1),
+                    .raw = parser.tree.sourceSlice(span.start, span.end),
+                },
+            }, span);
+        },
 
         .left_brace => {
             const container = try parseJsxExpressionContainer(parser) orelse return null;

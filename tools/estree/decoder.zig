@@ -1274,11 +1274,12 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8) !void {
         , .{ sp, sp + 1, sr, sr, sdec, sdec + 1, mo, sta, sta });
     } else if (comptime eql(u8, name, "jsx_text")) {
         const sv = comptime slotOf(ast.JSXText, "value");
+        const sr = comptime slotOf(ast.JSXText, "raw");
         try emit(w,
             \\
-            \\      const t = str(f{d}, f{d});
-            \\      return {{ type: "JSXText", start, end, value: t, raw: t }};
-        , .{ sv, sv + 1 });
+            \\      const value = str(f{d}, f{d});
+            \\      return {{ type: "JSXText", start, end, value, raw: str(f{d}, f{d}) }};
+        , .{ sv, sv + 1, sr, sr + 1 });
     } else if (comptime eql(u8, name, "ts_function_type")) {
         const stp = comptime slotOf(ast.TSFunctionType, "type_parameters");
         const sp = comptime slotOf(ast.TSFunctionType, "params");

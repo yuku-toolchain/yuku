@@ -2235,9 +2235,12 @@ pub const JSXExpressionContainer = struct {
 /// The empty expression inside a `{}` container.
 pub const JSXEmptyExpression = struct {};
 
-/// Raw text inside a JSX element or fragment.
+/// Text inside a JSX element or fragment.
 pub const JSXText = struct {
+    /// Text with its entities decoded.
     value: String = .empty,
+    /// Source text as written. Empty for synthetic nodes, which print from `value`.
+    raw: String = .empty,
 };
 
 /// A `{...children}` spread child.

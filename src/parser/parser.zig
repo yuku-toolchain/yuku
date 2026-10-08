@@ -260,7 +260,15 @@ pub const Parser = struct {
         if (!token.isEscaped()) {
             return self.tree.sourceSlice(token.span.start + 1, token.span.end - 1);
         }
-        return self.decodeEscapedString(token.span.start + 1, token.span.end - 1);
+        return self.decode(util.Utf.decodeStringEscapes, token.span.start + 1, token.span.end - 1);
+    }
+
+    /// Returns JSX text or the inside of a JSX attribute string with its entities decoded.
+    pub inline fn jsxValue(self: *Parser, start: u32, end: u32) Error!ast.String {
+        if (std.mem.findScalar(u8, self.source[start..end], '&') == null) {
+            return self.tree.sourceSlice(start, end);
+        }
+        return self.decode(util.Utf.decodeJsxEntities, start, end);
     }
 
     /// Returns the decoded content of a template quasi span.
@@ -272,7 +280,7 @@ pub const Parser = struct {
         if (!token.isEscaped()) {
             return self.tree.sourceSlice(span.start, span.end);
         }
-        return self.decodeEscapedString(span.start, span.end);
+        return self.decode(util.Utf.decodeStringEscapes, span.start, span.end);
     }
 
     fn decodeEscapedIdentifier(self: *Parser, start: u32, end: u32) Error!ast.String {
@@ -283,12 +291,12 @@ pub const Parser = struct {
         );
     }
 
-    fn decodeEscapedString(self: *Parser, start: u32, end: u32) Error!ast.String {
+    fn decode(self: *Parser, comptime decoder: anytype, start: u32, end: u32) Error!ast.String {
         @branchHint(.cold);
         const alloc = self.allocator();
         var buf: std.ArrayList(u8) = .empty;
         defer buf.deinit(alloc);
-        try util.Utf.decodeStringEscapes(self.source[start..end], &buf, alloc);
+        try decoder(self.source[start..end], &buf, alloc);
         return try self.tree.addString(buf.items);
     }
 

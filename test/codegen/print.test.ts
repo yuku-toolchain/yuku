@@ -81,16 +81,16 @@ test("template raw text is preserved", () => {
     `);
 });
 
-test("a JSX attribute keeps its raw text", () => {
+test("JSX text and attributes keep their raw text", () => {
   expect(
     gen(
-      `const a = <a href="&amp;x" title='y' />;\nconst b = <b data-x={"&lt;"} />;`,
+      `const a = <a href="&amp;x" title='y' />;\nconst b = <b data-x={"&lt;"}>&lt;b&gt;</b>;`,
       {},
       "input.jsx",
     ),
   ).toMatchInlineSnapshot(`
       "const a = <a href="&amp;x" title='y' />;
-      const b = <b data-x={"&lt;"} />;"
+      const b = <b data-x={"&lt;"}>&lt;b&gt;</b>;"
     `);
 });
 

@@ -1,4 +1,5 @@
 const std = @import("std");
+const xhtml_entities = @import("xhtml_entities.zig");
 
 pub const CodePoint = struct { len: u3, value: u21 };
 
@@ -272,6 +273,53 @@ pub fn decodeStringEscapes(
             },
         }
     }
+}
+
+/// Appends JSX text or a JSX attribute string to `out` with its entities decoded.
+pub fn decodeJsxEntities(
+    raw: []const u8,
+    out: *std.ArrayList(u8),
+    alloc: std.mem.Allocator,
+) error{OutOfMemory}!void {
+    var run_start: usize = 0;
+    var i: usize = 0;
+    while (std.mem.findScalarPos(u8, raw, i, '&')) |amp| {
+        const entity = jsxEntityAt(raw, amp) orelse {
+            i = amp + 1;
+            continue;
+        };
+        try out.appendSlice(alloc, raw[run_start..amp]);
+        try appendCodePoint(out, alloc, entity.value);
+        run_start = entity.end;
+        i = entity.end;
+    }
+    try out.appendSlice(alloc, raw[run_start..]);
+}
+
+const JsxEntity = struct { value: u21, end: usize };
+
+fn jsxEntityAt(raw: []const u8, amp: usize) ?JsxEntity {
+    std.debug.assert(raw[amp] == '&');
+    var i = amp + 1;
+    var value: u32 = 0;
+    if (i < raw.len and raw[i] == '#') {
+        i += 1;
+        const base: u8 = if (i < raw.len and raw[i] == 'x') 16 else 10;
+        if (base == 16) i += 1;
+        const digits = i;
+        while (i < raw.len) : (i += 1) {
+            const digit = std.fmt.charToDigit(raw[i], base) catch break;
+            // saturates past the last code point, which stays as written
+            value = @min(value * base + digit, 0x110000);
+        }
+        if (i == digits or value > 0x10FFFF) return null;
+    } else {
+        const name = i;
+        while (i < raw.len and std.ascii.isAlphanumeric(raw[i])) i += 1;
+        value = xhtml_entities.code_points.get(raw[name..i]) orelse return null;
+    }
+    if (i == raw.len or raw[i] != ';') return null;
+    return .{ .value = @intCast(value), .end = i + 1 };
 }
 
 /// Returns the code unit of a WTF-8 lone surrogate (`ED A0..BF 80..BF`) at `s[i]`, else
