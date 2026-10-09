@@ -16,6 +16,14 @@ assert.equal(
   "const answer = 42;\nlet count = 0;\ncount++;",
 );
 
+const jsxSource = `const view: View = <Box enabled>&amp; &#x1F600;</Box>;`;
+assert.equal(
+  generate(parse(jsxSource, { lang: "tsx" }).program, {
+    jsx: true, strip: true, minify: true,
+  }).code,
+  `const view=/* @__PURE__ */React.createElement(Box,{enabled:!0},"& 😀")`,
+);
+
 let identifiers = 0;
 walk(program, {
   Identifier() {

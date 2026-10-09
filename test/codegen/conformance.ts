@@ -25,6 +25,32 @@ export interface Plan {
 }
 
 export const PLANS: Plan[] = [
+  {
+    name: "jsx",
+    zig: ["--jsx", "--comments=all", "--quotes=single"],
+    js: { jsx: true, comments: "all", quotes: "single" },
+    preserveParens: true,
+    map: false,
+  },
+  {
+    name: "jsx-pure",
+    zig: ["--jsx-pragma=runtime.h", "--jsx-pragma-frag=runtime.Fragment", "--jsx-pure",
+      "--comments=all"],
+    js: { jsx: { pragma: "runtime.h", pragmaFrag: "runtime.Fragment", pure: true },
+      comments: "all" },
+    preserveParens: true,
+    map: false,
+  },
+  {
+    name: "jsx-everything",
+    zig: ["--jsx-pragma=runtime.h", "--jsx-pragma-frag=runtime.Fragment",
+      "--strip", "--minify", "--compact", "--source-map",
+      "--no-preserve-parens", "--quotes=shortest", "--comments=all"],
+    js: { jsx: { pragma: "runtime.h", pragmaFrag: "runtime.Fragment" },
+      strip: true, minify: true, comments: "all" },
+    preserveParens: false,
+    map: true,
+  },
   { name: "default", zig: [], js: {}, preserveParens: true, map: false },
   {
     name: "all",
@@ -109,7 +135,7 @@ export const PLANS: Plan[] = [
 
 export interface Mismatch {
   path: string;
-  what: "code" | "map" | "diagnostics" | "skip" | "threw";
+  what: "code" | "map" | "diagnostics" | "skip" | "threw" | "fixture";
   expected: string;
   actual: string;
 }
@@ -147,7 +173,36 @@ export function conformanceInputs(): Input[] {
     const path = `comment-${i}.${lang}`;
     return { path, relative: path, lang, sourceType: "module" as const, source };
   });
-  return [...corpusFiles(), ...projectFiles(), ...chains, instantiations, ...comments];
+  const jsx: Input = {
+    path: "jsx-lowering.tsx",
+    relative: "jsx-lowering.tsx",
+    lang: "tsx",
+    sourceType: "module",
+    source: [
+      `<><div> hello </div><X/><Upper-case/><ui.Box/><this/><this.Box/><svg:path/></>;`,
+      `<Box<number> enabled data-id="&amp;" {...props} value={(a, b)}>{(a, b)}{...items}</Box>;`,
+      `<div __proto__={payload} title='&quot;&apos;&#x1F600;' raw={"&amp;"}/>;`,
+      `<div>\n a &#32; \n{/* @keep */}x{// @line\n}y</div>;`,
+      `<div>&amp;lt; &unknown; &AMP; &#xD800; &#x110000; &#X41; &#x; &#;</div>;`,
+      `<div>&#${"0".repeat(1_000)}65;&#0;</div>;`,
+      `new (<Box/>).constructor(); new (<></>)();`,
+      `x = a / <div/>; x = a / b / <div/>; x = y in <div/>;`,
+      `<this.foo-bar/>; <foo-bar.Box/>;`,
+      `<a.b.c.d/>; <x /*mid*/ .y-z /*tail*/ .w/>;`,
+      `<div>text</div /*closing*/>;`,
+      `<>text</ /*frag_close*/>;`,
+      `<Box<number /*type*/>>text</Box>;`,
+      `<UI.Box<{x: A<B /*inner*/> /*member*/} /*outer*/> />;`,
+      `<UI.Box>text</UI /*object*/.Box /*property*/>;`,
+      `<x:y>text</x /*namespace*/:y /*local*/>;`,
+      `<x /*tag_namespace*/:y /*tag_local*/ a /*attr_namespace*/:b /*attr_local*/="value" />;`,
+      `<Box<{/*ordinary*/\n// @line\n/* @legal */}>>text</Box /*close*/>;`,
+      `<Box<number // type\n> enabled>text</Box // close\n>;`,
+      `<Box<${"number,".repeat(127)}number /*wide*/> />;`,
+      `<Box<A${"[]".repeat(96)} /*deep*/> />;`,
+    ].join("\n"),
+  };
+  return [...corpusFiles(), ...projectFiles(), ...chains, instantiations, ...comments, jsx];
 }
 
 export function runPlan(plan: Plan, files: Input[]): PlanResult {
@@ -166,6 +221,18 @@ export function runPlan(plan: Plan, files: Input[]): PlanResult {
     };
     const parsed = parse(source, parseOptions);
     const skipped = parsed.diagnostics.length > 0;
+    // synthetic inputs must parse cleanly. only corpus files may carry diagnostics
+    if (skipped && file.source !== undefined) {
+      mismatches.push({
+        path: file.path,
+        what: "fixture",
+        expected: "",
+        actual: parsed.diagnostics
+          .map((d) => `${d.start}-${d.end} ${d.message}`)
+          .join("\n"),
+      });
+      continue;
+    }
     if (skipped !== !reference.printed) {
       mismatches.push({
         path: file.path,
@@ -304,7 +371,9 @@ function firstDifference(a: string, b: string): number {
 
 export function describeMismatch(mismatch: Mismatch, context = 240): string {
   const { path, what, expected, actual } = mismatch;
-  if (what === "threw" || what === "skip") return `${path} ${what}\n${actual}`;
+  if (what === "threw" || what === "skip" || what === "fixture") {
+    return `${path} ${what}\n${actual}`;
+  }
   const at = firstDifference(expected, actual);
   const from = Math.max(0, at - context);
   return [

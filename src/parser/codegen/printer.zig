@@ -5,6 +5,7 @@ const ast = @import("../ast.zig");
 const output = @import("output.zig");
 const sourcemap = @import("sourcemap.zig");
 const utils = @import("utils.zig");
+const jsx = @import("jsx.zig");
 
 const source_maps = @import("codegen_options").source_maps;
 
@@ -29,9 +30,23 @@ pub const Quotes = enum { preserve, double, single, shortest };
 /// Comment passthrough filter. `some` keeps legal headers, JSDoc, and annotations.
 pub const Comments = enum { none, all, some, line, block };
 
+/// Classic JSX factories. Their bindings must already be in scope.
+pub const JSXOptions = struct {
+    /// Identifier or dotted name used to construct elements.
+    pragma: []const u8 = "React.createElement",
+    /// Identifier or dotted name used for fragments.
+    pragma_frag: []const u8 = "React.Fragment",
+    /// Emit `/* @__PURE__ */` before factory calls so bundlers can drop unused elements.
+    /// `null` annotates only when the factories are the defaults, since a custom factory
+    /// may have side effects.
+    pure: ?bool = null,
+};
+
 pub const Options = struct {
     /// Drop TypeScript-only syntax.
     strip: bool = false,
+    /// Lower JSX with classic factories. `null` preserves JSX.
+    jsx: ?JSXOptions = null,
     /// Apply size-reducing syntax rewrites.
     minify: bool = false,
     format: Format = .pretty,
@@ -56,11 +71,23 @@ pub const Result = struct {
     }
 };
 
-pub const Error = error{OutOfMemory};
+pub const Error = error{ OutOfMemory, InvalidJSXFactory };
 
 pub fn generate(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
     std.debug.assert(tree.root != .null);
-    var p = try Printer.init(allocator, tree, options);
+    var opts = options;
+    if (opts.jsx) |*factories| {
+        if (!jsx.isFactoryName(factories.pragma) or !jsx.isFactoryName(factories.pragma_frag)) {
+            return error.InvalidJSXFactory;
+        }
+        if (factories.pure == null) {
+            // only the bundled factories are known-pure entry points
+            const defaults = JSXOptions{};
+            factories.pure = std.mem.eql(u8, factories.pragma, defaults.pragma) and
+                std.mem.eql(u8, factories.pragma_frag, defaults.pragma_frag);
+        }
+    }
+    var p = try Printer.init(allocator, tree, opts);
     defer p.deinit();
     try p.emit(tree.root);
     std.debug.assert(p.owed == .null);
@@ -99,6 +126,9 @@ const Printer = struct {
     options: Options,
     out: Output,
     diagnostics: std.ArrayList(Diagnostic) = .empty,
+    jsx_scratch: std.ArrayList(u8) = .empty,
+    jsx_comment_steps: std.ArrayList(JSXCommentStep) = .empty,
+    jsx_members: std.ArrayList(NodeIndex) = .empty,
 
     indent_depth: u32 = 0,
     pending_semi: bool = false,
@@ -129,6 +159,7 @@ const Printer = struct {
     };
 
     const CommentScope = struct { prev_idx: NodeIndex, commented: bool };
+    const JSXCommentStep = struct { idx: NodeIndex, exit: bool };
 
     const Head = struct { idx: NodeIndex, ctx: Ctx };
     const Self = @This();
@@ -153,6 +184,9 @@ const Printer = struct {
         self.out.deinit();
         self.diagnostics.deinit(self.allocator);
         self.links.deinit(self.allocator);
+        self.jsx_scratch.deinit(self.allocator);
+        self.jsx_comment_steps.deinit(self.allocator);
+        self.jsx_members.deinit(self.allocator);
     }
 
     inline fn pretty(self: *const Self) bool {
@@ -731,6 +765,9 @@ const Printer = struct {
     // minify's `!0` ranks as unary
     inline fn precedenceOf(self: *const Self, idx: NodeIndex) u8 {
         const data = self.nodeData(idx);
+        if (self.options.jsx != null and (data == .jsx_element or data == .jsx_fragment)) {
+            return Precedence.Call;
+        }
         const fixed = node_precedence[@intFromEnum(std.meta.activeTag(data))];
         if (fixed != operator_precedence) return fixed;
         return switch (data) {
@@ -772,6 +809,7 @@ const Printer = struct {
 
         if (ctx.no_call) switch (data) {
             .call_expression, .import_expression, .chain_expression => return true,
+            .jsx_element, .jsx_fragment => if (self.options.jsx != null) return true,
             else => {},
         };
         if (ctx.no_instantiation and data == .ts_instantiation_expression) return true;
@@ -812,7 +850,10 @@ const Printer = struct {
                     const fn_name = "emit_" ++ @tagName(tag);
                     if (comptime @hasDecl(Self, fn_name)) {
                         const f = @field(Self, fn_name);
-                        if (comptime @typeInfo(@TypeOf(f)).@"fn".params.len == 3) {
+                        const params = @typeInfo(@TypeOf(f)).@"fn".params;
+                        if (comptime params.len == 3 and params[2].type == NodeIndex) {
+                            try @call(.never_inline, f, .{ self, node, idx });
+                        } else if (comptime params.len == 3) {
                             try @call(.never_inline, f, .{ self, node, ctx });
                         } else {
                             try @call(.never_inline, f, .{ self, node });
@@ -2980,12 +3021,43 @@ const Printer = struct {
     }
 
     fn emit_jsx_element(self: *Self, e: *const ast.JSXElement) Error!void {
+        std.debug.assert(e.opening_element != .null);
+        std.debug.assert(self.nodeData(e.opening_element) == .jsx_opening_element);
+        if (self.options.jsx != null) {
+            try self.emit(e.opening_element);
+            try self.emitJSXChildren(e.children);
+            try self.emit(e.closing_element);
+            return self.out.writeByte(')');
+        }
         try self.emit(e.opening_element);
         for (self.tree.extra(e.children)) |c| try self.emit(c);
         try self.emit(e.closing_element);
     }
 
     fn emit_jsx_opening_element(self: *Self, o: *const ast.JSXOpeningElement) Error!void {
+        std.debug.assert(o.name != .null);
+        if (o.type_arguments != .null) {
+            std.debug.assert(self.nodeData(o.type_arguments) == .ts_type_parameter_instantiation);
+        }
+        if (self.options.jsx != null) {
+            try self.emitJSXPure();
+            try self.out.writeStr(self.options.jsx.?.pragma);
+            try self.out.writeByte('(');
+            try self.emitJSXName(o.name, true);
+            try self.emitJSXSkippedComments(o.type_arguments);
+            try self.out.writeByte(',');
+            try self.out.space();
+            if (o.attributes.len == 0) {
+                try self.out.writeStr("null");
+            } else {
+                try self.out.writeByte('{');
+                try self.out.space();
+                try self.emitList(o.attributes);
+                try self.out.space();
+                try self.out.writeByte('}');
+            }
+            return;
+        }
         try self.out.writeByte('<');
         try self.emit(o.name);
         try self.emit(o.type_arguments);
@@ -3002,83 +3074,509 @@ const Printer = struct {
     }
 
     fn emit_jsx_closing_element(self: *Self, c: *const ast.JSXClosingElement) Error!void {
+        std.debug.assert(c.name != .null);
+        const name = self.nodeData(c.name);
+        std.debug.assert(name == .jsx_identifier or name == .jsx_namespaced_name or
+            name == .jsx_member_expression);
+        if (self.options.jsx != null) return self.emitJSXSkippedComments(c.name);
         try self.out.writeStr("</");
         try self.emit(c.name);
         try self.out.writeByte('>');
     }
 
     fn emit_jsx_fragment(self: *Self, f: *const ast.JSXFragment) Error!void {
+        std.debug.assert(self.nodeData(f.opening_fragment) == .jsx_opening_fragment);
+        std.debug.assert(self.nodeData(f.closing_fragment) == .jsx_closing_fragment);
+        if (self.options.jsx != null) {
+            try self.emitJSXPure();
+            try self.out.writeStr(self.options.jsx.?.pragma);
+            try self.out.writeByte('(');
+            try self.emit(f.opening_fragment);
+            try self.out.writeByte(',');
+            try self.out.space();
+            try self.out.writeStr("null");
+            try self.emitJSXChildren(f.children);
+            try self.emit(f.closing_fragment);
+            return self.out.writeByte(')');
+        }
         try self.emit(f.opening_fragment);
         for (self.tree.extra(f.children)) |c| try self.emit(c);
         try self.emit(f.closing_fragment);
     }
 
+    fn emit_jsx_opening_fragment(
+        self: *Self,
+        _: *const ast.JSXOpeningFragment,
+        idx: NodeIndex,
+    ) Error!void {
+        std.debug.assert(idx != .null);
+        std.debug.assert(self.nodeData(idx) == .jsx_opening_fragment);
+        if (self.options.jsx) |factories| {
+            try self.out.writeStr(factories.pragma_frag);
+            if (self.options.comments != .none) try self.emitInsideComments(idx);
+            return;
+        }
+        try self.out.writeByte('<');
+        try self.emitInsideCommentsInline(idx);
+        try self.out.writeByte('>');
+    }
+
+    fn emit_jsx_closing_fragment(
+        self: *Self,
+        _: *const ast.JSXClosingFragment,
+        idx: NodeIndex,
+    ) Error!void {
+        std.debug.assert(idx != .null);
+        std.debug.assert(self.nodeData(idx) == .jsx_closing_fragment);
+        if (self.options.jsx == null) {
+            try self.out.writeStr("</");
+            try self.emitInsideCommentsInline(idx);
+            return self.out.writeByte('>');
+        }
+        // inside comments on `</>` have no token to attach to once the fragment is a call
+        return self.emitInsideComments(idx);
+    }
+
     fn emit_jsx_identifier(self: *Self, id: *const ast.JSXIdentifier) Error!void {
+        const name = self.tree.string(id.name);
+        std.debug.assert(name.len > 0);
         try self.writeString(id.name);
     }
 
     fn emit_jsx_namespaced_name(self: *Self, n: *const ast.JSXNamespacedName) Error!void {
+        std.debug.assert(self.nodeData(n.namespace) == .jsx_identifier);
+        std.debug.assert(self.nodeData(n.name) == .jsx_identifier);
         try self.emit(n.namespace);
         try self.out.writeByte(':');
         try self.emit(n.name);
     }
 
+    // member chains are built iteratively by the parser, so emit them iteratively
     fn emit_jsx_member_expression(self: *Self, m: *const ast.JSXMemberExpression) Error!void {
-        try self.emit(m.object);
+        std.debug.assert(self.nodeData(m.object) == .jsx_identifier or
+            self.nodeData(m.object) == .jsx_member_expression);
+        std.debug.assert(self.nodeData(m.property) == .jsx_identifier);
+        const base = self.jsx_members.items.len;
+        defer self.jsx_members.shrinkRetainingCapacity(base);
+        var idx = m.object;
+        while (true) {
+            const member = switch (self.nodeData(idx)) {
+                .jsx_member_expression => |member| member,
+                else => break,
+            };
+            try self.jsx_members.append(self.allocator, idx);
+            std.debug.assert(self.nodeData(member.object) == .jsx_identifier or
+                self.nodeData(member.object) == .jsx_member_expression);
+            idx = member.object;
+        }
+        const object = self.nodeData(idx);
+        std.debug.assert(object == .jsx_identifier);
+        const members = self.jsx_members.items[base..];
+        for (members) |member_idx| {
+            if (self.options.comments != .none) {
+                const comments = self.tree.commentsOf(member_idx);
+                if (comments.len != 0) {
+                    const saved_lead = self.out.lead;
+                    try self.emitLeadingComments(member_idx, comments);
+                    self.out.lead = saved_lead;
+                }
+            }
+            self.recordMapping(member_idx);
+        }
+        if (self.options.jsx != null and
+            !utils.isIdentifierName(self.tree.string(object.jsx_identifier.name)))
+        {
+            try self.emitJSXName(idx, true);
+        } else {
+            try self.emit(idx);
+        }
+        var i: usize = members.len;
+        while (i > 0) {
+            i -= 1;
+            const member = self.nodeData(members[i]).jsx_member_expression;
+            try self.emitJSXMemberProperty(member);
+            if (self.options.comments != .none) {
+                try self.emitTrailingComments(self.tree.commentsOf(members[i]));
+            }
+        }
+        try self.emitJSXMemberProperty(m.*);
+    }
+
+    fn emitJSXMemberProperty(self: *Self, m: ast.JSXMemberExpression) Error!void {
+        const property = self.nodeData(m.property);
+        std.debug.assert(property == .jsx_identifier);
+        if (self.options.jsx != null) {
+            const property_name = self.tree.string(property.jsx_identifier.name);
+            if (!utils.isIdentifierName(property_name)) {
+                try self.out.writeByte('[');
+                try self.emitJSXName(m.property, false);
+                return self.out.writeByte(']');
+            }
+        }
         try self.out.writeByte('.');
         try self.emit(m.property);
     }
 
     fn emit_jsx_attribute(self: *Self, a: *const ast.JSXAttribute) Error!void {
+        const name = self.nodeData(a.name);
+        std.debug.assert(name == .jsx_identifier or name == .jsx_namespaced_name);
+        if (a.value != .null) {
+            const value = self.nodeData(a.value);
+            std.debug.assert(value == .string_literal or value == .jsx_expression_container or
+                value == .jsx_element or value == .jsx_fragment);
+        }
+        if (self.options.jsx != null) {
+            try self.emitJSXName(a.name, false);
+            try self.out.writeByte(':');
+            try self.out.space();
+            if (a.value == .null) {
+                try self.out.writeStr(if (self.options.minify) "!0" else "true");
+            } else switch (self.nodeData(a.value)) {
+                .string_literal => |literal| {
+                    const raw = self.tree.string(literal.raw);
+                    const scope = if (self.options.comments != .none)
+                        try self.openComments(a.value)
+                    else
+                        CommentScope{ .prev_idx = .null, .commented = false };
+                    self.recordMapping(a.value);
+                    const value = if (raw.len >= 2)
+                        try jsx.text(
+                            self.allocator,
+                            &self.jsx_scratch,
+                            raw[1 .. raw.len - 1],
+                            false,
+                        )
+                    else
+                        self.tree.string(literal.value);
+                    try self.emitJSXString(value, raw.len != 0 and raw[0] == '\'');
+                    if (self.options.comments != .none) {
+                        try self.closeComments(a.value, scope, false);
+                    }
+                },
+                else => try self.emitValue(a.value),
+            }
+            return;
+        }
         try self.emit(a.name);
         if (a.value != .null) {
             try self.out.writeByte('=');
             // jsx attribute strings have no escapes, the raw lexeme is the value
             switch (self.nodeData(a.value)) {
-                .string_literal => |lit| try self.writeNodeText(a.value, self.tree.string(lit.raw)),
+                .string_literal => |lit| {
+                    const raw = self.tree.string(lit.raw);
+                    if (raw.len >= 2) return self.writeNodeText(a.value, raw);
+                    const value = self.tree.string(lit.value);
+                    if (std.mem.indexOfScalar(u8, value, '"') != null and
+                        std.mem.indexOfScalar(u8, value, '\'') != null)
+                    {
+                        try self.out.writeByte('{');
+                        try self.emit(a.value);
+                        return self.out.writeByte('}');
+                    }
+                    const scope = try self.openComments(a.value);
+                    const quote: u8 = if (std.mem.indexOfScalar(u8, value, '"') != null)
+                        '\''
+                    else
+                        '"';
+                    try self.out.writeByte(quote);
+                    // `&` re-decodes as an entity inside JSX quotes, so it prints escaped
+                    var start: usize = 0;
+                    for (value, 0..) |c, i| {
+                        if (c == '&') {
+                            try self.out.writeRawStr(value[start..i]);
+                            try self.out.writeRawStr("&amp;");
+                            start = i + 1;
+                        }
+                    }
+                    try self.out.writeRawStr(value[start..]);
+                    try self.out.writeRawByte(quote);
+                    return self.closeComments(a.value, scope, false);
+                },
                 else => try self.emit(a.value),
             }
         }
     }
 
     fn emit_jsx_spread_attribute(self: *Self, a: *const ast.JSXSpreadAttribute) Error!void {
+        std.debug.assert(a.argument != .null);
+        std.debug.assert(self.nodeData(a.argument).isExpression());
+        if (self.options.jsx != null) {
+            try self.out.writeStr("...");
+            return self.emitValue(a.argument);
+        }
         try self.printJSXSpread(a.argument);
     }
 
+    // retain comments on erased syntax without mapping its spans to generated tokens
+    fn emitJSXSkippedComments(self: *Self, root: NodeIndex) Error!void {
+        std.debug.assert(self.options.jsx != null);
+        std.debug.assert(self.jsx_comment_steps.items.len == 0);
+        if (root == .null or self.options.comments == .none) return;
+        if (self.tree.attached_comments.len == 0) return;
+        const root_comments = self.tree.commentsOf(root);
+        const leaf = self.nodeData(root) == .jsx_identifier;
+        if (leaf and root_comments.len == 0) return;
+
+        const map_start = self.out.map_start;
+        self.out.map_start = null;
+        defer self.out.map_start = map_start;
+        if (leaf) {
+            try self.emitLeadingComments(root, root_comments);
+            try self.emitInsideComments(root);
+            return self.emitTrailingComments(root_comments);
+        }
+        defer self.jsx_comment_steps.clearRetainingCapacity();
+        try self.jsx_comment_steps.ensureTotalCapacity(
+            self.allocator,
+            @min(64, self.tree.nodes.len),
+        );
+        self.jsx_comment_steps.appendAssumeCapacity(.{ .idx = root, .exit = false });
+        while (self.jsx_comment_steps.pop()) |step| {
+            std.debug.assert(step.idx != .null);
+            const comments = self.tree.commentsOf(step.idx);
+            if (step.exit) {
+                try self.emitInsideComments(step.idx);
+                try self.emitTrailingComments(comments);
+                continue;
+            }
+            try self.emitLeadingComments(step.idx, comments);
+            try self.jsx_comment_steps.ensureUnusedCapacity(self.allocator, 1);
+            self.jsx_comment_steps.appendAssumeCapacity(.{ .idx = step.idx, .exit = true });
+            const children_start = self.jsx_comment_steps.items.len;
+            switch (self.nodeData(step.idx)) {
+                inline else => |node| {
+                    inline for (@typeInfo(@TypeOf(node)).@"struct".fields) |field| {
+                        if (field.type == NodeIndex) {
+                            const child = @field(node, field.name);
+                            if (child != .null) {
+                                try self.jsx_comment_steps.ensureUnusedCapacity(self.allocator, 1);
+                                self.jsx_comment_steps.appendAssumeCapacity(
+                                    .{ .idx = child, .exit = false },
+                                );
+                            }
+                        } else if (field.type == IndexRange) {
+                            const range = @field(node, field.name);
+                            try self.jsx_comment_steps.ensureUnusedCapacity(
+                                self.allocator,
+                                range.len,
+                            );
+                            for (self.tree.extra(range)) |child| {
+                                if (child != .null) self.jsx_comment_steps.appendAssumeCapacity(
+                                    .{ .idx = child, .exit = false },
+                                );
+                            }
+                        }
+                    }
+                },
+            }
+            std.debug.assert(self.jsx_comment_steps.items.len <= self.tree.nodes.len);
+            std.mem.sort(
+                JSXCommentStep,
+                self.jsx_comment_steps.items[children_start..],
+                self.tree,
+                jsxCommentStepLater,
+            );
+        }
+    }
+
+    fn jsxCommentStepLater(tree: *const Tree, a: JSXCommentStep, b: JSXCommentStep) bool {
+        std.debug.assert(!a.exit);
+        std.debug.assert(!b.exit);
+        const left = tree.span(a.idx);
+        const right = tree.span(b.idx);
+        return if (left.start == right.start) left.end > right.end else left.start > right.start;
+    }
+
+    // bundlers drop annotated factory calls when the element goes unused
+    inline fn emitJSXPure(self: *Self) Error!void {
+        const factories = self.options.jsx.?;
+        std.debug.assert(factories.pure != null);
+        if (!factories.pure.?) return;
+        // emitted as a token, not a comment body, so `/` cannot fuse with `/*` into `//`
+        try self.out.writeStr("/* @__PURE__ */");
+        try self.out.space();
+    }
+
+    fn emitJSXChildren(self: *Self, children: IndexRange) Error!void {
+        std.debug.assert(self.options.jsx != null);
+        for (self.tree.extra(children)) |child| {
+            std.debug.assert(child != .null);
+            const empty = switch (self.nodeData(child)) {
+                .jsx_text => |t| blk: {
+                    const raw = self.tree.string(t.raw);
+                    break :blk if (raw.len != 0)
+                        jsx.isEmptyText(raw)
+                    else
+                        self.tree.string(t.value).len == 0;
+                },
+                .jsx_expression_container => |c| blk: {
+                    std.debug.assert(c.expression != .null);
+                    break :blk self.nodeData(c.expression) == .jsx_empty_expression;
+                },
+                .jsx_element, .jsx_fragment, .jsx_spread_child => false,
+                else => unreachable,
+            };
+            if (empty) {
+                // the child's own mapping would land on whatever prints next
+                const map_start = self.out.map_start;
+                try self.emit(child);
+                self.out.map_start = map_start;
+            } else {
+                try self.out.writeByte(',');
+                try self.out.space();
+                try self.emitValue(child);
+            }
+        }
+    }
+
+    fn emitJSXName(self: *Self, idx: NodeIndex, tag: bool) Error!void {
+        std.debug.assert(self.options.jsx != null);
+        std.debug.assert(idx != .null);
+        const data = self.nodeData(idx);
+        switch (data) {
+            .jsx_member_expression => return self.emit(idx),
+            .jsx_identifier => |id| {
+                const name = self.tree.string(id.name);
+                std.debug.assert(name.len > 0);
+                if (tag) {
+                    const component = !std.ascii.isLower(name[0]) and
+                        std.mem.indexOfScalar(u8, name, '-') == null;
+                    if (std.mem.eql(u8, name, "this") or component) {
+                        return self.emit(idx);
+                    }
+                } else if (utils.isIdentifierName(name) and !std.mem.eql(u8, name, "__proto__")) {
+                    return self.emit(idx);
+                }
+            },
+            .jsx_namespaced_name => {},
+            else => unreachable,
+        }
+        const scope = if (self.options.comments != .none)
+            try self.openComments(idx)
+        else
+            CommentScope{ .prev_idx = .null, .commented = false };
+        self.recordMapping(idx);
+        const computed = !tag and data == .jsx_identifier and
+            std.mem.eql(u8, self.tree.string(data.jsx_identifier.name), "__proto__");
+        if (computed) try self.out.writeByte('[');
+        switch (data) {
+            .jsx_identifier => |id| try self.emitJSXString(self.tree.string(id.name), false),
+            .jsx_namespaced_name => |n| {
+                std.debug.assert(self.nodeData(n.namespace) == .jsx_identifier);
+                std.debug.assert(self.nodeData(n.name) == .jsx_identifier);
+                const namespace = self.tree.string(self.nodeData(n.namespace).jsx_identifier.name);
+                const name = self.tree.string(self.nodeData(n.name).jsx_identifier.name);
+                self.jsx_scratch.clearRetainingCapacity();
+                try self.jsx_scratch.ensureTotalCapacity(
+                    self.allocator,
+                    namespace.len + 1 + name.len,
+                );
+                self.jsx_scratch.appendSliceAssumeCapacity(namespace);
+                self.jsx_scratch.appendAssumeCapacity(':');
+                self.jsx_scratch.appendSliceAssumeCapacity(name);
+                try self.emitJSXString(self.jsx_scratch.items, false);
+                try self.emitJSXSkippedComments(n.namespace);
+                try self.emitJSXSkippedComments(n.name);
+            },
+            else => unreachable,
+        }
+        if (computed) try self.out.writeByte(']');
+        if (self.options.comments != .none) try self.closeComments(idx, scope, false);
+    }
+
+    fn emitJSXString(self: *Self, value: []const u8, single_quoted: bool) Error!void {
+        std.debug.assert(self.options.jsx != null);
+        const quote = self.pickQuote(value, single_quoted);
+        std.debug.assert(quote == '\'' or quote == '"');
+        try self.out.writeByte(quote);
+        try self.writeEscapedString(value, quote);
+        try self.out.writeRawByte(quote);
+    }
+
     fn printJSXSpread(self: *Self, idx: NodeIndex) Error!void {
+        std.debug.assert(idx != .null);
+        std.debug.assert(self.nodeData(idx).isExpression());
         try self.out.writeStr("{...");
         try self.emitValue(idx);
         try self.out.writeByte('}');
     }
 
     fn emit_jsx_expression_container(self: *Self, c: *const ast.JSXExpressionContainer) Error!void {
+        std.debug.assert(c.expression != .null);
+        const expression = self.nodeData(c.expression);
+        std.debug.assert(expression.isExpression() or expression == .jsx_empty_expression);
+        if (self.options.jsx != null) return self.emitValue(c.expression);
         try self.out.writeByte('{');
         try self.emitValue(c.expression);
         try self.out.writeByte('}');
     }
 
-    fn emit_jsx_empty_expression(self: *Self, _: *const ast.JSXEmptyExpression) Error!void {
-        try self.emitInsideCommentsInline(self.current_idx);
-    }
-
-    fn emit_jsx_opening_fragment(self: *Self, _: *const ast.JSXOpeningFragment) Error!void {
-        try self.out.writeByte('<');
-        try self.emitInsideCommentsInline(self.current_idx);
-        try self.out.writeByte('>');
-    }
-
-    fn emit_jsx_closing_fragment(self: *Self, _: *const ast.JSXClosingFragment) Error!void {
-        try self.out.writeStr("</");
-        try self.emitInsideCommentsInline(self.current_idx);
-        try self.out.writeByte('>');
+    fn emit_jsx_empty_expression(
+        self: *Self,
+        _: *const ast.JSXEmptyExpression,
+        idx: NodeIndex,
+    ) Error!void {
+        std.debug.assert(idx != .null);
+        std.debug.assert(self.nodeData(idx) == .jsx_empty_expression);
+        if (self.options.jsx != null) {
+            return self.emitInsideComments(idx);
+        }
+        try self.emitInsideCommentsInline(idx);
     }
 
     fn emit_jsx_text(self: *Self, t: *const ast.JSXText) Error!void {
         const raw = self.tree.string(t.raw);
-        try self.out.writeRawStr(if (raw.len != 0) raw else self.tree.string(t.value));
+        const text = if (raw.len != 0) raw else self.tree.string(t.value);
+        std.debug.assert(text.len <= std.math.maxInt(u32));
+        if (self.options.jsx != null) {
+            const value = if (raw.len != 0)
+                try jsx.text(self.allocator, &self.jsx_scratch, raw, true)
+            else
+                text;
+            std.debug.assert(value.len <= text.len);
+            if (value.len != 0) try self.emitJSXString(value, false);
+            return;
+        }
+        if (raw.len != 0) {
+            try self.out.writeRawStr(text);
+        } else {
+            try self.writeJSXEscaped(text);
+        }
+    }
+
+    // cooked text re-enters the JSX lexer, so markup syntax and normalizing
+    // whitespace print as entities
+    fn writeJSXEscaped(self: *Self, value: []const u8) Error!void {
+        std.debug.assert(self.options.jsx == null);
+        var start: usize = 0;
+        for (value, 0..) |c, i| {
+            const entity: ?[]const u8 = switch (c) {
+                '&' => "&amp;",
+                '<' => "&lt;",
+                '>' => "&gt;",
+                '{' => "&#123;",
+                '}' => "&#125;",
+                '\t' => "&#9;",
+                '\r' => "&#13;",
+                '\n' => "&#10;",
+                else => null,
+            };
+            if (entity) |e| {
+                try self.out.writeRawStr(value[start..i]);
+                try self.out.writeRawStr(e);
+                start = i + 1;
+            }
+        }
+        try self.out.writeRawStr(value[start..]);
     }
 
     fn emit_jsx_spread_child(self: *Self, c: *const ast.JSXSpreadChild) Error!void {
+        std.debug.assert(c.expression != .null);
+        std.debug.assert(self.nodeData(c.expression).isExpression());
+        if (self.options.jsx != null) {
+            try self.out.writeStr("...");
+            return self.emitValue(c.expression);
+        }
         try self.printJSXSpread(c.expression);
     }
 };

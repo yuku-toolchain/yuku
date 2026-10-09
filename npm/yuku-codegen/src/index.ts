@@ -2,6 +2,7 @@ import type { Comment, Diagnostic, Program } from "@yuku-toolchain/types";
 
 import { print, type PrintOptions } from "./printer.js";
 import { encodeMappings, Mappings } from "./sourcemap.js";
+import { isJSXFactoryName } from "./jsx.js";
 
 export type Format = "pretty" | "compact";
 
@@ -42,6 +43,22 @@ export interface MinifyOptions {
   quotes?: boolean;
 }
 
+/** Classic JSX runtime configuration. Factory bindings must already be in scope. */
+export interface JSXOptions {
+  /** @default "classic" */
+  runtime?: "classic";
+  /** Identifier or dotted name used to construct elements. @default "React.createElement" */
+  pragma?: string;
+  /** Identifier or dotted name used for fragments. @default "React.Fragment" */
+  pragmaFrag?: string;
+  /**
+   * Annotate factory calls with a `__PURE__` comment so bundlers can drop unused
+   * elements.
+   * @default `true` for the React factories, `false` for custom factories
+   */
+  pure?: boolean;
+}
+
 export interface GenerateOptions {
   /**
    * Drop TypeScript-only syntax and emit plain JavaScript. Constructs with no JavaScript
@@ -49,6 +66,8 @@ export interface GenerateOptions {
    * @default false
    */
   strip?: boolean;
+  /** Preserve JSX, or lower it with a configurable classic runtime. @default false */
+  jsx?: boolean | "preserve" | JSXOptions;
   /**
    * `true` enables every {@link MinifyOptions} switch for maximum minification, pass an object
    * for fine-grained control.
@@ -84,6 +103,11 @@ export interface GenerateResult {
 
 const QUOTES: readonly Quotes[] = ["preserve", "double", "single", "shortest"];
 const COMMENTS = ["none", "all", "some", "line", "block"] as const;
+const DEFAULT_JSX = {
+  pragma: "React.createElement",
+  pragmaFrag: "React.Fragment",
+  pure: true,
+};
 
 export function generate(program: Program, options: GenerateOptions = {}): GenerateResult {
   if (program?.type !== "Program") {
@@ -144,10 +168,34 @@ function resolveOptions(options: GenerateOptions): PrintOptions {
 
   return {
     strip: options.strip === true,
+    jsx: resolveJSX(options.jsx),
     minify: minify.syntax === true,
     pretty: format === "pretty",
     indent,
     quotes,
     comments,
   };
+}
+
+function resolveJSX(jsx: GenerateOptions["jsx"]): PrintOptions["jsx"] {
+  if (jsx === undefined || jsx === false || jsx === "preserve") return null;
+  if (jsx === true) return DEFAULT_JSX;
+  if (jsx === null || typeof jsx !== "object" || Array.isArray(jsx)) {
+    throw new TypeError('`jsx` must be a boolean, "preserve", or a JSX options object');
+  }
+  if (jsx.runtime !== undefined && jsx.runtime !== "classic") {
+    throw new TypeError('`jsx.runtime` must be "classic"');
+  }
+  const pragma = jsx.pragma === undefined ? DEFAULT_JSX.pragma : jsx.pragma;
+  const pragmaFrag = jsx.pragmaFrag === undefined ? DEFAULT_JSX.pragmaFrag : jsx.pragmaFrag;
+  if (!isJSXFactoryName(pragma) || !isJSXFactoryName(pragmaFrag)) {
+    throw new TypeError('`jsx.pragma` and `jsx.pragmaFrag` must be identifiers or dotted names');
+  }
+  if (jsx.pure !== undefined && typeof jsx.pure !== "boolean") {
+    throw new TypeError("`jsx.pure` must be a boolean");
+  }
+  // only the bundled factories are known-pure entry points
+  const pure = jsx.pure ??
+    (pragma === DEFAULT_JSX.pragma && pragmaFrag === DEFAULT_JSX.pragmaFrag);
+  return { pragma, pragmaFrag, pure };
 }

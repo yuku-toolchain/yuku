@@ -15,8 +15,10 @@
 //! Only the status is written for a skipped file. The options mirror `codegen.Options`, and
 //! `--no-preserve-parens` parses without parenthesized expressions.
 //!
-//!   --strip --minify --compact --source-map --no-preserve-parens --indent=<n>
+//!   --jsx --strip --minify --compact --source-map --no-preserve-parens --indent=<n>
 //!   --quotes=<preserve|double|single|shortest> --comments=<none|all|some|line|block>
+//!   --jsx-pragma=<identifier-or-dotted-name> --jsx-pragma-frag=<identifier-or-dotted-name>
+//!   --jsx-pure
 
 const std = @import("std");
 const parser = @import("parser");
@@ -121,6 +123,17 @@ fn planParse(args: []const []const u8) !Plan {
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--strip")) {
             plan.codegen.strip = true;
+        } else if (std.mem.eql(u8, arg, "--jsx")) {
+            plan.codegen.jsx = .{};
+        } else if (valueOf(arg, "--jsx-pragma=")) |value| {
+            if (plan.codegen.jsx == null) plan.codegen.jsx = .{};
+            plan.codegen.jsx.?.pragma = value;
+        } else if (valueOf(arg, "--jsx-pragma-frag=")) |value| {
+            if (plan.codegen.jsx == null) plan.codegen.jsx = .{};
+            plan.codegen.jsx.?.pragma_frag = value;
+        } else if (std.mem.eql(u8, arg, "--jsx-pure")) {
+            if (plan.codegen.jsx == null) plan.codegen.jsx = .{};
+            plan.codegen.jsx.?.pure = true;
         } else if (std.mem.eql(u8, arg, "--minify")) {
             plan.codegen.minify = true;
         } else if (std.mem.eql(u8, arg, "--compact")) {

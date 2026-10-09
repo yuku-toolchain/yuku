@@ -2,6 +2,7 @@ import type * as T from "@yuku-toolchain/types";
 
 import { LEAD_ARROW, LEAD_EXPORT_DEFAULT, LEAD_NONE, LEAD_STMT, Output } from "./output.js";
 import type { Mappings } from "./sourcemap.js";
+import { decodeJSXEntities, escapeJSXText, isEmptyJSXText, normalizeJSXText } from "./jsx.js";
 import {
   CHAR_0,
   CHAR_BACKSLASH,
@@ -44,6 +45,7 @@ type Comment = T.AttachedComment;
 
 export interface PrintOptions {
   strip: boolean;
+  jsx: { pragma: string; pragmaFrag: string; pure: boolean } | null;
   minify: boolean;
   pretty: boolean;
   indent: number;
@@ -217,6 +219,7 @@ export function print(
 
 class Printer extends Output {
   readonly strip: boolean;
+  readonly jsx: PrintOptions["jsx"];
   readonly minify: boolean;
   readonly indentWidth: number;
   readonly quotes: PrintOptions["quotes"];
@@ -240,10 +243,12 @@ class Printer extends Output {
 
   chainDepth = 0;
   links: Link[] = [];
+  jsxCommentSteps: { node: Node; exit: boolean }[] = [];
 
   constructor(options: PrintOptions, mappings: Mappings | null) {
     super(options.pretty, mappings);
     this.strip = options.strip;
+    this.jsx = options.jsx;
     this.minify = options.minify;
     this.indentWidth = options.indent;
     this.quotes = options.quotes;
@@ -531,6 +536,9 @@ class Printer extends Output {
 
   precedenceOf(node: Node, type: string): number {
     switch (type) {
+      case "JSXElement":
+      case "JSXFragment":
+        return this.jsx ? PREC_CALL : PREC_GROUPING;
       case "MemberExpression":
       case "CallExpression":
         return PREC_CALL;
@@ -615,6 +623,9 @@ class Printer extends Output {
   flagNeedsParens(node: Node, type: string, ctx: number): boolean {
     if ((ctx & CTX_NO_CALL) !== 0) {
       switch (type) {
+        case "JSXElement":
+        case "JSXFragment":
+          return this.jsx !== null;
         case "CallExpression":
         case "ImportExpression":
         case "ChainExpression":
@@ -851,50 +862,114 @@ class Printer extends Output {
       case "ExportSpecifier":
         return this.emitExportSpecifier(node);
       case "JSXElement":
+        if (this.jsx) {
+          this.emit(node.openingElement);
+          this.emitJSXChildren(node.children);
+          this.emit(node.closingElement);
+          return this.writeToken(")");
+        }
         this.emit(node.openingElement);
         for (const c of node.children) this.emit(c);
         return this.emit(node.closingElement);
       case "JSXOpeningElement":
         return this.emitJSXOpeningElement(node);
       case "JSXClosingElement":
+        if (this.jsx) return this.emitJSXSkippedComments(node.name);
         this.writeToken("</");
         this.emit(node.name);
         return this.writeToken(">");
       case "JSXFragment":
+        if (this.jsx) {
+          this.emitJSXPure();
+          this.writeToken(this.jsx.pragma);
+          this.writeToken("(");
+          this.emit(node.openingFragment);
+          this.writeToken(",");
+          this.space();
+          this.writeToken("null");
+          this.emitJSXChildren(node.children);
+          this.emit(node.closingFragment);
+          return this.writeToken(")");
+        }
         this.emit(node.openingFragment);
         for (const c of node.children) this.emit(c);
         return this.emit(node.closingFragment);
+      case "JSXOpeningFragment":
+        if (this.jsx) {
+          this.writeToken(this.jsx.pragmaFrag);
+          return this.emitInsideComments(node);
+        }
+        this.writeToken("<");
+        this.emitInsideCommentsInline(node);
+        return this.writeToken(">");
+      case "JSXClosingFragment":
+        if (this.jsx) return this.emitInsideComments(node);
+        this.writeToken("</");
+        this.emitInsideCommentsInline(node);
+        return this.writeToken(">");
       case "JSXIdentifier":
         return this.writeToken(node.name);
       case "JSXNamespacedName":
         this.emit(node.namespace);
         this.writeToken(":");
         return this.emit(node.name);
-      case "JSXMemberExpression":
-        this.emit(node.object);
-        this.writeToken(".");
-        return this.emit(node.property);
+      case "JSXMemberExpression": {
+        // member chains are built iteratively by the parser, so emit them iteratively
+        const spine: T.JSXMemberExpression[] = [];
+        let object: T.JSXMemberExpression["object"] = node.object;
+        while (object.type === "JSXMemberExpression") {
+          spine.push(object);
+          object = object.object;
+        }
+        for (const member of spine) {
+          const list = this.comments !== "none" ? member.comments : undefined;
+          if (list != null && list.length > 0) {
+            const savedLead = this.lead;
+            this.emitLeadingComments(member, list);
+            this.lead = savedLead;
+          }
+          this.recordMapping(member);
+        }
+        if (this.jsx && object.type === "JSXIdentifier" && !isIdentifierName(object.name)) {
+          this.emitJSXName(object, true);
+        } else {
+          this.emit(object);
+        }
+        for (let i = spine.length - 1; i >= 0; i--) {
+          this.emitJSXMemberProperty(spine[i]!);
+          const list = this.comments !== "none" ? spine[i]!.comments : undefined;
+          if (list != null && list.length > 0) this.emitTrailingComments(list);
+        }
+        return this.emitJSXMemberProperty(node);
+      }
       case "JSXAttribute":
         return this.emitJSXAttribute(node);
       case "JSXSpreadAttribute":
+        if (this.jsx) {
+          this.writeToken("...");
+          return this.emitValue(node.argument);
+        }
         return this.printJSXSpread(node.argument);
       case "JSXExpressionContainer":
+        if (this.jsx) return this.emitValue(node.expression);
         this.writeToken("{");
         this.emitValue(node.expression);
         return this.writeToken("}");
       case "JSXEmptyExpression":
+        if (this.jsx) return this.emitInsideComments(node);
         return this.emitInsideCommentsInline(node);
-      case "JSXOpeningFragment":
-        this.writeToken("<");
-        this.emitInsideCommentsInline(node);
-        return this.writeToken(">");
-      case "JSXClosingFragment":
-        this.writeToken("</");
-        this.emitInsideCommentsInline(node);
-        return this.writeToken(">");
       case "JSXText":
-        return this.writeLiteral(node.raw || node.value);
+        if (this.jsx) {
+          const value = node.raw ? normalizeJSXText(node.raw) : node.value;
+          if (value.length !== 0) this.emitJSXString(value);
+          return;
+        }
+        return this.writeLiteral(node.raw || escapeJSXText(node.value));
       case "JSXSpreadChild":
+        if (this.jsx) {
+          this.writeToken("...");
+          return this.emitValue(node.expression);
+        }
         return this.printJSXSpread(node.expression);
     }
     const fixed = FIXED_STRING[node.type];
@@ -2445,7 +2520,34 @@ class Printer extends Output {
     this.writeSpaced(" }", "}");
   }
 
+  // bundlers drop annotated factory calls when the element goes unused
+  emitJSXPure(): void {
+    if (!this.jsx!.pure) return;
+    // emitted as a token, not a comment body, so `/` cannot fuse with `/*` into `//`
+    this.writeToken("/* @__PURE__ */");
+    this.space();
+  }
+
   emitJSXOpeningElement(o: T.JSXOpeningElement): void {
+    if (this.jsx) {
+      this.emitJSXPure();
+      this.writeToken(this.jsx.pragma);
+      this.writeToken("(");
+      this.emitJSXName(o.name, true);
+      this.emitJSXSkippedComments(o.typeArguments);
+      this.writeToken(",");
+      this.space();
+      if (o.attributes.length === 0) {
+        this.writeToken("null");
+      } else {
+        this.writeToken("{");
+        this.space();
+        this.emitItems(o.attributes, 0);
+        this.space();
+        this.writeToken("}");
+      }
+      return;
+    }
     this.writeToken("<");
     this.emit(o.name);
     this.emit(o.typeArguments);
@@ -2460,13 +2562,141 @@ class Printer extends Output {
     }
   }
 
+  // retain comments on erased syntax without mapping its spans to generated tokens
+  emitJSXSkippedComments(root: Node | null | undefined): void {
+    if (root == null || this.comments === "none") return;
+    if (root.type === "JSXIdentifier" && !hasComments(root)) return;
+    const mapStart = this.mapStart;
+    this.mapStart = -1;
+    if (root.type === "JSXIdentifier") {
+      const comments = root.comments ?? NO_COMMENTS;
+      this.emitLeadingComments(root, comments);
+      this.emitInsideComments(root);
+      this.emitTrailingComments(comments);
+      this.mapStart = mapStart;
+      return;
+    }
+    const steps = this.jsxCommentSteps;
+    const seen = new Set<Node>([root]);
+    steps.push({ node: root, exit: false });
+    while (steps.length !== 0) {
+      const { node, exit } = steps.pop()!;
+      const comments = node.comments ?? NO_COMMENTS;
+      if (exit) {
+        this.emitInsideComments(node);
+        this.emitTrailingComments(comments);
+        continue;
+      }
+      this.emitLeadingComments(node, comments);
+      steps.push({ node, exit: true });
+      const children: Node[] = [];
+      for (const key of Object.keys(node)) {
+        if (key === "comments" || key === "parent") continue;
+        const value: unknown = (node as unknown as Record<string, unknown>)[key];
+        if (Array.isArray(value)) {
+          for (const child of value) if (isJSXCommentNode(child)) children.push(child);
+        } else if (isJSXCommentNode(value)) {
+          children.push(value);
+        }
+      }
+      children.sort((a, b) => a.start - b.start || a.end - b.end);
+      for (let i = children.length - 1; i >= 0; i--) {
+        const child = children[i]!;
+        // a cyclic or shared subtree would push forever
+        if (seen.has(child)) throw new Error("JSX subtree contains a cyclic or shared node");
+        seen.add(child);
+        steps.push({ node: child, exit: false });
+      }
+    }
+    this.mapStart = mapStart;
+  }
+
+  emitJSXChildren(children: readonly T.JSXChild[]): void {
+    for (const child of children) {
+      const empty = child.type === "JSXText"
+        ? (child.raw ? isEmptyJSXText(child.raw) : child.value.length === 0)
+        : child.type === "JSXExpressionContainer" && child.expression.type === "JSXEmptyExpression";
+      if (empty) {
+        this.emitNothing(child);
+      } else {
+        this.writeToken(",");
+        this.space();
+        this.emitValue(child);
+      }
+    }
+  }
+
+  emitJSXName(name: T.JSXOpeningElement["name"], tag: boolean): void {
+    if (name.type === "JSXMemberExpression") return this.emit(name);
+    if (name.type === "JSXIdentifier") {
+      if (tag) {
+        if (name.name === "this" || (!/^[a-z]/.test(name.name) && name.name.indexOf("-") < 0)) {
+          return this.emit(name);
+        }
+      } else if (isIdentifierName(name.name) && name.name !== "__proto__") {
+        return this.emit(name);
+      }
+    }
+    const list = this.comments !== "none" ? name.comments : undefined;
+    if (list !== undefined) this.emitLeadingComments(name, list);
+    this.recordMapping(name);
+    const computed = !tag && name.type === "JSXIdentifier" && name.name === "__proto__";
+    if (computed) this.writeToken("[");
+    this.emitJSXString(name.type === "JSXIdentifier" ? name.name
+      : name.namespace.name + ":" + name.name.name);
+    if (name.type === "JSXNamespacedName") {
+      this.emitJSXSkippedComments(name.namespace);
+      this.emitJSXSkippedComments(name.name);
+    }
+    if (computed) this.writeToken("]");
+    if (list !== undefined) this.emitTrailingComments(list);
+  }
+
+  emitJSXString(value: string, singleQuoted = false): void {
+    const quote = this.pickQuote(value, singleQuoted);
+    const token = quote === CHAR_SINGLE_QUOTE ? "'" : '"';
+    this.writeToken(token);
+    this.writeEscapedString(value, quote);
+    this.writeLiteral(token);
+  }
+
   printJSXSpread(node: Node): void {
     this.writeToken("{...");
     this.emitValue(node);
     this.writeToken("}");
   }
 
+  emitJSXMemberProperty(m: T.JSXMemberExpression): void {
+    if (this.jsx && !isIdentifierName(m.property.name)) {
+      this.writeToken("[");
+      this.emitJSXName(m.property, false);
+      return this.writeToken("]");
+    }
+    this.writeToken(".");
+    this.emit(m.property);
+  }
+
   emitJSXAttribute(a: T.JSXAttribute): void {
+    if (this.jsx) {
+      this.emitJSXName(a.name, false);
+      this.writeToken(":");
+      this.space();
+      if (a.value === null) {
+        this.writeToken(this.minify ? "!0" : "true");
+      } else if (a.value.type === "Literal") {
+        const literal = a.value;
+        const raw = typeof literal.raw === "string" ? literal.raw : "";
+        const list = this.comments !== "none" ? literal.comments : undefined;
+        if (list !== undefined) this.emitLeadingComments(literal, list);
+        this.recordMapping(literal);
+        this.emitJSXString(raw.length >= 2 ? decodeJSXEntities(raw.slice(1, -1)) : literal.value,
+          raw.charCodeAt(0) === CHAR_SINGLE_QUOTE);
+        if (list !== undefined) this.emitTrailingComments(list);
+      } else {
+        this.emitValue(a.value);
+      }
+      return;
+    }
     this.emit(a.name);
     const value = a.value;
     if (value == null) return;
@@ -2480,7 +2710,8 @@ class Printer extends Output {
         this.emit(value);
         this.writeToken("}");
       } else {
-        this.writeNodeText(value, quoteVerbatim(value.value));
+        // `&` re-decodes as an entity inside JSX quotes, so it prints escaped
+        this.writeNodeText(value, quoteVerbatim(value.value.replace(/&/g, "&amp;")));
       }
     } else {
       this.emit(value);
@@ -2968,6 +3199,13 @@ function quoteVerbatim(text: string): string {
 
 function isDirective(node: Node): boolean {
   return node.type === "ExpressionStatement" && typeof node.directive === "string";
+}
+
+function isJSXCommentNode(value: unknown): value is Node {
+  if (value === null || typeof value !== "object") return false;
+  const node = value as Partial<Node>;
+  return typeof node.type === "string" && typeof node.start === "number" &&
+    typeof node.end === "number";
 }
 
 function isChainLink(node: Node): boolean {

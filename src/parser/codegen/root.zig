@@ -1,6 +1,7 @@
 const printer = @import("printer.zig");
 
 pub const Options = printer.Options;
+pub const JSXOptions = printer.JSXOptions;
 pub const Result = printer.Result;
 pub const Diagnostic = printer.Diagnostic;
 pub const Format = printer.Format;
@@ -14,5 +15,6 @@ pub const generate = printer.generate;
 
 test {
     _ = printer;
+    _ = @import("jsx.zig");
     _ = @import("sourcemap.zig");
 }

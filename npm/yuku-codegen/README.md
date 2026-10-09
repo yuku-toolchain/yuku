@@ -8,6 +8,7 @@ It is plain JavaScript with no native binary, and prints any ESTree AST, whichev
 - [Usage](#usage)
 - [Result](#result)
 - [Options](#options)
+- [JSX](#jsx)
 - [Type stripping](#type-stripping)
 - [Minification](#minification)
 - [Quotes](#quotes)
@@ -54,6 +55,7 @@ generate(program, { strip: true, minify: true, sourceMap: { source } });
 
 | Option      | Type                                                        | Default      | Description                                                                 |
 | ----------- | ----------------------------------------------------------- | ------------ | --------------------------------------------------------------------------- |
+| `jsx`       | `boolean \| "preserve" \| JSXOptions`                       | `false`      | Preserve JSX or lower it with classic factories. See [JSX](#jsx).           |
 | `strip`     | `boolean`                                                   | `false`      | Drop TypeScript-only syntax. See [Type stripping](#type-stripping).         |
 | `minify`    | `boolean \| MinifyOptions`                                  | `false`      | Minify the output. See [Minification](#minification).                       |
 | `format`    | `"pretty" \| "compact"`                                     | `"pretty"`   | `"compact"` emits only the separators the grammar requires.                 |
@@ -61,6 +63,30 @@ generate(program, { strip: true, minify: true, sourceMap: { source } });
 | `quotes`    | `"preserve" \| "double" \| "single" \| "shortest"`          | `"preserve"` | Quote style for string literals. See [Quotes](#quotes).                     |
 | `comments`  | `boolean \| "all" \| "some" \| "none" \| "line" \| "block"` | `"some"`     | Which attached comments to emit. See [Comments](#comments).                 |
 | `sourceMap` | `SourceMapOptions`                                          | none         | Emit a Source Map V3. See [Source maps](#source-maps).                      |
+
+## JSX
+
+`jsx: true` lowers JSX while printing with the classic `React.createElement` and `React.Fragment`
+factories. Set `pragma` and `pragmaFrag` to use another runtime. Factories must be identifiers or
+dotted names already in scope.
+
+```js
+generate(program, { jsx: true, strip: true });
+generate(program, { jsx: { pragma: "h", pragmaFrag: "Fragment" }, strip: true });
+generate(program, { jsx: { pragma: "h", pragmaFrag: "Fragment", pure: true }, strip: true });
+```
+
+Calls to the default React factories carry `/* @__PURE__ */` annotations so bundlers can drop
+unused elements. The annotation claims the call has no effects, so custom factories are annotated
+only when `pure` is set explicitly; `pure: false` removes it for the defaults.
+
+`jsx: "preserve"` keeps JSX for a framework transform such as Vue's JSX plugin while `strip`
+removes TypeScript. A custom factory alone does not implement Vue directives or slots.
+
+JSX tag type arguments are erased. Text follows JSX whitespace normalization, and text and quoted
+attributes decode XHTML entities. Spreads retain evaluation order. Attached comments follow
+`comments`, including those on erased types, closing names, and closing fragments. The runtime
+is classic. Imports and comment pragmas are not generated.
 
 ## Type stripping
 

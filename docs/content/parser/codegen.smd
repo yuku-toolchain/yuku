@@ -34,12 +34,13 @@ defer result.deinit(allocator);
 std.debug.print("{s}\n", .{result.code}); // const x = 1;
 ```
 
-`generate` leaves the tree unchanged and returns the `code`, its `diagnostics` as `ast.Diagnostic`, and the source `map`, owned by the allocator it was given and freed with `result.deinit`. It fails only with `error.OutOfMemory`.
+`generate` leaves the tree unchanged and returns the `code`, its `diagnostics` as `ast.Diagnostic`, and the source `map`, owned by the allocator it was given and freed with `result.deinit`. It fails with `error.OutOfMemory` or `error.InvalidJSXFactory` for an invalid factory name.
 
 ## [Options]($section.id('options'))
 
 | Field        | Default     | Description                                                                                                                                         |
 | ------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jsx`        | `null`      | Preserve JSX or lower it with classic factories, see [JSX](#jsx)                                                                                    |
 | `strip`      | `false`     | Drop TypeScript-only syntax, see [Type stripping](#type-stripping)                                                                                  |
 | `minify`     | `false`     | Size-reducing syntax rewrites, see [Minification](#minification)                                                                                    |
 | `format`     | `.pretty`   | `.compact` emits only the whitespace the grammar requires                                                                                           |
@@ -49,6 +50,30 @@ std.debug.print("{s}\n", .{result.code}); // const x = 1;
 | `source_map` | `null`      | Emit a Source Map V3, see [Source maps](#source-maps)                                                                                               |
 
 Every option is independent, so they compose freely. Comments print from the nodes they are attached to, so parse with `.comments = .attached` or `.both` to keep them.
+
+## [JSX]($section.id('jsx'))
+
+`.jsx = .{}` lowers JSX while printing with the classic `React.createElement` and `React.Fragment`
+factories. Configure identifiers or dotted names already in scope to use another runtime.
+
+```zig
+const result = try parser.codegen.generate(allocator, &tree, .{
+    .jsx = .{ .pragma = "h", .pragma_frag = "Fragment" },
+    .strip = true,
+});
+```
+
+The JavaScript API accepts `{ jsx: true }` or `{ jsx: { pragma: "h", pragmaFrag: "Fragment" } }`.
+JSX is preserved when the option is unset, `null` in Zig or `"preserve"` in JavaScript, so
+`{ jsx: "preserve", strip: true }` retains JSX for a framework transform such as Vue's JSX
+plugin. A custom factory alone does not implement Vue directives or slots.
+
+JSX tag type arguments are erased. Text follows JSX whitespace normalization, and text and quoted
+attributes decode XHTML entities. Spreads retain evaluation order. Attached comments follow
+`comments`, including those on erased types, closing names, and closing fragments. The runtime
+is classic. Imports and comment pragmas are not generated. Calls to the default React factories
+carry `/* @__PURE__ */` annotations so bundlers can drop unused elements; custom factories are
+annotated only with `pure = true`, since the annotation claims the call has no effects.
 
 ## [Type stripping]($section.id('type-stripping'))
 

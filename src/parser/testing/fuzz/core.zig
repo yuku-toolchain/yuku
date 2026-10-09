@@ -259,14 +259,30 @@ fn roundTrip(gpa: Allocator, mode: Mode, src: []const u8) Allocator.Error!void {
     });
     defer tree.deinit();
 
+    const legs: u32 = if (mode.lang == .jsx or mode.lang == .tsx) 2 else 1;
     for ([_]codegen.Format{ .pretty, .compact }) |format| {
-        var res = try codegen.generate(gpa, &tree, .{ .format = format, .comments = .all });
-        defer res.deinit(gpa);
-        const reparsed = try reparse(gpa, mode, mode.lang, src, res.code);
-        defer reparsed.deinit();
-        if (!try sameTree(gpa, &tree, &reparsed)) fail("printing changed the tree", src, res.code);
-        if (reparsed.comments.len != tree.comments.len) {
-            fail("printing lost a comment", src, res.code);
+        for (0..legs) |leg| {
+            var res = codegen.generate(gpa, &tree, .{
+                .format = format,
+                .jsx = if (leg == 1) .{ .pure = false } else null,
+                .comments = .all,
+            }) catch |e| switch (e) {
+                error.OutOfMemory => return error.OutOfMemory,
+                error.InvalidJSXFactory => unreachable, // only the bundled factories are used
+            };
+            defer res.deinit(gpa);
+
+            const reparsed = try reparse(gpa, mode, mode.lang, src, res.code);
+            defer reparsed.deinit();
+
+            if (leg == 0) {
+                if (!try sameTree(gpa, &tree, &reparsed)) {
+                    fail("printing changed the tree", src, res.code);
+                }
+            }
+            if (reparsed.comments.len != tree.comments.len) {
+                fail("printing lost a comment", src, res.code);
+            }
         }
     }
 
@@ -280,7 +296,10 @@ fn roundTrip(gpa: Allocator, mode: Mode, src: []const u8) Allocator.Error!void {
         .{ .minify = true, .format = .compact, .quotes = .shortest, .comments = .all },
     };
     for (rewrites) |options| {
-        var res = try codegen.generate(gpa, &tree, options);
+        var res = codegen.generate(gpa, &tree, options) catch |e| switch (e) {
+            error.OutOfMemory => return error.OutOfMemory,
+            error.InvalidJSXFactory => unreachable, // only the bundled factories are used
+        };
         defer res.deinit(gpa);
         const lang = if (options.strip) plain else mode.lang;
         const reparsed = try reparse(gpa, mode, lang, src, res.code);
