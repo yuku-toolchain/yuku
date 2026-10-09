@@ -55,8 +55,10 @@ export function loadedProjects(): LoadedProject[] {
     const root = join(PROJECTS_DIR, project.name);
     if (!existsSync(root)) continue;
     const excluded = (project.exclude ?? []).map((path) => join(root, path) + sep);
+    const sourceTypeOf = (path: string): SourceType =>
+      project.type === "commonjs" && path.endsWith(".js") ? "commonjs" : sourceTypeFromPath(path);
     const files = project.sources
-      .flatMap((source) => filesUnder(join(root, source), sourceTypeFromPath))
+      .flatMap((source) => filesUnder(join(root, source), sourceTypeOf))
       .filter((file) => !excluded.some((path) => file.path.startsWith(path)));
     loaded.push({ project, root, files });
   }

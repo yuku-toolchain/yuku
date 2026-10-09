@@ -1,4 +1,4 @@
-/** A real codebase the analyzer is tested on, pinned to a commit. */
+/** A real codebase the toolchain is tested on, pinned to a commit. */
 export interface Project {
   name: string;
   /** The GitHub repository, as `owner/name`. */
@@ -6,10 +6,12 @@ export interface Project {
   commit: string;
   /** The directories fetched, from the repository root. */
   sources: string[];
-  /** Paths under `sources` the project's own tsconfig leaves out. */
+  /** Paths under `sources` the project never compiles. */
   exclude?: string[];
   /** Module names mapped to files from the repository root, as a tsconfig `paths`. */
   paths?: Record<string, string[]>;
+  /** The package.json `type`, which decides the goal of `.js` files. */
+  type?: "commonjs";
 }
 
 export const PROJECTS_DIR = "test/projects";
@@ -65,5 +67,33 @@ export const PROJECTS: Project[] = [
     repository: "excalidraw/excalidraw",
     commit: "1919728724a1b71af73cb7e6d2d1a418a1415b1c",
     sources: ["packages"],
+  },
+  {
+    name: "node",
+    repository: "nodejs/node",
+    commit: "dd9777b284b05a0c4864ae9543e0b4d2020721db",
+    sources: ["lib"],
+    type: "commonjs",
+  },
+  {
+    name: "nest",
+    repository: "nestjs/nest",
+    commit: "2731c18054fb348779311d81e4e20949e313be78",
+    sources: ["packages"],
+    paths: { "@nestjs/*": ["packages/*"] },
+  },
+  {
+    name: "webpack",
+    repository: "webpack/webpack",
+    commit: "1ca58fd66e89e7183d982c13a7b305794ce6ef85",
+    sources: ["lib"],
+    type: "commonjs",
+  },
+  {
+    name: "vite",
+    repository: "vitejs/vite",
+    commit: "a4bfdb11766696af26186207f686fe8be2e1472d",
+    sources: ["packages/vite/src"],
+    exclude: ["packages/vite/src/node/ssr/__tests__/fixtures/errors"],
   },
 ];

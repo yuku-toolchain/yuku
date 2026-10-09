@@ -246,10 +246,49 @@ function compareFile(file: CorpusFile, source: string): Comparison {
 }
 
 const SUITE = "test/parser/suite/ts/pass";
+const PROJECTS = "test/projects";
 
 const KNOWN: Known = {
   "tsc parses `A extends (x: B extends C ? D : E) => 0 ? F : G` differently": {
     [`${SUITE}/7abadbdb73780802.ts`]: ["D@42: yuku unresolved, tsc 42"],
+  },
+  "tsc resolves a `require` binding to its first block, not its own": {
+    [`${PROJECTS}/webpack/lib/config/WebpackOptionsApply.js`]: [
+      "ExternalsPlugin@5127: yuku 5059, tsc 4299",
+      "ExternalsPlugin@7512: yuku 5915, tsc 4299",
+      "ExternalsPlugin@9524: yuku 9457, tsc 4299",
+      "ElectronTargetPlugin@11488: yuku 11411, tsc 11139",
+      "ElectronTargetPlugin@11764: yuku 11687, tsc 11139",
+      "ElectronTargetPlugin@12146: yuku 12069, tsc 11139",
+      "ExternalsPlugin@12401: yuku 12334, tsc 4299",
+      "OccurrenceChunkIdsPlugin@30080: yuku 29999, tsc 29704",
+      "MemoryCachePlugin@42338: yuku 42268, tsc 41401",
+      "MemoryWithGcCachePlugin@42607: yuku 42525, tsc 41071",
+    ],
+    [`${PROJECTS}/webpack/lib/javascript/EnableChunkLoadingPlugin.js`]: [
+      "CommonJsChunkLoadingPlugin@3208: yuku 3122, tsc 2819",
+    ],
+    [`${PROJECTS}/webpack/lib/library/EnableLibraryPlugin.js`]: [
+      "AssignLibraryPlugin@3439: yuku 3373, tsc 3046",
+      "AssignLibraryPlugin@3776: yuku 3710, tsc 3046",
+      "AssignLibraryPlugin@4090: yuku 4024, tsc 3046",
+      "AssignLibraryPlugin@4411: yuku 4345, tsc 3046",
+      "AssignLibraryPlugin@4732: yuku 4666, tsc 3046",
+      "AssignLibraryPlugin@5053: yuku 4987, tsc 3046",
+      "AssignLibraryPlugin@5376: yuku 5310, tsc 3046",
+      "AssignLibraryPlugin@5709: yuku 5643, tsc 3046",
+      "AssignLibraryPlugin@6066: yuku 6000, tsc 3046",
+    ],
+  },
+  "tsc resolves a computed method key in the method's own scope": {
+    [`${PROJECTS}/node/lib/internal/encoding.js`]: [
+      "inspect@16860: yuku 1068, tsc 17343",
+    ],
+  },
+  "tsc binds `module.exports =` as an export even where `module` is a parameter": {
+    [`${PROJECTS}/node/lib/internal/modules/esm/translators.js`]: [
+      "module@15256: yuku 14251, tsc unresolved",
+    ],
   },
 };
 

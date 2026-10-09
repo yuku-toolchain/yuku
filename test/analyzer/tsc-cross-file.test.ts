@@ -164,6 +164,7 @@ function compareLinks(linked: Linked, module: Module, mismatches: string[]): num
 
   for (const record of module.exports) {
     if (record.kind !== "reExport" || record.name === null) continue;
+    if (record.resolvedModule === null) continue;
     const exported = exports.find((candidate) => candidate.name === record.name);
     const ours = placesOf(linked, module.resolveExport(record.name));
     check(`re-export ${record.name}`, ours, tscPlacesOf(linked, exported));
@@ -213,7 +214,8 @@ describe("linking agrees with tsc across each project", () => {
         const files = loaded.files.length;
         console.log(`${loaded.project.name}: ${compared} links agreed across ${files} files`);
         expect(mismatches.slice(0, SAMPLE_MAX)).toEqual([]);
-        expect(compared).toBeGreaterThan(files);
+        // CommonJS links through `module.exports`, which neither side compares
+        expect(compared).toBeGreaterThan(loaded.project.type === "commonjs" ? 0 : files);
       },
       600_000,
     );

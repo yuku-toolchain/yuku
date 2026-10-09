@@ -24,6 +24,8 @@ function emit(source: string, lang: SourceLang, sourceType: SourceType): Emitted
     module: ts.ModuleKind.Preserve,
     target: ts.ScriptTarget.ESNext,
     jsx: ts.JsxEmit.Preserve,
+    // parameter decorators exist only under the legacy flag
+    experimentalDecorators: true,
     moduleDetection:
       sourceType === "module" ? ts.ModuleDetectionKind.Force : ts.ModuleDetectionKind.Legacy,
   };
