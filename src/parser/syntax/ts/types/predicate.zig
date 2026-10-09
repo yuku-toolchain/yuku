@@ -101,9 +101,9 @@ fn finishTypePredicate(
         const inner = try core.parseType(parser) orelse return null;
         type_annotation = try parser.tree.addNode(
             .{ .ts_type_annotation = .{ .type_annotation = inner } },
-            parser.tree.span(inner),
+            parser.tree.span(unparenthesized(parser, inner)),
         );
-        end = parser.tree.span(type_annotation).end;
+        end = parser.tree.span(inner).end;
     }
 
     return try parser.tree.addNode(
@@ -114,6 +114,16 @@ fn finishTypePredicate(
         } },
         .{ .start = start, .end = end },
     );
+}
+
+// spans its type as the paren strip leaves it
+fn unparenthesized(parser: *Parser, node: ast.NodeIndex) ast.NodeIndex {
+    if (parser.preserve_parens) return node;
+    var current = node;
+    while (true) switch (parser.tree.data(current)) {
+        .ts_parenthesized_type => |paren| current = paren.type_annotation,
+        else => return current,
+    };
 }
 
 pub fn isAssertsPredicateStart(parser: *Parser) bool {

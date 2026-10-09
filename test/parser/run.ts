@@ -112,6 +112,12 @@ const suites: TestSuite[] = [
     options: { preserveParens: false },
   },
   {
+    path: `${MISC_DIR}/ts/preserve-parens-disabled`,
+    expect: "snapshot",
+    lang: ["ts"],
+    options: { preserveParens: false },
+  },
+  {
     path: `${MISC_DIR}/js/semantic`,
     expect: "snapshot",
     lang: ["js"],

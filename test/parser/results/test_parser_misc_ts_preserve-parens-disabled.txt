@@ -1,0 +1,7 @@
+test/parser/misc/ts/preserve-parens-disabled
+============================================
+Passed:       1/1 (100.00%)
+Failed:       0
+AST mismatch: 0/1
+
+✓ test/parser/misc/ts/preserve-parens-disabled/type-predicate.ts
