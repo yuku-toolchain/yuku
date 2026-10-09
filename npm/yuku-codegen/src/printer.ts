@@ -1274,7 +1274,7 @@ class Printer extends Output {
   emitProgram(p: T.Program): void {
     if (p.hashbang != null) {
       this.writeToken("#!");
-      if (p.hashbang.value.length > 0) this.writeToken(p.hashbang.value);
+      this.writeLiteral(p.hashbang.value);
       this.writeToken("\n");
     }
     this.printStmtList(p.body, true);

@@ -292,3 +292,9 @@ test("decorators print on the side of `export` they were written on", () => {
     `"@a export class A{}@b export default class B{}export@c class C{}export default@d class D{}"`,
   );
 });
+
+test("a hashbang is reprinted verbatim", () => {
+  expect(gen("#!/usr/bin/env node --flag \nx;", { format: "compact" }, "input.js")).toBe(
+    "#!/usr/bin/env node --flag \nx",
+  );
+});

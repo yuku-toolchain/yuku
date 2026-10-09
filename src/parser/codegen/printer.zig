@@ -952,7 +952,7 @@ const Printer = struct {
     fn emit_program(self: *Self, p: *const ast.Program) Error!void {
         if (p.hashbang) |h| {
             try self.out.writeStr("#!");
-            try self.writeString(h.value);
+            try self.out.writeRawStr(self.tree.string(h.value));
             try self.out.writeByte('\n');
         }
         try self.printStmtList(p.body, true);
