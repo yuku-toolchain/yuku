@@ -42,7 +42,8 @@ pub const fragments = [_][]const u8{
     "??=",                   "#!",                     "\x00",
     "\xEF\xBB\xBF",          "\xC3",                   "\xE2\x82",
     "\xF0\x9F\x98",          "\xED\xA0\x80",           "\xED\xB0\x80",
-    "\xFF\xFE",
+    "\xFF\xFE",              "/*c*/",                  "//c\n",
+    "/**\n * d\n\n */",      "<!--c\n",                "\n-->c\n",
 };
 
 // complete programs, so one mutation lands in deep parser state
@@ -67,6 +68,8 @@ pub const seeds = [_][]const u8{
     "abstract class A { abstract m(): void; private readonly x = 1; }",
     "const { a = 1, b: { c } = {}, ...rest } = obj;",
     "const u = '\\u{1F600}\\uD83D\\uDE00\\n\\t\\x41';",
+    "/** d */ function f(/* a */ a, b /* b */) { // c\n  return [/* x */] as T; }",
+    "const o = { m /* c */ () {} }; x = <a b=/* c */\"x\">{/* d */}</a>;",
 };
 
 pub const regressions = [_][]const u8{
@@ -85,6 +88,9 @@ pub const regressions = [_][]const u8{
     ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
     "type T<U> = U extends string ? ? & B : C0", // compact printed `??`
     "f<T> == x", // compact fused the type argument closer into `>=`
+    "'\\u{1F600}\xed\\uD83D\\uDE00'", // a stray 0xED read as a surrogate ate the next emoji
+    "'\\uD83D\\\xed\xb0\x80'", // an escaped and a raw surrogate stayed apart, unlike reprinted
+    "#!x ", // compact dropped a hashbang's trailing space
 };
 
 // a runaway allocation panics attributably instead of a silent oom kill
@@ -239,36 +245,130 @@ fn checkTokens(tree: *const ast.Tree, src: []const u8) void {
 }
 
 fn checkRoundTrip(gpa: Allocator, mode: Mode, src: []const u8) void {
-    var tree = parser.parse(gpa, src, .{
+    roundTrip(gpa, mode, src) catch |e| switch (e) {
+        error.OutOfMemory => return,
+    };
+}
+
+fn roundTrip(gpa: Allocator, mode: Mode, src: []const u8) Allocator.Error!void {
+    var tree = try parser.parse(gpa, src, .{
         .lang = mode.lang,
         .source_type = mode.source_type,
         .preserve_parens = false,
-    }) catch |e| switch (e) {
-        error.OutOfMemory => return,
-    };
+        .comments = .both,
+    });
     defer tree.deinit();
 
     for ([_]codegen.Format{ .pretty, .compact }) |format| {
-        var res = codegen.generate(gpa, &tree, .{ .format = format }) catch |e| switch (e) {
-            error.OutOfMemory => return,
-        };
+        var res = try codegen.generate(gpa, &tree, .{ .format = format, .comments = .all });
         defer res.deinit(gpa);
-
-        var reparsed = parser.parse(gpa, res.code, .{
-            .lang = mode.lang,
-            .source_type = mode.source_type,
-        }) catch |e| switch (e) {
-            error.OutOfMemory => return,
-        };
+        const reparsed = try reparse(gpa, mode, mode.lang, src, res.code);
         defer reparsed.deinit();
-
-        if (reparsed.hasErrors()) {
-            std.debug.panic(
-                "round trip: a clean parse printed to output that fails to reparse\n" ++
-                    "--- src ---\n{s}\n--- printed ---\n{s}",
-                .{ src, res.code },
-            );
+        if (!try sameTree(gpa, &tree, &reparsed)) fail("printing changed the tree", src, res.code);
+        if (reparsed.comments.len != tree.comments.len) {
+            fail("printing lost a comment", src, res.code);
         }
+    }
+
+    const plain: ast.Lang = switch (mode.lang) {
+        .ts, .dts => .js,
+        .tsx => .jsx,
+        .js, .jsx => mode.lang,
+    };
+    const rewrites = [_]codegen.Options{
+        .{ .strip = true, .comments = .all },
+        .{ .minify = true, .format = .compact, .quotes = .shortest, .comments = .all },
+    };
+    for (rewrites) |options| {
+        var res = try codegen.generate(gpa, &tree, options);
+        defer res.deinit(gpa);
+        const lang = if (options.strip) plain else mode.lang;
+        const reparsed = try reparse(gpa, mode, lang, src, res.code);
+        reparsed.deinit();
+    }
+}
+
+fn reparse(
+    gpa: Allocator,
+    mode: Mode,
+    lang: ast.Lang,
+    src: []const u8,
+    code: []const u8,
+) Allocator.Error!ast.Tree {
+    const tree = try parser.parse(gpa, code, .{
+        .lang = lang,
+        .source_type = mode.source_type,
+        .preserve_parens = false,
+    });
+    if (tree.hasErrors()) fail("a clean parse printed to output that fails to reparse", src, code);
+    return tree;
+}
+
+fn fail(message: []const u8, src: []const u8, code: []const u8) noreturn {
+    std.debug.panic(
+        "round trip: {s}\n--- src ---\n{s}\n--- printed ---\n{s}",
+        .{ message, src, code },
+    );
+}
+
+const Pair = struct { a: ast.NodeIndex, b: ast.NodeIndex };
+
+// spans and raw lexemes aside
+fn sameTree(gpa: Allocator, a: *const ast.Tree, b: *const ast.Tree) Allocator.Error!bool {
+    var pending: std.ArrayList(Pair) = .empty;
+    defer pending.deinit(gpa);
+    try pending.append(gpa, .{ .a = a.root, .b = b.root });
+    while (pending.pop()) |pair| {
+        std.debug.assert(pending.items.len < a.nodes.len);
+        const x = a.data(pair.a);
+        const y = b.data(pair.b);
+        if (std.meta.activeTag(x) != std.meta.activeTag(y)) return false;
+        switch (x) {
+            inline else => |payload, tag| {
+                const other = @field(y, @tagName(tag));
+                if (!try sameValue(gpa, a, b, payload, other, &pending)) return false;
+            },
+        }
+    }
+    return true;
+}
+
+fn sameValue(
+    gpa: Allocator,
+    a: *const ast.Tree,
+    b: *const ast.Tree,
+    x: anytype,
+    y: @TypeOf(x),
+    pending: *std.ArrayList(Pair),
+) Allocator.Error!bool {
+    const T = @TypeOf(x);
+    if (T == ast.NodeIndex) {
+        if ((x == .null) != (y == .null)) return false;
+        if (x != .null) try pending.append(gpa, .{ .a = x, .b = y });
+        return true;
+    }
+    if (T == ast.IndexRange) {
+        const xs = a.extra(x);
+        const ys = b.extra(y);
+        if (xs.len != ys.len) return false;
+        for (xs, ys) |p, q| if (!try sameValue(gpa, a, b, p, q, pending)) return false;
+        return true;
+    }
+    if (T == ast.String) return std.mem.eql(u8, a.string(x), b.string(y));
+    switch (@typeInfo(T)) {
+        .@"struct" => |info| {
+            inline for (info.fields) |field| {
+                if (comptime std.mem.eql(u8, field.name, "raw")) continue;
+                const xf = @field(x, field.name);
+                if (!try sameValue(gpa, a, b, xf, @field(y, field.name), pending)) return false;
+            }
+            return true;
+        },
+        .optional => {
+            if ((x == null) != (y == null)) return false;
+            return if (x) |value| sameValue(gpa, a, b, value, y.?, pending) else true;
+        },
+        else => return x == y,
     }
 }
 
