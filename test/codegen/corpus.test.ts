@@ -4,7 +4,13 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { parse, type ParseOptions, type SourceLang } from "yuku-parser";
 import { generate, type GenerateOptions } from "yuku-codegen";
 import { astDiffPath } from "../ast-helpers-for-test";
-import { corpusPresent, forEachCorpusFile, type CorpusFile } from "../corpus";
+import {
+  corpusFiles,
+  corpusPresent,
+  forEachCorpusFile,
+  projectFiles,
+  type CorpusFile,
+} from "../corpus";
 
 type Plan = "print" | "compact" | "strip" | "minify";
 
@@ -107,7 +113,7 @@ function stripLang(lang: SourceLang): SourceLang {
 
 describe.skipIf(!corpusPresent())("codegen corpus invariants", () => {
   beforeAll(async () => {
-    await forEachCorpusFile((file, source) => checkFile(file, source));
+    await forEachCorpusFile(checkFile, [...corpusFiles(), ...projectFiles()]);
   }, 300_000);
 
   test("the corpus is non-empty", () => {

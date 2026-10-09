@@ -5,7 +5,7 @@ import { analyze } from "yuku-analyzer";
 import { fileOptions, load } from "yuku-core";
 import { parse } from "yuku-parser";
 import { load as loadInBrowser } from "../../npm/yuku-core/browser.js";
-import { corpusFiles, corpusPresent } from "../corpus";
+import { corpusFiles, corpusPresent, projectFiles } from "../corpus";
 import { jsSource, tsSource } from "./sources";
 
 const native = load();
@@ -42,10 +42,10 @@ describe("the WebAssembly core matches the native core", () => {
   });
 
   test.skipIf(!corpusPresent())(
-    "on every corpus file",
+    "on every corpus and project file",
     () => {
       const mismatched: string[] = [];
-      for (const file of corpusFiles()) {
+      for (const file of [...corpusFiles(), ...projectFiles()]) {
         const options = {
           lang: file.lang,
           sourceType: file.sourceType,

@@ -113,18 +113,22 @@ fn findFirst(tree: *const ast.Tree, tag: NodeTag) ?ast.NodeIndex {
     return null;
 }
 
+const projects_dir = "test/projects";
+
 const corpus_dirs = [_][]const u8{
     "test/parser/suite/js/pass",
     "test/parser/suite/jsx/pass",
     "test/parser/suite/ts/pass",
     "test/parser/misc",
+    projects_dir,
 };
 
 const source_extensions = [_][]const u8{
     ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts",
 };
 
-fn corpusSourceType(path: []const u8) ast.SourceType {
+fn corpusSourceType(dir_path: []const u8, path: []const u8) ast.SourceType {
+    if (std.mem.eql(u8, dir_path, projects_dir)) return .fromPath(path);
     if (std.mem.find(u8, path, "commonjs" ++ std.fs.path.sep_str) != null) return .commonjs;
     if (std.mem.find(u8, path, ".module.") != null) return .module;
     return .script;
@@ -164,7 +168,7 @@ pub fn forEachCorpusTree(gpa: Allocator, checker: anytype) !void {
 
             var tree = try parser.parse(gpa, source, .{
                 .lang = ast.Lang.fromPath(entry.basename),
-                .source_type = corpusSourceType(entry.path),
+                .source_type = corpusSourceType(dir_path, entry.path),
             });
             defer tree.deinit();
             if (tree.hasErrors()) continue;

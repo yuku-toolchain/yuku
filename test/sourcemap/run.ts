@@ -9,7 +9,7 @@ import {
 } from "yuku-parser";
 import { generate, type SourceMap } from "yuku-codegen";
 import { TraceMap, originalPositionFor, type EncodedSourceMap } from "@jridgewell/trace-mapping";
-import { CORPUS_DIRS, corpusFilesUnder } from "../corpus";
+import { CORPUS_DIRS, corpusFilesUnder, loadedProjects } from "../corpus";
 
 const OUT_FILE = "out.js";
 
@@ -18,8 +18,12 @@ let totalSkip = 0;
 let totalFail = 0;
 const sampleErrs: string[] = [];
 
-for (const dir of CORPUS_DIRS) {
-  const files = corpusFilesUnder(dir);
+const groups = [
+  ...CORPUS_DIRS.map((dir) => ({ dir, files: corpusFilesUnder(dir) })),
+  ...loadedProjects().map(({ root, files }) => ({ dir: root, files })),
+];
+
+for (const { dir, files } of groups) {
   const start = performance.now();
   let dirFiles = 0;
   let dirSkip = 0;
@@ -108,14 +112,16 @@ function verify(
   }
 
   const inputIds = collectIdentifiers(inputAst);
+  const codeLines = lineStarts(code);
+  const sourceLines = lineStarts(source);
   for (const node of walkNodes(outputAst)) {
     if (node.type !== "Identifier" && node.type !== "PrivateIdentifier") continue;
-    const { line, col } = lineColOf(code, node.start);
+    const { line, col } = lineColOf(codeLines, node.start);
     const orig = originalPositionFor(tracer, { line: line + 1, column: col });
     if (!orig.source) {
       errs.push(`no mapping for ${node.type} "${node.name}" at gen ${line + 1}:${col}`);
     } else {
-      const input = inputIds.get(offsetOf(source, orig.line - 1, orig.column));
+      const input = inputIds.get((sourceLines[orig.line - 1] ?? source.length) + orig.column);
       const at = `gen "${node.name}" at ${line + 1}:${col} -> orig ${orig.line}:${orig.column}`;
       if (!input) {
         errs.push(`${at}: no input identifier there`);
@@ -174,34 +180,23 @@ function lineBreakLen(s: string, i: number): number {
   return 0;
 }
 
-function lineColOf(s: string, offset: number) {
-  let line = 0;
-  let lineStart = 0;
-  let i = 0;
-  while (i < offset) {
+function lineStarts(s: string): number[] {
+  const starts = [0];
+  for (let i = 0; i < s.length; ) {
     const brk = lineBreakLen(s, i);
-    if (brk > 0) {
-      line++;
-      i += brk;
-      lineStart = i;
-    } else {
-      i++;
-    }
+    if (brk > 0) starts.push((i += brk));
+    else i++;
   }
-  return { line, col: offset - lineStart };
+  return starts;
 }
 
-function offsetOf(s: string, line: number, col: number): number {
-  let l = 0;
-  let off = 0;
-  while (l < line && off < s.length) {
-    const brk = lineBreakLen(s, off);
-    if (brk > 0) {
-      l++;
-      off += brk;
-    } else {
-      off++;
-    }
+function lineColOf(starts: number[], offset: number) {
+  let lo = 0;
+  let hi = starts.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (starts[mid]! <= offset) lo = mid;
+    else hi = mid - 1;
   }
-  return off + col;
+  return { line: lo, col: offset - starts[lo]! };
 }

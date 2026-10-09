@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parse, sourceTypeFromPath, type ParseOptions } from "yuku-parser";
 import { generate, type GenerateOptions } from "yuku-codegen";
-import { corpusFiles, type CorpusFile } from "../corpus";
+import { corpusFiles, projectFiles, type CorpusFile } from "../corpus";
 import { commentPlacements, deepChains, INSTANTIATIONS } from "./helpers";
 
 const REFERENCE = join(
@@ -147,7 +147,7 @@ export function conformanceInputs(): Input[] {
     const path = `comment-${i}.${lang}`;
     return { path, relative: path, lang, sourceType: "module" as const, source };
   });
-  return [...corpusFiles(), ...chains, instantiations, ...comments];
+  return [...corpusFiles(), ...projectFiles(), ...chains, instantiations, ...comments];
 }
 
 export function runPlan(plan: Plan, files: Input[]): PlanResult {
