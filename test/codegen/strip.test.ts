@@ -59,3 +59,11 @@ test("a this parameter goes with its comments", () => {
     }"
   `);
 });
+
+test("an uninitialized const is ambient and strips away", () => {
+  const source = "export const a: A;\nconst b: B, c = 1;\nexport const d = 1;\nlet e: E;";
+  expect(gen(source, { strip: true }, "input.d.ts")).toMatchInlineSnapshot(`
+    "export const d = 1;
+    let e;"
+  `);
+});

@@ -319,6 +319,7 @@ class Printer extends Output {
     if (this.hasPrintedComments(node)) return false;
     switch (node.type) {
       case "VariableDeclaration":
+        return isAmbient(node);
       case "FunctionDeclaration":
       case "FunctionExpression":
       case "ClassDeclaration":
@@ -1531,7 +1532,7 @@ class Printer extends Output {
   }
 
   emitVariableDeclaration(d: T.VariableDeclaration): void {
-    if (this.strip && d.declare) return;
+    if (this.strip && isAmbient(d)) return;
     this.printVariableDecl(d, true, false);
   }
 
@@ -2924,6 +2925,12 @@ function needsSpaceBeforeInlineComment(last: number): boolean {
       return false;
   }
   return true;
+}
+
+// an uninitialized `const` is ambient, as in a `.d.ts`
+function isAmbient(d: T.VariableDeclaration): boolean {
+  if (d.declare === true) return true;
+  return d.kind === "const" && d.declarations.some((x) => x.init == null);
 }
 
 function strippedOperand(node: Node): Node {

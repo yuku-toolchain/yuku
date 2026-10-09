@@ -278,7 +278,7 @@ const Printer = struct {
         }
         if (self.hasPrintedComments(idx)) return false;
         return switch (data) {
-            .variable_declaration => |d| d.declare,
+            .variable_declaration => |d| isAmbient(self.tree, d),
             .function => |f| f.declare or
                 f.type == .ts_declare_function or
                 f.type == .ts_empty_body_function_expression,
@@ -1354,7 +1354,7 @@ const Printer = struct {
     }
 
     fn emit_variable_declaration(self: *Self, d: *const ast.VariableDeclaration) Error!void {
-        if (self.options.strip) if (d.declare) return;
+        if (self.options.strip) if (isAmbient(self.tree, d.*)) return;
         try self.printVariableDecl(d.*, true, false);
     }
 
@@ -3151,6 +3151,16 @@ fn hasValueExportSpecifier(tree: *const Tree, list: []const NodeIndex) bool {
 fn isNamed(tree: *const Tree, idx: NodeIndex, name: []const u8) bool {
     const id = identifierStringOrNull(tree, idx) orelse return false;
     return std.mem.eql(u8, tree.string(id), name);
+}
+
+// an uninitialized `const` is ambient, as in a `.d.ts`
+fn isAmbient(tree: *const Tree, d: ast.VariableDeclaration) bool {
+    if (d.declare) return true;
+    if (d.kind != .@"const") return false;
+    for (tree.extra(d.declarators)) |x| {
+        if (tree.data(x).variable_declarator.init == .null) return true;
+    }
+    return false;
 }
 
 fn parameterOf(tree: *const Tree, idx: NodeIndex) NodeIndex {
