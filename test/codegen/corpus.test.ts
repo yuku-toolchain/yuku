@@ -1,6 +1,8 @@
 // Codegen invariants over the whole corpus, checked per plan.
 //
 //   reparse   every plan's output parses cleanly again
+//   kept      every source comment survives. strip drops the comments of the TypeScript
+//             syntax it removes, so it is held to this on JavaScript only
 //   verbatim  print and compact reparse to the original AST modulo spans. strip and
 //             minify rewrite the tree by design
 //   fixed     every plan is a fixed point on its own output. comment-free code is
@@ -58,6 +60,12 @@ function checkFile(file: CorpusFile, source: string): void {
     const reparsed = parse(code, reparseOptions);
     if (reparsed.diagnostics.length > 0) {
       note(plan, `${file.path}: reparse failed`);
+      continue;
+    }
+
+    const typed = file.lang !== "js" && file.lang !== "jsx";
+    if (!(plan === "strip" && typed) && commentKey(ast) !== commentKey(reparsed)) {
+      note(plan, `${file.path}: comment lost or duplicated`);
       continue;
     }
 

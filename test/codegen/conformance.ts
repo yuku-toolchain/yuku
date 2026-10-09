@@ -1,5 +1,6 @@
-// Prints every corpus file, the deep chains, and the instantiation expressions with the Zig and
-// the JS printer and compares code, mappings, and diagnostics byte for byte.
+// Prints every corpus file, the deep chains, the instantiation expressions, and the comment
+// placements with the Zig and the JS printer and compares code, mappings, and diagnostics byte
+// for byte.
 //
 //   bun test/codegen/conformance.ts [plan...] [--file <path>] [--show <n>]
 
@@ -10,7 +11,7 @@ import { join } from "node:path";
 import { parse, sourceTypeFromPath, type ParseOptions } from "yuku-parser";
 import { generate, type GenerateOptions } from "yuku-codegen";
 import { corpusFiles, type CorpusFile } from "../corpus";
-import { deepChains, INSTANTIATIONS } from "./helpers";
+import { commentPlacements, deepChains, INSTANTIATIONS } from "./helpers";
 
 const REFERENCE = join(
   "zig-out",
@@ -136,7 +137,7 @@ export interface Input extends CorpusFile {
   source?: string;
 }
 
-/** Every corpus file, the deep chains, and the instantiation expressions. */
+/** Every corpus file, the deep chains, the instantiations, and the comment placements. */
 export function conformanceInputs(): Input[] {
   const chains = deepChains().map(({ source, lang }, i) => {
     const path = `chain-${i}.${lang}`;
@@ -149,7 +150,11 @@ export function conformanceInputs(): Input[] {
     sourceType: "module",
     source: INSTANTIATIONS.join("\n"),
   };
-  return [...corpusFiles(), ...chains, instantiations];
+  const comments = commentPlacements().map(({ source, lang }, i) => {
+    const path = `comment-${i}.${lang}`;
+    return { path, relative: path, lang, sourceType: "module" as const, source };
+  });
+  return [...corpusFiles(), ...chains, instantiations, ...comments];
 }
 
 /** Prints `files` with both printers under `plan`. */

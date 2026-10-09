@@ -1,5 +1,7 @@
 import { expect, test } from "bun:test";
-import { gen } from "./helpers";
+import { parse } from "yuku-parser";
+import type { GenerateOptions } from "yuku-codegen";
+import { commentPlacements, gen } from "./helpers";
 
 const ALL = { comments: true } as const;
 
@@ -240,4 +242,211 @@ test("a comment breaking before a restricted operand keeps it parenthesized", ()
     // y
     b)}"
   `);
+});
+
+test("a comment between array holes stays in the array", () => {
+  expect(gen("[,/* hole*/,,];\nconst [/* none */] = x;", ALL, "input.js")).toMatchInlineSnapshot(`
+    "[/* hole*/, , ,];
+    const [/* none */] = x;"
+  `);
+});
+
+test("a comment in an empty JSX expression container or fragment is kept", () => {
+  expect(gen("<div>{/* @ts-expect-error */}</div>;", {}, "input.jsx")).toMatchInlineSnapshot(
+    `"<div>{/* @ts-expect-error */}</div>;"`,
+  );
+  const source = "<div>{/* keep me */}</div>;\n<div>{// note\n}</div>;\n</* a */></ /* b */>;";
+  expect(gen(source, ALL, "input.jsx")).toMatchInlineSnapshot(`
+    "<div>{/* keep me */}</div>;
+    <div>{
+      // note
+    }</div>;
+    </* a */></ /* b */>;"
+  `);
+});
+
+test("a comment with no node beside it stays inside its parent", () => {
+  const source = [
+    "const o = { /* none */ };",
+    "const {/* none */} = o;",
+    "export { /* none */ };",
+    "function f(/* none */) {}",
+    "function g(a /* maybe */?) {}",
+    "const h = async (/* none */) => {};",
+    "x = function /* anonymous */ () {};",
+    "function i() { return /* nothing */; }",
+    "for (;;) { break /* out */; continue /* on */; }",
+    "debugger /* stop */;",
+    "switch (a) { default /* fallback */: }",
+    "type T = [/* none */];",
+    "type L = { /* none */ };",
+    "interface I { /* none */ }",
+    "enum E { /* none */ }",
+    "interface J { m(/* none */): void; new (/* none */): J }",
+    "declare function d(/* none */): void;",
+  ].join("\n");
+  expect(gen(source, ALL)).toMatchInlineSnapshot(`
+    "const o = {/* none */};
+    const {/* none */} = o;
+    export {/* none */};
+    function f(/* none */) {}
+    function g(a /* maybe */?) {}
+    const h = async (/* none */) => {};
+    x = function(/* anonymous */) {};
+    function i() {
+      return /* nothing */;
+    }
+    for (;;) {
+      break /* out */;
+      continue /* on */;
+    }
+    debugger /* stop */;
+    switch (a) {
+    default /* fallback */:
+    }
+    type T = [/* none */];
+    type L = {
+      /* none */
+    };
+    interface I {
+      /* none */
+    }
+    enum E {
+      /* none */
+    }
+    interface J {
+      m(/* none */): void;
+      new (/* none */): J;
+    }
+    declare function d(/* none */): void;"
+  `);
+});
+
+test("a line comment in an empty list breaks it open", () => {
+  const source = "const a = [// empty\n];\nconst o = {// empty\n};\nfunction f(// none\n) {}";
+  expect(gen(source, ALL, "input.js")).toMatchInlineSnapshot(`
+    "const a = [
+      // empty
+    ];
+    const o = {
+      // empty
+    };
+    function f(
+      // none
+    ) {}"
+  `);
+});
+
+test("a node the parent writes itself keeps its comments", () => {
+  const source = [
+    "'use strict' /* c */;",
+    "class A { m /* c */ () {} get g(/* none */) { return 1; } }",
+    "const o = { m /* c */ () {} };",
+    "for (/* c */ const x of y) {}",
+    "import { a as /* c */ a } from 'a';",
+    'x = <a b= /* c */ "x" />;',
+    "type F = () /* c */ => void;",
+    "function f(a): a /* c */ is string {}",
+  ].join("\n");
+  expect(gen(source, ALL, "input.tsx")).toMatchInlineSnapshot(`
+    "'use strict' /* c */;
+    class A {
+      m /* c */ () {}
+      get g(/* none */) {
+        return 1;
+      }
+    }
+    const o = { m /* c */ () {} };
+    for ( /* c */ const x of y) {}
+    import { a as /* c */ a } from 'a';
+    x = <a b= /* c */ "x" />;
+    type F = () => /* c */ void;
+    function f(a): a is /* c */ string {}"
+  `);
+  const keys = 'x = a[/* c */ "b"];\ny = { "c" /* c */\n: 1 };\nclass C { "d" /* c */\n() {} }';
+  expect(gen(keys, { ...ALL, minify: true }, "input.js")).toMatchInlineSnapshot(
+    `"x=a./* c */b;y={c/* c */:1};class C{d/* c */(){}}"`,
+  );
+});
+
+test("strip keeps the comments of a cast and drops those of a type-only specifier", () => {
+  expect(gen("const a = /*#__PURE__*/ make() as Thing;", { strip: true })).toMatchInlineSnapshot(
+    `"const a = /*#__PURE__*/ make();"`,
+  );
+  const source = 'f(a as T /* c */, b);\nimport { /* c */ type A, B } from "a";';
+  expect(gen(source, { ...ALL, strip: true })).toMatchInlineSnapshot(`
+    "f(a, /* c */ b);
+    import { B } from "a";"
+  `);
+});
+
+test("a trailing line comment follows a token no line break may precede", () => {
+  const source = [
+    "x = a as // c\n  T;",
+    "x = a satisfies // c\n  T;",
+    "function f(a): a is // c\n  string {}",
+    "type C<T> = T extends // c\n  string ? 1 : 2;",
+    "type I = T[ // c\n  K];",
+    "type R = T[ // c\n];",
+    "x = (a): b => // c\n  a;",
+    "class A { b! // c\n  : T; }",
+  ].join("\n");
+  expect(gen(source, ALL)).toMatchInlineSnapshot(`
+    "x = a as // c
+    T;
+    x = a satisfies // c
+    T;
+    function f(a): a is // c
+    string {}
+    type C<T> = T extends // c
+    string ? 1 : 2;
+    type I = T[ // c
+    K];
+    type R = T[ // c
+    ];
+    x = (a): b => // c
+    a;
+    class A {
+      b! // c
+      : T;
+    }"
+  `);
+});
+
+test("a blank line inside a JSDoc comment is kept", () => {
+  const source = "/**\n * Summary.\n\n * @param a\n */\nfunction f(a) {}";
+  expect(gen(source, ALL, "input.js")).toMatchInlineSnapshot(`
+    "/**
+     * Summary.
+
+     * @param a
+     */
+    function f(a) {}"
+  `);
+});
+
+// One comment in each token gap of a snippet per node kind. Every plan prints code that parses
+// and keeps the comment through a second pass, though strip drops it with TypeScript syntax.
+test("a comment in any gap survives every plan", () => {
+  const plans: GenerateOptions[] = [
+    ALL,
+    { ...ALL, format: "compact" },
+    { ...ALL, minify: true },
+    { ...ALL, strip: true },
+  ];
+  const failures: string[] = [];
+  for (const { source, lang } of commentPlacements()) {
+    const options = { lang, sourceType: "module" } as const;
+    for (const plan of plans) {
+      const first = gen(source, plan, undefined, options);
+      const second = gen(first, plan, undefined, options);
+      const reparsed = parse(first, options);
+      const kept = [reparsed, parse(second, options)].map((r) => r.comments.length).join();
+      const typed = plan.strip === true && lang !== "js" && lang !== "jsx";
+      if (reparsed.diagnostics.length > 0 || (!typed && kept !== "1,1")) {
+        failures.push(JSON.stringify([plan, source, first]));
+      }
+    }
+  }
+  expect(failures.slice(0, 8)).toEqual([]);
 });
