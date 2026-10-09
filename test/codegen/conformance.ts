@@ -1,7 +1,4 @@
-// Prints every corpus file, the deep chains, the instantiation expressions, and the comment
-// placements with the Zig and the JS printer and compares code, mappings, and diagnostics byte
-// for byte.
-//
+// the Zig and JS printers must agree byte for byte
 //   bun test/codegen/conformance.ts [plan...] [--file <path>] [--show <n>]
 
 import { spawnSync } from "node:child_process";
@@ -21,9 +18,7 @@ const REFERENCE = join(
 
 export interface Plan {
   name: string;
-  /** Flags for `codegen-reference`. */
   zig: string[];
-  /** The same options for `generate`, `sourceMap` added per file when `map` is set. */
   js: GenerateOptions;
   preserveParens: boolean;
   map: boolean;
@@ -132,12 +127,10 @@ interface Reference {
   diagnostics: { start: number; end: number; message: string }[];
 }
 
-/** A file to print, read from `path` unless `source` is given. */
 export interface Input extends CorpusFile {
   source?: string;
 }
 
-/** Every corpus file, the deep chains, the instantiations, and the comment placements. */
 export function conformanceInputs(): Input[] {
   const chains = deepChains().map(({ source, lang }, i) => {
     const path = `chain-${i}.${lang}`;
@@ -157,7 +150,6 @@ export function conformanceInputs(): Input[] {
   return [...corpusFiles(), ...chains, instantiations, ...comments];
 }
 
-/** Prints `files` with both printers under `plan`. */
 export function runPlan(plan: Plan, files: Input[]): PlanResult {
   const references = runReference(plan, files);
   const mismatches: Mismatch[] = [];
@@ -310,7 +302,6 @@ function firstDifference(a: string, b: string): number {
   return i;
 }
 
-/** A readable excerpt around the first difference of a mismatch. */
 export function describeMismatch(mismatch: Mismatch, context = 240): string {
   const { path, what, expected, actual } = mismatch;
   if (what === "threw" || what === "skip") return `${path} ${what}\n${actual}`;

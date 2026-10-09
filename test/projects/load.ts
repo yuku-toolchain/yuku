@@ -1,6 +1,4 @@
-// Fetches every project at its pinned commit.
-//
-//   bun test/projects/load.ts
+// fetches every project at its pinned commit
 
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";

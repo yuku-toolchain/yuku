@@ -1,22 +1,16 @@
 import { expect, test } from "bun:test";
 import type { CorpusFile } from "../../corpus";
 
-/** One file compared against an oracle. */
 export interface Comparison {
   compared: number;
   mismatches: string[];
 }
 
-/** Divergences by reason, with the exact mismatches of each file it covers. */
+// reason, then path, then the exact mismatches that file must show
 export type Known = Record<string, Record<string, string[]>>;
 
-/** The most mismatches a failure lists. */
 export const SAMPLE_MAX = 20;
 
-/**
- * Compares every file with an oracle. A file `known` lists must disagree in exactly its listed
- * mismatches, any other agree.
- */
 export function differential(
   name: string,
   files: CorpusFile[],

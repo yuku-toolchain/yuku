@@ -75,7 +75,6 @@ export const INSTANTIATIONS: string[] = [
   "f<T>`t`;",
 ];
 
-// one construct per entry, so a comment lands in every gap each node kind has
 const COMMENT_SNIPPETS: Record<"js" | "jsx" | "ts" | "tsx", string[]> = {
   js: [
     "[, , ,];",
@@ -214,7 +213,6 @@ const COMMENT_SNIPPETS: Record<"js" | "jsx" | "ts" | "tsx", string[]> = {
   tsx: ["<div<T> a='1' />;", "x = <T,>(a: T) => a;"],
 };
 
-/** Each snippet with a block or a line comment in one of its token gaps, where it still parses. */
 export function commentPlacements(): { source: string; lang: SourceLang }[] {
   const placements: { source: string; lang: SourceLang }[] = [];
   for (const [lang, snippets] of Object.entries(COMMENT_SNIPPETS) as [SourceLang, string[]][]) {

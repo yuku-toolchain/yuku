@@ -425,8 +425,7 @@ test("a blank line inside a JSDoc comment is kept", () => {
   `);
 });
 
-// One comment in each token gap of a snippet per node kind. Every plan prints code that parses
-// and keeps the comment through a second pass, though strip drops it with TypeScript syntax.
+// one comment in each token gap of a snippet per node kind, printed twice by every plan
 test("a comment in any gap survives every plan", () => {
   const plans: GenerateOptions[] = [
     ALL,

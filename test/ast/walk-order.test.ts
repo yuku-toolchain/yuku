@@ -4,11 +4,9 @@ import { parse } from "yuku-parser";
 import { walk } from "yuku-ast";
 import { corpusFiles, corpusPresent } from "../corpus";
 
-// quasis and expressions interleave in source, but walk order is by
-// key, matching every ESTree walker
+// walkers visit by key, so template quasis and expressions leave source order
 const INTERLEAVED_TYPES = new Set(["TemplateLiteral", "TSTemplateLiteralType"]);
 
-/** The first child entered out of source order, if any. */
 function walkOrderViolation(program: Node): string | null {
   let violation: string | null = null;
   const lastStart = new Map<Node, number>();

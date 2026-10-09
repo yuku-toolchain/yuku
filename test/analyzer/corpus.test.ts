@@ -5,7 +5,6 @@ import { corpusFiles, corpusPresent, forEachCorpusFile, projectFiles } from "../
 
 const SAMPLE_MAX = 8;
 
-// one list per invariant, a check pushes a `path: detail` line on violation
 const violations = {
   crashed: [] as string[],
   crossIndex: [] as string[],

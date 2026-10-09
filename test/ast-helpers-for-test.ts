@@ -66,11 +66,7 @@ export function deserializeAstJson(jsonString: string): unknown {
   });
 }
 
-/**
- * Returns the path of the first difference between two ASTs, or null when they are equivalent.
- * Ignores what codegen normalizes, which is `start`, `end`, `comments`, and the `raw` of string,
- * bigint, and regexp literals.
- */
+// ignores what codegen normalizes, spans, comments, and the raw of strings, bigints, and regexps
 export function astDiffPath(a: unknown, b: unknown, path = "program"): string | null {
   if (a === b) return null;
   if (typeof a === "number" && Number.isNaN(a) && typeof b === "number" && Number.isNaN(b)) {

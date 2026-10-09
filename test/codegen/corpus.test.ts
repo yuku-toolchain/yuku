@@ -1,14 +1,4 @@
-// Codegen invariants over the whole corpus, checked per plan.
-//
-//   reparse   every plan's output parses cleanly again
-//   kept      every source comment survives. strip drops the comments of the TypeScript
-//             syntax it removes, so it is held to this on JavaScript only
-//   verbatim  print and compact reparse to the original AST modulo spans. strip and
-//             minify rewrite the tree by design
-//   fixed     every plan is a fixed point on its own output. comment-free code is
-//             reproduced byte for byte, and no comment is lost or duplicated
-//
-// Skips when the corpus has not been downloaded so a bare `bun test` stays green.
+// every plan reparses, keeps each comment, and is idempotent, and print and compact keep the AST
 
 import { beforeAll, describe, expect, test } from "bun:test";
 import { parse, type ParseOptions, type SourceLang } from "yuku-parser";
@@ -43,7 +33,6 @@ function checkFile(file: CorpusFile, source: string): void {
     preserveParens: false,
   };
   const ast = parse(source, parseOptions);
-  // parse failures are a parser concern, caught elsewhere
   if (ast.diagnostics.length > 0) return;
   checked++;
 
@@ -86,8 +75,6 @@ function checkFile(file: CorpusFile, source: string): void {
     }
     if (second === code) continue;
 
-    // a comment may move, but comment-free code is a fixed point and no comment is lost or
-    // duplicated
     const reparsedTwice = parse(second, reparseOptions);
     const bare = { ...options, comments: false as const };
     if (generate(reparsed.program, bare).code !== generate(reparsedTwice.program, bare).code) {
@@ -98,7 +85,7 @@ function checkFile(file: CorpusFile, source: string): void {
   }
 }
 
-// sorted and trimmed, so moving or re-indenting a comment keeps the key
+// a moved or re-indented comment keeps its key
 function commentKey(result: { comments?: { type: string; value: string }[] }): string {
   const normalize = (value: string) =>
     value

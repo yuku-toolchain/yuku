@@ -20,12 +20,10 @@ export interface CorpusFile {
   sourceType: SourceType;
 }
 
-/** True when at least one corpus directory has been downloaded. */
 export function corpusPresent(): boolean {
   return CORPUS_DIRS.some((dir) => existsSync(dir));
 }
 
-/** Every corpus file under one directory, sorted by path, in the goal its name gives. */
 export function corpusFilesUnder(dir: string): CorpusFile[] {
   return filesUnder(dir, (path) => (path.includes(".module.") ? "module" : "script"));
 }
@@ -41,19 +39,16 @@ function filesUnder(dir: string, sourceTypeOf: (path: string) => SourceType): Co
   return files;
 }
 
-/** Every corpus file across all directories, with inferred language and type. */
 export function corpusFiles(): CorpusFile[] {
   return CORPUS_DIRS.flatMap(corpusFilesUnder);
 }
 
-/** A fetched project and its source files, see `test/projects/manifest.ts`. */
 export interface LoadedProject {
   project: Project;
   root: string;
   files: CorpusFile[];
 }
 
-/** Every project fetched by `test/projects/load.ts`. */
 export function loadedProjects(): LoadedProject[] {
   const loaded: LoadedProject[] = [];
   for (const project of PROJECTS) {
@@ -68,15 +63,11 @@ export function loadedProjects(): LoadedProject[] {
   return loaded;
 }
 
-/** The source files of every fetched project. */
 export function projectFiles(): CorpusFile[] {
   return loadedProjects().flatMap((loaded) => loaded.files);
 }
 
-/**
- * Runs `fn` over `files`, every corpus file by default, reading sources in batches so
- * thousands of files do not open at once.
- */
+// batched, so thousands of files never open at once
 export async function forEachCorpusFile(
   fn: (file: CorpusFile, source: string) => void,
   files: CorpusFile[] = corpusFiles(),

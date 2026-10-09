@@ -1,5 +1,4 @@
-// Compares the imports a consumer keeps from Yuku's type positions with the ones tsc keeps
-// when it emits each file on its own.
+// Compares the imports Yuku's type positions keep with the ones tsc keeps per file.
 
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
