@@ -811,7 +811,6 @@ const Printer = struct {
                 } else if (comptime emittedByParent(tag)) {
                     std.debug.panic("codegen: {s} is emitted by its parent", .{@tagName(tag)});
                 } else {
-                    // every other tag has an emitter, so a new node kind fails to compile
                     const emitter = @field(Self, "emit_" ++ @tagName(tag));
                     if (comptime @typeInfo(@TypeOf(emitter)).@"fn".param_types.len == 3) {
                         try @call(.never_inline, emitter, .{ self, node, ctx });
@@ -3103,7 +3102,6 @@ fn fixedString(comptime tag: NodeTag) ?[]const u8 {
     };
 }
 
-// printed inline by the node that owns them, never dispatched on their own
 fn emittedByParent(comptime tag: NodeTag) bool {
     return switch (tag) {
         .formal_parameters, .formal_parameter, .template_element => true,

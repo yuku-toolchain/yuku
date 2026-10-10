@@ -73,7 +73,6 @@ pub const Analyzed = struct {
     }
 };
 
-/// Returns `count` copies of `unit` laid end to end, built at comptime.
 pub inline fn repeat(comptime unit: []const u8, comptime count: u32) *const [unit.len * count]u8 {
     comptime {
         const units: [count][unit.len]u8 = @splat(unit.*);
