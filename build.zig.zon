@@ -3,8 +3,8 @@
     .version = "0.18.1",
     .dependencies = .{
         .napi_zig = .{
-            .url = "git+https://github.com/yuku-toolchain/napi-zig?ref=main#e8e1c02d1824ebe8a560c8c812dc3e6a588af5c4",
-            .hash = "napi_zig-0.2.0-XRkY0TEWAgB3K3JZLlS-T5Q3-FaVqxWjZ3XqC-xUphCa",
+            .url = "git+https://github.com/yuku-toolchain/napi-zig?ref=fix-android-libc-file#33754d3e80f68383ba8e4e1e49d3edcc215788f0",
+            .hash = "napi_zig-0.2.0-XRkY0UsWAgAqaAoq4Zx7sCD39BNi-Uiq0uMS8sIX_ZUZ",
         },
     },
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
