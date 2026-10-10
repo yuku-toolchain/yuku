@@ -14,7 +14,7 @@ pub fn reportCoverInitializedNames(parser: *Parser) Error!void {
         const prop = data.object_property;
         if (!prop.shorthand or !isCoverInitializedName(parser, prop.value)) continue;
         try parser.report(
-            parser.tree.span(@enumFromInt(i)),
+            parser.tree.span(@fromBackingInt(@intCast(i))),
             "Shorthand property cannot have a default value in object expression",
             .{ .help = "Use '{ a: a = 1 }' syntax or this is only valid in destructuring" ++
                 " patterns." },

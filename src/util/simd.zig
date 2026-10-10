@@ -37,7 +37,7 @@ pub inline fn leadingTrueCount(lanes: @Vector(16, bool)) u32 {
 }
 
 // aarch64 lacks movemask, `shrn` packs a nibble per lane
-const has_nibble_mask = builtin.cpu.arch.isAARCH64();
+const has_nibble_mask = builtin.target.cpu.arch.isAarch64();
 
 inline fn nibbleMask(lanes: @Vector(16, bool)) u64 {
     comptime std.debug.assert(has_nibble_mask);

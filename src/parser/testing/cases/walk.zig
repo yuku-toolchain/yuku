@@ -2,6 +2,7 @@
 
 const std = @import("std");
 const parser = @import("parser");
+const helpers = @import("../helpers.zig");
 
 const ast = parser.ast;
 const traverser = parser.traverser;
@@ -33,9 +34,9 @@ test "NodePath starts empty" {
 test "NodePath push/pop tracks depth, parent, and ancestors" {
     var buffer: [3]ast.NodeIndex = undefined;
     var path = NodePath{ .items = &buffer };
-    const n0: ast.NodeIndex = @enumFromInt(10);
-    const n1: ast.NodeIndex = @enumFromInt(20);
-    const n2: ast.NodeIndex = @enumFromInt(30);
+    const n0: ast.NodeIndex = @fromBackingInt(10);
+    const n1: ast.NodeIndex = @fromBackingInt(20);
+    const n2: ast.NodeIndex = @fromBackingInt(30);
 
     path.push(n0);
     path.push(n1);
@@ -59,7 +60,7 @@ test "NodePath push/pop tracks depth, parent, and ancestors" {
     try testing.expectEqual(n0, path.parent().?);
 }
 
-const deep_source = "let before; a" ++ (".b" ** 1000) ++ "; let after;";
+const deep_source = "let before; a" ++ helpers.repeat(".b", 1000) ++ "; let after;";
 
 test "the path holds every ancestor past the walk's recursion" {
     var tree = try parseModule(deep_source);
@@ -611,7 +612,7 @@ test "transform traverser walks the replacement after setData" {
     var replaced = false;
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
-        const data = tree.data(@enumFromInt(i));
+        const data = tree.data(@fromBackingInt(i));
         if (data == .binary_expression) return error.BinaryNodeSurvived;
         if (data == .numeric_literal) replaced = true;
     }

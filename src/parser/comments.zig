@@ -59,7 +59,7 @@ pub fn attach(tree: *ast.Tree, raw: []const ast.Comment) Error!void {
     try ctx.walk(tree.root);
 
     while (ctx.cursor < raw.len) : (ctx.cursor += 1) {
-        ctx.write(@intFromEnum(tree.root), .inside, false);
+        ctx.write(@backingInt(tree.root), .inside, false);
     }
 
     const counts = try alloc.alloc(u32, node_count);
@@ -101,7 +101,7 @@ const Ctx = struct {
 
     fn walk(self: *Ctx, root: ast.NodeIndex) Error!void {
         std.debug.assert(self.frames.items.len == 0);
-        try self.walkEnter(root, self.spans[@intFromEnum(root)].end, .null);
+        try self.walkEnter(root, self.spans[@backingInt(root)].end, .null);
 
         while (self.frames.items.len > 0) {
             const frame = &self.frames.items[self.frames.items.len - 1];
@@ -148,23 +148,24 @@ const Ctx = struct {
     // a parameter list has no ESTree node, so it bounds the comments inside its parens but
     // never hosts one
     inline fn hosts(self: *const Ctx, node: ast.NodeIndex) bool {
-        return self.data_items[@intFromEnum(node)] != .formal_parameters;
+        return self.data_items[@backingInt(node)] != .formal_parameters;
     }
 
     fn collectChildren(self: *Ctx, node: ast.NodeIndex) Error!void {
-        switch (self.data_items[@intFromEnum(node)]) {
+        switch (self.data_items[@backingInt(node)]) {
             // quasis are literal text, never comment hosts
             .template_literal => |t| try self.pushRange(t.expressions),
             .ts_template_literal_type => |t| try self.pushRange(t.types),
             inline else => |payload| {
                 const T = @TypeOf(payload);
                 if (@typeInfo(T) != .@"struct") return;
-                inline for (std.meta.fields(T)) |f| {
-                    if (f.type == ast.NodeIndex) {
-                        const child = @field(payload, f.name);
+                const info = @typeInfo(T).@"struct";
+                inline for (info.field_names, info.field_types) |name, Field| {
+                    if (Field == ast.NodeIndex) {
+                        const child = @field(payload, name);
                         if (child != .null) try self.pushChild(child);
-                    } else if (f.type == ast.IndexRange) {
-                        try self.pushRange(@field(payload, f.name));
+                    } else if (Field == ast.IndexRange) {
+                        try self.pushRange(@field(payload, name));
                     }
                 }
             },
@@ -179,12 +180,12 @@ const Ctx = struct {
 
     // a parameter is its pattern in ESTree, with the same span
     inline fn pushChild(self: *Ctx, child: ast.NodeIndex) Error!void {
-        const node = switch (self.data_items[@intFromEnum(child)]) {
+        const node = switch (self.data_items[@backingInt(child)]) {
             .formal_parameter => |param| param.pattern,
             else => child,
         };
-        const s = self.spans[@intFromEnum(node)];
-        std.debug.assert(std.meta.eql(s, self.spans[@intFromEnum(child)]));
+        const s = self.spans[@backingInt(node)];
+        std.debug.assert(std.meta.eql(s, self.spans[@backingInt(child)]));
         try self.scratch.append(self.alloc, .{ .idx = node, .start = s.start, .end = s.end });
     }
 
@@ -204,18 +205,18 @@ const Ctx = struct {
 
             if (has_prev and has_next) {
                 if (self.sameLine(c.span.end, next_start)) {
-                    self.write(@intFromEnum(next_idx), .before, true);
+                    self.write(@backingInt(next_idx), .before, true);
                 } else if (self.sameLine(prev_end, c.span.start)) {
-                    self.write(@intFromEnum(prev_idx), .after, true);
+                    self.write(@backingInt(prev_idx), .after, true);
                 } else {
-                    self.write(@intFromEnum(next_idx), .before, false);
+                    self.write(@backingInt(next_idx), .before, false);
                 }
             } else if (has_next) {
-                self.write(@intFromEnum(next_idx), .before, self.sameLine(c.span.end, next_start));
+                self.write(@backingInt(next_idx), .before, self.sameLine(c.span.end, next_start));
             } else if (has_prev) {
-                self.write(@intFromEnum(prev_idx), .after, self.sameLine(prev_end, c.span.start));
+                self.write(@backingInt(prev_idx), .after, self.sameLine(prev_end, c.span.start));
             } else {
-                self.write(@intFromEnum(host_node), .inside, false);
+                self.write(@backingInt(host_node), .inside, false);
             }
             self.cursor += 1;
         }

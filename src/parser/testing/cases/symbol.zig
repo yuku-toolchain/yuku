@@ -227,7 +227,8 @@ test "the semantic Ctx exposes type position, namespace state, and the tracker" 
 
 test "module records collect an export pattern of any depth" {
     const depth = 300;
-    var a = try analyze("export const " ++ "[" ** depth ++ "a" ++ "]" ** depth ++ " = x;", .{});
+    const pattern = helpers.repeat("[", depth) ++ "a" ++ helpers.repeat("]", depth);
+    var a = try analyze("export const " ++ pattern ++ " = x;", .{});
     defer a.deinit();
     const records = try semantic.module_record.collect(&a.tree, &a.sem);
     try testing.expectEqual(@as(usize, 1), records.exports.len);

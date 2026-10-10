@@ -199,8 +199,8 @@ pub fn canStartLetBinding(tag: TokenTag) bool {
 }
 
 test "canStartLetBinding accepts patterns and non-reserved identifiers" {
-    inline for (@typeInfo(TokenTag).@"enum".fields) |field| {
-        const tag = @field(TokenTag, field.name);
+    inline for (@typeInfo(TokenTag).@"enum".field_names) |name| {
+        const tag = @field(TokenTag, name);
         try std.testing.expectEqual(
             tag == .left_bracket or tag == .left_brace or canStartBindingIdentifier(tag),
             canStartLetBinding(tag),

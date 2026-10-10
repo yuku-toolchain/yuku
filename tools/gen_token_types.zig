@@ -18,11 +18,9 @@ pub fn main(init: std.process.Init) !void {
         \\export interface TokenKindMap {
         \\
     );
-    inline for (@typeInfo(parser.ast.TokenTag).@"enum".fields) |field| {
-        try w.print("  readonly {s}: {d};\n", .{
-            comptime decoder.tokenName(field.name),
-            field.value,
-        });
+    const info = @typeInfo(parser.ast.TokenTag).@"enum";
+    inline for (info.field_names, info.field_values) |name, value| {
+        try w.print("  readonly {s}: {d};\n", .{ comptime decoder.tokenName(name), value });
     }
     try w.writeAll("}\n");
     try fw.flush();

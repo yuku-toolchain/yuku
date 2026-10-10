@@ -35,7 +35,8 @@ const walk_enter_only = walk_depth_max + 1;
 const walk_exit_only = walk_depth_max + 2;
 
 fn ExitData(comptime C: type) type {
-    return if (@typeInfo(@FieldType(C, "tree")).pointer.is_const) void else *const ast.NodeData;
+    const tree_pointer = @typeInfo(@FieldType(C, "tree")).pointer;
+    return if (tree_pointer.attrs.@"const") void else *const ast.NodeData;
 }
 
 fn walkNode(
@@ -101,16 +102,16 @@ fn walkStructFields(
     payload: T,
     depth: u32,
 ) Allocator.Error!Action {
-    const fields = @typeInfo(T).@"struct".fields;
+    const info = @typeInfo(T).@"struct";
 
-    inline for (fields) |field| {
-        if (field.type == ast.NodeIndex) {
-            const child = @field(payload, field.name);
+    inline for (info.field_names, info.field_types) |name, Field| {
+        if (Field == ast.NodeIndex) {
+            const child = @field(payload, name);
             const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
             if (action == .stop) return .stop;
-        } else if (field.type == ast.IndexRange) {
-            const range = @field(payload, field.name);
-            if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const) {
+        } else if (Field == ast.IndexRange) {
+            const range = @field(payload, name);
+            if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.attrs.@"const") {
                 for (ctx.tree.extra(range)) |child| {
                     const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
                     if (action == .stop) return .stop;
@@ -189,12 +190,13 @@ fn walkDeepPushChildren(
         inline else => |payload| {
             const T = @TypeOf(payload);
             if (@typeInfo(T) == .@"struct") {
-                inline for (@typeInfo(T).@"struct".fields) |field| {
-                    if (field.type == ast.NodeIndex) {
-                        const child = @field(payload, field.name);
+                const info = @typeInfo(T).@"struct";
+                inline for (info.field_names, info.field_types) |name, Field| {
+                    if (Field == ast.NodeIndex) {
+                        const child = @field(payload, name);
                         try steps.append(gpa, .{ .index = child, .exit = null });
-                    } else if (field.type == ast.IndexRange) {
-                        for (tree.extra(@field(payload, field.name))) |child| {
+                    } else if (Field == ast.IndexRange) {
+                        for (tree.extra(@field(payload, name))) |child| {
                             try steps.append(gpa, .{ .index = child, .exit = null });
                         }
                     }
@@ -318,9 +320,7 @@ inline fn unwrapAction(result: anytype) Allocator.Error!Action {
 }
 
 fn validateHooks(comptime V: type) void {
-    for (@typeInfo(V).@"struct".decls) |decl| {
-        const name = decl.name;
-
+    for (@typeInfo(V).@"struct".decl_names) |name| {
         if (comptime std.mem.eql(u8, name, "enter_node") or std.mem.eql(u8, name, "exit_node"))
             continue;
 
@@ -337,10 +337,10 @@ fn validateHooks(comptime V: type) void {
         }
 
         const expected = @FieldType(ast.NodeData, node_name);
-        const hook_fn_params = @typeInfo(@TypeOf(@field(V, name))).@"fn".params;
+        const hook_param_types = @typeInfo(@TypeOf(@field(V, name))).@"fn".param_types;
 
-        if (hook_fn_params.len >= 3) {
-            if (hook_fn_params[1].type) |actual| {
+        if (hook_param_types.len >= 3) {
+            if (hook_param_types[1]) |actual| {
                 if (actual != expected) {
                     @compileError("Visitor hook '" ++ name ++
                         "': expected payload type '" ++ @typeName(expected) ++

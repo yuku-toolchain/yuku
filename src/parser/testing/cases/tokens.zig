@@ -18,7 +18,7 @@ const AlignmentChecker = struct {
         const tokens = with_tokens.tokens;
         var i: u32 = 0;
         while (i < with_tokens.nodes.len) : (i += 1) {
-            const index: ast.NodeIndex = @enumFromInt(i);
+            const index: ast.NodeIndex = @fromBackingInt(i);
             switch (with_tokens.data(index)) {
                 // the program starts before leading trivia, the other two sit inside one token
                 .program, .template_element, .jsx_empty_expression => continue,

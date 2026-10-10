@@ -65,8 +65,8 @@ fn analyzeBuffer(source: []const u8, flags: u32) ![]u8 {
 
 fn parseTree(source: []const u8, flags: u32) !parser.ast.Tree {
     return parser.parse(gpa, source, .{
-        .source_type = @enumFromInt(@as(u2, @truncate(flags & flag.source_type_mask))),
-        .lang = @enumFromInt(@as(u3, @truncate(flags >> flag.lang_shift))),
+        .source_type = @fromBackingInt(@truncate(flags & flag.source_type_mask)),
+        .lang = @fromBackingInt(@truncate(flags >> flag.lang_shift)),
         .preserve_parens = flags & flag.preserve_parens != 0,
         .comments = if (flags & flag.attach_comments != 0) .both else .flat,
         .tokens = flags & flag.tokens != 0,

@@ -234,15 +234,15 @@ pub const Tree = struct {
     /// Returns the data for the node at the given index.
     pub inline fn data(self: *const Tree, index: NodeIndex) NodeData {
         std.debug.assert(index != .null);
-        std.debug.assert(@intFromEnum(index) < self.nodes.len);
-        return self.nodes.items(.data)[@intFromEnum(index)];
+        std.debug.assert(@backingInt(index) < self.nodes.len);
+        return self.nodes.items(.data)[@backingInt(index)];
     }
 
     /// Returns the span for the node at the given index.
     pub inline fn span(self: *const Tree, index: NodeIndex) Span {
         std.debug.assert(index != .null);
-        std.debug.assert(@intFromEnum(index) < self.nodes.len);
-        return self.nodes.items(.span)[@intFromEnum(index)];
+        std.debug.assert(@backingInt(index) < self.nodes.len);
+        return self.nodes.items(.span)[@backingInt(index)];
     }
 
     /// Returns the child nodes for the given range.
@@ -254,16 +254,16 @@ pub const Tree = struct {
     /// Replaces an existing node's data in place.
     pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
         std.debug.assert(index != .null);
-        std.debug.assert(@intFromEnum(index) < self.nodes.len);
-        self.nodes.items(.data)[@intFromEnum(index)] = new_data;
+        std.debug.assert(@backingInt(index) < self.nodes.len);
+        self.nodes.items(.data)[@backingInt(index)] = new_data;
     }
 
     /// Replaces an existing node's span in place.
     pub inline fn setSpan(self: *Tree, index: NodeIndex, new_span: Span) void {
         std.debug.assert(index != .null);
-        std.debug.assert(@intFromEnum(index) < self.nodes.len);
+        std.debug.assert(@backingInt(index) < self.nodes.len);
         std.debug.assert(new_span.start <= new_span.end);
-        self.nodes.items(.span)[@intFromEnum(index)] = new_span;
+        self.nodes.items(.span)[@backingInt(index)] = new_span;
     }
 
     /// Updates the name of an identifier-shaped node in place.
@@ -293,7 +293,7 @@ pub const Tree = struct {
     ) error{OutOfMemory}!NodeIndex {
         std.debug.assert(self.nodes.len < std.math.maxInt(u32));
         std.debug.assert(node_span.start <= node_span.end);
-        const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
+        const index: NodeIndex = @fromBackingInt(@intCast(self.nodes.len));
         const entry: Node = .{ .data = node_data, .span = node_span };
         if (self.nodes.len < self.nodes.capacity) {
             self.nodes.appendAssumeCapacity(entry);
@@ -346,7 +346,7 @@ pub const Tree = struct {
     pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const AttachedComment {
         std.debug.assert(node != .null);
         const offsets = self.attached_comment_offsets;
-        const i = @intFromEnum(node);
+        const i = @backingInt(node);
         if (i + 1 >= offsets.len) return &.{};
         std.debug.assert(offsets[i] <= offsets[i + 1]);
         std.debug.assert(offsets[i + 1] <= self.attached_comments.len);
@@ -507,11 +507,11 @@ pub const StaticBlock = struct {
 
 fn operatorText(comptime Operator: type, operator: Operator) []const u8 {
     const texts = comptime blk: {
-        var t: [std.meta.fields(Operator).len][]const u8 = undefined;
-        for (std.enums.values(Operator)) |o| t[@intFromEnum(o)] = o.toToken().toString().?;
+        var t: [@typeInfo(Operator).@"enum".field_names.len][]const u8 = undefined;
+        for (std.enums.values(Operator)) |o| t[@backingInt(o)] = o.toToken().toString().?;
         break :blk t;
     };
-    return texts[@intFromEnum(operator)];
+    return texts[@backingInt(operator)];
 }
 
 /// Operator of a `binary_expression`.

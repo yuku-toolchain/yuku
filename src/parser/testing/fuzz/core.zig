@@ -72,6 +72,9 @@ pub const seeds = [_][]const u8{
     "const o = { m /* c */ () {} }; x = <a b=/* c */\"x\">{/* d */}</a>;",
 };
 
+const typeof_units: [300]["typeof ".len]u8 = @splat("typeof ".*);
+const typeof_chain: [300 * "typeof ".len]u8 = @bitCast(typeof_units);
+
 pub const regressions = [_][]const u8{
     "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
     "switch (x) { case \xa01: break; default", // lex error spun parseSwitchCases
@@ -85,7 +88,7 @@ pub const regressions = [_][]const u8{
     "x as T\r[1, 2]", // member access on a cast reprinted as a type index T[1,2]
     "class C{async get x(){await 0}}", // async getter whose async the printer dropped
     "0x; let a = 1;", // a lexical error in the first token dropped the rest of the file
-    ("typeof " ** 300) ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
+    typeof_chain ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
     "type T<U> = U extends string ? ? & B : C0", // compact printed `??`
     "f<T> == x", // compact fused the type argument closer into `>=`
     "'\\u{1F600}\xed\\uD83D\\uDE00'", // a stray 0xED read as a surrogate ate the next emoji
@@ -180,7 +183,7 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
 fn checkSpans(tree: *const ast.Tree, src: []const u8) void {
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
-        const sp = tree.span(@enumFromInt(i));
+        const sp = tree.span(@fromBackingInt(i));
         if (sp.start > sp.end or sp.end > src.len) {
             std.debug.panic(
                 "node span out of bounds: node {d}/{d} is {d}..{d}, src.len {d}",
@@ -357,10 +360,10 @@ fn sameValue(
     if (T == ast.String) return std.mem.eql(u8, a.string(x), b.string(y));
     switch (@typeInfo(T)) {
         .@"struct" => |info| {
-            inline for (info.fields) |field| {
-                if (comptime std.mem.eql(u8, field.name, "raw")) continue;
-                const xf = @field(x, field.name);
-                if (!try sameValue(gpa, a, b, xf, @field(y, field.name), pending)) return false;
+            inline for (info.field_names) |name| {
+                if (comptime std.mem.eql(u8, name, "raw")) continue;
+                const xf = @field(x, name);
+                if (!try sameValue(gpa, a, b, xf, @field(y, name), pending)) return false;
             }
             return true;
         },

@@ -5,7 +5,7 @@ code generator with source maps, and a semantic analyzer.
 
 ## Set up
 
-You need [Zig](https://ziglang.org/) 0.16 and [Bun](https://bun.sh/).
+You need [Zig](https://ziglang.org/) 0.17 and [Bun](https://bun.sh/).
 
 ```bash
 git clone https://github.com/yuku-toolchain/yuku.git

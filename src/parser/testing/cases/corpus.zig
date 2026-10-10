@@ -34,14 +34,14 @@ fn verifyScopes(tree: *const ast.Tree, sem: *const Semantic) !void {
     while (it.next()) |entry| {
         const scope = entry.scope;
         if (scope.node == .null) return error.ScopeWithoutNode;
-        if (@intFromEnum(scope.node) >= tree.nodes.len) return error.ScopeNodeOutOfBounds;
+        if (@backingInt(scope.node) >= tree.nodes.len) return error.ScopeNodeOutOfBounds;
 
         if (entry.id == .root) {
             if (scope.parent != .none) return error.RootScopeHasParent;
             if (scope.kind != .global) return error.RootScopeNotGlobal;
         } else {
             if (scope.parent == .none) return error.OrphanScope;
-            if (@intFromEnum(scope.parent) >= @intFromEnum(entry.id)) {
+            if (@backingInt(scope.parent) >= @backingInt(entry.id)) {
                 return error.ParentScopeCreatedAfterChild;
             }
         }
@@ -142,9 +142,9 @@ fn isOnChain(sem: *const Semantic, ref: *const Reference, name: []const u8) bool
 }
 
 fn isOtherBody(sem: *const Semantic, body: ScopeId, other: ScopeId) bool {
-    var next = sem.next_bodies[@intFromEnum(body)];
+    var next = sem.next_bodies[@backingInt(body)];
     if (next == .none) return false;
-    while (next != body) : (next = sem.next_bodies[@intFromEnum(next)]) {
+    while (next != body) : (next = sem.next_bodies[@backingInt(next)]) {
         if (next == other) return true;
     }
     return false;
@@ -158,12 +158,12 @@ fn verifyNodeTables(tree: *const ast.Tree, sem: *const Semantic) !void {
 
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
-        const node: ast.NodeIndex = @enumFromInt(i);
-        if (@intFromEnum(sem.scopeOf(node)) >= sem.scopes.list.len) {
+        const node: ast.NodeIndex = @fromBackingInt(i);
+        if (@backingInt(sem.scopeOf(node)) >= sem.scopes.list.len) {
             return error.NodeScopeOutOfBounds;
         }
         if (sem.parentOf(node)) |p| {
-            if (@intFromEnum(p) >= tree.nodes.len) return error.NodeParentOutOfBounds;
+            if (@backingInt(p) >= tree.nodes.len) return error.NodeParentOutOfBounds;
         }
     }
 }

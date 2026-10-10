@@ -85,13 +85,13 @@ pub const ScopeTree = struct {
     /// The scope with the given id.
     pub inline fn get(self: ScopeTree, id: ScopeId) Scope {
         std.debug.assert(id != .none);
-        std.debug.assert(@intFromEnum(id) < self.list.len);
-        return self.list[@intFromEnum(id)];
+        std.debug.assert(@backingInt(id) < self.list.len);
+        return self.list[@backingInt(id)];
     }
 
     /// Walks from `start` up to the root, yielding `start` first.
     pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
-        std.debug.assert(start == .none or @intFromEnum(start) < self.list.len);
+        std.debug.assert(start == .none or @backingInt(start) < self.list.len);
         return .{ .list = self.list, .current = start };
     }
 
@@ -104,8 +104,8 @@ pub const ScopeTree = struct {
         pub fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
-            std.debug.assert(@intFromEnum(id) < self.list.len);
-            self.current = self.list[@intFromEnum(id)].parent;
+            std.debug.assert(@backingInt(id) < self.list.len);
+            self.current = self.list[@backingInt(id)].parent;
             return id;
         }
     };
@@ -169,7 +169,7 @@ pub const ScopeTracker = struct {
     ) Allocator.Error!void {
         std.debug.assert(self.scopes.items.len < std.math.maxInt(u32));
 
-        const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
+        const id: ScopeId = @fromBackingInt(@intCast(self.scopes.items.len));
         const parent = self.currentScope();
 
         try self.scopes.append(self.allocator, .{
@@ -390,7 +390,7 @@ pub const ScopeTracker = struct {
 
     inline fn currentMut(self: *ScopeTracker) *Scope {
         std.debug.assert(self.current != .none);
-        return &self.scopes.items[@intFromEnum(self.current)];
+        return &self.scopes.items[@backingInt(self.current)];
     }
 
     /// The scope where a `var` declared here would land.
@@ -401,8 +401,8 @@ pub const ScopeTracker = struct {
     /// The scope with the given id.
     pub inline fn get(self: *const ScopeTracker, id: ScopeId) Scope {
         std.debug.assert(id != .none);
-        std.debug.assert(@intFromEnum(id) < self.scopes.items.len);
-        return self.scopes.items[@intFromEnum(id)];
+        std.debug.assert(@backingInt(id) < self.scopes.items.len);
+        return self.scopes.items[@backingInt(id)];
     }
 
     /// Whether the current scope is in strict mode.
@@ -412,7 +412,7 @@ pub const ScopeTracker = struct {
 
     /// Walks from `start` up to the root, yielding `start` first.
     pub fn ancestors(self: *const ScopeTracker, start: ScopeId) ScopeTree.AncestorIterator {
-        std.debug.assert(start == .none or @intFromEnum(start) < self.scopes.items.len);
+        std.debug.assert(start == .none or @backingInt(start) < self.scopes.items.len);
         return .{ .list = self.scopes.items, .current = start };
     }
 

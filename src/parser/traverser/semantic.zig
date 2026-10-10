@@ -49,7 +49,7 @@ pub const Ctx = struct {
 
     /// The parent of `node`, or `null` at the root.
     pub inline fn parentOf(self: *const Ctx, node: ast.NodeIndex) ?ast.NodeIndex {
-        const parent = self.node_parents[@intFromEnum(node)];
+        const parent = self.node_parents[@backingInt(node)];
         return if (parent != .null) parent else null;
     }
 
@@ -67,8 +67,8 @@ pub const Ctx = struct {
         const parent = self.path.parent() orelse .null;
         try self.scope.enter(index, parent, data);
 
-        self.node_scopes[@intFromEnum(index)] = self.scope.current;
-        self.node_parents[@intFromEnum(index)] = parent;
+        self.node_scopes[@backingInt(index)] = self.scope.current;
+        self.node_parents[@backingInt(index)] = parent;
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 

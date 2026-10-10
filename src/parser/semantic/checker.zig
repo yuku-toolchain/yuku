@@ -25,7 +25,7 @@ pub const Checker = struct {
     tree: *ast.Tree,
     allocator: Allocator,
 
-    exported_names: std.StringArrayHashMapUnmanaged(ExportedName) = .empty,
+    exported_names: std.array_hash_map.String(ExportedName) = .empty,
     // kinds of the module-level names a ts module declares without `export`
     local_kinds: std.StringHashMapUnmanaged(Symbol.Flags) = .empty,
     export_specifiers: std.ArrayList(ExportSpecifierInfo) = .empty,
@@ -1613,6 +1613,6 @@ pub const Checker = struct {
     }
 
     fn fmt(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
-        return std.fmt.allocPrint(self.allocator, format, args);
+        return self.allocator.print(format, args);
     }
 };

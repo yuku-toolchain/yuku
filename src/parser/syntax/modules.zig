@@ -808,7 +808,7 @@ fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult)
             continue;
         }
 
-        const local_tag: TokenTag = @enumFromInt(@intFromEnum(local_tags[i]));
+        const local_tag: TokenTag = @bitCast(local_tags[i]);
 
         if (local_tag.isReserved()) {
             const local_name = parser.tree.string(local_data.identifier_name.name);
@@ -848,7 +848,7 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
 
         try parser.scratch_a.append(parser.allocator(), spec);
 
-        try parser.scratch_b.append(parser.allocator(), @enumFromInt(@intFromEnum(local_tag)));
+        try parser.scratch_b.append(parser.allocator(), @bitCast(local_tag));
 
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;

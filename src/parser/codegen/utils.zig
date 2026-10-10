@@ -107,7 +107,7 @@ pub fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
 
     const exp_len = d.len + 1 + std.fmt.count("{d}", .{exp});
     const out = if (exp_len < fixedLen(d.len, exp, scratch.len))
-        (std.fmt.bufPrint(scratch, "{s}e{d}", .{ d, exp }) catch return s)
+        (std.mem.print(scratch, "{s}e{d}", .{ d, exp }) catch return s)
     else
         writeFixed(scratch, d, exp) orelse return s;
     return if (out.len <= s.len) out else s;

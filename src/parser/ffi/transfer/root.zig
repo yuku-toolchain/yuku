@@ -48,6 +48,7 @@
 //       n bytes   message text (UTF-8)
 
 const std = @import("std");
+const builtin = @import("builtin");
 const ast = @import("parser").ast;
 
 pub const semantic = @import("semantic.zig");
@@ -163,13 +164,13 @@ comptime {
 // layout helpers shared with the decoder generator in tools/estree/decoder.zig
 
 pub fn flagBitCount(comptime T: type, comptime field_idx: usize) u8 {
-    const f = std.meta.fields(T)[field_idx];
-    if (f.type == bool) return 1;
-    if (f.type == ?ast.ImportPhase) return 1 + enumBitWidth(ast.ImportPhase);
-    if (f.type == ?ast.Hashbang) return 1;
-    if (comptime isEnumType(f.type)) return enumBitWidth(f.type);
-    if (f.type == ast.NodeIndex or f.type == ast.IndexRange or f.type == ast.String) return 0;
-    @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
+    const Field = @typeInfo(T).@"struct".field_types[field_idx];
+    if (Field == bool) return 1;
+    if (Field == ?ast.ImportPhase) return 1 + enumBitWidth(ast.ImportPhase);
+    if (Field == ?ast.Hashbang) return 1;
+    if (comptime isEnumType(Field)) return enumBitWidth(Field);
+    if (Field == ast.NodeIndex or Field == ast.IndexRange or Field == ast.String) return 0;
+    @compileError("unsupported field type '" ++ @typeName(Field) ++ "' in " ++ @typeName(T));
 }
 
 pub fn flagBitForField(comptime T: type, comptime target: usize) u8 {
@@ -181,12 +182,12 @@ pub fn flagBitForField(comptime T: type, comptime target: usize) u8 {
 }
 
 pub fn fieldU32Count(comptime T: type, comptime field_idx: usize) u8 {
-    const f = std.meta.fields(T)[field_idx];
-    if (f.type == ast.NodeIndex) return 1;
-    if (f.type == ast.IndexRange or f.type == ast.String) return 2;
-    if (f.type == ?ast.Hashbang) return 2;
-    if (f.type == bool or f.type == ?ast.ImportPhase or comptime isEnumType(f.type)) return 0;
-    @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
+    const Field = @typeInfo(T).@"struct".field_types[field_idx];
+    if (Field == ast.NodeIndex) return 1;
+    if (Field == ast.IndexRange or Field == ast.String) return 2;
+    if (Field == ?ast.Hashbang) return 2;
+    if (Field == bool or Field == ?ast.ImportPhase or comptime isEnumType(Field)) return 0;
+    @compileError("unsupported field type '" ++ @typeName(Field) ++ "' in " ++ @typeName(T));
 }
 
 pub fn u32SlotForField(comptime T: type, comptime target: usize) u8 {
@@ -198,7 +199,7 @@ pub fn u32SlotForField(comptime T: type, comptime target: usize) u8 {
 }
 
 pub fn enumBitWidth(comptime E: type) u8 {
-    return std.math.log2_int_ceil(usize, @typeInfo(E).@"enum".fields.len);
+    return std.math.log2_int_ceil(usize, @typeInfo(E).@"enum".field_names.len);
 }
 
 pub fn isEnumType(comptime T: type) bool {
@@ -208,7 +209,7 @@ pub fn isEnumType(comptime T: type) bool {
 pub fn totalU32Slots(comptime T: type) u8 {
     comptime {
         var total: u8 = 0;
-        for (0..std.meta.fields(T).len) |i| total += fieldU32Count(T, i);
+        for (0..@typeInfo(T).@"struct".field_types.len) |i| total += fieldU32Count(T, i);
         return total;
     }
 }
@@ -216,26 +217,26 @@ pub fn totalU32Slots(comptime T: type) u8 {
 pub fn totalFlagBits(comptime T: type) u8 {
     comptime {
         var total: u8 = 0;
-        for (0..std.meta.fields(T).len) |i| total += flagBitCount(T, i);
+        for (0..@typeInfo(T).@"struct".field_types.len) |i| total += flagBitCount(T, i);
         return total;
     }
 }
 
 fn validateAllNodeLayouts() void {
     @setEvalBranchQuota(10_000);
-    for (@typeInfo(ast.NodeData).@"union".fields) |field| {
-        const T = field.type;
+    const info = @typeInfo(ast.NodeData).@"union";
+    for (info.field_names, info.field_types) |name, T| {
         if (@typeInfo(T) != .@"struct") continue;
         if (totalU32Slots(T) > NODE_DATA_SLOTS) {
             @compileError(std.fmt.comptimePrint(
                 "node '{s}' needs more than {d} u32 slots",
-                .{ field.name, NODE_DATA_SLOTS },
+                .{ name, NODE_DATA_SLOTS },
             ));
         }
         if (totalFlagBits(T) > NODE_FLAG_BITS) {
             @compileError(std.fmt.comptimePrint(
                 "node '{s}' needs more than {d} flag bits",
-                .{ field.name, NODE_FLAG_BITS },
+                .{ name, NODE_FLAG_BITS },
             ));
         }
     }
@@ -275,8 +276,8 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     std.debug.assert(buf.len >= bufferSize(tree));
     std.debug.assert(tree.root != .null);
     std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
-    std.debug.assert(@intFromEnum(tree.root) + 1 == tree.nodes.len);
-    if (std.debug.runtime_safety) assertPostOrder(tree);
+    std.debug.assert(@backingInt(tree.root) + 1 == tree.nodes.len);
+    if (builtin.optimize.runtimeSafety()) assertPostOrder(tree);
 
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
     const has_attached = tree.attached_comment_offsets.len != 0;
@@ -297,7 +298,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .attached_comment_count = @intCast(tree.attached_comments.len),
         .token_count = @intCast(tree.tokens.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
-        .program_index = @intFromEnum(tree.root),
+        .program_index = @backingInt(tree.root),
         .flags = hdr_flags,
         .first_non_ascii = @intCast(firstNonAsciiOffset(tree.source)),
     };
@@ -329,7 +330,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     for (tree.attached_comments, 0..) |c, i| {
         var flags: u8 = 0;
         if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
-        flags |= @as(u8, @intFromEnum(c.position)) << ATTACHED_COMMENT_POSITION_SHIFT;
+        flags |= @as(u8, @backingInt(c.position)) << ATTACHED_COMMENT_POSITION_SHIFT;
         if (c.same_line) flags |= 1 << ATTACHED_COMMENT_SAME_LINE_BIT;
         attached_out[i] = .{
             .flags = flags,
@@ -356,7 +357,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     pos += token_bytes.len;
 
     for (tree.diagnostics.items) |d| {
-        buf[pos] = @intFromEnum(d.severity);
+        buf[pos] = @backingInt(d.severity);
         pos += 1;
         w32(buf, pos, d.span.start);
         pos += 4;
@@ -401,11 +402,12 @@ fn assertPostOrder(tree: *const ast.Tree) void {
             inline else => |payload| {
                 const T = @TypeOf(payload);
                 if (@typeInfo(T) == .@"struct") {
-                    inline for (@typeInfo(T).@"struct".fields) |field| {
-                        if (field.type == ast.NodeIndex) {
-                            assertChildBefore(@field(payload, field.name), index);
-                        } else if (field.type == ast.IndexRange) {
-                            for (tree.extra(@field(payload, field.name))) |child| {
+                    const info = @typeInfo(T).@"struct";
+                    inline for (info.field_names, info.field_types) |name, Field| {
+                        if (Field == ast.NodeIndex) {
+                            assertChildBefore(@field(payload, name), index);
+                        } else if (Field == ast.IndexRange) {
+                            for (tree.extra(@field(payload, name))) |child| {
                                 assertChildBefore(child, index);
                             }
                         }
@@ -417,7 +419,7 @@ fn assertPostOrder(tree: *const ast.Tree) void {
 }
 
 fn assertChildBefore(child: ast.NodeIndex, index: usize) void {
-    if (child != .null) std.debug.assert(@intFromEnum(child) < index);
+    if (child != .null) std.debug.assert(@backingInt(child) < index);
 }
 
 fn packNode(data: *const ast.NodeData, span: ast.Span) PackedNode {
@@ -428,7 +430,7 @@ fn packNode(data: *const ast.NodeData, span: ast.Span) PackedNode {
     // captured by pointer to avoid copying the 44-byte union per node
     switch (data.*) {
         inline else => |*payload, tag| {
-            n.tag = @intFromEnum(tag);
+            n.tag = @backingInt(tag);
             packPayload(&n, payload);
         },
     }
@@ -438,38 +440,39 @@ fn packNode(data: *const ast.NodeData, span: ast.Span) PackedNode {
 fn packPayload(n: *PackedNode, payload: anytype) void {
     const T = @typeInfo(@TypeOf(payload)).pointer.child;
     if (@typeInfo(T) != .@"struct") return;
-    if (@typeInfo(T).@"struct".fields.len == 0) return;
+    const info = @typeInfo(T).@"struct";
+    if (info.field_types.len == 0) return;
 
-    inline for (std.meta.fields(T), 0..) |f, i| {
-        const val = @field(payload, f.name);
+    inline for (info.field_names, info.field_types, 0..) |name, Field, i| {
+        const val = @field(payload, name);
         const bit = comptime flagBitForField(T, i);
         const slot = comptime u32SlotForField(T, i);
 
-        if (f.type == bool) {
+        if (Field == bool) {
             if (val) setFlagBit(n, bit);
-        } else if (f.type == ast.NodeIndex) {
-            setSlot(n, slot, @intFromEnum(val));
-        } else if (f.type == ast.IndexRange) {
+        } else if (Field == ast.NodeIndex) {
+            setSlot(n, slot, @backingInt(val));
+        } else if (Field == ast.IndexRange) {
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.len);
-        } else if (f.type == ast.String) {
+        } else if (Field == ast.String) {
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.end);
-        } else if (comptime isEnumType(f.type)) {
-            setFlagBits(n, bit, @intFromEnum(val));
-        } else if (f.type == ?ast.ImportPhase) {
+        } else if (comptime isEnumType(Field)) {
+            setFlagBits(n, bit, @backingInt(val));
+        } else if (Field == ?ast.ImportPhase) {
             if (val) |v| {
                 setFlagBit(n, bit);
-                setFlagBits(n, bit + 1, @intFromEnum(v));
+                setFlagBits(n, bit + 1, @backingInt(v));
             }
-        } else if (f.type == ?ast.Hashbang) {
+        } else if (Field == ?ast.Hashbang) {
             if (val) |h| {
                 setFlagBit(n, bit);
                 setSlot(n, slot, h.value.start);
                 setSlot(n, slot + 1, h.value.end);
             }
         } else {
-            @compileError("unsupported field type '" ++ @typeName(f.type) ++
+            @compileError("unsupported field type '" ++ @typeName(Field) ++
                 "' in " ++ @typeName(T));
         }
     }

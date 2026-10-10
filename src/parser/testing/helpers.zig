@@ -73,6 +73,15 @@ pub const Analyzed = struct {
     }
 };
 
+/// Returns `count` copies of `unit` laid end to end, built at comptime.
+pub inline fn repeat(comptime unit: []const u8, comptime count: u32) *const [unit.len * count]u8 {
+    comptime {
+        const units: [count][unit.len]u8 = @splat(unit.*);
+        const joined: [unit.len * count]u8 = @bitCast(units);
+        return &joined;
+    }
+}
+
 pub fn analyze(gpa: Allocator, source: []const u8, opts: parser.Options) !Analyzed {
     var result = try analyzeAllowErrors(gpa, source, opts);
     errdefer result.deinit();
@@ -95,7 +104,7 @@ pub fn analyzeAllowErrors(gpa: Allocator, source: []const u8, opts: parser.Optio
 fn findNamed(tree: *const ast.Tree, comptime tag: NodeTag, name: []const u8) ?ast.NodeIndex {
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
-        const index: ast.NodeIndex = @enumFromInt(i);
+        const index: ast.NodeIndex = @fromBackingInt(i);
         const data = tree.data(index);
         if (std.meta.activeTag(data) != tag) continue;
         const node_name = @field(data, @tagName(tag)).name;
@@ -107,7 +116,7 @@ fn findNamed(tree: *const ast.Tree, comptime tag: NodeTag, name: []const u8) ?as
 fn findFirst(tree: *const ast.Tree, tag: NodeTag) ?ast.NodeIndex {
     var i: u32 = 0;
     while (i < tree.nodes.len) : (i += 1) {
-        const index: ast.NodeIndex = @enumFromInt(i);
+        const index: ast.NodeIndex = @fromBackingInt(i);
         if (std.meta.activeTag(tree.data(index)) == tag) return index;
     }
     return null;
@@ -129,7 +138,7 @@ const source_extensions = [_][]const u8{
 
 fn corpusSourceType(dir_path: []const u8, path: []const u8) ast.SourceType {
     if (std.mem.eql(u8, dir_path, projects_dir)) return .fromPath(path);
-    if (std.mem.find(u8, path, "commonjs" ++ std.fs.path.sep_str) != null) return .commonjs;
+    if (std.mem.find(u8, path, "commonjs" ++ std.Io.Dir.path.sep_str) != null) return .commonjs;
     if (std.mem.find(u8, path, ".module.") != null) return .module;
     return .script;
 }
@@ -146,7 +155,7 @@ fn isSourceFile(basename: []const u8) bool {
 pub fn forEachCorpusTree(gpa: Allocator, checker: anytype) !void {
     const io = std.testing.io;
     var checked: usize = 0;
-    var path_buf: [std.fs.max_path_bytes]u8 = undefined;
+    var path_buf: [std.Io.Dir.max_path_bytes]u8 = undefined;
 
     for (corpus_dirs) |dir_path| {
         var dir = std.Io.Dir.cwd().openDir(io, dir_path, .{ .iterate = true }) catch continue;
@@ -173,7 +182,7 @@ pub fn forEachCorpusTree(gpa: Allocator, checker: anytype) !void {
             defer tree.deinit();
             if (tree.hasErrors()) continue;
 
-            const path = try std.fmt.bufPrint(&path_buf, "{s}/{s}", .{ dir_path, entry.path });
+            const path = try std.mem.print(&path_buf, "{s}/{s}", .{ dir_path, entry.path });
             try checker.check(path, &tree);
             checked += 1;
         }

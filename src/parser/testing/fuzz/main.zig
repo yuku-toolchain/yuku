@@ -51,11 +51,11 @@ fn dumpReproducer(message: []const u8) void {
 }
 
 pub fn main() void {
-    var gpa_state: std.heap.DebugAllocator(.{}) = .init;
-    defer if (gpa_state.deinit() == .leak) std.process.exit(1);
-    const gpa = gpa_state.allocator();
+    var safe_allocator: std.heap.SafeAllocator = .init(std.heap.page_allocator, .{});
+    defer if (safe_allocator.deinit() != 0) std.process.exit(1);
+    const gpa = safe_allocator.allocator();
 
-    current_seed = @intFromPtr(&gpa_state) *% 0x9e3779b97f4a7c15;
+    current_seed = @intFromPtr(&safe_allocator) *% 0x9e3779b97f4a7c15;
     var prng = std.Random.DefaultPrng.init(current_seed);
 
     std.debug.print(

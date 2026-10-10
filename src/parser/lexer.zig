@@ -912,7 +912,7 @@ pub const Lexer = struct {
     }
 
     const ident_start_table_ascii: [256]bool = blk: {
-        var t = [_]bool{false} ** 256;
+        var t: [256]bool = @splat(false);
         for ('a'..('z' + 1)) |c| t[c] = true;
         for ('A'..('Z' + 1)) |c| t[c] = true;
         t['_'] = true;
@@ -921,7 +921,7 @@ pub const Lexer = struct {
     };
 
     const ident_continue_table_ascii: [256]bool = blk: {
-        var t = [_]bool{false} ** 256;
+        var t: [256]bool = @splat(false);
         for ('a'..('z' + 1)) |c| t[c] = true;
         for ('A'..('Z' + 1)) |c| t[c] = true;
         for ('0'..('9' + 1)) |c| t[c] = true;

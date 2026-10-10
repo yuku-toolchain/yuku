@@ -28,8 +28,8 @@ pub fn build(b: *std.Build) void {
     );
     // pins neither target nor optimize, so the host tool and wasm graphs can share the instance
     const parser_extension = if (parser_extension_source) |source| b.createModule(.{
-        .root_source_file = if (std.fs.path.isAbsolute(source))
-            .{ .cwd_relative = source }
+        .root_source_file = if (std.Io.Dir.path.isAbsolute(source))
+            b.graph.cwdRelativePath(source)
         else
             b.path(source),
     }) else b.addOptions().createModule();
@@ -114,12 +114,12 @@ pub fn build(b: *std.Build) void {
     const safe_util = b.createModule(.{
         .root_source_file = b.path("src/util/root.zig"),
         .target = b.graph.host,
-        .optimize = .ReleaseSafe,
+        .optimize = .safe,
     });
     const safe_parser = b.createModule(.{
         .root_source_file = b.path("src/parser/root.zig"),
         .target = b.graph.host,
-        .optimize = .ReleaseSafe,
+        .optimize = .safe,
     });
     safe_parser.addImport("util", safe_util);
     safe_parser.addImport("codegen_options", codegen_options_module);
@@ -127,7 +127,7 @@ pub fn build(b: *std.Build) void {
     const fuzz_driver = b.createModule(.{
         .root_source_file = b.path("src/parser/testing/fuzz/main.zig"),
         .target = b.graph.host,
-        .optimize = .ReleaseSafe,
+        .optimize = .safe,
     });
     fuzz_driver.addImport("parser", safe_parser);
     const fuzz_exe = b.addExecutable(.{ .name = "fuzz", .root_module = fuzz_driver });
@@ -139,7 +139,7 @@ pub fn build(b: *std.Build) void {
     const codegen_reference_module = b.createModule(.{
         .root_source_file = b.path("src/parser/testing/codegen/reference.zig"),
         .target = b.graph.host,
-        .optimize = .ReleaseSafe,
+        .optimize = .safe,
     });
     codegen_reference_module.addImport("parser", safe_parser);
     const codegen_reference = b.addExecutable(.{
@@ -181,8 +181,8 @@ pub fn build(b: *std.Build) void {
     });
     const wasm_step = b.step("wasm", "Build the WebAssembly core");
 
-    // ReleaseSmall saves 85 kB at the cost of 10 to 15% of the speed
-    const wasm_optimize: std.builtin.OptimizeMode = .ReleaseFast;
+    // small saves 85 kB at the cost of 10 to 15% of the speed
+    const wasm_optimize: std.lang.Optimize = .fast;
     const wasm_util = b.createModule(.{
         .root_source_file = b.path("src/util/root.zig"),
         .target = wasm_target,

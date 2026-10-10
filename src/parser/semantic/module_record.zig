@@ -450,7 +450,7 @@ const Collector = struct {
 
     fn sweep(self: *Collector) Allocator.Error!void {
         for (0..self.tree.nodes.len) |i| {
-            const index: ast.NodeIndex = @enumFromInt(@as(u32, @intCast(i)));
+            const index: ast.NodeIndex = @fromBackingInt(@intCast(i));
             switch (self.tree.data(index)) {
                 .import_expression => |expr| try self.dynamicImport(expr, index),
                 .call_expression => |call| try self.requireCall(call, index),

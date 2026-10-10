@@ -20,10 +20,7 @@ const TableData = struct { root: []u32, leaf: []u32 };
 const CodepointRange = struct { start: u32, end: u32 };
 
 pub fn main(init: std.process.Init) !void {
-    var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
-    defer _ = debug_allocator.deinit();
-    const gpa = debug_allocator.allocator();
-
+    const gpa = init.gpa;
     const io = init.io;
 
     var start_set, var continue_set = try downloadAndParseProperties(io, gpa);
@@ -141,8 +138,8 @@ fn parseUnicodeProperties(
     );
     defer gpa.free(file_data);
 
-    var start_set: CodepointSet = .{};
-    var continue_set: CodepointSet = .{};
+    var start_set: CodepointSet = .empty;
+    var continue_set: CodepointSet = .empty;
 
     var line_iter = std.mem.splitScalar(u8, file_data, '\n');
     while (line_iter.next()) |line| {

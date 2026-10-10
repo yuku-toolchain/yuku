@@ -160,7 +160,7 @@ const Printer = struct {
     }
 
     inline fn nodeData(self: *const Self, idx: NodeIndex) NodeData {
-        return self.node_data[@intFromEnum(idx)];
+        return self.node_data[@backingInt(idx)];
     }
 
     inline fn writeString(self: *Self, id: ast.String) Error!void {
@@ -506,11 +506,11 @@ const Printer = struct {
     }
 
     inline fn tagOf(self: *const Self, idx: NodeIndex) NodeTag {
-        return std.meta.activeTag(self.node_data[@intFromEnum(idx)]);
+        return std.meta.activeTag(self.node_data[@backingInt(idx)]);
     }
 
     fn linkHeadOf(self: *const Self, idx: NodeIndex, ctx: Ctx) Head {
-        return switch (self.node_data[@intFromEnum(idx)]) {
+        return switch (self.node_data[@backingInt(idx)]) {
             inline else => |*node, tag| if (comptime isChainLink(tag))
                 self.linkHead(tag, node, ctx)
             else
@@ -519,7 +519,7 @@ const Printer = struct {
     }
 
     fn emitLinkSuffixOf(self: *Self, link: Link) Error!void {
-        switch (self.node_data[@intFromEnum(link.idx)]) {
+        switch (self.node_data[@backingInt(link.idx)]) {
             inline else => |*node, tag| if (comptime isChainLink(tag)) {
                 try self.emitLinkSuffix(tag, node, link.inner);
             } else unreachable,
@@ -731,7 +731,7 @@ const Printer = struct {
     // minify's `!0` ranks as unary
     inline fn precedenceOf(self: *const Self, idx: NodeIndex) u8 {
         const data = self.nodeData(idx);
-        const fixed = node_precedence[@intFromEnum(std.meta.activeTag(data))];
+        const fixed = node_precedence[@backingInt(std.meta.activeTag(data))];
         if (fixed != operator_precedence) return fixed;
         return switch (data) {
             .logical_expression => |l| l.operator.toToken().precedence(),
@@ -800,7 +800,7 @@ const Printer = struct {
         @setEvalBranchQuota(10_000);
         self.recordMapping(idx);
 
-        switch (self.node_data[@intFromEnum(idx)]) {
+        switch (self.node_data[@backingInt(idx)]) {
             // out of line, so the recursion's frame holds only what every node needs
             inline else => |*node, tag| {
                 if (comptime isChainLink(tag)) {
@@ -808,17 +808,15 @@ const Printer = struct {
                 }
                 if (comptime fixedString(tag)) |s| {
                     try self.out.writeStr(s);
+                } else if (comptime emittedByParent(tag)) {
+                    std.debug.panic("codegen: {s} is emitted by its parent", .{@tagName(tag)});
                 } else {
-                    const fn_name = "emit_" ++ @tagName(tag);
-                    if (comptime @hasDecl(Self, fn_name)) {
-                        const f = @field(Self, fn_name);
-                        if (comptime @typeInfo(@TypeOf(f)).@"fn".params.len == 3) {
-                            try @call(.never_inline, f, .{ self, node, ctx });
-                        } else {
-                            try @call(.never_inline, f, .{ self, node });
-                        }
+                    // every other tag has an emitter, so a new node kind fails to compile
+                    const emitter = @field(Self, "emit_" ++ @tagName(tag));
+                    if (comptime @typeInfo(@TypeOf(emitter)).@"fn".param_types.len == 3) {
+                        try @call(.never_inline, emitter, .{ self, node, ctx });
                     } else {
-                        std.debug.panic("codegen: not implemented for {s}", .{@tagName(tag)});
+                        try @call(.never_inline, emitter, .{ self, node });
                     }
                 }
             },
@@ -3105,6 +3103,14 @@ fn fixedString(comptime tag: NodeTag) ?[]const u8 {
     };
 }
 
+// printed inline by the node that owns them, never dispatched on their own
+fn emittedByParent(comptime tag: NodeTag) bool {
+    return switch (tag) {
+        .formal_parameters, .formal_parameter, .template_element => true,
+        else => false,
+    };
+}
+
 fn sameIdentifier(tree: *const Tree, a: NodeIndex, b: NodeIndex) bool {
     if (a == .null or b == .null) return false;
     const an = identifierStringOrNull(tree, a) orelse return false;
@@ -3310,8 +3316,8 @@ comptime {
 }
 
 const node_precedence = blk: {
-    var table: [std.meta.fields(NodeTag).len]u8 = undefined;
-    for (std.enums.values(NodeTag)) |tag| table[@intFromEnum(tag)] = switch (tag) {
+    var table: [@typeInfo(NodeTag).@"enum".field_names.len]u8 = undefined;
+    for (std.enums.values(NodeTag)) |tag| table[@backingInt(tag)] = switch (tag) {
         .sequence_expression => Precedence.Comma,
         .assignment_expression,
         .arrow_function_expression,

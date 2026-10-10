@@ -549,15 +549,15 @@ pub const Parser = struct {
         const spans = tree.nodes.items(.span);
         for (0..datas.len) |i| {
             var inner: u32 = switch (datas[i]) {
-                .parenthesized_expression => |p| @intFromEnum(p.expression),
-                .ts_parenthesized_type => |p| @intFromEnum(p.type_annotation),
+                .parenthesized_expression => |p| @backingInt(p.expression),
+                .ts_parenthesized_type => |p| @backingInt(p.type_annotation),
                 else => continue,
             };
 
             while (true) {
                 switch (datas[inner]) {
-                    .parenthesized_expression => |p| inner = @intFromEnum(p.expression),
-                    .ts_parenthesized_type => |p| inner = @intFromEnum(p.type_annotation),
+                    .parenthesized_expression => |p| inner = @backingInt(p.expression),
+                    .ts_parenthesized_type => |p| inner = @backingInt(p.type_annotation),
                     else => break,
                 }
             }
@@ -610,7 +610,7 @@ pub const Parser = struct {
     }
 
     pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
-        return try std.fmt.allocPrint(self.allocator(), format, args);
+        return self.allocator().print(format, args);
     }
 
     pub fn recover(self: *Parser, terminator: ?TokenTag) Error!void {

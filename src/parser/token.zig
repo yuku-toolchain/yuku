@@ -225,11 +225,11 @@ pub const TokenTag = enum(u32) {
     invalid = 160,
 
     pub fn precedence(self: TokenTag) u5 {
-        return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
+        return @intCast((@backingInt(self) >> Mask.PrecShift) & Mask.PrecOverlap);
     }
 
     pub fn hasMask(self: TokenTag, mask: u32) bool {
-        return (@intFromEnum(self) & mask) != 0;
+        return (@backingInt(self) & mask) != 0;
     }
 
     pub fn isNumericLiteral(self: TokenTag) bool {
@@ -477,7 +477,7 @@ pub const TokenFlag = enum(u3) {
 };
 
 pub inline fn flagMask(comptime flag: TokenFlag) u8 {
-    return @as(u8, 1) << @intFromEnum(flag);
+    return @as(u8, 1) << @backingInt(flag);
 }
 
 // extern, the token list is copied to the wire as is

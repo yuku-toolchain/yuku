@@ -149,11 +149,11 @@ fn isIdentifierPredicateStart(parser: *Parser) bool {
 
 pub fn parsePatternTypeAnnotation(parser: *Parser, pattern: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
-    std.debug.assert(@intFromEnum(pattern) + 1 == parser.tree.nodes.len);
+    std.debug.assert(@backingInt(pattern) + 1 == parser.tree.nodes.len);
 
     var data = parser.tree.data(pattern);
     var span = parser.tree.span(pattern);
-    parser.tree.nodes.shrinkRetainingCapacity(@intFromEnum(pattern));
+    parser.tree.nodes.shrinkRetainingCapacity(@backingInt(pattern));
 
     const annotation = try parseTypeAnnotation(parser) orelse return null;
     switch (data) {

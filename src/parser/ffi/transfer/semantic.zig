@@ -157,37 +157,37 @@ comptime {
     std.debug.assert(
         @bitOffsetOf(Reference.Flags, "type_position") == REFERENCE_TYPE_POSITION_BIT,
     );
-    std.debug.assert(@intFromEnum(Reference.Space.value) == 0);
-    std.debug.assert(@intFromEnum(Reference.Space.type) == 1);
-    std.debug.assert(@intFromEnum(Reference.Space.namespace) == 2);
-    std.debug.assert(@intFromEnum(Reference.Space.typeof) == 3);
-    std.debug.assert(@intFromEnum(Reference.Space.any) == 4);
+    std.debug.assert(@backingInt(Reference.Space.value) == 0);
+    std.debug.assert(@backingInt(Reference.Space.type) == 1);
+    std.debug.assert(@backingInt(Reference.Space.namespace) == 2);
+    std.debug.assert(@backingInt(Reference.Space.typeof) == 3);
+    std.debug.assert(@backingInt(Reference.Space.any) == 4);
 
     // scope kinds cross as raw u8 values inside `bits`, freeze the order
-    std.debug.assert(@intFromEnum(Scope.Kind.global) == 0);
-    std.debug.assert(@intFromEnum(Scope.Kind.module) == 1);
-    std.debug.assert(@intFromEnum(Scope.Kind.function) == 2);
-    std.debug.assert(@intFromEnum(Scope.Kind.block) == 3);
-    std.debug.assert(@intFromEnum(Scope.Kind.class) == 4);
-    std.debug.assert(@intFromEnum(Scope.Kind.static_block) == 5);
-    std.debug.assert(@intFromEnum(Scope.Kind.expression_name) == 6);
-    std.debug.assert(@intFromEnum(Scope.Kind.ts_module) == 7);
-    std.debug.assert(@intFromEnum(Scope.Kind.function_body) == 8);
+    std.debug.assert(@backingInt(Scope.Kind.global) == 0);
+    std.debug.assert(@backingInt(Scope.Kind.module) == 1);
+    std.debug.assert(@backingInt(Scope.Kind.function) == 2);
+    std.debug.assert(@backingInt(Scope.Kind.block) == 3);
+    std.debug.assert(@backingInt(Scope.Kind.class) == 4);
+    std.debug.assert(@backingInt(Scope.Kind.static_block) == 5);
+    std.debug.assert(@backingInt(Scope.Kind.expression_name) == 6);
+    std.debug.assert(@backingInt(Scope.Kind.ts_module) == 7);
+    std.debug.assert(@backingInt(Scope.Kind.function_body) == 8);
 
     // record kinds cross as raw bits, a contract with the JS IMPORT_KINDS and EXPORT_KINDS tables
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.named) == 0);
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.namespace) == 1);
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.side_effect) == 2);
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.import_equals) == 3);
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.dynamic) == 4);
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.require) == 5);
-    std.debug.assert(@intFromEnum(module_record.Import.Kind.augmentation) == 6);
-    std.debug.assert(@intFromEnum(module_record.Export.Kind.named) == 0);
-    std.debug.assert(@intFromEnum(module_record.Export.Kind.re_export) == 1);
-    std.debug.assert(@intFromEnum(module_record.Export.Kind.namespace) == 2);
-    std.debug.assert(@intFromEnum(module_record.Export.Kind.star) == 3);
-    std.debug.assert(@intFromEnum(module_record.Export.Kind.equals) == 4);
-    std.debug.assert(@intFromEnum(module_record.Export.Kind.global) == 5);
+    std.debug.assert(@backingInt(module_record.Import.Kind.named) == 0);
+    std.debug.assert(@backingInt(module_record.Import.Kind.namespace) == 1);
+    std.debug.assert(@backingInt(module_record.Import.Kind.side_effect) == 2);
+    std.debug.assert(@backingInt(module_record.Import.Kind.import_equals) == 3);
+    std.debug.assert(@backingInt(module_record.Import.Kind.dynamic) == 4);
+    std.debug.assert(@backingInt(module_record.Import.Kind.require) == 5);
+    std.debug.assert(@backingInt(module_record.Import.Kind.augmentation) == 6);
+    std.debug.assert(@backingInt(module_record.Export.Kind.named) == 0);
+    std.debug.assert(@backingInt(module_record.Export.Kind.re_export) == 1);
+    std.debug.assert(@backingInt(module_record.Export.Kind.namespace) == 2);
+    std.debug.assert(@backingInt(module_record.Export.Kind.star) == 3);
+    std.debug.assert(@backingInt(module_record.Export.Kind.equals) == 4);
+    std.debug.assert(@backingInt(module_record.Export.Kind.global) == 5);
 
     // module flags cross as a raw bitset, a contract with the JS moduleFlags accessors
     std.debug.assert(@bitSizeOf(module_record.Flags) == 8);
@@ -241,7 +241,7 @@ pub fn serializeInto(
         .import_count = @intCast(records.imports.len),
         .export_count = @intCast(records.exports.len),
         .node_scope_count = @intCast(sem.node_scopes.len),
-        .module_flags = @as(u8, @bitCast(records.flags)),
+        .module_flags = @backingInt(records.flags),
     };
     @memcpy(buf[pos..][0..SUBHEADER_SIZE], std.mem.asBytes(&sub));
     pos += SUBHEADER_SIZE;
@@ -249,12 +249,12 @@ pub fn serializeInto(
     std.debug.assert(sem.next_bodies.len == sem.scopes.list.len);
     for (sem.scopes.list, sem.next_bodies) |scope, next_body| {
         const entry = PackedScope{
-            .node = @intFromEnum(scope.node),
-            .parent = @intFromEnum(scope.parent),
-            .hoist_target = @intFromEnum(scope.hoist_target),
-            .bits = @as(u32, @intFromEnum(scope.kind)) |
+            .node = @backingInt(scope.node),
+            .parent = @backingInt(scope.parent),
+            .hoist_target = @backingInt(scope.hoist_target),
+            .bits = @as(u32, @backingInt(scope.kind)) |
                 (@as(u32, @intFromBool(scope.flags.strict)) << SCOPE_STRICT_BIT),
-            .next_body = @intFromEnum(next_body),
+            .next_body = @backingInt(next_body),
         };
         @memcpy(buf[pos..][0..SCOPE_SIZE], std.mem.asBytes(&entry));
         pos += SCOPE_SIZE;
@@ -264,8 +264,8 @@ pub fn serializeInto(
         const entry = PackedSymbol{
             .name_start = symbol.name.start,
             .name_end = symbol.name.end,
-            .flags = @bitCast(symbol.flags),
-            .scope = @intFromEnum(symbol.scope),
+            .flags = @backingInt(symbol.flags),
+            .scope = @backingInt(symbol.scope),
             .decls_start = symbol.decls.start,
             .decls_len = symbol.decls.len,
         };
@@ -281,31 +281,31 @@ pub fn serializeInto(
         const entry = PackedReference{
             .name_start = reference.name.start,
             .name_end = reference.name.end,
-            .scope = @intFromEnum(reference.scope),
-            .node = @intFromEnum(reference.node),
-            .bits = @as(u8, @bitCast(reference.flags)),
-            .symbol = @intFromEnum(reference.symbol),
+            .scope = @backingInt(reference.scope),
+            .node = @backingInt(reference.node),
+            .bits = @backingInt(reference.flags),
+            .symbol = @backingInt(reference.symbol),
         };
         @memcpy(buf[pos..][0..REFERENCE_SIZE], std.mem.asBytes(&entry));
         pos += REFERENCE_SIZE;
     }
 
     for (records.imports) |record| {
-        var bits: u32 = @intFromEnum(record.kind);
+        var bits: u32 = @backingInt(record.kind);
         bits |= @as(u32, @intFromBool(record.type_only)) << IMPORT_TYPE_BIT;
         if (record.phase) |phase| {
             bits |= @as(u32, 1) << IMPORT_HAS_PHASE_BIT;
-            bits |= @as(u32, @intFromEnum(phase)) << IMPORT_PHASE_BIT;
+            bits |= @as(u32, @backingInt(phase)) << IMPORT_PHASE_BIT;
         }
         const entry = PackedImport{
-            .symbol = @intFromEnum(record.symbol),
+            .symbol = @backingInt(record.symbol),
             .bits = bits,
             .name_start = record.name.start,
             .name_end = record.name.end,
             .specifier_start = record.specifier.start,
             .specifier_end = record.specifier.end,
-            .node = @intFromEnum(record.node),
-            .scope = @intFromEnum(record.scope),
+            .node = @backingInt(record.node),
+            .scope = @backingInt(record.scope),
         };
         @memcpy(buf[pos..][0..IMPORT_SIZE], std.mem.asBytes(&entry));
         pos += IMPORT_SIZE;
@@ -313,16 +313,16 @@ pub fn serializeInto(
 
     for (records.exports) |record| {
         const entry = PackedExport{
-            .bits = @as(u32, @intFromEnum(record.kind)) |
+            .bits = @as(u32, @backingInt(record.kind)) |
                 (@as(u32, @intFromBool(record.type_only)) << EXPORT_TYPE_BIT),
             .name_start = record.name.start,
             .name_end = record.name.end,
-            .symbol = @intFromEnum(record.symbol),
+            .symbol = @backingInt(record.symbol),
             .from_name_start = record.from_name.start,
             .from_name_end = record.from_name.end,
             .specifier_start = record.specifier.start,
             .specifier_end = record.specifier.end,
-            .node = @intFromEnum(record.node),
+            .node = @backingInt(record.node),
         };
         @memcpy(buf[pos..][0..EXPORT_SIZE], std.mem.asBytes(&entry));
         pos += EXPORT_SIZE;

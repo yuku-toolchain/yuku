@@ -145,10 +145,11 @@ fn validateCall(comptime point: Point, comptime Args: type) void {
         @compileError("extension.at expects a tuple of arguments, found " ++ @typeName(Args));
     }
     const want = spec(point).args;
-    if (info.@"struct".fields.len != want) {
+    const found = info.@"struct".field_types.len;
+    if (found != want) {
         @compileError(std.fmt.comptimePrint(
             "extension point {s} takes {d} arguments, the call site passes {d}",
-            .{ @tagName(point), want, info.@"struct".fields.len },
+            .{ @tagName(point), want, found },
         ));
     }
 }
@@ -156,7 +157,7 @@ fn validateCall(comptime point: Point, comptime Args: type) void {
 fn validateHook(comptime point: Point) void {
     const s = spec(point);
     const want = s.args + @intFromBool(s.kind != .predicate);
-    const found = @typeInfo(@TypeOf(@field(binding, @tagName(point)))).@"fn".params.len;
+    const found = @typeInfo(@TypeOf(@field(binding, @tagName(point)))).@"fn".param_types.len;
     if (found != want) {
         @compileError(std.fmt.comptimePrint(
             "parser_extension.{s} declares {d} parameters, a {s} hook there takes {d}",
@@ -167,28 +168,21 @@ fn validateHook(comptime point: Point) void {
 
 // a typo must not compile to a hook that never runs
 comptime {
-    const decls = @typeInfo(binding).@"struct".decls;
-    @setEvalBranchQuota(1000 + 64 * decls.len * @typeInfo(Point).@"enum".fields.len);
+    const decl_names = @typeInfo(binding).@"struct".decl_names;
+    @setEvalBranchQuota(1000 + 64 * decl_names.len * @typeInfo(Point).@"enum".field_names.len);
 
-    for (decls) |decl| {
-        if (@typeInfo(@TypeOf(@field(binding, decl.name))) != .@"fn") continue;
-        if (!isSnakeCase(decl.name)) continue;
+    for (decl_names) |name| {
+        if (@typeInfo(@TypeOf(@field(binding, name))) != .@"fn") continue;
+        if (!isSnakeCase(name)) continue;
 
-        const point = pointNamed(decl.name) orelse @compileError(
-            "parser_extension declares the snake_case function \"" ++ decl.name ++
+        const point = std.meta.stringToEnum(Point, name) orelse @compileError(
+            "parser_extension declares the snake_case function \"" ++ name ++
                 "\", which is not an extension point. Rename it, or make it non-`pub`." ++
                 " The extension points are:" ++ point_list,
         );
 
         validateHook(point);
     }
-}
-
-fn pointNamed(comptime name: []const u8) ?Point {
-    for (std.meta.fields(Point)) |field| {
-        if (std.mem.eql(u8, field.name, name)) return @enumFromInt(field.value);
-    }
-    return null;
 }
 
 fn isSnakeCase(comptime name: []const u8) bool {
@@ -201,7 +195,7 @@ fn isSnakeCase(comptime name: []const u8) bool {
 
 const point_list = blk: {
     var list: []const u8 = "";
-    for (std.meta.fieldNames(Point)) |name| {
+    for (@typeInfo(Point).@"enum".field_names) |name| {
         list = list ++ "\n  " ++ name ++ " (" ++ @tagName(spec(@field(Point, name)).kind) ++
             ") " ++ spec(@field(Point, name)).note;
     }
