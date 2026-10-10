@@ -17,13 +17,17 @@ pub const Point = enum {
     for_of_tail,
     function_body,
     function_has_body,
+    jsx_attribute,
     jsx_child,
     jsx_element_name,
     jsx_element_name_check,
     jsx_element_tail,
     jsx_fragment_tail,
     jsx_names_match,
+    jsx_starts_statement,
+    jsx_statement,
     jsx_text_boundary,
+    jsx_text_child,
     jsx_text_value,
     module_specifier,
 };
@@ -87,6 +91,7 @@ fn spec(comptime point: Point) Spec {
         // may consume its clause before declining, unlike every other point
         .for_of_tail => .{ .kind = .node, .args = 2, .note = "past a for-of right operand" },
         .function_body => .{ .kind = .node, .args = 1, .note = "head of a function body" },
+        .jsx_attribute => .{ .kind = .node, .args = 1, .note = "`{` opening a JSX attribute" },
         .jsx_child => .{ .kind = .node, .args = 1, .note = "past `{` in a JSX child" },
         .jsx_element_name => .{
             .kind = .node,
@@ -95,6 +100,8 @@ fn spec(comptime point: Point) Spec {
         },
         .jsx_element_tail => .{ .kind = .node, .args = 3, .note = "past a JSX opening element" },
         .jsx_fragment_tail => .{ .kind = .node, .args = 2, .note = "past a JSX opening fragment" },
+        .jsx_statement => .{ .kind = .node, .args = 1, .note = "`<` in statement position" },
+        .jsx_text_child => .{ .kind = .node, .args = 2, .note = "a child inside a JSX text run" },
         .module_specifier => .{ .kind = .node, .args = 1, .note = "a non-string module specifier" },
 
         .jsx_text_value => .{
@@ -108,12 +115,17 @@ fn spec(comptime point: Point) Spec {
         .function_has_body => .{
             .kind = .predicate,
             .args = 1,
-            .note = "does a `function` carry a body",
+            .note = "does a function or method carry a body",
         },
         .jsx_names_match => .{
             .kind = .predicate,
             .args = 3,
             .note = "does a closing tag match its opening tag",
+        },
+        .jsx_starts_statement => .{
+            .kind = .predicate,
+            .args = 1,
+            .note = "does a `<` after a line break start a statement",
         },
         .jsx_text_boundary => .{
             .kind = .predicate,

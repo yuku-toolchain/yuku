@@ -38,6 +38,13 @@ pub fn parseExpression(
     while (true) {
         const current_token = parser.current_token;
 
+        // a dialect can read a line-leading tag as the next statement, not a comparison
+        if (current_token.tag == .less_than and current_token.hasLineTerminatorBefore() and
+            parser.tree.isJsx())
+        {
+            if (extension.at(.jsx_starts_statement, .{parser}) orelse false) break;
+        }
+
         // f<T>(x)
         //  ^ dispatched before the binary precedence gate so it can
         //    act as a call-level postfix (generic call/instantiation)

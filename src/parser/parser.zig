@@ -7,6 +7,7 @@ const ast = @import("ast.zig");
 const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
+const ts_types = @import("syntax/ts/types.zig");
 const grammar = @import("grammar.zig");
 const comments = @import("comments.zig");
 
@@ -307,6 +308,20 @@ pub const Parser = struct {
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
         self.lexer.mode = mode;
+    }
+
+    /// Parses the TypeScript annotation at the current `:` and attaches it to `pattern`, as
+    /// a declaration does. An extension that reads its own bindings calls it to type them.
+    pub fn parseTypeAnnotation(self: *Parser, pattern: ast.NodeIndex) Error!?ast.NodeIndex {
+        std.debug.assert(self.tree.isTs());
+        std.debug.assert(pattern != .null);
+        std.debug.assert(self.current_token.tag == .colon);
+
+        const annotation = try ts_types.parseTypeAnnotation(self) orelse return null;
+        ts_types.applyTypeAnnotationToPattern(self, pattern, annotation);
+
+        std.debug.assert(self.tree.span(pattern).end == self.tree.span(annotation).end);
+        return annotation;
     }
 
     pub fn flushToExtras(

@@ -11,9 +11,30 @@ pub fn at_expression(comptime R: type, parser: anytype) R {
     return decline(R, parser);
 }
 
+/// `@typed x: T;` declares `let x: T`, typed by the parser's own annotation.
 pub fn at_statement(comptime R: type, parser: anytype) R {
     visit("at_statement");
-    return decline(R, parser);
+    const start = parser.current_token.span.start;
+    if (!std.mem.startsWith(u8, parser.source[parser.current_token.span.end..], "typed ")) return null;
+    try parser.advance() orelse return .failed;
+    try parser.advance() orelse return .failed;
+
+    const name = parser.current_token.span;
+    const id = try parser.tree.addNode(.{ .binding_identifier = .{
+        .name = parser.tree.sourceSlice(name.start, name.end),
+    } }, name);
+    try parser.advance() orelse return .failed;
+    _ = try parser.parseTypeAnnotation(id) orelse return .failed;
+
+    const declarator = try parser.tree.addNode(
+        .{ .variable_declarator = .{ .id = id, .init = .null } },
+        parser.tree.span(id),
+    );
+    const end = try parser.eatSemicolon(parser.tree.span(id).end) orelse return .failed;
+    return .of(try parser.tree.addNode(.{ .variable_declaration = .{
+        .kind = .let,
+        .declarators = try parser.tree.addExtra(&.{declarator}),
+    } }, .{ .start = start, .end = end }));
 }
 
 pub fn binding_pattern(comptime R: type, parser: anytype) R {
@@ -41,9 +62,24 @@ pub fn for_of_tail(comptime R: type, parser: anytype, head: anytype) R {
     return null;
 }
 
+/// A `%` body reports, then fails.
 pub fn function_body(comptime R: type, parser: anytype) R {
     visit("function_body");
-    return decline(R, parser);
+    if (parser.current_token.tag != .percent) return null;
+
+    try parser.report(parser.current_token.span, "'%' is not a body", .{});
+    return .failed;
+}
+
+/// `{}` reports, then fails.
+pub fn jsx_attribute(comptime R: type, parser: anytype) R {
+    visit("jsx_attribute");
+    std.debug.assert(parser.current_token.tag == .left_brace);
+    const close = parser.current_token.span.end;
+    if (close >= parser.source.len or parser.source[close] != '}') return null;
+
+    try parser.report(parser.current_token.span, "An attribute cannot be empty", .{});
+    return .failed;
 }
 
 pub fn jsx_child(comptime R: type, parser: anytype) R {
@@ -64,6 +100,30 @@ pub fn jsx_element_tail(comptime R: type, parser: anytype, opening: anytype, con
 pub fn jsx_fragment_tail(comptime R: type, parser: anytype, opening: anytype) R {
     visit("jsx_fragment_tail");
     return decline(R, .{ parser, opening });
+}
+
+pub fn jsx_statement(comptime R: type, parser: anytype) R {
+    visit("jsx_statement");
+    std.debug.assert(parser.current_token.tag == .less_than);
+    return null;
+}
+
+/// `#c#` in text is an empty `{}` child.
+pub fn jsx_text_child(comptime R: type, parser: anytype, span: anytype) R {
+    visit("jsx_text_child");
+    const text = parser.source[span.start..span.end];
+    const open = std.mem.indexOfScalar(u8, text, '#') orelse return null;
+    const close = std.mem.indexOfScalarPos(u8, text, open + 1, '#') orelse return null;
+
+    const child: @TypeOf(span) = .{
+        .start = span.start + @as(u32, @intCast(open)),
+        .end = span.start + @as(u32, @intCast(close)) + 1,
+    };
+    const empty = try parser.tree.addNode(.{ .jsx_empty_expression = .{} }, child);
+    return .of(try parser.tree.addNode(
+        .{ .jsx_expression_container = .{ .expression = empty } },
+        child,
+    ));
 }
 
 /// Accepts a bare identifier as a specifier.
@@ -95,9 +155,22 @@ pub fn binding_start(tag: anytype) ?bool {
     return decline(?bool, tag);
 }
 
+/// A `%` starts a body, which `function_body` reads.
 pub fn function_has_body(parser: anytype) ?bool {
     visit("function_has_body");
-    return decline(?bool, parser);
+    if (parser.current_token.tag != .percent) return null;
+
+    return true;
+}
+
+/// A line-leading `<p` starts a statement.
+pub fn jsx_starts_statement(parser: anytype) ?bool {
+    visit("jsx_starts_statement");
+    std.debug.assert(parser.current_token.tag == .less_than);
+    const after = parser.current_token.span.end;
+    if (after >= parser.source.len or parser.source[after] != 'p') return null;
+
+    return true;
 }
 
 /// `</_>` closes any element.
