@@ -37,7 +37,8 @@ function run({ memory, alloc, free }, entry, source, options) {
   }
   const capacity = source.length * 3 || 1;
   const pointer = alloc(capacity);
-  const { written } = encoder.encodeInto(source, new Uint8Array(memory.buffer, pointer, capacity));
+  const view = new Uint8Array(memory.buffer, pointer, capacity);
+  const written = source.length === 0 ? 0 : encoder.encodeInto(source, view).written;
   const result = entry(pointer, written, flagsOf(options));
   free(pointer, capacity);
   if (result === 0) throw new Error("@yuku-core/wasm: out of memory");

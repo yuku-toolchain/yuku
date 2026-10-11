@@ -41,6 +41,21 @@ describe("the WebAssembly core matches the native core", () => {
     expect(differences(`let s = "${text}";\nlet x = ;`, { lang: "ts" })).toEqual([]);
   });
 
+  test("on an empty source when encodeInto repeats its last count, as in WebContainers", () => {
+    const encodeInto = TextEncoder.prototype.encodeInto;
+    let last = { read: 0, written: 0 };
+    TextEncoder.prototype.encodeInto = function (source, view) {
+      if (source) last = encodeInto.call(this, source, view);
+      return last;
+    };
+    try {
+      expect(differences(jsSource, {})).toEqual([]);
+      expect(differences("", {})).toEqual([]);
+    } finally {
+      TextEncoder.prototype.encodeInto = encodeInto;
+    }
+  });
+
   test.skipIf(!corpusPresent())(
     "on every corpus and project file",
     () => {
