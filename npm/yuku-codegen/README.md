@@ -32,7 +32,7 @@ const { code } = generate(parse("const x = 1 + 2;").program);
 
 ## Result
 
-`generate` takes a `Program` node and returns a `GenerateResult`.
+`generate` takes a `Program` or any single node, such as an object property, and returns a `GenerateResult`.
 
 ```ts
 interface GenerateResult {

@@ -1,4 +1,4 @@
-import type { Comment, Diagnostic, Program } from "@yuku-toolchain/types";
+import type { Comment, Diagnostic, Node } from "@yuku-toolchain/types";
 
 import { print, type PrintOptions } from "./printer.js";
 import { encodeMappings, Mappings } from "./sourcemap.js";
@@ -85,18 +85,19 @@ export interface GenerateResult {
 const QUOTES: readonly Quotes[] = ["preserve", "double", "single", "shortest"];
 const COMMENTS = ["none", "all", "some", "line", "block"] as const;
 
-export function generate(program: Program, options: GenerateOptions = {}): GenerateResult {
-  if (program?.type !== "Program") {
-    throw new TypeError("Expected a `Program` node, such as `parse(source).program`");
+/** Prints a `Program` or any single node back to source. */
+export function generate(node: Node, options: GenerateOptions = {}): GenerateResult {
+  if (typeof node?.type !== "string") {
+    throw new TypeError("Expected an AST node, such as `parse(source).program`");
   }
   const printOptions = resolveOptions(options);
   const sourceMap = options.sourceMap;
-  if (sourceMap == null) return { ...print(program, printOptions, null), map: null };
+  if (sourceMap == null) return { ...print(node, printOptions, null), map: null };
   if (typeof sourceMap.source !== "string") {
     throw new TypeError("`sourceMap.source` must be the original source text");
   }
   const mappings = new Mappings(Math.max(sourceMap.source.length >>> 3, 1024));
-  const { code, diagnostics } = print(program, printOptions, mappings);
+  const { code, diagnostics } = print(node, printOptions, mappings);
   const map: SourceMap = {
     version: 3,
     file: sourceMap.file ?? null,

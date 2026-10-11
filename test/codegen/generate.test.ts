@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { parse, type Program } from "yuku-parser";
 import { generate } from "yuku-codegen";
+import { findAll, walk } from "yuku-ast";
 import { TraceMap, decodedMappings } from "@jridgewell/trace-mapping";
 import { gen } from "./helpers";
 
@@ -61,4 +62,44 @@ test("the line after a hashbang maps to its own line", () => {
   const { code, map } = generate(parse(source).program, { sourceMap: { source } });
   expect(code).toBe("#!/usr/bin/env node\nx;");
   expect(map?.mappings).toBe("AAAA;AACA");
+});
+
+test("any node prints on its own", () => {
+  const source = "#!/usr/bin/env node\nconst o = { a: `x` };\nclass C { #p: string; }";
+  const printed: string[] = [];
+  walk(parse(source, { lang: "ts" }).program, {
+    enter(node) {
+      if (node.type === "Program" || node.type === "Identifier") return;
+      printed.push(`${node.type}: ${generate(node, { format: "compact" }).code}`);
+    },
+  });
+  expect(printed).toMatchInlineSnapshot(`
+    [
+      "Hashbang: #!/usr/bin/env node",
+      "VariableDeclaration: const o={a:\`x\`}",
+      "VariableDeclarator: o={a:\`x\`}",
+      "ObjectExpression: {a:\`x\`}",
+      "Property: a:\`x\`",
+      "TemplateLiteral: \`x\`",
+      "TemplateElement: x",
+      "ClassDeclaration: class C{#p:string}",
+      "ClassBody: {#p:string}",
+      "PropertyDefinition: #p:string",
+      "PrivateIdentifier: #p",
+      "TSTypeAnnotation: :string",
+      "TSStringKeyword: string",
+    ]
+  `);
+});
+
+test("a lone type strips to nothing", () => {
+  const { program } = parse("let x: this | string;", { lang: "ts" });
+  const types = findAll(program, ["TSUnionType", "TSThisType", "TSStringKeyword"]);
+  expect(types.map((node) => generate(node, { strip: true }).code)).toEqual(["", "", ""]);
+});
+
+test("a value that is not a node throws", () => {
+  for (const value of [null, undefined, {}, { type: 1 }]) {
+    expect(() => generate(value as never)).toThrow("Expected an AST node");
+  }
 });

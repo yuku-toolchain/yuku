@@ -155,6 +155,20 @@ const TYPE_CONTEXT = new Set([
   "TSJSDocNullableType",
   "TSJSDocNonNullableType",
   "TSJSDocUnknownType",
+  "TSThisType",
+  "TSNullKeyword",
+  "TSAnyKeyword",
+  "TSUnknownKeyword",
+  "TSNeverKeyword",
+  "TSVoidKeyword",
+  "TSUndefinedKeyword",
+  "TSStringKeyword",
+  "TSNumberKeyword",
+  "TSBigIntKeyword",
+  "TSBooleanKeyword",
+  "TSSymbolKeyword",
+  "TSObjectKeyword",
+  "TSIntrinsicKeyword",
   "TSUnionType",
   "TSIntersectionType",
   "TSConditionalType",
@@ -205,13 +219,9 @@ interface Link {
   deferTrailing: boolean;
 }
 
-export function print(
-  program: T.Program,
-  options: PrintOptions,
-  mappings: Mappings | null,
-): PrintResult {
+export function print(node: Node, options: PrintOptions, mappings: Mappings | null): PrintResult {
   const printer = new Printer(options, mappings);
-  printer.emit(program);
+  printer.emit(node);
   return { code: printer.finish(), diagnostics: printer.diagnostics };
 }
 
@@ -745,6 +755,8 @@ class Printer extends Output {
         return this.emitNewExpression(node);
       case "TemplateLiteral":
         return this.emitTemplateLiteral(node, ctx);
+      case "TemplateElement":
+        return this.printTemplateElement(node, false);
       case "UpdateExpression":
         return this.emitUpdateExpression(node);
       case "SequenceExpression":
@@ -828,6 +840,9 @@ class Printer extends Output {
         return this.emitRestElement(node);
       case "Program":
         return this.emitProgram(node);
+      case "Hashbang":
+        this.writeToken("#!");
+        return this.writeLiteral(node.value);
       case "ImportDeclaration":
         return this.emitImportDeclaration(node);
       case "ImportSpecifier":
@@ -1273,8 +1288,7 @@ class Printer extends Output {
 
   emitProgram(p: T.Program): void {
     if (p.hashbang != null) {
-      this.writeToken("#!");
-      this.writeLiteral(p.hashbang.value);
+      this.emit(p.hashbang);
       this.writeToken("\n");
     }
     this.printStmtList(p.body, true);
