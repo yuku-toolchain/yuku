@@ -1,6 +1,10 @@
 const SOURCE_TYPES = { script: 0, module: 1, commonjs: 2 };
 const LANGS = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
 
+// linear memory never shrinks, so after a huge file a source too small to need it (at most 64
+// bytes per character) gets a fresh instance
+const MEMORY_BYTES_MAX = 128 * 1024 * 1024;
+
 export async function instantiate(source, write) {
   let input = await source;
   if (typeof input === "string" || input instanceof URL) input = await fetch(input);
@@ -22,11 +26,15 @@ export function instantiateSync(source, write) {
 }
 
 function coreOf(module, write) {
-  const { exports } = new WebAssembly.Instance(module);
+  let exports = new WebAssembly.Instance(module).exports;
 
   function run(entry, source, options) {
     if (typeof source !== "string") {
       throw new TypeError("@yuku-core/wasm: the source must be a string");
+    }
+    const grown = exports.memory.buffer.byteLength > MEMORY_BYTES_MAX;
+    if (grown && source.length * 64 < MEMORY_BYTES_MAX) {
+      exports = new WebAssembly.Instance(module).exports;
     }
     const { memory, alloc, free } = exports;
     const capacity = source.length * 3 || 1;

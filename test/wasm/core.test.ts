@@ -60,6 +60,11 @@ describe("the WebAssembly core matches the native core", () => {
     }
   });
 
+  test("on the fresh instance a huge file leaves behind", () => {
+    expect(differences(`[${"1, ".repeat(1_000_000)}];`, {})).toEqual([]);
+    expect(differences(tsSource, { lang: "ts" })).toEqual([]);
+  });
+
   test.skipIf(!corpusPresent())(
     "on every corpus and project file",
     () => {
