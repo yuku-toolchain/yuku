@@ -14,8 +14,15 @@ const Options = struct {
     tokens: bool = false,
 };
 
+// reused across calls, so large parses skip mapping and faulting in fresh pages
+const scratch_retained_bytes_max = 16 * 1024 * 1024;
+
+threadlocal var scratch: std.heap.ArenaAllocator = .init(std.heap.smp_allocator);
+threadlocal var scratch_hooked = false;
+
 pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
-    var tree = parseTree(source, options) catch return error.ParseFailed;
+    defer scratchReset();
+    var tree = parseTree(env, source, options) catch return error.ParseFailed;
     defer tree.deinit();
 
     if (options.semantic_errors) _ = parser.semantic.analyze(&tree) catch {};
@@ -26,7 +33,8 @@ pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
 }
 
 pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
-    var tree = parseTree(source, options) catch return error.AnalyzeFailed;
+    defer scratchReset();
+    var tree = parseTree(env, source, options) catch return error.AnalyzeFailed;
     defer tree.deinit();
 
     // analysis is error tolerant, a tree with syntax errors still yields scopes and symbols
@@ -40,14 +48,29 @@ pub fn analyze(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     return buffer.val;
 }
 
-fn parseTree(source: []const u8, options: Options) !parser.ast.Tree {
-    return parser.parse(std.heap.smp_allocator, source, .{
+fn parseTree(env: napi.Env, source: []const u8, options: Options) !parser.ast.Tree {
+    if (!scratch_hooked) {
+        // frees the arena of a worker thread on exit
+        const status = napi.c.napi_add_env_cleanup_hook(env.handle, &scratchFree, null);
+        std.debug.assert(status == .ok);
+        scratch_hooked = true;
+    }
+    return parser.parse(scratch.allocator(), source, .{
         .source_type = options.source_type,
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,
         .comments = if (options.attach_comments) .both else .flat,
         .tokens = options.tokens,
     });
+}
+
+fn scratchReset() void {
+    _ = scratch.reset(.{ .retain_with_limit = scratch_retained_bytes_max });
+}
+
+fn scratchFree(_: ?*anyopaque) callconv(.c) void {
+    _ = scratch.reset(.free_all);
+    scratch_hooked = false;
 }
 
 comptime {
