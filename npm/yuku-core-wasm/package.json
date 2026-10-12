@@ -25,6 +25,7 @@
   },
   "sideEffects": false,
   "files": [
+    "core.js",
     "index.js",
     "index.d.ts",
     "node.js",

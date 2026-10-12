@@ -5,12 +5,14 @@ import { analyze } from "yuku-analyzer";
 import { fileOptions, load } from "yuku-core";
 import { parse } from "yuku-parser";
 import { load as loadInBrowser } from "../../npm/yuku-core/browser.js";
+import { loadSync as loadBrowserWasm } from "../../npm/yuku-core-wasm/index.js";
 import { corpusFiles, corpusPresent, projectFiles } from "../corpus";
 import { jsSource, tsSource } from "./sources";
 
 const native = load();
 const wasm = await wasmCore.load();
 const bytes = readFileSync(new URL("../../npm/yuku-core-wasm/yuku-core.wasm", import.meta.url));
+const wasmCores = [wasm, loadBrowserWasm(bytes)];
 
 const OPTION_SETS = [
   {},
@@ -23,7 +25,9 @@ function differences(source: string, options: object): string[] {
   const found: string[] = [];
   for (const entry of ["parse", "analyze"] as const) {
     const expected = Buffer.from(native[entry](source, resolved));
-    if (!expected.equals(Buffer.from(wasm[entry](source, resolved)))) found.push(entry);
+    for (const core of wasmCores) {
+      if (!expected.equals(Buffer.from(core[entry](source, resolved)))) found.push(entry);
+    }
   }
   return found;
 }
