@@ -116,6 +116,18 @@ test("TS leading union and intersection operators", () => {
     `);
 });
 
+test("an empty type-only import keeps its braces", () => {
+  const source = "import type {} from 'a';\nimport {} from 'b';\nexport type {} from 'c';";
+  expect(gen(source)).toMatchInlineSnapshot(`
+    "import type {} from 'a';
+    import 'b';
+    export type {} from 'c';"
+  `);
+  expect(gen(source, { format: "compact" })).toMatchInlineSnapshot(
+    `"import type{} from'a';import'b';export type{} from'c'"`,
+  );
+});
+
 test("an export default value keeps the parens that stop it reading as a declaration", () => {
   const source = [
     "export default (function () {})();",

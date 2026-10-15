@@ -2405,6 +2405,10 @@ class NodePrinter extends Output implements Printer {
       }
       this.closeList(depth);
       this.writeKeyword(" from");
+    } else if (d.importKind === "type") {
+      this.writeToken(" ");
+      this.writeToken("{}");
+      this.writeKeyword(" from");
     } else {
       this.writeToken(" ");
     }

@@ -2231,6 +2231,10 @@ const Printer = struct {
             }
             try self.closeList(depth);
             try self.out.writeStr(" from ");
+        } else if (d.import_kind == .type) {
+            try self.out.writeByte(' ');
+            try self.out.writeStr("{}");
+            try self.out.writeStr(" from ");
         } else {
             try self.out.writeByte(' ');
         }
