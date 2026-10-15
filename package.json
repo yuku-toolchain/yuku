@@ -2,6 +2,7 @@
   "name": "yuku-root",
   "version": "",
   "private": true,
+  "type": "module",
   "homepage": "https://yuku.fyi",
   "license": "MIT",
   "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
@@ -33,9 +34,12 @@
     "docs:llms": "bun docs/generate-llms.ts",
     "build": "zig build package && bun run --cwd packages/yuku build",
     "release:npm": "bun .github/scripts/release.ts",
-    "fetch:fixtures": "bun test/parser/load test/parser/suite && bun test/projects/load.ts"
+    "fetch:fixtures": "bun test/parser/load test/parser/suite && bun test/projects/load.ts",
+    "fetch:profile": "bun test/projects/load.ts typescript zod excalidraw three",
+    "profile": "bun fetch:profile && bun run build && node profile/package.ts"
   },
   "devDependencies": {
+    "@codspeed/tinybench-plugin": "6.0.1",
     "@jridgewell/trace-mapping": "^0.3.31",
     "@types/bun": "^1.3.14",
     "@types/node": "^26.6.2",
@@ -44,6 +48,7 @@
     "fast-deep-equal": "^3.1.3",
     "jest-diff": "^30.5.2",
     "pkg-pr-new": "0.0.88",
+    "tinybench": "6.2.2",
     "typescript": "^6.0.3",
     "yuku": "workspace:*"
   }
