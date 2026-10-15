@@ -1,0 +1,816 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 328,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 204,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "A",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 8,
+          "end": 204,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 12,
+              "end": 34,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 12,
+                "end": 14,
+                "name": "f"
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 14,
+                "end": 34,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 15,
+                    "end": 24,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 16,
+                      "end": 24,
+                      "typeAnnotation": {
+                        "type": "TSStringKeyword",
+                        "start": 18,
+                        "end": 24
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 25,
+                  "end": 33,
+                  "typeAnnotation": {
+                    "type": "TSNumberKeyword",
+                    "start": 27,
+                    "end": 33
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 37,
+              "end": 59,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 37,
+                "end": 39,
+                "name": "f"
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 39,
+                "end": 59,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 40,
+                    "end": 49,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 41,
+                      "end": 49,
+                      "typeAnnotation": {
+                        "type": "TSNumberKeyword",
+                        "start": 43,
+                        "end": 49
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 50,
+                  "end": 58,
+                  "typeAnnotation": {
+                    "type": "TSNumberKeyword",
+                    "start": 52,
+                    "end": 58
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 62,
+              "end": 112,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 62,
+                "end": 64,
+                "name": "f"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 64,
+                "end": 112,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 65,
+                    "end": 83,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 66,
+                      "end": 83,
+                      "typeAnnotation": {
+                        "type": "TSUnionType",
+                        "start": 68,
+                        "end": 83,
+                        "types": [
+                          {
+                            "type": "TSStringKeyword",
+                            "start": 68,
+                            "end": 74
+                          },
+                          {
+                            "type": "TSNumberKeyword",
+                            "start": 77,
+                            "end": 83
+                          }
+                        ]
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 85,
+                  "end": 112,
+                  "body": [
+                    {
+                      "type": "ReturnStatement",
+                      "start": 91,
+                      "end": 108,
+                      "argument": {
+                        "type": "CallExpression",
+                        "start": 98,
+                        "end": 107,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 98,
+                          "end": 104,
+                          "name": "Number",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "arguments": [
+                          {
+                            "type": "Identifier",
+                            "start": 105,
+                            "end": 106,
+                            "name": "x",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          }
+                        ],
+                        "optional": false,
+                        "typeArguments": null
+                      }
+                    }
+                  ]
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 115,
+              "end": 142,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 122,
+                "end": 124,
+                "name": "g"
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 124,
+                "end": 142,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 125,
+                    "end": 134,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 126,
+                      "end": 134,
+                      "typeAnnotation": {
+                        "type": "TSStringKeyword",
+                        "start": 128,
+                        "end": 134
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 135,
+                  "end": 141,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 137,
+                    "end": 141
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": true,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 145,
+              "end": 165,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 152,
+                "end": 154,
+                "name": "g"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 154,
+                "end": 165,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 155,
+                    "end": 161,
+                    "name": "x",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 156,
+                      "end": 161,
+                      "typeAnnotation": {
+                        "type": "TSAnyKeyword",
+                        "start": 158,
+                        "end": 161
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 163,
+                  "end": 165,
+                  "body": []
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": true,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 168,
+              "end": 202,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 168,
+                "end": 169,
+                "name": "m",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 169,
+                "end": 202,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 172,
+                  "end": 202,
+                  "body": [
+                    {
+                      "type": "ReturnStatement",
+                      "start": 178,
+                      "end": 198,
+                      "argument": {
+                        "type": "CallExpression",
+                        "start": 185,
+                        "end": 197,
+                        "callee": {
+                          "type": "MemberExpression",
+                          "start": 185,
+                          "end": 192,
+                          "object": {
+                            "type": "ThisExpression",
+                            "start": 185,
+                            "end": 189
+                          },
+                          "property": {
+                            "type": "PrivateIdentifier",
+                            "start": 190,
+                            "end": 192,
+                            "name": "f"
+                          },
+                          "computed": false,
+                          "optional": false
+                        },
+                        "arguments": [
+                          {
+                            "type": "Literal",
+                            "start": 193,
+                            "end": 196,
+                            "value": "1",
+                            "raw": "\"1\""
+                          }
+                        ],
+                        "optional": false,
+                        "typeArguments": null
+                      }
+                    }
+                  ]
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 206,
+        "end": 327,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 212,
+          "end": 213,
+          "name": "B",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 214,
+          "end": 327,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 218,
+              "end": 229,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 218,
+                "end": 220,
+                "name": "f"
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 220,
+                "end": 229,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 222,
+                  "end": 228,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 224,
+                    "end": 228
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 232,
+              "end": 246,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 239,
+                "end": 241,
+                "name": "f"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 241,
+                "end": 246,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 244,
+                  "end": 246,
+                  "body": []
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": true,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 249,
+              "end": 260,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 249,
+                "end": 251,
+                "name": "g"
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 251,
+                "end": 260,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 253,
+                  "end": 259,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 255,
+                    "end": 259
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 263,
+              "end": 291,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 267,
+                "end": 269,
+                "name": "g"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 269,
+                "end": 291,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 272,
+                  "end": 291,
+                  "body": [
+                    {
+                      "type": "ReturnStatement",
+                      "start": 278,
+                      "end": 287,
+                      "argument": {
+                        "type": "Literal",
+                        "start": 285,
+                        "end": 286,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  ]
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "get",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 294,
+              "end": 305,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 294,
+                "end": 296,
+                "name": "h"
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 296,
+                "end": 305,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 298,
+                  "end": 304,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 300,
+                    "end": 304
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 308,
+              "end": 315,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 308,
+                "end": 310,
+                "name": "h"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 310,
+                "end": 315,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 313,
+                  "end": 315,
+                  "body": []
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 318,
+              "end": 325,
+              "decorators": [],
+              "key": {
+                "type": "PrivateIdentifier",
+                "start": 318,
+                "end": 320,
+                "name": "h"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 320,
+                "end": 325,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 323,
+                  "end": 325,
+                  "body": []
+                },
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Duplicate private name '#f'",
+      "path": null,
+      "start": 232,
+      "end": 246,
+      "labels": [
+        {
+          "start": 218,
+          "end": 229,
+          "message": "first declared here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate private name '#g'",
+      "path": null,
+      "start": 263,
+      "end": 291,
+      "labels": [
+        {
+          "start": 249,
+          "end": 260,
+          "message": "first declared here"
+        }
+      ],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate private name '#h'",
+      "path": null,
+      "start": 318,
+      "end": 325,
+      "labels": [
+        {
+          "start": 308,
+          "end": 315,
+          "message": "first declared here"
+        }
+      ],
+      "help": null
+    }
+  ]
+}

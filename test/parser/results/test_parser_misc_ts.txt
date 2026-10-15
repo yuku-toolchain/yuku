@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       104/104 (100.00%)
+Passed:       105/105 (100.00%)
 Failed:       0
-AST mismatch: 0/104
+AST mismatch: 0/105
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -305,6 +305,17 @@ error: A parameter property may not be declared using a binding pattern
    |
    = help: Name the parameter, then destructure it inside the constructor body.
 
+
+✓ test/parser/misc/ts/private-method-overloads.ts
+error: Duplicate private name '#f'
+   |
+14 | class B {
+15 |   #f(): void;
+   |   ~~~~~~~~~~~ first declared here
+16 |   static #f() {}
+   |   ^^^^^^^^^^^^^^
+17 |   #g(): void;
+   |
 
 ✓ test/parser/misc/ts/redeclare-error-ambient.ts
 error: Identifier 'A1' has already been declared

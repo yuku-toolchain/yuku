@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       282/282 (100.00%)
+Passed:       281/281 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -3143,17 +3143,6 @@ error: 'super()' is only valid in a constructor of a derived class
    |
    = help: Add an 'extends' clause to the class or remove the 'super()' call
 
-
-✓ test/parser/suite/ts/semantic/f1aec79048b71e95.ts
-error: Duplicate private name '#f'
-   |
- 1 | class Test {
- 2 |   #f(x: string): number;
-   |   ~~~~~~~~~~~~~~~~~~~~~~ first declared here
- 3 |   #f(x: number): string;
-   |   ^^^^^^^^^^^^^^^^^^^^^^
- 4 |   #f(x: string | number): string | number {
-   |
 
 ✓ test/parser/suite/ts/semantic/f2c6db3ad9c90b42.ts
 error: 'arguments' is not allowed as a binding identifier in strict mode

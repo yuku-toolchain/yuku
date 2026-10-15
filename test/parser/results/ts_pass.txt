@@ -1,8 +1,8 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8647/8647 (100.00%)
+Passed:       8648/8648 (100.00%)
 Failed:       0
-AST mismatch: 0/8645
+AST mismatch: 0/8646
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -8155,6 +8155,7 @@ AST mismatch: 0/8645
 ✓ test/parser/suite/ts/pass/f192cabc643c5160.ts
 ✓ test/parser/suite/ts/pass/f19a9bf3ec8e79ab.ts
 ✓ test/parser/suite/ts/pass/f19db491e8a5e304.ts
+✓ test/parser/suite/ts/pass/f1aec79048b71e95.ts
 ✓ test/parser/suite/ts/pass/f1be9939d3edff1a.ts
 ✓ test/parser/suite/ts/pass/f1c190628f288a74.ts
 ✓ test/parser/suite/ts/pass/f1ce7acd181eb02c.ts

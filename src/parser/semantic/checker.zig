@@ -915,8 +915,8 @@ pub const Checker = struct {
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
     ///
     /// A class body has at most one constructor, and declares each private name
-    /// once, except for a getter and setter pair that are both static or both
-    /// non-static.
+    /// once. A getter and setter pair may share a name, and so may a method and
+    /// its TypeScript overload signatures, when all of them are static or none are.
     pub fn enter_class_body(
         self: *Self,
         body: ast.ClassBody,
@@ -952,19 +952,17 @@ pub const Checker = struct {
             }
 
             const name_j = privateElementName(ctx.tree, child_data) orelse continue;
-            const kind_j = privateElementKind(child_data);
+            const kind_j = privateElementKind(ctx.tree, child_data);
 
             for (children[0..j]) |prev| {
                 const prev_data = ctx.tree.data(prev);
                 const name_i = privateElementName(ctx.tree, prev_data) orelse continue;
                 if (!eql(u8, name_i, name_j)) continue;
 
-                const kind_i = privateElementKind(prev_data);
-                const get_set_pair = (kind_i == .getter and kind_j == .setter) or
-                    (kind_i == .setter and kind_j == .getter);
+                const kind_i = privateElementKind(ctx.tree, prev_data);
                 const same_static =
                     privateElementIsStatic(prev_data) == privateElementIsStatic(child_data);
-                if (get_set_pair and same_static) continue;
+                if (privateElementsPair(kind_i, kind_j) and same_static) continue;
 
                 try self.report(
                     ctx.tree.span(child),
@@ -980,7 +978,7 @@ pub const Checker = struct {
         return .proceed;
     }
 
-    const PrivateElementKind = enum { field, method, getter, setter };
+    const PrivateElementKind = enum { field, method, signature, getter, setter };
 
     fn privateElementName(tree: *const ast.Tree, data: ast.NodeData) ?[]const u8 {
         const key = switch (data) {
@@ -993,14 +991,27 @@ pub const Checker = struct {
         };
     }
 
-    fn privateElementKind(data: ast.NodeData) PrivateElementKind {
+    fn privateElementKind(tree: *const ast.Tree, data: ast.NodeData) PrivateElementKind {
         return switch (data) {
             .method_definition => |method| switch (method.kind) {
                 .get => .getter,
                 .set => .setter,
-                else => .method,
+                else => if (tree.data(method.value).function.body == .null)
+                    .signature
+                else
+                    .method,
             },
             else => .field,
+        };
+    }
+
+    fn privateElementsPair(a: PrivateElementKind, b: PrivateElementKind) bool {
+        return switch (a) {
+            .getter => b == .setter,
+            .setter => b == .getter,
+            .signature => b == .signature or b == .method,
+            .method => b == .signature,
+            .field => false,
         };
     }
 
