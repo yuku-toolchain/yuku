@@ -1,3 +1,5 @@
+// first, so the flags apply before yuku compiles its WebAssembly
+import "./v8.ts";
 import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { withCodSpeed } from "@codspeed/tinybench-plugin";
