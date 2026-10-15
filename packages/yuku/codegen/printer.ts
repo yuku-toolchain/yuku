@@ -1269,6 +1269,7 @@ class NodePrinter extends Output implements Printer {
 
   writeNodeText(node: Node, text: string): void {
     const list = this.openComments(node);
+    this.recordMapping(node);
     this.writeToken(text);
     this.closeComments(node, list, false);
   }

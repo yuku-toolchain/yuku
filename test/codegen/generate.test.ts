@@ -57,6 +57,20 @@ test("a compact source map starts each mapping on its token", () => {
   }
 });
 
+test("a node printed as other text maps to its own column", () => {
+  for (const [source, printed, original, minify] of [
+    ['<a b="c" />;', '"c"', '"c"', false],
+    ['x = a["bc"];', "bc", '"bc"', true],
+    ['x = { ["bc"]: 1 };', "bc", '"bc"', true],
+  ] as const) {
+    const { program } = parse(source, { lang: "jsx" });
+    const { code, map } = generate(program, { minify, sourceMap: { source } });
+    const segments = decodedMappings(new TraceMap(JSON.stringify(map)))[0] ?? [];
+    const segment = segments.find(([column]) => column === code.indexOf(printed));
+    expect(segment?.[3], source).toBe(source.indexOf(original));
+  }
+});
+
 test("the line after a hashbang maps to its own line", () => {
   const source = "#!/usr/bin/env node\nx;\n";
   const { code, map } = generate(parse(source).program, { sourceMap: { source } });

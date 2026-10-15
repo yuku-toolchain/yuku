@@ -427,6 +427,7 @@ const Printer = struct {
 
     fn writeNodeText(self: *Self, idx: NodeIndex, text: []const u8) Error!void {
         const scope = try self.openComments(idx);
+        self.recordMapping(idx);
         try self.out.writeStr(text);
         try self.closeComments(idx, scope, false);
     }
