@@ -103,6 +103,7 @@ const COMMENT_SNIPPETS: Record<"js" | "jsx" | "ts" | "tsx", string[]> = {
     "x = a ? b : c;",
     "x = !a + b * c ** d;",
     "x++, --y;",
+    "(x)++;",
     "x = (a, b);",
     "class A extends B { constructor() { super(); } }",
     "class A { m() {} static s() {} get g() { return 1; } set s(v) {} #p = 1; static { } }",

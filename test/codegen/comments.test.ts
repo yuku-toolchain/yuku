@@ -244,6 +244,22 @@ test("a comment breaking before a restricted operand keeps it parenthesized", ()
   `);
 });
 
+test("a comment breaking before a postfix operator keeps its operand parenthesized", () => {
+  const source = "(a // b\n)++;\n(c.d /* e\nf */)--;\n(g /* h */)++;";
+  expect(gen(source, ALL, "input.js")).toMatchInlineSnapshot(`
+    "(a // b
+    )++;
+    (c.d /* e
+    f */)--;
+    g /* h */++;"
+  `);
+  expect(gen(source, { ...ALL, format: "compact" }, "input.js")).toMatchInlineSnapshot(`
+    "(a// b
+    )++;(c.d/* e
+    f */)--;g/* h */++"
+  `);
+});
+
 test("a comment between array holes stays in the array", () => {
   expect(gen("[,/* hole*/,,];\nconst [/* none */] = x;", ALL, "input.js")).toMatchInlineSnapshot(`
     "[/* hole*/, , ,];

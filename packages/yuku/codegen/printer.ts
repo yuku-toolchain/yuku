@@ -136,6 +136,7 @@ const CTX_NO_JSX_TAG = 1 << 8;
 const CTX_TAGGED = 1 << 9;
 const CTX_DEFER_TRAILING = 1 << 10;
 const CTX_NO_DECORATORS = 1 << 11;
+const CTX_POSTFIX_OPERAND = 1 << 12;
 
 const TPREC_TRAILING = 1;
 const TPREC_UNION = 2;
@@ -1231,6 +1232,15 @@ class NodePrinter extends Output implements Printer {
     this.skipLeadingOf = key;
   }
 
+  breaksLineAfter(node: Node): boolean {
+    if (this.comments === "none") return false;
+    for (const c of node.comments ?? NO_COMMENTS) {
+      if (c.position !== "after" || !this.allowComment(c)) continue;
+      if (c.type === "Line" || !c.sameLine || hasLineTerminator(c.value)) return true;
+    }
+    return false;
+  }
+
   emitTrailingComments(list: Comment[]): void {
     for (const c of list) {
       if (c.position === "after" && this.allowComment(c)) {
@@ -1682,7 +1692,7 @@ class NodePrinter extends Output implements Printer {
       this.writeToken(e.operator);
       this.emitAssignTarget(e.argument, 0);
     } else {
-      this.emitAssignTarget(e.argument, 0);
+      this.emitAssignTarget(e.argument, CTX_POSTFIX_OPERAND);
       this.writeToken(e.operator);
     }
   }
@@ -1697,7 +1707,10 @@ class NodePrinter extends Output implements Printer {
   emitAssignTarget(node: Node | null | undefined, ctx: number): void {
     if (node == null) return;
     const prev = this.inAssignTarget;
-    if (needsParensAsAssignTarget(node)) {
+    const wrap =
+      needsParensAsAssignTarget(node) ||
+      ((ctx & CTX_POSTFIX_OPERAND) !== 0 && this.breaksLineAfter(node));
+    if (wrap) {
       this.inAssignTarget = false;
       this.writeToken("(");
       this.emitExpr(node, ctx);
