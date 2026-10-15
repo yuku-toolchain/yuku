@@ -124,6 +124,9 @@ function importRow(record: Import): string {
   const specifier = `from "${record.specifier}"`;
   if (record.kind === "sideEffect") return `(side-effect) ${specifier}${mods}`;
   if (record.kind === "augmentation") return `(augmentation) ${specifier}${mods}`;
+  if (record.kind === "dynamic" || record.kind === "require") {
+    return `(${record.kind}) ${specifier}${mods}`;
+  }
   const local = record.local ? `#${record.local.id}` : "–";
   if (record.isNamespace) return `* as ${local} ${specifier}${mods}`;
   return `${record.name} → ${local} ${specifier}${mods}`;

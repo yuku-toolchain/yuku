@@ -294,11 +294,3 @@ fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!ast.Node
         parser.tree.span(expr),
     );
 }
-
-pub fn unwrapParens(parser: *Parser, node: ast.NodeIndex) ast.NodeIndex {
-    var current = node;
-    while (true) switch (parser.tree.data(current)) {
-        .parenthesized_expression => |paren| current = paren.expression,
-        else => return current,
-    };
-}

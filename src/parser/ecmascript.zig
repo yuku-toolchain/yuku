@@ -79,6 +79,21 @@ pub fn findPatternExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) ?ast
     }
 }
 
+/// The expression inside any number of parentheses.
+pub fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
+    std.debug.assert(node != .null);
+    var current = node;
+    // at most one paren node per syntactic level, so nesting depth bounds the chain
+    var depth: u32 = 0;
+    while (true) : (depth += 1) {
+        std.debug.assert(depth < 1_000_000);
+        switch (tree.data(current)) {
+            .parenthesized_expression => |p| current = p.expression,
+            else => return current,
+        }
+    }
+}
+
 /// https://tc39.es/ecma262/#sec-initializers-in-forin-statement-heads
 pub fn isAnnexBForInHead(
     tree: *const ast.Tree,

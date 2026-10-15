@@ -38,6 +38,25 @@ describe("imports", () => {
     `);
   });
 
+  test("a dynamic import or require of a static specifier", () => {
+    const source = [
+      "import(('./a')); import(`./b`); import(`./${c}`);",
+      "require(('./d')); require(`./e`);",
+    ].join("\n");
+    expect(summary(source, { path: "input.js" })).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          c → free
+          require → free
+          require → free
+      imports
+        (dynamic) from "./a"
+        (dynamic) from "./b"
+        (require) from "./d"
+        (require) from "./e""
+    `);
+  });
+
   test("type-only import, and an inline type specifier", () => {
     expect(summary(`import type T from "./t"; import { value, type Named } from "./m";`))
       .toMatchInlineSnapshot(`

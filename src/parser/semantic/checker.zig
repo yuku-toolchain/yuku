@@ -468,10 +468,11 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (expr.operator == .delete) {
-            var target = unwrapParens(ctx.tree, expr.argument);
+            var target = ecmascript.unwrapParens(ctx.tree, expr.argument);
 
             if (ctx.tree.data(target) == .chain_expression) {
-                target = unwrapParens(ctx.tree, ctx.tree.data(target).chain_expression.expression);
+                const chain = ctx.tree.data(target).chain_expression;
+                target = ecmascript.unwrapParens(ctx.tree, chain.expression);
             }
 
             switch (ctx.tree.data(target)) {
@@ -1168,20 +1169,6 @@ pub const Checker = struct {
             .assignment_pattern => |ap| try self.checkAssignTargetEvalArguments(ap.left, ctx),
             .binding_rest_element => |r| try self.checkAssignTargetEvalArguments(r.argument, ctx),
             else => {},
-        }
-    }
-
-    fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
-        std.debug.assert(node != .null);
-        var current = node;
-        // at most one paren node per syntactic level, so nesting depth bounds the chain
-        var depth: u32 = 0;
-        while (true) : (depth += 1) {
-            std.debug.assert(depth < 1_000_000);
-            switch (tree.data(current)) {
-                .parenthesized_expression => |p| current = p.expression,
-                else => return current,
-            }
         }
     }
 
