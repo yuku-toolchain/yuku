@@ -131,6 +131,48 @@ pub fn build(b: *std.Build) void {
     );
     codegen_reference_step.dependOn(&b.addInstallArtifact(codegen_reference, .{}).step);
 
+    const profile_target = b.resolveTargetQuery(.{ .cpu_model = .baseline });
+    const profile_optimize: std.lang.Optimize = .fast;
+    const profile_util = b.createModule(.{
+        .root_source_file = b.path("src/util/root.zig"),
+        .target = profile_target,
+        .optimize = profile_optimize,
+    });
+    const profile_parser = b.createModule(.{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = profile_target,
+        .optimize = profile_optimize,
+    });
+    _ = addParserImports(b, profile_parser, .{
+        .util = profile_util,
+        .codegen_options = codegen_options_module,
+        .dialect = null,
+    });
+    const profile_transfer = b.createModule(.{
+        .root_source_file = b.path("src/parser/ffi/transfer/root.zig"),
+        .target = profile_target,
+        .optimize = profile_optimize,
+        .imports = &.{.{ .name = "parser", .module = profile_parser }},
+    });
+    const profile_exe = b.addExecutable(.{
+        .name = "profile",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("profile/native.zig"),
+            .target = profile_target,
+            .optimize = profile_optimize,
+            // flamegraphs name functions from the debug info
+            .strip = false,
+            // CodSpeed simulation cannot measure a statically linked executable
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "parser", .module = profile_parser },
+                .{ .name = "transfer", .module = profile_transfer },
+            },
+        }),
+    });
+    b.step("profile", "Build the native profile of the Zig core")
+        .dependOn(&b.addInstallArtifact(profile_exe, .{}).step);
+
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .freestanding,

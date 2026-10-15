@@ -243,7 +243,7 @@ Standardization reduces dimensionality as the team grows. Slower in the short te
 
 ## Project
 
-How this repository works. The runtime it ships to, where its tests go, how a change lands, and how a release ships.
+How this repository works. The runtime it ships to, where its tests and benchmarks go, how a change lands, and how a release ships.
 
 ### Runtime Baseline
 
@@ -269,6 +269,16 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | The dialect mechanism | `src/parser/testing/dialect.zig`, a dialect that claims every position, and `test/dialect/` for its JavaScript side |
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
 | A small pure Zig helper | An inline `test` block next to the function |
+
+### Profiling
+
+CodSpeed measures every pull request against `main` in its CPU simulation mode, which counts instructions and cache misses instead of time, so a regression shows on the pull request that causes it, even on shared CI runners.
+
+- `profile/package.ts` measures the `yuku` package as users call it: `parse`, `analyze`, and `generate` with each option that has its own code path.
+- `profile/native.zig`, listed in `profile/codspeed.yml`, runs `parse` and `analyze` as a native executable, so a flamegraph names the Zig functions the shipped WebAssembly strips.
+- **A new operation, or an option with its own code path, gets a benchmark in the same change.**
+- Inputs are files from `test/projects/`, pinned to a commit. A changed input moves a benchmark as much as a changed toolchain does, so change one only on purpose.
+- Every input is valid for its operation. A benchmark fails on any diagnostic rather than measure an error path.
 
 ### Changes
 

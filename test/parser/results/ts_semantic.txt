@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       279/279 (100.00%)
+Passed:       282/282 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -2604,6 +2604,14 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
+✓ test/parser/suite/ts/semantic/cc49d36b6c09bf56.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 1 | class eval {}
+   |       ^^^^
+ 2 | (class arguments {});
+   |
+
 ✓ test/parser/suite/ts/semantic/cc7b04da234ac562.ts
 error: 'using' is not allowed at the top level of a script
    |
@@ -3072,6 +3080,14 @@ error: 'new.target' is only valid inside functions, class field initializers, or
  4 | const b = () => new.target;
    |
 
+✓ test/parser/suite/ts/semantic/ee2f7f09eb0c9758.module.ts
+error: 'interface' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | interface <!-- c
+   | ^^^^^^^^^
+ 2 | F
+   |
+
 ✓ test/parser/suite/ts/semantic/ee6e7380be3a9360.ts
 error: Identifier 'x' has already been declared
    |
@@ -3147,6 +3163,18 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |       ^^^^^^^^^
  6 |         var a = () => arguments;
    |
+
+✓ test/parser/suite/ts/semantic/f35b5a77d10272a3.ts
+error: Identifier 'f' has already been declared
+   |
+ 1 | l: function f(); let f;
+   |                      ^
+   |             ~ 'f' was first declared as a function here
+   |                      ~ cannot be redeclared here
+ 2 | l: function g() {} let g;
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
 
 ✓ test/parser/suite/ts/semantic/f4df05868024e821.ts
 error: for-in loop variable declaration may not have an initializer

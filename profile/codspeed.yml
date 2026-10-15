@@ -1,0 +1,39 @@
+options:
+  working-directory: ..
+
+benchmarks:
+  - name: native parse typescript/checker.ts
+    exec: >-
+      ./zig-out/bin/profile parse
+      test/projects/typescript/src/compiler/checker.ts
+  - name: native analyze typescript/checker.ts
+    exec: >-
+      ./zig-out/bin/profile analyze
+      test/projects/typescript/src/compiler/checker.ts
+
+  - name: native parse zod/schemas.ts
+    exec: >-
+      ./zig-out/bin/profile parse
+      test/projects/zod/packages/zod/src/v4/core/schemas.ts
+  - name: native analyze zod/schemas.ts
+    exec: >-
+      ./zig-out/bin/profile analyze
+      test/projects/zod/packages/zod/src/v4/core/schemas.ts
+
+  - name: native parse excalidraw/App.tsx
+    exec: >-
+      ./zig-out/bin/profile parse
+      test/projects/excalidraw/packages/excalidraw/components/App.tsx
+  - name: native analyze excalidraw/App.tsx
+    exec: >-
+      ./zig-out/bin/profile analyze
+      test/projects/excalidraw/packages/excalidraw/components/App.tsx
+
+  - name: native parse three/WebGLRenderer.js
+    exec: >-
+      ./zig-out/bin/profile parse
+      test/projects/three/src/renderers/WebGLRenderer.js
+  - name: native analyze three/WebGLRenderer.js
+    exec: >-
+      ./zig-out/bin/profile analyze
+      test/projects/three/src/renderers/WebGLRenderer.js

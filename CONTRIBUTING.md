@@ -75,6 +75,7 @@ packages/yuku/   the published package
   codegen/       yuku/codegen
   types/         yuku/types
 test/            test suites
+profile/         benchmarks CodSpeed runs on every pull request
 docs/            the website
 ```
 

@@ -1,5 +1,3 @@
-// fetches every project at its pinned commit
-
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -22,7 +20,6 @@ async function load(project: Project): Promise<void> {
   await rm(root, { recursive: true, force: true });
   await mkdir(root, { recursive: true });
   git(root, "init", "--quiet");
-  // keep line endings as committed, even where `text=auto` asks for the platform's
   git(root, "config", "core.autocrlf", "false");
   git(root, "config", "core.eol", "lf");
   git(root, "remote", "add", "origin", `https://github.com/${project.repository}.git`);
@@ -34,4 +31,13 @@ async function load(project: Project): Promise<void> {
 }
 
 if (!existsSync(PROJECTS_DIR)) throw new Error("run from the repository root");
-for (const project of PROJECTS) await load(project);
+
+const names = process.argv.slice(2);
+for (const name of names) {
+  if (!PROJECTS.some((project) => project.name === name)) {
+    throw new Error(`no project is named ${name}`);
+  }
+}
+for (const project of PROJECTS) {
+  if (names.length === 0 || names.includes(project.name)) await load(project);
+}

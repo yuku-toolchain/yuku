@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       5000/5000 (100.00%)
+Passed:       5048/5048 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -1485,6 +1485,16 @@ error: 'import' is reserved and cannot be used as a binding identifier
    |     ^^^^^^
    |
 
+✓ test/parser/suite/js/fail/0743a7da60958e7f.module.js
+error: Unexpected token '>'
+   |
+ 1 | let --> c x = 1;
+   |       ^
+ 2 | 
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/07448d787d00f53b.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found '0'
    |
@@ -1930,6 +1940,16 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/09645c989950cdbe.js
+error: Numeric separator is only allowed between two digits
+   |
+ 1 | 1e+_1;
+   |    ^
+ 2 | 
+   |
+   = help: Try placing the separator between two digits, or removing it
 
 
 ✓ test/parser/suite/js/fail/097b8e7c43c5c118.js
@@ -2521,6 +2541,18 @@ error: 'break' is reserved and cannot be used as an identifier
    |   ^^^^^^^^^^
  3 | };
    |
+
+✓ test/parser/suite/js/fail/0cee46ad077951ca.module.js
+error: Invalid element in assignment pattern
+   |
+ 1 | let <!-- c
+   | ^^^^^^^^^^
+ 2 | [a] = b;
+   | ^^^
+ 3 | 
+   |
+   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
 
 ✓ test/parser/suite/js/fail/0cf54da4193e9f2e.js
 error: Classes may not have a static property named 'prototype'
@@ -3185,6 +3217,17 @@ error: 'continue' is reserved and cannot be used as a binding identifier
  1 | var continue = 123;
    |     ^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/107d864bbabe71c9.js
+error: Invalid element in assignment pattern
+   |
+ 2 | ({a=1}.x = 0);
+ 3 | [{a=1}](x) = 0;
+   | ^^^^^^^^^^
+ 4 | [{a=1}].x += 0;
+   |
+   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
 
 ✓ test/parser/suite/js/fail/107d8a06aa72211d.js
 error: A rest element cannot have an initializer
@@ -4257,6 +4300,16 @@ error: Invalid assignment target
    | ^^^^^^^^^^
    |
    = help: The left-hand side of a compound assignment must be a variable or property access
+
+
+✓ test/parser/suite/js/fail/15db9762a9d623b5.js
+error: Unexpected token ']'
+   |
+ 1 | [[void]] = 0;
+   |       ^
+ 2 | [{ a: void }] = 0;
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/15dde87632fe97de.js
@@ -5882,6 +5935,16 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
+✓ test/parser/suite/js/fail/1ee11088b8ba5ecb.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+   |
+ 1 | new async x => {}
+   |           ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
 ✓ test/parser/suite/js/fail/1f0505992caef508.js
 error: Expected ')' to close parameter list, but found '='
    |
@@ -6005,6 +6068,16 @@ error: 'case' is reserved and cannot be used as an identifier
  1 | var x = { c\u0061se } = { case: 42 };
    |           ^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/1fd74a0044469981.module.js
+error: The left-hand side of a for-of statement may not start with 'let'
+   |
+ 1 | for (let <!-- c
+   |      ^^^
+ 2 | [a] of b);
+   |
+   = help: Rename the variable or wrap it in parentheses: 'for ((let).x of ...)'
+
 
 ✓ test/parser/suite/js/fail/1fdecc93370d22ba.js
 error: 'do' is reserved and cannot be used as an identifier
@@ -6533,6 +6606,16 @@ error: 'extends' is reserved and cannot be used as a binding identifier
  1 | var extend\u{73} = 123;
    |     ^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/225fe96fda66eaea.js
+error: Numeric separator is only allowed between two digits
+   |
+ 1 | 1e_+1;
+   |   ^
+ 2 | 1E_-1;
+   |
+   = help: Try placing the separator between two digits, or removing it
+
 
 ✓ test/parser/suite/js/fail/2280746b00767ed6.js
 error: Unexpected token '?'
@@ -8042,6 +8125,16 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/29abaf7016540ddc.js
+error: Unexpected '=>'
+   |
+ 1 | async function f() { await x => {} }
+   |                      ^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/29b829d70c99c912.js
 error: The left-hand side of '**' cannot be an unparenthesized unary expression
    |
@@ -9136,6 +9229,16 @@ error: Bad escape sequence in untagged template literal
    |          ^^^^^
    |
 
+✓ test/parser/suite/js/fail/2e5f3cfbc657cb08.module.js
+error: Unexpected token '>'
+   |
+ 1 | let--> cx = 1;
+   |       ^
+ 2 | 
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/2e6b632fc9350265.js
 error: Hexadecimal literal must contain at least one hex digit
    |
@@ -9334,6 +9437,16 @@ error: Setter must have exactly one parameter
    |                  ^^^^^^
    |
    = help: Setters accept exactly one argument.
+
+
+✓ test/parser/suite/js/fail/2f95c99622024c2c.js
+error: Numeric separator is only allowed between two digits
+   |
+ 1 | 1E+_1n;
+   |    ^
+ 2 | 
+   |
+   = help: Try placing the separator between two digits, or removing it
 
 
 ✓ test/parser/suite/js/fail/2f9cef25b6e13b83.js
@@ -10161,6 +10274,14 @@ error: Expected ';' after class field, but found ':'
    |
    = help: Add a semicolon after the field declaration.
 
+
+✓ test/parser/suite/js/fail/33befa72c6d9f50d.js
+error: Async functions can only be declared at the top level or inside a block
+   |
+ 1 | l: async function f() {} let f;
+   |                          ^^^
+ 2 | { l: async function g() {} let g; }
+   |
 
 ✓ test/parser/suite/js/fail/33c0166e3328813a.js
 error: Constructor can't have get/set modifier
@@ -11431,6 +11552,16 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  3 | }}
    |
 
+✓ test/parser/suite/js/fail/3a9a03b588d4b40e.js
+error: Shorthand property cannot have a default value in object expression
+   |
+ 1 | for ([{a=1}].x of y);
+   |        ^^^
+ 2 | for ({a=1}.x in y);
+   |
+   = help: Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.
+
+
 ✓ test/parser/suite/js/fail/3a9fa392421db6dd.js
 error: Expected ']' after computed property key, but found ','
    |
@@ -12551,6 +12682,16 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
+✓ test/parser/suite/js/fail/4186deb1eb914895.module.js
+error: Expected an identifier, but found '<'
+   |
+ 1 | import <!-- c
+   |        ^
+ 2 | ("a");
+   |
+   = help: Identifiers must start with a letter, underscore (_), or dollar sign ($)
+
+
 ✓ test/parser/suite/js/fail/41895c8145489971.js
 error: Expected '}' to close template expression, but found 'end of file'
    |
@@ -12601,6 +12742,16 @@ error: Unterminated string literal
    = help: Try adding a closing quote here to complete the string
 
 
+✓ test/parser/suite/js/fail/41b3800985eea52d.js
+error: Invalid element in binding pattern
+   |
+ 1 | (a()) => 1;
+   |  ^^^
+ 2 | (a.b()) => 1;
+   |
+   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
+
 ✓ test/parser/suite/js/fail/41bb6cfb5f18770c.js
 error: 'class' is reserved and cannot be used as an imported binding
    |
@@ -12632,6 +12783,16 @@ error: Empty parentheses are only valid as arrow function parameters
  1 | () ? 0
    | ^^
    |
+
+✓ test/parser/suite/js/fail/41e6f9d4e70848e3.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+   |
+ 1 | async function f() { await async x => {} }
+   |                                  ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/js/fail/41fe8d8d6bda36ef.js
 error: Rest element must be the last element
@@ -14890,6 +15051,17 @@ error: Bad escape sequence in untagged template literal
    |          ^^^^^^
    |
 
+✓ test/parser/suite/js/fail/4e7934e61364d4e7.js
+error: Unexpected token '#x' as property key
+   |
+ 3 |   m() {
+ 4 |     [{ #x: x }] = this;
+   |        ^^
+ 5 |     ({ a: { #x: x } } = this);
+   |
+   = help: Property keys must be identifiers, strings, numbers, or computed expressions [expr].
+
+
 ✓ test/parser/suite/js/fail/4e7f27a0cb9c387a.js
 error: 'super' is reserved and cannot be used as a binding identifier
    |
@@ -17108,6 +17280,14 @@ error: Unexpected token ';'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/5a84dcc8dd9c7d59.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async (x = async function await() {}) => {};
+   |                           ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/5a87c20baea6ecd8.js
 error: Expected ',' or ']' in array, but found 'foo'
    |
@@ -18163,6 +18343,16 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/5fcc13557f31dba0.js
+error: Unexpected token '%'
+   |
+ 1 | %%L%%: function f() {} let f;
+   | ^
+ 2 | { %%L%%: function g() {} let g; }
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/5fd39839aba542c6.js
 error: Numeric separator is only allowed between two digits
    |
@@ -18634,6 +18824,14 @@ error: Class declaration requires a name
    = help: Add a name after 'class', e.g. 'class MyClass {}'.
 
 
+✓ test/parser/suite/js/fail/62173dc35fe16474.js
+error: Empty parentheses are only valid as arrow function parameters
+   |
+ 1 | new new () => {}
+   |         ^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/62332211b15b3d4a.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -18721,6 +18919,14 @@ error: Expected '(' for getter/setter definition, but found ';'
    |
    = help: Getters and setters require parentheses. Use 'get prop() {}' or 'set prop(value) {}' syntax.
 
+
+✓ test/parser/suite/js/fail/63431ca3421124e9.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async (x = function await() {}, await) => {};
+   |                     ^^^^^
+ 2 | async (x = function await() {}, y = await) => {};
+   |
 
 ✓ test/parser/suite/js/fail/63452bbeb15314d6.js
 error: Invalid element in assignment pattern
@@ -19238,6 +19444,16 @@ error: Unexpected token '>'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/667444cb599ce5aa.js
+error: Unexpected '=>'
+   |
+ 1 | async function f() { await async () => {} }
+   |                      ^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
 
 
 ✓ test/parser/suite/js/fail/66761c92d5453066.js
@@ -20885,6 +21101,17 @@ error: Expected ')' after import(), but found ''''
    = help: Dynamic import call must end with ')'
 
 
+✓ test/parser/suite/js/fail/6ec31afbfc1b5010.js
+error: Unexpected token '#x' as property key
+   |
+ 3 |   m() {
+ 4 |     ({ #x: x }.y = this);
+   |        ^^
+ 5 |     [{ #x: x }.y] = this;
+   |
+   = help: Property keys must be identifiers, strings, numbers, or computed expressions [expr].
+
+
 ✓ test/parser/suite/js/fail/6ed986948899cf46.js
 error: Identifier cannot immediately follow a numeric literal
    |
@@ -20973,6 +21200,16 @@ error: Numeric separator is only allowed between two digits
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
+
+
+✓ test/parser/suite/js/fail/6f4f7c800c3ab503.js
+error: Unexpected token '%'
+   |
+ 1 | if (0) %%L%%: function f() {}
+   |        ^
+ 2 | 
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/6f541ea029e10c06.js
@@ -23054,6 +23291,16 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/7a22300e7e6ec17e.js
+error: Unexpected token ':'
+   |
+ 1 | a::(b) => 1
+   |   ^
+ 2 | 
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/7a2bf91be132b22d.js
 error: Invalid element in assignment pattern
    |
@@ -23476,6 +23723,17 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    |  ^^^^^^
    |
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
+
+
+✓ test/parser/suite/js/fail/7c0f9333294975d4.module.js
+error: Unexpected token '>'
+   |
+ 1 | let /*
+ 2 | */ --> c
+   |      ^
+ 3 | [a] = b;
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/7c11e063d71d8e6a.module.js
@@ -24313,6 +24571,16 @@ error: Expected '(' to start parameter list, but found '.'
  1 | function obj.tt.ss() {}
    |             ^
    |
+
+✓ test/parser/suite/js/fail/804c246e08d17775.js
+error: Unexpected token '}'
+   |
+ 1 | [{ a: void }.x] = 0;
+   |            ^
+ 2 | [[void].x] = 0;
+   |
+   = help: Expected an expression
+
 
 ✓ test/parser/suite/js/fail/80536cd7a7d9c325.js
 error: Async functions can only be declared at the top level or inside a block
@@ -26508,6 +26776,17 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/8bcd11d07c72fc6b.module.js
+error: Unexpected token '>'
+   |
+ 2 | <!-- d
+ 3 | --> e
+   |   ^
+ 4 | {a} = b;
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/8bcdffd1e7142607.js
 error: 'import' keyword is not allowed here
    |
@@ -28453,6 +28732,17 @@ error: Destructuring declaration must have an initializer
    = help: Add '= value' to provide the object or array to destructure from.
 
 
+✓ test/parser/suite/js/fail/960f3460057660ea.module.js
+error: Unexpected token '='
+   |
+ 1 | let <!-- c
+ 2 | {a} = b;
+   |     ^
+ 3 | 
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/96381b50c09dda69.js
 error: Unexpected token ';'
    |
@@ -29956,6 +30246,16 @@ error: Bad escape sequence in untagged template literal
    |          ^^^^^
    |
 
+✓ test/parser/suite/js/fail/9ecd3702eb931463.module.js
+error: Unexpected '=>'
+   |
+ 1 | await x => {}
+   | ^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/9ed3b7b577ed62d7.js
 error: A rest element cannot have an initializer
    |
@@ -30014,6 +30314,16 @@ error: Expected identifier or string literal, but found ','
  1 | import {b,c,,} from 'a';
    |             ^
    |
+
+✓ test/parser/suite/js/fail/9f1263e9b84500ee.js
+error: Unexpected '=>'
+   |
+ 1 | async function f() { await (x) => {} }
+   |                      ^^^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
 
 ✓ test/parser/suite/js/fail/9f15affa01060595.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
@@ -30844,6 +31154,16 @@ error: Method cannot appear in destructuring pattern
    = help: Use a regular property instead of a method definition.
 
 
+✓ test/parser/suite/js/fail/a3deb2ba824928a8.js
+error: Numeric separator is only allowed between two digits
+   |
+ 1 | 1e-_1;
+   |    ^
+ 2 | 
+   |
+   = help: Try placing the separator between two digits, or removing it
+
+
 ✓ test/parser/suite/js/fail/a3ec3739bb2f89ad.js
 error: Unexpected token 'end of file' in binding pattern
    |
@@ -31666,6 +31986,16 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/a885dc786d3b9177.js
+error: Unexpected token ':'
+   |
+ 1 | a::async b => 1
+   |   ^
+ 2 | 
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/a88c3adb6a751f40.js
@@ -32813,6 +33143,16 @@ error: Hexadecimal literal must contain at least one hex digit
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
 
+✓ test/parser/suite/js/fail/adba3840426fd44f.js
+error: Unexpected '=>'
+   |
+ 1 | new async () => {}
+   | ^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/adbfc91f9b5eaef0.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -33001,6 +33341,16 @@ error: Rest element cannot have a trailing comma in object destructuring.
    |  ^^^^^^^
    |
    = help: Remove the trailing comma after the rest element
+
+
+✓ test/parser/suite/js/fail/ae48c010aa5c9b5f.js
+error: Unexpected token ':'
+   |
+ 1 | a::b => 1
+   |   ^
+ 2 | 
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/ae4d68adecff54eb.js
@@ -33967,6 +34317,16 @@ error: Invalid element in assignment pattern
    |      ^
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
+
+✓ test/parser/suite/js/fail/b4d4ab65f8502ed3.js
+error: Shorthand property cannot have a default value in object expression
+   |
+ 1 | [{a=1}.x] = 0;
+   |   ^^^
+ 2 | ({b: {a=1}.x} = 0);
+   |
+   = help: Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.
 
 
 ✓ test/parser/suite/js/fail/b4dee73bca326dba.js
@@ -35048,6 +35408,14 @@ error: Numeric separator is only allowed between two digits
    |
    = help: Try placing the separator between two digits, or removing it
 
+
+✓ test/parser/suite/js/fail/ba2b9c315c984841.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async (x = class await {}) => {};
+   |                  ^^^^^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/ba2d36d35efa68ec.js
 error: Unexpected token 'end of file'
@@ -37083,6 +37451,17 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/c5e523e6215f2648.module.js
+error: Unexpected token '%'
+   |
+ 1 | export default from // comment
+ 2 | %%FILE%%;
+   |  ^
+ 3 | 
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/c5f2ef734df460c5.js
 error: Invalid Unicode escape sequence
    |
@@ -37234,6 +37613,16 @@ error: 'await using' declarations must be initialized
  3 | }
    |
    = help: Disposable resources require an initial value that implements the dispose protocol.
+
+
+✓ test/parser/suite/js/fail/c6952da8012d5533.module.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found '"bar"'
+   |
+ 1 | export default from "bar";
+   |                     ^^^^^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/js/fail/c696219ba5818afa.js
@@ -37862,6 +38251,16 @@ error: Invalid element in assignment pattern
    | ^^^
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+
+
+✓ test/parser/suite/js/fail/c9e9023c8204b851.js
+error: Numeric separator is only allowed between two digits
+   |
+ 1 | 08e+_1;
+   |     ^
+ 2 | 09.5e-_1;
+   |
+   = help: Try placing the separator between two digits, or removing it
 
 
 ✓ test/parser/suite/js/fail/ca20522a9d36e8bd.js
@@ -39719,6 +40118,16 @@ error: Expected '{' to start class body, but found 'x'
  2 | 
    |
    = help: Class body must be enclosed in braces: class Name { ... }
+
+
+✓ test/parser/suite/js/fail/d52d41d79fed3df5.js
+error: Numeric separator is only allowed between two digits
+   |
+ 1 | .5e-_3;
+   |     ^
+ 2 | 0.5E+_1;
+   |
+   = help: Try placing the separator between two digits, or removing it
 
 
 ✓ test/parser/suite/js/fail/d52f769ab39372c7.js
@@ -42811,6 +43220,16 @@ error: Unexpected token '>'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/e588bf295f59afcb.module.js
+error: Unexpected '=>'
+   |
+ 1 | await (x) => {}
+   | ^^^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/e5a002efffcd5328.js
 error: Invalid operand for increment/decrement operator
    |
@@ -43045,6 +43464,16 @@ error: Unexpected token '#m' as property key
    = help: Property keys must be identifiers, strings, numbers, or computed expressions [expr].
 
 
+✓ test/parser/suite/js/fail/e6cd893c83433f1e.js
+error: Unexpected '=>'
+   |
+ 1 | new x => {}
+   | ^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/e6e67554ed746623.js
 error: Rest parameter may not have a trailing comma
    |
@@ -43152,6 +43581,14 @@ error: Function declaration requires a name
    = help: Add a name after 'function', e.g. 'function myFunc() {}'.
 
 
+✓ test/parser/suite/js/fail/e7822c826ae177d9.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class await {}
+   |       ^^^^^
+ 2 | (class await {});
+   |
+
 ✓ test/parser/suite/js/fail/e7b2b3790afb8b3e.js
 error: Unexpected token '>'
    |
@@ -43252,6 +43689,16 @@ error: 'import' is reserved and cannot be used as an identifier
    |       ^^^^^^
  3 | };
    |
+
+✓ test/parser/suite/js/fail/e816ccad790aa4de.js
+error: Unexpected token ':'
+   |
+ 1 | a::(b => 1);
+   |   ^
+ 2 | 
+   |
+   = help: Expected an expression
+
 
 ✓ test/parser/suite/js/fail/e82474d52b99f1b7.js
 error: Expected '{' to start function body, but found '1'
@@ -43826,6 +44273,17 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/ea9145e566b305b8.module.js
+error: Unexpected token '>'
+   |
+ 1 | let
+ 2 | --> c
+   |   ^
+ 3 | x = 1;
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/ea9e5f218423bd4f.js
@@ -45783,6 +46241,16 @@ error: Expected ';' after for-loop init, but found 'void'
  3 | }
    |
 
+✓ test/parser/suite/js/fail/f56a57e0f4f19390.js
+error: Unexpected '=>'
+   |
+ 1 | new (x) => {}
+   | ^^^^^^^
+ 2 | 
+   |
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/f5735a75fbda0fcb.js
 error: Binary literal must contain at least one binary digit
    |
@@ -47140,6 +47608,17 @@ error: Bad escape sequence in untagged template literal
  1 | `\u{${0}right`
    |  ^^^
    |
+
+✓ test/parser/suite/js/fail/fc4c7f0ac1fbfd2a.module.js
+error: Unexpected token '%'
+   |
+ 1 | export default from
+ 2 | %%FILE%%;
+   |  ^
+ 3 | 
+   |
+   = help: Expected an expression
+
 
 ✓ test/parser/suite/js/fail/fc586058c8b20364.js
 error: 'import' keyword is not allowed here
