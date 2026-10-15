@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 70,
+    "end": 144,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -134,6 +134,193 @@
           },
           "children": [],
           "closingElement": null
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 70,
+        "end": 97,
+        "expression": {
+          "type": "JSXElement",
+          "start": 70,
+          "end": 96,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 70,
+            "end": 73,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 71,
+              "end": 72,
+              "name": "p"
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [
+            {
+              "type": "JSXFragment",
+              "start": 73,
+              "end": 83,
+              "openingFragment": {
+                "type": "JSXOpeningFragment",
+                "start": 73,
+                "end": 75
+              },
+              "children": [
+                {
+                  "type": "JSXText",
+                  "start": 75,
+                  "end": 80,
+                  "value": "first",
+                  "raw": "first"
+                }
+              ],
+              "closingFragment": {
+                "type": "JSXClosingFragment",
+                "start": 80,
+                "end": 83
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 83,
+              "end": 92,
+              "value": " — second",
+              "raw": " — second"
+            }
+          ],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 92,
+            "end": 96,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 94,
+              "end": 95,
+              "name": "p"
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 98,
+        "end": 126,
+        "expression": {
+          "type": "JSXElement",
+          "start": 98,
+          "end": 125,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 98,
+            "end": 101,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 99,
+              "end": 100,
+              "name": "p"
+            },
+            "attributes": [],
+            "selfClosing": false
+          },
+          "children": [
+            {
+              "type": "JSXFragment",
+              "start": 101,
+              "end": 111,
+              "openingFragment": {
+                "type": "JSXOpeningFragment",
+                "start": 101,
+                "end": 103
+              },
+              "children": [
+                {
+                  "type": "JSXText",
+                  "start": 103,
+                  "end": 108,
+                  "value": "first",
+                  "raw": "first"
+                }
+              ],
+              "closingFragment": {
+                "type": "JSXClosingFragment",
+                "start": 108,
+                "end": 111
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 111,
+              "end": 121,
+              "value": " 1st place",
+              "raw": " 1st place"
+            }
+          ],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 121,
+            "end": 125,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 123,
+              "end": 124,
+              "name": "p"
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 127,
+        "end": 143,
+        "expression": {
+          "type": "JSXFragment",
+          "start": 127,
+          "end": 142,
+          "openingFragment": {
+            "type": "JSXOpeningFragment",
+            "start": 127,
+            "end": 129
+          },
+          "children": [
+            {
+              "type": "JSXFragment",
+              "start": 129,
+              "end": 135,
+              "openingFragment": {
+                "type": "JSXOpeningFragment",
+                "start": 129,
+                "end": 131
+              },
+              "children": [
+                {
+                  "type": "JSXText",
+                  "start": 131,
+                  "end": 132,
+                  "value": "x",
+                  "raw": "x"
+                }
+              ],
+              "closingFragment": {
+                "type": "JSXClosingFragment",
+                "start": 132,
+                "end": 135
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 135,
+              "end": 139,
+              "value": " — y",
+              "raw": " — y"
+            }
+          ],
+          "closingFragment": {
+            "type": "JSXClosingFragment",
+            "start": 139,
+            "end": 142
+          }
         }
       }
     ]
