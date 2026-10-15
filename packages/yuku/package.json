@@ -1,6 +1,6 @@
 {
   "name": "yuku",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "A JavaScript and TypeScript compiler toolchain written in Zig",
   "license": "MIT",
   "homepage": "https://yuku.fyi",
