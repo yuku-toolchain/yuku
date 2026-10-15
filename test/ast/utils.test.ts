@@ -90,6 +90,16 @@ describe("utils", () => {
     expect(is.Identifier(inner, "x")).toBe(true);
   });
 
+  test("unwrap takes any node and returns what nothing wraps as it is", () => {
+    const root = program(`const a = (b as any), c; f(...d);`);
+    const [first, second] = findAll(root, "VariableDeclarator");
+    const [call] = findAll(root, "CallExpression");
+    expect(is.Identifier(unwrap(first!.init), "b")).toBe(true);
+    expect(unwrap(second!.init)).toBeNull();
+    expect(unwrap(call!.arguments[0])?.type).toBe("SpreadElement");
+    expect(unwrap(call!.arguments[1])).toBeUndefined();
+  });
+
   test("isWrapper matches every form unwrap strips, and narrows to it", () => {
     expect(isWrapper(firstExpression(`(x)`))).toBe(true);
     expect(isWrapper(firstExpression(`x as any`))).toBe(true);

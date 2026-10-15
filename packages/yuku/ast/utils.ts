@@ -75,13 +75,13 @@ export function isWrapper(node: MaybeNode): node is Wrapper {
 
 /**
  * The expression inside parentheses and erased TypeScript assertion
- * wrappers: `((x as any))!` unwraps to `x`. Returns the node itself
- * when nothing wraps it.
+ * wrappers: `((x as any))!` unwraps to `x`. Returns any other node,
+ * `null`, or `undefined` as it is.
  */
-export function unwrap(node: Expression): Expression {
-  let current = node;
+export function unwrap<T extends MaybeNode>(node: T): T extends Wrapper ? Expression : T {
+  let current: MaybeNode = node;
   while (isWrapper(current)) current = current.expression;
-  return current;
+  return current as T extends Wrapper ? Expression : T;
 }
 
 /**
