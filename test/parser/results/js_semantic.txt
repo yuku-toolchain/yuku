@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4160/4160 (100.00%)
+Passed:       4186/4186 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
@@ -3960,6 +3960,18 @@ error: In strict mode code, functions can only be declared at top level or insid
    |           ^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/184f05eaa45a75bc.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: l: function f() {} case 2: let f; }
+   |                                                     ^
+   |                                  ~ 'f' was first declared as a function here
+   |                                                     ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/185cc309566f0a77.js
 error: for-in loop variable declaration may not have an initializer
    |
@@ -4329,6 +4341,14 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  4 |   function arguments() {}
    |            ^^^^^^^^^
  5 |   count++;
+   |
+
+✓ test/parser/suite/js/semantic/1a09d2252b765068.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async (x = function await() {}) => {};
+   |                     ^^^^^
+ 2 | 
    |
 
 ✓ test/parser/suite/js/semantic/1a0b4ab6c0207b84.js
@@ -4776,6 +4796,18 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |            ^^^^^^^^^
  4 | };
    |
+
+✓ test/parser/suite/js/semantic/1d3d7ea7986a7f01.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | l: function f() {} let f;
+   |                        ^
+   |             ~ 'f' was first declared as a function here
+   |                        ~ cannot be redeclared here
+ 2 | let g; l: function g() {}
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
 
 ✓ test/parser/suite/js/semantic/1d3dd296a717e478.module.js
 error: 'eval' is not allowed as a binding identifier in strict mode
@@ -6221,6 +6253,18 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  2 | 
    |
 
+✓ test/parser/suite/js/semantic/2699f8960c26691f.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | l: function f() {} let f;
+   |                        ^
+   |             ~ 'f' was first declared as a function here
+   |                        ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/26a10a2c36beef84.js
 error: for-of loop variable declaration may not have an initializer
    |
@@ -6514,6 +6558,18 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | export let local1 = 23;
    |
+
+✓ test/parser/suite/js/semantic/28b5bfa8d6eec5a5.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | if (0) function f() {} let f;
+   |                            ^
+   |                 ~ 'f' was first declared as a function here
+   |                            ~ cannot be redeclared here
+ 2 | { if (0) function g() {} let g; }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
 
 ✓ test/parser/suite/js/semantic/28be818a270b7e23.js
 error: Use of undefined label 'x'
@@ -9291,6 +9347,15 @@ error: 'with' statements are not allowed in strict mode
  3 |   x = 1;
    |
 
+✓ test/parser/suite/js/semantic/3961715cf9192ea6.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | [{__proto__: a, __proto__: b}].x = 0;
+   |                 ^^^^^^^^^^^^
+   |   ~~~~~~~~~~~~ first defined here
+ 2 | [{__proto__: a, __proto__: b}[0]] = c;
+   |
+
 ✓ test/parser/suite/js/semantic/397c4128a0de3518.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -9714,6 +9779,14 @@ error: Private field '#x' must be declared in an enclosing class
  3 |     function fn() { (() => this)().#x }
    |                                    ^^
  4 |   }
+   |
+
+✓ test/parser/suite/js/semantic/3c5d4e9da47f259b.module.js
+error: In strict mode code, functions can only be declared at top level or inside a block
+   |
+ 1 | l: function f() {} var f;
+   |    ^^^^^^^^^^^^^^^
+ 2 | var g; l: function g() {}
    |
 
 ✓ test/parser/suite/js/semantic/3c93c40648ef8eae.js
@@ -13214,6 +13287,14 @@ error: In strict mode code, functions can only be declared at top level or insid
  5 | }
    |
 
+✓ test/parser/suite/js/semantic/530c10a24bd2358f.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | C = class { static { async (x = function await() {}) => {} } };
+   |                                          ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/5325c297d972e33c.js
 error: Duplicate private name '#m'
    |
@@ -13853,6 +13934,18 @@ error: Identifier 'a' has already been declared
    |               ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/suite/js/semantic/573d59e0beae7699.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | try {} catch (f) { l: function f() {} }
+   |                                ^
+   |               ~ 'f' was first declared as a catch parameter here
+   |                                ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Consider removing or renaming this declaration of 'f'
 
 
 ✓ test/parser/suite/js/semantic/5744ff363a607202.module.js
@@ -19336,6 +19429,14 @@ error: Cannot use import statement outside a module
  2 | export let local1 = 23;
    |
 
+✓ test/parser/suite/js/semantic/797f10645d5b199e.js
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 1 | (class arguments {});
+   |        ^^^^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/7984943422e489ae.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -19776,6 +19877,18 @@ error: In non-strict mode code, functions can only be declared at top level, ins
  1 | do b: function a(){} while (1)
    |       ^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/7c24f22b23c0fc2f.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function g() { l: function f() {} let f; }
+   |                                       ^
+   |                            ~ 'f' was first declared as a function here
+   |                                       ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
 
 ✓ test/parser/suite/js/semantic/7c34c81ddd1d8f22.module.js
 error: 'static' is reserved in strict mode and cannot be used as an identifier
@@ -21569,6 +21682,14 @@ error: Cannot use import statement outside a module
  2 | 
    |
 
+✓ test/parser/suite/js/semantic/89fa1bb7ef736bca.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async (x = function* await() {}) => {};
+   |                      ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/8a0fc8ea31727188.js
 error: Cannot use 'export *' declaration outside a module
    |
@@ -21845,6 +21966,15 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  1 | function hello() {'use strict'; try { } catch (eval) { } }
    |                                                ^^^^
  2 | 
+   |
+
+✓ test/parser/suite/js/semantic/8c052ca41438faeb.js
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 1 | function f() {
+ 2 |   class eval {}
+   |         ^^^^
+ 3 |   var g = class arguments {};
    |
 
 ✓ test/parser/suite/js/semantic/8c0dcbcb0ba9a5c6.js
@@ -22430,6 +22560,14 @@ error: Cannot use import statement outside a module
  1 | import defer * as ns from "./dep_FIXTURE.js";
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | assert.sameValue(typeof ns, "object", "Deferred namespaces are objects");
+   |
+
+✓ test/parser/suite/js/semantic/90e04a2f1bebce15.js
+error: Cannot use 'export default' declaration outside a module
+   |
+ 1 | export default from /*
+   | ^^^^^^^^^^^^^^^^^^^
+ 2 | */ 'bar';
    |
 
 ✓ test/parser/suite/js/semantic/90f191897a5d5a67.js
@@ -23063,6 +23201,14 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
+   |
+
+✓ test/parser/suite/js/semantic/94386b97a8f9bd66.js
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 1 | class C extends (class eval {}) {
+   |                        ^^^^
+ 2 |   m() {
    |
 
 ✓ test/parser/suite/js/semantic/947b2d4e8ce0c641.module.js
@@ -29391,6 +29537,14 @@ error: Cannot use import statement outside a module
  2 | import x from './import-attribute-1_FIXTURE.js' with { test262: "\u0078" };
    |
 
+✓ test/parser/suite/js/semantic/bd301a76bf1c1f65.js
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 1 | class ev\u0061l {}
+   |       ^^^^^^^^^
+ 2 | (class argument\u0073 {});
+   |
+
 ✓ test/parser/suite/js/semantic/bd320eba790d65a4.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -31064,6 +31218,15 @@ error: 'private' is reserved in strict mode and cannot be used as a binding iden
  1 | var private, protected, public, static;
    |     ^^^^^^^
  2 | 
+   |
+
+✓ test/parser/suite/js/semantic/c712af55530f2741.js
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 1 | class C {
+ 2 |   x = class arguments {};
+   |             ^^^^^^^^^
+ 3 | }
    |
 
 ✓ test/parser/suite/js/semantic/c72dc8d57bfccce9.js
@@ -33720,6 +33883,14 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
+✓ test/parser/suite/js/semantic/d5c133ba80a290fc.module.js
+error: In strict mode code, functions can only be declared at top level or inside a block
+   |
+ 1 | { l: function f() {} function f() {} }
+   |      ^^^^^^^^^^^^^^^
+ 2 | { l: function g() {} l: function g() {} }
+   |
+
 ✓ test/parser/suite/js/semantic/d5c8181740237339.js
 error: Cannot use import statement outside a module
    |
@@ -34695,6 +34866,18 @@ error: Cannot use 'export' declaration outside a module
  4 | export var {x = await ({
    |
 
+✓ test/parser/suite/js/semantic/dad2d3f09bb43e2d.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { l: function f() {} let f; }
+   |                          ^
+   |               ~ 'f' was first declared as a function here
+   |                          ~ cannot be redeclared here
+ 2 | { l: function g() {} var g; }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/dae49da3552bcf41.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -35367,6 +35550,14 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
+✓ test/parser/suite/js/semantic/dea5c3f411146962.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async (x = (function await() {})) => {};
+   |                      ^^^^^
+ 2 | async ([x = function await() {}]) => {};
+   |
+
 ✓ test/parser/suite/js/semantic/dea62fd450ecb0bc.module.js
 error: Duplicate export of 'foo'
    |
@@ -35732,6 +35923,14 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  2 | 
    |
 
+✓ test/parser/suite/js/semantic/e05f266a44eda8dc.js
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 1 | (class eval {});
+   |        ^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/e081a55d497ecba3.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -35775,6 +35974,14 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  2 |   (function yield() {});
    |             ^^^^^
  3 | });
+   |
+
+✓ test/parser/suite/js/semantic/e0adb8f0a67c8b5a.module.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | let <!-- c
+   | ^^^
+ 2 | x = 1;
    |
 
 ✓ test/parser/suite/js/semantic/e0bcfb63cbe11c82.js
@@ -37924,6 +38131,15 @@ error: Identifier 'param' has already been declared
    = help: Consider removing or renaming this declaration of 'param'
 
 
+✓ test/parser/suite/js/semantic/ed9eef5f4bfe800b.js
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 2 |   static {
+ 3 |     class arguments {}
+   |           ^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/edb15336bfbe0a8e.js
 error: Class declaration requires a name
    |
@@ -38285,6 +38501,14 @@ error: 'import' declaration may only appear at the top level
  2 |   import v from './decl-pos-import-try-finally.js';
    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  3 | }
+   |
+
+✓ test/parser/suite/js/semantic/f0162fd76490304e.module.js
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 1 | export class arguments {}
+   |              ^^^^^^^^^
+ 2 | export default class eval {}
    |
 
 ✓ test/parser/suite/js/semantic/f03dc0712b57ee1f.js
@@ -39157,6 +39381,14 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
+✓ test/parser/suite/js/semantic/f5c74eb079e87ff7.js
+error: Cannot use 'export default' declaration outside a module
+   |
+ 1 | export default from // comment
+   | ^^^^^^^^^^^^^^^^^^^
+ 2 | "bar";
+   |
+
 ✓ test/parser/suite/js/semantic/f5cd538c1b5a056b.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -39544,6 +39776,14 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | 0, { x = yield } = {};
    |          ^^^^^
+   |
+
+✓ test/parser/suite/js/semantic/f7d61754b2eaea5c.js
+error: Cannot use 'export default' declaration outside a module
+   |
+ 1 | export default from <!-- c
+   | ^^^^^^^^^^^^^^^^^^^
+ 2 | "x";
    |
 
 ✓ test/parser/suite/js/semantic/f7d93cc6e6b14c32.module.js
