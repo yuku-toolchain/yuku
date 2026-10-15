@@ -1183,7 +1183,8 @@ pub const Checker = struct {
     // arrow functions are transparent (8.5.1), regular functions are opaque
     fn superCallValidity(ctx: *SemanticCtx) SuperCallValidity {
         var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
+        var child: ast.NodeIndex = .null;
+        while (iter.next()) |i| : (child = i) {
             switch (ctx.tree.data(i)) {
                 .function => {
                     if (iter.next()) |parent| {
@@ -1201,7 +1202,10 @@ pub const Checker = struct {
                     }
                     return .not_in_constructor;
                 },
-                .property_definition, .static_block, .program => return .not_in_constructor,
+                .property_definition => |field| {
+                    if (field.value == child) return .not_in_constructor;
+                },
+                .static_block, .program => return .not_in_constructor,
                 else => {},
             }
         }
@@ -1210,7 +1214,8 @@ pub const Checker = struct {
 
     fn isSuperPropertyValid(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
+        var child: ast.NodeIndex = .null;
+        while (iter.next()) |i| : (child = i) {
             switch (ctx.tree.data(i)) {
                 .function => {
                     if (iter.next()) |parent| {
@@ -1223,7 +1228,10 @@ pub const Checker = struct {
                     }
                     return false;
                 },
-                .property_definition, .static_block => return true,
+                .property_definition => |field| {
+                    if (field.value == child) return true;
+                },
+                .static_block => return true,
                 .program => return false,
                 else => {},
             }

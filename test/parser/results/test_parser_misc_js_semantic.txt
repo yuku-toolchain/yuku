@@ -1,8 +1,8 @@
 test/parser/misc/js/semantic
 ============================
-Passed:       9/9 (100.00%)
+Passed:       10/10 (100.00%)
 Failed:       0
-AST mismatch: 0/9
+AST mismatch: 0/10
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-methods-arrows.js
 error: Identifier 'a' has already been declared
@@ -103,5 +103,16 @@ error: Identifier 'a' has already been declared
  3 | import { b } from "m";
    |
    = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/misc/js/semantic/super-in-class-field-key.js
+error: 'super' property access is only valid inside a method or class body
+   |
+15 |   class C {
+16 |     [super.x];
+   |      ^^^^^^^
+17 |   }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 

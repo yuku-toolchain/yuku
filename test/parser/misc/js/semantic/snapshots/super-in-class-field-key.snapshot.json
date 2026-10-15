@@ -1,0 +1,392 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 272,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 10,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "B"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 8,
+          "end": 10,
+          "body": []
+        }
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 12,
+        "end": 171,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 18,
+          "end": 19,
+          "name": "A"
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 28,
+          "end": 29,
+          "name": "B"
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 30,
+          "end": 171,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 34,
+              "end": 169,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 34,
+                "end": 45,
+                "name": "constructor"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 45,
+                "end": 169,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 48,
+                  "end": 169,
+                  "body": [
+                    {
+                      "type": "ClassDeclaration",
+                      "start": 54,
+                      "end": 165,
+                      "decorators": [],
+                      "id": {
+                        "type": "Identifier",
+                        "start": 60,
+                        "end": 61,
+                        "name": "C"
+                      },
+                      "superClass": null,
+                      "body": {
+                        "type": "ClassBody",
+                        "start": 62,
+                        "end": 165,
+                        "body": [
+                          {
+                            "type": "PropertyDefinition",
+                            "start": 70,
+                            "end": 80,
+                            "decorators": [],
+                            "key": {
+                              "type": "CallExpression",
+                              "start": 71,
+                              "end": 78,
+                              "callee": {
+                                "type": "Super",
+                                "start": 71,
+                                "end": 76
+                              },
+                              "arguments": [],
+                              "optional": false
+                            },
+                            "value": null,
+                            "computed": true,
+                            "static": false
+                          },
+                          {
+                            "type": "PropertyDefinition",
+                            "start": 87,
+                            "end": 108,
+                            "decorators": [],
+                            "key": {
+                              "type": "CallExpression",
+                              "start": 95,
+                              "end": 102,
+                              "callee": {
+                                "type": "Super",
+                                "start": 95,
+                                "end": 100
+                              },
+                              "arguments": [],
+                              "optional": false
+                            },
+                            "value": {
+                              "type": "Literal",
+                              "start": 106,
+                              "end": 107,
+                              "value": 1,
+                              "raw": "1"
+                            },
+                            "computed": true,
+                            "static": true
+                          },
+                          {
+                            "type": "AccessorProperty",
+                            "start": 115,
+                            "end": 138,
+                            "decorators": [],
+                            "key": {
+                              "type": "CallExpression",
+                              "start": 125,
+                              "end": 132,
+                              "callee": {
+                                "type": "Super",
+                                "start": 125,
+                                "end": 130
+                              },
+                              "arguments": [],
+                              "optional": false
+                            },
+                            "value": {
+                              "type": "Literal",
+                              "start": 136,
+                              "end": 137,
+                              "value": 1,
+                              "raw": "1"
+                            },
+                            "computed": true,
+                            "static": false
+                          },
+                          {
+                            "type": "PropertyDefinition",
+                            "start": 145,
+                            "end": 159,
+                            "decorators": [],
+                            "key": {
+                              "type": "MemberExpression",
+                              "start": 146,
+                              "end": 153,
+                              "object": {
+                                "type": "Super",
+                                "start": 146,
+                                "end": 151
+                              },
+                              "property": {
+                                "type": "Identifier",
+                                "start": 152,
+                                "end": 153,
+                                "name": "x"
+                              },
+                              "computed": false,
+                              "optional": false
+                            },
+                            "value": {
+                              "type": "Literal",
+                              "start": 157,
+                              "end": 158,
+                              "value": 1,
+                              "raw": "1"
+                            },
+                            "computed": true,
+                            "static": false
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "kind": "constructor",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 173,
+        "end": 220,
+        "id": {
+          "type": "Identifier",
+          "start": 182,
+          "end": 183,
+          "name": "f"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 186,
+          "end": 220,
+          "body": [
+            {
+              "type": "ClassDeclaration",
+              "start": 190,
+              "end": 218,
+              "decorators": [],
+              "id": {
+                "type": "Identifier",
+                "start": 196,
+                "end": 197,
+                "name": "C"
+              },
+              "superClass": null,
+              "body": {
+                "type": "ClassBody",
+                "start": 198,
+                "end": 218,
+                "body": [
+                  {
+                    "type": "PropertyDefinition",
+                    "start": 204,
+                    "end": 214,
+                    "decorators": [],
+                    "key": {
+                      "type": "MemberExpression",
+                      "start": 205,
+                      "end": 212,
+                      "object": {
+                        "type": "Super",
+                        "start": 205,
+                        "end": 210
+                      },
+                      "property": {
+                        "type": "Identifier",
+                        "start": 211,
+                        "end": 212,
+                        "name": "x"
+                      },
+                      "computed": false,
+                      "optional": false
+                    },
+                    "value": null,
+                    "computed": true,
+                    "static": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "ClassDeclaration",
+        "start": 222,
+        "end": 271,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 228,
+          "end": 229,
+          "name": "D"
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 238,
+          "end": 239,
+          "name": "B"
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 240,
+          "end": 271,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 244,
+              "end": 256,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 244,
+                "end": 245,
+                "name": "x"
+              },
+              "value": {
+                "type": "CallExpression",
+                "start": 248,
+                "end": 255,
+                "callee": {
+                  "type": "Super",
+                  "start": 248,
+                  "end": 253
+                },
+                "arguments": [],
+                "optional": false
+              },
+              "computed": false,
+              "static": false
+            },
+            {
+              "type": "PropertyDefinition",
+              "start": 259,
+              "end": 269,
+              "decorators": [],
+              "key": {
+                "type": "MemberExpression",
+                "start": 260,
+                "end": 267,
+                "object": {
+                  "type": "Super",
+                  "start": 260,
+                  "end": 265
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 266,
+                  "end": 267,
+                  "name": "y"
+                },
+                "computed": false,
+                "optional": false
+              },
+              "value": null,
+              "computed": true,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "'super' property access is only valid inside a method or class body",
+      "path": null,
+      "start": 205,
+      "end": 212,
+      "labels": [],
+      "help": "Use an arrow function instead of a regular function to inherit the 'super' binding"
+    },
+    {
+      "severity": "error",
+      "message": "'super()' is only valid in a constructor of a derived class",
+      "path": null,
+      "start": 248,
+      "end": 255,
+      "labels": [],
+      "help": "Use an arrow function instead of a regular function to inherit the 'super' binding"
+    },
+    {
+      "severity": "error",
+      "message": "'super' property access is only valid inside a method or class body",
+      "path": null,
+      "start": 260,
+      "end": 267,
+      "labels": [],
+      "help": "Use an arrow function instead of a regular function to inherit the 'super' binding"
+    }
+  ]
+}
