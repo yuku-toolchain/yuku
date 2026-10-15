@@ -45,8 +45,6 @@ pub const Options = struct {
 };
 
 pub const Context = packed struct {
-    /// `[In]`
-    in: bool = true,
     /// `[Yield]`
     yield: bool = false,
     /// `[Await]`

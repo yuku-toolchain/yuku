@@ -37303,11 +37303,11 @@ error: Expected ')' after while condition, but found 'new'
    |
 
 ✓ test/parser/suite/js/fail/c54aaf04072f6d4b.js
-error: Expected ';' after for-loop init, but found ')'
+error: The left-hand side of a for-in/of statement cannot be an assignment
    |
  1 | var a;
  2 | for (a = 0 in {});
-   |                 ^
+   |      ^^^^^
    |
 
 ✓ test/parser/suite/js/fail/c5522f9cb824b642.js

@@ -110,10 +110,6 @@ fn parseForWithDeclaration(
     kind: ast.VariableKind,
     decl_start: u32,
 ) Error!?ast.NodeIndex {
-    const saved_allow_in = parser.context.in;
-    parser.context.in = false;
-    defer parser.context.in = saved_allow_in;
-
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
@@ -129,7 +125,6 @@ fn parseForWithDeclaration(
     }
 
     const declarators = try parser.flushToExtras(&parser.scratch_a, checkpoint);
-    parser.context.in = saved_allow_in;
 
     const decl = try parser.tree.addNode(.{
         .variable_declaration = .{
@@ -168,17 +163,11 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     const head = parser.current_token;
     const head_is_let = head.tag == .let and !head.isEscaped();
 
-    const expr = blk: {
-        const saved_allow_in = parser.context.in;
-        parser.context.in = false;
-        defer parser.context.in = saved_allow_in;
-
-        break :blk try expressions.parseExpression(
-            parser,
-            Precedence.Lowest,
-            .{ .respect_allow_in = true },
-        ) orelse return null;
-    };
+    const expr = try expressions.parseExpression(
+        parser,
+        Precedence.Lowest,
+        .{ .allow_in = false },
+    ) orelse return null;
 
     if ((parser.current_token.tag == .in or parser.current_token.tag == .of) and
         parser.tree.data(expr) == .assignment_expression)

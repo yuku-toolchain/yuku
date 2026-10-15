@@ -31014,12 +31014,14 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |
 
 ✓ test/parser/suite/js/semantic/c55aa044bdb2a996.module.js
-error: Expected ';' after for-loop init, but found ')'
+error: for-in loop variable declaration may not have an initializer
    |
  1 | for (var x = y = z in q);
-   |                        ^
+   |          ^^^^^^^^^
  2 | 
    |
+   = help: Remove the initializer from the loop variable.
+
 
 ✓ test/parser/suite/js/semantic/c56e2a87f3b5690c.js
 error: Cannot use import statement outside a module

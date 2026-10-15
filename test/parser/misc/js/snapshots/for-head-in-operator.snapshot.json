@@ -1,0 +1,847 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 440,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 29,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 5,
+          "end": 25,
+          "left": {
+            "type": "Identifier",
+            "start": 5,
+            "end": 6,
+            "name": "x"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 9,
+            "end": 25,
+            "expression": {
+              "type": "ConditionalExpression",
+              "start": 10,
+              "end": 24,
+              "test": {
+                "type": "Identifier",
+                "start": 10,
+                "end": 11,
+                "name": "a"
+              },
+              "consequent": {
+                "type": "Identifier",
+                "start": 14,
+                "end": 15,
+                "name": "b"
+              },
+              "alternate": {
+                "type": "BinaryExpression",
+                "start": 18,
+                "end": 24,
+                "left": {
+                  "type": "Identifier",
+                  "start": 18,
+                  "end": 19,
+                  "name": "c"
+                },
+                "right": {
+                  "type": "Identifier",
+                  "start": 23,
+                  "end": 24,
+                  "name": "d"
+                },
+                "operator": "in"
+              }
+            }
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 28,
+          "end": 29
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 30,
+        "end": 59,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 35,
+          "end": 55,
+          "left": {
+            "type": "Identifier",
+            "start": 35,
+            "end": 36,
+            "name": "x"
+          },
+          "right": {
+            "type": "ArrayExpression",
+            "start": 39,
+            "end": 55,
+            "elements": [
+              {
+                "type": "ConditionalExpression",
+                "start": 40,
+                "end": 54,
+                "test": {
+                  "type": "Identifier",
+                  "start": 40,
+                  "end": 41,
+                  "name": "a"
+                },
+                "consequent": {
+                  "type": "Identifier",
+                  "start": 44,
+                  "end": 45,
+                  "name": "b"
+                },
+                "alternate": {
+                  "type": "BinaryExpression",
+                  "start": 48,
+                  "end": 54,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 48,
+                    "end": 49,
+                    "name": "c"
+                  },
+                  "right": {
+                    "type": "Identifier",
+                    "start": 53,
+                    "end": 54,
+                    "name": "d"
+                  },
+                  "operator": "in"
+                }
+              }
+            ]
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 58,
+          "end": 59
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 60,
+        "end": 94,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 65,
+          "end": 90,
+          "left": {
+            "type": "Identifier",
+            "start": 65,
+            "end": 66,
+            "name": "x"
+          },
+          "right": {
+            "type": "ObjectExpression",
+            "start": 69,
+            "end": 90,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 71,
+                "end": 88,
+                "key": {
+                  "type": "Identifier",
+                  "start": 71,
+                  "end": 72,
+                  "name": "k"
+                },
+                "value": {
+                  "type": "ConditionalExpression",
+                  "start": 74,
+                  "end": 88,
+                  "test": {
+                    "type": "Identifier",
+                    "start": 74,
+                    "end": 75,
+                    "name": "a"
+                  },
+                  "consequent": {
+                    "type": "Identifier",
+                    "start": 78,
+                    "end": 79,
+                    "name": "b"
+                  },
+                  "alternate": {
+                    "type": "BinaryExpression",
+                    "start": 82,
+                    "end": 88,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 82,
+                      "end": 83,
+                      "name": "c"
+                    },
+                    "right": {
+                      "type": "Identifier",
+                      "start": 87,
+                      "end": 88,
+                      "name": "d"
+                    },
+                    "operator": "in"
+                  }
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 93,
+          "end": 94
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 95,
+        "end": 127,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 100,
+          "end": 123,
+          "left": {
+            "type": "Identifier",
+            "start": 100,
+            "end": 101,
+            "name": "x"
+          },
+          "right": {
+            "type": "TemplateLiteral",
+            "start": 104,
+            "end": 123,
+            "quasis": [
+              {
+                "type": "TemplateElement",
+                "start": 105,
+                "end": 105,
+                "value": {
+                  "raw": "",
+                  "cooked": ""
+                },
+                "tail": false
+              },
+              {
+                "type": "TemplateElement",
+                "start": 122,
+                "end": 122,
+                "value": {
+                  "raw": "",
+                  "cooked": ""
+                },
+                "tail": true
+              }
+            ],
+            "expressions": [
+              {
+                "type": "ConditionalExpression",
+                "start": 107,
+                "end": 121,
+                "test": {
+                  "type": "Identifier",
+                  "start": 107,
+                  "end": 108,
+                  "name": "a"
+                },
+                "consequent": {
+                  "type": "Identifier",
+                  "start": 111,
+                  "end": 112,
+                  "name": "b"
+                },
+                "alternate": {
+                  "type": "BinaryExpression",
+                  "start": 115,
+                  "end": 121,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 115,
+                    "end": 116,
+                    "name": "c"
+                  },
+                  "right": {
+                    "type": "Identifier",
+                    "start": 120,
+                    "end": 121,
+                    "name": "d"
+                  },
+                  "operator": "in"
+                }
+              }
+            ]
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 126,
+          "end": 127
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 128,
+        "end": 173,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 133,
+          "end": 169,
+          "left": {
+            "type": "Identifier",
+            "start": 133,
+            "end": 134,
+            "name": "x"
+          },
+          "right": {
+            "type": "FunctionExpression",
+            "start": 137,
+            "end": 169,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "AssignmentPattern",
+                "start": 147,
+                "end": 165,
+                "left": {
+                  "type": "Identifier",
+                  "start": 147,
+                  "end": 148,
+                  "name": "p"
+                },
+                "right": {
+                  "type": "ConditionalExpression",
+                  "start": 151,
+                  "end": 165,
+                  "test": {
+                    "type": "Identifier",
+                    "start": 151,
+                    "end": 152,
+                    "name": "a"
+                  },
+                  "consequent": {
+                    "type": "Identifier",
+                    "start": 155,
+                    "end": 156,
+                    "name": "b"
+                  },
+                  "alternate": {
+                    "type": "BinaryExpression",
+                    "start": 159,
+                    "end": 165,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 159,
+                      "end": 160,
+                      "name": "c"
+                    },
+                    "right": {
+                      "type": "Identifier",
+                      "start": 164,
+                      "end": 165,
+                      "name": "d"
+                    },
+                    "operator": "in"
+                  }
+                }
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 167,
+              "end": 169,
+              "body": []
+            },
+            "expression": false
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 172,
+          "end": 173
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 174,
+        "end": 215,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 179,
+          "end": 211,
+          "left": {
+            "type": "Identifier",
+            "start": 179,
+            "end": 180,
+            "name": "x"
+          },
+          "right": {
+            "type": "ClassExpression",
+            "start": 183,
+            "end": 211,
+            "decorators": [],
+            "id": null,
+            "superClass": null,
+            "body": {
+              "type": "ClassBody",
+              "start": 189,
+              "end": 211,
+              "body": [
+                {
+                  "type": "PropertyDefinition",
+                  "start": 191,
+                  "end": 209,
+                  "decorators": [],
+                  "key": {
+                    "type": "Identifier",
+                    "start": 191,
+                    "end": 192,
+                    "name": "m"
+                  },
+                  "value": {
+                    "type": "ConditionalExpression",
+                    "start": 195,
+                    "end": 209,
+                    "test": {
+                      "type": "Identifier",
+                      "start": 195,
+                      "end": 196,
+                      "name": "a"
+                    },
+                    "consequent": {
+                      "type": "Identifier",
+                      "start": 199,
+                      "end": 200,
+                      "name": "b"
+                    },
+                    "alternate": {
+                      "type": "BinaryExpression",
+                      "start": 203,
+                      "end": 209,
+                      "left": {
+                        "type": "Identifier",
+                        "start": 203,
+                        "end": 204,
+                        "name": "c"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "start": 208,
+                        "end": 209,
+                        "name": "d"
+                      },
+                      "operator": "in"
+                    }
+                  },
+                  "computed": false,
+                  "static": false
+                }
+              ]
+            }
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 214,
+          "end": 215
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 216,
+        "end": 238,
+        "init": {
+          "type": "ParenthesizedExpression",
+          "start": 221,
+          "end": 234,
+          "expression": {
+            "type": "ArrowFunctionExpression",
+            "start": 222,
+            "end": 233,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 222,
+                "end": 223,
+                "name": "x"
+              }
+            ],
+            "body": {
+              "type": "BinaryExpression",
+              "start": 227,
+              "end": 233,
+              "left": {
+                "type": "Identifier",
+                "start": 227,
+                "end": 228,
+                "name": "a"
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 232,
+                "end": 233,
+                "name": "b"
+              },
+              "operator": "in"
+            },
+            "expression": true
+          }
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 237,
+          "end": 238
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 239,
+        "end": 266,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 244,
+          "end": 262,
+          "left": {
+            "type": "Identifier",
+            "start": 244,
+            "end": 245,
+            "name": "x"
+          },
+          "right": {
+            "type": "ArrayExpression",
+            "start": 248,
+            "end": 262,
+            "elements": [
+              {
+                "type": "ArrowFunctionExpression",
+                "start": 249,
+                "end": 261,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BinaryExpression",
+                  "start": 255,
+                  "end": 261,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 255,
+                    "end": 256,
+                    "name": "a"
+                  },
+                  "right": {
+                    "type": "Identifier",
+                    "start": 260,
+                    "end": 261,
+                    "name": "b"
+                  },
+                  "operator": "in"
+                },
+                "expression": true
+              }
+            ]
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 265,
+          "end": 266
+        }
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 267,
+        "end": 312,
+        "id": {
+          "type": "Identifier",
+          "start": 277,
+          "end": 278,
+          "name": "g"
+        },
+        "generator": true,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 281,
+          "end": 312,
+          "body": [
+            {
+              "type": "ForStatement",
+              "start": 283,
+              "end": 310,
+              "init": {
+                "type": "AssignmentExpression",
+                "start": 288,
+                "end": 306,
+                "left": {
+                  "type": "Identifier",
+                  "start": 288,
+                  "end": 289,
+                  "name": "x"
+                },
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 292,
+                  "end": 306,
+                  "expression": {
+                    "type": "YieldExpression",
+                    "start": 293,
+                    "end": 305,
+                    "argument": {
+                      "type": "BinaryExpression",
+                      "start": 299,
+                      "end": 305,
+                      "left": {
+                        "type": "Identifier",
+                        "start": 299,
+                        "end": 300,
+                        "name": "a"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "start": 304,
+                        "end": 305,
+                        "name": "b"
+                      },
+                      "operator": "in"
+                    },
+                    "delegate": false
+                  }
+                },
+                "operator": "="
+              },
+              "test": null,
+              "update": null,
+              "body": {
+                "type": "EmptyStatement",
+                "start": 309,
+                "end": 310
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "ForStatement",
+        "start": 313,
+        "end": 357,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 318,
+          "end": 353,
+          "left": {
+            "type": "Identifier",
+            "start": 318,
+            "end": 319,
+            "name": "x"
+          },
+          "right": {
+            "type": "FunctionExpression",
+            "start": 322,
+            "end": 353,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [],
+            "body": {
+              "type": "BlockStatement",
+              "start": 334,
+              "end": 353,
+              "body": [
+                {
+                  "type": "VariableDeclaration",
+                  "start": 336,
+                  "end": 351,
+                  "kind": "var",
+                  "declarations": [
+                    {
+                      "type": "VariableDeclarator",
+                      "start": 340,
+                      "end": 350,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 340,
+                        "end": 341,
+                        "name": "y"
+                      },
+                      "init": {
+                        "type": "BinaryExpression",
+                        "start": 344,
+                        "end": 350,
+                        "left": {
+                          "type": "Identifier",
+                          "start": 344,
+                          "end": 345,
+                          "name": "a"
+                        },
+                        "right": {
+                          "type": "Identifier",
+                          "start": 349,
+                          "end": 350,
+                          "name": "b"
+                        },
+                        "operator": "in"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "expression": false
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 356,
+          "end": 357
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 358,
+        "end": 385,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 363,
+          "end": 381,
+          "left": {
+            "type": "Identifier",
+            "start": 363,
+            "end": 364,
+            "name": "x"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 367,
+            "end": 381,
+            "test": {
+              "type": "Identifier",
+              "start": 367,
+              "end": 368,
+              "name": "a"
+            },
+            "consequent": {
+              "type": "BinaryExpression",
+              "start": 371,
+              "end": 377,
+              "left": {
+                "type": "Identifier",
+                "start": 371,
+                "end": 372,
+                "name": "b"
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 376,
+                "end": 377,
+                "name": "c"
+              },
+              "operator": "in"
+            },
+            "alternate": {
+              "type": "Identifier",
+              "start": 380,
+              "end": 381,
+              "name": "d"
+            }
+          },
+          "operator": "="
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 384,
+          "end": 385
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "The left-hand side of a for-in/of statement cannot be an assignment",
+      "path": null,
+      "start": 392,
+      "end": 397,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Expected ')' after for-in expression, but found ';'",
+      "path": null,
+      "start": 402,
+      "end": 403,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "The left-hand side of a for-in/of statement cannot be an assignment",
+      "path": null,
+      "start": 412,
+      "end": 430,
+      "labels": [],
+      "help": null
+    },
+    {
+      "severity": "error",
+      "message": "Expected ')' after for-in expression, but found ';'",
+      "path": null,
+      "start": 435,
+      "end": 436,
+      "labels": [],
+      "help": null
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       75/75 (100.00%)
+Passed:       76/76 (100.00%)
 Failed:       0
-AST mismatch: 0/75
+AST mismatch: 0/76
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -206,6 +206,15 @@ error: 'for await' is only valid with for-of loops
  2 |   for await (;;) {}
    |              ^
  3 |   for await (x in y) {}
+   |
+
+✓ test/parser/misc/js/for-head-in-operator.js
+error: The left-hand side of a for-in/of statement cannot be an assignment
+   |
+12 | 
+13 | for (x = a in b;;);
+   |      ^^^^^
+14 | for (x = a ? b : c => d in e;;);
    |
 
 ✓ test/parser/misc/js/for-in-initializer.js

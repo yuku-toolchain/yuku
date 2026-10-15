@@ -5,6 +5,7 @@ const Error = @import("../../parser.zig").Error;
 
 const functions = @import("../functions.zig");
 const parenthesized = @import("../parenthesized.zig");
+const ParseExpressionOptions = @import("../expressions.zig").ParseExpressionOptions;
 
 const generics = @import("types/generics.zig");
 const predicate = @import("types/predicate.zig");
@@ -52,7 +53,12 @@ pub fn classifyArrowHead(parser: *Parser) ArrowHead {
     }
 }
 
-pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+pub fn parseArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
     const saved_await = parser.context.await;
     if (is_async) parser.context.await = true;
     defer parser.context.await = saved_await;
@@ -91,17 +97,23 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
         arrow_start,
         type_parameters,
         return_type,
+        options,
     );
 }
 
 // rewind on failure so a parenthesized expression, call, jsx, or `<T>` assertion can win
-pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+pub fn tryParseArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
     const head = parser.current_token.span.start;
     if (parser.ts_rejected_speculations.contains(head)) return null;
 
     const cp = parser.checkpoint();
 
-    const arrow = (try parseArrow(parser, is_async, arrow_start)) orelse {
+    const arrow = (try parseArrow(parser, is_async, arrow_start, options)) orelse {
         parser.rewind(cp);
         try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {});
         return null;
@@ -125,11 +137,12 @@ pub fn tryParseGenericArrow(
     parser: *Parser,
     is_async: bool,
     arrow_start: u32,
+    options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
     const next = parser.peekAhead();
     if (!next.tag.isIdentifierLike() and next.tag != .@"const") return null;
 
-    return tryParseArrow(parser, is_async, arrow_start);
+    return tryParseArrow(parser, is_async, arrow_start, options);
 }

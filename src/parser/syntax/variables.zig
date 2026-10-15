@@ -132,11 +132,10 @@ pub fn parseVariableDeclarator(
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
 
-        // Annex B 3.5 `for (var x = 0 in obj)` must stop at `in`
         init = try expressions.parseExpression(
             parser,
             Precedence.Assignment,
-            .{ .respect_allow_in = true },
+            .{ .allow_in = context != .for_loop },
         ) orelse return null;
 
         end = parser.tree.span(init).end;

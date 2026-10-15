@@ -8,6 +8,8 @@ const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
 
+const ParseExpressionOptions = expressions.ParseExpressionOptions;
+
 /// Cover grammar result for a parenthesized expression or an arrow parameter list.
 /// https://tc39.es/ecma262/#prod-CoverParenthesizedExpressionAndArrowParameterList
 pub const ParenthesizedCover = struct {
@@ -164,9 +166,10 @@ pub fn coverToArrowFunction(
     parser: *Parser,
     cover: ParenthesizedCover,
     arrow_start: u32,
+    options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
     const params = try convertToFormalParameters(parser, cover) orelse return null;
-    return buildArrowFunction(parser, params, false, arrow_start, .null, .null);
+    return buildArrowFunction(parser, params, false, arrow_start, .null, .null, options);
 }
 
 /// Converts a lone identifier into an arrow function for `x => body`.
@@ -175,6 +178,7 @@ pub fn identifierToArrowFunction(
     id: ast.NodeIndex,
     is_async: bool,
     start: u32,
+    options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
     const param = try convertToFormalParameter(parser, id);
     const params = try parser.tree.addNode(
@@ -186,7 +190,7 @@ pub fn identifierToArrowFunction(
         parser.tree.span(id),
     );
 
-    return buildArrowFunction(parser, params, is_async, start, .null, .null);
+    return buildArrowFunction(parser, params, is_async, start, .null, .null, options);
 }
 
 pub fn buildArrowFunction(
@@ -196,6 +200,7 @@ pub fn buildArrowFunction(
     arrow_start: u32,
     type_parameters: ast.NodeIndex,
     return_type: ast.NodeIndex,
+    options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume =>
 
@@ -206,7 +211,7 @@ pub fn buildArrowFunction(
     defer parser.context.await = saved_await;
     defer parser.context.yield = saved_yield;
 
-    const body = try parseArrowBody(parser) orelse return null;
+    const body = try parseArrowBody(parser, options) orelse return null;
 
     return try parser.tree.addNode(
         .{ .arrow_function_expression = .{
@@ -226,15 +231,12 @@ const ArrowBodyResult = struct {
     is_expression: bool,
 };
 
-fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
+fn parseArrowBody(parser: *Parser, options: ParseExpressionOptions) Error!?ArrowBodyResult {
     const body = try functions.parseFunctionBody(parser, .optional) orelse return null;
     if (body != .null) return .{ .body = body, .is_expression = false };
 
-    const expr = try expressions.parseExpression(
-        parser,
-        Precedence.Assignment,
-        .{ .respect_allow_in = true },
-    ) orelse return null;
+    const expr = try expressions.parseExpression(parser, Precedence.Assignment, options) orelse
+        return null;
 
     return .{ .body = expr, .is_expression = true };
 }
