@@ -33,7 +33,7 @@ pub const Import = struct {
         named,
         /// `import * as ns from "m"`
         namespace,
-        /// `import "m"`
+        /// `import "m"` and `export {} from "m"`
         side_effect,
         /// `import x = require("m")`
         import_equals,
@@ -158,7 +158,7 @@ const Collector = struct {
         switch (self.tree.data(index)) {
             .import_declaration => |decl| try self.importDeclaration(decl, index),
             .ts_import_equals_declaration => |decl| try self.importEquals(decl, index),
-            .export_named_declaration => |decl| try self.exportNamed(decl),
+            .export_named_declaration => |decl| try self.exportNamed(decl, index),
             .export_default_declaration => |decl| try self.exportDefault(decl, index),
             .export_all_declaration => |decl| try self.exportAll(decl, index),
             .ts_export_assignment => |decl| try self.exportAssignment(decl, index),
@@ -272,6 +272,7 @@ const Collector = struct {
     fn exportNamed(
         self: *Collector,
         decl: ast.ExportNamedDeclaration,
+        index: ast.NodeIndex,
     ) Allocator.Error!void {
         if (decl.declaration != .null) {
             const type_only = decl.export_kind == .type;
@@ -285,6 +286,15 @@ const Collector = struct {
 
         const has_source = decl.source != .null;
         const specifier = if (has_source) self.stringOf(decl.source) else ast.String.empty;
+
+        if (has_source and decl.specifiers.len == 0) {
+            return self.addImport(.{
+                .kind = .side_effect,
+                .specifier = specifier,
+                .type_only = decl.export_kind == .type,
+                .node = index,
+            });
+        }
 
         for (self.tree.extra(decl.specifiers)) |spec_index| {
             if (self.tree.data(spec_index) != .export_specifier) continue;

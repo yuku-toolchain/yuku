@@ -87,7 +87,7 @@ export type ScopeKind =
 /**
  * - `"named"`: `import x from "m"` and `import { x } from "m"`
  * - `"namespace"`: `import * as ns from "m"`
- * - `"sideEffect"`: `import "m"`
+ * - `"sideEffect"`: `import "m"` and `export {} from "m"`
  * - `"importEquals"`: `import ns = require("m")`
  * - `"dynamic"`: `import("m")`
  * - `"require"`: `require("m")`

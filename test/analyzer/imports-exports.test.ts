@@ -28,6 +28,16 @@ describe("imports", () => {
     `);
   });
 
+  test("an empty re-export loads its module as a side-effect import does", () => {
+    expect(summary(`export {} from "./a"; export type {} from "./t";`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+      imports
+        (side-effect) from "./a"
+        (side-effect) from "./t" type"
+    `);
+  });
+
   test("type-only import, and an inline type specifier", () => {
     expect(summary(`import type T from "./t"; import { value, type Named } from "./m";`))
       .toMatchInlineSnapshot(`
