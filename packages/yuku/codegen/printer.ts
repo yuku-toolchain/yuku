@@ -521,6 +521,12 @@ class NodePrinter extends Output implements Printer {
       }
     }
 
+    if (type === "ThisExpression" && (this.comments === "none" || !hasComments(node))) {
+      this.recordMapping(node);
+      this.writeName("this");
+      return;
+    }
+
     const wrap = this.needsParens(node, type, ctx);
     const inner = wrap ? 0 : ctx & ~CTX_DEFER_TRAILING;
     if (wrap) this.writeToken("(");
@@ -1146,8 +1152,15 @@ class NodePrinter extends Output implements Printer {
       return;
     }
     this.writeToken(e.optional ? "?." : ".");
-    if (staticKey !== null) this.writeNodeText(e.property, staticKey);
-    else this.emit(e.property);
+    if (staticKey !== null) return this.writeNodeText(e.property, staticKey);
+    const key = e.property;
+    if (key.type === "Identifier" && !this.definitePending && isPlainIdentifier(key)) {
+      if (this.comments === "none" || !hasComments(key)) {
+        this.recordMapping(key);
+        return this.writeName(key.name);
+      }
+    }
+    this.emit(key);
   }
 
   emitCallSuffix(e: T.CallExpression): void {

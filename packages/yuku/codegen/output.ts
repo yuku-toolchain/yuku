@@ -99,12 +99,12 @@ export class Output {
   writeToken(s: string): void {
     const first = s.charCodeAt(0);
     if (!this.pretty) this.dropHeldSpace(first);
-    const last = s.charCodeAt(s.length - 1);
+    const last = s.length === 1 ? first : s.charCodeAt(s.length - 1);
     if (last === CHAR_SPACE) return this.writeHolding(s, first, false);
     this.lead = LEAD_NONE;
     const held = this.heldSpaces;
     if (held === 0) {
-      this.separateToken(first);
+      if (first < 128 && FUSES_AFTER[first] !== 0) this.separateToken(first);
       if (this.mapStart >= 0) this.placeMapping(0);
       this.text += s;
     } else {
@@ -114,7 +114,6 @@ export class Output {
     this.lastChar = last;
   }
 
-  // a name starts with an identifier character, so it neither fuses nor drops a held space
   writeName(s: string): void {
     this.lead = LEAD_NONE;
     const held = this.heldSpaces;
