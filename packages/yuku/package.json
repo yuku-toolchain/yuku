@@ -39,7 +39,8 @@
   },
   "imports": {
     "#module": {
-      "workerd": "./dist/module/workerd.js",
+      "workerd": "./dist/module/import.js",
+      "edge-light": "./dist/module/import.js",
       "default": "./dist/module/inline.js"
     }
   },

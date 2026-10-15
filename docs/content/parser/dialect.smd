@@ -343,7 +343,7 @@ export function analyze(source: string, options: Omit<AnalyzeOptions, "wasm"> = 
 }
 ```
 
-To run in every runtime with no setup, load the module the way `yuku` does. Inline its bytes, and import the file in Workers, which cannot compile WebAssembly from bytes.
+To run in every runtime with no setup, load the module the way `yuku` does. Inline its bytes, and import the file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
 
 ```ts
 // src/module/inline.ts
@@ -353,7 +353,7 @@ export const pipeline = new WebAssembly.Module(bytes);
 ```
 
 ```ts
-// src/module/workerd.ts
+// src/module/import.ts
 import pipeline from "#wasm";
 
 export { pipeline };
@@ -362,14 +362,14 @@ export { pipeline };
 ```json
 "imports": {
   "#module": {
-    "workerd": "./dist/module/workerd.js",
+    "workerd": "./dist/module/import.js",
+    "edge-light": "./dist/module/import.js",
     "default": "./dist/module/inline.js"
-  },
-  "#wasm": "./dist/pipeline.wasm"
+  }
 }
 ```
 
-Bundle with a bundler that inlines `.wasm` as bytes, such as tsdown with `loader: { ".wasm": "binary" }`, keep the `#` imports external, and copy `pipeline.wasm` into `dist`. TypeScript reads the `#module`, `#wasm`, and `.wasm` imports from declarations like `yuku`'s own [imports.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/core/module/imports.d.ts).
+Bundle with a bundler that inlines `.wasm` as bytes, such as tsdown with `loader: { ".wasm": "binary" }`. Keep the `#` imports external, rewrite `#wasm` to `../pipeline.wasm?module`, such as with `outputOptions: { paths: { "#wasm": "../pipeline.wasm?module" } }`, and copy `pipeline.wasm` into `dist`. Cloudflare's and Vercel's bundlers both load a `.wasm?module` import as WebAssembly, and they match the path as written, so `#wasm` cannot reach them through `imports`. TypeScript reads the `#module`, `#wasm`, and `.wasm` imports from declarations like `yuku`'s own [imports.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/core/module/imports.d.ts).
 
 ## [Cost]($section.id('cost'))
 

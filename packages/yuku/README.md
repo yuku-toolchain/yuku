@@ -54,7 +54,7 @@ Type every node.
 import type { Node, Program } from "yuku/types";
 ```
 
-It runs in Node.js 16.4 or newer, Bun, Deno, Workers, and browsers.
+It runs in Node.js 16.4 or newer, Bun, Deno, browsers, and edge runtimes such as Cloudflare Workers and Vercel Edge.
 
 ## Documentation
 

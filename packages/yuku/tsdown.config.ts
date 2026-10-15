@@ -8,7 +8,7 @@ export default defineConfig({
     codegen: "codegen/index.ts",
     types: "types/index.ts",
     "module/inline": "core/module/inline.ts",
-    "module/workerd": "core/module/workerd.ts",
+    "module/import": "core/module/import.ts",
   },
   outDir: "dist",
   clean: true,
@@ -22,7 +22,6 @@ export default defineConfig({
   deps: { neverBundle: [/^#/] },
   outputOptions: {
     chunkFileNames: "shared/[name].js",
-    // bundlers for workerd load an import as WebAssembly only when its path ends in `.wasm`
-    paths: { "#wasm": "../yuku.wasm" },
+    paths: { "#wasm": "../yuku.wasm?module" },
   },
 });

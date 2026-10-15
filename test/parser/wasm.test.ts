@@ -11,6 +11,16 @@ test("the inlined module parses as the shipped yuku.wasm does", () => {
   expect(parse(source, { lang: "ts", wasm })).toEqual(parse(source, { lang: "ts" }));
 });
 
+test("workerd and edge-light import yuku.wasm in the form their bundlers compile", () => {
+  const manifest = new URL("../../packages/yuku/package.json", import.meta.url);
+  const loaders = JSON.parse(readFileSync(manifest, "utf8")).imports["#module"];
+  expect(Object.keys(loaders)).toEqual(["workerd", "edge-light", "default"]);
+  expect(loaders["edge-light"]).toBe(loaders.workerd);
+  const loader = readFileSync(new URL(loaders.workerd, manifest), "utf8");
+  expect(loader).toContain('"../yuku.wasm?module"');
+  expect(loader).not.toContain("new WebAssembly.Module");
+});
+
 test("the JavaScript base64 decoder matches Buffer", () => {
   for (let length = 0; length <= 64; length++) {
     const bytes = Buffer.from(Array.from({ length }, (_, i) => (i * 167 + length * 31) & 255));

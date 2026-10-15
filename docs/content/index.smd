@@ -15,7 +15,7 @@ Yuku is a JavaScript and TypeScript compiler toolchain written in Zig, for use f
 
 **Fast.** Built for speed, see [Performance](#performance).
 
-**Anywhere.** Runs in Node.js, Bun, Deno, Workers, and browsers, see [JavaScript](#javascript).
+**Anywhere.** Runs in Node.js, Bun, Deno, browsers, and edge runtimes, see [JavaScript](#javascript).
 
 **Zero dependencies.** Pure Zig, with no dependencies in the build or on npm.
 
@@ -42,7 +42,7 @@ npm install yuku
 | [`yuku/codegen`](/parser/codegen/#javascript)   | Print an AST back to source, with source maps     |
 | [`yuku/types`](/parser/ast/#javascript)         | TypeScript types for the AST                      |
 
-It runs in Node.js 16.4 or newer, Bun, Deno, Workers, and browsers.
+It runs in Node.js 16.4 or newer, Bun, Deno, browsers, and edge runtimes such as Cloudflare Workers and Vercel Edge.
 
 ### [Zig]($section.id('zig'))
 
