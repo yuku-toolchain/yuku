@@ -710,6 +710,9 @@ class NodePrinter extends Output implements Printer {
         this.emitLinkHead(e.callee, PREC_CALL | (e.optional ? 0 : CTX_NO_INSTANTIATION));
         return this.emitCallSuffix(e);
       }
+      case "TSTypeReference":
+      case "TSTypeAnnotation":
+        return this.emitTypeScript(node, ctx);
       case "BlockStatement":
         return this.emitBlockStatement(node as T.BlockStatement);
       case "ExpressionStatement": {
@@ -747,6 +750,26 @@ class NodePrinter extends Output implements Printer {
         return this.emitAssignmentExpression(node as T.AssignmentExpression, ctx);
       case "Identifier":
         return this.emitIdentifier(node as T.Identifier);
+      case "ImportSpecifier":
+        return this.emitImportSpecifier(node as T.ImportSpecifier);
+      case "TSTypeParameterInstantiation":
+      case "TSPropertySignature":
+      case "TSLiteralType":
+      case "TSTypeParameter":
+      case "TSFunctionType":
+      case "TSQualifiedName":
+      case "TSTypeParameterDeclaration":
+        return this.emitTypeScript(node, ctx);
+      case "TSUnionType":
+        return this.emitTypeList((node as T.TSUnionType).types, "|");
+      case "TSUndefinedKeyword":
+        return this.writeToken("undefined");
+      case "TSStringKeyword":
+        return this.writeToken("string");
+      case "TSBooleanKeyword":
+        return this.writeToken("boolean");
+      case "TSNumberKeyword":
+        return this.writeToken("number");
       case "FunctionDeclaration":
       case "FunctionExpression":
         return this.emitFunction(node as T.Function);
@@ -768,6 +791,14 @@ class NodePrinter extends Output implements Printer {
 
   emitRareNode(node: Node, ctx: number): void {
     switch (node.type) {
+      case "ImportSpecifier":
+        return this.emitImportSpecifier(node);
+      case "ParenthesizedExpression":
+        this.writeToken("(");
+        this.emit(node.expression);
+        return this.writeToken(")");
+      case "ExportNamedDeclaration":
+        return this.emitExportNamedDeclaration(node);
       case "ChainExpression":
       case "TaggedTemplateExpression":
       case "TSAsExpression":
@@ -775,62 +806,102 @@ class NodePrinter extends Output implements Printer {
       case "TSNonNullExpression":
       case "TSInstantiationExpression":
         return this.emitLink(node, ctx);
+      case "TemplateElement":
+        return this.printTemplateElement(node, false);
+      case "JSXIdentifier":
+        return this.writeToken(node.name);
+      case "NewExpression":
+        return this.emitNewExpression(node);
+      case "SpreadElement":
+        this.writeToken("...");
+        return this.emitValue(node.argument);
+      case "ImportDeclaration":
+        return this.emitImportDeclaration(node);
+      case "PropertyDefinition":
+      case "AccessorProperty":
+      case "TSAbstractPropertyDefinition":
+      case "TSAbstractAccessorProperty":
+        return this.emitPropertyDefinition(node);
+      case "TemplateLiteral":
+        return this.emitTemplateLiteral(node, ctx);
+      case "JSXAttribute":
+        return this.emitJSXAttribute(node);
+      case "JSXExpressionContainer":
+        this.writeToken("{");
+        this.emitValue(node.expression);
+        return this.writeToken("}");
+      case "BreakStatement":
+        return this.printJump("break", node.label, node);
+      case "ObjectPattern":
+        return this.emitObjectPattern(node);
+      case "AssignmentPattern":
+        return this.emitAssignmentPattern(node);
+      case "AwaitExpression":
+        this.writeKeyword("await");
+        return this.emitExpr(node.argument, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
+      case "UpdateExpression":
+        return this.emitUpdateExpression(node);
+      case "ForOfStatement":
+        return this.emitForOfStatement(node);
+      case "MethodDefinition":
+      case "TSAbstractMethodDefinition":
+        return this.emitMethodDefinition(node);
+      case "JSXText":
+        return this.writeLiteral(node.raw || node.value);
+      case "WhileStatement":
+        return this.emitWhileStatement(node);
+      case "SwitchStatement":
+        return this.emitSwitchStatement(node);
+      case "ForStatement":
+        return this.emitForStatement(node);
+      case "ThrowStatement":
+        return this.emitThrowStatement(node);
+      case "JSXElement":
+        this.emit(node.openingElement);
+        for (const c of node.children) this.emit(c);
+        return this.emit(node.closingElement);
+      case "JSXOpeningElement":
+        return this.emitJSXOpeningElement(node);
+      case "ContinueStatement":
+        return this.printJump("continue", node.label, node);
+      case "TryStatement":
+        return this.emitTryStatement(node);
+      case "ArrayPattern":
+        return this.emitArrayPattern(node);
+      case "CatchClause":
+        return this.emitCatchClause(node);
       case "TSDeclareFunction":
       case "TSEmptyBodyFunctionExpression":
         return this.emitFunction(node);
-      case "ParenthesizedExpression":
-        this.writeToken("(");
-        this.emit(node.expression);
-        return this.writeToken(")");
-      case "NewExpression":
-        return this.emitNewExpression(node);
-      case "TemplateLiteral":
-        return this.emitTemplateLiteral(node, ctx);
-      case "TemplateElement":
-        return this.printTemplateElement(node, false);
-      case "UpdateExpression":
-        return this.emitUpdateExpression(node);
-      case "SequenceExpression":
-        return this.emitSequenceExpression(node, ctx);
-      case "ThrowStatement":
-        return this.emitThrowStatement(node);
-      case "ForStatement":
-        return this.emitForStatement(node);
-      case "ForInStatement":
-        return this.emitForInStatement(node);
-      case "ForOfStatement":
-        return this.emitForOfStatement(node);
-      case "WhileStatement":
-        return this.emitWhileStatement(node);
-      case "DoWhileStatement":
-        return this.emitDoWhileStatement(node);
-      case "BreakStatement":
-        return this.printJump("break", node.label, node);
-      case "ContinueStatement":
-        return this.printJump("continue", node.label, node);
-      case "SwitchStatement":
-        return this.emitSwitchStatement(node);
-      case "TryStatement":
-        return this.emitTryStatement(node);
-      case "CatchClause":
-        return this.emitCatchClause(node);
-      case "LabeledStatement":
-        return this.emitLabeledStatement(node);
+      case "JSXClosingElement":
+        this.writeToken("</");
+        this.emit(node.name);
+        return this.writeToken(">");
+      case "RestElement":
+        return this.emitRestElement(node);
+      case "JSXMemberExpression":
+        this.emit(node.object);
+        this.writeToken(".");
+        return this.emit(node.property);
+      case "ImportDefaultSpecifier":
+        return this.emit(node.local);
       case "EmptyStatement":
         // not deferred, `if(x);` needs the `;` to materialize the body
         return this.writeToken(";");
+      case "SequenceExpression":
+        return this.emitSequenceExpression(node, ctx);
+      case "ForInStatement":
+        return this.emitForInStatement(node);
+      case "DoWhileStatement":
+        return this.emitDoWhileStatement(node);
+      case "LabeledStatement":
+        return this.emitLabeledStatement(node);
       case "DebuggerStatement":
         this.writeToken("debugger");
         this.emitInsideCommentsInline(node);
         return this.softSemi();
       case "WithStatement":
         return this.emitWithStatement(node);
-      case "SpreadElement":
-        this.writeToken("...");
-        return this.emitValue(node.argument);
-      case "AwaitExpression":
-        this.writeKeyword("await");
-        return this.emitExpr(node.argument, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
       case "YieldExpression":
         return this.emitYieldExpression(node, ctx);
       case "ImportExpression":
@@ -847,39 +918,17 @@ class NodePrinter extends Output implements Printer {
         return this.emitClass(node, ctx);
       case "ClassBody":
         return this.emitClassBody(node);
-      case "MethodDefinition":
-      case "TSAbstractMethodDefinition":
-        return this.emitMethodDefinition(node);
-      case "PropertyDefinition":
-      case "AccessorProperty":
-      case "TSAbstractPropertyDefinition":
-      case "TSAbstractAccessorProperty":
-        return this.emitPropertyDefinition(node);
       case "StaticBlock":
         this.writeToken("static");
         this.space();
         return this.printBlock(node.body, false, node);
       case "Decorator":
         return this.emitDecorator(node);
-      case "ArrayPattern":
-        return this.emitArrayPattern(node);
-      case "ObjectPattern":
-        return this.emitObjectPattern(node);
-      case "AssignmentPattern":
-        return this.emitAssignmentPattern(node);
-      case "RestElement":
-        return this.emitRestElement(node);
       case "Program":
         return this.emitProgram(node);
       case "Hashbang":
         this.writeToken("#!");
         return this.writeLiteral(node.value);
-      case "ImportDeclaration":
-        return this.emitImportDeclaration(node);
-      case "ImportSpecifier":
-        return this.emitImportSpecifier(node);
-      case "ImportDefaultSpecifier":
-        return this.emit(node.local);
       case "ImportNamespaceSpecifier":
         this.writeKeyword("* as");
         return this.emit(node.local);
@@ -888,46 +937,22 @@ class NodePrinter extends Output implements Printer {
         this.writeToken(":");
         this.space();
         return this.emit(node.value);
-      case "ExportNamedDeclaration":
-        return this.emitExportNamedDeclaration(node);
       case "ExportDefaultDeclaration":
         return this.emitExportDefaultDeclaration(node);
       case "ExportAllDeclaration":
         return this.emitExportAllDeclaration(node);
       case "ExportSpecifier":
         return this.emitExportSpecifier(node);
-      case "JSXElement":
-        this.emit(node.openingElement);
-        for (const c of node.children) this.emit(c);
-        return this.emit(node.closingElement);
-      case "JSXOpeningElement":
-        return this.emitJSXOpeningElement(node);
-      case "JSXClosingElement":
-        this.writeToken("</");
-        this.emit(node.name);
-        return this.writeToken(">");
       case "JSXFragment":
         this.emit(node.openingFragment);
         for (const c of node.children) this.emit(c);
         return this.emit(node.closingFragment);
-      case "JSXIdentifier":
-        return this.writeToken(node.name);
       case "JSXNamespacedName":
         this.emit(node.namespace);
         this.writeToken(":");
         return this.emit(node.name);
-      case "JSXMemberExpression":
-        this.emit(node.object);
-        this.writeToken(".");
-        return this.emit(node.property);
-      case "JSXAttribute":
-        return this.emitJSXAttribute(node);
       case "JSXSpreadAttribute":
         return this.printJSXSpread(node.argument);
-      case "JSXExpressionContainer":
-        this.writeToken("{");
-        this.emitValue(node.expression);
-        return this.writeToken("}");
       case "JSXEmptyExpression":
         return this.emitInsideCommentsInline(node);
       case "JSXOpeningFragment":
@@ -938,8 +963,6 @@ class NodePrinter extends Output implements Printer {
         this.writeToken("</");
         this.emitInsideCommentsInline(node);
         return this.writeToken(">");
-      case "JSXText":
-        return this.writeLiteral(node.raw || node.value);
       case "JSXSpreadChild":
         return this.printJSXSpread(node.expression);
     }
@@ -2527,31 +2550,25 @@ class NodePrinter extends Output implements Printer {
 
   emitTypeScript(node: Node, ctx: number): void {
     switch (node.type) {
+      case "TSTypeReference":
+        this.emit(node.typeName);
+        return this.emit(node.typeArguments);
       case "TSTypeAnnotation":
         this.writeToken(":");
         this.space();
         return this.emit(node.typeAnnotation);
-      case "TSTypeReference":
-        this.emit(node.typeName);
-        return this.emit(node.typeArguments);
-      case "TSQualifiedName":
-        this.emit(node.left);
-        this.writeToken(".");
-        return this.emit(node.right);
-      case "TSTypeQuery":
-        this.writeKeyword("typeof");
-        this.emit(node.exprName);
-        return this.emit(node.typeArguments);
-      case "TSImportType":
-        return this.emitTSImportType(node);
-      case "TSTypeParameter":
-        return this.emitTSTypeParameter(node);
-      case "TSTypeParameterDeclaration":
-        return this.emitTSTypeParameterDeclaration(node, ctx);
       case "TSTypeParameterInstantiation":
         this.writeToken("<");
         this.emitList(node.params);
         return this.writeToken(">");
+      case "TSUnionType":
+        return this.emitTypeList(node.types, "|");
+      case "TSPropertySignature":
+        if (node.readonly) this.writeKeyword("readonly");
+        this.printPropertyKey(node.key, node.computed);
+        if (node.optional) this.writeToken("?");
+        this.emit(node.typeAnnotation);
+        return this.softSemi();
       case "TSLiteralType": {
         const lit = node.literal;
         // `!0` is no type
@@ -2560,114 +2577,16 @@ class NodePrinter extends Output implements Printer {
         }
         return this.emit(lit);
       }
-      case "TSTemplateLiteralType":
-        return this.printTemplate(node.quasis, node.types, false);
-      case "TSArrayType":
-        this.emitType(node.elementType, TPREC_PRIMARY, CTX_DEFER_TRAILING);
-        this.writeToken("[");
-        this.emitOwedComments();
-        return this.writeToken("]");
-      case "TSIndexedAccessType":
-        this.emitType(node.objectType, TPREC_PRIMARY, CTX_DEFER_TRAILING);
-        this.writeToken("[");
-        this.emitOwedComments();
-        this.emit(node.indexType);
-        return this.writeToken("]");
-      case "TSTupleType":
-        this.writeToken("[");
-        this.emitInsideCommentsInline(node);
-        this.emitList(node.elementTypes);
-        return this.writeToken("]");
-      case "TSNamedTupleMember":
-        this.emit(node.label);
-        if (node.optional) this.writeToken("?");
-        this.writeToken(":");
-        this.space();
-        return this.emit(node.elementType);
-      case "TSOptionalType":
-        this.emitType(node.typeAnnotation, TPREC_PRIMARY, 0);
-        return this.writeToken("?");
-      case "TSRestType":
-        this.writeToken("...");
-        return this.emit(node.typeAnnotation);
-      case "TSJSDocNullableType":
-        return this.printJSDocNullability("?", node.typeAnnotation, node.postfix);
-      case "TSJSDocNonNullableType":
-        return this.printJSDocNullability("!", node.typeAnnotation, node.postfix);
-      case "TSUnionType":
-        return this.emitTypeList(node.types, "|");
-      case "TSIntersectionType":
-        return this.emitTypeList(node.types, "&");
-      case "TSConditionalType":
-        this.emitType(node.checkType, TPREC_UNION, CTX_DEFER_TRAILING);
-        this.writeKeywordThenOwed(" extends");
-        this.emitType(node.extendsType, TPREC_UNION, 0);
-        this.writeSpaced(" ?", "?");
-        this.space();
-        this.emit(node.trueType);
-        this.writeSpaced(" :", ":");
-        this.space();
-        return this.emit(node.falseType);
-      case "TSInferType":
-        this.writeKeyword("infer");
-        return this.emit(node.typeParameter);
-      case "TSTypeOperator":
-        this.writeKeyword(node.operator);
-        return this.emitType(node.typeAnnotation, TPREC_OPERATOR, 0);
-      case "TSParenthesizedType":
-        this.writeToken("(");
-        this.emit(node.typeAnnotation);
-        return this.writeToken(")");
+      case "TSTypeParameter":
+        return this.emitTSTypeParameter(node);
       case "TSFunctionType":
         return this.printArrowType(node);
-      case "TSConstructorType":
-        if (node.abstract) this.writeKeyword("abstract");
-        this.writeKeyword("new");
-        return this.printArrowType(node);
-      case "TSTypePredicate":
-        if (node.asserts) this.writeKeyword("asserts");
-        if (node.typeAnnotation == null) return this.emit(node.parameterName);
-        this.emitExpr(node.parameterName, CTX_DEFER_TRAILING);
-        this.writeKeywordThenOwed(" is");
-        return this.emitUnwrappedType(node.typeAnnotation);
-      case "TSTypeLiteral":
-        return this.printSignatureBody(node.members, node);
-      case "TSMappedType":
-        return this.emitTSMappedType(node);
-      case "TSPropertySignature":
-        if (node.readonly) this.writeKeyword("readonly");
-        this.printPropertyKey(node.key, node.computed);
-        if (node.optional) this.writeToken("?");
-        this.emit(node.typeAnnotation);
-        return this.softSemi();
-      case "TSMethodSignature":
-        if (node.kind === "get") this.writeKeyword("get");
-        else if (node.kind === "set") this.writeKeyword("set");
-        this.printPropertyKey(node.key, node.computed);
-        if (node.optional) this.writeToken("?");
-        return this.printSignatureTail(node);
-      case "TSCallSignatureDeclaration":
-        return this.printSignatureTail(node);
-      case "TSConstructSignatureDeclaration":
-        this.writeKeyword("new");
-        return this.printSignatureTail(node);
-      case "TSIndexSignature":
-        if (node.static === true) this.writeKeyword("static");
-        if (node.readonly) this.writeKeyword("readonly");
-        this.writeToken("[");
-        this.emitList(node.parameters);
-        this.writeToken("]");
-        this.emit(node.typeAnnotation);
-        return this.softSemi();
-      case "TSTypeAliasDeclaration":
-        if (node.declare) this.writeKeyword("declare");
-        this.writeKeyword("type");
-        this.emit(node.id);
-        this.emit(node.typeParameters);
-        this.printEq();
-        // a leftmost bare `intrinsic` reference would reparse as the keyword
-        this.wrapIf(isLeftmostIntrinsicReference(node.typeAnnotation), node.typeAnnotation, 0);
-        return this.softSemi();
+      case "TSQualifiedName":
+        this.emit(node.left);
+        this.writeToken(".");
+        return this.emit(node.right);
+      case "TSTypeParameterDeclaration":
+        return this.emitTSTypeParameterDeclaration(node, ctx);
       case "TSInterfaceDeclaration":
         if (node.declare) this.writeKeyword("declare");
         this.writeKeyword("interface");
@@ -2681,19 +2600,45 @@ class NodePrinter extends Output implements Printer {
         return this.emit(node.body);
       case "TSInterfaceBody":
         return this.printSignatureBody(node.body, node);
+      case "TSArrayType":
+        this.emitType(node.elementType, TPREC_PRIMARY, CTX_DEFER_TRAILING);
+        this.writeToken("[");
+        this.emitOwedComments();
+        return this.writeToken("]");
       case "TSInterfaceHeritage":
       case "TSClassImplements":
         this.emit(node.expression);
         return this.emit(node.typeArguments);
-      case "TSEnumDeclaration":
+      case "TSIndexedAccessType":
+        this.emitType(node.objectType, TPREC_PRIMARY, CTX_DEFER_TRAILING);
+        this.writeToken("[");
+        this.emitOwedComments();
+        this.emit(node.indexType);
+        return this.writeToken("]");
+      case "TSTypeLiteral":
+        return this.printSignatureBody(node.members, node);
+      case "TSTypeAliasDeclaration":
         if (node.declare) this.writeKeyword("declare");
-        if (node.const) this.writeKeyword("const");
-        this.writeKeyword("enum");
+        this.writeKeyword("type");
         this.emit(node.id);
+        this.emit(node.typeParameters);
+        this.printEq();
+        // a leftmost bare `intrinsic` reference would reparse as the keyword
+        this.wrapIf(isLeftmostIntrinsicReference(node.typeAnnotation), node.typeAnnotation, 0);
+        return this.softSemi();
+      case "TSTypeOperator":
+        this.writeKeyword(node.operator);
+        return this.emitType(node.typeAnnotation, TPREC_OPERATOR, 0);
+      case "TSConditionalType":
+        this.emitType(node.checkType, TPREC_UNION, CTX_DEFER_TRAILING);
+        this.writeKeywordThenOwed(" extends");
+        this.emitType(node.extendsType, TPREC_UNION, 0);
+        this.writeSpaced(" ?", "?");
         this.space();
-        return this.emit(node.body);
-      case "TSEnumBody":
-        return this.emitTSEnumBody(node);
+        this.emit(node.trueType);
+        this.writeSpaced(" :", ":");
+        this.space();
+        return this.emit(node.falseType);
       case "TSEnumMember":
         if (node.computed) {
           this.writeToken("[");
@@ -2707,6 +2652,84 @@ class NodePrinter extends Output implements Printer {
           this.emit(node.initializer);
         }
         return;
+      case "TSTypeQuery":
+        this.writeKeyword("typeof");
+        this.emit(node.exprName);
+        return this.emit(node.typeArguments);
+      case "TSMethodSignature":
+        if (node.kind === "get") this.writeKeyword("get");
+        else if (node.kind === "set") this.writeKeyword("set");
+        this.printPropertyKey(node.key, node.computed);
+        if (node.optional) this.writeToken("?");
+        return this.printSignatureTail(node);
+      case "TSIntersectionType":
+        return this.emitTypeList(node.types, "&");
+      case "TSTupleType":
+        this.writeToken("[");
+        this.emitInsideCommentsInline(node);
+        this.emitList(node.elementTypes);
+        return this.writeToken("]");
+      case "TSParenthesizedType":
+        this.writeToken("(");
+        this.emit(node.typeAnnotation);
+        return this.writeToken(")");
+      case "TSNamedTupleMember":
+        this.emit(node.label);
+        if (node.optional) this.writeToken("?");
+        this.writeToken(":");
+        this.space();
+        return this.emit(node.elementType);
+      case "TSInferType":
+        this.writeKeyword("infer");
+        return this.emit(node.typeParameter);
+      case "TSConstructorType":
+        if (node.abstract) this.writeKeyword("abstract");
+        this.writeKeyword("new");
+        return this.printArrowType(node);
+      case "TSMappedType":
+        return this.emitTSMappedType(node);
+      case "TSIndexSignature":
+        if (node.static === true) this.writeKeyword("static");
+        if (node.readonly) this.writeKeyword("readonly");
+        this.writeToken("[");
+        this.emitList(node.parameters);
+        this.writeToken("]");
+        this.emit(node.typeAnnotation);
+        return this.softSemi();
+      case "TSRestType":
+        this.writeToken("...");
+        return this.emit(node.typeAnnotation);
+      case "TSImportType":
+        return this.emitTSImportType(node);
+      case "TSTemplateLiteralType":
+        return this.printTemplate(node.quasis, node.types, false);
+      case "TSOptionalType":
+        this.emitType(node.typeAnnotation, TPREC_PRIMARY, 0);
+        return this.writeToken("?");
+      case "TSJSDocNullableType":
+        return this.printJSDocNullability("?", node.typeAnnotation, node.postfix);
+      case "TSJSDocNonNullableType":
+        return this.printJSDocNullability("!", node.typeAnnotation, node.postfix);
+      case "TSTypePredicate":
+        if (node.asserts) this.writeKeyword("asserts");
+        if (node.typeAnnotation == null) return this.emit(node.parameterName);
+        this.emitExpr(node.parameterName, CTX_DEFER_TRAILING);
+        this.writeKeywordThenOwed(" is");
+        return this.emitUnwrappedType(node.typeAnnotation);
+      case "TSCallSignatureDeclaration":
+        return this.printSignatureTail(node);
+      case "TSConstructSignatureDeclaration":
+        this.writeKeyword("new");
+        return this.printSignatureTail(node);
+      case "TSEnumDeclaration":
+        if (node.declare) this.writeKeyword("declare");
+        if (node.const) this.writeKeyword("const");
+        this.writeKeyword("enum");
+        this.emit(node.id);
+        this.space();
+        return this.emit(node.body);
+      case "TSEnumBody":
+        return this.emitTSEnumBody(node);
       case "TSModuleDeclaration":
         if (node.declare) this.writeKeyword("declare");
         if (node.global) {
