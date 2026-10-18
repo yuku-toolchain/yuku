@@ -265,6 +265,11 @@ pub const TokenTag = enum(u32) {
         return self.hasMask(Mask.IsUnconditionallyReserved);
     }
 
+    /// Whether the token is a keyword reserved only in strict mode code.
+    pub fn isStrictModeReserved(self: TokenTag) bool {
+        return self.hasMask(Mask.IsStrictModeReserved);
+    }
+
     /// Whether the token is reserved unconditionally or in strict mode.
     pub fn isReserved(self: TokenTag) bool {
         return self.hasMask(Mask.IsUnconditionallyReserved | Mask.IsStrictModeReserved);

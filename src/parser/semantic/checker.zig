@@ -6,6 +6,7 @@ const util = @import("util");
 const traverser = @import("../traverser/root.zig");
 const ast = @import("../ast.zig");
 const ecmascript = @import("../ecmascript.zig");
+const lexical = @import("../lexical.zig");
 const binder = @import("binder.zig");
 
 const Allocator = std.mem.Allocator;
@@ -1045,44 +1046,17 @@ pub const Checker = struct {
         comptime as_what: []const u8,
     ) AnalysisError!void {
         if (!ctx.scope.isStrict()) return;
-        if (matchStrictReserved(name)) |word| {
-            try self.report(
-                ctx.tree.span(node_index),
-                try self.fmt(
-                    "'{s}' is reserved in strict mode and cannot be used as " ++ as_what,
-                    .{word},
-                ),
-                .{},
-            );
-        }
+        const tag = lexical.keyword(name) orelse return;
+        if (!tag.isStrictModeReserved()) return;
+        try self.report(
+            ctx.tree.span(node_index),
+            try self.fmt(
+                "'{s}' is reserved in strict mode and cannot be used as " ++ as_what,
+                .{name},
+            ),
+            .{},
+        );
     }
-
-    // https://tc39.es/ecma262/#sec-keywords-and-reserved-words
-    fn matchStrictReserved(name: []const u8) ?[]const u8 {
-        // a length and first-letter bitmap rejects most names in one predictable branch
-        const initials = if (name.len < strict_reserved_initials.len)
-            strict_reserved_initials[name.len]
-        else
-            0;
-        const letter = (if (name.len > 0) name[0] else 0) -% 'a';
-        const initial = if (letter < 26) @as(u32, 1) << @intCast(letter) else 0;
-        if (initials & initial == 0) return null;
-        inline for (strict_reserved) |word| {
-            if (name.len == word.len and eql(u8, name, word)) return word;
-        }
-        return null;
-    }
-
-    const strict_reserved = [_][]const u8{
-        "let",     "yield",     "static",    "public",     "private",
-        "package", "protected", "interface", "implements",
-    };
-
-    const strict_reserved_initials = blk: {
-        var table: [11]u32 = @splat(0);
-        for (strict_reserved) |word| table[word.len] |= 1 << (word[0] - 'a');
-        break :blk table;
-    };
 
     // 14.7.5.1 allows one ForBinding and, outside annex B 3.5, no initializer
     fn checkForInOfInitializer(
