@@ -811,10 +811,10 @@ pub const Lexer = struct {
             return error.InvalidUnicodeEscape;
         switch (context) {
             .identifier_start => {
-                if (!util.UnicodeId.canStartId(parsed.value)) return error.InvalidIdentifierStart;
+                if (!lexical.isIdentifierStart(parsed.value)) return error.InvalidIdentifierStart;
             },
             .identifier_continue => {
-                if (!util.UnicodeId.canContinueId(parsed.value)) {
+                if (!lexical.isIdentifierChar(parsed.value)) {
                     return error.InvalidIdentifierContinue;
                 }
             },

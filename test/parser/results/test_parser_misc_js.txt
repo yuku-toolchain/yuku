@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       76/76 (100.00%)
+Passed:       77/77 (100.00%)
 Failed:       0
-AST mismatch: 0/76
+AST mismatch: 0/77
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -188,6 +188,7 @@ error: Expected 'class' keyword, but found 'const'
 
 ✓ test/parser/misc/js/dynamic-import-in-script.js
 ✓ test/parser/misc/js/dynamic-import.module.js
+✓ test/parser/misc/js/escaped-dollar-underscore-identifier.js
 ✓ test/parser/misc/js/export-default-async-linebreak.module.js
 ✓ test/parser/misc/js/export-default-using.module.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'resource'
