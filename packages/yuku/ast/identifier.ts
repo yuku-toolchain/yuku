@@ -1,34 +1,37 @@
-const ID_START = /^[$_\p{ID_Start}]$/u;
-const ID_CONTINUE = /^[$\u200C\u200D\p{ID_Continue}]$/u;
-const IDENTIFIER_NAME = /^[$_\p{ID_Start}][$\u200C\u200D\p{ID_Continue}]*$/u;
+import { decodeBase64 } from "../core/base64";
+import { CHAR, CHUNKS, START } from "./identifier-tables";
 
-const CODE_POINT_MAX = 0x10ffff;
+const start = decodeBase64(START);
+const char = decodeBase64(CHAR);
+const chunks = decodeBase64(CHUNKS);
 
-/**
- * True if the code point `cp`, as from `codePointAt`, can start an
- * identifier: any `ID_Start` character, plus `$` and `_`.
- */
+function has(roots: Uint8Array, cp: number): boolean {
+  if (cp >>> 0 !== cp) return false;
+  const chunk = cp >>> 9;
+  if (chunk >= roots.length) return false;
+  return ((chunks[(roots[chunk]! << 6) | ((cp >>> 3) & 63)]! >>> (cp & 7)) & 1) === 1;
+}
+
+/** True if the code point `cp` can start an identifier. */
 export function isIdentifierStart(cp: number): boolean {
-  if (!Number.isInteger(cp) || cp < 0 || cp > CODE_POINT_MAX) return false;
-  return ID_START.test(String.fromCodePoint(cp));
+  return has(start, cp);
 }
 
-/**
- * True if the code point `cp` can follow the first character of an
- * identifier: any `ID_Continue` character, plus `$`, `_`, ZWNJ, and ZWJ.
- */
+/** True if the code point `cp` can continue an identifier. */
 export function isIdentifierChar(cp: number): boolean {
-  if (!Number.isInteger(cp) || cp < 0 || cp > CODE_POINT_MAX) return false;
-  return ID_CONTINUE.test(String.fromCodePoint(cp));
+  return has(char, cp);
 }
 
-/**
- * True if `name` is a valid ECMAScript `IdentifierName`. Reserved words
- * are identifier names, so `isIdentifierName("class")` is true, see
- * {@link isValidIdentifier}.
- */
+/** True if `name` is an `IdentifierName`, reserved words included. */
 export function isIdentifierName(name: string): boolean {
-  return IDENTIFIER_NAME.test(name);
+  if (name.length === 0) return false;
+  let cp = name.codePointAt(0)!;
+  if (!has(start, cp)) return false;
+  for (let i = cp > 0xffff ? 2 : 1; i < name.length; i += cp > 0xffff ? 2 : 1) {
+    cp = name.codePointAt(i)!;
+    if (!has(char, cp)) return false;
+  }
+  return true;
 }
 
 const keywords = new Set([
@@ -83,51 +86,32 @@ const strictReservedWords = new Set([
 
 const strictBindOnlyReservedWords = new Set(["eval", "arguments"]);
 
-/**
- * True if `word` is a reserved keyword of the core grammar. Does not
- * include `enum`, `await`, or the strict-mode-only words, see
- * {@link isReservedWord} and {@link isStrictReservedWord}.
- */
+/** True if `word` is a keyword of the core grammar, not `enum`, `await`, or strict-only words. */
 export function isKeyword(word: string): boolean {
   return keywords.has(word);
 }
 
-/**
- * True if `word` is unconditionally reserved: `enum` in any context,
- * and `await` when `inModule`.
- */
+/** True for `enum`, and `await` when `inModule`. */
 export function isReservedWord(word: string, inModule = false): boolean {
   return (inModule && word === "await") || word === "enum";
 }
 
-/**
- * True if `word` is reserved in strict mode: everything
- * {@link isReservedWord} covers, plus `let`, `static`, `yield`, and the
- * other strict-mode future reserved words.
- */
+/** True if `word` is reserved in strict mode code. */
 export function isStrictReservedWord(word: string, inModule = false): boolean {
   return isReservedWord(word, inModule) || strictReservedWords.has(word);
 }
 
-/** True for `eval` and `arguments`, reserved only as strict-mode binding targets. */
+/** True for `eval` and `arguments`, which strict mode code cannot bind. */
 export function isStrictBindOnlyReservedWord(word: string): boolean {
   return strictBindOnlyReservedWords.has(word);
 }
 
-/**
- * True if `word` is reserved as a strict-mode binding target:
- * everything {@link isStrictReservedWord} covers, plus `eval` and
- * `arguments`.
- */
+/** True if strict mode code cannot bind `word`. */
 export function isStrictBindReservedWord(word: string, inModule = false): boolean {
   return isStrictReservedWord(word, inModule) || isStrictBindOnlyReservedWord(word);
 }
 
-/**
- * True if `name` can be used as an identifier binding: a valid
- * {@link isIdentifierName} that, when `reserved` is true (the default),
- * is neither a keyword nor a strict-mode reserved word.
- */
+/** True if `name` is an identifier no code reserves, or any `IdentifierName` without `reserved`. */
 export function isValidIdentifier(name: string, reserved = true): boolean {
   if (reserved && (isKeyword(name) || isStrictReservedWord(name, true))) return false;
   return isIdentifierName(name);

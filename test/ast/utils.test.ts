@@ -10,7 +10,9 @@ import {
   findAll,
   is,
   isCallOf,
+  isIdentifierChar,
   isIdentifierName,
+  isIdentifierStart,
   isValidIdentifier,
   isWrapper,
   literalValue,
@@ -65,6 +67,18 @@ describe("identifier", () => {
     expect(isValidIdentifier("await")).toBe(false);
     expect(isValidIdentifier("eval")).toBe(true);
     expect(isValidIdentifier("class", false)).toBe(true);
+  });
+
+  // the parser's Unicode tables, on any runtime
+  test("code points", () => {
+    expect(isIdentifierStart(0x24)).toBe(true);
+    expect(isIdentifierStart(0x10940)).toBe(true);
+    expect(isIdentifierStart(0x200c)).toBe(false);
+    expect(isIdentifierChar(0x200c)).toBe(true);
+    expect(isIdentifierStart(0x110000)).toBe(false);
+    expect(isIdentifierStart(-1)).toBe(false);
+    expect(isIdentifierName("a\u{10940}")).toBe(true);
+    expect(isIdentifierName("\ud800")).toBe(false);
   });
 });
 

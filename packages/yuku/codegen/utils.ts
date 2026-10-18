@@ -1,3 +1,5 @@
+import { isIdentifierChar } from "../ast/identifier";
+
 export const CHAR_NUL = 0x00;
 export const CHAR_BACKSPACE = 0x08;
 export const CHAR_TAB = 0x09;
@@ -31,27 +33,14 @@ export const CHAR_PS = 0x2029;
 const CHAR_9 = 0x39;
 const CHAR_UNDERSCORE = 0x5f;
 
-const ID_CONTINUE_ASCII = new Uint8Array(128);
-for (let c = 0; c < 128; c++) {
-  const letter = (c >= 0x41 && c <= 0x5a) || (c >= 0x61 && c <= 0x7a);
-  const digit = c >= CHAR_0 && c <= CHAR_9;
-  if (letter || digit || c === CHAR_UNDERSCORE || c === CHAR_DOLLAR) ID_CONTINUE_ASCII[c] = 1;
-}
-
 export function isIdCont(code: number): boolean {
-  return code >= 0x80 || ID_CONTINUE_ASCII[code] === 1;
+  return code >= 0x80 || isIdentifierChar(code);
 }
 
 const WORD_OPERATORS = new Set(["in", "instanceof", "typeof", "void", "delete"]);
 
 export function isWordOp(op: string): boolean {
   return WORD_OPERATORS.has(op);
-}
-
-const IDENTIFIER_NAME = /^[$_\p{ID_Start}][$\p{ID_Continue}]*$/u;
-
-export function isIdentifierName(s: string): boolean {
-  return IDENTIFIER_NAME.test(s);
 }
 
 function isAsciiWhitespace(code: number): boolean {

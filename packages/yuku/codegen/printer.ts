@@ -1,3 +1,4 @@
+import { isIdentifierName } from "../ast/identifier";
 import type * as T from "../types";
 
 import { LEAD_ARROW, LEAD_EXPORT_DEFAULT, LEAD_NONE, LEAD_STMT, Output } from "./output";
@@ -26,7 +27,6 @@ import {
   hasLineTerminator,
   isAsciiDigit,
   isBareInteger,
-  isIdentifierName,
   isJsdocBody,
   isLoneSurrogateAt,
   isMinimalInteger,

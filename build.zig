@@ -231,6 +231,7 @@ pub fn build(b: *std.Build) void {
         .{ .name = "gen_decoder", .output = "packages/yuku/core/decode.js" },
         .{ .name = "gen_walk_tables", .output = "packages/yuku/ast/generated.ts" },
         .{ .name = "gen_token_types", .output = "packages/yuku/types/tokens.ts" },
+        .{ .name = "gen_identifier_tables", .output = "packages/yuku/ast/identifier-tables.ts" },
     }) |generator| {
         const generator_exe = b.addExecutable(.{
             .name = generator.name,
