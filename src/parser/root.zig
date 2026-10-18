@@ -5,6 +5,7 @@ pub const Options = parser.Options;
 pub const CommentMode = parser.CommentMode;
 
 pub const ast = @import("ast.zig");
+pub const lexical = @import("lexical.zig");
 
 pub const dialect = @import("dialect.zig");
 
@@ -13,5 +14,6 @@ pub const semantic = @import("semantic/root.zig");
 pub const codegen = @import("codegen/root.zig");
 
 test {
+    _ = lexical;
     _ = codegen;
 }

@@ -4,7 +4,11 @@ const TokenTag = @import("token.zig").TokenTag;
 const Span = @import("token.zig").Span;
 const TokenFlag = @import("token.zig").TokenFlag;
 const flagMask = @import("token.zig").flagMask;
+const keywordTag = @import("token.zig").keywordTag;
+const keyword_length_min = @import("token.zig").keyword_length_min;
+const keyword_length_max = @import("token.zig").keyword_length_max;
 const ast = @import("ast.zig");
+const lexical = @import("lexical.zig");
 const util = @import("util");
 const Simd = util.Simd;
 
@@ -50,6 +54,25 @@ inline fn identContinueRun(chunk: Simd.Chunk) u32 {
     const underscore = chunk == Simd.splat('_');
     const dollar = chunk == Simd.splat('$');
     return Simd.leadingTrueCount(alpha | digit | underscore | dollar);
+}
+
+const identifier_start_ascii = asciiTable(lexical.isIdentifierStart);
+const identifier_char_ascii = asciiTable(lexical.isIdentifierChar);
+const identifier_char_jsx_ascii = asciiTable(lexical.isJSXIdentifierChar);
+
+fn asciiTable(comptime predicate: fn (u21) bool) [256]bool {
+    @setEvalBranchQuota(10_000);
+    var table: [256]bool = @splat(false);
+    for (0..0x80) |c| table[c] = predicate(c);
+    return table;
+}
+
+comptime {
+    @setEvalBranchQuota(20_000);
+    for (0..256) |c| {
+        const run: u32 = if (identifier_char_ascii[c]) 16 else 0;
+        std.debug.assert(identContinueRun(Simd.splat(c)) == run);
+    }
 }
 
 fn findAnyPos(comptime chars: []const u8, src: []const u8, from: u32) u32 {
@@ -144,7 +167,7 @@ pub const Lexer = struct {
 
         const current_char = self.source[self.cursor];
 
-        if (ident_start_table_ascii[current_char] and self.mode == .normal) {
+        if (identifier_start_ascii[current_char] and self.mode == .normal) {
             var token: Token = undefined;
             if (self.scanAsciiIdentifier(&token)) return token;
             return self.scanIdentifierOrKeyword();
@@ -243,7 +266,7 @@ pub const Lexer = struct {
     inline fn scanAsciiIdentifier(self: *Lexer, out: *Token) bool {
         const src = self.source;
         const start = self.cursor;
-        std.debug.assert(ident_start_table_ascii[src[start]]);
+        std.debug.assert(identifier_start_ascii[src[start]]);
 
         var pos = start + 1;
         while (pos + 16 <= src.len) {
@@ -251,12 +274,12 @@ pub const Lexer = struct {
             pos += run;
             if (run < 16) break;
         } else {
-            while (pos < src.len and ident_continue_table_ascii[src[pos]]) {
+            while (pos < src.len and identifier_char_ascii[src[pos]]) {
                 pos += 1;
             }
         }
         std.debug.assert(pos > start);
-        if (pos < src.len) std.debug.assert(!ident_continue_table_ascii[src[pos]]);
+        if (pos < src.len) std.debug.assert(!identifier_char_ascii[src[pos]]);
         if (pos < src.len and (src[pos] == '\\' or src[pos] >= 0x80)) return false;
 
         self.cursor = pos;
@@ -265,7 +288,7 @@ pub const Lexer = struct {
         const is_keyword_candidate = first >= 'a' and first <= 'z' and
             len >= keyword_length_min and len <= keyword_length_max;
         const tag: TokenTag = if (is_keyword_candidate)
-            getKeywordType(src[start..pos])
+            keywordTag(src[start..pos])
         else
             .identifier;
         out.* = self.createToken(tag, start, pos);
@@ -293,7 +316,7 @@ pub const Lexer = struct {
     const fast_class: [256]FastClass = blk: {
         var t: [256]FastClass = @splat(.slow);
         for (0..256) |c| {
-            if (ident_start_table_ascii[c]) t[c] = .ident;
+            if (identifier_start_ascii[c]) t[c] = .ident;
             if (simple_punct_tag[c] != .eof) t[c] = .punct;
         }
         t['.'] = .dot;
@@ -812,37 +835,12 @@ pub const Lexer = struct {
         return self.puncToken(1, .dot, start);
     }
 
-    const ident_start_table_ascii: [256]bool = blk: {
-        var t: [256]bool = @splat(false);
-        for ('a'..('z' + 1)) |c| t[c] = true;
-        for ('A'..('Z' + 1)) |c| t[c] = true;
-        t['_'] = true;
-        t['$'] = true;
-        break :blk t;
-    };
-
-    const ident_continue_table_ascii: [256]bool = blk: {
-        var t: [256]bool = @splat(false);
-        for ('a'..('z' + 1)) |c| t[c] = true;
-        for ('A'..('Z' + 1)) |c| t[c] = true;
-        for ('0'..('9' + 1)) |c| t[c] = true;
-        t['_'] = true;
-        t['$'] = true;
-        break :blk t;
-    };
-
-    const ident_continue_jsx_table_ascii: [256]bool = blk: {
-        var t = ident_continue_table_ascii;
-        t['-'] = true;
-        break :blk t;
-    };
-
     fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
         std.debug.assert(self.cursor <= self.source.len);
         const table = if (is_jsx_tag)
-            &ident_continue_jsx_table_ascii
+            &identifier_char_jsx_ascii
         else
-            &ident_continue_table_ascii;
+            &identifier_char_ascii;
         const src = self.source;
         const entry_pos = self.cursor;
         var pos = entry_pos;
@@ -868,7 +866,7 @@ pub const Lexer = struct {
                 @branchHint(.cold);
                 self.cursor = pos;
                 const cp = try util.Utf.codePointAt(src, pos);
-                if (util.UnicodeId.canContinueId(cp.value)) {
+                if (lexical.isIdentifierChar(cp.value)) {
                     pos += cp.len;
                     continue;
                 }
@@ -898,7 +896,7 @@ pub const Lexer = struct {
                 self.cursor += 1;
                 _ = try self.consumeUnicodeEscape(.identifier_start);
             } else {
-                if (!ident_start_table_ascii[first_char]) {
+                if (!identifier_start_ascii[first_char]) {
                     @branchHint(.cold);
                     return error.InvalidIdentifierStart;
                 }
@@ -909,7 +907,7 @@ pub const Lexer = struct {
         } else {
             @branchHint(.cold);
             const cp = try util.Utf.codePointAt(self.source, self.cursor);
-            if (!util.UnicodeId.canStartId(cp.value)) return error.InvalidIdentifierStart;
+            if (!lexical.isIdentifierStart(cp.value)) return error.InvalidIdentifierStart;
             self.cursor += cp.len;
             has_escape = try self.scanIdentifierBody(is_jsx_tag);
         }
@@ -923,7 +921,7 @@ pub const Lexer = struct {
         else if (has_escape)
             getEscapedKeywordType(lexeme)
         else
-            getKeywordType(lexeme);
+            keywordTag(lexeme);
 
         return self.createToken(tag, start, self.cursor);
     }
@@ -949,52 +947,7 @@ pub const Lexer = struct {
                 i += 1;
             }
         }
-        return getKeywordType(buf[0..out]);
-    }
-
-    const keyword_length_min = 2;
-    const keyword_length_max = 11;
-
-    const KeywordEntry = struct {
-        name: [keyword_length_max]u8,
-        len: u8,
-        tag: TokenTag,
-    };
-
-    // perfect hash over (first, second, last, length). the multipliers were found by
-    // offline search so every keyword lands in a distinct slot of the 512-entry table
-    inline fn keywordHash(c0: u8, c1: u8, c_last: u8, length: usize) u32 {
-        const h = @as(u32, c0) * 56 + @as(u32, c1) * 97 +
-            @as(u32, c_last) * 108 + @as(u32, @intCast(length)) * 117;
-        return h & 511;
-    }
-
-    const keyword_table: [512]KeywordEntry = blk: {
-        @setEvalBranchQuota(20_000);
-        var t: [512]KeywordEntry = @splat(.{ .name = @splat(0), .len = 0, .tag = .identifier });
-        for (std.enums.values(TokenTag)) |keyword_tag| {
-            if (!keyword_tag.isIdentifierLike()) continue;
-            const name = keyword_tag.toString() orelse continue;
-            std.debug.assert(name.len >= keyword_length_min);
-            std.debug.assert(name.len <= keyword_length_max);
-            const h = keywordHash(name[0], name[1], name[name.len - 1], name.len);
-            if (t[h].len != 0) @compileError("keyword perfect hash collision: " ++ name);
-            var entry: KeywordEntry = .{ .name = @splat(0), .len = name.len, .tag = keyword_tag };
-            @memcpy(entry.name[0..name.len], name);
-            t[h] = entry;
-        }
-        break :blk t;
-    };
-
-    fn getKeywordType(lexeme: []const u8) TokenTag {
-        if (lexeme.len < keyword_length_min or lexeme.len > keyword_length_max) {
-            return .identifier;
-        }
-        const h = keywordHash(lexeme[0], lexeme[1], lexeme[lexeme.len - 1], lexeme.len);
-        const entry = &keyword_table[h];
-        if (entry.len != lexeme.len) return .identifier;
-        if (!std.mem.eql(u8, entry.name[0..lexeme.len], lexeme)) return .identifier;
-        return entry.tag;
+        return keywordTag(buf[0..out]);
     }
 
     fn scanNumber(self: *Lexer) LexicalError!Token {
@@ -1067,7 +1020,7 @@ pub const Lexer = struct {
         }
 
         const c = self.peek(0);
-        if (ident_start_table_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
+        if (identifier_start_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
         std.debug.assert(self.cursor > start);
         return self.createToken(tag, start, self.cursor);
     }

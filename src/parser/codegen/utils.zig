@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const lexical = @import("../lexical.zig");
 
 pub fn isWordOp(op: []const u8) bool {
     return std.mem.eql(u8, op, "in") or std.mem.eql(u8, op, "instanceof") or
@@ -9,24 +9,7 @@ pub fn isWordOp(op: []const u8) bool {
 
 /// True when `c` can continue an ASCII identifier or is a non-ASCII byte.
 pub inline fn isIdCont(c: u8) bool {
-    return c == '$' or c >= 0x80 or util.UnicodeId.canContinueId(c);
-}
-
-pub fn isIdentifierName(s: []const u8) bool {
-    if (s.len == 0) return false;
-    var i: usize = 0;
-    while (i < s.len) {
-        const cp = util.Utf.codePointAt(s, i) catch return false;
-        const ok = if (cp.value == '$' or cp.value == '_')
-            true
-        else if (i == 0)
-            util.UnicodeId.canStartId(cp.value)
-        else
-            util.UnicodeId.canContinueId(cp.value);
-        if (!ok) return false;
-        i += cp.len;
-    }
-    return true;
+    return c >= 0x80 or lexical.isIdentifierChar(c);
 }
 
 /// The escape that keeps `s[i]` from ending an inline `<script>`, a backslash the value

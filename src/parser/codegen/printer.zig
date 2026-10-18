@@ -6,6 +6,7 @@ const output = @import("output.zig");
 const sourcemap = @import("sourcemap.zig");
 const utils = @import("utils.zig");
 const dialect = @import("../dialect.zig");
+const lexical = @import("../lexical.zig");
 
 const source_maps = @import("codegen_options").source_maps;
 
@@ -3211,7 +3212,7 @@ fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
         else => return null,
     };
     const s = tree.string(lit.value);
-    return if (utils.isIdentifierName(s)) s else null;
+    return if (lexical.isIdentifierName(s)) s else null;
 }
 
 fn isBareInteger(text: []const u8) bool {

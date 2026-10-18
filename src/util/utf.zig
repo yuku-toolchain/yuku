@@ -37,8 +37,7 @@ pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     return 0;
 }
 
-/// Returns the byte length of the line terminator at `pos`, or 0 if there is none. CRLF
-/// counts as a single terminator.
+/// The byte length of the line terminator at `pos`, or 0. CRLF is one terminator.
 pub fn lineBreakLen(source: []const u8, pos: usize) u8 {
     std.debug.assert(pos < source.len);
     return switch (source[pos]) {
@@ -127,11 +126,11 @@ pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
     return buf[0..out];
 }
 
-/// Appends the cooked value of a string or template body to `out`.
+/// Appends the cooked value of a string or template body to `out`, as WTF-8.
 pub fn decodeStringEscapes(
+    gpa: std.mem.Allocator,
     raw: []const u8,
     out: *std.ArrayList(u8),
-    alloc: std.mem.Allocator,
 ) error{OutOfMemory}!void {
     const start = out.items.len;
     defer if (std.mem.findScalarPos(u8, out.items, start, 0xED) != null) {
@@ -143,12 +142,12 @@ pub fn decodeStringEscapes(
 
         while (i < raw.len and raw[i] != '\\' and raw[i] != '\r') : (i += 1) {}
 
-        if (i > run_start) try out.appendSlice(alloc, raw[run_start..i]);
+        if (i > run_start) try out.appendSlice(gpa, raw[run_start..i]);
         if (i >= raw.len) break;
 
         // a raw CR or CRLF cooks to LF
         if (raw[i] == '\r') {
-            try out.append(alloc, '\n');
+            try out.append(gpa, '\n');
             i += 1;
             if (i < raw.len and raw[i] == '\n') i += 1;
             continue;
@@ -157,7 +156,7 @@ pub fn decodeStringEscapes(
         if (i >= raw.len) break;
         switch (raw[i]) {
             'n', 'r', 't', 'b', 'f', 'v' => |c| {
-                try out.append(alloc, switch (c) {
+                try out.append(gpa, switch (c) {
                     'n' => '\n',
                     'r' => '\r',
                     't' => '\t',
@@ -171,33 +170,33 @@ pub fn decodeStringEscapes(
             '0' => {
                 if (i + 1 < raw.len and std.ascii.isDigit(raw[i + 1])) {
                     const r = parseOctal(raw, i);
-                    try appendCodePoint(out, alloc, r.value);
+                    try appendCodePoint(out, gpa, r.value);
                     i = r.end;
                 } else {
-                    try out.append(alloc, 0);
+                    try out.append(gpa, 0);
                     i += 1;
                 }
             },
             '1'...'7' => {
                 const r = parseOctal(raw, i);
-                try appendCodePoint(out, alloc, r.value);
+                try appendCodePoint(out, gpa, r.value);
                 i = r.end;
             },
             'x' => {
                 if (parseHex2(raw, i + 1)) |r| {
-                    try appendCodePoint(out, alloc, r.value);
+                    try appendCodePoint(out, gpa, r.value);
                     i = r.end;
                 } else {
-                    try out.append(alloc, 'x');
+                    try out.append(gpa, 'x');
                     i += 1;
                 }
             },
             'u' => {
                 if (parseUnicodeEscape(raw, i + 1)) |r| {
-                    try appendCodePoint(out, alloc, r.value);
+                    try appendCodePoint(out, gpa, r.value);
                     i = r.end;
                 } else {
-                    try out.append(alloc, 'u');
+                    try out.append(gpa, 'u');
                     i += 1;
                 }
             },
@@ -211,7 +210,7 @@ pub fn decodeStringEscapes(
                 if (separator_len > 0) {
                     i += separator_len;
                 } else {
-                    try out.append(alloc, raw[i]);
+                    try out.append(gpa, raw[i]);
                     i += 1;
                 }
             },
@@ -219,11 +218,11 @@ pub fn decodeStringEscapes(
     }
 }
 
-/// Appends JSX text or a JSX attribute string to `out` with its entities decoded.
-pub fn decodeJsxEntities(
+/// Appends JSX text or a JSX attribute string to `out`, entities decoded.
+pub fn decodeJSXEntities(
+    gpa: std.mem.Allocator,
     raw: []const u8,
     out: *std.ArrayList(u8),
-    alloc: std.mem.Allocator,
 ) error{OutOfMemory}!void {
     var run_start: usize = 0;
     var i: usize = 0;
@@ -232,12 +231,12 @@ pub fn decodeJsxEntities(
             i = amp + 1;
             continue;
         };
-        try out.appendSlice(alloc, raw[run_start..amp]);
-        try appendCodePoint(out, alloc, entity.value);
+        try out.appendSlice(gpa, raw[run_start..amp]);
+        try appendCodePoint(out, gpa, entity.value);
         run_start = entity.end;
         i = entity.end;
     }
-    try out.appendSlice(alloc, raw[run_start..]);
+    try out.appendSlice(gpa, raw[run_start..]);
 }
 
 fn jsxEntityAt(raw: []const u8, amp: usize) ?Decoded {
@@ -452,7 +451,7 @@ test "hexVal" {
 fn expectDecode(input: []const u8, expected: []const u8) !void {
     var out: std.ArrayList(u8) = .empty;
     defer out.deinit(testing.allocator);
-    try decodeStringEscapes(input, &out, testing.allocator);
+    try decodeStringEscapes(testing.allocator, input, &out);
     try testing.expectEqualSlices(u8, expected, out.items);
 }
 

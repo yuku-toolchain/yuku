@@ -260,7 +260,7 @@ pub const Parser = struct {
         if (std.mem.findScalar(u8, self.source[start..end], '&') == null) {
             return self.tree.sourceSlice(start, end);
         }
-        return self.decode(util.Utf.decodeJsxEntities, start, end);
+        return self.decode(util.Utf.decodeJSXEntities, start, end);
     }
 
     /// Returns the decoded content of a template quasi span.
@@ -288,7 +288,7 @@ pub const Parser = struct {
         const alloc = self.allocator();
         var buf: std.ArrayList(u8) = .empty;
         defer buf.deinit(alloc);
-        try decoder(self.source[start..end], &buf, alloc);
+        try decoder(alloc, self.source[start..end], &buf);
         return try self.tree.addString(buf.items);
     }
 

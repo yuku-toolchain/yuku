@@ -268,3 +268,21 @@ token.isEscaped()                 // also hasInvalidEscape and hasLoneSurrogates
 ```
 
 The list ends with an `eof` token. Every node other than `program`, `template_element`, and `jsx_empty_expression` starts and ends on a token boundary, so its tokens are a contiguous run.
+
+## [Lexical grammar]($section.id('lexical-grammar'))
+
+`parser.lexical` answers as the lexer does.
+
+```zig
+lexical.isValidIdentifier("total");      // true
+lexical.isValidIdentifier("class");      // false, reserved
+lexical.isIdentifierName("class");       // true
+lexical.isIdentifierStart('$');          // true, also isIdentifierChar and isJSXIdentifierChar
+lexical.keyword("yield").?.isReserved(); // true, a token tag
+lexical.lineBreakLen(source, i);         // 0, or the line terminator's length
+
+try lexical.decodeStringEscapes(gpa, raw, &out);
+try lexical.decodeJSXEntities(gpa, raw, &out);
+```
+
+Names are UTF-8 with escapes decoded, as `tree.string` returns them.
