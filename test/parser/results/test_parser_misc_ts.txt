@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       105/105 (100.00%)
+Passed:       106/106 (100.00%)
 Failed:       0
-AST mismatch: 0/105
+AST mismatch: 0/106
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -213,6 +213,7 @@ error: for-in loop variable declaration may not have an initializer
 
 
 ✓ test/parser/misc/ts/function-overloads.ts
+✓ test/parser/misc/ts/function-type-lookahead.ts
 ✓ test/parser/misc/ts/import-export-in-namespace.ts
 error: Cannot use 'export' declaration outside a module
    |

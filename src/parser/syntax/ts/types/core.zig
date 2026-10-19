@@ -469,7 +469,6 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     switch (first.tag) {
         .right_paren => return peek.next().tag == .arrow,
         .spread => return true,
-        .this => return peek.next().tag == .colon,
         // `{` or `[` may head a parameter pattern or a type
         .left_brace, .left_bracket => {
             peek.end();
@@ -482,7 +481,8 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
 
     return switch (peek.next().tag) {
         .colon, .question, .comma, .assign => true,
-        .right_paren => peek.next().tag == .arrow,
+        .right_paren => (first.tag == .this or !first.tag.isUnconditionallyReserved()) and
+            peek.next().tag == .arrow,
         else => false,
     };
 }

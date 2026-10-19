@@ -1,0 +1,355 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 174,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 27,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 26,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "a",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "start": 10,
+              "end": 26,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 24,
+                "end": 26,
+                "body": []
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 12,
+                "end": 20,
+                "typeAnnotation": {
+                  "type": "TSParenthesizedType",
+                  "start": 14,
+                  "end": 20,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 15,
+                    "end": 19
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 28,
+        "end": 55,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 34,
+            "end": 54,
+            "id": {
+              "type": "Identifier",
+              "start": 34,
+              "end": 35,
+              "name": "b",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "start": 38,
+              "end": 54,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 52,
+                "end": 54,
+                "body": []
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 40,
+                "end": 48,
+                "typeAnnotation": {
+                  "type": "TSParenthesizedType",
+                  "start": 42,
+                  "end": 48,
+                  "typeAnnotation": {
+                    "type": "TSNullKeyword",
+                    "start": 43,
+                    "end": 47
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 56,
+        "end": 83,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 62,
+            "end": 82,
+            "id": {
+              "type": "Identifier",
+              "start": 62,
+              "end": 63,
+              "name": "c",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "start": 66,
+              "end": 82,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 80,
+                "end": 82,
+                "body": []
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 68,
+                "end": 76,
+                "typeAnnotation": {
+                  "type": "TSParenthesizedType",
+                  "start": 70,
+                  "end": 76,
+                  "typeAnnotation": {
+                    "type": "TSLiteralType",
+                    "start": 71,
+                    "end": 75,
+                    "literal": {
+                      "type": "Literal",
+                      "start": 71,
+                      "end": 75,
+                      "value": true,
+                      "raw": "true"
+                    }
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 84,
+        "end": 112,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 90,
+            "end": 111,
+            "id": {
+              "type": "Identifier",
+              "start": 90,
+              "end": 91,
+              "name": "d",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ArrowFunctionExpression",
+              "start": 94,
+              "end": 111,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 109,
+                "end": 111,
+                "body": []
+              },
+              "expression": false,
+              "typeParameters": null,
+              "returnType": {
+                "type": "TSTypeAnnotation",
+                "start": 96,
+                "end": 105,
+                "typeAnnotation": {
+                  "type": "TSParenthesizedType",
+                  "start": 98,
+                  "end": 105,
+                  "typeAnnotation": {
+                    "type": "TSLiteralType",
+                    "start": 99,
+                    "end": 104,
+                    "literal": {
+                      "type": "Literal",
+                      "start": 99,
+                      "end": 104,
+                      "value": false,
+                      "raw": "false"
+                    }
+                  }
+                }
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 113,
+        "end": 137,
+        "id": {
+          "type": "Identifier",
+          "start": 118,
+          "end": 119,
+          "name": "F",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSFunctionType",
+          "start": 122,
+          "end": 136,
+          "typeParameters": null,
+          "params": [
+            {
+              "type": "Identifier",
+              "start": 123,
+              "end": 127,
+              "decorators": [],
+              "name": "this",
+              "optional": false,
+              "typeAnnotation": null
+            }
+          ],
+          "returnType": {
+            "type": "TSTypeAnnotation",
+            "start": 129,
+            "end": 136,
+            "typeAnnotation": {
+              "type": "TSVoidKeyword",
+              "start": 132,
+              "end": 136
+            }
+          }
+        },
+        "declare": false
+      },
+      {
+        "type": "TSTypeAliasDeclaration",
+        "start": 138,
+        "end": 173,
+        "id": {
+          "type": "Identifier",
+          "start": 143,
+          "end": 144,
+          "name": "G",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "typeParameters": null,
+        "typeAnnotation": {
+          "type": "TSFunctionType",
+          "start": 147,
+          "end": 172,
+          "typeParameters": null,
+          "params": [
+            {
+              "type": "Identifier",
+              "start": 148,
+              "end": 152,
+              "decorators": [],
+              "name": "this",
+              "optional": false,
+              "typeAnnotation": null
+            },
+            {
+              "type": "Identifier",
+              "start": 154,
+              "end": 163,
+              "name": "a",
+              "decorators": [],
+              "typeAnnotation": {
+                "type": "TSTypeAnnotation",
+                "start": 155,
+                "end": 163,
+                "typeAnnotation": {
+                  "type": "TSNumberKeyword",
+                  "start": 157,
+                  "end": 163
+                }
+              },
+              "optional": false
+            }
+          ],
+          "returnType": {
+            "type": "TSTypeAnnotation",
+            "start": 165,
+            "end": 172,
+            "typeAnnotation": {
+              "type": "TSVoidKeyword",
+              "start": 168,
+              "end": 172
+            }
+          }
+        },
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
