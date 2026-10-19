@@ -245,6 +245,8 @@ pub const Semantic = struct {
     hoisting_variables: []const ScopeMap,
     /// Per scope, the next body of the same namespace or enum in a cycle, or `.none`.
     next_bodies: []const sc.ScopeId,
+    /// Per namespace or enum symbol, a body on its `next_bodies` cycle.
+    owner_bodies: std.AutoHashMapUnmanaged(SymbolId, sc.ScopeId),
     node_scopes: []const sc.ScopeId,
     node_parents: []const ast.NodeIndex,
     node_symbols: []const SymbolId,
@@ -361,6 +363,32 @@ pub const Semantic = struct {
             if (bodies.sharedMember(ancestor, name, space)) |id| return id;
         }
         return null;
+    }
+
+    /// The member `name` of the namespace or enum `owner` visible in `space`, as `owner.name`
+    /// resolves across every merged body.
+    pub fn member(
+        self: Semantic,
+        owner: SymbolId,
+        name: []const u8,
+        space: Reference.Space,
+    ) ?SymbolId {
+        std.debug.assert(owner != .none);
+        std.debug.assert(@backingInt(owner) < self.symbols.len);
+        const first = self.owner_bodies.get(owner) orelse return null;
+        var body = first;
+        for (0..self.scopes.list.len) |_| {
+            if (self.scope_maps[@backingInt(body)].get(name)) |id| {
+                const flags = self.symbol(id).flags;
+                const in_enum = self.scopes.list[@backingInt(body)].kind != .ts_module;
+                const shared = if (in_enum) flags.enum_member else flags.exported;
+                if (shared and flags.visibleIn(space)) return id;
+            }
+            body = self.next_bodies[@backingInt(body)];
+            std.debug.assert(body != .none);
+            if (body == first) return null;
+        }
+        unreachable;
     }
 
     /// Iterates every scope in creation order.
@@ -1337,6 +1365,7 @@ pub const SymbolTracker = struct {
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
             .next_bodies = self.next_bodies.items,
+            .owner_bodies = self.last_bodies,
             .node_scopes = node_scopes,
             .node_parents = node_parents,
             .node_symbols = node_symbols,

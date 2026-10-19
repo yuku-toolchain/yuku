@@ -262,6 +262,7 @@ semantic.uses(symbol)               // each reference to it
 semantic.bindings(scope)            // the symbols a scope declares
 semantic.binding(scope, "x")        // one of them by name
 semantic.lookup(scope, "x", .value) // name resolution from any scope
+semantic.member(ns, "x", .value)    // `ns.x` for a namespace or enum, across merged bodies
 
 semantic.iterSymbols()              // and iterScopes, iterReferences
 ```
