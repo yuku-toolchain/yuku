@@ -134,7 +134,7 @@ function compare(
   sourceType: SourceType = "module",
   path?: string,
 ): Comparison | null {
-  const module = analyze(source, { path, lang, sourceType });
+  const module = analyze(source, { path, lang, sourceType, semanticErrors: true });
   if (module.diagnostics.some((d) => d.severity === "error")) return null;
   const list = candidates(module);
   if (list.length === 0) return { compared: 0, mismatches: [] };

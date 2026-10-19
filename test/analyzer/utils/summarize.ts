@@ -9,6 +9,7 @@ import {
   type Module,
   type Reference,
   type Scope,
+  type SetFileOptions,
 } from "yuku/analyzer";
 import type { Node } from "yuku";
 
@@ -186,9 +187,9 @@ function functionLabel(node: Node): string {
   return "function <anonymous>";
 }
 
-export function project(files: Record<string, string>): Analyzer {
+export function project(files: Record<string, string>, options?: SetFileOptions): Analyzer {
   const analyzer = new Analyzer();
-  for (const [path, source] of Object.entries(files)) analyzer.setFile(path, source);
+  for (const [path, source] of Object.entries(files)) analyzer.setFile(path, source, options);
   return analyzer;
 }
 

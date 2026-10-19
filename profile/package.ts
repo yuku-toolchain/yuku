@@ -33,6 +33,9 @@ for (const path of FILES) {
 
   add(`parse ${file}`, () => parse(source, { path }));
   add(`analyze ${file}`, () => analyze(source, { path }));
+  add(`analyze ${file} with semantic errors`, () =>
+    analyze(source, { path, semanticErrors: true }),
+  );
 
   let program: Program | null = null;
   const parsed: Scope = {

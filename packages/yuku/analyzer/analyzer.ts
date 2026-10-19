@@ -22,6 +22,8 @@ import {
 export interface ParseOptions {
   /** @default true */
   preserveParens?: boolean;
+  /** Also report the early errors that need scopes, such as redeclarations. @default false */
+  semanticErrors?: boolean;
   /** @default false */
   attachComments?: boolean;
   /** Keep every token in {@link Module.tokens}. @default false */

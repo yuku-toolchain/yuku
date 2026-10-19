@@ -254,11 +254,20 @@ describe("resolution", () => {
   });
 
   test("project diagnostics include each module's own", () => {
-    const analyzer = project({ "a.ts": `let x; let x;`, "b.ts": `import { y } from "./a";` });
+    const files = { "a.ts": `let x; let x;`, "b.ts": `import { y } from "./a";` };
+    const analyzer = project(files, { semanticErrors: true });
     expect(analyzer.diagnostics.map((d) => `${d.path}: ${d.message}`)).toEqual([
       "a.ts: Identifier 'x' has already been declared",
       "b.ts: Module './a' has no export 'y'",
     ]);
+  });
+
+  test("a module reports its early errors only with semanticErrors", () => {
+    const analyzer = project({ "a.ts": `let x; let x;`, "b.ts": `import { y } from "./a";` });
+    expect(analyzer.diagnostics.map((d) => `${d.path}: ${d.message}`)).toEqual([
+      "b.ts: Module './a' has no export 'y'",
+    ]);
+    expect(analyzer.module("a.ts")!.rootScope.find("x")!.declarations).toHaveLength(2);
   });
 
   test("a custom resolver maps bare specifiers", () => {

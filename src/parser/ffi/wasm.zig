@@ -57,7 +57,9 @@ fn analyzeBuffer(source: []const u8, flags: u32) ![]u8 {
     var tree = try parseTree(source, flags);
     defer tree.deinit();
 
-    const sem = try parser.semantic.analyze(&tree, .{ .check = true });
+    const sem = try parser.semantic.analyze(&tree, .{
+        .check = flags & flag.semantic_errors != 0,
+    });
 
     const records = try parser.semantic.module_record.collect(&tree, &sem);
 

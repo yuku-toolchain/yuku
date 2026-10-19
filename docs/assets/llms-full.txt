@@ -537,7 +537,7 @@ Names are UTF-8 with escapes decoded, as `tree.string` returns them.
 
 Source: https://yuku.fyi/parser/semantic/
 
-Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the binding it names. It also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
+Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the binding it names. On request, it also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
 
 ## JavaScript
 
@@ -579,7 +579,7 @@ project.diagnostics;                    // every module's diagnostics, and the f
 project.link();                         // links now, cross-file queries link on demand otherwise
 ```
 
-`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `attachComments`, and `tokens` options of the [parser](https://yuku.fyi/parser/#js-options). `analyze(source, options)` is a project of one file, and also takes `path`. `new Analyzer` and `analyze` both take a custom build as `wasm`, such as one with a [dialect](https://yuku.fyi/parser/dialect/#javascript).
+`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `semanticErrors`, `attachComments`, and `tokens` options of the [parser](https://yuku.fyi/parser/#js-options). Early errors are reported only with `semanticErrors: true`, as in the parser. `analyze(source, options)` is a project of one file, and also takes `path`. `new Analyzer` and `analyze` both take a custom build as `wasm`, such as one with a [dialect](https://yuku.fyi/parser/dialect/#javascript).
 
 The default resolver matches relative specifiers to files in the project, probing extensions and index files as TypeScript does, so `./a.js` finds `a.ts`. A package or an asset such as `./app.css` is external, and a relative specifier with no match is reported as a warning.
 
