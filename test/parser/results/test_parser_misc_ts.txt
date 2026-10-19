@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       105/105 (100.00%)
+Passed:       106/106 (100.00%)
 Failed:       0
-AST mismatch: 0/105
+AST mismatch: 0/106
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -117,6 +117,7 @@ error: Expected 'class' keyword, but found 'abstract'
 ✓ test/parser/misc/ts/decorated-abstract-class.ts
 ✓ test/parser/misc/ts/decorated-declare-class.ts
 ✓ test/parser/misc/ts/decorated-export-abstract-class.module.ts
+✓ test/parser/misc/ts/decorated-export-class-type-arguments.module.ts
 ✓ test/parser/misc/ts/decorated-export-declare-class.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class-named.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class.module.ts

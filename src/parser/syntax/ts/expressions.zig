@@ -148,7 +148,20 @@ fn isStartOfExpression(tag: TokenTag) bool {
         .at,
         .slash,
         .slash_assign,
+        .this,
+        .super,
+        .null_literal,
+        .true,
+        .false,
+        .function,
+        .class,
+        .new,
+        .import,
+        .typeof,
+        .void,
+        .delete,
         => true,
-        else => tag.isIdentifierLike() or tag.isNumericLiteral(),
+        else => tag.isNumericLiteral() or
+            (tag.isIdentifierLike() and !tag.isUnconditionallyReserved()),
     };
 }
