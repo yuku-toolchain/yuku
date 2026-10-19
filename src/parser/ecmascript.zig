@@ -13,23 +13,13 @@ pub const PropName = struct {
 
 /// https://tc39.es/ecma262/#sec-static-semantics-propname
 pub fn propName(tree: *const ast.Tree, key: ast.NodeIndex) ?PropName {
-    switch (tree.data(key)) {
-        .identifier_name => |id| return .{
-            .name = tree.string(id.name),
-            .span = tree.span(key),
-            .is_string_literal = false,
-        },
-        .string_literal => |str| {
-            const name = tree.string(str.value);
-            if (name.len == 0) return null;
-            return .{
-                .name = name,
-                .span = tree.span(key),
-                .is_string_literal = true,
-            };
-        },
+    const name, const is_string_literal = switch (tree.data(key)) {
+        .identifier_name => |id| .{ tree.string(id.name), false },
+        .string_literal => |str| .{ tree.string(str.value), true },
         else => return null,
-    }
+    };
+    if (is_string_literal and name.len == 0) return null;
+    return .{ .name = name, .span = tree.span(key), .is_string_literal = is_string_literal };
 }
 
 /// https://tc39.es/ecma262/#sec-static-semantics-containsexpression

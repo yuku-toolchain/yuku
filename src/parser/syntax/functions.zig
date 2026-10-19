@@ -25,25 +25,16 @@ pub fn parseFunction(
     std.debug.assert(start_from_param != null or parser.current_token.tag == .function);
 
     const start = start_from_param orelse parser.current_token.span.start;
-
     if (!try parser.expect(.function, "Expected 'function' keyword", null)) return null;
 
     const is_function_expression = options.is_expression and !options.is_default_export;
-
-    var is_generator = false;
-
-    if (parser.current_token.tag == .star) {
-        is_generator = true;
-        try parser.advance() orelse return null;
-    }
+    const is_generator = parser.current_token.tag == .star;
+    if (is_generator) try parser.advance() orelse return null;
 
     const outer_yield_is_keyword = parser.context.yield;
     const outer_await_is_keyword = parser.context.await;
-
-    defer {
-        parser.context.yield = outer_yield_is_keyword;
-        parser.context.await = outer_await_is_keyword;
-    }
+    defer parser.context.yield = outer_yield_is_keyword;
+    defer parser.context.await = outer_await_is_keyword;
 
     // an expression's name follows its own yield and await rules, a declaration's the outer ones
     parser.context.yield = if (is_function_expression) is_generator else outer_yield_is_keyword;
@@ -67,12 +58,7 @@ pub fn parseFunction(
     }
 
     const is_ts = parser.tree.isTs();
-
-    const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts.parseTypeParameters(parser)
-    else
-        .null;
-
+    const type_parameters: ast.NodeIndex = if (is_ts) try ts.parseTypeParameters(parser) else .null;
     const params = try parseFormalParameters(parser, .formal_parameters, false) orelse return null;
     const params_end = parser.tree.span(params).end;
 
@@ -83,7 +69,6 @@ pub fn parseFunction(
         return_type_end = parser.tree.span(return_type).end;
     }
 
-    // only declarations obey ambient rules, expressions always carry a body
     const is_ambient_declaration = parser.ts_context.ambient and !is_function_expression;
     if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
         try parser.report(
@@ -94,7 +79,6 @@ pub fn parseFunction(
         return null;
     }
 
-    // ambient declarations and overload signatures have no body
     const presence: BodyPresence = if (!is_ts or is_function_expression) .required else .optional;
     const body: ast.NodeIndex = if (is_ambient_declaration)
         .null
@@ -133,19 +117,17 @@ pub fn parseFunction(
         }
     }
 
-    return try parser.tree.addNode(.{
-        .function = .{
-            .type = function_type,
-            .id = id,
-            .generator = is_generator,
-            .async = options.is_async,
-            .declare = options.is_declare,
-            .params = params,
-            .body = body,
-            .type_parameters = type_parameters,
-            .return_type = return_type,
-        },
-    }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .function = .{
+        .type = function_type,
+        .id = id,
+        .generator = is_generator,
+        .async = options.is_async,
+        .declare = options.is_declare,
+        .params = params,
+        .body = body,
+        .type_parameters = type_parameters,
+        .return_type = return_type,
+    } }, .{ .start = start, .end = end });
 }
 
 pub const BodyPresence = enum { required, optional };
@@ -160,31 +142,27 @@ pub inline fn parseFunctionBody(parser: *Parser, presence: BodyPresence) Error!?
     return parseBlockFunctionBody(parser);
 }
 
-// a dialect's body reads `return` and a directive prologue, as a block body does
 fn parseDialectFunctionBody(parser: *Parser) Error!??ast.NodeIndex {
     const saved = parser.context;
     parser.context.@"return" = true;
     parser.context.directive_prologue = true;
-    defer {
-        parser.context.@"return" = saved.@"return";
-        parser.context.directive_prologue = saved.directive_prologue;
-    }
+    defer parser.context.@"return" = saved.@"return";
+    defer parser.context.directive_prologue = saved.directive_prologue;
 
     return dialect.at(.function_body, parser, .{});
 }
 
 fn parseBlockFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-
     if (!try parser.expect(
         .left_brace,
         "Expected '{' to start function body",
         "Function bodies must be enclosed in braces: function name() { ... }",
     )) return null;
 
-    const saved_allow_return_statement = parser.context.@"return";
+    const saved_return = parser.context.@"return";
     parser.context.@"return" = true;
-    defer parser.context.@"return" = saved_allow_return_statement;
+    defer parser.context.@"return" = saved_return;
 
     const body = try parser.parseBody(.right_brace, .function);
     const end = parser.current_token.span.end;
@@ -222,7 +200,7 @@ pub fn parseFormalParameters(
         const decorators: ast.IndexRange = if (is_ts and parser.current_token.tag == .at)
             try decorator.parseDecorators(parser) orelse return null
         else
-            ast.IndexRange.empty;
+            .empty;
 
         if (parser.current_token.tag == .spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
@@ -285,7 +263,7 @@ const ParameterPropertyModifiers = struct {
 };
 
 /// Parses one parameter after the caller has collected its `decorators` and `start`.
-pub fn parseFormalParameter(
+fn parseFormalParameter(
     parser: *Parser,
     allow_parameter_properties: bool,
     decorators: ast.IndexRange,
@@ -293,9 +271,7 @@ pub fn parseFormalParameter(
 ) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
 
-    if (is_ts and parser.current_token.tag == .this) {
-        return parseThisParameter(parser);
-    }
+    if (is_ts and parser.current_token.tag == .this) return parseThisParameter(parser);
 
     const modifiers = if (is_ts and allow_parameter_properties)
         try parseParameterPropertyModifiers(parser) orelse return null
@@ -304,7 +280,6 @@ pub fn parseFormalParameter(
 
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    // a parameter property declares a field named after the parameter, a pattern has no name
     if (modifiers.present and patterns.isDestructuringPattern(parser, pattern)) {
         try parser.report(
             parser.tree.span(pattern),
@@ -365,21 +340,15 @@ fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModi
     return modifiers;
 }
 
-const AccessorSpec = struct { arity: u32, message: []const u8, help: []const u8 };
-
 /// Returns whether `params` has the arity an accessor of `kind` requires, ignoring a leading
 /// `this` parameter. Always true when `kind` is not an accessor.
 pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex) Error!bool {
-    const spec: AccessorSpec = switch (kind) {
-        .get => .{
-            .arity = 0,
-            .message = "Getter must have no parameters",
-            .help = "Remove all parameters from the getter.",
-        },
+    const arity_expected: u32, const message: []const u8, const help: []const u8 = switch (kind) {
+        .get => .{ 0, "Getter must have no parameters", "Remove all parameters from the getter." },
         .set => .{
-            .arity = 1,
-            .message = "Setter must have exactly one parameter",
-            .help = "Setters accept exactly one argument.",
+            1,
+            "Setter must have exactly one parameter",
+            "Setters accept exactly one argument.",
         },
         else => return true,
     };
@@ -389,9 +358,9 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
     const has_this = items.len > 0 and
         parser.tree.data(parser.tree.data(items[0]).formal_parameter.pattern) == .ts_this_parameter;
     const arity = data.items.len - @intFromBool(has_this);
-    if (arity == spec.arity and data.rest == .null) return true;
+    if (arity == arity_expected and data.rest == .null) return true;
 
-    try parser.report(parser.tree.span(params), spec.message, .{ .help = spec.help });
+    try parser.report(parser.tree.span(params), message, .{ .help = help });
     return false;
 }
 
@@ -399,7 +368,7 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
 fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
-    try parser.advance() orelse return null; // consume 'this'
+    try parser.advance() orelse return null;
 
     var type_annotation: ast.NodeIndex = .null;
     if (parser.current_token.tag == .colon) {
@@ -412,10 +381,7 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
         .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
         span,
     );
-    return try parser.tree.addNode(
-        .{ .formal_parameter = .{ .pattern = this_param } },
-        span,
-    );
+    return try parser.tree.addNode(.{ .formal_parameter = .{ .pattern = this_param } }, span);
 }
 
 // `constructor(readonly)` names a parameter, not a modifier

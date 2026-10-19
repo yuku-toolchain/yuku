@@ -29,7 +29,6 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-// the `extends` arm of a conditional type cannot nest another conditional
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
         return parseFunctionOrConstructorType(parser);
@@ -40,8 +39,6 @@ fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-// T extends U ? X : Y
-// ^^^^^^^^^^^^^^^^^^^
 fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     const check_type = try parseUnionType(parser) orelse return null;
 
@@ -87,34 +84,26 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// | A | B | C
-// ^^^^^^^^^^^
 fn parseUnionType(parser: *Parser) Error!?ast.NodeIndex {
-    return parseBinaryTypeChain(parser, .bitwise_or, parseIntersectionType, .union_type);
+    return parseBinaryTypeChain(parser, .bitwise_or, parseIntersectionType);
 }
 
-// & A & B & C
-// ^^^^^^^^^^^
 fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
-    return parseBinaryTypeChain(parser, .bitwise_and, parsePostfixType, .intersection_type);
+    return parseBinaryTypeChain(parser, .bitwise_and, parsePostfixType);
 }
-
-const BinaryTypeKind = enum { union_type, intersection_type };
 
 fn parseBinaryTypeChain(
     parser: *Parser,
     comptime separator: TokenTag,
     comptime parseOperand: fn (*Parser) Error!?ast.NodeIndex,
-    comptime kind: BinaryTypeKind,
 ) Error!?ast.NodeIndex {
-    const leading_start: ?u32 = if (parser.current_token.tag == separator) blk: {
-        const start = parser.current_token.span.start;
-        try parser.advance() orelse return null;
-        break :blk start;
-    } else null;
+    const start = parser.current_token.span.start;
+    const has_leading = parser.current_token.tag == separator;
+    if (has_leading) try parser.advance() orelse return null;
 
     const first = try parseOperand(parser) orelse return null;
-    if (leading_start == null and parser.current_token.tag != separator) return first;
+    if (!has_leading) std.debug.assert(parser.tree.span(first).start == start);
+    if (!has_leading and parser.current_token.tag != separator) return first;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -129,33 +118,27 @@ fn parseBinaryTypeChain(
     }
 
     const types = try parser.flushToExtras(&parser.scratch_a, checkpoint);
-    const span: ast.Span = .{
-        .start = leading_start orelse parser.tree.span(first).start,
-        .end = parser.tree.span(last).end,
-    };
-    const data: ast.NodeData = switch (kind) {
-        .union_type => .{ .ts_union_type = .{ .types = types } },
-        .intersection_type => .{ .ts_intersection_type = .{ .types = types } },
-    };
-    return try parser.tree.addNode(data, span);
+    const data: ast.NodeData = if (separator == .bitwise_or)
+        .{ .ts_union_type = .{ .types = types } }
+    else
+        .{ .ts_intersection_type = .{ .types = types } };
+    return try parser.tree.addNode(data, .{ .start = start, .end = parser.tree.span(last).end });
 }
 
-// T[]   T[K]   T?   T!
-// ^^^   ^^^^   ^^   ^^
 fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
     var ty = try parsePrimaryType(parser) orelse return null;
 
     while (!parser.current_token.hasLineTerminatorBefore()) {
-        switch (parser.current_token.tag) {
-            .left_bracket => ty = try parseArrayOrIndexedAccessType(parser, ty) orelse return null,
-            .question => {
-                if (!isPostfixNullable(parser)) return ty;
-                ty = try parseJSDocPostfix(parser, ty, .nullable) orelse return null;
-            },
-            .logical_not => ty = try parseJSDocPostfix(parser, ty, .non_nullable) orelse
-                return null,
+        ty = try switch (parser.current_token.tag) {
+            .left_bracket => parseArrayOrIndexedAccessType(parser, ty),
+            // a postfix `?` only when no type follows, else the outer conditional owns it
+            .question => if (isStartOfType(parser.peekAhead().tag))
+                return ty
+            else
+                parseJSDocPostfix(parser, ty, .ts_jsdoc_nullable_type),
+            .logical_not => parseJSDocPostfix(parser, ty, .ts_jsdoc_non_nullable_type),
             else => return ty,
-        }
+        } orelse return null;
     }
 
     return ty;
@@ -191,24 +174,17 @@ fn parseArrayOrIndexedAccessType(parser: *Parser, element: ast.NodeIndex) Error!
 fn parseJSDocPostfix(
     parser: *Parser,
     inner: ast.NodeIndex,
-    comptime kind: JSDocKind,
+    comptime tag: std.meta.Tag(ast.NodeData),
 ) Error!?ast.NodeIndex {
     const start = parser.tree.span(inner).start;
     const end = parser.current_token.span.end;
     try parser.advance() orelse return null;
     return try parser.tree.addNode(
-        jsdocNodeData(inner, kind, true),
+        @unionInit(ast.NodeData, @tagName(tag), .{ .type_annotation = inner, .postfix = true }),
         .{ .start = start, .end = end },
     );
 }
 
-// a postfix `?` only when no type follows, else the outer conditional owns it
-fn isPostfixNullable(parser: *Parser) bool {
-    return !isStartOfType(parser.peekAhead().tag);
-}
-
-// string   42   Foo<T>   this is T   asserts x is T
-// ^^^^^^   ^^   ^^^^^^   ^^^^^^^^^   ^^^^^^^^^^^^^^
 fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
 
@@ -246,12 +222,10 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .void,
             => if (!isQualifiedTypeContinuation(parser)) return parseTypeKeyword(parser),
             .this => return predicate.parseThisTypeOrPredicate(parser),
-            .asserts => {
-                if (predicate.isAssertsPredicateStart(parser)) {
-                    return predicate.parseAssertsTypePredicate(parser);
-                }
-                return parseTypeReference(parser);
-            },
+            .asserts => return if (predicate.isAssertsPredicateStart(parser))
+                predicate.parseAssertsTypePredicate(parser)
+            else
+                parseTypeReference(parser),
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
             .left_brace => return if (object.isStartOfMappedType(parser))
@@ -268,10 +242,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    if (token.tag.isIdentifierLike()) {
-        return parseTypeReference(parser);
-    }
-
+    if (token.tag.isIdentifierLike()) return parseTypeReference(parser);
     return null;
 }
 
@@ -306,8 +277,7 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
 // only a bare `type Name = intrinsic` is `TSIntrinsicKeyword`
 pub fn parseTypeAliasBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .intrinsic and !parser.current_token.isEscaped()) {
-        const next = parser.peekAhead();
-        if (!continuesType(next.tag)) {
+        if (!continuesType(parser.peekAhead().tag)) {
             const span = parser.current_token.span;
             try parser.advance() orelse return null;
             return try parser.tree.addNode(.{ .ts_intrinsic_keyword = .{} }, span);
@@ -332,8 +302,6 @@ fn continuesType(tag: TokenTag) bool {
     };
 }
 
-// ?T   ?
-// ^^   ^
 fn parseJSDocNullableOrUnknownType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .question);
 
@@ -346,7 +314,7 @@ fn parseJSDocNullableOrUnknownType(parser: *Parser) Error!?ast.NodeIndex {
 
     const inner = try parseType(parser) orelse return null;
     return try parser.tree.addNode(
-        jsdocNodeData(inner, .nullable, false),
+        .{ .ts_jsdoc_nullable_type = .{ .type_annotation = inner, .postfix = false } },
         .{ .start = question.start, .end = parser.tree.span(inner).end },
     );
 }
@@ -360,24 +328,9 @@ fn parseJSDocNonNullableType(parser: *Parser) Error!?ast.NodeIndex {
 
     const inner = try parsePrimaryType(parser) orelse return null;
     return try parser.tree.addNode(
-        jsdocNodeData(inner, .non_nullable, false),
+        .{ .ts_jsdoc_non_nullable_type = .{ .type_annotation = inner, .postfix = false } },
         .{ .start = start, .end = parser.tree.span(inner).end },
     );
-}
-
-const JSDocKind = enum { nullable, non_nullable };
-
-fn jsdocNodeData(inner: ast.NodeIndex, comptime kind: JSDocKind, postfix: bool) ast.NodeData {
-    return switch (kind) {
-        .nullable => .{ .ts_jsdoc_nullable_type = .{
-            .type_annotation = inner,
-            .postfix = postfix,
-        } },
-        .non_nullable => .{ .ts_jsdoc_non_nullable_type = .{
-            .type_annotation = inner,
-            .postfix = postfix,
-        } },
-    };
 }
 
 pub fn isStartOfType(tag: TokenTag) bool {
@@ -424,7 +377,6 @@ pub fn isStartOfType(tag: TokenTag) bool {
         .question,
         .logical_not,
         .spread,
-        // leading `|` or `&`
         .bitwise_and,
         .bitwise_or,
         => true,
@@ -432,8 +384,6 @@ pub fn isStartOfType(tag: TokenTag) bool {
     };
 }
 
-// keyof T   unique symbol   readonly T[]
-// ^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^
 fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -448,16 +398,11 @@ fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
     const inner = try parsePostfixType(parser) orelse return null;
 
     return try parser.tree.addNode(
-        .{ .ts_type_operator = .{
-            .operator = operator,
-            .type_annotation = inner,
-        } },
+        .{ .ts_type_operator = .{ .operator = operator, .type_annotation = inner } },
         .{ .start = start, .end = parser.tree.span(inner).end },
     );
 }
 
-// infer T   infer T extends U
-// ^^^^^^^   ^^^^^^^^^^^^^^^^^
 fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .infer);
 
@@ -468,16 +413,10 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     const name = try literals.parseBindingIdentifier(parser) orelse return null;
 
     const constraint = try parseInferConstraint(parser);
-    const param_end = if (constraint != .null)
-        parser.tree.span(constraint).end
-    else
-        name_span.end;
+    const param_end = if (constraint != .null) parser.tree.span(constraint).end else name_span.end;
 
     const type_parameter = try parser.tree.addNode(
-        .{ .ts_type_parameter = .{
-            .name = name,
-            .constraint = constraint,
-        } },
+        .{ .ts_type_parameter = .{ .name = name, .constraint = constraint } },
         .{ .start = name_span.start, .end = param_end },
     );
 
@@ -507,9 +446,7 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     };
     parser.ts_context.disallow_conditional_types = cp.ts_context.disallow_conditional_types;
 
-    const yields_to_conditional = conditional_allowed and parser.current_token.tag == .question;
-
-    if (yields_to_conditional) {
+    if (conditional_allowed and parser.current_token.tag == .question) {
         parser.rewind(cp);
         try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), extends_offset, {});
         return .null;
@@ -520,9 +457,7 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
 
 fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
-
     if (tag == .new) return true;
-
     if (tag == .abstract) return parser.peekAhead().tag == .new;
     if (generics.isAngleOpen(tag)) return true;
     if (tag != .left_paren) return false;
@@ -559,18 +494,16 @@ fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
     try parser.advance() orelse return false;
     _ = try patterns.parseBindingPattern(parser) orelse return false;
 
-    return switch (parser.current_token.tag) {
-        .colon, .comma, .question, .assign => true,
-        .right_paren => blk: {
-            try parser.advance() orelse break :blk false;
-            break :blk parser.current_token.tag == .arrow;
+    switch (parser.current_token.tag) {
+        .colon, .comma, .question, .assign => return true,
+        .right_paren => {
+            try parser.advance() orelse return false;
+            return parser.current_token.tag == .arrow;
         },
-        else => false,
-    };
+        else => return false,
+    }
 }
 
-// (a: T) => R       new (x: T) => R       abstract new (x: T) => R
-// ^^^^^^^^^^^       ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -584,17 +517,12 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     const params = try functions.parseFormalParameters(parser, .signature, false) orelse
         return null;
 
-    if (parser.current_token.tag != .arrow) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected '=>' in function type",
-            .{ .help = "A function type is written '(params) => ReturnType'" },
-        );
-        return null;
-    }
-
     const arrow_start = parser.current_token.span.start;
-    try parser.advance() orelse return null;
+    if (!try parser.expect(
+        .arrow,
+        "Expected '=>' in function type",
+        "A function type is written '(params) => ReturnType'",
+    )) return null;
 
     const return_type_inner = try predicate.parseTypeOrTypePredicate(parser) orelse return null;
     const return_type_end = parser.tree.span(return_type_inner).end;
@@ -638,8 +566,6 @@ fn parseParenthesizedType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// [A, B?, ...C]   [label: T, rest?: U]
-// ^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^
 fn parseTupleType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
 
@@ -672,46 +598,36 @@ fn parseTupleType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-const TupleElementKind = enum { required, optional, rest };
-
-fn tupleElementKind(parser: *Parser, element: ast.NodeIndex) TupleElementKind {
-    return switch (parser.tree.data(element)) {
-        .ts_rest_type => .rest,
-        .ts_optional_type => .optional,
-        .ts_named_tuple_member => |member| if (member.optional) .optional else .required,
-        else => .required,
-    };
-}
-
-// a rest element neither satisfies nor clears a preceding optional
 fn checkTupleElementOrder(parser: *Parser, element_types: ast.IndexRange) Error!void {
     var seen_optional = false;
-
     for (parser.tree.extra(element_types)) |element| {
-        switch (tupleElementKind(parser, element)) {
-            .required => if (seen_optional) return parser.report(
-                parser.tree.span(element),
-                "A required element cannot follow an optional element",
-                .{ .help = "Mark this element optional, or move it before the optional ones." },
-            ),
-            .optional => seen_optional = true,
-            .rest => {},
-        }
+        const optional = switch (parser.tree.data(element)) {
+            // a rest element neither satisfies nor clears a preceding optional
+            .ts_rest_type => continue,
+            .ts_optional_type => true,
+            .ts_named_tuple_member => |member| member.optional,
+            else => false,
+        };
+        if (optional) {
+            seen_optional = true;
+        } else if (seen_optional) return parser.report(
+            parser.tree.span(element),
+            "A required element cannot follow an optional element",
+            .{ .help = "Mark this element optional, or move it before the optional ones." },
+        );
     }
 }
 
 fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.tag == .spread) {
-        const start = parser.current_token.span.start;
-        try parser.advance() orelse return null;
-        const inner = try parseTupleElementBody(parser) orelse return null;
-        return try parser.tree.addNode(
-            .{ .ts_rest_type = .{ .type_annotation = inner } },
-            .{ .start = start, .end = parser.tree.span(inner).end },
-        );
-    }
+    if (parser.current_token.tag != .spread) return parseTupleElementBody(parser);
 
-    return parseTupleElementBody(parser);
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+    const inner = try parseTupleElementBody(parser) orelse return null;
+    return try parser.tree.addNode(
+        .{ .ts_rest_type = .{ .type_annotation = inner } },
+        .{ .start = start, .end = parser.tree.span(inner).end },
+    );
 }
 
 // a postfix jsdoc `?` in a tuple slot is an optional element
@@ -766,8 +682,6 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// Foo.Bar.Baz<T, U>
-// ^^^^^^^^^^^^^^^^^
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     const type_name = try parseEntityName(parser) orelse return null;
     const name_span = parser.tree.span(type_name);
@@ -778,16 +692,11 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
         name_span.end;
 
     return try parser.tree.addNode(
-        .{ .ts_type_reference = .{
-            .type_name = type_name,
-            .type_arguments = type_arguments,
-        } },
+        .{ .ts_type_reference = .{ .type_name = type_name, .type_arguments = type_arguments } },
         .{ .start = name_span.start, .end = end },
     );
 }
 
-// typeof x   typeof x.y   typeof Err<T>   typeof import("m").Foo
-// ^^^^^^^^   ^^^^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^
 fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .typeof);
 
@@ -807,16 +716,11 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = parser.tree.span(if (type_arguments != .null) type_arguments else expr_name).end;
     return try parser.tree.addNode(
-        .{ .ts_type_query = .{
-            .expr_name = expr_name,
-            .type_arguments = type_arguments,
-        } },
+        .{ .ts_type_query = .{ .expr_name = expr_name, .type_arguments = type_arguments } },
         .{ .start = start, .end = end },
     );
 }
 
-// import("module")    import("module").Foo.Bar<T>    import("m", { with: ... })
-// ^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .import);
 
@@ -841,7 +745,12 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
     var qualifier: ast.NodeIndex = .null;
     if (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null;
-        qualifier = try parseImportTypeQualifier(parser) orelse return null;
+        const head = try parseQualifiedSegment(
+            parser,
+            "Expected an identifier",
+            "Each '.' in a qualified name must be followed by an identifier",
+        ) orelse return null;
+        qualifier = try extendQualifiedName(parser, head) orelse return null;
     }
 
     const type_arguments = try generics.parseTypeArguments(parser);
@@ -873,19 +782,8 @@ fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
     const options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
         return null;
 
-    if (parser.current_token.tag == .comma) {
-        try parser.advance() orelse return null;
-    }
+    if (parser.current_token.tag == .comma) try parser.advance() orelse return null;
     return options;
-}
-
-fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
-    const head = try parseQualifiedSegment(
-        parser,
-        "Expected an identifier",
-        "Each '.' in a qualified name must be followed by an identifier",
-    ) orelse return null;
-    return extendQualifiedName(parser, head);
 }
 
 fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {

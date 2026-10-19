@@ -24,8 +24,7 @@ pub const SourceMapOptions = sourcemap.Options;
 /// Whitespace mode. `compact` emits only the whitespace the grammar requires.
 pub const Format = enum { pretty, compact };
 
-/// Quote style for string literals. `preserve` keeps each literal's source quote and
-/// `shortest` picks the quote with fewer escapes, double on a tie.
+/// Quote style for string literals. `shortest` picks the quote with fewer escapes, double on a tie.
 pub const Quotes = enum { preserve, double, single, shortest };
 
 /// Comment passthrough filter. `some` keeps legal headers, JSDoc, and annotations.
@@ -133,7 +132,6 @@ const Printer = struct {
 
     indent_depth: u32 = 0,
     pending_semi: bool = false,
-    // the node whose inside-comments a container prints
     current_idx: NodeIndex = .null,
     skip_leading_of: NodeIndex = .null,
     defer_trailing_of: NodeIndex = .null,
@@ -153,7 +151,6 @@ const Printer = struct {
         idx: NodeIndex,
         inner: Ctx,
         wrap: bool,
-        // a cast strip removes, open for its comments
         stripped: bool,
         defer_trailing: bool,
         scope: CommentScope,
@@ -260,7 +257,6 @@ const Printer = struct {
     }
 
     inline fn takeDefinite(self: *Self) bool {
-        if (self.options.strip) return false;
         const d = self.definite_pending;
         self.definite_pending = false;
         return d;
@@ -322,15 +318,12 @@ const Printer = struct {
         if (self.hasPrintedComments(idx)) return false;
         return switch (data) {
             .variable_declaration => |d| isAmbient(self.tree, d),
-            .function => |f| f.declare or
-                f.type == .ts_declare_function or
-                f.type == .ts_empty_body_function_expression,
+            .function => |*f| isTSOnlyFunction(f),
             .class => |c| c.declare,
             .method_definition => |m| m.abstract or
                 self.nodeData(m.value).function.body == .null,
             .property_definition => |d| d.declare or d.abstract,
-            .import_declaration => |d| d.import_kind == .type or (d.specifiers.len > 0 and
-                !hasValueImportSpecifier(self.tree, self.tree.extra(d.specifiers))),
+            .import_declaration => |*d| isTypeOnlyImport(self.tree, d),
             .export_named_declaration => |d| if (d.declaration != .null)
                 d.export_kind == .type or self.stripsToNothing(d.declaration)
             else
@@ -725,7 +718,7 @@ const Printer = struct {
             .ts_global_declaration,
             .ts_namespace_export_declaration,
             .ts_this_parameter,
-            => return true,
+            => {},
             .import_specifier => |s| return s.import_kind == .type,
             .export_specifier => |s| return s.export_kind == .type,
             .ts_as_expression,
@@ -733,45 +726,27 @@ const Printer = struct {
             .ts_type_assertion,
             .ts_non_null_expression,
             .ts_instantiation_expression,
-            => {
-                try self.emitStrippedOperand(idx, self.stripped(idx), ctx);
-                return true;
+            => try self.emitStrippedOperand(idx, self.stripped(idx), ctx),
+            .ts_enum_declaration => |e| if (!e.declare) {
+                try self.diagnose(idx, "TypeScript enums cannot be stripped to JavaScript");
             },
-            .ts_enum_declaration => |e| {
-                if (!e.declare) try self.diagnose(
-                    idx,
-                    "TypeScript enums cannot be stripped to JavaScript",
-                );
-                return true;
-            },
-            .ts_module_declaration => |m| {
-                if (!m.declare) try self.diagnose(
-                    idx,
-                    "TypeScript namespaces cannot be stripped to JavaScript",
-                );
-                return true;
-            },
-            .ts_import_equals_declaration => |i| {
-                if (i.import_kind != .type) try self.diagnose(
-                    idx,
-                    "`import = require()` cannot be stripped to JavaScript",
-                );
-                return true;
+            .ts_module_declaration => |m| if (!m.declare) try self.diagnose(
+                idx,
+                "TypeScript namespaces cannot be stripped to JavaScript",
+            ),
+            .ts_import_equals_declaration => |i| if (i.import_kind != .type) {
+                try self.diagnose(idx, "`import = require()` cannot be stripped to JavaScript");
             },
             .ts_export_assignment => {
                 try self.diagnose(idx, "`export =` cannot be stripped to JavaScript");
-                return true;
             },
             .ts_parameter_property => |pp| {
-                try self.diagnose(
-                    idx,
-                    "parameter properties cannot be stripped to JavaScript",
-                );
+                try self.diagnose(idx, "parameter properties cannot be stripped to JavaScript");
                 try self.emitStrippedOperand(idx, pp.parameter, ctx);
-                return true;
             },
             else => return false,
         }
+        return true;
     }
 
     // minify's `!0` ranks as unary
@@ -788,7 +763,6 @@ const Printer = struct {
     }
 
     inline fn needsParens(self: *const Self, idx: NodeIndex, ctx: Ctx) bool {
-        // anything ranked below relational wraps, so only operators above it pass the flag on
         if (ctx.no_instantiation) std.debug.assert(ctx.prec >= Precedence.Relational);
         if (self.out.lead == .none and ctx.prec <= Precedence.Comma and
             !ctx.no_call and !ctx.no_in) return false;
@@ -915,10 +889,9 @@ const Printer = struct {
     }
 
     fn writeLeading(self: *Self, c: ast.Comment) Error!void {
-        const armed = self.restrictedArmed();
         if (c.type == .block and c.same_line) {
             // a comment spanning lines is a line terminator too
-            if (armed and hasLineTerminator(self.tree.string(c.value))) {
+            if (self.restrictedArmed() and hasLineTerminator(self.tree.string(c.value))) {
                 try self.openRestrictedParen();
             }
             const last = self.out.lastByte();
@@ -1436,14 +1409,21 @@ const Printer = struct {
         try self.out.writeByte(')');
     }
 
+    // `??` mixed with `&&` or `||` must be parenthesized
     fn logicalOperandPrecedence(
         self: *const Self,
         child: NodeIndex,
         min: u8,
         parent: ast.LogicalOperator,
     ) u8 {
-        const mismatch = logicalMismatch(self.tree, parent, self.stripped(child));
-        return if (mismatch) Precedence.Grouping else min;
+        const nullish = parent == .nullish_coalescing;
+        return switch (self.nodeData(self.stripped(child))) {
+            .logical_expression => |l| if (nullish != (l.operator == .nullish_coalescing))
+                Precedence.Grouping
+            else
+                min,
+            else => min,
+        };
     }
 
     fn emit_conditional_expression(
@@ -1498,15 +1478,8 @@ const Printer = struct {
 
         const wrap = needsParensAsAssignTarget(self.tree, idx) or
             (ctx.postfix_operand and self.breaksLineAfter(idx));
-        if (wrap) {
-            self.in_assign_target = false;
-            try self.out.writeByte('(');
-            try self.emitExpr(idx, ctx);
-            try self.out.writeByte(')');
-        } else {
-            self.in_assign_target = true;
-            try self.emitExpr(idx, ctx);
-        }
+        self.in_assign_target = !wrap;
+        try self.wrapIf(wrap, idx, ctx);
     }
 
     inline fn emitChildOfAssignTarget(self: *Self, idx: NodeIndex) Error!void {
@@ -1651,11 +1624,7 @@ const Printer = struct {
             .preserve => if (single_quoted) '\'' else '"',
             .single => '\'',
             .double => '"',
-            .shortest => blk: {
-                const single = std.mem.count(u8, s, "'");
-                const double = std.mem.count(u8, s, "\"");
-                break :blk if (single < double) '\'' else '"';
-            },
+            .shortest => if (std.mem.count(u8, s, "'") < std.mem.count(u8, s, "\"")) '\'' else '"',
         };
     }
 
@@ -1677,21 +1646,17 @@ const Printer = struct {
                 }
                 continue;
             }
-            const esc: ?[]const u8 = blk: {
-                if (self.options.minify) {
-                    if (utils.scriptEscape(s, i)) |e| break :blk e;
-                }
-                break :blk switch (c) {
-                    '\\' => "\\\\",
-                    '\n' => "\\n",
-                    '\r' => "\\r",
-                    '\t' => "\\t",
-                    0x08 => "\\b",
-                    0x0C => "\\f",
-                    0x0B => "\\v",
-                    0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                    else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
-                };
+            const script_escape = if (self.options.minify) utils.scriptEscape(s, i) else null;
+            const esc: ?[]const u8 = script_escape orelse switch (c) {
+                '\\' => "\\\\",
+                '\n' => "\\n",
+                '\r' => "\\r",
+                '\t' => "\\t",
+                0x08 => "\\b",
+                0x0C => "\\f",
+                0x0B => "\\v",
+                0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
+                else => if (c == quote) (if (quote == '"') "\\\"" else "\\'") else null,
             };
             if (esc) |e| {
                 if (i > start) try self.out.writeRawStr(s[start..i]);
@@ -1743,9 +1708,8 @@ const Printer = struct {
         const raw = self.tree.string(lit.raw);
         if (lit.kind == .decimal and utils.isMinimalInteger(raw)) return self.writeNumber(raw);
         var cleaned_buf: [128]u8 = undefined;
-        const cleaned = utils.stripUnderscores(raw, &cleaned_buf) orelse {
+        const cleaned = utils.stripUnderscores(raw, &cleaned_buf) orelse
             return self.writeNumber(raw);
-        };
         if (lit.kind != .decimal) return self.writeNumber(cleaned);
         // `010` is legacy octal and `08` sloppy decimal
         if (cleaned.len > 1 and cleaned[0] == '0' and std.ascii.isDigit(cleaned[1])) {
@@ -1809,18 +1773,14 @@ const Printer = struct {
                 start = i + 1;
                 continue;
             }
-            const esc: ?[]const u8 = blk: {
-                if (script_safe) {
-                    if (utils.scriptEscape(s, i)) |e| break :blk e;
-                }
-                break :blk switch (c) {
-                    '\\' => "\\\\",
-                    '`' => "\\`",
-                    '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
-                    '\r' => "\\r",
-                    0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
-                    else => null,
-                };
+            const script_escape = if (script_safe) utils.scriptEscape(s, i) else null;
+            const esc: ?[]const u8 = script_escape orelse switch (c) {
+                '\\' => "\\\\",
+                '`' => "\\`",
+                '$' => if (i + 1 < s.len and s[i + 1] == '{') "\\$" else null,
+                '\r' => "\\r",
+                0 => if (i + 1 < s.len and std.ascii.isDigit(s[i + 1])) "\\x00" else "\\0",
+                else => null,
             };
             if (esc) |e| {
                 if (i > start) try self.out.writeRawStr(s[start..i]);
@@ -1976,13 +1936,8 @@ const Printer = struct {
     }
 
     fn emit_function(self: *Self, f: *const ast.Function) Error!void {
-        if (self.options.strip) {
-            const is_ts_only = f.declare or
-                f.type == .ts_declare_function or
-                f.type == .ts_empty_body_function_expression;
-            if (is_ts_only) return;
-        }
-        if (!self.options.strip) if (f.declare) try self.out.writeStr("declare ");
+        if (self.options.strip) if (isTSOnlyFunction(f)) return;
+        if (f.declare) try self.out.writeStr("declare ");
         if (f.async) try self.out.writeStr("async ");
         try self.out.writeStr("function");
         if (f.generator) try self.out.writeByte('*');
@@ -2092,10 +2047,14 @@ const Printer = struct {
     }
 
     fn emit_class_body(self: *Self, b: *const ast.ClassBody) Error!void {
+        try self.printMemberBody(b.body);
+    }
+
+    fn printMemberBody(self: *Self, members: IndexRange) Error!void {
         try self.out.writeByte('{');
         self.indent_depth += 1;
         var any = false;
-        for (self.tree.extra(b.body)) |m| {
+        for (self.tree.extra(members)) |m| {
             if (try self.skipStripped(m)) continue;
             try self.flushSemi();
             try self.newline();
@@ -2213,11 +2172,8 @@ const Printer = struct {
     }
 
     fn emit_import_declaration(self: *Self, d: *const ast.ImportDeclaration) Error!void {
+        if (self.options.strip) if (isTypeOnlyImport(self.tree, d)) return;
         const list = self.tree.extra(d.specifiers);
-        if (self.options.strip) {
-            if (d.import_kind == .type) return;
-            if (list.len > 0 and !hasValueImportSpecifier(self.tree, list)) return;
-        }
 
         try self.out.writeStr("import");
         if (d.import_kind == .type) try self.out.writeStr(" type");
@@ -2250,8 +2206,7 @@ const Printer = struct {
             try self.out.writeStr(" from ");
         } else if (d.import_kind == .type) {
             try self.out.writeByte(' ');
-            try self.out.writeStr("{}");
-            try self.out.writeStr(" from ");
+            try self.out.writeStr("{} from ");
         } else {
             try self.out.writeByte(' ');
         }
@@ -2301,10 +2256,7 @@ const Printer = struct {
         try self.out.writeByte(')');
     }
 
-    fn emit_export_named_declaration(
-        self: *Self,
-        d: *const ast.ExportNamedDeclaration,
-    ) Error!void {
+    fn emit_export_named_declaration(self: *Self, d: *const ast.ExportNamedDeclaration) Error!void {
         const list = self.tree.extra(d.specifiers);
         if (self.options.strip) {
             if (d.export_kind == .type) return;
@@ -2665,7 +2617,7 @@ const Printer = struct {
     }
 
     fn emit_ts_type_literal(self: *Self, t: *const ast.TSTypeLiteral) Error!void {
-        try self.printSignatureBody(t.members);
+        try self.printMemberBody(t.members);
     }
 
     fn emit_ts_mapped_type(self: *Self, t: *const ast.TSMappedType) Error!void {
@@ -2767,24 +2719,6 @@ const Printer = struct {
         try self.softSemi();
     }
 
-    fn printSignatureBody(self: *Self, items: IndexRange) Error!void {
-        try self.out.writeByte('{');
-        if (items.len > 0) {
-            self.indent_depth += 1;
-            for (self.tree.extra(items)) |s| {
-                try self.flushSemi();
-                try self.newline();
-                try self.emit(s);
-            }
-            self.indent_depth -= 1;
-            self.pending_semi = false;
-            try self.newline();
-        } else if (self.options.comments != .none) {
-            try self.emitInsideComments(self.current_idx);
-        }
-        try self.out.writeByte('}');
-    }
-
     fn emit_ts_type_alias_declaration(
         self: *Self,
         d: *const ast.TSTypeAliasDeclaration,
@@ -2800,7 +2734,7 @@ const Printer = struct {
         try self.softSemi();
     }
 
-    fn wrapIf(self: *Self, cond: bool, idx: NodeIndex, ctx: Ctx) Error!void {
+    inline fn wrapIf(self: *Self, cond: bool, idx: NodeIndex, ctx: Ctx) Error!void {
         if (cond) try self.out.writeByte('(');
         try self.emitExpr(idx, ctx);
         if (cond) try self.out.writeByte(')');
@@ -2841,7 +2775,7 @@ const Printer = struct {
     }
 
     fn emit_ts_interface_body(self: *Self, b: *const ast.TSInterfaceBody) Error!void {
-        try self.printSignatureBody(b.body);
+        try self.printMemberBody(b.body);
     }
 
     fn emit_ts_interface_heritage(self: *Self, h: *const ast.TSInterfaceHeritage) Error!void {
@@ -3136,15 +3070,22 @@ fn identifierStringOrNull(tree: *const Tree, idx: NodeIndex) ?ast.String {
     };
 }
 
-fn hasValueImportSpecifier(tree: *const Tree, list: []const NodeIndex) bool {
-    for (list) |idx| {
+fn isTSOnlyFunction(f: *const ast.Function) bool {
+    if (f.declare) return true;
+    return f.type == .ts_declare_function or f.type == .ts_empty_body_function_expression;
+}
+
+fn isTypeOnlyImport(tree: *const Tree, d: *const ast.ImportDeclaration) bool {
+    if (d.import_kind == .type) return true;
+    if (d.specifiers.len == 0) return false;
+    for (tree.extra(d.specifiers)) |idx| {
         switch (tree.data(idx)) {
-            .import_default_specifier, .import_namespace_specifier => return true,
-            .import_specifier => |s| if (s.import_kind != .type) return true,
+            .import_default_specifier, .import_namespace_specifier => return false,
+            .import_specifier => |s| if (s.import_kind != .type) return false,
             else => {},
         }
     }
-    return false;
+    return true;
 }
 
 fn hasValueExportSpecifier(tree: *const Tree, list: []const NodeIndex) bool {
@@ -3199,15 +3140,6 @@ fn typeStartsWithLeftAngle(tree: *const Tree, idx: NodeIndex) bool {
     };
 }
 
-// `??` mixed with `&&`/`||` must be parenthesized
-fn logicalMismatch(tree: *const Tree, parent: ast.LogicalOperator, child: NodeIndex) bool {
-    const child_op = switch (tree.data(child)) {
-        .logical_expression => |l| l.operator,
-        else => return false,
-    };
-    return (parent == .nullish_coalescing) != (child_op == .nullish_coalescing);
-}
-
 fn simpleStringKey(tree: *const Tree, idx: NodeIndex) ?[]const u8 {
     const lit = switch (tree.data(idx)) {
         .string_literal => |l| l,
@@ -3242,10 +3174,7 @@ inline fn castOperand(data: NodeData) ?NodeIndex {
 }
 
 fn hasLineTerminator(text: []const u8) bool {
-    var i: usize = 0;
-    while (i < text.len) : (i += 1) {
-        if (util.Utf.lineBreakLen(text, i) > 0) return true;
-    }
+    for (0..text.len) |i| if (util.Utf.lineBreakLen(text, i) > 0) return true;
     return false;
 }
 
@@ -3266,15 +3195,13 @@ fn endsWithTsCast(tree: *const Tree, idx: NodeIndex) bool {
 
 // `x as T < y` would re-lex as the type arguments `T<y>`
 fn binaryLeftPrecedence(tree: *const Tree, e: ast.BinaryExpression) u8 {
-    const p: u8 = e.operator.toToken().precedence();
     if (e.operator == .exponent) return Precedence.Postfix;
     const op = e.operator.toString();
     if (op[0] == '<' and endsWithTsCast(tree, e.left)) return Precedence.Grouping;
-    return p;
+    return e.operator.toToken().precedence();
 }
 
-// TypeScript reads `f<T>` as comparisons before `<`, `>`, `+`, or `-`, and its scanner starts
-// `>=` and `>>` with `>`
+// TypeScript reads `f<T>` as comparisons before `<`, `+`, `-`, or any operator starting with `>`
 fn canFollowTypeArguments(operator: ast.BinaryOperator) bool {
     return switch (operator) {
         .less_than,
@@ -3345,9 +3272,9 @@ const node_precedence = blk: {
 };
 
 const TPrec = struct {
-    const trailing: u8 = 1; // function, constructor, conditional, infer
+    const trailing: u8 = 1;
     const @"union": u8 = 2;
     const intersection: u8 = 3;
-    const operator: u8 = 4; // keyof, typeof, readonly, unique
+    const operator: u8 = 4;
     const primary: u8 = 5;
 };

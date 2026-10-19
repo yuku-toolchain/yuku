@@ -1,12 +1,10 @@
 # yuku
 
-[Yuku](https://yuku.fyi) is a JavaScript and TypeScript compiler toolchain written in Zig.
+[Yuku](https://yuku.fyi) is a JavaScript and TypeScript compiler toolchain written in Zig, with no dependencies.
 
 ```bash
 npm install yuku
 ```
-
-It has no dependencies.
 
 ## Usage
 

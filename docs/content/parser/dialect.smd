@@ -5,19 +5,11 @@
 .date = @date("2026-10-12T00:00:00"),
 .layout = "page.shtml",
 ---
-A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file. Yuku already parses, analyzes, walks, and prints the rest of the language, to the spec, and does the same for your nodes.
+A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file. Yuku parses, analyzes, walks, and prints the rest of the language to the spec, and your nodes with it.
 
 ## [How it works]($section.id('how-it-works'))
 
-Yuku is written in Zig and compiled to one WebAssembly module. The `yuku` npm package runs that module and decodes its output, the AST and the semantic model, into JavaScript objects.
-
-A dialect is compiled into Yuku itself. The result is your own WebAssembly module: Yuku with your syntax in its parser. Pass it to the `yuku` package as the `wasm` option, and `parse`, `analyze`, `walk`, and `generate` work as before, now with your syntax.
-
-1. Write the dialect, one Zig file.
-2. Build it into a WebAssembly module with Yuku's build.
-3. Pass the module as `wasm` in JavaScript.
-
-Standard code parses and analyzes exactly as in Yuku. Your nodes appear in the tree next to standard nodes.
+The `yuku` npm package runs Yuku as one WebAssembly module and decodes its output, the AST and the semantic model, into JavaScript objects. A dialect is compiled into Yuku itself, which makes your own WebAssembly module: Yuku with your syntax in its parser. Pass it to `yuku` as the `wasm` option, and `parse`, `analyze`, `walk`, and `generate` work as before, with your nodes in the tree next to standard ones. Standard code parses and analyzes exactly as in Yuku.
 
 ## [Example]($section.id('example'))
 
@@ -79,7 +71,7 @@ pub fn print(w: *dialect.Printer, kind: Node, children: []const ast.NodeIndex) d
 }
 ```
 
-With Yuku as a dependency, see [Install](/#zig), build it into a WebAssembly module.
+With Yuku as a [dependency](/#zig), build it into a WebAssembly module.
 
 ```zig
 // build.zig
@@ -104,7 +96,7 @@ const { program } = parse("const total = prices |> sum(%) |> round(%, 2);", {
 });
 ```
 
-The pipelines group left to right, and each decodes as `{ type: "PipelineExpression", start, end, left, right }`. The calls inside them are standard nodes, so `analyze` resolves `sum` and `round`, `walk` visits everything, and `generate` prints the line back as written.
+The pipelines group left to right, and each decodes as `{ type: "PipelineExpression", start, end, left, right }`. The calls inside them are standard nodes, so `analyze` resolves `sum` and `round`, and `walk` visits everything. `generate` prints the line back as written once its [`print`](/parser/codegen/#js-printing-new-nodes) option covers your nodes.
 
 ## [The dialect file]($section.id('the-dialect-file'))
 
@@ -135,18 +127,18 @@ pub const files: []const dialect.File = &.{
 
 ## [Positions]($section.id('positions'))
 
-A position is a point in the grammar where the parser asks your dialect first. Define a `pub fn` with the position's name, and the parser calls it there. Your function either parses the input as your syntax, or declines and lets standard parsing continue.
+A position is a point in the grammar where the parser asks your dialect first, by calling the `pub fn` of that name. It parses your syntax there, or declines and standard parsing continues.
 
-| Position           | Called at                                                         | Extra arguments                         |
-| ------------------ | ----------------------------------------------------------------- | --------------------------------------- |
-| `statement`        | The start of every statement                                      |                                         |
-| `expression`       | The start of every operand, before any prefix operator            |                                         |
-| `operator`         | After an operand, where an infix or postfix operator could follow | `left`, the operand, and `precedence`   |
-| `function_body`    | Where a function, method, or arrow function body starts           |                                         |
-| `jsx_child`        | The start of each JSX child                                       | `offset`, its byte offset, and `parent` |
-| `jsx_attribute`    | A `{` in a JSX tag, where standard JSX reads a spread attribute   |                                         |
-| `jsx_element_name` | The start of an element name, in an opening or closing tag        |                                         |
-| `module_specifier` | A module specifier that is not a string                           |                                         |
+| Position           | Called at                                                                 |
+| ------------------ | ------------------------------------------------------------------------- |
+| `statement`        | The start of every statement                                              |
+| `expression`       | The start of every operand, before any prefix operator                    |
+| `operator`         | After the operand `left`, where an infix or postfix operator could follow |
+| `function_body`    | Where a function, method, or arrow function body starts                   |
+| `jsx_child`        | The start of each JSX child, at byte `offset` in `parent`                 |
+| `jsx_attribute`    | A `{` in a JSX tag, where standard JSX reads a spread attribute           |
+| `jsx_element_name` | The start of an element name, in an opening or closing tag                |
+| `module_specifier` | A module specifier that is not a string                                   |
 
 ```zig
 pub fn statement(p: *dialect.Parser) dialect.Error!dialect.Claim
@@ -168,15 +160,15 @@ Each returns a `dialect.Claim`.
 | `.failed`            | A diagnostic was reported, by you or by a parse call.          |
 | `.end`               | `operator` only. The expression ends before the current token. |
 
-- Positions apply everywhere, including inside your own nodes. A `parseExpression` inside your node asks your `expression` and `operator` again, so your syntax and standard syntax nest in each other.
+- Positions apply everywhere, including inside your own nodes. A `parseExpression` inside your node asks your `expression` and `operator` again, so your syntax and standard syntax nest.
 - Decline anything the standard grammar accepts, unless you mean to read it differently.
-- `operator` receives the lowest precedence that continues the current expression. When your operator binds more loosely, answer `.end`, so an enclosing expression takes it, as the example does.
+- `operator` receives the lowest `precedence` that continues the current expression. When your operator binds more loosely, answer `.end` so an enclosing expression takes it, as the example does.
 - `function_body` allows `return` and a directive prologue inside, as a block body does.
 - A `jsx_child` ends on its last token, which stays current, since the parser reads the text after it by offset. `parent` is the opening element or fragment. Use `seek(offset)` when the child starts with tokens.
 
 ## [The parser]($section.id('the-parser'))
 
-A position function receives a `*dialect.Parser`, the parser as your dialect drives it.
+A position function drives the parser through a `*dialect.Parser`.
 
 | Call                                 | Does                                                                                                                    |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
@@ -250,7 +242,7 @@ In JavaScript, a node is a plain object: its `type`, `start` and `end`, each fie
 
 ## [Printing]($section.id('printing'))
 
-An optional `print` writes your nodes back to source, so codegen prints a whole tree. Without it, codegen reports a diagnostic for each of your nodes.
+An optional `print` writes your nodes back to source. Without it, codegen reports a diagnostic for each of your nodes.
 
 ```zig
 pub fn print(w: *dialect.Printer, kind: Node, children: []const ast.NodeIndex) dialect.Error!void
@@ -268,7 +260,7 @@ In JavaScript, `yuku/codegen` prints your nodes through its [`print`](/parser/co
 
 ## [Analysis]($section.id('analysis'))
 
-Semantic analysis walks into your nodes like any other node. Standard code inside them declares, resolves, and reports early errors as usual, and names inside them resolve to the bindings around them. `block_scope`, `lexical_bindings`, and `catch_bindings` decide what scope and bindings your node adds, and `iteration` makes it a loop.
+Semantic analysis walks into your nodes like any other. Standard code inside them declares, resolves, and reports early errors as usual, and names inside them resolve to the bindings around them. The [shape](#nodes) decides the scope and bindings your node adds, and whether it is a loop.
 
 ## [Walking and lowering]($section.id('walking-and-lowering'))
 
@@ -279,7 +271,7 @@ pub fn enter_dialect(self: *Lower, node: ast.Dialect, index: ast.NodeIndex, ctx:
 pub fn exit_dialect(self: *Lower, node: ast.Dialect, index: ast.NodeIndex, ctx: *transform.Ctx) void
 ```
 
-To compile your syntax to standard JavaScript, replace each of your nodes with standard nodes in a [transform](/parser/traverse/#transform) pass, with `ctx.tree.setData(index, ...)` and the tree's building calls. After that, every tool reads plain JavaScript.
+To compile your syntax to standard JavaScript, replace each of your nodes with standard ones in a [transform](/parser/traverse/#transform) pass, with `ctx.tree.setData(index, ...)` and the tree's building calls. Every tool then reads plain JavaScript.
 
 ## [Building]($section.id('building'))
 
@@ -294,9 +286,9 @@ const yuku = b.dependency("yuku", .{
 my_module.addImport("parser", yuku.module("parser"));
 ```
 
-`addWasm(b, yuku, name)` builds the WebAssembly module for JavaScript and installs it as `zig-out/bin/<name>.wasm`. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
+`addWasm(b, yuku, name)` adds the WebAssembly module for JavaScript, which `b.installArtifact` writes to `zig-out/bin/<name>.wasm`. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
 
-A build holds one parser, so it holds one dialect.
+A build holds one parser, and so one dialect.
 
 ## [JavaScript]($section.id('javascript'))
 
@@ -307,9 +299,7 @@ const { program } = parse(source, { path: "app.pipe.js", wasm });
 const module = analyze(source, { path: "app.pipe.js", wasm });
 ```
 
-- [`yuku/ast`](/parser/ast/#js-walking) walks your nodes by their fields, and visitors can name your types.
-- [`yuku/analyzer`](/parser/semantic/#javascript) resolves the names inside them.
-- [`yuku/codegen`](/parser/codegen/#js-printing-new-nodes) prints them through its `print` option.
+[`yuku/ast`](/parser/ast/#js-walking) walks your nodes by their fields, and visitors can name your types. [`yuku/analyzer`](/parser/semantic/#javascript) resolves the names inside them, and [`yuku/codegen`](/parser/codegen/#js-printing-new-nodes) prints them through its `print` option.
 
 For TypeScript, declare your nodes in `DialectNodes`, which adds them to `Node`, so visitors and `node.type` checks know them.
 
@@ -343,7 +333,7 @@ export function analyze(source: string, options: Omit<AnalyzeOptions, "wasm"> = 
 }
 ```
 
-To run in every runtime with no setup, load the module the way `yuku` does. Inline its bytes, and import the file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
+To run in every runtime with no setup, load the module as `yuku` does: inline its bytes, and import the file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
 
 ```ts
 // src/module/inline.ts
@@ -369,7 +359,7 @@ export { pipeline };
 }
 ```
 
-Bundle with a bundler that inlines `.wasm` as bytes, such as tsdown with `loader: { ".wasm": "binary" }`. Keep the `#` imports external, rewrite `#wasm` to `../pipeline.wasm?module`, such as with `outputOptions: { paths: { "#wasm": "../pipeline.wasm?module" } }`, and copy `pipeline.wasm` into `dist`. Cloudflare's and Vercel's bundlers both load a `.wasm?module` import as WebAssembly, and they match the path as written, so `#wasm` cannot reach them through `imports`. TypeScript reads the `#module`, `#wasm`, and `.wasm` imports from declarations like `yuku`'s own [imports.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/core/module/imports.d.ts).
+Bundle with a bundler that inlines `.wasm` as bytes, such as tsdown with `loader: { ".wasm": "binary" }`. Keep the `#` imports external, rewrite `#wasm` to `../pipeline.wasm?module`, as `outputOptions: { paths: { "#wasm": "../pipeline.wasm?module" } }` does, and copy `pipeline.wasm` into `dist`. Cloudflare's and Vercel's bundlers load a `.wasm?module` import as WebAssembly but match the path as written, so `#wasm` cannot reach them through `imports`. TypeScript reads the `#module`, `#wasm`, and `.wasm` imports from declarations like `yuku`'s own [imports.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/core/module/imports.d.ts).
 
 ## [Cost]($section.id('cost'))
 

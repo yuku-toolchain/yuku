@@ -117,6 +117,7 @@ pub const Output = struct {
 
     /// Maps the next token to `span`, unless the node is synthetic.
     pub inline fn recordMapping(self: *Output, span: ast.Span) void {
+        // a synthetic node has no source position
         if (span.start == 0 and span.end == 0) return;
         self.map_start = span.start;
     }

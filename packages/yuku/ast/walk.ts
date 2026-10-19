@@ -3,13 +3,13 @@ import { ALIAS_GROUPS, type AliasMap, type AliasName } from "./aliases";
 import { type Frame, WalkContext } from "./context";
 import { CHILD_KEYS } from "./generated";
 
-/** A visitor function for one node type or alias. */
+/** A visitor for one node type or alias. */
 export type WalkHandler<T extends Node = Node, S = unknown> = (
   node: T,
   ctx: WalkContext<T, S>,
 ) => void;
 
-/** Enter and leave hooks for one node type or alias. */
+/** Enter and leave handlers for one node type or alias. */
 export interface WalkHooks<T extends Node = Node, S = unknown> {
   enter?: WalkHandler<T, S>;
   leave?: WalkHandler<T, S>;
@@ -18,11 +18,8 @@ export interface WalkHooks<T extends Node = Node, S = unknown> {
 type Visitor<T extends Node, S> = WalkHandler<T, S> | WalkHooks<T, S>;
 
 /**
- * Handlers keyed by node `type`, by alias (`Expression`, `Function`,
- * ...), or the universal `enter` / `leave`. A bare function is an enter
- * handler. Per node the order is universal `enter`, alias enters in
- * visitor key order, the typed enter, children, then the mirror for
- * leave.
+ * Handlers by node `type` or alias, plus `enter` and `leave` for every node. A function is an
+ * enter handler. Enters run universal, aliases, then typed, and leaves run in reverse.
  */
 export type Visitors<S = unknown> = {
   [K in NodeType]?: Visitor<NodeOfType<K>, S>;
@@ -33,13 +30,13 @@ export type Visitors<S = unknown> = {
   leave?: WalkHandler<Node, S>;
 };
 
-/** An async visitor function for one node type or alias. */
+/** A {@link WalkHandler} that may return a promise. */
 export type AsyncWalkHandler<T extends Node = Node, S = unknown> = (
   node: T,
   ctx: WalkContext<T, S>,
 ) => void | Promise<void>;
 
-/** Enter and leave hooks for one node type or alias in an async walk. */
+/** {@link WalkHooks} whose handlers may return promises. */
 export interface AsyncWalkHooks<T extends Node = Node, S = unknown> {
   enter?: AsyncWalkHandler<T, S>;
   leave?: AsyncWalkHandler<T, S>;
@@ -71,8 +68,7 @@ function createDispatch(visitors: Visitors<never> | AsyncVisitors<never>): Dispa
   let leave: WalkHandler | null = null;
   const typed = new Map<string, Handlers>();
 
-  // leaves run in reverse registration order, so aliases enter before the
-  // typed handler and leave after it
+  // aliases register first, so they enter before the typed handler and leave after it
   const add = (type: string, handler: unknown): void => {
     const hooks = (typeof handler === "function" ? { enter: handler } : handler) as WalkHooks;
     let entry = typed.get(type);
@@ -100,19 +96,13 @@ function createDispatch(visitors: Visitors<never> | AsyncVisitors<never>): Dispa
   return { enter, leave, typed };
 }
 
-/**
- * Walk an AST depth-first, dispatching to typed visitors and mutating
- * in place. Returns the root.
- */
+/** Walks an AST depth-first, mutating it in place, and returns the root. */
 export function walk<T extends Node, S = unknown>(root: T, visitors: Visitors<S>, state?: S): T {
   _walk(root, visitors, state, new WalkContext());
   return root;
 }
 
-/**
- * The async counterpart of {@link walk}, with every handler awaited
- * before the walk moves on. Resolves to the root.
- */
+/** Like {@link walk}, awaiting each handler. */
 export async function walkAsync<T extends Node, S = unknown>(
   root: T,
   visitors: AsyncVisitors<S>,
@@ -221,7 +211,6 @@ export function _walk(
             const childFrame = { i: 0 };
             for (; childFrame.i < value.length; childFrame.i++) {
               const item = value[childFrame.i] as Node | null;
-              // pattern element holes are null
               if (item !== null && !visit(item, field, value as Node[], childFrame)) return false;
             }
           } else if (!visit(value as Node, field, null, null)) {
@@ -250,7 +239,7 @@ export function _walk(
   })(root, null, null, null);
 }
 
-// twin of _walk with every handler awaited, keep the two in lockstep
+// keep in lockstep with _walk
 /** @internal */
 export async function _walkAsync(
   root: Node,
@@ -305,7 +294,6 @@ export async function _walkAsync(
             const childFrame = { i: 0 };
             for (; childFrame.i < value.length; childFrame.i++) {
               const item = value[childFrame.i] as Node | null;
-              // pattern element holes are null
               if (item !== null && !(await visit(item, field, value as Node[], childFrame))) {
                 return false;
               }

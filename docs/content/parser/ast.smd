@@ -11,13 +11,13 @@ The parser produces an AST. In JavaScript it is an ESTree / TypeScript-ESTree tr
 
 The tree is [ESTree](https://github.com/estree/estree) for JavaScript and JSX, as [Acorn](https://www.npmjs.com/package/acorn) produces it, and [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) for TypeScript, matching [Oxc](https://oxc.rs) for both. It also carries stage 3 [decorators](https://github.com/tc39/proposal-decorators), the `phase` of [import defer](https://github.com/tc39/proposal-defer-import-eval) and [import source](https://github.com/tc39/proposal-source-phase-imports) on imports and `ImportExpression`, and `Program.hashbang`.
 
-`yuku/types` has the TypeScript types of every node, comment, diagnostic, and token, listed in its [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/types/index.ts). `yuku` re-exports them, and a [dialect](/parser/dialect/#javascript) adds its nodes to them.
+`yuku/types` has the TypeScript types of every node, comment, diagnostic, and token, in its [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/types/index.ts). `yuku` re-exports them, and a [dialect](/parser/dialect/#javascript) adds its nodes.
 
 ```ts
 import type { Expression, Identifier, Node, Statement } from "yuku";
 ```
 
-`yuku/ast` walks, builds, and checks the tree, and works on an ESTree AST from any parser.
+`yuku/ast` walks, builds, and checks an ESTree AST from any parser.
 
 ### [Walking]($section.id('js-walking'))
 
@@ -44,11 +44,11 @@ walk(program, {
 
 Handlers are keyed by node `type`, by alias group, or by the universal `enter` / `leave`, and receive the exact node type. The alias groups are `Expression`, `Statement`, `Declaration`, `ModuleDeclaration`, `Function`, `Class`, `Method`, `Loop`, `Pattern`, `JSX`, and `TSType`. Per node, the order is the universal `enter`, alias enters, the typed enter, the children, then the same in reverse for leave.
 
-An optional third argument passes state to every handler as `ctx.state`. `walkAsync` walks in the same order and awaits every handler. [`module.walk`](/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the context.
+An optional third argument reaches every handler as `ctx.state`. `walkAsync` walks in the same order and awaits every handler. [`module.walk`](/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the context.
 
 #### [The context]($section.id('js-walk-context'))
 
-One context object is reused across the whole walk, so do not store it.
+One context object is reused for the whole walk, so do not store it.
 
 ```js
 ctx.node;        // the current node
@@ -96,7 +96,7 @@ findAll(program, ["ClassDeclaration", "TSInterfaceDeclaration"]);
 
 ### [Builders]($section.id('js-builders'))
 
-`b` has one typed constructor per node type. Spans default to 0, which `ctx.replace` fills from the replaced node.
+`b` has one typed constructor per node type, with spans defaulting to 0.
 
 ```js
 import { b } from "yuku/ast";
@@ -143,17 +143,7 @@ for (const record of collectExports(program)) {
 }
 ```
 
-`collectImportDeclaration` and `collectExportDeclaration` return the records of a single statement, for use inside a walk.
-
-```js
-walk(program, {
-  ImportDeclaration(node) {
-    records.push(...collectImportDeclaration(node));
-  },
-});
-```
-
-These read the syntax of one file. [`yuku/analyzer`](/parser/semantic/#js-imports-and-exports) resolves them to bindings and links them across files.
+`collectImportDeclaration` and `collectExportDeclaration` return the records of one statement, for use inside a walk. All four read the syntax of one file. [`yuku/analyzer`](/parser/semantic/#js-imports-and-exports) resolves them to bindings and links them across files.
 
 ### [Utilities]($section.id('js-utilities'))
 
@@ -182,7 +172,7 @@ Plus `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `is
 
 ## [Zig]($section.id('zig'))
 
-The tree is flat. Nodes, child lists, and strings live in arrays in one arena, and `tree.deinit()` frees them all at once. Four types refer into it.
+The tree is flat: nodes, child lists, and strings live in arrays in one arena. Four types refer into it.
 
 | Type         | Is                                                                           |
 | ------------ | ---------------------------------------------------------------------------- |
@@ -241,7 +231,7 @@ try tree.addDiagnostic(.{ .message = "unused", .span = span });
 
 ## [Comments]($section.id('comments'))
 
-`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and its `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](/parser/codegen/) prints it in place.
+`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](/parser/codegen/) prints it in place.
 
 ```zig
 var comments = tree.commentsOf(node);

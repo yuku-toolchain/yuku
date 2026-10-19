@@ -135,13 +135,7 @@ pub const Lexer = struct {
     fn skipHashbang(self: *Lexer) void {
         std.debug.assert(self.cursor == 0);
         if (self.source.len >= 2 and self.source[0] == '#' and self.source[1] == '!') {
-            var end: u32 = 2;
-            while (end < self.source.len and
-                self.source[end] != '\n' and
-                self.source[end] != '\r')
-            {
-                end += 1;
-            }
+            const end = findAnyPos("\n\r", self.source, 2);
             std.debug.assert(end >= 2);
             std.debug.assert(end <= self.source.len);
             self.hashbang = .{ .start = 2, .len = end - 2 };
@@ -262,7 +256,6 @@ pub const Lexer = struct {
         return true;
     }
 
-    // false on an escape or non-ascii byte
     inline fn scanAsciiIdentifier(self: *Lexer, out: *Token) bool {
         const src = self.source;
         const start = self.cursor;
@@ -390,8 +383,7 @@ pub const Lexer = struct {
                 '=' => self.puncToken(2, .less_than_equal, start),
                 else => self.puncToken(1, .less_than, start),
             },
-            // inside a jsx tag `>` only closes the tag, so `<div>=</div>` and the
-            // trailing `>>` of `<div attr=<e></e>></div>` must not merge
+            // in a jsx tag `>` stays alone, as in `<a>=</a>` and `<a b=<e></e>></a>`
             '>' => if (self.mode == .jsx_tag)
                 self.puncToken(1, .greater_than, start)
             else if (c1 == '>' and c2 == '=')
@@ -453,9 +445,7 @@ pub const Lexer = struct {
 
     inline fn peek(self: *const Lexer, offset: u32) u8 {
         const idx = @as(usize, self.cursor) + offset;
-        if (idx >= self.source.len) {
-            return 0;
-        }
+        if (idx >= self.source.len) return 0;
         return self.source[idx];
     }
 
@@ -515,10 +505,9 @@ pub const Lexer = struct {
     }
 
     /// Scans a JSX text run.
-    pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
-        std.debug.assert(initial_cursor <= self.source.len);
-        self.rewindTo(initial_cursor);
-        const start = self.cursor;
+    pub fn reScanJsxText(self: *Lexer, start: u32) Token {
+        std.debug.assert(start <= self.source.len);
+        self.rewindTo(start);
         while (self.cursor < self.source.len) {
             switch (self.source[self.cursor]) {
                 '<', '{', '>', '}' => break,
@@ -537,13 +526,11 @@ pub const Lexer = struct {
     };
 
     /// Re-scans a `/` token as a regex literal once the parser knows it is not division.
-    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult {
-        std.debug.assert(slash_token_start < self.source.len);
-        std.debug.assert(self.source[slash_token_start] == '/');
+    pub fn reScanAsRegex(self: *Lexer, start: u32) LexicalError!RegexResult {
+        std.debug.assert(start < self.source.len);
+        std.debug.assert(self.source[start] == '/');
 
-        self.rewindTo(slash_token_start);
-        const start = self.cursor;
-        self.cursor += 1;
+        self.rewindTo(start + 1);
         var in_class = false;
 
         while (self.cursor < self.source.len) {
@@ -705,8 +692,7 @@ pub const Lexer = struct {
         template,
     };
 
-    // a bad template escape is not fatal, tagged templates still get a token with an
-    // undefined cooked value
+    // a bad template escape is not fatal, a tagged template cooks it to undefined
     fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         if (context == .template) {
             self.consumeEscapeImpl(context) catch |err| {
@@ -775,21 +761,16 @@ pub const Lexer = struct {
     fn consumeOctal(self: *Lexer) LexicalError!void {
         std.debug.assert(self.cursor < self.source.len);
         const result = util.Utf.parseOctal(self.source, self.cursor);
-        if (result.end == self.cursor) {
-            return error.InvalidOctalEscape;
-        }
         std.debug.assert(result.end > self.cursor);
         self.cursor = @intCast(result.end);
     }
 
     fn consumeHex(self: *Lexer) LexicalError!void {
         std.debug.assert(self.cursor < self.source.len);
-        if (util.Utf.parseHex2(self.source, self.cursor + 1)) |r| {
-            std.debug.assert(r.end >= self.cursor + 1);
-            self.cursor = @intCast(r.end);
-        } else {
+        const r = util.Utf.parseHex2(self.source, self.cursor + 1) orelse
             return error.InvalidHexEscape;
-        }
+        std.debug.assert(r.end >= self.cursor + 1);
+        self.cursor = @intCast(r.end);
     }
 
     const ConsumeUnicodeContext = enum {
@@ -837,10 +818,7 @@ pub const Lexer = struct {
 
     fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
         std.debug.assert(self.cursor <= self.source.len);
-        const table = if (is_jsx_tag)
-            &identifier_char_jsx_ascii
-        else
-            &identifier_char_ascii;
+        const table = if (is_jsx_tag) &identifier_char_jsx_ascii else &identifier_char_ascii;
         const src = self.source;
         const entry_pos = self.cursor;
         var pos = entry_pos;

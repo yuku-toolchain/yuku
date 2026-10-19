@@ -9,8 +9,7 @@ pub const module_record = @import("module_record.zig");
 pub const Semantic = semantic.Semantic;
 pub const AnalysisError = checker.AnalysisError;
 
-/// Reports the scope-dependent early errors of a tree. Diagnostics go on the tree and
-/// allocations use its arena.
+/// Reports the scope-dependent early errors of a tree as diagnostics in its arena.
 pub fn check(tree: *ast.Tree) AnalysisError!void {
     std.debug.assert(tree.root != .null);
 

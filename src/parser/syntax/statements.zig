@@ -85,7 +85,6 @@ pub fn parseStatement(parser: *Parser, options: ParseStatementOptions) Error!?as
     };
 }
 
-// the body of a control statement, where a lexical declaration is an error
 pub inline fn parseSingleStatement(parser: *Parser) Error!?ast.NodeIndex {
     return parseStatement(parser, .{ .can_be_single_statement_context = true });
 }
@@ -163,11 +162,8 @@ fn parseDecoratedStatement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex {
-    const expression = try expressions.parseExpression(
-        parser,
-        Precedence.Lowest,
-        .{},
-    ) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        return null;
     const expression_data = parser.tree.data(expression);
 
     if (parser.context.directive_prologue and expression_data == .string_literal) {
@@ -182,11 +178,8 @@ fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.Node
 }
 
 fn parseExpressionStatement(parser: *Parser) Error!?ast.NodeIndex {
-    const expression = try expressions.parseExpression(
-        parser,
-        Precedence.Lowest,
-        .{},
-    ) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        return null;
     return parseExpressionStatementWithExpression(parser, expression);
 }
 
@@ -203,21 +196,15 @@ fn parseExpressionStatementWithExpression(
 }
 
 fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeIndex {
-    const string_literal_span = parser.tree.span(expression);
-
-    // "use strict" recognition matches exact code units, not the decoded value
-    const value_start = string_literal_span.start + 1;
-    const value_end = string_literal_span.end - 1;
+    const span = parser.tree.span(expression);
 
     return try parser.tree.addNode(.{
         .directive = .{
             .expression = expression,
-            .value = parser.tree.sourceSlice(value_start, value_end),
+            // "use strict" recognition matches exact code units, not the decoded value
+            .value = parser.tree.sourceSlice(span.start + 1, span.end - 1),
         },
-    }, .{
-        .start = string_literal_span.start,
-        .end = try parser.eatSemicolon(string_literal_span.end) orelse return null,
-    });
+    }, .{ .start = span.start, .end = try parser.eatSemicolon(span.end) orelse return null });
 }
 
 fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
@@ -237,7 +224,7 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     if (variables.isAwaitUsingDeclarationAhead(parser)) {
         const start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'await'
+        try parser.advance() orelse return null;
         return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
     }
 
@@ -246,11 +233,9 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .import);
-    const next = parser.peekAhead();
-
-    return switch (next.tag) {
+    return switch (parser.peekAhead().tag) {
         .left_paren, .dot => parseExpressionStatement(parser),
-        else => modules.parseImportDeclaration(parser),
+        else => modules.parseImportDeclaration(parser, null),
     };
 }
 
@@ -261,9 +246,8 @@ fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"const");
-    if (parser.tree.isTs()) {
-        const next = parser.peekAhead();
-        if (ts_decl.isConstEnumHead(next)) return ts_decl.parseTsDeclaration(parser);
+    if (parser.tree.isTs() and ts_decl.isConstEnumHead(parser.peekAhead())) {
+        return ts_decl.parseTsDeclaration(parser);
     }
     return variables.parseVariableDeclaration(parser, .{}, null);
 }
@@ -274,7 +258,7 @@ fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'async'
+        try parser.advance() orelse return null;
         return functions.parseFunction(parser, .{ .is_async = true }, start);
     }
 
@@ -285,26 +269,22 @@ fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
     std.debug.assert(parser.tree.data(identifier) == .identifier_reference);
-    const id_data = parser.tree.data(identifier);
     const id_span = parser.tree.span(identifier);
+    const name = parser.tree.data(identifier).identifier_reference.name;
+    const label = try parser.tree.addNode(.{ .label_identifier = .{ .name = name } }, id_span);
 
-    const label = try parser.tree.addNode(
-        .{ .label_identifier = .{ .name = id_data.identifier_reference.name } },
-        id_span,
-    );
-
-    try parser.advance() orelse return null; // consume ':'
-
+    try parser.advance() orelse return null;
     const body = try parseSingleStatement(parser) orelse return null;
 
-    return try parser.tree.addNode(.{
-        .labeled_statement = .{ .label = label, .body = body },
-    }, .{ .start = id_span.start, .end = parser.tree.span(body).end });
+    return try parser.tree.addNode(
+        .{ .labeled_statement = .{ .label = label, .body = body } },
+        .{ .start = id_span.start, .end = parser.tree.span(body).end },
+    );
 }
 
 /// Parses a braced block statement.
 /// https://tc39.es/ecma262/#prod-BlockStatement
-pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
+fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(
@@ -330,10 +310,10 @@ pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
 
 /// Parses a `switch` statement.
 /// https://tc39.es/ecma262/#sec-switch-statement
-pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
+fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"switch");
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'switch'
+    try parser.advance() orelse return null;
 
     const discriminant = try parseParenthesizedHead(
         parser,
@@ -347,12 +327,10 @@ pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(.right_brace, "Expected '}' to close switch body", null)) return null;
 
-    return try parser.tree.addNode(.{
-        .switch_statement = .{
-            .discriminant = discriminant,
-            .cases = cases,
-        },
-    }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .switch_statement = .{ .discriminant = discriminant, .cases = cases } },
+        .{ .start = start, .end = end },
+    );
 }
 
 fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
@@ -376,16 +354,11 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const is_default = parser.current_token.tag == .default;
 
-    try parser.advance() orelse return null; // consume 'case' or 'default'
-
-    var test_expr: ast.NodeIndex = .null;
-    if (!is_default) {
-        test_expr = try expressions.parseExpression(
-            parser,
-            Precedence.Lowest,
-            .{},
-        ) orelse return null;
-    }
+    try parser.advance() orelse return null;
+    const test_expr: ast.NodeIndex = if (is_default)
+        .null
+    else
+        try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const colon_end = parser.current_token.span.end;
     if (!try parser.expect(.colon, "Expected ':' after case", null)) return null;
@@ -396,12 +369,10 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
     else
         colon_end;
 
-    return try parser.tree.addNode(.{
-        .switch_case = .{
-            .@"test" = test_expr,
-            .consequent = consequent,
-        },
-    }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(
+        .{ .switch_case = .{ .@"test" = test_expr, .consequent = consequent } },
+        .{ .start = start, .end = end },
+    );
 }
 
 fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
@@ -415,7 +386,6 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
     {
         const statement = try parseStatement(parser, .{}) orelse break;
 
-        // a using declaration may not sit directly in a `CaseClause` or `DefaultClause`
         const data = parser.tree.data(statement);
         if (data == .variable_declaration) {
             const kind = data.variable_declaration.kind;
@@ -436,10 +406,10 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
 
 /// Parses an `if` statement.
 /// https://tc39.es/ecma262/#sec-if-statement
-pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
+fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"if");
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'if'
+    try parser.advance() orelse return null;
 
     const test_expr = try parseParenthesizedHead(
         parser,
@@ -452,25 +422,23 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
     var alternate: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .@"else") {
-        try parser.advance() orelse return null; // consume 'else'
+        try parser.advance() orelse return null;
         alternate = try parseSingleStatement(parser) orelse return null;
         end = parser.tree.span(alternate).end;
     }
 
-    return try parser.tree.addNode(.{
-        .if_statement = .{
-            .@"test" = test_expr,
-            .consequent = consequent,
-            .alternate = alternate,
-        },
-    }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .if_statement = .{
+        .@"test" = test_expr,
+        .consequent = consequent,
+        .alternate = alternate,
+    } }, .{ .start = start, .end = end });
 }
 
 // https://tc39.es/ecma262/#sec-while-statement
 fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"while");
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'while'
+    try parser.advance() orelse return null;
 
     const test_expr = try parseParenthesizedHead(
         parser,
@@ -479,45 +447,48 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     ) orelse return null;
     const body = try parseSingleStatement(parser) orelse return null;
 
-    return try parser.tree.addNode(.{
-        .while_statement = .{
-            .@"test" = test_expr,
-            .body = body,
-        },
-    }, .{ .start = start, .end = parser.tree.span(body).end });
+    return try parser.tree.addNode(
+        .{ .while_statement = .{ .@"test" = test_expr, .body = body } },
+        .{ .start = start, .end = parser.tree.span(body).end },
+    );
 }
 
 // https://tc39.es/ecma262/#sec-do-while-statement
 fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .do);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'do'
+    try parser.advance() orelse return null;
 
     const body = try parseSingleStatement(parser) orelse return null;
 
     if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) {
         return null;
     }
+
     const test_expr = try parseParenthesizedHead(
         parser,
         "Expected '(' after 'while'",
         "Expected ')' after while condition",
     ) orelse return null;
-    const end = try parser.eatSemicolonLenient(parser.prev_token_end) orelse return null;
 
-    return try parser.tree.addNode(.{
-        .do_while_statement = .{
-            .body = body,
-            .@"test" = test_expr,
-        },
-    }, .{ .start = start, .end = end });
+    // ASI always inserts a semicolon after the `)` of do-while
+    var end = parser.prev_token_end;
+    if (parser.current_token.tag == .semicolon) {
+        end = parser.current_token.span.end;
+        try parser.advance() orelse return null;
+    }
+
+    return try parser.tree.addNode(
+        .{ .do_while_statement = .{ .body = body, .@"test" = test_expr } },
+        .{ .start = start, .end = end },
+    );
 }
 
 // https://tc39.es/ecma262/#sec-with-statement
 fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .with);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'with'
+    try parser.advance() orelse return null;
 
     const object = try parseParenthesizedHead(
         parser,
@@ -526,18 +497,16 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     ) orelse return null;
     const body = try parseSingleStatement(parser) orelse return null;
 
-    return try parser.tree.addNode(.{
-        .with_statement = .{
-            .object = object,
-            .body = body,
-        },
-    }, .{ .start = start, .end = parser.tree.span(body).end });
+    return try parser.tree.addNode(
+        .{ .with_statement = .{ .object = object, .body = body } },
+        .{ .start = start, .end = parser.tree.span(body).end },
+    );
 }
 
 fn parseEmptyStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .semicolon);
     const span = parser.current_token.span;
-    try parser.advance() orelse return null; // consume ';'
+    try parser.advance() orelse return null;
     return try parser.tree.addNode(.{ .empty_statement = .{} }, span);
 }
 
@@ -553,10 +522,10 @@ fn parseBreakOrContinueStatement(
     try parser.advance() orelse return null;
 
     var label: ast.NodeIndex = .null;
-
     // break [no LineTerminator here] LabelIdentifier
-    const can_insert_semicolon = parser.canInsertImplicitSemicolon(parser.current_token);
-    if (!can_insert_semicolon and parser.current_token.tag != .semicolon) {
+    if (!parser.canInsertImplicitSemicolon(parser.current_token) and
+        parser.current_token.tag != .semicolon)
+    {
         label = try literals.parseLabelIdentifier(parser) orelse return null;
         end = parser.tree.span(label).end;
     }
@@ -585,18 +554,15 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
         );
     }
 
-    try parser.advance() orelse return null; // consume 'return'
+    try parser.advance() orelse return null;
 
     var argument: ast.NodeIndex = .null;
-
     // return [no LineTerminator here] Expression?
-    const can_insert_semicolon = parser.canInsertImplicitSemicolon(parser.current_token);
-    if (!can_insert_semicolon and parser.current_token.tag != .semicolon) {
-        argument = try expressions.parseExpression(
-            parser,
-            Precedence.Lowest,
-            .{},
-        ) orelse return null;
+    if (!parser.canInsertImplicitSemicolon(parser.current_token) and
+        parser.current_token.tag != .semicolon)
+    {
+        argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+            return null;
         end = parser.tree.span(argument).end;
     }
 
@@ -612,7 +578,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
 fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .throw);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'throw'
+    try parser.advance() orelse return null;
 
     // throw [no LineTerminator here] Expression
     if (parser.current_token.hasLineTerminatorBefore()) {
@@ -622,12 +588,8 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    const argument = try expressions.parseExpression(
-        parser,
-        Precedence.Lowest,
-        .{},
-    ) orelse return null;
-
+    const argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse
+        return null;
     const end = try parser.eatSemicolon(parser.tree.span(argument).end) orelse return null;
 
     return try parser.tree.addNode(
@@ -640,7 +602,7 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
 fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"try");
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'try'
+    try parser.advance() orelse return null;
 
     const block = try parseBlockStatement(parser) orelse return null;
 
@@ -654,7 +616,7 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (parser.current_token.tag == .finally) {
-        try parser.advance() orelse return null; // consume 'finally'
+        try parser.advance() orelse return null;
         finalizer = try parseBlockStatement(parser) orelse return null;
         end = parser.tree.span(finalizer).end;
     }
@@ -668,24 +630,22 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    return try parser.tree.addNode(.{
-        .try_statement = .{
-            .block = block,
-            .handler = handler,
-            .finalizer = finalizer,
-        },
-    }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .try_statement = .{
+        .block = block,
+        .handler = handler,
+        .finalizer = finalizer,
+    } }, .{ .start = start, .end = end });
 }
 
 // https://tc39.es/ecma262/#prod-Catch
 fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"catch");
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'catch'
+    try parser.advance() orelse return null;
 
     var param: ast.NodeIndex = .null;
     if (parser.current_token.tag == .left_paren) {
-        try parser.advance() orelse return null; // consume '('
+        try parser.advance() orelse return null;
         param = try patterns.parseBindingPattern(parser) orelse return null;
 
         if (parser.tree.isTs() and parser.current_token.tag == .colon) {
@@ -708,9 +668,11 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
 // https://tc39.es/ecma262/#sec-debugger-statement
 fn parseDebuggerStatement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .debugger);
-    const start = parser.current_token.span.start;
-    var end = parser.current_token.span.end;
-    try parser.advance() orelse return null; // consume 'debugger'
-    end = try parser.eatSemicolon(end) orelse return null;
-    return try parser.tree.addNode(.{ .debugger_statement = .{} }, .{ .start = start, .end = end });
+    const span = parser.current_token.span;
+    try parser.advance() orelse return null;
+    const end = try parser.eatSemicolon(span.end) orelse return null;
+    return try parser.tree.addNode(
+        .{ .debugger_statement = .{} },
+        .{ .start = span.start, .end = end },
+    );
 }

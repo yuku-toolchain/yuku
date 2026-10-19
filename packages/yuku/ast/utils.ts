@@ -16,11 +16,7 @@ import type {
 import { is, type MaybeNode } from "./is";
 import { walk } from "./walk";
 
-/**
- * The static name a node denotes: an `Identifier`'s `name` or a string
- * `Literal`'s `value`, as in a `ModuleExportName` or a static property
- * key. Null for anything else.
- */
+/** An `Identifier`'s `name` or a string `Literal`'s `value`, null for anything else. */
 export function nameOf(node: Identifier | StringLiteral): string;
 export function nameOf(node: MaybeNode): string | null;
 export function nameOf(node: MaybeNode): string | null {
@@ -30,11 +26,7 @@ export function nameOf(node: MaybeNode): string | null {
   return null;
 }
 
-/**
- * The runtime value of a `Literal` node: string, number, boolean,
- * bigint, RegExp, or null for the null literal. Undefined for
- * non-literal nodes.
- */
+/** The runtime value of a `Literal`, undefined for any other node. */
 export function literalValue(
   node: MaybeNode,
 ): string | number | boolean | bigint | RegExp | null | undefined {
@@ -43,10 +35,7 @@ export function literalValue(
   return node.value;
 }
 
-/**
- * An expression that only wraps another one: parentheses and the
- * TypeScript assertion forms erased on the way to JavaScript.
- */
+/** Parentheses or an erased TypeScript assertion around an `expression`. */
 export type Wrapper =
   | ParenthesizedExpression
   | TSAsExpression
@@ -62,36 +51,19 @@ const WRAPPERS = new Set<NodeType>([
   "TSTypeAssertion",
 ]);
 
-/**
- * True when `node` is a {@link Wrapper}, whose `expression` is the
- * wrapped node.
- *
- * @example
- * isWrapper(node) ? node.expression : node
- */
+/** Whether `node` is a {@link Wrapper}. */
 export function isWrapper(node: MaybeNode): node is Wrapper {
   return node != null && WRAPPERS.has(node.type);
 }
 
-/**
- * The expression inside parentheses and erased TypeScript assertion
- * wrappers: `((x as any))!` unwraps to `x`. Returns any other node,
- * `null`, or `undefined` as it is.
- */
+/** The expression inside every {@link Wrapper} around `node`, or `node` itself. */
 export function unwrap<T extends MaybeNode>(node: T): T extends Wrapper ? Expression : T {
   let current: MaybeNode = node;
   while (isWrapper(current)) current = current.expression;
   return current as T extends Wrapper ? Expression : T;
 }
 
-/**
- * True when `node` calls an `Identifier` named `name`, or any of
- * `name` when given an array. The callee is read through {@link unwrap}.
- *
- * @example
- * isCallOf(node, "require")
- * isCallOf(node, ["defineConfig", "defineProject"])
- */
+/** Whether `node` calls an unwrapped `Identifier` named `name`, or one of the names. */
 export function isCallOf(
   node: MaybeNode,
   name: string | readonly string[],
@@ -102,11 +74,7 @@ export function isCallOf(
   return typeof name === "string" ? callee.name === name : name.includes(callee.name);
 }
 
-/**
- * Every binding `Identifier` a pattern introduces, in source order:
- * the pattern itself, destructuring leaves, defaults' targets, and
- * rest elements.
- */
+/** Every `Identifier` a binding pattern declares, in source order. */
 export function bindingIdentifiers(pattern: BindingPattern | null | undefined): Identifier[] {
   const out: Identifier[] = [];
   const visit = (node: MaybeNode): void => {
@@ -135,7 +103,7 @@ export function bindingIdentifiers(pattern: BindingPattern | null | undefined): 
   return out;
 }
 
-/** Every node of the given type(s) under `root`, in source order. */
+/** Every node of the given types under `root`, in source order. */
 export function findAll<K extends NodeType>(
   root: Node,
   types: K | readonly K[],

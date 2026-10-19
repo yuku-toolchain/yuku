@@ -59,13 +59,12 @@ pub fn shortestDecimal(s: []const u8, scratch: []u8) []const u8 {
     const int_part = mantissa[0..dot_at];
     const frac_part = if (dot_at < mantissa.len) mantissa[dot_at + 1 ..] else "";
 
-    // value is <int_part><frac_part> * 10^(exp - frac_len), past the bound it is 0 or Infinity
-    var exp: i64 = blk: {
-        if (exp_at == s.len) break :blk 0;
-        const e = std.fmt.parseInt(i64, s[exp_at + 1 ..], 10) catch return s;
-        if (e > 100_000 or e < -100_000) return s;
-        break :blk e;
-    };
+    var exp: i64 = 0;
+    if (exp_at < s.len) {
+        exp = std.fmt.parseInt(i64, s[exp_at + 1 ..], 10) catch return s;
+        // past the bound the value is 0 or Infinity
+        if (exp > 100_000 or exp < -100_000) return s;
+    }
     exp -= @intCast(frac_part.len);
 
     var dig: [128]u8 = undefined;

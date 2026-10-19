@@ -13,7 +13,6 @@ export const CHAR_DOUBLE_QUOTE = 0x22;
 export const CHAR_DOLLAR = 0x24;
 export const CHAR_SINGLE_QUOTE = 0x27;
 export const CHAR_OPEN_PAREN = 0x28;
-export const CHAR_STAR = 0x2a;
 export const CHAR_PLUS = 0x2b;
 export const CHAR_MINUS = 0x2d;
 export const CHAR_DOT = 0x2e;
@@ -30,6 +29,7 @@ export const CHAR_OPEN_BRACE = 0x7b;
 export const CHAR_LS = 0x2028;
 export const CHAR_PS = 0x2029;
 
+const CHAR_STAR = 0x2a;
 const CHAR_9 = 0x39;
 const CHAR_UNDERSCORE = 0x5f;
 
@@ -104,7 +104,6 @@ export function shortestDecimal(s: string): string {
   if (expAt !== s.length) {
     const parsed = parseExponent(s.slice(expAt + 1));
     if (parsed === null) return s;
-    if (parsed > EXPONENT_MAGNITUDE_MAX || parsed < -EXPONENT_MAGNITUDE_MAX) return s;
     exp = parsed;
   }
   exp -= fracPart.length;
@@ -158,19 +157,15 @@ function writeFixed(d: string, exp: number): string | null {
 }
 
 function parseExponent(text: string): number | null {
-  let i = 0;
-  let negative = false;
-  if (text.charCodeAt(0) === CHAR_PLUS || text.charCodeAt(0) === CHAR_MINUS) {
-    negative = text.charCodeAt(0) === CHAR_MINUS;
-    i = 1;
-  }
+  const negative = text.charCodeAt(0) === CHAR_MINUS;
+  let i = negative || text.charCodeAt(0) === CHAR_PLUS ? 1 : 0;
   if (i === text.length) return null;
   let value = 0;
   for (; i < text.length; i++) {
     const code = text.charCodeAt(i);
     if (!isAsciiDigit(code)) return null;
     value = value * 10 + (code - CHAR_0);
-    if (value > Number.MAX_SAFE_INTEGER / 10) return negative ? -Infinity : Infinity;
+    if (value > EXPONENT_MAGNITUDE_MAX) return null;
   }
   return negative ? -value : value;
 }
@@ -181,17 +176,12 @@ export function stripUnderscores(raw: string): string | null {
   return raw.replace(/_/g, "");
 }
 
-export function isJsdocBody(value: string): boolean {
-  const lines = value.split("\n");
+export function isJsdocBody(lines: string[]): boolean {
   if (lines.length < 2) return false;
   for (let i = 1; i < lines.length; i++) {
     if (!/^[ \t]*(\*|$)/.test(lines[i]!)) return false;
   }
   return true;
-}
-
-export function trimStartSpaceTab(line: string): string {
-  return line.replace(/^[ \t]+/, "");
 }
 
 export function isSignificantBlockComment(value: string): boolean {
@@ -215,8 +205,4 @@ export function isLoneSurrogateAt(s: string, i: number): boolean {
   }
   const prev = i > 0 ? s.charCodeAt(i - 1) : 0;
   return !(prev >= 0xd800 && prev <= 0xdbff);
-}
-
-export function surrogateEscape(code: number): string {
-  return "\\u" + code.toString(16);
 }

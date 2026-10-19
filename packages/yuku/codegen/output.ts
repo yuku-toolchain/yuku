@@ -19,11 +19,6 @@ export const LEAD_STMT = 1;
 export const LEAD_ARROW = 2;
 export const LEAD_EXPORT_DEFAULT = 3;
 
-export interface Span {
-  start: number;
-  end: number;
-}
-
 // the byte before `.` in `1 .x`, which would lex as a fraction unspaced
 const AFTER_BARE_INTEGER = 0xffff;
 
@@ -96,7 +91,7 @@ export class Output {
     return this.length() === 0 ? 0 : this.lastChar;
   }
 
-  writeToken(s: string): void {
+  write(s: string): void {
     const first = s.charCodeAt(0);
     if (!this.pretty) this.dropHeldSpace(first);
     const last = s.length === 1 ? first : s.charCodeAt(s.length - 1);
@@ -128,13 +123,13 @@ export class Output {
   }
 
   writeKeyword(word: string): void {
-    this.writeToken(word);
+    this.write(word);
     this.heldSpaces++;
     this.heldLiteral = false;
   }
 
   writeSpaced(pretty: string, compact: string): void {
-    this.writeToken(this.pretty ? pretty : compact);
+    this.write(this.pretty ? pretty : compact);
   }
 
   writeLiteral(s: string): void {
@@ -180,17 +175,13 @@ export class Output {
     this.heldLiteral = false;
   }
 
-  recordMapping(span: Span): void {
+  recordMapping(span: { start: number; end: number }): void {
     if (this.mappings === null) return;
     const start = span.start;
     // a node without a span or with a zero span is synthetic
     if (typeof start !== "number") return;
     if (start === 0 && span.end === 0) return;
     this.mapStart = start;
-  }
-
-  markBareInteger(): void {
-    this.bareIntegerEnd = this.length();
   }
 
   spillWhenFull(): void {

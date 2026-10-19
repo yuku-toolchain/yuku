@@ -5,17 +5,15 @@ const Allocator = std.mem.Allocator;
 
 /// What the walk does after a node's enter hooks.
 pub const Action = enum {
-    /// Walk the node's children.
+    /// Walks the node's children.
     proceed,
-    /// Skip the node's children and move to the next sibling.
+    /// Skips the node's children.
     skip,
-    /// Stop the whole traversal.
+    /// Stops the whole traversal.
     stop,
 };
 
-/// Walks the tree, calling visitor hooks at each node. `C` is the context
-/// type with a `.tree` field, `V` the visitor type with hooks such as
-/// `enter_function` or the catch-all `enter_node`.
+/// Walks the tree from `ctx.tree.root`, calling hooks such as `enter_function` or `enter_node`.
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
     std.debug.assert(ctx.tree.root != .null);
@@ -210,10 +208,8 @@ fn walkDeepPushChildren(
     std.mem.reverse(WalkStep, steps.items[children_start..]);
 }
 
-/// Wraps a visitor so the context's hooks run around the user hooks at each
-/// node. `ctx.enter` runs before the user's enter hooks, the optional
-/// `ctx.post_enter` after them and before the children, and `ctx.exit` after
-/// the user's exit hooks.
+/// Wraps a visitor so `ctx.enter`, the optional `ctx.post_enter`, and `ctx.exit` run around
+/// its hooks.
 pub fn Layer(comptime C: type, comptime V: type) type {
     comptime validateHooks(V);
     return struct {
@@ -297,16 +293,13 @@ inline fn unwrapAction(result: anytype) Allocator.Error!Action {
 
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decl_names) |name| {
-        if (comptime std.mem.eql(u8, name, "enter_node") or std.mem.eql(u8, name, "exit_node")) {
-            continue;
-        }
-
         const node_name = if (std.mem.startsWith(u8, name, "enter_"))
             name["enter_".len..]
         else if (std.mem.startsWith(u8, name, "exit_"))
             name["exit_".len..]
         else
             continue;
+        if (std.mem.eql(u8, node_name, "node")) continue;
 
         if (!@hasField(ast.NodeData, node_name)) {
             @compileError("Invalid visitor hook '" ++ name ++
@@ -328,6 +321,21 @@ fn validateHooks(comptime V: type) void {
     }
 }
 
+pub fn PathCtx(comptime Tree: type) type {
+    return struct {
+        tree: Tree,
+        path: NodePath = .{},
+
+        pub fn enter(self: *@This(), index: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
+            self.path.push(index);
+        }
+
+        pub fn exit(self: *@This(), _: ast.NodeIndex, _: ast.NodeData) void {
+            self.path.pop();
+        }
+    };
+}
+
 /// The node indices from the root to the current node.
 pub const NodePath = struct {
     items: []ast.NodeIndex = &.{},
@@ -338,7 +346,7 @@ pub const NodePath = struct {
         return self.ancestor(1);
     }
 
-    /// The nth ancestor, 0 for the current node and 1 for its parent.
+    /// The nth ancestor, 0 being the current node, or `null` past the root.
     pub inline fn ancestor(self: *const NodePath, n: usize) ?ast.NodeIndex {
         if (n >= self.len) return null;
         return self.items[self.len - 1 - n];
@@ -349,12 +357,12 @@ pub const NodePath = struct {
         return self.len;
     }
 
-    /// Walks from the current node up to the root, yielding the current node first.
+    /// Iterates from the current node up to the root.
     pub fn ancestors(self: *const NodePath) AncestorIterator {
         return .{ .items = self.items[0..self.len], .pos = self.len };
     }
 
-    /// Yields each node index from the current node up to the root.
+    /// Yields node indices from the current node up to the root.
     pub const AncestorIterator = struct {
         items: []const ast.NodeIndex,
         pos: usize,
@@ -367,14 +375,14 @@ pub const NodePath = struct {
         }
     };
 
-    /// Pushes a node as it is entered.
+    /// Pushes an entered node.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
         std.debug.assert(index != .null);
         self.items[self.len] = index;
         self.len += 1;
     }
 
-    /// Pops the current node as it is exited.
+    /// Pops the exited node.
     pub fn pop(self: *NodePath) void {
         std.debug.assert(self.len > 0);
         self.len -= 1;

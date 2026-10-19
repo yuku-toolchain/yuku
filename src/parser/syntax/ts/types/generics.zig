@@ -6,8 +6,6 @@ const TokenTag = @import("../../../token.zig").TokenTag;
 const literals = @import("../../literals.zig");
 const core = @import("core.zig");
 
-// Foo<T, U, V>
-//    ^^^^^^^^^
 pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .arguments, .peel);
 }
@@ -24,23 +22,12 @@ pub inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeI
     return parseAngleList(parser, .arguments, .peel);
 }
 
-// function f<T, U extends V>() {}
-//           ^^^^^^^^^^^^^^^^
 pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .parameters, .peel);
 }
 
-const AngleListKind = enum {
-    arguments,
-    parameters,
-};
-
-const AngleClose = enum {
-    // one `>` peels off a fused `>>` or `>=`
-    peel,
-    // a fused closer fails the speculation
-    exact,
-};
+const AngleListKind = enum { arguments, parameters };
+const AngleClose = enum { peel, exact };
 
 fn parseAngleList(
     parser: *Parser,
@@ -86,7 +73,6 @@ pub inline fn isAngleOpen(tag: TokenTag) bool {
     return tag == .less_than or tag == .left_shift;
 }
 
-// nested closers fuse into one token that consumeAngleClose peels apart
 inline fn isAngleClose(tag: TokenTag) bool {
     return switch (tag) {
         .greater_than,
@@ -118,39 +104,28 @@ fn consumeAngleClose(
     comptime kind: AngleListKind,
     comptime close: AngleClose,
 ) Error!?u32 {
-    switch (parser.current_token.tag) {
-        .greater_than => {
-            const end = parser.current_token.span.end;
-            try parser.advance() orelse return null;
-            return end;
-        },
-        .right_shift,
-        .unsigned_right_shift,
-        .greater_than_equal,
-        .right_shift_assign,
-        .unsigned_right_shift_assign,
-        => {
-            if (close == .exact) return null;
-            const gt = parser.lexer.reScanGreaterThan(parser.current_token.span.start);
-            try parser.advanceWithRescannedToken(gt) orelse return null;
-            return gt.span.end;
-        },
-        else => {
-            try parser.reportExpected(
-                parser.current_token.span,
-                switch (kind) {
-                    .arguments => "Expected '>' to close a type argument list",
-                    .parameters => "Expected '>' to close a type parameter list",
-                },
-                .{ .help = "Each '<' in a type must be matched by a '>'" },
-            );
-            return null;
-        },
+    const token = parser.current_token;
+    if (token.tag == .greater_than) {
+        try parser.advance() orelse return null;
+        return token.span.end;
     }
+    if (isAngleClose(token.tag)) {
+        if (close == .exact) return null;
+        const gt = parser.lexer.reScanGreaterThan(token.span.start);
+        try parser.advanceWithRescannedToken(gt) orelse return null;
+        return gt.span.end;
+    }
+    try parser.reportExpected(
+        token.span,
+        switch (kind) {
+            .arguments => "Expected '>' to close a type argument list",
+            .parameters => "Expected '>' to close a type parameter list",
+        },
+        .{ .help = "Each '<' in a type must be matched by a '>'" },
+    );
+    return null;
 }
 
-// const in out T extends U = V
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var flags: struct { @"const": bool = false, in: bool = false, out: bool = false } = .{};

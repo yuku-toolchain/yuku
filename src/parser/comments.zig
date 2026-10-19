@@ -5,8 +5,8 @@ const lineBreakLen = @import("lexical.zig").lineBreakLen;
 const Error = error{OutOfMemory};
 const none = std.math.maxInt(u32);
 
-/// The comments of each node, as chains of comment ids in id order. Ids below
-/// `Tree.comments.len` are source comments, the rest index `added`.
+/// Each node's comments as chains of ids in id order, where ids past `Tree.comments.len` index
+/// `added`.
 pub const Index = struct {
     owners: std.ArrayList(u64) = .empty,
     chains: std.AutoHashMapUnmanaged(ast.NodeIndex, Chain) = .empty,
@@ -34,16 +34,13 @@ pub const Index = struct {
         comment: ast.Comment,
     ) Error!void {
         const id: u32 = @intCast(source_len + self.added.items.len);
-        try self.added.append(gpa, .{
-            .type = comment.type,
-            .value = comment.value,
-            .position = comment.position,
-            .same_line = comment.same_line,
-        });
+        var added = comment;
+        added.span = .{ .start = 0, .end = 0 };
+        try self.added.append(gpa, added);
         try self.link(gpa, node, id);
     }
 
-    pub fn link(self: *Index, gpa: std.mem.Allocator, node: ast.NodeIndex, id: u32) Error!void {
+    fn link(self: *Index, gpa: std.mem.Allocator, node: ast.NodeIndex, id: u32) Error!void {
         std.debug.assert(node != .null);
         std.debug.assert(id != none);
         if (self.links.items.len <= id) {
@@ -150,18 +147,9 @@ pub fn attach(tree: *ast.Tree, list: []ast.Comment) Error!void {
     std.debug.assert(walk.frames.items.len == 0);
 }
 
-const Child = struct {
-    node: ast.NodeIndex,
-    start: u32,
-    end: u32,
-};
+const Child = struct { node: ast.NodeIndex, start: u32, end: u32 };
 
-const Frame = struct {
-    host: ast.NodeIndex,
-    end: u32,
-    children_start: u32,
-    next_child: u32,
-};
+const Frame = struct { host: ast.NodeIndex, end: u32, children_start: u32, next_child: u32 };
 
 const Walk = struct {
     spans: []const ast.Span,

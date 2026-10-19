@@ -8,6 +8,7 @@ const Precedence = @import("../token.zig").Precedence;
 const literals = @import("literals.zig");
 const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
+const object = @import("object.zig");
 const decorator = @import("decorators.zig");
 const ts = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
@@ -27,7 +28,7 @@ pub fn parseClass(
     options: ParseClassOptions,
     start_from_param: ?u32,
 ) Error!?ast.NodeIndex {
-    return parseClassDecorated(parser, options, start_from_param, ast.IndexRange.empty);
+    return parseClassDecorated(parser, options, start_from_param, .empty);
 }
 
 pub fn parseClassDecorated(
@@ -43,7 +44,6 @@ pub fn parseClassDecorated(
     const start = start_from_param orelse parser.current_token.span.start;
     const is_ts = parser.tree.isTs();
 
-    // the modifiers after decorators or `export default`, as in `@dec abstract declare class`
     var is_abstract = options.is_abstract;
     var is_declare = options.is_declare;
     if (is_ts and !options.is_expression and isClassModifiersNext(parser)) {
@@ -88,13 +88,9 @@ pub fn parseClassDecorated(
         return null;
     }
 
-    const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts.parseTypeParameters(parser)
-    else
-        .null;
+    const type_parameters: ast.NodeIndex = if (is_ts) try ts.parseTypeParameters(parser) else .null;
 
-    // `extends Expr<T>` either commits an instantiation expression to peel apart
-    // or rewinds before a same-line `{` and leaves `<T>` unconsumed
+    // `extends Base<T> {` rewinds the instantiation expression and leaves `<T>` here
     var super_class: ast.NodeIndex = .null;
     var super_type_arguments: ast.NodeIndex = .null;
 
@@ -115,7 +111,8 @@ pub fn parseClassDecorated(
     }
 
     const implements: ast.IndexRange = if (is_ts)
-        try ts_decl.parseImplementsClause(parser) orelse return null
+        try ts_decl.parseHeritageClause(parser, .implements, .ts_class_implements) orelse
+            return null
     else
         .empty;
 
@@ -217,28 +214,18 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     const decorators: ast.IndexRange = if (parser.current_token.tag == .at)
         try decorator.parseDecorators(parser) orelse return null
     else
-        ast.IndexRange.empty;
+        .empty;
 
     if (try tryStaticBlock(parser, decorators)) |block| return block;
 
-    // a modifier word becomes the key when what follows cannot continue a modifier
     var modifiers: Modifiers = .{};
-    var key: ast.NodeIndex = .null;
-    while (true) switch (try consumeModifier(parser, &modifiers)) {
-        .consumed => continue,
-        .key => |identifier| {
-            key = identifier;
-            break;
-        },
-        .none => break,
-    };
+    var key = try parseModifiers(parser, &modifiers);
 
     if (key == .null and parser.current_token.tag == .star) {
         modifiers.is_generator = true;
         try parser.advance() orelse return null;
     }
 
-    // an index signature shares the `[` opener with computed keys
     if (key == .null and
         is_ts and
         parser.current_token.tag == .left_bracket and
@@ -249,27 +236,22 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     var computed = false;
     if (key == .null) {
-        const parsed = try parseClassElementKey(parser) orelse return null;
-        key = parsed.key;
-        computed = parsed.computed;
+        key, computed = try object.parsePropertyKey(parser, .class) orelse return null;
     }
 
-    var optional = false;
-    var definite = false;
     if (is_ts) switch (parser.current_token.tag) {
         .question => {
-            optional = true;
+            modifiers.optional = true;
             try parser.advance() orelse return null;
         },
         .logical_not => if (!parser.current_token.hasLineTerminatorBefore()) {
-            definite = true;
+            modifiers.definite = true;
             try parser.advance() orelse return null;
         },
         else => {},
     };
 
-    try validatePrivateConstructor(parser, key, computed);
-    try detectConstructorKind(parser, key, &modifiers, computed);
+    if (!computed) try detectConstructor(parser, key, &modifiers);
 
     const is_method_start = parser.current_token.tag == .left_paren or
         (is_ts and parser.current_token.tag == .less_than);
@@ -283,22 +265,14 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             );
             return null;
         }
-        if (definite) {
+        if (modifiers.definite) {
             try parser.report(
                 parser.tree.span(key),
                 "Method cannot have a definite assignment assertion",
                 .{ .help = "Remove the '!' or declare a property instead." },
             );
         }
-        return parseMethodDefinition(
-            parser,
-            element_start,
-            decorators,
-            key,
-            computed,
-            modifiers,
-            optional,
-        );
+        return parseMethodDefinition(parser, element_start, decorators, key, computed, modifiers);
     }
 
     if (modifiers.is_async or modifiers.is_generator) {
@@ -320,16 +294,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    return parsePropertyDefinition(
-        parser,
-        element_start,
-        decorators,
-        key,
-        computed,
-        modifiers,
-        optional,
-        definite,
-    );
+    return parsePropertyDefinition(parser, element_start, decorators, key, computed, modifiers);
 }
 
 fn parseIndexSignatureElement(
@@ -382,6 +347,8 @@ const Modifiers = struct {
     override: bool = false,
     readonly: bool = false,
     accessibility: ast.Accessibility = .none,
+    optional: bool = false,
+    definite: bool = false,
 
     fn conflicts(self: Modifiers, tag: TokenTag) bool {
         // `accessor` sits directly before the key, so a following modifier word is the key
@@ -418,37 +385,28 @@ const Modifiers = struct {
     }
 };
 
-const ModifierStep = union(enum) {
-    consumed,
-    key: ast.NodeIndex,
-    none,
-};
+// a modifier word becomes the key when what follows cannot continue a modifier
+fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
+    while (isModifier(parser.current_token.tag, parser.tree.isTs())) {
+        const token = parser.current_token;
+        const next = parser.peekAhead();
 
-fn consumeModifier(parser: *Parser, modifiers: *Modifiers) Error!ModifierStep {
-    const token = parser.current_token;
-    if (!isModifier(token.tag, parser.tree.isTs())) return .none;
+        // an accessor can never be a generator, so `get *` keeps `get` as a field key
+        const accessor_before_star = next.tag == .star and
+            (token.tag == .get or token.tag == .set);
 
-    const next = parser.peekAhead();
+        const is_modifier =
+            canStartElementKey(next.tag) and
+            !accessor_before_star and
+            !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
+            !modifiers.conflicts(token.tag);
+        if (!is_modifier) return try literals.parseIdentifierName(parser) orelse .null;
 
-    // an accessor can never be a generator, so `get *` keeps `get` as a field key
-    const accessor_before_star = next.tag == .star and
-        (token.tag == .get or token.tag == .set);
-
-    const is_modifier =
-        canStartElementKey(next.tag) and
-        !accessor_before_star and
-        !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
-        !modifiers.conflicts(token.tag);
-
-    if (!is_modifier) {
-        const key = try literals.parseIdentifierName(parser) orelse return .none;
-        return .{ .key = key };
+        try parser.reportIfEscapedKeyword(token);
+        try parser.advanceWithoutEscapeCheck() orelse return .null;
+        modifiers.set(token.tag);
     }
-
-    try parser.reportIfEscapedKeyword(token);
-    try parser.advanceWithoutEscapeCheck() orelse return .none;
-    modifiers.set(token.tag);
-    return .consumed;
+    return .null;
 }
 
 // runs before modifiers so a decorated static block still parses
@@ -467,7 +425,27 @@ fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIn
     }
     try parser.reportIfEscapedKeyword(static_token);
     try parser.advanceWithoutEscapeCheck() orelse return null;
-    return parseStaticBlock(parser, static_token.span.start);
+    if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
+
+    // ClassStaticBlockStatementList is [~Yield, +Await, ~Return]
+    const saved_await = parser.context.await;
+    const saved_yield = parser.context.yield;
+    const saved_return = parser.context.@"return";
+    parser.context.await = true;
+    parser.context.yield = false;
+    parser.context.@"return" = false;
+    defer parser.context.await = saved_await;
+    defer parser.context.yield = saved_yield;
+    defer parser.context.@"return" = saved_return;
+
+    const body = try parser.parseBody(.right_brace, .other);
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
+
+    return try parser.tree.addNode(
+        .{ .static_block = .{ .body = body } },
+        .{ .start = static_token.span.start, .end = end },
+    );
 }
 
 inline fn isModifier(tag: TokenTag, is_ts: bool) bool {
@@ -494,48 +472,6 @@ inline fn requiresSameLine(tag: TokenTag) bool {
     };
 }
 
-const KeyResult = struct { key: ast.NodeIndex, computed: bool };
-
-fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
-    const token = parser.current_token;
-
-    if (token.tag == .left_bracket) {
-        try parser.advance() orelse return null;
-        const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-            return null;
-        if (!try parser.expect(
-            .right_bracket,
-            "Expected ']' after computed property key",
-            null,
-        )) return null;
-        return .{ .key = key, .computed = true };
-    }
-
-    const key = if (token.tag == .private_identifier)
-        try literals.parsePrivateIdentifier(parser) orelse return null
-    else if (token.tag == .string_literal)
-        try literals.parseStringLiteral(parser) orelse return null
-    else if (token.tag.isNumericLiteral())
-        try literals.parseNumericLiteral(parser) orelse return null
-    else if (token.tag.isIdentifierLike())
-        try literals.parseIdentifierName(parser) orelse return null
-    else {
-        try parser.report(
-            token.span,
-            try parser.fmt(
-                "Unexpected token '{s}' as class element key",
-                .{parser.describeToken(token)},
-            ),
-            .{ .help = "Class element keys must be identifiers, strings, numbers," ++
-                " private identifiers (#name), or computed expressions [expr]." },
-        );
-        return null;
-    };
-
-    return .{ .key = key, .computed = false };
-}
-
-// in ts a missing body is an overload signature, ambient member, or abstract method
 fn parseMethodDefinition(
     parser: *Parser,
     element_start: u32,
@@ -543,31 +479,22 @@ fn parseMethodDefinition(
     key: ast.NodeIndex,
     computed: bool,
     modifiers: Modifiers,
-    optional: bool,
 ) Error!?ast.NodeIndex {
-    if (modifiers.is_static and !computed) {
-        try validateStaticPrototypeOrConstructor(parser, key, .method);
-    }
+    if (modifiers.is_static and !computed) try validateElementName(parser, key, true, .method);
     try validateMethodModifiers(parser, key, modifiers);
 
     const saved_await = parser.context.await;
     const saved_yield = parser.context.yield;
     parser.context.await = modifiers.is_async;
     parser.context.yield = modifiers.is_generator;
-    defer {
-        parser.context.await = saved_await;
-        parser.context.yield = saved_yield;
-    }
+    defer parser.context.await = saved_await;
+    defer parser.context.yield = saved_yield;
 
     const is_ts = parser.tree.isTs();
     const func_start = parser.current_token.span.start;
 
-    const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts.parseTypeParameters(parser)
-    else
-        .null;
+    const type_parameters: ast.NodeIndex = if (is_ts) try ts.parseTypeParameters(parser) else .null;
 
-    // the class owns the type parameters a constructor is invoked through
     if (modifiers.kind == .constructor and type_parameters != .null) {
         try parser.report(
             parser.tree.span(type_parameters),
@@ -590,22 +517,20 @@ fn parseMethodDefinition(
         return_type_end = parser.tree.span(return_type).end;
     }
 
-    var function_type: ast.FunctionType = .function_expression;
-    var end: u32 = return_type_end;
-
     const body = try functions.parseFunctionBody(parser, .optional) orelse return null;
-
+    var end = return_type_end;
     if (body != .null) {
         end = parser.tree.span(body).end;
-
-        if (modifiers.abstract) switch (modifiers.kind) {
-            .get, .set => try reportAbstractImplementation(parser, body, .accessor),
-            .method => try reportAbstractImplementation(parser, body, .method),
-            // an abstract constructor is already rejected as a misplaced modifier
-            .constructor => {},
-        };
+        // an abstract constructor is already reported as a misplaced modifier
+        if (modifiers.abstract and modifiers.kind != .constructor) try parser.report(
+            parser.tree.span(body),
+            if (modifiers.kind == .method)
+                "An abstract method cannot have an implementation"
+            else
+                "An abstract accessor cannot have an implementation",
+            .{ .help = "Remove the body, or drop the 'abstract' modifier." },
+        );
     } else if (is_ts) {
-        function_type = .ts_empty_body_function_expression;
         end = try parser.eatSemicolon(return_type_end) orelse return null;
     } else {
         try parser.reportExpected(
@@ -617,7 +542,7 @@ fn parseMethodDefinition(
     }
 
     const func = try parser.tree.addNode(.{ .function = .{
-        .type = function_type,
+        .type = if (body == .null) .ts_empty_body_function_expression else .function_expression,
         .id = .null,
         .generator = modifiers.is_generator,
         .async = modifiers.is_async,
@@ -635,21 +560,10 @@ fn parseMethodDefinition(
         .computed = computed,
         .static = modifiers.is_static,
         .override = modifiers.override,
-        .optional = optional,
+        .optional = modifiers.optional,
         .abstract = modifiers.abstract,
         .accessibility = modifiers.accessibility,
     } }, .{ .start = element_start, .end = end });
-}
-
-fn reportAbstractImplementation(
-    parser: *Parser,
-    body: ast.NodeIndex,
-    kind: enum { method, accessor },
-) Error!void {
-    try parser.report(parser.tree.span(body), switch (kind) {
-        .method => "An abstract method cannot have an implementation",
-        .accessor => "An abstract accessor cannot have an implementation",
-    }, .{ .help = "Remove the body, or drop the 'abstract' modifier." });
 }
 
 fn parsePropertyDefinition(
@@ -659,16 +573,8 @@ fn parsePropertyDefinition(
     key: ast.NodeIndex,
     computed: bool,
     modifiers: Modifiers,
-    optional: bool,
-    definite: bool,
 ) Error!?ast.NodeIndex {
-    if (!computed) {
-        if (modifiers.is_static) {
-            try validateStaticPrototypeOrConstructor(parser, key, .field);
-        } else {
-            try validateFieldConstructor(parser, key);
-        }
-    }
+    if (!computed) try validateElementName(parser, key, modifiers.is_static, .field);
 
     var end = parser.prev_token_end;
 
@@ -689,10 +595,8 @@ fn parsePropertyDefinition(
         const saved_yield = parser.context.yield;
         parser.context.await = false;
         parser.context.yield = false;
-        defer {
-            parser.context.await = saved_await;
-            parser.context.yield = saved_yield;
-        }
+        defer parser.context.await = saved_await;
+        defer parser.context.yield = saved_yield;
 
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
             return null;
@@ -707,7 +611,7 @@ fn parsePropertyDefinition(
         }
     }
 
-    if (definite) {
+    if (modifiers.definite) {
         try ts.checkDefiniteAssignment(
             parser,
             parser.tree.span(key),
@@ -742,59 +646,27 @@ fn parsePropertyDefinition(
         .type_annotation = type_annotation,
         .declare = modifiers.declare,
         .override = modifiers.override,
-        .optional = optional,
-        .definite = definite,
+        .optional = modifiers.optional,
+        .definite = modifiers.definite,
         .readonly = modifiers.readonly,
         .abstract = modifiers.abstract,
         .accessibility = modifiers.accessibility,
     } }, .{ .start = element_start, .end = end });
 }
 
-fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
-
-    // ClassStaticBlockStatementList is [~Yield, +Await, ~Return]
-    const saved_await = parser.context.await;
-    const saved_yield = parser.context.yield;
-    const saved_return = parser.context.@"return";
-    parser.context.await = true;
-    parser.context.yield = false;
-    parser.context.@"return" = false;
-    defer {
-        parser.context.await = saved_await;
-        parser.context.yield = saved_yield;
-        parser.context.@"return" = saved_return;
-    }
-
-    const body = try parser.parseBody(.right_brace, .other);
-    const end = parser.current_token.span.end;
-    if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
-
-    return try parser.tree.addNode(
-        .{ .static_block = .{ .body = body } },
-        .{ .start = start, .end = end },
-    );
-}
-
-fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: bool) Error!void {
-    if (computed) return;
+fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers) Error!void {
     const data = parser.tree.data(key);
-    if (data != .private_identifier) return;
-    if (!std.mem.eql(u8, parser.tree.string(data.private_identifier.name), "constructor")) return;
-    try parser.report(
-        parser.tree.span(key),
-        "Classes can't have a private field named '#constructor'",
-        .{ .help = "Use a different name for this private member." },
-    );
-}
-
-fn detectConstructorKind(
-    parser: *Parser,
-    key: ast.NodeIndex,
-    modifiers: *Modifiers,
-    computed: bool,
-) Error!void {
-    if (modifiers.is_static or computed) return;
+    if (data == .private_identifier) {
+        if (std.mem.eql(u8, parser.tree.string(data.private_identifier.name), "constructor")) {
+            try parser.report(
+                parser.tree.span(key),
+                "Classes can't have a private field named '#constructor'",
+                .{ .help = "Use a different name for this private member." },
+            );
+        }
+        return;
+    }
+    if (modifiers.is_static) return;
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
     if (!prop.eql("constructor")) return;
 
@@ -851,33 +723,32 @@ fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, modifiers: Modif
     }
 }
 
-fn validateStaticPrototypeOrConstructor(
+fn validateElementName(
     parser: *Parser,
     key: ast.NodeIndex,
-    kind: enum { method, field },
+    is_static: bool,
+    comptime kind: enum { method, field },
 ) Error!void {
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
-    if (prop.eql("prototype")) {
+    if (is_static and prop.eql("prototype")) {
         try parser.report(
             prop.span,
             "Classes may not have a static property named 'prototype'",
             .{ .help = "Remove 'static' or rename the property." },
         );
     } else if (kind == .field and prop.eql("constructor")) {
-        try parser.report(
-            prop.span,
-            "Classes may not have a static field named 'constructor'",
-            .{ .help = "Remove 'static' or rename the field." },
-        );
+        if (is_static) {
+            try parser.report(
+                prop.span,
+                "Classes may not have a static field named 'constructor'",
+                .{ .help = "Remove 'static' or rename the field." },
+            );
+        } else {
+            try parser.report(
+                prop.span,
+                "Classes may not have a non-static field named 'constructor'",
+                .{ .help = "Rename the field or make it a method." },
+            );
+        }
     }
-}
-
-fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
-    const prop = ecmascript.propName(&parser.tree, key) orelse return;
-    if (!prop.eql("constructor")) return;
-    try parser.report(
-        prop.span,
-        "Classes may not have a non-static field named 'constructor'",
-        .{ .help = "Rename the field or make it a method." },
-    );
 }

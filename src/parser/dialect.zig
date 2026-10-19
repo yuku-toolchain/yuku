@@ -38,17 +38,17 @@ pub const Claim = union(enum) {
 pub const Shape = struct {
     /// The `type` the node decodes to in JavaScript.
     type: []const u8,
-    /// Names for its children in order. A name ending in `[]` takes the children left over.
+    /// Names of its children in order, one ending in `[]` taking those left over.
     fields: []const []const u8 = &.{},
     /// Properties every node of the kind decodes with, as a JSON object.
     properties: []const u8 = "{}",
     block_scope: bool = false,
     /// A binding identifier inside the node declares a `let`-like binding.
     lexical_bindings: bool = false,
-    /// A binding identifier inside the node declares a catch parameter, which a `var` in the
-    /// node may redeclare while every parameter is an identifier, as in `catch (e) { var e }`.
+    /// Bindings inside declare catch parameters, which a `var` inside may redeclare while
+    /// every parameter is an identifier, as in `catch (e) { var e }`.
     catch_bindings: bool = false,
-    /// The node repeats its body, which `break` and `continue` in it end or skip, as a loop's.
+    /// The node is a loop, which `break` and `continue` inside end or skip.
     iteration: bool = false,
 };
 
@@ -166,7 +166,7 @@ pub fn print(printer: *Printer, kind: Kind, children: []const ast.NodeIndex) Err
     return Bound.print(printer, kind, children);
 }
 
-/// The parser as a dialect drives it. Positions apply inside every production it parses.
+/// The parser as a dialect drives it, with positions applying inside every production.
 pub const Parser = struct {
     inner: *core.Parser,
 
@@ -182,8 +182,7 @@ pub const Parser = struct {
         return self.inner.current_token;
     }
 
-    /// Lexes the token at or after `offset` in the current mode, without moving the parser or
-    /// reporting a lexical error.
+    /// Lexes the token at or after `offset` in the current mode, without moving or reporting.
     pub fn tokenAt(self: *const Parser, offset: u32) ast.Token {
         std.debug.assert(offset <= self.inner.source.len);
         var peek = self.inner.beginPeek();
@@ -237,8 +236,7 @@ pub const Parser = struct {
         return statements.parseStatement(self.inner, .{});
     }
 
-    /// Parses an expression whose operators bind at `precedence` or tighter, a whole
-    /// `Expression` at `ast.Precedence.Lowest`.
+    /// Parses an expression whose operators bind at `precedence` or tighter.
     pub inline fn parseExpression(self: *const Parser, precedence: u8) Error!?ast.NodeIndex {
         return expressions.parseExpression(self.inner, precedence, .{});
     }
@@ -299,8 +297,7 @@ pub const Parser = struct {
         } }, span);
     }
 
-    /// Starts a child list on the parser's scratch space, reset before any list that encloses
-    /// it continues.
+    /// Starts a child list on scratch space, to reset before an enclosing list continues.
     pub inline fn list(self: *const Parser) List {
         return .{ .inner = self.inner, .start = self.inner.scratch_statements.begin() };
     }

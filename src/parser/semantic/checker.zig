@@ -1,6 +1,5 @@
 //! The early-error checker, a semantic-traverser visitor that reports
 //! the scope-dependent early errors the specification requires.
-
 const std = @import("std");
 const util = @import("util");
 const traverser = @import("../traverser/root.zig");
@@ -26,30 +25,25 @@ pub const Checker = struct {
     allocator: Allocator,
 
     exported_names: std.array_hash_map.String(ExportedName) = .empty,
-    // kinds of the module-level names a ts module declares without `export`
     local_kinds: std.StringHashMapUnmanaged(Symbol.Flags) = .empty,
     export_specifiers: std.ArrayList(ExportSpecifierInfo) = .empty,
     plain_functions: std.AutoHashMapUnmanaged(ast.NodeIndex, void) = .empty,
 
-    // every export of one name, which ts judges once all are known
     const ExportedName = struct {
         first: ast.NodeIndex,
         last: ast.NodeIndex,
-        // exports tsc counts, every one but interfaces and overload signatures
+        // every export but interfaces and overload signatures, as tsc counts
         counted: u32 = 0,
-        // kinds of its exported declarations
         flags: Symbol.Flags = .{},
         alias: bool = false,
-        // what a local `export { x }` of it exports
         local: ?[]const u8 = null,
-        // a conflict the order of its exports decides
+        // a conflict the order of the exports decides
         conflict: bool = false,
     };
 
     const ExportForm = union(enum) {
-        // a specifier, `export * as`, or `export import`, with what a local specifier exports
         alias: ?[]const u8,
-        // `export default` of an expression, which nothing before it merges with
+        // an `export default` expression merges with no earlier export
         default_expression,
         declaration: struct { flags: Symbol.Flags, counted: bool },
     };
@@ -196,7 +190,6 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        // type-position identifiers are ts type references, js rules don't apply
         if (ctx.inTypePosition()) return .proceed;
 
         const name = ctx.tree.string(id.name);
@@ -221,8 +214,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        const name = ctx.tree.string(id.name);
-        try self.checkStrictReserved(name, node_index, ctx, "a label");
+        try self.checkStrictReserved(ctx.tree.string(id.name), node_index, ctx, "a label");
         return .proceed;
     }
 
@@ -259,9 +251,7 @@ pub const Checker = struct {
 
         if (!isLegacyNumericLiteral(raw)) return .proceed;
 
-        const is_octal = for (raw) |c| {
-            if (c == '8' or c == '9') break false;
-        } else true;
+        const is_octal = std.mem.findAny(u8, raw, "89") == null;
 
         const message = if (is_octal)
             "Octal literals are not allowed in strict mode"
@@ -384,29 +374,17 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        // ClassStaticBlockBody uses [~Await]
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
-            switch (ctx.tree.data(i)) {
-                .formal_parameters => {
-                    try self.report(
-                        ctx.tree.span(node_index),
-                        "Await expression is not allowed in formal parameters",
-                        .{},
-                    );
-                    return .proceed;
-                },
-                .static_block => {
-                    try self.report(
-                        ctx.tree.span(node_index),
-                        "Cannot use await in class static initialization block",
-                        .{},
-                    );
-                    return .proceed;
-                },
+            const message = switch (ctx.tree.data(i)) {
+                .formal_parameters => "Await expression is not allowed in formal parameters",
+                // ClassStaticBlockBody uses [~Await]
+                .static_block => "Cannot use await in class static initialization block",
                 .function, .arrow_function_expression, .program => return .proceed,
-                else => {},
-            }
+                else => continue,
+            };
+            try self.report(ctx.tree.span(node_index), message, .{});
+            return .proceed;
         }
         return .proceed;
     }
@@ -447,17 +425,7 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (expr.operator == .in and ctx.tree.data(expr.left) == .private_identifier) {
-            const name = ctx.tree.string(ctx.tree.data(expr.left).private_identifier.name);
-            if (!isPrivateNameDeclared(ctx, name)) {
-                try self.report(
-                    ctx.tree.span(expr.left),
-                    try self.fmt(
-                        "Private field '#{s}' must be declared in an enclosing class",
-                        .{name},
-                    ),
-                    .{},
-                );
-            }
+            try self.checkPrivateName(expr.left, ctx);
         }
         return .proceed;
     }
@@ -486,9 +454,7 @@ pub const Checker = struct {
                     );
                 },
                 .member_expression => |m| {
-                    const is_private = !m.computed and
-                        ctx.tree.data(m.property) == .private_identifier;
-                    if (is_private) {
+                    if (!m.computed and ctx.tree.data(m.property) == .private_identifier) {
                         try self.report(
                             ctx.tree.span(node_index),
                             "Private fields cannot be deleted",
@@ -540,22 +506,17 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (ctx.tree.data(expr.callee) == .super) {
-            const super_message = "'super()' is only valid in a constructor of a derived class";
-            switch (superCallValidity(ctx)) {
-                .valid => {},
-                .not_in_constructor => try self.report(
-                    ctx.tree.span(node_index),
-                    super_message,
-                    .{ .help = "Use an arrow function instead of a regular function to" ++
-                        " inherit the 'super' binding" },
-                ),
-                .no_extends => try self.report(
-                    ctx.tree.span(node_index),
-                    super_message,
-                    .{ .help = "Add an 'extends' clause to the class or remove the" ++
-                        " 'super()' call" },
-                ),
-            }
+            const help = switch (superCallValidity(ctx)) {
+                .valid => return .proceed,
+                .not_in_constructor => "Use an arrow function instead of a regular function to" ++
+                    " inherit the 'super' binding",
+                .no_extends => "Add an 'extends' clause to the class or remove the 'super()' call",
+            };
+            try self.report(
+                ctx.tree.span(node_index),
+                "'super()' is only valid in a constructor of a derived class",
+                .{ .help = help },
+            );
         }
         return .proceed;
     }
@@ -580,18 +541,10 @@ pub const Checker = struct {
         // 13.3.7 SuperProperty admits no PrivateIdentifier, and 15.7.7
         // AllPrivateIdentifiersValid requires a declaring class
         if (!expr.computed and ctx.tree.data(expr.property) == .private_identifier) {
-            const name = ctx.tree.string(ctx.tree.data(expr.property).private_identifier.name);
             if (ctx.tree.data(expr.object) == .super) {
                 try self.report(ctx.tree.span(node_index), "'super' keyword unexpected here", .{});
-            } else if (!isPrivateNameDeclared(ctx, name)) {
-                try self.report(
-                    ctx.tree.span(expr.property),
-                    try self.fmt(
-                        "Private field '#{s}' must be declared in an enclosing class",
-                        .{name},
-                    ),
-                    .{},
-                );
+            } else {
+                try self.checkPrivateName(expr.property, ctx);
             }
         }
 
@@ -695,8 +648,7 @@ pub const Checker = struct {
         const exported_name = getModuleExportName(ctx.tree, spec.exported);
         try self.recordExportedName(exported_name, node_index, ctx, .{ .alias = local });
 
-        // only local value exports get the unresolved check, the checker
-        // tracks the value scope alone
+        // only local value exports are resolved, as the checker tracks the value scope alone
         if (spec.export_kind == .type or declaration.export_kind == .type) return .proceed;
         if (ctx.inTsNamespace()) return .proceed;
         if (local) |local_name| {
@@ -780,32 +732,14 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (stmt.label != .null) {
-            const label_name = labelName(ctx.tree, stmt.label);
-            switch (findLabel(ctx, label_name)) {
-                .found => {},
-                .not_found => try self.report(
-                    ctx.tree.span(node_index),
-                    try self.fmt("Use of undefined label '{s}'", .{label_name}),
-                    .{},
-                ),
-                .crossed_boundary => try self.report(
-                    ctx.tree.span(node_index),
-                    try self.fmt(
-                        "Cannot break to label '{s}' across function boundaries",
-                        .{label_name},
-                    ),
-                    .{},
-                ),
-            }
-        } else {
-            if (!isInsideBreakable(ctx)) {
-                try self.report(
-                    ctx.tree.span(node_index),
-                    "Illegal break statement",
-                    .{ .help = "A 'break' statement can only be used within an enclosing" ++
-                        " iteration or switch statement" },
-                );
-            }
+            _ = try self.jumpTarget(stmt.label, node_index, ctx, "break");
+        } else if (!isInsideJumpTarget(ctx, true)) {
+            try self.report(
+                ctx.tree.span(node_index),
+                "Illegal break statement",
+                .{ .help = "A 'break' statement can only be used within an enclosing" ++
+                    " iteration or switch statement" },
+            );
         }
         return .proceed;
     }
@@ -817,46 +751,28 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (stmt.label != .null) {
-            const label_name = labelName(ctx.tree, stmt.label);
-            switch (findLabel(ctx, label_name)) {
-                .found => |body| {
-                    const target = ctx.tree.data(body);
-                    if (!target.isIteration() and target != .labeled_statement) {
-                        try self.report(
-                            ctx.tree.span(node_index),
-                            try self.fmt(
-                                "Label '{s}' does not denote an iteration statement",
-                                .{label_name},
-                            ),
-                            .{ .help = "A 'continue' statement can only jump to a label of an" ++
-                                " enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of'" ++
-                                " statement" },
-                        );
-                    }
-                },
-                .not_found => try self.report(
-                    ctx.tree.span(node_index),
-                    try self.fmt("Use of undefined label '{s}'", .{label_name}),
-                    .{},
-                ),
-                .crossed_boundary => try self.report(
-                    ctx.tree.span(node_index),
-                    try self.fmt(
-                        "Cannot continue to label '{s}' across function boundaries",
-                        .{label_name},
-                    ),
-                    .{},
-                ),
-            }
-        } else {
-            if (!isInsideIteration(ctx)) {
+            const body = try self.jumpTarget(stmt.label, node_index, ctx, "continue") orelse
+                return .proceed;
+            const target = ctx.tree.data(body);
+            if (!target.isIteration() and target != .labeled_statement) {
                 try self.report(
                     ctx.tree.span(node_index),
-                    "Illegal continue statement",
-                    .{ .help = "A 'continue' statement can only be used within an enclosing" ++
-                        " iteration statement" },
+                    try self.fmt(
+                        "Label '{s}' does not denote an iteration statement",
+                        .{labelName(ctx.tree, stmt.label)},
+                    ),
+                    .{ .help = "A 'continue' statement can only jump to a label of an" ++
+                        " enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of'" ++
+                        " statement" },
                 );
             }
+        } else if (!isInsideJumpTarget(ctx, false)) {
+            try self.report(
+                ctx.tree.span(node_index),
+                "Illegal continue statement",
+                .{ .help = "A 'continue' statement can only be used within an enclosing" ++
+                    " iteration statement" },
+            );
         }
         return .proceed;
     }
@@ -1025,17 +941,21 @@ pub const Checker = struct {
     }
 
     // 15.7.7 AllPrivateIdentifiersValid
-    fn isPrivateNameDeclared(ctx: *SemanticCtx, name: []const u8) bool {
+    fn checkPrivateName(self: *Self, node: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+        const name = ctx.tree.string(ctx.tree.data(node).private_identifier.name);
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             if (ctx.tree.data(i) != .class_body) continue;
             for (ctx.tree.extra(ctx.tree.data(i).class_body.body)) |child| {
-                if (privateElementName(ctx.tree, ctx.tree.data(child))) |pname| {
-                    if (eql(u8, pname, name)) return true;
-                }
+                const declared = privateElementName(ctx.tree, ctx.tree.data(child)) orelse continue;
+                if (eql(u8, declared, name)) return;
             }
         }
-        return false;
+        try self.report(
+            ctx.tree.span(node),
+            try self.fmt("Private field '#{s}' must be declared in an enclosing class", .{name}),
+            .{},
+        );
     }
 
     fn checkStrictReserved(
@@ -1078,25 +998,18 @@ pub const Checker = struct {
             return;
         }
 
+        if (!ctx.scope.isStrict()) return;
         for (declarators) |child| {
             const declarator = ctx.tree.data(child).variable_declarator;
             if (declarator.init == .null) continue;
-
-            const deferred = ecmascript.isAnnexBForInHead(
-                ctx.tree,
-                decl.kind,
-                declarator.id,
-                is_for_in,
-            );
-            if (!deferred) continue;
-            if (!ctx.scope.isStrict()) continue;
-
-            try self.report(
-                ctx.tree.span(child),
-                "for-in loop variable declaration may not have an initializer",
-                .{ .help = "Remove the initializer, or leave strict mode." },
-            );
-            return;
+            if (ecmascript.isAnnexBForInHead(ctx.tree, decl.kind, declarator.id, is_for_in)) {
+                try self.report(
+                    ctx.tree.span(child),
+                    "for-in loop variable declaration may not have an initializer",
+                    .{ .help = "Remove the initializer, or leave strict mode." },
+                );
+                return;
+            }
         }
     }
 
@@ -1226,21 +1139,12 @@ pub const Checker = struct {
         };
     }
 
-    fn isInsideBreakable(ctx: *SemanticCtx) bool {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            const data = ctx.tree.data(i);
-            if (data.isIteration() or data == .switch_statement) return true;
-            if (isFunctionBoundary(data)) return false;
-        }
-        return false;
-    }
-
-    fn isInsideIteration(ctx: *SemanticCtx) bool {
+    fn isInsideJumpTarget(ctx: *SemanticCtx, comptime or_switch: bool) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             const data = ctx.tree.data(i);
             if (data.isIteration()) return true;
+            if (or_switch and data == .switch_statement) return true;
             if (isFunctionBoundary(data)) return false;
         }
         return false;
@@ -1258,13 +1162,15 @@ pub const Checker = struct {
         return ctx.tree.source_type == .commonjs;
     }
 
-    const LabelSearch = union(enum) {
-        found: ast.NodeIndex,
-        not_found,
-        crossed_boundary,
-    };
-
-    fn findLabel(ctx: *SemanticCtx, name: []const u8) LabelSearch {
+    // the body a labelled jump lands in, or `null` once a missing target is reported
+    fn jumpTarget(
+        self: *Self,
+        label_node: ast.NodeIndex,
+        node_index: ast.NodeIndex,
+        ctx: *SemanticCtx,
+        comptime keyword: []const u8,
+    ) AnalysisError!?ast.NodeIndex {
+        const name = labelName(ctx.tree, label_node);
         std.debug.assert(name.len > 0);
         var crossed_boundary = false;
         var iter = ctx.path.ancestors();
@@ -1273,13 +1179,22 @@ pub const Checker = struct {
             if (data == .labeled_statement) {
                 const statement = data.labeled_statement;
                 if (eql(u8, labelName(ctx.tree, statement.label), name)) {
-                    if (crossed_boundary) return .crossed_boundary;
-                    return .{ .found = statement.body };
+                    if (!crossed_boundary) return statement.body;
+                    try self.report(ctx.tree.span(node_index), try self.fmt(
+                        "Cannot " ++ keyword ++ " to label '{s}' across function boundaries",
+                        .{name},
+                    ), .{});
+                    return null;
                 }
             }
             if (isFunctionBoundary(data)) crossed_boundary = true;
         }
-        return .not_found;
+        try self.report(
+            ctx.tree.span(node_index),
+            try self.fmt("Use of undefined label '{s}'", .{name}),
+            .{},
+        );
+        return null;
     }
 
     fn labelName(tree: *const ast.Tree, label_node: ast.NodeIndex) []const u8 {
@@ -1329,8 +1244,7 @@ pub const Checker = struct {
 
     fn getModuleExportName(tree: *const ast.Tree, node: ast.NodeIndex) []const u8 {
         return switch (tree.data(node)) {
-            .identifier_name => |id| tree.string(id.name),
-            .identifier_reference => |id| tree.string(id.name),
+            inline .identifier_name, .identifier_reference => |id| tree.string(id.name),
             .string_literal => |lit| tree.string(lit.value),
             else => "",
         };

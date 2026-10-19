@@ -20,7 +20,6 @@ import { NODE_TYPES } from "./generated";
 
 export type MaybeNode = Node | null | undefined;
 
-// NODE_TYPES must match StandardNodeType exactly
 type _missing = Record<Exclude<StandardNodeType, (typeof NODE_TYPES)[number]>, never>;
 type _extra = Record<Exclude<(typeof NODE_TYPES)[number], StandardNodeType>, never>;
 const _exhaustive: [_missing, _extra] = [{}, {}];
@@ -42,7 +41,7 @@ const aliases = Object.fromEntries(
 ) as AliasGuards;
 
 const shapes = {
-  /** True when `node.type` is one of `types`, narrowing to that union. */
+  /** Whether `node.type` is one of `types`. */
   oneOf: <const K extends NodeType>(node: MaybeNode, types: readonly K[]): node is NodeOfType<K> =>
     node != null && (types as readonly string[]).includes(node.type),
 
@@ -74,16 +73,7 @@ const shapes = {
     node?.type === "ExpressionStatement" && node.directive != null,
 };
 
-/**
- * Type guards, one per concrete node `type` plus alias and shape
- * guards. Every guard accepts `null` and `undefined` and narrows.
- *
- * @example
- * is.CallExpression(node)
- * is.Identifier(node, "require")
- * is.Expression(node)
- * is.StringLiteral(node)
- */
+/** Type guards by node `type`, alias and literal shape, each accepting `null` and `undefined`. */
 export const is: Omit<ConcreteGuards, keyof typeof shapes> & AliasGuards & typeof shapes = {
   ...concrete,
   ...aliases,

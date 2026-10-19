@@ -2,7 +2,6 @@ const std = @import("std");
 const parser = @import("parser");
 const transfer = @import("transfer");
 
-const ast = parser.ast;
 const assert = std.debug.assert;
 
 const source_bytes_max = 64 * 1024 * 1024;
@@ -25,47 +24,7 @@ pub fn main(init: std.process.Init) !void {
     );
     defer gpa.free(source);
 
-    switch (operation) {
-        .parse => try parse(gpa, path, source),
-        .analyze => try analyze(gpa, path, source),
-    }
-}
-
-fn usage() noreturn {
-    std.debug.print("usage: profile <parse|analyze> <path>\n", .{});
-    std.process.exit(2);
-}
-
-fn parse(gpa: std.mem.Allocator, path: []const u8, source: []const u8) !void {
-    var tree = try parseTree(gpa, path, source);
-    defer tree.deinit();
-
-    const out = try gpa.alignedAlloc(u8, .of(u32), transfer.bufferSize(&tree));
-    defer gpa.free(out);
-    const written = transfer.serializeInto(&tree, out);
-    assert(written == out.len);
-}
-
-fn analyze(gpa: std.mem.Allocator, path: []const u8, source: []const u8) !void {
-    var tree = try parseTree(gpa, path, source);
-    defer tree.deinit();
-
-    const sem = try parser.semantic.analyze(&tree);
-    const records = try parser.semantic.module_record.collect(&tree, &sem);
-    if (tree.diagnostics.items.len > 0) return error.InvalidCorpus;
-
-    const out = try gpa.alignedAlloc(
-        u8,
-        .of(u32),
-        transfer.semantic.bufferSize(&tree, &sem, records),
-    );
-    defer gpa.free(out);
-    const written = transfer.semantic.serializeInto(&tree, &sem, records, out);
-    assert(written == out.len);
-}
-
-fn parseTree(gpa: std.mem.Allocator, path: []const u8, source: []const u8) !ast.Tree {
-    const tree = try parser.parse(gpa, source, .{
+    var tree = try parser.parse(gpa, source, .{
         .source_type = .fromPath(path),
         .lang = .fromPath(path),
         .preserve_parens = true,
@@ -73,8 +32,32 @@ fn parseTree(gpa: std.mem.Allocator, path: []const u8, source: []const u8) !ast.
         .tokens = false,
         .dialect = false,
     });
-    errdefer tree.deinit();
+    defer tree.deinit();
     assert(tree.root != .null);
     if (tree.diagnostics.items.len > 0) return error.InvalidCorpus;
-    return tree;
+
+    switch (operation) {
+        .parse => {
+            const out = try gpa.alignedAlloc(u8, .of(u32), transfer.bufferSize(&tree));
+            defer gpa.free(out);
+            const written = transfer.serializeInto(&tree, out);
+            assert(written == out.len);
+        },
+        .analyze => {
+            const sem = try parser.semantic.analyze(&tree);
+            const records = try parser.semantic.module_record.collect(&tree, &sem);
+            if (tree.diagnostics.items.len > 0) return error.InvalidCorpus;
+
+            const size = transfer.semantic.bufferSize(&tree, &sem, records);
+            const out = try gpa.alignedAlloc(u8, .of(u32), size);
+            defer gpa.free(out);
+            const written = transfer.semantic.serializeInto(&tree, &sem, records, out);
+            assert(written == out.len);
+        },
+    }
+}
+
+fn usage() noreturn {
+    std.debug.print("usage: profile <parse|analyze> <path>\n", .{});
+    std.process.exit(2);
 }

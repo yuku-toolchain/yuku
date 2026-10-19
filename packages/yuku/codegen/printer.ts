@@ -1,6 +1,7 @@
 import { isIdentifierName } from "../ast/identifier";
 import type * as T from "../types";
 
+import type { Comments, Quotes } from "./index";
 import { LEAD_ARROW, LEAD_EXPORT_DEFAULT, LEAD_NONE, LEAD_STMT, Output } from "./output";
 import type { Mappings } from "./sourcemap";
 import {
@@ -35,8 +36,6 @@ import {
   scriptEscape,
   shortestDecimal,
   stripUnderscores,
-  surrogateEscape,
-  trimStartSpaceTab,
 } from "./utils";
 
 type Node = T.Node;
@@ -64,14 +63,9 @@ export interface PrintOptions {
   minify: boolean;
   pretty: boolean;
   indent: number;
-  quotes: "preserve" | "double" | "single" | "shortest";
-  comments: "none" | "all" | "some" | "line" | "block";
+  quotes: Quotes;
+  comments: Exclude<Comments, boolean>;
   print: Printers;
-}
-
-export interface PrintResult {
-  code: string;
-  diagnostics: T.Diagnostic[];
 }
 
 const hasOwn = Object.prototype.hasOwnProperty;
@@ -219,11 +213,7 @@ const FIXED_STRING = table({
   TSUnknownKeyword: "unknown",
   TSNeverKeyword: "never",
   TSVoidKeyword: "void",
-  TSUndefinedKeyword: "undefined",
-  TSStringKeyword: "string",
-  TSNumberKeyword: "number",
   TSBigIntKeyword: "bigint",
-  TSBooleanKeyword: "boolean",
   TSSymbolKeyword: "symbol",
   TSObjectKeyword: "object",
   TSIntrinsicKeyword: "intrinsic",
@@ -235,12 +225,15 @@ interface Link {
   inner: number;
   wrap: boolean;
   comments: Comment[] | null;
-  // a cast strip removes, open for its comments
   stripped: boolean;
   deferTrailing: boolean;
 }
 
-export function print(node: Node, options: PrintOptions, mappings: Mappings | null): PrintResult {
+export function print(
+  node: Node,
+  options: PrintOptions,
+  mappings: Mappings | null,
+): { code: string; diagnostics: T.Diagnostic[] } {
   const printer = new NodePrinter(options, mappings);
   printer.emit(node);
   return { code: printer.finish(), diagnostics: printer.diagnostics };
@@ -250,11 +243,10 @@ class NodePrinter extends Output implements Printer {
   readonly strip: boolean;
   readonly minify: boolean;
   readonly indentWidth: number;
-  readonly quotes: PrintOptions["quotes"];
+  readonly quotes: Quotes;
   readonly comments: PrintOptions["comments"];
   readonly print: Printers;
   diagnostics: T.Diagnostic[] = [];
-  // the node a `print` function is printing, whose comments an empty `block` holds
   printing: Node | null = null;
 
   indentDepth = 0;
@@ -283,10 +275,6 @@ class NodePrinter extends Output implements Printer {
     this.quotes = options.quotes;
     this.comments = options.comments;
     this.print = options.print;
-  }
-
-  write(code: string): void {
-    this.writeToken(code);
   }
 
   node(node: Node | null): void {
@@ -330,7 +318,7 @@ class NodePrinter extends Output implements Printer {
   emitStmt(node: Node): void {
     if (this.strip && this.stripsToNothing(node)) {
       this.emitNothing(node);
-      this.writeToken(";");
+      this.write(";");
     } else {
       this.emit(node);
     }
@@ -383,18 +371,12 @@ class NodePrinter extends Output implements Printer {
       case "MethodDefinition":
         return node.value.body == null;
       case "ImportDeclaration":
-        return (
-          node.importKind === "type" ||
-          (node.specifiers.length > 0 && !hasValueImportSpecifier(node.specifiers))
-        );
+        if (node.importKind === "type") return true;
+        return node.specifiers.length > 0 && !hasValueImportSpecifier(node.specifiers);
       case "ExportNamedDeclaration":
-        if (node.declaration != null) {
-          return node.exportKind === "type" || this.stripsToNothing(node.declaration);
-        }
-        return (
-          node.exportKind === "type" ||
-          (node.specifiers.length > 0 && !hasValueExportSpecifier(node.specifiers))
-        );
+        if (node.exportKind === "type") return true;
+        if (node.declaration != null) return this.stripsToNothing(node.declaration);
+        return node.specifiers.length > 0 && !hasValueExportSpecifier(node.specifiers);
       case "ExportDefaultDeclaration":
         return isDeclaration(node.declaration) && this.stripsToNothing(node.declaration);
       case "ExportAllDeclaration":
@@ -448,7 +430,7 @@ class NodePrinter extends Output implements Printer {
   }
 
   printBlock(items: Node[], prologue: boolean, host: Node): void {
-    this.writeToken("{");
+    this.write("{");
     if (items.length > 0) {
       if (this.printIndentedStmtList(items, prologue)) {
         this.pendingSemi = false;
@@ -457,7 +439,7 @@ class NodePrinter extends Output implements Printer {
     } else if (this.comments !== "none") {
       this.emitInsideComments(host);
     }
-    this.writeToken("}");
+    this.write("}");
   }
 
   emitInsideComments(host: Node): void {
@@ -491,21 +473,21 @@ class NodePrinter extends Output implements Printer {
     if (!any) return;
     for (const c of list) {
       if (c.position !== "inside" || !this.allowComment(c)) continue;
-      if (this.pretty && needsSpaceBeforeInlineComment(this.lastByte())) this.writeToken(" ");
+      if (this.pretty && needsSpaceBeforeInlineComment(this.lastByte())) this.write(" ");
       this.writeCommentBody(c);
     }
   }
 
   // compact mode defers `;` so a closing `}` can drop it
   softSemi(): void {
-    if (this.pretty) this.writeToken(";");
+    if (this.pretty) this.write(";");
     else this.pendingSemi = true;
   }
 
   flushSemi(): void {
     if (this.pendingSemi) {
       this.pendingSemi = false;
-      this.writeToken(";");
+      this.write(";");
     }
   }
 
@@ -530,11 +512,11 @@ class NodePrinter extends Output implements Printer {
 
     const wrap = this.needsParens(node, type, ctx);
     const inner = wrap ? 0 : ctx & ~CTX_DEFER_TRAILING;
-    if (wrap) this.writeToken("(");
+    if (wrap) this.write("(");
     const list = this.openComments(node);
     this.emitNode(node, type, inner);
     this.closeComments(node, list, (ctx & CTX_DEFER_TRAILING) !== 0);
-    if (wrap) this.writeToken(")");
+    if (wrap) this.write(")");
   }
 
   emitStrippedNode(node: Node, ctx: number): boolean {
@@ -680,18 +662,17 @@ class NodePrinter extends Output implements Printer {
 
   stripped(node: Node): Node {
     if (!this.strip) return node;
-    let n = node;
     for (;;) {
-      switch (n.type) {
+      switch (node.type) {
         case "TSAsExpression":
         case "TSSatisfiesExpression":
         case "TSNonNullExpression":
         case "TSInstantiationExpression":
         case "TSTypeAssertion":
-          n = n.expression;
+          node = node.expression;
           continue;
       }
-      return n;
+      return node;
     }
   }
 
@@ -751,8 +732,10 @@ class NodePrinter extends Output implements Printer {
         return this.emitAssignmentExpression(node as T.AssignmentExpression, ctx);
       case "Identifier":
         return this.emitIdentifier(node as T.Identifier);
-      case "ImportSpecifier":
-        return this.emitImportSpecifier(node as T.ImportSpecifier);
+      case "ImportSpecifier": {
+        const s = node as T.ImportSpecifier;
+        return this.printSpecifier(s.importKind === "type", s.imported, s.local);
+      }
       case "TSTypeParameterInstantiation":
       case "TSPropertySignature":
       case "TSLiteralType":
@@ -764,13 +747,13 @@ class NodePrinter extends Output implements Printer {
       case "TSUnionType":
         return this.emitTypeList((node as T.TSUnionType).types, "|");
       case "TSUndefinedKeyword":
-        return this.writeToken("undefined");
+        return this.write("undefined");
       case "TSStringKeyword":
-        return this.writeToken("string");
+        return this.write("string");
       case "TSBooleanKeyword":
-        return this.writeToken("boolean");
+        return this.write("boolean");
       case "TSNumberKeyword":
-        return this.writeToken("number");
+        return this.write("number");
       case "FunctionDeclaration":
       case "FunctionExpression":
         return this.emitFunction(node as T.Function);
@@ -781,7 +764,7 @@ class NodePrinter extends Output implements Printer {
       case "ConditionalExpression":
         return this.emitConditionalExpression(node as T.ConditionalExpression, ctx);
       case "ThisExpression":
-        return this.writeToken("this");
+        return this.write("this");
       case "ArrayExpression":
         return this.emitArrayExpression(node as T.ArrayExpression);
       case "ObjectExpression":
@@ -792,12 +775,10 @@ class NodePrinter extends Output implements Printer {
 
   emitRareNode(node: Node, ctx: number): void {
     switch (node.type) {
-      case "ImportSpecifier":
-        return this.emitImportSpecifier(node);
       case "ParenthesizedExpression":
-        this.writeToken("(");
+        this.write("(");
         this.emit(node.expression);
-        return this.writeToken(")");
+        return this.write(")");
       case "ExportNamedDeclaration":
         return this.emitExportNamedDeclaration(node);
       case "ChainExpression":
@@ -806,15 +787,16 @@ class NodePrinter extends Output implements Printer {
       case "TSSatisfiesExpression":
       case "TSNonNullExpression":
       case "TSInstantiationExpression":
-        return this.emitLink(node, ctx);
+        this.emitLinkHead(this.linkHead(node), this.linkHeadCtx(node, ctx));
+        return this.emitLinkSuffix(node, ctx);
       case "TemplateElement":
         return this.printTemplateElement(node, false);
       case "JSXIdentifier":
-        return this.writeToken(node.name);
+        return this.write(node.name);
       case "NewExpression":
         return this.emitNewExpression(node);
       case "SpreadElement":
-        this.writeToken("...");
+        this.write("...");
         return this.emitValue(node.argument);
       case "ImportDeclaration":
         return this.emitImportDeclaration(node);
@@ -824,13 +806,13 @@ class NodePrinter extends Output implements Printer {
       case "TSAbstractAccessorProperty":
         return this.emitPropertyDefinition(node);
       case "TemplateLiteral":
-        return this.emitTemplateLiteral(node, ctx);
+        return this.printTemplate(node.quasis, node.expressions, (ctx & CTX_TAGGED) !== 0);
       case "JSXAttribute":
         return this.emitJSXAttribute(node);
       case "JSXExpressionContainer":
-        this.writeToken("{");
+        this.write("{");
         this.emitValue(node.expression);
-        return this.writeToken("}");
+        return this.write("}");
       case "BreakStatement":
         return this.printJump("break", node.label, node);
       case "ObjectPattern":
@@ -850,13 +832,15 @@ class NodePrinter extends Output implements Printer {
       case "JSXText":
         return this.writeLiteral(node.raw || node.value);
       case "WhileStatement":
-        return this.emitWhileStatement(node);
+        return this.printHeaded("while (", "while(", node.test, node.body);
       case "SwitchStatement":
         return this.emitSwitchStatement(node);
       case "ForStatement":
         return this.emitForStatement(node);
       case "ThrowStatement":
-        return this.emitThrowStatement(node);
+        this.write("throw");
+        this.emitRestrictedArg(node.argument, 0);
+        return this.softSemi();
       case "JSXElement":
         this.emit(node.openingElement);
         for (const c of node.children) this.emit(c);
@@ -875,44 +859,47 @@ class NodePrinter extends Output implements Printer {
       case "TSEmptyBodyFunctionExpression":
         return this.emitFunction(node);
       case "JSXClosingElement":
-        this.writeToken("</");
+        this.write("</");
         this.emit(node.name);
-        return this.writeToken(">");
+        return this.write(">");
       case "RestElement":
         return this.emitRestElement(node);
       case "JSXMemberExpression":
         this.emit(node.object);
-        this.writeToken(".");
+        this.write(".");
         return this.emit(node.property);
       case "ImportDefaultSpecifier":
         return this.emit(node.local);
       case "EmptyStatement":
         // not deferred, `if(x);` needs the `;` to materialize the body
-        return this.writeToken(";");
+        return this.write(";");
       case "SequenceExpression":
-        return this.emitSequenceExpression(node, ctx);
+        return this.emitItems(node.expressions, PREC_ASSIGNMENT | (ctx & CTX_NO_IN));
       case "ForInStatement":
         return this.emitForInStatement(node);
       case "DoWhileStatement":
         return this.emitDoWhileStatement(node);
       case "LabeledStatement":
-        return this.emitLabeledStatement(node);
+        this.emit(node.label);
+        this.write(":");
+        this.space();
+        return this.emitStmt(node.body);
       case "DebuggerStatement":
-        this.writeToken("debugger");
+        this.write("debugger");
         this.emitInsideCommentsInline(node);
         return this.softSemi();
       case "WithStatement":
-        return this.emitWithStatement(node);
+        return this.printHeaded("with (", "with(", node.object, node.body);
       case "YieldExpression":
         return this.emitYieldExpression(node, ctx);
       case "ImportExpression":
         return this.emitImportExpression(node);
       case "MetaProperty":
         this.emit(node.meta);
-        this.writeToken(".");
+        this.write(".");
         return this.emit(node.property);
       case "PrivateIdentifier":
-        this.writeToken("#");
+        this.write("#");
         return this.writeName(node.name);
       case "ClassDeclaration":
       case "ClassExpression":
@@ -920,7 +907,7 @@ class NodePrinter extends Output implements Printer {
       case "ClassBody":
         return this.emitClassBody(node);
       case "StaticBlock":
-        this.writeToken("static");
+        this.write("static");
         this.space();
         return this.printBlock(node.body, false, node);
       case "Decorator":
@@ -928,14 +915,14 @@ class NodePrinter extends Output implements Printer {
       case "Program":
         return this.emitProgram(node);
       case "Hashbang":
-        this.writeToken("#!");
+        this.write("#!");
         return this.writeLiteral(node.value);
       case "ImportNamespaceSpecifier":
         this.writeKeyword("* as");
         return this.emit(node.local);
       case "ImportAttribute":
         this.emit(node.key);
-        this.writeToken(":");
+        this.write(":");
         this.space();
         return this.emit(node.value);
       case "ExportDefaultDeclaration":
@@ -943,38 +930,33 @@ class NodePrinter extends Output implements Printer {
       case "ExportAllDeclaration":
         return this.emitExportAllDeclaration(node);
       case "ExportSpecifier":
-        return this.emitExportSpecifier(node);
+        return this.printSpecifier(node.exportKind === "type", node.local, node.exported);
       case "JSXFragment":
         this.emit(node.openingFragment);
         for (const c of node.children) this.emit(c);
         return this.emit(node.closingFragment);
       case "JSXNamespacedName":
         this.emit(node.namespace);
-        this.writeToken(":");
+        this.write(":");
         return this.emit(node.name);
       case "JSXSpreadAttribute":
         return this.printJSXSpread(node.argument);
       case "JSXEmptyExpression":
         return this.emitInsideCommentsInline(node);
       case "JSXOpeningFragment":
-        this.writeToken("<");
+        this.write("<");
         this.emitInsideCommentsInline(node);
-        return this.writeToken(">");
+        return this.write(">");
       case "JSXClosingFragment":
-        this.writeToken("</");
+        this.write("</");
         this.emitInsideCommentsInline(node);
-        return this.writeToken(">");
+        return this.write(">");
       case "JSXSpreadChild":
         return this.printJSXSpread(node.expression);
     }
     const fixed = FIXED_STRING[node.type];
-    if (fixed !== undefined) return this.writeToken(fixed);
+    if (fixed !== undefined) return this.write(fixed);
     return this.emitTypeScript(node, ctx);
-  }
-
-  emitLink(node: Node, ctx: number): void {
-    this.emitLinkHead(this.linkHead(node), this.linkHeadCtx(node, ctx));
-    this.emitLinkSuffix(node, ctx);
   }
 
   emitLinkHead(head: Node, headCtx: number): void {
@@ -1018,7 +1000,7 @@ class NodePrinter extends Output implements Printer {
 
   openLink(node: Node, ctx: number): Link {
     const wrap = this.needsParens(node, node.type, ctx);
-    if (wrap) this.writeToken("(");
+    if (wrap) this.write("(");
     const comments = this.openComments(node);
     this.recordMapping(node);
     return {
@@ -1033,7 +1015,7 @@ class NodePrinter extends Output implements Printer {
 
   closeLink(link: Link): void {
     this.closeComments(link.node, link.comments, link.deferTrailing);
-    if (link.wrap) this.writeToken(")");
+    if (link.wrap) this.write(")");
   }
 
   // only the outermost cast defers, so the comments print in source order
@@ -1126,7 +1108,7 @@ class NodePrinter extends Output implements Printer {
       case "ChainExpression":
         return;
       case "TSNonNullExpression":
-        return this.writeToken("!");
+        return this.write("!");
       case "TSInstantiationExpression":
         return this.emit(node.typeArguments);
       case "TSAsExpression":
@@ -1143,17 +1125,17 @@ class NodePrinter extends Output implements Printer {
     const op = e.operator;
     const p = OPERATOR_PRECEDENCE[op]!;
     if (isWordOp(op)) {
-      this.writeToken(" ");
+      this.write(" ");
       this.writeKeyword(op);
     } else if (this.pretty) {
-      this.writeToken(LEAD_SPACED_OPERATOR[op]!);
+      this.write(LEAD_SPACED_OPERATOR[op]!);
       this.space();
     } else {
       const first = op.charCodeAt(0);
       const extendsAngle = first === CHAR_GT || first === CHAR_EQUALS;
       // `f<T>==x` would re-lex the type argument closer into `>=`
-      if (extendsAngle && this.lastByte() === CHAR_GT) this.writeToken(" ");
-      this.writeToken(op);
+      if (extendsAngle && this.lastByte() === CHAR_GT) this.write(" ");
+      this.write(op);
     }
     this.emitExpr(e.right, (op === "**" ? p : p + 1) | (ctx & (CTX_NO_IN | CTX_NO_INSTANTIATION)));
   }
@@ -1169,13 +1151,13 @@ class NodePrinter extends Output implements Printer {
   emitMemberSuffix(e: T.MemberExpression): void {
     const staticKey = this.minify && e.computed ? simpleStringKey(e.property) : null;
     if (e.computed && staticKey === null) {
-      if (e.optional) this.writeToken("?.");
-      this.writeToken("[");
+      if (e.optional) this.write("?.");
+      this.write("[");
       this.emit(e.property);
-      this.writeToken("]");
+      this.write("]");
       return;
     }
-    this.writeToken(e.optional ? "?." : ".");
+    this.write(e.optional ? "?." : ".");
     if (staticKey !== null) return this.writeNodeText(e.property, staticKey);
     const key = e.property;
     if (key.type === "Identifier" && !this.definitePending && isPlainIdentifier(key)) {
@@ -1188,7 +1170,7 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitCallSuffix(e: T.CallExpression): void {
-    if (e.optional) this.writeToken("?.");
+    if (e.optional) this.write("?.");
     this.emit(e.typeArguments);
     this.printArgList(e.arguments);
   }
@@ -1270,7 +1252,7 @@ class NodePrinter extends Output implements Printer {
   writeNodeText(node: Node, text: string): void {
     const list = this.openComments(node);
     this.recordMapping(node);
-    this.writeToken(text);
+    this.write(text);
     this.closeComments(node, list, false);
   }
 
@@ -1282,9 +1264,9 @@ class NodePrinter extends Output implements Printer {
   }
 
   writeKeywordThenOwed(word: string): void {
-    this.writeToken(word);
+    this.write(word);
     this.emitOwedComments();
-    if (!this.atLineStart()) this.writeToken(" ");
+    if (!this.atLineStart()) this.write(" ");
   }
 
   writeLeading(c: Comment): void {
@@ -1293,11 +1275,9 @@ class NodePrinter extends Output implements Printer {
       // a comment spanning lines is a line terminator too
       if (armed && hasLineTerminator(c.value)) this.openRestrictedParen();
       const last = this.lastByte();
-      if (this.pretty && last !== 0 && last !== CHAR_SPACE && last !== CHAR_LF) {
-        this.writeToken(" ");
-      }
+      if (this.pretty && last !== 0 && last !== CHAR_SPACE && last !== CHAR_LF) this.write(" ");
       this.writeCommentBody(c);
-      if (this.pretty) this.writeToken(" ");
+      if (this.pretty) this.write(" ");
     } else {
       this.breakLine();
       this.writeCommentBody(c);
@@ -1309,7 +1289,7 @@ class NodePrinter extends Output implements Printer {
 
   writeTrailing(c: Comment): void {
     if (c.sameLine) {
-      if (this.pretty) this.writeToken(" ");
+      if (this.pretty) this.write(" ");
       this.writeCommentBody(c);
       if (c.type === "Line") this.breakLine();
       return;
@@ -1321,41 +1301,38 @@ class NodePrinter extends Output implements Printer {
 
   writeCommentBody(c: Comment): void {
     if (c.type === "Line") {
-      this.writeToken("//");
+      this.write("//");
       this.writeComment(c.value);
       return;
     }
-    this.writeToken("/*");
+    this.write("/*");
     this.writeBlockBody(c.value);
     this.writeComment("*/");
   }
 
   writeBlockBody(value: string): void {
-    if (!this.pretty || !isJsdocBody(value)) {
-      this.writeComment(value);
-      return;
-    }
-    const lines = value.split("\n");
+    const lines = this.pretty ? value.split("\n") : null;
+    if (lines === null || !isJsdocBody(lines)) return this.writeComment(value);
     const head = trimEndCr(lines[0]!);
-    if (head.length > 0) this.writeToken(head);
+    if (head.length > 0) this.write(head);
     for (let i = 1; i < lines.length; i++) {
       this.breakLine();
-      const line = trimStartSpaceTab(trimEndCr(lines[i]!));
+      const line = trimEndCr(lines[i]!).replace(/^[ \t]+/, "");
       // a line break alone would collapse a blank line
       if (line.length === 0 && i + 1 < lines.length) {
         this.heldSpaces = 0;
         this.writeComment("\n");
         continue;
       }
-      this.writeToken(" ");
-      if (line.length > 0) this.writeToken(line);
+      this.write(" ");
+      if (line.length > 0) this.write(line);
     }
   }
 
   emitProgram(p: T.Program): void {
     if (p.hashbang != null) {
       this.emit(p.hashbang);
-      this.writeToken("\n");
+      this.write("\n");
     }
     this.printStmtList(p.body, true);
     this.pendingSemi = false;
@@ -1386,21 +1363,20 @@ class NodePrinter extends Output implements Printer {
     const asDirective = this.inPrologue && e.type === "Literal" && typeof e.value === "string";
     this.inPrologue = false;
     if (asDirective) {
-      this.writeToken("(");
+      this.write("(");
       this.emit(e);
-      this.writeToken(")");
-      this.softSemi();
-      return;
+      this.write(")");
+    } else {
+      this.lead = LEAD_STMT;
+      this.emitExpr(e, 0);
     }
-    this.lead = LEAD_STMT;
-    this.emitExpr(e, 0);
     this.softSemi();
   }
 
   emitIfStatement(s: T.IfStatement): void {
     this.writeSpaced("if (", "if(");
     this.emit(s.test);
-    this.writeToken(")");
+    this.write(")");
     this.space();
     this.emitStmt(s.consequent);
     if (s.alternate != null) {
@@ -1412,23 +1388,24 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitReturnStatement(s: T.ReturnStatement): void {
-    this.writeToken("return");
+    this.write("return");
     this.emitInsideCommentsInline(s);
     this.emitRestrictedArg(s.argument, 0);
     this.softSemi();
   }
 
-  emitThrowStatement(s: T.ThrowStatement): void {
-    this.writeToken("throw");
-    this.emitRestrictedArg(s.argument, 0);
-    this.softSemi();
+  printHeaded(pretty: string, compact: string, head: Node, body: Node): void {
+    this.writeSpaced(pretty, compact);
+    this.emit(head);
+    this.write(")");
+    this.space();
+    this.emitStmt(body);
   }
 
-  // asi would split an operand whose first token follows a line terminator, so that opens a
-  // paren the operand closes
+  // asi would end the statement at a line break before the operand, so one opens a paren
   emitRestrictedArg(node: Node | null | undefined, ctx: number): void {
     if (node == null) return;
-    this.writeToken(" ");
+    this.write(" ");
     const outerOpened = this.restrictedOpened;
     this.restrictedOpened = false;
     this.restrictedLen = this.length();
@@ -1436,7 +1413,7 @@ class NodePrinter extends Output implements Printer {
     this.restrictedLen = -1;
     const opened = this.restrictedOpened;
     this.restrictedOpened = outerOpened;
-    if (opened) this.writeToken(")");
+    if (opened) this.write(")");
   }
 
   restrictedArmed(): boolean {
@@ -1451,7 +1428,7 @@ class NodePrinter extends Output implements Printer {
     this.restrictedLen = -1;
     // the keyword's separator space becomes part of ` (`
     this.heldSpaces = 0;
-    this.writeToken(" (");
+    this.write(" (");
   }
 
   printJump(keyword: string, label: Node | null | undefined, host: Node): void {
@@ -1459,33 +1436,10 @@ class NodePrinter extends Output implements Printer {
       this.writeKeyword(keyword);
       this.emit(label);
     } else {
-      this.writeToken(keyword);
+      this.write(keyword);
       this.emitInsideCommentsInline(host);
     }
     this.softSemi();
-  }
-
-  emitLabeledStatement(s: T.LabeledStatement): void {
-    this.emit(s.label);
-    this.writeToken(":");
-    this.space();
-    this.emitStmt(s.body);
-  }
-
-  emitWithStatement(s: T.WithStatement): void {
-    this.writeSpaced("with (", "with(");
-    this.emit(s.object);
-    this.writeToken(")");
-    this.space();
-    this.emitStmt(s.body);
-  }
-
-  emitWhileStatement(s: T.WhileStatement): void {
-    this.writeSpaced("while (", "while(");
-    this.emit(s.test);
-    this.writeToken(")");
-    this.space();
-    this.emitStmt(s.body);
   }
 
   emitDoWhileStatement(s: T.DoWhileStatement): void {
@@ -1494,7 +1448,7 @@ class NodePrinter extends Output implements Printer {
     this.flushSemi();
     this.writeSpaced(" while (", "while(");
     this.emit(s.test);
-    this.writeToken(");");
+    this.write(");");
   }
 
   emitForStatement(s: T.ForStatement): void {
@@ -1504,17 +1458,17 @@ class NodePrinter extends Output implements Printer {
       if (init.type === "VariableDeclaration") this.printForDeclaration(init, true);
       else this.emitExpr(init, CTX_NO_IN);
     }
-    this.writeToken(";");
+    this.write(";");
     if (s.test != null) {
       this.space();
       this.emit(s.test);
     }
-    this.writeToken(";");
+    this.write(";");
     if (s.update != null) {
       this.space();
       this.emit(s.update);
     }
-    this.writeToken(")");
+    this.write(")");
     this.space();
     this.emitStmt(s.body);
   }
@@ -1524,23 +1478,23 @@ class NodePrinter extends Output implements Printer {
     this.printForLeft(s.left);
     this.writeKeyword(" in");
     this.emit(s.right);
-    this.writeToken(")");
+    this.write(")");
     this.space();
     this.emitStmt(s.body);
   }
 
   emitForOfStatement(s: T.ForOfStatement): void {
-    this.writeToken("for");
-    if (s.await) this.writeToken(" await");
+    this.write("for");
+    if (s.await) this.write(" await");
     this.writeSpaced(" (", "(");
     // `for (async of …)` is forbidden, it would read as `for await`
     const wrapAsync = !s.await && isNamed(s.left, "async");
-    if (wrapAsync) this.writeToken("(");
+    if (wrapAsync) this.write("(");
     this.printForLeft(s.left);
-    if (wrapAsync) this.writeToken(")");
+    if (wrapAsync) this.write(")");
     this.writeKeyword(" of");
     this.emitValue(s.right);
-    this.writeToken(")");
+    this.write(")");
     this.space();
     this.emitStmt(s.body);
   }
@@ -1552,7 +1506,7 @@ class NodePrinter extends Output implements Printer {
 
   printForDeclaration(d: T.VariableDeclaration, noIn: boolean): void {
     const list = this.openComments(d);
-    this.printVariableDecl(d, false, noIn);
+    this.printVariableDecl(d, noIn);
     this.closeComments(d, list, false);
   }
 
@@ -1569,21 +1523,19 @@ class NodePrinter extends Output implements Printer {
       this.pendingSemi = false;
       this.newline();
     }
-    this.writeToken("}");
+    this.write("}");
   }
 
   emitSwitchCase(c: T.SwitchCase): void {
     if (c.test != null) {
       this.writeKeyword("case");
       this.emit(c.test);
-      this.writeToken(":");
     } else {
-      this.writeToken("default");
+      this.write("default");
       this.emitInsideCommentsInline(c);
-      this.writeToken(":");
     }
-    if (c.consequent.length === 0) return;
-    this.printIndentedStmtList(c.consequent, false);
+    this.write(":");
+    if (c.consequent.length > 0) this.printIndentedStmtList(c.consequent, false);
   }
 
   emitTryStatement(s: T.TryStatement): void {
@@ -1601,11 +1553,11 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitCatchClause(c: T.CatchClause): void {
-    this.writeToken("catch");
+    this.write("catch");
     if (c.param != null) {
       this.writeSpaced(" (", "(");
       this.emit(c.param);
-      this.writeToken(")");
+      this.write(")");
     }
     this.space();
     this.emit(c.body);
@@ -1613,17 +1565,17 @@ class NodePrinter extends Output implements Printer {
 
   emitVariableDeclaration(d: T.VariableDeclaration): void {
     if (this.strip && isAmbient(d)) return;
-    this.printVariableDecl(d, true, false);
+    this.printVariableDecl(d, false);
+    this.softSemi();
   }
 
-  printVariableDecl(d: T.VariableDeclaration, withSemicolon: boolean, noIn: boolean): void {
+  printVariableDecl(d: T.VariableDeclaration, noIn: boolean): void {
     if (!this.strip && d.declare) this.writeKeyword("declare");
     this.writeKeyword(d.kind);
     const prev = this.declNoIn;
     this.declNoIn = noIn;
-    this.emitList(d.declarations);
+    this.emitItems(d.declarations, 0);
     this.declNoIn = prev;
-    if (withSemicolon) this.softSemi();
   }
 
   emitVariableDeclarator(d: T.VariableDeclarator): void {
@@ -1633,10 +1585,6 @@ class NodePrinter extends Output implements Printer {
       this.printEq();
       this.emitExpr(d.init, PREC_ASSIGNMENT | (this.declNoIn ? CTX_NO_IN : 0));
     }
-  }
-
-  emitList(items: readonly (Node | null)[]): void {
-    this.emitItems(items, 0);
   }
 
   emitItems(items: readonly (Node | null)[], ctx: number): void {
@@ -1650,7 +1598,7 @@ class NodePrinter extends Output implements Printer {
 
   // an item's separator precedes its trailing comments, so a line comment cannot swallow it
   closeItem(separated: boolean, hangDepth: number): void {
-    if (separated) this.writeToken(",");
+    if (separated) this.write(",");
     this.emitOwedComments();
     if (!separated) return;
     if (hangDepth >= 0 && this.indentDepth === hangDepth && this.atLineStart()) {
@@ -1667,10 +1615,6 @@ class NodePrinter extends Output implements Printer {
     if (this.atLineStart()) this.breakLine();
   }
 
-  emitSequenceExpression(e: T.SequenceExpression, ctx: number): void {
-    this.emitItems(e.expressions, PREC_ASSIGNMENT | (ctx & CTX_NO_IN));
-  }
-
   emitConditionalExpression(e: T.ConditionalExpression, ctx: number): void {
     const noIn = ctx & CTX_NO_IN;
     this.emitExpr(e.test, PREC_LOGICAL_OR | noIn);
@@ -1684,17 +1628,17 @@ class NodePrinter extends Output implements Printer {
 
   emitUnaryExpression(e: T.UnaryExpression, ctx: number): void {
     if (isWordOp(e.operator)) this.writeKeyword(e.operator);
-    else this.writeToken(e.operator);
+    else this.write(e.operator);
     this.emitExpr(e.argument, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
   }
 
   emitUpdateExpression(e: T.UpdateExpression): void {
     if (e.prefix) {
-      this.writeToken(e.operator);
+      this.write(e.operator);
       this.emitAssignTarget(e.argument, 0);
     } else {
       this.emitAssignTarget(e.argument, CTX_POSTFIX_OPERAND);
-      this.writeToken(e.operator);
+      this.write(e.operator);
     }
   }
 
@@ -1711,15 +1655,10 @@ class NodePrinter extends Output implements Printer {
     const wrap =
       needsParensAsAssignTarget(node) ||
       ((ctx & CTX_POSTFIX_OPERAND) !== 0 && this.breaksLineAfter(node));
-    if (wrap) {
-      this.inAssignTarget = false;
-      this.writeToken("(");
-      this.emitExpr(node, ctx);
-      this.writeToken(")");
-    } else {
-      this.inAssignTarget = true;
-      this.emitExpr(node, ctx);
-    }
+    this.inAssignTarget = !wrap;
+    if (wrap) this.write("(");
+    this.emitExpr(node, ctx);
+    if (wrap) this.write(")");
     this.inAssignTarget = prev;
   }
 
@@ -1735,7 +1674,7 @@ class NodePrinter extends Output implements Printer {
   emitArrayExpression(e: T.ArrayExpression): void {
     const inTarget = this.inAssignTarget;
     this.inAssignTarget = false;
-    this.writeToken("[");
+    this.write("[");
     this.emitInsideCommentsInline(e);
     const list = e.elements;
     const depth = this.indentDepth;
@@ -1746,14 +1685,14 @@ class NodePrinter extends Output implements Printer {
     }
     this.closeList(depth);
     // a trailing hole needs its own comma, else `[a,]` is one element
-    if (list.length > 0 && list[list.length - 1] == null) this.writeToken(",");
-    this.writeToken("]");
+    if (list.length > 0 && list[list.length - 1] == null) this.write(",");
+    this.write("]");
     this.inAssignTarget = inTarget;
   }
 
   emitObjectExpression(e: T.ObjectExpression): void {
     const inTarget = this.inAssignTarget;
-    this.writeToken("{");
+    this.write("{");
     this.emitInsideCommentsInline(e);
     const list = e.properties;
     if (list.length > 0) {
@@ -1767,50 +1706,41 @@ class NodePrinter extends Output implements Printer {
       this.closeList(depth);
       if (!this.atLineStart()) this.space();
     }
-    this.writeToken("}");
+    this.write("}");
     this.inAssignTarget = inTarget;
   }
 
   emitProperty(p: T.ObjectProperty): void {
     if (p.method || p.kind === "get" || p.kind === "set") {
       const fn = p.value as T.Function;
-      switch (p.kind) {
-        case "get":
-          this.writeKeyword("get");
-          break;
-        case "set":
-          this.writeKeyword("set");
-          break;
-        case "init":
-          if (fn.async) this.writeKeyword("async");
-          if (fn.generator) this.writeToken("*");
-          break;
-      }
+      this.printMethodKind(p.kind, fn);
       this.printObjectKey(p.key, p.computed);
-      this.emitMethodValue(fn);
-      return;
+      return this.emitMethodValue(fn);
     }
-
-    if (p.shorthand && shorthandStillValid(p.key, p.value)) {
-      this.emitChildOfAssignTarget(p.value);
-      return;
+    if (!p.shorthand || !shorthandStillValid(p.key, p.value)) {
+      this.printObjectKey(p.key, p.computed);
+      this.write(":");
+      this.space();
     }
-
-    this.printObjectKey(p.key, p.computed);
-    this.writeToken(":");
-    this.space();
     this.emitChildOfAssignTarget(p.value);
   }
 
   emitBindingProperty(p: T.BindingProperty): void {
-    if (p.shorthand && shorthandStillValid(p.key, p.value)) {
-      this.emitAssignTarget(p.value, 0);
-      return;
+    if (!p.shorthand || !shorthandStillValid(p.key, p.value)) {
+      this.printObjectKey(p.key, p.computed);
+      this.write(":");
+      this.space();
     }
-    this.printObjectKey(p.key, p.computed);
-    this.writeToken(":");
-    this.space();
     this.emitAssignTarget(p.value, 0);
+  }
+
+  printMethodKind(kind: string, fn: T.Function): void {
+    if (kind === "get" || kind === "set") {
+      this.writeKeyword(kind);
+    } else {
+      if (fn.async) this.writeKeyword("async");
+      if (fn.generator) this.write("*");
+    }
   }
 
   emitNewExpression(e: T.NewExpression): void {
@@ -1821,31 +1751,31 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitYieldExpression(e: T.YieldExpression, ctx: number): void {
-    this.writeToken("yield");
-    if (e.delegate) this.writeToken("*");
+    this.write("yield");
+    if (e.delegate) this.write("*");
     this.emitRestrictedArg(e.argument, PREC_ASSIGNMENT | (ctx & CTX_NO_IN));
   }
 
   printArgList(args: readonly Node[]): void {
-    this.writeToken("(");
+    this.write("(");
     this.emitItems(args, PREC_ASSIGNMENT);
-    this.writeToken(")");
+    this.write(")");
   }
 
   emitImportExpression(e: T.ImportExpression): void {
-    this.writeToken("import");
+    this.write("import");
     if (e.phase != null) {
-      this.writeToken(".");
-      this.writeToken(e.phase);
+      this.write(".");
+      this.write(e.phase);
     }
-    this.writeToken("(");
+    this.write("(");
     this.emitValue(e.source);
     if (e.options != null) {
-      this.writeToken(",");
+      this.write(",");
       this.space();
       this.emitValue(e.options);
     }
-    this.writeToken(")");
+    this.write(")");
   }
 
   emitLiteral(lit: T.Literal): void {
@@ -1856,22 +1786,22 @@ class NodePrinter extends Output implements Printer {
       case "number":
         return this.emitNumericLiteral(lit as T.NumericLiteral);
       case "boolean":
-        if (this.minify) return this.writeToken(value ? "!0" : "!1");
-        return this.writeToken(value ? "true" : "false");
+        if (this.minify) return this.write(value ? "!0" : "!1");
+        return this.write(value ? "true" : "false");
     }
     if ("regex" in lit && lit.regex != null) return this.emitRegExpLiteral(lit);
     if ("bigint" in lit && typeof lit.bigint === "string") return this.emitBigIntLiteral(lit);
     const raw = lit.raw;
     // a number JSON turned into null, such as `1e999`, still has its raw lexeme
     if (typeof raw === "string" && raw !== "null") return this.writeNumericRaw(raw);
-    this.writeToken("null");
+    this.write("null");
   }
 
   emitStringLiteral(lit: T.StringLiteral): void {
     const raw = typeof lit.raw === "string" ? lit.raw : "";
     const q = this.pickQuote(lit.value, raw.charCodeAt(0) === CHAR_SINGLE_QUOTE);
     const quote = q === CHAR_SINGLE_QUOTE ? "'" : '"';
-    this.writeToken(quote);
+    this.write(quote);
     this.writeEscapedString(lit.value, q);
     this.writeLiteral(quote);
   }
@@ -1908,7 +1838,7 @@ class NodePrinter extends Output implements Printer {
       let escape: string | null = null;
       if (code >= 0x80) {
         if (code < 0xd800 || code > 0xdfff || !isLoneSurrogateAt(s, i)) continue;
-        escape = surrogateEscape(code);
+        escape = "\\u" + code.toString(16);
       } else if (code >= 0x0e && code !== CHAR_BACKSLASH && code !== quote) {
         if (!this.minify || (code !== CHAR_LT && code !== CHAR_GT)) continue;
         escape = scriptEscape(s, i);
@@ -1925,29 +1855,21 @@ class NodePrinter extends Output implements Printer {
 
   emitNumericLiteral(lit: T.NumericLiteral): void {
     if (typeof lit.raw === "string") return this.writeNumericRaw(lit.raw);
-    const value = lit.value;
-    if (isNegativeNumber(value)) {
-      this.writeToken("-");
-      this.writeNumericRaw(String(-value));
-    } else {
-      this.writeNumericRaw(String(value));
-    }
+    if (isNegativeNumber(lit.value)) this.write("-");
+    this.writeNumericRaw(String(Math.abs(lit.value)));
   }
 
   writeNumericRaw(raw: string): void {
-    this.writeNumber(this.minify ? shortestNumber(raw) : raw);
-  }
-
-  writeNumber(text: string): void {
-    this.writeToken(text);
-    if (isBareInteger(text)) this.markBareInteger();
+    const text = this.minify ? shortestNumber(raw) : raw;
+    this.write(text);
+    if (isBareInteger(text)) this.bareIntegerEnd = this.length();
   }
 
   emitBigIntLiteral(lit: T.BigIntLiteral): void {
     const raw =
       typeof lit.raw === "string" && lit.raw.endsWith("n") ? lit.raw.slice(0, -1) : lit.bigint;
-    this.writeToken(raw);
-    this.writeToken("n");
+    this.write(raw);
+    this.write("n");
   }
 
   emitRegExpLiteral(lit: T.RegExpLiteral): void {
@@ -1956,15 +1878,11 @@ class NodePrinter extends Output implements Printer {
     const slash = raw.lastIndexOf("/");
     // the parser sorts `regex.flags`, the raw lexeme keeps their source order
     const flags = slash > 0 ? raw.slice(slash + 1) : lit.regex.flags;
-    this.writeToken("/");
+    this.write("/");
     // an empty pattern would open a line comment
     this.writeLiteral(pattern.length > 0 ? pattern : "(?:)");
     this.writeLiteral("/");
     this.writeLiteral(flags);
-  }
-
-  emitTemplateLiteral(lit: T.TemplateLiteral, ctx: number): void {
-    this.printTemplate(lit.quasis, lit.expressions, (ctx & CTX_TAGGED) !== 0);
   }
 
   printTemplate(
@@ -1972,13 +1890,13 @@ class NodePrinter extends Output implements Printer {
     subs: readonly Node[],
     tagged: boolean,
   ): void {
-    this.writeToken("`");
+    this.write("`");
     for (let i = 0; i < quasis.length; i++) {
       this.printTemplateElement(quasis[i]!, tagged);
       if (i < subs.length) {
         this.writeLiteral("${");
         this.emit(subs[i]);
-        this.writeToken("}");
+        this.write("}");
       }
     }
     this.writeLiteral("`");
@@ -1987,16 +1905,14 @@ class NodePrinter extends Output implements Printer {
   printTemplateElement(el: T.TemplateElement, tagged: boolean): void {
     const scriptSafe = this.minify && !tagged;
     const raw = el.value.raw;
-    if (typeof raw === "string" && raw.length !== 0) {
-      return this.writeTemplateRaw(raw, scriptSafe);
-    }
+    if (typeof raw === "string" && raw.length !== 0) return this.writeTemplateRaw(raw, scriptSafe);
     const s = el.value.cooked ?? "";
     let start = 0;
     for (let i = 0; i < s.length; i++) {
       const code = s.charCodeAt(i);
       let escape: string | null = null;
       if (isLoneSurrogateAt(s, i)) {
-        escape = surrogateEscape(code);
+        escape = "\\u" + code.toString(16);
       } else if (scriptSafe && (code === CHAR_LT || code === CHAR_GT)) {
         escape = scriptEscape(s, i);
       }
@@ -2044,8 +1960,8 @@ class NodePrinter extends Output implements Printer {
     definite: boolean,
     annotation: Node | null | undefined,
   ): void {
-    if (!this.strip && optional) this.writeToken("?");
-    if (definite) this.writeToken("!");
+    if (!this.strip && optional) this.write("?");
+    if (definite) this.write("!");
     this.emit(annotation);
   }
 
@@ -2059,59 +1975,55 @@ class NodePrinter extends Output implements Printer {
   emitAssignmentPattern(p: T.AssignmentPattern): void {
     if (!this.strip && p.decorators != null) this.printDecorators(p.decorators);
     this.emit(p.left);
-    if (!this.strip && p.optional === true) this.writeToken("?");
-    this.emit(p.typeAnnotation);
+    this.printBindingSuffix(p.optional === true, false, p.typeAnnotation);
     this.printEq();
     this.emitValue(p.right);
   }
 
   emitRestElement(r: T.RestElement): void {
     if (!this.strip && r.decorators != null) this.printDecorators(r.decorators);
-    this.writeToken("...");
+    this.write("...");
     this.emit(r.argument);
-    if (!this.strip && r.optional === true) this.writeToken("?");
-    this.emit(r.typeAnnotation);
+    this.printBindingSuffix(r.optional === true, false, r.typeAnnotation);
   }
 
   emitArrayPattern(p: T.ArrayPattern): void {
     const definite = this.takeDefinite();
     if (!this.strip && p.decorators != null) this.printDecorators(p.decorators);
-    this.writeToken("[");
+    this.write("[");
     this.emitInsideCommentsInline(p);
     const elements = p.elements;
-    const last = elements.length > 0 ? elements[elements.length - 1] : null;
-    const rest = last != null && last.type === "RestElement" ? last : null;
-    const count = rest === null ? elements.length : elements.length - 1;
-    const depth = this.indentDepth;
-    for (let i = 0; i < count; i++) {
-      this.emitAssignTarget(elements[i], CTX_DEFER_TRAILING);
-      this.closeItem(i + 1 < count || rest !== null, depth);
-    }
-    if (rest !== null) {
-      this.emitExpr(rest, CTX_DEFER_TRAILING);
-      this.closeItem(false, depth);
-    }
-    this.closeList(depth);
-    if (rest === null && count > 0 && elements[count - 1] == null) this.writeToken(",");
-    this.writeToken("]");
+    this.printPatternItems(elements, false);
+    if (elements.length > 0 && elements[elements.length - 1] == null) this.write(",");
+    this.write("]");
     this.printBindingSuffix(p.optional === true, definite, p.typeAnnotation);
   }
 
   emitObjectPattern(p: T.ObjectPattern): void {
     const definite = this.takeDefinite();
     if (!this.strip && p.decorators != null) this.printDecorators(p.decorators);
-    this.writeToken("{");
+    this.write("{");
     this.emitInsideCommentsInline(p);
-    const props = p.properties;
-    const last = props.length > 0 ? props[props.length - 1] : null;
-    const rest = last != null && last.type === "RestElement" ? last : null;
-    const count = rest === null ? props.length : props.length - 1;
-    const hasAny = props.length > 0;
+    const hasAny = p.properties.length > 0;
     if (hasAny) this.space();
+    this.printPatternItems(p.properties, true);
+    if (hasAny && !this.atLineStart()) this.space();
+    this.write("}");
+    this.printBindingSuffix(p.optional === true, definite, p.typeAnnotation);
+  }
+
+  printPatternItems(items: readonly (Node | null)[], properties: boolean): void {
+    const last = items.length > 0 ? items[items.length - 1] : null;
+    const rest = last != null && last.type === "RestElement" ? last : null;
+    const count = rest === null ? items.length : items.length - 1;
     const depth = this.indentDepth;
     for (let i = 0; i < count; i++) {
-      this.bindingProperty = true;
-      this.emitExpr(props[i], CTX_DEFER_TRAILING);
+      if (properties) {
+        this.bindingProperty = true;
+        this.emitExpr(items[i], CTX_DEFER_TRAILING);
+      } else {
+        this.emitAssignTarget(items[i], CTX_DEFER_TRAILING);
+      }
       this.closeItem(i + 1 < count || rest !== null, depth);
     }
     if (rest !== null) {
@@ -2119,16 +2031,13 @@ class NodePrinter extends Output implements Printer {
       this.closeItem(false, depth);
     }
     this.closeList(depth);
-    if (hasAny && !this.atLineStart()) this.space();
-    this.writeToken("}");
-    this.printBindingSuffix(p.optional === true, definite, p.typeAnnotation);
   }
 
   printPropertyKey(key: Node, computed: boolean): void {
     if (computed) {
-      this.writeToken("[");
+      this.write("[");
       this.emitValue(key);
-      this.writeToken("]");
+      this.write("]");
     } else {
       this.emit(key);
     }
@@ -2136,46 +2045,39 @@ class NodePrinter extends Output implements Printer {
 
   // computed `["__proto__"]` defines an own property, bare `__proto__` sets the prototype
   printObjectKey(key: Node, computed: boolean): void {
-    if (this.minify) {
-      const s = simpleStringKey(key);
-      if (s !== null) {
-        const protoClash = computed && s === "__proto__";
-        if (!protoClash) return this.writeNodeText(key, s);
-      }
-    }
+    const s = this.minify ? simpleStringKey(key) : null;
+    if (s !== null && !(computed && s === "__proto__")) return this.writeNodeText(key, s);
     this.printPropertyKey(key, computed);
   }
 
   // `["constructor"]` would become the constructor or a SyntaxError, `static ["prototype"]` too
   printClassKey(key: Node, computed: boolean, isStatic: boolean, isField: boolean): void {
-    if (this.minify) {
-      const s = simpleStringKey(key);
-      if (s !== null) {
-        if (!computed) return this.writeNodeText(key, s);
-        const ctorClash = s === "constructor" && (isField || !isStatic);
-        const protoClash = isStatic && s === "prototype";
-        if (!ctorClash && !protoClash) return this.writeNodeText(key, s);
-      }
+    const s = this.minify ? simpleStringKey(key) : null;
+    if (s !== null) {
+      const ctorClash = s === "constructor" && (isField || !isStatic);
+      const protoClash = isStatic && s === "prototype";
+      if (!computed || (!ctorClash && !protoClash)) return this.writeNodeText(key, s);
     }
     this.printPropertyKey(key, computed);
   }
 
   emitFunction(f: T.Function): void {
-    if (this.strip) {
-      const tsOnly =
-        f.declare === true ||
-        f.type === "TSDeclareFunction" ||
-        f.type === "TSEmptyBodyFunctionExpression";
-      if (tsOnly) return;
+    if (!this.strip) {
+      if (f.declare === true) this.writeKeyword("declare");
+    } else if (
+      f.declare === true ||
+      f.type === "TSDeclareFunction" ||
+      f.type === "TSEmptyBodyFunctionExpression"
+    ) {
+      return;
     }
-    if (!this.strip && f.declare === true) this.writeKeyword("declare");
     if (f.async) this.writeKeyword("async");
     const keyword = f.generator ? "function*" : "function";
     if (f.id != null) {
       this.writeKeyword(keyword);
       this.emit(f.id);
     } else {
-      this.writeToken(keyword);
+      this.write(keyword);
     }
     this.printFunctionAsMethod(f);
   }
@@ -2219,11 +2121,11 @@ class NodePrinter extends Output implements Printer {
   }
 
   printParams(params: readonly Node[], host: Node): void {
-    this.writeToken("(");
+    this.write("(");
     const thisParam = this.strip && params.length > 0 && isNamed(params[0]!, "this");
     this.emitKeptItems(thisParam ? params.slice(1) : params);
     this.emitInsideCommentsInline(host);
-    this.writeToken(")");
+    this.write(")");
   }
 
   emitKeptItems(items: readonly Node[]): void {
@@ -2255,7 +2157,7 @@ class NodePrinter extends Output implements Printer {
       this.writeKeyword("class");
       this.emit(c.id);
     } else {
-      this.writeToken("class");
+      this.write("class");
     }
     this.emit(c.typeParameters);
     if (c.superClass != null) {
@@ -2265,14 +2167,14 @@ class NodePrinter extends Output implements Printer {
     }
     if (!this.strip && c.implements != null && c.implements.length > 0) {
       this.writeKeyword(" implements");
-      this.emitList(c.implements);
+      this.emitItems(c.implements, 0);
     }
     this.space();
     this.emit(c.body);
   }
 
   emitClassBody(b: T.ClassBody): void {
-    this.writeToken("{");
+    this.write("{");
     this.indentDepth++;
     let any = false;
     for (const m of b.body) {
@@ -2292,7 +2194,7 @@ class NodePrinter extends Output implements Printer {
     } else if (this.comments !== "none") {
       this.emitInsideComments(b);
     }
-    this.writeToken("}");
+    this.write("}");
   }
 
   emitMethodDefinition(m: T.MethodDefinition | T.TSAbstractMethodDefinition): void {
@@ -2307,19 +2209,9 @@ class NodePrinter extends Output implements Printer {
       if (isAbstract) this.writeKeyword("abstract");
       if (m.override === true) this.writeKeyword("override");
     }
-    switch (m.kind) {
-      case "get":
-        this.writeKeyword("get");
-        break;
-      case "set":
-        this.writeKeyword("set");
-        break;
-      default:
-        if (fn.async) this.writeKeyword("async");
-        if (fn.generator) this.writeToken("*");
-    }
+    this.printMethodKind(m.kind, fn);
     this.printClassKey(m.key, m.computed, m.static, false);
-    if (!this.strip && m.optional === true) this.writeToken("?");
+    if (!this.strip && m.optional === true) this.write("?");
     this.emitMethodValue(fn);
     this.skipLeadingOf = null;
   }
@@ -2352,8 +2244,8 @@ class NodePrinter extends Output implements Printer {
     this.printClassKey(p.key, p.computed, p.static, true);
     this.deferTrailingOf = null;
     if (!this.strip) {
-      if (p.optional === true) this.writeToken("?");
-      if (p.definite === true) this.writeToken("!");
+      if (p.optional === true) this.write("?");
+      if (p.definite === true) this.write("!");
     }
     this.emitOwedComments();
     this.emit(p.typeAnnotation);
@@ -2366,19 +2258,19 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitDecorator(d: T.Decorator): void {
-    this.writeToken("@");
+    this.write("@");
     const simple = decoratorIsSimple(d.expression);
     this.emitExpr(d.expression, simple ? PREC_LOWEST : PREC_GROUPING);
   }
 
-  printDecorators(decs: readonly Node[] | undefined): void {
+  printDecorators(decs: readonly Node[] | null | undefined): void {
     if (decs == null || decs.length === 0) return;
     const carry = this.mapStart;
     for (let i = 0; i < decs.length; i++) {
       this.emit(decs[i]);
       // `@a.b class` would fuse to `@a.bclass` without a separator
       if (this.pretty) this.newline();
-      else if (i + 1 === decs.length) this.writeToken(" ");
+      else if (i + 1 === decs.length) this.write(" ");
     }
     this.mapStart = carry;
   }
@@ -2390,15 +2282,15 @@ class NodePrinter extends Output implements Printer {
       if (list.length > 0 && !hasValueImportSpecifier(list)) return;
     }
 
-    this.writeToken("import");
-    if (d.importKind === "type") this.writeToken(" type");
+    this.write("import");
+    if (d.importKind === "type") this.write(" type");
     if (d.phase != null) {
-      this.writeToken(" ");
-      this.writeToken(d.phase);
+      this.write(" ");
+      this.write(d.phase);
     }
 
     if (list.length > 0) {
-      this.writeToken(" ");
+      this.write(" ");
       const depth = this.indentDepth;
       let i = 0;
       if (list[0]!.type === "ImportDefaultSpecifier") {
@@ -2410,21 +2302,21 @@ class NodePrinter extends Output implements Printer {
         if (list[i]!.type === "ImportNamespaceSpecifier") {
           this.emit(list[i]);
         } else {
-          this.writeToken("{");
+          this.write("{");
           this.space();
           this.emitKeptItems(i === 0 ? list : list.slice(i));
           if (!this.atLineStart()) this.space();
-          this.writeToken("}");
+          this.write("}");
         }
       }
       this.closeList(depth);
       this.writeKeyword(" from");
     } else if (d.importKind === "type") {
-      this.writeToken(" ");
-      this.writeToken("{}");
+      this.write(" ");
+      this.write("{}");
       this.writeKeyword(" from");
     } else {
-      this.writeToken(" ");
+      this.write(" ");
     }
 
     this.emit(d.source);
@@ -2432,12 +2324,12 @@ class NodePrinter extends Output implements Printer {
     this.softSemi();
   }
 
-  emitImportSpecifier(s: T.ImportSpecifier): void {
-    if (s.importKind === "type") this.writeKeyword("type");
-    this.emit(s.imported);
-    if (!sameIdentifier(s.imported, s.local) || this.hasPrintedComments(s.local)) {
+  printSpecifier(typeOnly: boolean, name: Node, alias: Node): void {
+    if (typeOnly) this.writeKeyword("type");
+    this.emit(name);
+    if (!sameIdentifier(name, alias) || this.hasPrintedComments(alias)) {
       this.writeKeyword(" as");
-      this.emit(s.local);
+      this.emit(alias);
     }
   }
 
@@ -2452,13 +2344,13 @@ class NodePrinter extends Output implements Printer {
       }
     }
     const hoisted = decoratorsBeforeExport(d.declaration);
-    if (hoisted !== null) this.printDecorators(hoisted);
-    this.writeToken("export");
+    this.printDecorators(hoisted);
+    this.write("export");
     if (d.declaration != null) {
-      this.writeToken(" ");
+      this.write(" ");
       return this.emitExpr(d.declaration, hoisted !== null ? CTX_NO_DECORATORS : 0);
     }
-    if (d.exportKind === "type") this.writeToken(" type");
+    if (d.exportKind === "type") this.write(" type");
     this.writeSpaced(" {", "{");
     this.emitInsideCommentsInline(d);
     if (list.length > 0) {
@@ -2466,7 +2358,7 @@ class NodePrinter extends Output implements Printer {
       this.emitKeptItems(list);
       if (!this.atLineStart()) this.space();
     }
-    this.writeToken("}");
+    this.write("}");
     if (d.source != null) {
       this.writeKeyword(" from");
       this.emit(d.source);
@@ -2481,7 +2373,7 @@ class NodePrinter extends Output implements Printer {
         return this.emitNothing(d.declaration);
       }
       const hoisted = decoratorsBeforeExport(d.declaration);
-      if (hoisted !== null) this.printDecorators(hoisted);
+      this.printDecorators(hoisted);
       this.writeKeyword("export default");
       return this.emitExpr(d.declaration, hoisted !== null ? CTX_NO_DECORATORS : 0);
     }
@@ -2493,9 +2385,9 @@ class NodePrinter extends Output implements Printer {
 
   emitExportAllDeclaration(d: T.ExportAllDeclaration): void {
     if (this.strip && d.exportKind === "type") return;
-    this.writeToken("export");
-    if (d.exportKind === "type") this.writeToken(" type");
-    this.writeToken(" *");
+    this.write("export");
+    if (d.exportKind === "type") this.write(" type");
+    this.write(" *");
     if (d.exported != null) {
       this.writeKeyword(" as");
       this.emit(d.exported);
@@ -2506,58 +2398,46 @@ class NodePrinter extends Output implements Printer {
     this.softSemi();
   }
 
-  emitExportSpecifier(s: T.ExportSpecifier): void {
-    if (s.exportKind === "type") this.writeKeyword("type");
-    this.emit(s.local);
-    if (!sameIdentifier(s.local, s.exported) || this.hasPrintedComments(s.exported)) {
-      this.writeKeyword(" as");
-      this.emit(s.exported);
-    }
-  }
-
   printAttributes(attrs: readonly Node[] | undefined): void {
     if (attrs == null || attrs.length === 0) return;
     this.writeKeyword(" with");
-    this.writeToken("{");
+    this.write("{");
     this.space();
-    this.emitList(attrs);
+    this.emitItems(attrs, 0);
     this.writeSpaced(" }", "}");
   }
 
   emitJSXOpeningElement(o: T.JSXOpeningElement): void {
-    this.writeToken("<");
+    this.write("<");
     this.emit(o.name);
     this.emit(o.typeArguments);
     for (const a of o.attributes) {
-      this.writeToken(" ");
+      this.write(" ");
       this.emit(a);
     }
-    if (o.selfClosing) {
-      this.writeSpaced(" />", "/>");
-    } else {
-      this.writeToken(">");
-    }
+    if (o.selfClosing) this.writeSpaced(" />", "/>");
+    else this.write(">");
   }
 
   printJSXSpread(node: Node): void {
-    this.writeToken("{...");
+    this.write("{...");
     this.emitValue(node);
-    this.writeToken("}");
+    this.write("}");
   }
 
   emitJSXAttribute(a: T.JSXAttribute): void {
     this.emit(a.name);
     const value = a.value;
     if (value == null) return;
-    this.writeToken("=");
+    this.write("=");
     if (value.type === "Literal" && typeof value.value === "string") {
       // jsx attribute strings have no escapes, the raw lexeme is the value
       if (typeof value.raw === "string" && value.raw.length >= 2) {
         this.writeNodeText(value, value.raw);
       } else if (value.value.includes('"') && value.value.includes("'")) {
-        this.writeToken("{");
+        this.write("{");
         this.emit(value);
-        this.writeToken("}");
+        this.write("}");
       } else {
         this.writeNodeText(value, quoteVerbatim(value.value));
       }
@@ -2572,26 +2452,24 @@ class NodePrinter extends Output implements Printer {
         this.emit(node.typeName);
         return this.emit(node.typeArguments);
       case "TSTypeAnnotation":
-        this.writeToken(":");
+        this.write(":");
         this.space();
         return this.emit(node.typeAnnotation);
       case "TSTypeParameterInstantiation":
-        this.writeToken("<");
-        this.emitList(node.params);
-        return this.writeToken(">");
-      case "TSUnionType":
-        return this.emitTypeList(node.types, "|");
+        this.write("<");
+        this.emitItems(node.params, 0);
+        return this.write(">");
       case "TSPropertySignature":
         if (node.readonly) this.writeKeyword("readonly");
         this.printPropertyKey(node.key, node.computed);
-        if (node.optional) this.writeToken("?");
+        if (node.optional) this.write("?");
         this.emit(node.typeAnnotation);
         return this.softSemi();
       case "TSLiteralType": {
         const lit = node.literal;
         // `!0` is no type
         if (lit.type === "Literal" && typeof lit.value === "boolean") {
-          return this.writeToken(lit.value ? "true" : "false");
+          return this.write(lit.value ? "true" : "false");
         }
         return this.emit(lit);
       }
@@ -2601,7 +2479,7 @@ class NodePrinter extends Output implements Printer {
         return this.printArrowType(node);
       case "TSQualifiedName":
         this.emit(node.left);
-        this.writeToken(".");
+        this.write(".");
         return this.emit(node.right);
       case "TSTypeParameterDeclaration":
         return this.emitTSTypeParameterDeclaration(node, ctx);
@@ -2612,29 +2490,29 @@ class NodePrinter extends Output implements Printer {
         this.emit(node.typeParameters);
         if (node.extends.length > 0) {
           this.writeKeyword(" extends");
-          this.emitList(node.extends);
+          this.emitItems(node.extends, 0);
         }
         this.space();
         return this.emit(node.body);
       case "TSInterfaceBody":
-        return this.printSignatureBody(node.body, node);
+        return this.printBlock(node.body, false, node);
       case "TSArrayType":
         this.emitType(node.elementType, TPREC_PRIMARY, CTX_DEFER_TRAILING);
-        this.writeToken("[");
+        this.write("[");
         this.emitOwedComments();
-        return this.writeToken("]");
+        return this.write("]");
       case "TSInterfaceHeritage":
       case "TSClassImplements":
         this.emit(node.expression);
         return this.emit(node.typeArguments);
       case "TSIndexedAccessType":
         this.emitType(node.objectType, TPREC_PRIMARY, CTX_DEFER_TRAILING);
-        this.writeToken("[");
+        this.write("[");
         this.emitOwedComments();
         this.emit(node.indexType);
-        return this.writeToken("]");
+        return this.write("]");
       case "TSTypeLiteral":
-        return this.printSignatureBody(node.members, node);
+        return this.printBlock(node.members, false, node);
       case "TSTypeAliasDeclaration":
         if (node.declare) this.writeKeyword("declare");
         this.writeKeyword("type");
@@ -2659,9 +2537,9 @@ class NodePrinter extends Output implements Printer {
         return this.emit(node.falseType);
       case "TSEnumMember":
         if (node.computed) {
-          this.writeToken("[");
+          this.write("[");
           this.emit(node.id);
-          this.writeToken("]");
+          this.write("]");
         } else {
           this.emit(node.id);
         }
@@ -2675,26 +2553,25 @@ class NodePrinter extends Output implements Printer {
         this.emit(node.exprName);
         return this.emit(node.typeArguments);
       case "TSMethodSignature":
-        if (node.kind === "get") this.writeKeyword("get");
-        else if (node.kind === "set") this.writeKeyword("set");
+        if (node.kind === "get" || node.kind === "set") this.writeKeyword(node.kind);
         this.printPropertyKey(node.key, node.computed);
-        if (node.optional) this.writeToken("?");
+        if (node.optional) this.write("?");
         return this.printSignatureTail(node);
       case "TSIntersectionType":
         return this.emitTypeList(node.types, "&");
       case "TSTupleType":
-        this.writeToken("[");
+        this.write("[");
         this.emitInsideCommentsInline(node);
-        this.emitList(node.elementTypes);
-        return this.writeToken("]");
+        this.emitItems(node.elementTypes, 0);
+        return this.write("]");
       case "TSParenthesizedType":
-        this.writeToken("(");
+        this.write("(");
         this.emit(node.typeAnnotation);
-        return this.writeToken(")");
+        return this.write(")");
       case "TSNamedTupleMember":
         this.emit(node.label);
-        if (node.optional) this.writeToken("?");
-        this.writeToken(":");
+        if (node.optional) this.write("?");
+        this.write(":");
         this.space();
         return this.emit(node.elementType);
       case "TSInferType":
@@ -2709,13 +2586,13 @@ class NodePrinter extends Output implements Printer {
       case "TSIndexSignature":
         if (node.static === true) this.writeKeyword("static");
         if (node.readonly) this.writeKeyword("readonly");
-        this.writeToken("[");
-        this.emitList(node.parameters);
-        this.writeToken("]");
+        this.write("[");
+        this.emitItems(node.parameters, 0);
+        this.write("]");
         this.emit(node.typeAnnotation);
         return this.softSemi();
       case "TSRestType":
-        this.writeToken("...");
+        this.write("...");
         return this.emit(node.typeAnnotation);
       case "TSImportType":
         return this.emitTSImportType(node);
@@ -2723,7 +2600,7 @@ class NodePrinter extends Output implements Printer {
         return this.printTemplate(node.quasis, node.types, false);
       case "TSOptionalType":
         this.emitType(node.typeAnnotation, TPREC_PRIMARY, 0);
-        return this.writeToken("?");
+        return this.write("?");
       case "TSJSDocNullableType":
         return this.printJSDocNullability("?", node.typeAnnotation, node.postfix);
       case "TSJSDocNonNullableType":
@@ -2750,29 +2627,22 @@ class NodePrinter extends Output implements Printer {
         return this.emitTSEnumBody(node);
       case "TSModuleDeclaration":
         if (node.declare) this.writeKeyword("declare");
-        if (node.global) {
-          this.emit(node.id);
-          this.space();
-          return this.emit(node.body);
-        }
-        this.writeKeyword(node.kind);
+        if (!node.global) this.writeKeyword(node.kind);
         this.emit(node.id);
-        if (node.body != null) {
-          this.space();
-          return this.emit(node.body);
-        }
-        return this.softSemi();
+        if (node.body == null && !node.global) return this.softSemi();
+        this.space();
+        return this.emit(node.body);
       case "TSModuleBlock":
         return this.printBlock(node.body, false, node);
       case "TSTypeAssertion":
-        this.writeToken("<");
+        this.write("<");
         // `<<T>` would re-lex as `<<`
-        if (typeStartsWithLeftAngle(node.typeAnnotation)) this.writeToken(" ");
+        if (typeStartsWithLeftAngle(node.typeAnnotation)) this.write(" ");
         this.emit(node.typeAnnotation);
-        this.writeToken(">");
+        this.write(">");
         return this.emitExpr(node.expression, PREC_UNARY | (ctx & CTX_NO_INSTANTIATION));
       case "TSExportAssignment":
-        this.writeToken("export");
+        this.write("export");
         this.printEq();
         this.emit(node.expression);
         return this.softSemi();
@@ -2788,9 +2658,9 @@ class NodePrinter extends Output implements Printer {
         this.emit(node.moduleReference);
         return this.softSemi();
       case "TSExternalModuleReference":
-        this.writeToken("require(");
+        this.write("require(");
         this.emit(node.expression);
-        return this.writeToken(")");
+        return this.write(")");
       case "TSParameterProperty":
         this.printDecorators(node.decorators);
         if (node.accessibility != null) this.writeKeyword(node.accessibility);
@@ -2809,16 +2679,16 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitTSImportType(t: T.TSImportType): void {
-    this.writeToken("import(");
+    this.write("import(");
     this.emit(t.source);
     if (t.options != null) {
-      this.writeToken(",");
+      this.write(",");
       this.space();
       this.emit(t.options);
     }
-    this.writeToken(")");
+    this.write(")");
     if (t.qualifier != null) {
-      this.writeToken(".");
+      this.write(".");
       this.emit(t.qualifier);
     }
     this.emit(t.typeArguments);
@@ -2841,13 +2711,13 @@ class NodePrinter extends Output implements Printer {
 
   emitTSTypeParameterDeclaration(d: T.TSTypeParameterDeclaration, ctx: number): void {
     const params = d.params;
-    this.writeToken("<");
-    this.emitList(params);
+    this.write("<");
+    this.emitItems(params, 0);
     // in TSX a lone `<T>` opens a JSX tag, and `<T,>` is valid TS too
     if ((ctx & CTX_NO_JSX_TAG) !== 0 && params.length === 1) {
-      if (params[0]!.constraint == null) this.writeToken(",");
+      if (params[0]!.constraint == null) this.write(",");
     }
-    this.writeToken(">");
+    this.write(">");
   }
 
   emitType(node: Node, floor: number, ctx: number): void {
@@ -2857,14 +2727,14 @@ class NodePrinter extends Output implements Printer {
   // a lone member keeps its leading operator (`type X = | A`) so reparse keeps the wrapper
   emitTypeList(types: readonly Node[], op: "|" | "&"): void {
     if (types.length === 1) {
-      this.writeToken(op);
+      this.write(op);
       this.space();
     }
     const floor = op === "|" ? TPREC_INTERSECTION : TPREC_OPERATOR;
     for (let i = 0; i < types.length; i++) {
       if (i > 0) {
         this.space();
-        this.writeToken(op);
+        this.write(op);
         this.space();
       }
       this.emitType(types[i]!, floor, 0);
@@ -2872,9 +2742,9 @@ class NodePrinter extends Output implements Printer {
   }
 
   printJSDocNullability(marker: string, node: Node, postfix: boolean): void {
-    if (!postfix) this.writeToken(marker);
+    if (!postfix) this.write(marker);
     this.emit(node);
-    if (postfix) this.writeToken(marker);
+    if (postfix) this.write(marker);
   }
 
   printArrowType(t: T.TSFunctionType | T.TSConstructorType): void {
@@ -2894,20 +2764,12 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitTSMappedType(t: T.TSMappedType): void {
-    this.writeToken("{");
+    this.write("{");
     this.space();
-    switch (t.readonly) {
-      case true:
-        this.writeKeyword("readonly");
-        break;
-      case "+":
-        this.writeKeyword("+readonly");
-        break;
-      case "-":
-        this.writeKeyword("-readonly");
-        break;
-    }
-    this.writeToken("[");
+    if (t.readonly === true) this.writeKeyword("readonly");
+    else if (t.readonly === "+") this.writeKeyword("+readonly");
+    else if (t.readonly === "-") this.writeKeyword("-readonly");
+    this.write("[");
     this.emit(t.key);
     this.writeKeyword(" in");
     this.emit(t.constraint);
@@ -2915,20 +2777,12 @@ class NodePrinter extends Output implements Printer {
       this.writeKeyword(" as");
       this.emit(t.nameType);
     }
-    this.writeToken("]");
-    switch (t.optional) {
-      case true:
-        this.writeToken("?");
-        break;
-      case "+":
-        this.writeToken("+?");
-        break;
-      case "-":
-        this.writeToken("-?");
-        break;
-    }
+    this.write("]");
+    if (t.optional === true) this.write("?");
+    else if (t.optional === "+") this.write("+?");
+    else if (t.optional === "-") this.write("-?");
     if (t.typeAnnotation != null) {
-      this.writeToken(":");
+      this.write(":");
       this.space();
       this.emit(t.typeAnnotation);
     }
@@ -2946,32 +2800,14 @@ class NodePrinter extends Output implements Printer {
     this.softSemi();
   }
 
-  printSignatureBody(items: readonly Node[], host: Node): void {
-    this.writeToken("{");
-    if (items.length > 0) {
-      this.indentDepth++;
-      for (const s of items) {
-        this.flushSemi();
-        this.newline();
-        this.emit(s);
-      }
-      this.indentDepth--;
-      this.pendingSemi = false;
-      this.newline();
-    } else if (this.comments !== "none") {
-      this.emitInsideComments(host);
-    }
-    this.writeToken("}");
-  }
-
   wrapIf(cond: boolean, node: Node, ctx: number): void {
-    if (cond) this.writeToken("(");
+    if (cond) this.write("(");
     this.emitExpr(node, ctx);
-    if (cond) this.writeToken(")");
+    if (cond) this.write(")");
   }
 
   emitTSEnumBody(b: T.TSEnumBody): void {
-    this.writeToken("{");
+    this.write("{");
     const list = b.members;
     if (list.length > 0) {
       this.indentDepth++;
@@ -2985,7 +2821,7 @@ class NodePrinter extends Output implements Printer {
     } else if (this.comments !== "none") {
       this.emitInsideComments(b);
     }
-    this.writeToken("}");
+    this.write("}");
   }
 }
 
@@ -3103,19 +2939,12 @@ function isNamed(node: Node, name: string): boolean {
   return node.type === "Identifier" && node.name === name;
 }
 
-function identifierName(node: Node | null | undefined): string | null {
-  return node != null && node.type === "Identifier" ? node.name : null;
-}
-
 function sameIdentifier(a: Node | null | undefined, b: Node | null | undefined): boolean {
-  const an = identifierName(a);
-  if (an === null) return false;
-  return an === identifierName(b);
+  return a != null && a.type === "Identifier" && b != null && isNamed(b, a.name);
 }
 
 function shorthandStillValid(key: Node, value: Node): boolean {
-  const v = value.type === "AssignmentPattern" ? value.left : value;
-  return sameIdentifier(key, v);
+  return sameIdentifier(key, value.type === "AssignmentPattern" ? value.left : value);
 }
 
 function hasValueImportSpecifier(list: readonly Node[]): boolean {
@@ -3169,19 +2998,18 @@ function simpleStringKey(node: Node): string | null {
 }
 
 function endsWithTsCast(node: Node): boolean {
-  let n = node;
   for (;;) {
-    switch (n.type) {
+    switch (node.type) {
       case "TSAsExpression":
       case "TSSatisfiesExpression":
         return true;
       case "BinaryExpression":
       case "LogicalExpression":
       case "AssignmentExpression":
-        n = n.right;
+        node = node.right;
         continue;
       case "ConditionalExpression":
-        n = n.alternate;
+        node = node.alternate;
         continue;
     }
     return false;
@@ -3193,8 +3021,7 @@ function binaryHeadCtx(e: T.BinaryExpression, ctx: number): number {
   return binaryLeftPrecedence(e) | (ctx & CTX_NO_IN) | instantiation;
 }
 
-// TypeScript reads `f<T>` as comparisons before `<`, `>`, `+`, or `-`, and its scanner starts
-// `>=` and `>>` with `>`
+// `f<T>` reads as comparisons before `<`, `+`, `-`, or a token starting with `>`
 function canFollowTypeArguments(operator: string): boolean {
   switch (operator) {
     case "<":
@@ -3212,24 +3039,21 @@ function canFollowTypeArguments(operator: string): boolean {
 // `x as T < y` would re-lex as the type arguments `T<y>`
 function binaryLeftPrecedence(e: T.BinaryExpression): number {
   if (e.operator === "**") return PREC_POSTFIX;
-  if (e.operator.charCodeAt(0) === CHAR_LT && endsWithTsCast(e.left as Node)) {
-    return PREC_GROUPING;
-  }
+  if (e.operator.charCodeAt(0) === CHAR_LT && endsWithTsCast(e.left as Node)) return PREC_GROUPING;
   return OPERATOR_PRECEDENCE[e.operator]!;
 }
 
 function decoratorIsSimple(node: Node): boolean {
-  let n = node;
   for (;;) {
-    switch (n.type) {
+    switch (node.type) {
       case "Identifier":
         return true;
       case "MemberExpression":
-        if (n.computed) return false;
-        n = n.object;
+        if (node.computed) return false;
+        node = node.object;
         continue;
       case "CallExpression":
-        n = n.callee;
+        node = node.callee;
         continue;
     }
     return false;
@@ -3237,24 +3061,23 @@ function decoratorIsSimple(node: Node): boolean {
 }
 
 function isLeftmostIntrinsicReference(node: Node): boolean {
-  let n = node;
   for (;;) {
-    switch (n.type) {
+    switch (node.type) {
       case "TSTypeReference":
-        return n.typeArguments == null && isNamed(n.typeName, "intrinsic");
+        return node.typeArguments == null && isNamed(node.typeName, "intrinsic");
       case "TSArrayType":
-        n = n.elementType;
+        node = node.elementType;
         continue;
       case "TSIndexedAccessType":
-        n = n.objectType;
+        node = node.objectType;
         continue;
       case "TSUnionType":
       case "TSIntersectionType":
-        if (n.types.length === 0) return false;
-        n = n.types[0]!;
+        if (node.types.length === 0) return false;
+        node = node.types[0]!;
         continue;
       case "TSConditionalType":
-        n = n.checkType;
+        node = node.checkType;
         continue;
     }
     return false;
@@ -3317,12 +3140,8 @@ function templateEscape(s: string, i: number, code: number): string | null {
   return null;
 }
 
-function isDecimal(raw: string): boolean {
-  return !/^0(?:[xob]|[0-7]+$)/i.test(raw);
-}
-
 function shortestNumber(raw: string): string {
-  const decimal = isDecimal(raw);
+  const decimal = !/^0(?:[xob]|[0-7]+$)/i.test(raw);
   if (decimal && isMinimalInteger(raw)) return raw;
   const cleaned = stripUnderscores(raw);
   if (cleaned === null) return raw;

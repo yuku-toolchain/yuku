@@ -1,20 +1,9 @@
 import { yuku } from "#module";
-import type { ParseResult } from "../parser";
+import type { ParseOptions, ParseResult } from "../parser";
 import type { SourceLang, SourceType } from "../types";
 import { addChildKeys } from "./child-keys";
 import { decode, type Decoded } from "./decode";
 import { NodeBuffer } from "./node";
-
-export interface RunOptions {
-  path?: string;
-  lang?: SourceLang;
-  sourceType?: SourceType;
-  wasm?: WebAssembly.Module;
-  preserveParens?: boolean;
-  semanticErrors?: boolean;
-  attachComments?: boolean;
-  tokens?: boolean;
-}
 
 export interface Shape {
   type: string;
@@ -39,6 +28,7 @@ interface Exports {
 
 interface Instance {
   exports: Exports;
+  dialect: Dialect | null;
   grownAt: number;
 }
 
@@ -51,9 +41,8 @@ const MEMORY_IDLE_MS = 10_000;
 const encoder = new TextEncoder();
 const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const instances = new WeakMap<WebAssembly.Module, Instance>();
-const dialects = new WeakMap<WebAssembly.Module, Dialect | null>();
 
-/** The `lang` a path implies: `"dts"`, `"tsx"`, `"ts"`, `"jsx"`, or `"js"`. */
+/** The `lang` a path's extension implies. */
 export function langFromPath(path: string): SourceLang {
   if (/\.d\.[cm]?ts$/.test(path)) return "dts";
   if (path.endsWith(".tsx")) return "tsx";
@@ -62,7 +51,7 @@ export function langFromPath(path: string): SourceLang {
   return "js";
 }
 
-/** The `sourceType` a path implies: `"commonjs"` for `.cjs` and `.cts`, else `"module"`. */
+/** The `sourceType` a path implies, `"commonjs"` for `.cjs` and `.cts`. */
 export function sourceTypeFromPath(path: string): SourceType {
   return /\.c[jt]s$/.test(path) ? "commonjs" : "module";
 }
@@ -71,18 +60,15 @@ export function sourceText(source: string | Uint8Array): string {
   return typeof source === "string" ? source : utf8.decode(source);
 }
 
-export function run(entry: "parse", source: string, options: RunOptions): ParseResult;
-export function run(entry: "analyze", source: string, options: RunOptions): Decoded;
+export function run(entry: "parse", source: string, options: ParseOptions): ParseResult;
+export function run(entry: "analyze", source: string, options: ParseOptions): Decoded;
 export function run(
   entry: "parse" | "analyze",
   source: string,
-  options: RunOptions,
+  options: ParseOptions,
 ): ParseResult | Decoded {
-  const module = options.wasm ?? yuku;
-  const instance = instanceOf(module);
-  const { exports } = instance;
-  const dialect = dialectOf(module, exports);
-
+  const instance = instanceOf(options.wasm ?? yuku);
+  const { exports, dialect } = instance;
   const { memory, alloc, free } = exports;
   const bytes = memory.buffer.byteLength;
   const capacity = source.length * 3 || 1;
@@ -101,7 +87,8 @@ export function run(
 function instanceOf(module: WebAssembly.Module): Instance {
   let instance = instances.get(module);
   if (instance === undefined) {
-    instance = { exports: instantiate(module), grownAt: 0 };
+    const exports = instantiate(module);
+    instance = { exports, dialect: dialectOf(exports), grownAt: 0 };
     instances.set(module, instance);
   } else if (instance.exports.memory.buffer.byteLength > MEMORY_BYTES_MAX) {
     if (Date.now() - instance.grownAt > MEMORY_IDLE_MS) instance.exports = instantiate(module);
@@ -125,22 +112,17 @@ function writeSource(
   return encoder.encodeInto(source, new Uint8Array(memory, pointer, capacity)).written;
 }
 
-function dialectOf(module: WebAssembly.Module, exports: Exports): Dialect | null {
-  let dialect = dialects.get(module);
-  if (dialect !== undefined) return dialect;
+function dialectOf(exports: Exports): Dialect | null {
   const pointer = exports.dialect();
-  dialect = null;
-  if (pointer !== 0) {
-    const size = new DataView(exports.memory.buffer).getUint32(pointer, true);
-    const json = utf8.decode(new Uint8Array(exports.memory.buffer, pointer + 4, size));
-    dialect = JSON.parse(json) as Dialect;
-    for (const shape of dialect.shapes) addChildKeys(shape.type, shape.fields);
-  }
-  dialects.set(module, dialect);
+  if (pointer === 0) return null;
+  const size = new DataView(exports.memory.buffer).getUint32(pointer, true);
+  const json = utf8.decode(new Uint8Array(exports.memory.buffer, pointer + 4, size));
+  const dialect = JSON.parse(json) as Dialect;
+  for (const shape of dialect.shapes) addChildKeys(shape.type, shape.fields);
   return dialect;
 }
 
-function flagsOf(options: RunOptions, dialect: Dialect | null): number {
+function flagsOf(options: ParseOptions, dialect: Dialect | null): number {
   const path = options.path ?? "";
   const file = options.lang === undefined && dialect !== null ? fileOf(dialect, path) : undefined;
   const lang = LANGS[options.lang ?? file?.lang ?? langFromPath(path)];
@@ -160,7 +142,6 @@ function flagsOf(options: RunOptions, dialect: Dialect | null): number {
   return flags;
 }
 
-// a source with no path is the dialect's first kind of file
 function fileOf(dialect: Dialect, path: string): Dialect["files"][number] | undefined {
   if (path === "") return dialect.files[0];
   return dialect.files.find((file) => path.endsWith(file.extension));

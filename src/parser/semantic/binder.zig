@@ -17,15 +17,12 @@ const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
 /// A `(start, len)` window into a backing slice.
 pub const Range = struct { start: u32, len: u32 };
 
-/// A declared binding. Declarations that legally share a name, such as
-/// `var` redeclarations, TS overloads, and `class` + `interface`
-/// merging, merge into one symbol.
+/// A declared binding, shared by every declaration that legally merges under its name.
 pub const Symbol = struct {
     name: String,
     flags: Flags,
     /// The scope the symbol lands in, the hoist target for a hoisting `var`.
     scope: sc.ScopeId,
-    // window into `Semantic.decl_nodes`
     decls: Range,
 
     pub const Flags = packed struct(u32) {
@@ -51,7 +48,7 @@ pub const Symbol = struct {
         enum_member: bool = false,
         _: u12 = 0,
 
-        /// True when `a` and `b` have at least one flag in common.
+        /// Whether `a` and `b` share a flag.
         pub inline fn intersects(a: Flags, b: Flags) bool {
             return @backingInt(a) & @backingInt(b) != 0;
         }
@@ -61,29 +58,31 @@ pub const Symbol = struct {
             return @fromBackingInt(@backingInt(a) | @backingInt(b));
         }
 
-        /// True for a `var` that hoists past intermediate blocks, which
-        /// excludes parameters and catch variables.
+        fn without(a: Flags, b: Flags) Flags {
+            return @fromBackingInt(@backingInt(a) & ~@backingInt(b));
+        }
+
+        /// Whether this is a `var` that hoists, not a parameter or catch variable.
         pub inline fn isHoistingVar(self: Flags) bool {
             return self.function_scoped_var and !self.parameter and !self.catch_var;
         }
 
-        /// True for a binding visible at runtime.
+        /// Whether the binding exists at runtime.
         pub inline fn inValueSpace(self: Flags) bool {
             return self.intersects(value_space);
         }
 
-        /// True for a binding in TypeScript type space.
+        /// Whether the binding is a TypeScript type.
         pub inline fn inTypeSpace(self: Flags) bool {
             return self.intersects(type_space);
         }
 
-        /// True for a binding a dotted type name can start from.
+        /// Whether a dotted type name can start from the binding.
         pub inline fn inNamespaceSpace(self: Flags) bool {
             return self.intersects(namespace_space);
         }
 
-        /// True when a symbol with these flags is visible in `space`.
-        /// Import bindings are visible in every space.
+        /// Whether the binding is visible in `space`, as an import always is.
         pub fn visibleIn(self: Flags, space: Reference.Space) bool {
             if (self.intersects(any_import)) return true;
             return switch (space) {
@@ -94,12 +93,12 @@ pub const Symbol = struct {
             };
         }
 
-        /// True for declarations a hoisting `var` may not pass through.
+        /// Whether a hoisting `var` cannot pass through the binding.
         pub inline fn isBlockScopedLike(self: Flags) bool {
             return self.intersects(block_scoped_like);
         }
 
-        /// Human-readable category for diagnostics.
+        /// The declaration kind as diagnostics name it.
         pub fn toString(self: Flags) []const u8 {
             if (self.function) return "function";
             if (self.class) return "class";
@@ -119,13 +118,13 @@ pub const Symbol = struct {
 
     // mirrored into the JS decoder's BindingFlags
 
-    /// `var` / `let` / `const`, parameters and catch bindings included.
+    /// Any variable, parameter, or catch binding.
     pub const variable: Flags = .{ .function_scoped_var = true, .block_scoped_var = true };
 
-    /// Any import binding, value (`import x`) or type-only (`import type x`).
+    /// Any value or type-only import binding.
     pub const any_import: Flags = .{ .import = true, .type_import = true };
 
-    /// Declarations that live in JS value space (visible at runtime).
+    /// Declarations that exist at runtime.
     pub const value_space: Flags = .{
         .function_scoped_var = true,
         .block_scoped_var = true,
@@ -137,7 +136,7 @@ pub const Symbol = struct {
         .enum_member = true,
     };
 
-    /// Declarations that live in TS type space.
+    /// Declarations that are TypeScript types.
     pub const type_space: Flags = .{
         .class = true,
         .regular_enum = true,
@@ -156,175 +155,87 @@ pub const Symbol = struct {
         .const_enum = true,
     };
 
-    // names a hoisted `var` cannot pass through
     const block_scoped_like: Flags = .{
         .block_scoped_var = true,
         .class = true,
         .function = true,
     };
 
-    /// Per-declaration redeclaration excludes. A new declaration conflicts
-    /// with an existing symbol whose flags intersect its excludes, otherwise
-    /// the two merge.
+    /// The flags of the symbols each kind of declaration cannot merge into.
     pub const Excludes = struct {
         pub const block_scoped_var: Flags = value_space;
-
-        pub const function_scoped_var: Flags = blk: {
-            var f = value_space;
-            f.function_scoped_var = false;
-            f.function = false;
-            break :blk f;
-        };
-
+        pub const function_scoped_var: Flags =
+            value_space.without(.{ .function_scoped_var = true, .function = true });
         /// A TypeScript function.
-        pub const function: Flags = blk: {
-            var f = value_space;
-            f.function = false;
-            f.value_module = false;
-            break :blk f;
-        };
-
-        pub const class: Flags = blk: {
-            var f = value_space.merge(type_space);
-            f.value_module = false;
-            f.interface = false;
-            break :blk f;
-        };
-
-        pub const interface: Flags = blk: {
-            var f = type_space;
-            f.interface = false;
-            f.class = false;
-            break :blk f;
-        };
-
+        pub const function: Flags =
+            value_space.without(.{ .function = true, .value_module = true });
+        pub const class: Flags =
+            value_space.merge(type_space).without(.{ .value_module = true, .interface = true });
+        pub const interface: Flags = type_space.without(.{ .interface = true, .class = true });
         pub const type_alias: Flags = type_space;
-
-        pub const regular_enum: Flags = blk: {
-            var f = value_space.merge(type_space);
-            f.regular_enum = false;
-            f.value_module = false;
-            break :blk f;
-        };
-
-        pub const const_enum: Flags = blk: {
-            var f = value_space.merge(type_space);
-            f.const_enum = false;
-            break :blk f;
-        };
-
-        pub const value_module: Flags = blk: {
-            var f = value_space;
-            f.function = false;
-            f.class = false;
-            f.regular_enum = false;
-            f.value_module = false;
-            break :blk f;
-        };
-
+        pub const regular_enum: Flags =
+            value_space.merge(type_space).without(.{ .regular_enum = true, .value_module = true });
+        pub const const_enum: Flags =
+            value_space.merge(type_space).without(.{ .const_enum = true });
+        pub const value_module: Flags = value_space.without(.{
+            .function = true,
+            .class = true,
+            .regular_enum = true,
+            .value_module = true,
+        });
         pub const namespace_module: Flags = .{};
-
         pub const import_binding: Flags = any_import;
-
-        pub const parameter: Flags = blk: {
-            var f = value_space;
-            f.function_scoped_var = false;
-            break :blk f;
-        };
-
+        pub const parameter: Flags = value_space.without(.{ .function_scoped_var = true });
         pub const catch_var: Flags = value_space;
-
         // multiple `infer T` in one conditional unify, `<T, T>` is caught structurally
-        pub const type_parameter: Flags = blk: {
-            var f = type_space;
-            f.type_parameter = false;
-            break :blk f;
-        };
-
+        pub const type_parameter: Flags = type_space.without(.{ .type_parameter = true });
         pub const enum_member: Flags = value_space.merge(type_space);
     };
 };
 
-/// A use of a name, recorded for every `identifier_reference`, JSX
-/// component tag, and TS type-predicate parameter. Declaration sites
-/// live on the symbol.
-///
-/// ## Example
-/// ```ts
-/// let a = b; a = 2;
-/// //      ^ a read of `b`
-/// //         ^ a write of `a`, flags.write
-/// ```
+/// A use of a name by an identifier reference, a JSX tag, or a type predicate parameter.
 pub const Reference = struct {
     name: String,
     /// The scope the reference appears in.
     scope: sc.ScopeId,
     /// The referencing node.
     node: ast.NodeIndex,
-    /// The resolved symbol, or `.none` for names with no visible binding.
+    /// The resolved symbol, or `.none`.
     symbol: SymbolId = .none,
     flags: Flags = .{},
 
     pub const Flags = packed struct(u8) {
-        /// True when this reference assigns its binding. Initializers in
-        /// declarations are not references.
+        /// Whether the reference assigns its binding.
         write: bool = false,
         /// The declaration space this position resolves in.
         space: Space = .value,
-        /// True when the use is erased with the types.
+        /// Whether the use is erased with the types.
         type_position: bool = false,
         _: u3 = 0,
     };
 
-    /// The declaration space a syntactic position resolves in, matching
-    /// TypeScript name resolution. A binding outside a reference's space
-    /// does not shadow.
-    ///
-    /// ## Example
-    /// ```ts
-    /// let a: T = v;
-    /// //     ^ type
-    /// //         ^ value
-    /// let b: N.T;
-    /// //     ^ namespace
-    /// let c: typeof v;
-    /// //            ^ typeof
-    /// export { T };
-    /// //       ^ any
-    /// ```
+    /// The declaration space a reference resolves in, as in TypeScript.
     pub const Space = enum(u3) {
         /// A runtime use.
         value,
         /// A type use.
         type,
-        /// The qualifier of a dotted name, `ns` in `ns.T` and `import x = ns.T`.
+        /// The qualifier of a dotted name, `ns` in `ns.T`.
         namespace,
-        /// A value use inside a type, such as the entity of a `typeof` query.
+        /// A value use inside a type, as in `typeof v`.
         typeof,
-        /// An alias position that accepts every space, such as `export { x }`.
+        /// A position that accepts every space, as in `export { x }`.
         any,
     };
 };
 
-/// The complete semantic model of a tree, with every scope, symbol, and
-/// reference resolved and cross-indexed. Backed by the tree's arena and
-/// valid for the lifetime of the tree.
-///
-/// ## Example
-/// ```zig
-/// const sem = try parser.semantic.analyze(&tree);
-///
-/// const sym = sem.symbolOf(node);      // declared at or resolved to
-/// const sites = sem.uses(sym.?);       // every use, in source order
-/// const first = sem.decls(sym.?)[0];   // first declaration node
-/// const found = sem.lookup(sem.scopeOf(node), "x", .value);
-/// ```
+/// The semantic model of a tree, valid for the lifetime of its arena.
 pub const Semantic = struct {
     /// Every scope, indexed by `ScopeId`.
     scopes: sc.ScopeTree,
-    /// Every symbol, in declaration order, indexed by `SymbolId`.
+    /// Every symbol in declaration order, indexed by `SymbolId`.
     symbols: []const Symbol,
-    /// Every reference, in source order, indexed by `ReferenceId`.
+    /// Every reference in source order, indexed by `ReferenceId`.
     references: []const Reference,
 
     decl_nodes: []const ast.NodeIndex,
@@ -332,7 +243,7 @@ pub const Semantic = struct {
     use_ranges: []const Range,
     scope_maps: []const ScopeMap,
     hoisting_variables: []const ScopeMap,
-    /// Per scope, the next body of the same namespace or enum, in a cycle, or `.none`.
+    /// Per scope, the next body of the same namespace or enum in a cycle, or `.none`.
     next_bodies: []const sc.ScopeId,
     node_scopes: []const sc.ScopeId,
     node_parents: []const ast.NodeIndex,
@@ -358,15 +269,7 @@ pub const Semantic = struct {
         return self.scopes.get(id);
     }
 
-    /// The symbol declared at `node` or resolved to by the reference at
-    /// `node`, or `null` for neither.
-    ///
-    /// ## Example
-    /// ```ts
-    /// let a = 1; a;
-    /// //  ^ the declared symbol
-    /// //         ^ the same symbol, through the reference
-    /// ```
+    /// The symbol declared at `node` or resolved by its reference, or `null`.
     pub fn symbolOf(self: Semantic, node: ast.NodeIndex) ?SymbolId {
         std.debug.assert(node != .null);
         std.debug.assert(@backingInt(node) < self.node_symbols.len);
@@ -378,8 +281,7 @@ pub const Semantic = struct {
         return if (resolved != .none) resolved else null;
     }
 
-    /// The reference recorded at `node`, or `null` when the node is
-    /// not a reference site.
+    /// The reference at `node`, or `null`.
     pub fn referenceOf(self: Semantic, node: ast.NodeIndex) ?ReferenceId {
         std.debug.assert(node != .null);
         std.debug.assert(@backingInt(node) < self.node_references.len);
@@ -387,8 +289,7 @@ pub const Semantic = struct {
         return if (id != .none) id else null;
     }
 
-    /// The innermost scope containing `node`. A scope-creating node maps
-    /// to the scope it creates.
+    /// The innermost scope of `node`, the one it creates if any.
     pub inline fn scopeOf(self: Semantic, node: ast.NodeIndex) sc.ScopeId {
         std.debug.assert(node != .null);
         std.debug.assert(@backingInt(node) < self.node_scopes.len);
@@ -403,29 +304,20 @@ pub const Semantic = struct {
         return if (parent != .null) parent else null;
     }
 
-    /// Walks from `node` up to the root, yielding `node` first.
+    /// Iterates from `node` up to the root.
     pub fn ancestors(self: Semantic, node: ast.NodeIndex) AncestorIterator {
         std.debug.assert(node == .null or @backingInt(node) < self.node_parents.len);
         return .{ .node_parents = self.node_parents, .current = node };
     }
 
-    /// The name node of every declaration of `id`, in source order. A
-    /// conflicting redeclaration is recorded too, so check `tree.hasErrors()`
-    /// when only legal declarations matter.
-    ///
-    /// ## Example
-    /// ```ts
-    /// var a = 1; var a = 2;
-    /// //  ^ decls[0]
-    /// //             ^ decls[1], same symbol
-    /// ```
+    /// The name node of every declaration of `id` in source order, conflicting ones included.
     pub fn decls(self: Semantic, id: SymbolId) []const ast.NodeIndex {
         const range = self.symbol(id).decls;
         std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
         return self.decl_nodes[range.start..][0..range.len];
     }
 
-    /// Every use site of `id`, in source order. Declaration sites are not uses.
+    /// Every reference to `id` in source order.
     pub fn uses(self: Semantic, id: SymbolId) []const ReferenceId {
         std.debug.assert(id != .none);
         std.debug.assert(@backingInt(id) < self.use_ranges.len);
@@ -433,15 +325,7 @@ pub const Semantic = struct {
         return self.use_ids[range.start..][0..range.len];
     }
 
-    /// The binding of `name` at `scope` alone, including a hoisting `var`
-    /// passing through. Does not walk the scope chain, see `lookup`.
-    ///
-    /// ## Example
-    /// ```ts
-    /// function f() { { var a; } }
-    /// //             ^ binding here finds `a`, whose symbol
-    /// //               lives in the function scope
-    /// ```
+    /// The binding of `name` in the scope alone, a hoisting `var` passing through included.
     pub fn binding(self: Semantic, scope_id: sc.ScopeId, name: []const u8) ?SymbolId {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@backingInt(scope_id) < self.scope_maps.len);
@@ -449,26 +333,14 @@ pub const Semantic = struct {
             self.hoisting_variables[@backingInt(scope_id)].get(name);
     }
 
-    /// Every symbol declared directly in `scope`. A hoisting `var` appears
-    /// in its hoist target only.
+    /// Iterates the symbols declared directly in the scope.
     pub fn bindings(self: Semantic, scope_id: sc.ScopeId) BindingIterator {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@backingInt(scope_id) < self.scope_maps.len);
         return .{ .inner = self.scope_maps[@backingInt(scope_id)].valueIterator() };
     }
 
-    /// The nearest binding of `name` visible in `space` from `scope`, walking up the
-    /// scope chain and the other bodies of each namespace or enum on it. A binding
-    /// outside the space does not shadow.
-    ///
-    /// ## Example
-    /// ```ts
-    /// type T = string;
-    /// function f() {
-    ///   const T = 1;
-    ///   // here .type finds the alias, .value the const, .any the nearest
-    /// }
-    /// ```
+    /// The nearest binding of `name` visible in `space` from the scope.
     pub fn lookup(
         self: Semantic,
         scope_id: sc.ScopeId,
@@ -491,44 +363,41 @@ pub const Semantic = struct {
         return null;
     }
 
-    /// Iterates every `(id, scope)` pair in creation order.
+    /// Iterates every scope in creation order.
     pub fn iterScopes(self: Semantic) ScopeIterator {
         return .{ .list = self.scopes.list };
     }
 
-    /// Iterates every `(id, symbol)` pair in declaration order.
+    /// Iterates every symbol in declaration order.
     pub fn iterSymbols(self: Semantic) SymbolIterator {
         return .{ .symbols = self.symbols };
     }
 
-    /// Iterates every `(id, reference)` pair in source order.
+    /// Iterates every reference in source order.
     pub fn iterReferences(self: Semantic) ReferenceIterator {
         return .{ .references = self.references };
     }
 
     /// A `(id, scope)` pair yielded by `iterScopes`.
     pub const ScopeEntry = struct { id: sc.ScopeId, scope: sc.Scope };
-
     /// A `(id, symbol)` pair yielded by `iterSymbols`.
     pub const SymbolEntry = struct { id: SymbolId, symbol: Symbol };
-
     /// A `(id, reference)` pair yielded by `iterReferences`.
     pub const ReferenceEntry = struct { id: ReferenceId, reference: Reference };
 
-    /// Yields every `(id, scope)` pair in creation order.
+    /// Yields every scope in creation order.
     pub const ScopeIterator = struct {
         list: []const sc.Scope,
         index: u32 = 0,
 
         pub fn next(self: *ScopeIterator) ?ScopeEntry {
             if (self.index >= self.list.len) return null;
-            const i = self.index;
-            self.index += 1;
-            return .{ .id = @fromBackingInt(i), .scope = self.list[i] };
+            defer self.index += 1;
+            return .{ .id = @fromBackingInt(self.index), .scope = self.list[self.index] };
         }
     };
 
-    /// Yields each node index from a starting node up to the root.
+    /// Yields node indices from a starting node up to the root.
     pub const AncestorIterator = struct {
         node_parents: []const ast.NodeIndex,
         current: ast.NodeIndex,
@@ -543,40 +412,37 @@ pub const Semantic = struct {
         }
     };
 
-    /// Yields each symbol id declared directly in a scope.
+    /// Yields the symbols declared directly in a scope.
     pub const BindingIterator = struct {
         inner: ScopeMap.ValueIterator,
 
         /// The next symbol id, or `null` when done.
         pub fn next(self: *BindingIterator) ?SymbolId {
-            const ptr = self.inner.next() orelse return null;
-            return ptr.*;
+            return if (self.inner.next()) |id| id.* else null;
         }
     };
 
-    /// Yields every `(id, symbol)` pair in declaration order.
+    /// Yields every symbol in declaration order.
     pub const SymbolIterator = struct {
         symbols: []const Symbol,
         index: u32 = 0,
 
         pub fn next(self: *SymbolIterator) ?SymbolEntry {
             if (self.index >= self.symbols.len) return null;
-            const i = self.index;
-            self.index += 1;
-            return .{ .id = @fromBackingInt(i), .symbol = self.symbols[i] };
+            defer self.index += 1;
+            return .{ .id = @fromBackingInt(self.index), .symbol = self.symbols[self.index] };
         }
     };
 
-    /// Yields every `(id, reference)` pair in source order.
+    /// Yields every reference in source order.
     pub const ReferenceIterator = struct {
         references: []const Reference,
         index: u32 = 0,
 
         pub fn next(self: *ReferenceIterator) ?ReferenceEntry {
             if (self.index >= self.references.len) return null;
-            const i = self.index;
-            self.index += 1;
-            return .{ .id = @fromBackingInt(i), .reference = self.references[i] };
+            defer self.index += 1;
+            return .{ .id = @fromBackingInt(self.index), .reference = self.references[self.index] };
         }
     };
 };
@@ -628,8 +494,7 @@ pub const Mode = enum {
     analyze,
 };
 
-/// Collects symbols and references during the AST walk and finalizes
-/// them into a `Semantic`.
+/// Collects symbols and references during a walk and finalizes them into a `Semantic`.
 pub const SymbolTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
@@ -641,7 +506,6 @@ pub const SymbolTracker = struct {
     scope_maps: std.ArrayList(ScopeMap) = .empty,
     hoisting_variables: std.ArrayList(ScopeMap) = .empty,
     next_bodies: std.ArrayList(sc.ScopeId) = .empty,
-    // per scope, whether declarations export implicitly
     export_contexts: std.ArrayList(bool) = .empty,
     last_bodies: std.AutoHashMapUnmanaged(SymbolId, sc.ScopeId) = .empty,
     last_module_bodies: std.StringHashMapUnmanaged(sc.ScopeId) = .empty,
@@ -649,10 +513,9 @@ pub const SymbolTracker = struct {
     body_owner: SymbolId = .none,
     global_body: sc.ScopeId = .none,
 
-    /// What the next `binding_identifier` declares, valid inside its enter hook.
+    /// What the next `binding_identifier` declares.
     pending: PendingBinding = .{},
-    /// Whether the next `binding_identifier` is the exported name of an
-    /// `export` declaration.
+    /// How the next `binding_identifier` is exported.
     export_state: ExportState = .none,
     ambient: bool = false,
     excluded_imports: Symbol.Flags,
@@ -700,8 +563,7 @@ pub const SymbolTracker = struct {
         return self;
     }
 
-    /// Records the binding context for the next `binding_identifier`.
-    /// Called for every node on enter.
+    /// Records the binding context a node sets for its `binding_identifier`s.
     pub fn setBindingContext(
         self: *SymbolTracker,
         data: ast.NodeData,
@@ -710,8 +572,7 @@ pub const SymbolTracker = struct {
     ) Allocator.Error!void {
         switch (data) {
             .export_named_declaration => |decl| {
-                // the declaration form exports its binding even when type-only,
-                // a bare type re-export must not tag the value side
+                // a type-only specifier list must not tag the value side
                 if (decl.declaration != .null or decl.export_kind != .type) {
                     self.export_state = .named;
                 }
@@ -783,10 +644,7 @@ pub const SymbolTracker = struct {
                 try self.pushSavedContext();
                 const is_decl = cls.type == .class_declaration;
                 self.pending = .{
-                    .flags = .{
-                        .class = true,
-                        .ambient = cls.declare or self.ambient,
-                    },
+                    .flags = .{ .class = true, .ambient = cls.declare or self.ambient },
                     .excludes = Symbol.Excludes.class.merge(self.excluded_imports),
                     .scope = if (is_decl) scope.currentScope().parent else exprNameScope(scope),
                 };
@@ -808,7 +666,6 @@ pub const SymbolTracker = struct {
                 self.export_state = .none;
             },
 
-            // members are not the exported binding
             .class_body => self.export_state = .none,
             .ts_module_block, .ts_enum_body => try self.enterBody(data, parent, scope),
 
@@ -846,21 +703,17 @@ pub const SymbolTracker = struct {
 
             .dialect => |node| {
                 const shape = dialect.shape(node.kind);
-                if (shape.lexical_bindings) {
-                    try self.pushSavedContext();
-                    self.pending = .{
-                        .flags = .{ .block_scoped_var = true },
-                        .excludes = Symbol.Excludes.block_scoped_var.merge(self.excluded_imports),
-                        .scope = scope.current,
-                    };
-                } else if (shape.catch_bindings) {
-                    try self.pushSavedContext();
-                    self.pending = .{
-                        .flags = .{ .function_scoped_var = true, .catch_var = true },
-                        .excludes = Symbol.Excludes.catch_var,
-                        .scope = scope.current,
-                    };
-                }
+                if (!shape.lexical_bindings and !shape.catch_bindings) return;
+                try self.pushSavedContext();
+                self.pending = if (shape.lexical_bindings) .{
+                    .flags = .{ .block_scoped_var = true },
+                    .excludes = Symbol.Excludes.block_scoped_var.merge(self.excluded_imports),
+                    .scope = scope.current,
+                } else .{
+                    .flags = .{ .function_scoped_var = true, .catch_var = true },
+                    .excludes = Symbol.Excludes.catch_var,
+                    .scope = scope.current,
+                };
             },
 
             // the id binds outside the scope the tracker pushed for the body
@@ -928,12 +781,10 @@ pub const SymbolTracker = struct {
                 try self.declareGlobalNamespace(decl, scope);
             },
 
-            // mapped type keys `[K in T]` are bare binding identifiers, so they share this
+            // the key of a mapped type `[K in T]` is a type parameter
             .ts_type_parameter, .ts_mapped_type => {
                 try self.pushSavedContext();
-                // infer declares in the enclosing conditional so the true branch sees it
-                //   T extends ((k: infer I) => void) ? I : never
-                //   //                   ^ declares    ^ resolves
+                // an infer declares in the enclosing conditional so its true branch sees it
                 const target = if (parent != .null and self.tree.data(parent) == .ts_infer_type)
                     inferScope(self.tree, scope, parent)
                 else
@@ -1013,8 +864,7 @@ pub const SymbolTracker = struct {
         self.ambient = saved.ambient;
     }
 
-    /// Declares the pending binding at a `binding_identifier`, and the names other nodes
-    /// declare. Called for every node after its enter hook, before its children.
+    /// Declares the names a node binds, after its enter hooks.
     pub fn declareBindings(
         self: *SymbolTracker,
         index: ast.NodeIndex,
@@ -1074,8 +924,7 @@ pub const SymbolTracker = struct {
         }
     }
 
-    /// Records the uses of names at a node, with `identifier_flags` for an
-    /// `identifier_reference`. Called after `declareBindings` in an `analyze` walk.
+    /// Records the names a node uses, with `identifier_flags` for an `identifier_reference`.
     pub fn addReferences(
         self: *SymbolTracker,
         index: ast.NodeIndex,
@@ -1101,8 +950,7 @@ pub const SymbolTracker = struct {
                     .type_position = true,
                 });
             },
-            // like the JSX transforms, a lone tag starting with a-z or holding a `-` is an
-            // intrinsic string, and a member tag references its leftmost object unless `this`
+            // a lowercase or dashed tag is an intrinsic element, as the JSX transforms treat it
             inline .jsx_opening_element, .jsx_closing_element => |el| {
                 if (jsxTagRoot(self.tree, el.name)) |root_idx| {
                     const id = self.tree.data(root_idx).jsx_identifier;
@@ -1160,7 +1008,7 @@ pub const SymbolTracker = struct {
         self.body_owner = owner;
     }
 
-    /// Restores the context saved by the matching enter. Safe for any node.
+    /// Restores the binding context a node saved on enter.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
             // the export state stays cleared so the body declares nothing exported
@@ -1302,23 +1150,21 @@ pub const SymbolTracker = struct {
         return self.symbols.items[@backingInt(id)];
     }
 
-    /// The name node of the earliest declaration of `id`.
+    /// The name node of the first declaration of `id`.
     pub fn firstDeclOf(self: *const SymbolTracker, id: SymbolId) ast.NodeIndex {
         std.debug.assert(id != .none);
         std.debug.assert(@backingInt(id) < self.first_decls.items.len);
         return self.first_decls.items[@backingInt(id)];
     }
 
-    /// The binding of `name` declared directly in `scope`, excluding
-    /// hoisting `var`s passing through.
+    /// The binding of `name` declared directly in `scope`.
     pub fn ownBinding(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
         const idx = @backingInt(scope);
         if (idx >= self.scope_maps.items.len) return null;
         return self.scope_maps.items[idx].get(name);
     }
 
-    /// The binding of `name` at `scope`, including a hoisting `var`
-    /// passing through on its way to its hoist target.
+    /// The binding of `name` in `scope`, a hoisting `var` passing through included.
     pub fn binding(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
         if (self.ownBinding(scope, name)) |id| return id;
         const idx = @backingInt(scope);
@@ -1329,12 +1175,8 @@ pub const SymbolTracker = struct {
     }
 
     fn syncScopeMaps(self: *SymbolTracker, count: usize) Allocator.Error!void {
-        try self.scope_maps.ensureTotalCapacity(self.allocator, count);
-        while (self.scope_maps.items.len < count) self.scope_maps.appendAssumeCapacity(.empty);
-        try self.hoisting_variables.ensureTotalCapacity(self.allocator, count);
-        while (self.hoisting_variables.items.len < count) {
-            self.hoisting_variables.appendAssumeCapacity(.empty);
-        }
+        try padTo(ScopeMap, &self.scope_maps, self.allocator, count, .empty);
+        try padTo(ScopeMap, &self.hoisting_variables, self.allocator, count, .empty);
     }
 
     fn setExportContext(
@@ -1342,12 +1184,10 @@ pub const SymbolTracker = struct {
         scope_id: sc.ScopeId,
         value: bool,
     ) Allocator.Error!void {
-        const count = @backingInt(scope_id) + 1;
-        try padTo(bool, &self.export_contexts, self.allocator, count, false);
+        try padTo(bool, &self.export_contexts, self.allocator, @backingInt(scope_id) + 1, false);
         self.export_contexts.items[@backingInt(scope_id)] = value;
     }
 
-    // of a `declare module "m"`
     fn lastModuleBody(
         self: *SymbolTracker,
         declaration: ast.NodeIndex,
@@ -1361,8 +1201,7 @@ pub const SymbolTracker = struct {
             .string_literal => |literal| self.tree.string(literal.value),
             else => return null,
         };
-        const entry = try self.last_module_bodies.getOrPutValue(self.allocator, name, .none);
-        return entry.value_ptr;
+        return (try self.last_module_bodies.getOrPutValue(self.allocator, name, .none)).value_ptr;
     }
 
     fn lastBodyOf(self: *SymbolTracker, owner: SymbolId) Allocator.Error!*sc.ScopeId {
@@ -1371,8 +1210,7 @@ pub const SymbolTracker = struct {
 
     fn addBody(self: *SymbolTracker, last: *sc.ScopeId, body: sc.ScopeId) Allocator.Error!void {
         std.debug.assert(last.* != body);
-        const count = @backingInt(body) + 1;
-        try padTo(sc.ScopeId, &self.next_bodies, self.allocator, count, .none);
+        try padTo(sc.ScopeId, &self.next_bodies, self.allocator, @backingInt(body) + 1, .none);
         const next = self.next_bodies.items;
         std.debug.assert(next[@backingInt(body)] == .none);
         if (last.* == .none) {
@@ -1394,8 +1232,7 @@ pub const SymbolTracker = struct {
         };
     }
 
-    /// Finalizes the tracker into a complete `Semantic` that aliases the
-    /// tracker's storage and stays valid for the lifetime of the tree.
+    /// Finalizes the tracker into a `Semantic` that aliases its storage.
     pub fn finalize(
         self: *SymbolTracker,
         scopes: sc.ScopeTree,
@@ -1445,8 +1282,7 @@ pub const SymbolTracker = struct {
             const name = self.tree.string(ref.name);
             const space = ref.flags.space;
             const prehashed = PrehashedContext{ .hash_value = std.hash.Wyhash.hash(0, name) };
-            // the implicit arguments object (10.2.11 argumentsObjectNeeded) shadows outer bindings,
-            // an own parameter or var still wins
+            // an implicit arguments object hides outer bindings but not its own scope's (10.2.11)
             const arguments_barrier = (space == .value or space == .typeof) and
                 std.mem.eql(u8, name, "arguments");
             ref.symbol = blk: {
@@ -1650,7 +1486,6 @@ fn memberOwner(node_parents: []const ast.NodeIndex, member: ast.NodeIndex) ast.N
     return if (body == .null) .null else node_parents[@backingInt(body)];
 }
 
-// the conditional whose extends clause holds `infer_node`
 fn inferScope(
     tree: *const ast.Tree,
     scope: *const sc.ScopeTracker,

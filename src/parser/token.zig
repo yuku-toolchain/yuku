@@ -16,7 +16,6 @@ pub const Mask = struct {
 };
 
 pub const TokenTag = enum(u32) {
-    // literals
     numeric_literal = 1 | Mask.IsNumericLiteral,
     hex_literal = 2 | Mask.IsNumericLiteral,
     octal_literal = 3 | Mask.IsNumericLiteral,
@@ -29,12 +28,10 @@ pub const TokenTag = enum(u32) {
     template_middle = 10,
     template_tail = 11,
 
-    // keyword literals
     true = 12 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
     false = 13 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
     null_literal = 14 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
 
-    // arithmetic operators
     plus = 15 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp,
     minus = 16 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp,
     star = 17 | (12 << Mask.PrecShift) | Mask.IsBinaryOp,
@@ -42,7 +39,6 @@ pub const TokenTag = enum(u32) {
     percent = 19 | (12 << Mask.PrecShift) | Mask.IsBinaryOp,
     exponent = 20 | (13 << Mask.PrecShift) | Mask.IsBinaryOp,
 
-    // assignment operators
     assign = 21 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     plus_assign = 22 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     minus_assign = 23 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
@@ -51,11 +47,9 @@ pub const TokenTag = enum(u32) {
     percent_assign = 26 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     exponent_assign = 27 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
 
-    // update operators
     increment = 28 | (15 << Mask.PrecShift),
     decrement = 29 | (15 << Mask.PrecShift),
 
-    // equality and relational operators
     equal = 30 | (8 << Mask.PrecShift) | Mask.IsBinaryOp,
     not_equal = 31 | (8 << Mask.PrecShift) | Mask.IsBinaryOp,
     strict_equal = 32 | (8 << Mask.PrecShift) | Mask.IsBinaryOp,
@@ -65,12 +59,10 @@ pub const TokenTag = enum(u32) {
     less_than_equal = 36 | (9 << Mask.PrecShift) | Mask.IsBinaryOp,
     greater_than_equal = 37 | (9 << Mask.PrecShift) | Mask.IsBinaryOp,
 
-    // logical operators
     logical_and = 38 | (4 << Mask.PrecShift) | Mask.IsLogicalOp,
     logical_or = 39 | (3 << Mask.PrecShift) | Mask.IsLogicalOp,
     logical_not = 40 | (14 << Mask.PrecShift) | Mask.IsUnaryOp,
 
-    // bitwise operators
     bitwise_and = 41 | (7 << Mask.PrecShift) | Mask.IsBinaryOp,
     bitwise_or = 42 | (5 << Mask.PrecShift) | Mask.IsBinaryOp,
     bitwise_xor = 43 | (6 << Mask.PrecShift) | Mask.IsBinaryOp,
@@ -79,7 +71,6 @@ pub const TokenTag = enum(u32) {
     right_shift = 46 | (10 << Mask.PrecShift) | Mask.IsBinaryOp,
     unsigned_right_shift = 47 | (10 << Mask.PrecShift) | Mask.IsBinaryOp,
 
-    // compound bitwise assignment
     bitwise_and_assign = 48 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     bitwise_or_assign = 49 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     bitwise_xor_assign = 50 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
@@ -87,14 +78,12 @@ pub const TokenTag = enum(u32) {
     right_shift_assign = 52 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     unsigned_right_shift_assign = 53 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
 
-    // nullish and optional
     nullish_coalescing = 54 | (3 << Mask.PrecShift) | Mask.IsLogicalOp,
     nullish_assign = 55 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     logical_and_assign = 56 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     logical_or_assign = 57 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp,
     optional_chaining = 58 | (17 << Mask.PrecShift),
 
-    // punctuation
     left_paren = 59 | (17 << Mask.PrecShift),
     right_paren = 60,
     left_brace = 61,
@@ -110,7 +99,6 @@ pub const TokenTag = enum(u32) {
     colon = 71,
     at = 72,
 
-    // reserved keywords
     @"if" = 73 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
     @"else" = 74 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
     @"switch" = 75 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
@@ -150,9 +138,9 @@ pub const TokenTag = enum(u32) {
     from = 105 | Mask.IsKeyword | Mask.IsIdentifierLike,
     as = 106 | (9 << Mask.PrecShift) | Mask.IsKeyword | Mask.IsIdentifierLike,
     namespace = 107 | Mask.IsKeyword | Mask.IsIdentifierLike,
-    assert = 108 | Mask.IsKeyword | Mask.IsIdentifierLike, // import assertions
-    source = 109 | Mask.IsKeyword | Mask.IsIdentifierLike, // source phase imports
-    @"defer" = 110 | Mask.IsKeyword | Mask.IsIdentifierLike, // deferred imports
+    assert = 108 | Mask.IsKeyword | Mask.IsIdentifierLike,
+    source = 109 | Mask.IsKeyword | Mask.IsIdentifierLike,
+    @"defer" = 110 | Mask.IsKeyword | Mask.IsIdentifierLike,
 
     @"try" = 111 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
     @"catch" = 112 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
@@ -175,17 +163,14 @@ pub const TokenTag = enum(u32) {
     with = 123 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
     debugger = 124 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike,
 
-    // identifiers
     identifier = 125 | Mask.IsIdentifierLike,
     private_identifier = 126,
 
-    // contextual keywords (class/object bodies)
     get = 127 | Mask.IsKeyword | Mask.IsIdentifierLike,
     set = 128 | Mask.IsKeyword | Mask.IsIdentifierLike,
     accessor = 129 | Mask.IsIdentifierLike,
     constructor = 130 | Mask.IsIdentifierLike,
 
-    // ts contextual keywords
     declare = 131 | Mask.IsKeyword | Mask.IsIdentifierLike,
     type = 132 | Mask.IsKeyword | Mask.IsIdentifierLike,
     abstract = 133 | Mask.IsKeyword | Mask.IsIdentifierLike,
@@ -203,7 +188,6 @@ pub const TokenTag = enum(u32) {
     module = 145 | Mask.IsKeyword | Mask.IsIdentifierLike,
     require = 146 | Mask.IsKeyword | Mask.IsIdentifierLike,
 
-    // ts primitive type keywords
     any = 147 | Mask.IsKeyword | Mask.IsIdentifierLike,
     bigint = 148 | Mask.IsKeyword | Mask.IsIdentifierLike,
     boolean = 149 | Mask.IsKeyword | Mask.IsIdentifierLike,
@@ -215,12 +199,11 @@ pub const TokenTag = enum(u32) {
     undefined = 155 | Mask.IsKeyword | Mask.IsIdentifierLike,
     unknown = 156 | Mask.IsKeyword | Mask.IsIdentifierLike,
 
-    // jsx
     jsx_identifier = 157,
     jsx_text = 158,
 
     eof = 159,
-    /// Input the lexer could not scan during lookahead, left for the real parse to report.
+    /// Input that lookahead could not scan, left for the parse to report.
     invalid = 160,
 
     pub fn precedence(self: TokenTag) u5 {
@@ -276,7 +259,7 @@ pub const TokenTag = enum(u32) {
     }
 
     pub fn toString(self: TokenTag) ?[]const u8 {
-        // a keyword is spelled as its tag name, except `null`
+        // a keyword tag is named as it is spelled, except `null`
         if (self.isIdentifierLike()) return switch (self) {
             .identifier => null,
             .null_literal => "null",
@@ -470,7 +453,7 @@ pub const Token = extern struct {
         return self.has(.invalid_escape);
     }
 
-    /// Whether the token text contains escape sequences, or a raw carriage return in a template.
+    /// Whether the text has escapes, or a raw carriage return in a template.
     pub inline fn isEscaped(self: Token) bool {
         return self.has(.escaped);
     }

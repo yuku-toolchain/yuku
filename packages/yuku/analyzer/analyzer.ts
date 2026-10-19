@@ -32,16 +32,14 @@ export interface SetFileOptions extends Omit<FileOptions, "path">, ParseOptions 
 
 export interface AnalyzerOptions {
   /**
-   * The build of Yuku that analyzes, such as one with a dialect compiled in. See
+   * A Yuku build to analyze with, such as one with a dialect compiled in. See
    * https://yuku.fyi/parser/dialect/#javascript.
    * @default the module yuku ships
    */
   wasm?: WebAssembly.Module;
   /**
-   * Maps an import specifier to the path of a file in the project. Return `false` for a module
-   * outside the project, such as a package, and `null` when it cannot be resolved, which is
-   * reported as a warning. Defaults to relative paths, probing extensions and index files as
-   * TypeScript does.
+   * Maps a specifier to a project file path, `false` for an external module, or `null` to warn
+   * that it is unresolved. Defaults to relative paths probed as TypeScript does.
    */
   resolve?: (specifier: string, importer: string) => string | false | null;
 }
@@ -76,10 +74,9 @@ export class Analyzer {
   private resolve: Resolve;
   private projectDiagnostics: Diagnostic[] = [];
   private dirty = false;
-  // origin binding to the import bindings that resolve to it
   private importers = new Map<Binding, Binding[]>();
   private exportResolutions = new Map<Module, Map<string, ExportResolution>>();
-  // each merged binding to its whole merge, the augmented binding first
+  // the augmented binding comes first in a merge
   private merged = new Map<Binding, Binding[]>();
   private addedExports = new Map<Module, Map<string, Binding>>();
 
@@ -235,7 +232,6 @@ export class Analyzer {
     return { module, binding, augmentations: merged === undefined ? [] : merged.slice(1) };
   }
 
-  // a name the module lacks becomes its export
   private augment(module: Module, binding: Binding): void {
     const name = binding.has(BindingFlags.Default) ? "default" : binding.name;
     const resolution = this.resolveExportRecursive(module, name, []);
@@ -392,7 +388,7 @@ function specifierNodeOf(module: Module, node: Node): Node {
   }
 }
 
-// a bare specifier is a package, and an unmatched asset such as `./app.css` is external
+// bare specifiers and unmatched assets such as `./app.css` are external
 function defaultResolve(modules: Map<string, Module>): Resolve {
   return (specifier, importer) => {
     if (!specifier.startsWith(".")) return false;
@@ -404,11 +400,8 @@ function defaultResolve(modules: Map<string, Module>): Resolve {
       const path = base.slice(0, -extension!.length) + source;
       if (modules.has(path)) return path;
     }
-    for (const probe of EXTENSIONS) {
-      if (modules.has(base + probe)) return base + probe;
-    }
-    for (const probe of EXTENSIONS) {
-      if (modules.has(`${base}/index${probe}`)) return `${base}/index${probe}`;
+    for (const stem of [base, `${base}/index`]) {
+      for (const probe of EXTENSIONS) if (modules.has(stem + probe)) return stem + probe;
     }
     return extension === null || EXTENSIONS.includes(extension) ? null : false;
   };

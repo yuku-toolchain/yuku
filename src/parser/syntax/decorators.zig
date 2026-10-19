@@ -4,6 +4,7 @@ const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 
 const expressions = @import("expressions.zig");
+const class = @import("class.zig");
 
 /// Parses a possibly empty run of `@expression` decorators.
 pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
@@ -27,10 +28,20 @@ pub fn parseDecoratorsAfter(parser: *Parser, leading: ast.IndexRange) Error!?ast
     return try parser.flushToExtras(&parser.scratch_decorators, checkpoint);
 }
 
+pub fn parseDecoratedClass(
+    parser: *Parser,
+    options: class.ParseClassOptions,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .at);
+    const start = parser.current_token.span.start;
+    const decorators = try parseDecorators(parser) orelse return null;
+    return class.parseClassDecorated(parser, options, start, decorators);
+}
+
 fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .at);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume '@'
+    try parser.advance() orelse return null;
 
     const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse
         return null;

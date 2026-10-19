@@ -10,15 +10,7 @@ type Builders = {
   [K in StandardNodeType]: (fields: BuilderInput<NodeOfType<K>>) => NodeOfType<K>;
 };
 
-/**
- * One constructor per node type, its fields derived from the node type
- * itself. `start` and `end` default to 0, which `ctx.replace` treats
- * as span-less and fills from the replaced node.
- *
- * @example
- * b.Identifier({ name: "x" })
- * b.ExpressionStatement({ expression: b.Identifier({ name: "x" }) })
- */
+/** A node constructor per `type`, with `start` and `end` defaulting to 0. */
 export const b = Object.fromEntries(
   NODE_TYPES.map((type) => [
     type,

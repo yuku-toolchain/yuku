@@ -98,17 +98,14 @@ pub const Ctx = struct {
         switch (self.mode) {
             .check => {},
             .analyze => {
-                const flags = self.identifierFlags(data);
+                var flags: Reference.Flags = .{};
+                if (data == .identifier_reference) {
+                    flags = refPosition(self.tree, &self.path, self.inTypePosition());
+                    flags.write = isWriteTarget(self.tree, &self.path);
+                }
                 try self.symbols.addReferences(index, data, &self.scope, flags);
             },
         }
-    }
-
-    fn identifierFlags(self: *const Ctx, data: ast.NodeData) Reference.Flags {
-        if (data != .identifier_reference) return .{};
-        var flags = refPosition(self.tree, &self.path, self.inTypePosition());
-        flags.write = isWriteTarget(self.tree, &self.path);
-        return flags;
     }
 
     pub inline fn exit(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) void {
@@ -122,8 +119,7 @@ pub const Ctx = struct {
     }
 };
 
-/// Walks the tree tracking the node path, scopes, and symbols, and returns the
-/// `Semantic` model.
+/// Walks the tree tracking the node path, scopes, and symbols, and returns the `Semantic` model.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
     std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree, .analyze);
@@ -132,7 +128,6 @@ pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!
     return ctx.finalize();
 }
 
-// where the identifier at the top of `path` resolves, and whether its use is erased with the types
 fn refPosition(
     tree: *const ast.Tree,
     path: *const NodePath,
@@ -140,7 +135,6 @@ fn refPosition(
 ) Reference.Flags {
     std.debug.assert(path.depth() > 0);
 
-    // crossing a qualified name makes this the qualifier of a dotted name
     var qualified_left = false;
     var child = path.ancestor(0) orelse return .{};
     var n: usize = 1;
@@ -208,12 +202,10 @@ fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
             // the declaration form's leaves are binding identifiers, never references
             inline .for_in_statement, .for_of_statement => |f| return f.left == child,
             .array_pattern, .object_pattern => child = parent,
-            // computed keys are reads
             .binding_property => |bp| {
                 if (bp.value != child) return false;
                 child = parent;
             },
-            // the default value is a read
             .assignment_pattern => |ap| {
                 if (ap.left != child) return false;
                 child = parent;
@@ -222,7 +214,6 @@ fn isWriteTarget(tree: *const ast.Tree, path: *const NodePath) bool {
                 if (r.argument != child) return false;
                 child = parent;
             },
-            // transparent wrappers such as `(a) += 1` and `a!++`
             .parenthesized_expression, .ts_non_null_expression => child = parent,
             inline .ts_as_expression, .ts_satisfies_expression, .ts_type_assertion => |e| {
                 if (e.expression != child) return false;

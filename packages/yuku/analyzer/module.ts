@@ -4,7 +4,8 @@ import { CHILD_KEYS } from "../ast/generated";
 import { findAll } from "../ast/utils";
 import { _walk, _walkAsync, type Visitors } from "../ast/walk";
 import { BindingFlags, type Decoded, type Semantic } from "../core/decode";
-import { run, sourceText, type RunOptions } from "../core/wasm";
+import { run, sourceText } from "../core/wasm";
+import type { ParseOptions } from "../parser";
 import type {
   Comment,
   Diagnostic,
@@ -16,7 +17,7 @@ import type {
   Program,
   TokenList,
 } from "../types";
-import type { Analyzer, ParseOptions } from "./analyzer";
+import type { Analyzer } from "./analyzer";
 
 /** Kinds and modifiers of a {@link Binding}, tested with `has` and `hasAll`. */
 export interface BindingFlagMap {
@@ -63,13 +64,8 @@ export interface BindingFlagMap {
 }
 
 /**
- * The declaration space a name resolves in. A binding outside it does not shadow.
- *
- * - `"value"`: runtime uses
- * - `"type"`: type positions
- * - `"namespace"`: the start of a dotted name, `ns` in `ns.T` and `import x = ns.T`
- * - `"typeof"`: a value inside a type, `x` in `typeof x`
- * - `"any"`: alias positions, `x` in `export { x }`
+ * The declaration space a name resolves in, where bindings outside it do not shadow. `"namespace"`
+ * is `ns` in `ns.T`, `"typeof"` is `x` in `typeof x`, and `"any"` is `x` in `export { x }`.
  */
 export type Space = "value" | "type" | "namespace" | "typeof" | "any";
 
@@ -85,13 +81,8 @@ export type ScopeKind =
   | "tsModule";
 
 /**
- * - `"named"`: `import x from "m"` and `import { x } from "m"`
- * - `"namespace"`: `import * as ns from "m"`
- * - `"sideEffect"`: `import "m"` and `export {} from "m"`
- * - `"importEquals"`: `import ns = require("m")`
- * - `"dynamic"`: `import("m")`
- * - `"require"`: `require("m")`
- * - `"augmentation"`: `declare module "m" {}` in a module, merging its declarations into `m`
+ * How a module is imported. `"named"` includes default imports, `"sideEffect"` includes
+ * `export {} from "m"`, and `"augmentation"` is `declare module "m" {}` in a module.
  */
 export type ImportKind =
   | "named"
@@ -103,12 +94,8 @@ export type ImportKind =
   | "augmentation";
 
 /**
- * - `"named"`: `export const x`, `export { x }`, `export default x`
- * - `"reExport"`: `export { x as y } from "m"`
- * - `"namespace"`: `export * as ns from "m"`
- * - `"star"`: `export * from "m"`
- * - `"equals"`: `export = x`
- * - `"global"`: `export as namespace N`
+ * How a name is exported. `"reExport"` is `export { x } from "m"`, `"namespace"` is
+ * `export * as ns from "m"`, `"equals"` is `export = x`, and `"global"` is `export as namespace N`.
  */
 export type ExportKind = "named" | "reExport" | "namespace" | "star" | "equals" | "global";
 
@@ -124,7 +111,7 @@ export interface ModuleFlags {
 export interface Definition {
   readonly module: Module;
   readonly binding: Binding | null;
-  /** The bindings that `declare module` blocks in other modules merge into it. */
+  /** The bindings that `declare module` blocks merge into it. */
   readonly augmentations: Binding[];
 }
 
@@ -145,7 +132,7 @@ export interface SemanticWalkHooks<T extends Node = Node> {
   leave?: SemanticWalkHandler<T>;
 }
 
-/** Handlers keyed by node type or alias group, with `enter` and `leave` for every node. */
+/** {@link Visitors} whose handlers receive a {@link SemanticWalkContext}. */
 export type SemanticVisitors = {
   [K in NodeType]?: SemanticWalkHandler<NodeOfType<K>> | SemanticWalkHooks<NodeOfType<K>>;
 } & {
@@ -288,10 +275,7 @@ export class Binding {
     }
     throw new TypeError('`space` must be "value", "type", "namespace", "typeof", or "any"');
   }
-  /**
-   * Where it is defined, following imports across modules and a module augmentation to the binding
-   * it merges into, itself otherwise. Links.
-   */
+  /** Where it is defined, following imports and module augmentations. Links. */
   definition(): Definition | null {
     return this.module.analyzer._definitionOf(this);
   }
@@ -329,7 +313,7 @@ export class Reference {
   get inTypePosition(): boolean {
     return this.semantic.reference.inTypePosition(this.id);
   }
-  /** Whether it assigns, as `x = 1`, `x++`, and `for (x of xs)` do. */
+  /** Whether it assigns to the name. */
   get isWrite(): boolean {
     return this.semantic.reference.isWrite(this.id);
   }
@@ -451,7 +435,7 @@ export class Export {
   }
 }
 
-/** The {@link WalkContext} of `yuku/ast`, with the semantic model at the current node. */
+/** A {@link WalkContext} with the semantic model at the current node. */
 export class SemanticWalkContext<T extends Node = Node> extends WalkContext<T> {
   readonly module: Module;
 
@@ -501,7 +485,7 @@ export class Module {
     analyzer: Analyzer,
     path: string,
     source: string | Uint8Array,
-    options: RunOptions & ParseOptions,
+    options: ParseOptions,
   ) {
     this.analyzer = analyzer;
     this.path = path;
@@ -654,14 +638,9 @@ export class Module {
       const target = reference.symbolId(i);
       if (target === null || reference.inTypePosition(i)) continue;
       if (reference.start(i) < start || reference.end(i) > end) continue;
-      let inside = false;
-      for (let id: number | null = symbol.scopeId(target); id !== null; id = scope.parentId(id)) {
-        if (id === functionScope) {
-          inside = true;
-          break;
-        }
-      }
-      if (inside) continue;
+      let id: number | null = symbol.scopeId(target);
+      while (id !== null && id !== functionScope) id = scope.parentId(id);
+      if (id !== null) continue;
       let capture = captures.get(target);
       if (capture === undefined) {
         capture = { binding: this.bindings[target]!, references: [], isWritten: false };

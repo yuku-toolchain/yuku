@@ -63,7 +63,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .spread);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume ...
+    try parser.advance() orelse return null;
 
     const argument = try parseBindingPattern(parser) orelse return null;
     var end = parser.tree.span(argument).end;

@@ -1,6 +1,6 @@
 const std = @import("std");
 
-/// A string in the AST, referencing either the source text or the extra buffer.
+/// Text in the AST, as offsets into the source or, past its end, into the pool's extra buffer.
 pub const String = struct {
     start: u32 = 0,
     end: u32 = 0,
@@ -27,14 +27,14 @@ pub const ASTStringPool = struct {
         return resolve(self.extra.items, src_len, id);
     }
 
-    /// Returns a `String` referencing a range in the original source.
+    /// A `String` for a range of the source text.
     pub inline fn sourceSlice(self: *const ASTStringPool, start: u32, end: u32) String {
         std.debug.assert(start <= end);
         std.debug.assert(end <= self.source.len);
         return .{ .start = start, .end = end };
     }
 
-    /// Interns a string into the extra buffer with deduplication.
+    /// Interns `str`, returning the same `String` for equal text.
     pub fn addString(
         self: *ASTStringPool,
         alloc: std.mem.Allocator,

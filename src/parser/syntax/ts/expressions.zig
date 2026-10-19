@@ -13,13 +13,10 @@ const generics = @import("types/generics.zig");
 
 pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
-
     const start = parser.current_token.span.start;
-
     try parser.advance() orelse return null;
 
     const type_node = try core.parseType(parser) orelse return null;
-
     if (!try parser.expect(
         .greater_than,
         "Expected '>' to close a type assertion",
@@ -37,7 +34,6 @@ pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const keyword_tag = parser.current_token.tag;
     std.debug.assert(keyword_tag == .as or keyword_tag == .satisfies);
-
     try parser.advance() orelse return null;
 
     const type_node = try core.parseType(parser) orelse return null;
@@ -55,7 +51,6 @@ pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!
 
 pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .logical_not);
-
     const bang_end = parser.current_token.span.end;
     try parser.advance() orelse return null;
 
@@ -72,36 +67,31 @@ pub fn parseTypeArgumentedCallOrInstantiation(
     const type_arguments = try tryParseTypeArgumentsInExpression(parser);
     if (type_arguments == .null) return null;
 
-    return switch (parser.current_token.tag) {
-        .left_paren => expressions.parseCallExpression(parser, callee, false, type_arguments),
-        .no_substitution_template, .template_head => expressions.parseTaggedTemplateExpression(
-            parser,
-            callee,
-            type_arguments,
-        ),
-        else => blk: {
-            const node = try parser.tree.addNode(
-                .{ .ts_instantiation_expression = .{
-                    .expression = callee,
-                    .type_arguments = type_arguments,
-                } },
-                .{
-                    .start = parser.tree.span(callee).start,
-                    .end = parser.tree.span(type_arguments).end,
-                },
-            );
-
-            if (parser.current_token.tag == .dot) {
-                try parser.report(
-                    parser.tree.span(node),
-                    "An instantiation expression cannot be followed by a property access",
-                    .{ .help = "Wrap the instantiation expression in parentheses." },
-                );
-            }
-
-            break :blk node;
+    switch (parser.current_token.tag) {
+        .left_paren => {
+            return expressions.parseCallExpression(parser, callee, false, type_arguments);
         },
-    };
+        .no_substitution_template, .template_head => {
+            return expressions.parseTaggedTemplateExpression(parser, callee, type_arguments);
+        },
+        else => {},
+    }
+
+    const node = try parser.tree.addNode(
+        .{ .ts_instantiation_expression = .{
+            .expression = callee,
+            .type_arguments = type_arguments,
+        } },
+        .{ .start = parser.tree.span(callee).start, .end = parser.tree.span(type_arguments).end },
+    );
+    if (parser.current_token.tag == .dot) {
+        try parser.report(
+            parser.tree.span(node),
+            "An instantiation expression cannot be followed by a property access",
+            .{ .help = "Wrap the instantiation expression in parentheses." },
+        );
+    }
+    return node;
 }
 
 // rewind so `<` can stay a relational compare
@@ -112,7 +102,6 @@ pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     if (!core.isStartOfType(after.tag) and after.tag != .greater_than) return .null;
 
     const cp = parser.checkpoint();
-
     const args = try generics.parseTypeArgumentsInExpression(parser);
     if (args == .null or !canFollowTypeArgumentsInExpression(parser.current_token)) {
         parser.rewind(cp);
@@ -125,10 +114,8 @@ pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
 fn canFollowTypeArgumentsInExpression(token: Token) bool {
     return switch (token.tag) {
         .left_paren, .no_substitution_template, .template_head => true,
-
         // favor relational parse for `a < b > -c`
         .less_than, .greater_than, .plus, .minus => false,
-
         else => token.hasLineTerminatorBefore() or
             isBinaryOperatorLike(token.tag) or
             !isStartOfExpression(token.tag),

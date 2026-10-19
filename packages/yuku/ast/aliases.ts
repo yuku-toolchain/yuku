@@ -11,7 +11,6 @@ import type {
   TSType,
 } from "../types";
 
-// groups backed by a union of the shared types must match it exactly, checked below
 export const ALIAS_GROUPS = {
   Expression: [
     "Identifier",
@@ -170,7 +169,7 @@ export type AliasName = keyof typeof ALIAS_GROUPS;
 
 type GroupType<A extends AliasName> = (typeof ALIAS_GROUPS)[A][number];
 
-/** The node union each alias covers, e.g. `AliasMap["Function"]`. */
+/** The node union each alias covers. */
 export type AliasMap = { [A in AliasName]: NodeOfType<GroupType<A>> };
 
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;

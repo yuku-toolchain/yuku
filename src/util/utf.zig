@@ -3,24 +3,12 @@ const xhtml_entities = @import("xhtml_entities.zig");
 
 pub const CodePoint = struct { len: u3, value: u21 };
 
-pub const Utf8Error = error{InvalidUtf8};
-
-pub fn codePointAt(str: []const u8, i: usize) Utf8Error!CodePoint {
+pub fn codePointAt(str: []const u8, i: usize) error{InvalidUtf8}!CodePoint {
     std.debug.assert(i < str.len);
     const len = std.unicode.utf8ByteSequenceLength(str[i]) catch return error.InvalidUtf8;
     if (str.len - i < len) return error.InvalidUtf8;
-
-    const codepoint: u21 = switch (len) {
-        1 => str[i],
-        2 => std.unicode.utf8Decode2(.{ str[i], str[i + 1] }) catch return error.InvalidUtf8,
-        3 => std.unicode.utf8Decode3(.{ str[i], str[i + 1], str[i + 2] }) catch
-            return error.InvalidUtf8,
-        4 => std.unicode.utf8Decode4(.{ str[i], str[i + 1], str[i + 2], str[i + 3] }) catch
-            return error.InvalidUtf8,
-        else => unreachable,
-    };
-
-    return .{ .len = @intCast(len), .value = codepoint };
+    const value = std.unicode.utf8Decode(str[i..][0..len]) catch return error.InvalidUtf8;
+    return .{ .len = @intCast(len), .value = value };
 }
 
 pub fn isOctalDigit(digit: u8) bool {
@@ -37,7 +25,7 @@ pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     return 0;
 }
 
-/// The byte length of the line terminator at `pos`, or 0. CRLF is one terminator.
+/// The byte length of the line terminator at `pos`, or 0, counting CRLF as one.
 pub fn lineBreakLen(source: []const u8, pos: usize) u8 {
     std.debug.assert(pos < source.len);
     return switch (source[pos]) {
@@ -145,11 +133,9 @@ pub fn decodeStringEscapes(
         if (i > run_start) try out.appendSlice(gpa, raw[run_start..i]);
         if (i >= raw.len) break;
 
-        // a raw CR or CRLF cooks to LF
         if (raw[i] == '\r') {
             try out.append(gpa, '\n');
-            i += 1;
-            if (i < raw.len and raw[i] == '\n') i += 1;
+            i += lineBreakLen(raw, i);
             continue;
         }
         i += 1;
@@ -167,48 +153,28 @@ pub fn decodeStringEscapes(
                 });
                 i += 1;
             },
-            '0' => {
-                if (i + 1 < raw.len and std.ascii.isDigit(raw[i + 1])) {
-                    const r = parseOctal(raw, i);
-                    try appendCodePoint(out, gpa, r.value);
-                    i = r.end;
-                } else {
-                    try out.append(gpa, 0);
-                    i += 1;
-                }
-            },
-            '1'...'7' => {
+            '0'...'7' => {
                 const r = parseOctal(raw, i);
                 try appendCodePoint(out, gpa, r.value);
                 i = r.end;
             },
-            'x' => {
-                if (parseHex2(raw, i + 1)) |r| {
+            'x', 'u' => |c| {
+                const parsed = if (c == 'x')
+                    parseHex2(raw, i + 1)
+                else
+                    parseUnicodeEscape(raw, i + 1);
+                if (parsed) |r| {
                     try appendCodePoint(out, gpa, r.value);
                     i = r.end;
                 } else {
-                    try out.append(gpa, 'x');
+                    try out.append(gpa, c);
                     i += 1;
                 }
-            },
-            'u' => {
-                if (parseUnicodeEscape(raw, i + 1)) |r| {
-                    try appendCodePoint(out, gpa, r.value);
-                    i = r.end;
-                } else {
-                    try out.append(gpa, 'u');
-                    i += 1;
-                }
-            },
-            '\n' => i += 1,
-            '\r' => {
-                i += 1;
-                if (i < raw.len and raw[i] == '\n') i += 1;
             },
             else => {
-                const separator_len = unicodeSeparatorLen(raw, i);
-                if (separator_len > 0) {
-                    i += separator_len;
+                const break_len = lineBreakLen(raw, i);
+                if (break_len > 0) {
+                    i += break_len;
                 } else {
                     try out.append(gpa, raw[i]);
                     i += 1;
@@ -299,7 +265,6 @@ fn pairAt(s: []const u8, i: usize) ?u21 {
     return 0x10000 + (high - 0xD800) * 0x400 + (low - 0xDC00);
 }
 
-// utf-8, or wtf-8 for a lone surrogate
 fn appendCodePoint(
     out: *std.ArrayList(u8),
     alloc: std.mem.Allocator,
@@ -337,10 +302,7 @@ pub fn hasOctalEscape(str: []const u8) bool {
 }
 
 inline fn hexVal(c: u8) ?u8 {
-    if (c >= '0' and c <= '9') return c - '0';
-    if (c >= 'a' and c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' and c <= 'F') return c - 'A' + 10;
-    return null;
+    return std.fmt.charToDigit(c, 16) catch null;
 }
 
 const testing = std.testing;

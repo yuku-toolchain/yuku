@@ -5,7 +5,7 @@
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",
 ---
-Semantic analysis builds a model of a program: its scopes, symbols, and references, with each reference resolved to the binding it names. It also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
+Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the binding it names. It also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
 
 ## [JavaScript]($section.id('javascript'))
 
@@ -47,7 +47,7 @@ project.diagnostics;                    // every module's diagnostics, and the f
 project.link();                         // links now, cross-file queries link on demand otherwise
 ```
 
-`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `attachComments`, and `tokens` options of the [parser](/parser/#js-options). `analyze(source, options)` is a project of one file, and also takes `path`. Both `new Analyzer` and `analyze` take a custom build as `wasm`, such as one with a [dialect](/parser/dialect/#javascript).
+`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `attachComments`, and `tokens` options of the [parser](/parser/#js-options). `analyze(source, options)` is a project of one file, and also takes `path`. `new Analyzer` and `analyze` both take a custom build as `wasm`, such as one with a [dialect](/parser/dialect/#javascript).
 
 The default resolver matches relative specifiers to files in the project, probing extensions and index files as TypeScript does, so `./a.js` finds `a.ts`. A package or an asset such as `./app.css` is external, and a relative specifier with no match is reported as a warning.
 
@@ -91,7 +91,7 @@ module.walkAsync(visitors, root);
 module.findAll(types);       // every node of the given types, in source order
 ```
 
-A node is the same object in `module.ast` and in every result, so each query takes the node you hold. The model describes the source as analyzed, and does not follow later edits to the AST.
+A node is the same object in `module.ast` and in every result, so each query takes the node you hold. The model describes the source as analyzed, not later edits to the AST.
 
 ### [Scope]($section.id('js-scope'))
 
@@ -236,7 +236,7 @@ const semantic = try parser.semantic.analyze(&tree);
 
 `analyze` returns the `Semantic` model and appends its errors to `tree.diagnostics`. The model lives in the tree's arena and describes the tree as parsed, so analyze again after a transform. To run your own hooks during the analysis walk, use the [semantic traverser](/parser/traverse/#semantic).
 
-When only the errors matter, `check` reports the same ones faster, without building the model.
+When only the errors matter, `check` reports the same ones faster, without the model.
 
 ```zig
 try parser.semantic.check(&tree);
@@ -247,8 +247,6 @@ try parser.semantic.check(&tree);
 - A **scope** is a lexical environment, with its kind, its parent, its strictness, and the scope its `var`s hoist to.
 - A **symbol** is a declared binding, with its flags and every declaration.
 - A **reference** is a use of a name, resolved to its symbol, or to `.none` for a global or undeclared name. It records whether it writes, as assignments, `++`, and `for-of` targets do. JSX component tags and type-predicate parameters are references too, so a rename sees every site.
-
-Every node leads into the model, and every symbol leads back to its nodes.
 
 ```zig
 semantic.symbolOf(node)             // the symbol a node declares or refers to, or null
@@ -270,7 +268,7 @@ semantic.iterSymbols()              // and iterScopes, iterReferences
 
 `Symbol`, `Scope`, and `Reference` are in `parser.traverser.semantic`. A declaration's name node is an identifier, or a string literal for a quoted enum member. Ids are dense and ordered, symbols by first declaration and references by source position, so "first declaration" and "earliest use" are index comparisons.
 
-Renaming a binding everywhere is two loops.
+Renaming a binding is two loops.
 
 ```zig
 const name = try tree.addString("renamed");

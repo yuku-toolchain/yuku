@@ -21,7 +21,7 @@ pub const SourceMap = struct {
 };
 
 pub const Options = struct {
-    /// The original source text. Required to emit a map.
+    /// The original source text, required to emit a map.
     source: ?[]const u8 = null,
     /// Output filename, embedded as the map's `file`.
     file: ?[]const u8 = null,

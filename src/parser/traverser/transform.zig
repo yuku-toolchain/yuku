@@ -1,6 +1,5 @@
-//! Transform traverser whose visitor hooks mutate the tree in place through
-//! `ctx.tree`. The walker re-reads a node after enter, so never point a
-//! node's child back to its own index.
+//! Traversal whose hooks may mutate the tree through `ctx.tree`. The walk re-reads a node
+//! after its enter hooks, so a node's child must never point back to the node.
 
 const std = @import("std");
 const ast = @import("../ast.zig");
@@ -8,18 +7,7 @@ const wk = @import("walk.zig");
 
 const Allocator = std.mem.Allocator;
 
-pub const Ctx = struct {
-    tree: *ast.Tree,
-    path: wk.NodePath = .{},
-
-    pub fn enter(self: *Ctx, index: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
-        self.path.push(index);
-    }
-
-    pub fn exit(self: *Ctx, _: ast.NodeIndex, _: ast.NodeData) void {
-        self.path.pop();
-    }
-};
+pub const Ctx = wk.PathCtx(*ast.Tree);
 
 /// Walks the tree tracking the node path, letting hooks mutate it.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!void {

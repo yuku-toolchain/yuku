@@ -6,32 +6,23 @@ const Error = @import("../../../parser.zig").Error;
 const literals = @import("../../literals.zig");
 const core = @import("core.zig");
 
-// let x: string
-//      ^^^^^^^^
 pub fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .colon);
-
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return null;
-
-    const type_node = try core.parseType(parser) orelse return null;
-
-    return try parser.tree.addNode(
-        .{ .ts_type_annotation = .{ .type_annotation = type_node } },
-        .{ .start = start, .end = parser.tree.span(type_node).end },
-    );
+    return parseAnnotation(parser, core.parseType);
 }
 
-// function f(x): x is T { ... }   function f(x): asserts x is T { ... }
-//                ^^^^^^                          ^^^^^^^^^^^^^^
 pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .colon);
+    return parseAnnotation(parser, parseTypeOrTypePredicate);
+}
 
+inline fn parseAnnotation(
+    parser: *Parser,
+    comptime parseInner: fn (*Parser) Error!?ast.NodeIndex,
+) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .colon);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
 
-    const inner = try parseTypeOrTypePredicate(parser) orelse return null;
-
+    const inner = try parseInner(parser) orelse return null;
     return try parser.tree.addNode(
         .{ .ts_type_annotation = .{ .type_annotation = inner } },
         .{ .start = start, .end = parser.tree.span(inner).end },
@@ -51,8 +42,6 @@ pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// this   this is T
-// ^^^^   ^^^^^^^^^
 pub fn parseThisTypeOrPredicate(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .this);
 
@@ -67,8 +56,6 @@ pub fn parseThisTypeOrPredicate(parser: *Parser) Error!?ast.NodeIndex {
     return finishTypePredicate(parser, this_token.span.start, this_type, false);
 }
 
-// asserts x   asserts x is T   asserts this is T
-// ^^^^^^^^^   ^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^
 pub fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .asserts);
 
@@ -131,9 +118,7 @@ pub fn isAssertsPredicateStart(parser: *Parser) bool {
     std.debug.assert(!parser.current_token.isEscaped());
 
     const next = parser.peekAhead();
-    if (next.hasLineTerminatorBefore()) return false;
-
-    return next.tag.isIdentifierLike();
+    return next.tag.isIdentifierLike() and !next.hasLineTerminatorBefore();
 }
 
 // `this is T` is handled by the primary type path
@@ -190,8 +175,9 @@ pub fn applyDecoratorsToPattern(
     parser.tree.setData(pattern, data);
 
     if (data == .binding_rest_element) {
-        const first = parser.tree.extra(decorators)[0];
-        extendSpanFrom(parser, pattern, parser.tree.span(first).start);
+        const start = parser.tree.span(parser.tree.extra(decorators)[0]).start;
+        const span = parser.tree.span(pattern);
+        if (start < span.start) parser.tree.setSpan(pattern, .{ .start = start, .end = span.end });
     }
 }
 
@@ -227,15 +213,6 @@ pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) vo
         else => return,
     }
     parser.tree.setData(pattern, data);
-    extendSpanTo(parser, pattern, end);
-}
-
-inline fn extendSpanTo(parser: *Parser, node: ast.NodeIndex, end: u32) void {
-    const span = parser.tree.span(node);
-    if (end > span.end) parser.tree.setSpan(node, .{ .start = span.start, .end = end });
-}
-
-inline fn extendSpanFrom(parser: *Parser, node: ast.NodeIndex, start: u32) void {
-    const span = parser.tree.span(node);
-    if (start < span.start) parser.tree.setSpan(node, .{ .start = start, .end = span.end });
+    const span = parser.tree.span(pattern);
+    if (end > span.end) parser.tree.setSpan(pattern, .{ .start = span.start, .end = end });
 }

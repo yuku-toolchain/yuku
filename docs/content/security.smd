@@ -11,13 +11,13 @@ Yuku processes source code that may be attacker controlled, so it treats every i
 
 Please do not open a public issue. Report privately through GitHub's [private vulnerability reporting](https://github.com/yuku-toolchain/yuku/security/advisories/new), or email [arshadpyaseen@gmail.com](mailto:arshadpyaseen@gmail.com).
 
-We aim to acknowledge reports within 72 hours. Please allow a reasonable window for a fix before public disclosure, and we are glad to credit you in the advisory. Fixes ship against the latest version.
+We aim to acknowledge reports within 72 hours. Please allow a reasonable window for a fix before public disclosure. We are glad to credit you in the advisory. Fixes ship against the latest version.
 
 ## [Our practices]($section.id('our-practices'))
 
-- **No third-party dependencies.** The npm package has no dependencies and runs no install scripts.
+- **No third-party dependencies.** The npm package has none and runs no install scripts, and the Zig build has none.
 - **Provenance publishing.** Releases publish to npm with provenance through OIDC trusted publishing, with no long-lived tokens.
-- **Hardened CI.** Every action is pinned to a commit hash, workflow tokens are read-only by default, and the workflows are checked by [zizmor](https://github.com/zizmorcore/zizmor) and [OpenSSF Scorecard](https://securityscorecards.dev).
-- **Reproducible builds.** Installs use a frozen lockfile, and the Zig build has no dependencies.
+- **Hardened CI.** Every action is pinned to a commit hash, workflow tokens are read-only by default, and [zizmor](https://github.com/zizmorcore/zizmor) and [OpenSSF Scorecard](https://securityscorecards.dev) check the workflows.
+- **Reproducible builds.** Installs use a frozen lockfile.
 - **Memory safety.** A parse allocates everything in one arena, and the npm package runs Yuku as WebAssembly, sandboxed from host memory.
 - **Fuzzing.** Millions of adversarial inputs per run, see [Testing](/testing/#fuzzing).

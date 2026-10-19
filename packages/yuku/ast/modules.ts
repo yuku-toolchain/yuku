@@ -11,15 +11,15 @@ import type {
 } from "../types";
 import { bindingIdentifiers, nameOf } from "./utils";
 
-/** One imported binding, one record per specifier. */
+/** One imported binding. */
 export interface CollectedImport {
-  /** The module specifier string. */
+  /** The module specifier. */
   source: string;
   /** The local binding name. */
   local: string;
-  /** The imported name: `"default"`, `"*"` for namespaces, or the export name. */
+  /** The export name, `"default"`, or `"*"` for a namespace. */
   imported: string;
-  /** True for `import type` and `import { type x }`. */
+  /** Whether it is `import type` or `import { type x }`. */
   typeOnly: boolean;
   /** Stage 3 phase modifier, or null. */
   phase: ImportPhase | null;
@@ -27,11 +27,7 @@ export interface CollectedImport {
   declaration: ImportDeclaration;
 }
 
-/**
- * The imported bindings of one declaration, one record per specifier.
- * Type-only imports are included with `typeOnly` set, and side-effect
- * imports yield none. Composes with a walk.
- */
+/** The bindings one declaration imports, none for a side-effect import. */
 export function collectImportDeclaration(declaration: ImportDeclaration): CollectedImport[] {
   const source = declaration.source.value;
   const declarationTypeOnly = declaration.importKind === "type";
@@ -60,24 +56,20 @@ export function collectImports(program: Program): CollectedImport[] {
   );
 }
 
-/** One exported name, one record per binding or specifier. */
+/** One exported name. */
 export interface CollectedExport {
-  /** The exported name, or null for bare `export *`. */
+  /** Null for a bare `export *`. */
   exported: string | null;
-  /** The local name backing the export, or null for re-exports and anonymous defaults. */
+  /** Null for a re-export or an anonymous default. */
   local: string | null;
-  /** The re-export source specifier, or null for local exports. */
+  /** The module a re-export takes from. */
   source: string | null;
-  /** True for `export type` and `export { type x }`. */
+  /** Whether it is `export type` or `export { type x }`. */
   typeOnly: boolean;
   node: ExportNamedDeclaration | ExportDefaultDeclaration | ExportAllDeclaration | ExportSpecifier;
 }
 
-/**
- * The exports of one declaration: declaration forms expand to one
- * record per bound name, specifiers to one record each, and `export *`
- * to a single record with a null `exported`. Composes with a walk.
- */
+/** The names one export declaration exports, one per bound name or specifier. */
 export function collectExportDeclaration(
   statement: ExportNamedDeclaration | ExportDefaultDeclaration | ExportAllDeclaration,
 ): CollectedExport[] {

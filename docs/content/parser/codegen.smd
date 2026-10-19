@@ -21,7 +21,7 @@ const { code, map, diagnostics } = generate(parse("const x = 1 + 2;").program);
 
 ### [Result]($section.id('js-result'))
 
-`generate` takes a `Program` or any single node, such as an object property, and returns a `GenerateResult`.
+`generate` takes a `Program` or any single node, such as an object property. Its `diagnostics` have the [shape of the parser's](/parser/#js-diagnostics).
 
 ```ts
 interface GenerateResult {
@@ -31,13 +31,7 @@ interface GenerateResult {
 }
 ```
 
-`diagnostics` has the [shape of the parser's](/parser/#js-diagnostics).
-
 ### [Options]($section.id('js-options'))
-
-```js
-generate(program, { strip: true, minify: true, sourceMap: { source } });
-```
 
 | Option      | Type                                                        | Default      | Description                                                                                   |
 | ----------- | ----------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------- |
@@ -58,9 +52,9 @@ An invalid value throws a `TypeError`, or a `RangeError` for `indent`.
 
 | Switch       | Behavior                                                  |
 | ------------ | --------------------------------------------------------- |
-| `whitespace` | Emit compact whitespace.                                  |
+| `whitespace` | Use the `"compact"` format.                               |
 | `syntax`     | Apply the size-reducing [syntax rewrites](#minification). |
-| `quotes`     | Use whichever quote needs fewer escapes per literal.      |
+| `quotes`     | Use `"shortest"` quotes.                                  |
 
 ```js
 generate(program, { minify: { syntax: true } }); // rewrites only, readable output
@@ -101,9 +95,6 @@ Pass the original source to emit a Source Map V3 alongside the code.
 const { code, map } = generate(program, {
   sourceMap: { source, file: "out.js", sourceFileName: "in.js", sourcesContent: source },
 });
-
-const output = `${code}\n//# sourceMappingURL=out.js.map`;
-const mapJson = JSON.stringify(map);
 ```
 
 | Field            | Description                                     |
@@ -114,7 +105,7 @@ const mapJson = JSON.stringify(map);
 | `sourceRoot`     | Embedded as `sourceRoot`.                       |
 | `sourcesContent` | The single entry of `sourcesContent`.           |
 
-`map` is a Source Map V3 object, ready for `JSON.stringify`, with columns in UTF-16 code units as in [Source maps](#source-maps).
+`map` is ready for `JSON.stringify`, with columns in UTF-16 code units as in [Source maps](#source-maps).
 
 ```ts
 interface SourceMap {

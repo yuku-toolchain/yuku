@@ -1,7 +1,5 @@
 # Contributing to Yuku
 
-Yuku is a JavaScript and TypeScript compiler toolchain written in Zig.
-
 ## Set up
 
 You need [Zig](https://ziglang.org/) 0.17 and [Bun](https://bun.sh/).
@@ -30,10 +28,10 @@ bun run test
 ```
 
 This builds everything and runs every suite, fetching the parser test suite and
-a few pinned open-source projects on the first run. To run a single one, use
+a few pinned open-source projects on the first run. To run one suite, use
 `test:parser`, `test:codegen`, `test:analyzer`, `test:sourcemap`, `test:ast`,
 `test:dialect`, or `test:runtime`, which runs the package with the `node` on
-your path. CI runs it on the minimum runtime, see AGENTS.md. After editing Zig,
+your path, and in CI on the minimum runtime (see AGENTS.md). After editing Zig,
 run `bun run build` first so the suites see your change.
 
 ### Add a test
@@ -44,15 +42,15 @@ run `bun run build` first so the suites see your change.
   in `test/codegen/` or `test/analyzer/`, then run the suite with
   `--update-snapshots`.
 
-Review the snapshot and commit it alongside your test. To learn what each suite
-checks, see [how Yuku is tested](https://yuku.fyi/testing/).
+Review the snapshot and commit it with your test. For what each suite checks,
+see [how Yuku is tested](https://yuku.fyi/testing/).
 
 ### Change the codegen
 
-The codegen has a Zig implementation, `src/parser/codegen/printer.zig`, and a
-JavaScript one, `packages/yuku/codegen/printer.ts`. They mirror each other
-function by function, so a change lands in both. `bun run test:codegen` prints
-the test corpus with each and fails on any difference.
+The Zig printer, `src/parser/codegen/printer.zig`, and the JavaScript one,
+`packages/yuku/codegen/printer.ts`, mirror each other function by function, so
+a change lands in both. `bun run test:codegen` prints the test corpus with each
+and fails on any difference.
 
 ## Find your way around
 

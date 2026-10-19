@@ -22,7 +22,7 @@ Yuku is a JavaScript and TypeScript compiler toolchain written in Zig.
 
 ## Documentation
 
-Visit [yuku.fyi](https://yuku.fyi) for the documentation.
+See [yuku.fyi](https://yuku.fyi).
 
 ## Install
 

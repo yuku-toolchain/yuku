@@ -19,7 +19,7 @@ pub const ArrayCover = struct {
 pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume [
+    try parser.advance() orelse return null;
 
     const checkpoint = parser.scratch_cover.begin();
     defer parser.scratch_cover.reset(checkpoint);
@@ -67,7 +67,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     }
 
     end = parser.current_token.span.end;
-    try parser.advance() orelse return null; // consume ]
+    try parser.advance() orelse return null;
 
     return .{
         .elements = try parser.flushToExtras(&parser.scratch_cover, checkpoint),

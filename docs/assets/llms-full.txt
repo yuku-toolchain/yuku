@@ -15,13 +15,13 @@ Yuku is a JavaScript and TypeScript compiler toolchain written in Zig, for use f
 
 **Correct.** Zero failures and zero AST mismatches across the [test suite](https://yuku.fyi/testing/).
 
-**Fast.** Built for speed, see [Performance](#performance).
+**Fast.** Faster than the alternatives, see [Performance](#performance).
 
-**Anywhere.** Runs in Node.js, Bun, Deno, browsers, and edge runtimes, see [JavaScript](#javascript).
+**Anywhere.** Node.js, Bun, Deno, browsers, and edge runtimes, see [JavaScript](#javascript).
 
 **Zero dependencies.** Pure Zig, with no dependencies in the build or on npm.
 
-**Modern.** Supports new and proposed syntax, including decorators, source phase and deferred imports, and `using` declarations.
+**Modern.** New and proposed syntax, including decorators, source phase and deferred imports, and `using` declarations.
 
 ---
 
@@ -48,6 +48,8 @@ It runs in Node.js 16.4 or newer, Bun, Deno, browsers, and edge runtimes such as
 
 ### Zig
 
+Yuku needs Zig 0.17.0 or later.
+
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
 ```
@@ -58,33 +60,27 @@ const yuku = b.dependency("yuku", .{ .target = target, .optimize = optimize });
 my_module.addImport("parser", yuku.module("parser"));
 ```
 
-Yuku needs Zig 0.17.0 or later.
-
 ## Performance
 
-Measured against the alternatives doing the same work, on an Apple M3.
+Measured on an Apple M3, with every tool doing the same work.
 
 ### Parser
 
-Parsing natively, Yuku is faster than Oxc and SWC.
+Natively, Yuku parses faster than Oxc and SWC.
 
 ![Parsing `typescript.js` (7.8 MB) natively · [benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png "Native benchmark comparing Yuku, Oxc, and SWC parsing typescript.js")
 
-On npm, Yuku parses faster than the alternatives.
+On npm, it parses faster than the alternatives, on small and large files.
 
 ![Parsing `react.js` (70 KB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png "npm benchmark comparing Yuku, Oxc, SWC, Babel, and Acorn parsing react.js")
-
-The lead holds on large files.
 
 ![Parsing `typescript.js` (7.8 MB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png "npm benchmark comparing Yuku, Oxc, SWC, Babel, and Acorn parsing typescript.js")
 
 ### Analyzer
 
-Analyzing a whole codebase, resolving every reference and linking every import across files, Yuku is faster than typescript-eslint and the TypeScript API.
+Analyzing a whole codebase, resolving every reference and linking every import across files, Yuku is faster than typescript-eslint and the TypeScript API, and on a single large file too.
 
 ![Analyzing three.js (755 files) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/three.png "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing three.js")
-
-The lead holds on a single large file.
 
 ![Analyzing `typescript.js` (7.8 MB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/typescript_js.png "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing typescript.js")
 
@@ -106,20 +102,16 @@ const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 
 ### Options
 
-```js
-parse(source, { path: "src/app.tsx" });
-```
-
-| Option           | Values                                    | Default    | Description                                                                                |
-| ---------------- | ----------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
-| `path`           | a file path                               | none       | Names the file in diagnostics. `lang` and `sourceType` default from its extension.         |
-| `lang`           | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, `"dts"` | `"js"`     | The syntax to parse, by default from the extension of `path`.                              |
-| `sourceType`     | `"module"`, `"script"`, `"commonjs"`      | `"module"` | `"commonjs"` allows top-level `return`, and is the default for `.cjs` and `.cts` paths.    |
-| `preserveParens` | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes.                                                      |
-| `semanticErrors` | `true`, `false`                           | `false`    | Also report the early errors that need scopes, such as redeclarations.                     |
-| `attachComments` | `true`, `false`                           | `false`    | Also attach each comment to its node, see [Comments](#js-comments).                        |
-| `tokens`         | `true`, `false`                           | `false`    | Keep every token, see [Tokens](#js-tokens).                                                |
-| `wasm`           | a `WebAssembly.Module`                    | bundled    | A custom build of Yuku, such as one with a [dialect](https://yuku.fyi/parser/dialect/#javascript).         |
+| Option           | Values                                    | Default    | Description                                                                              |
+| ---------------- | ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| `path`           | a file path                               | none       | Names the file in diagnostics, and sets `lang` and `sourceType` from its extension.      |
+| `lang`           | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, `"dts"` | `"js"`     | The syntax to parse.                                                                     |
+| `sourceType`     | `"module"`, `"script"`, `"commonjs"`      | `"module"` | `"commonjs"` allows top-level `return`, and is the default for `.cjs` and `.cts` paths.  |
+| `preserveParens` | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes.                                                    |
+| `semanticErrors` | `true`, `false`                           | `false`    | Also report the early errors that need scopes, such as redeclarations.                   |
+| `attachComments` | `true`, `false`                           | `false`    | Also attach each comment to its node, see [Comments](#js-comments).                      |
+| `tokens`         | `true`, `false`                           | `false`    | Keep every token, see [Tokens](#js-tokens).                                              |
+| `wasm`           | a `WebAssembly.Module`                    | bundled    | A custom build of Yuku, such as one with a [dialect](https://yuku.fyi/parser/dialect/#javascript).       |
 
 An unknown `lang` or `sourceType` throws a `TypeError`. `langFromPath(path)` and `sourceTypeFromPath(path)` return the values a path implies.
 
@@ -152,17 +144,9 @@ interface Diagnostic {
 
 ### Comments
 
-`comments` lists every comment in source order.
+`comments` lists every comment in source order, as `{ type, value, start, end }`, where `type` is `"Line"` or `"Block"` and `value` is the text without delimiters.
 
-```js
-const { comments } = parse(`// a line comment\nconst x = 1; /* a block comment */`);
-// [
-//   { type: "Line", value: " a line comment", start: 0, end: 17 },
-//   { type: "Block", value: " a block comment ", start: 31, end: 52 },
-// ]
-```
-
-`attachComments: true` also gives each comment to the node it prints with, in `node.comments`, and adds where it sits. They are the same objects as in `comments`. [`yuku/codegen`](https://yuku.fyi/parser/codegen/#js-comments) prints comments from `node.comments`, so they move with their nodes, and editing that array adds, moves, or drops them.
+`attachComments: true` also gives each comment to the node it prints with, in `node.comments`, and adds where it sits. They are the same objects as in `comments`.
 
 ```js
 const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
@@ -174,7 +158,7 @@ program.body[0].comments;
 // ]
 ```
 
-`position` is `"before"`, `"after"`, or `"inside"` an otherwise empty node, such as `function f() { /* hi */ }`.
+`position` is `"before"`, `"after"`, or `"inside"` an otherwise empty node, such as `function f() { /* hi */ }`. [`yuku/codegen`](https://yuku.fyi/parser/codegen/#js-comments) prints comments from `node.comments`, so they move with their nodes, and editing that array adds, moves, or drops them.
 
 ### Tokens
 
@@ -232,10 +216,6 @@ const parser = @import("parser");
 pub fn main() !void {
     var tree = try parser.parse(std.heap.smp_allocator, "const x: number = 1;", .{ .lang = .ts });
     defer tree.deinit();
-
-    for (tree.diagnostics.items) |d| {
-        std.debug.print("{s}\n", .{d.message});
-    }
 }
 ```
 
@@ -256,16 +236,11 @@ pub fn main() !void {
 
 ## Diagnostics
 
-The parser reports a syntax error and parses on past it.
-
 ```zig
 var tree = try parser.parse(allocator, "const a = 1;\nlet x = ;\nconst y = 2;", .{});
+defer tree.deinit();
 // one diagnostic, "Unexpected token ';'", and a tree holding `a` and `y`
-```
 
-Every part of Yuku reports diagnostics in one shape, `ast.Diagnostic`: a `severity` of `.error`, `.warning`, `.hint`, or `.info`, a `message`, a byte `span`, `labels` pointing at related code, and optional `help`.
-
-```zig
 for (tree.diagnostics.items) |d| {
     std.debug.print("[{s}] {s} at {d}..{d}\n", .{
         d.severity.toString(), d.message, d.span.start, d.span.end,
@@ -273,6 +248,8 @@ for (tree.diagnostics.items) |d| {
     if (d.help) |help| std.debug.print("  help: {s}\n", .{help});
 }
 ```
+
+Every part of Yuku reports diagnostics as an `ast.Diagnostic`: a `severity` of `.error`, `.warning`, `.hint`, or `.info`, a `message`, a byte `span`, `labels` pointing at related code, and optional `help`.
 
 `tree.hasErrors()` tells whether any error occurred, and `tree.hasDiagnostics()` whether anything was reported. [Semantic analysis](https://yuku.fyi/parser/semantic/) adds the early errors that need scopes, such as duplicate `let` declarations and `break` outside a loop.
 
@@ -286,13 +263,13 @@ The parser produces an AST. In JavaScript it is an ESTree / TypeScript-ESTree tr
 
 The tree is [ESTree](https://github.com/estree/estree) for JavaScript and JSX, as [Acorn](https://www.npmjs.com/package/acorn) produces it, and [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) for TypeScript, matching [Oxc](https://oxc.rs) for both. It also carries stage 3 [decorators](https://github.com/tc39/proposal-decorators), the `phase` of [import defer](https://github.com/tc39/proposal-defer-import-eval) and [import source](https://github.com/tc39/proposal-source-phase-imports) on imports and `ImportExpression`, and `Program.hashbang`.
 
-`yuku/types` has the TypeScript types of every node, comment, diagnostic, and token, listed in its [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/types/index.ts). `yuku` re-exports them, and a [dialect](https://yuku.fyi/parser/dialect/#javascript) adds its nodes to them.
+`yuku/types` has the TypeScript types of every node, comment, diagnostic, and token, in its [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/types/index.ts). `yuku` re-exports them, and a [dialect](https://yuku.fyi/parser/dialect/#javascript) adds its nodes.
 
 ```ts
 import type { Expression, Identifier, Node, Statement } from "yuku";
 ```
 
-`yuku/ast` walks, builds, and checks the tree, and works on an ESTree AST from any parser.
+`yuku/ast` walks, builds, and checks an ESTree AST from any parser.
 
 ### Walking
 
@@ -319,11 +296,11 @@ walk(program, {
 
 Handlers are keyed by node `type`, by alias group, or by the universal `enter` / `leave`, and receive the exact node type. The alias groups are `Expression`, `Statement`, `Declaration`, `ModuleDeclaration`, `Function`, `Class`, `Method`, `Loop`, `Pattern`, `JSX`, and `TSType`. Per node, the order is the universal `enter`, alias enters, the typed enter, the children, then the same in reverse for leave.
 
-An optional third argument passes state to every handler as `ctx.state`. `walkAsync` walks in the same order and awaits every handler. [`module.walk`](https://yuku.fyi/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the context.
+An optional third argument reaches every handler as `ctx.state`. `walkAsync` walks in the same order and awaits every handler. [`module.walk`](https://yuku.fyi/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the context.
 
 #### The context
 
-One context object is reused across the whole walk, so do not store it.
+One context object is reused for the whole walk, so do not store it.
 
 ```js
 ctx.node;        // the current node
@@ -371,7 +348,7 @@ findAll(program, ["ClassDeclaration", "TSInterfaceDeclaration"]);
 
 ### Builders
 
-`b` has one typed constructor per node type. Spans default to 0, which `ctx.replace` fills from the replaced node.
+`b` has one typed constructor per node type, with spans defaulting to 0.
 
 ```js
 import { b } from "yuku/ast";
@@ -418,17 +395,7 @@ for (const record of collectExports(program)) {
 }
 ```
 
-`collectImportDeclaration` and `collectExportDeclaration` return the records of a single statement, for use inside a walk.
-
-```js
-walk(program, {
-  ImportDeclaration(node) {
-    records.push(...collectImportDeclaration(node));
-  },
-});
-```
-
-These read the syntax of one file. [`yuku/analyzer`](https://yuku.fyi/parser/semantic/#js-imports-and-exports) resolves them to bindings and links them across files.
+`collectImportDeclaration` and `collectExportDeclaration` return the records of one statement, for use inside a walk. All four read the syntax of one file. [`yuku/analyzer`](https://yuku.fyi/parser/semantic/#js-imports-and-exports) resolves them to bindings and links them across files.
 
 ### Utilities
 
@@ -457,7 +424,7 @@ Plus `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `is
 
 ## Zig
 
-The tree is flat. Nodes, child lists, and strings live in arrays in one arena, and `tree.deinit()` frees them all at once. Four types refer into it.
+The tree is flat: nodes, child lists, and strings live in arrays in one arena. Four types refer into it.
 
 | Type         | Is                                                                           |
 | ------------ | ---------------------------------------------------------------------------- |
@@ -516,7 +483,7 @@ try tree.addDiagnostic(.{ .message = "unused", .span = span });
 
 ## Comments
 
-`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and its `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](https://yuku.fyi/parser/codegen/) prints it in place.
+`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](https://yuku.fyi/parser/codegen/) prints it in place.
 
 ```zig
 var comments = tree.commentsOf(node);
@@ -570,7 +537,7 @@ Names are UTF-8 with escapes decoded, as `tree.string` returns them.
 
 Source: https://yuku.fyi/parser/semantic/
 
-Semantic analysis builds a model of a program: its scopes, symbols, and references, with each reference resolved to the binding it names. It also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
+Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the binding it names. It also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
 
 ## JavaScript
 
@@ -612,7 +579,7 @@ project.diagnostics;                    // every module's diagnostics, and the f
 project.link();                         // links now, cross-file queries link on demand otherwise
 ```
 
-`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `attachComments`, and `tokens` options of the [parser](https://yuku.fyi/parser/#js-options). `analyze(source, options)` is a project of one file, and also takes `path`. Both `new Analyzer` and `analyze` take a custom build as `wasm`, such as one with a [dialect](https://yuku.fyi/parser/dialect/#javascript).
+`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `attachComments`, and `tokens` options of the [parser](https://yuku.fyi/parser/#js-options). `analyze(source, options)` is a project of one file, and also takes `path`. `new Analyzer` and `analyze` both take a custom build as `wasm`, such as one with a [dialect](https://yuku.fyi/parser/dialect/#javascript).
 
 The default resolver matches relative specifiers to files in the project, probing extensions and index files as TypeScript does, so `./a.js` finds `a.ts`. A package or an asset such as `./app.css` is external, and a relative specifier with no match is reported as a warning.
 
@@ -656,7 +623,7 @@ module.walkAsync(visitors, root);
 module.findAll(types);       // every node of the given types, in source order
 ```
 
-A node is the same object in `module.ast` and in every result, so each query takes the node you hold. The model describes the source as analyzed, and does not follow later edits to the AST.
+A node is the same object in `module.ast` and in every result, so each query takes the node you hold. The model describes the source as analyzed, not later edits to the AST.
 
 ### Scope
 
@@ -801,7 +768,7 @@ const semantic = try parser.semantic.analyze(&tree);
 
 `analyze` returns the `Semantic` model and appends its errors to `tree.diagnostics`. The model lives in the tree's arena and describes the tree as parsed, so analyze again after a transform. To run your own hooks during the analysis walk, use the [semantic traverser](https://yuku.fyi/parser/traverse/#semantic).
 
-When only the errors matter, `check` reports the same ones faster, without building the model.
+When only the errors matter, `check` reports the same ones faster, without the model.
 
 ```zig
 try parser.semantic.check(&tree);
@@ -812,8 +779,6 @@ try parser.semantic.check(&tree);
 - A **scope** is a lexical environment, with its kind, its parent, its strictness, and the scope its `var`s hoist to.
 - A **symbol** is a declared binding, with its flags and every declaration.
 - A **reference** is a use of a name, resolved to its symbol, or to `.none` for a global or undeclared name. It records whether it writes, as assignments, `++`, and `for-of` targets do. JSX component tags and type-predicate parameters are references too, so a rename sees every site.
-
-Every node leads into the model, and every symbol leads back to its nodes.
 
 ```zig
 semantic.symbolOf(node)             // the symbol a node declares or refers to, or null
@@ -835,7 +800,7 @@ semantic.iterSymbols()              // and iterScopes, iterReferences
 
 `Symbol`, `Scope`, and `Reference` are in `parser.traverser.semantic`. A declaration's name node is an identifier, or a string literal for a quoted enum member. Ids are dense and ordered, symbols by first declaration and references by source position, so "first declaration" and "earliest use" are index comparisons.
 
-Renaming a binding everywhere is two loops.
+Renaming a binding is two loops.
 
 ```zig
 const name = try tree.addString("renamed");
@@ -907,7 +872,7 @@ CommonJS exports have no static shape, so `records.flags` records whether the fi
 
 Source: https://yuku.fyi/parser/traverse/
 
-The traverser walks a tree and calls your visitor's hooks at every node. Pick the mode for what your tool needs to know as it walks.
+The traverser walks a tree and calls your visitor's hooks at every node, in one of four modes.
 
 | Mode                      | Tracks                          | Returns                                   | For                                         |
 | ------------------------- | ------------------------------- | ----------------------------------------- | ------------------------------------------- |
@@ -916,13 +881,13 @@ The traverser walks a tree and calls your visitor's hooks at every node. Pick th
 | [`semantic`](#semantic)   | scopes, symbols, and references | the [`Semantic`](https://yuku.fyi/parser/semantic/) model | analysis that needs to know what names mean |
 | [`transform`](#transform) | the path, with a mutable tree   | nothing                                   | rewrites, codemods, and desugaring          |
 
-In `basic`, `scoped`, and `semantic`, `ctx.tree` is a `*const Tree`, so a visitor cannot mutate what it reads. Only `transform` hands it a mutable tree.
+Only `transform` gives the visitor a mutable tree. In the other modes, `ctx.tree` is a `*const Tree`.
 
 In JavaScript, [`walk`](https://yuku.fyi/parser/ast/#js-walking) from `yuku/ast` walks any ESTree AST, and [`module.walk`](https://yuku.fyi/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the walk.
 
 ## Visitors
 
-A visitor is a struct with `enter_<tag>` and `exit_<tag>` methods, named after node tags. Each hook receives its node's payload already unpacked. This one counts functions in `basic` mode.
+A visitor is a struct with `enter_<tag>` and `exit_<tag>` methods, named after node tags, which receive the node's payload unpacked. This one counts functions in `basic` mode.
 
 ```zig
 const std = @import("std");
@@ -952,13 +917,13 @@ std.debug.print("{d} functions\n", .{counter.functions});
 
 A misspelled hook or a wrong payload type is a compile error. `enter_node` and `exit_node` fire for every node, with the `ast.NodeData` payload. The walk is depth-first with siblings in source order.
 
-An enter hook returns a `traverser.Action`: `.proceed` to walk into the children, `.skip` to pass over them, or `.stop` to end the walk. It may return it in an error union to `try` an allocation. An exit hook returns nothing.
+An enter hook returns a `traverser.Action`: `.proceed` to walk into the children, `.skip` to pass over them, or `.stop` to end the walk. It may return an error union, to `try` an allocation. An exit hook returns nothing.
 
 Every mode's context has `ctx.tree` and `ctx.path`. The path knows the current node's `parent()`, its `ancestor(n)` with the current node at 0, its `ancestors()` from the current node up, and its `depth()`.
 
 ## Scoped
 
-`ctx.scope` follows the walk into and out of every scope, with `currentScope()`, `hoistTarget()`, and `isStrict()`. This lint finds each `var` that escapes the block it is written in.
+`ctx.scope` follows the walk into and out of every scope, with `currentScope()`, `hoistTarget()`, and `isStrict()`. This lint finds each `var` that escapes its block.
 
 ```zig
 const scoped = traverser.scoped;
@@ -985,7 +950,7 @@ On `{ var b; } for (var i = 0;;) {}` it finds `b` and `i`. The walk also returns
 
 ## Semantic
 
-The walk builds the [`Semantic`](https://yuku.fyi/parser/semantic/) model as it goes and returns it. During the walk, `ctx.inTypePosition()` and `ctx.inTsNamespace()` tell where it is, and `ctx.symbols.binding(scope, name)` finds a name declared so far. References resolve when the walk ends, so a visitor collects nodes and queries the model after. This one finds the types a file imports.
+The walk builds the [`Semantic`](https://yuku.fyi/parser/semantic/) model and returns it. During the walk, `ctx.inTypePosition()` and `ctx.inTsNamespace()` tell where it is, and `ctx.symbols.binding(scope, name)` finds a name declared so far. References resolve when the walk ends, so a visitor collects nodes and queries the model after. This one finds the types a file imports.
 
 ```zig
 const sem = traverser.semantic;
@@ -1021,7 +986,7 @@ On `import type { User } from "./user"; type Id = string; let user: User, id: Id
 
 ## Transform
 
-A `transform` hook rewrites the tree in place. The walker re-reads a node after its enter hook, so it walks the replacement. This one turns `total = price + tax` into `total = price * tax`.
+A `transform` hook rewrites the tree in place. The walker re-reads a node after its enter hook, so it walks the replacement. This one turns `price + tax` into `price * tax`.
 
 ```zig
 const transform = traverser.transform;
@@ -1050,7 +1015,7 @@ try transform.traverse(AddToMultiply, &tree, &rewrite);
 
 The tree's [building and editing](https://yuku.fyi/parser/ast/#building-and-editing) calls, such as `addNode`, `addString`, and `setIdentifierName`, work during the walk. After wrapping a node in a new parent, return `.skip`, so the walker does not enter the moved node again. [Codegen](https://yuku.fyi/parser/codegen/) prints the result.
 
-To build a separate output tree, start one with `ast.Tree.initEmpty` and walk the input tree in any mode. Modes compose as passes, such as a transform followed by a semantic walk over its result.
+To build a separate output tree instead, start one with `ast.Tree.initEmpty` and walk the input in any mode. Modes compose as passes, such as a transform followed by a semantic walk over its result.
 
 ## Your own mode
 
@@ -1083,7 +1048,7 @@ const { code, map, diagnostics } = generate(parse("const x = 1 + 2;").program);
 
 ### Result
 
-`generate` takes a `Program` or any single node, such as an object property, and returns a `GenerateResult`.
+`generate` takes a `Program` or any single node, such as an object property. Its `diagnostics` have the [shape of the parser's](https://yuku.fyi/parser/#js-diagnostics).
 
 ```ts
 interface GenerateResult {
@@ -1093,13 +1058,7 @@ interface GenerateResult {
 }
 ```
 
-`diagnostics` has the [shape of the parser's](https://yuku.fyi/parser/#js-diagnostics).
-
 ### Options
-
-```js
-generate(program, { strip: true, minify: true, sourceMap: { source } });
-```
 
 | Option      | Type                                                        | Default      | Description                                                                                   |
 | ----------- | ----------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------- |
@@ -1120,9 +1079,9 @@ An invalid value throws a `TypeError`, or a `RangeError` for `indent`.
 
 | Switch       | Behavior                                                  |
 | ------------ | --------------------------------------------------------- |
-| `whitespace` | Emit compact whitespace.                                  |
+| `whitespace` | Use the `"compact"` format.                               |
 | `syntax`     | Apply the size-reducing [syntax rewrites](#minification). |
-| `quotes`     | Use whichever quote needs fewer escapes per literal.      |
+| `quotes`     | Use `"shortest"` quotes.                                  |
 
 ```js
 generate(program, { minify: { syntax: true } }); // rewrites only, readable output
@@ -1163,9 +1122,6 @@ Pass the original source to emit a Source Map V3 alongside the code.
 const { code, map } = generate(program, {
   sourceMap: { source, file: "out.js", sourceFileName: "in.js", sourcesContent: source },
 });
-
-const output = `${code}\n//# sourceMappingURL=out.js.map`;
-const mapJson = JSON.stringify(map);
 ```
 
 | Field            | Description                                     |
@@ -1176,7 +1132,7 @@ const mapJson = JSON.stringify(map);
 | `sourceRoot`     | Embedded as `sourceRoot`.                       |
 | `sourcesContent` | The single entry of `sourcesContent`.           |
 
-`map` is a Source Map V3 object, ready for `JSON.stringify`, with columns in UTF-16 code units as in [Source maps](#source-maps).
+`map` is ready for `JSON.stringify`, with columns in UTF-16 code units as in [Source maps](#source-maps).
 
 ```ts
 interface SourceMap {
@@ -1297,19 +1253,11 @@ const yuku = b.dependency("yuku", .{ .@"codegen-source-maps" = false });
 
 Source: https://yuku.fyi/parser/dialect/
 
-A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file. Yuku already parses, analyzes, walks, and prints the rest of the language, to the spec, and does the same for your nodes.
+A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file. Yuku parses, analyzes, walks, and prints the rest of the language to the spec, and your nodes with it.
 
 ## How it works
 
-Yuku is written in Zig and compiled to one WebAssembly module. The `yuku` npm package runs that module and decodes its output, the AST and the semantic model, into JavaScript objects.
-
-A dialect is compiled into Yuku itself. The result is your own WebAssembly module: Yuku with your syntax in its parser. Pass it to the `yuku` package as the `wasm` option, and `parse`, `analyze`, `walk`, and `generate` work as before, now with your syntax.
-
-1. Write the dialect, one Zig file.
-2. Build it into a WebAssembly module with Yuku's build.
-3. Pass the module as `wasm` in JavaScript.
-
-Standard code parses and analyzes exactly as in Yuku. Your nodes appear in the tree next to standard nodes.
+The `yuku` npm package runs Yuku as one WebAssembly module and decodes its output, the AST and the semantic model, into JavaScript objects. A dialect is compiled into Yuku itself, which makes your own WebAssembly module: Yuku with your syntax in its parser. Pass it to `yuku` as the `wasm` option, and `parse`, `analyze`, `walk`, and `generate` work as before, with your nodes in the tree next to standard ones. Standard code parses and analyzes exactly as in Yuku.
 
 ## Example
 
@@ -1371,7 +1319,7 @@ pub fn print(w: *dialect.Printer, kind: Node, children: []const ast.NodeIndex) d
 }
 ```
 
-With Yuku as a dependency, see [Install](https://yuku.fyi/#zig), build it into a WebAssembly module.
+With Yuku as a [dependency](https://yuku.fyi/#zig), build it into a WebAssembly module.
 
 ```zig
 // build.zig
@@ -1396,7 +1344,7 @@ const { program } = parse("const total = prices |> sum(%) |> round(%, 2);", {
 });
 ```
 
-The pipelines group left to right, and each decodes as `{ type: "PipelineExpression", start, end, left, right }`. The calls inside them are standard nodes, so `analyze` resolves `sum` and `round`, `walk` visits everything, and `generate` prints the line back as written.
+The pipelines group left to right, and each decodes as `{ type: "PipelineExpression", start, end, left, right }`. The calls inside them are standard nodes, so `analyze` resolves `sum` and `round`, and `walk` visits everything. `generate` prints the line back as written once its [`print`](https://yuku.fyi/parser/codegen/#js-printing-new-nodes) option covers your nodes.
 
 ## The dialect file
 
@@ -1427,18 +1375,18 @@ pub const files: []const dialect.File = &.{
 
 ## Positions
 
-A position is a point in the grammar where the parser asks your dialect first. Define a `pub fn` with the position's name, and the parser calls it there. Your function either parses the input as your syntax, or declines and lets standard parsing continue.
+A position is a point in the grammar where the parser asks your dialect first, by calling the `pub fn` of that name. It parses your syntax there, or declines and standard parsing continues.
 
-| Position           | Called at                                                         | Extra arguments                         |
-| ------------------ | ----------------------------------------------------------------- | --------------------------------------- |
-| `statement`        | The start of every statement                                      |                                         |
-| `expression`       | The start of every operand, before any prefix operator            |                                         |
-| `operator`         | After an operand, where an infix or postfix operator could follow | `left`, the operand, and `precedence`   |
-| `function_body`    | Where a function, method, or arrow function body starts           |                                         |
-| `jsx_child`        | The start of each JSX child                                       | `offset`, its byte offset, and `parent` |
-| `jsx_attribute`    | A `{` in a JSX tag, where standard JSX reads a spread attribute   |                                         |
-| `jsx_element_name` | The start of an element name, in an opening or closing tag        |                                         |
-| `module_specifier` | A module specifier that is not a string                           |                                         |
+| Position           | Called at                                                                 |
+| ------------------ | ------------------------------------------------------------------------- |
+| `statement`        | The start of every statement                                              |
+| `expression`       | The start of every operand, before any prefix operator                    |
+| `operator`         | After the operand `left`, where an infix or postfix operator could follow |
+| `function_body`    | Where a function, method, or arrow function body starts                   |
+| `jsx_child`        | The start of each JSX child, at byte `offset` in `parent`                 |
+| `jsx_attribute`    | A `{` in a JSX tag, where standard JSX reads a spread attribute           |
+| `jsx_element_name` | The start of an element name, in an opening or closing tag                |
+| `module_specifier` | A module specifier that is not a string                                   |
 
 ```zig
 pub fn statement(p: *dialect.Parser) dialect.Error!dialect.Claim
@@ -1460,15 +1408,15 @@ Each returns a `dialect.Claim`.
 | `.failed`            | A diagnostic was reported, by you or by a parse call.          |
 | `.end`               | `operator` only. The expression ends before the current token. |
 
-- Positions apply everywhere, including inside your own nodes. A `parseExpression` inside your node asks your `expression` and `operator` again, so your syntax and standard syntax nest in each other.
+- Positions apply everywhere, including inside your own nodes. A `parseExpression` inside your node asks your `expression` and `operator` again, so your syntax and standard syntax nest.
 - Decline anything the standard grammar accepts, unless you mean to read it differently.
-- `operator` receives the lowest precedence that continues the current expression. When your operator binds more loosely, answer `.end`, so an enclosing expression takes it, as the example does.
+- `operator` receives the lowest `precedence` that continues the current expression. When your operator binds more loosely, answer `.end` so an enclosing expression takes it, as the example does.
 - `function_body` allows `return` and a directive prologue inside, as a block body does.
 - A `jsx_child` ends on its last token, which stays current, since the parser reads the text after it by offset. `parent` is the opening element or fragment. Use `seek(offset)` when the child starts with tokens.
 
 ## The parser
 
-A position function receives a `*dialect.Parser`, the parser as your dialect drives it.
+A position function drives the parser through a `*dialect.Parser`.
 
 | Call                                 | Does                                                                                                                    |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
@@ -1542,7 +1490,7 @@ In JavaScript, a node is a plain object: its `type`, `start` and `end`, each fie
 
 ## Printing
 
-An optional `print` writes your nodes back to source, so codegen prints a whole tree. Without it, codegen reports a diagnostic for each of your nodes.
+An optional `print` writes your nodes back to source. Without it, codegen reports a diagnostic for each of your nodes.
 
 ```zig
 pub fn print(w: *dialect.Printer, kind: Node, children: []const ast.NodeIndex) dialect.Error!void
@@ -1560,7 +1508,7 @@ In JavaScript, `yuku/codegen` prints your nodes through its [`print`](https://yu
 
 ## Analysis
 
-Semantic analysis walks into your nodes like any other node. Standard code inside them declares, resolves, and reports early errors as usual, and names inside them resolve to the bindings around them. `block_scope`, `lexical_bindings`, and `catch_bindings` decide what scope and bindings your node adds, and `iteration` makes it a loop.
+Semantic analysis walks into your nodes like any other. Standard code inside them declares, resolves, and reports early errors as usual, and names inside them resolve to the bindings around them. The [shape](#nodes) decides the scope and bindings your node adds, and whether it is a loop.
 
 ## Walking and lowering
 
@@ -1571,7 +1519,7 @@ pub fn enter_dialect(self: *Lower, node: ast.Dialect, index: ast.NodeIndex, ctx:
 pub fn exit_dialect(self: *Lower, node: ast.Dialect, index: ast.NodeIndex, ctx: *transform.Ctx) void
 ```
 
-To compile your syntax to standard JavaScript, replace each of your nodes with standard nodes in a [transform](https://yuku.fyi/parser/traverse/#transform) pass, with `ctx.tree.setData(index, ...)` and the tree's building calls. After that, every tool reads plain JavaScript.
+To compile your syntax to standard JavaScript, replace each of your nodes with standard ones in a [transform](https://yuku.fyi/parser/traverse/#transform) pass, with `ctx.tree.setData(index, ...)` and the tree's building calls. Every tool then reads plain JavaScript.
 
 ## Building
 
@@ -1586,9 +1534,9 @@ const yuku = b.dependency("yuku", .{
 my_module.addImport("parser", yuku.module("parser"));
 ```
 
-`addWasm(b, yuku, name)` builds the WebAssembly module for JavaScript and installs it as `zig-out/bin/<name>.wasm`. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
+`addWasm(b, yuku, name)` adds the WebAssembly module for JavaScript, which `b.installArtifact` writes to `zig-out/bin/<name>.wasm`. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
 
-A build holds one parser, so it holds one dialect.
+A build holds one parser, and so one dialect.
 
 ## JavaScript
 
@@ -1599,9 +1547,7 @@ const { program } = parse(source, { path: "app.pipe.js", wasm });
 const module = analyze(source, { path: "app.pipe.js", wasm });
 ```
 
-- [`yuku/ast`](https://yuku.fyi/parser/ast/#js-walking) walks your nodes by their fields, and visitors can name your types.
-- [`yuku/analyzer`](https://yuku.fyi/parser/semantic/#javascript) resolves the names inside them.
-- [`yuku/codegen`](https://yuku.fyi/parser/codegen/#js-printing-new-nodes) prints them through its `print` option.
+[`yuku/ast`](https://yuku.fyi/parser/ast/#js-walking) walks your nodes by their fields, and visitors can name your types. [`yuku/analyzer`](https://yuku.fyi/parser/semantic/#javascript) resolves the names inside them, and [`yuku/codegen`](https://yuku.fyi/parser/codegen/#js-printing-new-nodes) prints them through its `print` option.
 
 For TypeScript, declare your nodes in `DialectNodes`, which adds them to `Node`, so visitors and `node.type` checks know them.
 
@@ -1635,7 +1581,7 @@ export function analyze(source: string, options: Omit<AnalyzeOptions, "wasm"> = 
 }
 ```
 
-To run in every runtime with no setup, load the module the way `yuku` does. Inline its bytes, and import the file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
+To run in every runtime with no setup, load the module as `yuku` does: inline its bytes, and import the file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
 
 ```ts
 // src/module/inline.ts
@@ -1661,7 +1607,7 @@ export { pipeline };
 }
 ```
 
-Bundle with a bundler that inlines `.wasm` as bytes, such as tsdown with `loader: { ".wasm": "binary" }`. Keep the `#` imports external, rewrite `#wasm` to `../pipeline.wasm?module`, such as with `outputOptions: { paths: { "#wasm": "../pipeline.wasm?module" } }`, and copy `pipeline.wasm` into `dist`. Cloudflare's and Vercel's bundlers both load a `.wasm?module` import as WebAssembly, and they match the path as written, so `#wasm` cannot reach them through `imports`. TypeScript reads the `#module`, `#wasm`, and `.wasm` imports from declarations like `yuku`'s own [imports.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/core/module/imports.d.ts).
+Bundle with a bundler that inlines `.wasm` as bytes, such as tsdown with `loader: { ".wasm": "binary" }`. Keep the `#` imports external, rewrite `#wasm` to `../pipeline.wasm?module`, as `outputOptions: { paths: { "#wasm": "../pipeline.wasm?module" } }` does, and copy `pipeline.wasm` into `dist`. Cloudflare's and Vercel's bundlers load a `.wasm?module` import as WebAssembly but match the path as written, so `#wasm` cannot reach them through `imports`. TypeScript reads the `#module`, `#wasm`, and `.wasm` imports from declarations like `yuku`'s own [imports.d.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/core/module/imports.d.ts).
 
 ## Cost
 
@@ -1677,15 +1623,15 @@ Yuku is tested for spec conformance, exact AST shapes, codegen soundness, name r
 
 The parser runs against [parser-test-suite](https://github.com/yuku-toolchain/parser-test-suite), over 55,000 tests from [Test262](https://github.com/tc39/test262), the [TypeScript](https://github.com/microsoft/TypeScript) compiler, and [Babel](https://github.com/babel/babel), synced with upstream daily.
 
-| Category   | Expectation                                                          |
-| ---------- | -------------------------------------------------------------------- |
-| `pass`     | Parses with no diagnostics, and the AST matches a snapshot exactly   |
-| `fail`     | Produces a syntax error                                              |
-| `semantic` | Parses, then fails semantic analysis with an early error             |
+| Category   | Expectation                                                        |
+| ---------- | ------------------------------------------------------------------ |
+| `pass`     | Parses with no diagnostics, and the AST matches a snapshot exactly |
+| `fail`     | Produces a syntax error                                            |
+| `semantic` | Parses, then fails semantic analysis with an early error           |
 
-The snapshots come from an independent parser, [Oxc](https://oxc.rs), and must match down to every field, position, and comment. Passing files must also walk in source order and pass semantic analysis without a false positive. Yuku passes every test, with zero failures and zero AST mismatches.
+The snapshots come from an independent parser, [Oxc](https://oxc.rs), and must match down to every field, position, and comment. Passing files must also walk in source order and pass semantic analysis without a false positive. Yuku passes every test.
 
-The suite runs through the `yuku` package built from local source, so every run checks the whole chain from the Zig parser to the JavaScript AST.
+The suite runs through the `yuku` package built from local source, so it checks the whole chain from the Zig parser to the JavaScript AST.
 
 ## Codegen
 
@@ -1693,13 +1639,13 @@ Every parseable file in the suite is printed under several option sets. Each out
 
 ## Semantic analysis
 
-Every file in the suite is analyzed, along with real codebases pinned to a commit, such as the TypeScript compiler, Node.js, Vue, and three.js. The TypeScript checker must resolve every reference, values and types alike, to the same declaration Yuku does. [@typescript-eslint/scope-manager](https://typescript-eslint.io/packages/scope-manager) must agree on every runtime reference and write, and on every declaration and its scope. Each runs over a million comparisons.
+Every file in the suite is analyzed, along with real codebases pinned to a commit, such as the TypeScript compiler, Node.js, Vue, and three.js. The TypeScript checker must resolve every reference, values and types alike, to the same declaration as Yuku. [@typescript-eslint/scope-manager](https://typescript-eslint.io/packages/scope-manager) must agree on every runtime reference and write, and on every declaration and its scope. Each runs over a million comparisons.
 
 Each codebase is also linked as one project, and every import, re-export, exported name, and relative path must resolve as in a TypeScript program.
 
 ## Fuzzing
 
-A fuzzer throws millions of adversarial inputs at the parser in every language mode, with out-of-memory failures injected along the way. The parser must never crash, and any failure dumps a self-contained reproducer. With everything in one arena, a parse has nothing to leak even when memory runs out.
+A fuzzer throws millions of adversarial inputs at the parser in every language mode, injecting out-of-memory failures along the way. The parser must never crash, and any failure dumps a self-contained reproducer. With everything in one arena, a parse has nothing to leak even when memory runs out.
 
 ## Running the suites
 
@@ -1719,13 +1665,13 @@ Yuku processes source code that may be attacker controlled, so it treats every i
 
 Please do not open a public issue. Report privately through GitHub's [private vulnerability reporting](https://github.com/yuku-toolchain/yuku/security/advisories/new), or email [arshadpyaseen@gmail.com](mailto:arshadpyaseen@gmail.com).
 
-We aim to acknowledge reports within 72 hours. Please allow a reasonable window for a fix before public disclosure, and we are glad to credit you in the advisory. Fixes ship against the latest version.
+We aim to acknowledge reports within 72 hours. Please allow a reasonable window for a fix before public disclosure. We are glad to credit you in the advisory. Fixes ship against the latest version.
 
 ## Our practices
 
-- **No third-party dependencies.** The npm package has no dependencies and runs no install scripts.
+- **No third-party dependencies.** The npm package has none and runs no install scripts, and the Zig build has none.
 - **Provenance publishing.** Releases publish to npm with provenance through OIDC trusted publishing, with no long-lived tokens.
-- **Hardened CI.** Every action is pinned to a commit hash, workflow tokens are read-only by default, and the workflows are checked by [zizmor](https://github.com/zizmorcore/zizmor) and [OpenSSF Scorecard](https://securityscorecards.dev).
-- **Reproducible builds.** Installs use a frozen lockfile, and the Zig build has no dependencies.
+- **Hardened CI.** Every action is pinned to a commit hash, workflow tokens are read-only by default, and [zizmor](https://github.com/zizmorcore/zizmor) and [OpenSSF Scorecard](https://securityscorecards.dev) check the workflows.
+- **Reproducible builds.** Installs use a frozen lockfile.
 - **Memory safety.** A parse allocates everything in one arena, and the npm package runs Yuku as WebAssembly, sandboxed from host memory.
 - **Fuzzing.** Millions of adversarial inputs per run, see [Testing](https://yuku.fyi/testing/#fuzzing).

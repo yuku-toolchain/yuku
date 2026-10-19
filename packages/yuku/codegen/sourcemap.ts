@@ -10,9 +10,6 @@ const VLQ_ZERO = VLQ_DIGITS[0]!;
 const CHAR_COMMA = 0x2c;
 const CHAR_SEMICOLON = 0x3b;
 
-const LINE_SEPARATOR = String.fromCharCode(CHAR_LS);
-const PARAGRAPH_SEPARATOR = String.fromCharCode(CHAR_PS);
-
 const LATIN1 = new TextDecoder("latin1");
 
 export class Mappings {
@@ -65,7 +62,9 @@ export function encodeMappings(output: string, source: string, mappings: Mapping
     let sourceCol = 0;
     if (!done) {
       const committed = data[i]!;
-      while (genLine + 1 < outputStarts.length && outputStarts[genLine + 1]! <= committed) genLine++;
+      while (genLine + 1 < outputStarts.length && outputStarts[genLine + 1]! <= committed) {
+        genLine++;
+      }
       genCol = committed - outputStarts[genLine]! + data[i + 1]!;
       const sourceOffset = data[i + 2]!;
       sourceLine = lineOf(sourceStarts, sourceOffset, sourceLine);
@@ -74,7 +73,12 @@ export function encodeMappings(output: string, source: string, mappings: Mapping
 
     if (hasPending && (done || pendingGenLine !== genLine || pendingGenCol !== genCol)) {
       const lines = pendingGenLine - lastGenLine;
-      if (at + lines + SEGMENT_BYTES_MAX > bytes.length) bytes = grow(bytes, at, lines);
+      const needed = at + lines + SEGMENT_BYTES_MAX;
+      if (needed > bytes.length) {
+        const grown = new Uint8Array(Math.max(needed, bytes.length * 2));
+        grown.set(bytes.subarray(0, at));
+        bytes = grown;
+      }
       at = writeSegment(
         bytes,
         at,
@@ -101,11 +105,7 @@ export function encodeMappings(output: string, source: string, mappings: Mapping
 
 function lineStarts(text: string): number[] {
   const starts = [0];
-  if (
-    text.indexOf("\r") === -1 &&
-    text.indexOf(LINE_SEPARATOR) === -1 &&
-    text.indexOf(PARAGRAPH_SEPARATOR) === -1
-  ) {
+  if (text.indexOf("\r") === -1 && text.indexOf("\u2028") === -1 && text.indexOf("\u2029") === -1) {
     for (let at = text.indexOf("\n"); at !== -1; at = text.indexOf("\n", at + 1)) {
       starts.push(at + 1);
     }
@@ -137,16 +137,6 @@ function lineOf(starts: number[], offset: number, hint: number): number {
     else high = mid - 1;
   }
   return low;
-}
-
-function grow(
-  bytes: Uint8Array<ArrayBuffer>,
-  length: number,
-  lines: number,
-): Uint8Array<ArrayBuffer> {
-  const grown = new Uint8Array(Math.max(length + lines + SEGMENT_BYTES_MAX, bytes.length * 2));
-  grown.set(bytes.subarray(0, length));
-  return grown;
 }
 
 // a segment of deltas, after a `;` per generated line it moves down or a `,` on the same line

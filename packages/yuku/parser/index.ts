@@ -15,30 +15,18 @@ export { langFromPath, sourceTypeFromPath } from "../core/wasm";
 
 export interface ParseOptions extends FileOptions {
   /**
-   * The build of Yuku that parses, such as one with a dialect compiled in. See
+   * A Yuku build to parse with, such as one with a dialect compiled in. See
    * https://yuku.fyi/parser/dialect/#javascript.
    * @default the module yuku ships
    */
   wasm?: WebAssembly.Module;
-  /**
-   * Keep `ParenthesizedExpression` nodes. When false, only the inner expression is kept.
-   * @default true
-   */
+  /** Keep `ParenthesizedExpression` nodes. @default true */
   preserveParens?: boolean;
-  /**
-   * Also report the early errors that need scopes, such as redeclarations.
-   * @default false
-   */
+  /** Also report the early errors that need scopes, such as redeclarations. @default false */
   semanticErrors?: boolean;
-  /**
-   * Also attach each comment to its node. See {@link BaseNode.comments}.
-   * @default false
-   */
+  /** Attach each comment to its node, see {@link BaseNode.comments}. @default false */
   attachComments?: boolean;
-  /**
-   * Keep every token in {@link ParseResult.tokens}.
-   * @default false
-   */
+  /** Keep every token in {@link ParseResult.tokens}. @default false */
   tokens?: boolean;
 }
 
@@ -51,7 +39,7 @@ export interface ParseResult {
   diagnostics: Diagnostic[];
 }
 
-/** Every token kind by name, `tokens.kind(i) === TokenKind.Arrow`. */
+/** Every token kind by name. */
 export const TokenKind: TokenKindMap = tokenKind;
 export type TokenKind = TokenKindMap[keyof TokenKindMap];
 

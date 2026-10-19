@@ -5,29 +5,21 @@ const dialect = @import("../dialect.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// ID for a scope. `.root` is the top-level scope, `.none` means no scope.
+/// Identifier for a `Scope`. `.root` is the top-level scope and `.none` means absent.
 pub const ScopeId = enum(u32) { root = 0, module = 1, none = std.math.maxInt(u32), _ };
 
-/// A single lexical scope in the scope tree.
-///
-/// ## Example
-/// ```ts
-/// function f() { { var a; let b; } }
-/// //       ^ creates a function scope, a hoist target
-/// //             ^ creates a block scope where `b` lives,
-/// //               while `a` hoists to the function scope
-/// ```
+/// A lexical scope.
 pub const Scope = struct {
-    /// The AST node that created this scope.
+    /// The node that created the scope.
     node: ast.NodeIndex,
-    /// Parent scope, or `.none` for the root.
+    /// The parent scope, or `.none` for the root.
     parent: ScopeId,
-    /// Nearest ancestor (or self) where `var` declarations hoist to.
+    /// The nearest scope, itself included, where a `var` declared here lands.
     hoist_target: ScopeId,
     kind: Kind,
     flags: Flags,
 
-    /// What kind of JavaScript construct created this scope.
+    /// The construct that created a scope.
     pub const Kind = enum(u8) {
         /// Section 16.1.7 GlobalDeclarationInstantiation.
         global,
@@ -44,10 +36,8 @@ pub const Scope = struct {
         /// The scope of a named function or class expression's own name,
         /// between the outer scope and the body (15.2.5, 15.7.14).
         expression_name,
-
-        /// A TS namespace body, a hoist target so its `var`s do not escape.
+        /// A TypeScript namespace body.
         ts_module,
-
         /// A function body's own scope. The signature sits outside it so a
         /// parameter annotation cannot see a body-local type, and body `var`s
         /// hoist past it unless the parameter list has expressions (10.2.11 step 28).
@@ -56,8 +46,7 @@ pub const Scope = struct {
         ///   //            ^ unresolved, T is local to the body
         function_body,
 
-        /// Whether `var` declarations can hoist to this kind. `function_body`
-        /// varies per instance, see `hoist_target`.
+        /// Whether a `var` can hoist to this kind. A `function_body` may still pass it on.
         pub fn isHoistTarget(self: Kind) bool {
             return switch (self) {
                 .global, .module, .function, .static_block, .ts_module, .function_body => true,
@@ -67,7 +56,7 @@ pub const Scope = struct {
     };
 
     pub const Flags = struct {
-        /// Whether this scope is in strict mode.
+        /// Whether the scope is strict mode code.
         strict: bool = false,
     };
 };
@@ -83,13 +72,13 @@ pub const ScopeTree = struct {
         return self.list[@backingInt(id)];
     }
 
-    /// Walks from `start` up to the root, yielding `start` first.
+    /// Iterates from `start` up to the root.
     pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
         std.debug.assert(start == .none or @backingInt(start) < self.list.len);
         return .{ .list = self.list, .current = start };
     }
 
-    /// Yields each scope id from a starting scope up to the root.
+    /// Yields scope ids from a starting scope up to the root.
     pub const AncestorIterator = struct {
         list: []const Scope,
         current: ScopeId,
@@ -110,7 +99,6 @@ pub const ScopeTracker = struct {
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .empty,
     current: ScopeId = .root,
-    // scopes saved while a decorator subtree retargets `current`
     decorator_saved: std.ArrayList(ScopeId) = .empty,
 
     pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
@@ -121,31 +109,18 @@ pub const ScopeTracker = struct {
 
         const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));
         try self.scopes.ensureTotalCapacity(alloc, estimated_scopes);
-
-        self.pushRoot();
-
-        std.debug.assert(self.scopes.items.len == if (tree.source_type == .module)
-            @as(usize, 2)
-        else
-            1);
-        return self;
-    }
-
-    fn pushRoot(self: *ScopeTracker) void {
         std.debug.assert(self.scopes.items.len == 0);
 
         self.scopes.appendAssumeCapacity(.{
-            .node = self.tree.root,
+            .node = tree.root,
             .parent = .none,
             .hoist_target = .root,
             .kind = .global,
             .flags = .{},
         });
-        self.current = .root;
-
-        if (self.tree.source_type == .module) {
+        if (tree.source_type == .module) {
             self.scopes.appendAssumeCapacity(.{
-                .node = self.tree.root,
+                .node = tree.root,
                 .parent = .root,
                 .hoist_target = .module,
                 .kind = .module,
@@ -153,6 +128,12 @@ pub const ScopeTracker = struct {
             });
             self.current = .module;
         }
+
+        std.debug.assert(self.scopes.items.len == if (tree.source_type == .module)
+            @as(usize, 2)
+        else
+            1);
+        return self;
     }
 
     pub fn pushScope(
@@ -197,7 +178,9 @@ pub const ScopeTracker = struct {
             },
             .function => |func| {
                 const flags = self.functionFlags(func.body);
-                if (isNamedFunctionExpression(func)) {
+                const declaration = func.type == .function_declaration or
+                    func.type == .ts_declare_function;
+                if (!declaration and func.id != .null) {
                     try self.pushScope(.expression_name, index, flags);
                 }
                 try self.pushScope(.function, index, flags);
@@ -266,7 +249,7 @@ pub const ScopeTracker = struct {
             .class => |cls| {
                 // class code is always strict (15.7.14)
                 const flags = Scope.Flags{ .strict = true };
-                if (isNamedClassExpression(cls)) {
+                if (cls.type != .class_declaration and cls.id != .null) {
                     try self.pushScope(.expression_name, index, flags);
                 }
                 try self.pushScope(.class, index, flags);
@@ -296,7 +279,7 @@ pub const ScopeTracker = struct {
         return outer;
     }
 
-    // a body's "use strict" covers the parameter list too, so it applies before the parameters
+    // a body's "use strict" also covers its parameters
     fn functionFlags(self: *const ScopeTracker, body_index: ast.NodeIndex) Scope.Flags {
         return .{ .strict = self.isStrict() or hasUseStrict(self.tree, body_index) };
     }
@@ -317,10 +300,9 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    // pops exactly the scopes recording this node as creator, so it cannot drift from `enter`
     pub fn exit(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) void {
         switch (data) {
-            // the root and module scopes live for the whole walk
+            // the root and module scopes outlive the walk
             .program => {},
             .decorator => {
                 std.debug.assert(self.decorator_saved.items.len > 0);
@@ -337,17 +319,6 @@ pub const ScopeTracker = struct {
         const data = tree.data(params);
         if (data != .formal_parameters) return false;
         return ecmascript.findParameterExpression(tree, data.formal_parameters) != null;
-    }
-
-    fn isNamedFunctionExpression(func: ast.Function) bool {
-        return switch (func.type) {
-            .function_declaration, .ts_declare_function => false,
-            else => func.id != .null,
-        };
-    }
-
-    fn isNamedClassExpression(cls: ast.Class) bool {
-        return cls.type != .class_declaration and cls.id != .null;
     }
 
     /// The current scope.
@@ -376,7 +347,7 @@ pub const ScopeTracker = struct {
         return self.currentScope().flags.strict;
     }
 
-    /// Walks from `start` up to the root, yielding `start` first.
+    /// Iterates from `start` up to the root.
     pub fn ancestors(self: *const ScopeTracker, start: ScopeId) ScopeTree.AncestorIterator {
         return self.toScopeTree().ancestors(start);
     }

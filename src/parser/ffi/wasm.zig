@@ -1,5 +1,3 @@
-// the JavaScript instantiates this module with no imports
-
 const std = @import("std");
 const parser = @import("parser");
 const transfer = @import("transfer/root.zig");
@@ -16,6 +14,10 @@ const flag = struct {
     const tokens = 1 << 8;
     const dialect = 1 << 9;
 };
+
+// static, so the host reads it without freeing
+const description = std.mem.toBytes(std.mem.nativeToLittle(u32, parser.dialect.description.len)) ++
+    parser.dialect.description[0..parser.dialect.description.len].*;
 
 export fn alloc(len: usize) [*]u8 {
     return (gpa.alloc(u8, len) catch @trap()).ptr;
@@ -35,19 +37,10 @@ export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
     return @intFromPtr(out.ptr);
 }
 
-// static, so the host reads it without freeing
 export fn dialect() usize {
     if (!parser.dialect.bound) return 0;
     return @intFromPtr(&description);
 }
-
-const description = blk: {
-    const json = parser.dialect.description;
-    var bytes: [4 + json.len]u8 = undefined;
-    std.mem.writeInt(u32, bytes[0..4], json.len, .little);
-    @memcpy(bytes[4..], json);
-    break :blk bytes;
-};
 
 fn parseBuffer(source: []const u8, flags: u32) ![]u8 {
     var tree = try parseTree(source, flags);
@@ -84,7 +77,6 @@ fn parseTree(source: []const u8, flags: u32) !parser.ast.Tree {
     });
 }
 
-// the length prefix lets the host copy the buffer out before freeing it
 fn prefixed(size: usize) ![]u8 {
     const out = try gpa.alloc(u8, 4 + size);
     std.mem.writeInt(u32, out[0..4], @intCast(size), .little);

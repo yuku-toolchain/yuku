@@ -66,12 +66,8 @@ pub fn expressionToPattern(
     }
 
     switch (data) {
-        .identifier_reference => |id| {
-            if (context == .binding) {
-                parser.tree.setData(expr, .{ .binding_identifier = .{
-                    .name = id.name,
-                } });
-            }
+        .identifier_reference => |id| if (context == .binding) {
+            parser.tree.setData(expr, .{ .binding_identifier = .{ .name = id.name } });
         },
 
         .assignment_expression => |assign| {
@@ -100,15 +96,13 @@ pub fn expressionToPattern(
             try array.toArrayPattern(parser, expr, arr.elements, parser.tree.span(expr), context);
         },
 
-        .object_expression => |obj| {
-            try object.toObjectPattern(
-                parser,
-                expr,
-                obj.properties,
-                parser.tree.span(expr),
-                context,
-            );
-        },
+        .object_expression => |obj| try object.toObjectPattern(
+            parser,
+            expr,
+            obj.properties,
+            parser.tree.span(expr),
+            context,
+        ),
 
         .spread_element => |spread| {
             const arg = spread.argument;
@@ -125,28 +119,24 @@ pub fn expressionToPattern(
             parser.tree.setData(expr, .{ .binding_rest_element = .{ .argument = arg } });
         },
 
-        .chain_expression => {
+        .chain_expression => try parser.report(
+            parser.tree.span(expr),
+            if (context == .binding)
+                "Optional chaining is not allowed in binding pattern"
+            else
+                "Optional chaining is not allowed in assignment pattern",
+            .{ .help = "Optional chaining ('?.') cannot be used as an assignment target" ++
+                " in destructuring patterns." },
+        ),
+
+        .member_expression => if (context != .assignable) {
             try parser.report(
                 parser.tree.span(expr),
-                if (context == .binding)
-                    "Optional chaining is not allowed in binding pattern"
-                else
-                    "Optional chaining is not allowed in assignment pattern",
-                .{ .help = "Optional chaining ('?.') cannot be used as an assignment target" ++
-                    " in destructuring patterns." },
+                "Member expression is not allowed in binding pattern",
+                .{ .help = "Function parameters and variable declarations can only bind" ++
+                    " to identifiers, not member expressions like 'obj.prop' or" ++
+                    " 'obj[key]'. Use a simple identifier instead." },
             );
-        },
-
-        .member_expression => {
-            if (context != .assignable) {
-                try parser.report(
-                    parser.tree.span(expr),
-                    "Member expression is not allowed in binding pattern",
-                    .{ .help = "Function parameters and variable declarations can only bind" ++
-                        " to identifiers, not member expressions like 'obj.prop' or" ++
-                        " 'obj[key]'. Use a simple identifier instead." },
-                );
-            }
         },
 
         .ts_non_null_expression,
@@ -207,8 +197,7 @@ pub fn expressionToPattern(
 
         .binding_identifier => {},
 
-        // `.binding` re-descends targets already converted under `.assignable` at `=`,
-        // as in the parameter of `([a.b] = []) => {}`
+        // `.binding` re-descends what `.assignable` converted, as in `([a.b] = []) => {}`
         .assignment_pattern => |pattern| if (context == .binding) {
             try expressionToPattern(parser, pattern.left, context);
         },
@@ -218,9 +207,7 @@ pub fn expressionToPattern(
                 if (element == .null) continue;
                 try expressionToPattern(parser, element, context);
             }
-            if (pattern.rest != .null) {
-                try expressionToPattern(parser, pattern.rest, context);
-            }
+            if (pattern.rest != .null) try expressionToPattern(parser, pattern.rest, context);
         },
 
         .object_pattern => |pattern| if (context == .binding) {
@@ -230,25 +217,21 @@ pub fn expressionToPattern(
                 if (property_data != .binding_property) continue;
                 try expressionToPattern(parser, property_data.binding_property.value, context);
             }
-            if (pattern.rest != .null) {
-                try expressionToPattern(parser, pattern.rest, context);
-            }
+            if (pattern.rest != .null) try expressionToPattern(parser, pattern.rest, context);
         },
 
         .binding_rest_element => |rest| if (context == .binding) {
             try expressionToPattern(parser, rest.argument, context);
         },
 
-        else => {
-            try parser.report(
-                parser.tree.span(expr),
-                if (context == .binding)
-                    "Invalid element in binding pattern"
-                else
-                    "Invalid element in assignment pattern",
-                .{ .help = "Expected an identifier, array pattern, object pattern," ++
-                    " or assignment pattern." },
-            );
-        },
+        else => try parser.report(
+            parser.tree.span(expr),
+            if (context == .binding)
+                "Invalid element in binding pattern"
+            else
+                "Invalid element in assignment pattern",
+            .{ .help = "Expected an identifier, array pattern, object pattern," ++
+                " or assignment pattern." },
+        ),
     }
 }

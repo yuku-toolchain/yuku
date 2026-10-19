@@ -19,32 +19,21 @@ pub fn classifyArrowHead(parser: *Parser) ArrowHead {
     defer peek.end();
 
     const second = peek.next();
-
     switch (second.tag) {
         .spread => return .yes,
         .left_bracket, .left_brace => return .maybe,
-        .right_paren => {
-            const third = peek.next();
-            return switch (third.tag) {
-                .arrow, .colon => .yes,
-                else => .no,
-            };
+        .right_paren => return switch (peek.next().tag) {
+            .arrow, .colon => .yes,
+            else => .no,
         },
-        .this => {
-            const third = peek.next();
-            return if (third.tag == .colon) .yes else .no;
-        },
+        .this => return if (peek.next().tag == .colon) .yes else .no,
         else => {
             if (!second.tag.isIdentifierLike()) return .no;
-            const third = peek.next();
-            return switch (third.tag) {
+            return switch (peek.next().tag) {
                 .colon => .yes,
-                .question => blk: {
-                    const fourth = peek.next();
-                    break :blk switch (fourth.tag) {
-                        .colon, .comma, .assign, .right_paren => .yes,
-                        else => .no,
-                    };
+                .question => switch (peek.next().tag) {
+                    .colon, .comma, .assign, .right_paren => .yes,
+                    else => .no,
                 },
                 .comma, .assign, .right_paren => .maybe,
                 else => .no,
@@ -112,8 +101,7 @@ pub fn tryParseArrow(
     if (parser.ts_rejected_speculations.contains(head)) return null;
 
     const cp = parser.checkpoint();
-
-    const arrow = (try parseArrow(parser, is_async, arrow_start, options)) orelse {
+    const arrow = try parseArrow(parser, is_async, arrow_start, options) orelse {
         parser.rewind(cp);
         try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {});
         return null;

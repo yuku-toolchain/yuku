@@ -24,7 +24,7 @@ pub const ObjectCover = struct {
 pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume {
+    try parser.advance() orelse return null;
 
     const checkpoint = parser.scratch_cover.begin();
     defer parser.scratch_cover.reset(checkpoint);
@@ -66,7 +66,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     }
 
     end = parser.current_token.span.end;
-    try parser.advance() orelse return null; // consume }
+    try parser.advance() orelse return null;
 
     return .{
         .properties = try parser.flushToExtras(&parser.scratch_cover, checkpoint),
@@ -120,38 +120,9 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (key == .null) {
-        if (parser.current_token.tag == .left_bracket) {
-            computed = true;
-            try parser.advance() orelse return null;
-            // a key is never a pattern, so its strips must not replace the pattern's record
-            const outer_stripped_paren = parser.state.stripped_paren;
-            key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-                return null;
-            parser.state.stripped_paren = outer_stripped_paren;
-            if (!try parser.expect(
-                .right_bracket,
-                "Expected ']' after computed property key",
-                null,
-            )) return null;
-        } else if (parser.current_token.tag.isIdentifierLike()) {
-            key_identifier_token = parser.current_token;
-            key = try literals.parseIdentifierName(parser) orelse return null;
-        } else if (parser.current_token.tag == .string_literal) {
-            key = try literals.parseStringLiteral(parser) orelse return null;
-        } else if (parser.current_token.tag.isNumericLiteral()) {
-            key = try literals.parseNumericLiteral(parser) orelse return null;
-        } else {
-            try parser.report(
-                parser.current_token.span,
-                try parser.fmt(
-                    "Unexpected token '{s}' as property key",
-                    .{parser.describeToken(parser.current_token)},
-                ),
-                .{ .help = "Property keys must be identifiers, strings, numbers, or" ++
-                    " computed expressions [expr]." },
-            );
-            return null;
-        }
+        const key_token = parser.current_token;
+        key, computed = try parsePropertyKey(parser, .object) orelse return null;
+        if (key_token.tag.isIdentifierLike()) key_identifier_token = key_token;
     }
 
     const key_span = parser.tree.span(key);
@@ -197,6 +168,8 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         );
     }
 
+    const key_data = parser.tree.data(key);
+    var value: ast.NodeIndex = undefined;
     // CoverInitializedName `a = default`
     if (parser.current_token.tag == .assign) {
         if (computed) {
@@ -207,8 +180,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             );
             return null;
         }
-
-        const key_data = parser.tree.data(key);
         if (key_data != .identifier_name) {
             try parser.report(
                 key_span,
@@ -225,63 +196,44 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             Precedence.Assignment,
             .{},
         ) orelse return null;
-
-        const id_ref = try parser.tree.addNode(
+        const reference = try parser.tree.addNode(
             .{ .identifier_reference = .{ .name = key_data.identifier_name.name } },
             key_span,
         );
-
-        const assign_expr = try parser.tree.addNode(
+        value = try parser.tree.addNode(
             .{ .assignment_expression = .{
-                .left = id_ref,
+                .left = reference,
                 .right = default_value,
                 .operator = .assign,
             } },
             .{ .start = key_span.start, .end = parser.tree.span(default_value).end },
         );
-
         parser.state.cover_init_names += 1;
-
-        return try parser.tree.addNode(
-            .{ .object_property = .{
-                .key = key,
-                .value = assign_expr,
-                .kind = .init,
-                .method = false,
-                .shorthand = true,
-                .computed = false,
-            } },
-            .{ .start = prop_start, .end = parser.tree.span(default_value).end },
-        );
-    }
-
-    if (computed) {
-        try parser.report(
+    } else {
+        if (computed) {
+            try parser.report(
+                key_span,
+                "Computed property must have a value",
+                .{ .help = "Add ': value' after the computed key." },
+            );
+            return null;
+        }
+        if (key_identifier_token) |key_token| {
+            try literals.validateIdentifier(parser, "an identifier", key_token);
+        }
+        if (key_data != .identifier_name) {
+            try parser.report(
+                key_span,
+                "Shorthand property must be an identifier",
+                .{ .help = "String and numeric keys require explicit ': value' syntax." },
+            );
+            return null;
+        }
+        value = try parser.tree.addNode(
+            .{ .identifier_reference = .{ .name = key_data.identifier_name.name } },
             key_span,
-            "Computed property must have a value",
-            .{ .help = "Add ': value' after the computed key." },
         );
-        return null;
     }
-
-    if (key_identifier_token) |key_token| {
-        try literals.validateIdentifier(parser, "an identifier", key_token);
-    }
-
-    const key_data = parser.tree.data(key);
-    if (key_data != .identifier_name) {
-        try parser.report(
-            key_span,
-            "Shorthand property must be an identifier",
-            .{ .help = "String and numeric keys require explicit ': value' syntax." },
-        );
-        return null;
-    }
-
-    const value = try parser.tree.addNode(
-        .{ .identifier_reference = .{ .name = key_data.identifier_name.name } },
-        key_span,
-    );
 
     return try parser.tree.addNode(
         .{ .object_property = .{
@@ -292,8 +244,67 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             .shorthand = true,
             .computed = false,
         } },
-        .{ .start = prop_start, .end = key_span.end },
+        .{ .start = prop_start, .end = parser.tree.span(value).end },
     );
+}
+
+pub fn parsePropertyKey(
+    parser: *Parser,
+    comptime owner: enum { object, class, signature },
+) Error!?struct { ast.NodeIndex, bool } {
+    const token = parser.current_token;
+    if (token.tag == .left_bracket) {
+        try parser.advance() orelse return null;
+        // a key is never a pattern, so its strips must not replace the pattern's record
+        const outer_stripped_paren = parser.state.stripped_paren;
+        const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+            return null;
+        if (owner == .object) parser.state.stripped_paren = outer_stripped_paren;
+        if (!try parser.expect(
+            .right_bracket,
+            if (owner == .signature)
+                "Expected ']' to close a computed property key"
+            else
+                "Expected ']' after computed property key",
+            if (owner == .signature) "A computed property key is written '[expr]'" else null,
+        )) return null;
+        return .{ key, true };
+    }
+
+    const key = if (token.tag.isIdentifierLike())
+        try literals.parseIdentifierName(parser) orelse return null
+    else if (token.tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (token.tag.isNumericLiteral())
+        try literals.parseNumericLiteral(parser) orelse return null
+    else if (owner == .class and token.tag == .private_identifier)
+        try literals.parsePrivateIdentifier(parser) orelse return null
+    else {
+        const name, const help = switch (owner) {
+            .object => .{
+                "property key",
+                "Property keys must be identifiers, strings, numbers, or" ++
+                    " computed expressions [expr].",
+            },
+            .class => .{
+                "class element key",
+                "Class element keys must be identifiers, strings, numbers," ++
+                    " private identifiers (#name), or computed expressions [expr].",
+            },
+            .signature => .{
+                "signature key",
+                "Signature keys must be identifiers, strings, numbers," ++
+                    " or computed expressions [expr].",
+            },
+        };
+        try parser.report(
+            token.span,
+            try parser.fmt("Unexpected token '{s}' as " ++ name, .{parser.describeToken(token)}),
+            .{ .help = help },
+        );
+        return null;
+    };
+    return .{ key, false };
 }
 
 inline fn isPropertyKeyStart(tag: TokenTag) bool {
@@ -317,14 +328,12 @@ fn parseObjectMethodProperty(
     if (is_async) std.debug.assert(kind == .init);
     if (is_generator) std.debug.assert(kind == .init);
 
-    const saved_await_is_keyword = parser.context.await;
-    const saved_yield_is_keyword = parser.context.yield;
+    const saved_await = parser.context.await;
+    const saved_yield = parser.context.yield;
     parser.context.await = is_async;
     parser.context.yield = is_generator;
-    defer {
-        parser.context.await = saved_await_is_keyword;
-        parser.context.yield = saved_yield_is_keyword;
-    }
+    defer parser.context.await = saved_await;
+    defer parser.context.yield = saved_yield;
 
     const is_ts = parser.tree.isTs();
     const func_start = parser.current_token.span.start;

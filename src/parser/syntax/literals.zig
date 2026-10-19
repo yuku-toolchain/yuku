@@ -13,12 +13,11 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     }
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.tree.addNode(.{
-        .string_literal = .{
-            .value = try parser.stringValue(token),
-            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
-        },
-    }, token.span);
+    const value_span: ast.Span = .{ .start = token.span.start + 1, .end = token.span.end - 1 };
+    return try parser.tree.addNode(.{ .string_literal = .{
+        .value = try parser.stringValue(token, value_span),
+        .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
+    } }, token.span);
 }
 
 pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -43,19 +42,15 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     if (token.tag == .bigint_literal) {
-        return try parser.tree.addNode(.{
-            .bigint_literal = .{
-                .raw = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
-            },
-        }, token.span);
+        return try parser.tree.addNode(.{ .bigint_literal = .{
+            .raw = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
+        } }, token.span);
     }
 
-    return try parser.tree.addNode(.{
-        .numeric_literal = .{
-            .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
-            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
-        },
-    }, token.span);
+    return try parser.tree.addNode(.{ .numeric_literal = .{
+        .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
+        .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
+    } }, token.span);
 }
 
 pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -75,12 +70,10 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const pattern_end = pattern_start + @as(u32, @intCast(regex.pattern.len));
     const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
 
-    return try parser.tree.addNode(.{
-        .regexp_literal = .{
-            .pattern = parser.tree.sourceSlice(pattern_start, pattern_end),
-            .flags = parser.tree.sourceSlice(flags_start, regex.span.end),
-        },
-    }, regex.span);
+    return try parser.tree.addNode(.{ .regexp_literal = .{
+        .pattern = parser.tree.sourceSlice(pattern_start, pattern_end),
+        .flags = parser.tree.sourceSlice(flags_start, regex.span.end),
+    } }, regex.span);
 }
 
 pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
@@ -90,12 +83,10 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
     const element = try addTemplateElement(parser, token, true, tagged);
     try parser.advance() orelse return null;
 
-    return try parser.tree.addNode(.{
-        .template_literal = .{
-            .quasis = try parser.tree.addExtra(&[_]ast.NodeIndex{element}),
-            .expressions = ast.IndexRange.empty,
-        },
-    }, token.span);
+    return try parser.tree.addNode(.{ .template_literal = .{
+        .quasis = try parser.tree.addExtra(&.{element}),
+        .expressions = ast.IndexRange.empty,
+    } }, token.span);
 }
 
 pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
@@ -198,16 +189,14 @@ inline fn addTemplateElement(
     const cooked: ast.String = if (is_cooked_undefined)
         .empty
     else
-        try parser.templateElementValue(token, span);
+        try parser.stringValue(token, span);
 
-    return parser.tree.addNode(.{
-        .template_element = .{
-            .cooked = cooked,
-            .raw = parser.tree.sourceSlice(span.start, span.end),
-            .tail = tail,
-            .is_cooked_undefined = is_cooked_undefined,
-        },
-    }, span);
+    return parser.tree.addNode(.{ .template_element = .{
+        .cooked = cooked,
+        .raw = parser.tree.sourceSlice(span.start, span.end),
+        .tail = tail,
+        .is_cooked_undefined = is_cooked_undefined,
+    } }, span);
 }
 
 inline fn templateElementSpan(token: Token) ast.Span {

@@ -3,18 +3,15 @@ const ast = @import("../../../ast.zig");
 const Parser = @import("../../../parser.zig").Parser;
 const Error = @import("../../../parser.zig").Error;
 const TokenTag = @import("../../../token.zig").TokenTag;
-const Precedence = @import("../../../token.zig").Precedence;
 
 const literals = @import("../../literals.zig");
-const expressions = @import("../../expressions.zig");
 const functions = @import("../../functions.zig");
+const object_literal = @import("../../object.zig");
 
 const core = @import("core.zig");
 const generics = @import("generics.zig");
 const predicate = @import("predicate.zig");
 
-// { x: T; foo(): U; [k: string]: V }
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
@@ -94,8 +91,6 @@ pub fn isStartOfMappedType(parser: *Parser) bool {
     return peek.next().tag == .in;
 }
 
-// { [K in T]: V }   { readonly [K in T]?: V }   { -readonly [K in T as U]-?: V }
-// ^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
@@ -253,8 +248,6 @@ inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
         tag == .spread;
 }
 
-// (params): R    <T>(params): R    new (params): R    new <T>(params): R
-// ^^^^^^^^^^^    ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
 fn parseCallOrConstructSignature(
     parser: *Parser,
     comptime is_construct: bool,
@@ -277,17 +270,15 @@ fn parseCallOrConstructSignature(
         end = parser.tree.span(return_type).end;
     }
 
-    const data: ast.NodeData = if (is_construct) .{ .ts_construct_signature_declaration = .{
+    const tag = if (is_construct)
+        "ts_construct_signature_declaration"
+    else
+        "ts_call_signature_declaration";
+    return try parser.tree.addNode(@unionInit(ast.NodeData, tag, .{
         .type_parameters = type_parameters,
         .params = params,
         .return_type = return_type,
-    } } else .{ .ts_call_signature_declaration = .{
-        .type_parameters = type_parameters,
-        .params = params,
-        .return_type = return_type,
-    } };
-
-    return try parser.tree.addNode(data, .{ .start = start, .end = end });
+    }), .{ .start = start, .end = end });
 }
 
 pub const IndexSignatureModifiers = struct {
@@ -295,8 +286,6 @@ pub const IndexSignatureModifiers = struct {
     static: bool = false,
 };
 
-// [k: T]: V    readonly [k: T]: V
-// ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
 pub fn parseIndexSignature(
     parser: *Parser,
     start: u32,
@@ -305,7 +294,16 @@ pub fn parseIndexSignature(
     std.debug.assert(parser.current_token.tag == .left_bracket);
     try parser.advance() orelse return null;
 
-    const param = try parseIndexSignatureParameter(parser) orelse return null;
+    const name = try literals.parseBindingIdentifier(parser) orelse return null;
+    if (parser.current_token.tag != .colon) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ':' after index signature parameter name",
+            .{ .help = "Each index signature parameter requires a type: '[k: string]'" },
+        );
+        return null;
+    }
+    const param = try predicate.parsePatternTypeAnnotation(parser, name) orelse return null;
     if (parser.current_token.tag == .comma) {
         try parser.report(
             parser.current_token.span,
@@ -344,21 +342,6 @@ pub fn parseIndexSignature(
     );
 }
 
-fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
-    const name = try literals.parseBindingIdentifier(parser) orelse return null;
-
-    if (parser.current_token.tag != .colon) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected ':' after index signature parameter name",
-            .{ .help = "Each index signature parameter requires a type: '[k: string]'" },
-        );
-        return null;
-    }
-
-    return predicate.parsePatternTypeAnnotation(parser, name);
-}
-
 fn parsePropertyOrMethodSignature(
     parser: *Parser,
     start: u32,
@@ -374,9 +357,8 @@ fn parsePropertyOrMethodSignature(
         }
     }
 
-    const key_result = try parsePropertyKey(parser) orelse return null;
-    const key = key_result.key;
-    const computed = key_result.computed;
+    const key, const computed = try object_literal.parsePropertyKey(parser, .signature) orelse
+        return null;
 
     var is_optional = false;
     var tail_end = if (computed) parser.prev_token_end else parser.tree.span(key).end;
@@ -460,46 +442,4 @@ fn parseMethodSignatureBody(
         } },
         .{ .start = start, .end = end },
     );
-}
-
-const PropertyKeyResult = struct {
-    key: ast.NodeIndex,
-    computed: bool,
-};
-
-fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
-    const tag = parser.current_token.tag;
-
-    if (tag == .left_bracket) {
-        try parser.advance() orelse return null;
-        const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-            return null;
-        if (!try parser.expect(
-            .right_bracket,
-            "Expected ']' to close a computed property key",
-            "A computed property key is written '[expr]'",
-        )) return null;
-        return .{ .key = expr, .computed = true };
-    }
-
-    const key = if (tag.isIdentifierLike())
-        try literals.parseIdentifierName(parser) orelse return null
-    else if (tag == .string_literal)
-        try literals.parseStringLiteral(parser) orelse return null
-    else if (tag.isNumericLiteral())
-        try literals.parseNumericLiteral(parser) orelse return null
-    else {
-        try parser.report(
-            parser.current_token.span,
-            try parser.fmt(
-                "Unexpected token '{s}' as signature key",
-                .{parser.describeToken(parser.current_token)},
-            ),
-            .{ .help = "Signature keys must be identifiers, strings, numbers," ++
-                " or computed expressions [expr]." },
-        );
-        return null;
-    };
-
-    return .{ .key = key, .computed = false };
 }

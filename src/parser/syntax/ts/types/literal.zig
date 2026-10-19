@@ -5,12 +5,8 @@ const Error = @import("../../../parser.zig").Error;
 const literals = @import("../../literals.zig");
 const core = @import("core.zig");
 
-// 42   "foo"   true   -1
-// ^^   ^^^^^   ^^^^   ^^
 pub fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-    const start = token.span.start;
-
     const literal: ast.NodeIndex = switch (token.tag) {
         .true, .false => try literals.parseBooleanLiteral(parser) orelse return null,
         .string_literal => try literals.parseStringLiteral(parser) orelse return null,
@@ -28,14 +24,13 @@ pub fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.tree.addNode(
         .{ .ts_literal_type = .{ .literal = literal } },
-        .{ .start = start, .end = parser.tree.span(literal).end },
+        .{ .start = token.span.start, .end = parser.tree.span(literal).end },
     );
 }
 
 fn parseSignedNumericLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const sign_token = parser.current_token;
-    const next = parser.peekAhead();
-    if (!next.tag.isNumericLiteral()) return null;
+    if (!parser.peekAhead().tag.isNumericLiteral()) return null;
 
     try parser.advance() orelse return null;
     const arg = try literals.parseNumericLiteral(parser) orelse return null;

@@ -34,7 +34,15 @@ pub fn parseVariableDeclaration(
         else => false,
     });
     const start = start_from_param orelse parser.current_token.span.start;
-    const kind = try parseVariableKind(parser, options.await_using) orelse return null;
+    const tag = parser.current_token.tag;
+    try parser.advance() orelse return null;
+    const kind: ast.VariableKind = switch (tag) {
+        .let => .let,
+        .@"const" => .@"const",
+        .@"var" => .@"var",
+        .using => if (options.await_using) .await_using else .using,
+        else => return null,
+    };
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -54,9 +62,7 @@ pub fn parseVariableDeclaration(
     const semi_end = try parser.eatSemicolon(end) orelse return null;
     const span: ast.Span = .{ .start = start, .end = semi_end };
 
-    if (parser.context.single_statement and
-        (kind == .let or kind == .@"const" or kind == .using or kind == .await_using))
-    {
+    if (parser.context.single_statement and kind != .@"var") {
         @branchHint(.unlikely);
 
         try parser.report(
@@ -66,29 +72,11 @@ pub fn parseVariableDeclaration(
         );
     }
 
-    return try parser.tree.addNode(
-        .{
-            .variable_declaration = .{
-                .declarators = try parser.flushToExtras(&parser.scratch_a, checkpoint),
-                .kind = kind,
-                .declare = options.is_declare,
-            },
-        },
-        span,
-    );
-}
-
-fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind {
-    const tag = parser.current_token.tag;
-    try parser.advance() orelse return null;
-
-    return switch (tag) {
-        .let => .let,
-        .@"const" => .@"const",
-        .@"var" => .@"var",
-        .using => if (await_using) .await_using else .using,
-        else => null,
-    };
+    return try parser.tree.addNode(.{ .variable_declaration = .{
+        .declarators = try parser.flushToExtras(&parser.scratch_a, checkpoint),
+        .kind = kind,
+        .declare = options.is_declare,
+    } }, span);
 }
 
 pub fn parseVariableDeclarator(
@@ -192,9 +180,7 @@ pub fn isLetIdentifier(parser: *Parser) bool {
 /// Returns whether the current `using` is an `IdentifierReference`, not a declaration keyword.
 pub fn isUsingIdentifier(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .using);
-
     const next = parser.peekAhead();
-
     // [+Using] using [no LineTerminator here] BindingList
     return next.hasLineTerminatorBefore() or !canStartBindingIdentifier(next.tag);
 }
@@ -203,18 +189,13 @@ pub fn isUsingIdentifier(parser: *Parser) bool {
 /// `await [no LineTerminator here] using [no LineTerminator here] Binding`
 pub fn isAwaitUsingDeclarationAhead(parser: *Parser) bool {
     std.debug.assert(parser.current_token.tag == .await);
-
     if (!parser.context.await) return false;
 
     var peek = parser.beginPeek();
     defer peek.end();
 
     const using_token = peek.next();
-    if (using_token.tag != .using) return false;
-    if (using_token.hasLineTerminatorBefore()) return false;
-
+    if (using_token.tag != .using or using_token.hasLineTerminatorBefore()) return false;
     const binding = peek.next();
-    if (binding.hasLineTerminatorBefore()) return false;
-
-    return canStartBindingIdentifier(binding.tag);
+    return !binding.hasLineTerminatorBefore() and canStartBindingIdentifier(binding.tag);
 }
