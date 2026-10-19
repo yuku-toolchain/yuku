@@ -985,6 +985,8 @@ for (names.nodes.items) |node| {
 
 On `import type { User } from "./user"; type Id = string; let user: User, id: Id;` it prints `User`. `semantic.analyze` is this mode, with a visitor that reports the early errors when it checks.
 
+The model covers the whole tree, so `.skip` and `.stop` only mute the visitor here.
+
 ## Transform
 
 A `transform` hook rewrites the tree in place. The walker re-reads a node after its enter hook, so it walks the replacement. This one turns `price + tax` into `price * tax`.

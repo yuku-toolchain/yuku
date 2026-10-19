@@ -443,6 +443,92 @@ test "Layer keeps ctx enter/exit balanced when the user visitor skips" {
     try testing.expectEqual(ctx_enters, post_enters);
 }
 
+const HookEvent = struct { exit: bool, index: ast.NodeIndex };
+
+fn EnterCountingCtx(comptime whole_tree: bool) type {
+    return struct {
+        tree: *const ast.Tree,
+        enters: u32 = 0,
+
+        pub const walk_whole_tree = whole_tree;
+
+        pub fn enter(self: *@This(), _: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
+            self.enters += 1;
+        }
+
+        pub fn exit(_: *@This(), _: ast.NodeIndex, _: ast.NodeData) void {}
+    };
+}
+
+fn HookRecorder(comptime C: type) type {
+    return struct {
+        events: *std.ArrayList(HookEvent),
+        tag: helpers.NodeTag,
+        action: Action,
+
+        pub fn enter_node(
+            self: *@This(),
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+            _: *C,
+        ) Allocator.Error!Action {
+            try self.events.append(testing.allocator, .{ .exit = false, .index = index });
+            return if (std.meta.activeTag(data) == self.tag) self.action else .proceed;
+        }
+
+        pub fn exit_node(self: *@This(), _: ast.NodeData, index: ast.NodeIndex, _: *C) void {
+            self.events.append(testing.allocator, .{ .exit = true, .index = index }) catch
+                unreachable;
+        }
+    };
+}
+
+// records the visitor's hooks and returns how many nodes the context entered
+fn walkRecorded(
+    comptime whole_tree: bool,
+    tree: *const ast.Tree,
+    tag: helpers.NodeTag,
+    action: Action,
+    events: *std.ArrayList(HookEvent),
+) !u32 {
+    const C = EnterCountingCtx(whole_tree);
+    const V = HookRecorder(C);
+    var visitor: V = .{ .events = events, .tag = tag, .action = action };
+    var ctx: C = .{ .tree = tree };
+    var layer = traverser.Layer(C, V){ .inner = &visitor };
+    try traverser.walk(C, @TypeOf(layer), &layer, &ctx);
+    return ctx.enters;
+}
+
+// a whole tree context enters every node, and its visitor sees what a plain walk shows it,
+// past the recursion too
+test "Layer over a whole tree context mutes the visitor instead of cutting the walk" {
+    const cases = [_]struct { source: []const u8, tag: helpers.NodeTag }{
+        .{ .source = "let before; function f(b) { let inner; } let after;", .tag = .function },
+        .{ .source = deep_source, .tag = .expression_statement },
+        .{ .source = deep_source, .tag = .identifier_reference },
+    };
+    for (cases) |case| {
+        var tree = try parseModule(case.source);
+        defer tree.deinit();
+        var events: std.ArrayList(HookEvent) = .empty;
+        defer events.deinit(testing.allocator);
+        const nodes = try walkRecorded(false, &tree, case.tag, .proceed, &events);
+
+        for ([_]Action{ .skip, .stop }) |action| {
+            var plain: std.ArrayList(HookEvent) = .empty;
+            defer plain.deinit(testing.allocator);
+            var whole: std.ArrayList(HookEvent) = .empty;
+            defer whole.deinit(testing.allocator);
+
+            const plain_nodes = try walkRecorded(false, &tree, case.tag, action, &plain);
+            try testing.expectEqual(nodes, try walkRecorded(true, &tree, case.tag, action, &whole));
+            try testing.expectEqualSlices(HookEvent, plain.items, whole.items);
+            if (action == .stop) try testing.expect(plain_nodes < nodes);
+        }
+    }
+}
+
 const PathCheckVisitor = struct {
     checked: bool = false,
     failure: ?anyerror = null,

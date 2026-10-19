@@ -31,6 +31,8 @@ pub const Ctx = struct {
     node_scopes: []ScopeId,
     node_parents: []ast.NodeIndex,
 
+    pub const walk_whole_tree = true;
+
     pub fn init(tree: *ast.Tree, mode: Mode) Allocator.Error!Ctx {
         const node_count: usize = switch (mode) {
             .check => 0,
@@ -120,6 +122,7 @@ pub const Ctx = struct {
 };
 
 /// Walks the tree tracking the node path, scopes, and symbols, and returns the `Semantic` model.
+/// `.skip` and `.stop` only mute the visitor, so the model covers the whole tree.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
     std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree, .analyze);

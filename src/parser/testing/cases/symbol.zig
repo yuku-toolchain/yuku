@@ -249,6 +249,33 @@ test "the semantic Ctx exposes type position, namespace state, and the tracker" 
     if (visitor.failure) |err| return err;
 }
 
+const RootActionVisitor = struct {
+    action: traverser.Action,
+
+    pub fn enter_program(
+        self: *RootActionVisitor,
+        _: ast.Program,
+        _: ast.NodeIndex,
+        _: *traverser.semantic.Ctx,
+    ) traverser.Action {
+        return self.action;
+    }
+};
+
+test "a semantic walk models the whole tree when its visitor skips or stops" {
+    var tree = try parser.parse(testing.allocator, "function f() { let a; } f();", .{});
+    defer tree.deinit();
+    const want = try semantic.analyze(&tree, .{ .check = false });
+
+    for ([_]traverser.Action{ .skip, .stop }) |action| {
+        var visitor: RootActionVisitor = .{ .action = action };
+        const got = try traverser.semantic.traverse(RootActionVisitor, &tree, &visitor);
+        try testing.expectEqualDeep(want.scopes.list, got.scopes.list);
+        try testing.expectEqualDeep(want.symbols, got.symbols);
+        try testing.expectEqualDeep(want.references, got.references);
+    }
+}
+
 test "module records collect an export pattern of any depth" {
     const depth = 300;
     const pattern = helpers.repeat("[", depth) ++ "a" ++ helpers.repeat("]", depth);

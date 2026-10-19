@@ -209,11 +209,16 @@ fn walkDeepPushChildren(
 }
 
 /// Wraps a visitor so `ctx.enter`, the optional `ctx.post_enter`, and `ctx.exit` run around
-/// its hooks.
+/// its hooks. A context with `walk_whole_tree = true` is walked whole, and `.skip` and `.stop`
+/// only mute the visitor.
 pub fn Layer(comptime C: type, comptime V: type) type {
     comptime validateHooks(V);
+    // a visitor without enter hooks never skips or stops
+    const whole_tree = @hasDecl(C, "walk_whole_tree") and C.walk_whole_tree and
+        comptime hasEnterHooks(V);
     return struct {
         inner: *V,
+        muting: if (whole_tree) Muting else struct {} = .{},
 
         pub fn enter_node(
             self: *@This(),
@@ -222,7 +227,14 @@ pub fn Layer(comptime C: type, comptime V: type) type {
             ctx: *C,
         ) Allocator.Error!Action {
             try ctx.enter(index, data);
-            const action = try dispatch.enter(C, V, self.inner, data, index, ctx);
+            var action: Action = .proceed;
+            if (comptime whole_tree) {
+                if (self.muting.enter()) {
+                    self.muting.action = try dispatch.enter(C, V, self.inner, data, index, ctx);
+                }
+            } else {
+                action = try dispatch.enter(C, V, self.inner, data, index, ctx);
+            }
             if (comptime @hasDecl(C, "post_enter")) try ctx.post_enter(index, data);
             return action;
         }
@@ -233,11 +245,41 @@ pub fn Layer(comptime C: type, comptime V: type) type {
             index: ast.NodeIndex,
             ctx: *C,
         ) void {
-            dispatch.exit(C, V, self.inner, data, index, ctx);
+            if (comptime whole_tree) {
+                if (self.muting.exit()) dispatch.exit(C, V, self.inner, data, index, ctx);
+            } else {
+                dispatch.exit(C, V, self.inner, data, index, ctx);
+            }
             ctx.exit(index, data);
         }
     };
 }
+
+// mutes the visitor below a skip and after a stop, while the walk goes on
+const Muting = struct {
+    action: Action = .proceed,
+    // muted nodes on the path, always its deepest
+    muted: u32 = 0,
+
+    fn enter(self: *Muting) bool {
+        if (self.action == .proceed) {
+            std.debug.assert(self.muted == 0);
+            return true;
+        }
+        self.muted += 1;
+        return false;
+    }
+
+    fn exit(self: *Muting) bool {
+        if (self.muted > 0) {
+            std.debug.assert(self.action != .proceed);
+            self.muted -= 1;
+            return false;
+        }
+        if (self.action == .skip) self.action = .proceed;
+        return true;
+    }
+};
 
 const dispatch = struct {
     fn enter(
@@ -289,6 +331,13 @@ const dispatch = struct {
 
 inline fn unwrapAction(result: anytype) Allocator.Error!Action {
     return result;
+}
+
+fn hasEnterHooks(comptime V: type) bool {
+    for (@typeInfo(V).@"struct".decl_names) |name| {
+        if (std.mem.startsWith(u8, name, "enter_")) return true;
+    }
+    return false;
 }
 
 fn validateHooks(comptime V: type) void {
