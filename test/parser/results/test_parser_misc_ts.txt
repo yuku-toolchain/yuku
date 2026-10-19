@@ -117,6 +117,7 @@ error: Expected 'class' keyword, but found 'abstract'
 ✓ test/parser/misc/ts/decorated-abstract-class.ts
 ✓ test/parser/misc/ts/decorated-declare-class.ts
 ✓ test/parser/misc/ts/decorated-export-abstract-class.module.ts
+✓ test/parser/misc/ts/decorated-export-class-type-arguments.module.ts
 ✓ test/parser/misc/ts/decorated-export-declare-class.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class-named.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class.module.ts
