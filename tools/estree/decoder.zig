@@ -1,6 +1,7 @@
 const std = @import("std");
 const parser = @import("parser");
 const rt = @import("transfer");
+const util = @import("util");
 
 const ast = parser.ast;
 const sem_rt = rt.semantic;
@@ -33,6 +34,7 @@ pub fn generate(w: *Writer) Writer.Error!void {
         \\
     );
     try writeTables(w);
+    try writeJSXEntities(w);
     try writeTokenList(w);
     try writeChildTables(w);
     try w.writeAll(
@@ -186,6 +188,61 @@ const binding_flag_names = .{
     .is_default = "Default",
     .enum_member = "EnumMember",
 };
+
+// ESTree's `JSXText.value` decodes as `lexical.decodeJSXEntities` does.
+fn writeJSXEntities(w: *Writer) !void {
+    const Entity = struct {
+        name: []const u8,
+        code_point: u16,
+
+        fn lessThan(_: void, a: @This(), b: @This()) bool {
+            if (a.code_point != b.code_point) return a.code_point < b.code_point;
+            return std.mem.order(u8, a.name, b.name) == .lt;
+        }
+    };
+    const map = util.XhtmlEntities.code_points;
+    var entities: [map.keys().len]Entity = undefined;
+    for (&entities, map.keys(), map.values()) |*entity, name, code_point| {
+        entity.* = .{ .name = name, .code_point = code_point };
+    }
+    std.mem.sort(Entity, &entities, {}, Entity.lessThan);
+
+    try w.writeAll("const JSX_ENTITY_NAMES = \"");
+    var previous: ?u16 = null;
+    for (entities, 0..) |entity, i| {
+        try w.print("{s}{s}", .{ if (i == 0) "" else " ", entity.name });
+        const follows = if (previous) |code_point| entity.code_point == code_point + 1 else false;
+        if (!follows) try w.print(":{x}", .{entity.code_point});
+        previous = entity.code_point;
+    }
+    try w.writeAll(
+        \\";
+        \\const JSX_ENTITY = /&(?:#x([\da-fA-F]+)|#(\d+)|([\da-zA-Z]+));/g;
+        \\let _jsxEntities = null;
+        \\function _jsxEntity(name) {
+        \\  if (_jsxEntities === null) {
+        \\    _jsxEntities = new Map();
+        \\    let cp = 0;
+        \\    for (const entry of JSX_ENTITY_NAMES.split(" ")) {
+        \\      const colon = entry.indexOf(":");
+        \\      cp = colon === -1 ? cp + 1 : parseInt(entry.slice(colon + 1), 16);
+        \\      _jsxEntities.set(colon === -1 ? entry : entry.slice(0, colon), cp);
+        \\    }
+        \\  }
+        \\  return _jsxEntities.get(name);
+        \\}
+        \\function _jsxValue(raw) {
+        \\  if (raw.indexOf("&") === -1) return raw;
+        \\  return raw.replace(JSX_ENTITY, (text, hex, dec, name) => {
+        \\    const cp = name === undefined
+        \\      ? parseInt(hex === undefined ? dec : hex, hex === undefined ? 10 : 16)
+        \\      : _jsxEntity(name);
+        \\    return cp === undefined || cp > 0x10ffff ? text : String.fromCodePoint(cp);
+        \\  });
+        \\}
+        \\
+    );
+}
 
 fn writeTables(w: *Writer) !void {
     @setEvalBranchQuota(100_000);
@@ -1089,6 +1146,10 @@ const specials = [_]Special{
     },
     .{ .tag = "string_literal", .types = &.{"Literal"}, .body =
     \\return { type: "Literal", start, end, value: @value, raw: _src.slice(start, end) };
+    },
+    .{ .tag = "jsx_text", .body =
+    \\const raw = @raw;
+    \\return { type: "JSXText", start, end, value: _jsxValue(raw), raw };
     },
     .{ .tag = "numeric_literal", .types = &.{"Literal"}, .body =
     \\const r = _src.slice(start, end);

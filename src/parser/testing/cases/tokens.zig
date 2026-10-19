@@ -45,3 +45,29 @@ fn boundary(tokens: []const Token, comptime edge: enum { start, end }, offset: u
 test "node spans align to token boundaries across the parser corpus" {
     try helpers.forEachCorpusTree(checkAlignment);
 }
+
+test "tokensIn returns the tokens wholly within a span" {
+    var tree = try parser.parse(std.testing.allocator, "let x = f(a, b);", .{ .tokens = true });
+    defer tree.deinit();
+
+    try expectTexts(&tree, .{ .start = 8, .end = 15 }, &.{ "f", "(", "a", ",", "b", ")" });
+    try expectTexts(&tree, .{ .start = 15, .end = 16 }, &.{ ";", "" });
+    // `let` and `b` cross the edges
+    try expectTexts(&tree, .{ .start = 1, .end = 13 }, &.{ "x", "=", "f", "(", "a", "," });
+    try expectTexts(&tree, .{ .start = 10, .end = 10 }, &.{});
+    try expectTexts(&tree, .{ .start = 1, .end = 2 }, &.{});
+    const before_call = tree.tokensIn(.{ .start = 0, .end = 8 });
+    try std.testing.expectEqual(.assign, before_call[before_call.len - 1].tag);
+
+    var untokenized = try parser.parse(std.testing.allocator, "let x;", .{});
+    defer untokenized.deinit();
+    try std.testing.expectEqual(0, untokenized.tokensIn(.{ .start = 0, .end = 6 }).len);
+}
+
+fn expectTexts(tree: *const ast.Tree, range: ast.Span, expected: []const []const u8) !void {
+    const tokens = tree.tokensIn(range);
+    try std.testing.expectEqual(expected.len, tokens.len);
+    for (tokens, expected) |token, text| {
+        try std.testing.expectEqualStrings(text, token.text(tree.source));
+    }
+}

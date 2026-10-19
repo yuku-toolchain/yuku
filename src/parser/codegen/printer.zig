@@ -3010,8 +3010,7 @@ const Printer = struct {
     }
 
     fn emit_jsx_text(self: *Self, t: *const ast.JSXText) Error!void {
-        const raw = self.tree.string(t.raw);
-        try self.out.writeRawStr(if (raw.len != 0) raw else self.tree.string(t.value));
+        try self.out.writeRawStr(self.tree.string(t.raw));
     }
 
     fn emit_jsx_spread_child(self: *Self, c: *const ast.JSXSpreadChild) Error!void {

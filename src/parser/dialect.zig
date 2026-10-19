@@ -288,11 +288,10 @@ pub const Parser = struct {
         try self.inner.lexer.recordComment(@"type", span.start, span.end);
     }
 
-    /// Adds JSX text with its character references decoded.
+    /// Adds the source text in `span` as JSX text.
     pub fn addJsxText(self: *const Parser, span: ast.Span) Error!ast.NodeIndex {
         std.debug.assert(span.start < span.end);
         return self.tree().addNode(.{ .jsx_text = .{
-            .value = try self.inner.jsxValue(span.start, span.end),
             .raw = self.tree().sourceSlice(span.start, span.end),
         } }, span);
     }

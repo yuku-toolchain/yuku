@@ -259,9 +259,11 @@ token.tag.isKeyword()             // also isReserved, isIdentifierLike, isNumeri
 token.tag.precedence()            // operator precedence, 0 when none
 token.hasLineTerminatorBefore()   // what ASI reads
 token.isEscaped()                 // also hasInvalidEscape and hasLoneSurrogates
+
+tree.tokensIn(tree.span(node))    // the tokens within a span
 ```
 
-The list ends with an `eof` token. Every node other than `program`, `template_element`, and `jsx_empty_expression` starts and ends on a token boundary, so its tokens are a contiguous run.
+The list ends with an `eof` token. Every node other than `program`, `template_element`, and `jsx_empty_expression` starts and ends on a token boundary, so its tokens are a contiguous run, and the token before a node is the last of `tree.tokensIn(.{ .start = 0, .end = span.start })`.
 
 ## [Lexical grammar]($section.id('lexical-grammar'))
 
@@ -270,6 +272,8 @@ The list ends with an `eof` token. Every node other than `program`, `template_el
 ```zig
 lexical.isValidIdentifier("total");      // true
 lexical.isValidIdentifier("class");      // false, reserved
+lexical.isValidIdentifier("eval");       // true, though strict code cannot bind it
+lexical.isEvalOrArguments("eval");       // true
 lexical.isIdentifierName("class");       // true
 lexical.isIdentifierStart('$');          // true, also isIdentifierChar and isJSXIdentifierChar
 lexical.keyword("yield").?.isReserved(); // true, a token tag
@@ -279,4 +283,4 @@ try lexical.decodeStringEscapes(gpa, raw, &out);
 try lexical.decodeJSXEntities(gpa, raw, &out);
 ```
 
-Names are UTF-8 with escapes decoded, as `tree.string` returns them.
+Names are UTF-8 with escapes decoded, as `tree.string` returns them. A binding a transform declares from a source name is valid in strict code when `isValidIdentifier` holds and `isEvalOrArguments` does not.

@@ -188,7 +188,7 @@ pub const Parser = struct {
         return self.decode(util.Utf.decodeStringEscapes, span.start, span.end);
     }
 
-    /// Returns JSX text or the inside of a JSX attribute string with its entities decoded.
+    /// Returns the inside of a JSX attribute string with its entities decoded.
     pub inline fn jsxValue(self: *Parser, start: u32, end: u32) Error!ast.String {
         if (std.mem.findScalar(u8, self.source[start..end], '&') == null) {
             return self.tree.sourceSlice(start, end);

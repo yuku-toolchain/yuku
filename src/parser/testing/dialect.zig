@@ -101,7 +101,7 @@ pub fn jsx_child(p: *Parser, offset: u32, parent: NodeIndex) Error!Claim {
         const end: u32 = @intCast(std.mem.findPos(u8, source, offset, "</raw>") orelse source.len);
         if (end == offset) return .decline;
         const text = p.tree().sourceSlice(offset, end);
-        const raw: ast.NodeData = .{ .jsx_text = .{ .value = text, .raw = text } };
+        const raw: ast.NodeData = .{ .jsx_text = .{ .raw = text } };
         return claimed(try p.tree().addNode(raw, .{ .start = offset, .end = end }));
     }
 

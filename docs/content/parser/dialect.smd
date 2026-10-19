@@ -188,7 +188,7 @@ A position function drives the parser through a `*dialect.Parser`.
 | `parseJsxElement()`                  | Parses the element or fragment at the current `<`, leaving its last `>` current.                                        |
 | `addNode(kind, children, span)`      | Adds one of your nodes, see [Nodes](#nodes).                                                                            |
 | `list()`                             | Collects children of unknown count, see below.                                                                          |
-| `addJsxText(span)`                   | Adds JSX text, with character references decoded.                                                                       |
+| `addJsxText(span)`                   | Adds the source text in `span` as JSX text.                                                                             |
 | `addComment(type, span)`             | Records a comment where the standard grammar reads none, such as inside text your syntax owns.                          |
 | `tree()`                             | The `ast.Tree`, to read nodes and build standard ones, see [Building and editing](/parser/ast/#building-and-editing).   |
 

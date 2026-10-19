@@ -318,24 +318,35 @@ pub const Tree = struct {
 
     /// The source comments wholly within `range`, in source order.
     pub fn commentsIn(self: *const Tree, range: Span) []const Comment {
+        return spannedIn(Comment, self.comments, range);
+    }
+
+    /// The tokens wholly within `range`, in source order. A node's tokens are a contiguous
+    /// run, so the token before a node is the last of `tokensIn(.{ .start = 0, .end = start })`.
+    pub fn tokensIn(self: *const Tree, range: Span) []const Token {
+        return spannedIn(Token, self.tokens, range);
+    }
+
+    // comments and tokens never overlap, so their ends ascend with their starts
+    fn spannedIn(comptime T: type, items: []const T, range: Span) []const T {
         std.debug.assert(range.start <= range.end);
-        // comments never overlap, so their ends ascend with their starts
-        const first = std.sort.partitionPoint(Comment, self.comments, range.start, startsBefore);
-        const within = self.comments[first..];
-        const count = std.sort.partitionPoint(Comment, within, range.end, endsBy);
+        const Edge = struct {
+            fn startsBefore(offset: u32, item: T) bool {
+                return item.span.start < offset;
+            }
+
+            fn endsBy(offset: u32, item: T) bool {
+                return item.span.end <= offset;
+            }
+        };
+        const first = std.sort.partitionPoint(T, items, range.start, Edge.startsBefore);
+        const within = items[first..];
+        const count = std.sort.partitionPoint(T, within, range.end, Edge.endsBy);
         std.debug.assert(count <= within.len);
         if (count > 0) std.debug.assert(within[0].span.start >= range.start);
         if (count > 0) std.debug.assert(within[count - 1].span.end <= range.end);
         if (count < within.len) std.debug.assert(within[count].span.end > range.end);
         return within[0..count];
-    }
-
-    fn startsBefore(offset: u32, comment: Comment) bool {
-        return comment.span.start < offset;
-    }
-
-    fn endsBy(offset: u32, comment: Comment) bool {
-        return comment.span.end <= offset;
     }
 };
 
@@ -2140,9 +2151,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// Text inside a JSX element or fragment.
 pub const JSXText = struct {
-    /// Text with its entities decoded.
-    value: String = .empty,
-    /// Source text, empty for synthetic nodes, which print from `value`.
+    /// The text as written, entities undecoded. `lexical.decodeJSXEntities` gives its `value`.
     raw: String = .empty,
 };
 

@@ -137,6 +137,7 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "parser", .module = parser },
                 .{ .name = "transfer", .module = createTransfer(b, parser) },
+                .{ .name = "util", .module = util },
             },
         }),
     });

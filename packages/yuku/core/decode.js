@@ -221,6 +221,30 @@ const BindingFlags = Object.freeze({
   TypeSpace: 525240,
   NamespaceSpace: 1136,
 });
+const JSX_ENTITY_NAMES = "quot:22 amp:26 apos lt:3c gt:3e nbsp:a0 iexcl cent pound curren yen brvbar sect uml copy ordf laquo not shy reg macr deg plusmn sup2 sup3 acute micro para middot cedil sup1 ordm raquo frac14 frac12 frac34 iquest Agrave Aacute Acirc Atilde Auml Aring AElig Ccedil Egrave Eacute Ecirc Euml Igrave Iacute Icirc Iuml ETH Ntilde Ograve Oacute Ocirc Otilde Ouml times Oslash Ugrave Uacute Ucirc Uuml Yacute THORN szlig agrave aacute acirc atilde auml aring aelig ccedil egrave eacute ecirc euml igrave iacute icirc iuml eth ntilde ograve oacute ocirc otilde ouml divide oslash ugrave uacute ucirc uuml yacute thorn yuml OElig:152 oelig Scaron:160 scaron Yuml:178 fnof:192 circ:2c6 tilde:2dc Alpha:391 Beta Gamma Delta Epsilon Zeta Eta Theta Iota Kappa Lambda Mu Nu Xi Omicron Pi Rho Sigma:3a3 Tau Upsilon Phi Chi Psi Omega alpha:3b1 beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigmaf sigma tau upsilon phi chi psi omega thetasym:3d1 upsih piv:3d6 ensp:2002 emsp thinsp:2009 zwnj:200c zwj lrm rlm ndash:2013 mdash lsquo:2018 rsquo sbquo ldquo:201c rdquo bdquo dagger:2020 Dagger bull hellip:2026 permil:2030 prime:2032 Prime lsaquo:2039 rsaquo oline:203e frasl:2044 euro:20ac image:2111 weierp:2118 real:211c trade:2122 alefsym:2135 larr:2190 uarr rarr darr harr crarr:21b5 lArr:21d0 uArr rArr dArr hArr forall:2200 part:2202 exist empty:2205 nabla:2207 isin notin ni:220b prod:220f sum:2211 minus lowast:2217 radic:221a prop:221d infin ang:2220 and:2227 or cap cup int there4:2234 sim:223c cong:2245 asymp:2248 ne:2260 equiv le:2264 ge sub:2282 sup nsub sube:2286 supe oplus:2295 otimes:2297 perp:22a5 sdot:22c5 lceil:2308 rceil lfloor rfloor lang:2329 rang loz:25ca spades:2660 clubs:2663 hearts:2665 diams";
+const JSX_ENTITY = /&(?:#x([\da-fA-F]+)|#(\d+)|([\da-zA-Z]+));/g;
+let _jsxEntities = null;
+function _jsxEntity(name) {
+  if (_jsxEntities === null) {
+    _jsxEntities = new Map();
+    let cp = 0;
+    for (const entry of JSX_ENTITY_NAMES.split(" ")) {
+      const colon = entry.indexOf(":");
+      cp = colon === -1 ? cp + 1 : parseInt(entry.slice(colon + 1), 16);
+      _jsxEntities.set(colon === -1 ? entry : entry.slice(0, colon), cp);
+    }
+  }
+  return _jsxEntities.get(name);
+}
+function _jsxValue(raw) {
+  if (raw.indexOf("&") === -1) return raw;
+  return raw.replace(JSX_ENTITY, (text, hex, dec, name) => {
+    const cp = name === undefined
+      ? parseInt(hex === undefined ? dec : hex, hex === undefined ? 10 : 16)
+      : _jsxEntity(name);
+    return cp === undefined || cp > 0x10ffff ? text : String.fromCodePoint(cp);
+  });
+}
 class TokenList {
   constructor(u32, base, count, p, str) {
     this._u32 = u32;
@@ -906,7 +930,8 @@ function _decodeJSXAttribute(decoder, i, b, flags, start, end, depth) { const { 
 function _decodeJSXSpreadAttribute(decoder, i, b, flags, start, end, depth) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1, depth + 1) : null }; }
 function _decodeJSXExpressionContainer(decoder, i, b, flags, start, end, depth) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1, depth + 1) : null }; }
 function _decodeJSXEmptyExpression(decoder, i, b, flags, start, end, depth) { return { type: "JSXEmptyExpression", start, end }; }
-function _decodeJSXText(decoder, i, b, flags, start, end, depth) { const { _u32, str } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return { type: "JSXText", start, end, value: str(f1, f2), raw: str(f3, f4) }; }
+function _decodeJSXText(decoder, i, b, flags, start, end, depth) { const { _u32, str } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; const raw = str(f1, f2);
+return { type: "JSXText", start, end, value: _jsxValue(raw), raw }; }
 function _decodeJSXSpreadChild(decoder, i, b, flags, start, end, depth) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1, depth + 1) : null }; }
 function _decodeDialect(decoder, i, b, flags, start, end, depth) { const { _u32, nodeArrHoles, shapes } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return shaped(shapes[flags], start, end, nodeArrHoles(f1, f2, depth + 1)); }
 const KIND_DECODERS = [
