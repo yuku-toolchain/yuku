@@ -564,7 +564,7 @@ pub const SymbolTracker = struct {
     }
 
     /// Records the binding context a node sets for its `binding_identifier`s.
-    pub fn setBindingContext(
+    pub inline fn setBindingContext(
         self: *SymbolTracker,
         data: ast.NodeData,
         parent: ast.NodeIndex,
@@ -865,7 +865,7 @@ pub const SymbolTracker = struct {
     }
 
     /// Declares the names a node binds, after its enter hooks.
-    pub fn declareBindings(
+    pub inline fn declareBindings(
         self: *SymbolTracker,
         index: ast.NodeIndex,
         data: ast.NodeData,
@@ -925,7 +925,7 @@ pub const SymbolTracker = struct {
     }
 
     /// Records the names a node uses, with `identifier_flags` for an `identifier_reference`.
-    pub fn addReferences(
+    pub inline fn addReferences(
         self: *SymbolTracker,
         index: ast.NodeIndex,
         data: ast.NodeData,
@@ -1009,7 +1009,7 @@ pub const SymbolTracker = struct {
     }
 
     /// Restores the binding context a node saved on enter.
-    pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
+    pub inline fn exit(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
             // the export state stays cleared so the body declares nothing exported
             .formal_parameters => {

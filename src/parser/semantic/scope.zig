@@ -164,7 +164,7 @@ pub const ScopeTracker = struct {
         self.current = self.currentScope().parent;
     }
 
-    pub fn enter(
+    pub inline fn enter(
         self: *ScopeTracker,
         index: ast.NodeIndex,
         parent: ast.NodeIndex,
@@ -300,7 +300,7 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    pub fn exit(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) void {
+    pub inline fn exit(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) void {
         switch (data) {
             // the root and module scopes outlive the walk
             .program => {},
