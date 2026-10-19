@@ -270,7 +270,6 @@ fn parseJsxChildren(
         if (text_token.len() > 0) {
             const span = text_token.span;
             const text_node = try parser.tree.addNode(.{ .jsx_text = .{
-                .value = try parser.jsxValue(span.start, span.end),
                 .raw = parser.tree.sourceSlice(span.start, span.end),
             } }, span);
             try parser.scratch_b.append(parser.allocator(), text_node);

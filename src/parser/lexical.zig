@@ -52,7 +52,8 @@ pub fn keyword(name: []const u8) ?TokenTag {
     return null;
 }
 
-/// Whether `name` is an identifier that no code reserves.
+/// Whether `name` is an identifier that no code reserves. `eval` and `arguments` pass, though
+/// strict code cannot bind them, see `isEvalOrArguments`.
 pub fn isValidIdentifier(name: []const u8) bool {
     if (keyword(name)) |tag| {
         std.debug.assert(isIdentifierName(name));
@@ -60,6 +61,11 @@ pub fn isValidIdentifier(name: []const u8) bool {
         return tag != .await;
     }
     return isIdentifierName(name);
+}
+
+/// Whether `name` is `eval` or `arguments`, which strict code can neither bind nor assign.
+pub fn isEvalOrArguments(name: []const u8) bool {
+    return std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
 }
 
 pub const lineBreakLen = util.Utf.lineBreakLen;
@@ -118,5 +124,13 @@ test "keywords" {
     }
     for ([_][]const u8{ "class", "enum", "null", "let", "yield", "await", "1a" }) |name| {
         try testing.expect(!isValidIdentifier(name));
+    }
+}
+
+test "isEvalOrArguments" {
+    try testing.expect(isEvalOrArguments("eval"));
+    try testing.expect(isEvalOrArguments("arguments"));
+    for ([_][]const u8{ "", "Eval", "evaluate", "argument", "\\u0065val" }) |name| {
+        try testing.expect(!isEvalOrArguments(name));
     }
 }

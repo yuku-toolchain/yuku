@@ -70,7 +70,7 @@ pub const Checker = struct {
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict() and !flags.ambient) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
-            if (isEvalOrArguments(name)) {
+            if (lexical.isEvalOrArguments(name)) {
                 try self.report(
                     ctx.tree.span(node_index),
                     try self.fmt(
@@ -1013,13 +1013,9 @@ pub const Checker = struct {
         }
     }
 
-    fn isEvalOrArguments(name: []const u8) bool {
-        return eql(u8, name, "eval") or eql(u8, name, "arguments");
-    }
-
     fn isEvalOrArgumentsRef(tree: *const ast.Tree, node: ast.NodeIndex) bool {
         return tree.data(node) == .identifier_reference and
-            isEvalOrArguments(tree.string(tree.data(node).identifier_reference.name));
+            lexical.isEvalOrArguments(tree.string(tree.data(node).identifier_reference.name));
     }
 
     fn checkAssignTargetEvalArguments(
@@ -1030,7 +1026,7 @@ pub const Checker = struct {
         if (node == .null) return;
         switch (ctx.tree.data(node)) {
             .identifier_reference => |id| {
-                if (isEvalOrArguments(ctx.tree.string(id.name))) {
+                if (lexical.isEvalOrArguments(ctx.tree.string(id.name))) {
                     try self.report(
                         ctx.tree.span(node),
                         "Cannot assign to 'eval' or 'arguments' in strict mode",
