@@ -31,8 +31,6 @@ pub const Ctx = struct {
     node_scopes: []ScopeId,
     node_parents: []ast.NodeIndex,
 
-    pub const walk_whole_tree = true;
-
     pub fn init(tree: *ast.Tree, mode: Mode) Allocator.Error!Ctx {
         const node_count: usize = switch (mode) {
             .check => 0,
@@ -73,10 +71,15 @@ pub const Ctx = struct {
         return false;
     }
 
-    pub inline fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub inline fn enter(
+        self: *Ctx,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+        data: ast.NodeData,
+    ) Allocator.Error!void {
         self.path.push(index);
         const parent = self.path.parent() orelse .null;
-        try self.scope.enter(index, parent, data);
+        try self.scope.enter(tag, index, parent, data);
 
         switch (self.mode) {
             .check => {},
@@ -88,31 +91,37 @@ pub const Ctx = struct {
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 
-        try self.symbols.setBindingContext(data, parent, &self.scope);
+        try self.symbols.setBindingContext(tag, data, parent, &self.scope);
     }
 
     pub inline fn post_enter(
         self: *Ctx,
+        comptime tag: ast.NodeTag,
         index: ast.NodeIndex,
         data: ast.NodeData,
     ) Allocator.Error!void {
-        try self.symbols.declareBindings(index, data, &self.scope, self.inTypePosition());
+        try self.symbols.declareBindings(tag, index, data, &self.scope, self.inTypePosition());
         switch (self.mode) {
             .check => {},
             .analyze => {
                 var flags: Reference.Flags = .{};
-                if (data == .identifier_reference) {
+                if (tag == .identifier_reference) {
                     flags = refPosition(self.tree, &self.path, self.inTypePosition());
                     flags.write = isWriteTarget(self.tree, &self.path);
                 }
-                try self.symbols.addReferences(index, data, &self.scope, flags);
+                try self.symbols.addReferences(tag, index, data, &self.scope, flags);
             },
         }
     }
 
-    pub inline fn exit(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) void {
-        self.symbols.exit(data);
-        self.scope.exit(index, data);
+    pub inline fn exit(
+        self: *Ctx,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+        data: ast.NodeData,
+    ) void {
+        self.symbols.exit(tag, data);
+        self.scope.exit(tag, index);
         if (data.isTypeContext()) {
             std.debug.assert(self.type_position_depth > 0);
             self.type_position_depth -= 1;
@@ -122,12 +131,10 @@ pub const Ctx = struct {
 };
 
 /// Walks the tree tracking the node path, scopes, and symbols, and returns the `Semantic` model.
-/// `.skip` and `.stop` only mute the visitor, so the model covers the whole tree.
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Semantic {
     std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree, .analyze);
-    var layer = wk.Layer(Ctx, V){ .inner = visitor };
-    try wk.walk(Ctx, @TypeOf(layer), &layer, &ctx);
+    try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = true });
     return ctx.finalize();
 }
 

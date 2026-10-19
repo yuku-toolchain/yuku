@@ -140,7 +140,7 @@ test "walk visits every node with balanced enters and exits" {
     var visitor = CountingVisitor{ .gpa = testing.allocator };
     defer visitor.deinit();
     var ctx = Ctx{ .tree = &tree };
-    try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx);
+    try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     try testing.expect(visitor.enters > 0);
     try testing.expectEqual(visitor.enters, visitor.exits);
@@ -161,7 +161,7 @@ test "a walk past the recursion pairs every enter with an exit, even on stop" {
         };
         defer visitor.deinit();
         var ctx = Ctx{ .tree = &tree };
-        try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx);
+        try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
         try testing.expectEqual(@as(usize, 1), visitor.triggered);
         try testing.expectEqual(visitor.enters, visitor.exits);
@@ -181,7 +181,7 @@ test "skip suppresses the subtree but the node's exit still runs" {
     };
     defer visitor.deinit();
     var ctx = Ctx{ .tree = &tree };
-    try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx);
+    try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     try testing.expectEqual(@as(usize, 1), visitor.triggered);
     try testing.expect(!visitor.sawBinding("f"));
@@ -202,7 +202,7 @@ test "stop halts the traversal and unwinds exits for entered nodes" {
     };
     defer visitor.deinit();
     var ctx = Ctx{ .tree = &tree };
-    try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx);
+    try traverser.walk(Ctx, CountingVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     try testing.expectEqual(@as(usize, 1), visitor.triggered);
     try testing.expect(visitor.sawBinding("before"));
@@ -298,7 +298,7 @@ test "typed hooks fire between the generic hooks, exits in reverse order" {
     defer log.deinit();
     var visitor = TypedHookVisitor{ .log = &log };
     var ctx = Ctx{ .tree = &tree };
-    try traverser.walk(Ctx, TypedHookVisitor, &visitor, &ctx);
+    try traverser.walk(Ctx, TypedHookVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     try log.expectOrder(&.{
         "enter_node(function)",
@@ -348,38 +348,53 @@ test "a typed hook returning skip suppresses children, non-error hooks allowed" 
 
     var visitor = SkippingTypedVisitor{};
     var ctx = Ctx{ .tree = &tree };
-    try traverser.walk(Ctx, SkippingTypedVisitor, &visitor, &ctx);
+    try traverser.walk(Ctx, SkippingTypedVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     try testing.expectEqual(@as(usize, 0), visitor.entered_bindings);
     try testing.expectEqual(@as(usize, 1), visitor.function_exits);
 }
 
-const LayerCtx = struct {
+const HookOrderCtx = struct {
     tree: *const ast.Tree,
     log: *EventLog,
 
-    pub fn enter(self: *LayerCtx, _: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
+    pub fn enter(
+        self: *HookOrderCtx,
+        comptime _: ast.NodeTag,
+        _: ast.NodeIndex,
+        _: ast.NodeData,
+    ) Allocator.Error!void {
         try self.log.append("ctx.enter");
     }
 
-    pub fn post_enter(self: *LayerCtx, _: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
+    pub fn post_enter(
+        self: *HookOrderCtx,
+        comptime _: ast.NodeTag,
+        _: ast.NodeIndex,
+        _: ast.NodeData,
+    ) Allocator.Error!void {
         try self.log.append("ctx.post_enter");
     }
 
-    pub fn exit(self: *LayerCtx, _: ast.NodeIndex, _: ast.NodeData) void {
+    pub fn exit(
+        self: *HookOrderCtx,
+        comptime _: ast.NodeTag,
+        _: ast.NodeIndex,
+        _: ast.NodeData,
+    ) void {
         self.log.append("ctx.exit") catch unreachable;
     }
 };
 
-const LayerVisitor = struct {
+const HookOrderVisitor = struct {
     log: *EventLog,
     skip: ?helpers.NodeTag = null,
 
     pub fn enter_node(
-        self: *LayerVisitor,
+        self: *HookOrderVisitor,
         data: ast.NodeData,
         _: ast.NodeIndex,
-        _: *LayerCtx,
+        _: *HookOrderCtx,
     ) Allocator.Error!Action {
         try self.log.append("user.enter");
         if (self.skip) |tag| {
@@ -388,23 +403,25 @@ const LayerVisitor = struct {
         return .proceed;
     }
 
-    pub fn exit_node(self: *LayerVisitor, _: ast.NodeData, _: ast.NodeIndex, _: *LayerCtx) void {
+    pub fn exit_node(
+        self: *HookOrderVisitor,
+        _: ast.NodeData,
+        _: ast.NodeIndex,
+        _: *HookOrderCtx,
+    ) void {
         self.log.append("user.exit") catch unreachable;
     }
 };
 
-const Layered = traverser.Layer(LayerCtx, LayerVisitor);
-
-test "Layer runs ctx.enter, user hooks, ctx.post_enter, user exit, ctx.exit" {
+test "the walk runs ctx.enter, user hooks, ctx.post_enter, user exit, ctx.exit" {
     var tree = try parseModule("a;");
     defer tree.deinit();
 
     var log = EventLog{ .gpa = testing.allocator };
     defer log.deinit();
-    var visitor = LayerVisitor{ .log = &log };
-    var ctx = LayerCtx{ .tree = &tree, .log = &log };
-    var layer = Layered{ .inner = &visitor };
-    try traverser.walk(LayerCtx, Layered, &layer, &ctx);
+    var visitor = HookOrderVisitor{ .log = &log };
+    var ctx = HookOrderCtx{ .tree = &tree, .log = &log };
+    try traverser.walk(HookOrderCtx, HookOrderVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     const expected = [_][]const u8{
         "ctx.enter", "user.enter", "ctx.post_enter",
@@ -419,16 +436,15 @@ test "Layer runs ctx.enter, user hooks, ctx.post_enter, user exit, ctx.exit" {
     }
 }
 
-test "Layer keeps ctx enter/exit balanced when the user visitor skips" {
+test "the walk keeps ctx enter/exit balanced when the user visitor skips" {
     var tree = try parseModule("a;");
     defer tree.deinit();
 
     var log = EventLog{ .gpa = testing.allocator };
     defer log.deinit();
-    var visitor = LayerVisitor{ .log = &log, .skip = .expression_statement };
-    var ctx = LayerCtx{ .tree = &tree, .log = &log };
-    var layer = Layered{ .inner = &visitor };
-    try traverser.walk(LayerCtx, Layered, &layer, &ctx);
+    var visitor = HookOrderVisitor{ .log = &log, .skip = .expression_statement };
+    var ctx = HookOrderCtx{ .tree = &tree, .log = &log };
+    try traverser.walk(HookOrderCtx, HookOrderVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     var ctx_enters: usize = 0;
     var ctx_exits: usize = 0;
@@ -445,64 +461,60 @@ test "Layer keeps ctx enter/exit balanced when the user visitor skips" {
 
 const HookEvent = struct { exit: bool, index: ast.NodeIndex };
 
-fn EnterCountingCtx(comptime whole_tree: bool) type {
-    return struct {
-        tree: *const ast.Tree,
-        enters: u32 = 0,
-
-        pub const walk_whole_tree = whole_tree;
-
-        pub fn enter(self: *@This(), _: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
-            self.enters += 1;
-        }
-
-        pub fn exit(_: *@This(), _: ast.NodeIndex, _: ast.NodeData) void {}
-    };
-}
-
-fn HookRecorder(comptime C: type) type {
-    return struct {
-        events: *std.ArrayList(HookEvent),
-        tag: helpers.NodeTag,
-        action: Action,
-
-        pub fn enter_node(
-            self: *@This(),
-            data: ast.NodeData,
-            index: ast.NodeIndex,
-            _: *C,
-        ) Allocator.Error!Action {
-            try self.events.append(testing.allocator, .{ .exit = false, .index = index });
-            return if (std.meta.activeTag(data) == self.tag) self.action else .proceed;
-        }
-
-        pub fn exit_node(self: *@This(), _: ast.NodeData, index: ast.NodeIndex, _: *C) void {
-            self.events.append(testing.allocator, .{ .exit = true, .index = index }) catch
-                unreachable;
-        }
-    };
-}
-
-// records the visitor's hooks and returns how many nodes the context entered
-fn walkRecorded(
-    comptime whole_tree: bool,
+const EnterCountingCtx = struct {
     tree: *const ast.Tree,
+    enters: u32 = 0,
+
+    pub fn enter(
+        self: *EnterCountingCtx,
+        comptime _: ast.NodeTag,
+        _: ast.NodeIndex,
+        _: ast.NodeData,
+    ) Allocator.Error!void {
+        self.enters += 1;
+    }
+
+    pub fn exit(
+        _: *EnterCountingCtx,
+        comptime _: ast.NodeTag,
+        _: ast.NodeIndex,
+        _: ast.NodeData,
+    ) void {}
+};
+
+const HookRecorder = struct {
+    events: *std.ArrayList(HookEvent),
     tag: helpers.NodeTag,
     action: Action,
-    events: *std.ArrayList(HookEvent),
-) !u32 {
-    const C = EnterCountingCtx(whole_tree);
-    const V = HookRecorder(C);
-    var visitor: V = .{ .events = events, .tag = tag, .action = action };
-    var ctx: C = .{ .tree = tree };
-    var layer = traverser.Layer(C, V){ .inner = &visitor };
-    try traverser.walk(C, @TypeOf(layer), &layer, &ctx);
+
+    pub fn enter_node(
+        self: *HookRecorder,
+        data: ast.NodeData,
+        index: ast.NodeIndex,
+        _: *EnterCountingCtx,
+    ) Allocator.Error!Action {
+        try self.events.append(testing.allocator, .{ .exit = false, .index = index });
+        return if (std.meta.activeTag(data) == self.tag) self.action else .proceed;
+    }
+
+    pub fn exit_node(
+        self: *HookRecorder,
+        _: ast.NodeData,
+        index: ast.NodeIndex,
+        _: *EnterCountingCtx,
+    ) void {
+        self.events.append(testing.allocator, .{ .exit = true, .index = index }) catch unreachable;
+    }
+};
+
+fn walkRecorded(comptime whole_tree: bool, tree: *const ast.Tree, recorder: *HookRecorder) !u32 {
+    var ctx: EnterCountingCtx = .{ .tree = tree };
+    const options: traverser.Options = .{ .whole_tree = whole_tree };
+    try traverser.walk(EnterCountingCtx, HookRecorder, recorder, &ctx, options);
     return ctx.enters;
 }
 
-// a whole tree context enters every node, and its visitor sees what a plain walk shows it,
-// past the recursion too
-test "Layer over a whole tree context mutes the visitor instead of cutting the walk" {
+test "a whole tree walk mutes the visitor instead of cutting the walk" {
     const cases = [_]struct { source: []const u8, tag: helpers.NodeTag }{
         .{ .source = "let before; function f(b) { let inner; } let after;", .tag = .function },
         .{ .source = deep_source, .tag = .expression_statement },
@@ -513,17 +525,20 @@ test "Layer over a whole tree context mutes the visitor instead of cutting the w
         defer tree.deinit();
         var events: std.ArrayList(HookEvent) = .empty;
         defer events.deinit(testing.allocator);
-        const nodes = try walkRecorded(false, &tree, case.tag, .proceed, &events);
+        var all: HookRecorder = .{ .events = &events, .tag = case.tag, .action = .proceed };
+        const nodes = try walkRecorded(false, &tree, &all);
 
         for ([_]Action{ .skip, .stop }) |action| {
-            var plain: std.ArrayList(HookEvent) = .empty;
-            defer plain.deinit(testing.allocator);
-            var whole: std.ArrayList(HookEvent) = .empty;
-            defer whole.deinit(testing.allocator);
+            var plain_log: std.ArrayList(HookEvent) = .empty;
+            defer plain_log.deinit(testing.allocator);
+            var whole_log: std.ArrayList(HookEvent) = .empty;
+            defer whole_log.deinit(testing.allocator);
+            var plain: HookRecorder = .{ .events = &plain_log, .tag = case.tag, .action = action };
+            var whole: HookRecorder = .{ .events = &whole_log, .tag = case.tag, .action = action };
 
-            const plain_nodes = try walkRecorded(false, &tree, case.tag, action, &plain);
-            try testing.expectEqual(nodes, try walkRecorded(true, &tree, case.tag, action, &whole));
-            try testing.expectEqualSlices(HookEvent, plain.items, whole.items);
+            const plain_nodes = try walkRecorded(false, &tree, &plain);
+            try testing.expectEqual(nodes, try walkRecorded(true, &tree, &whole));
+            try testing.expectEqualSlices(HookEvent, plain_log.items, whole_log.items);
             if (action == .stop) try testing.expect(plain_nodes < nodes);
         }
     }

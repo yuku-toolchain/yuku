@@ -2547,12 +2547,15 @@ pub const NodeData = union(enum) {
         .ts_interface_body,
     };
 
-    const type_context_set = std.EnumSet(std.meta.Tag(NodeData)).initMany(&type_context_tags);
+    const type_context_set = std.EnumSet(NodeTag).initMany(&type_context_tags);
 
     pub fn isTypeContext(self: NodeData) bool {
         return type_context_set.contains(self);
     }
 };
+
+/// The kind of a node, the active tag of its `NodeData`.
+pub const NodeTag = std.meta.Tag(NodeData);
 
 pub const Node = struct {
     data: NodeData,

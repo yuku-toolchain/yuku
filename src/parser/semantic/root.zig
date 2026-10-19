@@ -27,17 +27,18 @@ pub fn check(tree: *ast.Tree) AnalysisError!void {
 pub fn analyze(tree: *ast.Tree, options: AnalyzeOptions) AnalysisError!Semantic {
     std.debug.assert(tree.root != .null);
 
+    var ctx = try semantic.Ctx.init(tree, .analyze);
     if (options.check) {
-        var ctx = try semantic.Ctx.init(tree, .analyze);
         try walk(tree, &ctx);
-        return ctx.finalize();
     } else {
         const diagnostics_count = tree.diagnostics.items.len;
         var visitor: struct {} = .{};
-        const model = try semantic.traverse(@TypeOf(visitor), tree, &visitor);
+        try traverser.walk(semantic.Ctx, @TypeOf(visitor), &visitor, &ctx, .{
+            .whole_tree = false,
+        });
         std.debug.assert(tree.diagnostics.items.len == diagnostics_count);
-        return model;
     }
+    return ctx.finalize();
 }
 
 fn walk(tree: *ast.Tree, ctx: *semantic.Ctx) AnalysisError!void {
@@ -45,7 +46,6 @@ fn walk(tree: *ast.Tree, ctx: *semantic.Ctx) AnalysisError!void {
         .tree = tree,
         .allocator = tree.allocator(),
     };
-    var layer = traverser.Layer(semantic.Ctx, checker.Checker){ .inner = &visitor };
-    try traverser.walk(semantic.Ctx, @TypeOf(layer), &layer, ctx);
+    try traverser.walk(semantic.Ctx, checker.Checker, &visitor, ctx, .{ .whole_tree = false });
     try visitor.checkExports(&ctx.symbols);
 }

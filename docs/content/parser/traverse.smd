@@ -154,11 +154,10 @@ To build a separate output tree instead, start one with `ast.Tree.initEmpty` and
 
 ## [Your own mode]($section.id('your-own-mode'))
 
-Each mode is a context type over one walker. A context of your own has a `tree` field and `enter(index, data)` and `exit(index, data)` methods, and `traverser.Layer` runs them around your visitor's hooks.
+Each mode is a context type over one walker. A context of your own has a `tree` field, and the walk runs its optional `enter`, `post_enter`, and `exit` methods around your visitor's hooks. Each takes `(comptime tag: ast.NodeTag, index, data)`, so a switch on the tag resolves at compile time. A context that builds a model passes `.whole_tree = true`, so `.skip` and `.stop` only mute the visitor.
 
 ```zig
-var layer = traverser.Layer(MyCtx, V){ .inner = &visitor };
-try traverser.walk(MyCtx, traverser.Layer(MyCtx, V), &layer, &ctx);
+try traverser.walk(MyCtx, V, &visitor, &ctx, .{ .whole_tree = false });
 ```
 
 [basic.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/traverser/basic.zig) is the smallest mode, a context that tracks the path.

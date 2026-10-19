@@ -166,17 +166,20 @@ pub const ScopeTracker = struct {
 
     pub inline fn enter(
         self: *ScopeTracker,
+        comptime tag: ast.NodeTag,
         index: ast.NodeIndex,
         parent: ast.NodeIndex,
         data: ast.NodeData,
     ) Allocator.Error!void {
-        switch (data) {
-            .directive => |d| {
+        switch (tag) {
+            .directive => {
+                const d = data.directive;
                 if (std.mem.eql(u8, self.tree.string(d.value), "use strict")) {
                     self.currentMut().flags.strict = true;
                 }
             },
-            .function => |func| {
+            .function => {
+                const func = data.function;
                 const flags = self.functionFlags(func.body);
                 const declaration = func.type == .function_declaration or
                     func.type == .ts_declare_function;
@@ -185,7 +188,8 @@ pub const ScopeTracker = struct {
                 }
                 try self.pushScope(.function, index, flags);
             },
-            .arrow_function_expression => |expr| {
+            .arrow_function_expression => {
+                const expr = data.arrow_function_expression;
                 try self.pushScope(.function, index, self.functionFlags(expr.body));
             },
             .function_body => {
@@ -239,14 +243,16 @@ pub const ScopeTracker = struct {
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .ts_module_block => try self.pushScope(.ts_module, index, self.inheritStrictFlag()),
             // a scope per qualifier of `namespace A.B.C {}`
-            .ts_module_declaration => |decl| {
+            .ts_module_declaration => {
+                const decl = data.ts_module_declaration;
                 var name = decl.id;
                 while (self.tree.data(name) == .ts_qualified_name) {
                     try self.pushScope(.ts_module, index, self.inheritStrictFlag());
                     name = self.tree.data(name).ts_qualified_name.left;
                 }
             },
-            .class => |cls| {
+            .class => {
+                const cls = data.class;
                 // class code is always strict (15.7.14)
                 const flags = Scope.Flags{ .strict = true };
                 if (cls.type != .class_declaration and cls.id != .null) {
@@ -255,7 +261,7 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.class, index, flags);
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
-            .dialect => |node| if (dialect.shape(node.kind).block_scope) {
+            .dialect => if (dialect.shape(data.dialect.kind).block_scope) {
                 try self.pushScope(.block, index, self.inheritStrictFlag());
             },
             .decorator => {
@@ -267,7 +273,6 @@ pub const ScopeTracker = struct {
         }
     }
 
-    // a class decorator evaluates outside the class, a member decorator inside
     fn decoratorScope(self: *const ScopeTracker, on_class: bool) ScopeId {
         var it = self.ancestors(self.current);
         const class = while (it.next()) |id| {
@@ -300,8 +305,12 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    pub inline fn exit(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) void {
-        switch (data) {
+    pub inline fn exit(
+        self: *ScopeTracker,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+    ) void {
+        switch (tag) {
             // the root and module scopes outlive the walk
             .program => {},
             .decorator => {

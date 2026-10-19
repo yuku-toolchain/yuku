@@ -1,5 +1,3 @@
-//! Corpus sweep checking that the walker enters every parent's children in source order.
-
 const std = @import("std");
 const parser = @import("parser");
 const helpers = @import("../helpers.zig");
@@ -69,7 +67,7 @@ fn checkOrder(path: []const u8, tree: *const ast.Tree) !void {
     var visitor: OrderVisitor = .{ .gpa = gpa };
     defer visitor.frames.deinit(gpa);
     var ctx: Ctx = .{ .tree = tree };
-    try traverser.walk(Ctx, OrderVisitor, &visitor, &ctx);
+    try traverser.walk(Ctx, OrderVisitor, &visitor, &ctx, .{ .whole_tree = false });
 
     if (visitor.violation) |v| {
         std.debug.print(

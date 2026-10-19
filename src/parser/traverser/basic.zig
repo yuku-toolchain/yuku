@@ -11,6 +11,5 @@ pub const Ctx = wk.PathCtx(*const ast.Tree);
 pub fn traverse(comptime V: type, tree: *const ast.Tree, visitor: *V) Allocator.Error!void {
     std.debug.assert(tree.root != .null);
     var ctx = Ctx{ .tree = tree };
-    var layer = wk.Layer(Ctx, V){ .inner = visitor };
-    try wk.walk(Ctx, @TypeOf(layer), &layer, &ctx);
+    try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = false });
 }

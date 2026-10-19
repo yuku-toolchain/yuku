@@ -20,13 +20,23 @@ pub const Ctx = struct {
         return .{ .tree = tree, .scope = try ScopeTracker.init(tree) };
     }
 
-    pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+    pub inline fn enter(
+        self: *Ctx,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+        data: ast.NodeData,
+    ) Allocator.Error!void {
         self.path.push(index);
-        try self.scope.enter(index, self.path.parent() orelse .null, data);
+        try self.scope.enter(tag, index, self.path.parent() orelse .null, data);
     }
 
-    pub fn exit(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) void {
-        self.scope.exit(index, data);
+    pub inline fn exit(
+        self: *Ctx,
+        comptime tag: ast.NodeTag,
+        index: ast.NodeIndex,
+        _: ast.NodeData,
+    ) void {
+        self.scope.exit(tag, index);
         self.path.pop();
     }
 };
@@ -35,7 +45,6 @@ pub const Ctx = struct {
 pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!ScopeTree {
     std.debug.assert(tree.root != .null);
     var ctx = try Ctx.init(tree);
-    var layer = wk.Layer(Ctx, V){ .inner = visitor };
-    try wk.walk(Ctx, @TypeOf(layer), &layer, &ctx);
+    try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = false });
     return ctx.scope.toScopeTree();
 }

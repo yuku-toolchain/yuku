@@ -2,6 +2,7 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 
 const Allocator = std.mem.Allocator;
+const Tag = ast.NodeTag;
 
 /// What the walk does after a node's enter hooks.
 pub const Action = enum {
@@ -13,8 +14,21 @@ pub const Action = enum {
     stop,
 };
 
+pub const Options = struct {
+    /// Walks every node, so `.skip` and `.stop` only mute the visitor, as a context that builds
+    /// a model of the whole tree needs.
+    whole_tree: bool,
+};
+
 /// Walks the tree from `ctx.tree.root`, calling hooks such as `enter_function` or `enter_node`.
-pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
+/// A context's `enter`, optional `post_enter`, and `exit` run around them.
+pub fn walk(
+    comptime C: type,
+    comptime V: type,
+    visitor: *V,
+    ctx: *C,
+    comptime options: Options,
+) Allocator.Error!void {
     comptime validateHooks(V);
     std.debug.assert(ctx.tree.root != .null);
 
@@ -24,158 +38,272 @@ pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.
         ctx.path.items = &.{};
     };
 
-    _ = try walkNode(C, V, visitor, ctx, ctx.tree.root, 0, undefined);
+    var walker: Walker(C, V, options) = .init(visitor, ctx);
+    if (walker.node(ctx, ctx.tree.root, 0) == .fail) return error.OutOfMemory;
 }
 
 const walk_depth_max = 256;
-// walkDeep runs each half through walkNode, as a second hook call site stops inlining
-const walk_enter_only = walk_depth_max + 1;
-const walk_exit_only = walk_depth_max + 2;
 
-// hooks on a mutable tree may replace nodes, so the walk re-reads them
-fn mutatesTree(comptime C: type) bool {
-    return !@typeInfo(@FieldType(C, "tree")).pointer.attrs.@"const";
-}
+const Step = enum(u8) { proceed, stop, fail };
 
-fn ExitData(comptime C: type) type {
-    return if (mutatesTree(C)) *const ast.NodeData else void;
-}
+fn Walker(comptime C: type, comptime V: type, comptime options: Options) type {
+    // hooks on a mutable tree may replace nodes, so the walk re-reads them
+    const mutates = !@typeInfo(@FieldType(C, "tree")).pointer.attrs.@"const";
 
-fn walkNode(
-    comptime C: type,
-    comptime V: type,
-    visitor: *V,
-    ctx: *C,
-    index: ast.NodeIndex,
-    depth: u32,
-    exit_data: ExitData(C),
-) Allocator.Error!Action {
-    if (index == .null) return .proceed;
-    if (depth == walk_depth_max) return walkDeep(C, V, visitor, ctx, index);
-    const deep = depth > walk_depth_max;
+    return struct {
+        visitor: *V,
+        // a const tree stays put during the walk, so its arrays are read once
+        nodes: if (mutates) void else []const ast.NodeData,
+        extras: if (mutates) void else []const ast.NodeIndex,
+        muting: Action = .proceed,
+        muted: u32 = 0,
 
-    var action: Action = .proceed;
-    var result: Action = .proceed;
-    var current: ast.NodeData = undefined;
-    if (!deep or depth == walk_enter_only) {
-        const data = ctx.tree.data(index);
-        action = try dispatch.enter(C, V, visitor, data, index, ctx);
+        const Self = @This();
 
-        current = if (comptime mutatesTree(C)) ctx.tree.data(index) else data;
+        fn init(visitor: *V, ctx: *C) Self {
+            if (comptime mutates) return .{ .visitor = visitor, .nodes = {}, .extras = {} };
+            return .{
+                .visitor = visitor,
+                .nodes = ctx.tree.nodes.items(.data),
+                .extras = ctx.tree.extras.items,
+            };
+        }
 
-        if (deep) return action;
-        if (action == .proceed) result = try walkChildren(C, V, visitor, ctx, current, depth + 1);
-    } else {
-        std.debug.assert(depth == walk_exit_only);
-        current = if (comptime mutatesTree(C)) exit_data.* else ctx.tree.data(index);
-    }
+        inline fn dataOf(self: *const Self, ctx: *C, index: ast.NodeIndex) ast.NodeData {
+            if (comptime mutates) return ctx.tree.data(index);
+            return self.nodes[@backingInt(index)];
+        }
 
-    dispatch.exit(C, V, visitor, current, index, ctx);
+        inline fn node(self: *Self, ctx: *C, index: ast.NodeIndex, depth: u32) Step {
+            std.debug.assert(index != .null);
+            if (depth == walk_depth_max) return self.deep(ctx, index);
+            return visits[@backingInt(self.dataOf(ctx, index))](self, ctx, index, depth);
+        }
 
-    return if (action == .stop) .stop else result;
-}
+        // one function per tag, so every hook sees the tag as known
+        const visits = table: {
+            const Visit = *const fn (*Self, *C, ast.NodeIndex, u32) Step;
+            var table: [@typeInfo(Tag).@"enum".field_names.len]Visit = undefined;
+            for (&table, 0..) |*entry, i| entry.* = visitOf(@fromBackingInt(@intCast(i)));
+            break :table table;
+        };
 
-fn walkChildren(
-    comptime C: type,
-    comptime V: type,
-    visitor: *V,
-    ctx: *C,
-    data: ast.NodeData,
-    depth: u32,
-) Allocator.Error!Action {
-    switch (data) {
-        inline else => |node| {
-            const T = @TypeOf(node);
-            if (@typeInfo(T) == .@"struct") {
-                return walkStructFields(C, V, visitor, ctx, T, node, depth);
+        fn visitOf(comptime tag: Tag) *const fn (*Self, *C, ast.NodeIndex, u32) Step {
+            return struct {
+                fn visit(self: *Self, ctx: *C, index: ast.NodeIndex, depth: u32) Step {
+                    @setEvalBranchQuota(100_000);
+                    const data = tagged(tag, self.dataOf(ctx, index));
+                    const action = self.enter(ctx, tag, data, index) catch return .fail;
+                    if (comptime mutates) {
+                        const current = ctx.tree.data(index);
+                        if (current != tag) {
+                            @branchHint(.cold);
+                            return self.finishAny(ctx, action, index, depth);
+                        }
+                        return self.finish(ctx, tag, current, action, index, depth);
+                    }
+                    return self.finish(ctx, tag, data, action, index, depth);
+                }
+            }.visit;
+        }
+
+        inline fn tagged(comptime tag: Tag, data: ast.NodeData) ast.NodeData {
+            return @unionInit(ast.NodeData, @tagName(tag), @field(data, @tagName(tag)));
+        }
+
+        inline fn finish(
+            self: *Self,
+            ctx: *C,
+            comptime tag: Tag,
+            data: ast.NodeData,
+            action: Action,
+            index: ast.NodeIndex,
+            depth: u32,
+        ) Step {
+            var result: Step = .proceed;
+            if (action == .proceed) {
+                // a mutable walk calls `fields` from two places, which would outline it
+                const modifier: std.builtin.CallModifier = if (mutates) .always_inline else .auto;
+                const payload = @field(data, @tagName(tag));
+                result = @call(modifier, fields, .{ self, ctx, payload, depth + 1 });
+                if (result == .fail) return .fail;
+            }
+            self.exit(ctx, tag, data, index);
+            return if (action == .stop) .stop else result;
+        }
+
+        fn finishAny(self: *Self, ctx: *C, action: Action, index: ast.NodeIndex, depth: u32) Step {
+            @setEvalBranchQuota(100_000);
+            const data = ctx.tree.data(index);
+            switch (data) {
+                inline else => |_, tag| return self.finish(ctx, tag, data, action, index, depth),
+            }
+        }
+
+        fn fields(self: *Self, ctx: *C, payload: anytype, depth: u32) Step {
+            const T = @TypeOf(payload);
+            if (@typeInfo(T) != .@"struct") return .proceed;
+            const info = @typeInfo(T).@"struct";
+            inline for (info.field_names, info.field_types) |name, Field| {
+                if (Field == ast.NodeIndex) {
+                    const child = @field(payload, name);
+                    if (child != .null) {
+                        const step = self.node(ctx, child, depth);
+                        if (step != .proceed) return step;
+                    }
+                } else if (Field == ast.IndexRange) {
+                    const range = @field(payload, name);
+                    if (comptime mutates) {
+                        // a visitor may append extras and move the backing array
+                        for (0..range.len) |i| {
+                            const child = ctx.tree.extra(range)[i];
+                            if (child == .null) continue;
+                            const step = self.node(ctx, child, depth);
+                            if (step != .proceed) return step;
+                        }
+                    } else {
+                        for (self.extras[range.start..][0..range.len]) |child| {
+                            if (child == .null) continue;
+                            const step = self.node(ctx, child, depth);
+                            if (step != .proceed) return step;
+                        }
+                    }
+                }
             }
             return .proceed;
-        },
-    }
-}
+        }
 
-fn walkStructFields(
-    comptime C: type,
-    comptime V: type,
-    visitor: *V,
-    ctx: *C,
-    comptime T: type,
-    payload: T,
-    depth: u32,
-) Allocator.Error!Action {
-    const info = @typeInfo(T).@"struct";
-
-    inline for (info.field_names, info.field_types) |name, Field| {
-        if (Field == ast.NodeIndex) {
-            const child = @field(payload, name);
-            const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
-            if (action == .stop) return .stop;
-        } else if (Field == ast.IndexRange) {
-            const range = @field(payload, name);
-            if (comptime mutatesTree(C)) {
-                // a visitor may append extras and move the backing array
-                for (0..range.len) |i| {
-                    const child = ctx.tree.extra(range)[i];
-                    const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
-                    if (action == .stop) return .stop;
-                }
+        inline fn enter(
+            self: *Self,
+            ctx: *C,
+            comptime tag: Tag,
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+        ) Allocator.Error!Action {
+            if (comptime @hasDecl(C, "enter")) try ctx.enter(tag, index, data);
+            var action: Action = .proceed;
+            if (comptime !options.whole_tree) {
+                action = try self.enterHooks(ctx, tag, data, index);
+            } else if (self.muting == .proceed) {
+                std.debug.assert(self.muted == 0);
+                const visited = try self.enterHooks(ctx, tag, data, index);
+                if (visited != .proceed) self.muting = visited;
             } else {
-                for (ctx.tree.extra(range)) |child| {
-                    const action = try walkNode(C, V, visitor, ctx, child, depth, undefined);
-                    if (action == .stop) return .stop;
+                self.muted += 1;
+            }
+            if (comptime @hasDecl(C, "post_enter")) try ctx.post_enter(tag, index, data);
+            return action;
+        }
+
+        inline fn enterHooks(
+            self: *Self,
+            ctx: *C,
+            comptime tag: Tag,
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+        ) Allocator.Error!Action {
+            if (comptime @hasDecl(V, "enter_node")) {
+                const action = try unwrapAction(self.visitor.enter_node(data, index, ctx));
+                if (action != .proceed) return action;
+            }
+            const name = "enter_" ++ @tagName(tag);
+            if (comptime !@hasDecl(V, name)) return .proceed;
+            const payload = @field(data, @tagName(tag));
+            return unwrapAction(@field(V, name)(self.visitor, payload, index, ctx));
+        }
+
+        inline fn exit(
+            self: *Self,
+            ctx: *C,
+            comptime tag: Tag,
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+        ) void {
+            if (!options.whole_tree or self.hooked()) {
+                const name = "exit_" ++ @tagName(tag);
+                if (comptime @hasDecl(V, name)) {
+                    @field(V, name)(self.visitor, @field(data, @tagName(tag)), index, ctx);
+                }
+                if (comptime @hasDecl(V, "exit_node")) self.visitor.exit_node(data, index, ctx);
+            }
+            if (comptime @hasDecl(C, "exit")) ctx.exit(tag, index, data);
+        }
+
+        inline fn hooked(self: *Self) bool {
+            if (self.muting == .proceed) return true;
+            if (self.muted > 0) {
+                self.muted -= 1;
+                return false;
+            }
+            if (self.muting == .skip) self.muting = .proceed;
+            return true;
+        }
+
+        fn enterAny(
+            self: *Self,
+            ctx: *C,
+            data: ast.NodeData,
+            index: ast.NodeIndex,
+        ) Allocator.Error!Action {
+            @setEvalBranchQuota(100_000);
+            switch (data) {
+                inline else => |_, tag| return self.enter(ctx, tag, data, index),
+            }
+        }
+
+        fn exitAny(self: *Self, ctx: *C, data: ast.NodeData, index: ast.NodeIndex) void {
+            @setEvalBranchQuota(100_000);
+            switch (data) {
+                inline else => |_, tag| self.exit(ctx, tag, data, index),
+            }
+        }
+
+        noinline fn deep(self: *Self, ctx: *C, root: ast.NodeIndex) Step {
+            return self.deepWalk(ctx, root) catch .fail;
+        }
+
+        fn deepWalk(self: *Self, ctx: *C, root: ast.NodeIndex) Allocator.Error!Step {
+            const gpa = ctx.tree.arena.child_allocator;
+            var steps: std.ArrayList(WalkStep) = .empty;
+            defer steps.deinit(gpa);
+
+            const outer_path = if (comptime @hasField(C, "path")) ctx.path.items else {};
+            if (comptime @hasField(C, "path")) {
+                ctx.path.items = try gpa.dupe(ast.NodeIndex, outer_path);
+            }
+            defer if (comptime @hasField(C, "path")) {
+                gpa.free(ctx.path.items);
+                ctx.path.items = outer_path;
+            };
+
+            var stopped = false;
+            try steps.append(gpa, .{ .index = root, .exit = null });
+            while (steps.pop()) |step| {
+                const index = step.index;
+                if (step.exit) |data| {
+                    self.exitAny(ctx, data, index);
+                    continue;
+                }
+                if (stopped or index == .null) continue;
+
+                if (comptime @hasField(C, "path")) {
+                    if (ctx.path.len == ctx.path.items.len) {
+                        ctx.path.items = try gpa.realloc(ctx.path.items, 2 * ctx.path.len);
+                    }
+                }
+
+                const action = try self.enterAny(ctx, ctx.tree.data(index), index);
+                const current = ctx.tree.data(index);
+                try steps.append(gpa, .{ .index = index, .exit = current });
+                switch (action) {
+                    .proceed => try walkDeepPushChildren(ctx.tree, current, &steps, gpa),
+                    .skip => {},
+                    .stop => stopped = true,
                 }
             }
+            return if (stopped) .stop else .proceed;
         }
-    }
-
-    return .proceed;
-}
-
-noinline fn walkDeep(
-    comptime C: type,
-    comptime V: type,
-    visitor: *V,
-    ctx: *C,
-    root: ast.NodeIndex,
-) Allocator.Error!Action {
-    const gpa = ctx.tree.arena.child_allocator;
-    var steps: std.ArrayList(WalkStep) = .empty;
-    defer steps.deinit(gpa);
-
-    const outer_path = if (comptime @hasField(C, "path")) ctx.path.items else {};
-    if (comptime @hasField(C, "path")) ctx.path.items = try gpa.dupe(ast.NodeIndex, outer_path);
-    defer if (comptime @hasField(C, "path")) {
-        gpa.free(ctx.path.items);
-        ctx.path.items = outer_path;
     };
-
-    var stopped = false;
-    try steps.append(gpa, .{ .index = root, .exit = null });
-    while (steps.pop()) |step| {
-        const index = step.index;
-        if (step.exit) |data| {
-            const exit_data = if (comptime mutatesTree(C)) &data else {};
-            _ = try walkNode(C, V, visitor, ctx, index, walk_exit_only, exit_data);
-            continue;
-        }
-        if (stopped or index == .null) continue;
-
-        if (comptime @hasField(C, "path")) {
-            if (ctx.path.len == ctx.path.items.len) {
-                ctx.path.items = try gpa.realloc(ctx.path.items, 2 * ctx.path.len);
-            }
-        }
-
-        const action = try walkNode(C, V, visitor, ctx, index, walk_enter_only, undefined);
-        const current = ctx.tree.data(index);
-        try steps.append(gpa, .{ .index = index, .exit = current });
-        switch (action) {
-            .proceed => try walkDeepPushChildren(ctx.tree, current, &steps, gpa),
-            .skip => {},
-            .stop => stopped = true,
-        }
-    }
-    return if (stopped) .stop else .proceed;
 }
 
 const WalkStep = struct { index: ast.NodeIndex, exit: ?ast.NodeData };
@@ -208,136 +336,8 @@ fn walkDeepPushChildren(
     std.mem.reverse(WalkStep, steps.items[children_start..]);
 }
 
-/// Wraps a visitor so `ctx.enter`, the optional `ctx.post_enter`, and `ctx.exit` run around
-/// its hooks. A context with `walk_whole_tree = true` is walked whole, and `.skip` and `.stop`
-/// only mute the visitor.
-pub fn Layer(comptime C: type, comptime V: type) type {
-    comptime validateHooks(V);
-    // a visitor without enter hooks never skips or stops
-    const whole_tree = @hasDecl(C, "walk_whole_tree") and C.walk_whole_tree and
-        comptime hasEnterHooks(V);
-    return struct {
-        inner: *V,
-        muting: if (whole_tree) Muting else struct {} = .{},
-
-        pub fn enter_node(
-            self: *@This(),
-            data: ast.NodeData,
-            index: ast.NodeIndex,
-            ctx: *C,
-        ) Allocator.Error!Action {
-            try ctx.enter(index, data);
-            var action: Action = .proceed;
-            if (comptime whole_tree) {
-                if (self.muting.enter()) {
-                    self.muting.action = try dispatch.enter(C, V, self.inner, data, index, ctx);
-                }
-            } else {
-                action = try dispatch.enter(C, V, self.inner, data, index, ctx);
-            }
-            if (comptime @hasDecl(C, "post_enter")) try ctx.post_enter(index, data);
-            return action;
-        }
-
-        pub fn exit_node(
-            self: *@This(),
-            data: ast.NodeData,
-            index: ast.NodeIndex,
-            ctx: *C,
-        ) void {
-            if (comptime whole_tree) {
-                if (self.muting.exit()) dispatch.exit(C, V, self.inner, data, index, ctx);
-            } else {
-                dispatch.exit(C, V, self.inner, data, index, ctx);
-            }
-            ctx.exit(index, data);
-        }
-    };
-}
-
-// mutes the visitor below a skip and after a stop, while the walk goes on
-const Muting = struct {
-    action: Action = .proceed,
-    // muted nodes on the path, always its deepest
-    muted: u32 = 0,
-
-    fn enter(self: *Muting) bool {
-        if (self.action == .proceed) {
-            std.debug.assert(self.muted == 0);
-            return true;
-        }
-        self.muted += 1;
-        return false;
-    }
-
-    fn exit(self: *Muting) bool {
-        if (self.muted > 0) {
-            std.debug.assert(self.action != .proceed);
-            self.muted -= 1;
-            return false;
-        }
-        if (self.action == .skip) self.action = .proceed;
-        return true;
-    }
-};
-
-const dispatch = struct {
-    fn enter(
-        comptime C: type,
-        comptime V: type,
-        visitor: *V,
-        data: ast.NodeData,
-        index: ast.NodeIndex,
-        ctx: *C,
-    ) Allocator.Error!Action {
-        if (comptime @hasDecl(V, "enter_node")) {
-            switch (try unwrapAction(visitor.enter_node(data, index, ctx))) {
-                .skip => return .skip,
-                .stop => return .stop,
-                .proceed => {},
-            }
-        }
-        switch (data) {
-            inline else => |node, tag| {
-                if (comptime @hasDecl(V, "enter_" ++ @tagName(tag))) {
-                    const hook = @field(V, "enter_" ++ @tagName(tag));
-                    return unwrapAction(hook(visitor, node, index, ctx));
-                }
-                return .proceed;
-            },
-        }
-    }
-
-    fn exit(
-        comptime C: type,
-        comptime V: type,
-        visitor: *V,
-        data: ast.NodeData,
-        index: ast.NodeIndex,
-        ctx: *C,
-    ) void {
-        switch (data) {
-            inline else => |node, tag| {
-                if (comptime @hasDecl(V, "exit_" ++ @tagName(tag))) {
-                    @field(V, "exit_" ++ @tagName(tag))(visitor, node, index, ctx);
-                }
-            },
-        }
-        if (comptime @hasDecl(V, "exit_node")) {
-            visitor.exit_node(data, index, ctx);
-        }
-    }
-};
-
 inline fn unwrapAction(result: anytype) Allocator.Error!Action {
     return result;
-}
-
-fn hasEnterHooks(comptime V: type) bool {
-    for (@typeInfo(V).@"struct".decl_names) |name| {
-        if (std.mem.startsWith(u8, name, "enter_")) return true;
-    }
-    return false;
 }
 
 fn validateHooks(comptime V: type) void {
@@ -375,11 +375,21 @@ pub fn PathCtx(comptime Tree: type) type {
         tree: Tree,
         path: NodePath = .{},
 
-        pub fn enter(self: *@This(), index: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
+        pub inline fn enter(
+            self: *@This(),
+            comptime _: ast.NodeTag,
+            index: ast.NodeIndex,
+            _: ast.NodeData,
+        ) Allocator.Error!void {
             self.path.push(index);
         }
 
-        pub fn exit(self: *@This(), _: ast.NodeIndex, _: ast.NodeData) void {
+        pub inline fn exit(
+            self: *@This(),
+            comptime _: ast.NodeTag,
+            _: ast.NodeIndex,
+            _: ast.NodeData,
+        ) void {
             self.path.pop();
         }
     };

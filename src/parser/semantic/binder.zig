@@ -594,12 +594,14 @@ pub const SymbolTracker = struct {
     /// Records the binding context a node sets for its `binding_identifier`s.
     pub inline fn setBindingContext(
         self: *SymbolTracker,
+        comptime tag: ast.NodeTag,
         data: ast.NodeData,
         parent: ast.NodeIndex,
         scope: *const sc.ScopeTracker,
     ) Allocator.Error!void {
-        switch (data) {
-            .export_named_declaration => |decl| {
+        switch (tag) {
+            .export_named_declaration => {
+                const decl = data.export_named_declaration;
                 // a type-only specifier list must not tag the value side
                 if (decl.declaration != .null or decl.export_kind != .type) {
                     self.export_state = .named;
@@ -607,7 +609,8 @@ pub const SymbolTracker = struct {
             },
             .export_default_declaration => self.export_state = .default,
 
-            .variable_declaration => |decl| {
+            .variable_declaration => {
+                const decl = data.variable_declaration;
                 try self.pushSavedContext();
                 const ambient = decl.declare or self.ambient;
                 switch (decl.kind) {
@@ -637,7 +640,8 @@ pub const SymbolTracker = struct {
                 }
             },
 
-            .function => |func| {
+            .function => {
+                const func = data.function;
                 try self.pushSavedContext();
                 const ambient = func.declare or
                     func.type == .ts_declare_function or
@@ -668,7 +672,8 @@ pub const SymbolTracker = struct {
                 if (!is_decl) self.export_state = .none;
             },
 
-            .class => |cls| {
+            .class => {
+                const cls = data.class;
                 try self.pushSavedContext();
                 const is_decl = cls.type == .class_declaration;
                 self.pending = .{
@@ -697,7 +702,8 @@ pub const SymbolTracker = struct {
             .class_body => self.export_state = .none,
             .ts_module_block, .ts_enum_body => try self.enterBody(data, parent, scope),
 
-            inline .import_declaration, .ts_import_equals_declaration => |decl| {
+            .import_declaration, .ts_import_equals_declaration => {
+                const decl = @field(data, @tagName(tag));
                 try self.pushSavedContext();
                 self.pending = .{
                     .flags = if (decl.import_kind == .type)
@@ -712,7 +718,8 @@ pub const SymbolTracker = struct {
                 };
             },
 
-            .import_specifier => |spec| {
+            .import_specifier => {
+                const spec = data.import_specifier;
                 try self.pushSavedContext();
                 if (spec.import_kind == .type) {
                     self.pending.flags = .{ .type_import = true };
@@ -729,7 +736,8 @@ pub const SymbolTracker = struct {
                 };
             },
 
-            .dialect => |node| {
+            .dialect => {
+                const node = data.dialect;
                 const shape = dialect.shape(node.kind);
                 if (!shape.lexical_bindings and !shape.catch_bindings) return;
                 try self.pushSavedContext();
@@ -745,7 +753,8 @@ pub const SymbolTracker = struct {
             },
 
             // the id binds outside the scope the tracker pushed for the body
-            inline .ts_interface_declaration, .ts_type_alias_declaration => |decl, tag| {
+            .ts_interface_declaration, .ts_type_alias_declaration => {
+                const decl = @field(data, @tagName(tag));
                 try self.pushSavedContext();
                 const interface = tag == .ts_interface_declaration;
                 self.pending = .{
@@ -762,7 +771,8 @@ pub const SymbolTracker = struct {
                 };
             },
 
-            .ts_enum_declaration => |decl| {
+            .ts_enum_declaration => {
+                const decl = data.ts_enum_declaration;
                 try self.pushSavedContext();
                 self.pending = .{
                     .flags = .{
@@ -779,7 +789,8 @@ pub const SymbolTracker = struct {
                 if (decl.declare) self.ambient = true;
             },
 
-            .ts_module_declaration => |decl| {
+            .ts_module_declaration => {
+                const decl = data.ts_module_declaration;
                 try self.pushSavedContext();
                 self.body_owner = .none;
                 const instantiated = isNamespaceInstantiated(self.tree, decl.body);
@@ -804,7 +815,8 @@ pub const SymbolTracker = struct {
                 self.ambient = true;
             },
 
-            .ts_namespace_export_declaration => |decl| {
+            .ts_namespace_export_declaration => {
+                const decl = data.ts_namespace_export_declaration;
                 try self.pushSavedContext();
                 try self.declareGlobalNamespace(decl, scope);
             },
@@ -895,6 +907,7 @@ pub const SymbolTracker = struct {
     /// Declares the names a node binds, after its enter hooks.
     pub inline fn declareBindings(
         self: *SymbolTracker,
+        comptime tag: ast.NodeTag,
         index: ast.NodeIndex,
         data: ast.NodeData,
         scope: *const sc.ScopeTracker,
@@ -904,8 +917,9 @@ pub const SymbolTracker = struct {
             try self.syncScopeMaps(scope.scopes.items.len);
         }
 
-        switch (data) {
-            .binding_identifier => |id| {
+        switch (tag) {
+            .binding_identifier => {
+                const id = data.binding_identifier;
                 const flags = self.pending.flags;
                 // in a type, only type parameters and parameters declare
                 if (type_position and !flags.type_parameter and !flags.parameter) return;
@@ -926,13 +940,15 @@ pub const SymbolTracker = struct {
                     }
                 }
             },
-            .ts_module_declaration => |decl| {
+            .ts_module_declaration => {
+                const decl = data.ts_module_declaration;
                 if (self.tree.data(decl.id) == .ts_qualified_name) {
                     try self.declareQualifiedNamespace(decl, scope);
                 }
             },
             // member names are not binding identifiers, and tsc resolves them lexically
-            .ts_enum_member => |member| {
+            .ts_enum_member => {
+                const member = data.ts_enum_member;
                 if (member.computed) return;
                 const name = switch (self.tree.data(member.id)) {
                     .identifier_name => |id| id.name,
@@ -955,17 +971,20 @@ pub const SymbolTracker = struct {
     /// Records the names a node uses, with `identifier_flags` for an `identifier_reference`.
     pub inline fn addReferences(
         self: *SymbolTracker,
+        comptime tag: ast.NodeTag,
         index: ast.NodeIndex,
         data: ast.NodeData,
         scope: *const sc.ScopeTracker,
         identifier_flags: Reference.Flags,
     ) Allocator.Error!void {
-        switch (data) {
-            .identifier_reference => |id| {
+        switch (tag) {
+            .identifier_reference => {
+                const id = data.identifier_reference;
                 try self.addReference(id.name, scope.current, index, identifier_flags);
             },
             // the `v` of `v is T` is an identifier_name, but renamers need its parameter link
-            .ts_type_predicate => |predicate| {
+            .ts_type_predicate => {
+                const predicate = data.ts_type_predicate;
                 if (predicate.parameter_name == .null) return;
                 const name = switch (self.tree.data(predicate.parameter_name)) {
                     .identifier_name => |id| id.name,
@@ -979,7 +998,8 @@ pub const SymbolTracker = struct {
                 });
             },
             // a lowercase or dashed tag is an intrinsic element, as the JSX transforms treat it
-            inline .jsx_opening_element, .jsx_closing_element => |el| {
+            .jsx_opening_element, .jsx_closing_element => {
+                const el = @field(data, @tagName(tag));
                 if (jsxTagRoot(self.tree, el.name)) |root_idx| {
                     const id = self.tree.data(root_idx).jsx_identifier;
                     const text = self.tree.string(id.name);
@@ -1037,8 +1057,12 @@ pub const SymbolTracker = struct {
     }
 
     /// Restores the binding context a node saved on enter.
-    pub inline fn exit(self: *SymbolTracker, data: ast.NodeData) void {
-        switch (data) {
+    pub inline fn exit(
+        self: *SymbolTracker,
+        comptime tag: ast.NodeTag,
+        data: ast.NodeData,
+    ) void {
+        switch (tag) {
             // the export state stays cleared so the body declares nothing exported
             .formal_parameters => {
                 const saved = self.saved_stack.pop() orelse return;
@@ -1066,7 +1090,8 @@ pub const SymbolTracker = struct {
 
             .export_named_declaration, .export_default_declaration => self.export_state = .none,
 
-            .dialect => |node| {
+            .dialect => {
+                const node = data.dialect;
                 const shape = dialect.shape(node.kind);
                 if (shape.lexical_bindings or shape.catch_bindings) self.popSavedContext();
             },

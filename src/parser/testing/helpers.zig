@@ -8,7 +8,7 @@ const semantic = parser.semantic;
 const Semantic = semantic.Semantic;
 const testing = std.testing;
 
-pub const NodeTag = std.meta.Tag(ast.NodeData);
+pub const NodeTag = ast.NodeTag;
 
 pub const Analyzed = struct {
     tree: ast.Tree,

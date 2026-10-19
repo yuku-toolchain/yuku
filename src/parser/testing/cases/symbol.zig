@@ -130,7 +130,6 @@ test "every declared symbol is reachable through its scope's bindings" {
     }
 }
 
-// `owner.name` reads every body of a merged declaration, each by its own kind
 test "member resolves a qualified name across merged bodies" {
     var a = try helpers.analyze(
         \\enum E { A }
