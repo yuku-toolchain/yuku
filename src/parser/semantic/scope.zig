@@ -146,6 +146,7 @@ pub const ScopeTracker = struct {
 
         const id: ScopeId = @fromBackingInt(@intCast(self.scopes.items.len));
         const parent = self.currentScope();
+        std.debug.assert(opens_scope.contains(self.tree.data(node)));
 
         try self.scopes.append(self.allocator, .{
             .node = node,
@@ -317,11 +318,42 @@ pub const ScopeTracker = struct {
                 std.debug.assert(self.decorator_saved.items.len > 0);
                 self.current = self.decorator_saved.pop().?;
             },
-            else => while (self.current != .root and self.currentScope().node == index) {
-                self.popScope();
+            else => if (comptime opens_scope.contains(tag)) {
+                while (self.current != .root and self.currentScope().node == index) {
+                    self.popScope();
+                }
             },
         }
     }
+
+    // the tags `enter` pushes a scope for, a switch's case block included
+    const opens_scope = std.EnumSet(ast.NodeTag).initMany(&.{
+        .function,
+        .arrow_function_expression,
+        .function_body,
+        .block_statement,
+        .switch_statement,
+        .for_statement,
+        .for_in_statement,
+        .for_of_statement,
+        .catch_clause,
+        .ts_interface_declaration,
+        .ts_type_alias_declaration,
+        .ts_function_type,
+        .ts_constructor_type,
+        .ts_method_signature,
+        .ts_call_signature_declaration,
+        .ts_construct_signature_declaration,
+        .ts_index_signature,
+        .ts_mapped_type,
+        .ts_conditional_type,
+        .ts_enum_body,
+        .ts_module_block,
+        .ts_module_declaration,
+        .class,
+        .static_block,
+        .dialect,
+    });
 
     fn hasParameterExpression(tree: *const ast.Tree, params: ast.NodeIndex) bool {
         if (params == .null) return false;

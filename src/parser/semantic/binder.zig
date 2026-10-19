@@ -12,6 +12,13 @@ pub const SymbolId = enum(u32) { none = std.math.maxInt(u32), _ };
 /// Identifier for a `Reference`. `.none` means absent.
 pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
+const NodeLink = packed struct(u32) {
+    id: u31,
+    reference: bool,
+
+    const none: NodeLink = .{ .id = std.math.maxInt(u31), .reference = true };
+};
+
 const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
 
 /// A `(start, len)` window into a backing slice.
@@ -242,6 +249,7 @@ pub const Semantic = struct {
     use_ids: []const ReferenceId,
     use_ranges: []const Range,
     scope_maps: []const ScopeMap,
+    scope_names: []const u64,
     hoisting_variables: []const ScopeMap,
     /// Per scope, the next body of the same namespace or enum in a cycle, or `.none`.
     next_bodies: []const sc.ScopeId,
@@ -249,8 +257,7 @@ pub const Semantic = struct {
     owner_bodies: std.AutoHashMapUnmanaged(SymbolId, sc.ScopeId),
     node_scopes: []const sc.ScopeId,
     node_parents: []const ast.NodeIndex,
-    node_symbols: []const SymbolId,
-    node_references: []const ReferenceId,
+    node_links: []const NodeLink,
 
     /// The symbol with the given id.
     pub inline fn symbol(self: Semantic, id: SymbolId) Symbol {
@@ -274,21 +281,21 @@ pub const Semantic = struct {
     /// The symbol declared at `node` or resolved by its reference, or `null`.
     pub fn symbolOf(self: Semantic, node: ast.NodeIndex) ?SymbolId {
         std.debug.assert(node != .null);
-        std.debug.assert(@backingInt(node) < self.node_symbols.len);
-        const declared = self.node_symbols[@backingInt(node)];
-        if (declared != .none) return declared;
-        const ref = self.node_references[@backingInt(node)];
-        if (ref == .none) return null;
-        const resolved = self.reference(ref).symbol;
+        std.debug.assert(@backingInt(node) < self.node_links.len);
+        const link = self.node_links[@backingInt(node)];
+        if (link == NodeLink.none) return null;
+        if (!link.reference) return @fromBackingInt(link.id);
+        const resolved = self.references[link.id].symbol;
         return if (resolved != .none) resolved else null;
     }
 
     /// The reference at `node`, or `null`.
     pub fn referenceOf(self: Semantic, node: ast.NodeIndex) ?ReferenceId {
         std.debug.assert(node != .null);
-        std.debug.assert(@backingInt(node) < self.node_references.len);
-        const id = self.node_references[@backingInt(node)];
-        return if (id != .none) id else null;
+        std.debug.assert(@backingInt(node) < self.node_links.len);
+        const link = self.node_links[@backingInt(node)];
+        if (link == NodeLink.none or !link.reference) return null;
+        return @fromBackingInt(link.id);
     }
 
     /// The innermost scope of `node`, the one it creates if any.
@@ -355,9 +362,10 @@ pub const Semantic = struct {
             .symbols = self.symbols,
             .next = self.next_bodies,
         };
+        const prehashed: PrehashedContext = .of(name);
         var it = self.scopes.ancestors(scope_id);
         while (it.next()) |ancestor| {
-            if (self.scope_maps[@backingInt(ancestor)].get(name)) |id| {
+            if (prehashed.find(self.scope_maps, self.scope_names, ancestor, name)) |id| {
                 if (self.symbol(id).flags.visibleIn(space)) return id;
             }
             if (bodies.sharedMember(ancestor, name, space)) |id| return id;
@@ -376,9 +384,10 @@ pub const Semantic = struct {
         std.debug.assert(owner != .none);
         std.debug.assert(@backingInt(owner) < self.symbols.len);
         const first = self.owner_bodies.get(owner) orelse return null;
+        const prehashed: PrehashedContext = .of(name);
         var body = first;
         for (0..self.scopes.list.len) |_| {
-            if (self.scope_maps[@backingInt(body)].get(name)) |id| {
+            if (prehashed.find(self.scope_maps, self.scope_names, body, name)) |id| {
                 const flags = self.symbol(id).flags;
                 const in_enum = self.scopes.list[@backingInt(body)].kind != .ts_module;
                 const shared = if (in_enum) flags.enum_member else flags.exported;
@@ -505,6 +514,27 @@ const Bodies = struct {
 const PrehashedContext = struct {
     hash_value: u64,
 
+    fn of(name: []const u8) PrehashedContext {
+        return .{ .hash_value = std.hash.Wyhash.hash(0, name) };
+    }
+
+    fn bit(self: PrehashedContext) u64 {
+        return @as(u64, 1) << @intCast(self.hash_value >> 58);
+    }
+
+    // a scope's binding of the name, its map skipped when its names rule the name out
+    inline fn find(
+        self: PrehashedContext,
+        maps: []const ScopeMap,
+        names: []const u64,
+        scope: sc.ScopeId,
+        name: []const u8,
+    ) ?SymbolId {
+        const i = @backingInt(scope);
+        if (names[i] & self.bit() == 0) return null;
+        return maps[i].getAdapted(name, self);
+    }
+
     pub fn hash(self: PrehashedContext, _: []const u8) u64 {
         return self.hash_value;
     }
@@ -532,6 +562,8 @@ pub const SymbolTracker = struct {
     // parallel to `symbols`
     first_decls: std.ArrayList(ast.NodeIndex) = .empty,
     scope_maps: std.ArrayList(ScopeMap) = .empty,
+    // per scope, one bit per name hash bound there, so a resolution skips most maps
+    scope_names: std.ArrayList(u64) = .empty,
     hoisting_variables: std.ArrayList(ScopeMap) = .empty,
     next_bodies: std.ArrayList(sc.ScopeId) = .empty,
     export_contexts: std.ArrayList(bool) = .empty,
@@ -913,13 +945,10 @@ pub const SymbolTracker = struct {
         scope: *const sc.ScopeTracker,
         type_position: bool,
     ) Allocator.Error!void {
-        if (self.scope_maps.items.len < scope.scopes.items.len) {
-            try self.syncScopeMaps(scope.scopes.items.len);
-        }
-
         switch (tag) {
             .binding_identifier => {
                 const id = data.binding_identifier;
+                try self.syncScopeMaps(scope.scopes.items.len);
                 const flags = self.pending.flags;
                 // in a type, only type parameters and parameters declare
                 if (type_position and !flags.type_parameter and !flags.parameter) return;
@@ -942,6 +971,7 @@ pub const SymbolTracker = struct {
             },
             .ts_module_declaration => {
                 const decl = data.ts_module_declaration;
+                try self.syncScopeMaps(scope.scopes.items.len);
                 if (self.tree.data(decl.id) == .ts_qualified_name) {
                     try self.declareQualifiedNamespace(decl, scope);
                 }
@@ -950,6 +980,7 @@ pub const SymbolTracker = struct {
             .ts_enum_member => {
                 const member = data.ts_enum_member;
                 if (member.computed) return;
+                try self.syncScopeMaps(scope.scopes.items.len);
                 const name = switch (self.tree.data(member.id)) {
                     .identifier_name => |id| id.name,
                     .string_literal => |str| str.value,
@@ -1113,15 +1144,12 @@ pub const SymbolTracker = struct {
         std.debug.assert(node != .null);
 
         const name_str = self.tree.string(name);
-        const target_idx = @backingInt(target);
 
         const exported = self.pendingExported(target);
         // an export merges across the bodies of its namespace
         const own = self.binding(target, name_str);
         const shared = if (own == null) self.sharedExport(target, name_str, scopes) else null;
-        if (shared) |existing| {
-            try self.scope_maps.items[target_idx].put(self.allocator, name_str, existing);
-        }
+        if (shared) |existing| try self.bind(target, name_str, existing);
 
         const id = if (own orelse shared) |existing| sid: {
             const sym = &self.symbols.items[@backingInt(existing)];
@@ -1147,7 +1175,7 @@ pub const SymbolTracker = struct {
                 .decls = .{ .start = 0, .len = 0 },
             });
             try self.first_decls.append(self.allocator, node);
-            try self.scope_maps.items[target_idx].put(self.allocator, name_str, new_id);
+            try self.bind(target, name_str, new_id);
             break :sid new_id;
         };
 
@@ -1227,8 +1255,31 @@ pub const SymbolTracker = struct {
         return null;
     }
 
-    fn syncScopeMaps(self: *SymbolTracker, count: usize) Allocator.Error!void {
+    fn bind(
+        self: *SymbolTracker,
+        scope: sc.ScopeId,
+        name: []const u8,
+        id: SymbolId,
+    ) Allocator.Error!void {
+        const prehashed: PrehashedContext = .of(name);
+        const entry = try self.scope_maps.items[@backingInt(scope)].getOrPutContextAdapted(
+            self.allocator,
+            name,
+            prehashed,
+            .{},
+        );
+        if (!entry.found_existing) entry.key_ptr.* = name;
+        entry.value_ptr.* = id;
+        self.scope_names.items[@backingInt(scope)] |= prehashed.bit();
+    }
+
+    inline fn syncScopeMaps(self: *SymbolTracker, count: usize) Allocator.Error!void {
+        if (self.scope_maps.items.len < count) try self.growScopeMaps(count);
+    }
+
+    noinline fn growScopeMaps(self: *SymbolTracker, count: usize) Allocator.Error!void {
         try padTo(ScopeMap, &self.scope_maps, self.allocator, count, .empty);
+        try padTo(u64, &self.scope_names, self.allocator, count, 0);
         try padTo(ScopeMap, &self.hoisting_variables, self.allocator, count, .empty);
     }
 
@@ -1318,15 +1369,15 @@ pub const SymbolTracker = struct {
             s.decls.len += 1;
         }
 
-        const node_symbols = try self.allocator.alloc(SymbolId, self.tree.nodes.len);
-        @memset(node_symbols, .none);
+        const node_links = try self.allocator.alloc(NodeLink, self.tree.nodes.len);
+        @memset(node_links, NodeLink.none);
         for (self.decl_pairs.items) |pair| {
-            node_symbols[@backingInt(pair.node)] = pair.symbol;
+            const symbol_id: u31 = @intCast(@backingInt(pair.symbol));
+            node_links[@backingInt(pair.node)] = .{ .id = symbol_id, .reference = false };
         }
-        const node_references = try self.allocator.alloc(ReferenceId, self.tree.nodes.len);
-        @memset(node_references, .none);
         for (self.references.items, 0..) |ref, i| {
-            node_references[@backingInt(ref.node)] = @fromBackingInt(@intCast(i));
+            std.debug.assert(node_links[@backingInt(ref.node)] == NodeLink.none);
+            node_links[@backingInt(ref.node)] = .{ .id = @intCast(i), .reference = true };
         }
 
         const members = self.bodies(scopes.list);
@@ -1334,15 +1385,15 @@ pub const SymbolTracker = struct {
         for (self.references.items) |*ref| {
             const name = self.tree.string(ref.name);
             const space = ref.flags.space;
-            const prehashed = PrehashedContext{ .hash_value = std.hash.Wyhash.hash(0, name) };
+            const prehashed: PrehashedContext = .of(name);
             // an implicit arguments object hides outer bindings but not its own scope's (10.2.11)
             const arguments_barrier = (space == .value or space == .typeof) and
                 std.mem.eql(u8, name, "arguments");
             ref.symbol = blk: {
                 var it = scopes.ancestors(ref.scope);
                 while (it.next()) |ancestor| {
-                    const idx = @backingInt(ancestor);
-                    if (self.scope_maps.items[idx].getAdapted(name, prehashed)) |id| {
+                    const maps = self.scope_maps.items;
+                    if (prehashed.find(maps, self.scope_names.items, ancestor, name)) |id| {
                         const sym = self.symbol(id);
                         if (sym.flags.visibleIn(space) and
                             visibleAt(self.tree, sym, ref, scopes, node_parents))
@@ -1388,13 +1439,13 @@ pub const SymbolTracker = struct {
             .use_ids = use_ids,
             .use_ranges = use_ranges,
             .scope_maps = self.scope_maps.items,
+            .scope_names = self.scope_names.items,
             .hoisting_variables = self.hoisting_variables.items,
             .next_bodies = self.next_bodies.items,
             .owner_bodies = self.last_bodies,
             .node_scopes = node_scopes,
             .node_parents = node_parents,
-            .node_symbols = node_symbols,
-            .node_references = node_references,
+            .node_links = node_links,
         };
     }
 };
