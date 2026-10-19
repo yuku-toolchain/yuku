@@ -182,7 +182,7 @@ pub fn check(gpa: Allocator, src: []const u8, mode: Mode) void {
     defer a.free(checked);
     tree.diagnostics.shrinkRetainingCapacity(parse_diagnostics);
 
-    _ = parser.semantic.analyze(&tree) catch |e| switch (e) {
+    _ = parser.semantic.analyze(&tree, .{ .check = true }) catch |e| switch (e) {
         error.OutOfMemory => return,
     };
     checkSameDiagnostics(checked, tree.diagnostics.items[parse_diagnostics..]);
@@ -413,7 +413,7 @@ pub fn oomSweep(src: []const u8, mode: Mode) void {
         })) |tree| {
             var t = tree;
             defer t.deinit();
-            if (parser.semantic.analyze(&t)) |_| {
+            if (parser.semantic.analyze(&t, .{ .check = true })) |_| {
                 // no induced failure means the fail index is past the last allocation
                 if (!failing.has_induced_failure) break;
             } else |e| switch (e) {

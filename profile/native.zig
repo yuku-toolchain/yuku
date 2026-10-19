@@ -6,7 +6,7 @@ const assert = std.debug.assert;
 
 const source_bytes_max = 64 * 1024 * 1024;
 
-const Operation = enum { parse, analyze };
+const Operation = enum { parse, analyze, model };
 
 pub fn main(init: std.process.Init) !void {
     const gpa = std.heap.c_allocator;
@@ -44,7 +44,7 @@ pub fn main(init: std.process.Init) !void {
             assert(written == out.len);
         },
         .analyze => {
-            const sem = try parser.semantic.analyze(&tree);
+            const sem = try parser.semantic.analyze(&tree, .{ .check = true });
             const records = try parser.semantic.module_record.collect(&tree, &sem);
             if (tree.diagnostics.items.len > 0) return error.InvalidCorpus;
 
@@ -54,10 +54,15 @@ pub fn main(init: std.process.Init) !void {
             const written = transfer.semantic.serializeInto(&tree, &sem, records, out);
             assert(written == out.len);
         },
+        .model => {
+            const sem = try parser.semantic.analyze(&tree, .{ .check = false });
+            assert(sem.scopes.list.len > 0);
+            assert(tree.diagnostics.items.len == 0);
+        },
     }
 }
 
 fn usage() noreturn {
-    std.debug.print("usage: profile <parse|analyze> <path>\n", .{});
+    std.debug.print("usage: profile <parse|analyze|model> <path>\n", .{});
     std.process.exit(2);
 }

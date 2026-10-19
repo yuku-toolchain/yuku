@@ -1,5 +1,3 @@
-//! Corpus sweep checking the semantic model invariants on every fixture that parses cleanly.
-
 const std = @import("std");
 const parser = @import("parser");
 const helpers = @import("../helpers.zig");
@@ -7,14 +5,21 @@ const helpers = @import("../helpers.zig");
 const ast = parser.ast;
 const semantic = parser.semantic;
 const Semantic = semantic.Semantic;
+const Scope = parser.traverser.semantic.Scope;
 const ScopeId = parser.traverser.semantic.ScopeId;
 const Symbol = parser.traverser.semantic.Symbol;
 const Reference = parser.traverser.semantic.Reference;
 
 fn checkInvariants(path: []const u8, tree: *ast.Tree) !void {
-    const sem = try semantic.analyze(tree);
-    verify(tree, &sem) catch |err| {
+    const checked = try semantic.analyze(tree, .{ .check = true });
+    verify(tree, &checked) catch |err| {
         std.debug.print("{s}: semantic invariant violated: {t}\n", .{ path, err });
+        return err;
+    };
+
+    const unchecked = try semantic.analyze(tree, .{ .check = false });
+    verifySameModel(&checked, &unchecked) catch |err| {
+        std.debug.print("{s}: checking changed the semantic model: {t}\n", .{ path, err });
         return err;
     };
 }
@@ -145,6 +150,35 @@ fn isOtherBody(sem: *const Semantic, body: ScopeId, other: ScopeId) bool {
         if (next == other) return true;
     }
     return false;
+}
+
+fn verifySameModel(checked: *const Semantic, unchecked: *const Semantic) !void {
+    if (!eqlElements(Scope, checked.scopes.list, unchecked.scopes.list)) {
+        return error.ScopesDiffer;
+    }
+    if (!eqlElements(Symbol, checked.symbols, unchecked.symbols)) {
+        return error.SymbolsDiffer;
+    }
+    if (!eqlElements(Reference, checked.references, unchecked.references)) {
+        return error.ReferencesDiffer;
+    }
+    if (!std.mem.eql(ast.NodeIndex, checked.decl_nodes, unchecked.decl_nodes)) {
+        return error.DeclarationsDiffer;
+    }
+    if (!std.mem.eql(ScopeId, checked.node_scopes, unchecked.node_scopes)) {
+        return error.NodeScopesDiffer;
+    }
+    if (!std.mem.eql(ast.NodeIndex, checked.node_parents, unchecked.node_parents)) {
+        return error.NodeParentsDiffer;
+    }
+}
+
+fn eqlElements(comptime T: type, a: []const T, b: []const T) bool {
+    if (a.len != b.len) return false;
+    for (a, b) |x, y| {
+        if (!std.meta.eql(x, y)) return false;
+    }
+    return true;
 }
 
 fn verifyNodeTables(tree: *const ast.Tree, sem: *const Semantic) !void {

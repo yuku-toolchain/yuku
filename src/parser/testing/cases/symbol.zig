@@ -179,6 +179,29 @@ const CtxProbeVisitor = struct {
     }
 };
 
+test "analyze without check reports nothing and builds the checked model" {
+    var tree = try parser.parse(testing.allocator, "let a = 1; let a = 2; a;", .{});
+    defer tree.deinit();
+    try testing.expect(!tree.hasDiagnostics());
+
+    const unchecked = try semantic.analyze(&tree, .{ .check = false });
+    try testing.expect(!tree.hasDiagnostics());
+
+    const checked = try semantic.analyze(&tree, .{ .check = true });
+    try testing.expectEqual(@as(usize, 1), tree.diagnostics.items.len);
+    try testing.expectEqualStrings(
+        "Identifier 'a' has already been declared",
+        tree.diagnostics.items[0].message,
+    );
+
+    try testing.expectEqual(@as(usize, 1), unchecked.references.len);
+    const id = unchecked.references[0].symbol;
+    try testing.expect(id != .none);
+    try testing.expectEqual(checked.references[0].symbol, id);
+    try testing.expectEqual(@as(usize, 2), unchecked.decls(id).len);
+    try testing.expectEqualSlices(ast.NodeIndex, checked.decls(id), unchecked.decls(id));
+}
+
 test "the semantic Ctx exposes type position, namespace state, and the tracker" {
     const source =
         \\namespace N {

@@ -115,7 +115,7 @@ for (names.nodes.items) |node| {
 }
 ```
 
-On `import type { User } from "./user"; type Id = string; let user: User, id: Id;` it prints `User`. `semantic.analyze` is this mode with a visitor that reports the early errors.
+On `import type { User } from "./user"; type Id = string; let user: User, id: Id;` it prints `User`. `semantic.analyze` is this mode, with a visitor that reports the early errors when it checks.
 
 ## [Transform]($section.id('transform'))
 

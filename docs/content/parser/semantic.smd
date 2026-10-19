@@ -231,10 +231,10 @@ The [symbol flags](#symbols), as `binding.flags` holds them.
 var tree = try parser.parse(allocator, source, .{});
 defer tree.deinit();
 
-const semantic = try parser.semantic.analyze(&tree);
+const semantic = try parser.semantic.analyze(&tree, .{ .check = true });
 ```
 
-`analyze` returns the `Semantic` model and appends its errors to `tree.diagnostics`. The model lives in the tree's arena and describes the tree as parsed, so analyze again after a transform. To run your own hooks during the analysis walk, use the [semantic traverser](/parser/traverse/#semantic).
+`analyze` returns the `Semantic` model, and with `.check = true` appends the early errors to `tree.diagnostics` in the same walk. A tool that reads only the model, such as a transform or a bundler, passes `.check = false` and skips the cost of checking. The model lives in the tree's arena and describes the tree as parsed, so analyze again after a transform. To run your own hooks during the analysis walk, use the [semantic traverser](/parser/traverse/#semantic).
 
 When only the errors matter, `check` reports the same ones faster, without the model.
 
@@ -304,7 +304,7 @@ The scope tree follows the specification.
 
 A symbol's `flags` record its declaration kinds, such as `function_scoped_var`, `block_scoped_var`, `function`, `class`, `interface`, `regular_enum`, and `import`, and its modifiers, such as `const_var`, `exported`, and `ambient`. Masks test a category in one call, as `flags.intersects(Symbol.value_space)` does, with `variable`, `any_import`, `value_space`, `type_space`, and `namespace_space`. `flags.visibleIn(space)` tells whether a reference in a space can bind to it.
 
-One rule decides both merging and redeclaration. Each declaration kind has an exclusion mask in `Symbol.Excludes`. A new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way. A namespace or enum declared in several blocks merges too, and each block sees the exports or members of the others.
+One rule decides both merging and redeclaration. Each declaration kind has an exclusion mask in `Symbol.Excludes`. A new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. A conflicting declaration is still one of the symbol's `decls`, and only an analysis that checks reports it. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way. A namespace or enum declared in several blocks merges too, and each block sees the exports or members of the others.
 
 ## [Declaration spaces]($section.id('declaration-spaces'))
 

@@ -440,7 +440,7 @@ test "a failed claim reports its diagnostic" {
 test "a dialect binding lands in its node's scope" {
     var tree = try parseSource("each (item of items) { use(item); }", true);
     defer tree.deinit();
-    const semantic = try parser.semantic.analyze(&tree);
+    const semantic = try parser.semantic.analyze(&tree, .{ .check = true });
     try expectClean(&tree);
 
     const each = firstOf(&tree, .each).?;
@@ -465,24 +465,24 @@ test "codegen prints dialect nodes back to the source" {
 test "a dialect loop is the target of break and continue" {
     var tree = try parseSource("each (item of items) { if (item) continue; break; }", true);
     defer tree.deinit();
-    _ = try parser.semantic.analyze(&tree);
+    _ = try parser.semantic.analyze(&tree, .{ .check = true });
     try expectClean(&tree);
 
     var crossing = try parseSource("each (item of items) { () => { continue; }; }", true);
     defer crossing.deinit();
-    _ = try parser.semantic.analyze(&crossing);
+    _ = try parser.semantic.analyze(&crossing, .{ .check = true });
     try testing.expect(crossing.hasErrors());
 }
 
 test "a var redeclares a dialect catch binding while the binding is an identifier" {
     var simple = try parseSource("rescue (error) { var error = 1; }", true);
     defer simple.deinit();
-    _ = try parser.semantic.analyze(&simple);
+    _ = try parser.semantic.analyze(&simple, .{ .check = true });
     try expectClean(&simple);
 
     var pattern = try parseSource("rescue ({ message }) { var message = 1; }", true);
     defer pattern.deinit();
-    _ = try parser.semantic.analyze(&pattern);
+    _ = try parser.semantic.analyze(&pattern, .{ .check = true });
     try testing.expect(pattern.hasErrors());
 }
 

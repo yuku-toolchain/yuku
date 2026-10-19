@@ -1,4 +1,4 @@
-//! Shared helpers for the Zig-side parser tests.
+//! Shared helpers for the Zig-side tests.
 
 const std = @import("std");
 const parser = @import("parser");
@@ -94,7 +94,7 @@ pub fn analyze(source: []const u8, opts: parser.Options) !Analyzed {
 pub fn analyzeAllowErrors(source: []const u8, opts: parser.Options) !Analyzed {
     var tree = try parser.parse(testing.allocator, source, opts);
     errdefer tree.deinit();
-    const sem = try semantic.analyze(&tree);
+    const sem = try semantic.analyze(&tree, .{ .check = true });
     return .{ .tree = tree, .sem = sem };
 }
 

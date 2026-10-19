@@ -57,8 +57,8 @@ fn analyzeBuffer(source: []const u8, flags: u32) ![]u8 {
     var tree = try parseTree(source, flags);
     defer tree.deinit();
 
-    const sem = try parser.semantic.analyze(&tree);
-    // collect before sizing, records may intern into the string pool
+    const sem = try parser.semantic.analyze(&tree, .{ .check = true });
+
     const records = try parser.semantic.module_record.collect(&tree, &sem);
 
     const out = try prefixed(transfer.semantic.bufferSize(&tree, &sem, records));
