@@ -34,15 +34,19 @@
         "comments": [
           {
             "type": "Line",
+            "value": " lead",
+            "start": 0,
+            "end": 7,
             "position": "before",
-            "sameLine": false,
-            "value": " lead"
+            "sameLine": false
           },
           {
             "type": "Line",
+            "value": " trail",
+            "start": 21,
+            "end": 29,
             "position": "after",
-            "sameLine": true,
-            "value": " trail"
+            "sameLine": true
           }
         ]
       }
@@ -53,13 +57,17 @@
       "type": "Line",
       "value": " lead",
       "start": 0,
-      "end": 7
+      "end": 7,
+      "position": "before",
+      "sameLine": false
     },
     {
       "type": "Line",
       "value": " trail",
       "start": 21,
-      "end": 29
+      "end": 29,
+      "position": "after",
+      "sameLine": true
     }
   ],
   "diagnostics": []

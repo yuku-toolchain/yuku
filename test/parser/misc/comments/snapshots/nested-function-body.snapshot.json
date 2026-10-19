@@ -56,9 +56,11 @@
                     "comments": [
                       {
                         "type": "Line",
+                        "value": " deep",
+                        "start": 44,
+                        "end": 51,
                         "position": "before",
-                        "sameLine": false,
-                        "value": " deep"
+                        "sameLine": false
                       }
                     ]
                   }
@@ -77,7 +79,9 @@
       "type": "Line",
       "value": " deep",
       "start": 44,
-      "end": 51
+      "end": 51,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

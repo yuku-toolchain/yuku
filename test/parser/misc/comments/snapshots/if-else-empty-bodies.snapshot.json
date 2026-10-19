@@ -24,9 +24,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " in-then ",
+              "start": 11,
+              "end": 24,
               "position": "inside",
-              "sameLine": false,
-              "value": " in-then "
+              "sameLine": false
             }
           ]
         },
@@ -38,9 +40,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " in-else ",
+              "start": 36,
+              "end": 49,
               "position": "inside",
-              "sameLine": false,
-              "value": " in-else "
+              "sameLine": false
             }
           ]
         }
@@ -52,13 +56,17 @@
       "type": "Block",
       "value": " in-then ",
       "start": 11,
-      "end": 24
+      "end": 24,
+      "position": "inside",
+      "sameLine": false
     },
     {
       "type": "Block",
       "value": " in-else ",
       "start": 36,
-      "end": 49
+      "end": 49,
+      "position": "inside",
+      "sameLine": false
     }
   ],
   "diagnostics": []

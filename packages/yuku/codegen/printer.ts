@@ -40,7 +40,7 @@ import {
 } from "./utils";
 
 type Node = T.Node;
-type Comment = T.AttachedComment;
+type Comment = T.Comment;
 
 /** The printer as a `print` function drives it. */
 export interface Printer {

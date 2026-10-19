@@ -34,9 +34,11 @@
         "comments": [
           {
             "type": "Line",
+            "value": " only-leading",
+            "start": 0,
+            "end": 15,
             "position": "before",
-            "sameLine": false,
-            "value": " only-leading"
+            "sameLine": false
           }
         ]
       }
@@ -47,7 +49,9 @@
       "type": "Line",
       "value": " only-leading",
       "start": 0,
-      "end": 15
+      "end": 15,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

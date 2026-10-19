@@ -26,7 +26,7 @@ const TS_METHOD_SIGNATURE_KINDS = ["method", "get", "set"];
 const TS_MODULE_KINDS = ["namespace", "module"];
 const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
-const AC_POSITIONS = ["before", "after", "inside"];
+const COMMENT_POSITIONS = ["before", "after", "inside"];
 const TokenKind = Object.freeze({
   NumericLiteral: 8193,
   HexLiteral: 8194,
@@ -1252,35 +1252,32 @@ const KIND_DECODERS = [
 function decode(buffer, source, path, shapes) {
   const _u8 = new Uint8Array(buffer);
   const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
-  if (BIG_ENDIAN) _hostOrder(_u32, 0, 11);
+  if (BIG_ENDIAN) _hostOrder(_u32, 0, 10);
   const _src = source;
   const _srcLen = _u32[3];
   const nodeCount = _u32[0],
         extraCount = _u32[1],
         spLen = _u32[2];
   const commentCount = _u32[4],
-        diagCount = _u32[7],
-        progIdx = _u32[8];
-  const attachedCommentCount = _u32[5];
-  const tokenCount = _u32[6];
-  const _flags = _u32[9];
+        diagCount = _u32[6],
+        progIdx = _u32[7];
+  const tokenCount = _u32[5];
+  const _flags = _u32[8];
   const _isTs = !!(_flags & 1);
   const _attached = !!(_flags & 2);
   const _hasSemantic = !!(_flags & 8);
-  const _firstNa = _u32[10];
-  const _nodesOff = 44;
+  const _firstNa = _u32[9];
+  const _nodesOff = 40;
   const eOff = _nodesOff + nodeCount * 48;
   const _extraBase = eOff >> 2;
   const _spOff = eOff + extraCount * 4;
-  const _aoOff = _spOff + ((spLen + 3) & ~3);
-  const _acOff = _attached ? _aoOff + (nodeCount + 1) * 4 : _aoOff;
-  const _cOff = _acOff + attachedCommentCount * 12;
-  const _tOff = _cOff + commentCount * 20;
+  const _cOff = _spOff + ((spLen + 3) & ~3);
+  const _tOff = _cOff + commentCount * 24;
   const dOff = _tOff + tokenCount * 16;
   // the string pool and the diagnostics are bytes, the other sections 32-bit words
   if (BIG_ENDIAN) {
     _hostOrder(_u32, _nodesOff >> 2, _spOff >> 2);
-    _hostOrder(_u32, _aoOff >> 2, dOff >> 2);
+    _hostOrder(_u32, _cOff >> 2, dOff >> 2);
   }
   function _poolDecode(s, e) {
     const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
@@ -1339,7 +1336,7 @@ function decode(buffer, source, path, shapes) {
     return r;
   }
   function fnParams(idx, depth) {
-    const pb = idx * 12 + 11;
+    const pb = idx * 12 + 10;
     const len = _u32[pb + 2];
     const iStart = _u32[pb + 1], rest = _u32[pb + 3];
     const p = new Array(rest !== NULL ? len + 1 : len);
@@ -1349,33 +1346,32 @@ function decode(buffer, source, path, shapes) {
     if (rest !== NULL) p[len] = node(rest, depth);
     return p;
   }
-  function _attachedCommentsOf(a, e) {
-    const out = new Array(e - a);
-    for (let j = a; j < e; j++) {
-      const o = (_acOff >> 2) + j * 3;
-      const cf = _u32[o] & 255;
-      const vs = _u32[o + 1], ve = _u32[o + 2];
-      out[j - a] = {
-        type: (cf & 1) ? "Block" : "Line",
-        position: AC_POSITIONS[(cf >> 1) & 3],
-        sameLine: (cf & 8) !== 0,
-        value: str(vs, ve),
-      };
+  let _owned, _ownedBits;
+  function _own() {
+    _owned = new Map();
+    _ownedBits = new Int32Array((nodeCount + 31) >>> 5);
+    const all = _comments !== undefined ? _comments : (_comments = _decodeComments());
+    for (let j = 0; j < commentCount; j++) {
+      const n = _u32[(_cOff >> 2) + j * 6 + 1];
+      if (n < 0) continue;
+      const list = _owned.get(n);
+      if (list !== undefined) list.push(all[j]);
+      else {
+        _owned.set(n, [all[j]]);
+        _ownedBits[n >>> 5] |= 1 << (n & 31);
+      }
     }
-    return out;
   }
   function nodeWithComments(i, depth) {
     const r = _decode(i, depth);
-    if (r && r.type !== undefined && r.comments === undefined) {
-      const off = (_aoOff >> 2) + i;
-      const a = _u32[off], e = _u32[off + 1];
-      if (a !== e) r.comments = _attachedCommentsOf(a, e);
-    }
+    if (_owned === undefined) _own();
+    if ((_ownedBits[i >>> 5] & (1 << (i & 31))) === 0) return r;
+    if (r && r.type !== undefined && r.comments === undefined) r.comments = _owned.get(i);
     return r;
   }
   function _decode(i, depth) {
     if (depth >= DEPTH_MAX) return _deep(i);
-    const b = i * 12 + 11;
+    const b = i * 12 + 10;
     const h0 = _u32[b];
     const tag = h0 & 255;
     const flags = h0 >>> 16;
@@ -1452,16 +1448,21 @@ function decode(buffer, source, path, shapes) {
   function _decodeComments() {
     const out = new Array(commentCount);
     for (let j = 0; j < commentCount; j++) {
-      const o = (_cOff >> 2) + j * 5;
+      const o = (_cOff >> 2) + j * 6;
       const cf = _u32[o] & 255;
-      const vs = _u32[o + 1], ve = _u32[o + 2];
-      const ss = _u32[o + 3], se = _u32[o + 4];
-      out[j] = {
-        type: (cf & 1) ? "Block" : "Line",
-        value: str(vs, ve),
-        start: _p(ss),
-        end: _p(se),
-      };
+      const vs = _u32[o + 2], ve = _u32[o + 3];
+      const ss = _u32[o + 4], se = _u32[o + 5];
+      const type = (cf & 1) ? "Block" : "Line";
+      out[j] = _attached
+        ? {
+            type,
+            value: str(vs, ve),
+            start: _p(ss),
+            end: _p(se),
+            position: COMMENT_POSITIONS[(cf >> 1) & 3],
+            sameLine: (cf & 8) !== 0,
+          }
+        : { type, value: str(vs, ve), start: _p(ss), end: _p(se) };
     }
     return out;
   }

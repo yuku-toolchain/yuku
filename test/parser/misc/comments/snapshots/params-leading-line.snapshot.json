@@ -33,9 +33,11 @@
             "comments": [
               {
                 "type": "Line",
+                "value": " before-b",
+                "start": 16,
+                "end": 27,
                 "position": "before",
-                "sameLine": false,
-                "value": " before-b"
+                "sameLine": false
               }
             ]
           }
@@ -55,7 +57,9 @@
       "type": "Line",
       "value": " before-b",
       "start": 16,
-      "end": 27
+      "end": 27,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

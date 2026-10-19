@@ -38,9 +38,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " init ",
+              "start": 5,
+              "end": 15,
               "position": "before",
-              "sameLine": true,
-              "value": " init "
+              "sameLine": true
             }
           ]
         },
@@ -90,7 +92,9 @@
       "type": "Block",
       "value": " init ",
       "start": 5,
-      "end": 15
+      "end": 15,
+      "position": "before",
+      "sameLine": true
     }
   ],
   "diagnostics": []

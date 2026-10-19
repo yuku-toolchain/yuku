@@ -75,15 +75,15 @@ const { comments } = parse(`// a line comment\nconst x = 1; /* a block comment *
 // ]
 ```
 
-`attachComments: true` also attaches each comment to the node next to it, as `node.comments`. [`yuku/codegen`](/parser/codegen/#js-comments) prints comments from there, so they move with their nodes.
+`attachComments: true` also gives each comment to the node it prints with, in `node.comments`, and adds where it sits. They are the same objects as in `comments`. [`yuku/codegen`](/parser/codegen/#js-comments) prints comments from `node.comments`, so they move with their nodes, and editing that array adds, moves, or drops them.
 
 ```js
 const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
 
 program.body[0].comments;
 // [
-//   { type: "Line", position: "before", sameLine: false, value: " header" },
-//   { type: "Line", position: "after", sameLine: true, value: " trailing" },
+//   { type: "Line", value: " header", start: 0, end: 9, position: "before", sameLine: false },
+//   { type: "Line", value: " trailing", start: 28, end: 39, position: "after", sameLine: true },
 // ]
 ```
 
@@ -156,14 +156,14 @@ pub fn main() !void {
 
 ## [Options]($section.id('options'))
 
-| Field             | Default   | Description                                                                                    |
-| ----------------- | --------- | ---------------------------------------------------------------------------------------------- |
-| `source_type`     | `.module` | `.script`, `.module` (strict, with `import` and `export`), or `.commonjs` (top-level `return`) |
-| `lang`            | `.js`     | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                        |
-| `preserve_parens` | `true`    | Keep `parenthesized_expression` nodes, or only their inner expression                          |
-| `comments`        | `.flat`   | `.none`, `.flat`, `.attached`, or `.both`, see [Comments](/parser/ast/#comments)               |
-| `tokens`          | `false`   | Keep every token, see [Tokens](/parser/ast/#tokens)                                            |
-| `dialect`         | `false`   | Read the source with the [dialect](/parser/dialect/) compiled into the parser                  |
+| Field             | Default    | Description                                                                                    |
+| ----------------- | ---------- | ---------------------------------------------------------------------------------------------- |
+| `source_type`     | `.module`  | `.script`, `.module` (strict, with `import` and `export`), or `.commonjs` (top-level `return`) |
+| `lang`            | `.js`      | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                        |
+| `preserve_parens` | `true`     | Keep `parenthesized_expression` nodes, or only their inner expression                          |
+| `comments`        | `.collect` | `.none`, `.collect`, or `.attach`, see [Comments](/parser/ast/#comments)                       |
+| `tokens`          | `false`    | Keep every token, see [Tokens](/parser/ast/#tokens)                                            |
+| `dialect`         | `false`    | Read the source with the [dialect](/parser/dialect/) compiled into the parser                  |
 
 `.fromPath` infers `source_type` and `lang` from a file name, as in `.lang = .fromPath("app.tsx")`.
 

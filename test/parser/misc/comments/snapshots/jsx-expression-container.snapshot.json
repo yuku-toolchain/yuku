@@ -59,9 +59,11 @@
                     "comments": [
                       {
                         "type": "Block",
+                        "value": " inline ",
+                        "start": 16,
+                        "end": 28,
                         "position": "before",
-                        "sameLine": true,
-                        "value": " inline "
+                        "sameLine": true
                       }
                     ]
                   }
@@ -91,7 +93,9 @@
       "type": "Block",
       "value": " inline ",
       "start": 16,
-      "end": 28
+      "end": 28,
+      "position": "before",
+      "sameLine": true
     }
   ],
   "diagnostics": []

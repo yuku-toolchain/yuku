@@ -179,7 +179,7 @@ std.debug.print("{s}\n", .{result.code}); // const x = 1;
 | `comments`   | `.some`     | Which [attached comments](/parser/ast/#comments) to print, `.some` for legal headers, JSDoc, and annotations, or `.all`, `.none`, `.line`, `.block` |
 | `source_map` | `null`      | Emit a Source Map V3, see [Source maps](#source-maps)                                                                                               |
 
-Comments print from the nodes they are attached to, so parse with `.comments = .attached` or `.both` to keep them.
+Comments print from the nodes they are attached to, so parse with `.comments = .attach` to keep them.
 
 ## [Type stripping]($section.id('type-stripping'))
 

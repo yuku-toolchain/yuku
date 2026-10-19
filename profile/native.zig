@@ -69,7 +69,7 @@ fn parseTree(gpa: std.mem.Allocator, path: []const u8, source: []const u8) !ast.
         .source_type = .fromPath(path),
         .lang = .fromPath(path),
         .preserve_parens = true,
-        .comments = .flat,
+        .comments = .collect,
         .tokens = false,
         .dialect = false,
     });

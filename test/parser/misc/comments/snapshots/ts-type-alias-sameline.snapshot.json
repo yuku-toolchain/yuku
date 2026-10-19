@@ -27,9 +27,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " unit ",
+              "start": 9,
+              "end": 19,
               "position": "before",
-              "sameLine": true,
-              "value": " unit "
+              "sameLine": true
             }
           ]
         },
@@ -42,7 +44,9 @@
       "type": "Block",
       "value": " unit ",
       "start": 9,
-      "end": 19
+      "end": 19,
+      "position": "before",
+      "sameLine": true
     }
   ],
   "diagnostics": []

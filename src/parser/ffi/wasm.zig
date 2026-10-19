@@ -78,7 +78,7 @@ fn parseTree(source: []const u8, flags: u32) !parser.ast.Tree {
         .source_type = @fromBackingInt(@truncate(flags & flag.source_type_mask)),
         .lang = @fromBackingInt(@truncate(flags >> flag.lang_shift)),
         .preserve_parens = flags & flag.preserve_parens != 0,
-        .comments = if (flags & flag.attach_comments != 0) .both else .flat,
+        .comments = if (flags & flag.attach_comments != 0) .attach else .collect,
         .tokens = flags & flag.tokens != 0,
         .dialect = flags & flag.dialect != 0,
     });

@@ -60,9 +60,11 @@
         "comments": [
           {
             "type": "Line",
+            "value": " mid",
+            "start": 13,
+            "end": 19,
             "position": "before",
-            "sameLine": false,
-            "value": " mid"
+            "sameLine": false
           }
         ]
       }
@@ -73,7 +75,9 @@
       "type": "Line",
       "value": " mid",
       "start": 13,
-      "end": 19
+      "end": 19,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

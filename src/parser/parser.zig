@@ -11,23 +11,9 @@ const grammar = @import("grammar.zig");
 const dialect = @import("dialect.zig");
 const comments = @import("comments.zig");
 
-/// How comments are collected. Not at all, as a flat list, attached to host nodes, or both.
-pub const CommentMode = enum {
-    none,
-    flat,
-    attached,
-    both,
-
-    pub inline fn collects(self: CommentMode) bool {
-        return self != .none;
-    }
-    pub inline fn attaches(self: CommentMode) bool {
-        return self == .attached or self == .both;
-    }
-    pub inline fn isFlat(self: CommentMode) bool {
-        return self == .flat or self == .both;
-    }
-};
+/// Whether comments are collected into `Tree.comments`, and attached to their
+/// nodes for `Tree.commentsOf` and codegen.
+pub const CommentMode = enum { none, collect, attach };
 
 pub const Options = struct {
     /// How the source is parsed. `.commonjs` treats the top level as a function body.
@@ -36,8 +22,8 @@ pub const Options = struct {
     lang: ast.Lang = .js,
     /// Whether parenthesized expressions are kept as `ParenthesizedExpression` nodes.
     preserve_parens: bool = true,
-    /// Whether and how comments are collected.
-    comments: CommentMode = .flat,
+    /// Whether comments are collected, and attached to their nodes.
+    comments: CommentMode = .collect,
     /// Whether to keep every consumed token in `Tree.tokens`.
     tokens: bool = false,
     /// Whether the dialect compiled into the parser reads this source.
@@ -146,7 +132,7 @@ pub const Parser = struct {
             self.source,
             self.allocator(),
             self.source_type,
-            self.comment_mode.collects(),
+            self.comment_mode != .none,
         );
 
         // ScriptBody is [~Yield, ~Await, ~Return], ModuleItemList is [+Await], and a
@@ -184,9 +170,9 @@ pub const Parser = struct {
 
         self.tree.diagnostics = self.diagnostics;
         if (!self.preserve_parens) stripParenthesizedNodes(&self.tree);
-        const raw_comments = self.lexer.comments.items;
-        if (self.comment_mode.attaches()) try comments.attach(&self.tree, raw_comments);
-        if (self.comment_mode.isFlat()) self.tree.comments = raw_comments;
+        const collected = self.lexer.comments.items;
+        if (self.comment_mode == .attach) try comments.attach(&self.tree, collected);
+        self.tree.comments = collected;
         if (self.collect_tokens) self.tree.tokens = self.tokens.items;
     }
 

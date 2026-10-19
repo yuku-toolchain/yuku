@@ -55,9 +55,11 @@
               "comments": [
                 {
                   "type": "Block",
+                  "value": " lead ",
+                  "start": 4,
+                  "end": 14,
                   "position": "before",
-                  "sameLine": true,
-                  "value": " lead "
+                  "sameLine": true
                 }
               ]
             },
@@ -69,9 +71,11 @@
               "comments": [
                 {
                   "type": "Block",
+                  "value": " trail ",
+                  "start": 22,
+                  "end": 33,
                   "position": "after",
-                  "sameLine": true,
-                  "value": " trail "
+                  "sameLine": true
                 }
               ]
             }
@@ -85,13 +89,17 @@
       "type": "Block",
       "value": " lead ",
       "start": 4,
-      "end": 14
+      "end": 14,
+      "position": "before",
+      "sameLine": true
     },
     {
       "type": "Block",
       "value": " trail ",
       "start": 22,
-      "end": 33
+      "end": 33,
+      "position": "after",
+      "sameLine": true
     }
   ],
   "diagnostics": []

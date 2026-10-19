@@ -83,9 +83,11 @@
             "comments": [
               {
                 "type": "Line",
+                "value": " between",
+                "start": 30,
+                "end": 40,
                 "position": "before",
-                "sameLine": false,
-                "value": " between"
+                "sameLine": false
               }
             ]
           }
@@ -98,7 +100,9 @@
       "type": "Line",
       "value": " between",
       "start": 30,
-      "end": 40
+      "end": 40,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

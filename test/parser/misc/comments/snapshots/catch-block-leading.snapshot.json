@@ -77,9 +77,11 @@
                 "comments": [
                   {
                     "type": "Line",
+                    "value": " log",
+                    "start": 29,
+                    "end": 35,
                     "position": "before",
-                    "sameLine": false,
-                    "value": " log"
+                    "sameLine": false
                   }
                 ]
               }
@@ -95,7 +97,9 @@
       "type": "Line",
       "value": " log",
       "start": 29,
-      "end": 35
+      "end": 35,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

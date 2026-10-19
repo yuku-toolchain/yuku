@@ -60,9 +60,11 @@
         "comments": [
           {
             "type": "Block",
+            "value": " multi\nline ",
+            "start": 13,
+            "end": 29,
             "position": "before",
-            "sameLine": false,
-            "value": " multi\nline "
+            "sameLine": false
           }
         ]
       }
@@ -73,7 +75,9 @@
       "type": "Block",
       "value": " multi\nline ",
       "start": 13,
-      "end": 29
+      "end": 29,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

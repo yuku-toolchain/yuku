@@ -31,9 +31,11 @@
           "comments": [
             {
               "type": "Line",
+              "value": " between",
+              "start": 5,
+              "end": 15,
               "position": "before",
-              "sameLine": false,
-              "value": " between"
+              "sameLine": false
             }
           ]
         },
@@ -52,7 +54,9 @@
       "type": "Line",
       "value": " between",
       "start": 5,
-      "end": 15
+      "end": 15,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

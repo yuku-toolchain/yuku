@@ -26,9 +26,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " empty class ",
+              "start": 10,
+              "end": 27,
               "position": "inside",
-              "sameLine": false,
-              "value": " empty class "
+              "sameLine": false
             }
           ]
         }
@@ -40,7 +42,9 @@
       "type": "Block",
       "value": " empty class ",
       "start": 10,
-      "end": 27
+      "end": 27,
+      "position": "inside",
+      "sameLine": false
     }
   ],
   "diagnostics": []

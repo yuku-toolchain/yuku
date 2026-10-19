@@ -162,15 +162,15 @@ const { comments } = parse(`// a line comment\nconst x = 1; /* a block comment *
 // ]
 ```
 
-`attachComments: true` also attaches each comment to the node next to it, as `node.comments`. [`yuku/codegen`](https://yuku.fyi/parser/codegen/#js-comments) prints comments from there, so they move with their nodes.
+`attachComments: true` also gives each comment to the node it prints with, in `node.comments`, and adds where it sits. They are the same objects as in `comments`. [`yuku/codegen`](https://yuku.fyi/parser/codegen/#js-comments) prints comments from `node.comments`, so they move with their nodes, and editing that array adds, moves, or drops them.
 
 ```js
 const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
 
 program.body[0].comments;
 // [
-//   { type: "Line", position: "before", sameLine: false, value: " header" },
-//   { type: "Line", position: "after", sameLine: true, value: " trailing" },
+//   { type: "Line", value: " header", start: 0, end: 9, position: "before", sameLine: false },
+//   { type: "Line", value: " trailing", start: 28, end: 39, position: "after", sameLine: true },
 // ]
 ```
 
@@ -243,14 +243,14 @@ pub fn main() !void {
 
 ## Options
 
-| Field             | Default   | Description                                                                                    |
-| ----------------- | --------- | ---------------------------------------------------------------------------------------------- |
-| `source_type`     | `.module` | `.script`, `.module` (strict, with `import` and `export`), or `.commonjs` (top-level `return`) |
-| `lang`            | `.js`     | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                        |
-| `preserve_parens` | `true`    | Keep `parenthesized_expression` nodes, or only their inner expression                          |
-| `comments`        | `.flat`   | `.none`, `.flat`, `.attached`, or `.both`, see [Comments](https://yuku.fyi/parser/ast/#comments)               |
-| `tokens`          | `false`   | Keep every token, see [Tokens](https://yuku.fyi/parser/ast/#tokens)                                            |
-| `dialect`         | `false`   | Read the source with the [dialect](https://yuku.fyi/parser/dialect/) compiled into the parser                  |
+| Field             | Default    | Description                                                                                    |
+| ----------------- | ---------- | ---------------------------------------------------------------------------------------------- |
+| `source_type`     | `.module`  | `.script`, `.module` (strict, with `import` and `export`), or `.commonjs` (top-level `return`) |
+| `lang`            | `.js`      | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                        |
+| `preserve_parens` | `true`     | Keep `parenthesized_expression` nodes, or only their inner expression                          |
+| `comments`        | `.collect` | `.none`, `.collect`, or `.attach`, see [Comments](https://yuku.fyi/parser/ast/#comments)                       |
+| `tokens`          | `false`    | Keep every token, see [Tokens](https://yuku.fyi/parser/ast/#tokens)                                            |
+| `dialect`         | `false`    | Read the source with the [dialect](https://yuku.fyi/parser/dialect/) compiled into the parser                  |
 
 `.fromPath` infers `source_type` and `lang` from a file name, as in `.lang = .fromPath("app.tsx")`.
 
@@ -516,12 +516,16 @@ try tree.addDiagnostic(.{ .message = "unused", .span = span });
 
 ## Comments
 
-The `comments` option collects every comment into `tree.comments`, attaches each to its node, or both. An attached comment records whether it sits `before`, `after`, or `inside` its node, so it moves with its node through transforms and [codegen](https://yuku.fyi/parser/codegen/) prints it in place.
+`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and its `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](https://yuku.fyi/parser/codegen/) prints it in place.
 
 ```zig
-for (tree.commentsOf(idx)) |c| {
-    std.debug.print("{t} {s}\n", .{ c.position, tree.string(c.value) });
-}
+var comments = tree.commentsOf(node);
+while (comments.next()) |c| std.debug.print("{t} {s}\n", .{ c.position, tree.string(c.value) });
+
+tree.hasComments(node);                       // without walking them
+tree.commentsIn(tree.span(node));             // the source comments within a span
+try tree.addComment(node, .{ .type = .block, .value = try tree.addString("#__PURE__") });
+try tree.moveComments(replaced, replacement); // or to `.null` to drop them
 ```
 
 ## Tokens
@@ -1237,7 +1241,7 @@ std.debug.print("{s}\n", .{result.code}); // const x = 1;
 | `comments`   | `.some`     | Which [attached comments](https://yuku.fyi/parser/ast/#comments) to print, `.some` for legal headers, JSDoc, and annotations, or `.all`, `.none`, `.line`, `.block` |
 | `source_map` | `null`      | Emit a Source Map V3, see [Source maps](#source-maps)                                                                                               |
 
-Comments print from the nodes they are attached to, so parse with `.comments = .attached` or `.both` to keep them.
+Comments print from the nodes they are attached to, so parse with `.comments = .attach` to keep them.
 
 ## Type stripping
 

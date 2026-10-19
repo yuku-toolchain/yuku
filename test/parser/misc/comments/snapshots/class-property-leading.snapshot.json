@@ -46,9 +46,11 @@
               "comments": [
                 {
                   "type": "Line",
+                  "value": " leading prop",
+                  "start": 12,
+                  "end": 27,
                   "position": "before",
-                  "sameLine": false,
-                  "value": " leading prop"
+                  "sameLine": false
                 }
               ]
             }
@@ -62,7 +64,9 @@
       "type": "Line",
       "value": " leading prop",
       "start": 12,
-      "end": 27
+      "end": 27,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

@@ -9,15 +9,19 @@
     "comments": [
       {
         "type": "Line",
+        "value": " a",
+        "start": 0,
+        "end": 4,
         "position": "inside",
-        "sameLine": false,
-        "value": " a"
+        "sameLine": false
       },
       {
         "type": "Block",
+        "value": " b ",
+        "start": 5,
+        "end": 12,
         "position": "inside",
-        "sameLine": false,
-        "value": " b "
+        "sameLine": false
       }
     ]
   },
@@ -26,13 +30,17 @@
       "type": "Line",
       "value": " a",
       "start": 0,
-      "end": 4
+      "end": 4,
+      "position": "inside",
+      "sameLine": false
     },
     {
       "type": "Block",
       "value": " b ",
       "start": 5,
-      "end": 12
+      "end": 12,
+      "position": "inside",
+      "sameLine": false
     }
   ],
   "diagnostics": []

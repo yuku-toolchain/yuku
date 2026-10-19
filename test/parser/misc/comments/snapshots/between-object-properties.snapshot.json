@@ -51,9 +51,11 @@
                   "comments": [
                     {
                       "type": "Line",
+                      "value": " trail-a",
+                      "start": 20,
+                      "end": 30,
                       "position": "after",
-                      "sameLine": true,
-                      "value": " trail-a"
+                      "sameLine": true
                     }
                   ]
                 },
@@ -81,9 +83,11 @@
                   "comments": [
                     {
                       "type": "Line",
+                      "value": " lead-b",
+                      "start": 33,
+                      "end": 42,
                       "position": "before",
-                      "sameLine": false,
-                      "value": " lead-b"
+                      "sameLine": false
                     }
                   ]
                 }
@@ -99,13 +103,17 @@
       "type": "Line",
       "value": " trail-a",
       "start": 20,
-      "end": 30
+      "end": 30,
+      "position": "after",
+      "sameLine": true
     },
     {
       "type": "Line",
       "value": " lead-b",
       "start": 33,
-      "end": 42
+      "end": 42,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

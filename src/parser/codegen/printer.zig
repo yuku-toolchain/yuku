@@ -159,7 +159,7 @@ const Printer = struct {
         scope: CommentScope,
     };
 
-    const CommentScope = struct { prev_idx: NodeIndex, commented: bool };
+    const CommentScope = struct { prev_idx: NodeIndex, comments: ?ast.CommentIterator };
 
     const Head = struct { idx: NodeIndex, ctx: Ctx };
     const Self = @This();
@@ -345,7 +345,8 @@ const Printer = struct {
 
     fn hasPrintedComments(self: *const Self, idx: NodeIndex) bool {
         if (self.options.comments == .none) return false;
-        for (self.tree.commentsOf(idx)) |c| {
+        var comments = self.tree.commentsOf(idx);
+        while (comments.next()) |c| {
             const printed = switch (c.position) {
                 .before => idx != self.skip_leading_of,
                 .after => true,
@@ -370,7 +371,7 @@ const Printer = struct {
         switch (self.nodeData(idx)) {
             inline .identifier_reference, .identifier_name => |id| {
                 const has_comments = self.options.comments != .none and
-                    self.tree.commentsOf(idx).len > 0;
+                    self.tree.hasComments(idx);
                 if (!has_comments) {
                     self.recordMapping(idx);
                     return self.writeString(id.name);
@@ -394,13 +395,13 @@ const Printer = struct {
     }
 
     inline fn openComments(self: *Self, idx: NodeIndex) Error!CommentScope {
-        const comments = self.tree.commentsOf(idx);
+        const commented = self.options.comments != .none and self.tree.hasComments(idx);
         const scope: CommentScope = .{
             .prev_idx = self.current_idx,
-            .commented = self.options.comments != .none and comments.len > 0,
+            .comments = if (commented) self.tree.commentsOf(idx) else null,
         };
         self.current_idx = idx;
-        if (scope.commented) {
+        if (scope.comments) |comments| {
             const saved_lead = self.out.lead;
             try self.emitLeadingComments(idx, comments);
             self.out.lead = saved_lead;
@@ -415,12 +416,12 @@ const Printer = struct {
         defer_trailing: bool,
     ) Error!void {
         std.debug.assert(self.current_idx == idx);
-        if (scope.commented) {
+        if (scope.comments) |comments| {
             if (defer_trailing or idx == self.defer_trailing_of) {
                 std.debug.assert(self.owed == .null);
                 self.owed = idx;
             } else {
-                try self.emitTrailingComments(self.tree.commentsOf(idx));
+                try self.emitTrailingComments(comments);
             }
         }
         self.current_idx = scope.prev_idx;
@@ -523,7 +524,7 @@ const Printer = struct {
         var cast = outer;
         for (0..self.tree.nodes.len) |_| {
             if (cast == operand) return opened;
-            if (self.tree.commentsOf(cast).len > 0) {
+            if (self.tree.hasComments(cast)) {
                 try self.links.append(self.allocator, .{
                     .idx = cast,
                     .inner = .{},
@@ -864,7 +865,7 @@ const Printer = struct {
         }
     }
 
-    inline fn allowComment(self: *const Self, c: ast.AttachedComment) bool {
+    inline fn allowComment(self: *const Self, c: ast.Comment) bool {
         return switch (self.options.comments) {
             .none => false,
             .all => true,
@@ -875,13 +876,10 @@ const Printer = struct {
         };
     }
 
-    fn emitLeadingComments(
-        self: *Self,
-        idx: NodeIndex,
-        comments: []const ast.AttachedComment,
-    ) Error!void {
+    fn emitLeadingComments(self: *Self, idx: NodeIndex, comments: ast.CommentIterator) Error!void {
         if (idx == self.skip_leading_of) return;
-        for (comments) |c| {
+        var it = comments;
+        while (it.next()) |c| {
             if (c.position == .before and self.allowComment(c)) try self.writeLeading(c);
         }
     }
@@ -896,7 +894,8 @@ const Printer = struct {
 
     fn breaksLineAfter(self: *const Self, idx: NodeIndex) bool {
         if (self.options.comments == .none) return false;
-        for (self.tree.commentsOf(idx)) |c| {
+        var comments = self.tree.commentsOf(idx);
+        while (comments.next()) |c| {
             if (c.position != .after or !self.allowComment(c)) continue;
             if (c.type == .line or !c.same_line) return true;
             if (hasLineTerminator(self.tree.string(c.value))) return true;
@@ -904,8 +903,9 @@ const Printer = struct {
         return false;
     }
 
-    fn emitTrailingComments(self: *Self, comments: []const ast.AttachedComment) Error!void {
-        for (comments) |c| {
+    fn emitTrailingComments(self: *Self, comments: ast.CommentIterator) Error!void {
+        var it = comments;
+        while (it.next()) |c| {
             if (c.position == .after and self.allowComment(c)) {
                 // a deferred `;` landing after the comment would re-home it on reparse
                 try self.flushSemi();
@@ -914,7 +914,7 @@ const Printer = struct {
         }
     }
 
-    fn writeLeading(self: *Self, c: ast.AttachedComment) Error!void {
+    fn writeLeading(self: *Self, c: ast.Comment) Error!void {
         const armed = self.restrictedArmed();
         if (c.type == .block and c.same_line) {
             // a comment spanning lines is a line terminator too
@@ -936,7 +936,7 @@ const Printer = struct {
         if (self.restricted != null) self.restricted_len = self.out.len();
     }
 
-    fn writeTrailing(self: *Self, c: ast.AttachedComment) Error!void {
+    fn writeTrailing(self: *Self, c: ast.Comment) Error!void {
         if (c.same_line) {
             if (self.pretty()) try self.out.writeByte(' ');
             try self.writeCommentBody(c);
@@ -948,7 +948,7 @@ const Printer = struct {
         try self.breakLine();
     }
 
-    inline fn writeCommentBody(self: *Self, c: ast.AttachedComment) Error!void {
+    inline fn writeCommentBody(self: *Self, c: ast.Comment) Error!void {
         const value = self.tree.string(c.value);
         try self.out.writeStr(if (c.type == .line) "//" else "/*");
         if (c.type == .block) {
@@ -1054,7 +1054,8 @@ const Printer = struct {
 
     fn emitInsideComments(self: *Self, idx: NodeIndex) Error!void {
         var any = false;
-        for (self.tree.commentsOf(idx)) |c| {
+        var comments = self.tree.commentsOf(idx);
+        while (comments.next()) |c| {
             if (c.position != .inside or !self.allowComment(c)) continue;
             if (!any) {
                 any = true;
@@ -1072,15 +1073,16 @@ const Printer = struct {
     // a line comment breaks the node open like a block
     fn emitInsideCommentsInline(self: *Self, idx: NodeIndex) Error!void {
         if (self.options.comments == .none) return;
-        const comments = self.tree.commentsOf(idx);
+        var scan = self.tree.commentsOf(idx);
         var any = false;
-        for (comments) |c| {
+        while (scan.next()) |c| {
             if (c.position != .inside or !self.allowComment(c)) continue;
             if (c.type == .line) return self.emitInsideComments(idx);
             any = true;
         }
         if (!any) return;
-        for (comments) |c| {
+        var comments = self.tree.commentsOf(idx);
+        while (comments.next()) |c| {
             if (c.position != .inside or !self.allowComment(c)) continue;
             if (self.pretty() and needsSpaceBeforeInlineComment(self.out.lastByte())) {
                 try self.out.writeByte(' ');
@@ -2031,7 +2033,7 @@ const Printer = struct {
     }
 
     fn printParams(self: *Self, idx: NodeIndex) Error!void {
-        std.debug.assert(self.tree.commentsOf(idx).len == 0);
+        std.debug.assert(!self.tree.hasComments(idx));
         const params = self.tree.data(idx).formal_parameters;
         try self.out.writeByte('(');
         try self.emitKeptItems(self.tree.extra(params.items), params.rest);

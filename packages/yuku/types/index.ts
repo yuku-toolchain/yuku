@@ -32,7 +32,13 @@ interface FileOptions {
 /** Whether a comment is a line or a block comment. */
 type CommentType = "Line" | "Block";
 
-/** A comment in the flat `comments` list of a parse result. */
+/** Where an attached {@link Comment} sits. `inside` means within an otherwise empty node. */
+type CommentPosition = "before" | "after" | "inside";
+
+/**
+ * A comment. With `attachComments`, the same object is in the {@link BaseNode.comments} of the
+ * node it prints with, and `position` and `sameLine` say where.
+ */
 interface Comment {
   type: CommentType;
   /** Text without the delimiters. */
@@ -41,25 +47,9 @@ interface Comment {
   start: number;
   /** UTF-16 offset. */
   end: number;
-}
-
-/**
- * Where an {@link AttachedComment} sits relative to its host node. `inside` means within an
- * otherwise empty host.
- */
-type CommentPosition = "before" | "after" | "inside";
-
-/** A comment attached to a host node through {@link BaseNode.comments}. */
-interface AttachedComment {
-  type: CommentType;
-  position: CommentPosition;
-  /**
-   * The comment shares a line with the nearest edge of its host, the start for `before` and the
-   * end for `after`. Always false for `inside`.
-   */
-  sameLine: boolean;
-  /** Text without the delimiters. */
-  value: string;
+  position?: CommentPosition;
+  /** It shares a line with the edge of its node it sits by. */
+  sameLine?: boolean;
 }
 
 /** One of the values of the `TokenKind` object. */
@@ -170,7 +160,7 @@ interface BaseNode {
   start: number;
   end: number;
   /** Comments attached to this node in source order, present only with `attachComments`. */
-  comments?: AttachedComment[];
+  comments?: Comment[];
 }
 
 type Span = BaseNode;
@@ -1755,7 +1745,6 @@ export type {
   NodeType,
   StandardNodeType,
   Comment,
-  AttachedComment,
   CommentType,
   CommentPosition,
   Diagnostic,

@@ -280,7 +280,7 @@ fn roundTrip(gpa: Allocator, mode: Mode, src: []const u8) Allocator.Error!void {
         .lang = mode.lang,
         .source_type = mode.source_type,
         .preserve_parens = false,
-        .comments = .both,
+        .comments = .attach,
     });
     defer tree.deinit();
 

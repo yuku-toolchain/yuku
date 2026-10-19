@@ -241,12 +241,16 @@ try tree.addDiagnostic(.{ .message = "unused", .span = span });
 
 ## [Comments]($section.id('comments'))
 
-The `comments` option collects every comment into `tree.comments`, attaches each to its node, or both. An attached comment records whether it sits `before`, `after`, or `inside` its node, so it moves with its node through transforms and [codegen](/parser/codegen/) prints it in place.
+`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and its `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](/parser/codegen/) prints it in place.
 
 ```zig
-for (tree.commentsOf(idx)) |c| {
-    std.debug.print("{t} {s}\n", .{ c.position, tree.string(c.value) });
-}
+var comments = tree.commentsOf(node);
+while (comments.next()) |c| std.debug.print("{t} {s}\n", .{ c.position, tree.string(c.value) });
+
+tree.hasComments(node);                       // without walking them
+tree.commentsIn(tree.span(node));             // the source comments within a span
+try tree.addComment(node, .{ .type = .block, .value = try tree.addString("#__PURE__") });
+try tree.moveComments(replaced, replacement); // or to `.null` to drop them
 ```
 
 ## [Tokens]($section.id('tokens'))

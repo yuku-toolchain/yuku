@@ -30,9 +30,11 @@
               "comments": [
                 {
                   "type": "Block",
+                  "value": " none ",
+                  "start": 12,
+                  "end": 22,
                   "position": "inside",
-                  "sameLine": false,
-                  "value": " none "
+                  "sameLine": false
                 }
               ]
             }
@@ -46,7 +48,9 @@
       "type": "Block",
       "value": " none ",
       "start": 12,
-      "end": 22
+      "end": 22,
+      "position": "inside",
+      "sameLine": false
     }
   ],
   "diagnostics": []

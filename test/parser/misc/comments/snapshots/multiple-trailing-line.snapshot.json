@@ -34,15 +34,19 @@
         "comments": [
           {
             "type": "Line",
+            "value": " a",
+            "start": 13,
+            "end": 17,
             "position": "after",
-            "sameLine": true,
-            "value": " a"
+            "sameLine": true
           },
           {
             "type": "Line",
+            "value": " b",
+            "start": 18,
+            "end": 22,
             "position": "after",
-            "sameLine": false,
-            "value": " b"
+            "sameLine": false
           }
         ]
       }
@@ -53,13 +57,17 @@
       "type": "Line",
       "value": " a",
       "start": 13,
-      "end": 17
+      "end": 17,
+      "position": "after",
+      "sameLine": true
     },
     {
       "type": "Line",
       "value": " b",
       "start": 18,
-      "end": 22
+      "end": 22,
+      "position": "after",
+      "sameLine": false
     }
   ],
   "diagnostics": []

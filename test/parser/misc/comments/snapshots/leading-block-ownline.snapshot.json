@@ -34,9 +34,11 @@
         "comments": [
           {
             "type": "Block",
+            "value": " header ",
+            "start": 0,
+            "end": 12,
             "position": "before",
-            "sameLine": false,
-            "value": " header "
+            "sameLine": false
           }
         ]
       }
@@ -47,7 +49,9 @@
       "type": "Block",
       "value": " header ",
       "start": 0,
-      "end": 12
+      "end": 12,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

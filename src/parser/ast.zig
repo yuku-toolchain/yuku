@@ -16,6 +16,9 @@ pub const TokenFlag = @import("token.zig").TokenFlag;
 pub const TokenMask = @import("token.zig").Mask;
 pub const Precedence = @import("token.zig").Precedence;
 
+const CommentIndex = @import("comments.zig").Index;
+pub const CommentIterator = @import("comments.zig").Iterator;
+
 pub const Severity = enum {
     @"error",
     warning,
@@ -87,12 +90,17 @@ pub const Lang = enum {
     }
 };
 
-/// A line or block comment. `value` is the text without delimiters and
-/// `span` covers the whole comment.
+/// A line or block comment. `value` is the text without delimiters and `span`
+/// covers the whole comment, empty for one added with `Tree.addComment`.
+///
+/// An attached comment prints `before`, `after`, or `inside` its node, and
+/// `same_line` says whether it shares a line with that edge of the node.
 pub const Comment = struct {
     type: Type,
     value: String,
-    span: Span,
+    span: Span = .{ .start = 0, .end = 0 },
+    position: Position = .before,
+    same_line: bool = false,
 
     pub const Type = enum(u1) {
         line,
@@ -105,18 +113,6 @@ pub const Comment = struct {
             };
         }
     };
-};
-
-/// A comment bound to a host node, read with `Tree.commentsOf`.
-///
-/// `same_line` is true when the comment shares a line with the adjacent edge
-/// of the host, its start for `before` and its end for `after`. It is always
-/// false for `inside`.
-pub const AttachedComment = struct {
-    type: Comment.Type,
-    position: Position = .before,
-    same_line: bool = false,
-    value: String,
 
     pub const Position = enum(u2) {
         before,
@@ -138,14 +134,11 @@ pub const Tree = struct {
     /// Child lists of all nodes, resolved with `extra()`.
     extras: std.ArrayList(NodeIndex) = .empty,
     diagnostics: std.ArrayList(Diagnostic) = .empty,
-    /// Every comment in source order. Populated when the comment mode is
-    /// `.flat` or `.both`.
+    /// Every comment of the source, in source order, unless the comment mode
+    /// is `.none`.
     comments: []const Comment = &.{},
-    /// Attached comments grouped by host node, read with `commentsOf()`.
-    /// Populated when the comment mode is `.attached` or `.both`.
-    attached_comments: []const AttachedComment = &.{},
-    /// Prefix sums into `attached_comments`, `nodes.len + 1` entries long.
-    attached_comment_offsets: []const u32 = &.{},
+    /// The comments of each node, read with `commentsOf()`.
+    comment_index: CommentIndex = .{},
     /// Every consumed token in source order, ending with `eof`. Empty unless
     /// `Options.tokens` is set.
     tokens: []const Token = &.{},
@@ -312,16 +305,60 @@ pub const Tree = struct {
         return self.strings.get(id);
     }
 
-    /// Returns the comments attached to `node`, in source order. Empty when
-    /// the comment mode does not attach comments.
-    pub inline fn commentsOf(self: *const Tree, node: NodeIndex) []const AttachedComment {
-        std.debug.assert(node != .null);
-        const offsets = self.attached_comment_offsets;
-        const i = @backingInt(node);
-        if (i + 1 >= offsets.len) return &.{};
-        std.debug.assert(offsets[i] <= offsets[i + 1]);
-        std.debug.assert(offsets[i + 1] <= self.attached_comments.len);
-        return self.attached_comments[offsets[i]..offsets[i + 1]];
+    /// Returns the comments of `node`, the attached ones in source order, then
+    /// the added ones.
+    ///
+    /// ## Example
+    /// ```zig
+    /// var it = tree.commentsOf(node);
+    /// while (it.next()) |comment| std.debug.print("{s}\n", .{tree.string(comment.value)});
+    /// ```
+    pub inline fn commentsOf(self: *const Tree, node: NodeIndex) CommentIterator {
+        return .{ .tree = self, .id = self.comment_index.first(node) };
+    }
+
+    /// Whether `node` has comments.
+    pub inline fn hasComments(self: *const Tree, node: NodeIndex) bool {
+        return self.comment_index.has(node);
+    }
+
+    /// Adds `comment` to the comments of `node`, after the ones it has.
+    ///
+    /// ## Example
+    /// ```zig
+    /// try tree.addComment(call, .{ .type = .block, .value = try tree.addString("#__PURE__") });
+    /// ```
+    pub fn addComment(self: *Tree, node: NodeIndex, comment: Comment) error{OutOfMemory}!void {
+        try self.comment_index.add(self.arena.allocator(), self.comments.len, node, comment);
+    }
+
+    /// Gives the comments of `from` to `to`, in order, or drops them when `to`
+    /// is `.null`.
+    pub fn moveComments(self: *Tree, from: NodeIndex, to: NodeIndex) error{OutOfMemory}!void {
+        try self.comment_index.move(self.arena.allocator(), from, to);
+    }
+
+    /// Returns the source comments that lie wholly within `range`, in source
+    /// order.
+    pub fn commentsIn(self: *const Tree, range: Span) []const Comment {
+        std.debug.assert(range.start <= range.end);
+        // comments never overlap, so their ends ascend with their starts
+        const first = std.sort.partitionPoint(Comment, self.comments, range.start, startsBefore);
+        const within = self.comments[first..];
+        const count = std.sort.partitionPoint(Comment, within, range.end, endsBy);
+        std.debug.assert(count <= within.len);
+        if (count > 0) std.debug.assert(within[0].span.start >= range.start);
+        if (count > 0) std.debug.assert(within[count - 1].span.end <= range.end);
+        if (count < within.len) std.debug.assert(within[count].span.end > range.end);
+        return within[0..count];
+    }
+
+    fn startsBefore(offset: u32, comment: Comment) bool {
+        return comment.span.start < offset;
+    }
+
+    fn endsBy(offset: u32, comment: Comment) bool {
+        return comment.span.end <= offset;
     }
 };
 

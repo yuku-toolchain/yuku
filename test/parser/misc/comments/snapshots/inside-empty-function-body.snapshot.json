@@ -27,9 +27,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " hi ",
+              "start": 15,
+              "end": 23,
               "position": "inside",
-              "sameLine": false,
-              "value": " hi "
+              "sameLine": false
             }
           ]
         },
@@ -42,7 +44,9 @@
       "type": "Block",
       "value": " hi ",
       "start": 15,
-      "end": 23
+      "end": 23,
+      "position": "inside",
+      "sameLine": false
     }
   ],
   "diagnostics": []

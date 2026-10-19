@@ -34,9 +34,11 @@
         "comments": [
           {
             "type": "Line",
+            "value": " only-trailing",
+            "start": 13,
+            "end": 29,
             "position": "after",
-            "sameLine": false,
-            "value": " only-trailing"
+            "sameLine": false
           }
         ]
       }
@@ -47,7 +49,9 @@
       "type": "Line",
       "value": " only-trailing",
       "start": 13,
-      "end": 29
+      "end": 29,
+      "position": "after",
+      "sameLine": false
     }
   ],
   "diagnostics": []

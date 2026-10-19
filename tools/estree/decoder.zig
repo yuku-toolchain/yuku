@@ -333,7 +333,6 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const commentCount = _u32[{[u_cc]d}],
         \\        diagCount = _u32[{[u_dc]d}],
         \\        progIdx = _u32[{[u_pi]d}];
-        \\  const attachedCommentCount = _u32[{[u_acc]d}];
         \\  const tokenCount = _u32[{[u_tc]d}];
         \\  const _flags = _u32[{[u_fl]d}];
         \\  const _isTs = !!(_flags & {[ts]d});
@@ -344,15 +343,13 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\  const eOff = _nodesOff + nodeCount * {[size]d};
         \\  const _extraBase = eOff >> 2;
         \\  const _spOff = eOff + extraCount * 4;
-        \\  const _aoOff = _spOff + ((spLen + 3) & ~3);
-        \\  const _acOff = _attached ? _aoOff + (nodeCount + 1) * 4 : _aoOff;
-        \\  const _cOff = _acOff + attachedCommentCount * {[acsize]d};
+        \\  const _cOff = _spOff + ((spLen + 3) & ~3);
         \\  const _tOff = _cOff + commentCount * {[csize]d};
         \\  const dOff = _tOff + tokenCount * {[tsize]d};
         \\  // the string pool and the diagnostics are bytes, the other sections 32-bit words
         \\  if (BIG_ENDIAN) {{
         \\    _hostOrder(_u32, _nodesOff >> 2, _spOff >> 2);
-        \\    _hostOrder(_u32, _aoOff >> 2, dOff >> 2);
+        \\    _hostOrder(_u32, _cOff >> 2, dOff >> 2);
         \\  }}
         \\  function _poolDecode(s, e) {{
         \\    const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
@@ -430,7 +427,6 @@ fn writeDecodeOpen(w: *Writer) !void {
         .u_cc = rt.HDR_COMMENT_COUNT_U32,
         .u_dc = rt.HDR_DIAG_COUNT_U32,
         .u_pi = rt.HDR_PROGRAM_INDEX_U32,
-        .u_acc = rt.HDR_ATTACHED_COMMENT_COUNT_U32,
         .u_tc = rt.HDR_TOKEN_COUNT_U32,
         .u_fl = rt.HDR_FLAGS_U32,
         .u_fna = rt.HDR_FIRST_NON_ASCII_U32,
@@ -439,7 +435,6 @@ fn writeDecodeOpen(w: *Writer) !void {
         .sem = rt.FLAG_SEMANTIC,
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
-        .acsize = rt.ATTACHED_COMMENT_SIZE,
         .csize = rt.COMMENT_SIZE,
         .tsize = rt.TOKEN_SIZE,
         .stride = rt.NODE_SIZE / 4,
@@ -460,31 +455,29 @@ fn u16At(comptime word: []const u8, comptime byte_in_word: u8) []const u8 {
 fn writeNodeFunction(w: *Writer) !void {
     comptime std.debug.assert(rt.NODE_FLAGS_OFFSET / 4 == 0);
     const flags_expr = comptime u16At("h0", rt.NODE_FLAGS_OFFSET % 4);
-    comptime std.debug.assert(rt.ATTACHED_COMMENT_FLAGS_OFFSET == 0);
-    comptime std.debug.assert(rt.ATTACHED_COMMENT_SIZE % 4 == 0);
+    comptime std.debug.assert(rt.COMMENT_NODE_OFFSET % 4 == 0);
     try w.print(
-        \\  function _attachedCommentsOf(a, e) {{
-        \\    const out = new Array(e - a);
-        \\    for (let j = a; j < e; j++) {{
-        \\      const o = (_acOff >> 2) + j * {[ac_stride]d};
-        \\      const cf = _u32[o] & 255;
-        \\      const vs = _u32[o + {[ac_vs]d}], ve = _u32[o + {[ac_ve]d}];
-        \\      out[j - a] = {{
-        \\        type: (cf & 1) ? "Block" : "Line",
-        \\        position: AC_POSITIONS[(cf >> 1) & 3],
-        \\        sameLine: (cf & 8) !== 0,
-        \\        value: str(vs, ve),
-        \\      }};
+        \\  let _owned, _ownedBits;
+        \\  function _own() {{
+        \\    _owned = new Map();
+        \\    _ownedBits = new Int32Array((nodeCount + 31) >>> 5);
+        \\    const all = _comments !== undefined ? _comments : (_comments = _decodeComments());
+        \\    for (let j = 0; j < commentCount; j++) {{
+        \\      const n = _u32[(_cOff >> 2) + j * {[c_stride]d} + {[c_node]d}];
+        \\      if (n < 0) continue;
+        \\      const list = _owned.get(n);
+        \\      if (list !== undefined) list.push(all[j]);
+        \\      else {{
+        \\        _owned.set(n, [all[j]]);
+        \\        _ownedBits[n >>> 5] |= 1 << (n & 31);
+        \\      }}
         \\    }}
-        \\    return out;
         \\  }}
         \\  function nodeWithComments(i, depth) {{
         \\    const r = _decode(i, depth);
-        \\    if (r && r.type !== undefined && r.comments === undefined) {{
-        \\      const off = (_aoOff >> 2) + i;
-        \\      const a = _u32[off], e = _u32[off + 1];
-        \\      if (a !== e) r.comments = _attachedCommentsOf(a, e);
-        \\    }}
+        \\    if (_owned === undefined) _own();
+        \\    if ((_ownedBits[i >>> 5] & (1 << (i & 31))) === 0) return r;
+        \\    if (r && r.type !== undefined && r.comments === undefined) r.comments = _owned.get(i);
         \\    return r;
         \\  }}
         \\  function _decode(i, depth) {{
@@ -501,9 +494,8 @@ fn writeNodeFunction(w: *Writer) !void {
     , .{
         .stride = rt.NODE_SIZE / 4,
         .hdr_u32 = rt.HEADER_SIZE / 4,
-        .ac_stride = rt.ATTACHED_COMMENT_SIZE / 4,
-        .ac_vs = rt.ATTACHED_COMMENT_VALUE_START_OFFSET / 4,
-        .ac_ve = rt.ATTACHED_COMMENT_VALUE_END_OFFSET / 4,
+        .c_stride = rt.COMMENT_SIZE / 4,
+        .c_node = rt.COMMENT_NODE_OFFSET / 4,
         .fe = flags_expr,
         .ss = rt.NODE_SPAN_START_U32,
         .se = rt.NODE_SPAN_END_U32,
@@ -575,7 +567,7 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArrayRaw(w, "TS_MODULE_KINDS", &meta.TS_MODULE_KINDS_RAW);
     try writeArrayRaw(w, "TS_MAPPED_OPTIONAL", &meta.TS_MAPPED_OPTIONAL_RAW);
     try writeArrayRaw(w, "TS_MAPPED_READONLY", &meta.TS_MAPPED_READONLY_RAW);
-    try writeArray(w, "AC_POSITIONS", &.{ "before", "after", "inside" });
+    try writeArray(w, "COMMENT_POSITIONS", &.{ "before", "after", "inside" });
 }
 
 fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
@@ -1526,12 +1518,17 @@ fn writeDecodeBody(w: *Writer) !void {
         \\      const cf = _u32[o] & 255;
         \\      const vs = _u32[o + {[c_vs]d}], ve = _u32[o + {[c_ve]d}];
         \\      const ss = _u32[o + {[c_ss]d}], se = _u32[o + {[c_se]d}];
-        \\      out[j] = {{
-        \\        type: (cf & 1) ? "Block" : "Line",
-        \\        value: str(vs, ve),
-        \\        start: _p(ss),
-        \\        end: _p(se),
-        \\      }};
+        \\      const type = (cf & {[c_type]d}) ? "Block" : "Line";
+        \\      out[j] = _attached
+        \\        ? {{
+        \\            type,
+        \\            value: str(vs, ve),
+        \\            start: _p(ss),
+        \\            end: _p(se),
+        \\            position: COMMENT_POSITIONS[(cf >> {[c_pos]d}) & 3],
+        \\            sameLine: (cf & {[c_same]d}) !== 0,
+        \\          }}
+        \\        : {{ type, value: str(vs, ve), start: _p(ss), end: _p(se) }};
         \\    }}
         \\    return out;
         \\  }}
@@ -1575,6 +1572,9 @@ fn writeDecodeBody(w: *Writer) !void {
         .c_ve = rt.COMMENT_VALUE_END_OFFSET / 4,
         .c_ss = rt.COMMENT_SPAN_START_OFFSET / 4,
         .c_se = rt.COMMENT_SPAN_END_OFFSET / 4,
+        .c_type = 1 << rt.COMMENT_TYPE_BIT,
+        .c_pos = rt.COMMENT_POSITION_SHIFT,
+        .c_same = 1 << rt.COMMENT_SAME_LINE_BIT,
     });
 
     try writeParentBody(w);

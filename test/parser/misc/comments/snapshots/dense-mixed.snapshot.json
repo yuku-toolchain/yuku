@@ -41,15 +41,19 @@
         "comments": [
           {
             "type": "Line",
+            "value": " file header",
+            "start": 0,
+            "end": 14,
             "position": "before",
-            "sameLine": false,
-            "value": " file header"
+            "sameLine": false
           },
           {
             "type": "Line",
+            "value": " trail import",
+            "start": 40,
+            "end": 55,
             "position": "after",
-            "sameLine": true,
-            "value": " trail import"
+            "sameLine": true
           }
         ]
       },
@@ -65,9 +69,11 @@
           "comments": [
             {
               "type": "Block",
+              "value": " inline name ",
+              "start": 83,
+              "end": 100,
               "position": "before",
-              "sameLine": true,
-              "value": " inline name "
+              "sameLine": true
             }
           ]
         },
@@ -117,15 +123,19 @@
               "comments": [
                 {
                   "type": "Line",
+                  "value": " lead-return",
+                  "start": 115,
+                  "end": 129,
                   "position": "before",
-                  "sameLine": false,
-                  "value": " lead-return"
+                  "sameLine": false
                 },
                 {
                   "type": "Block",
+                  "value": " trail-return ",
+                  "start": 146,
+                  "end": 164,
                   "position": "after",
-                  "sameLine": true,
-                  "value": " trail-return "
+                  "sameLine": true
                 }
               ]
             }
@@ -135,9 +145,11 @@
         "comments": [
           {
             "type": "Block",
+            "value": "*\n * jsdoc\n ",
+            "start": 57,
+            "end": 73,
             "position": "before",
-            "sameLine": false,
-            "value": "*\n * jsdoc\n "
+            "sameLine": false
           }
         ]
       },
@@ -168,15 +180,19 @@
         "comments": [
           {
             "type": "Line",
+            "value": " trail decl",
+            "start": 186,
+            "end": 199,
             "position": "after",
-            "sameLine": true,
-            "value": " trail decl"
+            "sameLine": true
           },
           {
             "type": "Line",
+            "value": " dangling-trailing",
+            "start": 200,
+            "end": 220,
             "position": "after",
-            "sameLine": false,
-            "value": " dangling-trailing"
+            "sameLine": false
           }
         ]
       }
@@ -187,49 +203,65 @@
       "type": "Line",
       "value": " file header",
       "start": 0,
-      "end": 14
+      "end": 14,
+      "position": "before",
+      "sameLine": false
     },
     {
       "type": "Line",
       "value": " trail import",
       "start": 40,
-      "end": 55
+      "end": 55,
+      "position": "after",
+      "sameLine": true
     },
     {
       "type": "Block",
       "value": "*\n * jsdoc\n ",
       "start": 57,
-      "end": 73
+      "end": 73,
+      "position": "before",
+      "sameLine": false
     },
     {
       "type": "Block",
       "value": " inline name ",
       "start": 83,
-      "end": 100
+      "end": 100,
+      "position": "before",
+      "sameLine": true
     },
     {
       "type": "Line",
       "value": " lead-return",
       "start": 115,
-      "end": 129
+      "end": 129,
+      "position": "before",
+      "sameLine": false
     },
     {
       "type": "Block",
       "value": " trail-return ",
       "start": 146,
-      "end": 164
+      "end": 164,
+      "position": "after",
+      "sameLine": true
     },
     {
       "type": "Line",
       "value": " trail decl",
       "start": 186,
-      "end": 199
+      "end": 199,
+      "position": "after",
+      "sameLine": true
     },
     {
       "type": "Line",
       "value": " dangling-trailing",
       "start": 200,
-      "end": 220
+      "end": 220,
+      "position": "after",
+      "sameLine": false
     }
   ],
   "diagnostics": []

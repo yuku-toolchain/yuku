@@ -65,9 +65,11 @@
                   "comments": [
                     {
                       "type": "Block",
+                      "value": " mid ",
+                      "start": 11,
+                      "end": 20,
                       "position": "before",
-                      "sameLine": true,
-                      "value": " mid "
+                      "sameLine": true
                     }
                   ]
                 }
@@ -89,7 +91,9 @@
       "type": "Block",
       "value": " mid ",
       "start": 11,
-      "end": 20
+      "end": 20,
+      "position": "before",
+      "sameLine": true
     }
   ],
   "diagnostics": []

@@ -83,7 +83,7 @@ fn printFile(
         .lang = ast.Lang.fromPath(path),
         .source_type = source_type,
         .preserve_parens = plan.preserve_parens,
-        .comments = .both,
+        .comments = .attach,
     });
     defer tree.deinit();
 

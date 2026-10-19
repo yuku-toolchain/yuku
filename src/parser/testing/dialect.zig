@@ -408,7 +408,7 @@ test "a comment the dialect reads joins the tree's comments and prints" {
     var tree = try parser.parse(testing.allocator, source, .{
         .lang = .jsx,
         .dialect = true,
-        .comments = .both,
+        .comments = .attach,
     });
     defer tree.deinit();
     try expectClean(&tree);

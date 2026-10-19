@@ -57,9 +57,11 @@
               "comments": [
                 {
                   "type": "Line",
+                  "value": " leading",
+                  "start": 16,
+                  "end": 26,
                   "position": "before",
-                  "sameLine": false,
-                  "value": " leading"
+                  "sameLine": false
                 }
               ]
             }
@@ -74,7 +76,9 @@
       "type": "Line",
       "value": " leading",
       "start": 16,
-      "end": 26
+      "end": 26,
+      "position": "before",
+      "sameLine": false
     }
   ],
   "diagnostics": []

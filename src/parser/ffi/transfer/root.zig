@@ -1,4 +1,4 @@
-// AST transfer format v11, little endian with no version byte
+// AST transfer format v12, little endian with no version byte
 // the decoder tools/estree/decoder.zig generates shares the extern struct layouts below
 //
 // sections, in order
@@ -7,9 +7,7 @@
 //   nodes              node_count * NODE_SIZE, one PackedNode each
 //   extra              extra_count * 4, the u32 array backing IndexRange
 //   strings            string_pool_len bytes of UTF-8, zero-padded to a 4-byte boundary
-//   attached_offsets   (node_count + 1) u32 prefix sums, only with FLAG_ATTACHED_COMMENTS
-//   attached_comments  attached_comment_count * ATTACHED_COMMENT_SIZE
-//   comments           comment_count * COMMENT_SIZE in source order, only with FLAG_COMMENTS
+//   comments           comment_count * COMMENT_SIZE in source order
 //   tokens             token_count * TOKEN_SIZE, each `Token` as is
 //   diagnostics        diag_count variable-length entries
 //
@@ -46,7 +44,6 @@ const Header = extern struct {
     string_pool_len: u32,
     source_len: u32,
     comment_count: u32,
-    attached_comment_count: u32,
     token_count: u32,
     diag_count: u32,
     program_index: u32,
@@ -64,10 +61,14 @@ const PackedNode = extern struct {
     span_end: u32,
 };
 
-// `flags` bit 0 is the type, 0 line and 1 block
+// `node` is the node a comment is attached to, 0xFFFFFFFF for none, and `flags` packs
+//   bit 0     type       (0 line, 1 block)
+//   bits 1-2  position   (0 before, 1 after, 2 inside)
+//   bit 3     same_line
 const PackedComment = extern struct {
     flags: u8,
     _pad: [3]u8 = .{ 0, 0, 0 },
+    node: u32,
     value_start: u32,
     value_end: u32,
     span_start: u32,
@@ -75,25 +76,12 @@ const PackedComment = extern struct {
 };
 
 pub const COMMENT_TYPE_BIT: u8 = 0;
-
-// attached_offsets gives each node its run of entries, `flags` packs
-//   bit 0     type       (0 line, 1 block)
-//   bits 1-2  position   (0 before, 1 after, 2 inside)
-//   bit 3     same_line
-const PackedAttachedComment = extern struct {
-    flags: u8,
-    _pad: [3]u8 = .{ 0, 0, 0 },
-    value_start: u32,
-    value_end: u32,
-};
-
-pub const ATTACHED_COMMENT_POSITION_SHIFT: u8 = 1;
-pub const ATTACHED_COMMENT_SAME_LINE_BIT: u8 = 3;
+pub const COMMENT_POSITION_SHIFT: u8 = 1;
+pub const COMMENT_SAME_LINE_BIT: u8 = 3;
 
 pub const HEADER_SIZE: u32 = @sizeOf(Header);
 pub const NODE_SIZE: u32 = @sizeOf(PackedNode);
 pub const COMMENT_SIZE: u32 = @sizeOf(PackedComment);
-pub const ATTACHED_COMMENT_SIZE: u32 = @sizeOf(PackedAttachedComment);
 pub const TOKEN_SIZE: u32 = @sizeOf(ast.Token);
 
 pub const HDR_NODE_COUNT_U32: u32 = @offsetOf(Header, "node_count") / 4;
@@ -101,7 +89,6 @@ pub const HDR_EXTRA_COUNT_U32: u32 = @offsetOf(Header, "extra_count") / 4;
 pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 4;
 pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
 pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
-pub const HDR_ATTACHED_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "attached_comment_count") / 4;
 pub const HDR_TOKEN_COUNT_U32: u32 = @offsetOf(Header, "token_count") / 4;
 pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
 pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
@@ -122,14 +109,11 @@ const NODE_DATA_SLOTS: u8 = NODE_SPAN_START_U32 - NODE_HEADER_U32S;
 pub const NODE_FLAG_BITS: u8 = @bitSizeOf(@FieldType(PackedNode, "flags"));
 
 pub const COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedComment, "flags");
+pub const COMMENT_NODE_OFFSET: u8 = @offsetOf(PackedComment, "node");
 pub const COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedComment, "value_start");
 pub const COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedComment, "value_end");
 pub const COMMENT_SPAN_START_OFFSET: u8 = @offsetOf(PackedComment, "span_start");
 pub const COMMENT_SPAN_END_OFFSET: u8 = @offsetOf(PackedComment, "span_end");
-
-pub const ATTACHED_COMMENT_FLAGS_OFFSET: u8 = @offsetOf(PackedAttachedComment, "flags");
-pub const ATTACHED_COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_start");
-pub const ATTACHED_COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(PackedAttachedComment, "value_end");
 
 pub const TOKEN_START_U32: u8 = (@offsetOf(ast.Token, "span") + @offsetOf(ast.Span, "start")) / 4;
 pub const TOKEN_END_U32: u8 = (@offsetOf(ast.Token, "span") + @offsetOf(ast.Span, "end")) / 4;
@@ -226,8 +210,6 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
         tree.nodes.len * NODE_SIZE +
         tree.extras.items.len * 4 +
         std.mem.alignForward(usize, tree.strings.extra.items.len, 4) +
-        tree.attached_comment_offsets.len * 4 +
-        tree.attached_comments.len * ATTACHED_COMMENT_SIZE +
         tree.comments.len * COMMENT_SIZE +
         tree.tokens.len * TOKEN_SIZE;
 
@@ -247,12 +229,10 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     if (builtin.optimize.runtimeSafety()) assertPostOrder(tree);
 
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
-    const has_attached = tree.attached_comment_offsets.len != 0;
-    if (has_attached) std.debug.assert(tree.attached_comment_offsets.len == tree.nodes.len + 1);
 
     var hdr_flags: u32 = 0;
     if (tree.isTs()) hdr_flags |= FLAG_TS;
-    if (has_attached) hdr_flags |= FLAG_ATTACHED_COMMENTS;
+    if (tree.comment_index.chains.count() != 0) hdr_flags |= FLAG_ATTACHED_COMMENTS;
     if (tree.comments.len != 0) hdr_flags |= FLAG_COMMENTS;
 
     const hdr: Header = .{
@@ -261,7 +241,6 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .string_pool_len = string_pool_len,
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
-        .attached_comment_count = @intCast(tree.attached_comments.len),
         .token_count = @intCast(tree.tokens.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @backingInt(tree.root),
@@ -284,32 +263,21 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     @memset(buf[pos..][0..pool_pad], 0);
     pos += pool_pad;
 
-    writeBytes(buf, &pos, std.mem.sliceAsBytes(tree.attached_comment_offsets));
-
-    const attached_out: [*]PackedAttachedComment = @ptrCast(@alignCast(buf.ptr + pos));
-    for (tree.attached_comments, 0..) |c, i| {
-        var flags: u8 = 0;
-        if (c.type == .block) flags |= 1 << COMMENT_TYPE_BIT;
-        flags |= @as(u8, @backingInt(c.position)) << ATTACHED_COMMENT_POSITION_SHIFT;
-        if (c.same_line) flags |= 1 << ATTACHED_COMMENT_SAME_LINE_BIT;
-        attached_out[i] = .{
-            .flags = flags,
-            .value_start = c.value.start,
-            .value_end = c.value.end,
-        };
-    }
-    pos += tree.attached_comments.len * ATTACHED_COMMENT_SIZE;
-
     const comments_out: [*]PackedComment = @ptrCast(@alignCast(buf.ptr + pos));
     for (tree.comments, 0..) |c, i| {
+        var flags: u8 = @as(u8, @backingInt(c.type)) << COMMENT_TYPE_BIT;
+        flags |= @as(u8, @backingInt(c.position)) << COMMENT_POSITION_SHIFT;
+        flags |= @as(u8, @intFromBool(c.same_line)) << COMMENT_SAME_LINE_BIT;
         comments_out[i] = .{
-            .flags = if (c.type == .block) 1 << COMMENT_TYPE_BIT else 0,
+            .flags = flags,
+            .node = @backingInt(ast.NodeIndex.null),
             .value_start = c.value.start,
             .value_end = c.value.end,
             .span_start = c.span.start,
             .span_end = c.span.end,
         };
     }
+    writeCommentNodes(tree, comments_out[0..tree.comments.len]);
     pos += tree.comments.len * COMMENT_SIZE;
 
     writeBytes(buf, &pos, std.mem.sliceAsBytes(tree.tokens));
@@ -444,4 +412,19 @@ fn firstNonAsciiOffset(source: []const u8) usize {
     }
     for (source[i..], i..) |c, offset| if (c >= 0x80) return offset;
     return source.len;
+}
+
+// a node's comments chain in id order, so each source comment learns its node
+fn writeCommentNodes(tree: *const ast.Tree, out: []PackedComment) void {
+    const index = &tree.comment_index;
+    std.debug.assert(index.added.items.len == 0);
+    var chains = index.chains.iterator();
+    while (chains.next()) |entry| {
+        var id = entry.value_ptr.first;
+        for (0..out.len) |_| {
+            out[id].node = @backingInt(entry.key_ptr.*);
+            id = index.links.items[id];
+            if (id == std.math.maxInt(u32)) break;
+        } else unreachable;
+    }
 }

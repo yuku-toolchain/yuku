@@ -18,9 +18,11 @@
           "comments": [
             {
               "type": "Line",
+              "value": " tail-test",
+              "start": 7,
+              "end": 19,
               "position": "after",
-              "sameLine": true,
-              "value": " tail-test"
+              "sameLine": true
             }
           ]
         },
@@ -58,7 +60,9 @@
       "type": "Line",
       "value": " tail-test",
       "start": 7,
-      "end": 19
+      "end": 19,
+      "position": "after",
+      "sameLine": true
     }
   ],
   "diagnostics": []

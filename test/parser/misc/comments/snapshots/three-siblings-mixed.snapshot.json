@@ -60,9 +60,11 @@
         "comments": [
           {
             "type": "Line",
+            "value": " mid",
+            "start": 13,
+            "end": 19,
             "position": "before",
-            "sameLine": false,
-            "value": " mid"
+            "sameLine": false
           }
         ]
       },
@@ -94,9 +96,11 @@
         "comments": [
           {
             "type": "Line",
+            "value": " tail",
+            "start": 46,
+            "end": 53,
             "position": "after",
-            "sameLine": true,
-            "value": " tail"
+            "sameLine": true
           }
         ]
       }
@@ -107,13 +111,17 @@
       "type": "Line",
       "value": " mid",
       "start": 13,
-      "end": 19
+      "end": 19,
+      "position": "before",
+      "sameLine": false
     },
     {
       "type": "Line",
       "value": " tail",
       "start": 46,
-      "end": 53
+      "end": 53,
+      "position": "after",
+      "sameLine": true
     }
   ],
   "diagnostics": []

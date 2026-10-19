@@ -61,9 +61,11 @@
         "comments": [
           {
             "type": "Line",
+            "value": " iface",
+            "start": 27,
+            "end": 35,
             "position": "after",
-            "sameLine": true,
-            "value": " iface"
+            "sameLine": true
           }
         ]
       }
@@ -74,7 +76,9 @@
       "type": "Line",
       "value": " iface",
       "start": 27,
-      "end": 35
+      "end": 35,
+      "position": "after",
+      "sameLine": true
     }
   ],
   "diagnostics": []
