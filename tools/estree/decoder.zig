@@ -189,8 +189,7 @@ const binding_flag_names = .{
     .enum_member = "EnumMember",
 };
 
-// ESTree's `JSXText.value` decodes as `lexical.decodeJSXEntities` does. The names go in code
-// point order, each one past the last unless a `:hex` follows it, which runs make rare.
+// ESTree's `JSXText.value` decodes as `lexical.decodeJSXEntities` does.
 fn writeJSXEntities(w: *Writer) !void {
     const Entity = struct {
         name: []const u8,
