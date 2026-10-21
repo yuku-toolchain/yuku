@@ -1,7 +1,7 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const sc = @import("scope.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 
 const Allocator = std.mem.Allocator;
 const String = ast.String;
@@ -21,8 +21,7 @@ const NodeLink = packed struct(u32) {
 
 const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
 
-/// A `(start, len)` window into a backing slice.
-pub const Range = struct { start: u32, len: u32 };
+const Range = struct { start: u32, len: u32 };
 
 /// A declared binding, shared by every declaration that legally merges under its name.
 pub const Symbol = struct {
@@ -30,7 +29,6 @@ pub const Symbol = struct {
     flags: Flags,
     /// The scope the symbol lands in, the hoist target for a hoisting `var`.
     scope: sc.ScopeId,
-    decls: Range,
 
     pub const Flags = packed struct(u32) {
         function_scoped_var: bool = false,
@@ -75,17 +73,17 @@ pub const Symbol = struct {
         }
 
         /// Whether the binding exists at runtime.
-        pub inline fn inValueSpace(self: Flags) bool {
+        inline fn inValueSpace(self: Flags) bool {
             return self.intersects(value_space);
         }
 
         /// Whether the binding is a TypeScript type.
-        pub inline fn inTypeSpace(self: Flags) bool {
+        inline fn inTypeSpace(self: Flags) bool {
             return self.intersects(type_space);
         }
 
         /// Whether a dotted type name can start from the binding.
-        pub inline fn inNamespaceSpace(self: Flags) bool {
+        inline fn inNamespaceSpace(self: Flags) bool {
             return self.intersects(namespace_space);
         }
 
@@ -246,6 +244,7 @@ pub const Semantic = struct {
     references: []const Reference,
 
     decl_nodes: []const ast.NodeIndex,
+    decl_ranges: []const Range,
     use_ids: []const ReferenceId,
     use_ranges: []const Range,
     scope_maps: []const ScopeMap,
@@ -271,11 +270,6 @@ pub const Semantic = struct {
         std.debug.assert(id != .none);
         std.debug.assert(@backingInt(id) < self.references.len);
         return self.references[@backingInt(id)];
-    }
-
-    /// The scope with the given id.
-    pub inline fn scope(self: Semantic, id: sc.ScopeId) sc.Scope {
-        return self.scopes.get(id);
     }
 
     /// The symbol declared at `node` or resolved by its reference, or `null`.
@@ -321,8 +315,9 @@ pub const Semantic = struct {
 
     /// The name node of every declaration of `id` in source order, conflicting ones included.
     pub fn decls(self: Semantic, id: SymbolId) []const ast.NodeIndex {
-        const range = self.symbol(id).decls;
-        std.debug.assert(@as(usize, range.start) + range.len <= self.decl_nodes.len);
+        std.debug.assert(id != .none);
+        std.debug.assert(@backingInt(id) < self.decl_ranges.len);
+        const range = self.decl_ranges[@backingInt(id)];
         return self.decl_nodes[range.start..][0..range.len];
     }
 
@@ -400,40 +395,6 @@ pub const Semantic = struct {
         unreachable;
     }
 
-    /// Iterates every scope in creation order.
-    pub fn iterScopes(self: Semantic) ScopeIterator {
-        return .{ .list = self.scopes.list };
-    }
-
-    /// Iterates every symbol in declaration order.
-    pub fn iterSymbols(self: Semantic) SymbolIterator {
-        return .{ .symbols = self.symbols };
-    }
-
-    /// Iterates every reference in source order.
-    pub fn iterReferences(self: Semantic) ReferenceIterator {
-        return .{ .references = self.references };
-    }
-
-    /// A `(id, scope)` pair yielded by `iterScopes`.
-    pub const ScopeEntry = struct { id: sc.ScopeId, scope: sc.Scope };
-    /// A `(id, symbol)` pair yielded by `iterSymbols`.
-    pub const SymbolEntry = struct { id: SymbolId, symbol: Symbol };
-    /// A `(id, reference)` pair yielded by `iterReferences`.
-    pub const ReferenceEntry = struct { id: ReferenceId, reference: Reference };
-
-    /// Yields every scope in creation order.
-    pub const ScopeIterator = struct {
-        list: []const sc.Scope,
-        index: u32 = 0,
-
-        pub fn next(self: *ScopeIterator) ?ScopeEntry {
-            if (self.index >= self.list.len) return null;
-            defer self.index += 1;
-            return .{ .id = @fromBackingInt(self.index), .scope = self.list[self.index] };
-        }
-    };
-
     /// Yields node indices from a starting node up to the root.
     pub const AncestorIterator = struct {
         node_parents: []const ast.NodeIndex,
@@ -456,30 +417,6 @@ pub const Semantic = struct {
         /// The next symbol id, or `null` when done.
         pub fn next(self: *BindingIterator) ?SymbolId {
             return if (self.inner.next()) |id| id.* else null;
-        }
-    };
-
-    /// Yields every symbol in declaration order.
-    pub const SymbolIterator = struct {
-        symbols: []const Symbol,
-        index: u32 = 0,
-
-        pub fn next(self: *SymbolIterator) ?SymbolEntry {
-            if (self.index >= self.symbols.len) return null;
-            defer self.index += 1;
-            return .{ .id = @fromBackingInt(self.index), .symbol = self.symbols[self.index] };
-        }
-    };
-
-    /// Yields every reference in source order.
-    pub const ReferenceIterator = struct {
-        references: []const Reference,
-        index: u32 = 0,
-
-        pub fn next(self: *ReferenceIterator) ?ReferenceEntry {
-            if (self.index >= self.references.len) return null;
-            defer self.index += 1;
-            return .{ .id = @fromBackingInt(self.index), .reference = self.references[self.index] };
         }
     };
 };
@@ -619,7 +556,7 @@ pub const SymbolTracker = struct {
         try self.hoisting_variables.ensureTotalCapacity(alloc, @max(8, nodes / 16));
         try self.saved_stack.ensureTotalCapacity(alloc, 32);
 
-        if (exportsImplicitly(tree)) try self.setExportContext(.module, true);
+        if (exportsImplicitly(tree)) try self.setExportContext(sc.module_scope, true);
         return self;
     }
 
@@ -647,7 +584,7 @@ pub const SymbolTracker = struct {
                 const ambient = decl.declare or self.ambient;
                 switch (decl.kind) {
                     .@"var" => {
-                        const target = scope.hoistTarget();
+                        const target = scope.get(scope.current).hoist_target;
                         // ts and module-level functions never merge with `var`
                         var excludes =
                             Symbol.Excludes.function_scoped_var.merge(self.excluded_imports);
@@ -711,7 +648,7 @@ pub const SymbolTracker = struct {
                 self.pending = .{
                     .flags = .{ .class = true, .ambient = cls.declare or self.ambient },
                     .excludes = Symbol.Excludes.class.merge(self.excluded_imports),
-                    .scope = if (is_decl) scope.currentScope().parent else exprNameScope(scope),
+                    .scope = if (is_decl) scope.get(scope.current).parent else exprNameScope(scope),
                 };
                 // expression names are local
                 if (!is_decl) self.export_state = .none;
@@ -799,7 +736,7 @@ pub const SymbolTracker = struct {
                         Symbol.Excludes.interface
                     else
                         Symbol.Excludes.type_alias,
-                    .scope = scope.currentScope().parent,
+                    .scope = scope.get(scope.current).parent,
                 };
             },
 
@@ -1172,7 +1109,6 @@ pub const SymbolTracker = struct {
                 .name = name,
                 .flags = flags,
                 .scope = target,
-                .decls = .{ .start = 0, .len = 0 },
             });
             try self.first_decls.append(self.allocator, node);
             try self.bind(target, name_str, new_id);
@@ -1349,24 +1285,21 @@ pub const SymbolTracker = struct {
         try self.syncScopeMaps(scopes.list.len);
         try padTo(sc.ScopeId, &self.next_bodies, self.allocator, scopes.list.len, .none);
 
-        // `len` doubles as the write cursor during each fill
-        const decl_nodes = try self.allocator.alloc(ast.NodeIndex, self.decl_pairs.items.len);
-        for (self.symbols.items) |*s| s.decls = .{ .start = 0, .len = 0 };
-        for (self.decl_pairs.items) |pair| {
-            self.symbols.items[@backingInt(pair.symbol)].decls.len += 1;
-        }
+        const decl_ranges = try self.allocator.alloc(Range, self.symbols.items.len);
+        @memset(decl_ranges, .{ .start = 0, .len = 0 });
+        for (self.decl_pairs.items) |pair| decl_ranges[@backingInt(pair.symbol)].len += 1;
         var decl_offset: u32 = 0;
-        for (self.symbols.items) |*s| {
-            const count = s.decls.len;
-            s.decls.start = decl_offset;
-            s.decls.len = 0;
-            decl_offset += count;
+        for (decl_ranges) |*r| {
+            r.start = decl_offset;
+            decl_offset += r.len;
+            r.len = 0;
         }
         std.debug.assert(decl_offset == self.decl_pairs.items.len);
+        const decl_nodes = try self.allocator.alloc(ast.NodeIndex, decl_offset);
         for (self.decl_pairs.items) |pair| {
-            const s = &self.symbols.items[@backingInt(pair.symbol)];
-            decl_nodes[s.decls.start + s.decls.len] = pair.node;
-            s.decls.len += 1;
+            const r = &decl_ranges[@backingInt(pair.symbol)];
+            decl_nodes[r.start + r.len] = pair.node;
+            r.len += 1;
         }
 
         const node_links = try self.allocator.alloc(NodeLink, self.tree.nodes.len);
@@ -1436,6 +1369,7 @@ pub const SymbolTracker = struct {
             .symbols = self.symbols.items,
             .references = self.references.items,
             .decl_nodes = decl_nodes,
+            .decl_ranges = decl_ranges,
             .use_ids = use_ids,
             .use_ranges = use_ranges,
             .scope_maps = self.scope_maps.items,
@@ -1629,14 +1563,14 @@ fn jsxTagRoot(tree: *const ast.Tree, name: ast.NodeIndex) ?ast.NodeIndex {
 }
 
 fn exprNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
-    const current = scope.currentScope();
+    const current = scope.get(scope.current);
     if (current.kind == .function or current.kind == .class) return current.parent;
     return scope.current;
 }
 
 // at a body's top level a function declaration is var-scoped and hoists past
 fn declNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
-    const enclosing = scope.currentScope().parent;
+    const enclosing = scope.get(scope.current).parent;
     std.debug.assert(enclosing != .none);
     const enclosing_scope = scope.get(enclosing);
     if (enclosing_scope.kind == .function_body) return enclosing_scope.hoist_target;

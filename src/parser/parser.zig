@@ -8,7 +8,7 @@ const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
 const grammar = @import("grammar.zig");
-const dialect = @import("dialect.zig");
+const dialect = @import("dialect/root.zig");
 const comments = @import("comments.zig");
 
 /// How comments are collected and attached to their nodes.

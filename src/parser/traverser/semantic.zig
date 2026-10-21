@@ -7,17 +7,12 @@ const bi = @import("../semantic/binder.zig");
 const Allocator = std.mem.Allocator;
 const NodePath = wk.NodePath;
 
-pub const Scope = sc.Scope;
-pub const ScopeId = sc.ScopeId;
-pub const ScopeTree = sc.ScopeTree;
-pub const ScopeTracker = sc.ScopeTracker;
-pub const SymbolId = bi.SymbolId;
-pub const ReferenceId = bi.ReferenceId;
-pub const Symbol = bi.Symbol;
-pub const Reference = bi.Reference;
-pub const Semantic = bi.Semantic;
-pub const SymbolTracker = bi.SymbolTracker;
-pub const Mode = bi.Mode;
+const ScopeId = sc.ScopeId;
+const ScopeTracker = sc.ScopeTracker;
+const Semantic = bi.Semantic;
+const SymbolTracker = bi.SymbolTracker;
+const Mode = bi.Mode;
+const Reference = bi.Reference;
 
 /// Traverser context that tracks the node path, scopes, and symbols.
 pub const Ctx = struct {

@@ -5,7 +5,7 @@ const util = @import("util");
 
 const ast = parser.ast;
 const sem_rt = rt.semantic;
-const semantic = parser.traverser.semantic;
+const semantic = parser.semantic;
 const module_record = parser.semantic.module_record;
 const Writer = std.Io.Writer;
 
@@ -362,19 +362,11 @@ fn writeTokenList(w: *Writer) !void {
         \\    const to = this._search({[end]d}, node.end);
         \\    return [from, to > from ? to : from];
         \\  }}
-        \\  first(node) {{
-        \\    const [from, to] = this.range(node);
-        \\    return to > from ? from : -1;
+        \\  before(offset) {{
+        \\    return this._search({[end]d}, offset) - 1;
         \\  }}
-        \\  last(node) {{
-        \\    const [from, to] = this.range(node);
-        \\    return to > from ? to - 1 : -1;
-        \\  }}
-        \\  before(at) {{
-        \\    return this._search({[end]d}, typeof at === "number" ? at : at.start) - 1;
-        \\  }}
-        \\  after(at) {{
-        \\    const i = this._search({[start]d}, (typeof at === "number" ? at : at.end) - 1);
+        \\  after(offset) {{
+        \\    const i = this._search({[start]d}, offset - 1);
         \\    return i < this.length ? i : -1;
         \\  }}
         \\  at(offset) {{
@@ -469,7 +461,7 @@ fn writeKindDecoders(w: *Writer) !void {
     }
     inline for (node_data.field_names) |tag| {
         if (comptime isInlineKind(tag)) continue;
-        try w.print("function _decode{s}(decoder, i, b, flags, start, end, depth) {{", .{
+        try w.print("function _decode{s}(decoder, i, b, flags, start, end) {{", .{
             comptime pascalName(tag),
         });
         try writeCase(w, tag, true);
@@ -512,23 +504,7 @@ fn writeCase(w: *Writer, comptime tag: []const u8, destructure: bool) !void {
         }
         if (!first) try w.writeAll(" } = decoder;");
     }
-    try w.print("{s} ", .{loads.buffered()});
-
-    const calls = [_][]const u8{ "node", "nodeArr", "nodeArrHoles", "fnParams" };
-    var written: usize = 0;
-    var open: usize = 0;
-    while (std.mem.findScalarPos(u8, body, open, '(')) |paren| : (open = paren + 1) {
-        var name_start = paren;
-        while (name_start > 0 and isIdentChar(body[name_start - 1])) name_start -= 1;
-        for (calls) |call| {
-            if (!eql(body[name_start..paren], call)) continue;
-            const close = std.mem.findScalarPos(u8, body, paren, ')').?;
-            std.debug.assert(std.mem.findScalar(u8, body[paren + 1 .. close], '(') == null);
-            try w.print("{s}, depth + 1", .{body[written..close]});
-            written = close;
-        }
-    }
-    try w.print("{s} }}\n", .{body[written..]});
+    try w.print("{s} {s} }}\n", .{ loads.buffered(), body });
 }
 
 fn isIdentChar(c: u8) bool {
@@ -631,29 +607,29 @@ fn writeDecode(w: *Writer) !void {
         \\    const m = _posMap();
         \\    return _src.slice(s < _firstNa ? s : m[s - _firstNa], m[e - _firstNa]);
         \\  }};
-        \\  function nodeArr(s, len, depth) {{
+        \\  function nodeArr(s, len) {{
         \\    const r = new Array(len);
         \\    const base = _extraBase + s;
-        \\    for (let j = 0; j < len; j++) r[j] = node(_u32[base + j], depth);
+        \\    for (let j = 0; j < len; j++) r[j] = node(_u32[base + j]);
         \\    return r;
         \\  }}
-        \\  function nodeArrHoles(s, len, depth) {{
+        \\  function nodeArrHoles(s, len) {{
         \\    const r = new Array(len);
         \\    for (let j = 0, base = _extraBase + s; j < len; j++) {{
         \\      const x = _u32[base + j];
-        \\      r[j] = x !== NULL ? node(x, depth) : null;
+        \\      r[j] = x !== NULL ? node(x) : null;
         \\    }}
         \\    return r;
         \\  }}
-        \\  function fnParams(idx, depth) {{
+        \\  function fnParams(idx) {{
         \\    const pb = idx * {[stride]d} + {[header_words]d};
         \\    const len = _u32[pb + {[items_len]d}];
         \\    const iStart = _u32[pb + {[items]d}], rest = _u32[pb + {[rest]d}];
         \\    const p = new Array(rest !== NULL ? len + 1 : len);
         \\    for (let j = 0, base = _extraBase + iStart; j < len; j++) {{
-        \\      p[j] = node(_u32[base + j], depth);
+        \\      p[j] = node(_u32[base + j]);
         \\    }}
-        \\    if (rest !== NULL) p[len] = node(rest, depth);
+        \\    if (rest !== NULL) p[len] = node(rest);
         \\    return p;
         \\  }}
         \\  let _owned, _ownedBits;
@@ -672,15 +648,7 @@ fn writeDecode(w: *Writer) !void {
         \\      }}
         \\    }}
         \\  }}
-        \\  function nodeWithComments(i, depth) {{
-        \\    const r = _decode(i, depth);
-        \\    if (_owned === undefined) _own();
-        \\    if ((_ownedBits[i >>> 5] & (1 << (i & 31))) === 0) return r;
-        \\    if (r && r.type !== undefined && r.comments === undefined) r.comments = _owned.get(i);
-        \\    return r;
-        \\  }}
-        \\  function _decode(i, depth) {{
-        \\    if (depth >= DEPTH_MAX) return _deep(i);
+        \\  function _decode(i) {{
         \\    const b = i * {[stride]d} + {[header_words]d};
         \\    const h0 = _u32[b];
         \\    const tag = h0 & 255;
@@ -723,26 +691,33 @@ fn writeDecode(w: *Writer) !void {
         try w.print("    case {d}: {{", .{index});
         try writeCase(w, tag, false);
     }
-    // children precede their parent, so index order decodes past DEPTH_MAX and keeps identity
     try w.writeAll(
-        \\    default: return KIND_DECODERS[tag](_decoder, i, b, flags, start, end, depth);
+        \\    default: return KIND_DECODERS[tag](_decoder, i, b, flags, start, end);
         \\    }
         \\  }
-        \\  const _inner = _attached ? nodeWithComments : _decode;
-        \\  const DEPTH_MAX = 128, _n = [];
-        \\  function _deep(i) {
-        \\    while (_n.length <= i) _n.push(_inner(_n.length, DEPTH_MAX - 1));
+        \\  const _n = new Array(nodeCount);
+        \\  let _count = 0;
+        \\  function nodeAt(i) {
+        \\    if (_count === 0) {
+        \\      _posMap();
+        \\      if (_attached) _own();
+        \\    }
+        \\    while (_count <= i) {
+        \\      const k = _count;
+        \\      const r = _decode(k);
+        \\      if (_attached && (_ownedBits[k >>> 5] & (1 << (k & 31))) !== 0 && r !== null &&
+        \\          typeof r === "object" && r.type !== undefined && r.comments === undefined) {
+        \\        r.comments = _owned.get(k);
+        \\      }
+        \\      _n[_count++] = r;
+        \\    }
         \\    return _n[i];
         \\  }
-        \\  function _indexed(i) {
-        \\    if (_n.length === 0) _posMap();
-        \\    return _deep(i);
-        \\  }
-        \\  const node = _hasSemantic ? _indexed : _inner;
+        \\  const node = (i) => _n[i];
         \\  let _nodeIndexes, _indexedCount = 0;
         \\  function indexOf(n) {
         \\    if (_nodeIndexes === undefined) _nodeIndexes = new Map();
-        \\    for (; _indexedCount < _n.length; _indexedCount++) {
+        \\    for (; _indexedCount < _count; _indexedCount++) {
         \\      const r = _n[_indexedCount];
         \\      if (r !== null && typeof r === "object" && !_nodeIndexes.has(r)) {
         \\        _nodeIndexes.set(r, _indexedCount);
@@ -913,17 +888,13 @@ fn writeDecode(w: *Writer) !void {
     try w.writeAll(
         \\  }
         \\  let _program, _diagnostics, _comments, _tokens;
-        \\  const result = {
+        \\  return {
         \\    get program() {
-        \\      if (_program === undefined) {
-        \\        _posMap();
-        \\        _program = node(progIdx, 0);
-        \\      }
+        \\      if (_program === undefined) _program = nodeAt(progIdx);
         \\      return _program;
         \\    },
         \\    get tokens() {
-        \\      // the list closes with eof, which is not a token of the source
-        \\      if (tokenCount === 0) return undefined;
+        \\      if (tokenCount === 0) return null;
         \\      return _tokens !== undefined
         \\        ? _tokens
         \\        : (_tokens = new TokenList(_u32, _tOff >> 2, tokenCount - 1, _p, str));
@@ -938,15 +909,15 @@ fn writeDecode(w: *Writer) !void {
         \\        ? _diagnostics
         \\        : (_diagnostics = _decodeDiagnostics());
         \\    },
+        \\    get semantic() {
+        \\      return _semantic();
+        \\    },
+        \\    nodeOf: nodeAt,
+        \\    indexOf,
+        \\    parentIndex: (i) => _parents()[i],
+        \\    startOf,
+        \\    endOf,
         \\  };
-        \\  if (!_hasSemantic) return result;
-        \\  result.nodeOf = node;
-        \\  result.indexOf = indexOf;
-        \\  result.parentIndex = (i) => _parents()[i];
-        \\  result.startOf = startOf;
-        \\  result.endOf = endOf;
-        \\  result.semantic = _semantic();
-        \\  return result;
         \\}
         \\
     );
@@ -964,7 +935,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        count: scopeCount,
         \\        kind: (i) => SCOPE_KINDS[{[bits]s} & {[kmask]d}],
         \\        strict: (i) => (({[bits]s} >> {[strict]d}) & 1) !== 0,
-        \\        node: (i) => node({[n]s}),
+        \\        node: (i) => nodeAt({[n]s}),
         \\        nodeIndex: (i) => {[n]s},
         \\        parentId: (i) => _id({[p]s}),
         \\        hoistTargetId: (i) => {[h]s},
@@ -989,7 +960,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        flags: (i) => {[flags]s},
         \\        scopeId: (i) => {[scope]s},
         \\        declCount: (i) => {[dlen]s},
-        \\        declNode: (i, j) => node(declNodes[{[dstart]s} + j]),
+        \\        declNode: (i, j) => nodeAt(declNodes[{[dstart]s} + j]),
         \\        declNodeIndex: (i, j) => declNodes[{[dstart]s} + j],
         \\      }},
         \\
@@ -1005,7 +976,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        count: referenceCount,
         \\        name: (i) => {[name]s},
         \\        scopeId: (i) => {[scope]s},
-        \\        node: (i) => node({[n]s}),
+        \\        node: (i) => nodeAt({[n]s}),
         \\        nodeIndex: (i) => {[n]s},
         \\        space: (i) => REFERENCE_SPACES[({[bits]s} >> {[sshift]d}) & {[smask]d}],
         \\        inTypePosition: (i) => (({[bits]s} >> {[pbit]d}) & 1) !== 0,
@@ -1038,7 +1009,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\          ({[bits]s} >> {[hpbit]d}) & 1
         \\            ? IMPORT_PHASES[({[bits]s} >> {[pbit]d}) & 1]
         \\            : null,
-        \\        node: (i) => node({[n]s}),
+        \\        node: (i) => nodeAt({[n]s}),
         \\        scopeId: (i) => _id({[scope]s}),
         \\      }},
         \\
@@ -1063,7 +1034,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        fromName: (i) => {[fname]s},
         \\        specifier: (i) => {[spec]s},
         \\        symbolId: (i) => _id({[sym]s}),
-        \\        node: (i) => node({[n]s}),
+        \\        node: (i) => nodeAt({[n]s}),
         \\      }},
         \\      moduleFlags: {{
         \\        usesRequire: (moduleFlags & {[require]d}) !== 0,

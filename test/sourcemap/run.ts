@@ -3,12 +3,13 @@
 
 import {
   parse,
+  print,
   type Identifier,
   type Node,
   type PrivateIdentifier,
   type Program,
+  type SourceMap,
 } from "yuku";
-import { generate, type SourceMap } from "yuku/codegen";
 import { TraceMap, originalPositionFor, type EncodedSourceMap } from "@jridgewell/trace-mapping";
 import { CORPUS_DIRS, corpusFilesUnder, loadedProjects } from "../corpus";
 
@@ -34,16 +35,16 @@ for (const { dir, files } of groups) {
   for (const { path, relative, lang, sourceType } of files) {
     const source = await Bun.file(path).text();
 
-    const input = parse(source, { lang, sourceType });
+    const input = parse(source, { path: relative, lang, sourceType });
     if (input.diagnostics.length > 0) {
       skipped++;
       continue;
     }
     checked++;
 
-    const result = generate(input.program, {
-      comments: true,
-      sourceMap: { source, file: OUT_FILE, sourceFileName: relative, sourcesContent: source },
+    const result = print(input, {
+      comments: "all",
+      sourceMap: { file: OUT_FILE, sourcesContent: true },
     });
     if (!result.map) {
       failed++;

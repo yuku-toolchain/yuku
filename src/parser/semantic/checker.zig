@@ -7,11 +7,12 @@ const ast = @import("../ast.zig");
 const ecmascript = @import("../ecmascript.zig");
 const lexical = @import("../lexical.zig");
 const binder = @import("binder.zig");
+const scope = @import("scope.zig");
 
 const Allocator = std.mem.Allocator;
 
 const semantic = traverser.semantic;
-const Symbol = semantic.Symbol;
+const Symbol = binder.Symbol;
 
 const Action = traverser.Action;
 const SemanticCtx = semantic.Ctx;
@@ -68,7 +69,7 @@ pub const Checker = struct {
         if (ctx.inTypePosition() and !flags.type_parameter) return .proceed;
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
-        if (ctx.scope.isStrict() and !flags.ambient) {
+        if (isStrict(ctx) and !flags.ambient) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
             if (lexical.isEvalOrArguments(name)) {
                 try self.report(
@@ -106,7 +107,7 @@ pub const Checker = struct {
         name: []const u8,
         flags: Symbol.Flags,
         ctx: *SemanticCtx,
-        existing_id: ?semantic.SymbolId,
+        existing_id: ?binder.SymbolId,
     ) AnalysisError!void {
         std.debug.assert(node_index != .null);
         std.debug.assert(name.len > 0);
@@ -125,7 +126,7 @@ pub const Checker = struct {
             // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
             if (existing.flags.parameter and flags.parameter) {
                 if (findFormalParameters(ctx)) |params| {
-                    const must_be_unique = ctx.scope.isStrict() or
+                    const must_be_unique = isStrict(ctx) or
                         params.kind == .unique_formal_parameters or
                         params.kind == .arrow_formal_parameters or
                         ecmascript.findNonSimpleParameter(ctx.tree, params) != null;
@@ -225,7 +226,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.inTypePosition() or !ctx.scope.isStrict()) return .proceed;
+        if (ctx.inTypePosition() or !isStrict(ctx)) return .proceed;
 
         const span = ctx.tree.span(node_index);
         if (util.Utf.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
@@ -244,7 +245,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.inTypePosition() or !ctx.scope.isStrict()) return .proceed;
+        if (ctx.inTypePosition() or !isStrict(ctx)) return .proceed;
 
         const span = ctx.tree.span(node_index);
         const raw = ctx.tree.source[span.start..span.end];
@@ -313,7 +314,7 @@ pub const Checker = struct {
         }
         if (func.type != .function_declaration) return .proceed;
 
-        const is_strict = ctx.scope.isStrict();
+        const is_strict = isStrict(ctx);
         var through_labels = false;
         var iter = ctx.path.ancestors();
         _ = iter.next(); // skip self
@@ -396,7 +397,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.argument)) {
+        if (isStrict(ctx) and isEvalOrArgumentsRef(ctx.tree, expr.argument)) {
             try self.report(
                 ctx.tree.span(node_index),
                 "Cannot assign to 'eval' or 'arguments' in strict mode",
@@ -413,7 +414,7 @@ pub const Checker = struct {
         _: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.scope.isStrict()) try self.checkAssignTargetEvalArguments(expr.left, ctx);
+        if (isStrict(ctx)) try self.checkAssignTargetEvalArguments(expr.left, ctx);
         return .proceed;
     }
 
@@ -446,7 +447,7 @@ pub const Checker = struct {
 
             switch (ctx.tree.data(target)) {
                 // https://tc39.es/ecma262/#sec-delete-operator-static-semantics-early-errors
-                .identifier_reference => if (ctx.scope.isStrict()) {
+                .identifier_reference => if (isStrict(ctx)) {
                     try self.report(
                         ctx.tree.span(node_index),
                         "Deleting a variable in strict mode is not allowed",
@@ -667,7 +668,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.scope.isStrict()) {
+        if (isStrict(ctx)) {
             try self.report(
                 ctx.tree.span(node_index),
                 "'with' statements are not allowed in strict mode",
@@ -692,7 +693,7 @@ pub const Checker = struct {
             );
         }
         try self.checkForInOfInitializer(ctx, stmt.left, false);
-        if (ctx.scope.isStrict()) try self.checkAssignTargetEvalArguments(stmt.left, ctx);
+        if (isStrict(ctx)) try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
     }
 
@@ -704,7 +705,7 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         try self.checkForInOfInitializer(ctx, stmt.left, true);
-        if (ctx.scope.isStrict()) try self.checkAssignTargetEvalArguments(stmt.left, ctx);
+        if (isStrict(ctx)) try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
     }
 
@@ -965,7 +966,7 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
         comptime as_what: []const u8,
     ) AnalysisError!void {
-        if (!ctx.scope.isStrict()) return;
+        if (!isStrict(ctx)) return;
         const tag = lexical.keyword(name) orelse return;
         if (!tag.isStrictModeReserved()) return;
         try self.report(
@@ -998,7 +999,7 @@ pub const Checker = struct {
             return;
         }
 
-        if (!ctx.scope.isStrict()) return;
+        if (!isStrict(ctx)) return;
         for (declarators) |child| {
             const declarator = ctx.tree.data(child).variable_declarator;
             if (declarator.init == .null) continue;
@@ -1354,10 +1355,10 @@ pub const Checker = struct {
     /// Reports local export specifiers that name no declared binding, and the
     /// TypeScript duplicate exports, which depend on every export of a name.
     /// Runs after the traversal.
-    pub fn checkExports(self: *Self, symbols: *const semantic.SymbolTracker) AnalysisError!void {
+    pub fn checkExports(self: *Self, symbols: *const binder.SymbolTracker) AnalysisError!void {
         if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |spec| {
-            if (symbols.binding(.module, spec.local_name) == null) {
+            if (symbols.binding(scope.module_scope, spec.local_name) == null) {
                 try self.report(
                     self.tree.span(spec.node),
                     try self.fmt("Export '{s}' is not defined", .{spec.local_name}),
@@ -1405,7 +1406,7 @@ pub const Checker = struct {
         self: *Self,
         name: []const u8,
         node_index: ast.NodeIndex,
-        existing_id: semantic.SymbolId,
+        existing_id: binder.SymbolId,
         ctx: *SemanticCtx,
     ) Allocator.Error!void {
         std.debug.assert(existing_id != .none);
@@ -1491,4 +1492,8 @@ fn hasSimpleCatchParameters(tree: *const ast.Tree, node: ast.NodeIndex) bool {
         },
         else => unreachable,
     }
+}
+
+inline fn isStrict(ctx: *const SemanticCtx) bool {
+    return ctx.scope.get(ctx.scope.current).flags.strict;
 }

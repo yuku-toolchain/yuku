@@ -1,111 +1,104 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer } from "yuku/analyzer";
-import { definition, project } from "./utils/summarize";
+import { Project } from "yuku";
+import { definition, projectOf } from "./utils/summarize";
 
 const VALUE_PROJECT = {
   "a.ts": `export const value = 1;`,
   "b.ts": `import { value } from "./a.ts"; value;`,
 };
 
-function messages(analyzer: Analyzer): string[] {
-  return analyzer.diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`);
+function messages(project: Project): string[] {
+  return project.diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`);
 }
 
-function dependencies(analyzer: Analyzer, path: string): string[] {
-  return analyzer.module(path)!.dependencies.map((dependency) => dependency.path);
+function dependencies(project: Project, path: string): (string | null)[] {
+  return project.files.get(path)!.dependencies.map((dependency) => dependency.path);
 }
 
 describe("re-adding a path", () => {
   test("replacing a module relinks dependents to the new exports", () => {
-    const analyzer = project(VALUE_PROJECT);
-    expect(definition(analyzer, "b.ts", "value")).toBe("a.ts:value");
-    expect(messages(analyzer)).toEqual([]);
+    const project = projectOf(VALUE_PROJECT);
+    expect(definition(project, "b.ts", "value")).toBe("a.ts:value");
+    expect(messages(project)).toEqual([]);
 
-    analyzer.setFile("a.ts", `export const renamed = 1;`);
-    expect(definition(analyzer, "b.ts", "value")).toBe("(none)");
-    expect(messages(analyzer)).toEqual(["b.ts: Module './a.ts' has no export 'value'"]);
+    project.set("a.ts", `export const renamed = 1;`);
+    expect(definition(project, "b.ts", "value")).toBe("(none)");
+    expect(messages(project)).toEqual(["b.ts: Module './a.ts' has no export 'value'"]);
   });
 
   test("replacing a module clears a diagnostic it previously caused", () => {
-    const analyzer = project({
+    const project = projectOf({
       "a.ts": `export const present = 1;`,
       "b.ts": `import { missing } from "./a.ts"; missing;`,
     });
-    expect(messages(analyzer)).toEqual(["b.ts: Module './a.ts' has no export 'missing'"]);
-    expect(definition(analyzer, "b.ts", "missing")).toBe("(none)");
+    expect(messages(project)).toEqual(["b.ts: Module './a.ts' has no export 'missing'"]);
+    expect(definition(project, "b.ts", "missing")).toBe("(none)");
 
-    analyzer.setFile("a.ts", `export const present = 1; export const missing = 2;`);
-    expect(messages(analyzer)).toEqual([]);
-    expect(definition(analyzer, "b.ts", "missing")).toBe("a.ts:missing");
+    project.set("a.ts", `export const present = 1; export const missing = 2;`);
+    expect(messages(project)).toEqual([]);
+    expect(definition(project, "b.ts", "missing")).toBe("a.ts:missing");
   });
 
   test("a replaced module is no longer current, and its cross-file queries throw", () => {
-    const analyzer = new Analyzer();
-    const first = analyzer.setFile("a.ts", `export const value = 1;`);
-    const second = analyzer.setFile("a.ts", `export const value = 2;`);
+    const project = new Project();
+    const first = project.set("a.ts", `export const value = 1;`);
+    const second = project.set("a.ts", `export const value = 2;`);
     expect(second).not.toBe(first);
-    expect(analyzer.module("a.ts")).toBe(second);
-    expect(analyzer.modules.size).toBe(1);
+    expect(project.files.get("a.ts")).toBe(second);
+    expect(project.files.size).toBe(1);
     expect([first.isCurrent, second.isCurrent]).toEqual([false, true]);
     expect(() => first.dependencies).toThrow("'a.ts' was replaced or deleted");
     expect(() => first.rootScope.find("value")!.definition()).toThrow();
   });
 
   test("re-adding re-resolves the changed module's own imports", () => {
-    const analyzer = project({
+    const project = projectOf({
       "one.ts": `export const a = 1;`,
       "two.ts": `export const b = 2;`,
       "main.ts": `import { a } from "./one.ts"; a;`,
     });
-    expect(dependencies(analyzer, "main.ts")).toEqual(["one.ts"]);
+    expect(dependencies(project, "main.ts")).toEqual(["one.ts"]);
 
-    analyzer.setFile("main.ts", `import { b } from "./two.ts"; b;`);
-    expect(dependencies(analyzer, "main.ts")).toEqual(["two.ts"]);
-    expect(definition(analyzer, "main.ts", "b")).toBe("two.ts:b");
+    project.set("main.ts", `import { b } from "./two.ts"; b;`);
+    expect(dependencies(project, "main.ts")).toEqual(["two.ts"]);
+    expect(definition(project, "main.ts", "b")).toBe("two.ts:b");
   });
 });
 
 describe("deleteFile", () => {
   test("reports whether the path existed", () => {
-    const analyzer = project({ "a.ts": `export const x = 1;` });
-    expect(analyzer.deleteFile("a.ts")).toBe(true);
-    expect(analyzer.deleteFile("a.ts")).toBe(false);
+    const project = projectOf({ "a.ts": `export const x = 1;` });
+    expect(project.delete("a.ts")).toBe(true);
+    expect(project.delete("a.ts")).toBe(false);
   });
 
   test("removing a dependency drops it from the graph", () => {
-    const analyzer = project(VALUE_PROJECT);
-    expect(dependencies(analyzer, "b.ts")).toEqual(["a.ts"]);
+    const project = projectOf(VALUE_PROJECT);
+    expect(dependencies(project, "b.ts")).toEqual(["a.ts"]);
 
-    analyzer.deleteFile("a.ts");
-    expect(analyzer.module("b.ts")!.dependencies).toEqual([]);
+    project.delete("a.ts");
+    expect(project.files.get("b.ts")!.dependencies).toEqual([]);
     // a missing file is an external module
-    expect(definition(analyzer, "b.ts", "value")).toBe("(none)");
+    expect(definition(project, "b.ts", "value")).toBe("(none)");
   });
 
   test("re-adding after removal restores resolution", () => {
-    const analyzer = project(VALUE_PROJECT);
-    analyzer.deleteFile("a.ts");
-    expect(definition(analyzer, "b.ts", "value")).toBe("(none)");
+    const project = projectOf(VALUE_PROJECT);
+    project.delete("a.ts");
+    expect(definition(project, "b.ts", "value")).toBe("(none)");
 
-    analyzer.setFile("a.ts", `export const value = 1;`);
-    expect(definition(analyzer, "b.ts", "value")).toBe("a.ts:value");
-    expect(messages(analyzer)).toEqual([]);
+    project.set("a.ts", `export const value = 1;`);
+    expect(definition(project, "b.ts", "value")).toBe("a.ts:value");
+    expect(messages(project)).toEqual([]);
   });
 });
 
 describe("on-demand relinking", () => {
-  test("queries reflect the latest sources without an explicit link()", () => {
-    const analyzer = project(VALUE_PROJECT);
-    expect(definition(analyzer, "b.ts", "value")).toBe("a.ts:value");
+  test("queries reflect the latest sources", () => {
+    const project = projectOf(VALUE_PROJECT);
+    expect(definition(project, "b.ts", "value")).toBe("a.ts:value");
 
-    analyzer.setFile("a.ts", `export const renamed = 1;`);
-    expect(definition(analyzer, "b.ts", "value")).toBe("(none)");
-  });
-
-  test("an explicit link() agrees with on-demand linking", () => {
-    const analyzer = project(VALUE_PROJECT);
-    analyzer.link();
-    expect(definition(analyzer, "b.ts", "value")).toBe("a.ts:value");
-    expect(messages(analyzer)).toEqual([]);
+    project.set("a.ts", `export const renamed = 1;`);
+    expect(definition(project, "b.ts", "value")).toBe("(none)");
   });
 });

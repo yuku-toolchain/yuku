@@ -19,6 +19,23 @@ const DOCS_DIR = import.meta.dir;
 const CONTENT_DIR = join(DOCS_DIR, "content");
 const ASSETS_DIR = join(DOCS_DIR, "assets");
 
+const GUIDES = [
+  {
+    slug: "javascript",
+    path: "packages/yuku/README.md",
+    url: "tree/main/packages/yuku#readme",
+    title: "JavaScript",
+    description: "Use Yuku from JavaScript and TypeScript with the yuku package.",
+  },
+  {
+    slug: "dialects",
+    path: "src/parser/dialect/README.md",
+    url: "tree/main/src/parser/dialect#readme",
+    title: "Dialects",
+    description: "Add your own syntax to JavaScript, TypeScript, and JSX.",
+  },
+];
+
 const PLAYGROUND_URL = "https://playground.yuku.fyi";
 
 const ORDER = [
@@ -28,14 +45,15 @@ const ORDER = [
   "parser/semantic",
   "parser/traverse",
   "parser/codegen",
-  "parser/dialect",
   "testing",
   "security",
+  "javascript",
+  "dialects",
 ];
 
 async function main() {
   const site = await readSite();
-  const pages = await collectPages(site.host);
+  const pages = [...(await collectPages(site.host)), ...(await readGuides(site.repo))];
   pages.sort((a, b) => rank(a.slug) - rank(b.slug) || a.slug.localeCompare(b.slug));
   const summary = pages.find((page) => page.slug === "")?.description ?? site.title;
 
@@ -82,6 +100,16 @@ async function collectPages(host: string): Promise<Page[]> {
     });
   }
   return pages;
+}
+
+async function readGuides(repo: string): Promise<Page[]> {
+  return Promise.all(
+    GUIDES.map(async ({ slug, path, url, title, description }) => {
+      const markdown = await Bun.file(join(DOCS_DIR, "..", path)).text();
+      const body = markdown.replace(/^(<div[\s\S]*?<\/div>|# .*)\s*/, "").trim();
+      return { slug, url: `${repo}/${url}`, title, description, body };
+    }),
+  );
 }
 
 function rank(slug: string): number {

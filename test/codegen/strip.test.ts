@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { gen } from "./helpers";
 
 test("removes type annotations but keeps comments", () => {
-  expect(gen(`// types incoming\nconst x: number = 1;`, { strip: true, comments: true }))
+  expect(gen(`// types incoming\nconst x: number = 1;`, { strip: true, comments: "all" }))
     .toMatchInlineSnapshot(`
       "// types incoming
       const x = 1;"
@@ -53,7 +53,7 @@ test("stripping an item or statement leaves no stray separator", () => {
 
 test("a this parameter goes with its comments", () => {
   const source = "class C {\n  m(\n    // why\n    this: C,\n    a: number,\n  ) {}\n}";
-  expect(gen(source, { strip: true, comments: true })).toMatchInlineSnapshot(`
+  expect(gen(source, { strip: true, comments: "all" })).toMatchInlineSnapshot(`
     "class C {
       m(a) {}
     }"

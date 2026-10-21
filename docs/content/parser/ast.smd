@@ -1,286 +1,137 @@
 ---
 .title = "AST",
-.description = "The AST Yuku's parser produces, and how to read, walk, build, and check it.",
+.description = "The tree the parser produces, and how to read, build, and edit it.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The parser produces an AST. In JavaScript it is an ESTree / TypeScript-ESTree tree of plain objects, and in Zig a flat tree in one arena.
+A parse returns an `ast.Tree`, a flat tree whose nodes, child lists, and strings live in arrays in one arena. From JavaScript, the tree decodes to [ESTree](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#the-ast).
 
-## [JavaScript]($section.id('javascript'))
+| Type         | Is                                                             |
+| ------------ | -------------------------------------------------------------- |
+| `NodeIndex`  | A node's position in `tree.nodes`, `.null` for an absent child |
+| `IndexRange` | A child list, a `start` and `len` in `tree.extras`             |
+| `String`     | Text, a zero-copy slice of the source or an entry in the pool  |
+| `Span`       | A source range in bytes, `start` and `end`                     |
 
-The tree is [ESTree](https://github.com/estree/estree) for JavaScript and JSX, as [Acorn](https://www.npmjs.com/package/acorn) produces it, and [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) for TypeScript, matching [Oxc](https://oxc.rs) for both. It also carries stage 3 [decorators](https://github.com/tc39/proposal-decorators), the `phase` of [import defer](https://github.com/tc39/proposal-defer-import-eval) and [import source](https://github.com/tc39/proposal-source-phase-imports) on imports and `ImportExpression`, and `Program.hashbang`.
-
-`yuku/types` has the TypeScript types of every node, comment, diagnostic, and token, in its [type definitions](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/types/index.ts). `yuku` re-exports them, and a [dialect](/parser/dialect/#javascript) adds its nodes.
-
-```ts
-import type { Expression, Identifier, Node, Statement } from "yuku";
-```
-
-`yuku/ast` walks, builds, and checks an ESTree AST from any parser.
-
-### [Walking]($section.id('js-walking'))
-
-```js
-import { parse } from "yuku";
-import { walk } from "yuku/ast";
-
-const { program } = parse(source);
-
-walk(program, {
-  Identifier(node) {
-    console.log(node.name);
-  },
-  CallExpression: {
-    enter(node, ctx) {},
-    leave(node, ctx) {},
-  },
-  Function(node) {
-    // function declarations, expressions, and arrows
-  },
-  enter(node) {},
-});
-```
-
-Handlers are keyed by node `type`, by alias group, or by the universal `enter` / `leave`, and receive the exact node type. The alias groups are `Expression`, `Statement`, `Declaration`, `ModuleDeclaration`, `Function`, `Class`, `Method`, `Loop`, `Pattern`, `JSX`, and `TSType`. Per node, the order is the universal `enter`, alias enters, the typed enter, the children, then the same in reverse for leave.
-
-An optional third argument reaches every handler as `ctx.state`. `walkAsync` walks in the same order and awaits every handler. [`module.walk`](/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the context.
-
-#### [The context]($section.id('js-walk-context'))
-
-One context object is reused for the whole walk, so do not store it.
-
-```js
-ctx.node;        // the current node
-ctx.parent;      // its parent, or null at the walk root
-ctx.key;         // the field on the parent holding this node
-ctx.index;       // position in an array field, or null
-ctx.ancestors(); // a copy of the ancestor chain, root first
-```
-
-#### [Mutation]($section.id('js-mutation'))
-
-Handlers can mutate the AST in place.
-
-| Operation                | Effect                                                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `ctx.skip()`             | Do not descend into this node's children. `leave` still fires.                                                |
-| `ctx.stop()`             | End the walk immediately.                                                                                     |
-| `ctx.replace(node)`      | Swap the current node. The walk continues into the replacement's children and `leave` fires for its new type. |
-| `ctx.remove()`           | Splice the node out of an array field, or null a plain field. Children are not walked, `leave` does not fire. |
-| `ctx.insertBefore(node)` | Insert a sibling before the current node in an array field. The inserted node is not visited.                 |
-| `ctx.insertAfter(node)`  | Insert a sibling after the current node in an array field. The walk visits it.                                |
-
-A replacement with `start: 0, end: 0`, such as a [builder](#js-builders) node, takes the original node's span, so [source maps](/parser/codegen/#js-source-maps) still point at the original code.
-
-```js
-walk(program, {
-  DebuggerStatement(node, ctx) {
-    ctx.remove();
-  },
-});
-```
-
-#### [findAll]($section.id('js-find-all'))
-
-`findAll` collects every node of the given types, in source order.
-
-```js
-import { findAll } from "yuku/ast";
-
-findAll(program, "CallExpression");
-findAll(program, ["ClassDeclaration", "TSInterfaceDeclaration"]);
-```
-
-`CHILD_KEYS` maps each node type to its child fields in traversal order, for walkers of your own.
-
-### [Builders]($section.id('js-builders'))
-
-`b` has one typed constructor per node type, with spans defaulting to 0.
-
-```js
-import { b } from "yuku/ast";
-
-b.CallExpression({ callee: b.Identifier({ name: "f" }), arguments: [], optional: false });
-```
-
-### [Guards]($section.id('js-guards'))
-
-`is` has one guard per node type, per alias group, and for the shapes ESTree folds into one type: literal kinds, member expression kinds, and directives. Every guard accepts `null` and `undefined` and narrows.
-
-```js
-import { is } from "yuku/ast";
-
-is.CallExpression(node);
-is.Identifier(node, "require");
-is.oneOf(node, ["FunctionDeclaration", "ClassDeclaration"]);
-is.Expression(node);
-is.StringLiteral(node);
-is.StaticMemberExpression(node);
-is.Directive(node);
-```
-
-### [Imports and exports]($section.id('js-imports-and-exports'))
-
-`collectImports` and `collectExports` read a module's import and export declarations, one record per bound name, destructuring included.
-
-```js
-import { collectExports, collectImports } from "yuku/ast";
-
-for (const record of collectImports(program)) {
-  record.source;   // "./m"
-  record.local;    // the local binding name
-  record.imported; // "default", "*", or the export name
-  record.typeOnly; // import type / import { type x }
-  record.phase;    // "source" | "defer" | null
-}
-
-for (const record of collectExports(program)) {
-  record.exported; // the exported name, null for a bare export *
-  record.local;    // the backing local name, when there is one
-  record.source;   // the re-export specifier, when there is one
-  record.typeOnly;
-}
-```
-
-`collectImportDeclaration` and `collectExportDeclaration` return the records of one statement, for use inside a walk. All four read the syntax of one file. [`yuku/analyzer`](/parser/semantic/#js-imports-and-exports) resolves them to bindings and links them across files.
-
-### [Utilities]($section.id('js-utilities'))
-
-```js
-import {
-  bindingIdentifiers, // every binding Identifier a pattern introduces
-  isCallOf,           // isCallOf(node, "require")
-  isWrapper,          // true for the wrappers unwrap strips
-  literalValue,       // string | number | boolean | bigint | RegExp | null
-  nameOf,             // Identifier name or string Literal value
-  unwrap,             // strips parens and erased TypeScript assertion wrappers
-} from "yuku/ast";
-```
-
-### [Identifier names]($section.id('js-identifier-names'))
-
-```js
-import { isIdentifierName, isValidIdentifier } from "yuku/ast";
-
-isValidIdentifier("foo");   // true
-isValidIdentifier("class"); // false, reserved
-isIdentifierName("class");  // true, syntactically an IdentifierName
-```
-
-Plus `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, `isStrictBindReservedWord`, and `isStrictBindOnlyReservedWord`.
-
-## [Zig]($section.id('zig'))
-
-The tree is flat: nodes, child lists, and strings live in arrays in one arena. Four types refer into it.
-
-| Type         | Is                                                                           |
-| ------------ | ---------------------------------------------------------------------------- |
-| `NodeIndex`  | A node's position in `nodes`, `.null` for an absent child                    |
-| `IndexRange` | A child list, a start and length in `extras`                                 |
-| `String`     | Text, a zero-copy slice of the source or an entry in the pool                |
-| `Span`       | A source range in bytes                                                      |
-
-## [Reading the tree]($section.id('reading-the-tree'))
-
-`tree.root` is the `program` node, and four calls read everything below it.
+## [Reading]($section.id('reading'))
 
 ```zig
-tree.data(idx)    // a node's payload, a tagged union
-tree.span(idx)    // its source range
-tree.extra(range) // a list of child nodes
-tree.string(text) // the bytes of a string
+tree.root          // the program node
+tree.data(index)   // its payload, a NodeData union
+tree.span(index)
+tree.extra(range)  // the nodes of a child list
+tree.string(text)  // the bytes of a String
+
+tree.source        // also lang and source_type
+tree.isTs()        // also isJsx and isModule
 ```
 
-Tags are snake_case, and [ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every one with its fields.
-
 ```zig
-switch (tree.data(idx)) {
+switch (tree.data(index)) {
     .variable_declaration => |decl| {
         for (tree.extra(decl.declarators)) |declarator| {
             _ = declarator;
         }
     },
-    .identifier_reference => |id| {
-        std.debug.print("{s}\n", .{tree.string(id.name)});
-    },
+    .identifier_reference => |id| std.debug.print("{s}\n", .{tree.string(id.name)}),
     else => {},
 }
 ```
 
-Predicates classify a payload in one call: `isExpression`, `isStatement`, `isDeclaration`, `isLiteral`, `isPattern`, `isCallable`, `isIteration`, and `isTypeContext`. To walk the whole tree, use the [traverser](/parser/traverse/).
+`NodeData` has a tag per node kind, each the snake_case name of its payload, as in `ts_as_expression: TSAsExpression`. [ast.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/ast.zig) defines every one with its fields. To walk the whole tree, use the [traverser](/parser/traverse/).
 
-`tree.source`, `tree.lang`, and `tree.source_type` hold what was parsed, and `isTs()`, `isJsx()`, and `isModule()` ask about them.
+```zig
+data.isExpression()             // also isStatement, isDeclaration, isLiteral, isPattern,
+                                // isCallable, isIteration, and isTypeContext
+
+literal.value(&tree)            // a numeric literal's f64
+ast.BinaryOperator.fromToken(t) // also toToken and toString, on LogicalOperator,
+                                // UnaryOperator, UpdateOperator, and AssignmentOperator
+kind.toString()                 // on VariableKind, PropertyKind, Accessibility, and the other kinds
+```
 
 ## [Building and editing]($section.id('building-and-editing'))
 
-Every change goes through the tree and lands in its arena.
-
 ```zig
-const name = try tree.addString("total");          // interned, deduplicated
+var tree = ast.Tree.init(allocator, ""); // or the source to edit
+defer tree.deinit();
+
+const name = try tree.addString("total"); // interned
 const id = try tree.addNode(.{ .identifier_reference = .{ .name = name } }, span);
-const list = try tree.addExtra(&.{id});            // a child list
-tree.setData(idx, data);                           // replace a payload
-tree.setSpan(idx, span);
-tree.setIdentifierName(idx, name);                 // any identifier kind
-const text = tree.sourceSlice(start, end);         // a String over the source, no copy
-try tree.addDiagnostic(.{ .message = "unused", .span = span });
+const list = try tree.addExtra(&.{id});   // a child list
+
+tree.setData(index, data);
+tree.setSpan(index, span);
+tree.setName(index, name);                // any node a declaration or reference can be
+tree.sourceSlice(start, end);             // a String over the source, no copy
+tree.allocator();                         // the arena
 ```
 
-`ast.Tree.initEmpty(allocator)` starts a tree with no source. The [transform](/parser/traverse/#transform) traverser makes these changes during a walk.
+A built tree sets `tree.root` itself. The [transform](/parser/traverse/#transform) traverser makes these changes during a walk.
 
 ## [Comments]($section.id('comments'))
 
-`.comments = .collect` keeps every comment in `tree.comments`, in source order, with its `value` and `span`. `.comments = .attach` also gives each comment to the node it prints with, `before`, `after`, or `inside` it, so it moves with its node through transforms and [codegen](/parser/codegen/) prints it in place.
+`.comments = .collect` keeps every comment in `tree.comments`, in source order. `.attach` also gives each to the node it prints with, so it moves with its node and [codegen](/parser/codegen/) prints it in place.
+
+```zig
+pub const Comment = struct {
+    type: Type,         // .line or .block
+    value: String,      // without delimiters
+    span: Span,         // empty for an added comment
+    position: Position, // .before, .after, or .inside an otherwise empty node
+    same_line: bool,
+};
+```
 
 ```zig
 var comments = tree.commentsOf(node);
-while (comments.next()) |c| std.debug.print("{t} {s}\n", .{ c.position, tree.string(c.value) });
+while (comments.next()) |comment| std.debug.print("{s}\n", .{tree.string(comment.value)});
 
-tree.hasComments(node);                       // without walking them
-tree.commentsIn(tree.span(node));             // the source comments within a span
+tree.hasComments(node);
+tree.commentsIn(tree.span(node)); // the source comments within a span
 try tree.addComment(node, .{ .type = .block, .value = try tree.addString("#__PURE__") });
-try tree.moveComments(replaced, replacement); // or to `.null` to drop them
+try tree.moveComments(from, to);  // to .null drops them
 ```
 
 ## [Tokens]($section.id('tokens'))
 
-`.tokens = true` keeps every token in `tree.tokens`, as the parser resolved it.
+`.tokens = true` keeps every token in `tree.tokens`, as the parser resolved it, ending with `eof`.
 
 ```zig
-for (tree.tokens) |token| {
-    std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
-}
+for (tree.tokens) |token| std.debug.print("{t} {s}\n", .{ token.tag, token.text(tree.source) });
 ```
 
 ```zig
-token.tag.isKeyword()             // also isReserved, isIdentifierLike, isNumericLiteral,
-                                  // and the operator kinds
-token.tag.precedence()            // operator precedence, 0 when none
-token.hasLineTerminatorBefore()   // what ASI reads
-token.isEscaped()                 // also hasInvalidEscape and hasLoneSurrogates
+token.span
+token.tag                       // an ast.TokenTag
+token.len()
+token.hasLineTerminatorBefore() // what ASI reads
+token.isEscaped()               // also hasInvalidEscape and hasLoneSurrogates
 
-tree.tokensIn(tree.span(node))    // the tokens within a span
+token.tag.toString()            // its spelling, null for literals and names
+token.tag.precedence()          // an ast.Precedence, 0 when none
+token.tag.isKeyword()           // also isReserved, isUnconditionallyReserved, isStrictModeReserved,
+                                // isIdentifierLike, isNumericLiteral, isBinaryOperator,
+                                // isLogicalOperator, isUnaryOperator, and isAssignmentOperator
+
+tree.tokensIn(tree.span(node))  // a node's tokens, a contiguous run
 ```
 
-The list ends with an `eof` token. Every node other than `program`, `template_element`, and `jsx_empty_expression` starts and ends on a token boundary, so its tokens are a contiguous run, and the token before a node is the last of `tree.tokensIn(.{ .start = 0, .end = span.start })`.
+Every node but `program`, `template_element`, and `jsx_empty_expression` starts and ends on a token boundary.
 
 ## [Lexical grammar]($section.id('lexical-grammar'))
 
-`parser.lexical` answers as the lexer does.
+`parser.lexical` answers as the lexer does, on UTF-8 names with escapes decoded.
 
 ```zig
-lexical.isValidIdentifier("total");      // true
-lexical.isValidIdentifier("class");      // false, reserved
-lexical.isValidIdentifier("eval");       // true, though strict code cannot bind it
-lexical.isEvalOrArguments("eval");       // true
-lexical.isIdentifierName("class");       // true
-lexical.isIdentifierStart('$');          // true, also isIdentifierChar and isJSXIdentifierChar
-lexical.keyword("yield").?.isReserved(); // true, a token tag
-lexical.lineBreakLen(source, i);         // 0, or the line terminator's length
+lexical.isValidIdentifier("class"); // false, reserved, as is await
+lexical.isEvalOrArguments("eval");  // true, which strict code cannot bind
+lexical.isIdentifierName("class");  // true, reserved words included
+lexical.isIdentifierStart('$');     // also isIdentifierChar and isJSXIdentifierChar
+lexical.keyword("yield");           // ?TokenTag, contextual keywords included
+lexical.lineBreakLen(source, i);    // 0, or the byte length of the line terminator at i
 
-try lexical.decodeStringEscapes(gpa, raw, &out);
+try lexical.decodeStringEscapes(gpa, raw, &out); // appends WTF-8
 try lexical.decodeJSXEntities(gpa, raw, &out);
 ```
-
-Names are UTF-8 with escapes decoded, as `tree.string` returns them. A binding a transform declares from a source name is valid in strict code when `isValidIdentifier` holds and `isEvalOrArguments` does not.

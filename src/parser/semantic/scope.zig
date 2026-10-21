@@ -1,12 +1,14 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const ecmascript = @import("../ecmascript.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// Identifier for a `Scope`. `.root` is the top-level scope and `.none` means absent.
-pub const ScopeId = enum(u32) { root = 0, module = 1, none = std.math.maxInt(u32), _ };
+/// Identifier for a `Scope`. `.root` is the global scope and `.none` means absent.
+pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
+
+pub const module_scope: ScopeId = @fromBackingInt(@intCast(1));
 
 /// A lexical scope.
 pub const Scope = struct {
@@ -122,11 +124,11 @@ pub const ScopeTracker = struct {
             self.scopes.appendAssumeCapacity(.{
                 .node = tree.root,
                 .parent = .root,
-                .hoist_target = .module,
+                .hoist_target = module_scope,
                 .kind = .module,
                 .flags = .{ .strict = true },
             });
-            self.current = .module;
+            self.current = module_scope;
         }
 
         std.debug.assert(self.scopes.items.len == if (tree.source_type == .module)
@@ -136,7 +138,7 @@ pub const ScopeTracker = struct {
         return self;
     }
 
-    pub fn pushScope(
+    fn pushScope(
         self: *ScopeTracker,
         kind: Scope.Kind,
         node: ast.NodeIndex,
@@ -287,7 +289,8 @@ pub const ScopeTracker = struct {
 
     // a body's "use strict" also covers its parameters
     fn functionFlags(self: *const ScopeTracker, body_index: ast.NodeIndex) Scope.Flags {
-        return .{ .strict = self.isStrict() or hasUseStrict(self.tree, body_index) };
+        const strict = self.currentScope().flags.strict;
+        return .{ .strict = strict or hasUseStrict(self.tree, body_index) };
     }
 
     fn hasUseStrict(tree: *const ast.Tree, body_index: ast.NodeIndex) bool {
@@ -362,8 +365,7 @@ pub const ScopeTracker = struct {
         return ecmascript.findParameterExpression(tree, data.formal_parameters) != null;
     }
 
-    /// The current scope.
-    pub inline fn currentScope(self: *const ScopeTracker) Scope {
+    inline fn currentScope(self: *const ScopeTracker) Scope {
         std.debug.assert(self.current != .none);
         return self.get(self.current);
     }
@@ -373,19 +375,9 @@ pub const ScopeTracker = struct {
         return &self.scopes.items[@backingInt(self.current)];
     }
 
-    /// The scope where a `var` declared here would land.
-    pub inline fn hoistTarget(self: *const ScopeTracker) ScopeId {
-        return self.currentScope().hoist_target;
-    }
-
     /// The scope with the given id.
     pub inline fn get(self: *const ScopeTracker, id: ScopeId) Scope {
         return self.toScopeTree().get(id);
-    }
-
-    /// Whether the current scope is in strict mode.
-    pub inline fn isStrict(self: *const ScopeTracker) bool {
-        return self.currentScope().flags.strict;
     }
 
     /// Iterates from `start` up to the root.

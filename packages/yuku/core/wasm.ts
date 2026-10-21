@@ -1,8 +1,7 @@
-import { yuku } from "#module";
-import type { ParseOptions, ParseResult } from "../parser";
+import { bundled } from "#module";
+import type { ParseOptions } from "../file/source-file";
 import type { SourceLang, SourceType } from "../types";
 import { addChildKeys } from "./child-keys";
-import { decode, type Decoded } from "./decode";
 import { NodeBuffer } from "./node";
 
 export interface Shape {
@@ -32,15 +31,88 @@ interface Instance {
   grownAt: number;
 }
 
+export interface Read {
+  readonly buffer: ArrayBuffer;
+  readonly lang: SourceLang;
+  readonly sourceType: SourceType;
+  readonly shapes: Shape[] | null;
+}
+
 const LANGS: Record<string, number> = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
 const SOURCE_TYPES: Record<string, number> = { script: 0, module: 1, commonjs: 2 };
+const LANG_SHIFT = 2;
+const PRESERVE_PARENS = 1 << 5;
+const SEMANTIC_ERRORS = 1 << 6;
+const ATTACH_COMMENTS = 1 << 7;
+const TOKENS = 1 << 8;
+const DIALECT = 1 << 9;
 
 const MEMORY_BYTES_MAX = 128 * 1024 * 1024;
 const MEMORY_IDLE_MS = 10_000;
 
 const encoder = new TextEncoder();
 const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
+const lossyUtf8 = new TextDecoder("utf-8", { ignoreBOM: true });
 const instances = new WeakMap<WebAssembly.Module, Instance>();
+
+export function sourceText(source: string | Uint8Array): { text: string; malformed: number } {
+  if (typeof source === "string") return { text: source, malformed: -1 };
+  if (!(source instanceof Uint8Array)) {
+    throw new TypeError("`source` must be a string or UTF-8 bytes");
+  }
+  try {
+    return { text: utf8.decode(source), malformed: -1 };
+  } catch {
+    const valid = source.subarray(0, malformedAt(source));
+    return { text: lossyUtf8.decode(source), malformed: lossyUtf8.decode(valid).length };
+  }
+}
+
+export function read(source: string, options: ParseOptions, entry: "parse" | "analyze"): Read {
+  const instance = instanceOf(options.wasm ?? bundled());
+  const path = options.path ?? "";
+  const { dialect } = instance;
+  const file = dialect === null || options.lang !== undefined ? undefined : fileOf(dialect, path);
+  const lang = options.lang ?? file?.lang ?? langFromPath(path);
+  const langBits = LANGS[lang];
+  if (langBits === undefined) {
+    throw new TypeError('`lang` must be "js", "jsx", "ts", "tsx", or "dts"');
+  }
+  const sourceType = options.sourceType ?? sourceTypeFromPath(path);
+  const sourceTypeBits = SOURCE_TYPES[sourceType];
+  if (sourceTypeBits === undefined) {
+    throw new TypeError('`sourceType` must be "module", "script", or "commonjs"');
+  }
+  let flags = sourceTypeBits | (langBits << LANG_SHIFT);
+  if (options.preserveParens !== false) flags |= PRESERVE_PARENS;
+  if (options.semanticErrors === true) flags |= SEMANTIC_ERRORS;
+  if (options.attachComments === true) flags |= ATTACH_COMMENTS;
+  if (options.tokens === true) flags |= TOKENS;
+  if (file !== undefined) flags |= DIALECT;
+  const buffer = call(instance, entry, source, flags);
+  return { buffer, lang, sourceType, shapes: file?.shapes ?? null };
+}
+
+function call(
+  instance: Instance,
+  entry: "parse" | "analyze",
+  source: string,
+  flags: number,
+): ArrayBuffer {
+  const { memory, alloc, free } = instance.exports;
+  const bytes = memory.buffer.byteLength;
+  const capacity = source.length * 3 || 1;
+  const pointer = alloc(capacity) >>> 0;
+  const written = writeSource(memory.buffer, pointer, capacity, source);
+  const result = instance.exports[entry](pointer, written, flags) >>> 0;
+  if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
+  free(pointer, capacity);
+  if (result === 0) throw new Error("yuku: out of memory");
+  const size = new DataView(memory.buffer).getUint32(result, true);
+  const buffer = memory.buffer.slice(result + 4, result + 4 + size);
+  free(result, 4 + size);
+  return buffer;
+}
 
 /** The `lang` a path's extension implies. */
 export function langFromPath(path: string): SourceLang {
@@ -54,34 +126,6 @@ export function langFromPath(path: string): SourceLang {
 /** The `sourceType` a path implies, `"commonjs"` for `.cjs` and `.cts`. */
 export function sourceTypeFromPath(path: string): SourceType {
   return /\.c[jt]s$/.test(path) ? "commonjs" : "module";
-}
-
-export function sourceText(source: string | Uint8Array): string {
-  return typeof source === "string" ? source : utf8.decode(source);
-}
-
-export function run(entry: "parse", source: string, options: ParseOptions): ParseResult;
-export function run(entry: "analyze", source: string, options: ParseOptions): Decoded;
-export function run(
-  entry: "parse" | "analyze",
-  source: string,
-  options: ParseOptions,
-): ParseResult | Decoded {
-  const instance = instanceOf(options.wasm ?? yuku);
-  const { exports, dialect } = instance;
-  const { memory, alloc, free } = exports;
-  const bytes = memory.buffer.byteLength;
-  const capacity = source.length * 3 || 1;
-  const pointer = alloc(capacity) >>> 0;
-  const written = writeSource(memory.buffer, pointer, capacity, source);
-  const result = exports[entry](pointer, written, flagsOf(options, dialect)) >>> 0;
-  if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
-  free(pointer, capacity);
-  if (result === 0) throw new Error("yuku: out of memory");
-  const size = new DataView(memory.buffer).getUint32(result, true);
-  const buffer = memory.buffer.slice(result + 4, result + 4 + size);
-  free(result, 4 + size);
-  return decode(buffer, source, options.path || null, dialect?.shapes ?? null);
 }
 
 function instanceOf(module: WebAssembly.Module): Instance {
@@ -122,27 +166,39 @@ function dialectOf(exports: Exports): Dialect | null {
   return dialect;
 }
 
-function flagsOf(options: ParseOptions, dialect: Dialect | null): number {
-  const path = options.path ?? "";
-  const file = options.lang === undefined && dialect !== null ? fileOf(dialect, path) : undefined;
-  const lang = LANGS[options.lang ?? file?.lang ?? langFromPath(path)];
-  if (lang === undefined) {
-    throw new TypeError('`lang` must be "js", "jsx", "ts", "tsx", or "dts"');
+function malformedAt(bytes: Uint8Array): number {
+  let i = 0;
+  while (i < bytes.length) {
+    const lead = bytes[i]!;
+    if (lead < 0x80) {
+      i++;
+      continue;
+    }
+    let size = 4;
+    let low = lead === 0xf0 ? 0x90 : 0x80;
+    let high = lead === 0xf4 ? 0x8f : 0xbf;
+    if (lead >= 0xc2 && lead <= 0xdf) {
+      size = 2;
+    } else if (lead >= 0xe0 && lead <= 0xef) {
+      size = 3;
+      low = lead === 0xe0 ? 0xa0 : 0x80;
+      high = lead === 0xed ? 0x9f : 0xbf;
+    } else if (lead < 0xf0 || lead > 0xf4) {
+      return i;
+    }
+    for (let k = 1; k < size; k++) {
+      const byte = bytes[i + k];
+      if (byte === undefined || byte < low || byte > high) return i;
+      low = 0x80;
+      high = 0xbf;
+    }
+    i += size;
   }
-  const sourceType = SOURCE_TYPES[options.sourceType ?? sourceTypeFromPath(path)];
-  if (sourceType === undefined) {
-    throw new TypeError('`sourceType` must be "module", "script", or "commonjs"');
-  }
-  let flags = sourceType | (lang << 2);
-  if (options.preserveParens !== false) flags |= 1 << 5;
-  if (options.semanticErrors) flags |= 1 << 6;
-  if (options.attachComments) flags |= 1 << 7;
-  if (options.tokens) flags |= 1 << 8;
-  if (file !== undefined) flags |= 1 << 9;
-  return flags;
+  return bytes.length;
 }
 
-function fileOf(dialect: Dialect, path: string): Dialect["files"][number] | undefined {
-  if (path === "") return dialect.files[0];
-  return dialect.files.find((file) => path.endsWith(file.extension));
+function fileOf(dialect: Dialect, path: string): { lang: SourceLang; shapes: Shape[] } | undefined {
+  const { files, shapes } = dialect;
+  const file = path === "" ? files[0] : files.find(({ extension }) => path.endsWith(extension));
+  return file === undefined ? undefined : { lang: file.lang, shapes };
 }

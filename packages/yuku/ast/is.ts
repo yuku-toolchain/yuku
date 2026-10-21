@@ -3,22 +3,41 @@ import type {
   BooleanLiteral,
   ComputedMemberExpression,
   Directive,
-  Identifier,
   Node,
   NodeOfType,
-  NodeType,
   NullLiteral,
   NumericLiteral,
+  ParenthesizedExpression,
   PrivateFieldExpression,
   RegExpLiteral,
   StandardNodeType,
   StaticMemberExpression,
   StringLiteral,
+  TSAsExpression,
+  TSNonNullExpression,
+  TSSatisfiesExpression,
+  TSTypeAssertion,
 } from "../types";
 import { ALIAS_GROUPS, type AliasMap, type AliasName } from "./aliases";
 import { NODE_TYPES } from "./generated";
 
 export type MaybeNode = Node | null | undefined;
+
+/** Parentheses or an erased TypeScript assertion around an `expression`. */
+export type Wrapper =
+  | ParenthesizedExpression
+  | TSAsExpression
+  | TSSatisfiesExpression
+  | TSNonNullExpression
+  | TSTypeAssertion;
+
+const WRAPPERS: ReadonlySet<string> = new Set<Wrapper["type"]>([
+  "ParenthesizedExpression",
+  "TSAsExpression",
+  "TSSatisfiesExpression",
+  "TSNonNullExpression",
+  "TSTypeAssertion",
+]);
 
 type _missing = Record<Exclude<StandardNodeType, (typeof NODE_TYPES)[number]>, never>;
 type _extra = Record<Exclude<(typeof NODE_TYPES)[number], StandardNodeType>, never>;
@@ -41,14 +60,6 @@ const aliases = Object.fromEntries(
 ) as AliasGuards;
 
 const shapes = {
-  /** Whether `node.type` is one of `types`. */
-  oneOf: <const K extends NodeType>(node: MaybeNode, types: readonly K[]): node is NodeOfType<K> =>
-    node != null && (types as readonly string[]).includes(node.type),
-
-  /** An `Identifier`, optionally with the exact `name`. */
-  Identifier: (node: MaybeNode, name?: string): node is Identifier =>
-    node?.type === "Identifier" && (name === undefined || node.name === name),
-
   StringLiteral: (node: MaybeNode): node is StringLiteral =>
     node?.type === "Literal" && typeof node.value === "string",
   NumericLiteral: (node: MaybeNode): node is NumericLiteral =>
@@ -56,7 +67,7 @@ const shapes = {
   BooleanLiteral: (node: MaybeNode): node is BooleanLiteral =>
     node?.type === "Literal" && typeof node.value === "boolean",
   NullLiteral: (node: MaybeNode): node is NullLiteral =>
-    node?.type === "Literal" && node.raw === "null",
+    node?.type === "Literal" && node.value === null && !("regex" in node),
   BigIntLiteral: (node: MaybeNode): node is BigIntLiteral =>
     node?.type === "Literal" && "bigint" in node,
   RegExpLiteral: (node: MaybeNode): node is RegExpLiteral =>
@@ -71,9 +82,11 @@ const shapes = {
 
   Directive: (node: MaybeNode): node is Directive =>
     node?.type === "ExpressionStatement" && node.directive != null,
+
+  Wrapper: (node: MaybeNode): node is Wrapper => node != null && WRAPPERS.has(node.type),
 };
 
-/** Type guards by node `type`, alias and literal shape, each accepting `null` and `undefined`. */
+/** Type guards by node `type`, alias, and shape, each accepting `null` and `undefined`. */
 export const is: Omit<ConcreteGuards, keyof typeof shapes> & AliasGuards & typeof shapes = {
   ...concrete,
   ...aliases,

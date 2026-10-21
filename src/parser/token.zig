@@ -439,7 +439,7 @@ pub const Token = extern struct {
         return source[self.span.start..self.span.end];
     }
 
-    pub inline fn has(self: Token, comptime flag: TokenFlag) bool {
+    inline fn has(self: Token, comptime flag: TokenFlag) bool {
         return (self.flags & flagMask(flag)) != 0;
     }
 

@@ -10,6 +10,9 @@ const testing = std.testing;
 
 pub const NodeTag = ast.NodeTag;
 
+pub const SymbolEntry = struct { id: semantic.SymbolId, symbol: semantic.Symbol };
+pub const ReferenceEntry = struct { id: semantic.ReferenceId, reference: semantic.Reference };
+
 pub const Analyzed = struct {
     tree: ast.Tree,
     sem: Semantic,
@@ -30,41 +33,34 @@ pub const Analyzed = struct {
         return findFirst(&self.tree, tag) orelse error.NodeNotFound;
     }
 
-    pub fn symbolNamed(self: *const Analyzed, name: []const u8) !Semantic.SymbolEntry {
-        var found: ?Semantic.SymbolEntry = null;
-        var it = self.sem.iterSymbols();
-        while (it.next()) |entry| {
-            if (std.mem.eql(u8, self.tree.string(entry.symbol.name), name)) {
+    pub fn symbolNamed(self: *const Analyzed, name: []const u8) !SymbolEntry {
+        var found: ?SymbolEntry = null;
+        for (self.sem.symbols, 0..) |symbol, i| {
+            if (std.mem.eql(u8, self.tree.string(symbol.name), name)) {
                 if (found != null) return error.AmbiguousSymbolName;
-                found = entry;
+                found = .{ .id = @fromBackingInt(@intCast(i)), .symbol = symbol };
             }
         }
         return found orelse error.SymbolNotFound;
     }
 
-    pub fn symbolsNamed(
-        self: *const Analyzed,
-        name: []const u8,
-        buf: []Semantic.SymbolEntry,
-    ) []Semantic.SymbolEntry {
+    pub fn symbolsNamed(self: *const Analyzed, name: []const u8, buf: []SymbolEntry) []SymbolEntry {
         var len: usize = 0;
-        var it = self.sem.iterSymbols();
-        while (it.next()) |entry| {
-            if (std.mem.eql(u8, self.tree.string(entry.symbol.name), name)) {
-                buf[len] = entry;
+        for (self.sem.symbols, 0..) |symbol, i| {
+            if (std.mem.eql(u8, self.tree.string(symbol.name), name)) {
+                buf[len] = .{ .id = @fromBackingInt(@intCast(i)), .symbol = symbol };
                 len += 1;
             }
         }
         return buf[0..len];
     }
 
-    pub fn onlyReferenceNamed(self: *const Analyzed, name: []const u8) !Semantic.ReferenceEntry {
-        var found: ?Semantic.ReferenceEntry = null;
-        var it = self.sem.iterReferences();
-        while (it.next()) |entry| {
-            if (std.mem.eql(u8, self.tree.string(entry.reference.name), name)) {
+    pub fn onlyReferenceNamed(self: *const Analyzed, name: []const u8) !ReferenceEntry {
+        var found: ?ReferenceEntry = null;
+        for (self.sem.references, 0..) |reference, i| {
+            if (std.mem.eql(u8, self.tree.string(reference.name), name)) {
                 if (found != null) return error.AmbiguousReferenceName;
-                found = entry;
+                found = .{ .id = @fromBackingInt(@intCast(i)), .reference = reference };
             }
         }
         return found orelse error.ReferenceNotFound;

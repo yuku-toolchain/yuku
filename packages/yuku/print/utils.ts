@@ -1,4 +1,4 @@
-import { isIdentifierChar } from "../ast/identifier";
+import { isIdentifierChar } from "../ast/lexical";
 
 export const CHAR_NUL = 0x00;
 export const CHAR_BACKSPACE = 0x08;

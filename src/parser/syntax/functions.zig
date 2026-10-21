@@ -7,7 +7,7 @@ const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const decorator = @import("decorators.zig");
 const ts = @import("ts/types.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 
 const ParseFunctionOptions = struct {
     is_async: bool = false,

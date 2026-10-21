@@ -35,8 +35,6 @@
       •
       <a href="$site.page('parser/codegen').link()">Codegen</a>
       •
-      <a href="$site.page('parser/dialect').link()">Dialects</a>
-      •
       <a href="$site.page('testing').link()">Testing</a>
       •
       <a href="$site.page('security').link()">Security</a>

@@ -1,35 +1,36 @@
 import {
-  analyze,
-  Analyzer,
   BindingFlags,
-  type AnalyzeOptions,
+  parse,
+  Project,
   type Binding,
   type Export,
+  type FileOptions,
   type Import,
-  type Module,
+  type Node,
+  type ParseOptions,
   type Reference,
   type Scope,
-  type SetFileOptions,
-} from "yuku/analyzer";
-import type { Node } from "yuku";
+  type SourceFile,
+} from "yuku";
+import { nodesOf } from "../../ast-helpers-for-test";
 
-function analyzeOne(source: string, options: AnalyzeOptions): Module {
-  return analyze(source, { path: "input.ts", ...options });
+function parseOne(source: string, options: ParseOptions): SourceFile {
+  return parse(source, { semantic: true, path: "input.ts", ...options });
 }
 
-export function summary(source: string, options: AnalyzeOptions = {}): string {
-  const module = analyzeOne(source, options);
+export function summary(source: string, options: ParseOptions = {}): string {
+  const file = parseOne(source, options);
   const lines: string[] = [];
 
-  if (module.diagnostics.length > 0) {
+  if (file.diagnostics.length > 0) {
     lines.push("diagnostics");
-    for (const diagnostic of module.diagnostics) {
+    for (const diagnostic of file.diagnostics) {
       lines.push(`  ${diagnostic.severity}: ${diagnostic.message}`);
     }
   }
 
-  const childrenByScope = groupBy(module.scopes, (scope) => scope.parent?.id);
-  const referencesByScope = groupBy(module.references, (reference) => reference.scope.id);
+  const childrenByScope = groupBy(file.scopes, (scope) => scope.parent?.id);
+  const referencesByScope = groupBy(file.references, (reference) => reference.scope.id);
   const render = (scope: Scope, depth: number): void => {
     const inner = "  ".repeat(depth + 1);
     lines.push("  ".repeat(depth) + scopeHeader(scope));
@@ -39,15 +40,15 @@ export function summary(source: string, options: AnalyzeOptions = {}): string {
     }
     for (const child of childrenByScope.get(scope.id) ?? []) render(child, depth + 1);
   };
-  render(module.scopes[0]!, 0);
+  render(file.scopes[0]!, 0);
 
-  if (module.imports.length > 0) {
+  if (file.imports.length > 0) {
     lines.push("imports");
-    for (const record of module.imports) lines.push(`  ${importRow(record)}`);
+    for (const record of file.imports) lines.push(`  ${importRow(record)}`);
   }
-  if (module.exports.length > 0) {
+  if (file.exports.length > 0) {
     lines.push("exports");
-    for (const record of module.exports) lines.push(`  ${exportRow(record)}`);
+    for (const record of file.exports) lines.push(`  ${exportRow(record)}`);
   }
 
   return lines.join("\n");
@@ -129,14 +130,16 @@ function importRow(record: Import): string {
     return `(${record.kind}) ${specifier}${mods}`;
   }
   const local = record.local ? `#${record.local.id}` : "–";
-  if (record.isNamespace) return `* as ${local} ${specifier}${mods}`;
+  if (record.kind === "namespace" || record.kind === "importEquals") {
+    return `* as ${local} ${specifier}${mods}`;
+  }
   return `${record.name} → ${local} ${specifier}${mods}`;
 }
 
 function exportRow(record: Export): string {
   const type = record.typeOnly ? " type" : "";
   if (record.kind === "equals") return "export=";
-  if (record.globalName !== null) return `export as namespace ${record.globalName}`;
+  if (record.kind === "global") return `export as namespace ${record.name}`;
   if (record.kind === "star") return `* from "${record.specifier}"${type}`;
   if (record.specifier !== null) {
     const source = `from "${record.specifier}"`;
@@ -149,7 +152,7 @@ function exportRow(record: Export): string {
   return `${record.name} → ${local}${type}`;
 }
 
-function groupBy<T>(items: T[], keyOf: (item: T) => number | undefined): Map<number, T[]> {
+function groupBy<T>(items: readonly T[], keyOf: (item: T) => number | undefined): Map<number, T[]> {
   const groups = new Map<number, T[]>();
   for (const item of items) {
     const key = keyOf(item);
@@ -167,11 +170,11 @@ const FUNCTION_TYPES = [
   "ArrowFunctionExpression",
 ] as const;
 
-export function captures(source: string, options: AnalyzeOptions = {}): string {
-  const module = analyzeOne(source, options);
+export function captures(source: string, options: ParseOptions = {}): string {
+  const file = parseOne(source, options);
   const lines: string[] = [];
-  for (const node of module.findAll(FUNCTION_TYPES)) {
-    const captured = module
+  for (const node of nodesOf(file.program, ...FUNCTION_TYPES)) {
+    const captured = file
       .capturesOf(node)
       .map(({ binding, isWritten }) => `${binding.name}#${binding.id}${isWritten ? "(w)" : ""}`);
     const list = captured.length > 0 ? captured.join(", ") : "(none)";
@@ -187,51 +190,50 @@ function functionLabel(node: Node): string {
   return "function <anonymous>";
 }
 
-export function project(files: Record<string, string>, options?: SetFileOptions): Analyzer {
-  const analyzer = new Analyzer();
-  for (const [path, source] of Object.entries(files)) analyzer.setFile(path, source, options);
-  return analyzer;
+export function projectOf(files: Record<string, string>, options?: FileOptions): Project {
+  const project = new Project();
+  for (const [path, source] of Object.entries(files)) project.set(path, source, options);
+  return project;
 }
 
 export function links(files: Record<string, string>): string {
-  const analyzer = project(files);
-  analyzer.link();
+  const linked = projectOf(files);
   const lines: string[] = ["diagnostics"];
-  if (analyzer.diagnostics.length === 0) lines.push("  (none)");
-  for (const diagnostic of analyzer.diagnostics) {
+  if (linked.diagnostics.length === 0) lines.push("  (none)");
+  for (const diagnostic of linked.diagnostics) {
     lines.push(`  ${diagnostic.path}: ${diagnostic.message}`);
   }
   lines.push("graph");
-  for (const module of analyzer.modules.values()) {
-    const dependencies = module.dependencies.map((dependency) => dependency.path);
-    lines.push(`  ${module.path} → ${dependencies.join(", ") || "(none)"}`);
+  for (const file of linked.files.values()) {
+    const dependencies = file.dependencies.map((dependency) => dependency.path);
+    lines.push(`  ${file.path} → ${dependencies.join(", ") || "(none)"}`);
   }
   lines.push("exportedNames");
-  for (const module of analyzer.modules.values()) {
-    lines.push(`  ${module.path}: ${module.exportedNames().join(", ") || "(none)"}`);
+  for (const file of linked.files.values()) {
+    lines.push(`  ${file.path}: ${file.exportedNames().join(", ") || "(none)"}`);
   }
   return lines.join("\n");
 }
 
-function bindingOf(analyzer: Analyzer, path: string, name: string): Binding {
-  const module = analyzer.module(path);
-  if (module === undefined) throw new Error(`no module ${path}`);
-  const binding = module.lookup(name, { space: "any" });
+function bindingOf(project: Project, path: string, name: string): Binding {
+  const file = project.files.get(path);
+  if (file === undefined) throw new Error(`no file ${path}`);
+  const binding = file.rootScope.lookup(name, "any");
   if (binding === null) throw new Error(`no binding ${name} in ${path}`);
   return binding;
 }
 
-export function definition(analyzer: Analyzer, path: string, name: string): string {
-  const found = bindingOf(analyzer, path, name).definition();
+export function definition(project: Project, path: string, name: string): string {
+  const found = bindingOf(project, path, name).definition();
   if (found === null) return "(none)";
-  const defined = `${found.module.path}:${found.binding ? found.binding.name : "(namespace)"}`;
-  const augmented = found.augmentations.map((binding) => `${binding.module.path}:${binding.name}`);
+  const defined = `${found.file.path}:${found.binding ? found.binding.name : "(namespace)"}`;
+  const augmented = found.augmentations.map((binding) => `${binding.file.path}:${binding.name}`);
   return [defined, ...augmented].join(" + ");
 }
 
-export function references(analyzer: Analyzer, path: string, name: string): string {
-  return bindingOf(analyzer, path, name)
+export function references(project: Project, path: string, name: string): string {
+  return bindingOf(project, path, name)
     .findReferences()
-    .map((use) => `${use.module.path}:${use.name}${use.isWrite ? "(w)" : ""}`)
+    .map((use) => `${use.file.path}:${use.name}${use.isWrite ? "(w)" : ""}`)
     .join(", ");
 }

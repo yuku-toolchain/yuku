@@ -103,7 +103,7 @@ export function encodeMappings(output: string, source: string, mappings: Mapping
   return LATIN1.decode(bytes.subarray(0, at));
 }
 
-function lineStarts(text: string): number[] {
+export function lineStarts(text: string): number[] {
   const starts = [0];
   if (text.indexOf("\r") === -1 && text.indexOf("\u2028") === -1 && text.indexOf("\u2029") === -1) {
     for (let at = text.indexOf("\n"); at !== -1; at = text.indexOf("\n", at + 1)) {
@@ -123,7 +123,7 @@ function lineStarts(text: string): number[] {
   return starts;
 }
 
-function lineOf(starts: number[], offset: number, hint: number): number {
+export function lineOf(starts: number[], offset: number, hint: number): number {
   const last = starts.length - 1;
   if (starts[hint]! <= offset) {
     if (hint === last || offset < starts[hint + 1]!) return hint;

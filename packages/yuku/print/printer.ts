@@ -1,4 +1,4 @@
-import { isIdentifierName } from "../ast/identifier";
+import { isIdentifierName } from "../ast/lexical";
 import type * as T from "../types";
 
 import type { Comments, Quotes } from "./index";
@@ -58,14 +58,15 @@ export type Printers = {
   [K in T.NodeType]?: (node: T.NodeOfType<K>, printer: Printer) => void;
 };
 
-export interface PrintOptions {
+export interface PrinterOptions {
   strip: boolean;
   minify: boolean;
   pretty: boolean;
   indent: number;
   quotes: Quotes;
   comments: Exclude<Comments, boolean>;
-  print: Printers;
+  printers: Printers;
+  path: string | null;
 }
 
 const hasOwn = Object.prototype.hasOwnProperty;
@@ -229,9 +230,9 @@ interface Link {
   deferTrailing: boolean;
 }
 
-export function print(
+export function printNode(
   node: Node,
-  options: PrintOptions,
+  options: PrinterOptions,
   mappings: Mappings | null,
 ): { code: string; diagnostics: T.Diagnostic[] } {
   const printer = new NodePrinter(options, mappings);
@@ -244,8 +245,9 @@ class NodePrinter extends Output implements Printer {
   readonly minify: boolean;
   readonly indentWidth: number;
   readonly quotes: Quotes;
-  readonly comments: PrintOptions["comments"];
-  readonly print: Printers;
+  readonly comments: PrinterOptions["comments"];
+  readonly printers: Printers;
+  readonly path: string | null;
   diagnostics: T.Diagnostic[] = [];
   printing: Node | null = null;
 
@@ -267,14 +269,15 @@ class NodePrinter extends Output implements Printer {
   chainDepth = 0;
   links: Link[] = [];
 
-  constructor(options: PrintOptions, mappings: Mappings | null) {
+  constructor(options: PrinterOptions, mappings: Mappings | null) {
     super(options.pretty, mappings);
     this.strip = options.strip;
     this.minify = options.minify;
     this.indentWidth = options.indent;
     this.quotes = options.quotes;
     this.comments = options.comments;
-    this.print = options.print;
+    this.printers = options.printers;
+    this.path = options.path;
   }
 
   node(node: Node | null): void {
@@ -303,7 +306,7 @@ class NodePrinter extends Output implements Printer {
     this.diagnostics.push({
       severity: "error",
       message,
-      path: null,
+      path: this.path,
       start: node.start,
       end: node.end,
       labels: [],
@@ -2668,8 +2671,8 @@ class NodePrinter extends Output implements Printer {
         if (node.readonly) this.writeKeyword("readonly");
         return this.emit(node.parameter);
     }
-    const print = hasOwn.call(this.print, node.type)
-      ? (this.print[node.type as T.NodeType] as (node: Node, printer: Printer) => void)
+    const print = hasOwn.call(this.printers, node.type)
+      ? (this.printers[node.type as T.NodeType] as (node: Node, printer: Printer) => void)
       : undefined;
     if (print === undefined) throw new Error("yuku: unsupported node type: " + node.type);
     const printing = this.printing;

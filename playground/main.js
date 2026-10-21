@@ -1,6 +1,4 @@
-import { parse, TokenKind } from "yuku";
-import { generate } from "yuku/codegen";
-import { analyze, BindingFlags } from "yuku/analyzer";
+import { BindingFlags, parse, print, TokenKind } from "yuku";
 import { CodeJar } from "https://esm.sh/codejar@4.2.0";
 import hljs from "https://esm.sh/highlight.js@11.10.0/lib/core";
 import typescript from "https://esm.sh/highlight.js@11.10.0/lib/languages/typescript";
@@ -261,7 +259,7 @@ function recordRow(label, badgeList, record) {
 
 function importRow(imp) {
   const badgeList = [];
-  if (imp.isNamespace) badgeList.push("namespace");
+  if (imp.kind === "namespace" || imp.kind === "importEquals") badgeList.push("namespace");
   if (imp.kind === "sideEffect") badgeList.push("side-effect");
   if (imp.typeOnly) badgeList.push("type-only");
   if (imp.phase) badgeList.push(imp.phase);
@@ -277,7 +275,7 @@ function exportRow(ex) {
   if (ex.kind === "equals") badgeList.push("export=");
   if (ex.typeOnly) badgeList.push("type-only");
   let label = ex.name ?? (ex.kind === "equals" ? "export =" : "*");
-  if (ex.globalName) label = `as namespace ${ex.globalName}`;
+  if (ex.kind === "global") label = `as namespace ${ex.name}`;
   if (ex.fromName && ex.fromName !== ex.name) label += ` ← ${ex.fromName}`;
   return recordRow(label, badgeList, ex);
 }
@@ -331,10 +329,11 @@ function semTree(m) {
     const body = section(root, "exports", m.exports.length, "sem/exports");
     for (const ex of m.exports) body.append(exportRow(ex));
   }
-  if (m.unresolvedReferences.length) {
-    const body = section(root, "unresolved", m.unresolvedReferences.length, "sem/unresolved");
+  const unresolved = m.references.filter((r) => r.binding === null);
+  if (unresolved.length) {
+    const body = section(root, "unresolved", unresolved.length, "sem/unresolved");
     const byName = new Map();
-    for (const r of m.unresolvedReferences) {
+    for (const r of unresolved) {
       if (!byName.has(r.name)) byName.set(r.name, []);
       byName.get(r.name).push(r);
     }
@@ -702,7 +701,11 @@ function render() {
   let result;
   const t0 = performance.now();
   try {
-    result = parse(source, { ...options(), tokens: view === "tokens" });
+    result = parse(source, {
+      ...options(),
+      tokens: view === "tokens",
+      semantic: view === "semantics",
+    });
   } catch (e) {
     astView.replaceChildren();
     outView.textContent = "";
@@ -713,23 +716,17 @@ function render() {
   }
   const t1 = performance.now();
 
-  let diags = result.diagnostics;
+  const diags = result.diagnostics;
   const astScroll = astView.scrollTop;
   $("paneTitle").textContent = view;
   if (view === "semantics") {
     try {
-      const m = analyze(source, options());
-      diags = m.diagnostics;
-      astView.replaceChildren(semTree(m));
+      astView.replaceChildren(semTree(result));
     } catch (e) {
       astView.replaceChildren(el("div", "sem-err", String(e)));
     }
   } else if (view === "tokens") {
-    astView.replaceChildren(
-      result.tokens
-        ? tokenList(result.tokens)
-        : el("div", "sem-err", "this version of yuku has no tokens"),
-    );
+    astView.replaceChildren(tokenList(result.tokens));
   } else {
     astView.replaceChildren(
       astValue(null, result.program, 0, ""),
@@ -741,9 +738,9 @@ function render() {
   const t2 = performance.now();
   const outScroll = outView.scrollTop;
   try {
-    const out = generate(result.program, {
+    const out = print(result, {
       strip: $("strip").checked,
-      minify: { syntax: $("minify").checked },
+      minify: $("minify").checked,
       format: $("format").value,
       quotes: $("quotes").value,
       comments: $("comments").value,

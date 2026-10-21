@@ -2,8 +2,17 @@
 
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
-import { analyze, BindingFlags, type Binding, type Module } from "yuku/analyzer";
-import type { Node, SourceLang, SourceType, TSImportEqualsDeclaration } from "yuku";
+import { nodesOf } from "../ast-helpers-for-test";
+import {
+  type Binding,
+  BindingFlags,
+  type Node,
+  parse,
+  type SourceFile,
+  type SourceLang,
+  type SourceType,
+  type TSImportEqualsDeclaration,
+} from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
 import { differential, singleFileProgram, type Comparison, type Known } from "./utils/differential";
 
@@ -71,15 +80,15 @@ interface Candidate {
   exported: boolean;
 }
 
-function candidates(module: Module): Candidate[] {
+function candidates(file: SourceFile): Candidate[] {
   const found: Candidate[] = [];
-  for (const statement of module.ast.body) {
+  for (const statement of file.program.body) {
     const exported = statement.type === "ExportNamedDeclaration";
     const node = exported ? statement.declaration : statement;
     if (node?.type === "ImportDeclaration" && node.importKind !== "type") {
       for (const specifier of node.specifiers) {
         if (specifier.type === "ImportSpecifier" && specifier.importKind === "type") continue;
-        const binding = module.bindingOf(specifier.local);
+        const binding = file.bindingOf(specifier.local);
         if (binding !== null) found.push({ name: specifier.local.name, binding, exported });
       }
     } else if (
@@ -87,42 +96,42 @@ function candidates(module: Module): Candidate[] {
       node.importKind !== "type" &&
       node.moduleReference.type === "TSExternalModuleReference"
     ) {
-      const binding = module.bindingOf(node.id);
+      const binding = file.bindingOf(node.id);
       if (binding !== null) found.push({ name: node.id.name, binding, exported });
     }
   }
   return found;
 }
 
-function keeps(module: Module, binding: Binding, seen: Set<Binding>): boolean {
+function keeps(file: SourceFile, binding: Binding, seen: Set<Binding>): boolean {
   if (binding.has(BindingFlags.ValueSpace) || seen.has(binding)) return false;
   seen.add(binding);
   for (const reference of binding.references) {
     if (reference.inTypePosition) continue;
-    const alias = aliasOf(module, reference.node);
+    const alias = aliasOf(file, reference.node);
     if (alias === null) return true;
-    if (module.parentOf(alias)?.type === "ExportNamedDeclaration") return true;
-    const aliased = module.bindingOf(alias.id);
-    if (aliased !== null && keeps(module, aliased, seen)) return true;
+    if (file.parentOf(alias)?.type === "ExportNamedDeclaration") return true;
+    const aliased = file.bindingOf(alias.id);
+    if (aliased !== null && keeps(file, aliased, seen)) return true;
   }
   return false;
 }
 
-function aliasOf(module: Module, node: Node): TSImportEqualsDeclaration | null {
+function aliasOf(file: SourceFile, node: Node): TSImportEqualsDeclaration | null {
   let child = node;
-  let parent = module.parentOf(child);
+  let parent = file.parentOf(child);
   while (parent?.type === "TSQualifiedName" && parent.left === child) {
     child = parent;
-    parent = module.parentOf(child);
+    parent = file.parentOf(child);
   }
   if (parent?.type !== "TSImportEqualsDeclaration" || parent.moduleReference !== child) return null;
   return parent;
 }
 
-function jsxFactories(module: Module): Set<string> {
-  if (module.findAll(["JSXElement", "JSXFragment"]).length === 0) return new Set();
+function jsxFactories(file: SourceFile): Set<string> {
+  if (nodesOf(file.program, "JSXElement", "JSXFragment").length === 0) return new Set();
   const names = new Set(["React"]);
-  for (const match of module.source.matchAll(/@jsx(?:Frag)?\s+([A-Za-z_$][\w$]*)/g)) {
+  for (const match of file.source.matchAll(/@jsx(?:Frag)?\s+([A-Za-z_$][\w$]*)/g)) {
     names.add(match[1]!);
   }
   return names;
@@ -134,18 +143,18 @@ function compare(
   sourceType: SourceType = "module",
   path?: string,
 ): Comparison | null {
-  const module = analyze(source, { path, lang, sourceType, semanticErrors: true });
-  if (module.diagnostics.some((d) => d.severity === "error")) return null;
-  const list = candidates(module);
+  const file = parse(source, { semantic: true, path, lang, sourceType, semanticErrors: true });
+  if (file.diagnostics.some((d) => d.severity === "error")) return null;
+  const list = candidates(file);
   if (list.length === 0) return { compared: 0, mismatches: [] };
   const tsc = emit(source, lang, sourceType);
-  const factories = jsxFactories(module);
+  const factories = jsxFactories(file);
   const mismatches: string[] = [];
   let compared = 0;
   for (const { name, binding, exported } of list) {
     if (factories.has(name)) continue;
     compared++;
-    const ours = exported || keeps(module, binding, new Set());
+    const ours = exported || keeps(file, binding, new Set());
     const theirs = tsc.kept.has(name);
     if (ours === theirs) continue;
     const positions = [

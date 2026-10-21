@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { parse } from "yuku";
-import { b, nameOf, walk, walkAsync } from "yuku/ast";
+import { b, js, nameOf, parse, print, walk, type Visitors } from "yuku";
+import { nodesOf } from "../ast-helpers-for-test";
 
 function program(source: string) {
   return parse(source, { sourceType: "module", lang: "ts" }).program;
@@ -31,14 +31,6 @@ describe("walk", () => {
       "leave ExpressionStatement",
       "leave Program",
     ]);
-  });
-
-  test("state threads to every handler and the root is returned", () => {
-    const root = program(`a;`);
-    const state: string[] = [];
-    const result = walk(root, { Identifier: (_n, ctx) => ctx.state.push("hit") }, state);
-    expect(result).toBe(root);
-    expect(state).toEqual(["hit"]);
   });
 
   test("remove splices, replace continues into the replacement", () => {
@@ -86,19 +78,148 @@ describe("walk", () => {
     expect(root.body).toHaveLength(3);
   });
 
-  test("walkAsync awaits handlers and keeps the sync order", async () => {
-    const syncTrace: string[] = [];
-    walk(program(`f(x);`), {
-      enter: (node) => syncTrace.push(node.type),
-    });
-    const asyncTrace: string[] = [];
-    await walkAsync(program(`f(x);`), {
-      async enter(node) {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        asyncTrace.push(node.type);
+  test("context reports the position and ancestors of the node", () => {
+    const positions: string[] = [];
+    walk(program(`f(a, b);`), {
+      Identifier(node, ctx) {
+        const path = ctx.ancestors().map((ancestor) => ancestor.type).join(">");
+        positions.push(`${node.name} ${ctx.key}[${ctx.index}] in ${ctx.parent?.type} ${path}`);
       },
     });
-    expect(asyncTrace).toEqual(syncTrace);
+    expect(positions).toEqual([
+      "f callee[null] in CallExpression Program>ExpressionStatement>CallExpression",
+      "a arguments[0] in CallExpression Program>ExpressionStatement>CallExpression",
+      "b arguments[1] in CallExpression Program>ExpressionStatement>CallExpression",
+    ]);
+  });
+
+  test("the root has no place to replace or remove", () => {
+    expect(() => walk(program(`a;`), { Program: (_n, ctx) => ctx.remove() })).toThrow(
+      "the walk root",
+    );
+    expect(() => walk(program(`a;`), { Program: (_n, ctx) => ctx.replace(js`b`) })).toThrow(
+      "the walk root",
+    );
+  });
+
+  test("a misspelled visitor key throws", () => {
+    expect(() => walk(program(`a;`), { Identifer() {} } as Visitors)).toThrow(
+      "'Identifer' is not a node type or alias",
+    );
+  });
+
+  test("walks trees far deeper than the call stack", () => {
+    const links = 100_000;
+    const source = "x = " + Array.from({ length: links }, (_, i) => `a${i}`).join(" + ") + ";";
+    let identifiers = 0;
+    walk(program(source), {
+      Identifier() {
+        identifiers++;
+      },
+    });
+    expect(identifiers).toBe(links + 1);
+  });
+
+  test("edits apply the same deeper than the walk recurses", () => {
+    const terms = 3_000;
+    const chain = Array.from({ length: terms }, (_, i) => `a${i}`).join(" + ");
+    const root = program(`x = ${chain};`);
+    let removed = 0;
+    walk(root, {
+      Identifier(node, ctx) {
+        if (node.name.startsWith("a")) ctx.replace(b.Identifier({ name: `b${node.name}` }));
+      },
+      BinaryExpression(node, ctx) {
+        if (node.right.type === "Identifier" && node.right.name === "a1500") {
+          ctx.replace(node.left);
+          removed++;
+        }
+      },
+    });
+    const names = nodesOf(root, "Identifier").map((node) => node.name);
+    expect(removed).toBe(1);
+    expect(names).toHaveLength(terms);
+    expect(names.filter((name) => name.startsWith("a"))).toEqual([]);
+  });
+});
+
+describe("visitors", () => {
+  test("a list merges into one pass, entering in order and leaving in reverse", () => {
+    const trace: string[] = [];
+    const visitor = (name: string): Visitors => ({
+      Identifier: {
+        enter: () => trace.push(`${name} enter`),
+        leave: () => trace.push(`${name} leave`),
+      },
+    });
+    walk(program(`a;`), [visitor("first"), visitor("second")]);
+    expect(trace).toEqual(["first enter", "second enter", "second leave", "first leave"]);
+  });
+
+  test("every visitor sees a replacement from its start", () => {
+    const seen: string[] = [];
+    const root = program(`old;`);
+    walk(root, [
+      {
+        Identifier(node, ctx) {
+          seen.push(`first ${node.name}`);
+          if (node.name === "old") ctx.replace(b.Identifier({ name: "fresh" }));
+        },
+      },
+      { Identifier: (node) => seen.push(`second ${node.name}`) },
+    ]);
+    expect(seen).toEqual(["first old", "first fresh", "second fresh"]);
+  });
+
+  test("skip after replace leaves the replacement unvisited", () => {
+    const root = program(`a;`);
+    let calls = 0;
+    walk(root, {
+      Identifier(node, ctx) {
+        calls++;
+        const callee = b.Identifier({ name: "wrap" });
+        ctx.replace(b.CallExpression({ callee, arguments: [node] }));
+        ctx.skip();
+      },
+    });
+    expect(calls).toBe(1);
+    expect(print(root).code).toBe("wrap(a);");
+  });
+
+  test("a visitor that keeps replacing its own result stops with an error", () => {
+    expect(() =>
+      walk(program(`a;`), {
+        Identifier(node, ctx) {
+          ctx.replace(b.Identifier({ name: node.name + "a" }));
+        },
+      }),
+    ).toThrow("replaced 64 times in one place");
+  });
+
+  test("a list replaces a node in an array field, and each new node is visited", () => {
+    const root = program(`a; z;`);
+    const seen: string[] = [];
+    walk(root, {
+      ExpressionStatement(node, ctx) {
+        const name = nameOf(node.expression);
+        seen.push(name ?? "?");
+        if (name === "a") ctx.replace([js`b;`, js`c;`]);
+      },
+    });
+    expect(seen).toEqual(["a", "b", "c", "z"]);
+    expect(print(root).code).toBe("b;\nc;\nz;");
+  });
+
+  test("a replaced node's comments move to its replacement", () => {
+    const file = parse(`// keep\nold();`, { attachComments: true });
+    walk(file.program, {
+      ExpressionStatement(node, ctx) {
+        if (node.expression.type === "CallExpression" && nameOf(node.expression.callee) === "old") {
+          ctx.replace(js`fresh();`);
+        }
+      },
+    });
+    expect(print(file).code).toBe("// keep\nfresh();");
   });
 });
 

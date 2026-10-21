@@ -5,14 +5,15 @@
 ## Documentation
 
 - [Introduction](https://yuku.fyi/): Yuku is a JavaScript and TypeScript compiler toolchain written in Zig.
-- [Parser](https://yuku.fyi/parser/): A JavaScript and TypeScript parser written in Zig.
-- [AST](https://yuku.fyi/parser/ast/): The AST Yuku's parser produces, and how to read, walk, build, and check it.
+- [Parser](https://yuku.fyi/parser/): Parse JavaScript, TypeScript, and JSX into a tree.
+- [AST](https://yuku.fyi/parser/ast/): The tree the parser produces, and how to read, build, and edit it.
 - [Semantic Analysis](https://yuku.fyi/parser/semantic/): Scopes, symbols, resolved references, early errors, and module records for a parsed tree.
 - [Traverse](https://yuku.fyi/parser/traverse/): Walk and transform a tree with typed visitor hooks.
-- [Codegen](https://yuku.fyi/parser/codegen/): Print a tree back to JavaScript or TypeScript source, with type stripping, minification, and source maps.
-- [Dialects](https://yuku.fyi/parser/dialect/): Add your own syntax to JavaScript, TypeScript, and JSX, and reuse the rest of Yuku.
+- [Codegen](https://yuku.fyi/parser/codegen/): Print a tree back to JavaScript or TypeScript, with type stripping, minification, and source maps.
 - [Testing](https://yuku.fyi/testing/): How Yuku is tested.
 - [Security](https://yuku.fyi/security/): How to report a vulnerability in Yuku, and the security practices behind the toolchain and its releases.
+- [JavaScript](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme): Use Yuku from JavaScript and TypeScript with the yuku package.
+- [Dialects](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme): Add your own syntax to JavaScript, TypeScript, and JSX.
 
 ## Resources
 

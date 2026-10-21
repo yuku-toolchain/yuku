@@ -4,7 +4,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import ts from "typescript";
-import { Analyzer, type Definition, type Module } from "yuku/analyzer";
+import { type Definition, Project, type SourceFile } from "yuku";
 import { loadedProjects, type LoadedProject } from "../corpus";
 import { SAMPLE_MAX } from "./utils/differential";
 
@@ -17,7 +17,7 @@ interface Checker extends ts.TypeChecker {
 interface Linked {
   program: ts.Program;
   checker: Checker;
-  analyzer: Analyzer;
+  project: Project;
   /** The project file tsc resolves a specifier to, or null. */
   resolveModule(specifier: string, importer: string): string | null;
   /** A path as shown, from the project root. */
@@ -59,21 +59,21 @@ function link(loaded: LoadedProject): Linked {
     return path !== null && inProject.has(path) ? path : null;
   };
 
-  const analyzer = new Analyzer({
+  const project = new Project({
     resolve: (specifier, importer) => resolveModule(specifier, importer) ?? false,
   });
-  for (const file of files) analyzer.setFile(file, ts.sys.readFile(file) ?? "");
+  for (const file of files) project.set(file, ts.sys.readFile(file) ?? "");
   const shown = (path: string) => relative(root, path).replaceAll("\\", "/");
   const checker = program.getTypeChecker() as Checker;
-  return { program, checker, analyzer, resolveModule, shown };
+  return { program, checker, project, resolveModule, shown };
 }
 
 // `path:start` per declaration, or `module:path`
 function placesOf(linked: Linked, definition: Definition | null): string[] {
   if (definition === null) return [UNRESOLVED];
-  if (definition.binding === null) return [`module:${linked.shown(definition.module.path)}`];
+  if (definition.binding === null) return [`module:${linked.shown(definition.file.path!)}`];
   return [definition.binding, ...definition.augmentations].flatMap((binding) =>
-    binding.declarations.map((node) => `${linked.shown(binding.module.path)}:${node.start}`),
+    binding.declarations.map((node) => `${linked.shown(binding.file.path!)}:${node.start}`),
   );
 }
 
@@ -119,16 +119,16 @@ function identifierAt(file: ts.SourceFile, position: number): ts.Identifier | un
   return found;
 }
 
-function exportsByAssignment(module: Module): boolean {
-  if (module.exports.some((record) => record.kind === "equals")) return true;
-  if (!module.moduleFlags.usesModule && !module.moduleFlags.usesExports) return false;
-  if (module.exports.length > 0) return false;
-  return module.imports.every((record) => record.kind === "dynamic" || record.kind === "require");
+function exportsByAssignment(file: SourceFile): boolean {
+  if (file.exports.some((record) => record.kind === "equals")) return true;
+  if (!file.moduleFlags.usesModule && !file.moduleFlags.usesExports) return false;
+  if (file.exports.length > 0) return false;
+  return file.imports.every((record) => record.kind === "dynamic" || record.kind === "require");
 }
 
-function compareLinks(linked: Linked, module: Module, mismatches: string[]): number {
-  const file = linked.program.getSourceFile(module.path)!;
-  const shown = linked.shown(module.path);
+function compareLinks(linked: Linked, file: SourceFile, mismatches: string[]): number {
+  const tsFile = linked.program.getSourceFile(file.path!)!;
+  const shown = linked.shown(file.path!);
   let compared = 0;
   const check = (subject: string, ours: string[], theirs: string[] | null) => {
     if (theirs === null) return;
@@ -137,24 +137,24 @@ function compareLinks(linked: Linked, module: Module, mismatches: string[]): num
     mismatches.push(`${shown} ${subject}: yuku ${ours}, tsc ${theirs}`);
   };
 
-  for (const record of module.imports) {
+  for (const record of file.imports) {
     const local = record.local;
-    if (local === null || record.resolvedModule === null) continue;
-    if (exportsByAssignment(record.resolvedModule)) continue;
-    const node = identifierAt(file, local.declarations[0]!.start)!;
+    if (local === null || record.resolvedFile === null) continue;
+    if (exportsByAssignment(record.resolvedFile)) continue;
+    const node = identifierAt(tsFile, local.declarations[0]!.start)!;
     const theirs = tscPlacesOf(linked, linked.checker.getSymbolAtLocation(node));
     check(`import ${local.name}`, placesOf(linked, local.definition()), theirs);
   }
 
-  if (exportsByAssignment(module)) return compared;
-  const symbol = linked.checker.getSymbolAtLocation(file);
+  if (exportsByAssignment(file)) return compared;
+  const symbol = linked.checker.getSymbolAtLocation(tsFile);
   const exports = symbol === undefined ? [] : linked.checker.getExportsOfModule(symbol);
   const theirNames = exports
     .filter(declaresInSyntax)
     .map((exported) => exported.name)
     // a forwarded `export =`, which no import can name
     .filter((name) => name !== "export=");
-  const ourNames = module.exportedNames();
+  const ourNames = file.exportedNames();
   const missing = theirNames.filter((name) => !ourNames.includes(name));
   const extra = ourNames.filter((name) => !theirNames.includes(name));
   compared++;
@@ -162,11 +162,11 @@ function compareLinks(linked: Linked, module: Module, mismatches: string[]): num
     mismatches.push(`${shown} exports: missing [${missing}], extra [${extra}]`);
   }
 
-  for (const record of module.exports) {
+  for (const record of file.exports) {
     if (record.kind !== "reExport" || record.name === null) continue;
-    if (record.resolvedModule === null) continue;
+    if (record.resolvedFile === null) continue;
     const exported = exports.find((candidate) => candidate.name === record.name);
-    const ours = placesOf(linked, module.resolveExport(record.name));
+    const ours = placesOf(linked, file.resolveExport(record.name));
     check(`re-export ${record.name}`, ours, tscPlacesOf(linked, exported));
   }
   return compared;
@@ -178,22 +178,20 @@ function throughPackageJSON(specifier: string, importer: string, resolved: strin
 }
 
 function compareResolution(linked: Linked, mismatches: string[]): number {
-  const withDefaultResolver = new Analyzer();
-  for (const module of linked.analyzer.modules.values()) {
-    withDefaultResolver.setFile(module.path, module.source);
-  }
+  const withDefaultResolver = new Project();
+  for (const [path, file] of linked.project.files) withDefaultResolver.set(path, file.source);
   let compared = 0;
-  for (const module of withDefaultResolver.modules.values()) {
-    for (const record of [...module.imports, ...module.exports]) {
+  for (const [path, file] of withDefaultResolver.files) {
+    for (const record of [...file.imports, ...file.exports]) {
       const specifier = record.specifier;
       if (specifier === null || !specifier.startsWith(".")) continue;
-      const theirs = linked.resolveModule(specifier, module.path);
-      if (theirs === null || throughPackageJSON(specifier, module.path, theirs)) continue;
+      const theirs = linked.resolveModule(specifier, path);
+      if (theirs === null || throughPackageJSON(specifier, path, theirs)) continue;
       compared++;
-      const ours = record.resolvedModule?.path ?? null;
+      const ours = record.resolvedFile?.path ?? null;
       if (ours === theirs) continue;
       const yuku = ours === null ? UNRESOLVED : linked.shown(ours);
-      const subject = `${linked.shown(module.path)} '${specifier}'`;
+      const subject = `${linked.shown(path)} '${specifier}'`;
       mismatches.push(`${subject}: yuku ${yuku}, tsc ${linked.shown(theirs)}`);
     }
   }
@@ -208,8 +206,8 @@ describe("linking agrees with tsc across each project", () => {
         const linked = link(loaded);
         const mismatches: string[] = [];
         let compared = compareResolution(linked, mismatches);
-        for (const module of linked.analyzer.modules.values()) {
-          compared += compareLinks(linked, module, mismatches);
+        for (const file of linked.project.files.values()) {
+          compared += compareLinks(linked, file, mismatches);
         }
         const files = loaded.files.length;
         console.log(`${loaded.project.name}: ${compared} links agreed across ${files} files`);

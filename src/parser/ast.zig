@@ -4,7 +4,6 @@ const std = @import("std");
 const strings = @import("strings.zig");
 
 pub const String = strings.String;
-pub const StringPool = strings.ASTStringPool;
 
 pub const Span = @import("token.zig").Span;
 pub const Token = @import("token.zig").Token;
@@ -127,7 +126,7 @@ pub const Comment = struct {
 /// A parsed or built AST, all in one arena that `deinit()` frees at once.
 pub const Tree = struct {
     /// The `program` node.
-    root: NodeIndex = undefined,
+    root: NodeIndex = .null,
     nodes: NodeList = .empty,
     /// Child lists of all nodes, read with `extra()`.
     extras: std.ArrayList(NodeIndex) = .empty,
@@ -139,25 +138,17 @@ pub const Tree = struct {
     /// Every token in source order, ending with `eof`, when `Options.tokens` is set.
     tokens: []const Token = &.{},
     arena: std.heap.ArenaAllocator,
-    /// Empty for trees built with `initEmpty()`.
     source: []const u8 = "",
-    strings: StringPool = .{},
+    strings: strings.ASTStringPool = .{},
     source_type: SourceType = .module,
     lang: Lang = .js,
 
-    /// Creates a tree for parsing or transforming `source`.
+    /// Creates a tree for `source`, or an empty one to build an AST with `addString()`.
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8) Tree {
         return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
             .source = source,
             .strings = .{ .source = source },
-        };
-    }
-
-    /// Creates a tree without source text, for building an AST with `addString()`.
-    pub fn initEmpty(child_allocator: std.mem.Allocator) Tree {
-        return .{
-            .arena = std.heap.ArenaAllocator.init(child_allocator),
         };
     }
 
@@ -188,11 +179,6 @@ pub const Tree = struct {
             if (d.severity == .@"error") return true;
         }
         return false;
-    }
-
-    /// Returns true if the tree has any diagnostics.
-    pub inline fn hasDiagnostics(self: *const Tree) bool {
-        return self.diagnostics.items.len > 0;
     }
 
     /// Appends a diagnostic to the tree.
@@ -235,8 +221,9 @@ pub const Tree = struct {
         self.nodes.items(.span)[@backingInt(index)] = new_span;
     }
 
-    /// Renames an identifier-shaped node in place.
-    pub fn setIdentifierName(self: *Tree, index: NodeIndex, name: String) void {
+    /// Renames a name node in place, any node a declaration or a reference can be. A quoted
+    /// name, such as the enum member `"a"`, keeps its quotes.
+    pub fn setName(self: *Tree, index: NodeIndex, name: String) void {
         std.debug.assert(index != .null);
         std.debug.assert(@backingInt(index) < self.nodes.len);
         switch (self.nodes.items(.data)[@backingInt(index)]) {
@@ -247,6 +234,10 @@ pub const Tree = struct {
             .private_identifier,
             .jsx_identifier,
             => |*node| node.name = name,
+            .string_literal => |*node| {
+                node.value = name;
+                node.raw = .empty;
+            },
             else => unreachable,
         }
     }
@@ -982,7 +973,7 @@ pub const WithStatement = struct {
 pub const StringLiteral = struct {
     /// Decoded value without the quotes.
     value: String = .empty,
-    /// Source text including the quotes.
+    /// Source text including the quotes, empty for a built or renamed literal.
     raw: String = .empty,
 };
 
@@ -992,29 +983,18 @@ pub const NumericLiteral = struct {
     /// Source text, including any base prefix and `_` separators.
     raw: String = .empty,
 
-    /// The IEEE 754 double value.
+    /// The IEEE 754 double value, 0 for a literal the parser reported as malformed.
     pub fn value(self: NumericLiteral, tree: *const Tree) f64 {
         const raw = tree.string(self.raw);
-        var buf: [128]u8 = undefined;
-        var len: usize = 0;
-        for (raw) |c| {
-            if (c != '_') {
-                if (len >= buf.len) return 0;
-                buf[len] = c;
-                len += 1;
-            }
-        }
-        const s = buf[0..len];
-        if (s.len == 0) return 0;
+        std.debug.assert(self.kind == .decimal or raw.len >= 2);
         return switch (self.kind) {
-            .decimal => std.fmt.parseFloat(f64, s) catch 0,
-            .hex => parseIntOrFloat(s[2..], 16),
+            .decimal => std.fmt.parseFloat(f64, raw) catch 0,
+            .hex => parseIntOrFloat(raw[2..], 16),
             .octal => blk: {
-                // legacy octal has a bare 0 prefix
-                const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
+                const digits = if (raw[1] == 'o' or raw[1] == 'O') raw[2..] else raw[1..];
                 break :blk parseIntOrFloat(digits, 8);
             },
-            .binary => parseIntOrFloat(s[2..], 2),
+            .binary => parseIntOrFloat(raw[2..], 2),
         };
     }
 
@@ -1023,7 +1003,8 @@ pub const NumericLiteral = struct {
             var val: f64 = 0;
             const fbase: f64 = @floatFromInt(base);
             for (digits) |d| {
-                const digit_value = std.fmt.charToDigit(d, base) catch unreachable;
+                if (d == '_') continue;
+                const digit_value = std.fmt.charToDigit(d, base) catch return 0;
                 val = val * fbase + @as(f64, @floatFromInt(digit_value));
             }
             return val;
@@ -1048,6 +1029,30 @@ pub const NumericLiteral = struct {
         }
     };
 };
+
+test "NumericLiteral.value" {
+    var tree = Tree.init(std.testing.allocator, "");
+    defer tree.deinit();
+    const long = comptime blk: {
+        var digits: [301]u8 = @splat('0');
+        digits[0] = '1';
+        break :blk digits;
+    };
+    const cases = [_]struct { NumericLiteral.Kind, []const u8, f64 }{
+        .{ .decimal, &long, 1e300 },
+        .{ .decimal, "1_000.5", 1000.5 },
+        .{ .decimal, ".5e1_0", 5e9 },
+        .{ .hex, "0xF_F", 255 },
+        .{ .octal, "0o17", 15 },
+        .{ .octal, "017", 15 },
+        .{ .binary, "0b1_0", 2 },
+        .{ .hex, "0x20000000000000000", 0x1p65 },
+    };
+    for (cases) |case| {
+        const literal: NumericLiteral = .{ .kind = case[0], .raw = try tree.addString(case[1]) };
+        try std.testing.expectEqual(case[2], literal.value(&tree));
+    }
+}
 
 /// A BigInt literal such as `10n`.
 pub const BigIntLiteral = struct {
@@ -2163,7 +2168,7 @@ pub const JSXSpreadChild = struct {
 
 /// A node of the compiled-in dialect, see [Dialects](https://yuku.fyi/parser/dialect/).
 pub const Dialect = struct {
-    kind: @import("dialect.zig").Kind,
+    kind: @import("dialect/root.zig").Kind,
     /// In source order, `.null` for an absent part.
     children: IndexRange,
 };
@@ -2501,7 +2506,7 @@ pub const NodeData = union(enum) {
             .while_statement,
             .do_while_statement,
             => true,
-            .dialect => |node| @import("dialect.zig").shape(node.kind).iteration,
+            .dialect => |node| @import("dialect/root.zig").shape(node.kind).iteration,
             else => false,
         };
     }

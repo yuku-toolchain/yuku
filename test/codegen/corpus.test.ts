@@ -1,8 +1,7 @@
 // every plan reparses, keeps each comment, and is idempotent, and print and compact keep the AST
 
 import { beforeAll, describe, expect, test } from "bun:test";
-import { parse, type ParseOptions, type SourceLang } from "yuku";
-import { generate, type GenerateOptions } from "yuku/codegen";
+import { parse, type ParseOptions, print, type PrintOptions, type SourceLang } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
 import {
   corpusAndProjectFiles,
@@ -10,14 +9,15 @@ import {
   forEachCorpusFile,
   type CorpusFile,
 } from "../corpus";
+import { MINIFIED } from "./helpers";
 
 type Plan = "print" | "compact" | "strip" | "minify";
 
-const PLANS: Record<Plan, GenerateOptions> = {
-  print: { comments: true },
-  compact: { format: "compact", comments: true },
-  strip: { strip: true, comments: true },
-  minify: { minify: true, comments: true },
+const PLANS: Record<Plan, PrintOptions> = {
+  print: { comments: "all" },
+  compact: { format: "compact", comments: "all" },
+  strip: { strip: true, comments: "all" },
+  minify: { ...MINIFIED, comments: "all" },
 };
 
 const SAMPLE_MAX = 8;
@@ -41,10 +41,10 @@ function checkFile(file: CorpusFile, source: string): void {
   checked++;
 
   const typed = file.lang !== "js" && file.lang !== "jsx";
-  for (const [plan, options] of Object.entries(PLANS) as [Plan, GenerateOptions][]) {
+  for (const [plan, options] of Object.entries(PLANS) as [Plan, PrintOptions][]) {
     let code: string;
     try {
-      code = generate(ast.program, options).code;
+      code = print(ast.program, options).code;
     } catch (error) {
       note(plan, `${file.path}: threw ${(error as Error).message}`);
       continue;
@@ -73,7 +73,7 @@ function checkFile(file: CorpusFile, source: string): void {
 
     let second: string;
     try {
-      second = generate(reparsed.program, options).code;
+      second = print(reparsed.program, options).code;
     } catch (error) {
       note(plan, `${file.path}: second pass threw ${(error as Error).message}`);
       continue;
@@ -81,8 +81,8 @@ function checkFile(file: CorpusFile, source: string): void {
     if (second === code) continue;
 
     const reparsedTwice = parse(second, reparseOptions);
-    const bare = { ...options, comments: false as const };
-    if (generate(reparsed.program, bare).code !== generate(reparsedTwice.program, bare).code) {
+    const bare = { ...options, comments: "none" as const };
+    if (print(reparsed.program, bare).code !== print(reparsedTwice.program, bare).code) {
       note(plan, `${file.path}: not idempotent (code)`);
     } else if (commentKey(reparsed) !== commentKey(reparsedTwice)) {
       note(plan, `${file.path}: not idempotent (comment lost or duplicated)`);
@@ -91,14 +91,14 @@ function checkFile(file: CorpusFile, source: string): void {
 }
 
 // a moved or re-indented comment keeps its key
-function commentKey(result: { comments?: { type: string; value: string }[] }): string {
+function commentKey(result: { comments: readonly { type: string; value: string }[] }): string {
   const normalize = (value: string) =>
     value
       .replace(/\r\n?/g, "\n")
       .split("\n")
       .map((line) => line.trim())
       .join("\n");
-  return (result.comments ?? [])
+  return result.comments
     .map((comment) => `${comment.type}:${normalize(comment.value)}`)
     .sort()
     .join("\0");

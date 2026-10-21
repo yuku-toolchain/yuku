@@ -11,6 +11,6 @@
     "declaration": true,
     "stripInternal": true
   },
-  "include": ["core", "parser", "analyzer", "ast", "codegen", "types"],
+  "include": ["index.ts", "core", "ast", "file", "traverse", "print", "types"],
   "exclude": []
 }

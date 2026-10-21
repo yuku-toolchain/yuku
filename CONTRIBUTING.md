@@ -48,7 +48,7 @@ see [how Yuku is tested](https://yuku.fyi/testing/).
 ### Change the codegen
 
 The Zig printer, `src/parser/codegen/printer.zig`, and the JavaScript one,
-`packages/yuku/codegen/printer.ts`, mirror each other function by function, so
+`packages/yuku/print/printer.ts`, mirror each other function by function, so
 a change lands in both. `bun run test:codegen` prints the test corpus with each
 and fails on any difference.
 
@@ -65,13 +65,13 @@ src/parser/
   traverser/     AST visitors
   ffi/           WebAssembly bindings
   testing/       Zig tests and the fuzzer
-packages/yuku/   the published package
-  core/          the WebAssembly and its loader per runtime
-  parser/        yuku
-  analyzer/      yuku/analyzer
-  ast/           yuku/ast
-  codegen/       yuku/codegen
-  types/         yuku/types
+packages/yuku/   the published package, one entry in index.ts
+  core/          the WebAssembly, its loader per runtime, and the decoder
+  file/          SourceFile, Project, the semantic model, and rename
+  traverse/      walk and match
+  ast/           builders, templates, guards, and helpers
+  print/         the printer and source maps
+  types/         the AST types
 test/            test suites
 profile/         benchmarks CodSpeed runs on every pull request
 docs/            the website
@@ -79,14 +79,18 @@ docs/            the website
 
 ## Edit the docs
 
-Pages are Markdown files in `docs/content/`. Preview them with
+[yuku.fyi](https://yuku.fyi) documents Yuku and its Zig API, from the Markdown
+files in `docs/content/`. Preview them with
 [Zine](https://github.com/kristoff-it/zine/releases) 0.11.3:
 
 ```bash
 cd docs && zine
 ```
 
-Then open http://localhost:1990. When you're done, run `bun run docs:llms`.
+Then open http://localhost:1990. The JavaScript API lives in the package's
+guide, `packages/yuku/README.md`, which npm and GitHub show, and dialects in
+`src/parser/dialect/README.md`. When you're done with any of them, run
+`bun run docs:llms`, which regenerates `llms.txt` and `llms-full.txt`.
 
 ## Open a pull request
 

@@ -6,7 +6,6 @@
   <url><loc>https://yuku.fyi/parser/semantic/</loc><priority>0.8</priority></url>
   <url><loc>https://yuku.fyi/parser/traverse/</loc><priority>0.8</priority></url>
   <url><loc>https://yuku.fyi/parser/codegen/</loc><priority>0.8</priority></url>
-  <url><loc>https://yuku.fyi/parser/dialect/</loc><priority>0.8</priority></url>
   <url><loc>https://yuku.fyi/testing/</loc><priority>0.7</priority></url>
   <url><loc>https://yuku.fyi/security/</loc><priority>0.7</priority></url>
 </urlset>

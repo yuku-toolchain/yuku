@@ -16,7 +16,7 @@ const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
 const ts_types = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 
 const ParseStatementOptions = struct {
     can_be_single_statement_context: bool = false,

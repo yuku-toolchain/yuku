@@ -113,7 +113,7 @@ pub fn collect(tree: *ast.Tree, sem: *const Semantic) Allocator.Error!Records {
         .sem = sem,
         .allocator = tree.allocator(),
         .default_name = try tree.addString("default"),
-        .top_scope = if (tree.isModule()) .module else .root,
+        .top_scope = sem.scopeOf(tree.root),
         .exports_implicitly = binder.exportsImplicitly(tree),
     };
 

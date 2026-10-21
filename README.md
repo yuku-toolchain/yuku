@@ -20,25 +20,29 @@ Yuku is a JavaScript and TypeScript compiler toolchain written in Zig.
 
 </div>
 
-## Documentation
-
-See [yuku.fyi](https://yuku.fyi).
-
-## Install
+## JavaScript
 
 ```bash
 npm install yuku
 ```
 
-| Import                                                          | For                                               |
-| --------------------------------------------------------------- | ------------------------------------------------- |
-| [`yuku`](https://yuku.fyi/parser/#javascript)                   | Parse to an ESTree / TypeScript-ESTree AST        |
-| [`yuku/analyzer`](https://yuku.fyi/parser/semantic/#javascript) | Resolve scopes, bindings, references, and imports |
-| [`yuku/ast`](https://yuku.fyi/parser/ast/#javascript)           | Walk, build, and check an AST                     |
-| [`yuku/codegen`](https://yuku.fyi/parser/codegen/#javascript)   | Print an AST back to source, with source maps     |
-| [`yuku/types`](https://yuku.fyi/parser/ast/#javascript)         | TypeScript types for the AST                      |
+```js
+import { parse, print } from "yuku";
 
-For Zig, see [Install](https://yuku.fyi/#zig).
+const file = parse(`const answer: number = 42;`, { path: "answer.ts" });
+
+print(file, { strip: true }).code; // "const answer = 42;"
+```
+
+One import parses, analyzes, walks, and prints JavaScript and TypeScript, in Node.js, Bun, Deno, browsers, and edge runtimes. See the [package guide](packages/yuku/README.md).
+
+## Zig
+
+```bash
+zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
+```
+
+The parser, AST, semantic analysis, traversal, and codegen are documented at [yuku.fyi](https://yuku.fyi).
 
 ## Contributing
 

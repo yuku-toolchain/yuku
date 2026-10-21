@@ -5,9 +5,17 @@ import type {
   ModuleFlags,
   ScopeKind,
   Space,
-} from "../analyzer/module";
-import type { ParseResult } from "../parser";
-import type { Identifier, JSXIdentifier, Node, TokenKindMap } from "../types";
+} from "../file/semantic";
+import type {
+  Comment,
+  Diagnostic,
+  Identifier,
+  JSXIdentifier,
+  Node,
+  Program,
+  TokenKindMap,
+  TokenList,
+} from "../types";
 import type { Shape } from "./wasm";
 
 export interface Semantic {
@@ -68,10 +76,15 @@ export interface Semantic {
   nodeScope(index: number): number;
 }
 
-export interface Decoded extends ParseResult {
-  semantic: Semantic;
+export interface Decoded {
+  readonly program: Program;
+  readonly tokens: TokenList | null;
+  readonly comments: readonly Comment[];
+  readonly diagnostics: Diagnostic[];
+  readonly semantic: Semantic | null;
   nodeOf(index: number): Node;
   indexOf(node: Node): number | undefined;
+  /** -1 at the root. */
   parentIndex(index: number): number;
   startOf(index: number): number;
   endOf(index: number): number;
@@ -82,6 +95,6 @@ export declare function decode(
   source: string,
   path: string | null,
   shapes: Shape[] | null,
-): ParseResult | Decoded;
+): Decoded;
 export declare const TokenKind: TokenKindMap;
 export declare const BindingFlags: BindingFlagMap;

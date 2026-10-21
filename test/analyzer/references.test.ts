@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer, BindingFlags } from "yuku/analyzer";
+import { BindingFlags, parse } from "yuku";
 import { summary } from "./utils/summarize";
 
 describe("resolution", () => {
@@ -174,11 +174,9 @@ describe("declaration spaces", () => {
   });
 
   test("an import alias target resolves as a namespace and is read at runtime", () => {
-    const module = new Analyzer().setFile(
-      "input.ts",
-      `import * as lib from "./lib"; import A = lib.A; import B = lib; let x: lib.T;`,
-    );
-    const uses = module.bindings.find((b) => b.name === "lib")!.references;
+    const source = `import * as lib from "./lib"; import A = lib.A; import B = lib; let x: lib.T;`;
+    const file = parse(source, { semantic: true, path: "input.ts" });
+    const uses = file.bindings.find((b) => b.name === "lib")!.references;
     expect(uses.map((r) => [r.space, r.inTypePosition])).toEqual([
       ["namespace", false],
       ["namespace", false],
@@ -187,11 +185,9 @@ describe("declaration spaces", () => {
   });
 
   test("a type-only export specifier is erased with the types", () => {
-    const module = new Analyzer().setFile(
-      "input.ts",
-      `import { A, B, C } from "./m"; export type { A }; export { type B, C };`,
-    );
-    const uses = module.references.map((r) => [r.name, r.space, r.inTypePosition]);
+    const source = `import { A, B, C } from "./m"; export type { A }; export { type B, C };`;
+    const file = parse(source, { semantic: true, path: "input.ts" });
+    const uses = file.references.map((r) => [r.name, r.space, r.inTypePosition]);
     expect(uses).toEqual([
       ["A", "any", true],
       ["B", "any", true],
@@ -214,18 +210,16 @@ describe("declaration spaces", () => {
   });
 
   test("lookup walks the chain per space, and bindings expose the predicates", () => {
-    const module = new Analyzer().setFile(
-      "input.ts",
-      `type T = string; function f() { const T = 1; T; }`,
-    );
-    const alias = module.bindings.find((s) => s.name === "T" && s.has(BindingFlags.TypeSpace))!;
-    const local = module.bindings.find((s) => s.name === "T" && s.has(BindingFlags.ValueSpace))!;
+    const source = `type T = string; function f() { const T = 1; T; }`;
+    const file = parse(source, { semantic: true, path: "input.ts" });
+    const alias = file.bindings.find((s) => s.name === "T" && s.has(BindingFlags.TypeSpace))!;
+    const local = file.bindings.find((s) => s.name === "T" && s.has(BindingFlags.ValueSpace))!;
     const inner = local.scope;
 
-    expect(module.lookup("T", { from: inner, space: "type" })).toBe(alias);
-    expect(module.lookup("T", { from: inner, space: "value" })).toBe(local);
-    expect(module.lookup("T", { from: inner, space: "any" })).toBe(local);
-    expect(module.lookup("T", { from: inner })).toBe(local);
+    expect(inner.lookup("T", "type")).toBe(alias);
+    expect(inner.lookup("T", "value")).toBe(local);
+    expect(inner.lookup("T", "any")).toBe(local);
+    expect(inner.lookup("T")).toBe(local);
 
     expect(alias.visibleIn("type")).toBe(true);
     expect(alias.visibleIn("value")).toBe(false);
@@ -301,25 +295,26 @@ describe("JSX", () => {
   test("a tag is a component unless JSX transforms emit it as an intrinsic string", () => {
     const components = ["_Widget", "_widget", "$Widget", "$", "éWidget", "ÉWidget", "Ωmega", "中文"];
     for (const name of components) {
-      const module = new Analyzer().setFile("input.jsx", `const ${name} = 1; <${name} />;`);
-      expect(module.rootScope.find(name)?.references, name).toHaveLength(1);
+      const file = parse(`const ${name} = 1; <${name} />;`, { semantic: true, path: "input.jsx" });
+      expect(file.rootScope.find(name)?.references, name).toHaveLength(1);
     }
     for (const tag of ["widget", "foo-bar", "Foo-Bar", "a:b", "this", "this.Foo"]) {
-      const module = new Analyzer().setFile("input.jsx", `<${tag} />;`);
-      expect(module.unresolvedReferences, tag).toEqual([]);
+      const file = parse(`<${tag} />;`, { path: "input.jsx", semantic: true });
+      expect(file.references, tag).toEqual([]);
     }
   });
 });
 
 describe("reference cross-indexes", () => {
-  test("unresolvedReferences is exactly the free names", () => {
-    const module = new Analyzer().setFile("input.js", `let local = 1; local; free1; free2;`);
-    expect(module.unresolvedReferences.map((r) => r.name)).toEqual(["free1", "free2"]);
+  test("a free name resolves to no binding", () => {
+    const file = parse(`let local = 1; local; free1; free2;`, { path: "input.js", semantic: true });
+    const free = file.references.filter((reference) => reference.binding === null);
+    expect(free.map((reference) => reference.name)).toEqual(["free1", "free2"]);
   });
 
   test("a binding's references all point back to it", () => {
-    const module = new Analyzer().setFile("input.js", `let x = 1; x; x = 2; x + x;`);
-    const x = module.bindings.find((s) => s.name === "x")!;
+    const file = parse(`let x = 1; x; x = 2; x + x;`, { semantic: true, path: "input.js" });
+    const x = file.bindings.find((s) => s.name === "x")!;
     expect(x.references.length).toBe(4);
     expect(x.references.every((r) => r.binding === x)).toBe(true);
   });

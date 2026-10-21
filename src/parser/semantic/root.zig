@@ -2,12 +2,21 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const traverser = @import("../traverser/root.zig");
 const checker = @import("checker.zig");
+const binder = @import("binder.zig");
+const scope = @import("scope.zig");
 
 const semantic = traverser.semantic;
 
 pub const module_record = @import("module_record.zig");
-pub const Semantic = semantic.Semantic;
-pub const AnalysisError = checker.AnalysisError;
+pub const Semantic = binder.Semantic;
+pub const Symbol = binder.Symbol;
+pub const SymbolId = binder.SymbolId;
+pub const Reference = binder.Reference;
+pub const ReferenceId = binder.ReferenceId;
+pub const Scope = scope.Scope;
+pub const ScopeId = scope.ScopeId;
+pub const ScopeTree = scope.ScopeTree;
+const AnalysisError = checker.AnalysisError;
 
 pub const AnalyzeOptions = struct {
     /// Whether to report the early errors of `check` in the same walk.

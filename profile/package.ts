@@ -4,9 +4,17 @@ import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { withCodSpeed } from "@codspeed/tinybench-plugin";
 import { Bench } from "tinybench";
-import { type Diagnostic, langFromPath, parse, type Program } from "yuku";
-import { analyze } from "yuku/analyzer";
-import { generate } from "yuku/codegen";
+import {
+  b,
+  clone,
+  js,
+  parse,
+  pattern,
+  print,
+  walk,
+  type Diagnostic,
+  type SourceFile,
+} from "yuku";
 
 const FILES = [
   "test/projects/zod/packages/zod/src/v4/core/schemas.ts",
@@ -16,7 +24,7 @@ const FILES = [
 ];
 
 interface Result {
-  diagnostics: Diagnostic[];
+  diagnostics: readonly Diagnostic[];
 }
 
 interface Scope {
@@ -24,39 +32,119 @@ interface Scope {
   teardown?(): void;
 }
 
+const NO_DIAGNOSTICS: Result = { diagnostics: [] };
+
+const PATTERNS = [
+  pattern("console.log($$$ARGS)"),
+  pattern("$A.then($$$ARGS)"),
+  pattern("setTimeout($F, 0)"),
+  pattern("$A.$B($$$ARGS)"),
+];
+const MINIFIED = { minify: true, format: "compact", quotes: "shortest", comments: "some" } as const;
+
 const bench = withCodSpeed(new Bench({ time: 1000, warmupTime: 250, throws: true }));
 
 for (const path of FILES) {
   const source = readFileSync(path, "utf8");
-  const file = `${path.split("/")[2]}/${basename(path)}`;
-  const lang = langFromPath(path);
+  const name = `${path.split("/")[2]}/${basename(path)}`;
+  const typed = /\.tsx?$/.test(path);
 
-  add(`parse ${file}`, () => parse(source, { path }));
-  add(`analyze ${file}`, () => analyze(source, { path }));
-  add(`analyze ${file} with semantic errors`, () =>
-    analyze(source, { path, semanticErrors: true }),
-  );
+  add(`parse ${name}`, () => parse(source, { path }));
+  add(`decode ${name}`, () => {
+    const file = parse(source, { path });
+    void file.program;
+    return file;
+  });
+  add(`decode ${name} with comments`, () => {
+    const file = parse(source, { path, attachComments: true });
+    void file.program;
+    return file;
+  });
+  add(`tokens ${name}`, () => {
+    const file = parse(source, { path, tokens: true });
+    void file.tokens;
+    return file;
+  });
+  add(`analyze ${name}`, () => {
+    const file = parse(source, { path, semantic: true });
+    void file.scopes;
+    return file;
+  });
+  add(`analyze ${name} with semantic errors`, () => {
+    const file = parse(source, { path, semantic: true, semanticErrors: true });
+    void file.scopes;
+    return file;
+  });
+  add(`rename ${name}`, () => {
+    const file = parse(source, { path, semantic: true });
+    const binding = file.bindings.find((candidate) => candidate.references.length > 0);
+    return { diagnostics: binding?.rename(`${binding.name}_renamed`) ?? [] };
+  });
 
-  let program: Program | null = null;
+  let file: SourceFile | null = null;
   const parsed: Scope = {
     setup() {
-      program = parse(source, { path }).program;
+      file = parse(source, { path });
+      void file.program;
     },
     teardown() {
-      program = null;
+      file = null;
     },
   };
-  add(`generate ${file}`, () => generate(program!), parsed);
-  if (lang === "ts" || lang === "tsx") {
-    add(`generate ${file} stripped`, () => generate(program!, { strip: true }), parsed);
-  }
-  add(`generate ${file} minified`, () => generate(program!, { minify: true }), parsed);
+  let commented: SourceFile | null = null;
+  const withComments: Scope = {
+    setup() {
+      commented = parse(source, { path, attachComments: true });
+      void commented.program;
+    },
+    teardown() {
+      commented = null;
+    },
+  };
+  add(`print ${name}`, () => print(file!), parsed);
+  add(`print ${name} with comments`, () => print(commented!), withComments);
+  if (typed) add(`print ${name} stripped`, () => print(file!, { strip: true }), parsed);
+  add(`print ${name} minified`, () => print(file!, MINIFIED), parsed);
+  add(`print ${name} with source map`, () => print(file!, { sourceMap: true }), parsed);
   add(
-    `generate ${file} with source map`,
-    () => generate(program!, { sourceMap: { source } }),
+    `walk ${name}`,
+    () => {
+      let identifiers = 0;
+      walk(file!.program, {
+        Identifier() {
+          identifiers++;
+        },
+      });
+      return NO_DIAGNOSTICS;
+    },
+    parsed,
+  );
+  add(
+    `patterns ${name}`,
+    () => {
+      walk(file!.program, {
+        CallExpression(node) {
+          for (const rule of PATTERNS) void rule.match(node);
+        },
+      });
+      return NO_DIAGNOSTICS;
+    },
+    parsed,
+  );
+  add(
+    `clone ${name}`,
+    () => {
+      void clone(file!.program);
+      return NO_DIAGNOSTICS;
+    },
     parsed,
   );
 }
+
+add("template", () => {
+  for (let i = 0; i < 1_000; i++) void js`console.log(${b.Identifier({ name: "value" })}, ${i})`;
+  return NO_DIAGNOSTICS;
+});
 
 bench.runSync();
 

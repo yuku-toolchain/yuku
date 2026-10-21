@@ -1,7 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { Node } from "yuku";
-import { parse } from "yuku";
-import { walk } from "yuku/ast";
+import { parse, walk, type Node } from "yuku";
 import { corpusAndProjectFiles, corpusPresent } from "../corpus";
 
 // walkers visit by key, so template quasis and expressions leave source order

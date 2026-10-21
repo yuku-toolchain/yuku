@@ -5,227 +5,7 @@
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",
 ---
-Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the binding it names. On request, it also reports the early errors that need scopes, such as redeclarations and private fields used outside their class.
-
-## [JavaScript]($section.id('javascript'))
-
-```js
-import { analyze } from "yuku/analyzer";
-
-const module = analyze(`const double = (n: number) => n * 2; double(21);`, { path: "math.ts" });
-
-module.rootScope.find("double").references.length; // 1
-```
-
-An `Analyzer` is a project, which links imports across its files.
-
-```js
-import { Analyzer } from "yuku/analyzer";
-
-const project = new Analyzer();
-
-project.setFile("a.ts", `export const value = 1;`);
-project.setFile("b.ts", `export { value as renamed } from "./a.ts";`);
-project.setFile("c.ts", `import { renamed } from "./b.ts"; renamed;`);
-
-project.module("c.ts").rootScope.find("renamed").definition().binding.name; // "value"
-```
-
-### [Analyzer]($section.id('js-analyzer'))
-
-```js
-const project = new Analyzer({
-  // a path in the project, false for a module outside it, null when it cannot be resolved
-  resolve: (specifier, importer) => aliases.get(specifier) ?? null,
-});
-
-project.setFile(path, source, options); // Module, replacing any at the same path
-project.deleteFile(path);               // whether it was in the project
-project.module(path);                   // Module | undefined
-project.modules;                        // ReadonlyMap<string, Module>
-project.diagnostics;                    // every module's diagnostics, and the failed links
-project.link();                         // links now, cross-file queries link on demand otherwise
-```
-
-`setFile` takes a string or UTF-8 bytes, and the `lang`, `sourceType`, `preserveParens`, `semanticErrors`, `attachComments`, and `tokens` options of the [parser](/parser/#js-options). Early errors are reported only with `semanticErrors: true`, as in the parser. `analyze(source, options)` is a project of one file, and also takes `path`. `new Analyzer` and `analyze` both take a custom build as `wasm`, such as one with a [dialect](/parser/dialect/#javascript).
-
-The default resolver matches relative specifiers to files in the project, probing extensions and index files as TypeScript does, so `./a.js` finds `a.ts`. A package or an asset such as `./app.css` is external, and a relative specifier with no match is reported as a warning.
-
-Diagnostics have the [shape of the parser's](/parser/#js-diagnostics), with the `path` of their module.
-
-### [Module]($section.id('js-module'))
-
-```js
-module.analyzer;    // the Analyzer it belongs to
-module.path;
-module.source;
-module.ast;         // the ESTree / TypeScript-ESTree Program
-module.comments;
-module.tokens;      // with tokens: true
-module.diagnostics;
-module.isCurrent;   // false once its path is set again or deleted
-
-module.scopes;               // Scope[], by id
-module.rootScope;            // the module scope, or the global scope of a script
-module.bindings;             // Binding[], by id
-module.references;           // Reference[], in source order
-module.unresolvedReferences; // globals and undeclared names
-module.imports;              // Import[]
-module.exports;              // Export[]
-module.moduleFlags;          // { usesRequire, usesModule, usesExports, usesImportMeta }
-module.dependencies;         // the modules it imports from
-module.dependents;           // the modules that import it
-
-module.bindingOf(node);      // the binding a node declares or refers to
-module.referenceOf(node);
-module.scopeOf(node);
-module.parentOf(node);
-module.ancestors(node);      // the node, then each parent up to the root
-module.nodeAt(offset);       // the innermost node at a UTF-16 offset
-module.lookup("x", { from: scope, space: "value" }); // resolves a name as code there would
-module.capturesOf(fn);       // [{ binding, references, isWritten }], the outer bindings it uses
-module.exportedNames();      // through export * and module augmentations
-module.resolveExport("x");   // { module, binding, augmentations }, the binding behind an export
-module.walk(visitors, root);
-module.walkAsync(visitors, root);
-module.findAll(types);       // every node of the given types, in source order
-```
-
-A node is the same object in `module.ast` and in every result, so each query takes the node you hold. The model describes the source as analyzed, not later edits to the AST.
-
-### [Scope]($section.id('js-scope'))
-
-```js
-scope.id;
-scope.module;
-scope.kind;        // "global" | "module" | "function" | "functionBody" | "block" | "class"
-                   // | "staticBlock" | "expressionName" | "tsModule"
-scope.strict;
-scope.node;        // the node that creates it
-scope.parent;
-scope.hoistTarget; // where a var declared in it lands
-scope.bindings;
-
-scope.find("x");       // a binding it declares
-scope.contains(other); // other is this scope or inside it
-scope.ancestors();     // this scope, then each parent
-```
-
-### [Binding]($section.id('js-binding'))
-
-```js
-binding.id;
-binding.module;
-binding.name;
-binding.scope;
-binding.declarations; // each declaration's name node, overloads and merges included
-binding.references;   // its uses in this module
-binding.flags;        // a BindingFlags bitset
-
-binding.has(BindingFlags.Function);
-binding.hasAll(BindingFlags.Const | BindingFlags.Exported);
-binding.visibleIn("type");
-
-binding.definition();     // { module, binding, augmentations } it imports, followed across modules
-binding.findReferences(); // its uses across the project
-```
-
-A `definition` with a null `binding` is a whole module namespace, as `import * as ns` binds. Its `augmentations` are the bindings of `declare module "m"` blocks in other modules that merge into it.
-
-### [Reference]($section.id('js-reference'))
-
-```js
-reference.id;
-reference.module;
-reference.name;
-reference.scope;
-reference.node;           // the Identifier or JSXIdentifier
-reference.binding;        // null for a global or undeclared name
-reference.space;          // "value" | "type" | "namespace" | "typeof" | "any"
-reference.inTypePosition; // erased with the types
-reference.isWrite;        // x = 1, x++, for (x of xs)
-```
-
-Names resolve per space, as [Declaration spaces](#declaration-spaces) describes.
-
-### [Imports and exports]($section.id('js-imports-and-exports'))
-
-```js
-imp.id;
-imp.module;
-imp.kind;           // "named" | "namespace" | "sideEffect" | "importEquals" | "dynamic" | "require" | "augmentation"
-imp.name;           // the imported name, "default" for a default import
-imp.local;          // the binding it declares
-imp.isNamespace;    // it binds a whole module, as namespace and importEquals do
-imp.specifier;
-imp.typeOnly;
-imp.phase;          // "source" | "defer" | null
-imp.node;
-imp.resolvedModule;
-
-exp.id;
-exp.module;
-exp.kind;           // "named" | "reExport" | "namespace" | "star" | "equals" | "global"
-exp.name;           // the exported name, null for star, equals, and global
-exp.globalName;     // the N of export as namespace N
-exp.local;          // the binding it exports
-exp.specifier;      // the module it re-exports from
-exp.fromName;       // the name a reExport takes from it
-exp.typeOnly;
-exp.node;
-exp.resolvedModule;
-```
-
-They are the [module records](#module-records), linked. Linking follows the specification's ResolveExport, so `export *` never forwards `default`, and a name two stars provide differently is reported as ambiguous.
-
-### [Walking]($section.id('js-walking'))
-
-`module.walk` is the [walker of `yuku/ast`](/parser/ast/#js-walking), with the model in its context.
-
-```js
-module.walk({
-  CallExpression(node, ctx) {
-    ctx.binding;   // module.bindingOf(node)
-    ctx.reference; // module.referenceOf(node)
-    ctx.scope;     // module.scopeOf(node)
-    ctx.module;
-  },
-});
-```
-
-### [BindingFlags]($section.id('js-binding-flags'))
-
-The [symbol flags](#symbols), as `binding.flags` holds them.
-
-| Flag                     | Set on                                  |
-| ------------------------ | --------------------------------------- |
-| `FunctionScopedVariable` | `var`, a parameter, or a catch variable |
-| `BlockScopedVariable`    | `let`, `const`, `using`, `await using`  |
-| `Function`               | a function                              |
-| `Class`                  | a class                                 |
-| `RegularEnum`            | `enum`                                  |
-| `ConstEnum`              | `const enum`                            |
-| `ValueModule`            | a namespace with runtime content        |
-| `Interface`              | `interface`                             |
-| `TypeAlias`              | `type`                                  |
-| `TypeParameter`          | `<T>`, `infer T`, a mapped type key     |
-| `NamespaceModule`        | a namespace of any kind                 |
-| `ValueImport`            | `import x`, `import { x }`              |
-| `TypeImport`             | `import type`, `import { type x }`      |
-| `Const`                  | `const`, `using`, `await using`         |
-| `Ambient`                | `declare`                               |
-| `Parameter`              | a parameter                             |
-| `CatchVariable`          | `catch (e)`                             |
-| `Exported`               | `export`, or implicitly in ambient code |
-| `Default`                | `export default <declaration>`          |
-| `EnumMember`             | an enum member                          |
-| `Variable`               | any variable                            |
-| `Import`                 | any import                              |
-| `ValueSpace`             | anything visible at runtime             |
-| `TypeSpace`              | anything usable as a type               |
-| `NamespaceSpace`         | what a dotted type name can start from  |
-
-## [Zig]($section.id('zig'))
+Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the symbol it names, and reports the early errors that need scopes, such as redeclarations. From JavaScript, see [Semantic analysis](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#semantic-analysis).
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -234,60 +14,84 @@ defer tree.deinit();
 const semantic = try parser.semantic.analyze(&tree, .{ .check = true });
 ```
 
-`analyze` returns the `Semantic` model, and with `.check = true` appends the early errors to `tree.diagnostics` in the same walk. A tool that reads only the model, such as a transform or a bundler, passes `.check = false` and skips the cost of checking. The model lives in the tree's arena and describes the tree as parsed, so analyze again after a transform. To run your own hooks during the analysis walk, use the [semantic traverser](/parser/traverse/#semantic).
-
-When only the errors matter, `check` reports the same ones faster, without the model.
-
 ```zig
-try parser.semantic.check(&tree);
+pub fn analyze(tree: *ast.Tree, options: AnalyzeOptions) error{OutOfMemory}!Semantic // .{ .check: bool }
+pub fn check(tree: *ast.Tree) error{OutOfMemory}!void
 ```
+
+- `.check = true` appends the early errors to `tree.diagnostics` in the same walk, and `.check = false` skips their cost.
+- `check` reports the same errors faster, without the model.
+- The model lives in the tree's arena and describes the tree as parsed. Analyze again after a transform with `.check = false`, since the errors are already reported.
+- The [semantic traverser](/parser/traverse/#semantic) runs hooks of your own during the analysis.
 
 ## [The model]($section.id('the-model'))
 
-- A **scope** is a lexical environment, with its kind, its parent, its strictness, and the scope its `var`s hoist to.
-- A **symbol** is a declared binding, with its flags and every declaration.
-- A **reference** is a use of a name, resolved to its symbol, or to `.none` for a global or undeclared name. It records whether it writes, as assignments, `++`, and `for-of` targets do. JSX component tags and type-predicate parameters are references too, so a rename sees every site.
-
 ```zig
-semantic.symbolOf(node)             // the symbol a node declares or refers to, or null
-semantic.referenceOf(node)          // the reference at an identifier, or null
-semantic.scopeOf(node)              // the innermost scope around a node
-semantic.parentOf(node)             // its parent, or null at the root
+semantic.symbolOf(node)             // ?SymbolId, what a node declares or refers to
+semantic.referenceOf(node)          // ?ReferenceId, at an identifier
+semantic.scopeOf(node)              // ScopeId, the scope a node creates, or the innermost around it
+semantic.parentOf(node)             // ?ast.NodeIndex
 semantic.ancestors(node)            // the node, then each parent up to the root
 
-semantic.symbol(id)                 // and scope(id), reference(id)
-semantic.decls(symbol)              // each declaration's name node
-semantic.uses(symbol)               // each reference to it
+semantic.symbol(id)                 // also reference(id) and scopes.get(id)
+semantic.decls(symbol)              // each declaration's name node, in source order
+semantic.uses(symbol)               // each ReferenceId to it, in source order
 
-semantic.bindings(scope)            // the symbols a scope declares
-semantic.binding(scope, "x")        // one of them by name
-semantic.lookup(scope, "x", .value) // name resolution from any scope
-semantic.member(ns, "x", .value)    // `ns.x` for a namespace or enum, across merged bodies
+semantic.bindings(scope)            // an iterator over the symbols a scope declares, in no order
+semantic.binding(scope, "x")        // ?SymbolId, declared there or a var hoisting through
+semantic.lookup(scope, "x", .value) // ?SymbolId, as the name resolves from the scope
+semantic.member(ns, "x", .value)    // ?SymbolId, ns.x of a namespace or enum, across merged bodies
 
-semantic.iterSymbols()              // and iterScopes, iterReferences
+semantic.symbols                    // every Symbol, indexed by SymbolId, also references
+semantic.scopes.list                // every Scope, indexed by ScopeId
+semantic.scopes.ancestors(id)       // a scope, then each parent
 ```
 
-`Symbol`, `Scope`, and `Reference` are in `parser.traverser.semantic`. A declaration's name node is an identifier, or a string literal for a quoted enum member. Ids are dense and ordered, symbols by first declaration and references by source position, so "first declaration" and "earliest use" are index comparisons.
+The types are in `parser.semantic`. Ids are dense, with symbols ordered by first declaration and references by position.
 
-Renaming a binding is two loops.
+```zig
+pub const Symbol = struct {
+    name: ast.String,
+    flags: Flags,   // see Symbols
+    scope: ScopeId, // where it lands, the hoist target for a var
+};
+
+pub const Reference = struct {
+    name: ast.String,
+    scope: ScopeId,
+    node: ast.NodeIndex, // an identifier_reference, jsx_identifier, or identifier_name
+    symbol: SymbolId,    // .none for a global or undeclared name
+    flags: Flags,        // .write, .space, and .type_position
+};
+
+pub const Scope = struct {
+    node: ast.NodeIndex,
+    parent: ScopeId,       // .none at the root
+    hoist_target: ScopeId,
+    kind: Kind,            // .global, .module, .function, .function_body, .block, .class,
+                           // .static_block, .expression_name, or .ts_module
+    flags: Flags,          // .strict
+};
+```
+
+`ScopeId.root` is the global scope, and `semantic.scopeOf(tree.root)` the scope of top-level code, the module scope in a module. A JSX component tag and a type predicate's parameter are references too, so a rename sees every use.
 
 ```zig
 const name = try tree.addString("renamed");
-for (semantic.decls(symbol)) |node| tree.setIdentifierName(node, name);
-for (semantic.uses(symbol)) |ref| tree.setIdentifierName(semantic.reference(ref).node, name);
+for (semantic.decls(symbol)) |node| tree.setName(node, name);
+for (semantic.uses(symbol)) |id| tree.setName(semantic.reference(id).node, name);
 ```
 
-Unused bindings and undeclared names are one loop each.
+An enum member is also read as `E.member`, a member access rather than a reference, so a rename of one is incomplete.
 
 ```zig
-var symbols = semantic.iterSymbols();
-while (symbols.next()) |entry| {
-    if (semantic.uses(entry.id).len == 0) std.debug.print("unused {s}\n", .{tree.string(entry.symbol.name)});
+for (semantic.symbols, 0..) |symbol, i| {
+    const id: parser.semantic.SymbolId = @fromBackingInt(@intCast(i));
+    if (semantic.uses(id).len == 0) std.debug.print("unused {s}\n", .{tree.string(symbol.name)});
 }
 
-var references = semantic.iterReferences();
-while (references.next()) |entry| {
-    if (entry.reference.symbol == .none) std.debug.print("undeclared {s}\n", .{tree.string(entry.reference.name)});
+for (semantic.references) |reference| {
+    if (reference.symbol == .none) std.debug.print("undeclared {s}\n", .{tree.string(reference.name)});
 }
 ```
 
@@ -303,36 +107,79 @@ The scope tree follows the specification.
 
 ## [Symbols]($section.id('symbols'))
 
-A symbol's `flags` record its declaration kinds, such as `function_scoped_var`, `block_scoped_var`, `function`, `class`, `interface`, `regular_enum`, and `import`, and its modifiers, such as `const_var`, `exported`, and `ambient`. Masks test a category in one call, as `flags.intersects(Symbol.value_space)` does, with `variable`, `any_import`, `value_space`, `type_space`, and `namespace_space`. `flags.visibleIn(space)` tells whether a reference in a space can bind to it.
+`symbol.flags` records its declaration kinds and modifiers.
 
-One rule decides both merging and redeclaration. Each declaration kind has an exclusion mask in `Symbol.Excludes`. A new declaration conflicts with an existing symbol whose flags intersect it, and merges into that symbol otherwise. A conflicting declaration is still one of the symbol's `decls`, and only an analysis that checks reports it. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` all merge this way. A namespace or enum declared in several blocks merges too, and each block sees the exports or members of the others.
+| Kinds                                                                                                                                                                                                  | Modifiers                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `function_scoped_var`, `block_scoped_var`, `function`, `class`, `regular_enum`, `const_enum`, `value_module`, `interface`, `type_alias`, `type_parameter`, `namespace_module`, `import`, `type_import` | `const_var`, `ambient`, `parameter`, `catch_var`, `exported`, `is_default`, `enum_member` |
+
+```zig
+symbol.flags.intersects(Symbol.value_space) // also variable, any_import, type_space, and namespace_space
+symbol.flags.visibleIn(.type)               // whether a reference in a space binds to it, always for an import
+symbol.flags.isHoistingVar()
+symbol.flags.toString()
+```
+
+One rule decides merging and redeclaration. Each declaration kind has an exclusion mask in `Symbol.Excludes`, and a new declaration conflicts with a symbol whose flags intersect it, or merges into it otherwise. Function overloads, a `class` and an `interface`, and a `namespace` and an `enum` merge this way, and a namespace or enum declared in several blocks sees the members of the others. A conflicting declaration is still one of the symbol's `decls`.
 
 ## [Declaration spaces]($section.id('declaration-spaces'))
 
-Resolution follows TypeScript. A name resolves in one space, and a binding outside that space does not shadow it.
+A name resolves in one space, and a binding outside that space does not shadow it, as in TypeScript.
 
 ```ts
 type T = string;
 function f() {
   const T = 1;
-  let x: T; // the outer `type T`, as in tsc
-  T;        // the inner `const T`
+  let x: T; // the outer type T
+  T;        // the inner const T
 }
 ```
 
-A reference resolves in `.value` for runtime uses, `.type` for annotations, `.namespace` for the head of a dotted name such as `ns.T` or `import x = ns.T`, `.typeof` for value uses inside a type, or `.any` for alias positions such as `export { x }`. A class and an enum live in both the value and type spaces, and every reference carries its space, so a rename can change a value without touching a same-named type.
+| Space        | For                                               |
+| ------------ | ------------------------------------------------- |
+| `.value`     | Runtime uses                                      |
+| `.type`      | Annotations                                       |
+| `.namespace` | The head of a dotted name, such as `ns` in `ns.T` |
+| `.typeof`    | A value in a type, such as `x` in `typeof x`      |
+| `.any`       | Alias positions, such as `export { x }`           |
+
+`lookup` resolves by scope alone, without the position rules a reference follows, such as an `infer` type parameter being visible only in its true branch.
 
 ## [Module records]($section.id('module-records'))
 
-`module_record.collect` lists a module's imports and exports, modeled on the specification's ImportEntry and ExportEntry records, each with the local symbol behind it.
+`module_record.collect` lists a module's imports and exports, as the specification's ImportEntry and ExportEntry records with the symbol behind each, static ones first and then dynamic ones, each in source order.
 
 ```zig
 const records = try parser.semantic.module_record.collect(&tree, &semantic);
-// records.imports, records.exports, records.flags
 ```
 
-An import has a `kind`, `name`, `symbol`, `specifier`, `type_only`, `phase`, `node`, and `scope`. Its kind is `named`, `namespace`, `side_effect`, `import_equals`, `dynamic`, `require`, or `augmentation`. Dynamic `import()` and `require()` calls count when their specifier is a string literal. An `augmentation` is a `declare module "m"` block in a module, which merges the declarations of its body `scope` into the exports of `m`.
+```zig
+pub const Import = struct {
+    kind: Kind,               // .named, .namespace, .side_effect, .import_equals, .dynamic,
+                              // .require, or .augmentation
+    name: ast.String,         // the imported name, "default" for a default import
+    symbol: SymbolId,         // the binding it declares, .none if it declares none
+    specifier: ast.String,
+    type_only: bool,
+    phase: ?ast.ImportPhase,  // .source or .@"defer"
+    node: ast.NodeIndex,
+    scope: ScopeId,           // the body of an augmentation
+};
 
-An export has a `kind`, `name`, `symbol`, `from_name`, `specifier`, `type_only`, and `node`, and its kind is `named`, `re_export`, `namespace`, `star`, `equals`, or `global`. As in TypeScript, a declaration file that is a module but has no export statement exports every declaration but its imports.
+pub const Export = struct {
+    kind: Kind,               // .named, .re_export, .namespace, .star, .equals, or .global
+    name: ast.String,
+    symbol: SymbolId,         // the binding it exports, .none for a re-export
+    from_name: ast.String,    // the name a re_export takes
+    specifier: ast.String,
+    type_only: bool,
+    node: ast.NodeIndex,
+};
 
-CommonJS exports have no static shape, so `records.flags` records whether the file uses `require`, `module`, `exports`, or `import.meta`.
+records.flags // .uses_require, .uses_module, .uses_exports, and .uses_import_meta
+```
+
+- A dynamic `import()` or `require()` counts when its specifier is a string, or a template with no substitutions.
+- An `augmentation` is a `declare module "m"` block in a module, which merges its body's declarations into `m`.
+- A declaration file that is a module with no export statement exports every declaration but its imports, as in TypeScript.
+- `flags` record free uses, so a local `require` does not count.

@@ -5,10 +5,8 @@ const sc = @import("../semantic/scope.zig");
 
 const Allocator = std.mem.Allocator;
 
-pub const ScopeId = sc.ScopeId;
-pub const Scope = sc.Scope;
-pub const ScopeTree = sc.ScopeTree;
-pub const ScopeTracker = sc.ScopeTracker;
+const ScopeTree = sc.ScopeTree;
+const ScopeTracker = sc.ScopeTracker;
 
 /// Traverser context that tracks the node path and lexical scopes.
 pub const Ctx = struct {

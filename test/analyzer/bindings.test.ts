@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer, BindingFlags, type Module } from "yuku/analyzer";
+import { BindingFlags, parse, type SourceFile } from "yuku";
 import { summary } from "./utils/summarize";
 
-function spaces(module: Module, name: string): [value: boolean, type: boolean] {
-  const binding = module.bindings.find((candidate) => candidate.name === name)!;
+function spaces(file: SourceFile, name: string): [value: boolean, type: boolean] {
+  const binding = file.bindings.find((candidate) => candidate.name === name)!;
   return [binding.has(BindingFlags.ValueSpace), binding.has(BindingFlags.TypeSpace)];
 }
 
@@ -261,18 +261,16 @@ describe("modifiers", () => {
 
 describe("value space and type space", () => {
   test("a class is in both spaces, an interface and an alias in type, a const in value", () => {
-    const module = new Analyzer().setFile(
-      "input.ts",
-      `class C {} interface I {} type A = 1; const v = 1;`,
-    );
-    expect(spaces(module, "C")).toEqual([true, true]);
-    expect(spaces(module, "I")).toEqual([false, true]);
-    expect(spaces(module, "A")).toEqual([false, true]);
-    expect(spaces(module, "v")).toEqual([true, false]);
+    const source = `class C {} interface I {} type A = 1; const v = 1;`;
+    const file = parse(source, { semantic: true, path: "input.ts" });
+    expect(spaces(file, "C")).toEqual([true, true]);
+    expect(spaces(file, "I")).toEqual([false, true]);
+    expect(spaces(file, "A")).toEqual([false, true]);
+    expect(spaces(file, "v")).toEqual([true, false]);
   });
 
   test("an enum lives in both spaces", () => {
-    const module = new Analyzer().setFile("input.ts", `enum E { A }`);
-    expect(spaces(module, "E")).toEqual([true, true]);
+    const file = parse(`enum E { A }`, { semantic: true, path: "input.ts" });
+    expect(spaces(file, "E")).toEqual([true, true]);
   });
 });

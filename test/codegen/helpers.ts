@@ -1,14 +1,15 @@
-import { parse, type ParseOptions, type SourceLang } from "yuku";
-import { generate, type GenerateOptions } from "yuku/codegen";
+import { parse, type ParseOptions, print, type PrintOptions, type SourceLang } from "yuku";
+
+export const MINIFIED = { minify: true, format: "compact", quotes: "shortest" } as const;
 
 export function gen(
   source: string,
-  options: GenerateOptions = {},
+  options: PrintOptions = {},
   path = "input.ts",
   parseOptions: Partial<ParseOptions> = {},
 ): string {
   const { program } = parse(source, { path, attachComments: true, ...parseOptions });
-  return generate(program, options).code;
+  return print(program, options).code;
 }
 
 interface Snippet {
@@ -221,7 +222,7 @@ export function commentPlacements(): Snippet[] {
     for (const snippet of snippets) {
       const base = parse(snippet, { lang, sourceType: "module", tokens: true });
       if (base.diagnostics.length > 0) throw new Error(`snippet does not parse: ${snippet}`);
-      const tokens = base.tokens!;
+      const tokens = base.tokens;
       const gaps = new Set([snippet.length]);
       for (let i = 0; i < tokens.length; i++) gaps.add(tokens.start(i));
       for (const at of gaps) {

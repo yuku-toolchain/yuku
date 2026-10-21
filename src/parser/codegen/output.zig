@@ -32,15 +32,14 @@ pub const Output = struct {
         pretty: bool,
         capacity: Capacity,
         map_options: ?sourcemap.Options,
+        source: []const u8,
     ) Error!Output {
         var out: Output = .{ .allocator = allocator, .pretty = pretty };
         try out.code.ensureTotalCapacity(allocator, capacity.code);
         errdefer out.code.deinit(allocator);
         if (comptime source_maps) if (map_options) |options| {
-            if (options.source != null) {
-                out.map = sourcemap.State.init(options);
-                try out.map.?.out.ensureTotalCapacity(allocator, capacity.map);
-            }
+            out.map = sourcemap.State.init(options, source);
+            try out.map.?.out.ensureTotalCapacity(allocator, capacity.map);
         };
         return out;
     }

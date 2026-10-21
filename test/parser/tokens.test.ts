@@ -5,10 +5,8 @@ type Span = { start: number; end: number };
 
 const names = new Map(Object.entries(TokenKind).map(([name, tag]) => [tag, name]));
 
-function list(source: string, options = {}): TokenList {
-  const { tokens } = parse(source, { tokens: true, ...options });
-  if (!tokens) throw new Error("tokens missing");
-  return tokens;
+function list(source: string | Uint8Array, options = {}): TokenList {
+  return parse(source, { ...options, tokens: true }).tokens;
 }
 
 function values(tokens: TokenList): string[] {
@@ -24,9 +22,12 @@ function spans(tokens: TokenList): number[][] {
 }
 
 describe("tokens", () => {
-  test("absent unless requested", () => {
-    expect(parse("let x = 1;").tokens).toBeUndefined();
+  test("collected with tokens, and read without it throws", () => {
+    const file = parse("let x = 1;", { tokens: true });
+    expect(file.tokens).toBe(file.tokens);
+    expect(file.tokens.length).toBe(5);
     expect(list("").length).toBe(0);
+    expect(() => parse("let x = 1;").tokens).toThrow("parse with `tokens: true`");
   });
 
   test("every token in source order, without the closing eof", () => {
@@ -90,7 +91,7 @@ describe("tokens", () => {
   test("lone surrogates keep every span in UTF-16", () => {
     const source = `const s = "\uD800\uD800"; after;`;
     const { program, tokens } = parse(source, { tokens: true });
-    expect(spans(tokens!)).toEqual([
+    expect(spans(tokens)).toEqual([
       [0, 5], [6, 7], [8, 9], [10, 14], [14, 15], [16, 21], [21, 22],
     ]);
     expect(program.body[1]).toMatchObject({ start: 16, end: 22 });
@@ -99,28 +100,24 @@ describe("tokens", () => {
   test("offsets are UTF-16 like nodes", () => {
     const source = `const s = "😀"; s;`;
     const { program, tokens } = parse(source, { tokens: true });
-    expect(source.slice(tokens!.start(3), tokens!.end(3))).toBe(`"😀"`);
-    expect(tokens!.start(5)).toBe(program.body[1]!.start);
+    expect(source.slice(tokens.start(3), tokens.end(3))).toBe(`"😀"`);
+    expect(tokens.start(5)).toBe(program.body[1]!.start);
   });
 
   test("span queries", () => {
     const source = "const a = 1;\nfoo(a, 2);";
-    const { program, tokens } = parse(source, { tokens: true });
+    const { program, tokens: t } = parse(source, { tokens: true });
     const [decl, call] = program.body as unknown as [Span, Span];
-    const t = tokens!;
 
     expect(t.range(decl)).toEqual([0, 5]);
     expect(t.range(call)).toEqual([5, 12]);
-    expect(t.first(call)).toBe(5);
-    expect(t.last(call)).toBe(11);
-    expect(t.before(call)).toBe(4);
-    expect(t.after(decl)).toBe(5);
-    expect(t.before(decl)).toBe(-1);
-    expect(t.after(call)).toBe(-1);
+    expect(t.before(call.start)).toBe(4);
+    expect(t.after(decl.end)).toBe(5);
+    expect(t.before(decl.start)).toBe(-1);
+    expect(t.after(call.end)).toBe(-1);
 
     const paren = list("foo(a)");
     expect(paren.text(paren.before(4))).toBe("(");
-    expect(paren.text(paren.before({ start: 4, end: 5 }))).toBe("(");
     expect(paren.text(paren.after(4))).toBe("a");
 
     const foo = source.indexOf("foo");
@@ -131,15 +128,14 @@ describe("tokens", () => {
     expect(t.before(foo)).toBe(4);
     expect(t.after(foo)).toBe(5);
 
-    const empty = { start: foo + 1, end: foo + 1 };
-    expect(t.first(empty)).toBe(-1);
-    expect(t.last(empty)).toBe(-1);
+    const [from, to] = t.range({ start: foo + 1, end: foo + 1 });
+    expect(to - from).toBe(0);
   });
 
   test("tokens survive syntax errors", () => {
     const { tokens, diagnostics } = parse("let = ) ;\nfoo(1);", { tokens: true });
     expect(diagnostics.length).toBeGreaterThan(0);
-    expect(values(tokens!)).toEqual(["let", "=", ")", ";", "foo", "(", "1", ")", ";"]);
+    expect(values(tokens)).toEqual(["let", "=", ")", ";", "foo", "(", "1", ")", ";"]);
   });
 
   test("an out of range index throws", () => {
@@ -150,9 +146,8 @@ describe("tokens", () => {
 
   test("a UTF-8 byte source reads back like its string", () => {
     const source = "\uFEFFlet après = '🎉'; // ü";
-    const bytes = new TextEncoder().encode(source) as unknown as string;
+    const bytes = new TextEncoder().encode(source);
     expect(parse(bytes).program).toEqual(parse(source).program);
     expect(values(list(bytes))).toEqual(values(list(source)));
-    expect(() => parse(new Uint8Array([0xff]) as unknown as string)).toThrow(TypeError);
   });
 });

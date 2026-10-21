@@ -5,8 +5,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parse, sourceTypeFromPath, type SourceLang } from "yuku";
-import { generate, type GenerateOptions } from "yuku/codegen";
+import { parse, print, sourceTypeFromPath, type PrintOptions, type SourceLang } from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
 import { commentPlacements, deepChains, INSTANTIATIONS } from "./helpers";
 
@@ -19,12 +18,12 @@ const REFERENCE = join(
 export interface Plan {
   name: string;
   zig: string[];
-  js: GenerateOptions;
+  js: PrintOptions;
   preserveParens: boolean;
   map: boolean;
 }
 
-function definePlan(name: string, zig: string[], js: GenerateOptions): Plan {
+function definePlan(name: string, zig: string[], js: PrintOptions): Plan {
   return {
     name,
     zig,
@@ -35,12 +34,14 @@ function definePlan(name: string, zig: string[], js: GenerateOptions): Plan {
 }
 
 export const PLANS: Plan[] = [
-  definePlan("default", [], {}),
+  definePlan("some", ["--comments=some"], { comments: "some" }),
   definePlan("all", ["--comments=all"], { comments: "all" }),
   definePlan("compact", ["--compact", "--comments=all"], { format: "compact", comments: "all" }),
   definePlan("strip", ["--strip", "--comments=all"], { strip: true, comments: "all" }),
   definePlan("minify", ["--minify", "--compact", "--quotes=shortest", "--comments=all"], {
     minify: true,
+    format: "compact",
+    quotes: "shortest",
     comments: "all",
   }),
   definePlan("map", ["--source-map", "--comments=all"], { comments: "all" }),
@@ -72,7 +73,7 @@ export const PLANS: Plan[] = [
     ],
     {
       strip: true,
-      minify: { syntax: true },
+      minify: true,
       format: "compact",
       quotes: "single",
       comments: "some",
@@ -142,10 +143,10 @@ export function runPlan(plan: Plan, files: Input[]): PlanResult {
     if (skipped) continue;
     compared++;
 
-    const options: GenerateOptions = plan.map ? { ...plan.js, sourceMap: { source } } : plan.js;
+    const options: PrintOptions = { ...plan.js, sourceMap: plan.map };
     let result;
     try {
-      result = generate(parsed.program, options);
+      result = print(parsed, options);
     } catch (error) {
       mismatch("threw", "", String((error as Error).stack ?? error));
       continue;

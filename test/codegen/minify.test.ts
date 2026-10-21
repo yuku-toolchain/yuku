@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
-import { gen } from "./helpers";
+import { gen, MINIFIED } from "./helpers";
 
-const MINIFY = { minify: true } as const;
+const MINIFY = { ...MINIFIED, comments: "some" } as const;
 
 test("keeps a legal banner and a pure annotation", () => {
   expect(gen(`/*! ©2025 */\nconst x = /*#__PURE__*/ make();`, MINIFY))

@@ -15,7 +15,7 @@ const parser = @import("parser");
 const transfer = @import("root.zig");
 
 const ast = parser.ast;
-const semantic = parser.traverser.semantic;
+const semantic = parser.semantic;
 const module_record = parser.semantic.module_record;
 
 const Scope = semantic.Scope;
@@ -242,14 +242,15 @@ pub fn serializeInto(
         transfer.writeBytes(buf, &pos, std.mem.asBytes(&entry));
     }
 
-    for (sem.symbols) |symbol| {
+    std.debug.assert(sem.decl_ranges.len == sem.symbols.len);
+    for (sem.symbols, sem.decl_ranges) |symbol, decls| {
         const entry: PackedSymbol = .{
             .name_start = symbol.name.start,
             .name_end = symbol.name.end,
             .flags = @backingInt(symbol.flags),
             .scope = @backingInt(symbol.scope),
-            .decls_start = symbol.decls.start,
-            .decls_len = symbol.decls.len,
+            .decls_start = decls.start,
+            .decls_len = decls.len,
         };
         transfer.writeBytes(buf, &pos, std.mem.asBytes(&entry));
     }

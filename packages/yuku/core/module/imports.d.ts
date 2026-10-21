@@ -1,5 +1,5 @@
 declare module "#module" {
-  export const yuku: WebAssembly.Module;
+  export function bundled(): WebAssembly.Module;
 }
 
 declare module "#wasm" {

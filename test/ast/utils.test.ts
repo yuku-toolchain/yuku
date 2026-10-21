@@ -1,24 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { parse, type Expression } from "yuku";
 import {
   b,
   bindingIdentifiers,
-  collectExportDeclaration,
-  collectExports,
-  collectImportDeclaration,
-  collectImports,
-  findAll,
+  clone,
   is,
-  isCallOf,
-  isIdentifierChar,
-  isIdentifierName,
-  isIdentifierStart,
-  isValidIdentifier,
-  isWrapper,
-  literalValue,
+  lexical,
   nameOf,
+  parse,
   unwrap,
-} from "yuku/ast";
+  type Expression,
+} from "yuku";
+import { nodesOf } from "../ast-helpers-for-test";
 
 function program(source: string) {
   return parse(source, { sourceType: "module", lang: "ts" }).program;
@@ -38,11 +30,10 @@ describe("is", () => {
     expect(is.CallExpression(call)).toBe(true);
     expect(is.Expression(call)).toBe(true);
     expect(is.Statement(call)).toBe(false);
-    expect(is.oneOf(call, ["CallExpression", "NewExpression"])).toBe(true);
     expect(is.CallExpression(null)).toBe(false);
 
-    expect(is.Identifier(firstExpression(`foo`), "foo")).toBe(true);
-    expect(is.Identifier(firstExpression(`foo`), "bar")).toBe(false);
+    expect(is.Identifier(firstExpression(`foo`))).toBe(true);
+    expect(is.Identifier(firstExpression(`"foo"`))).toBe(false);
     expect(is.StringLiteral(firstExpression(`"s"`))).toBe(true);
     expect(is.NumericLiteral(firstExpression(`1`))).toBe(true);
     expect(is.NullLiteral(firstExpression(`null`))).toBe(true);
@@ -55,30 +46,31 @@ describe("is", () => {
   });
 });
 
-describe("identifier", () => {
+describe("lexical", () => {
   test("names, keywords, and binding validity", () => {
-    expect(isIdentifierName("foo")).toBe(true);
-    expect(isIdentifierName("π")).toBe(true);
-    expect(isIdentifierName("class")).toBe(true);
-    expect(isIdentifierName("1foo")).toBe(false);
-    expect(isIdentifierName("")).toBe(false);
-    expect(isValidIdentifier("foo")).toBe(true);
-    expect(isValidIdentifier("class")).toBe(false);
-    expect(isValidIdentifier("await")).toBe(false);
-    expect(isValidIdentifier("eval")).toBe(true);
-    expect(isValidIdentifier("class", false)).toBe(true);
+    expect(lexical.isIdentifierName("foo")).toBe(true);
+    expect(lexical.isIdentifierName("π")).toBe(true);
+    expect(lexical.isIdentifierName("class")).toBe(true);
+    expect(lexical.isIdentifierName("1foo")).toBe(false);
+    expect(lexical.isIdentifierName("")).toBe(false);
+    expect(lexical.isValidIdentifier("foo")).toBe(true);
+    expect(lexical.isValidIdentifier("class")).toBe(false);
+    expect(lexical.isValidIdentifier("await")).toBe(false);
+    expect(lexical.isValidIdentifier("eval")).toBe(true);
+    expect(lexical.isEvalOrArguments("arguments")).toBe(true);
+    expect(lexical.isEvalOrArguments("argument")).toBe(false);
   });
 
   // the parser's Unicode tables, on any runtime
   test("code points", () => {
-    expect(isIdentifierStart(0x24)).toBe(true);
-    expect(isIdentifierStart(0x10940)).toBe(true);
-    expect(isIdentifierStart(0x200c)).toBe(false);
-    expect(isIdentifierChar(0x200c)).toBe(true);
-    expect(isIdentifierStart(0x110000)).toBe(false);
-    expect(isIdentifierStart(-1)).toBe(false);
-    expect(isIdentifierName("a\u{10940}")).toBe(true);
-    expect(isIdentifierName("\ud800")).toBe(false);
+    expect(lexical.isIdentifierStart(0x24)).toBe(true);
+    expect(lexical.isIdentifierStart(0x10940)).toBe(true);
+    expect(lexical.isIdentifierStart(0x200c)).toBe(false);
+    expect(lexical.isIdentifierChar(0x200c)).toBe(true);
+    expect(lexical.isIdentifierStart(0x110000)).toBe(false);
+    expect(lexical.isIdentifierStart(-1)).toBe(false);
+    expect(lexical.isIdentifierName("a\u{10940}")).toBe(true);
+    expect(lexical.isIdentifierName("\ud800")).toBe(false);
   });
 });
 
@@ -90,133 +82,86 @@ describe("utils", () => {
     expect(nameOf(null)).toBe(null);
   });
 
-  test("literalValue extracts every literal kind", () => {
-    expect(literalValue(firstExpression(`"s"`))).toBe("s");
-    expect(literalValue(firstExpression(`2`))).toBe(2);
-    expect(literalValue(firstExpression(`true`))).toBe(true);
-    expect(literalValue(firstExpression(`10n`))).toBe(10n);
-    expect(literalValue(firstExpression(`null`))).toBe(null);
-    expect(literalValue(firstExpression(`foo`))).toBe(undefined);
+  test("a literal's value is its runtime value", () => {
+    const valueOf = (source: string) => {
+      const node = firstExpression(source);
+      return node.type === "Literal" ? node.value : undefined;
+    };
+    expect(valueOf(`"s"`)).toBe("s");
+    expect(valueOf(`2`)).toBe(2);
+    expect(valueOf(`true`)).toBe(true);
+    expect(valueOf(`10n`)).toBe(10n);
+    expect(valueOf(`null`)).toBe(null);
+    expect(valueOf(`/x/g`)).toEqual(/x/g);
   });
 
   test("unwrap strips parens and TS assertion wrappers", () => {
     const inner = unwrap(firstExpression(`((x as any))!`));
-    expect(is.Identifier(inner, "x")).toBe(true);
+    expect(nameOf(inner)).toBe("x");
   });
 
   test("unwrap takes any node and returns what nothing wraps as it is", () => {
     const root = program(`const a = (b as any), c; f(...d);`);
-    const [first, second] = findAll(root, "VariableDeclarator");
-    const [call] = findAll(root, "CallExpression");
-    expect(is.Identifier(unwrap(first!.init), "b")).toBe(true);
+    const [first, second] = nodesOf(root, "VariableDeclarator");
+    const [call] = nodesOf(root, "CallExpression");
+    expect(nameOf(unwrap(first!.init))).toBe("b");
     expect(unwrap(second!.init)).toBeNull();
     expect(unwrap(call!.arguments[0])?.type).toBe("SpreadElement");
     expect(unwrap(call!.arguments[1])).toBeUndefined();
   });
 
-  test("isWrapper matches every form unwrap strips, and narrows to it", () => {
-    expect(isWrapper(firstExpression(`(x)`))).toBe(true);
-    expect(isWrapper(firstExpression(`x as any`))).toBe(true);
-    expect(isWrapper(firstExpression(`x satisfies any`))).toBe(true);
-    expect(isWrapper(firstExpression(`x!`))).toBe(true);
-    expect(isWrapper(firstExpression(`<any>x`))).toBe(true);
+  test("is.Wrapper matches every form unwrap strips, and narrows to it", () => {
+    expect(is.Wrapper(firstExpression(`(x)`))).toBe(true);
+    expect(is.Wrapper(firstExpression(`x as any`))).toBe(true);
+    expect(is.Wrapper(firstExpression(`x satisfies any`))).toBe(true);
+    expect(is.Wrapper(firstExpression(`x!`))).toBe(true);
+    expect(is.Wrapper(firstExpression(`<any>x`))).toBe(true);
 
-    expect(isWrapper(firstExpression(`x`))).toBe(false);
-    expect(isWrapper(firstExpression(`f<string>`))).toBe(false);
-    expect(isWrapper(program(`x;`))).toBe(false);
-    expect(isWrapper(null)).toBe(false);
+    expect(is.Wrapper(firstExpression(`x`))).toBe(false);
+    expect(is.Wrapper(firstExpression(`f<string>`))).toBe(false);
+    expect(is.Wrapper(program(`x;`))).toBe(false);
+    expect(is.Wrapper(null)).toBe(false);
 
     const node = firstExpression(`(x as any)!`);
-    expect(isWrapper(node) && is.Identifier(unwrap(node.expression), "x")).toBe(true);
-  });
-
-  test("isCallOf matches the unwrapped callee", () => {
-    expect(isCallOf(firstExpression(`require("m")`), "require")).toBe(true);
-    expect(isCallOf(firstExpression(`(require as any)("m")`), "require")).toBe(true);
-    expect(isCallOf(firstExpression(`require("m")`), ["define", "require"])).toBe(true);
-    expect(isCallOf(firstExpression(`other("m")`), "require")).toBe(false);
-    expect(isCallOf(null, "require")).toBe(false);
+    expect(is.Wrapper(node) && nameOf(unwrap(node.expression))).toBe("x");
   });
 
   test("bindingIdentifiers collects destructuring leaves in order", () => {
     const root = program(`const { a, b: [c = 1, ...d], ...e } = obj;`);
-    const [declarator] = findAll(root, "VariableDeclarator");
+    const [declarator] = nodesOf(root, "VariableDeclarator");
     expect(bindingIdentifiers(declarator!.id).map((id) => id.name)).toEqual(["a", "c", "d", "e"]);
   });
 
-  test("builders derive fields from the node type and default spans", () => {
-    const node = b.CallExpression({
-      callee: b.Identifier({ name: "f" }),
-      arguments: [b.Literal({ value: 1, raw: "1" })],
+  test("builders default spans to 0 and fields to the empty value their type allows", () => {
+    const node = b.CallExpression({ callee: b.Identifier({ name: "f" }) });
+    expect(node).toEqual({
+      type: "CallExpression",
+      start: 0,
+      end: 0,
+      callee: { type: "Identifier", start: 0, end: 0, name: "f" },
+      arguments: [],
       optional: false,
     });
-    expect(node.start).toBe(0);
-    expect(isCallOf(node, "f")).toBe(true);
     expect(nameOf(b.Identifier({ name: "x", start: 3, end: 4 }))).toBe("x");
+    expect(b.UnaryExpression({ operator: "!", argument: node }).prefix).toBe(true);
+    expect(is.NullLiteral(b.Literal({ value: null }))).toBe(true);
   });
 
-  test("findAll collects in source order", () => {
-    const types = findAll(program(`let a: string; let b: number;`), "TSTypeReference");
-    expect(types).toEqual([]);
-    const names = findAll(program(`a; b;`), "Identifier").map((n) => n.name);
-    expect(names).toEqual(["a", "b"]);
-  });
-});
-
-describe("modules", () => {
-  test("collectImports covers default, named, namespace, type, and phase", () => {
-    const source = [
-      `import def from "a";`,
-      `import * as ns from "b";`,
-      `import { x, type Y, z as w } from "c";`,
-      `import type T from "d";`,
-      `import "side";`,
-    ].join(" ");
-    const records = collectImports(program(source));
-    expect(
-      records.map((r) => `${r.local}<-${r.imported}@${r.source}${r.typeOnly ? ":type" : ""}`),
-    ).toEqual([
-      "def<-default@a",
-      "ns<-*@b",
-      "x<-x@c",
-      "Y<-Y@c:type",
-      "w<-z@c",
-      "T<-default@d:type",
-    ]);
+  test("built nodes never share a list", () => {
+    const first = b.ArrayExpression({});
+    const second = b.ArrayExpression({});
+    first.elements.push(b.Identifier({ name: "a" }));
+    expect(second.elements).toEqual([]);
   });
 
-  test("per-declaration helpers compose with a walk", () => {
-    const root = program(`import { a } from "m"; export const b = 1;`);
-    const imported = root.body.flatMap((node) =>
-      node.type === "ImportDeclaration" ? collectImportDeclaration(node) : [],
-    );
-    const exported = root.body.flatMap((node) =>
-      node.type === "ExportNamedDeclaration" ? collectExportDeclaration(node) : [],
-    );
-    expect(imported.map((r) => r.local)).toEqual(["a"]);
-    expect(exported.map((r) => r.exported)).toEqual(["b"]);
-  });
-
-  test("collectExports covers declarations, specifiers, re-exports, star, and default", () => {
-    const source = [
-      `export const a = 1, { b } = obj;`,
-      `export function f() {}`,
-      `export { c, d as e } from "m";`,
-      `export * as ns from "n";`,
-      `export * from "o";`,
-      `export default class G {}`,
-    ].join(" ");
-    const records = collectExports(program(source));
-    expect(records.map((r) => `${r.exported ?? "*"}${r.source ? "@" + r.source : ""}`)).toEqual([
-      "a",
-      "b",
-      "f",
-      "c@m",
-      "e@m",
-      "ns@n",
-      "*@o",
-      "default",
-    ]);
-    expect(records.at(-1)?.local).toBe("G");
+  test("clone copies a tree, sharing no node or list, comments included", () => {
+    const root = program(`// lead\nf(a, [b]);`);
+    const copy = clone(root);
+    expect(copy).toEqual(root);
+    expect(copy.body[0]).not.toBe(root.body[0]);
+    expect(copy.body[0]!.comments).toEqual(root.body[0]!.comments);
+    const [call] = nodesOf(copy, "CallExpression");
+    expect(call!.arguments).not.toBe(nodesOf(root, "CallExpression")[0]!.arguments);
+    expect(() => clone(null as never)).toThrow("expected an AST node");
   });
 });

@@ -3,8 +3,15 @@
 import { describe, expect, test } from "bun:test";
 import { analyze, type Scope as TheirScope } from "@typescript-eslint/scope-manager";
 import { parse as tsParse } from "@typescript-eslint/typescript-estree";
-import { analyze as analyzeFile, type Binding, type Module, type Scope } from "yuku/analyzer";
-import type { Node, SourceLang, SourceType } from "yuku";
+import {
+  type Binding,
+  type Node,
+  parse,
+  type Scope,
+  type SourceFile,
+  type SourceLang,
+  type SourceType,
+} from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
 import { differential, type Comparison, type Known } from "./utils/differential";
 
@@ -72,22 +79,22 @@ function theirOwner(scope: TheirScope): string {
 
 const BODIES = new Set(["TSModuleBlock", "TSEnumBody"]);
 
-function ownerOf(module: Module, scope: Scope): string {
+function ownerOf(file: SourceFile, scope: Scope): string {
   const node = scope.node;
   if (node.type === "Program") return scope.kind;
-  const parent = module.parentOf(node)!;
+  const parent = file.parentOf(node)!;
   const isBody =
     scope.kind === "functionBody" || BODIES.has(node.type) || parent.type === "CatchClause";
   return String((isBody ? parent : node).start);
 }
 
-function declarationOwner(module: Module, binding: Binding, node: Node): string | null {
-  if (module.parentOf(module.parentOf(node)!)?.type === "TSInferType") return null;
-  if (binding.scope.kind !== "tsModule") return ownerOf(module, binding.scope);
-  for (const ancestor of module.ancestors(node)) {
-    if (ancestor.type === "TSModuleBlock") return String(module.parentOf(ancestor)!.start);
+function declarationOwner(file: SourceFile, binding: Binding, node: Node): string | null {
+  if (file.parentOf(file.parentOf(node)!)?.type === "TSInferType") return null;
+  if (binding.scope.kind !== "tsModule") return ownerOf(file, binding.scope);
+  for (const ancestor of file.ancestors(node)) {
+    if (ancestor.type === "TSModuleBlock") return String(file.parentOf(ancestor)!.start);
   }
-  return ownerOf(module, binding.scope);
+  return ownerOf(file, binding.scope);
 }
 
 // `B` in `namespace A.B {}`, `s` in `[s: string]: T`, `N` in `export as namespace N`
@@ -97,22 +104,22 @@ const UNMODELED_PARENTS = new Set([
   "TSNamespaceExportDeclaration",
 ]);
 
-function isUnmodeled(module: Module, node: Node): boolean {
-  const parent = module.parentOf(node);
+function isUnmodeled(file: SourceFile, node: Node): boolean {
+  const parent = file.parentOf(node);
   if (parent !== null && UNMODELED_PARENTS.has(parent.type)) return true;
   return parent?.type === "TSModuleDeclaration" && parent.id.type === "TSQualifiedName";
 }
 
-function isIntrinsicTag(module: Module, position: number): boolean {
-  const node = module.nodeAt(position);
+function isIntrinsicTag(file: SourceFile, position: number): boolean {
+  const node = file.nodeAt(position);
   if (node?.type !== "JSXIdentifier") return false;
-  const parent = module.parentOf(node);
+  const parent = file.parentOf(node);
   if (parent?.type === "JSXNamespacedName") return true;
   return parent?.type !== "JSXMemberExpression" && /^[a-z]|-/.test(node.name);
 }
 
-function unmodeled(module: Module, binding: Binding): boolean {
-  return binding.declarations.some((node) => isUnmodeled(module, node));
+function unmodeled(file: SourceFile, binding: Binding): boolean {
+  return binding.declarations.some((node) => isUnmodeled(file, node));
 }
 
 function compare(source: string, sourceType: SourceType, lang: SourceLang): Comparison | null {
@@ -123,47 +130,47 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
     // typescript-estree rejects the file
     return null;
   }
-  const module = analyzeFile(source, { sourceType, lang });
+  const file = parse(source, { semantic: true, sourceType, lang });
   const mismatches: string[] = [];
   let compared = 0;
 
-  for (const reference of module.references) {
+  for (const reference of file.references) {
     const position = reference.node.start;
     const their = theirs.references.get(position);
     if (their === undefined || reference.inTypePosition) continue;
     const binding = reference.binding;
     if (binding !== null && !binding.scope.contains(reference.scope)) continue;
-    if (binding !== null && unmodeled(module, binding)) continue;
+    if (binding !== null && unmodeled(file, binding)) continue;
     compared++;
     const starts = binding?.declarations.map((declaration) => declaration.start) ?? [];
     const def = binding === null ? UNRESOLVED : Math.min(...starts);
     if (def !== their.def) {
-      const node = their.def === UNRESOLVED ? null : module.nodeAt(their.def);
-      const target = node === null ? null : module.bindingOf(node);
+      const node = their.def === UNRESOLVED ? null : file.nodeAt(their.def);
+      const target = node === null ? null : file.bindingOf(node);
       const consistent = binding === null || binding.visibleIn(reference.space);
       if (consistent && target !== null && !target.visibleIn(reference.space)) continue;
       mismatches.push(`${reference.name}@${position}: yuku ${def}, scope-manager ${their.def}`);
     } else if (reference.isWrite !== their.write) {
-      const parent = module.parentOf(reference.node);
+      const parent = file.parentOf(reference.node);
       if (reference.isWrite && parent !== null && ERASED_WRAPPERS.has(parent.type)) continue;
       mismatches.push(`${reference.name}@${position}: yuku write ${reference.isWrite}`);
     }
   }
 
   const recorded = new Set([
-    ...module.references.map((reference) => reference.node.start),
-    ...module.bindings.flatMap((binding) => binding.declarations.map((node) => node.start)),
+    ...file.references.map((reference) => reference.node.start),
+    ...file.bindings.flatMap((binding) => binding.declarations.map((node) => node.start)),
   ]);
   for (const [position, their] of theirs.references) {
-    if (isIntrinsicTag(module, position)) continue;
+    if (isIntrinsicTag(file, position)) continue;
     compared++;
     if (!recorded.has(position)) mismatches.push(`${their.name}@${position}: no yuku reference`);
   }
 
   const ours = new Map<number, string | null>();
-  for (const binding of module.bindings) {
+  for (const binding of file.bindings) {
     for (const node of binding.declarations) {
-      if (!isUnmodeled(module, node)) ours.set(node.start, declarationOwner(module, binding, node));
+      if (!isUnmodeled(file, node)) ours.set(node.start, declarationOwner(file, binding, node));
     }
   }
   for (const [position, owners] of theirs.declarations) {

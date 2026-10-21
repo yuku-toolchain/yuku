@@ -54,6 +54,40 @@ describe("diagnostics", () => {
   });
 });
 
+describe("encoding", () => {
+  test("bytes that are not UTF-8 read as U+FFFD and report where they start", () => {
+    const bytes = new Uint8Array([0x61, 0x3d, 0x22, 0xc3, 0xa9, 0xff, 0x22, 0x3b]);
+    const file = parse(bytes, { path: "a.js" });
+    expect(file.source).toBe('a="é\uFFFD";');
+    expect(file.diagnostics).toEqual([
+      {
+        severity: "error",
+        message: "Invalid UTF-8 sequence",
+        path: "a.js",
+        start: 4,
+        end: 5,
+        labels: [],
+        help: "Save the file as UTF-8",
+      },
+    ]);
+  });
+
+  test("every malformed sequence starts where Unicode's table 3-7 stops it", () => {
+    const offsetOf = (bytes: number[]) => parse(new Uint8Array(bytes)).diagnostics[0]?.start;
+    expect(offsetOf([0x61, 0xc0, 0x80])).toBe(1);
+    expect(offsetOf([0xe0, 0x80, 0x80])).toBe(0);
+    expect(offsetOf([0xed, 0xa0, 0x80])).toBe(0);
+    expect(offsetOf([0xf4, 0x90, 0x80, 0x80])).toBe(0);
+    expect(offsetOf([0x61, 0xf0, 0x9f, 0x98])).toBe(1);
+    expect(offsetOf([0xf0, 0x9f, 0x98, 0x80, 0xf5])).toBe(2);
+    expect(offsetOf([0xef, 0xbb, 0xbf, 0x61])).toBeUndefined();
+  });
+
+  test("a source that is neither text nor bytes throws", () => {
+    expect(() => parse(1 as never)).toThrow("`source` must be a string or UTF-8 bytes");
+  });
+});
+
 describe("depth", () => {
   test("a chain of any depth decodes", () => {
     const source = "a" + ".b(/* c */ x)".repeat(1000);

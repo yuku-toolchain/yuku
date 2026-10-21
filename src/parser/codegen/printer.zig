@@ -5,7 +5,7 @@ const ast = @import("../ast.zig");
 const output = @import("output.zig");
 const sourcemap = @import("sourcemap.zig");
 const utils = @import("utils.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 const lexical = @import("../lexical.zig");
 
 const source_maps = @import("codegen_options").source_maps;
@@ -43,7 +43,7 @@ pub const Options = struct {
     comments: Comments = .some,
 };
 
-pub const Diagnostic = ast.Diagnostic;
+const Diagnostic = ast.Diagnostic;
 
 pub const Result = struct {
     code: []const u8,
@@ -57,7 +57,7 @@ pub const Result = struct {
     }
 };
 
-pub const Error = error{OutOfMemory};
+const Error = std.mem.Allocator.Error;
 
 /// The printer as a dialect's `print` drives it.
 pub const DialectPrinter = struct {
@@ -87,7 +87,7 @@ pub const DialectPrinter = struct {
     }
 };
 
-pub fn generate(allocator: Allocator, tree: *Tree, options: Options) Error!Result {
+pub fn generate(allocator: Allocator, tree: *const Tree, options: Options) Error!Result {
     std.debug.assert(tree.root != .null);
     var p = try Printer.init(allocator, tree, options);
     defer p.deinit();
@@ -124,7 +124,7 @@ const Ctx = struct {
 
 const Printer = struct {
     allocator: Allocator,
-    tree: *Tree,
+    tree: *const Tree,
     node_data: []const NodeData,
     options: Options,
     out: Output,
@@ -161,7 +161,7 @@ const Printer = struct {
     const Head = struct { idx: NodeIndex, ctx: Ctx };
     const Self = @This();
 
-    fn init(allocator: Allocator, tree: *Tree, options: Options) Error!Self {
+    fn init(allocator: Allocator, tree: *const Tree, options: Options) Error!Self {
         return .{
             .allocator = allocator,
             .tree = tree,
@@ -172,6 +172,7 @@ const Printer = struct {
                 options.format == .pretty,
                 .{ .code = tree.source.len, .map = tree.nodes.len * 8 + 64 },
                 options.source_map,
+                tree.source,
             ),
             .stack_floor = @frameAddress() -| chain_stack_bytes_max,
         };

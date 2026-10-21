@@ -2,8 +2,8 @@ const std = @import("std");
 const parser = @import("parser");
 const helpers = @import("../helpers.zig");
 
-const Scope = parser.traverser.scoped.Scope;
-const ScopeId = parser.traverser.scoped.ScopeId;
+const Scope = parser.semantic.Scope;
+const ScopeId = parser.semantic.ScopeId;
 
 const testing = std.testing;
 
@@ -15,9 +15,9 @@ test "scope ancestors walk from a scope to the root" {
     var it = a.sem.scopes.ancestors(x_scope_id);
 
     try testing.expectEqual(x_scope_id, it.next().?);
-    try testing.expectEqual(Scope.Kind.function_body, a.sem.scope(it.next().?).kind);
-    try testing.expectEqual(Scope.Kind.function, a.sem.scope(it.next().?).kind);
-    try testing.expectEqual(ScopeId.module, it.next().?);
+    try testing.expectEqual(Scope.Kind.function_body, a.sem.scopes.get(it.next().?).kind);
+    try testing.expectEqual(Scope.Kind.function, a.sem.scopes.get(it.next().?).kind);
+    try testing.expectEqual(a.sem.scopeOf(a.tree.root), it.next().?);
     try testing.expectEqual(ScopeId.root, it.next().?);
     try testing.expectEqual(@as(?ScopeId, null), it.next());
 
@@ -30,10 +30,10 @@ test "scopeOf maps scope-creating nodes to the scope they create" {
     defer a.deinit();
 
     const func_node = try a.firstNode(.function);
-    const func_scope = a.sem.scope(a.sem.scopeOf(func_node));
+    const func_scope = a.sem.scopes.get(a.sem.scopeOf(func_node));
     try testing.expectEqual(Scope.Kind.function, func_scope.kind);
     try testing.expectEqual(func_node, func_scope.node);
-    try testing.expectEqual(ScopeId.module, a.sem.scopeOf(a.tree.root));
+    try testing.expectEqual(Scope.Kind.module, a.sem.scopes.get(a.sem.scopeOf(a.tree.root)).kind);
 }
 
 test "Scope.Kind.isHoistTarget matches the spec hoist boundaries" {

@@ -18,22 +18,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./analyzer": {
-      "types": "./dist/analyzer.d.ts",
-      "default": "./dist/analyzer.js"
-    },
-    "./ast": {
-      "types": "./dist/ast.d.ts",
-      "default": "./dist/ast.js"
-    },
-    "./codegen": {
-      "types": "./dist/codegen.d.ts",
-      "default": "./dist/codegen.js"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "default": "./dist/types.js"
-    },
     "./yuku.wasm": "./dist/yuku.wasm",
     "./package.json": "./package.json"
   },

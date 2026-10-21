@@ -11,19 +11,12 @@
     <script>
       const pr = new URLSearchParams(location.search).get("pr")?.match(/^[0-9a-f]{7,40}$/)?.[0];
       const local = !pr && ["localhost", "127.0.0.1"].includes(location.hostname);
-      const parts = {
-        "": "dist/index.js",
-        "/analyzer": "dist/analyzer.js",
-        "/codegen": "dist/codegen.js",
-      };
-      const imports = {};
-      for (const [subpath, path] of Object.entries(parts)) {
-        imports[`yuku${subpath}`] = local
-          ? `/pkg/${path}`
-          : pr
-            ? `https://esm.sh/pr/yuku-toolchain/yuku/yuku@${pr}${subpath}`
-            : `https://esm.sh/yuku${subpath}`;
-      }
+      const yuku = local
+        ? "/pkg/dist/index.js"
+        : pr
+          ? `https://esm.sh/pr/yuku-toolchain/yuku/yuku@${pr}`
+          : "https://esm.sh/yuku";
+      const imports = { yuku };
 
       const scopes = local ? { "/pkg/": { "#module": "/pkg/dist/module/inline.js" } } : {};
       document.write(`<script type="importmap">${JSON.stringify({ imports, scopes })}<\/script>`);

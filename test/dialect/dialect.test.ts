@@ -1,8 +1,6 @@
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { analyze } from "yuku/analyzer";
-import { walk } from "yuku/ast";
-import { parse } from "yuku";
+import { parse, walk } from "yuku";
 
 // Yuku with src/parser/testing/dialect.zig compiled in, which test:dialect builds
 const bytes = readFileSync(new URL("../../zig-out/dialect/bin/yuku.wasm", import.meta.url));
@@ -49,7 +47,14 @@ test("dialect nodes walk and analyze like standard ones", () => {
     "Identifier",
     "TopicReference",
   ]);
-  expect(analyze(source, { wasm }).diagnostics).toEqual([]);
+  const file = parse(source, { wasm, semantic: true });
+  expect(file.diagnostics).toEqual([]);
+  const resolved = file.references.map((reference) => [reference.name, reference.binding?.name]);
+  expect(resolved).toEqual([
+    ["items", undefined],
+    ["item", "item"],
+    ["f", undefined],
+  ]);
 });
 
 test("the dialect reads its own files, and other files and a given lang parse as standard", () => {

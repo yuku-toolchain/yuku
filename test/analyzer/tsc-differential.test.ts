@@ -2,8 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
-import { analyze } from "yuku/analyzer";
-import type { SourceLang, SourceType } from "yuku";
+import { parse, type SourceLang, type SourceType } from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
 import { differential, singleFileProgram, type Comparison, type Known } from "./utils/differential";
 
@@ -170,11 +169,11 @@ function compare(
   sourceType: SourceType = "module",
   path = FILE_NAMES[lang],
 ): Comparison {
-  const module = analyze(source, { path, lang, sourceType });
+  const file = parse(source, { semantic: true, path, lang, sourceType });
   const tsc = checker(source, lang, sourceType);
   const mismatches: string[] = [];
   let compared = 0;
-  for (const reference of module.references) {
+  for (const reference of file.references) {
     const position = reference.node.start;
     const theirs = tsc.resolve(position);
     if (theirs === null) continue;
@@ -187,8 +186,8 @@ function compare(
     mismatches.push(`${reference.name}@${position}: yuku ${yuku}, tsc ${expected}`);
   }
   const recorded = new Set([
-    ...module.references.map((reference) => reference.node.start),
-    ...module.bindings.flatMap((binding) => binding.declarations.map((node) => node.start)),
+    ...file.references.map((reference) => reference.node.start),
+    ...file.bindings.flatMap((binding) => binding.declarations.map((node) => node.start)),
   ]);
   for (const [position, name] of tsc.resolvedUses()) {
     compared++;

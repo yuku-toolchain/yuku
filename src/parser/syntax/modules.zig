@@ -13,7 +13,7 @@ const class = @import("class.zig");
 const decorator = @import("decorators.zig");
 const variables = @import("variables.zig");
 const ts = @import("ts/statements.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 
 // `start_from_param` lets `export public import x =` span from the legacy modifier
 pub fn parseImportDeclaration(parser: *Parser, start_from_param: ?u32) Error!?ast.NodeIndex {

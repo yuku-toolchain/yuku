@@ -1,16 +1,19 @@
 const std = @import("std");
-const ast = @import("ast.zig");
-const core = @import("parser.zig");
-const codegen = @import("codegen/printer.zig");
-const statements = @import("syntax/statements.zig");
-const expressions = @import("syntax/expressions.zig");
-const patterns = @import("syntax/patterns.zig");
-const ts = @import("syntax/ts/types.zig");
-const jsx = @import("syntax/jsx/root.zig");
+const ast = @import("../ast.zig");
+const core = @import("../parser.zig");
+const codegen = @import("../codegen/printer.zig");
+const statements = @import("../syntax/statements.zig");
+const expressions = @import("../syntax/expressions.zig");
+const patterns = @import("../syntax/patterns.zig");
+const ts = @import("../syntax/ts/types.zig");
+const jsx = @import("../syntax/jsx/root.zig");
 
 const Bound = @import("dialect");
 
-pub const Error = core.Error;
+const Error = std.mem.Allocator.Error;
+
+/// A parser position to return to with `Parser.rewind`.
+pub const Checkpoint = core.Checkpoint;
 
 pub const Position = enum {
     statement,
@@ -70,6 +73,8 @@ comptime {
     if (bound and (!@hasDecl(Bound, "files") or Bound.files.len == 0)) {
         @compileError("a dialect lists the `files` it parses");
     }
+    // the shapes compile only into the description, which a native build never reads
+    if (@hasDecl(Bound, "Node")) _ = shapesJson();
 }
 
 pub inline fn has(comptime position: Position) bool {
@@ -174,10 +179,6 @@ pub const Parser = struct {
         return &self.inner.tree;
     }
 
-    pub inline fn source(self: *const Parser) []const u8 {
-        return self.inner.source;
-    }
-
     pub inline fn token(self: *const Parser) ast.Token {
         return self.inner.current_token;
     }
@@ -220,11 +221,11 @@ pub const Parser = struct {
         return self.inner.eatSemicolon(end);
     }
 
-    pub inline fn checkpoint(self: *const Parser) core.Checkpoint {
+    pub inline fn checkpoint(self: *const Parser) Checkpoint {
         return self.inner.checkpoint();
     }
 
-    pub inline fn rewind(self: *const Parser, to: core.Checkpoint) void {
+    pub inline fn rewind(self: *const Parser, to: Checkpoint) void {
         self.inner.rewind(to);
     }
 
@@ -281,7 +282,11 @@ pub const Parser = struct {
     }
 
     /// Records a comment the dialect reads where the standard grammar reads none, as in text.
-    pub fn addComment(self: *const Parser, @"type": ast.Comment.Type, span: ast.Span) Error!void {
+    pub fn recordComment(
+        self: *const Parser,
+        @"type": ast.Comment.Type,
+        span: ast.Span,
+    ) Error!void {
         std.debug.assert(self.inner.source[span.start] == '/');
         const comments = self.inner.lexer.comments.items;
         if (comments.len > 0) std.debug.assert(comments[comments.len - 1].span.end <= span.start);

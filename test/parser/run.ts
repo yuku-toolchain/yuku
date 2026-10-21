@@ -3,11 +3,11 @@ import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
 import {
-  parse,
   langFromPath,
-  type ParseOptions,
-  type ParseResult,
+  parse,
   type Diagnostic,
+  type ParseOptions,
+  type SourceFile,
   type SourceLang,
 } from "yuku";
 import { deserializeAstJson, formatDiagnostics, serializeAstJson } from "../ast-helpers-for-test";
@@ -27,7 +27,7 @@ interface FileResult {
   snapshotCompared: boolean;
   reason?: string;
   source?: string;
-  diagnostics?: Diagnostic[];
+  diagnostics?: readonly Diagnostic[];
 }
 
 interface SuiteResult {
@@ -167,7 +167,7 @@ async function collectFiles(suite: TestSuite): Promise<string[]> {
   return files;
 }
 
-function parseFile(source: string, file: string, suite: TestSuite): ParseResult {
+function parseFile(source: string, file: string, suite: TestSuite): SourceFile {
   return parse(source, {
     sourceType: file.includes(".module.") ? "module" : "script",
     lang: langFromPath(file),
@@ -178,7 +178,7 @@ function parseFile(source: string, file: string, suite: TestSuite): ParseResult 
 
 async function checkSnapshot(
   file: string,
-  parsed: ParseResult,
+  parsed: SourceFile,
   suite: TestSuite,
 ): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${stem(file)}.snapshot.json`);

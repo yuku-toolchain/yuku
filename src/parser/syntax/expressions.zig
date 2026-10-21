@@ -19,7 +19,7 @@ const parenthesized = @import("parenthesized.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
 const ecmascript = @import("../ecmascript.zig");
-const dialect = @import("../dialect.zig");
+const dialect = @import("../dialect/root.zig");
 const ts = @import("ts/types.zig");
 
 pub const ParseExpressionOptions = struct {

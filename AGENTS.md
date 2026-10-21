@@ -262,10 +262,11 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | What the parser accepts or rejects, AST shape, diagnostic messages | A fixture in `test/parser/misc/` |
 | The token API, or diagnostic spans across many one-line inputs | `test/parser/tokens.test.ts`, `test/parser/diagnostics.test.ts` |
 | Codegen output | An inline snapshot in `test/codegen/`: `print` (default and compact), `strip`, `minify`, `comments`, `quotes`, or `generate` for option composition and source map output |
-| Scopes, bindings, references, imports, exports | An inline snapshot of `summary()` in `test/analyzer/<topic>.test.ts`, or `project()` for cross-file behavior |
+| Scopes, bindings, references, imports, exports | An inline snapshot of `summary()` in `test/analyzer/<topic>.test.ts`, or `links()` for cross-file behavior |
+| Renames | `test/analyzer/rename.test.ts` |
 | Resolution as tsc or scope-manager defines it | A snippet in `test/analyzer/tsc-differential.test.ts` or `scope-manager-differential.test.ts` |
 | A real codebase to analyze | An entry in `test/projects/manifest.ts`, pinned to a commit |
-| AST helpers and walkers | `test/ast/` |
+| Walking, patterns, templates, builders, and AST helpers | `test/ast/` |
 | The dialect mechanism | `src/parser/testing/dialect.zig`, a dialect that claims every position, and `test/dialect/` for its JavaScript side |
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
 | A small pure Zig helper | An inline `test` block next to the function |
@@ -274,11 +275,17 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 
 CodSpeed measures every pull request against `main` in its CPU simulation mode, which counts instructions and cache misses instead of time, so a regression shows on the pull request that causes it, even on shared CI runners.
 
-- `profile/package.ts` measures the `yuku` package as users call it: `parse`, `analyze`, and `generate` with each option that has its own code path.
+- `profile/package.ts` measures the `yuku` package as users call it: `parse`, analysis, `walk`, patterns, templates, `rename`, and `print`, with each option that has its own code path.
 - `profile/native.zig`, listed in `profile/codspeed.yml`, runs `parse` and `analyze` as a native executable, so a flamegraph names the Zig functions the shipped WebAssembly strips.
 - **A new operation, or an option with its own code path, gets a benchmark in the same change.**
 - Inputs are files from `test/projects/`, pinned to a commit. A changed input moves a benchmark as much as a changed toolchain does, so change one only on purpose.
 - Every input is valid for its operation. A benchmark fails on any diagnostic rather than measure an error path.
+
+### Documentation
+
+- **One home, two guides beside their code.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents Yuku and its Zig API. The package's README, `packages/yuku/README.md`, documents the JavaScript API, which npm and GitHub show, and `src/parser/dialect/README.md` documents dialects. None repeats another, and each links to the others where they meet.
+- **Docs change with the API.** A change to a public API updates its guide in the same change, then `bun run docs:llms` regenerates `llms.txt` and `llms-full.txt` from all three.
+- **Every example runs.** An example that states what it returns returns exactly that.
 
 ### Changes
 

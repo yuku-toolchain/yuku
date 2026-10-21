@@ -1,8 +1,7 @@
 import { expect, test } from "bun:test";
-import { parse, type ParseOptions } from "yuku";
-import { generate, type GenerateOptions } from "yuku/codegen";
+import { parse, type ParseOptions, print, type PrintOptions } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
-import { deepChains, gen, INSTANTIATIONS } from "./helpers";
+import { deepChains, gen, INSTANTIATIONS, MINIFIED } from "./helpers";
 
 test("array holes keep their elisions", () => {
   expect(
@@ -31,8 +30,15 @@ function f() {
 `);
 });
 
-test("normal comments are dropped by default", () => {
-  expect(gen(`// hi\nconst x = 1;`)).toMatchInlineSnapshot(`"const x = 1;"`);
+test("every comment prints by default", () => {
+  expect(gen(`// hi\nconst x = 1;`)).toMatchInlineSnapshot(`
+    "// hi
+    const x = 1;"
+  `);
+});
+
+test("\"some\" drops a plain comment", () => {
+  expect(gen(`// hi\nconst x = 1;`, { comments: "some" })).toMatchInlineSnapshot(`"const x = 1;"`);
 });
 
 test("a legal banner comment is kept", () => {
@@ -199,18 +205,18 @@ test("compact output keeps a type argument closer apart from `>` and `=` operato
 
 test("an instantiation expression keeps the parens that end its type arguments", () => {
   const parseOptions: ParseOptions = { lang: "ts", preserveParens: false };
-  const layouts: GenerateOptions[] = [{ format: "compact" }, { minify: true }];
+  const layouts: PrintOptions[] = [{ format: "compact" }, MINIFIED];
   for (const source of INSTANTIATIONS) {
     expect(gen(source, {}, "input.ts", { preserveParens: false })).toBe(source);
     const { program } = parse(source, parseOptions);
     for (const options of layouts) {
-      const code = generate(program, options).code;
+      const code = print(program, options).code;
       const reparsed = parse(code, parseOptions);
       expect(reparsed.diagnostics, code).toEqual([]);
       expect(astDiffPath(program, reparsed.program), code).toBeNull();
-      expect(generate(reparsed.program, options).code, code).toBe(code);
+      expect(print(reparsed.program, options).code, code).toBe(code);
     }
-    const stripped = generate(program, { strip: true }).code;
+    const stripped = print(program, { strip: true }).code;
     expect(parse(stripped, { lang: "js" }).diagnostics, stripped).toEqual([]);
   }
 });
@@ -265,14 +271,14 @@ test("a member of a bare integer keeps the space before its dot", () => {
     d = 1..w;
     e = 1?.v;"
   `);
-  expect(gen(source, { minify: true }, "input.js")).toMatchInlineSnapshot(
+  expect(gen(source, MINIFIED, "input.js")).toMatchInlineSnapshot(
     `"a=1 .x;b=1 .y;c=0x1.z;d=1 .w;e=1?.v"`,
   );
 });
 
 test("line breaks in template text and JSDoc print as LF", () => {
   const source = "x = `a\r\nb\rc`;\r\n/**\r\n * doc\r\n */\r\nfunction f() {}\r\n";
-  expect(gen(source, { comments: true }, "input.js")).toMatchInlineSnapshot(`
+  expect(gen(source, { comments: "all" }, "input.js")).toMatchInlineSnapshot(`
     "x = \`a
     b
     c\`;

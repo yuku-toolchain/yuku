@@ -2,11 +2,7 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
   entry: {
-    index: "parser/index.ts",
-    analyzer: "analyzer/index.ts",
-    ast: "ast/index.ts",
-    codegen: "codegen/index.ts",
-    types: "types/index.ts",
+    index: "index.ts",
     "module/inline": "core/module/inline.ts",
     "module/import": "core/module/import.ts",
   },

@@ -21,8 +21,6 @@ pub const SourceMap = struct {
 };
 
 pub const Options = struct {
-    /// The original source text, required to emit a map.
-    source: ?[]const u8 = null,
     /// Output filename, embedded as the map's `file`.
     file: ?[]const u8 = null,
     /// Source filename, embedded as the single entry of `sources`.
@@ -54,8 +52,8 @@ pub const State = struct {
 
     const Segment = struct { gen_line: u32, gen_col: u32, orig_line: u32, orig_col: u32 };
 
-    pub fn init(options: Options) State {
-        return .{ .options = options, .source = options.source orelse "" };
+    pub fn init(options: Options, source: []const u8) State {
+        return .{ .options = options, .source = source };
     }
 
     pub fn deinit(self: *State, allocator: Allocator) void {

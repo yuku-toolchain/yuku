@@ -1,9 +1,8 @@
 import { expect, test } from "bun:test";
-import { parse } from "yuku";
-import type { GenerateOptions } from "yuku/codegen";
-import { commentPlacements, gen } from "./helpers";
+import { parse, type PrintOptions } from "yuku";
+import { commentPlacements, gen, MINIFIED } from "./helpers";
 
-const ALL = { comments: true } as const;
+const ALL = { comments: "all" } as const;
 
 test("a blank line between statements is preserved as a group break", () => {
   expect(gen(`foo();\n\n// after blank\nbar();`, ALL)).toMatchInlineSnapshot(`
@@ -121,12 +120,13 @@ test("a pure annotation inline before a call", () => {
   );
 });
 
-test("the default keeps spaced annotations and drops plain comments", () => {
+test("\"some\" keeps spaced annotations and drops plain comments", () => {
+  const SOME = { comments: "some" } as const;
   for (const comment of ["/* @__PURE__ */", "/* #__PURE__ */", "/*\t@__NO_SIDE_EFFECTS__ */"]) {
-    expect(gen(`const x = ${comment} foo();`), comment).toBe(`const x = ${comment} foo();`);
+    expect(gen(`const x = ${comment} foo();`, SOME), comment).toBe(`const x = ${comment} foo();`);
   }
   for (const comment of ["/* ! not legal */", "/* * not jsdoc */", "/* plain */"]) {
-    expect(gen(`const x = ${comment} foo();`), comment).toBe("const x = foo();");
+    expect(gen(`const x = ${comment} foo();`, SOME), comment).toBe("const x = foo();");
   }
 });
 
@@ -209,7 +209,7 @@ test("comments:block keeps only the block comment", () => {
 });
 
 test("comments:false drops everything", () => {
-  expect(gen(`// hidden\nconst x = 1;`, { comments: false })).toMatchInlineSnapshot(
+  expect(gen(`// hidden\nconst x = 1;`, { comments: "none" })).toMatchInlineSnapshot(
     `"const x = 1;"`,
   );
 });
@@ -380,7 +380,7 @@ test("a node the parent writes itself keeps its comments", () => {
     function f(a): a is /* c */ string {}"
   `);
   const keys = 'x = a[/* c */ "b"];\ny = { "c" /* c */\n: 1 };\nclass C { "d" /* c */\n() {} }';
-  expect(gen(keys, { ...ALL, minify: true }, "input.js")).toMatchInlineSnapshot(
+  expect(gen(keys, { ...ALL, ...MINIFIED }, "input.js")).toMatchInlineSnapshot(
     `"x=a./* c */b;y={c/* c */:1};class C{d/* c */(){}}"`,
   );
 });
@@ -443,10 +443,10 @@ test("a blank line inside a JSDoc comment is kept", () => {
 
 // one comment in each token gap of a snippet per node kind, printed twice by every plan
 test("a comment in any gap survives every plan", () => {
-  const plans: GenerateOptions[] = [
+  const plans: PrintOptions[] = [
     ALL,
     { ...ALL, format: "compact" },
-    { ...ALL, minify: true },
+    { ...ALL, ...MINIFIED },
     { ...ALL, strip: true },
   ];
   const failures: string[] = [];

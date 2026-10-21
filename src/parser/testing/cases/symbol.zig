@@ -4,9 +4,8 @@ const helpers = @import("../helpers.zig");
 
 const ast = parser.ast;
 const semantic = parser.semantic;
-const Semantic = semantic.Semantic;
+const SymbolId = semantic.SymbolId;
 const traverser = parser.traverser;
-const SymbolId = traverser.semantic.SymbolId;
 
 const testing = std.testing;
 
@@ -14,7 +13,7 @@ test "lookup agrees with resolution when a var passes through a catch scope" {
     var a = try helpers.analyze("try {} catch (e) { { var e; e; } }", .{ .source_type = .script });
     defer a.deinit();
 
-    var buf: [4]Semantic.SymbolEntry = undefined;
+    var buf: [4]helpers.SymbolEntry = undefined;
     const es = a.symbolsNamed("e", &buf);
     try testing.expectEqual(@as(usize, 2), es.len);
     const catch_param = if (es[0].symbol.flags.catch_var) es[0] else es[1];
@@ -41,7 +40,7 @@ test "symbolOf answers for both declaration and reference nodes" {
 
     try testing.expect(a.sem.referenceOf(ref_node) != null);
     try testing.expectEqual(
-        @as(?traverser.semantic.ReferenceId, null),
+        @as(?semantic.ReferenceId, null),
         a.sem.referenceOf(binding_node),
     );
 
@@ -84,49 +83,25 @@ test "lookup walks the scope chain, binding does not" {
     try testing.expectEqual(inner.id, a.sem.binding(block_scope, "inner").?);
 }
 
-test "iterators yield ids that round-trip through the accessors" {
+test "reference ids round-trip through their nodes" {
     var a = try helpers.analyze("let x = 1; function f(y) { x; y; }", .{});
     defer a.deinit();
 
-    var scope_count: usize = 0;
-    var scope_it = a.sem.iterScopes();
-    while (scope_it.next()) |entry| {
-        scope_count += 1;
-        const direct = a.sem.scope(entry.id);
-        try testing.expectEqual(direct.kind, entry.scope.kind);
-        try testing.expectEqual(direct.node, entry.scope.node);
+    try testing.expect(a.sem.references.len > 0);
+    for (a.sem.references, 0..) |reference, i| {
+        const id: semantic.ReferenceId = @fromBackingInt(@intCast(i));
+        try testing.expectEqual(id, a.sem.referenceOf(reference.node).?);
     }
-    try testing.expectEqual(a.sem.scopes.list.len, scope_count);
-
-    var symbol_count: usize = 0;
-    var sym_it = a.sem.iterSymbols();
-    while (sym_it.next()) |entry| {
-        symbol_count += 1;
-        try testing.expectEqual(a.sem.symbol(entry.id).name, entry.symbol.name);
-    }
-    try testing.expectEqual(a.sem.symbols.len, symbol_count);
-
-    var ref_count: usize = 0;
-    var ref_it = a.sem.iterReferences();
-    while (ref_it.next()) |entry| {
-        ref_count += 1;
-        try testing.expectEqual(a.sem.reference(entry.id).node, entry.reference.node);
-        try testing.expectEqual(entry.id, a.sem.referenceOf(entry.reference.node).?);
-    }
-    try testing.expectEqual(a.sem.references.len, ref_count);
 }
 
 test "every declared symbol is reachable through its scope's bindings" {
     var a = try helpers.analyze("let x = 1; function f(y) { var z; }", .{});
     defer a.deinit();
 
-    var sym_it = a.sem.iterSymbols();
-    while (sym_it.next()) |entry| {
-        const found = a.sem.binding(
-            entry.symbol.scope,
-            a.tree.string(entry.symbol.name),
-        ) orelse return error.SymbolNotInScopeMap;
-        try testing.expectEqual(entry.id, found);
+    for (a.sem.symbols, 0..) |symbol, i| {
+        const found = a.sem.binding(symbol.scope, a.tree.string(symbol.name)) orelse
+            return error.SymbolNotInScopeMap;
+        try testing.expectEqual(@as(SymbolId, @fromBackingInt(@intCast(i))), found);
     }
 }
 
@@ -207,10 +182,10 @@ const CtxProbeVisitor = struct {
 test "analyze without check reports nothing and builds the checked model" {
     var tree = try parser.parse(testing.allocator, "let a = 1; let a = 2; a;", .{});
     defer tree.deinit();
-    try testing.expect(!tree.hasDiagnostics());
+    try testing.expectEqual(0, tree.diagnostics.items.len);
 
     const unchecked = try semantic.analyze(&tree, .{ .check = false });
-    try testing.expect(!tree.hasDiagnostics());
+    try testing.expectEqual(0, tree.diagnostics.items.len);
 
     const checked = try semantic.analyze(&tree, .{ .check = true });
     try testing.expectEqual(@as(usize, 1), tree.diagnostics.items.len);

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Analyzer } from "yuku/analyzer";
+import { parse } from "yuku";
 import { summary } from "./utils/summarize";
 
 describe("root scope", () => {
@@ -145,18 +145,18 @@ describe("strict mode", () => {
 
 describe("hoist targets", () => {
   test("a var in a nested block hoists to the enclosing function scope", () => {
-    const module = new Analyzer().setFile("input.js", `function outer() { { var v = 1; } }`);
-    const fnScope = module.scopes.find((s) => s.kind === "function")!;
-    const blockScope = module.scopes.find((s) => s.kind === "block")!;
-    const v = module.bindings.find((s) => s.name === "v")!;
+    const file = parse(`function outer() { { var v = 1; } }`, { semantic: true, path: "input.js" });
+    const fnScope = file.scopes.find((s) => s.kind === "function")!;
+    const blockScope = file.scopes.find((s) => s.kind === "block")!;
+    const v = file.bindings.find((s) => s.name === "v")!;
 
     expect(blockScope.hoistTarget).toBe(fnScope);
     expect(v.scope).toBe(fnScope);
   });
 
   test("a function scope is its own hoist target", () => {
-    const module = new Analyzer().setFile("input.js", `function f() {}`);
-    const fnScope = module.scopes.find((s) => s.kind === "function")!;
+    const file = parse(`function f() {}`, { semantic: true, path: "input.js" });
+    const fnScope = file.scopes.find((s) => s.kind === "function")!;
     expect(fnScope.hoistTarget).toBe(fnScope);
   });
 });

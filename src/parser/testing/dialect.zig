@@ -4,7 +4,7 @@ const parser = @import("parser");
 const ast = parser.ast;
 const dialect = parser.dialect;
 const Claim = dialect.Claim;
-const Error = dialect.Error;
+const Error = std.mem.Allocator.Error;
 const NodeIndex = ast.NodeIndex;
 const Parser = dialect.Parser;
 
@@ -54,7 +54,7 @@ pub const Node = enum {
 pub fn statement(p: *Parser) Error!Claim {
     const token = p.token();
     if (!token.tag.isIdentifierLike()) return .decline;
-    const name = token.text(p.source());
+    const name = token.text(p.tree().source);
     const next = p.tokenAt(token.span.end);
     if (std.mem.eql(u8, name, "each") and next.tag == .left_paren) return parseEach(p);
     if (std.mem.eql(u8, name, "rescue") and next.tag == .left_paren) return parseRescue(p);
@@ -64,7 +64,7 @@ pub fn statement(p: *Parser) Error!Claim {
 
 pub fn expression(p: *Parser) Error!Claim {
     const token = p.token();
-    if (token.tag == .at and std.mem.startsWith(u8, p.source()[token.span.end..], "<")) {
+    if (token.tag == .at and std.mem.startsWith(u8, p.tree().source[token.span.end..], "<")) {
         return parseMarked(p);
     }
     if (token.tag != .percent) return .decline;
@@ -76,7 +76,7 @@ pub fn operator(p: *Parser, left: NodeIndex, precedence: u8) Error!Claim {
     const token = p.token();
     // a `(` that starts a line starts a statement
     if (token.tag == .left_paren and token.hasLineTerminatorBefore()) return .end;
-    if (!std.mem.startsWith(u8, p.source()[token.span.start..], "|>")) return .decline;
+    if (!std.mem.startsWith(u8, p.tree().source[token.span.start..], "|>")) return .decline;
     if (precedence > ast.Precedence.Assignment) return .end;
 
     if (!try p.advance() or !try p.advance()) return .failed;
@@ -96,7 +96,7 @@ pub fn function_body(p: *Parser) Error!Claim {
 }
 
 pub fn jsx_child(p: *Parser, offset: u32, parent: NodeIndex) Error!Claim {
-    const source = p.source();
+    const source = p.tree().source;
     if (offset == p.tree().span(parent).end and isRaw(p.tree(), parent)) {
         const end: u32 = @intCast(std.mem.findPos(u8, source, offset, "</raw>") orelse source.len);
         if (end == offset) return .decline;
@@ -126,7 +126,7 @@ pub fn jsx_child(p: *Parser, offset: u32, parent: NodeIndex) Error!Claim {
     if (std.mem.startsWith(u8, source[offset..], "/*")) {
         const close = std.mem.findPos(u8, source, offset, "*/") orelse return .decline;
         const span: ast.Span = .{ .start = offset, .end = @intCast(close + 2) };
-        try p.addComment(.block, span);
+        try p.recordComment(.block, span);
         const empty = try p.tree().addNode(.{ .jsx_empty_expression = .{} }, span);
         return claimed(try p.tree().addNode(.{ .jsx_expression_container = .{
             .expression = empty,
@@ -317,7 +317,7 @@ fn parseSource(source: []const u8, enabled: bool) !ast.Tree {
 
 fn expectClean(tree: *const ast.Tree) !void {
     for (tree.diagnostics.items) |diagnostic| std.debug.print("{s}\n", .{diagnostic.message});
-    try testing.expect(!tree.hasDiagnostics());
+    try testing.expectEqual(0, tree.diagnostics.items.len);
 }
 
 fn firstOf(tree: *const ast.Tree, kind: Node) ?NodeIndex {
@@ -449,7 +449,7 @@ test "a dialect binding lands in its node's scope" {
         if (!std.mem.eql(u8, tree.string(data.identifier_reference.name), "item")) continue;
         const symbol = semantic.symbol(semantic.symbolOf(@fromBackingInt(@intCast(i))).?);
         try testing.expect(symbol.flags.block_scoped_var);
-        try testing.expectEqual(each, semantic.scope(symbol.scope).node);
+        try testing.expectEqual(each, semantic.scopes.get(symbol.scope).node);
     }
 }
 

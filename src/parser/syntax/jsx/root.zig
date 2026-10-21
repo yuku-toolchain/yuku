@@ -7,7 +7,7 @@ const Error = @import("../../parser.zig").Error;
 
 const expressions = @import("../expressions.zig");
 const ts = @import("../ts/types.zig");
-const dialect = @import("../../dialect.zig");
+const dialect = @import("../../dialect/root.zig");
 
 pub const JsxElementContext = enum { top_level, child, attribute };
 

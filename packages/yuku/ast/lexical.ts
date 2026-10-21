@@ -84,8 +84,6 @@ const strictReservedWords = new Set([
   "yield",
 ]);
 
-const strictBindOnlyReservedWords = new Set(["eval", "arguments"]);
-
 /** True if `word` is a keyword of the core grammar, not `enum`, `await`, or strict-only words. */
 export function isKeyword(word: string): boolean {
   return keywords.has(word);
@@ -102,17 +100,12 @@ export function isStrictReservedWord(word: string, inModule = false): boolean {
 }
 
 /** True for `eval` and `arguments`, which strict mode code cannot bind. */
-export function isStrictBindOnlyReservedWord(word: string): boolean {
-  return strictBindOnlyReservedWords.has(word);
+export function isEvalOrArguments(word: string): boolean {
+  return word === "eval" || word === "arguments";
 }
 
-/** True if strict mode code cannot bind `word`. */
-export function isStrictBindReservedWord(word: string, inModule = false): boolean {
-  return isStrictReservedWord(word, inModule) || isStrictBindOnlyReservedWord(word);
-}
-
-/** True if `name` is an identifier no code reserves, or any `IdentifierName` without `reserved`. */
-export function isValidIdentifier(name: string, reserved = true): boolean {
-  if (reserved && (isKeyword(name) || isStrictReservedWord(name, true))) return false;
+/** True if `name` is an identifier no code reserves. */
+export function isValidIdentifier(name: string): boolean {
+  if (isKeyword(name) || isStrictReservedWord(name, true)) return false;
   return isIdentifierName(name);
 }

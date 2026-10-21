@@ -93,7 +93,7 @@ fn printFile(
     }
 
     var options = plan.codegen;
-    if (plan.source_map) options.source_map = .{ .source = source };
+    if (plan.source_map) options.source_map = .{};
     const result = try codegen.generate(gpa, &tree, options);
     defer result.deinit(gpa);
     std.debug.assert(plan.source_map == (result.map != null));

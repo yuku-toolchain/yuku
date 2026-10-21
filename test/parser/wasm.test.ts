@@ -8,7 +8,10 @@ const shipped = readFileSync(new URL("../../packages/yuku/dist/yuku.wasm", impor
 test("the inlined module parses as the shipped yuku.wasm does", () => {
   const wasm = new WebAssembly.Module(shipped);
   const source = "const x: number = 1;";
-  expect(parse(source, { lang: "ts", wasm })).toEqual(parse(source, { lang: "ts" }));
+  const custom = parse(source, { lang: "ts", wasm });
+  const inlined = parse(source, { lang: "ts" });
+  expect(custom.program).toEqual(inlined.program);
+  expect(custom.diagnostics).toEqual(inlined.diagnostics);
 });
 
 test("workerd and edge-light import yuku.wasm in the form their bundlers compile", () => {

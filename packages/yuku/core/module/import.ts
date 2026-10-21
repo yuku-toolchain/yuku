@@ -1,3 +1,5 @@
 import yuku from "#wasm";
 
-export { yuku };
+export function bundled(): WebAssembly.Module {
+  return yuku;
+}

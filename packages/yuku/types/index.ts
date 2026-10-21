@@ -9,19 +9,6 @@ type ModuleKind = "script" | "module";
 /** The language of the source. */
 type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
 
-/** How a file is read. */
-interface FileOptions {
-  /** The file path, which `lang`, `sourceType` and the dialect default from. */
-  path?: string;
-  /** Parses without the dialect when set. @default from `path` or the dialect, else "js" */
-  lang?: SourceLang;
-  /**
-   * `"commonjs"` is a script whose top level allows `return`.
-   * @default "commonjs" for `.cjs` and `.cts` paths, else "module"
-   */
-  sourceType?: SourceType;
-}
-
 /** Whether a comment is a line or a block comment. */
 type CommentType = "Line" | "Block";
 
@@ -85,14 +72,10 @@ interface TokenList {
 
   /** The half-open range of the tokens inside a node, empty within a single token. */
   range(node: Span): [from: number, to: number];
-  /** The first token inside a node, or -1. */
-  first(node: Span): number;
-  /** The last token inside a node, or -1. */
-  last(node: Span): number;
-  /** The last token ending at or before a node or offset, or -1. */
-  before(at: number | Span): number;
-  /** The first token starting at or after a node or offset, or -1. */
-  after(at: number | Span): number;
+  /** The last token ending at or before an offset, or -1. */
+  before(offset: number): number;
+  /** The first token starting at or after an offset, or -1. */
+  after(offset: number): number;
   /** The token containing an offset, or -1. */
   at(offset: number): number;
 }
@@ -249,38 +232,38 @@ interface PrivateIdentifier extends BaseNode {
 interface StringLiteral extends BaseNode {
   type: "Literal";
   value: string;
-  raw: string;
+  raw?: string;
 }
 
 interface NumericLiteral extends BaseNode {
   type: "Literal";
   value: number;
-  raw: string;
+  raw?: string;
 }
 
 interface BigIntLiteral extends BaseNode {
   type: "Literal";
   value: bigint;
-  raw: string;
+  raw?: string;
   bigint: string;
 }
 
 interface BooleanLiteral extends BaseNode {
   type: "Literal";
   value: boolean;
-  raw: string;
+  raw?: string;
 }
 
 interface NullLiteral extends BaseNode {
   type: "Literal";
   value: null;
-  raw: "null";
+  raw?: "null";
 }
 
 interface RegExpLiteral extends BaseNode {
   type: "Literal";
   value: RegExp | null;
-  raw: string;
+  raw?: string;
   regex: {
     pattern: string;
     flags: string;
@@ -1727,7 +1710,6 @@ export type {
   Diagnostic,
   DiagnosticLabel,
   DiagnosticSeverity,
-  FileOptions,
   SourceType,
   ModuleKind,
   SourceLang,

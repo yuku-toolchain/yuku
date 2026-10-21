@@ -1,130 +1,11 @@
 ---
 .title = "Parser",
-.description = "A JavaScript and TypeScript parser written in Zig.",
+.description = "Parse JavaScript, TypeScript, and JSX into a tree.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The parser turns JavaScript, TypeScript, and JSX into an [AST](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns a tree of everything it could read.
-
-## [JavaScript]($section.id('javascript'))
-
-```js
-import { parse } from "yuku";
-
-const { program, comments, diagnostics } = parse("const x = 1 + 2;");
-```
-
-`parse` takes a string or UTF-8 bytes, and `program` is an [ESTree / TypeScript-ESTree AST](/parser/ast/#javascript).
-
-### [Options]($section.id('js-options'))
-
-| Option           | Values                                    | Default    | Description                                                                              |
-| ---------------- | ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
-| `path`           | a file path                               | none       | Names the file in diagnostics, and sets `lang` and `sourceType` from its extension.      |
-| `lang`           | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, `"dts"` | `"js"`     | The syntax to parse.                                                                     |
-| `sourceType`     | `"module"`, `"script"`, `"commonjs"`      | `"module"` | `"commonjs"` allows top-level `return`, and is the default for `.cjs` and `.cts` paths.  |
-| `preserveParens` | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes.                                                    |
-| `semanticErrors` | `true`, `false`                           | `false`    | Also report the early errors that need scopes, such as redeclarations.                   |
-| `attachComments` | `true`, `false`                           | `false`    | Also attach each comment to its node, see [Comments](#js-comments).                      |
-| `tokens`         | `true`, `false`                           | `false`    | Keep every token, see [Tokens](#js-tokens).                                              |
-| `wasm`           | a `WebAssembly.Module`                    | bundled    | A custom build of Yuku, such as one with a [dialect](/parser/dialect/#javascript).       |
-
-An unknown `lang` or `sourceType` throws a `TypeError`. `langFromPath(path)` and `sourceTypeFromPath(path)` return the values a path implies.
-
-### [Result]($section.id('js-result'))
-
-```ts
-interface ParseResult {
-  program: Program;
-  comments: Comment[];
-  tokens?: TokenList; // with tokens: true
-  diagnostics: Diagnostic[];
-}
-```
-
-### [Diagnostics]($section.id('js-diagnostics'))
-
-Every part of `yuku` reports diagnostics in this shape.
-
-```ts
-interface Diagnostic {
-  severity: "error" | "warning" | "hint" | "info";
-  message: string;
-  path: string | null; // the path option
-  start: number;       // UTF-16 offsets, like nodes
-  end: number;
-  labels: { start: number; end: number; message: string }[];
-  help: string | null;
-}
-```
-
-### [Comments]($section.id('js-comments'))
-
-`comments` lists every comment in source order, as `{ type, value, start, end }`, where `type` is `"Line"` or `"Block"` and `value` is the text without delimiters.
-
-`attachComments: true` also gives each comment to the node it prints with, in `node.comments`, and adds where it sits. They are the same objects as in `comments`.
-
-```js
-const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
-
-program.body[0].comments;
-// [
-//   { type: "Line", value: " header", start: 0, end: 9, position: "before", sameLine: false },
-//   { type: "Line", value: " trailing", start: 28, end: 39, position: "after", sameLine: true },
-// ]
-```
-
-`position` is `"before"`, `"after"`, or `"inside"` an otherwise empty node, such as `function f() { /* hi */ }`. [`yuku/codegen`](/parser/codegen/#js-comments) prints comments from `node.comments`, so they move with their nodes, and editing that array adds, moves, or drops them.
-
-### [Tokens]($section.id('js-tokens'))
-
-`tokens: true` keeps every token in a `TokenList`, where a token is an index.
-
-```js
-import { parse, TokenKind } from "yuku";
-
-const { tokens } = parse(source, { tokens: true });
-
-for (let i = 0; i < tokens.length; i++) {
-  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
-}
-```
-
-```js
-tokens.kind(i)                      // one of TokenKind
-tokens.text(i)                      // its source text
-tokens.start(i)                     // UTF-16 offsets
-tokens.end(i)
-
-tokens.isKeyword(i)
-tokens.isReserved(i)                // reserved unconditionally or in strict mode
-tokens.isUnconditionallyReserved(i)
-tokens.isStrictModeReserved(i)
-tokens.isIdentifierLike(i)          // an identifier or any keyword
-tokens.isNumericLiteral(i)
-tokens.isBinaryOperator(i)
-tokens.isLogicalOperator(i)
-tokens.isUnaryOperator(i)
-tokens.isAssignmentOperator(i)
-tokens.precedence(i)                // operator precedence, 0 when none
-
-tokens.newlineBefore(i)             // what ASI reads
-tokens.escaped(i)
-tokens.invalidEscape(i)             // a template chunk whose cooked value is undefined
-tokens.loneSurrogate(i)
-
-tokens.range(node)                  // [from, to) of the tokens inside a node
-tokens.first(node)
-tokens.last(node)
-tokens.before(nodeOrOffset)         // the last token ending at or before it
-tokens.after(nodeOrOffset)          // the first token starting at or after it
-tokens.at(offset)                   // the token containing an offset
-```
-
-The queries return an index, or `-1` when there is none. Tokens are as the parser resolved them, so a regex is one `RegexLiteral`, and comments are not tokens. [tokens.ts](https://github.com/yuku-toolchain/yuku/blob/main/packages/yuku/types/tokens.ts) lists the kinds.
-
-## [Zig]($section.id('zig'))
+The parser reads JavaScript, TypeScript, and JSX into a [tree](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#parse).
 
 ```zig
 const std = @import("std");
@@ -136,36 +17,50 @@ pub fn main() !void {
 }
 ```
 
-`parse` returns a `Tree` holding the AST, its diagnostics, and the source, and fails only with `error.OutOfMemory`. Everything lives in one arena, so `tree.deinit()` frees it all at once. The tree borrows `source`, which must outlive it. [AST](/parser/ast/#zig) shows how to read it.
+```zig
+pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) error{OutOfMemory}!ast.Tree
+```
+
+The tree lives in one arena, which `tree.deinit()` frees, and borrows `source`, which must outlive it.
 
 ## [Options]($section.id('options'))
 
-| Field             | Default    | Description                                                                                    |
-| ----------------- | ---------- | ---------------------------------------------------------------------------------------------- |
-| `source_type`     | `.module`  | `.script`, `.module` (strict, with `import` and `export`), or `.commonjs` (top-level `return`) |
-| `lang`            | `.js`      | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                        |
-| `preserve_parens` | `true`     | Keep `parenthesized_expression` nodes, or only their inner expression                          |
-| `comments`        | `.collect` | `.none`, `.collect`, or `.attach`, see [Comments](/parser/ast/#comments)                       |
-| `tokens`          | `false`    | Keep every token, see [Tokens](/parser/ast/#tokens)                                            |
-| `dialect`         | `false`    | Read the source with the [dialect](/parser/dialect/) compiled into the parser                  |
+| Field             | Default    | Description                                                                                                                   |
+| ----------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `source_type`     | `.module`  | `.script`, `.module`, or `.commonjs`, whose top level is a function body                                                      |
+| `lang`            | `.js`      | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                                                       |
+| `preserve_parens` | `true`     | Keep `parenthesized_expression` nodes                                                                                         |
+| `comments`        | `.collect` | `.none`, `.collect`, or `.attach`, see [Comments](/parser/ast/#comments)                                                      |
+| `tokens`          | `false`    | Keep every token, see [Tokens](/parser/ast/#tokens)                                                                           |
+| `dialect`         | `false`    | Read with the [dialect](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) the build has compiled in |
 
-`.fromPath` infers `source_type` and `lang` from a file name, as in `.lang = .fromPath("app.tsx")`.
+`ast.Lang.fromPath` and `ast.SourceType.fromPath` read them from a file name.
+
+```zig
+const options: parser.Options = .{ .lang = .fromPath(path), .source_type = .fromPath(path) };
+```
 
 ## [Diagnostics]($section.id('diagnostics'))
 
-```zig
-var tree = try parser.parse(allocator, "const a = 1;\nlet x = ;\nconst y = 2;", .{});
-defer tree.deinit();
-// one diagnostic, "Unexpected token ';'", and a tree holding `a` and `y`
+Every part of Yuku reports problems as an `ast.Diagnostic`.
 
-for (tree.diagnostics.items) |d| {
-    std.debug.print("[{s}] {s} at {d}..{d}\n", .{
-        d.severity.toString(), d.message, d.span.start, d.span.end,
-    });
-    if (d.help) |help| std.debug.print("  help: {s}\n", .{help});
-}
+```zig
+pub const Diagnostic = struct {
+    severity: Severity = .@"error", // .@"error", .warning, .hint, or .info
+    message: []const u8,
+    span: Span,                     // bytes
+    help: ?[]const u8 = null,
+    labels: []const Label = &.{},   // .{ .span, .message } pointing at related code
+};
 ```
 
-Every part of Yuku reports diagnostics as an `ast.Diagnostic`: a `severity` of `.error`, `.warning`, `.hint`, or `.info`, a `message`, a byte `span`, `labels` pointing at related code, and optional `help`.
+```zig
+for (tree.diagnostics.items) |d| {
+    std.debug.print("[{s}] {s} at {d}..{d}\n", .{ d.severity.toString(), d.message, d.span.start, d.span.end });
+}
 
-`tree.hasErrors()` tells whether any error occurred, and `tree.hasDiagnostics()` whether anything was reported. [Semantic analysis](/parser/semantic/) adds the early errors that need scopes, such as duplicate `let` declarations and `break` outside a loop.
+tree.hasErrors();      // any .@"error"
+try tree.addDiagnostic(.{ .message = "unused", .span = span });
+```
+
+[Semantic analysis](/parser/semantic/) adds the early errors that need scopes, such as redeclarations.

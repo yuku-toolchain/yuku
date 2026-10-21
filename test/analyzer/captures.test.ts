@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Analyzer } from "yuku/analyzer";
+import { parse } from "yuku";
 import { captures } from "./utils/summarize";
 
 test("a read capture and a written capture", () => {
@@ -55,6 +55,6 @@ test("imported bindings count as captures", () => {
 });
 
 test("capturesOf throws on a non-function node", () => {
-  const module = new Analyzer().setFile("input.js", `let x = 1;`);
-  expect(() => module.capturesOf(module.ast)).toThrow();
+  const file = parse(`let x = 1;`, { semantic: true, path: "input.js" });
+  expect(() => file.capturesOf(file.program)).toThrow();
 });

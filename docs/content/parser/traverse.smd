@@ -5,22 +5,24 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The traverser walks a tree and calls your visitor's hooks at every node, in one of four modes.
+The traverser walks a tree depth-first and calls a visitor's hooks at each node, in one of four modes. From JavaScript, see [`walk`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#walk).
 
-| Mode                      | Tracks                          | Returns                                   | For                                         |
-| ------------------------- | ------------------------------- | ----------------------------------------- | ------------------------------------------- |
-| [`basic`](#visitors)      | the path from the root          | nothing                                   | pattern matching, counters, simple lints    |
-| [`scoped`](#scoped)       | the path and lexical scopes     | a `ScopeTree`                             | checks that depend on scope or strict mode  |
-| [`semantic`](#semantic)   | scopes, symbols, and references | the [`Semantic`](/parser/semantic/) model | analysis that needs to know what names mean |
-| [`transform`](#transform) | the path, with a mutable tree   | nothing                                   | rewrites, codemods, and desugaring          |
+| Mode                      | Tracks                          | Returns                                   | `ctx.tree`        |
+| ------------------------- | ------------------------------- | ----------------------------------------- | ----------------- |
+| [`basic`](#visitors)      | the path from the root          | nothing                                   | `*const ast.Tree` |
+| [`scoped`](#scoped)       | the path and lexical scopes     | a `ScopeTree`                             | `*const ast.Tree` |
+| [`semantic`](#semantic)   | scopes, symbols, and references | the [`Semantic`](/parser/semantic/) model | `*const ast.Tree` |
+| [`transform`](#transform) | the path                        | nothing                                   | `*ast.Tree`       |
 
-Only `transform` gives the visitor a mutable tree. In the other modes, `ctx.tree` is a `*const Tree`.
+```zig
+pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) std.mem.Allocator.Error!Result
+```
 
-In JavaScript, [`walk`](/parser/ast/#js-walking) from `yuku/ast` walks any ESTree AST, and [`module.walk`](/parser/semantic/#js-walking) from `yuku/analyzer` adds the semantic model to the walk.
+`basic.traverse` takes a `*const ast.Tree`. Every mode can fail with `error.OutOfMemory`, since a subtree deeper than 256 levels walks iteratively.
 
 ## [Visitors]($section.id('visitors'))
 
-A visitor is a struct with `enter_<tag>` and `exit_<tag>` methods, named after node tags, which receive the node's payload unpacked. This one counts functions in `basic` mode.
+A visitor is a struct of `pub` hooks named after node tags. This one counts functions.
 
 ```zig
 const std = @import("std");
@@ -32,12 +34,7 @@ const basic = traverser.basic;
 const Counter = struct {
     functions: u32 = 0,
 
-    pub fn enter_function(
-        self: *Counter,
-        _: ast.Function,
-        _: ast.NodeIndex,
-        _: *basic.Ctx,
-    ) traverser.Action {
+    pub fn enter_function(self: *Counter, _: ast.Function, _: ast.NodeIndex, _: *basic.Ctx) traverser.Action {
         self.functions += 1;
         return .proceed;
     }
@@ -45,18 +42,38 @@ const Counter = struct {
 
 var counter = Counter{};
 try basic.traverse(Counter, &tree, &counter);
-std.debug.print("{d} functions\n", .{counter.functions});
 ```
 
-A misspelled hook or a wrong payload type is a compile error. `enter_node` and `exit_node` fire for every node, with the `ast.NodeData` payload. The walk is depth-first with siblings in source order.
+```zig
+pub fn enter_<tag>(self: *V, payload: ast.<Payload>, index: ast.NodeIndex, ctx: *Ctx) Action
+pub fn exit_<tag>(self: *V, payload: ast.<Payload>, index: ast.NodeIndex, ctx: *Ctx) void
+pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *Ctx) Action
+pub fn exit_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *Ctx) void
+```
 
-An enter hook returns a `traverser.Action`: `.proceed` to walk into the children, `.skip` to pass over them, or `.stop` to end the walk. It may return an error union, to `try` an allocation. An exit hook returns nothing.
+- An enter hook returns an `Action`, or `std.mem.Allocator.Error!Action` to `try` an allocation.
+- A misspelled hook or a wrong payload type is a compile error. A hook that is not `pub` is never called.
+- At each node, `enter_node` runs, then `enter_<tag>` unless `enter_node` returned something other than `.proceed`, then the children in field order, then `exit_<tag>` and `exit_node`.
+- A [dialect's](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) nodes reach `enter_dialect` and `exit_dialect` with an `ast.Dialect`.
 
-Every mode's context has `ctx.tree` and `ctx.path`. The path knows the current node's `parent()`, its `ancestor(n)` with the current node at 0, its `ancestors()` from the current node up, and its `depth()`.
+| `Action`   | Effect                                                             |
+| ---------- | ------------------------------------------------------------------ |
+| `.proceed` | Walk into the children                                             |
+| `.skip`    | Pass over the children. The node's exit hooks still run.           |
+| `.stop`    | End the walk. Exit hooks still run for the node and its ancestors. |
+
+Every mode's context has `ctx.tree` and `ctx.path`.
+
+```zig
+ctx.path.parent()     // ?ast.NodeIndex
+ctx.path.ancestor(n)  // with the current node at 0
+ctx.path.ancestors()  // an iterator from the current node up
+ctx.path.depth()      // 1 at the root
+```
 
 ## [Scoped]($section.id('scoped'))
 
-`ctx.scope` follows the walk into and out of every scope, with `currentScope()`, `hoistTarget()`, and `isStrict()`. This lint finds each `var` that escapes its block.
+`ctx.scope` follows the walk into and out of every scope, and the walk returns every scope it saw as a `ScopeTree`. A node's own scope is current in its enter hook. This lint counts each `var` that escapes its block.
 
 ```zig
 const scoped = traverser.scoped;
@@ -64,13 +81,8 @@ const scoped = traverser.scoped;
 const VarInBlock = struct {
     found: u32 = 0,
 
-    pub fn enter_variable_declaration(
-        self: *VarInBlock,
-        decl: ast.VariableDeclaration,
-        _: ast.NodeIndex,
-        ctx: *scoped.Ctx,
-    ) traverser.Action {
-        if (decl.kind == .@"var" and ctx.scope.currentScope().kind == .block) self.found += 1;
+    pub fn enter_variable_declaration(self: *VarInBlock, decl: ast.VariableDeclaration, _: ast.NodeIndex, ctx: *scoped.Ctx) traverser.Action {
+        if (decl.kind == .@"var" and ctx.scope.get(ctx.scope.current).kind == .block) self.found += 1;
         return .proceed;
     }
 };
@@ -79,11 +91,15 @@ var lint = VarInBlock{};
 const scopes = try scoped.traverse(VarInBlock, &tree, &lint);
 ```
 
-On `{ var b; } for (var i = 0;;) {}` it finds `b` and `i`. The walk also returns every scope it saw as a `ScopeTree`, and an empty visitor returns just that.
+```zig
+ctx.scope.current        // the current ScopeId
+ctx.scope.get(id)        // its Scope, with kind, hoist_target, and flags.strict
+ctx.scope.ancestors(id)  // an iterator from a scope up
+```
 
 ## [Semantic]($section.id('semantic'))
 
-The walk builds the [`Semantic`](/parser/semantic/) model and returns it. During the walk, `ctx.inTypePosition()` and `ctx.inTsNamespace()` tell where it is, and `ctx.symbols.binding(scope, name)` finds a name declared so far. References resolve when the walk ends, so a visitor collects nodes and queries the model after. This one finds the types a file imports.
+The walk builds the [`Semantic`](/parser/semantic/) model and returns it. A binding is declared after its node's enter hook, and references resolve when the walk ends, so a visitor collects nodes and queries the model after. This one finds the types a file imports.
 
 ```zig
 const sem = traverser.semantic;
@@ -92,12 +108,7 @@ const TypeNames = struct {
     allocator: std.mem.Allocator,
     nodes: std.ArrayList(ast.NodeIndex) = .empty,
 
-    pub fn enter_identifier_reference(
-        self: *TypeNames,
-        _: ast.IdentifierReference,
-        index: ast.NodeIndex,
-        ctx: *sem.Ctx,
-    ) std.mem.Allocator.Error!traverser.Action {
+    pub fn enter_identifier_reference(self: *TypeNames, _: ast.IdentifierReference, index: ast.NodeIndex, ctx: *sem.Ctx) std.mem.Allocator.Error!traverser.Action {
         if (ctx.inTypePosition()) try self.nodes.append(self.allocator, index);
         return .proceed;
     }
@@ -108,31 +119,30 @@ const semantic = try sem.traverse(TypeNames, &tree, &names);
 
 for (names.nodes.items) |node| {
     const id = semantic.symbolOf(node) orelse continue; // a global type
-    const symbol = semantic.symbol(id);
-    if (symbol.flags.intersects(sem.Symbol.any_import)) {
-        std.debug.print("imported type {s}\n", .{tree.string(symbol.name)});
-    }
+    if (semantic.symbol(id).flags.intersects(parser.semantic.Symbol.any_import)) std.debug.print("imported\n", .{});
 }
 ```
 
-On `import type { User } from "./user"; type Id = string; let user: User, id: Id;` it prints `User`. `semantic.analyze` is this mode, with a visitor that reports the early errors when it checks.
+```zig
+ctx.inTypePosition()
+ctx.inTsNamespace()
+ctx.scope                          // as in scoped
+ctx.symbols.binding(scope, name)   // ?SymbolId, a name declared so far
+ctx.symbols.ownBinding(scope, name)
+ctx.symbols.symbol(id)
+```
 
-The model covers the whole tree, so `.skip` and `.stop` only mute the visitor here.
+The model covers the whole tree, so `.skip` and `.stop` only mute the visitor.
 
 ## [Transform]($section.id('transform'))
 
-A `transform` hook rewrites the tree in place. The walker re-reads a node after its enter hook, so it walks the replacement. This one turns `price + tax` into `price * tax`.
+`ctx.tree` is mutable, and the walker reads a node again after its enter hook, so it walks a replacement. This one turns `price + tax` into `price * tax`.
 
 ```zig
 const transform = traverser.transform;
 
 const AddToMultiply = struct {
-    pub fn enter_binary_expression(
-        _: *AddToMultiply,
-        expr: ast.BinaryExpression,
-        index: ast.NodeIndex,
-        ctx: *transform.Ctx,
-    ) traverser.Action {
+    pub fn enter_binary_expression(_: *AddToMultiply, expr: ast.BinaryExpression, index: ast.NodeIndex, ctx: *transform.Ctx) traverser.Action {
         if (expr.operator == .add) {
             ctx.tree.setData(index, .{ .binary_expression = .{
                 .left = expr.left,
@@ -148,16 +158,26 @@ var rewrite = AddToMultiply{};
 try transform.traverse(AddToMultiply, &tree, &rewrite);
 ```
 
-The tree's [building and editing](/parser/ast/#building-and-editing) calls, such as `addNode`, `addString`, and `setIdentifierName`, work during the walk. After wrapping a node in a new parent, return `.skip`, so the walker does not enter the moved node again. [Codegen](/parser/codegen/) prints the result.
+- The tree's [building and editing](/parser/ast/#building-and-editing) calls work during the walk.
+- A node whose tag a hook changes is walked, and exited, as its new kind.
+- After wrapping a node in a new parent, return `.skip`, so the walk does not enter it again.
 
-To build a separate output tree instead, start one with `ast.Tree.initEmpty` and walk the input in any mode. Modes compose as passes, such as a transform followed by a semantic walk over its result.
+Modes compose as passes, such as a transform and then a semantic walk of its result.
 
 ## [Your own mode]($section.id('your-own-mode'))
 
-Each mode is a context type over one walker. A context of your own has a `tree` field, and the walk runs its optional `enter`, `post_enter`, and `exit` methods around your visitor's hooks. Each takes `(comptime tag: ast.NodeTag, index, data)`, so a switch on the tag resolves at compile time. A context that builds a model passes `.whole_tree = true`, so `.skip` and `.stop` only mute the visitor.
+A mode is a context type over one walker.
 
 ```zig
-try traverser.walk(MyCtx, V, &visitor, &ctx, .{ .whole_tree = false });
+pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C, comptime options: traverser.Options) std.mem.Allocator.Error!void
 ```
 
-[basic.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/traverser/basic.zig) is the smallest mode, a context that tracks the path.
+A context has a `tree` field, a `*ast.Tree` to edit or a `*const ast.Tree` to read, and an optional `path: traverser.NodePath`, which its `enter` and `exit` push and pop. The walk calls these optional methods around the visitor's hooks, with the tag known at compile time.
+
+```zig
+pub fn enter(self: *C, comptime tag: ast.NodeTag, index: ast.NodeIndex, data: ast.NodeData) std.mem.Allocator.Error!void
+pub fn post_enter(self: *C, comptime tag: ast.NodeTag, index: ast.NodeIndex, data: ast.NodeData) std.mem.Allocator.Error!void
+pub fn exit(self: *C, comptime tag: ast.NodeTag, index: ast.NodeIndex, data: ast.NodeData) void
+```
+
+`.whole_tree = true` calls the context for every node, even under a `.skip`, so a context that builds a model of the whole tree sees all of it. [basic.zig](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/traverser/basic.zig) is the smallest mode.
