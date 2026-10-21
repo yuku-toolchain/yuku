@@ -238,7 +238,8 @@ function checkTemplate(
   variants: string[][],
 ): void {
   for (const parts of variants) {
-    const strings = Object.assign([...parts], { raw: [...parts] }) as TemplateStringsArray;
+    const raw = parts.map(escaped);
+    const strings = Object.assign([...raw], { raw }) as TemplateStringsArray;
     let built: Node;
     try {
       built = (typed ? ts : js)(strings, child);
@@ -256,6 +257,12 @@ function checkTemplate(
     else if (!contains(built, child)) note("template", `${where} copies its value`);
     return;
   }
+}
+
+function escaped(code: string): string {
+  return code.replace(/(\\*)(`|\$\{)/g, (_, slashes: string, token: string) => {
+    return `${slashes}${slashes}\\${token}`;
+  });
 }
 
 function checkFile(file: CorpusFile, source: string): void {

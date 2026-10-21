@@ -89,6 +89,14 @@ describe("templates", () => {
     expect(() => js`f(${"a b"})`).toThrow('takes a name as a string, not "a b"');
   });
 
+  test("a nested template literal keeps its backticks and interpolations", () => {
+    const name = b.Identifier({ name: "name" });
+    expect(code(js`\`hi \${${name}}!\``)).toBe("`hi ${name}!`");
+    expect(code(js`f(\`a\`, "\n")`)).toBe('f(`a`, "\\n")');
+    expect(code(js`\`a\\\`b\``)).toBe("`a\\`b`");
+    expect(() => js`\`hi ${name}\``).toThrow("hole 0 of a template is in text");
+  });
+
   test("malformed templates throw", () => {
     expect(() => js`"${"x"}"`).toThrow("hole 0 of a template is in text");
     expect(() => js`a; b;`).toThrow("one expression or statement, not 2");

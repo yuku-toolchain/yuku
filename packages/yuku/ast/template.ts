@@ -129,7 +129,9 @@ function build(
 }
 
 function compile(lang: keyof typeof templates, strings: TemplateStringsArray): Template {
-  const text = strings.raw.reduce((joined, part, i) => `${joined}${HOLE}${i - 1}${part}`);
+  const text = strings.raw
+    .map((part) => part.replace(/\\+(?=`|\$\{)/g, (slashes) => "\\".repeat(slashes.length >> 1)))
+    .reduce((joined, part, i) => `${joined}${HOLE}${i - 1}${part}`);
   const { statement, expression } = parseFragment(text, lang, "template");
   const carriers = holesIn(expression ?? statement, HOLE_PATTERN, text);
   const program = b.Program({ sourceType: "module", body: [statement] });
