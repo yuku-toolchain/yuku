@@ -43,6 +43,7 @@ const SOURCE_EXTENSIONS = new Map([
 ]);
 
 const AMBIGUOUS = Symbol("ambiguous");
+const NO_FILES: readonly SourceFile[] = [];
 
 type ExportResolution = Resolution | typeof AMBIGUOUS | null;
 
@@ -57,6 +58,8 @@ export class Project {
   private exportResolutions = new Map<SourceFile, Map<string, ExportResolution>>();
   private merged = new Map<Binding, Binding[]>();
   private addedExports = new Map<SourceFile, Map<string, Binding>>();
+  private importsFrom = new Map<SourceFile, SourceFile[]>();
+  private importedBy = new Map<SourceFile, SourceFile[]>();
 
   constructor(options: ProjectOptions = {}) {
     this.wasm = options.wasm;
@@ -151,6 +154,18 @@ export class Project {
   }
 
   /** @internal */
+  _dependencies(file: SourceFile): readonly SourceFile[] {
+    this._link(file);
+    return this.importsFrom.get(file) ?? NO_FILES;
+  }
+
+  /** @internal */
+  _dependents(file: SourceFile): readonly SourceFile[] {
+    this._link(file);
+    return this.importedBy.get(file) ?? NO_FILES;
+  }
+
+  /** @internal */
   _exportedNames(file: SourceFile): string[] {
     this._link(file);
     return this.collectExportedNames(file, new Set());
@@ -161,12 +176,10 @@ export class Project {
     this.exportResolutions = new Map();
     this.merged = new Map();
     this.addedExports = new Map();
+    this.importsFrom = new Map();
+    this.importedBy = new Map();
     const diagnostics: Diagnostic[] = [];
-    for (const file of this.fileByPath.values()) {
-      diagnostics.push(...file.diagnostics);
-      file._deps = [];
-      file._dependents = [];
-    }
+    for (const file of this.fileByPath.values()) diagnostics.push(...file.diagnostics);
     for (const file of this.fileByPath.values()) {
       const resolved = new Map<string, SourceFile | null>();
       for (const record of [...file.imports, ...file.exports]) {
@@ -176,7 +189,10 @@ export class Project {
           resolved.set(record.specifier, this.resolveFile(file, record, diagnostics));
         }
         record._resolved = resolved.get(record.specifier)!;
-        if (record._resolved !== null) wire(file, record._resolved);
+        if (record._resolved !== null) {
+          addOnce(this.importsFrom, file, record._resolved);
+          addOnce(this.importedBy, record._resolved, file);
+        }
       }
     }
     for (const file of this.fileByPath.values()) {
@@ -346,9 +362,10 @@ export class Project {
   }
 }
 
-function wire(from: SourceFile, to: SourceFile): void {
-  if (!from._deps.includes(to)) from._deps.push(to);
-  if (!to._dependents.includes(from)) to._dependents.push(from);
+function addOnce(map: Map<SourceFile, SourceFile[]>, key: SourceFile, file: SourceFile): void {
+  const files = map.get(key);
+  if (files === undefined) map.set(key, [file]);
+  else if (!files.includes(file)) files.push(file);
 }
 
 function specifierNodeOf(file: SourceFile, node: Node): Node {

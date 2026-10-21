@@ -77,11 +77,11 @@ export interface Semantic {
 }
 
 export interface Decoded {
-  readonly program: Program;
-  readonly tokens: TokenList | null;
-  readonly comments: readonly Comment[];
-  readonly diagnostics: Diagnostic[];
-  readonly semantic: Semantic | null;
+  program(): Program;
+  tokens(): TokenList | null;
+  comments(): readonly Comment[];
+  diagnostics(): Diagnostic[];
+  semantic(): Semantic | null;
   nodeOf(index: number): Node;
   indexOf(node: Node): number | undefined;
   /** -1 at the root. */

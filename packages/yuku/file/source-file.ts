@@ -97,10 +97,6 @@ export class SourceFile {
   readonly lang: SourceLang;
   readonly sourceType: SourceType;
   readonly project: Project | null;
-  /** @internal */
-  _deps: SourceFile[] = [];
-  /** @internal */
-  _dependents: SourceFile[] = [];
   private syntax: Decoded;
   private model: Model | null = null;
   private lines: number[] | null = null;
@@ -120,24 +116,25 @@ export class SourceFile {
     if (malformed >= 0) {
       const span = { start: malformed, end: malformed + 1 };
       const help = "Save the file as UTF-8";
-      this.syntax.diagnostics.unshift(diagnosticAt(this, span, "Invalid UTF-8 sequence", { help }));
+      const diagnostic = diagnosticAt(this, span, "Invalid UTF-8 sequence", { help });
+      this.syntax.diagnostics().unshift(diagnostic);
     }
   }
 
   get program(): Program {
-    return this.syntax.program;
+    return this.syntax.program();
   }
   /** Every comment, in source order. */
   get comments(): readonly Comment[] {
-    return this.syntax.comments;
+    return this.syntax.comments();
   }
   get tokens(): TokenList {
-    const tokens = this.syntax.tokens;
+    const tokens = this.syntax.tokens();
     if (tokens === null) throw new Error("parse with `tokens: true` to read the tokens");
     return tokens;
   }
   get diagnostics(): readonly Diagnostic[] {
-    return this.syntax.diagnostics;
+    return this.syntax.diagnostics();
   }
 
   /** Every scope, indexed by id. The first is the global scope. */
@@ -172,13 +169,11 @@ export class SourceFile {
   }
   /** The files it imports from. */
   get dependencies(): readonly SourceFile[] {
-    this._project._link(this);
-    return this._deps;
+    return this._project._dependencies(this);
   }
   /** The files that import from it. */
   get dependents(): readonly SourceFile[] {
-    this._project._link(this);
-    return this._dependents;
+    return this._project._dependents(this);
   }
   /** Every name it exports, through `export *` and module augmentations. */
   exportedNames(): string[] {
@@ -288,11 +283,12 @@ export class SourceFile {
 
   /** @internal */
   get _model(): Model {
-    const semantic = this.syntax.semantic;
+    if (this.model !== null) return this.model;
+    const semantic = this.syntax.semantic();
     if (semantic === null) {
       throw new Error("parse with `semantic: true` to read the semantic model");
     }
-    return (this.model ??= new Model(this, semantic));
+    return (this.model = new Model(this, semantic));
   }
 
   /** @internal */

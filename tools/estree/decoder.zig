@@ -695,10 +695,10 @@ fn writeDecode(w: *Writer) !void {
         \\    default: return KIND_DECODERS[tag](_decoder, i, b, flags, start, end);
         \\    }
         \\  }
-        \\  const _n = new Array(nodeCount);
-        \\  let _count = 0;
+        \\  let _n, _count = 0;
         \\  function nodeAt(i) {
         \\    if (_count === 0) {
+        \\      _n = new Array(nodeCount);
         \\      _posMap();
         \\      if (_attached) _own();
         \\    }
@@ -889,29 +889,27 @@ fn writeDecode(w: *Writer) !void {
         \\  }
         \\  let _program, _diagnostics, _comments, _tokens;
         \\  return {
-        \\    get program() {
+        \\    program() {
         \\      if (_program === undefined) _program = nodeAt(progIdx);
         \\      return _program;
         \\    },
-        \\    get tokens() {
+        \\    tokens() {
         \\      if (tokenCount === 0) return null;
         \\      return _tokens !== undefined
         \\        ? _tokens
         \\        : (_tokens = new TokenList(_u32, _tOff >> 2, tokenCount - 1, _p, str));
         \\    },
-        \\    get comments() {
+        \\    comments() {
         \\      return _comments !== undefined
         \\        ? _comments
         \\        : (_comments = _decodeComments());
         \\    },
-        \\    get diagnostics() {
+        \\    diagnostics() {
         \\      return _diagnostics !== undefined
         \\        ? _diagnostics
         \\        : (_diagnostics = _decodeDiagnostics());
         \\    },
-        \\    get semantic() {
-        \\      return _semantic();
-        \\    },
+        \\    semantic: _semantic,
         \\    nodeOf: nodeAt,
         \\    indexOf,
         \\    parentIndex: (i) => _parents()[i],
