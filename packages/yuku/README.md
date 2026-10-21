@@ -271,7 +271,7 @@ pattern("f($$$BEFORE, last)"); // f(last), f(1, 2, last)
 pattern("if ($TEST) $BODY;");  // any if without an else
 ```
 
-A pattern ending in `;` matches statements, and anything else matches expressions. A lone hole such as `$X` would match every node, so it throws. In TypeScript, the captures are typed from the pattern.
+A pattern ending in `;` matches statements, and anything else matches expressions. A hole stands for the whole node that is nothing but it, so `$S;` matches any statement, `let $D;` any declarator, `x as $T` any type, and `{ $P }` any property. A lone hole such as `$X` would match every node, so it throws. In TypeScript, the captures are typed from the pattern.
 
 Any number of patterns share one walk, each under its type.
 
@@ -311,7 +311,7 @@ ts`const total: ${type} = ${initial};`;
 | `undefined`                          | the identifier `undefined`                  |
 | an array                             | its items, filling a list such as arguments |
 
-A template parses once per call site, and its nodes have no position.
+A hole takes a node of the kind it stands for, as a pattern's does, such as a statement in `${s};` or a declarator in `let ${d};`, or a name to fill it, and throws for a node that is neither. A template parses once per call site, and its nodes have no position.
 
 ### Builders
 

@@ -132,6 +132,18 @@ describe("tokens", () => {
     expect(to - from).toBe(0);
   });
 
+  test("offset queries at the edges of the source", () => {
+    const source = "a  +\n b";
+    const t = list(source);
+    expect([t.before(0), t.after(0), t.at(0)]).toEqual([-1, 0, 0]);
+    expect([t.before(2), t.after(2), t.at(2)]).toEqual([0, 1, -1]);
+    const end = source.length;
+    expect([t.before(end), t.after(end), t.at(end)]).toEqual([2, -1, -1]);
+    const empty = list("");
+    expect([empty.before(0), empty.after(0), empty.at(0)]).toEqual([-1, -1, -1]);
+    expect(empty.range({ start: 0, end: 0 })).toEqual([0, 0]);
+  });
+
   test("tokens survive syntax errors", () => {
     const { tokens, diagnostics } = parse("let = ) ;\nfoo(1);", { tokens: true });
     expect(diagnostics.length).toBeGreaterThan(0);

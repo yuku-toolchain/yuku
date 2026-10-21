@@ -989,27 +989,36 @@ pub const NumericLiteral = struct {
         std.debug.assert(self.kind == .decimal or raw.len >= 2);
         return switch (self.kind) {
             .decimal => std.fmt.parseFloat(f64, raw) catch 0,
-            .hex => parseIntOrFloat(raw[2..], 16),
+            .hex => parseRadix(raw[2..], 16),
             .octal => blk: {
                 const digits = if (raw[1] == 'o' or raw[1] == 'O') raw[2..] else raw[1..];
-                break :blk parseIntOrFloat(digits, 8);
+                break :blk parseRadix(digits, 8);
             },
-            .binary => parseIntOrFloat(raw[2..], 2),
+            .binary => parseRadix(raw[2..], 2),
         };
     }
 
-    fn parseIntOrFloat(digits: []const u8, base: u8) f64 {
-        const v = std.fmt.parseInt(u64, digits, base) catch {
-            var val: f64 = 0;
-            const fbase: f64 = @floatFromInt(base);
-            for (digits) |d| {
-                if (d == '_') continue;
-                const digit_value = std.fmt.charToDigit(d, base) catch return 0;
-                val = val * fbase + @as(f64, @floatFromInt(digit_value));
-            }
-            return val;
+    fn parseRadix(digits: []const u8, base: u8) f64 {
+        const bits: u7 = switch (base) {
+            2 => 1,
+            8 => 3,
+            16 => 4,
+            else => unreachable,
         };
-        return @floatFromInt(v);
+        var top: u128 = 0;
+        var dropped: i32 = 0;
+        var sticky: u128 = 0;
+        for (digits) |c| {
+            if (c == '_') continue;
+            const digit = std.fmt.charToDigit(c, base) catch return 0;
+            if (top >> (127 - (bits - 1)) == 0) {
+                top = (top << bits) | digit;
+            } else {
+                dropped += bits;
+                if (digit != 0) sticky = 1;
+            }
+        }
+        return std.math.ldexp(@as(f64, @floatFromInt(top | sticky)), dropped);
     }
 
     pub const Kind = enum {
@@ -1051,6 +1060,41 @@ test "NumericLiteral.value" {
     for (cases) |case| {
         const literal: NumericLiteral = .{ .kind = case[0], .raw = try tree.addString(case[1]) };
         try std.testing.expectEqual(case[2], literal.value(&tree));
+    }
+}
+
+test "NumericLiteral.value rounds large integers once" {
+    const allocator = std.testing.allocator;
+    var tree = Tree.init(allocator, "");
+    defer tree.deinit();
+    var prng: std.Random.DefaultPrng = .init(0x5eed);
+    const random = prng.random();
+    const bases = [_]struct { NumericLiteral.Kind, u8, []const u8 }{
+        .{ .hex, 16, "0x" },
+        .{ .octal, 8, "0o" },
+        .{ .binary, 2, "0b" },
+    };
+    var digits: [96]u8 = undefined;
+    var raw: [98]u8 = undefined;
+    for (0..20_000) |_| {
+        const base = bases[random.uintLessThan(usize, bases.len)];
+        const len = random.intRangeAtMost(usize, 1, digits.len);
+        for (digits[0..len]) |*digit| {
+            digit.* = std.fmt.digitToChar(random.uintLessThan(u8, base[1]), .lower);
+        }
+        @memcpy(raw[0..2], base[2]);
+        @memcpy(raw[2..][0..len], digits[0..len]);
+
+        var exact = try std.math.big.int.Managed.init(allocator);
+        defer exact.deinit();
+        try exact.setString(base[1], digits[0..len]);
+        const decimal = try exact.toString(allocator, 10, .lower);
+        defer allocator.free(decimal);
+        const expected = try std.fmt.parseFloat(f64, decimal);
+
+        const text = try tree.addString(raw[0 .. len + 2]);
+        const literal: NumericLiteral = .{ .kind = base[0], .raw = text };
+        try std.testing.expectEqual(expected, literal.value(&tree));
     }
 }
 

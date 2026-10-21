@@ -1,5 +1,5 @@
 import { CHILD_KEYS } from "../ast/generated";
-import { parseFragment } from "../ast/template";
+import { holesIn, parseFragment } from "../ast/template";
 import type { Node, NodeType } from "../types";
 import { fieldsOf } from "./walk";
 
@@ -36,6 +36,12 @@ export interface Pattern<P extends string = string> {
   match(node: Node): Captures<P> | null;
 }
 
+interface Compiled {
+  root: Node;
+  singles: Map<Node, string>;
+  lists: Map<Node, string>;
+}
+
 interface Pairing {
   node(pattern: Node, target: Node): boolean;
   list(patterns: (Node | null)[], targets: (Node | null)[]): boolean;
@@ -48,65 +54,65 @@ const UNCOMPARED = new Set(["type", "start", "end", "raw", "comments"]);
 const PATTERNS_MAX = 512;
 const STEPS_MAX = 100_000;
 
-const roots = new Map<string, Node>();
+const compiled = new Map<string, Compiled>();
 
 /**
  * Compiles code where `$NAME` matches one node, `$$$NAME` a run of list items, and `$_` anything
  * uncaptured. A repeated name matches equal nodes.
  */
 export function pattern<P extends string>(source: P): Pattern<P> {
-  const root = compile(source);
-  const type = root.type;
+  const holes = compile(source);
+  const type = holes.root.type;
   return {
     type,
     match(node) {
       if (node.type !== type) return null;
-      const matcher = new Matcher();
-      return matcher.node(root, node) ? (matcher.captures as Captures<P>) : null;
+      const matcher = new Matcher(holes);
+      return matcher.node(holes.root, node) ? (matcher.captures as Captures<P>) : null;
     },
   };
 }
 
-function compile(source: string): Node {
+function compile(source: string): Compiled {
   if (typeof source !== "string") throw new TypeError("pattern: `source` must be a string");
-  let root = roots.get(source);
-  if (root === undefined) {
+  let holes = compiled.get(source);
+  if (holes === undefined) {
     const { statement, expression } = parseFragment(source, "tsx", "pattern");
-    root = expression ?? statement;
-    const lone = root.type === "ExpressionStatement" ? root.expression : root;
-    if (metavariableOf(lone, SINGLE) !== null) {
+    const root = expression ?? statement;
+    holes = { root, singles: holesIn(root, SINGLE, source), lists: holesIn(root, LIST, source) };
+    if (holes.singles.has(root)) {
       throw new TypeError(`pattern: \`${source}\` matches any node, so visit the type instead`);
     }
-    if (roots.size === PATTERNS_MAX) roots.clear();
-    roots.set(source, root);
+    if (compiled.size === PATTERNS_MAX) compiled.clear();
+    compiled.set(source, holes);
   }
-  return root;
+  return holes;
 }
 
 class Matcher implements Pairing {
   captures: Record<string, Node | Node[]> = {};
   private steps = 0;
+  private readonly holes: Compiled;
+
+  constructor(holes: Compiled) {
+    this.holes = holes;
+  }
 
   node(pattern: Node, target: Node): boolean {
     if (++this.steps > STEPS_MAX) {
       throw new Error(`match: the pattern backtracks past ${STEPS_MAX} comparisons at one node`);
     }
     const node = unparenthesized(target);
-    const single = metavariableOf(pattern, SINGLE);
-    if (single !== null) return this.capture(single, node);
-    if (pattern.type === "ExpressionStatement" && node.type !== "ExpressionStatement") {
-      const statement = metavariableOf(pattern.expression, SINGLE);
-      return statement !== null && this.capture(statement, node);
-    }
-    return sameShape(pattern, node, this);
+    const single = this.holes.singles.get(pattern);
+    return single === undefined ? sameShape(pattern, node, this) : this.capture(single, node);
   }
 
   list(patterns: (Node | null)[], targets: (Node | null)[]): boolean {
     const matchFrom = (p: number, t: number): boolean => {
       const pattern = patterns[p];
       if (pattern === undefined) return t === targets.length;
-      const list = pattern === null ? null : listMetavariableOf(pattern);
-      if (list !== null) {
+      const list = pattern === null ? undefined : this.holes.lists.get(pattern);
+      if (list !== undefined) {
         for (let end = t; end <= targets.length; end++) {
           const saved = { ...this.captures };
           const nodes = targets.slice(t, end).filter((node) => node !== null);
@@ -137,6 +143,7 @@ class Matcher implements Pairing {
   }
 
   private captureList(name: string, nodes: Node[]): boolean {
+    if (name === WILDCARD) return true;
     const previous = this.captures[name];
     if (previous === undefined) {
       this.captures[name] = nodes;
@@ -197,18 +204,6 @@ function extraFieldsEmpty(from: Record<string, unknown>, to: Record<string, unkn
     if (!(key in from) && !UNCOMPARED.has(key) && !isEmpty(to[key])) return false;
   }
   return true;
-}
-
-function metavariableOf(node: Node | null, kind: RegExp): string | null {
-  if (node === null) return null;
-  if (node.type !== "Identifier" && node.type !== "JSXIdentifier") return null;
-  return kind.exec(node.name)?.[1] ?? null;
-}
-
-function listMetavariableOf(node: Node): string | null {
-  if (node.type === "ExpressionStatement") return metavariableOf(node.expression, LIST);
-  if (node.type === "Property" && node.shorthand) return metavariableOf(node.value, LIST);
-  return metavariableOf(node, LIST);
 }
 
 function unparenthesized(node: Node): Node {

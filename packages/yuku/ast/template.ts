@@ -13,8 +13,6 @@ type Item = Node | Primitive;
 /** A node, a list for a list, a string for a name, or a literal value. */
 export type TemplateValue = Item | readonly Item[];
 
-type Carrier = "statement" | "property" | "type" | "node" | "jsx";
-
 interface Step {
   key: string;
   index: number | null;
@@ -22,7 +20,7 @@ interface Step {
 
 interface Hole {
   value: number;
-  carrier: Carrier;
+  name: string;
   path: Step[];
 }
 
@@ -34,6 +32,15 @@ interface Template {
 
 const HOLE = "__yuku_hole_";
 const HOLE_PATTERN = /^__yuku_hole_(\d+)$/;
+const KINDS: Record<string, string> = { ExpressionStatement: "statement", TSTypeReference: "type" };
+const NAMES: ReadonlySet<string> = new Set([
+  "Identifier",
+  "JSXIdentifier",
+  "JSXMemberExpression",
+  "JSXNamespacedName",
+  "PrivateIdentifier",
+  "TSQualifiedName",
+]);
 
 const templates = {
   jsx: new WeakMap<TemplateStringsArray, Template>(),
@@ -54,6 +61,28 @@ export function ts<T extends Node = Node>(
   ...values: readonly TemplateValue[]
 ): T {
   return build("tsx", strings, values) as T;
+}
+
+/** Each node a hole stands for: its name, or the largest node around it holding nothing else. */
+export function holesIn(root: Node, names: RegExp, source: string): Map<Node, string> {
+  const holes = new Map<Node, string>();
+  walk(root, {
+    enter(node, ctx) {
+      if (node.type !== "Identifier" && node.type !== "JSXIdentifier") return;
+      const name = names.exec(node.name)?.[1];
+      if (name === undefined) return;
+      let carrier: Node = node;
+      const ancestors = ctx.ancestors();
+      for (let i = ancestors.length - 1; i >= 0; i--) {
+        const ancestor = ancestors[i]!;
+        const end = source[ancestor.end - 1] === ";" ? ancestor.end - 1 : ancestor.end;
+        if (ancestor.start !== node.start || end !== node.end) break;
+        carrier = ancestor;
+      }
+      holes.set(carrier, name);
+    },
+  });
+  return holes;
 }
 
 export function parseFragment(
@@ -89,8 +118,8 @@ function build(
   const { holes } = template;
   // backwards, so filling a list never moves a hole still to fill
   for (let h = holes.length - 1; h >= 0; h--) {
-    const hole = holes[h]!;
-    fill(slotAt(program, hole.path), CONVERTERS[hole.carrier], values[hole.value]);
+    const { value, name, path } = holes[h]!;
+    fill(slotAt(program, path), name, values[value]);
   }
   const [first, ...rest] = program.body;
   if (first === undefined || rest.length > 0) {
@@ -102,6 +131,7 @@ function build(
 function compile(lang: keyof typeof templates, strings: TemplateStringsArray): Template {
   const text = strings.raw.reduce((joined, part, i) => `${joined}${HOLE}${i - 1}${part}`);
   const { statement, expression } = parseFragment(text, lang, "template");
+  const carriers = holesIn(expression ?? statement, HOLE_PATTERN, text);
   const program = b.Program({ sourceType: "module", body: [statement] });
   walk(program, {
     enter(node) {
@@ -113,7 +143,7 @@ function compile(lang: keyof typeof templates, strings: TemplateStringsArray): T
       }
     },
   });
-  const holes = holesOf(program, expression !== null);
+  const holes = holesOf(program, carriers);
   for (let i = 0; i < strings.length - 1; i++) {
     if (!holes.some((hole) => hole.value === i)) {
       throw new TypeError(`hole ${i} of a template is in text, not code`);
@@ -124,15 +154,14 @@ function compile(lang: keyof typeof templates, strings: TemplateStringsArray): T
   return template;
 }
 
-function holesOf(program: Program, expression: boolean): Hole[] {
+function holesOf(program: Program, carriers: Map<Node, string>): Hole[] {
   const holes: Hole[] = [];
-  const root = program.body[0];
   const pending: [Node, Step[]][] = [[program, []]];
   for (let item = pending.pop(); item !== undefined; item = pending.pop()) {
     const [node, path] = item;
-    const hole = carrierOf(node, expression && node === root);
-    if (hole !== null) {
-      holes.push({ ...hole, path });
+    const value = carriers.get(node);
+    if (value !== undefined) {
+      holes.push({ value: Number(value), name: `${HOLE}${value}`, path });
       continue;
     }
     const fields = fieldsOf(node);
@@ -152,33 +181,6 @@ function holesOf(program: Program, expression: boolean): Hole[] {
   return holes;
 }
 
-function carrierOf(node: Node, isRoot: boolean): { value: number; carrier: Carrier } | null {
-  let value: number | null = null;
-  let carrier: Carrier = "node";
-  switch (node.type) {
-    case "ExpressionStatement":
-      if (!isRoot) value = holeOf(node.expression);
-      carrier = "statement";
-      break;
-    case "Property":
-      if (node.shorthand) value = holeOf(node.value);
-      carrier = "property";
-      break;
-    case "TSTypeReference":
-      if (node.typeArguments === null) value = holeOf(node.typeName);
-      carrier = "type";
-      break;
-    case "Identifier":
-      value = holeOf(node);
-      break;
-    case "JSXIdentifier":
-      value = holeOf(node);
-      carrier = "jsx";
-      break;
-  }
-  return value === null ? null : { value, carrier };
-}
-
 function slotAt(program: Program, path: readonly Step[]): Slot {
   let parent: Node = program;
   for (let i = 0; i < path.length - 1; i++) {
@@ -191,36 +193,77 @@ function slotAt(program: Program, path: readonly Step[]): Slot {
   return { parent, key, list, index: index ?? 0 };
 }
 
-function fill(slot: Slot, convert: (item: Item) => Node, value: TemplateValue): void {
+function fill(slot: Slot, name: string, value: TemplateValue): void {
+  const fields = fieldsOf(slot.parent);
+  const carrier = (slot.list === null ? fields[slot.key] : slot.list[slot.index]) as Node;
   if (!isList(value)) {
-    replaceAt(slot, [convert(value)]);
+    replaceAt(slot, [standIn(carrier, name, value)]);
   } else if (slot.list === null) {
     throw new TypeError("a list fills a template hole in a list");
   } else if (value.length === 0) {
     slot.list.splice(slot.index, 1);
   } else {
-    replaceAt(slot, value.map(convert));
+    replaceAt(slot, value.map((item) => standIn(carrier, name, item)));
   }
 }
 
-function holeOf(node: Node): number | null {
-  if (node.type !== "Identifier" && node.type !== "JSXIdentifier") return null;
-  const match = HOLE_PATTERN.exec(node.name);
-  return match === null ? null : Number(match[1]);
+function standIn(carrier: Node, name: string, item: Item): Node {
+  const hole = isNamed(carrier, name) ? carrier : nameIn(carrier, name);
+  const node = nodeOf(item, hole.type === "JSXIdentifier");
+  if (carrier === hole || takesWhole(carrier, node)) return node;
+  if (carrier.type === "ExpressionStatement" ? is.Expression(node) : NAMES.has(node.type)) {
+    return named(clone(carrier), name, node);
+  }
+  const kind = KINDS[carrier.type] ?? carrier.type;
+  throw new TypeError(`a ${node.type} does not fit a ${kind}`);
 }
 
-const CONVERTERS: Record<Carrier, (item: Item) => Node> = {
-  statement: statementOf,
-  property: propertyOf,
-  type: typeOf,
-  node: nodeOf,
-  jsx: jsxOf,
-};
+function takesWhole(carrier: Node, node: Node): boolean {
+  if (node.type === carrier.type || node.type === "RestElement") return true;
+  if (carrier.type === "ExpressionStatement") {
+    return is.Statement(node) || is.ModuleDeclaration(node);
+  }
+  if (carrier.type === "TSTypeReference") return is.TSType(node);
+  return !is.Expression(node) && !is.Pattern(node) && !NAMES.has(node.type);
+}
 
-function nodeOf(item: Item): Node {
+function nameIn(carrier: Node, name: string): Node {
+  let found: Node | null = null;
+  walk(carrier, {
+    enter(node, ctx) {
+      if (isNamed(node, name)) {
+        found = node;
+        ctx.stop();
+      }
+    },
+  });
+  return found!;
+}
+
+function named(carrier: Node, name: string, node: Node): Node {
+  let used = false;
+  walk(carrier, {
+    enter(current, ctx) {
+      if (isNamed(current, name)) {
+        ctx.replace(used ? clone(node) : node);
+        ctx.skip();
+        used = true;
+      }
+    },
+  });
+  return carrier;
+}
+
+function isNamed(node: Node, name: string): boolean {
+  return (node.type === "Identifier" || node.type === "JSXIdentifier") && node.name === name;
+}
+
+function nodeOf(item: Item, jsx: boolean): Node {
   switch (typeof item) {
-    case "string":
-      return b.Identifier({ name: checkedName(item) });
+    case "string": {
+      const name = checkedName(item);
+      return jsx ? b.JSXIdentifier({ name }) : b.Identifier({ name });
+    }
     case "number":
     case "boolean":
       return b.Literal({ value: item });
@@ -230,35 +273,6 @@ function nodeOf(item: Item): Node {
       return b.Identifier({ name: "undefined" });
   }
   return item ?? b.Literal({ value: null });
-}
-
-function jsxOf(item: Item): Node {
-  return typeof item === "string" ? b.JSXIdentifier({ name: checkedName(item) }) : nodeOf(item);
-}
-
-function statementOf(item: Item): Node {
-  const node = nodeOf(item);
-  return is.Expression(node) ? b.ExpressionStatement({ expression: node }) : node;
-}
-
-function propertyOf(item: Item): Node {
-  const node = nodeOf(item);
-  if (node.type === "Identifier") {
-    return b.Property({ kind: "init", key: clone(node), value: node, shorthand: true });
-  }
-  if (node.type === "Property" || node.type === "SpreadElement" || node.type === "RestElement") {
-    return node;
-  }
-  throw new TypeError(`a ${node.type} does not fit a shorthand property`);
-}
-
-function typeOf(item: Item): Node {
-  const node = nodeOf(item);
-  if (is.TSType(node)) return node;
-  if (node.type === "Identifier" || node.type === "TSQualifiedName") {
-    return b.TSTypeReference({ typeName: node });
-  }
-  throw new TypeError(`a ${node.type} does not fit a type`);
 }
 
 function checkedName(name: string): string {

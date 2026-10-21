@@ -22,6 +22,39 @@ fn checkInvariants(path: []const u8, tree: *ast.Tree) !void {
         std.debug.print("{s}: checking changed the semantic model: {t}\n", .{ path, err });
         return err;
     };
+
+    verifyRename(tree, &unchecked) catch |err| {
+        std.debug.print("{s}: renaming every symbol changed the program: {t}\n", .{ path, err });
+        return err;
+    };
+}
+
+// every declaration and use renamed through setName resolves as before
+fn verifyRename(tree: *ast.Tree, sem: *const Semantic) !void {
+    for (sem.symbols, 0..) |symbol, i| {
+        const id: semantic.SymbolId = @fromBackingInt(@intCast(i));
+        const old = tree.string(symbol.name);
+        const text = try std.fmt.allocPrint(tree.allocator(), "ŷ_{s}", .{old});
+        const name = try tree.addString(text);
+        for (sem.decls(id)) |node| tree.setName(node, name);
+        for (sem.uses(id)) |use| tree.setName(sem.reference(use).node, name);
+    }
+
+    const renamed = try semantic.analyze(tree, .{ .check = false });
+    if (renamed.symbols.len != sem.symbols.len) return error.SymbolCountChanged;
+    if (resolvedCount(&renamed) != resolvedCount(sem)) return error.ResolutionChanged;
+    for (renamed.symbols) |symbol| {
+        const name = tree.string(symbol.name);
+        if (!std.mem.startsWith(u8, name, "ŷ_")) return error.DeclarationMissed;
+    }
+}
+
+fn resolvedCount(sem: *const Semantic) usize {
+    var count: usize = 0;
+    for (sem.references) |reference| {
+        if (reference.symbol != .none) count += 1;
+    }
+    return count;
 }
 
 fn verify(tree: *const ast.Tree, sem: *const Semantic) !void {

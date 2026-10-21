@@ -20,17 +20,17 @@ export function rename(binding: Binding, name: string): Diagnostic[] {
   const previous = binding.name;
   if (name === previous) return [];
   const identifiers = binding.declarations.filter((node) => node.type === "Identifier");
-  const site = exportSite(binding, identifiers);
-  const diagnostics = [...unsupported(binding, site), ...conflicts(binding, name)];
-  if (diagnostics.length > 0) return diagnostics;
+  const sites = exportSites(binding, identifiers);
+  const diagnostics = [...unsupported(binding, sites), ...conflicts(binding, name)];
+  if (diagnostics.length > 0 || sites === null) return diagnostics;
 
   for (const identifier of identifiers) renameNode(binding.file, identifier, name);
   for (const reference of binding.references) renameNode(binding.file, reference.node, name);
-  if (site !== null) keepExportNames(site, previous, name);
+  for (let i = sites.length - 1; i >= 0; i--) keepExportNames(sites[i]!, previous, name);
   return [];
 }
 
-function unsupported(binding: Binding, site: ExportSite | null): Diagnostic[] {
+function unsupported(binding: Binding, sites: ExportSite[] | null): Diagnostic[] {
   const { file, name } = binding;
   const diagnostics: Diagnostic[] = [];
   const report = (node: Node, reason: string) => {
@@ -47,7 +47,8 @@ function unsupported(binding: Binding, site: ExportSite | null): Diagnostic[] {
   }
   const [declaration] = binding.declarations;
   const exported = binding.has(BindingFlags.Exported) && !binding.has(BindingFlags.Default);
-  if (declaration !== undefined && exported && site === null) {
+  const kept = sites !== null && sites.length > 0 && !exportsImplicitly(file);
+  if (declaration !== undefined && exported && !kept) {
     report(declaration, "which also names its export");
   }
   return diagnostics;
@@ -99,21 +100,39 @@ function declaredHere(binding: Binding): DiagnosticDetails {
   return { labels };
 }
 
-function exportSite(binding: Binding, identifiers: Identifier[]): ExportSite | null {
-  if (!binding.has(BindingFlags.Exported) || binding.has(BindingFlags.Default)) return null;
+function exportSites(binding: Binding, identifiers: Identifier[]): ExportSite[] | null {
+  if (!binding.has(BindingFlags.Exported) || binding.has(BindingFlags.Default)) return [];
   const { file } = binding;
+  const sites: ExportSite[] = [];
   for (const identifier of identifiers) {
-    let declaration: Node = identifier;
-    for (const ancestor of file.ancestors(identifier)) {
-      if (ancestor.type === "Program" || ancestor.type === "TSModuleBlock") break;
-      if (ancestor.type === "ExportNamedDeclaration") {
-        const slot = slotOf(file.program, ancestor);
-        return slot === null ? null : { statement: ancestor, declaration, slot };
-      }
-      declaration = ancestor;
-    }
+    const site = exportOf(file, identifier);
+    if (site === undefined) continue;
+    if (site === null) return null;
+    if (!sites.some(({ statement }) => statement === site.statement)) sites.push(site);
   }
-  return null;
+  return sites;
+}
+
+function exportOf(file: SourceFile, identifier: Node): ExportSite | null | undefined {
+  let declaration: Node = identifier;
+  for (const ancestor of file.ancestors(identifier)) {
+    if (ancestor.type === "Program" || ancestor.type === "TSModuleBlock") return undefined;
+    if (ancestor.type === "ExportNamedDeclaration") {
+      const slot = slotOf(file.program, ancestor);
+      return slot === null ? null : { statement: ancestor, declaration, slot };
+    }
+    declaration = ancestor;
+  }
+  return undefined;
+}
+
+// an export list would stop a declaration file exporting its unexported declarations
+function exportsImplicitly(file: SourceFile): boolean {
+  return file.rootScope.bindings.some(
+    (binding) =>
+      binding.has(BindingFlags.Exported) &&
+      binding.declarations.every((node) => exportOf(file, node) === undefined),
+  );
 }
 
 function isIntrinsicTag(file: SourceFile, node: JSXIdentifier, name: string): boolean {

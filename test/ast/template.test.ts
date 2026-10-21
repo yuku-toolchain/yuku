@@ -1,5 +1,17 @@
 import { describe, expect, test } from "bun:test";
-import { b, js, print, ts, type Node } from "yuku";
+import {
+  b,
+  js,
+  print,
+  ts,
+  type ClassExpression,
+  type JSXElement,
+  type Node,
+  type SwitchStatement,
+  type TSEnumDeclaration,
+  type TSTypeAliasDeclaration,
+  type VariableDeclaration,
+} from "yuku";
 
 function code(node: Node): string {
   return print(node).code;
@@ -41,6 +53,35 @@ describe("templates", () => {
     expect(code(ts`let x: ${b.TSStringKeyword({})};`)).toBe("let x: string;");
     expect(code(ts`let x: ${"T"}<U>;`)).toBe("let x: T<U>;");
     expect(code(js`<${"div"} />`)).toBe("<div />");
+  });
+
+  test("a hole takes the whole node it stands for, or a name inside it", () => {
+    const declarators = js<VariableDeclaration>`let a = 1, b;`.declarations;
+    expect(code(js`var ${declarators};`)).toBe("var a = 1, b;");
+    expect(code(js`let ${"x"};`)).toBe("let x;");
+    const classMembers = js<ClassExpression>`(class { m() {} })`.body.body;
+    expect(code(js`class A { ${classMembers} }`)).toBe("class A {\n  m() {}\n}");
+    const attributes = js<JSXElement>`<b c="d" {...e} />`.openingElement.attributes;
+    expect(code(js`<a ${attributes} />`)).toBe(
+      '<a c="d" {...e} />',
+    );
+    expect(code(js`<a ${"disabled"} />`)).toBe("<a disabled />");
+    expect(code(js`import { ${"a"} } from "m";`)).toBe('import { a } from "m";');
+    const enumMembers = ts<TSEnumDeclaration>`enum F { B = 1 }`.body.members;
+    expect(code(ts`enum E { ${"A"}, ${enumMembers} }`)).toBe(
+      "enum E {\n  A,\n  B = 1\n}",
+    );
+    expect(code(ts`class A implements ${"I"} {}`)).toBe("class A implements I {}");
+    const union = ts<TSTypeAliasDeclaration>`type Y = A | B;`.typeAnnotation;
+    expect(code(ts`let x: ${union};`)).toBe("let x: A | B;");
+  });
+
+  test("a node that does not fit the hole throws", () => {
+    expect(() => js`let ${js`f()`};`).toThrow("a CallExpression does not fit a VariableDeclarator");
+    expect(() => js`({ ${js`f()`} })`).toThrow("a CallExpression does not fit a Property");
+    const [kase] = js<SwitchStatement>`switch (x) { case 1: }`.cases;
+    expect(() => js`${kase};`).toThrow("a SwitchCase does not fit a statement");
+    expect(() => js`<a ${js`f()`} />`).toThrow("a CallExpression does not fit a JSXAttribute");
   });
 
   test("a string literal goes in as a node", () => {

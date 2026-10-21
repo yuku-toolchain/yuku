@@ -102,6 +102,40 @@ describe("walk", () => {
     );
   });
 
+  test("edits that have no place to go throw, and a removed plain field is null", () => {
+    const call = (source: string) => program(source).body[0]!;
+    expect(() => walk(call(`f(a);`), { Identifier: (_n, ctx) => ctx.insertBefore(js`b`) })).toThrow(
+      "insertBefore: the node is not in an array field",
+    );
+    const two = [js`c`, js`d`];
+    expect(() => walk(call(`a.b;`), { Identifier: (_n, ctx) => ctx.replace(two) })).toThrow(
+      "replace: several nodes need an array field",
+    );
+    expect(() => walk(call(`f(a);`), { Identifier: (_n, ctx) => ctx.replace([]) })).toThrow(
+      "replace: expected a node, or call remove",
+    );
+    const empty = {} as never;
+    expect(() => walk(call(`f(a);`), { Identifier: (_n, ctx) => ctx.replace(empty) })).toThrow(
+      "replace: expected an AST node",
+    );
+    const statement = call(`if (a) b(); else c();`);
+    walk(statement, {
+      ExpressionStatement(node, ctx) {
+        if (print(node).code === "c();") ctx.remove();
+      },
+    });
+    expect(statement.type === "IfStatement" && statement.alternate).toBeNull();
+  });
+
+  test("a visitor that is not handlers, or a root that is not a node, throws", () => {
+    expect(() => walk(program(`a;`), null as never)).toThrow("visitors must be an object");
+    expect(() => walk(program(`a;`), { enter: {} } as never)).toThrow("must be a function");
+    expect(() => walk(program(`a;`), { Identifier: 1 } as never)).toThrow(
+      "a function or { enter, leave }",
+    );
+    expect(() => walk({} as never, {})).toThrow("walk: expected an AST node");
+  });
+
   test("a misspelled visitor key throws", () => {
     expect(() => walk(program(`a;`), { Identifer() {} } as Visitors)).toThrow(
       "'Identifer' is not a node type or alias",

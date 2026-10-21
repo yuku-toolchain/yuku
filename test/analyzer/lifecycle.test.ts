@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Project } from "yuku";
+import { parse, Project } from "yuku";
 import { definition, projectOf } from "./utils/summarize";
 
 const VALUE_PROJECT = {
@@ -37,6 +37,16 @@ describe("re-adding a path", () => {
     project.set("a.ts", `export const present = 1; export const missing = 2;`);
     expect(messages(project)).toEqual([]);
     expect(definition(project, "b.ts", "missing")).toBe("a.ts:missing");
+  });
+
+  test("a file holds only what it was parsed with", () => {
+    const file = parse(`let a = 1;`);
+    expect(() => file.rootScope).toThrow("parse with `semantic: true`");
+    expect(() => file.bindingOf(file.program)).toThrow("parse with `semantic: true`");
+    expect(() => file.tokens).toThrow("parse with `tokens: true`");
+    const full = parse(`let a = 1;`, { semantic: true, tokens: true });
+    expect(full.rootScope.find("a")?.name).toBe("a");
+    expect(full.tokens.length).toBe(5);
   });
 
   test("a replaced module is no longer current, and its cross-file queries throw", () => {

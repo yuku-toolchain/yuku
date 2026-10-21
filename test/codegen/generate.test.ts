@@ -114,6 +114,16 @@ test("a lone type strips to nothing", () => {
   expect(types.map((node) => print(node, { strip: true }).code)).toEqual(["", "", ""]);
 });
 
+test("an option outside its values throws", () => {
+  const { program } = parse(`a;`);
+  expect(() => print(program, { format: "tight" as never })).toThrow('`format` must be "pretty"');
+  expect(() => print(program, { quotes: "back" as never })).toThrow("`quotes` must be");
+  expect(() => print(program, { comments: true as never })).toThrow("`comments` must be");
+  expect(() => print(program, { indent: 256 })).toThrow("`indent` must be an integer");
+  expect(() => print(program, { indent: 1.5 })).toThrow("`indent` must be an integer");
+  expect(() => print(program, { printers: 1 as never })).toThrow("`printers` must be an object");
+});
+
 test("a value that is not a file or a node throws", () => {
   for (const value of [null, undefined, {}, { type: 1 }]) {
     expect(() => print(value as never)).toThrow("print: expected an AST node");

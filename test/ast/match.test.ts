@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { js, nameOf, parse, pattern, print, walk, type Node } from "yuku";
 
 function matches(source: string, code: string): Node[] {
-  const { program } = parse(source, { path: "input.ts" });
+  const { program } = parse(source, { path: "input.tsx" });
   const compiled = pattern(code);
   const found: Node[] = [];
   walk(program, {
@@ -83,6 +83,52 @@ describe("pattern", () => {
     expect(print(file).code).toBe("logger.info(a);\nlogger.info(b);\nf(c);");
     expect(log.match(file.program)).toBeNull();
     expect(log.type).toBe("CallExpression");
+  });
+
+  test("a hole stands for the whole node of nothing but it", () => {
+    expect(texts(`let a = 1; let b;`, "let $D;")).toEqual(["let a = 1;", "let b;"]);
+    expect(texts(`let a, b = 2; let c;`, "let $$$D;")).toEqual(["let a, b = 2;", "let c;"]);
+    expect(texts(`x as A | B; x as C;`, "x as $T")).toEqual(["x as A | B", "x as C"]);
+    expect(texts(`f<A, B>(); f();`, "f<$$$T>()")).toEqual(["f<A, B>()"]);
+    expect(texts(`({ a: 1 }); ({ ...b });`, "({ $P })")).toEqual(["{ a: 1 }", "{ ...b }"]);
+    expect(texts(`class A { m() {} x = 1; }`, "class A { $$$M }")).toHaveLength(1);
+    expect(texts(`<a b="c" {...d} />;`, "<a $$$ATTRS />")).toEqual(['<a b="c" {...d} />']);
+    expect(texts(`import { a, b as c } from "m";`, `import { $$$S } from "m";`)).toHaveLength(1);
+    expect(texts(`interface I extends A<B>, C {}`, "interface I extends $$$H {}")).toHaveLength(1);
+    expect(texts(`if (a) b(); if (a) { b(); }`, "if (a) $S;")).toEqual([
+      "if (a) b();",
+      "if (a) { b(); }",
+    ]);
+  });
+
+  test("captures fill templates of the same shape", () => {
+    const { program } = parse(`let a = 1, b;`);
+    const [statement] = program.body;
+    const captures = pattern("let $$$D;").match(statement!)!;
+    expect(print(js`var ${captures.D};`).code).toBe("var a = 1, b;");
+    const call = pattern("$F($$$ARGS)").match(js`log(1, 2)`)!;
+    expect(print(js`${call.F}.call(null, ${call.ARGS})`).code).toBe("log.call(null, 1, 2)");
+  });
+
+  test("`$$$_` takes a run uncaptured", () => {
+    const [found] = matches(`f(1, 2, 3);`, "f($$$_, 3)");
+    expect(pattern("f($$$_, 3)").match(found!)).toEqual({});
+  });
+
+  test("captures are typed from the pattern", () => {
+    const captures = pattern("$CALLEE($FIRST, $$$REST)").match(js`f(1, 2, 3)`)!;
+    const one: Node = captures.FIRST;
+    const many: Node[] = captures.REST;
+    // @ts-expect-error a name the pattern does not hold
+    void captures.OTHER;
+    expect([one.type, many.length]).toEqual(["Literal", 2]);
+  });
+
+  test("a pattern still matches after more patterns than the cache holds", () => {
+    const first = pattern("f($A)");
+    for (let i = 0; i < 1_000; i++) pattern(`g${i}($A)`);
+    expect(first.match(js`f(1)`)).not.toBeNull();
+    expect(pattern("f($A)").match(js`f(1)`)).not.toBeNull();
   });
 
   test("malformed patterns throw", () => {
