@@ -5,7 +5,7 @@
 <br />
 <br />
 
-**Parse, analyze, walk, match, build, rename, and print JavaScript and TypeScript.**
+**Parse, analyze, walk, build, and print JavaScript and TypeScript.**
 
 One package, no dependencies. Written in Zig, running in Node.js, Bun, Deno, browsers, and edge runtimes.
 
@@ -514,7 +514,6 @@ c.rootScope.find("renamed").definition().binding.name; // "value"
 const project = new Project({
   // a path in the project, false for a module outside it, null when it cannot be resolved
   resolve: (specifier, importer) => aliases.get(specifier) ?? null,
-  wasm,
 });
 
 project.set(path, source, options); // the SourceFile, replacing any at the same path
