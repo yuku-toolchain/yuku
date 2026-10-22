@@ -1,16 +1,20 @@
-//! ECMAScript's conversion of a number to a string.
-
 const std = @import("std");
 
-/// The longest string `toString` writes, as `-0.000001234567890123456` and
-/// `-1.2345678901234567e-308` are.
-pub const string_bytes_max = 25;
-
+const string_bytes_max = 25;
 const digits_max = 17;
 
-/// Writes `value` as ECMAScript's `Number::toString` does, so `1e21` is `1e+21` and `0.1 + 0.2`
-/// is `0.30000000000000004`.
-pub fn toString(value: f64, buffer: *[string_bytes_max]u8) []const u8 {
+/// Whether `text` is exactly what ECMAScript's `Number::toString` writes for a finite number.
+pub fn isCanonicalString(text: []const u8) bool {
+    if (text.len == 0) return false;
+    if (text.len > string_bytes_max) return false;
+    if (text[0] != '-' and !std.ascii.isDigit(text[0])) return false;
+    const value = std.fmt.parseFloat(f64, text) catch return false;
+    if (!std.math.isFinite(value)) return false;
+    var buffer: [string_bytes_max]u8 = undefined;
+    return std.mem.eql(u8, toString(value, &buffer), text);
+}
+
+fn toString(value: f64, buffer: *[string_bytes_max]u8) []const u8 {
     if (std.math.isNan(value)) return "NaN";
     if (std.math.isInf(value)) return if (value > 0) "Infinity" else "-Infinity";
     if (value == 0) return "0";
@@ -64,17 +68,6 @@ pub fn toString(value: f64, buffer: *[string_bytes_max]u8) []const u8 {
     }
     std.debug.assert(length <= string_bytes_max);
     return buffer[0..length];
-}
-
-/// Whether `text` is the string `toString` writes for a finite number, as `1`, `-1`, and `1e+21`
-/// are, and `01`, `-0`, `1e21`, and `NaN` are not.
-pub fn isCanonicalString(text: []const u8) bool {
-    if (text.len == 0) return false;
-    if (text.len > string_bytes_max) return false;
-    const value = std.fmt.parseFloat(f64, text) catch return false;
-    if (!std.math.isFinite(value)) return false;
-    var buffer: [string_bytes_max]u8 = undefined;
-    return std.mem.eql(u8, toString(value, &buffer), text);
 }
 
 fn write(buffer: *[string_bytes_max]u8, at: u32, bytes: []const u8) u32 {

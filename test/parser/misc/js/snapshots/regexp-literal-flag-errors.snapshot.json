@@ -245,7 +245,7 @@
       "start": 17,
       "end": 18,
       "labels": [],
-      "help": "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other"
+      "help": "Use `v`, which extends `u`, or `u` alone."
     },
     {
       "severity": "error",
@@ -254,7 +254,7 @@
       "start": 41,
       "end": 42,
       "labels": [],
-      "help": "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other"
+      "help": "Use `v`, which extends `u`, or `u` alone."
     },
     {
       "severity": "error",
@@ -263,7 +263,7 @@
       "start": 66,
       "end": 67,
       "labels": [],
-      "help": "Remove the duplicate flag; each flag can only appear once"
+      "help": "Each flag can appear only once."
     },
     {
       "severity": "error",
@@ -272,7 +272,7 @@
       "start": 89,
       "end": 90,
       "labels": [],
-      "help": "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)"
+      "help": "Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`."
     },
     {
       "severity": "error",
@@ -281,7 +281,7 @@
       "start": 110,
       "end": 111,
       "labels": [],
-      "help": "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)"
+      "help": "Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`."
     }
   ]
 }

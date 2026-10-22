@@ -77,41 +77,33 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     } }, regex.span);
 }
 
-/// Reports each flag that is unknown, repeated, or `u` beside `v`, at the flag itself, so the
-/// literal stays in the tree with its flags as written.
 fn parseRegExpLiteralFlags(parser: *Parser, flags_start: u32, flags: []const u8) Error!void {
     std.debug.assert(flags_start + flags.len <= parser.source.len);
-    const unicode_both = regExpFlagBit('u') | regExpFlagBit('v');
+    const unicode_modes = regExpFlagBit('u') | regExpFlagBit('v');
     var seen: u32 = 0;
     var index: u32 = 0;
     while (index < flags.len) {
-        const flag = flags[index];
-        const len: u32 = std.unicode.utf8ByteSequenceLength(flag) catch unreachable;
+        const len: u32 = std.unicode.utf8ByteSequenceLength(flags[index]) catch unreachable;
         const span: ast.Span = .{ .start = flags_start + index, .end = flags_start + index + len };
+        const bit = regExpFlagBit(flags[index]);
         index += len;
 
-        const bit = regExpFlagBit(flag);
         if (bit == 0) {
             try parser.report(span, "Invalid regular expression flag", .{
-                .help = "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline)," ++
-                    " `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices)," ++
-                    " `v` (setNotation)",
+                .help = "Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`.",
             });
         } else if (seen & bit != 0) {
             try parser.report(span, "Duplicate regular expression flag", .{
-                .help = "Remove the duplicate flag; each flag can only appear once",
+                .help = "Each flag can appear only once.",
             });
-        } else {
-            seen |= bit;
-            if (seen & unicode_both == unicode_both) {
-                try parser.report(
-                    span,
-                    "The 'u' and 'v' regular expression flags cannot be used together",
-                    .{ .help = "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually" ++
-                        " exclusive; use one or the other" },
-                );
-            }
+        } else if ((seen | bit) & unicode_modes == unicode_modes) {
+            try parser.report(
+                span,
+                "The 'u' and 'v' regular expression flags cannot be used together",
+                .{ .help = "Use `v`, which extends `u`, or `u` alone." },
+            );
         }
+        seen |= bit;
     }
     std.debug.assert(index == flags.len);
 }
