@@ -57,19 +57,29 @@ export function clone<T extends Node>(node: T): T {
   const pending: object[] = [root];
   for (let item = pending.pop(); item !== undefined; item = pending.pop()) {
     if (Array.isArray(item)) {
-      for (let i = 0; i < item.length; i++) item[i] = copied(item[i], pending);
+      for (let i = 0; i < item.length; i++) {
+        const value: unknown = item[i];
+        if (value !== null && typeof value === "object") item[i] = copied(value, pending);
+      }
     } else {
       const fields = item as Record<string, unknown>;
-      for (const key in fields) fields[key] = copied(fields[key], pending);
+      for (const key in fields) {
+        const value = fields[key];
+        if (value !== null && typeof value === "object") fields[key] = copied(value, pending);
+      }
     }
   }
   return root;
 }
 
-function copied(value: unknown, pending: object[]): unknown {
-  if (value === null || typeof value !== "object") return value;
+function copied(value: object, pending: object[]): object {
+  if (Array.isArray(value)) {
+    const copy = value.slice();
+    pending.push(copy);
+    return copy;
+  }
   if (value instanceof RegExp) return new RegExp(value);
-  const copy = Array.isArray(value) ? value.slice() : { ...value };
+  const copy = { ...value };
   pending.push(copy);
   return copy;
 }
