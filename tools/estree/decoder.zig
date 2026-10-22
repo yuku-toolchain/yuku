@@ -712,32 +712,49 @@ fn writeDecode(w: *Writer) !void {
         \\    }
         \\  }
         \\  let _n, _count = 0;
+        \\  const _built = [];
+        \\  function _make(k) {
+        \\    const r = _decode(k);
+        \\    if (_attached && (_ownedBits[k >>> 5] & (1 << (k & 31))) !== 0 && r !== null &&
+        \\        typeof r === "object" && r.type !== undefined && r.comments === undefined) {
+        \\      r.comments = _owned.get(k);
+        \\    }
+        \\    return r;
+        \\  }
         \\  function nodeAt(i) {
-        \\    if (_count === 0) {
+        \\    if (_n === undefined) {
         \\      _n = new Array(nodeCount);
         \\      if (_attached) _own();
         \\    }
-        \\    while (_count <= i) {
-        \\      const k = _count;
-        \\      const r = _decode(k);
-        \\      if (_attached && (_ownedBits[k >>> 5] & (1 << (k & 31))) !== 0 && r !== null &&
-        \\          typeof r === "object" && r.type !== undefined && r.comments === undefined) {
-        \\        r.comments = _owned.get(k);
+        \\    if (i === progIdx) {
+        \\      if (_built.length === 0) {
+        \\        while (_count <= i) {
+        \\          const k = _count;
+        \\          const r = _decode(k);
+        \\          if (_attached && (_ownedBits[k >>> 5] & (1 << (k & 31))) !== 0 && r !== null &&
+        \\              typeof r === "object" && r.type !== undefined && r.comments === undefined) {
+        \\            r.comments = _owned.get(k);
+        \\          }
+        \\          _n[_count++] = r;
+        \\        }
+        \\      } else {
+        \\        for (; _count <= i; _count++) if (_n[_count] === undefined) _n[_count] = _make(_count);
         \\      }
-        \\      _n[_count++] = r;
+        \\    } else if (_n[i] === undefined) {
+        \\      _subtree(i);
         \\    }
         \\    return _n[i];
         \\  }
         \\  const node = (i) => _n[i];
-        \\  let _nodeIndexes, _indexedCount = 0;
+        \\  let _nodeIndexes, _indexedCount = 0, _builtIndexed = 0;
+        \\  function _index(k) {
+        \\    const r = _n[k];
+        \\    if (r !== null && typeof r === "object" && !_nodeIndexes.has(r)) _nodeIndexes.set(r, k);
+        \\  }
         \\  function indexOf(n) {
         \\    if (_nodeIndexes === undefined) _nodeIndexes = new Map();
-        \\    for (; _indexedCount < _count; _indexedCount++) {
-        \\      const r = _n[_indexedCount];
-        \\      if (r !== null && typeof r === "object" && !_nodeIndexes.has(r)) {
-        \\        _nodeIndexes.set(r, _indexedCount);
-        \\      }
-        \\    }
+        \\    for (; _indexedCount < _count; _indexedCount++) _index(_indexedCount);
+        \\    for (; _builtIndexed < _built.length; _builtIndexed++) _index(_built[_builtIndexed]);
         \\    return _nodeIndexes.get(n);
         \\  }
         \\  const _decoder = {
@@ -803,6 +820,32 @@ fn writeDecode(w: *Writer) !void {
         \\      out[j] = {{ severity: sev, message: msg, path, start: ds, end: de, labels, help }};
         \\    }}
         \\    return out;
+        \\  }}
+        \\  function _subtree(root) {{
+        \\    const pending = [root], found = [];
+        \\    while (pending.length > 0) {{
+        \\      const k = pending.pop();
+        \\      if (_n[k] !== undefined) continue;
+        \\      found.push(k);
+        \\      const b = (_nodesOff >> 2) + k * {[stride]d};
+        \\      const ops = CHILD_SLOTS[_u32[b] & 255];
+        \\      for (let q = 0; q < ops.length; q += 2) {{
+        \\        const slot = ops[q + 1];
+        \\        if (ops[q] === 0) {{
+        \\          const c = _u32[b + slot];
+        \\          if (c !== NULL) pending.push(c);
+        \\        }} else {{
+        \\          const s = _u32[b + slot], len = _u32[b + slot + 1];
+        \\          for (let j = 0; j < len; j++) {{
+        \\            const c = _u32[_extraBase + s + j];
+        \\            if (c !== NULL) pending.push(c);
+        \\          }}
+        \\        }}
+        \\      }}
+        \\    }}
+        \\    found.sort((x, y) => x - y);
+        \\    for (const k of found) _n[k] = _make(k);
+        \\    for (const k of found) _built.push(k);
         \\  }}
         \\  let _parentArr;
         \\  function _parents() {{

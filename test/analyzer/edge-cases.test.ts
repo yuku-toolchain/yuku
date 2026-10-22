@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parse, Project } from "yuku";
+import { parse, Project, walk } from "yuku";
 import { summary } from "./utils/summarize";
 
 describe("write detection through wrappers", () => {
@@ -117,5 +117,30 @@ describe("deep trees", () => {
     let ancestors = 0;
     for (let parent = file.parentOf(node); parent; parent = file.parentOf(parent)) ancestors++;
     expect(ancestors).toBe(100_000 + 2);
+  });
+});
+
+describe("nodes read before the program", () => {
+  test("a reference's node is the program's own, with its comments and lookups", () => {
+    const source = "const a = 1;\nfunction f(g) {\n  return g(/* the a */ a, a);\n}\n";
+    const options = { semantic: true, attachComments: true, path: "a.js" } as const;
+    const eager = parse(source, options);
+    const lazy = parse(source, options);
+    const [, first, last] = lazy.references;
+    expect(lazy.referenceOf(last!.node)).toBe(last!);
+    expect(lazy.bindingOf(first!.node)).toBe(lazy.bindings[0]!);
+    expect(eager.references[1]!.node.comments).toHaveLength(1);
+    expect(first!.node.comments).toEqual(eager.references[1]!.node.comments);
+
+    expect(lazy.program).toEqual(eager.program);
+    const nodes = new Set<object>();
+    walk(lazy.program, {
+      enter(node) {
+        nodes.add(node);
+      },
+    });
+    expect(nodes.has(first!.node)).toBe(true);
+    expect(nodes.has(last!.node)).toBe(true);
+    expect(lazy.referenceOf(first!.node)).toBe(first!);
   });
 });

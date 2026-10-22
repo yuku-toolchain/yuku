@@ -10,7 +10,7 @@ import {
   type SourceType,
   walk,
 } from "yuku";
-import { nodesOf } from "../ast-helpers-for-test";
+import { astDiffPath, nodesOf } from "../ast-helpers-for-test";
 import { corpusAndProjectFiles, corpusPresent, forEachCorpusFile } from "../corpus";
 
 const SAMPLE_MAX = 8;
@@ -25,6 +25,7 @@ const INVARIANTS = {
   captures: "capturesOf matches an independent recomputation",
   records: "module records are well formed",
   determinism: "analysis is deterministic",
+  earlyNodes: "nodes read before the program are the program's own",
   ordering: "bindings and references are recorded in walk (source) order",
 };
 
@@ -203,6 +204,31 @@ function check(path: string, source: string, sourceType: SourceType): void {
 
   const again = parse(source, { semantic: true, path, sourceType });
   if (fingerprint(file) !== fingerprint(again)) note("determinism", `${path}: non-deterministic`);
+  checkEarlyNodes(path, again, file);
+}
+
+function checkEarlyNodes(path: string, lazy: SourceFile, eager: SourceFile): void {
+  const references = [...lazy.references].reverse();
+  const early: Node[] = [];
+  for (const reference of references) {
+    early.push(reference.node);
+    if (lazy.referenceOf(reference.node) !== reference) {
+      note("earlyNodes", `${path}: referenceOf(${reference.name}) before the program`);
+    }
+  }
+  for (const binding of lazy.bindings) early.push(...binding.declarations);
+  const difference = astDiffPath(lazy.program, eager.program);
+  if (difference !== null) note("earlyNodes", `${path}: ${difference}`);
+  const nodes = new Set<Node>();
+  walk(lazy.program, {
+    enter(node) {
+      nodes.add(node);
+    },
+  });
+  const stray = early.find((node) => !nodes.has(node));
+  if (stray !== undefined) {
+    note("earlyNodes", `${path}: an early ${stray.type} is not in the program`);
+  }
 }
 
 describe.skipIf(!corpusPresent())("analyzer corpus invariants", () => {
