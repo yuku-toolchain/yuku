@@ -5,6 +5,7 @@ import type {
   Directive,
   Node,
   NodeOfType,
+  NodeType,
   NullLiteral,
   NumericLiteral,
   ParenthesizedExpression,
@@ -60,6 +61,10 @@ const aliases = Object.fromEntries(
 ) as AliasGuards;
 
 const shapes = {
+  /** Whether `node.type` is one of `types`. */
+  oneOf: <const K extends NodeType>(node: MaybeNode, types: readonly K[]): node is NodeOfType<K> =>
+    node != null && (types as readonly string[]).includes(node.type),
+
   StringLiteral: (node: MaybeNode): node is StringLiteral =>
     node?.type === "Literal" && typeof node.value === "string",
   NumericLiteral: (node: MaybeNode): node is NumericLiteral =>

@@ -995,14 +995,6 @@ The program is plain objects: [ESTree](https://github.com/estree/estree) for Jav
 import type { CallExpression, Expression, Node, Program } from "yuku";
 ```
 
-`CHILD_KEYS[type]` lists the fields of a node type that hold child nodes, in source order.
-
-```js
-import { CHILD_KEYS } from "yuku";
-
-CHILD_KEYS.CallExpression; // ["callee", "typeArguments", "arguments"]
-```
-
 ## Walk
 
 `walk` visits a node and everything under it, depth-first in source order.
@@ -1172,6 +1164,7 @@ import { is } from "yuku";
 
 is.CallExpression(node);
 is.Expression(node);              // aliases too
+is.oneOf(node, ["FunctionDeclaration", "ClassDeclaration"]);
 is.StringLiteral(node);           // also NumericLiteral, BooleanLiteral, NullLiteral,
                                   // BigIntLiteral, and RegExpLiteral
 is.StaticMemberExpression(node);  // also ComputedMemberExpression and PrivateFieldExpression

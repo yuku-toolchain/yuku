@@ -293,7 +293,8 @@ export function nodesOf<K extends NodeType | AliasName>(
   root: Node,
   ...kinds: K[]
 ): NodeOfKind<K>[] {
-  const guards = kinds.map((kind) => (is as Record<string, (node: Node) => boolean>)[kind]!);
+  const byName = is as unknown as Record<string, (node: Node) => boolean>;
+  const guards = kinds.map((kind) => byName[kind]!);
   const found: Node[] = [];
   walk(root, {
     enter(node) {

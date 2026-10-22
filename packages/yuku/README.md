@@ -353,6 +353,7 @@ import { is } from "yuku";
 
 is.CallExpression(node);
 is.Expression(node);              // aliases too
+is.oneOf(node, ["FunctionDeclaration", "ClassDeclaration"]);
 is.StringLiteral(node);           // also NumericLiteral, BooleanLiteral, NullLiteral,
                                   // BigIntLiteral, and RegExpLiteral
 is.StaticMemberExpression(node);  // also ComputedMemberExpression and PrivateFieldExpression

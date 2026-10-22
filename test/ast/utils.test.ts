@@ -31,6 +31,9 @@ describe("is", () => {
     expect(is.CallExpression(call)).toBe(true);
     expect(is.Expression(call)).toBe(true);
     expect(is.Statement(call)).toBe(false);
+    expect(is.oneOf(call, ["CallExpression", "NewExpression"])).toBe(true);
+    expect(is.oneOf(call, ["NewExpression"])).toBe(false);
+    expect(is.oneOf(null, ["CallExpression"])).toBe(false);
     expect(is.CallExpression(null)).toBe(false);
 
     expect(is.Identifier(firstExpression(`foo`))).toBe(true);
