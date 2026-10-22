@@ -2,7 +2,6 @@ import shipped from "#wasm";
 import type { SourceLang } from "../types";
 import { decodeBase64 } from "./base64";
 import { addChildKeys } from "./child-keys";
-import { NodeBuffer } from "./node";
 import type { Backend, Entry } from "./read";
 
 export interface Shape {
@@ -31,6 +30,20 @@ interface Instance extends Backend {
   grownAt: number;
 }
 
+interface NodeBufferConstructor {
+  from(
+    buffer: ArrayBuffer,
+    offset: number,
+    length: number,
+  ): { write(text: string, encoding: "utf16le"): number };
+  from(text: string, encoding: "base64"): Uint8Array<ArrayBuffer>;
+}
+
+interface NodeGlobals {
+  process?: { versions?: { node?: string } };
+  Buffer?: NodeBufferConstructor;
+}
+
 const UTF16 = 1 << 10;
 
 const MEMORY_BYTES_MAX = 128 * 1024 * 1024;
@@ -39,6 +52,10 @@ const MEMORY_IDLE_MS = 10_000;
 const encoder = new TextEncoder();
 const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const instances = new WeakMap<WebAssembly.Module, Instance>();
+const NodeBuffer: NodeBufferConstructor | undefined =
+  (globalThis as NodeGlobals).process?.versions?.node === undefined
+    ? undefined
+    : (globalThis as NodeGlobals).Buffer;
 let compiled: WebAssembly.Module | null = null;
 
 /** The WebAssembly module the package ships, compiled on first use. */
