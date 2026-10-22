@@ -69,11 +69,58 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const pattern_start = regex.span.start + 1;
     const pattern_end = pattern_start + @as(u32, @intCast(regex.pattern.len));
     const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
+    try parseRegExpLiteralFlags(parser, flags_start, regex.flags);
 
     return try parser.tree.addNode(.{ .regexp_literal = .{
         .pattern = parser.tree.sourceSlice(pattern_start, pattern_end),
         .flags = parser.tree.sourceSlice(flags_start, regex.span.end),
     } }, regex.span);
+}
+
+/// Reports each flag that is unknown, repeated, or `u` beside `v`, at the flag itself, so the
+/// literal stays in the tree with its flags as written.
+fn parseRegExpLiteralFlags(parser: *Parser, flags_start: u32, flags: []const u8) Error!void {
+    std.debug.assert(flags_start + flags.len <= parser.source.len);
+    const unicode_both = regExpFlagBit('u') | regExpFlagBit('v');
+    var seen: u32 = 0;
+    var index: u32 = 0;
+    while (index < flags.len) {
+        const flag = flags[index];
+        const len: u32 = std.unicode.utf8ByteSequenceLength(flag) catch unreachable;
+        const span: ast.Span = .{ .start = flags_start + index, .end = flags_start + index + len };
+        index += len;
+
+        const bit = regExpFlagBit(flag);
+        if (bit == 0) {
+            try parser.report(span, "Invalid regular expression flag", .{
+                .help = "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline)," ++
+                    " `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices)," ++
+                    " `v` (setNotation)",
+            });
+        } else if (seen & bit != 0) {
+            try parser.report(span, "Duplicate regular expression flag", .{
+                .help = "Remove the duplicate flag; each flag can only appear once",
+            });
+        } else {
+            seen |= bit;
+            if (seen & unicode_both == unicode_both) {
+                try parser.report(
+                    span,
+                    "The 'u' and 'v' regular expression flags cannot be used together",
+                    .{ .help = "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually" ++
+                        " exclusive; use one or the other" },
+                );
+            }
+        }
+    }
+    std.debug.assert(index == flags.len);
+}
+
+fn regExpFlagBit(flag: u8) u32 {
+    return switch (flag) {
+        'd', 'g', 'i', 'm', 's', 'u', 'v', 'y' => @as(u32, 1) << @intCast(flag - 'a'),
+        else => 0,
+    };
 }
 
 pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {

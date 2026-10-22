@@ -1,0 +1,287 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 168,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 19,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 18,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 10,
+              "name": "both"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 13,
+              "end": 18,
+              "value": null,
+              "raw": "/x/uv",
+              "regex": {
+                "pattern": "x",
+                "flags": "uv"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 20,
+        "end": 43,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 26,
+            "end": 42,
+            "id": {
+              "type": "Identifier",
+              "start": 26,
+              "end": 34,
+              "name": "reversed"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 37,
+              "end": 42,
+              "value": null,
+              "raw": "/x/vu",
+              "regex": {
+                "pattern": "x",
+                "flags": "uv"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 44,
+        "end": 68,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 50,
+            "end": 67,
+            "id": {
+              "type": "Identifier",
+              "start": 50,
+              "end": 58,
+              "name": "repeated"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 61,
+              "end": 67,
+              "value": null,
+              "raw": "/x/gig",
+              "regex": {
+                "pattern": "x",
+                "flags": "ggi"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 69,
+        "end": 91,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 75,
+            "end": 90,
+            "id": {
+              "type": "Identifier",
+              "start": 75,
+              "end": 82,
+              "name": "unknown"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 85,
+              "end": 90,
+              "value": null,
+              "raw": "/x/gq",
+              "regex": {
+                "pattern": "x",
+                "flags": "gq"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 92,
+        "end": 112,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 98,
+            "end": 111,
+            "id": {
+              "type": "Identifier",
+              "start": 98,
+              "end": 103,
+              "name": "digit"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 106,
+              "end": 111,
+              "value": null,
+              "raw": "/x/g1",
+              "regex": {
+                "pattern": "x",
+                "flags": "1g"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 113,
+        "end": 150,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 119,
+            "end": 136,
+            "id": {
+              "type": "Identifier",
+              "start": 119,
+              "end": 124,
+              "name": "valid"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 127,
+              "end": 136,
+              "value": "(RegExp) /x/dgimsy",
+              "raw": "/x/dgimsy",
+              "regex": {
+                "pattern": "x",
+                "flags": "dgimsy"
+              }
+            }
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 138,
+            "end": 149,
+            "id": {
+              "type": "Identifier",
+              "start": 138,
+              "end": 142,
+              "name": "sets"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 145,
+              "end": 149,
+              "value": "(RegExp) /x/v",
+              "raw": "/x/v",
+              "regex": {
+                "pattern": "x",
+                "flags": "v"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 151,
+        "end": 167,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 157,
+            "end": 166,
+            "id": {
+              "type": "Identifier",
+              "start": 157,
+              "end": 162,
+              "name": "after"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 165,
+              "end": 166,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "The 'u' and 'v' regular expression flags cannot be used together",
+      "path": null,
+      "start": 17,
+      "end": 18,
+      "labels": [],
+      "help": "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other"
+    },
+    {
+      "severity": "error",
+      "message": "The 'u' and 'v' regular expression flags cannot be used together",
+      "path": null,
+      "start": 41,
+      "end": 42,
+      "labels": [],
+      "help": "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other"
+    },
+    {
+      "severity": "error",
+      "message": "Duplicate regular expression flag",
+      "path": null,
+      "start": 66,
+      "end": 67,
+      "labels": [],
+      "help": "Remove the duplicate flag; each flag can only appear once"
+    },
+    {
+      "severity": "error",
+      "message": "Invalid regular expression flag",
+      "path": null,
+      "start": 89,
+      "end": 90,
+      "labels": [],
+      "help": "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)"
+    },
+    {
+      "severity": "error",
+      "message": "Invalid regular expression flag",
+      "path": null,
+      "start": 110,
+      "end": 111,
+      "labels": [],
+      "help": "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)"
+    }
+  ]
+}

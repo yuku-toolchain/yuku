@@ -17,9 +17,6 @@ pub const LexicalError = error{
     NonTerminatedTemplateLiteral,
     UnterminatedRegexLiteral,
     InvalidRegexLineTerminator,
-    InvalidRegexFlag,
-    DuplicateRegexFlag,
-    IncompatibleRegexFlags,
     InvalidIdentifierStart,
     InvalidIdentifierContinue,
     UnterminatedMultiLineComment,
@@ -556,24 +553,7 @@ pub const Lexer = struct {
             if (c == '/' and !in_class) {
                 self.cursor += 1;
                 const flags_start = self.cursor;
-
-                var flags_seen: u32 = 0;
-                while (std.ascii.isAlphabetic(self.peek(0))) : (self.cursor += 1) {
-                    const flag = self.peek(0);
-                    switch (flag) {
-                        'g', 'i', 'm', 's', 'u', 'y', 'd', 'v' => {},
-                        else => return error.InvalidRegexFlag,
-                    }
-                    const flag_bit = @as(u32, 1) << @intCast(flag - 'a');
-                    if (flags_seen & flag_bit != 0) return error.DuplicateRegexFlag;
-                    flags_seen |= flag_bit;
-                }
-
-                const u_bit = @as(u32, 1) << ('u' - 'a');
-                const v_bit = @as(u32, 1) << ('v' - 'a');
-                if (flags_seen & u_bit != 0 and flags_seen & v_bit != 0) {
-                    return error.IncompatibleRegexFlags;
-                }
+                try self.reScanAsRegexFlags();
 
                 return .{
                     .span = .{ .start = start, .end = self.cursor },
@@ -585,6 +565,24 @@ pub const Lexer = struct {
             self.cursor += 1;
         }
         return error.UnterminatedRegexLiteral;
+    }
+
+    fn reScanAsRegexFlags(self: *Lexer) LexicalError!void {
+        const src = self.source;
+        const flags_start = self.cursor;
+        while (self.cursor < src.len) {
+            const c = src[self.cursor];
+            if (identifier_char_ascii[c]) {
+                self.cursor += 1;
+                continue;
+            }
+            if (c < 0x80) break;
+            const cp = try util.Utf.codePointAt(src, self.cursor);
+            if (!lexical.isIdentifierChar(cp.value)) break;
+            self.cursor += cp.len;
+        }
+        std.debug.assert(self.cursor >= flags_start);
+        std.debug.assert(self.cursor <= src.len);
     }
 
     fn scanString(self: *Lexer) LexicalError!Token {
@@ -1325,10 +1323,6 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.UnterminatedRegexLiteral => "Unterminated regular expression literal",
         error.InvalidRegexLineTerminator => "Line terminator not allowed in regular expression" ++
             " literal",
-        error.InvalidRegexFlag => "Invalid regular expression flag",
-        error.DuplicateRegexFlag => "Duplicate regular expression flag",
-        error.IncompatibleRegexFlags => "The 'u' and 'v' regular expression flags cannot be" ++
-            " used together",
         error.InvalidIdentifierStart => "Invalid character at start of identifier",
         error.InvalidIdentifierContinue => "Invalid character in identifier",
         error.UnterminatedMultiLineComment => "Unterminated multi-line comment",
@@ -1363,12 +1357,6 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
             " followed by flags (g, i, m, etc.)",
         error.InvalidRegexLineTerminator => "Try removing the line break here or escaping" ++
             " it within the regex pattern",
-        error.InvalidRegexFlag => "Valid regex flags are: `g` (global), `i` (ignoreCase)," ++
-            " `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices)," ++
-            " `v` (setNotation)",
-        error.DuplicateRegexFlag => "Remove the duplicate flag; each flag can only appear once",
-        error.IncompatibleRegexFlags => "The 'u' (unicode) and 'v' (unicodeSets) flags are" ++
-            " mutually exclusive; use one or the other",
         error.InvalidIdentifierStart => "Try starting the identifier here with a letter" ++
             " (a-z, A-Z), underscore (_), or dollar sign ($)",
         error.InvalidIdentifierContinue => "Try using a valid identifier character here" ++
