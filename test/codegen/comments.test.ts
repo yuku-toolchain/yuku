@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { parse, type PrintOptions } from "yuku";
-import { commentPlacements, gen, MINIFIED } from "./helpers";
+import { commentPlacements, gen } from "./helpers";
 
 const ALL = { comments: "all" } as const;
 
@@ -380,7 +380,7 @@ test("a node the parent writes itself keeps its comments", () => {
     function f(a): a is /* c */ string {}"
   `);
   const keys = 'x = a[/* c */ "b"];\ny = { "c" /* c */\n: 1 };\nclass C { "d" /* c */\n() {} }';
-  expect(gen(keys, { ...ALL, ...MINIFIED }, "input.js")).toMatchInlineSnapshot(
+  expect(gen(keys, { ...ALL, minify: true }, "input.js")).toMatchInlineSnapshot(
     `"x=a./* c */b;y={c/* c */:1};class C{d/* c */(){}}"`,
   );
 });
@@ -446,7 +446,7 @@ test("a comment in any gap survives every plan", () => {
   const plans: PrintOptions[] = [
     ALL,
     { ...ALL, format: "compact" },
-    { ...ALL, ...MINIFIED },
+    { ...ALL, minify: true },
     { ...ALL, strip: true },
   ];
   const failures: string[] = [];

@@ -30,15 +30,19 @@ export interface PrintOptions {
    * @default false
    */
   strip?: boolean;
-  /** Rewrite syntax to shorter forms, such as `!0` and `obj.foo`. @default false */
+  /**
+   * Rewrite syntax to shorter forms, such as `!0` and `obj.foo`, and default to the compact
+   * format, the shortest quotes, and `"some"` comments.
+   * @default false
+   */
   minify?: boolean;
-  /** @default "pretty" */
+  /** @default "pretty", or "compact" when minifying */
   format?: Format;
   /** Spaces per indentation level in pretty format, from 0 to 255. @default 2 */
   indent?: number;
-  /** @default "preserve" */
+  /** @default "preserve", or "shortest" when minifying */
   quotes?: Quotes;
-  /** @default "all" */
+  /** @default "all", or "some" when minifying */
   comments?: Comments;
   /** Needs a file, for its source and path. @default false */
   sourceMap?: boolean | SourceMapOptions;
@@ -64,6 +68,17 @@ export interface PrintResult {
 
 const QUOTES = ["preserve", "double", "single", "shortest"] as const;
 const COMMENTS = ["none", "all", "some", "line", "block"] as const;
+const OPTIONS: ReadonlySet<string> = new Set([
+  "strip",
+  "minify",
+  "format",
+  "indent",
+  "quotes",
+  "comments",
+  "sourceMap",
+  "printers",
+]);
+const SOURCE_MAP_OPTIONS: ReadonlySet<string> = new Set(["file", "sourceRoot", "sourcesContent"]);
 
 /** Prints a file, or any single node, back to source. */
 export function print(target: SourceFile | Node, options: PrintOptions = {}): PrintResult {
@@ -71,13 +86,12 @@ export function print(target: SourceFile | Node, options: PrintOptions = {}): Pr
   const node = target instanceof SourceFile ? target.program : target;
   assertNode(node, "print");
   const printerOptions = resolveOptions(options, file?.path ?? null);
-  const sourceMap = options.sourceMap ?? false;
-  if (sourceMap === false) return { ...printNode(node, printerOptions, null), map: null };
+  const settings = sourceMapOf(options.sourceMap ?? false);
+  if (settings === null) return { ...printNode(node, printerOptions, null), map: null };
   if (file === null) throw new TypeError("a source map needs the source, so print the file");
   const { source, path } = file;
   const mappings = new Mappings(Math.max(source.length >>> 3, 1024));
   const { code, diagnostics } = printNode(node, printerOptions, mappings);
-  const settings: SourceMapOptions = sourceMap === true ? {} : sourceMap;
   const map: SourceMap = {
     version: 3,
     file: settings.file ?? null,
@@ -90,8 +104,31 @@ export function print(target: SourceFile | Node, options: PrintOptions = {}): Pr
   return { code, diagnostics, map };
 }
 
+function sourceMapOf(sourceMap: boolean | SourceMapOptions): SourceMapOptions | null {
+  if (sourceMap === false) return null;
+  if (sourceMap === true) return {};
+  if (typeof sourceMap !== "object" || sourceMap === null) {
+    throw new TypeError("`sourceMap` must be true, false, or an object of options");
+  }
+  for (const key in sourceMap) {
+    if (!SOURCE_MAP_OPTIONS.has(key)) throw new TypeError(`\`${key}\` is not a sourceMap option`);
+  }
+  const content = sourceMap.sourcesContent;
+  if (content !== undefined && typeof content !== "boolean") {
+    throw new TypeError("`sourcesContent` must be true or false");
+  }
+  return sourceMap;
+}
+
 function resolveOptions(options: PrintOptions, path: string | null): PrinterOptions {
-  const format = options.format ?? "pretty";
+  for (const key in options) {
+    if (!OPTIONS.has(key)) throw new TypeError(`\`${key}\` is not a print option`);
+  }
+
+  const minify = options.minify ?? false;
+  if (typeof minify !== "boolean") throw new TypeError("`minify` must be true or false");
+
+  const format = options.format ?? (minify ? "compact" : "pretty");
   if (format !== "pretty" && format !== "compact") {
     throw new TypeError('`format` must be "pretty" or "compact"');
   }
@@ -101,12 +138,12 @@ function resolveOptions(options: PrintOptions, path: string | null): PrinterOpti
     throw new RangeError("`indent` must be an integer from 0 to 255");
   }
 
-  const quotes = options.quotes ?? "preserve";
+  const quotes = options.quotes ?? (minify ? "shortest" : "preserve");
   if (!QUOTES.includes(quotes)) {
     throw new TypeError('`quotes` must be "preserve", "double", "single", or "shortest"');
   }
 
-  const comments = options.comments ?? "all";
+  const comments = options.comments ?? (minify ? "some" : "all");
   if (!COMMENTS.includes(comments)) {
     throw new TypeError('`comments` must be "all", "some", "none", "line", or "block"');
   }
@@ -118,7 +155,7 @@ function resolveOptions(options: PrintOptions, path: string | null): PrinterOpti
 
   return {
     strip: options.strip === true,
-    minify: options.minify === true,
+    minify,
     pretty: format === "pretty",
     indent,
     quotes,

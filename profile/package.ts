@@ -40,7 +40,6 @@ const PATTERNS = [
   pattern("setTimeout($F, 0)"),
   pattern("$A.$B($$$ARGS)"),
 ];
-const MINIFIED = { minify: true, format: "compact", quotes: "shortest", comments: "some" } as const;
 
 const bench = withCodSpeed(new Bench({ time: 1000, warmupTime: 250, throws: true }));
 
@@ -104,7 +103,7 @@ for (const path of FILES) {
   add(`print ${name}`, () => print(file!), parsed);
   add(`print ${name} with comments`, () => print(commented!), withComments);
   if (typed) add(`print ${name} stripped`, () => print(file!, { strip: true }), parsed);
-  add(`print ${name} minified`, () => print(file!, MINIFIED), parsed);
+  add(`print ${name} minified`, () => print(file!, { minify: true }), parsed);
   add(`print ${name} with source map`, () => print(file!, { sourceMap: true }), parsed);
   add(
     `walk ${name}`,

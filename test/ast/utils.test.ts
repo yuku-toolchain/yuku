@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   b,
   bindingIdentifiers,
+  CHILD_KEYS,
   clone,
   is,
   lexical,
@@ -75,6 +76,12 @@ describe("lexical", () => {
 });
 
 describe("utils", () => {
+  test("CHILD_KEYS lists the child fields of each type in source order", () => {
+    expect(CHILD_KEYS.CallExpression).toEqual(["callee", "typeArguments", "arguments"]);
+    expect(CHILD_KEYS.Literal).toEqual([]);
+    expect(CHILD_KEYS.NotANode).toBeUndefined();
+  });
+
   test("nameOf reads identifiers and string literals", () => {
     expect(nameOf(firstExpression(`foo`))).toBe("foo");
     expect(nameOf(firstExpression(`"bar"`))).toBe("bar");

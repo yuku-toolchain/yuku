@@ -107,6 +107,7 @@ pub fn generateWalkTables(w: *Writer) Writer.Error!void {
     try w.writeAll(
         \\ck("Hashbang", []);
         \\
+        \\/** The fields of each node type that hold child nodes, in source order. */
         \\export const CHILD_KEYS: Readonly<Record<string, readonly string[]>> = childKeys;
         \\
         \\const TYPES = [

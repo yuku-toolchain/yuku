@@ -10,27 +10,30 @@ import {
 } from "yuku";
 import { TraceMap, decodedMappings } from "@jridgewell/trace-mapping";
 import { nodesOf } from "../ast-helpers-for-test";
-import { gen, MINIFIED } from "./helpers";
+import { gen } from "./helpers";
 
 test("strip and minify compose in a single call", () => {
   expect(
     gen(`const x: number = 1000000;\nif (true) { obj["foo"] = undefined; }`, {
       strip: true,
       minify: true,
-      format: "compact",
     }),
   ).toMatchInlineSnapshot(`"const x=1e6;if(!0){obj.foo=undefined}"`);
 });
 
-test("minify rewrites syntax, and format and quotes set the layout", () => {
-  const source = `const x = 1000000;\nconst s = 'plain';`;
+test("minify defaults the format, quotes, and comments, and the options say otherwise", () => {
+  const source = `// note\n/*! legal */\nconst x = 1000000;\nconst s = 'plain';`;
   expect(gen(source, { minify: true })).toMatchInlineSnapshot(`
-    "const x = 1e6;
+    "/*! legal */
+    const x=1e6;const s="plain""
+  `);
+  const options = { minify: true, format: "pretty", quotes: "preserve", comments: "all" } as const;
+  expect(gen(source, options)).toMatchInlineSnapshot(`
+    "// note
+    /*! legal */
+    const x = 1e6;
     const s = 'plain';"
   `);
-  expect(gen(source, MINIFIED)).toMatchInlineSnapshot(
-    `"const x=1e6;const s="plain""`,
-  );
 });
 
 test("lists longer than a u16 survive the round trip", () => {
@@ -122,6 +125,13 @@ test("an option outside its values throws", () => {
   expect(() => print(program, { indent: 256 })).toThrow("`indent` must be an integer");
   expect(() => print(program, { indent: 1.5 })).toThrow("`indent` must be an integer");
   expect(() => print(program, { printers: 1 as never })).toThrow("`printers` must be an object");
+  expect(() => print(program, { minify: {} as never })).toThrow("`minify` must be true or false");
+  expect(() => print(program, { print: {} } as never)).toThrow("`print` is not a print option");
+  const source = { source: "a;" } as never;
+  expect(() => print(program, { sourceMap: source })).toThrow("`source` is not a sourceMap option");
+  const content = { sourcesContent: "a;" } as never;
+  expect(() => print(program, { sourceMap: content })).toThrow("`sourcesContent` must be true");
+  expect(() => print(program, { sourceMap: 1 as never })).toThrow("`sourceMap` must be true");
 });
 
 test("a value that is not a file or a node throws", () => {

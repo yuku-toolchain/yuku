@@ -47,7 +47,7 @@ print(file).code; // "const twice = (n) => n * 2;\ntwice(21);"
 
 - [Parse](#parse): [options](#options), [diagnostics](#diagnostics), [comments](#comments), [tokens](#tokens)
 - [The AST](#the-ast)
-- [Walk](#walk): [the context](#the-context), [editing](#editing)
+- [Walk](#walk): [the context](#the-context), [editing](#editing), [async work](#async-work)
 - [Patterns](#patterns)
 - [Build](#build): [templates](#templates), [builders](#builders), [guards and helpers](#guards-and-helpers)
 - [Semantic analysis](#semantic-analysis): [scopes](#scopes), [bindings](#bindings), [references](#references), [imports and exports](#imports-and-exports)
@@ -235,6 +235,24 @@ The [semantic model](#semantic-analysis) answers for any node a walk visits, as 
 walk(file.program, {
   DebuggerStatement(node, ctx) {
     ctx.remove();
+  },
+});
+```
+
+### Async work
+
+A walk runs synchronously. For async work, collect the nodes in one walk, await them together, and edit in a second.
+
+```js
+const calls = [];
+walk(file.program, { CallExpression: (node) => calls.push(node) });
+
+const results = new Map(await Promise.all(calls.map(async (node) => [node, await rewrite(node)])));
+
+walk(file.program, {
+  CallExpression(node, ctx) {
+    const result = results.get(node);
+    if (result !== undefined) ctx.replace(result);
   },
 });
 ```
@@ -540,22 +558,18 @@ import { print } from "yuku";
 const { code, map, diagnostics } = print(file, { strip: true, sourceMap: true });
 ```
 
-| Option      | Default      | Description                                                                   |
-| ----------- | ------------ | ----------------------------------------------------------------------------- |
-| `strip`     | `false`      | Print TypeScript as JavaScript, reporting what has no JavaScript form         |
-| `minify`    | `false`      | Rewrite syntax to shorter forms, such as `!0` and `obj.foo`                   |
-| `format`    | `"pretty"`   | Or `"compact"`                                                                |
-| `indent`    | `2`          | Spaces per level in the pretty format                                         |
-| `quotes`    | `"preserve"` | `"preserve"`, `"double"`, `"single"`, or `"shortest"`                         |
-| `comments`  | `"all"`      | `"all"`, `"some"`, `"none"`, `"line"`, or `"block"`, of the attached comments |
-| `sourceMap` | `false`      | `true`, or `{ file, sourceRoot, sourcesContent }`, when printing a file       |
-| `printers`  | none         | Print node types the printer does not know, by `type`                         |
+| Option      | Default                                 | Description                                                                   |
+| ----------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| `strip`     | `false`                                 | Print TypeScript as JavaScript, reporting what has no JavaScript form         |
+| `minify`    | `false`                                 | Minify, rewriting syntax to shorter forms such as `!0` and `obj.foo`          |
+| `format`    | `"pretty"`, or `"compact"` minifying    | Or `"compact"`                                                                |
+| `indent`    | `2`                                     | Spaces per level in the pretty format                                         |
+| `quotes`    | `"preserve"`, or `"shortest"` minifying | `"preserve"`, `"double"`, `"single"`, or `"shortest"`                         |
+| `comments`  | `"all"`, or `"some"` minifying          | `"all"`, `"some"`, `"none"`, `"line"`, or `"block"`, of the attached comments |
+| `sourceMap` | `false`                                 | `true`, or `{ file, sourceRoot, sourcesContent }`, when printing a file       |
+| `printers`  | none                                    | Print node types the printer does not know, by `type`                         |
 
-`"some"` keeps legal headers, JSDoc, and `@` or `#` annotations, as bundlers do. Minifying in full sets four of them.
-
-```js
-print(file, { minify: true, format: "compact", quotes: "shortest", comments: "some" });
-```
+`"some"` keeps legal headers, JSDoc, and `@` or `#` annotations, as bundlers do.
 
 ## Performance
 

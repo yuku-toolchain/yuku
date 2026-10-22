@@ -40,8 +40,6 @@ export const PLANS: Plan[] = [
   definePlan("strip", ["--strip", "--comments=all"], { strip: true, comments: "all" }),
   definePlan("minify", ["--minify", "--compact", "--quotes=shortest", "--comments=all"], {
     minify: true,
-    format: "compact",
-    quotes: "shortest",
     comments: "all",
   }),
   definePlan("map", ["--source-map", "--comments=all"], { comments: "all" }),

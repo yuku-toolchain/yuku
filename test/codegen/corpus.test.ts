@@ -9,7 +9,6 @@ import {
   forEachCorpusFile,
   type CorpusFile,
 } from "../corpus";
-import { MINIFIED } from "./helpers";
 
 type Plan = "print" | "compact" | "strip" | "minify";
 
@@ -17,7 +16,7 @@ const PLANS: Record<Plan, PrintOptions> = {
   print: { comments: "all" },
   compact: { format: "compact", comments: "all" },
   strip: { strip: true, comments: "all" },
-  minify: { ...MINIFIED, comments: "all" },
+  minify: { minify: true, comments: "all" },
 };
 
 const SAMPLE_MAX = 8;

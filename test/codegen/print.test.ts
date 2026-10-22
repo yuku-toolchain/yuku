@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { parse, type ParseOptions, print, type PrintOptions } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
-import { deepChains, gen, INSTANTIATIONS, MINIFIED } from "./helpers";
+import { deepChains, gen, INSTANTIATIONS } from "./helpers";
 
 test("array holes keep their elisions", () => {
   expect(
@@ -205,7 +205,7 @@ test("compact output keeps a type argument closer apart from `>` and `=` operato
 
 test("an instantiation expression keeps the parens that end its type arguments", () => {
   const parseOptions: ParseOptions = { lang: "ts", preserveParens: false };
-  const layouts: PrintOptions[] = [{ format: "compact" }, MINIFIED];
+  const layouts: PrintOptions[] = [{ format: "compact" }, { minify: true }];
   for (const source of INSTANTIATIONS) {
     expect(gen(source, {}, "input.ts", { preserveParens: false })).toBe(source);
     const { program } = parse(source, parseOptions);
@@ -271,7 +271,7 @@ test("a member of a bare integer keeps the space before its dot", () => {
     d = 1..w;
     e = 1?.v;"
   `);
-  expect(gen(source, MINIFIED, "input.js")).toMatchInlineSnapshot(
+  expect(gen(source, { minify: true }, "input.js")).toMatchInlineSnapshot(
     `"a=1 .x;b=1 .y;c=0x1.z;d=1 .w;e=1?.v"`,
   );
 });

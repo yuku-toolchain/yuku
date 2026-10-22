@@ -1,7 +1,5 @@
 import { parse, type ParseOptions, print, type PrintOptions, type SourceLang } from "yuku";
 
-export const MINIFIED = { minify: true, format: "compact", quotes: "shortest" } as const;
-
 export function gen(
   source: string,
   options: PrintOptions = {},
