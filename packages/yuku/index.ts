@@ -9,7 +9,7 @@ export {
   type ParseOptions,
   type SourceFile,
 } from "./file/source-file";
-export { langFromPath, sourceTypeFromPath } from "./core/wasm";
+export { langFromPath, sourceTypeFromPath } from "./core/read";
 
 /** Every token kind by name. */
 export const TokenKind: TokenKindMap = tokenKind;

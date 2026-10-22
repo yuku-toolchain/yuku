@@ -817,7 +817,7 @@ We aim to acknowledge reports within 72 hours. Please allow a reasonable window 
 - **Provenance publishing.** Releases publish to npm with provenance through OIDC trusted publishing, with no long-lived tokens.
 - **Hardened CI.** Every action is pinned to a commit hash, workflow tokens are read-only by default, and [zizmor](https://github.com/zizmorcore/zizmor) and [OpenSSF Scorecard](https://securityscorecards.dev) check the workflows.
 - **Reproducible builds.** Installs use a frozen lockfile.
-- **Memory safety.** A parse allocates everything in one arena, and the npm package runs Yuku as WebAssembly, sandboxed from host memory.
+- **Memory safety.** A parse allocates everything in one arena and frees it in one step. Where the npm package runs Yuku as WebAssembly, it is also sandboxed from host memory.
 - **Fuzzing.** Millions of adversarial inputs per run, see [Testing](https://yuku.fyi/testing/#fuzzing).
 
 # JavaScript
@@ -889,17 +889,17 @@ The parser recovers from errors, so a file with diagnostics still has a program.
 
 ### Options
 
-| Option           | Default                                             | Description                                                                                                              |
-| ---------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `path`           | none                                                | Names the file, and sets `lang` and `sourceType`                                                                         |
-| `lang`           | from `path`, else `"js"`                            | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, or `"dts"`                                                                             |
-| `sourceType`     | `"commonjs"` for `.cjs` and `.cts`, else `"module"` | `"module"`, `"script"`, or `"commonjs"`                                                                                  |
-| `preserveParens` | `true`                                              | Keep `ParenthesizedExpression` nodes                                                                                     |
-| `attachComments` | `false`                                             | Attach each comment to its node, see [Comments](#comments)                                                               |
-| `tokens`         | `false`                                             | Collect `file.tokens`                                                                                                    |
-| `semantic`       | `false`                                             | Build the [semantic model](#semantic-analysis)                                                                           |
-| `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations                                                    |
-| `wasm`           | the build `yuku` ships                              | A custom build, such as one with a [dialect](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) |
+| Option           | Default                                             | Description                                                           |
+| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------- |
+| `path`           | none                                                | Names the file, and sets `lang` and `sourceType`                      |
+| `lang`           | from `path`, else `"js"`                            | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, or `"dts"`                          |
+| `sourceType`     | `"commonjs"` for `.cjs` and `.cts`, else `"module"` | `"module"`, `"script"`, or `"commonjs"`                               |
+| `preserveParens` | `true`                                              | Keep `ParenthesizedExpression` nodes                                  |
+| `attachComments` | `false`                                             | Attach each comment to its node, see [Comments](#comments)            |
+| `tokens`         | `false`                                             | Collect `file.tokens`                                                 |
+| `semantic`       | `false`                                             | Build the [semantic model](#semantic-analysis)                        |
+| `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations |
+| `wasm`           | the native addon, else the build `yuku` ships       | A WebAssembly build to run instead                                    |
 
 A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws. `langFromPath(path)` and `sourceTypeFromPath(path)` return what a path implies.
 
@@ -1646,7 +1646,7 @@ my_module.addImport("parser", yuku.module("parser"));
 b.installArtifact(@import("yuku").addWasm(b, yuku, "pipeline")); // zig-out/bin/pipeline.wasm
 ```
 
-`addWasm(b, yuku, name)` builds the WebAssembly module the `yuku` package runs: wasm32 with SIMD, optimized for speed, and stripped. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
+`addWasm(b, yuku, name)` builds a WebAssembly module like the one the `yuku` package ships: wasm32 with SIMD, optimized for speed, and stripped. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
 
 A build without a dialect has no dialect code. With one, a standard file pays one flag check per position, and a dialect file one call.
 
@@ -1701,4 +1701,4 @@ export function parse(source: string, options: Omit<ParseOptions, "wasm"> = {}):
 }
 ```
 
-To load the build in every runtime, follow `yuku`'s own [loaders](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku/core/module): inline the bytes by default, and import the `.wasm` file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
+To load the build in every runtime, follow `yuku`'s own [loaders](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku/core/wasm): inline the bytes by default, and import the `.wasm` file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.

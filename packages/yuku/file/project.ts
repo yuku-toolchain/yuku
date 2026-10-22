@@ -13,9 +13,8 @@ import { diagnosticAt, SourceFile, type FileOptions } from "./source-file";
 
 export interface ProjectOptions {
   /**
-   * A Yuku build to analyze with, such as one with a dialect compiled in. See
-   * https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme.
-   * @default the module yuku ships
+   * A WebAssembly build of Yuku to analyze with in place of the native addon.
+   * @default the native addon where it loads, else the WebAssembly module yuku ships
    */
   wasm?: WebAssembly.Module;
   /**

@@ -52,6 +52,9 @@ jobs:
       - name: Read the release notes
         run: bun .github/scripts/release-notes.ts "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
 
+      - name: Build the addon for every platform
+        run: zig build native
+
       - name: Build
         run: bun run build
 

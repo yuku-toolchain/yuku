@@ -18,7 +18,8 @@
           : "https://esm.sh/yuku";
       const imports = { yuku };
 
-      const scopes = local ? { "/pkg/": { "#module": "/pkg/dist/module/inline.js" } } : {};
+      const pkg = { "#native": "/pkg/dist/native/none.js", "#wasm": "/pkg/dist/wasm/inline.js" };
+      const scopes = local ? { "/pkg/": pkg } : {};
       document.write(`<script type="importmap">${JSON.stringify({ imports, scopes })}<\/script>`);
     </script>
   </head>

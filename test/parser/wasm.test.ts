@@ -17,7 +17,7 @@ test("the inlined module parses as the shipped yuku.wasm does", () => {
 
 test("workerd and edge-light import yuku.wasm in the form their bundlers compile", () => {
   const manifest = new URL("../../packages/yuku/package.json", import.meta.url);
-  const loaders = JSON.parse(readFileSync(manifest, "utf8")).imports["#module"];
+  const loaders = JSON.parse(readFileSync(manifest, "utf8")).imports["#wasm"];
   expect(Object.keys(loaders)).toEqual(["workerd", "edge-light", "default"]);
   expect(loaders["edge-light"]).toBe(loaders.workerd);
   const loader = readFileSync(new URL(loaders.workerd, manifest), "utf8");
@@ -86,10 +86,11 @@ test("an empty source parses empty when the writer repeats its last count", () =
     if (args[0]) wrote = write.apply(this, args);
     return wrote;
   } as typeof write;
+  const wasm = new WebAssembly.Module(shipped);
   try {
-    expect(parse("const answer = 42;").program.body).toHaveLength(1);
-    expect(parse("").program.body).toEqual([]);
-    expect(parse("").diagnostics).toEqual([]);
+    expect(parse("const answer = 42;", { wasm }).program.body).toHaveLength(1);
+    expect(parse("", { wasm }).program.body).toEqual([]);
+    expect(parse("", { wasm }).diagnostics).toEqual([]);
   } finally {
     TextEncoder.prototype.encodeInto = encodeInto;
     Buffer.prototype.write = write;
@@ -106,7 +107,8 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
     "x".repeat(70) + "é\n" + "😀".repeat(40) + "\nlet z = 1;",
   ];
   const summarize = `(source) => {
-    const file = parse(source, { lang: "tsx", tokens: true, semantic: true, attachComments: true });
+    const options = { lang: "tsx", tokens: true, semantic: true, attachComments: true, wasm };
+    const file = parse(source, options);
     const tokens = [];
     for (let i = 0; i < file.tokens.length; i++) {
       tokens.push([file.tokens.start(i), file.tokens.end(i), file.tokens.text(i)]);
@@ -121,14 +123,20 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
       imports: file.imports.map((entry) => [entry.name, entry.specifier]),
     };
   }`;
+  const wasmPath = fileURLToPath(new URL("../../packages/yuku/dist/yuku.wasm", import.meta.url));
   const script = `globalThis.Buffer = undefined;
+    const { readFileSync } = await import("node:fs");
+    const wasm = new WebAssembly.Module(readFileSync(${JSON.stringify(wasmPath)}));
     const { parse } = await import("yuku");
     console.log(JSON.stringify(${JSON.stringify(sources)}.map(${summarize})));`;
   const child = Bun.spawnSync(["bun", "--eval", script], {
     cwd: fileURLToPath(new URL("../..", import.meta.url)),
   });
   expect(child.stderr.toString()).toBe("");
-  const summary = new Function("parse", `return ${summarize}`)(parse) as (source: string) => {
+  const wasm = new WebAssembly.Module(shipped);
+  const summary = new Function("parse", "wasm", `return ${summarize}`)(parse, wasm) as (
+    source: string,
+  ) => {
     program: Node;
     tokens: [number, number, string][];
   };

@@ -43,6 +43,102 @@ jobs:
       - name: Run tools tests
         run: zig build test-tools
 
+  package:
+    name: Package for every platform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.4.0"
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Cache Zig
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .zig-cache
+          key: zig-package-${{ runner.os }}-${{ hashFiles('build.zig', 'build.zig.zon', 'src/**/*.zig', 'tools/**/*.zig') }}
+          restore-keys: |
+            zig-package-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build the addon for every platform
+        run: zig build native
+
+      - name: Build the package
+        run: bun run build
+
+      - name: Pack the package and the smoke test
+        run: |
+          mkdir -p zig-out/package
+          npm pack --pack-destination ../../zig-out/package
+          bun build ../../test/runtime/smoke.ts --target=node --packages=external --outfile=../../zig-out/package/smoke.mjs
+        working-directory: packages/yuku
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package
+          path: zig-out/package
+          if-no-files-found: error
+
+  platforms:
+    name: Package on ${{ matrix.platform }}
+    needs: package
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: darwin-arm64, os: macos-15 }
+          - { platform: darwin-x64, os: macos-15-intel }
+          - { platform: linux-arm64, os: ubuntu-24.04-arm }
+          - { platform: linux-x64, os: ubuntu-24.04 }
+          - { platform: win32-arm64, os: windows-11-arm }
+          - { platform: win32-x64, os: windows-2025 }
+    steps:
+      - name: Harden the runner
+        if: runner.os == 'Linux'
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: package
+          path: app
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.18.0"
+
+      - name: Install the package as users do
+        shell: bash
+        run: npm install --no-audit --no-fund ./yuku-*.tgz
+        working-directory: app
+
+      - name: Run on the addon
+        shell: bash
+        run: node smoke.mjs | tee smoke.txt && grep --quiet "natively" smoke.txt
+        working-directory: app
+
+      - name: Run on the addon with musl
+        if: runner.os == 'Linux'
+        run: docker run --rm --volume "$PWD:/app" --workdir /app node:24-alpine node smoke.mjs
+        working-directory: app
+
   test:
     name: Build & test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

@@ -118,6 +118,22 @@ pub fn build(b: *std.Build) void {
     b.step("wasm", "Build the WebAssembly module")
         .dependOn(&b.addInstallArtifact(yuku_wasm, .{}).step);
 
+    const addons = b.step("native", "Build the Node-API addon for each platform the package ships");
+    var host_addon: ?*std.Build.Step = null;
+    for (native_platforms) |platform| {
+        const addon_files = b.addUpdateSourceFiles();
+        addon_files.addCopyFileToSource(
+            addAddon(b, config, platform.query).getEmittedBin(),
+            b.fmt("packages/yuku/native/{s}.node", .{platform.name}),
+        );
+        addons.dependOn(&addon_files.step);
+        const host = b.graph.host.result;
+        if (platform.query.os_tag == host.os.tag and platform.query.cpu_arch == host.cpu.arch) {
+            std.debug.assert(host_addon == null);
+            host_addon = &addon_files.step;
+        }
+    }
+
     const main = b.addExecutable(.{
         .name = "yuku",
         .root_module = b.createModule(.{
@@ -156,8 +172,51 @@ pub fn build(b: *std.Build) void {
         run.addArg(output[0]);
         package_files.addCopyFileToSource(run.captureStdOut(.{}), output[1]);
     }
-    b.step("package", "Write the WebAssembly and generated sources of packages/yuku")
-        .dependOn(&package_files.step);
+    const package_step = b.step(
+        "package",
+        "Write the WebAssembly, this platform's addon, and the generated sources of packages/yuku",
+    );
+    package_step.dependOn(&package_files.step);
+    if (host_addon) |addon| package_step.dependOn(addon);
+}
+
+/// Each platform the npm package ships a Node-API addon for, by Node's `process.platform` and
+/// `process.arch`. Others fall back to the WebAssembly module.
+const native_platforms = [_]struct { name: []const u8, query: std.Target.Query }{
+    .{ .name = "darwin-arm64", .query = .{
+        .cpu_arch = .aarch64,
+        .os_tag = .macos,
+        .os_version_min = .{ .semver = .{ .major = 11, .minor = 0, .patch = 0 } },
+    } },
+    .{ .name = "darwin-x64", .query = .{
+        .cpu_arch = .x86_64,
+        .os_tag = .macos,
+        .os_version_min = .{ .semver = .{ .major = 10, .minor = 15, .patch = 0 } },
+    } },
+    .{ .name = "linux-arm64", .query = .{ .cpu_arch = .aarch64, .os_tag = .linux, .abi = .none } },
+    .{ .name = "linux-x64", .query = .{ .cpu_arch = .x86_64, .os_tag = .linux, .abi = .none } },
+    .{ .name = "win32-arm64", .query = .{ .cpu_arch = .aarch64, .os_tag = .windows, .abi = .gnu } },
+    .{ .name = "win32-x64", .query = .{ .cpu_arch = .x86_64, .os_tag = .windows, .abi = .gnu } },
+};
+
+fn addAddon(b: *std.Build, config: ParserConfig, query: std.Target.Query) *std.Build.Step.Compile {
+    var baseline = query;
+    baseline.cpu_model = .baseline;
+    const target = b.resolveTargetQuery(baseline);
+    const parser = config.add(b, null, createUtil(b, target, .fast), null);
+    const addon = b.addLibrary(.{
+        .name = "yuku",
+        .linkage = .dynamic,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/parser/ffi/napi.zig"),
+            .target = target,
+            .optimize = .fast,
+            .strip = true,
+            .imports = &.{.{ .name = "parser", .module = parser }},
+        }),
+    });
+    addon.linker_allow_shlib_undefined = true;
+    return addon;
 }
 
 const ParserConfig = struct {

@@ -53,6 +53,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build the addon for every platform
+        run: zig build native
+
       - name: Build the package
         run: bun run build
 

@@ -1,5 +1,5 @@
 import { decode, type Decoded } from "../core/decode";
-import { read, sourceText } from "../core/wasm";
+import { read, sourceText } from "../core/read";
 import { lineOf, lineStarts } from "../print/sourcemap";
 import { slotOf, walk } from "../traverse/walk";
 import type {
@@ -50,9 +50,8 @@ export interface ParseOptions extends FileOptions {
   /** The file path, which `lang`, `sourceType` and the dialect default from. */
   path?: string;
   /**
-   * A Yuku build to parse with, such as one with a dialect compiled in. See
-   * https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme.
-   * @default the module yuku ships
+   * A WebAssembly build of Yuku to parse with in place of the native addon.
+   * @default the native addon where it loads, else the WebAssembly module yuku ships
    */
   wasm?: WebAssembly.Module;
 }

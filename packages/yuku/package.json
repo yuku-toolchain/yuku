@@ -22,10 +22,14 @@
     "./package.json": "./package.json"
   },
   "imports": {
-    "#module": {
-      "workerd": "./dist/module/import.js",
-      "edge-light": "./dist/module/import.js",
-      "default": "./dist/module/inline.js"
+    "#native": {
+      "node": "./dist/native/load.js",
+      "default": "./dist/native/none.js"
+    },
+    "#wasm": {
+      "workerd": "./dist/wasm/import.js",
+      "edge-light": "./dist/wasm/import.js",
+      "default": "./dist/wasm/inline.js"
     }
   },
   "files": [
@@ -34,6 +38,7 @@
   "scripts": {
     "build": "tsdown"
   },
+  "preferUnplugged": true,
   "engines": {
     "node": ">=16.4.0"
   },

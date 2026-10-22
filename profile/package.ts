@@ -1,7 +1,6 @@
-// first, so the flags apply before yuku compiles its WebAssembly
 import "./v8.ts";
 import { readFileSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, join } from "node:path";
 import { withCodSpeed } from "@codspeed/tinybench-plugin";
 import { Bench } from "tinybench";
 import {
@@ -41,6 +40,8 @@ const PATTERNS = [
   pattern("$A.$B($$$ARGS)"),
 ];
 
+const wasm = new WebAssembly.Module(readFileSync(join("packages", "yuku", "dist", "yuku.wasm")));
+
 const bench = withCodSpeed(new Bench({ time: 1000, warmupTime: 250, throws: true }));
 
 for (const path of FILES) {
@@ -49,6 +50,7 @@ for (const path of FILES) {
   const typed = /\.tsx?$/.test(path);
 
   add(`parse ${name}`, () => parse(source, { path }));
+  add(`parse ${name} with WebAssembly`, () => parse(source, { path, wasm }));
   add(`decode ${name}`, () => {
     const file = parse(source, { path });
     void file.program;
@@ -66,6 +68,11 @@ for (const path of FILES) {
   });
   add(`analyze ${name}`, () => {
     const file = parse(source, { path, semantic: true });
+    void file.scopes;
+    return file;
+  });
+  add(`analyze ${name} with WebAssembly`, () => {
+    const file = parse(source, { path, semantic: true, wasm });
     void file.scopes;
     return file;
   });

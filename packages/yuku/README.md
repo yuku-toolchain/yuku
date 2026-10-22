@@ -78,17 +78,17 @@ The parser recovers from errors, so a file with diagnostics still has a program.
 
 ### Options
 
-| Option           | Default                                             | Description                                                                                                              |
-| ---------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `path`           | none                                                | Names the file, and sets `lang` and `sourceType`                                                                         |
-| `lang`           | from `path`, else `"js"`                            | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, or `"dts"`                                                                             |
-| `sourceType`     | `"commonjs"` for `.cjs` and `.cts`, else `"module"` | `"module"`, `"script"`, or `"commonjs"`                                                                                  |
-| `preserveParens` | `true`                                              | Keep `ParenthesizedExpression` nodes                                                                                     |
-| `attachComments` | `false`                                             | Attach each comment to its node, see [Comments](#comments)                                                               |
-| `tokens`         | `false`                                             | Collect `file.tokens`                                                                                                    |
-| `semantic`       | `false`                                             | Build the [semantic model](#semantic-analysis)                                                                           |
-| `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations                                                    |
-| `wasm`           | the build `yuku` ships                              | A custom build, such as one with a [dialect](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) |
+| Option           | Default                                             | Description                                                           |
+| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------- |
+| `path`           | none                                                | Names the file, and sets `lang` and `sourceType`                      |
+| `lang`           | from `path`, else `"js"`                            | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, or `"dts"`                          |
+| `sourceType`     | `"commonjs"` for `.cjs` and `.cts`, else `"module"` | `"module"`, `"script"`, or `"commonjs"`                               |
+| `preserveParens` | `true`                                              | Keep `ParenthesizedExpression` nodes                                  |
+| `attachComments` | `false`                                             | Attach each comment to its node, see [Comments](#comments)            |
+| `tokens`         | `false`                                             | Collect `file.tokens`                                                 |
+| `semantic`       | `false`                                             | Build the [semantic model](#semantic-analysis)                        |
+| `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations |
+| `wasm`           | the native addon, else the build `yuku` ships       | A WebAssembly build to run instead                                    |
 
 A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws. `langFromPath(path)` and `sourceTypeFromPath(path)` return what a path implies.
 

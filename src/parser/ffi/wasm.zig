@@ -1,21 +1,10 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const parser = @import("parser");
+const flag = @import("flag.zig");
 const transfer = @import("transfer/root.zig");
 
 const gpa = std.heap.wasm_allocator;
-
-// packed by packages/yuku/core/wasm.ts
-const flag = struct {
-    const source_type_mask = 0b11;
-    const lang_shift = 2;
-    const preserve_parens = 1 << 5;
-    const semantic_errors = 1 << 6;
-    const attach_comments = 1 << 7;
-    const tokens = 1 << 8;
-    const dialect = 1 << 9;
-    const utf16 = 1 << 10;
-};
 
 comptime {
     std.debug.assert(builtin.cpu.arch.endian() == .little);
@@ -96,14 +85,7 @@ fn analyzeBuffer(source: []const u8, flags: u32) std.mem.Allocator.Error![]u8 {
 }
 
 fn parseTree(source: []const u8, flags: u32) !parser.ast.Tree {
-    return parser.parse(gpa, source, .{
-        .source_type = @fromBackingInt(@truncate(flags & flag.source_type_mask)),
-        .lang = @fromBackingInt(@truncate(flags >> flag.lang_shift)),
-        .preserve_parens = flags & flag.preserve_parens != 0,
-        .comments = if (flags & flag.attach_comments != 0) .attach else .collect,
-        .tokens = flags & flag.tokens != 0,
-        .dialect = flags & flag.dialect != 0,
-    });
+    return parser.parse(gpa, source, flag.parseOptions(flags));
 }
 
 fn prefixed(size: usize) ![]u8 {

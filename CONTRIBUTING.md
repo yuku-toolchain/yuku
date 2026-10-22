@@ -63,10 +63,10 @@ src/parser/
   codegen/       print, strip, minify, source maps
   semantic/      scopes, symbols, references, early errors
   traverser/     AST visitors
-  ffi/           WebAssembly bindings
+  ffi/           Node-API and WebAssembly bindings
   testing/       Zig tests and the fuzzer
 packages/yuku/   the published package, one entry in index.ts
-  core/          the WebAssembly, its loader per runtime, and the decoder
+  core/          the addon and WebAssembly loaders, and the decoder
   file/          SourceFile, Project, the semantic model, and rename
   traverse/      walk and match
   ast/           builders, templates, guards, and helpers

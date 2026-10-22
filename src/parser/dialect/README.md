@@ -239,7 +239,7 @@ my_module.addImport("parser", yuku.module("parser"));
 b.installArtifact(@import("yuku").addWasm(b, yuku, "pipeline")); // zig-out/bin/pipeline.wasm
 ```
 
-`addWasm(b, yuku, name)` builds the WebAssembly module the `yuku` package runs: wasm32 with SIMD, optimized for speed, and stripped. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
+`addWasm(b, yuku, name)` builds a WebAssembly module like the one the `yuku` package ships: wasm32 with SIMD, optimized for speed, and stripped. Inside the Yuku repository, `zig build wasm -Ddialect=src/pipeline.zig` builds it as `zig-out/bin/yuku.wasm`.
 
 A build without a dialect has no dialect code. With one, a standard file pays one flag check per position, and a dialect file one call.
 
@@ -294,4 +294,4 @@ export function parse(source: string, options: Omit<ParseOptions, "wasm"> = {}):
 }
 ```
 
-To load the build in every runtime, follow `yuku`'s own [loaders](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku/core/module): inline the bytes by default, and import the `.wasm` file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
+To load the build in every runtime, follow `yuku`'s own [loaders](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku/core/wasm): inline the bytes by default, and import the `.wasm` file in Cloudflare Workers and Vercel Edge, which cannot compile WebAssembly from bytes.
