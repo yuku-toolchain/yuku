@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4186/4186 (100.00%)
+Passed:       4189/4189 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
@@ -12649,6 +12649,15 @@ error: Identifier 'f' has already been declared
    |
    = help: Consider removing or renaming this declaration of 'f'
 
+
+✓ test/parser/suite/js/semantic/4eb2e21415499870.js
+error: Deleting a variable in strict mode is not allowed
+   |
+ 1 | "use strict";
+ 2 | delete (a);
+   | ^^^^^^^^^^
+ 3 | delete ((a));
+   |
 
 ✓ test/parser/suite/js/semantic/4ee62d8dc4f7e253.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
@@ -27220,6 +27229,14 @@ error: Cannot use import statement outside a module
  2 | export var x = 23;
    |
 
+✓ test/parser/suite/js/semantic/ac687adc0d4214d0.module.js
+error: Deleting a variable in strict mode is not allowed
+   |
+ 1 | delete (a);
+   | ^^^^^^^^^^
+ 2 | delete ((a));
+   |
+
 ✓ test/parser/suite/js/semantic/ac6a8263b8fbbdf9.js
 error: Cannot use import statement outside a module
    |
@@ -32108,6 +32125,15 @@ error: Identifier 'f' has already been declared
    |
    = help: Consider removing or renaming this declaration of 'f'
 
+
+✓ test/parser/suite/js/semantic/cbfa788cb624de50.js
+error: Private fields cannot be deleted
+   |
+ 3 |   m() {
+ 4 |     delete (this.#x);
+   |     ^^^^^^^^^^^^^^^^
+ 5 |     delete ((this.#x));
+   |
 
 ✓ test/parser/suite/js/semantic/cbfb8e1903880885.module.js
 error: 'await' is reserved in an async/module context and cannot be used as an identifier

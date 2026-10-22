@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       106/106 (100.00%)
+Passed:       108/108 (100.00%)
 Failed:       0
-AST mismatch: 0/106
+AST mismatch: 0/108
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -167,17 +167,28 @@ error: A type argument list cannot be empty
    |
 
 ✓ test/parser/misc/ts/enum-computed-member-name.ts
-error: Computed property names are not allowed in enums
+error: An enum member cannot have a numeric name
    |
  1 | enum Numeric {
  2 |   [1] = 1,
    |   ^^^
  3 | }
    |
-   = help: Name the member with an identifier or a string literal.
+   = help: Name the member with an identifier or a string that is not a number.
 
 
 ✓ test/parser/misc/ts/enum-declaration-line-terminator.ts
+✓ test/parser/misc/ts/enum-numeric-member-name.ts
+error: An enum member cannot have a numeric name
+   |
+ 1 | enum StringName {
+ 2 |   "1" = 1,
+   |   ^^^
+ 3 |   "01" = 2,
+   |
+   = help: Name the member with an identifier or a string that is not a number.
+
+
 ✓ test/parser/misc/ts/export-duplicate-error.module.ts
 error: Duplicate export of 'E1'
    |

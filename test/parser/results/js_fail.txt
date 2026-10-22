@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       5048/5048 (100.00%)
+Passed:       5052/5052 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -306,6 +306,17 @@ error: Invalid Unicode escape sequence
    |                    ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
+
+
+✓ test/parser/suite/js/fail/014810eb2aaa3fde.js
+error: Keywords cannot contain escape characters
+   |
+ 3 |   m(o) {
+ 4 |     return #x \u{69}n o;
+   |               ^^^^^^^
+ 5 |   }
+   |
+   = help: Remove the escape characters
 
 
 ✓ test/parser/suite/js/fail/0167c26059639fa1.js
@@ -2811,7 +2822,7 @@ error: Invalid regular expression flag
    |        ^
  2 | 
    |
-   = help: Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)
+   = help: Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`.
 
 
 ✓ test/parser/suite/js/fail/0e87112069ab5aaa.js
@@ -4745,9 +4756,9 @@ error: Unexpected token ')'
 error: The 'u' and 'v' regular expression flags cannot be used together
    |
  1 | /./uv;
-   |      ^
+   |     ^
    |
-   = help: The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other
+   = help: Use `v`, which extends `u`, or `u` alone.
 
 
 ✓ test/parser/suite/js/fail/17ed0e315fa31748.js
@@ -12042,7 +12053,7 @@ error: Invalid regular expression flag
  1 | /./G;
    |    ^
    |
-   = help: Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)
+   = help: Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`.
 
 
 ✓ test/parser/suite/js/fail/3db8e9f0933233e5.js
@@ -12680,6 +12691,16 @@ error: Invalid character at start of identifier
  3 | }
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
+
+
+✓ test/parser/suite/js/fail/41683a95dabd98e2.js
+error: Keywords cannot contain escape characters
+   |
+ 1 | a \u{69}n b;
+   |   ^^^^^^^
+ 2 | a \u{69}nstanceof b;
+   |
+   = help: Remove the escape characters
 
 
 ✓ test/parser/suite/js/fail/4186deb1eb914895.module.js
@@ -13598,7 +13619,7 @@ error: Duplicate regular expression flag
    |      ^
  2 | 
    |
-   = help: Remove the duplicate flag; each flag can only appear once
+   = help: Each flag can appear only once.
 
 
 ✓ test/parser/suite/js/fail/467030981c1de41c.js
@@ -18722,7 +18743,7 @@ error: Duplicate regular expression flag
  1 | /./gig;
    |      ^
    |
-   = help: Remove the duplicate flag; each flag can only appear once
+   = help: Each flag can appear only once.
 
 
 ✓ test/parser/suite/js/fail/61868a9334c2cfe3.js
@@ -21971,10 +21992,10 @@ error: 'super' must be followed by a call or property access
 error: The 'u' and 'v' regular expression flags cannot be used together
    |
  1 | /a/ugv;
-   |       ^
+   |      ^
  2 | 
    |
-   = help: The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other
+   = help: Use `v`, which extends `u`, or `u` alone.
 
 
 ✓ test/parser/suite/js/fail/734d4ba5adfe7213.js
@@ -29143,6 +29164,17 @@ error: Rest element must be the last element
  4 | callCount = callCount + 1;
    |
    = help: No elements can follow the rest element in a destructuring pattern.
+
+
+✓ test/parser/suite/js/fail/990e261b5538f24b.js
+error: Keywords cannot contain escape characters
+   |
+ 3 |   y = #x
+ 4 |   \u{69}n
+   |   ^^^^^^^
+ 5 | }
+   |
+   = help: Remove the escape characters
 
 
 ✓ test/parser/suite/js/fail/99170f6c3a47871d.js
@@ -38132,7 +38164,7 @@ error: Invalid regular expression flag
  1 | /./a
    |    ^
    |
-   = help: Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)
+   = help: Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`.
 
 
 ✓ test/parser/suite/js/fail/c95e96690ddc591c.js
@@ -43610,10 +43642,10 @@ error: 'import' is reserved and cannot be used as an identifier
 error: The 'u' and 'v' regular expression flags cannot be used together
    |
  1 | /a/vu;
-   |      ^
+   |     ^
  2 | 
    |
-   = help: The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other
+   = help: Use `v`, which extends `u`, or `u` alone.
 
 
 ✓ test/parser/suite/js/fail/e7c2c2dcc227201c.js
@@ -45123,7 +45155,7 @@ error: Duplicate regular expression flag
  1 | /./ii
    |     ^
    |
-   = help: Remove the duplicate flag; each flag can only appear once
+   = help: Each flag can appear only once.
 
 
 ✓ test/parser/suite/js/fail/ef675bf4dcddae5e.js
@@ -46118,6 +46150,17 @@ error: Class declaration requires a name
  2 | 
    |
    = help: Add a name after 'class', e.g. 'class MyClass {}'.
+
+
+✓ test/parser/suite/js/fail/f4c0437251216482.js
+error: Unexpected token '>'
+   |
+ 1 | class C {
+ 2 |   x = async () => y |> await
+   |                      ^
+ 3 |   \u{69}nstanceof
+   |
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/js/fail/f4c0cdc8d5782f3f.js

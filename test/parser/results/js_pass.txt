@@ -1,6 +1,6 @@
 test/parser/suite/js/pass
 =========================
-Passed:       38778/38778 (100.00%)
+Passed:       38779/38779 (100.00%)
 Failed:       0
 AST mismatch: 0/38725
 
@@ -1723,6 +1723,7 @@ AST mismatch: 0/38725
 ✓ test/parser/suite/js/pass/0b78ae1cd37f9591.js
 ✓ test/parser/suite/js/pass/0b7a549ff23eb0f7.js
 ✓ test/parser/suite/js/pass/0b7b254343e7a4cf.js
+✓ test/parser/suite/js/pass/0b8010a391d02c8a.js
 ✓ test/parser/suite/js/pass/0b844015e34f9afd.js
 ✓ test/parser/suite/js/pass/0b85ca5b4b38933b.js
 ✓ test/parser/suite/js/pass/0b8661e3c034b8f4.js
