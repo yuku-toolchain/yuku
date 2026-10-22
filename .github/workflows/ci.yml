@@ -83,7 +83,7 @@ jobs:
 
       - name: Pack the package and the smoke test
         run: |
-          mkdir -p zig-out/package
+          mkdir -p ../../zig-out/package
           npm pack --pack-destination ../../zig-out/package
           bun build ../../test/runtime/smoke.ts --target=node --packages=external --outfile=../../zig-out/package/smoke.mjs
         working-directory: packages/yuku
@@ -124,9 +124,11 @@ jobs:
         with:
           node-version: "24.18.0"
 
-      - name: Install the package as users do
+      - name: Install the package
         shell: bash
-        run: npm install --no-audit --no-fund ./yuku-*.tgz
+        run: |
+          mkdir -p node_modules/yuku
+          tar --extract --gzip --file yuku-*.tgz --strip-components=1 --directory node_modules/yuku
         working-directory: app
 
       - name: Run on the addon
