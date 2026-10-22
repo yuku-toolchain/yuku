@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { parse, walk, type Node } from "yuku";
 import { decodeBase64 } from "../../packages/yuku/core/base64";
 
@@ -123,8 +124,8 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
   const script = `globalThis.Buffer = undefined;
     const { parse } = await import("yuku");
     console.log(JSON.stringify(${JSON.stringify(sources)}.map(${summarize})));`;
-  const child = Bun.spawnSync([process.execPath, "--eval", script], {
-    cwd: new URL("../..", import.meta.url).pathname,
+  const child = Bun.spawnSync(["bun", "--eval", script], {
+    cwd: fileURLToPath(new URL("../..", import.meta.url)),
   });
   expect(child.stderr.toString()).toBe("");
   const summary = new Function("parse", `return ${summarize}`)(parse) as (source: string) => {
