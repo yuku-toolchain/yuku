@@ -4,7 +4,7 @@ const TokenTag = @import("token.zig").TokenTag;
 const flagMask = @import("token.zig").flagMask;
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
-const util = @import("util");
+const spec = @import("spec");
 
 const statements = @import("syntax/statements.zig");
 const grammar = @import("grammar.zig");
@@ -185,7 +185,7 @@ pub const Parser = struct {
     /// Returns the escape-decoded text of a string or template element, without its delimiters.
     pub inline fn stringValue(self: *Parser, token: Token, span: ast.Span) Error!ast.String {
         if (!token.isEscaped()) return self.tree.sourceSlice(span.start, span.end);
-        return self.decode(util.Utf.decodeStringEscapes, span.start, span.end);
+        return self.decode(spec.escapes.decodeStringEscapes, span.start, span.end);
     }
 
     /// Returns the inside of a JSX attribute string with its entities decoded.
@@ -193,14 +193,14 @@ pub const Parser = struct {
         if (std.mem.findScalar(u8, self.source[start..end], '&') == null) {
             return self.tree.sourceSlice(start, end);
         }
-        return self.decode(util.Utf.decodeJSXEntities, start, end);
+        return self.decode(spec.jsx_entities.decodeJSXEntities, start, end);
     }
 
     fn decodeEscapedIdentifier(self: *Parser, start: u32, end: u32) Error!ast.String {
         @branchHint(.cold);
         var buf: [256]u8 = undefined;
         return try self.tree.addString(
-            util.Utf.decodeIdentifierEscapes(self.source[start..end], &buf),
+            spec.escapes.decodeIdentifierEscapes(self.source[start..end], &buf),
         );
     }
 

@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const ast = @import("../ast.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 const binder = @import("binder.zig");
 const sc = @import("scope.zig");
 
@@ -479,7 +479,8 @@ const Collector = struct {
 
     fn literal(self: *const Collector, node: ast.NodeIndex) ?ast.String {
         if (node == .null) return null;
-        return ecmascript.stringLiteralLike(self.tree, ecmascript.unwrapParens(self.tree, node));
+        const unwrapped = static_semantics.unwrapParens(self.tree, node);
+        return static_semantics.stringLiteralLike(self.tree, unwrapped);
     }
 
     fn stringOf(self: *const Collector, node: ast.NodeIndex) ast.String {

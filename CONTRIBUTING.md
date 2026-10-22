@@ -55,6 +55,8 @@ and fails on any difference.
 ## Find your way around
 
 ```
+src/spec/        what a specification defines, each linked to its section
+src/util/        generic helpers that no specification defines
 src/parser/
   lexer.zig      tokenizer
   parser.zig     parser entry point

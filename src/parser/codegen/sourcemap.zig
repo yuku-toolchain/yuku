@@ -1,5 +1,6 @@
 const std = @import("std");
 const util = @import("util");
+const spec = @import("spec");
 const Simd = util.Simd;
 
 const Allocator = std.mem.Allocator;
@@ -74,7 +75,7 @@ pub const State = struct {
         var col_inc: u32 = 0;
         var saw_break = false;
         while (i < bytes.len) {
-            const brk = util.Utf.lineBreakLen(bytes, i);
+            const brk = spec.line_terminators.lineBreakLen(bytes, i);
             if (brk > 0) {
                 self.gen_line += 1;
                 col_inc = 0;
@@ -207,7 +208,7 @@ pub const SourceCursor = struct {
     pub fn resolve(self: *SourceCursor, source: []const u8, target: u32) LineCol {
         if (target >= self.byte) {
             while (self.byte < target and self.byte < source.len) {
-                const brk = util.Utf.lineBreakLen(source, self.byte);
+                const brk = spec.line_terminators.lineBreakLen(source, self.byte);
                 if (brk > 0) {
                     self.line += 1;
                     self.byte += brk;
@@ -229,7 +230,7 @@ pub const SourceCursor = struct {
                 const is_break = if (lead == '\n')
                     self.byte == 0 or source[self.byte - 1] != '\r'
                 else
-                    util.Utf.lineBreakLen(source, self.byte) > 0;
+                    spec.line_terminators.lineBreakLen(source, self.byte) > 0;
                 if (is_break) self.line -= 1;
             }
             self.line_start_utf16 = self.lineStart(source);
@@ -243,7 +244,7 @@ pub const SourceCursor = struct {
         while (b > 0) {
             var p = b - 1;
             while (p > 0 and isContinuation(source[p])) p -= 1;
-            if (util.Utf.lineBreakLen(source, p) > 0) break;
+            if (spec.line_terminators.lineBreakLen(source, p) > 0) break;
             units_back += utf16Width(std.unicode.utf8ByteSequenceLength(source[p]) catch 1);
             b = p;
         }

@@ -1,4 +1,53 @@
+//! https://facebook.github.io/jsx/
+
 const std = @import("std");
+const util = @import("util");
+const escapes = @import("escapes.zig");
+
+/// Appends JSX text or a JSX attribute string to `out`, entities decoded.
+pub fn decodeJSXEntities(
+    gpa: std.mem.Allocator,
+    raw: []const u8,
+    out: *std.ArrayList(u8),
+) error{OutOfMemory}!void {
+    var run_start: usize = 0;
+    var i: usize = 0;
+    while (std.mem.findScalarPos(u8, raw, i, '&')) |amp| {
+        const entity = jsxEntityAt(raw, amp) orelse {
+            i = amp + 1;
+            continue;
+        };
+        try out.appendSlice(gpa, raw[run_start..amp]);
+        try util.Utf.appendCodePoint(out, gpa, entity.value);
+        run_start = entity.end;
+        i = entity.end;
+    }
+    try out.appendSlice(gpa, raw[run_start..]);
+}
+
+fn jsxEntityAt(raw: []const u8, amp: usize) ?escapes.Decoded {
+    std.debug.assert(raw[amp] == '&');
+    var i = amp + 1;
+    var value: u32 = 0;
+    if (i < raw.len and raw[i] == '#') {
+        i += 1;
+        const base: u8 = if (i < raw.len and raw[i] == 'x') 16 else 10;
+        if (base == 16) i += 1;
+        const digits = i;
+        while (i < raw.len) : (i += 1) {
+            const digit = std.fmt.charToDigit(raw[i], base) catch break;
+            // saturates past the last code point, which stays as written
+            value = @min(value * base + digit, 0x110000);
+        }
+        if (i == digits or value > 0x10FFFF) return null;
+    } else {
+        const name = i;
+        while (i < raw.len and std.ascii.isAlphanumeric(raw[i])) i += 1;
+        value = code_points.get(raw[name..i]) orelse return null;
+    }
+    if (i == raw.len or raw[i] != ';') return null;
+    return .{ .value = @intCast(value), .end = i + 1 };
+}
 
 // https://www.w3.org/TR/xhtml1/dtds.html#h-A2
 pub const code_points = std.StaticStringMap(u16).initComptime(.{

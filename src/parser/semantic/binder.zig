@@ -1,6 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 const sc = @import("scope.zig");
 const dialect = @import("../dialect/root.zig");
 
@@ -919,7 +919,7 @@ pub const SymbolTracker = struct {
                 const member = data.ts_enum_member;
                 const name = switch (self.tree.data(member.id)) {
                     .identifier_name => |id| id.name,
-                    else => ecmascript.stringLiteralLike(self.tree, member.id) orelse return,
+                    else => static_semantics.stringLiteralLike(self.tree, member.id) orelse return,
                 };
                 try self.syncScopeMaps(scope.scopes.items.len);
                 const saved = self.pending;

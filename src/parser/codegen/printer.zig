@@ -1,5 +1,6 @@
 const std = @import("std");
 const util = @import("util");
+const spec = @import("spec");
 const Simd = util.Simd;
 const ast = @import("../ast.zig");
 const output = @import("output.zig");
@@ -3174,7 +3175,7 @@ inline fn castOperand(data: NodeData) ?NodeIndex {
 }
 
 fn hasLineTerminator(text: []const u8) bool {
-    for (0..text.len) |i| if (util.Utf.lineBreakLen(text, i) > 0) return true;
+    for (0..text.len) |i| if (spec.line_terminators.lineBreakLen(text, i) > 0) return true;
     return false;
 }
 

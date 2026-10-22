@@ -19,6 +19,7 @@ pub fn build(b: *std.Build) void {
 
     const util = createUtil(b, target, optimize);
     const parser = config.add(b, "parser", util, dialect);
+    const spec = parser.import_table.get("spec").?;
 
     const gen_unicode_id = b.addExecutable(.{
         .name = "gen-unicode-id",
@@ -36,13 +37,14 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tools/root.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "util", .module = util }},
+            .imports = &.{.{ .name = "spec", .module = spec }},
         }),
     });
     b.step("test-tools", "Run the tools tests").dependOn(&b.addRunArtifact(tools_tests).step);
 
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util })).step);
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = spec })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{
         .root_module = createTransfer(b, parser),
@@ -156,7 +158,7 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "parser", .module = parser },
                 .{ .name = "transfer", .module = createTransfer(b, parser) },
-                .{ .name = "util", .module = util },
+                .{ .name = "spec", .module = spec },
             },
         }),
     });
@@ -230,16 +232,24 @@ const ParserConfig = struct {
         util: *std.Build.Module,
         dialect: ?std.Build.LazyPath,
     ) *std.Build.Module {
+        const spec = b.createModule(.{
+            .root_source_file = b.path("src/spec/root.zig"),
+            .target = util.resolved_target,
+            .optimize = util.optimize,
+            .imports = &.{.{ .name = "util", .module = util }},
+        });
         const options: std.Build.Module.CreateOptions = .{
             .root_source_file = b.path("src/parser/root.zig"),
             .target = util.resolved_target,
             .optimize = util.optimize,
             .imports = &.{
                 .{ .name = "util", .module = util },
+                .{ .name = "spec", .module = spec },
                 .{ .name = "codegen_options", .module = config.codegen_options },
             },
         };
         const parser = if (name) |n| b.addModule(n, options) else b.createModule(options);
+        spec.addImport("parser", parser);
         parser.addImport("dialect", if (dialect) |source| b.createModule(.{
             .root_source_file = source,
             .target = util.resolved_target,

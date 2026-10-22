@@ -12,7 +12,7 @@ const object = @import("object.zig");
 const decorator = @import("decorators.zig");
 const ts = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 
 pub const ParseClassOptions = struct {
     is_expression: bool = false,
@@ -667,7 +667,7 @@ fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers)
         return;
     }
     if (modifiers.is_static) return;
-    const prop = ecmascript.propName(&parser.tree, key) orelse return;
+    const prop = static_semantics.propName(&parser.tree, key) orelse return;
     if (!prop.eql("constructor")) return;
 
     switch (modifiers.kind) {
@@ -729,7 +729,7 @@ fn validateElementName(
     is_static: bool,
     comptime kind: enum { method, field },
 ) Error!void {
-    const prop = ecmascript.propName(&parser.tree, key) orelse return;
+    const prop = static_semantics.propName(&parser.tree, key) orelse return;
     if (is_static and prop.eql("prototype")) {
         try parser.report(
             prop.span,

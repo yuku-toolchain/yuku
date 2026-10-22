@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const spec = @import("spec");
 const gen_unicode_id = @import("gen_unicode_id.zig");
 
 const testing = std.testing;
@@ -14,11 +14,11 @@ test "unicode_id can start and continue" {
 
     for (0..std.math.maxInt(u21)) |ch| {
         const cp: u32 = @intCast(ch);
-        testing.expectEqual(id_starts.isSet(cp), util.UnicodeId.canStartId(cp)) catch |err| {
+        testing.expectEqual(id_starts.isSet(cp), spec.unicode_id.canStartId(cp)) catch |err| {
             std.debug.print("ID_Start failed for U+{X:0>4}\n", .{cp});
             return err;
         };
-        testing.expectEqual(id_continues.isSet(cp), util.UnicodeId.canContinueId(cp)) catch |err| {
+        testing.expectEqual(id_continues.isSet(cp), spec.unicode_id.canContinueId(cp)) catch |err| {
             std.debug.print("ID_Continue failed for U+{X:0>4}\n", .{cp});
             return err;
         };

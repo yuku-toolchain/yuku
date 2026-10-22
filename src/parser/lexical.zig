@@ -1,20 +1,19 @@
 const std = @import("std");
 const util = @import("util");
+const spec = @import("spec");
 const TokenTag = @import("token.zig").TokenTag;
 const keywordTag = @import("token.zig").keywordTag;
-
-const UnicodeId = util.UnicodeId;
 
 /// Whether `code_point` can start an identifier, JSX ones included.
 pub fn isIdentifierStart(code_point: u21) bool {
     if (code_point < latin1_start.len) return latin1_start[code_point];
-    return UnicodeId.canStartId(code_point);
+    return spec.unicode_id.canStartId(code_point);
 }
 
 /// Whether `code_point` can continue an identifier.
 pub fn isIdentifierChar(code_point: u21) bool {
     if (code_point < latin1_char.len) return latin1_char[code_point];
-    return UnicodeId.canContinueId(code_point);
+    return spec.unicode_id.canContinueId(code_point);
 }
 
 /// Whether `code_point` can continue a JSX identifier, which also takes `-`.
@@ -68,29 +67,29 @@ pub fn isEvalOrArguments(name: []const u8) bool {
     return std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
 }
 
-pub const lineBreakLen = util.Utf.lineBreakLen;
-pub const decodeStringEscapes = util.Utf.decodeStringEscapes;
-pub const decodeJSXEntities = util.Utf.decodeJSXEntities;
+pub const lineBreakLen = spec.line_terminators.lineBreakLen;
+pub const decodeStringEscapes = spec.escapes.decodeStringEscapes;
+pub const decodeJSXEntities = spec.jsx_entities.decodeJSXEntities;
 
 const latin1_start: [256]bool = blk: {
     @setEvalBranchQuota(10_000);
     var table: [256]bool = undefined;
-    for (&table, 0..) |*entry, c| entry.* = c == '$' or c == '_' or UnicodeId.canStartId(c);
+    for (&table, 0..) |*entry, c| entry.* = c == '$' or c == '_' or spec.unicode_id.canStartId(c);
     break :blk table;
 };
 
 const latin1_char: [256]bool = blk: {
     @setEvalBranchQuota(10_000);
     var table: [256]bool = undefined;
-    for (&table, 0..) |*entry, c| entry.* = c == '$' or UnicodeId.canContinueId(c);
+    for (&table, 0..) |*entry, c| entry.* = c == '$' or spec.unicode_id.canContinueId(c);
     break :blk table;
 };
 
 comptime {
-    std.debug.assert(!UnicodeId.canStartId(std.math.maxInt(u21)));
-    std.debug.assert(!UnicodeId.canContinueId(std.math.maxInt(u21)));
-    std.debug.assert(UnicodeId.canContinueId(0x200C));
-    std.debug.assert(UnicodeId.canContinueId(0x200D));
+    std.debug.assert(!spec.unicode_id.canStartId(std.math.maxInt(u21)));
+    std.debug.assert(!spec.unicode_id.canContinueId(std.math.maxInt(u21)));
+    std.debug.assert(spec.unicode_id.canContinueId(0x200C));
+    std.debug.assert(spec.unicode_id.canContinueId(0x200D));
 }
 
 const testing = std.testing;

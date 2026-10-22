@@ -1,10 +1,10 @@
 //! The early-error checker, a semantic-traverser visitor that reports
 //! the scope-dependent early errors the specification requires.
 const std = @import("std");
-const util = @import("util");
+const spec = @import("spec");
 const traverser = @import("../traverser/root.zig");
 const ast = @import("../ast.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 const lexical = @import("../lexical.zig");
 const binder = @import("binder.zig");
 const scope = @import("scope.zig");
@@ -129,7 +129,7 @@ pub const Checker = struct {
                     const must_be_unique = isStrict(ctx) or
                         params.kind == .unique_formal_parameters or
                         params.kind == .arrow_formal_parameters or
-                        ecmascript.findNonSimpleParameter(ctx.tree, params) != null;
+                        static_semantics.findNonSimpleParameter(ctx.tree, params) != null;
                     if (must_be_unique) try self.reportRedeclaration(name, node_index, sym, ctx);
                 }
             }
@@ -229,7 +229,7 @@ pub const Checker = struct {
         if (ctx.inTypePosition() or !isStrict(ctx)) return .proceed;
 
         const span = ctx.tree.span(node_index);
-        if (util.Utf.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
+        if (spec.escapes.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
             try self.report(span, "Octal escape sequences are not allowed in strict mode", .{
                 .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
             });
@@ -288,7 +288,7 @@ pub const Checker = struct {
         if (params_index == .null) return .proceed;
 
         const params = ctx.tree.data(params_index).formal_parameters;
-        if (ecmascript.findNonSimpleParameter(ctx.tree, params)) |param| {
+        if (static_semantics.findNonSimpleParameter(ctx.tree, params)) |param| {
             try self.report(
                 ctx.tree.span(node_index),
                 "Illegal 'use strict' directive in function with non-simple parameter list",
@@ -438,11 +438,11 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (expr.operator == .delete) {
-            var target = ecmascript.unwrapParens(ctx.tree, expr.argument);
+            var target = static_semantics.unwrapParens(ctx.tree, expr.argument);
 
             if (ctx.tree.data(target) == .chain_expression) {
                 const chain = ctx.tree.data(target).chain_expression;
-                target = ecmascript.unwrapParens(ctx.tree, chain.expression);
+                target = static_semantics.unwrapParens(ctx.tree, chain.expression);
             }
 
             switch (ctx.tree.data(target)) {
@@ -481,7 +481,7 @@ pub const Checker = struct {
             if (ctx.tree.data(child) != .object_property) continue;
             const prop = ctx.tree.data(child).object_property;
             if (prop.computed or prop.method or prop.shorthand or prop.kind != .init) continue;
-            const pn = ecmascript.propName(ctx.tree, prop.key) orelse continue;
+            const pn = static_semantics.propName(ctx.tree, prop.key) orelse continue;
             if (!pn.eql("__proto__")) continue;
 
             if (first_proto) |first| {
@@ -637,20 +637,20 @@ pub const Checker = struct {
     /// https://tc39.es/ecma262/#sec-exports-static-semantics-early-errors
     pub fn enter_export_specifier(
         self: *Self,
-        spec: ast.ExportSpecifier,
+        specifier: ast.ExportSpecifier,
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         const declaration = ctx.tree.data(ctx.path.parent().?).export_named_declaration;
         const local = if (declaration.source == .null)
-            getModuleExportName(ctx.tree, spec.local)
+            getModuleExportName(ctx.tree, specifier.local)
         else
             null;
-        const exported_name = getModuleExportName(ctx.tree, spec.exported);
+        const exported_name = getModuleExportName(ctx.tree, specifier.exported);
         try self.recordExportedName(exported_name, node_index, ctx, .{ .alias = local });
 
         // only local value exports are resolved, as the checker tracks the value scope alone
-        if (spec.export_kind == .type or declaration.export_kind == .type) return .proceed;
+        if (specifier.export_kind == .type or declaration.export_kind == .type) return .proceed;
         if (ctx.inTsNamespace()) return .proceed;
         if (local) |local_name| {
             try self.export_specifiers.append(self.allocator, .{
@@ -1003,7 +1003,7 @@ pub const Checker = struct {
         for (declarators) |child| {
             const declarator = ctx.tree.data(child).variable_declarator;
             if (declarator.init == .null) continue;
-            if (ecmascript.isAnnexBForInHead(ctx.tree, decl.kind, declarator.id, is_for_in)) {
+            if (static_semantics.isAnnexBForInHead(ctx.tree, decl.kind, declarator.id, is_for_in)) {
                 try self.report(
                     ctx.tree.span(child),
                     "for-in loop variable declaration may not have an initializer",
@@ -1279,10 +1279,10 @@ pub const Checker = struct {
         const items = ctx.tree.extra(attributes);
         for (items, 0..) |attr_idx, i| {
             const attr_key = ctx.tree.data(attr_idx).import_attribute.key;
-            const key = ecmascript.propName(ctx.tree, attr_key) orelse continue;
+            const key = static_semantics.propName(ctx.tree, attr_key) orelse continue;
             for (items[0..i]) |prev_idx| {
                 const prev_attr_key = ctx.tree.data(prev_idx).import_attribute.key;
-                const prev_key = ecmascript.propName(ctx.tree, prev_attr_key) orelse continue;
+                const prev_key = static_semantics.propName(ctx.tree, prev_attr_key) orelse continue;
                 if (key.eql(prev_key.name) or prev_key.eql(key.name)) {
                     const name = if (!prev_key.is_string_literal) prev_key.name else key.name;
                     try self.report(
@@ -1357,11 +1357,11 @@ pub const Checker = struct {
     /// Runs after the traversal.
     pub fn checkExports(self: *Self, symbols: *const binder.SymbolTracker) AnalysisError!void {
         if (!self.tree.isModule()) return;
-        for (self.export_specifiers.items) |spec| {
-            if (symbols.binding(scope.module_scope, spec.local_name) == null) {
+        for (self.export_specifiers.items) |specifier| {
+            if (symbols.binding(scope.module_scope, specifier.local_name) == null) {
                 try self.report(
-                    self.tree.span(spec.node),
-                    try self.fmt("Export '{s}' is not defined", .{spec.local_name}),
+                    self.tree.span(specifier.node),
+                    try self.fmt("Export '{s}' is not defined", .{specifier.local_name}),
                     .{},
                 );
             }

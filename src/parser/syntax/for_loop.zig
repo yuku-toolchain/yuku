@@ -9,7 +9,7 @@ const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
 const grammar = @import("../grammar.zig");
 const statements = @import("statements.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 
 /// Parses `for`, `for-in`, `for-of`, and `for await` statements.
 /// https://tc39.es/ecma262/#sec-for-statement
@@ -283,7 +283,7 @@ fn validateForInOfDeclarators(
     for (parser.tree.extra(declarators)) |declarator| {
         const data = parser.tree.data(declarator).variable_declarator;
         if (data.init == .null) continue;
-        if (ecmascript.isAnnexBForInHead(&parser.tree, kind, data.id, tag == .in)) continue;
+        if (static_semantics.isAnnexBForInHead(&parser.tree, kind, data.id, tag == .in)) continue;
 
         try parser.report(
             parser.tree.span(declarator),

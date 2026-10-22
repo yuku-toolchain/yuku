@@ -1,7 +1,7 @@
 const std = @import("std");
 const parser = @import("parser");
 const rt = @import("transfer");
-const util = @import("util");
+const spec = @import("spec");
 
 const ast = parser.ast;
 const sem_rt = rt.semantic;
@@ -228,7 +228,7 @@ fn writeJSXEntities(w: *Writer) !void {
             return std.mem.order(u8, a.name, b.name) == .lt;
         }
     };
-    const map = util.XhtmlEntities.code_points;
+    const map = spec.jsx_entities.code_points;
     var entities: [map.keys().len]Entity = undefined;
     for (&entities, map.keys(), map.values()) |*entity, name, code_point| {
         entity.* = .{ .name = name, .code_point = code_point };

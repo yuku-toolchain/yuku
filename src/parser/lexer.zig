@@ -10,6 +10,7 @@ const keyword_length_max = @import("token.zig").keyword_length_max;
 const ast = @import("ast.zig");
 const lexical = @import("lexical.zig");
 const util = @import("util");
+const spec = @import("spec");
 const Simd = util.Simd;
 
 pub const LexicalError = error{
@@ -471,7 +472,7 @@ pub const Lexer = struct {
     }
 
     inline fn isLineTerminator(self: *const Lexer) bool {
-        return util.Utf.lineBreakLen(self.source, self.cursor) > 0;
+        return spec.line_terminators.lineBreakLen(self.source, self.cursor) > 0;
     }
 
     /// Scans the `template_middle` or `template_tail` that starts at the `}` closing
@@ -752,20 +753,23 @@ pub const Lexer = struct {
                     self.cursor += 1;
                 }
             },
-            else => self.cursor += @max(1, util.Utf.unicodeSeparatorLen(self.source, self.cursor)),
+            else => self.cursor += @max(1, spec.line_terminators.unicodeSeparatorLen(
+                self.source,
+                self.cursor,
+            )),
         }
     }
 
     fn consumeOctal(self: *Lexer) LexicalError!void {
         std.debug.assert(self.cursor < self.source.len);
-        const result = util.Utf.parseOctal(self.source, self.cursor);
+        const result = spec.escapes.parseOctal(self.source, self.cursor);
         std.debug.assert(result.end > self.cursor);
         self.cursor = @intCast(result.end);
     }
 
     fn consumeHex(self: *Lexer) LexicalError!void {
         std.debug.assert(self.cursor < self.source.len);
-        const r = util.Utf.parseHex2(self.source, self.cursor + 1) orelse
+        const r = spec.escapes.parseHex2(self.source, self.cursor + 1) orelse
             return error.InvalidHexEscape;
         std.debug.assert(r.end >= self.cursor + 1);
         self.cursor = @intCast(r.end);
@@ -786,7 +790,7 @@ pub const Lexer = struct {
         }
         self.setTokenFlag(.escaped);
 
-        const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse
+        const parsed = spec.escapes.parseUnicodeEscape(self.source, self.cursor + 1) orelse
             return error.InvalidUnicodeEscape;
         switch (context) {
             .identifier_start => {
@@ -911,7 +915,8 @@ pub const Lexer = struct {
         while (i < lexeme.len) {
             if (out == buf.len) return .identifier;
             if (lexeme[i] == '\\' and i + 1 < lexeme.len and lexeme[i + 1] == 'u') {
-                const parsed = util.Utf.parseUnicodeEscape(lexeme, i + 2) orelse return .identifier;
+                const parsed = spec.escapes.parseUnicodeEscape(lexeme, i + 2) orelse
+                    return .identifier;
                 if (parsed.value >= 0x80) return .identifier;
                 buf[out] = @intCast(parsed.value);
                 out += 1;
@@ -946,7 +951,7 @@ pub const Lexer = struct {
                 'o', 'O' => {
                     tag = .octal_literal;
                     try self.consumeRadixDigits(
-                        util.Utf.isOctalDigit,
+                        isOctalDigit,
                         error.InvalidOctalLiteralDigit,
                     );
                 },
@@ -1041,6 +1046,10 @@ pub const Lexer = struct {
 
     fn isBinaryDigit(c: u8) bool {
         return c == '0' or c == '1';
+    }
+
+    fn isOctalDigit(c: u8) bool {
+        return c >= '0' and c <= '7';
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {
@@ -1148,7 +1157,7 @@ pub const Lexer = struct {
                 },
                 .non_ascii => {
                     @branchHint(.unlikely);
-                    const us_len = util.Utf.unicodeSeparatorLen(src, pos);
+                    const us_len = spec.line_terminators.unicodeSeparatorLen(src, pos);
                     if (us_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
                         can_be_html_close_comment = true;
@@ -1204,7 +1213,7 @@ pub const Lexer = struct {
             if (pos >= src.len) break;
             const c = src[pos];
             if (c == '\n' or c == '\r') break;
-            if (c == 0xE2 and util.Utf.unicodeSeparatorLen(src, pos) > 0) break;
+            if (c == 0xE2 and spec.line_terminators.unicodeSeparatorLen(src, pos) > 0) break;
             pos += 1;
         }
         self.cursor = pos;
@@ -1236,7 +1245,7 @@ pub const Lexer = struct {
                     break;
                 },
                 0x80...0xFF => {
-                    const lt_len = util.Utf.unicodeSeparatorLen(src, pos);
+                    const lt_len = spec.line_terminators.unicodeSeparatorLen(src, pos);
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
                         pos += lt_len;

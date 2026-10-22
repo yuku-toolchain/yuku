@@ -1,6 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 const dialect = @import("../dialect/root.zig");
 
 const Allocator = std.mem.Allocator;
@@ -215,7 +215,10 @@ pub const ScopeTracker = struct {
                 const current = self.tree.data(self.currentScope().node);
                 const shares_catch_scope = current == .catch_clause and
                     current.catch_clause.body == index and
-                    ecmascript.findPatternExpression(self.tree, current.catch_clause.param) == null;
+                    static_semantics.findPatternExpression(
+                        self.tree,
+                        current.catch_clause.param,
+                    ) == null;
                 if (!shares_catch_scope) {
                     try self.pushScope(.block, index, self.inheritStrictFlag());
                 }
@@ -362,7 +365,7 @@ pub const ScopeTracker = struct {
         if (params == .null) return false;
         const data = tree.data(params);
         if (data != .formal_parameters) return false;
-        return ecmascript.findParameterExpression(tree, data.formal_parameters) != null;
+        return static_semantics.findParameterExpression(tree, data.formal_parameters) != null;
     }
 
     inline fn currentScope(self: *const ScopeTracker) Scope {

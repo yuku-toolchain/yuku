@@ -1,7 +1,7 @@
 const std = @import("std");
-const util = @import("util");
+const spec = @import("spec");
 const ast = @import("../../ast.zig");
-const ecmascript = @import("../../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const Token = @import("../../token.zig").Token;
@@ -439,7 +439,7 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
     if (tag == .string_literal) {
         const id = try literals.parseStringLiteral(parser) orelse return null;
         const name = parser.tree.string(parser.tree.data(id).string_literal.value);
-        if (util.Number.isCanonicalString(name)) {
+        if (spec.number.isCanonicalString(name)) {
             try reportEnumMemberNumericName(parser, parser.tree.span(id));
         }
         return .{ id, false };
@@ -478,8 +478,8 @@ fn parseEnumMemberNameKind(
 ) EnumMemberNameKind {
     std.debug.assert(expression != .null);
     if (parenthesized) return .computed;
-    if (ecmascript.stringLiteralLike(tree, expression)) |name| {
-        return if (util.Number.isCanonicalString(tree.string(name))) .numeric else .name;
+    if (static_semantics.stringLiteralLike(tree, expression)) |name| {
+        return if (spec.number.isCanonicalString(tree.string(name))) .numeric else .name;
     }
     return switch (tree.data(expression)) {
         .numeric_literal => |literal| {

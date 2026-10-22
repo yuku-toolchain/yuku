@@ -18,7 +18,7 @@ const decorator = @import("decorators.zig");
 const parenthesized = @import("parenthesized.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
-const ecmascript = @import("../ecmascript.zig");
+const static_semantics = @import("spec").static_semantics;
 const dialect = @import("../dialect/root.zig");
 const ts = @import("ts/types.zig");
 
@@ -660,7 +660,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
     else
         left;
     const argument_span = parser.tree.span(argument);
-    const unwrapped = ecmascript.unwrapParens(&parser.tree, argument);
+    const unwrapped = static_semantics.unwrapParens(&parser.tree, argument);
 
     if (!isSimpleAssignmentTarget(parser, unwrapped)) {
         try parser.report(
@@ -787,7 +787,7 @@ fn parseAssignmentExpression(
         try grammar.expressionToPattern(parser, left, .assignable);
     } else if (isSimpleAssignmentTarget(parser, left)) {
         // mirror the paren-stripping that pattern conversion does for `=`
-        target = ecmascript.unwrapParens(&parser.tree, left);
+        target = static_semantics.unwrapParens(&parser.tree, left);
     } else {
         @branchHint(.unlikely);
 
