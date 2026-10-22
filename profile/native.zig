@@ -38,9 +38,12 @@ pub fn main(init: std.process.Init) !void {
 
     switch (operation) {
         .parse => {
+            var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
+            defer offsets.deinit(gpa);
+
             const out = try gpa.alignedAlloc(u8, .of(u32), transfer.bufferSize(&tree));
             defer gpa.free(out);
-            const written = transfer.serializeInto(&tree, out);
+            const written = transfer.serializeInto(&tree, &offsets, out);
             assert(written == out.len);
         },
         .analyze => {
@@ -48,10 +51,13 @@ pub fn main(init: std.process.Init) !void {
             const records = try parser.semantic.module_record.collect(&tree, &sem);
             if (tree.diagnostics.items.len > 0) return error.InvalidCorpus;
 
+            var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
+            defer offsets.deinit(gpa);
+
             const size = transfer.semantic.bufferSize(&tree, &sem, records);
             const out = try gpa.alignedAlloc(u8, .of(u32), size);
             defer gpa.free(out);
-            const written = transfer.semantic.serializeInto(&tree, &sem, records, out);
+            const written = transfer.semantic.serializeInto(&tree, &sem, records, &offsets, out);
             assert(written == out.len);
         },
         .model => {

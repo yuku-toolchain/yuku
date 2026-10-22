@@ -1,5 +1,9 @@
 interface NodeBufferConstructor {
-  from(buffer: ArrayBuffer, offset: number, length: number): { write(text: string): number };
+  from(
+    buffer: ArrayBuffer,
+    offset: number,
+    length: number,
+  ): { write(text: string, encoding: "utf16le"): number };
   from(text: string, encoding: "base64"): Uint8Array<ArrayBuffer>;
 }
 

@@ -1,4 +1,4 @@
-// AST transfer format v12, little endian with no version byte
+// AST transfer format v13, little endian with no version byte
 // tools/estree/decoder.zig generates the JavaScript decoder from these layouts
 //
 // sections, in order
@@ -36,18 +36,19 @@ const ast = @import("parser").ast;
 const dialect = @import("parser").dialect;
 
 pub const semantic = @import("semantic.zig");
+pub const utf16 = @import("utf16.zig");
 
 pub const Header = extern struct {
     node_count: u32,
     extra_count: u32,
     string_pool_len: u32,
+    /// The source's length in UTF-16 units, the unit of every offset.
     source_len: u32,
     comment_count: u32,
     token_count: u32,
     diag_count: u32,
     program_index: u32,
     flags: u32,
-    first_non_ascii: u32,
 };
 
 pub const PackedNode = extern struct {
@@ -159,8 +160,9 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
     return size;
 }
 
-pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
+pub fn serializeInto(tree: *const ast.Tree, offsets: *const utf16.Offsets, buf: []u8) usize {
     std.debug.assert(buf.len >= bufferSize(tree));
+    std.debug.assert(offsets.bytes_len == tree.source.len);
     std.debug.assert(tree.root != .null);
     std.debug.assert(@intFromPtr(buf.ptr) % 4 == 0);
     std.debug.assert(@backingInt(tree.root) + 1 == tree.nodes.len);
@@ -177,20 +179,19 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         .node_count = @intCast(tree.nodes.len),
         .extra_count = @intCast(tree.extras.items.len),
         .string_pool_len = string_pool_len,
-        .source_len = @intCast(tree.source.len),
+        .source_len = offsets.units_len,
         .comment_count = @intCast(tree.comments.len),
         .token_count = @intCast(tree.tokens.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
         .program_index = @backingInt(tree.root),
         .flags = hdr_flags,
-        .first_non_ascii = @intCast(firstNonAsciiOffset(tree.source)),
     };
     var pos: usize = 0;
     writeBytes(buf, &pos, std.mem.asBytes(&hdr));
 
     const nodes_out: [*]PackedNode = @ptrCast(@alignCast(buf.ptr + pos));
-    for (tree.nodes.items(.data), tree.nodes.items(.span), 0..) |*data, span, i| {
-        nodes_out[i] = packNode(data, span);
+    for (tree.nodes.items(.data), tree.nodes.items(.span), nodes_out) |*data, span, *out| {
+        packNode(out, data, span, offsets);
     }
     pos += tree.nodes.len * @sizeOf(PackedNode);
 
@@ -206,31 +207,44 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
         var flags: u8 = @as(u8, @backingInt(c.type)) << COMMENT_TYPE_BIT;
         flags |= @as(u8, @backingInt(c.position)) << COMMENT_POSITION_SHIFT;
         flags |= @as(u8, @intFromBool(c.same_line)) << COMMENT_SAME_LINE_BIT;
+        const value = stringIn(offsets, c.value);
         comments_out[i] = .{
             .flags = flags,
             .node = @backingInt(ast.NodeIndex.null),
-            .value_start = c.value.start,
-            .value_end = c.value.end,
-            .span_start = c.span.start,
-            .span_end = c.span.end,
+            .value_start = value.start,
+            .value_end = value.end,
+            .span_start = offsets.at(c.span.start),
+            .span_end = offsets.at(c.span.end),
         };
     }
     writeCommentNodes(tree, comments_out[0..tree.comments.len]);
     pos += tree.comments.len * @sizeOf(PackedComment);
 
-    writeBytes(buf, &pos, std.mem.sliceAsBytes(tree.tokens));
+    if (offsets.ascii_len == offsets.bytes_len) {
+        writeBytes(buf, &pos, std.mem.sliceAsBytes(tree.tokens));
+    } else {
+        const tokens_out: [*]ast.Token = @ptrCast(@alignCast(buf.ptr + pos));
+        for (tree.tokens, 0..) |token, i| {
+            tokens_out[i] = token;
+            tokens_out[i].span = .{
+                .start = offsets.at(token.span.start),
+                .end = offsets.at(token.span.end),
+            };
+        }
+        pos += tree.tokens.len * @sizeOf(ast.Token);
+    }
 
     for (tree.diagnostics.items) |d| {
         writeBytes(buf, &pos, &.{@backingInt(d.severity)});
-        writeU32(buf, &pos, d.span.start);
-        writeU32(buf, &pos, d.span.end);
+        writeU32(buf, &pos, offsets.at(d.span.start));
+        writeU32(buf, &pos, offsets.at(d.span.end));
         writeString(buf, &pos, d.message);
         writeBytes(buf, &pos, &.{@intFromBool(d.help != null)});
         if (d.help) |help| writeString(buf, &pos, help);
         writeU32(buf, &pos, @intCast(d.labels.len));
         for (d.labels) |label| {
-            writeU32(buf, &pos, label.span.start);
-            writeU32(buf, &pos, label.span.end);
+            writeU32(buf, &pos, offsets.at(label.span.start));
+            writeU32(buf, &pos, offsets.at(label.span.end));
             writeString(buf, &pos, label.message);
         }
     }
@@ -242,6 +256,21 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
 pub inline fn writeBytes(buf: []u8, pos: *usize, bytes: []const u8) void {
     @memcpy(buf[pos.*..][0..bytes.len], bytes);
     pos.* += bytes.len;
+}
+
+/// A String with UTF-16 offsets into the source, or past the source's UTF-16 length into the
+/// pool.
+pub fn stringIn(offsets: *const utf16.Offsets, string: ast.String) ast.String {
+    std.debug.assert(string.start <= string.end);
+    if (string.start < offsets.bytes_len) {
+        std.debug.assert(string.end <= offsets.bytes_len);
+        return .{ .start = offsets.at(string.start), .end = offsets.at(string.end) };
+    }
+    const pool_start = offsets.units_len;
+    return .{
+        .start = string.start - offsets.bytes_len + pool_start,
+        .end = string.end - offsets.bytes_len + pool_start,
+    };
 }
 
 inline fn writeU32(buf: []u8, pos: *usize, value: u32) void {
@@ -280,22 +309,27 @@ fn assertChildBefore(child: ast.NodeIndex, index: usize) void {
     if (child != .null) std.debug.assert(@backingInt(child) < index);
 }
 
-fn packNode(data: *const ast.NodeData, span: ast.Span) PackedNode {
+fn packNode(
+    n: *PackedNode,
+    data: *const ast.NodeData,
+    span: ast.Span,
+    offsets: *const utf16.Offsets,
+) void {
     std.debug.assert(span.start <= span.end);
-    var n: PackedNode = std.mem.zeroes(PackedNode);
-    n.span_start = span.start;
-    n.span_end = span.end;
+    n.* = .{
+        .tag = @backingInt(std.meta.activeTag(data.*)),
+        .flags = 0,
+        .slots = @splat(0),
+        .span_start = offsets.at(span.start),
+        .span_end = offsets.at(span.end),
+    };
     // by pointer, so no node copies the whole union
     switch (data.*) {
-        inline else => |*payload, tag| {
-            n.tag = @backingInt(tag);
-            packPayload(&n, payload);
-        },
+        inline else => |*payload| packPayload(n, payload, offsets),
     }
-    return n;
 }
 
-fn packPayload(n: *PackedNode, payload: anytype) void {
+fn packPayload(n: *PackedNode, payload: anytype, offsets: *const utf16.Offsets) void {
     const T = @typeInfo(@TypeOf(payload)).pointer.child;
     if (@typeInfo(T) != .@"struct") return;
     const info = @typeInfo(T).@"struct";
@@ -311,8 +345,9 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
             n.slots[at.slot] = val.start;
             n.slots[at.slot + 1] = val.len;
         } else if (Field == ast.String) {
-            n.slots[at.slot] = val.start;
-            n.slots[at.slot + 1] = val.end;
+            const string = stringIn(offsets, val);
+            n.slots[at.slot] = string.start;
+            n.slots[at.slot + 1] = string.end;
         } else if (@typeInfo(Field) == .@"enum") {
             setFlagBits(n, at.bit, @backingInt(val));
         } else if (Field == ?ast.ImportPhase) {
@@ -322,9 +357,10 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
             }
         } else if (Field == ?ast.Hashbang) {
             if (val) |h| {
+                const value = stringIn(offsets, h.value);
                 setFlagBits(n, at.bit, 1);
-                n.slots[at.slot] = h.value.start;
-                n.slots[at.slot + 1] = h.value.end;
+                n.slots[at.slot] = value.start;
+                n.slots[at.slot + 1] = value.end;
             }
         } else {
             @compileError("unsupported field type '" ++ @typeName(Field) ++
@@ -335,16 +371,6 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
 
 inline fn setFlagBits(n: *PackedNode, comptime bit: u8, val: anytype) void {
     n.flags |= @as(@FieldType(PackedNode, "flags"), @intCast(val)) << @intCast(bit);
-}
-
-fn firstNonAsciiOffset(source: []const u8) usize {
-    const high: @Vector(16, u8) = @splat(0x80);
-    var i: usize = 0;
-    while (i + 16 <= source.len) : (i += 16) {
-        if (@reduce(.Or, source[i..][0..16].* & high) != 0) break;
-    }
-    for (source[i..], i..) |c, offset| if (c >= 0x80) return offset;
-    return source.len;
 }
 
 fn writeCommentNodes(tree: *const ast.Tree, out: []PackedComment) void {
@@ -359,4 +385,8 @@ fn writeCommentNodes(tree: *const ast.Tree, out: []PackedComment) void {
             if (id == std.math.maxInt(u32)) break;
         } else unreachable;
     }
+}
+
+test {
+    _ = utf16;
 }

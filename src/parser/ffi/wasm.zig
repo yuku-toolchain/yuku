@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const parser = @import("parser");
 const transfer = @import("transfer/root.zig");
 
@@ -13,7 +14,12 @@ const flag = struct {
     const attach_comments = 1 << 7;
     const tokens = 1 << 8;
     const dialect = 1 << 9;
+    const utf16 = 1 << 10;
 };
+
+comptime {
+    std.debug.assert(builtin.cpu.arch.endian() == .little);
+}
 
 // static, so the host reads it without freeing
 const description = std.mem.toBytes(std.mem.nativeToLittle(u32, parser.dialect.description.len)) ++
@@ -28,12 +34,12 @@ export fn free(ptr: [*]u8, len: usize) void {
 }
 
 export fn parse(ptr: [*]const u8, len: usize, flags: u32) usize {
-    const out = parseBuffer(ptr[0..len], flags) catch return 0;
+    const out = withSource(ptr[0..len], flags, parseBuffer) catch return 0;
     return @intFromPtr(out.ptr);
 }
 
 export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
-    const out = analyzeBuffer(ptr[0..len], flags) catch return 0;
+    const out = withSource(ptr[0..len], flags, analyzeBuffer) catch return 0;
     return @intFromPtr(out.ptr);
 }
 
@@ -42,18 +48,36 @@ export fn dialect() usize {
     return @intFromPtr(&description);
 }
 
-fn parseBuffer(source: []const u8, flags: u32) ![]u8 {
+fn withSource(
+    input: []const u8,
+    flags: u32,
+    comptime run: fn ([]const u8, u32) std.mem.Allocator.Error![]u8,
+) std.mem.Allocator.Error![]u8 {
+    if (flags & flag.utf16 == 0) return run(input, flags);
+    std.debug.assert(input.len % 2 == 0);
+    const units = std.mem.bytesAsSlice(u16, input);
+
+    const target = try gpa.alloc(u8, units.len * 3);
+    defer gpa.free(target);
+
+    return run(transfer.utf16.encodeUtf8(units, target), flags);
+}
+
+fn parseBuffer(source: []const u8, flags: u32) std.mem.Allocator.Error![]u8 {
     var tree = try parseTree(source, flags);
     defer tree.deinit();
 
     if (flags & flag.semantic_errors != 0) try parser.semantic.check(&tree);
 
+    var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
+    defer offsets.deinit(gpa);
+
     const out = try prefixed(transfer.bufferSize(&tree));
-    _ = transfer.serializeInto(&tree, out[4..]);
+    _ = transfer.serializeInto(&tree, &offsets, out[4..]);
     return out;
 }
 
-fn analyzeBuffer(source: []const u8, flags: u32) ![]u8 {
+fn analyzeBuffer(source: []const u8, flags: u32) std.mem.Allocator.Error![]u8 {
     var tree = try parseTree(source, flags);
     defer tree.deinit();
 
@@ -63,8 +87,11 @@ fn analyzeBuffer(source: []const u8, flags: u32) ![]u8 {
 
     const records = try parser.semantic.module_record.collect(&tree, &sem);
 
+    var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
+    defer offsets.deinit(gpa);
+
     const out = try prefixed(transfer.semantic.bufferSize(&tree, &sem, records));
-    _ = transfer.semantic.serializeInto(&tree, &sem, records, out[4..]);
+    _ = transfer.semantic.serializeInto(&tree, &sem, records, &offsets, out[4..]);
     return out;
 }
 

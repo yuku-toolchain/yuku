@@ -46,6 +46,7 @@ const SEMANTIC_ERRORS = 1 << 6;
 const ATTACH_COMMENTS = 1 << 7;
 const TOKENS = 1 << 8;
 const DIALECT = 1 << 9;
+const UTF16 = 1 << 10;
 
 const MEMORY_BYTES_MAX = 128 * 1024 * 1024;
 const MEMORY_IDLE_MS = 10_000;
@@ -101,10 +102,11 @@ function call(
 ): ArrayBuffer {
   const { memory, alloc, free } = instance.exports;
   const bytes = memory.buffer.byteLength;
-  const capacity = source.length * 3 || 1;
+  const capacity = source.length * (NodeBuffer === undefined ? 3 : 2) || 1;
   const pointer = alloc(capacity) >>> 0;
   const written = writeSource(memory.buffer, pointer, capacity, source);
-  const result = instance.exports[entry](pointer, written, flags) >>> 0;
+  const encoding = NodeBuffer === undefined ? 0 : UTF16;
+  const result = instance.exports[entry](pointer, written, flags | encoding) >>> 0;
   if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
   free(pointer, capacity);
   if (result === 0) throw new Error("yuku: out of memory");
@@ -152,7 +154,9 @@ function writeSource(
 ): number {
   // WebContainers' encodeInto repeats its last count for an empty string
   if (source.length === 0) return 0;
-  if (NodeBuffer !== undefined) return NodeBuffer.from(memory, pointer, capacity).write(source);
+  if (NodeBuffer !== undefined) {
+    return NodeBuffer.from(memory, pointer, capacity).write(source, "utf16le");
+  }
   return encoder.encodeInto(source, new Uint8Array(memory, pointer, capacity)).written;
 }
 

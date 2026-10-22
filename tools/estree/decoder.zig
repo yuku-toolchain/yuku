@@ -38,39 +38,6 @@ pub fn generate(w: *Writer) Writer.Error!void {
     try writeTokenList(w);
     try writeChildTables(w);
     try w.writeAll(
-        \\function buildPosMap(src, byteLen, startByte) {
-        \\  const m = new Uint32Array(byteLen - startByte + 1);
-        \\  const len = src.length;
-        \\  let bp = 0, u16p = startByte, i = startByte;
-        \\  while (i < len) {
-        \\    if (i + 16 <= len) {
-        \\      let allAscii = true;
-        \\      for (let k = 0; k < 16; k++) {
-        \\        if (src.charCodeAt(i + k) >= 0x80) { allAscii = false; break; }
-        \\      }
-        \\      if (allAscii) {
-        \\        for (let k = 0; k < 16; k++) m[bp + k] = u16p + k;
-        \\        bp += 16; u16p += 16; i += 16;
-        \\        continue;
-        \\      }
-        \\    }
-        \\    const cu = src.charCodeAt(i);
-        \\    m[bp] = u16p;
-        \\    if (cu < 0x80) { bp++; u16p++; i++; }
-        \\    else if (cu < 0x800) { m[bp + 1] = u16p + 1; bp += 2; u16p++; i++; }
-        \\    // a lone surrogate encodes as U+FFFD, three bytes and one unit
-        \\    else if (cu < 0xD800 || cu >= 0xDC00 || (src.charCodeAt(i + 1) & 0xFC00) !== 0xDC00) {
-        \\      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 1;
-        \\      bp += 3; u16p++; i++;
-        \\    }
-        \\    else {
-        \\      m[bp + 1] = u16p + 1; m[bp + 2] = u16p + 2; m[bp + 3] = u16p + 2;
-        \\      bp += 4; u16p += 2; i += 2;
-        \\    }
-        \\  }
-        \\  m[byteLen - startByte] = u16p;
-        \\  return m;
-        \\}
         \\function shaped(shape, start, end, children) {
         \\  const node = Object.assign({ type: shape.type, start, end }, shape.properties);
         \\  const fields = shape.fields, list = shape.list, extra = children.length - fields.length;
@@ -314,11 +281,10 @@ fn writeTokenList(w: *Writer) !void {
     const Mask = ast.TokenMask;
     try w.print(
         \\class TokenList {{
-        \\  constructor(u32, base, count, p, str) {{
+        \\  constructor(u32, base, count, str) {{
         \\    this._u32 = u32;
         \\    this._base = base;
         \\    this.length = count;
-        \\    this._p = p;
         \\    this._str = str;
         \\  }}
         \\  _at(i) {{
@@ -327,8 +293,8 @@ fn writeTokenList(w: *Writer) !void {
         \\  }}
         \\  kind(i) {{ return this._u32[this._at(i) + {[tag]d}]; }}
         \\  _flags(i) {{ return this._u32[this._at(i) + {[flags]d}]; }}
-        \\  start(i) {{ return this._p(this._u32[this._at(i) + {[start]d}]); }}
-        \\  end(i) {{ return this._p(this._u32[this._at(i) + {[end]d}]); }}
+        \\  start(i) {{ return this._u32[this._at(i) + {[start]d}]; }}
+        \\  end(i) {{ return this._u32[this._at(i) + {[end]d}]; }}
         \\  text(i) {{
         \\    const o = this._at(i);
         \\    return this._str(this._u32[o + {[start]d}], this._u32[o + {[end]d}]);
@@ -352,7 +318,7 @@ fn writeTokenList(w: *Writer) !void {
         \\    let lo = 0, hi = this.length;
         \\    while (lo < hi) {{
         \\      const mid = (lo + hi) >>> 1;
-        \\      if (this._p(this._u32[this._base + mid * {[stride]d} + column]) <= offset)
+        \\      if (this._u32[this._base + mid * {[stride]d} + column] <= offset)
         \\        lo = mid + 1;
         \\      else hi = mid;
         \\    }}
@@ -440,8 +406,9 @@ const inline_kinds = [_][]const u8{
 };
 
 const decoder_fields = [_][]const u8{
-    "_isTs", "_p",      "_src",         "_u32",   "fnParams",
-    "node",  "nodeArr", "nodeArrHoles", "shapes", "str",
+    "_isTs", "_src",    "_u32",         "fnParams",
+    "node",  "nodeArr", "nodeArrHoles", "shapes",
+    "str",
 };
 
 fn isInlineKind(comptime tag: []const u8) bool {
@@ -553,7 +520,6 @@ fn writeDecode(w: *Writer) !void {
         \\  const _isTs = !!(_flags & {[ts]d});
         \\  const _attached = !!(_flags & {[attached]d});
         \\  const _hasSemantic = !!(_flags & {[semantic]d});
-        \\  const _firstNa = _u32[{[first_non_ascii]d}];
         \\  const _nodesOff = {[header_size]d};
         \\  const eOff = _nodesOff + nodeCount * {[node_size]d};
         \\  const _extraBase = eOff >> 2;
@@ -595,18 +561,10 @@ fn writeDecode(w: *Writer) !void {
         \\    }}
         \\    return r;
         \\  }}
-        \\  let pm = null;
-        \\  function _posMap() {{
-        \\    if (pm === null && _firstNa < _srcLen) pm = buildPosMap(_src, _srcLen, _firstNa);
-        \\    return pm;
-        \\  }}
-        \\  const _p = v => v <= _firstNa ? v : _posMap()[v - _firstNa];
         \\  const str = (s, e) => {{
         \\    if (s === e) return "";
         \\    if (s >= _srcLen) return _poolDecode(s, e);
-        \\    if (e <= _firstNa) return _src.slice(s, e);
-        \\    const m = _posMap();
-        \\    return _src.slice(s < _firstNa ? s : m[s - _firstNa], m[e - _firstNa]);
+        \\    return _src.slice(s, e);
         \\  }};
         \\  function nodeArr(s, len) {{
         \\    const r = new Array(len);
@@ -654,9 +612,7 @@ fn writeDecode(w: *Writer) !void {
         \\    const h0 = _u32[b];
         \\    const tag = h0 & 255;
         \\    const flags = h0 >>> 16;
-        \\    const _ss = _u32[b + {[ss]d}], _se = _u32[b + {[se]d}];
-        \\    const start = _ss <= _firstNa ? _ss : pm[_ss - _firstNa];
-        \\    const end = _se <= _firstNa ? _se : pm[_se - _firstNa];
+        \\    const start = _u32[b + {[ss]d}], end = _u32[b + {[se]d}];
         \\    switch (tag) {{
         \\
     , .{
@@ -670,7 +626,6 @@ fn writeDecode(w: *Writer) !void {
         .program_index = word(rt.Header, "program_index"),
         .token_count = word(rt.Header, "token_count"),
         .flags = word(rt.Header, "flags"),
-        .first_non_ascii = word(rt.Header, "first_non_ascii"),
         .ts = rt.FLAG_TS,
         .attached = rt.FLAG_ATTACHED_COMMENTS,
         .semantic = rt.FLAG_SEMANTIC,
@@ -700,7 +655,6 @@ fn writeDecode(w: *Writer) !void {
         \\  function nodeAt(i) {
         \\    if (_count === 0) {
         \\      _n = new Array(nodeCount);
-        \\      _posMap();
         \\      if (_attached) _own();
         \\    }
         \\    while (_count <= i) {
@@ -734,8 +688,8 @@ fn writeDecode(w: *Writer) !void {
     try w.print(
         \\ }};
         \\  const _nodesU32 = _nodesOff >> 2;
-        \\  function startOf(i) {{ return _p(_u32[_nodesU32 + i * {[stride]d} + {[ss]d}]); }}
-        \\  function endOf(i) {{ return _p(_u32[_nodesU32 + i * {[stride]d} + {[se]d}]); }}
+        \\  function startOf(i) {{ return _u32[_nodesU32 + i * {[stride]d} + {[ss]d}]; }}
+        \\  function endOf(i) {{ return _u32[_nodesU32 + i * {[stride]d} + {[se]d}]; }}
         \\  function _decodeComments() {{
         \\    const out = new Array(commentCount);
         \\    for (let j = 0; j < commentCount; j++) {{
@@ -748,12 +702,12 @@ fn writeDecode(w: *Writer) !void {
         \\        ? {{
         \\            type,
         \\            value: str(vs, ve),
-        \\            start: _p(ss),
-        \\            end: _p(se),
+        \\            start: ss,
+        \\            end: se,
         \\            position: COMMENT_POSITIONS[(cf >> {[position]d}) & 3],
         \\            sameLine: (cf & {[same_line]d}) !== 0,
         \\          }}
-        \\        : {{ type, value: str(vs, ve), start: _p(ss), end: _p(se) }};
+        \\        : {{ type, value: str(vs, ve), start: ss, end: se }};
         \\    }}
         \\    return out;
         \\  }}
@@ -763,8 +717,8 @@ fn writeDecode(w: *Writer) !void {
         \\    let dp = dOff;
         \\    for (let j = 0; j < diagCount; j++) {{
         \\      const sev = SEVERITY[_u8[dp]]; dp++;
-        \\      const ds = _p(dv.getUint32(dp, true)); dp += 4;
-        \\      const de = _p(dv.getUint32(dp, true)); dp += 4;
+        \\      const ds = dv.getUint32(dp, true); dp += 4;
+        \\      const de = dv.getUint32(dp, true); dp += 4;
         \\      const ml = dv.getUint32(dp, true); dp += 4;
         \\      const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
         \\      const hh = _u8[dp]; dp++;
@@ -776,8 +730,8 @@ fn writeDecode(w: *Writer) !void {
         \\      const lc = dv.getUint32(dp, true); dp += 4;
         \\      const labels = new Array(lc);
         \\      for (let k = 0; k < lc; k++) {{
-        \\        const ls = _p(dv.getUint32(dp, true)); dp += 4;
-        \\        const le = _p(dv.getUint32(dp, true)); dp += 4;
+        \\        const ls = dv.getUint32(dp, true); dp += 4;
+        \\        const le = dv.getUint32(dp, true); dp += 4;
         \\        const lml = dv.getUint32(dp, true); dp += 4;
         \\        labels[k] = {{
         \\          start: ls,
@@ -898,7 +852,7 @@ fn writeDecode(w: *Writer) !void {
         \\      if (tokenCount === 0) return null;
         \\      return _tokens !== undefined
         \\        ? _tokens
-        \\        : (_tokens = new TokenList(_u32, _tOff >> 2, tokenCount - 1, _p, str));
+        \\        : (_tokens = new TokenList(_u32, _tOff >> 2, tokenCount - 1, str));
         \\    },
         \\    comments() {
         \\      return _comments !== undefined
@@ -1093,18 +1047,20 @@ const specials = [_]Special{
     .{ .tag = "formal_parameter", .types = &.{}, .body = "return node($pattern);" },
     .{ .tag = "formal_parameters", .types = &.{}, .body = "return { params: fnParams(i) };" },
     .{ .tag = "function", .types = typeNames(ast.FunctionType), .body =
-    \\const r = { type: @type, start, end, id: @id, generator: @generator, async: @async,
-    \\  params: @params, body: @body, expression: false };
-    \\if (_isTs) {
-    \\  r.typeParameters = @type_parameters; r.returnType = @return_type; r.declare = @declare;
-    \\}
-    \\return r;
+    \\return _isTs
+    \\  ? { type: @type, start, end, id: @id, generator: @generator, async: @async,
+    \\      params: @params, body: @body, expression: false, typeParameters: @type_parameters,
+    \\      returnType: @return_type, declare: @declare }
+    \\  : { type: @type, start, end, id: @id, generator: @generator, async: @async,
+    \\      params: @params, body: @body, expression: false };
     },
     .{ .tag = "arrow_function_expression", .body =
-    \\const r = { type: "ArrowFunctionExpression", start, end, id: null, generator: false,
-    \\  async: @async, params: @params, body: node($body), expression: @expression };
-    \\if (_isTs) { r.typeParameters = @type_parameters; r.returnType = @return_type; }
-    \\return r;
+    \\return _isTs
+    \\  ? { type: "ArrowFunctionExpression", start, end, id: null, generator: false,
+    \\      async: @async, params: @params, body: node($body), expression: @expression,
+    \\      typeParameters: @type_parameters, returnType: @return_type }
+    \\  : { type: "ArrowFunctionExpression", start, end, id: null, generator: false,
+    \\      async: @async, params: @params, body: node($body), expression: @expression };
     },
     .{ .tag = "program", .keys = &.{ "hashbang", "body" }, .body =
     \\return { type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script",
@@ -1160,70 +1116,68 @@ const specials = [_]Special{
     \\};
     },
     .{ .tag = "class", .types = typeNames(ast.ClassType), .body =
-    \\const r = { type: @type, start, end, decorators: @decorators, id: @id,
-    \\  superClass: @super_class, body: node($body) };
-    \\if (_isTs) {
-    \\  r.typeParameters = @type_parameters; r.superTypeArguments = @super_type_arguments;
-    \\  r.implements = @implements; r.abstract = @abstract; r.declare = @declare;
-    \\}
-    \\return r;
+    \\return _isTs
+    \\  ? { type: @type, start, end, decorators: @decorators, id: @id,
+    \\      superClass: @super_class, body: node($body), typeParameters: @type_parameters,
+    \\      superTypeArguments: @super_type_arguments, implements: @implements,
+    \\      abstract: @abstract, declare: @declare }
+    \\  : { type: @type, start, end, decorators: @decorators, id: @id,
+    \\      superClass: @super_class, body: node($body) };
     },
     .{ .tag = "method_definition", .types = &.{
         "MethodDefinition",
         "TSAbstractMethodDefinition",
     }, .body =
-    \\const r = { type: "MethodDefinition", start, end, decorators: @decorators,
-    \\  key: node($key), value: node($value), kind: @kind, computed: @computed,
-    \\  static: @static };
-    \\if (_isTs) {
-    \\  r.override = @override; r.optional = @optional; r.accessibility = @accessibility;
-    \\  if (@abstract) r.type = "TSAbstractMethodDefinition";
-    \\}
-    \\return r;
+    \\return _isTs
+    \\  ? { type: @abstract ? "TSAbstractMethodDefinition" : "MethodDefinition", start, end,
+    \\      decorators: @decorators, key: node($key), value: node($value), kind: @kind,
+    \\      computed: @computed, static: @static, override: @override, optional: @optional,
+    \\      accessibility: @accessibility }
+    \\  : { type: "MethodDefinition", start, end, decorators: @decorators, key: node($key),
+    \\      value: node($value), kind: @kind, computed: @computed, static: @static };
     },
     .{ .tag = "property_definition", .types = &.{
         "PropertyDefinition",           "AccessorProperty",
         "TSAbstractPropertyDefinition", "TSAbstractAccessorProperty",
     }, .body =
     \\const acc = @accessor;
-    \\const r = { type: acc ? "AccessorProperty" : "PropertyDefinition", start, end,
-    \\  decorators: @decorators, key: node($key), value: @value, computed: @computed,
-    \\  static: @static };
-    \\if (_isTs) {
-    \\  r.typeAnnotation = @type_annotation; r.declare = @declare; r.override = @override;
-    \\  r.optional = @optional; r.definite = @definite; r.readonly = @readonly;
-    \\  r.accessibility = @accessibility;
-    \\  if (@abstract) r.type = acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition";
-    \\}
-    \\return r;
+    \\const type = acc ? "AccessorProperty" : "PropertyDefinition";
+    \\const abstract = acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition";
+    \\return _isTs
+    \\  ? { type: @abstract ? abstract : type, start, end, decorators: @decorators,
+    \\      key: node($key), value: @value, computed: @computed, static: @static,
+    \\      typeAnnotation: @type_annotation, declare: @declare, override: @override,
+    \\      optional: @optional, definite: @definite, readonly: @readonly,
+    \\      accessibility: @accessibility }
+    \\  : { type, start, end, decorators: @decorators, key: node($key), value: @value,
+    \\      computed: @computed, static: @static };
     },
     .{ .tag = "unary_expression", .body =
     \\return { type: "UnaryExpression", start, end, operator: @operator, prefix: true,
     \\  argument: @argument };
     },
     .{ .tag = "binding_property", .types = &.{"Property"}, .body =
-    \\const r = { type: "Property", start, end, kind: "init", key: node($key),
-    \\  value: node($value), method: false, shorthand: @shorthand, computed: @computed };
-    \\if (_isTs) r.optional = false;
-    \\return r;
+    \\return _isTs
+    \\  ? { type: "Property", start, end, kind: "init", key: node($key), value: node($value),
+    \\      method: false, shorthand: @shorthand, computed: @computed, optional: false }
+    \\  : { type: "Property", start, end, kind: "init", key: node($key), value: node($value),
+    \\      method: false, shorthand: @shorthand, computed: @computed };
     },
     .{ .tag = "array_pattern", .keys = &.{ "decorators", "elements", "typeAnnotation" }, .body =
     \\const elements = @elements;
     \\if ($rest !== NULL) elements.push(node($rest));
-    \\const r = { type: "ArrayPattern", start, end, elements };
-    \\if (_isTs) {
-    \\  r.decorators = @decorators; r.optional = @optional; r.typeAnnotation = @type_annotation;
-    \\}
-    \\return r;
+    \\return _isTs
+    \\  ? { type: "ArrayPattern", start, end, elements, decorators: @decorators,
+    \\      optional: @optional, typeAnnotation: @type_annotation }
+    \\  : { type: "ArrayPattern", start, end, elements };
     },
     .{ .tag = "object_pattern", .keys = &.{ "decorators", "properties", "typeAnnotation" }, .body =
     \\const properties = @properties;
     \\if ($rest !== NULL) properties.push(node($rest));
-    \\const r = { type: "ObjectPattern", start, end, properties };
-    \\if (_isTs) {
-    \\  r.decorators = @decorators; r.optional = @optional; r.typeAnnotation = @type_annotation;
-    \\}
-    \\return r;
+    \\return _isTs
+    \\  ? { type: "ObjectPattern", start, end, properties, decorators: @decorators,
+    \\      optional: @optional, typeAnnotation: @type_annotation }
+    \\  : { type: "ObjectPattern", start, end, properties };
     },
     .{ .tag = "ts_constructor_type", .body =
     \\return { type: "TSConstructorType", start, end, abstract: @abstract,
@@ -1276,19 +1230,19 @@ const ts_fields = .{
     .ts_index_signature = .{"static"},
 };
 
-const identifier_ts_extras = "r.decorators = []; r.optional = false; r.typeAnnotation = null; ";
+const identifier_ts_extras = ", decorators: [], optional: false, typeAnnotation: null";
 
 const ts_extras = .{
     .identifier_reference = identifier_ts_extras,
     .identifier_name = identifier_ts_extras,
     .label_identifier = identifier_ts_extras,
-    .object_property = "r.optional = false; ",
-    .expression_statement = "r.directive = null; ",
-    .binding_rest_element = "r.value = null; ",
-    .export_default_declaration = "r.exportKind = \"value\"; ",
-    .ts_property_signature = "r.accessibility = null; r.static = false; ",
-    .ts_index_signature = "r.accessibility = null; ",
-    .ts_parameter_property = "r.static = false; ",
+    .object_property = ", optional: false",
+    .expression_statement = ", directive: null",
+    .binding_rest_element = ", value: null",
+    .export_default_declaration = ", exportKind: \"value\"",
+    .ts_property_signature = ", accessibility: null, static: false",
+    .ts_index_signature = ", accessibility: null",
+    .ts_parameter_property = ", static: false",
 };
 
 fn specialOf(comptime tag: []const u8) ?Special {
@@ -1338,16 +1292,16 @@ fn nodeBody(comptime tag: []const u8) []const u8 {
             for (@typeInfo(T).@"struct".field_names, 0..) |name, i| {
                 const key = estreeField(tag, name);
                 if (isTsField(tag, name)) {
-                    ts = ts ++ "r." ++ key ++ " = " ++ fieldValue(tag, T, i) ++ "; ";
+                    ts = ts ++ ", " ++ key ++ ": " ++ fieldValue(tag, T, i);
                 } else {
                     fields = fields ++ ", " ++ key ++ ": " ++ fieldValue(tag, T, i);
                 }
             }
         }
-        const node = "{ type: \"" ++ estreeType(tag) ++ "\", start, end" ++ fields ++ " }";
+        const base = "type: \"" ++ estreeType(tag) ++ "\", start, end" ++ fields;
         const extras = if (@hasField(@TypeOf(ts_extras), tag)) @field(ts_extras, tag) else "";
-        if (ts.len == 0 and extras.len == 0) return "return " ++ node ++ ";";
-        return "const r = " ++ node ++ "; if (_isTs) { " ++ ts ++ extras ++ "} return r;";
+        if (ts.len == 0 and extras.len == 0) return "return { " ++ base ++ " };";
+        return "return _isTs ? { " ++ base ++ ts ++ extras ++ " } : { " ++ base ++ " };";
     }
 }
 
@@ -1395,8 +1349,8 @@ fn fieldValue(comptime tag: []const u8, comptime T: type, comptime index: usize)
         return flag ++ " ? IMPORT_PHASES[" ++ flagBits(at.bit + 1, 1) ++ "] : null";
     }
     // the hashbang value starts past its `#!`
-    if (F == ?ast.Hashbang) return flag ++ " ? { type: \"Hashbang\", start: _p(" ++ s ++
-        " - 2), end: _p(" ++ e ++ "), value: str(" ++ s ++ ", " ++ e ++ ") } : null";
+    if (F == ?ast.Hashbang) return flag ++ " ? { type: \"Hashbang\", start: " ++ s ++
+        " - 2, end: " ++ e ++ ", value: str(" ++ s ++ ", " ++ e ++ ") } : null";
     if (@typeInfo(F) == .@"enum") {
         return tableName(F) ++ "[" ++ flagBits(at.bit, rt.enumBitWidth(F)) ++ "]";
     }

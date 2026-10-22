@@ -204,12 +204,13 @@ pub fn serializeInto(
     tree: *const ast.Tree,
     sem: *const Semantic,
     records: Records,
+    offsets: *const transfer.utf16.Offsets,
     buf: []u8,
 ) usize {
     std.debug.assert(buf.len >= bufferSize(tree, sem, records));
     std.debug.assert(sem.next_bodies.len == sem.scopes.list.len);
 
-    const base = transfer.serializeInto(tree, buf);
+    const base = transfer.serializeInto(tree, offsets, buf);
 
     const flags_offset = @offsetOf(transfer.Header, "flags");
     const flags = std.mem.readInt(u32, buf[flags_offset..][0..4], .little);
@@ -244,9 +245,10 @@ pub fn serializeInto(
 
     std.debug.assert(sem.decl_ranges.len == sem.symbols.len);
     for (sem.symbols, sem.decl_ranges) |symbol, decls| {
+        const name = transfer.stringIn(offsets, symbol.name);
         const entry: PackedSymbol = .{
-            .name_start = symbol.name.start,
-            .name_end = symbol.name.end,
+            .name_start = name.start,
+            .name_end = name.end,
             .flags = @backingInt(symbol.flags),
             .scope = @backingInt(symbol.scope),
             .decls_start = decls.start,
@@ -258,9 +260,10 @@ pub fn serializeInto(
     transfer.writeBytes(buf, &pos, std.mem.sliceAsBytes(sem.decl_nodes));
 
     for (sem.references) |reference| {
+        const name = transfer.stringIn(offsets, reference.name);
         const entry: PackedReference = .{
-            .name_start = reference.name.start,
-            .name_end = reference.name.end,
+            .name_start = name.start,
+            .name_end = name.end,
             .scope = @backingInt(reference.scope),
             .node = @backingInt(reference.node),
             .bits = @backingInt(reference.flags),
@@ -276,13 +279,15 @@ pub fn serializeInto(
             bits |= @as(u32, 1) << IMPORT_HAS_PHASE_BIT;
             bits |= @as(u32, @backingInt(phase)) << IMPORT_PHASE_BIT;
         }
+        const name = transfer.stringIn(offsets, record.name);
+        const specifier = transfer.stringIn(offsets, record.specifier);
         const entry: PackedImport = .{
             .symbol = @backingInt(record.symbol),
             .bits = bits,
-            .name_start = record.name.start,
-            .name_end = record.name.end,
-            .specifier_start = record.specifier.start,
-            .specifier_end = record.specifier.end,
+            .name_start = name.start,
+            .name_end = name.end,
+            .specifier_start = specifier.start,
+            .specifier_end = specifier.end,
             .node = @backingInt(record.node),
             .scope = @backingInt(record.scope),
         };
@@ -290,16 +295,19 @@ pub fn serializeInto(
     }
 
     for (records.exports) |record| {
+        const name = transfer.stringIn(offsets, record.name);
+        const from_name = transfer.stringIn(offsets, record.from_name);
+        const specifier = transfer.stringIn(offsets, record.specifier);
         const entry: PackedExport = .{
             .bits = @as(u32, @backingInt(record.kind)) |
                 (@as(u32, @intFromBool(record.type_only)) << EXPORT_TYPE_BIT),
-            .name_start = record.name.start,
-            .name_end = record.name.end,
+            .name_start = name.start,
+            .name_end = name.end,
             .symbol = @backingInt(record.symbol),
-            .from_name_start = record.from_name.start,
-            .from_name_end = record.from_name.end,
-            .specifier_start = record.specifier.start,
-            .specifier_end = record.specifier.end,
+            .from_name_start = from_name.start,
+            .from_name_end = from_name.end,
+            .specifier_start = specifier.start,
+            .specifier_end = specifier.end,
             .node = @backingInt(record.node),
         };
         transfer.writeBytes(buf, &pos, std.mem.asBytes(&entry));

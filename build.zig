@@ -44,6 +44,9 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util })).step);
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = parser })).step);
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{
+        .root_module = createTransfer(b, parser),
+    })).step);
     const zig_tests = b.addRunArtifact(b.addTest(.{ .root_module = b.createModule(.{
         .root_source_file = b.path("src/parser/testing/root.zig"),
         .target = target,
