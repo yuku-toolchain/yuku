@@ -1,5 +1,6 @@
 import { ALIAS_GROUPS, type AliasMap, type AliasName } from "../ast/aliases";
-import { CHILD_KEYS } from "../ast/generated";
+import { CHILD_KEYS, CHILD_VISITORS } from "../ast/generated";
+import { widened, type ChildVisitor } from "../core/child-keys";
 import type { Comment, Node, NodeOfType, NodeType } from "../types";
 
 export type WalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext) => void;
@@ -28,6 +29,7 @@ export type Handler = (node: Node, ctx: WalkContext) => void;
 export interface Handlers {
   enter: Handler[];
   leave: Handler[];
+  children: ChildVisitor | null;
 }
 
 /** @internal */
@@ -68,14 +70,14 @@ const RECURSION_MAX = 1_000;
 const STOPPED = -1;
 const REVISIT = -2;
 
-const NO_HANDLERS: Handlers = { enter: [], leave: [] };
+const NO_HANDLERS: Handlers = { enter: [], leave: [], children: null };
 const NO_KEYS: readonly string[] = [];
 const NO_NODES: Node[] = [];
 
 /** Walks a node depth-first in source order, every visitor of a list in one pass. */
 export function walk(node: Node, visitors: Visitors | readonly Visitors[]): void {
   assertNode(node, "walk");
-  visit(new WalkContext(), new Dispatch([visitors].flat()), node, null, null, 0);
+  visit(new WalkContext(new Dispatch([visitors].flat())), node, null, null, 0);
 }
 
 /** The walk's position and edits, valid only during the visit that receives it. */
@@ -90,6 +92,13 @@ export class WalkContext {
   _signal: number = SIGNAL_NONE;
   /** @internal */
   _replacement: Node[] = NO_NODES;
+  /** @internal */
+  _dispatch: Dispatch;
+
+  /** @internal */
+  constructor(dispatch: Dispatch) {
+    this._dispatch = dispatch;
+  }
 
   get parent(): Node | null {
     return this._depth > 1 ? this._frames[this._depth - 2]!.node : null;
@@ -163,26 +172,26 @@ export class WalkContext {
 
 function visit(
   ctx: WalkContext,
-  dispatch: Dispatch,
   node: Node,
   key: string | null,
   list: Node[] | null,
   index: number,
 ): number {
-  if (ctx._depth >= RECURSION_MAX) return run(ctx, dispatch, node, key, list, index);
-  open(ctx, node, key, list, index);
-  const frame = ctx._frames[ctx._depth - 1]!;
+  if (ctx._depth >= RECURSION_MAX) return run(ctx, node, key, list, index);
+  const frame = open(ctx, node, key, list, index);
   let count: number;
   for (;;) {
     count = 1;
-    const handlers = dispatch.handlersOf(frame.node.type);
+    const handlers = ctx._dispatch.handlersOf(frame.node.type);
     if (call(handlers.enter, frame.node, ctx)) {
       count = settle(ctx, frame);
       if (count === REVISIT) continue;
       break;
     }
     if (ctx._skipped) ctx._skipped = false;
-    else if (!visitChildren(ctx, dispatch, frame.node)) return STOPPED;
+    else if (handlers.children !== null) {
+      if (!handlers.children(fieldsOf(frame.node), visitValue, ctx)) return STOPPED;
+    }
     if (call(handlers.leave, frame.node, ctx)) {
       count = settle(ctx, frame);
       if (count === REVISIT) continue;
@@ -190,39 +199,26 @@ function visit(
     break;
   }
   ctx._depth--;
-  return count;
+  return count === STOPPED ? STOPPED : frame.index + count;
 }
 
-function visitChildren(ctx: WalkContext, dispatch: Dispatch, node: Node): boolean {
-  const keys = CHILD_KEYS[node.type];
-  if (keys === undefined) return true;
-  const fields = fieldsOf(node);
-  const depth = ctx._depth;
-  for (let k = 0; k < keys.length; k++) {
-    const key = keys[k]!;
-    const value = fields[key];
-    if (value === null || typeof value !== "object") continue;
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; ) {
-        const item: unknown = value[i];
-        if (item === null || typeof item !== "object") {
-          i++;
-          continue;
-        }
-        const count = visit(ctx, dispatch, item as Node, key, value as Node[], i);
-        if (count === STOPPED) return false;
-        i = ctx._frames[depth]!.index + count;
-      }
-    } else if (visit(ctx, dispatch, value as Node, key, null, 0) === STOPPED) {
-      return false;
+function visitValue(ctx: WalkContext, value: unknown, key: string): boolean {
+  if (value === null || typeof value !== "object") return true;
+  if (!Array.isArray(value)) return visit(ctx, value as Node, key, null, 0) !== STOPPED;
+  for (let i = 0; i < value.length; ) {
+    const item: unknown = value[i];
+    if (item === null || typeof item !== "object") {
+      i++;
+      continue;
     }
+    i = visit(ctx, item as Node, key, value as Node[], i);
+    if (i === STOPPED) return false;
   }
   return true;
 }
 
 function run(
   ctx: WalkContext,
-  dispatch: Dispatch,
   root: Node,
   key: string | null,
   list: Node[] | null,
@@ -236,7 +232,7 @@ function run(
     const entering = frame.phase === ENTER;
     let handlers: Handler[];
     if (entering) {
-      frame.handlers = dispatch.handlersOf(frame.node.type);
+      frame.handlers = ctx._dispatch.handlersOf(frame.node.type);
       handlers = frame.handlers.enter;
     } else {
       if (frame.phase === CHILDREN) {
@@ -262,7 +258,7 @@ function run(
       continue;
     }
     ctx._depth--;
-    if (ctx._depth === base) return count;
+    if (ctx._depth === base) return frame.index + count;
     if (frame.list !== null) frames[ctx._depth - 1]!.childIndex = frame.index + count;
   }
 }
@@ -303,10 +299,10 @@ function open(
   key: string | null,
   list: Node[] | null,
   index: number,
-): void {
-  const frame = ctx._frames[ctx._depth];
+): Frame {
+  let frame = ctx._frames[ctx._depth];
   if (frame === undefined) {
-    ctx._frames.push({
+    frame = {
       node,
       key,
       list,
@@ -317,7 +313,8 @@ function open(
       childKey: 0,
       childIndex: 0,
       replacements: 0,
-    });
+    };
+    ctx._frames.push(frame);
   } else {
     frame.node = node;
     frame.key = key;
@@ -327,6 +324,7 @@ function open(
     frame.replacements = 0;
   }
   ctx._depth++;
+  return frame;
 }
 
 function openChild(ctx: WalkContext, frame: Frame): boolean {
@@ -368,7 +366,8 @@ const ALIAS_MEMBERS: Record<string, ReadonlySet<string> | undefined> = Object.fr
   Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
 );
 
-class Dispatch {
+/** @internal */
+export class Dispatch {
   private visitors: CompiledVisitor[];
   private cache: Record<string, Handlers | undefined> = Object.create(null);
 
@@ -377,8 +376,24 @@ class Dispatch {
   }
 
   handlersOf(type: string): Handlers {
-    return (this.cache[type] ??= handlersFor(this.visitors, type));
+    let handlers = this.cache[type];
+    if (handlers === undefined) {
+      handlers = handlersFor(this.visitors, type);
+      this.cache[type] = handlers;
+    }
+    return handlers;
   }
+}
+
+function childVisitorOf(type: string): ChildVisitor | null {
+  const keys = CHILD_KEYS[type];
+  if (keys === undefined || keys.length === 0) return null;
+  const generated = widened.has(type) ? undefined : CHILD_VISITORS[type];
+  if (generated !== undefined) return generated;
+  return (node, visit, state) => {
+    for (const key of keys) if (!visit(state, node[key], key)) return false;
+    return true;
+  };
 }
 
 function handlersFor(visitors: readonly CompiledVisitor[], type: string): Handlers {
@@ -398,7 +413,7 @@ function handlersFor(visitors: readonly CompiledVisitor[], type: string): Handle
     if (visitor.leave !== null) leaves.push(visitor.leave);
     leave.unshift(...leaves);
   }
-  return enter.length === 0 && leave.length === 0 ? NO_HANDLERS : { enter, leave };
+  return { enter, leave, children: childVisitorOf(type) };
 }
 
 function compile(visitor: Visitors): CompiledVisitor {
