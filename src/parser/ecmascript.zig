@@ -69,6 +69,22 @@ pub fn findPatternExpression(tree: *const ast.Tree, pattern: ast.NodeIndex) ?ast
     }
 }
 
+/// The value of a string literal, or of a template literal without substitutions.
+pub fn stringLiteralLike(tree: *const ast.Tree, node: ast.NodeIndex) ?ast.String {
+    std.debug.assert(node != .null);
+    switch (tree.data(node)) {
+        .string_literal => |literal| return literal.value,
+        .template_literal => |template| {
+            if (template.expressions.len > 0) return null;
+            std.debug.assert(template.quasis.len == 1);
+            const quasi = tree.data(tree.extra(template.quasis)[0]).template_element;
+            if (quasi.is_cooked_undefined) return null;
+            return quasi.cooked;
+        },
+        else => return null,
+    }
+}
+
 /// The expression inside any number of parentheses.
 pub fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
     std.debug.assert(node != .null);

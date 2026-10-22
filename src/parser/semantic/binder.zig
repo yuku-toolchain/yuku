@@ -1,5 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
+const ecmascript = @import("../ecmascript.zig");
 const sc = @import("scope.zig");
 const dialect = @import("../dialect/root.zig");
 
@@ -916,13 +917,11 @@ pub const SymbolTracker = struct {
             // member names are not binding identifiers, and tsc resolves them lexically
             .ts_enum_member => {
                 const member = data.ts_enum_member;
-                if (member.computed) return;
-                try self.syncScopeMaps(scope.scopes.items.len);
                 const name = switch (self.tree.data(member.id)) {
                     .identifier_name => |id| id.name,
-                    .string_literal => |str| str.value,
-                    else => return,
+                    else => ecmascript.stringLiteralLike(self.tree, member.id) orelse return,
                 };
+                try self.syncScopeMaps(scope.scopes.items.len);
                 const saved = self.pending;
                 self.pending = .{
                     .flags = .{ .enum_member = true, .ambient = self.ambient },

@@ -49,7 +49,8 @@ function checker(source: string, lang: SourceLang, sourceType: SourceType): Chec
       const starts: number[] = [];
       for (const declaration of symbolOf(typeChecker, node)?.declarations ?? []) {
         if (isAssignmentDeclaration(declaration)) continue;
-        const name = ts.getNameOfDeclaration(declaration);
+        const declared = ts.getNameOfDeclaration(declaration);
+        const name = declared && ts.isComputedPropertyName(declared) ? declared.expression : declared;
         if (name?.getSourceFile() === file) starts.push(name.getStart(file));
       }
       return starts;
@@ -282,6 +283,10 @@ const SNIPPETS: [name: string, source: string, lang?: SourceLang][] = [
     `namespace A.B.C { export var v = 1; A; B; C; } namespace A.B { C.v; }`,
   ],
   ["enum blocks share their members", `enum E { a } enum E { b = a }`],
+  [
+    "a member named by a string in brackets is in scope",
+    "enum E { ['a'] = 1, [`b`] = 2, c = a + b }",
+  ],
   [
     "the blocks of one ambient module share their exports",
     `declare module "m" { export var x: number; } declare module "m" { let y: typeof x; }`,

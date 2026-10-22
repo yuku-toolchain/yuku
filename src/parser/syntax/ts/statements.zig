@@ -1,5 +1,7 @@
 const std = @import("std");
+const util = @import("util");
 const ast = @import("../../ast.zig");
+const ecmascript = @import("../../ecmascript.zig");
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const Token = @import("../../token.zig").Token;
@@ -381,6 +383,7 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
     const id, const computed = try parseEnumMemberName(parser) orelse return null;
     const id_span = parser.tree.span(id);
     var end = if (computed) parser.prev_token_end else id_span.end;
@@ -393,9 +396,11 @@ fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.tree.span(initializer).end;
     }
 
+    std.debug.assert(start <= id_span.start);
+    if (!computed) std.debug.assert(start == id_span.start);
     return try parser.tree.addNode(
         .{ .ts_enum_member = .{ .id = id, .initializer = initializer, .computed = computed } },
-        .{ .start = id_span.start, .end = end },
+        .{ .start = start, .end = end },
     );
 }
 
@@ -405,6 +410,7 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
     if (tag == .left_bracket) {
         const start = parser.current_token.span.start;
         try parser.advance() orelse return null;
+        const parenthesized = parser.current_token.tag == .left_paren;
         const inner = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
             return null;
         if (!try parser.expect(
@@ -413,34 +419,81 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
             "Each '[' in an enum member name must be matched by a ']'",
         )) return null;
 
-        try parser.report(
-            .{ .start = start, .end = parser.prev_token_end },
-            "Computed property names are not allowed in enums",
-            .{ .help = "Name the member with an identifier or a string literal." },
-        );
-
+        const span: ast.Span = .{ .start = start, .end = parser.prev_token_end };
+        switch (parseEnumMemberNameKind(&parser.tree, inner, parenthesized)) {
+            .name => {},
+            .numeric => try reportEnumMemberNumericName(parser, span),
+            .computed => try parser.report(
+                span,
+                "Computed property names are not allowed in enums",
+                .{ .help = "Name the member with an identifier or a string literal." },
+            ),
+        }
         return .{ inner, true };
     }
 
-    const id = if (tag.isIdentifierLike())
-        try literals.parseIdentifierName(parser) orelse return null
-    else if (tag == .string_literal)
-        try literals.parseStringLiteral(parser) orelse return null
-    else if (tag == .no_substitution_template)
-        try literals.parseNoSubstitutionTemplate(parser, false) orelse return null
-    else {
+    if (tag.isIdentifierLike()) {
+        const id = try literals.parseIdentifierName(parser) orelse return null;
+        return .{ id, false };
+    }
+    if (tag == .string_literal) {
+        const id = try literals.parseStringLiteral(parser) orelse return null;
+        const name = parser.tree.string(parser.tree.data(id).string_literal.value);
+        if (util.Number.isCanonicalString(name)) {
+            try reportEnumMemberNumericName(parser, parser.tree.span(id));
+        }
+        return .{ id, false };
+    }
+    if (tag == .no_substitution_template) {
+        const id = try literals.parseNoSubstitutionTemplate(parser, false) orelse return null;
         try parser.report(
-            parser.current_token.span,
-            try parser.fmt(
-                "Unexpected token '{s}' as enum member name",
-                .{parser.describeToken(parser.current_token)},
-            ),
-            .{ .help = "Enum member names must be identifiers or string literals." },
+            parser.tree.span(id),
+            "Enum member names cannot be template literals",
+            .{ .help = "Use a string literal, or put the template in brackets." },
         );
+        return .{ id, false };
+    }
+    if (tag.isNumericLiteral()) {
+        try reportEnumMemberNumericName(parser, parser.current_token.span);
         return null;
-    };
+    }
 
-    return .{ id, false };
+    try parser.report(
+        parser.current_token.span,
+        try parser.fmt(
+            "Unexpected token '{s}' as enum member name",
+            .{parser.describeToken(parser.current_token)},
+        ),
+        .{ .help = "Enum member names must be identifiers or string literals." },
+    );
+    return null;
+}
+
+const EnumMemberNameKind = enum { name, numeric, computed };
+
+fn parseEnumMemberNameKind(
+    tree: *const ast.Tree,
+    expression: ast.NodeIndex,
+    parenthesized: bool,
+) EnumMemberNameKind {
+    std.debug.assert(expression != .null);
+    if (parenthesized) return .computed;
+    if (ecmascript.stringLiteralLike(tree, expression)) |name| {
+        return if (util.Number.isCanonicalString(tree.string(name))) .numeric else .name;
+    }
+    return switch (tree.data(expression)) {
+        .numeric_literal => |literal| {
+            return if (std.math.isFinite(literal.value(tree))) .numeric else .name;
+        },
+        else => .computed,
+    };
+}
+
+fn reportEnumMemberNumericName(parser: *Parser, span: ast.Span) Error!void {
+    std.debug.assert(span.start < span.end);
+    try parser.report(span, "An enum member cannot have a numeric name", .{
+        .help = "Name the member with an identifier or a string that is not a number.",
+    });
 }
 
 fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {

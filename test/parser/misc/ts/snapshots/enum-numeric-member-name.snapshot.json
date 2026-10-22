@@ -1,0 +1,512 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 337,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TSEnumDeclaration",
+        "start": 0,
+        "end": 81,
+        "id": {
+          "type": "Identifier",
+          "start": 5,
+          "end": 15,
+          "name": "StringName",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 16,
+          "end": 81,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 20,
+              "end": 27,
+              "id": {
+                "type": "Literal",
+                "start": 20,
+                "end": 23,
+                "value": "1",
+                "raw": "\"1\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 26,
+                "end": 27,
+                "value": 1,
+                "raw": "1"
+              },
+              "computed": false
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 31,
+              "end": 39,
+              "id": {
+                "type": "Literal",
+                "start": 31,
+                "end": 35,
+                "value": "01",
+                "raw": "\"01\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 38,
+                "end": 39,
+                "value": 2,
+                "raw": "2"
+              },
+              "computed": false
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 43,
+              "end": 51,
+              "id": {
+                "type": "Literal",
+                "start": 43,
+                "end": 47,
+                "value": "-0",
+                "raw": "\"-0\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 50,
+                "end": 51,
+                "value": 3,
+                "raw": "3"
+              },
+              "computed": false
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 55,
+              "end": 64,
+              "id": {
+                "type": "Literal",
+                "start": 55,
+                "end": 60,
+                "value": "NaN",
+                "raw": "\"NaN\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 63,
+                "end": 64,
+                "value": 4,
+                "raw": "4"
+              },
+              "computed": false
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 68,
+              "end": 78,
+              "id": {
+                "type": "Literal",
+                "start": 68,
+                "end": 74,
+                "value": "1e21",
+                "raw": "\"1e21\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 77,
+                "end": 78,
+                "value": 5,
+                "raw": "5"
+              },
+              "computed": false
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 83,
+        "end": 199,
+        "id": {
+          "type": "Identifier",
+          "start": 88,
+          "end": 102,
+          "name": "ComputedString",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 103,
+          "end": 199,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 107,
+              "end": 116,
+              "id": {
+                "type": "Literal",
+                "start": 108,
+                "end": 111,
+                "value": "1",
+                "raw": "\"1\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 115,
+                "end": 116,
+                "value": 1,
+                "raw": "1"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 120,
+              "end": 130,
+              "id": {
+                "type": "Literal",
+                "start": 121,
+                "end": 125,
+                "value": "-1",
+                "raw": "\"-1\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 129,
+                "end": 130,
+                "value": 2,
+                "raw": "2"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 134,
+              "end": 147,
+              "id": {
+                "type": "Literal",
+                "start": 135,
+                "end": 142,
+                "value": "1e+21",
+                "raw": "\"1e+21\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 146,
+                "end": 147,
+                "value": 3,
+                "raw": "3"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 151,
+              "end": 163,
+              "id": {
+                "type": "Literal",
+                "start": 152,
+                "end": 158,
+                "value": "1",
+                "raw": "\"\\x31\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 162,
+                "end": 163,
+                "value": 4,
+                "raw": "4"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 167,
+              "end": 176,
+              "id": {
+                "type": "TemplateLiteral",
+                "start": 168,
+                "end": 171,
+                "quasis": [
+                  {
+                    "type": "TemplateElement",
+                    "start": 168,
+                    "end": 171,
+                    "value": {
+                      "raw": "1",
+                      "cooked": "1"
+                    },
+                    "tail": true
+                  }
+                ],
+                "expressions": []
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 175,
+                "end": 176,
+                "value": 5,
+                "raw": "5"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 180,
+              "end": 196,
+              "id": {
+                "type": "Literal",
+                "start": 181,
+                "end": 191,
+                "value": "Infinity",
+                "raw": "\"Infinity\""
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 195,
+                "end": 196,
+                "value": 6,
+                "raw": "6"
+              },
+              "computed": true
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 201,
+        "end": 265,
+        "id": {
+          "type": "Identifier",
+          "start": 206,
+          "end": 220,
+          "name": "ComputedNumber",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 221,
+          "end": 265,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 225,
+              "end": 235,
+              "id": {
+                "type": "Literal",
+                "start": 226,
+                "end": 230,
+                "value": 16,
+                "raw": "0x10"
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 234,
+                "end": 235,
+                "value": 1,
+                "raw": "1"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 239,
+              "end": 247,
+              "id": {
+                "type": "Literal",
+                "start": 240,
+                "end": 242,
+                "value": 0.5,
+                "raw": ".5"
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 246,
+                "end": 247,
+                "value": 2,
+                "raw": "2"
+              },
+              "computed": true
+            },
+            {
+              "type": "TSEnumMember",
+              "start": 251,
+              "end": 262,
+              "id": {
+                "type": "Literal",
+                "start": 252,
+                "end": 257,
+                "value": "(Number) Infinity",
+                "raw": "1e999"
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 261,
+                "end": 262,
+                "value": 3,
+                "raw": "3"
+              },
+              "computed": true
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      },
+      {
+        "type": "TSEnumDeclaration",
+        "start": 267,
+        "end": 304,
+        "id": {
+          "type": "Identifier",
+          "start": 272,
+          "end": 285,
+          "name": "Parenthesized",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "body": {
+          "type": "TSEnumBody",
+          "start": 286,
+          "end": 304,
+          "members": [
+            {
+              "type": "TSEnumMember",
+              "start": 290,
+              "end": 301,
+              "id": {
+                "type": "ParenthesizedExpression",
+                "start": 291,
+                "end": 296,
+                "expression": {
+                  "type": "Literal",
+                  "start": 292,
+                  "end": 295,
+                  "value": "D",
+                  "raw": "\"D\""
+                }
+              },
+              "initializer": {
+                "type": "Literal",
+                "start": 300,
+                "end": 301,
+                "value": 1,
+                "raw": "1"
+              },
+              "computed": true
+            }
+          ]
+        },
+        "const": false,
+        "declare": false
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 20,
+      "end": 23,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 107,
+      "end": 112,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 120,
+      "end": 126,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 134,
+      "end": 143,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 151,
+      "end": 159,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 167,
+      "end": 172,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 225,
+      "end": 231,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 239,
+      "end": 243,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    },
+    {
+      "severity": "error",
+      "message": "Computed property names are not allowed in enums",
+      "path": null,
+      "start": 290,
+      "end": 297,
+      "labels": [],
+      "help": "Name the member with an identifier or a string literal."
+    },
+    {
+      "severity": "error",
+      "message": "An enum member cannot have a numeric name",
+      "path": null,
+      "start": 328,
+      "end": 329,
+      "labels": [],
+      "help": "Name the member with an identifier or a string that is not a number."
+    }
+  ]
+}
