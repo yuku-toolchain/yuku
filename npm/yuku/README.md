@@ -48,7 +48,8 @@ print(file).code; // "const twice = (n) => n * 2;\ntwice(21);"
 - [Parse](#parse): [options](#options), [diagnostics](#diagnostics), [comments](#comments), [tokens](#tokens)
 - [The AST](#the-ast)
 - [Walk](#walk): [the context](#the-context), [editing](#editing), [async work](#async-work)
-- [Build](#build): [templates](#templates), [builders](#builders), [guards and helpers](#guards-and-helpers)
+- [Templates](#templates)
+- [Utils](#utils)
 - [Semantic analysis](#semantic-analysis): [scopes](#scopes), [bindings](#bindings), [references](#references), [imports and exports](#imports-and-exports)
 - [Rename](#rename)
 - [Projects](#projects)
@@ -256,9 +257,7 @@ walk(file.program, {
 });
 ```
 
-## Build
-
-### Templates
+## Templates
 
 `js` and `ts` build nodes from code, an expression unless it ends in `;`.
 
@@ -268,37 +267,37 @@ import { js, ts } from "yuku";
 js`console.log(${node})`;
 js`return ${value} ?? ${fallback};`;
 ts`const total: ${type} = ${initial};`;
+js`import config from "${path}";`;
 ```
 
 | A hole takes                         | And becomes                                 |
 | ------------------------------------ | ------------------------------------------- |
 | a node                               | that node                                   |
 | a string                             | a name, valid as an identifier or JSX name  |
+| a string or number, inside quotes    | its text, escaped as the quotes need        |
 | a number, boolean, bigint, or `null` | its literal                                 |
 | `undefined`                          | the identifier `undefined`                  |
 | an array                             | its items, filling a list such as arguments |
 
 A hole stands for the largest node around it that holds nothing else, such as a statement in `${s};`, a declarator in `let ${d};`, or a property in `{ ${p} }`, and a node of that kind takes its place. A name or a binding pattern fills it instead, and so does an expression in a statement. A hole in a name that holds more, such as `(${p}: T)`, takes a name and keeps the rest. A node that fits neither throws.
 
-A node goes in once, and a copy of it wherever else it is used. A template parses once per call site, and its nodes have no position.
-
-### Builders
-
-`b` has a constructor per node type, defaulting spans to 0 and any field that may be false, null, or empty.
+Code that needs a function or a generator, such as `return x;` or `yield x`, builds as it would inside one. A node that only exists inside another comes from a template of its container.
 
 ```js
-import { b } from "yuku";
-
-b.CallExpression({ callee: b.Identifier({ name: "f" }) });
-// { type: "CallExpression", start: 0, end: 0, arguments: [], optional: false, callee: ... }
-
-b.ArrowFunctionExpression({ body: b.Identifier({ name: "x" }), expression: true }); // () => x
+js`({ ${key}: ${value} })`.properties[0]; // a property
+js`switch (x) { case ${test}: }`.cases[0]; // a case
+ts`type _ = Array<${item}>;`.typeAnnotation; // a type
+js`{ ${a}; ${b}; }`.body; // several statements
 ```
 
-### Guards and helpers
+A node goes in once, and a copy of it wherever else it is used. The comments around a hole move to what fills it. A template parses once per call site, and its nodes have no position.
+
+## Utils
+
+`yuku/utils` has the small helpers.
 
 ```js
-import { is } from "yuku";
+import { is, isIdentifierName, isValidIdentifier, unwrap } from "yuku/utils";
 
 is.CallExpression(node);
 is.Expression(node);              // aliases too
@@ -308,18 +307,13 @@ is.StringLiteral(node);           // also NumericLiteral, BooleanLiteral, NullLi
 is.StaticMemberExpression(node);  // also ComputedMemberExpression and PrivateFieldExpression
 is.Directive(node);
 is.Wrapper(node);                 // parentheses or an erased TypeScript assertion
+unwrap(node);                     // the expression inside every wrapper
+
+isValidIdentifier("class");       // false, reserved
+isIdentifierName("class");        // true
 ```
 
-```js
-import { lexical, unwrap } from "yuku";
-
-unwrap(node); // the expression inside every wrapper
-
-lexical.isValidIdentifier("class"); // false, reserved
-lexical.isIdentifierName("class");  // true
-```
-
-`lexical` also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, and `isEvalOrArguments`.
+It also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, and `isEvalOrArguments`.
 
 ## Semantic analysis
 

@@ -267,7 +267,7 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | Renames | `test/analyzer/rename.test.ts` |
 | Resolution as tsc or scope-manager defines it | A snippet in `test/analyzer/tsc-differential.test.ts` or `scope-manager-differential.test.ts` |
 | A real codebase to analyze | An entry in `test/projects/manifest.ts`, pinned to a commit |
-| Walking, templates, builders, and AST helpers | `test/ast/` |
+| Walking, templates, and utils | `test/ast/` |
 | The dialect mechanism | `src/parser/testing/dialect.zig`, a dialect that claims every position, and `test/dialect/` for its JavaScript side |
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
 | A small pure Zig helper | An inline `test` block next to the function |

@@ -1,11 +1,11 @@
-import { b } from "../ast/builders";
-import { isEvalOrArguments, isValidIdentifier } from "../ast/lexical";
+import { isEvalOrArguments, isValidIdentifier } from "../ast/utils";
 import { replaceAt, slotOf, type Slot } from "../ast/walk";
 import { BindingFlags } from "../core/decode";
 import type {
   BindingPattern,
   Diagnostic,
   ExportNamedDeclaration,
+  ExportSpecifier,
   Identifier,
   JSXIdentifier,
   Node,
@@ -158,14 +158,24 @@ function renameNode(file: SourceFile, node: Identifier | JSXIdentifier, name: st
 
 function keepExportNames(site: ExportSite, previous: string, name: string): void {
   const { statement, declaration, slot } = site;
-  const list = b.ExportNamedDeclaration({
-    specifiers: declaredNames(declaration).map((local) =>
-      b.ExportSpecifier({
-        local: b.Identifier({ name: local }),
-        exported: b.Identifier({ name: local === name ? previous : local }),
-      }),
-    ),
-  });
+  const specifiers = declaredNames(declaration).map(
+    (local): ExportSpecifier => ({
+      type: "ExportSpecifier",
+      start: 0,
+      end: 0,
+      local: { type: "Identifier", start: 0, end: 0, name: local },
+      exported: { type: "Identifier", start: 0, end: 0, name: local === name ? previous : local },
+    }),
+  );
+  const list: ExportNamedDeclaration = {
+    type: "ExportNamedDeclaration",
+    start: 0,
+    end: 0,
+    declaration: null,
+    specifiers,
+    source: null,
+    attributes: [],
+  };
   if (statement.exportKind !== undefined) list.exportKind = statement.exportKind;
   replaceAt(slot, [declaration, list]);
 }

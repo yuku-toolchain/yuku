@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { b, parse, type SourceFile, walk } from "yuku";
+import { js, parse, type SourceFile, walk } from "yuku";
 import { nodesOf } from "../ast-helpers-for-test";
 
 function fileOf(source: string, path = "input.js"): SourceFile {
@@ -165,7 +165,7 @@ describe("node queries", () => {
   test("parentOf is null at the root and for a foreign node", () => {
     const file = fileOf(`let x = 1;`);
     expect(file.parentOf(file.program)).toBeNull();
-    expect(file.parentOf(b.Identifier({ name: "x" }))).toBeNull();
+    expect(file.parentOf(js`x`)).toBeNull();
   });
 
   test("ancestors yields a node, then each parent up to the root", () => {

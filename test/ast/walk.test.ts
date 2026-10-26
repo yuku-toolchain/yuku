@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { b, js, parse, print, walk, type Node, type Visitors } from "yuku";
+import { js, parse, print, walk, type Node, type Visitors } from "yuku";
 import { nodesOf } from "../ast-helpers-for-test";
 
 function nameOf(node: Node): string | null {
@@ -43,7 +43,7 @@ describe("walk", () => {
       DebuggerStatement: (_n, ctx) => ctx.remove(),
       Identifier(node, ctx) {
         if (node.name === "a") {
-          ctx.replace(b.Identifier({ name: "renamed" }));
+          ctx.replace(js`renamed`);
         }
       },
     });
@@ -73,8 +73,8 @@ describe("walk", () => {
         if (name === null) return;
         seen.push(name);
         if (name === "a") {
-          ctx.insertBefore(b.ExpressionStatement({ expression: b.Identifier({ name: "before" }) }));
-          ctx.insertAfter(b.ExpressionStatement({ expression: b.Identifier({ name: "after" }) }));
+          ctx.insertBefore(js`before;`);
+          ctx.insertAfter(js`after;`);
         }
       },
     });
@@ -165,7 +165,7 @@ describe("walk", () => {
     let removed = 0;
     walk(root, {
       Identifier(node, ctx) {
-        if (node.name.startsWith("a")) ctx.replace(b.Identifier({ name: `b${node.name}` }));
+        if (node.name.startsWith("a")) ctx.replace(js`${`b${node.name}`}`);
       },
       BinaryExpression(node, ctx) {
         if (node.right.type === "Identifier" && node.right.name === "a1500") {
@@ -201,7 +201,7 @@ describe("visitors", () => {
       {
         Identifier(node, ctx) {
           seen.push(`first ${node.name}`);
-          if (node.name === "old") ctx.replace(b.Identifier({ name: "fresh" }));
+          if (node.name === "old") ctx.replace(js`fresh`);
         },
       },
       { Identifier: (node) => seen.push(`second ${node.name}`) },
@@ -215,8 +215,7 @@ describe("visitors", () => {
     walk(root, {
       Identifier(node, ctx) {
         calls++;
-        const callee = b.Identifier({ name: "wrap" });
-        ctx.replace(b.CallExpression({ callee, arguments: [node] }));
+        ctx.replace(js`wrap(${node})`);
         ctx.skip();
       },
     });
@@ -228,7 +227,7 @@ describe("visitors", () => {
     expect(() =>
       walk(program(`a;`), {
         Identifier(node, ctx) {
-          ctx.replace(b.Identifier({ name: node.name + "a" }));
+          ctx.replace(js`${node.name + "a"}`);
         },
       }),
     ).toThrow("replaced 64 times in one place");

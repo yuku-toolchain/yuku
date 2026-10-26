@@ -1,12 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
-  b,
   js,
   print,
   ts,
   type AssignmentExpression,
   type ClassExpression,
+  type Identifier,
   type JSXElement,
+  type ObjectExpression,
   type Node,
   type SwitchStatement,
   type TSEnumDeclaration,
@@ -35,7 +36,7 @@ describe("templates", () => {
   });
 
   test("holes take nodes, names, literals, and lists", () => {
-    const callee = b.Identifier({ name: "log" });
+    const callee = js`log`;
     expect(code(js`${callee}(${"value"}, ${1}, ${true}, ${null}, ${10n})`)).toBe(
       "log(value, 1, true, null, 10n)",
     );
@@ -48,10 +49,12 @@ describe("templates", () => {
     expect(code(js`function f() { ${[js`a();`, js`b()`]} }`)).toBe(
       "function f() {\n  a();\n  b();\n}",
     );
-    expect(code(js`({ ${"a"}, ${b.SpreadElement({ argument: js`rest` })} })`)).toBe(
+    const spread = js<ObjectExpression>`({ ...rest })`.properties[0]!;
+    expect(code(js`({ ${"a"}, ${spread} })`)).toBe(
       "{ a, ...rest }",
     );
-    expect(code(ts`let x: ${b.TSStringKeyword({})};`)).toBe("let x: string;");
+    const string = ts<TSTypeAliasDeclaration>`type S = string;`.typeAnnotation;
+    expect(code(ts`let x: ${string};`)).toBe("let x: string;");
     expect(code(ts`let x: ${"T"}<U>;`)).toBe("let x: T<U>;");
     expect(code(js`<${"div"} />`)).toBe("<div />");
   });
@@ -78,7 +81,7 @@ describe("templates", () => {
   });
 
   test("a hole in a name that holds more renames it, keeping the rest", () => {
-    expect(code(ts`function f(${"a"}: ${"T"}, ${b.Identifier({ name: "b" })}?: number) {}`)).toBe(
+    expect(code(ts`function f(${"a"}: ${"T"}, ${js`b`}?: number) {}`)).toBe(
       "function f(a: T, b?: number) {}",
     );
     expect(code(ts`let ${"x"}: number;`)).toBe("let x: number;");
@@ -95,7 +98,7 @@ describe("templates", () => {
   });
 
   test("a node goes in once, and a copy of it everywhere else", () => {
-    const name = b.Identifier({ name: "x" });
+    const name = js<Identifier>`x`;
     const sum = js`${name} + ${name}`;
     expect(sum.type === "BinaryExpression" && sum.left).toBe(name);
     expect(sum.type === "BinaryExpression" && sum.right).not.toBe(name);
@@ -112,6 +115,37 @@ describe("templates", () => {
     expect(code(body)).toBe("function f() {\n  // first\n  a();\n  b(); // last\n}");
   });
 
+  test("a hole inside quotes fills the text of a string", () => {
+    const spec = `./a b's "c"`;
+    expect(code(js`import x from "${spec}";`)).toBe(`import x from "./a b's \\"c\\"";`);
+    expect(code(js`fetch("/api/${"users"}/${42}")`)).toBe('fetch("/api/users/42")');
+    expect(code(js`<a href="${"/x?a=1&b=2"}" />`)).toBe('<a href="/x?a=1&b=2" />');
+    expect(code(js`\`hi ${"`${x}` \\"}!\``)).toBe("`hi \\`\\${x}\\` \\\\!`");
+    expect(() => js`f("${js`x`}")`).toThrow("a hole inside quotes takes a string or a number");
+    expect(() => js`"use ${"strict"}";`).toThrow("hole 0 of a template is in text");
+  });
+
+  test("code that needs a generator builds as it would in one", () => {
+    expect(js`yield ${"x"}`.type).toBe("YieldExpression");
+    expect(js`yield`.type).toBe("YieldExpression");
+    expect(js`await ${"x"}`.type).toBe("AwaitExpression");
+    expect(js`import x from "m";`.type).toBe("ImportDeclaration");
+  });
+
+  test("a node that only exists inside another comes from a template of its container", () => {
+    const property = js<ObjectExpression>`({ ${"key"}: ${1} })`.properties[0]!;
+    expect(code(js`({ ${[property, property]} })`)).toBe("{ key: 1, key: 1 }");
+    const [kase] = js<SwitchStatement>`switch (x) { case ${1}: a(); }`.cases;
+    expect(kase!.type).toBe("SwitchCase");
+    expect(ts<TSTypeAliasDeclaration>`type _ = Array<${"T"}>;`.typeAnnotation.type).toBe(
+      "TSTypeReference",
+    );
+  });
+
+  test("the comments before an expression stay with it", () => {
+    expect(code(js`/* @__PURE__ */ ${js`make()`}`)).toBe("/* @__PURE__ */ make()");
+  });
+
   test("a node that does not fit the hole throws", () => {
     expect(() => js`let ${js`f()`};`).toThrow("a CallExpression does not fit a VariableDeclarator");
     expect(() => js`({ ${js`f()`} })`).toThrow("a CallExpression does not fit a Property");
@@ -121,20 +155,20 @@ describe("templates", () => {
   });
 
   test("a string literal goes in as a node", () => {
-    expect(code(js`f(${b.Literal({ value: "a b" })})`)).toBe('f("a b")');
+    expect(code(js`f(${js`"a b"`})`)).toBe('f("a b")');
     expect(() => js`f(${"a b"})`).toThrow('takes a name as a string, not "a b"');
   });
 
   test("a nested template literal keeps its backticks and interpolations", () => {
-    const name = b.Identifier({ name: "name" });
+    const name = js`name`;
     expect(code(js`\`hi \${${name}}!\``)).toBe("`hi ${name}!`");
     expect(code(js`f(\`a\`, "\n")`)).toBe('f(`a`, "\\n")');
     expect(code(js`\`a\\\`b\``)).toBe("`a\\`b`");
-    expect(() => js`\`hi ${name}\``).toThrow("hole 0 of a template is in text");
+    expect(() => js`\`hi ${name}\``).toThrow("a hole inside quotes takes a string or a number");
   });
 
   test("malformed templates throw", () => {
-    expect(() => js`"${"x"}"`).toThrow("hole 0 of a template is in text");
+    expect(() => js`/${"x"}/`).toThrow("hole 0 of a template is in text");
     expect(() => js`a; b;`).toThrow("one expression or statement, not 2");
     expect(() => js`let = ;`).toThrow(SyntaxError);
     expect(() => js`f(...${"a"})`).not.toThrow();

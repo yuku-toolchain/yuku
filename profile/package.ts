@@ -4,7 +4,6 @@ import { basename, join } from "node:path";
 import { withCodSpeed } from "@codspeed/tinybench-plugin";
 import { Bench } from "tinybench";
 import {
-  b,
   Core,
   js,
   parse,
@@ -121,7 +120,7 @@ for (const path of FILES) {
 }
 
 add("template", () => {
-  for (let i = 0; i < 1_000; i++) void js`console.log(${b.Identifier({ name: "value" })}, ${i})`;
+  for (let i = 0; i < 1_000; i++) void js`console.log(${"value"}, ${i})`;
   return NO_DIAGNOSTICS;
 });
 

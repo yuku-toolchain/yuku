@@ -3,6 +3,7 @@ import { defineConfig } from "tsdown";
 export default defineConfig({
   entry: {
     index: "index.ts",
+    utils: "ast/utils.ts",
     "native/addons": "core/native/addons.ts",
     "native/none": "core/native/none.ts",
     "wasm/inline": "core/wasm/inline.ts",
@@ -16,7 +17,7 @@ export default defineConfig({
   hash: false,
   treeshake: true,
   loader: { ".wasm": "base64" },
-  dts: { entry: "index.ts" },
+  dts: { entry: ["index.ts", "ast/utils.ts"] },
   deps: { neverBundle: [/^#/] },
   outputOptions: { chunkFileNames: "shared/[name].js" },
   plugins: [

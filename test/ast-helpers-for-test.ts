@@ -1,5 +1,5 @@
+import { is } from "yuku/utils";
 import {
-  is,
   walk,
   type AliasMap,
   type AliasName,

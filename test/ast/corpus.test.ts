@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { is, js, parse, ts, walk, type Node, type SourceFile } from "yuku";
+import { js, parse, ts, walk, type Node, type SourceFile } from "yuku";
+import { is } from "yuku/utils";
 import { astDiffPath } from "../ast-helpers-for-test";
 import {
   corpusAndProjectFiles,
@@ -8,9 +9,14 @@ import {
   type CorpusFile,
 } from "../corpus";
 
-type Invariant = "walk" | "options" | "tokens" | "template";
+type Invariant = "walk" | "options" | "tokens" | "template" | "text";
 
-const INVARIANTS: Invariant[] = ["walk", "options", "tokens", "template"];
+const INVARIANTS: Invariant[] = ["walk", "options", "tokens", "template", "text"];
+const CONTEXTS = [
+  ["async function* _() {\n", "\n}", "module"],
+  ["", "", "module"],
+  ["", "", "commonjs"],
+] as const;
 const SAMPLE_MAX = 8;
 const CANDIDATES_MAX = 3;
 const CHILDREN_MAX = 3;
@@ -60,10 +66,15 @@ function childrenOf(node: Node): Node[] {
 }
 
 function fragment(text: string, lang: "jsx" | "tsx", statement: boolean): Node | null {
-  for (const sourceType of ["module", "commonjs"] as const) {
-    const { program, diagnostics } = parse(text, { lang, sourceType, preserveParens: false });
-    if (diagnostics.length > 0 || program.body.length !== 1) continue;
-    const root = program.body[0]!;
+  for (const [before, after, sourceType] of CONTEXTS) {
+    const code = `${before}${text}${after}`;
+    const { program, diagnostics } = parse(code, { lang, sourceType, preserveParens: false });
+    if (diagnostics.length > 0) continue;
+    const first = program.body.length === 1 ? program.body[0] : undefined;
+    const wrapped = first?.type === "FunctionDeclaration" ? first.body!.body : [];
+    const body = before === "" ? program.body : wrapped;
+    if (body.length !== 1) continue;
+    const root = body[0]!;
     if (statement) return root;
     return root.type === "ExpressionStatement" && !text.endsWith(";") ? root.expression : null;
   }
@@ -164,6 +175,12 @@ function checkTemplates(file: CorpusFile, source: string, program: Node): void {
       const ends = is.Statement(child) || is.ModuleDeclaration(child) ? [";", ""] : [""];
       const parts = ends.map((end) => [before, `${end}${after}`]);
       checkTemplate(`${where} [${node.type} > ${child.type}]`, node, child, typed, parts);
+      if (child.type === "Literal" && typeof child.value === "string") {
+        checkText(`${where} [${node.type} > string]`, node, child.value, typed, [
+          `${before}"`,
+          `"${after}`,
+        ]);
+      }
     }
   }
 }
@@ -203,6 +220,27 @@ function checkTemplate(
     else if (!contains(built, child)) note("template", `${where} copies its value`);
     return;
   }
+}
+
+function checkText(
+  where: string,
+  node: Node,
+  value: string,
+  typed: boolean,
+  parts: string[],
+): void {
+  const raw = parts.map(escaped);
+  const strings = Object.assign([...raw], { raw }) as TemplateStringsArray;
+  let built: Node;
+  try {
+    built = (typed ? ts : js)(strings, value);
+  } catch (error) {
+    if (error instanceof SyntaxError) return;
+    note("text", `${where} throws ${(error as Error).message}`);
+    return;
+  }
+  checks.text++;
+  if (!sameTree(built, node)) note("text", `${where} rebuilds differently`);
 }
 
 function escaped(code: string): string {

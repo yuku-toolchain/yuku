@@ -44,6 +44,26 @@ zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
 
 The parser, AST, semantic analysis, traversal, and codegen are documented at [yuku.fyi](https://yuku.fyi).
 
+## Performance
+
+Natively, Yuku parses faster than Oxc and SWC.
+
+![Parsing typescript.js (7.8 MB) natively](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.svg)
+
+On npm, `yuku` parses faster than the alternatives, on small and large files.
+
+![Parsing react.js (70 KB) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.svg)
+
+![Parsing typescript.js (7.8 MB) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.svg)
+
+Analyzing a whole codebase, resolving every reference and linking every import across files, it is faster than typescript-eslint and the TypeScript API, and on a single large file too.
+
+![Analyzing three.js (755 files) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/three.svg)
+
+![Analyzing typescript.js (7.8 MB) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/typescript_js.svg)
+
+Measured on an Apple M3, with every tool doing the same work. See the [native](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native), [parser](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js), and [analyzer](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js) benchmarks.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to set up, test, and try a change. Report vulnerabilities privately, as [SECURITY.md](SECURITY.md) describes.

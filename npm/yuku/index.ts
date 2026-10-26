@@ -28,9 +28,6 @@ export {
 } from "./ast/walk";
 
 export { js, ts, type TemplateValue } from "./ast/template";
-export { b } from "./ast/builders";
-export { is, unwrap, type MaybeNode, type Wrapper } from "./ast/is";
-export * as lexical from "./ast/lexical";
 
 export type {
   Binding,

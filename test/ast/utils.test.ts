@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
+import { CHILD_KEYS, parse, type Expression, type Node } from "yuku";
 import {
-  b,
-  CHILD_KEYS,
   is,
-  lexical,
-  parse,
+  isEvalOrArguments,
+  isIdentifierChar,
+  isIdentifierName,
+  isIdentifierStart,
+  isValidIdentifier,
   unwrap,
-  type Expression,
-  type Node,
-} from "yuku";
+} from "yuku/utils";
 import { nodesOf } from "../ast-helpers-for-test";
 
 function nameOf(node: Node | null | undefined): string | null {
@@ -52,31 +52,31 @@ describe("is", () => {
   });
 });
 
-describe("lexical", () => {
+describe("names", () => {
   test("names, keywords, and binding validity", () => {
-    expect(lexical.isIdentifierName("foo")).toBe(true);
-    expect(lexical.isIdentifierName("π")).toBe(true);
-    expect(lexical.isIdentifierName("class")).toBe(true);
-    expect(lexical.isIdentifierName("1foo")).toBe(false);
-    expect(lexical.isIdentifierName("")).toBe(false);
-    expect(lexical.isValidIdentifier("foo")).toBe(true);
-    expect(lexical.isValidIdentifier("class")).toBe(false);
-    expect(lexical.isValidIdentifier("await")).toBe(false);
-    expect(lexical.isValidIdentifier("eval")).toBe(true);
-    expect(lexical.isEvalOrArguments("arguments")).toBe(true);
-    expect(lexical.isEvalOrArguments("argument")).toBe(false);
+    expect(isIdentifierName("foo")).toBe(true);
+    expect(isIdentifierName("π")).toBe(true);
+    expect(isIdentifierName("class")).toBe(true);
+    expect(isIdentifierName("1foo")).toBe(false);
+    expect(isIdentifierName("")).toBe(false);
+    expect(isValidIdentifier("foo")).toBe(true);
+    expect(isValidIdentifier("class")).toBe(false);
+    expect(isValidIdentifier("await")).toBe(false);
+    expect(isValidIdentifier("eval")).toBe(true);
+    expect(isEvalOrArguments("arguments")).toBe(true);
+    expect(isEvalOrArguments("argument")).toBe(false);
   });
 
   // the parser's Unicode tables, on any runtime
   test("code points", () => {
-    expect(lexical.isIdentifierStart(0x24)).toBe(true);
-    expect(lexical.isIdentifierStart(0x10940)).toBe(true);
-    expect(lexical.isIdentifierStart(0x200c)).toBe(false);
-    expect(lexical.isIdentifierChar(0x200c)).toBe(true);
-    expect(lexical.isIdentifierStart(0x110000)).toBe(false);
-    expect(lexical.isIdentifierStart(-1)).toBe(false);
-    expect(lexical.isIdentifierName("a\u{10940}")).toBe(true);
-    expect(lexical.isIdentifierName("\ud800")).toBe(false);
+    expect(isIdentifierStart(0x24)).toBe(true);
+    expect(isIdentifierStart(0x10940)).toBe(true);
+    expect(isIdentifierStart(0x200c)).toBe(false);
+    expect(isIdentifierChar(0x200c)).toBe(true);
+    expect(isIdentifierStart(0x110000)).toBe(false);
+    expect(isIdentifierStart(-1)).toBe(false);
+    expect(isIdentifierName("a\u{10940}")).toBe(true);
+    expect(isIdentifierName("\ud800")).toBe(false);
   });
 });
 
@@ -129,27 +129,5 @@ describe("utils", () => {
 
     const node = firstExpression(`(x as any)!`);
     expect(is.Wrapper(node) && nameOf(unwrap(node.expression))).toBe("x");
-  });
-
-  test("builders default spans to 0 and fields to the empty value their type allows", () => {
-    const node = b.CallExpression({ callee: b.Identifier({ name: "f" }) });
-    expect(node).toEqual({
-      type: "CallExpression",
-      start: 0,
-      end: 0,
-      callee: { type: "Identifier", start: 0, end: 0, name: "f" },
-      arguments: [],
-      optional: false,
-    });
-    expect(nameOf(b.Identifier({ name: "x", start: 3, end: 4 }))).toBe("x");
-    expect(b.UnaryExpression({ operator: "!", argument: node }).prefix).toBe(true);
-    expect(is.NullLiteral(b.Literal({ value: null }))).toBe(true);
-  });
-
-  test("built nodes never share a list", () => {
-    const first = b.ArrayExpression({});
-    const second = b.ArrayExpression({});
-    first.elements.push(b.Identifier({ name: "a" }));
-    expect(second.elements).toEqual([]);
   });
 });

@@ -1,4 +1,4 @@
-import { isIdentifierName } from "../ast/lexical";
+import { isIdentifierName } from "../ast/utils";
 import type * as T from "../types";
 
 import type { Comments, Quotes } from "./index";
