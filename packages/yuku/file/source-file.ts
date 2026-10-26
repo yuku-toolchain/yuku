@@ -1,8 +1,8 @@
+import { slotOf, walk } from "../ast/walk";
 import type { Core } from "../core/core";
 import { decode, type Decoded } from "../core/decode";
 import { read, sourceText } from "../core/read";
 import { lineOf, lineStarts } from "../print/sourcemap";
-import { slotOf, walk } from "../traverse/walk";
 import type {
   Comment,
   Diagnostic,

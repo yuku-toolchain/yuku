@@ -1,8 +1,8 @@
 import { b } from "../ast/builders";
 import { isEvalOrArguments, isValidIdentifier } from "../ast/lexical";
 import { bindingIdentifiers } from "../ast/utils";
+import { replaceAt, slotOf, type Slot } from "../ast/walk";
 import { BindingFlags } from "../core/decode";
-import { replaceAt, slotOf, type Slot } from "../traverse/walk";
 import type { Diagnostic, ExportNamedDeclaration, Identifier, JSXIdentifier, Node } from "../types";
 import type { Binding } from "./semantic";
 import { diagnosticAt, type DiagnosticDetails, type SourceFile } from "./source-file";

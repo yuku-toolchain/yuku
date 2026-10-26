@@ -2,16 +2,7 @@ import type { ParseOptions } from "../file/source-file";
 import type { SourceLang, SourceType } from "../types";
 import { addons } from "#native";
 import shipped from "#wasm";
-import { Core } from "./core";
-import type { Dialect, Shape } from "./wasm";
-
-/** A loaded core, its Node-API addon or a WebAssembly instance. */
-export interface Backend {
-  readonly dialect: Dialect | null;
-  run(entry: Entry, source: string, flags: number): ArrayBuffer;
-}
-
-export type Entry = "parse" | "analyze";
+import { Core, type Dialect, type Entry, type Shape } from "./core";
 
 export interface Read {
   readonly buffer: ArrayBuffer;

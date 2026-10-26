@@ -4,6 +4,7 @@ import {
   js,
   print,
   ts,
+  type AssignmentExpression,
   type ClassExpression,
   type JSXElement,
   type Node,
@@ -76,6 +77,41 @@ describe("templates", () => {
     expect(code(ts`let x: ${union};`)).toBe("let x: A | B;");
   });
 
+  test("a hole in a name that holds more renames it, keeping the rest", () => {
+    expect(code(ts`function f(${"a"}: ${"T"}, ${b.Identifier({ name: "b" })}?: number) {}`)).toBe(
+      "function f(a: T, b?: number) {}",
+    );
+    expect(code(ts`let ${"x"}: number;`)).toBe("let x: number;");
+    expect(() => ts`function f(${js<AssignmentExpression>`[a] = 0`.left}: T) {}`).toThrow(
+      "a ArrayPattern does not fit a typed name",
+    );
+  });
+
+  test("a binding pattern fills a declarator, and a JSX name may hold dashes", () => {
+    const pattern = js<AssignmentExpression>`({ a, b } = 0)`.left;
+    expect(code(js`for (const ${pattern} of items) {}`)).toBe("for (const { a, b } of items) {}");
+    expect(code(js`<${"my-element"} ${"aria-hidden"} />`)).toBe("<my-element aria-hidden />");
+    expect(() => js`f(${"a-b"})`).toThrow('takes a name as a string, not "a-b"');
+  });
+
+  test("a node goes in once, and a copy of it everywhere else", () => {
+    const name = b.Identifier({ name: "x" });
+    const sum = js`${name} + ${name}`;
+    expect(sum.type === "BinaryExpression" && sum.left).toBe(name);
+    expect(sum.type === "BinaryExpression" && sum.right).not.toBe(name);
+    expect(sum.type === "BinaryExpression" && sum.right).toEqual(name);
+    const shorthand = js`({ ${name} })`;
+    expect(code(shorthand)).toBe("{ x }");
+  });
+
+  test("the comments around a hole move to the nodes that fill it", () => {
+    const body = js`function f() {
+      // first
+      ${[js`a();`, js`b();`]} // last
+    }`;
+    expect(code(body)).toBe("function f() {\n  // first\n  a();\n  b(); // last\n}");
+  });
+
   test("a node that does not fit the hole throws", () => {
     expect(() => js`let ${js`f()`};`).toThrow("a CallExpression does not fit a VariableDeclarator");
     expect(() => js`({ ${js`f()`} })`).toThrow("a CallExpression does not fit a Property");
@@ -103,6 +139,7 @@ describe("templates", () => {
     expect(() => js`let = ;`).toThrow(SyntaxError);
     expect(() => js`f(...${"a"})`).not.toThrow();
     expect(() => js`a + ${[js`b`]}`).toThrow("a list fills a template hole in a list");
+    expect(() => js`f(${{} as never})`).toThrow("template: expected an AST node");
     expect(() => ts`let x: ${js`f()`};`).toThrow("a CallExpression does not fit a type");
   });
 });

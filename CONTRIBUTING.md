@@ -68,10 +68,9 @@ src/parser/
   ffi/           Node-API and WebAssembly bindings
   testing/       Zig tests and the fuzzer
 packages/yuku/   the published package, one entry in index.ts
-  core/          the addon and WebAssembly loaders, and the decoder
+  core/          the Zig core, its addon and WebAssembly loaders, and the decoder
+  ast/           walk, templates, builders, guards, and helpers
   file/          SourceFile, Project, the semantic model, and rename
-  traverse/      walk and match
-  ast/           builders, templates, guards, and helpers
   print/         the printer and source maps
   types/         the AST types
 test/            test suites

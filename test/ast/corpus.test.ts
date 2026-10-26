@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { clone, is, js, parse, pattern, ts, walk, type Node, type SourceFile } from "yuku";
+import { clone, is, js, parse, ts, walk, type Node, type SourceFile } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
 import {
   corpusAndProjectFiles,
@@ -8,17 +8,9 @@ import {
   type CorpusFile,
 } from "../corpus";
 
-type Invariant = "clone" | "walk" | "options" | "tokens" | "pattern" | "hole" | "template";
+type Invariant = "clone" | "walk" | "options" | "tokens" | "template";
 
-const INVARIANTS: Invariant[] = [
-  "clone",
-  "walk",
-  "options",
-  "tokens",
-  "pattern",
-  "hole",
-  "template",
-];
+const INVARIANTS: Invariant[] = ["clone", "walk", "options", "tokens", "template"];
 const SAMPLE_MAX = 8;
 const CANDIDATES_MAX = 3;
 const CHILDREN_MAX = 3;
@@ -97,7 +89,7 @@ function candidatesOf(program: Node, source: string): Node[] {
     enter(node) {
       if (node === program || node.end - node.start > TEXT_MAX) return;
       if ((!is.Expression(node) && !is.Statement(node)) || is.Directive(node)) return;
-      if (/\$[A-Z_$]|__yuku_hole_/.test(source.slice(node.start, node.end))) return;
+      if (source.slice(node.start, node.end).includes("__yuku_hole_")) return;
       if (childrenOf(node).length > 0) all.push(node);
     },
   });
@@ -178,29 +170,21 @@ function checkOptions(file: CorpusFile, source: string, plain: SourceFile): void
   });
 }
 
-function checkPatterns(file: CorpusFile, source: string, program: Node): void {
+function checkTemplates(file: CorpusFile, source: string, program: Node): void {
   const typed = file.lang === "ts" || file.lang === "tsx" || file.lang === "dts";
-  const lang = typed ? "tsx" : "jsx";
   for (const node of candidatesOf(program, source)) {
     const slice = source.slice(node.start, node.end);
     const terminator = node.type === "ExpressionStatement" && !slice.endsWith(";") ? ";" : "";
     const text = `${slice}${terminator}`;
-    const statement = is.Statement(node);
-    if (!sameTree(fragment(text, "tsx", statement), node)) continue;
+    if (!sameTree(fragment(text, typed ? "tsx" : "jsx", is.Statement(node)), node)) continue;
     const where = `${file.path}: [${node.type}] \`${text.slice(0, 80)}\``;
-    checks.pattern++;
-    if (pattern(text).match(node) === null) note("pattern", where);
-
-    const templated = sameTree(fragment(text, lang, statement), node);
     for (const child of childrenOf(node).slice(0, CHILDREN_MAX)) {
       if (!isHole(source, node, child)) continue;
       const before = source.slice(node.start, child.start);
       const after = `${source.slice(child.end, node.end)}${terminator}`;
       const ends = is.Statement(child) || is.ModuleDeclaration(child) ? [";", ""] : [""];
-      const at = `${where} [${node.type} > ${child.type}]`;
-      checkHole(at, node, child, ends.map((end) => `${before}$HOLE${end}${after}`));
       const parts = ends.map((end) => [before, `${end}${after}`]);
-      if (templated) checkTemplate(at, node, child, typed, parts);
+      checkTemplate(`${where} [${node.type} > ${child.type}]`, node, child, typed, parts);
     }
   }
 }
@@ -211,23 +195,6 @@ function isHole(source: string, node: Node, child: Node): boolean {
   const jsx = node.type === "JSXElement" || node.type === "JSXFragment";
   if (jsx && (node.children as Node[]).includes(child)) return false;
   return !/[\w$]/.test(source[child.start - 1] ?? "") && !/[\w$]/.test(source[child.end] ?? "");
-}
-
-function checkHole(where: string, node: Node, child: Node, texts: string[]): void {
-  for (const text of texts) {
-    let compiled;
-    try {
-      compiled = pattern(text);
-    } catch {
-      continue;
-    }
-    if (compiled.type !== node.type) return;
-    checks.hole++;
-    const captures = compiled.match(node);
-    if (captures === null) note("hole", `${where} as \`${text.slice(0, 80)}\``);
-    else if (!sameTree(captures.HOLE, child)) note("hole", `${where} captures another node`);
-    return;
-  }
 }
 
 function checkTemplate(
@@ -272,7 +239,7 @@ function checkFile(file: CorpusFile, source: string): void {
   const copy = checkClone(file, plain.program);
   checkWalk(file, plain.program, copy);
   checkOptions(file, source, plain);
-  checkPatterns(file, source, plain.program);
+  checkTemplates(file, source, plain.program);
 }
 
 describe.skipIf(!corpusPresent())("AST tools across the corpus", () => {

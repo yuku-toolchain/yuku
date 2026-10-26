@@ -36,7 +36,7 @@ const file = parse(`const answer: number = 42;`, { path: "answer.ts" });
 print(file, { strip: true }).code; // "const answer = 42;"
 ```
 
-One import parses, analyzes, walks, matches, builds, renames, and prints. The [package guide](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme) documents it.
+One import parses, analyzes, walks, builds, renames, and prints. The [package guide](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme) documents it.
 
 ## [Zig]($section.id('zig'))
 

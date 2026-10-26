@@ -16,7 +16,7 @@ import type {
   TokenKindMap,
   TokenList,
 } from "../types";
-import type { Shape } from "./wasm";
+import type { Shape } from "./core";
 
 export interface Semantic {
   scope: {

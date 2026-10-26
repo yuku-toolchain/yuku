@@ -9,7 +9,6 @@ import {
   Core,
   js,
   parse,
-  pattern,
   print,
   walk,
   type Diagnostic,
@@ -33,13 +32,6 @@ interface Scope {
 }
 
 const NO_DIAGNOSTICS: Result = { diagnostics: [] };
-
-const PATTERNS = [
-  pattern("console.log($$$ARGS)"),
-  pattern("$A.then($$$ARGS)"),
-  pattern("setTimeout($F, 0)"),
-  pattern("$A.$B($$$ARGS)"),
-];
 
 const wasm = new WebAssembly.Module(readFileSync(join("packages", "yuku", "dist", "yuku.wasm")));
 const core = new Core({ wasm });
@@ -121,18 +113,6 @@ for (const path of FILES) {
       walk(file!.program, {
         Identifier() {
           identifiers++;
-        },
-      });
-      return NO_DIAGNOSTICS;
-    },
-    parsed,
-  );
-  add(
-    `patterns ${name}`,
-    () => {
-      walk(file!.program, {
-        CallExpression(node) {
-          for (const rule of PATTERNS) void rule.match(node);
         },
       });
       return NO_DIAGNOSTICS;

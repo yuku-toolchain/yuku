@@ -1,7 +1,6 @@
-import { ALIAS_GROUPS, type AliasMap, type AliasName } from "../ast/aliases";
-import { CHILD_KEYS, CHILD_VISITORS } from "../ast/generated";
-import { widened, type ChildVisitor } from "../core/child-keys";
 import type { Comment, Node, NodeOfType, NodeType } from "../types";
+import { ALIAS_GROUPS, type AliasMap, type AliasName } from "./aliases";
+import { CHILD_KEYS as GENERATED_CHILD_KEYS, CHILD_VISITORS } from "./generated";
 
 export type WalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext) => void;
 
@@ -55,6 +54,16 @@ export interface Slot {
 
 type Fields = Record<string, unknown>;
 
+/** @internal */
+export type ChildVisit<State> = (state: State, value: unknown, key: string) => boolean;
+
+/** @internal */
+export type ChildVisitor = <State>(
+  node: Readonly<Fields>,
+  visit: ChildVisit<State>,
+  state: State,
+) => boolean;
+
 const ENTER = 0;
 const CHILDREN = 1;
 const LEAVE = 2;
@@ -73,6 +82,30 @@ const REVISIT = -2;
 const NO_HANDLERS: Handlers = { enter: [], leave: [], children: null };
 const NO_KEYS: readonly string[] = [];
 const NO_NODES: Node[] = [];
+
+const childKeys: Record<string, string[]> = Object.assign(
+  Object.create(null),
+  GENERATED_CHILD_KEYS,
+);
+const widened = new Set<string>();
+
+/** The fields of each node type that hold child nodes, in source order. */
+export const CHILD_KEYS: Readonly<Record<string, readonly string[]>> = childKeys;
+
+/** @internal */
+export function addChildKeys(type: string, keys: readonly string[]): void {
+  const existing = childKeys[type];
+  if (existing === undefined) {
+    childKeys[type] = [...keys];
+    return;
+  }
+  for (const key of keys) {
+    if (!existing.includes(key)) {
+      existing.push(key);
+      widened.add(type);
+    }
+  }
+}
 
 /** Walks a node depth-first in source order, every visitor of a list in one pass. */
 export function walk(node: Node, visitors: Visitors | readonly Visitors[]): void {
@@ -362,8 +395,11 @@ interface CompiledVisitor {
   typed: Record<string, WalkHooks | undefined>;
 }
 
-const ALIAS_MEMBERS: Record<string, ReadonlySet<string> | undefined> = Object.fromEntries(
-  Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
+const ALIAS_MEMBERS: Record<string, ReadonlySet<string> | undefined> = Object.assign(
+  Object.create(null),
+  Object.fromEntries(
+    Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
+  ),
 );
 
 /** @internal */
@@ -456,7 +492,7 @@ function hooksOf(name: string, value: unknown): WalkHooks {
   return { enter: hooks.enter ?? undefined, leave: hooks.leave ?? undefined };
 }
 
-export function fieldsOf(node: Node): Fields {
+function fieldsOf(node: Node): Fields {
   return node as unknown as Fields;
 }
 

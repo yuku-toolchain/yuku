@@ -1,5 +1,5 @@
+import { assertNode } from "../ast/walk";
 import { SourceFile } from "../file/source-file";
-import { assertNode } from "../traverse/walk";
 import type { Diagnostic, Node } from "../types";
 import { printNode, type PrinterOptions, type Printers } from "./printer";
 import { encodeMappings, Mappings } from "./sourcemap";

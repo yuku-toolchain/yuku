@@ -18,17 +18,15 @@ export type TokenKind = TokenKindMap[keyof TokenKindMap];
 
 export type * from "./types";
 export type { AliasMap, AliasName } from "./ast/aliases";
-export { CHILD_KEYS } from "./ast/generated";
 
 export {
+  CHILD_KEYS,
   walk,
   type Visitors,
   type WalkContext,
   type WalkHandler,
   type WalkHooks,
-} from "./traverse/walk";
-
-export { pattern, type Captures, type Pattern } from "./traverse/pattern";
+} from "./ast/walk";
 
 export { js, ts, type TemplateValue } from "./ast/template";
 export { b } from "./ast/builders";

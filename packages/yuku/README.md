@@ -18,15 +18,15 @@ npm install yuku
 ```
 
 ```js
-import { js, parse, pattern, print, walk } from "yuku";
+import { is, js, nameOf, parse, print, walk } from "yuku";
 
 const file = parse(`console.log("ready", port);`);
-const log = pattern("console.log($$$ARGS)");
 
 walk(file.program, {
   CallExpression(node, ctx) {
-    const captures = log.match(node);
-    if (captures !== null) ctx.replace(js`logger.info(${captures.ARGS})`);
+    if (is.MemberExpression(node.callee) && nameOf(node.callee.object) === "console") {
+      ctx.replace(js`logger.info(${node.arguments})`);
+    }
   },
 });
 
@@ -48,7 +48,6 @@ print(file).code; // "const twice = (n) => n * 2;\ntwice(21);"
 - [Parse](#parse): [options](#options), [diagnostics](#diagnostics), [comments](#comments), [tokens](#tokens)
 - [The AST](#the-ast)
 - [Walk](#walk): [the context](#the-context), [editing](#editing), [async work](#async-work)
-- [Patterns](#patterns)
 - [Build](#build): [templates](#templates), [builders](#builders), [guards and helpers](#guards-and-helpers)
 - [Semantic analysis](#semantic-analysis): [scopes](#scopes), [bindings](#bindings), [references](#references), [imports and exports](#imports-and-exports)
 - [Rename](#rename)
@@ -257,56 +256,6 @@ walk(file.program, {
 });
 ```
 
-## Patterns
-
-`pattern` compiles code with holes into a test of nodes, which runs in a walk.
-
-```js
-import { pattern, walk } from "yuku";
-
-const method = pattern("$OBJ.$METHOD($$$ARGS)");
-
-walk(file.program, {
-  CallExpression(node) {
-    const captures = method.match(node); // or null
-    captures?.OBJ;    // one node
-    captures?.ARGS;   // a list of nodes
-  },
-});
-
-method.type; // "CallExpression", the visitor key it matches under
-```
-
-| Hole      | Matches                                                      |
-| --------- | ------------------------------------------------------------ |
-| `$NAME`   | Any one node. A name used twice matches equal nodes.         |
-| `$$$NAME` | Any run of items in a list, such as arguments or statements. |
-| `$_`      | Any one node, uncaptured.                                    |
-
-```js
-pattern("$X === $X");          // a === a, f(x) === f(x)
-pattern("f($$$BEFORE, last)"); // f(last), f(1, 2, last)
-pattern("if ($TEST) $BODY;");  // any if without an else
-```
-
-A pattern ending in `;` matches statements, and anything else matches expressions. A hole stands for the whole node that is nothing but it, so `$S;` matches any statement, `let $D;` any declarator, `x as $T` any type, and `{ $P }` any property. A lone hole such as `$X` would match every node, so it throws. In TypeScript, the captures are typed from the pattern.
-
-Any number of patterns share one walk, each under its type.
-
-```js
-const rules = [pattern("console.log($$$ARGS)"), pattern("debugger;")];
-const found = [];
-
-walk(
-  file.program,
-  rules.map((rule) => ({
-    [rule.type]: (node) => {
-      if (rule.match(node) !== null) found.push(node);
-    },
-  })),
-);
-```
-
 ## Build
 
 ### Templates
@@ -324,12 +273,14 @@ ts`const total: ${type} = ${initial};`;
 | A hole takes                         | And becomes                                 |
 | ------------------------------------ | ------------------------------------------- |
 | a node                               | that node                                   |
-| a string                             | a name, which must be a valid identifier    |
+| a string                             | a name, valid as an identifier or JSX name  |
 | a number, boolean, bigint, or `null` | its literal                                 |
 | `undefined`                          | the identifier `undefined`                  |
 | an array                             | its items, filling a list such as arguments |
 
-A hole takes a node of the kind it stands for, as a pattern's does, such as a statement in `${s};` or a declarator in `let ${d};`, or a name to fill it, and throws for a node that is neither. A template parses once per call site, and its nodes have no position.
+A hole stands for the largest node around it that holds nothing else, such as a statement in `${s};`, a declarator in `let ${d};`, or a property in `{ ${p} }`, and a node of that kind takes its place. A name or a binding pattern fills it instead, and so does an expression in a statement. A hole in a name that holds more, such as `(${p}: T)`, takes a name and keeps the rest. A node that fits neither throws.
+
+A node goes in once, and a copy of it wherever else it is used. A template parses once per call site, and its nodes have no position.
 
 ### Builders
 
@@ -586,7 +537,7 @@ Analyzing a whole codebase, it is faster than typescript-eslint and the TypeScri
 
 ![Analyzing typescript.js (7.8 MB) on npm](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/typescript_js.svg)
 
-Measured on an Apple M3, see the [parser](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) and [analyzer](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js) benchmarks. Pass one `walk` all your visitors and patterns.
+Measured on an Apple M3, see the [parser](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) and [analyzer](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js) benchmarks. Pass one `walk` all your visitors.
 
 ## License
 

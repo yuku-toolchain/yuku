@@ -1,4 +1,4 @@
-import { assertNode } from "../traverse/walk";
+import { assertNode } from "./walk";
 import type { BindingPattern, Expression, Identifier, Node, StringLiteral } from "../types";
 import { is, type MaybeNode, type Wrapper } from "./is";
 
@@ -53,8 +53,13 @@ export function bindingIdentifiers(pattern: BindingPattern | null | undefined): 
 /** A deep copy of a node. */
 export function clone<T extends Node>(node: T): T {
   assertNode(node, "clone");
-  const root = { ...node };
-  const pending: object[] = [root];
+  return copyTree(node);
+}
+
+/** @internal */
+export function copyTree<T extends object>(value: T): T {
+  const pending: object[] = [];
+  const root = copied(value, pending) as T;
   for (let item = pending.pop(); item !== undefined; item = pending.pop()) {
     if (Array.isArray(item)) {
       for (let i = 0; i < item.length; i++) {

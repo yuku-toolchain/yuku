@@ -11,6 +11,6 @@
     "declaration": true,
     "stripInternal": true
   },
-  "include": ["index.ts", "core", "ast", "file", "traverse", "print", "types"],
+  "include": ["index.ts", "core", "ast", "file", "print", "types"],
   "exclude": []
 }

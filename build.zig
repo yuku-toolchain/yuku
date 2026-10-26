@@ -132,7 +132,7 @@ pub fn build(b: *std.Build) void {
         const addon_files = b.addUpdateSourceFiles();
         addon_files.addCopyFileToSource(
             addon.getEmittedBin(),
-            b.fmt("packages/yuku/native/{s}.node", .{platform.name}),
+            b.fmt("packages/yuku/core/native/{s}.node", .{platform.name}),
         );
         addons.dependOn(&addon_files.step);
         const host = b.graph.host.result;

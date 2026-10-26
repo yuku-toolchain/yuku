@@ -17,7 +17,7 @@ export default defineConfig({
   treeshake: true,
   copy: [
     { from: "core/yuku.wasm", to: "dist" },
-    { from: "native/*.node", to: "dist/native" },
+    { from: "core/native/*.node", to: "dist/native" },
   ],
   loader: { ".wasm": "base64" },
   dts: { entry: "index.ts" },
