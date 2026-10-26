@@ -1193,15 +1193,17 @@ pub fn parseLeftHandSideExpression(
 
 inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
     return switch (data) {
-        .arrow_function_expression, .yield_expression => Precedence.Comma,
+        .arrow_function_expression,
+        .yield_expression,
+        .conditional_expression,
+        .assignment_expression,
+        .sequence_expression,
+        => Precedence.Comma,
         .update_expression,
         .unary_expression,
         .await_expression,
         .binary_expression,
         .logical_expression,
-        .conditional_expression,
-        .assignment_expression,
-        .sequence_expression,
         .ts_as_expression,
         .ts_satisfies_expression,
         => Precedence.Unary,

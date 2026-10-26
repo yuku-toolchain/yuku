@@ -1,8 +1,8 @@
 test/parser/misc/js
 ===================
-Passed:       78/78 (100.00%)
+Passed:       80/80 (100.00%)
 Failed:       0
-AST mismatch: 0/78
+AST mismatch: 0/80
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
@@ -350,6 +350,17 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/misc/js/new-async-function-line-terminator.js
 ✓ test/parser/misc/js/new-async-function.js
 ✓ test/parser/misc/js/octal-literal-with-separator.js
+✓ test/parser/misc/js/operator-after-arrow-function.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found '+'
+   |
+ 1 | x = () => {} + 1;
+   |              ^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
+✓ test/parser/misc/js/regex-after-arrow-function.js
 ✓ test/parser/misc/js/regexp-literal-flag-errors.js
 error: The 'u' and 'v' regular expression flags cannot be used together
    |
