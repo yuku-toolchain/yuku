@@ -2,6 +2,23 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.24.0
+
+### Breaking
+
+- `pattern` is removed, so test nodes in a `walk` visitor with the `is` guards (#295 by @arshad-yaseen)
+- The `b` builders are removed, so build nodes with `js` and `ts`, and build a node that only exists inside another, such as a property, from a template of its container (#295 by @arshad-yaseen)
+- `is`, `unwrap`, and the identifier checks import from `yuku/utils`, where the checks are plain exports, so `lexical.isValidIdentifier` is `isValidIdentifier` (#295 by @arshad-yaseen)
+- `nameOf`, `bindingIdentifiers`, `clone`, `langFromPath`, and `sourceTypeFromPath` are removed. Read `node.name` and `binding.declarations`, copy a node with `structuredClone`, and read `file.lang` and `file.sourceType` instead (#295 by @arshad-yaseen)
+- On Cloudflare Workers and Vercel Edge, also install `@yuku-toolchain/wasm`, and import `yuku/yuku.wasm` as `@yuku-toolchain/wasm/yuku.wasm` (#295 by @arshad-yaseen)
+
+### Changes
+
+- Installing `yuku` fetches only the addon for its platform, from `@yuku-toolchain/<platform>`, so an install takes about 2.4 MB instead of 7.5 MB (#295 by @arshad-yaseen)
+- Templates take a string or a number inside quotes, as in ``js`import x from "${path}";` ``, build `yield` as a generator would, close a JSX tag with its own hole, keep the type of a name such as `(${p}: T)` and the comment before an expression, and copy a node used twice (#295 by @arshad-yaseen)
+- Templates with holes build 3 to 7 times faster (#295 by @arshad-yaseen)
+- A regular expression on the line after an expression that ends in an arrow function or `yield` parses, as in `x = () => {}` followed by `/=/g.test(y)`, and `x = () => {} + 1` is an error (#296 by @arshad-yaseen)
+
 ## 0.23.0
 
 ### Breaking
