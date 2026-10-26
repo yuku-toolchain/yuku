@@ -18,7 +18,7 @@ export default defineConfig({
   treeshake: true,
   loader: { ".wasm": "base64" },
   dts: { entry: ["index.ts", "ast/utils.ts"] },
-  deps: { neverBundle: [/^#/] },
+  deps: { neverBundle: [/^#/, /^node:/] },
   outputOptions: { chunkFileNames: "shared/[name].js" },
   plugins: [
     {
