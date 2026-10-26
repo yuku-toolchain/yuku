@@ -31,7 +31,7 @@ interface Scope {
 
 const NO_DIAGNOSTICS: Result = { diagnostics: [] };
 
-const wasm = new WebAssembly.Module(readFileSync(join("packages", "yuku", "dist", "yuku.wasm")));
+const wasm = new WebAssembly.Module(readFileSync(join("npm", "wasm", "yuku.wasm")));
 const core = new Core({ wasm });
 
 const bench = withCodSpeed(new Bench({ time: 1000, warmupTime: 250, throws: true }));
