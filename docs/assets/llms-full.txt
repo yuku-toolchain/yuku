@@ -826,13 +826,19 @@ npm install yuku
 It runs natively where its addon for the platform installs, and as WebAssembly everywhere else. Cloudflare Workers and Vercel Edge run WebAssembly only from a file, so there also install `@yuku-toolchain/wasm`.
 
 ```js
-import { js, parse, print, walk } from "yuku";
+import { b, parse, print, walk } from "yuku";
 
 const file = parse(`const area = radius ** 2 * Math.PI;`);
 
 walk(file.program, {
   BinaryExpression(node, ctx) {
-    if (node.operator === "**") ctx.replace(js`Math.pow(${node.left}, ${node.right})`);
+    if (node.operator !== "**") return;
+    const callee = b.MemberExpression({
+      object: b.Identifier({ name: "Math" }),
+      property: b.Identifier({ name: "pow" }),
+      computed: false,
+    });
+    ctx.replace(b.CallExpression({ callee, arguments: [node.left, node.right] }));
   },
 });
 
@@ -854,7 +860,7 @@ print(file).code; // "const twice = (n) => n * 2;\ntwice(21);"
 - [Parse](#parse): [options](#options), [diagnostics](#diagnostics), [comments](#comments), [tokens](#tokens)
 - [The AST](#the-ast)
 - [Walk](#walk): [the context](#the-context), [editing](#editing), [async work](#async-work)
-- [Templates](#templates)
+- [Build](#build)
 - [Utils](#utils)
 - [Semantic analysis](#semantic-analysis): [scopes](#scopes), [bindings](#bindings), [references](#references), [imports and exports](#imports-and-exports)
 - [Rename](#rename)
@@ -1063,41 +1069,20 @@ walk(file.program, {
 });
 ```
 
-## Templates
+## Build
 
-`js` and `ts` build nodes from code, an expression unless it ends in `;`.
-
-```js
-import { js, ts } from "yuku";
-
-js`console.log(${node})`;
-js`return ${value} ?? ${fallback};`;
-ts`const total: ${type} = ${initial};`;
-js`import config from "${path}";`;
-js`<${tag} label="${label}">{${child}}</${tag}>`;
-```
-
-| A hole takes                         | And becomes                                 |
-| ------------------------------------ | ------------------------------------------- |
-| a node                               | that node                                   |
-| a string                             | a name, valid as an identifier or JSX name  |
-| a string or number, inside quotes    | its text, escaped as the quotes need        |
-| a number, boolean, bigint, or `null` | its literal                                 |
-| `undefined`                          | the identifier `undefined`                  |
-| an array                             | its items, filling a list such as arguments |
-
-A hole stands for the largest node around it that holds nothing else, such as a statement in `${s};`, a declarator in `let ${d};`, or a property in `{ ${p} }`, and a node of that kind takes its place. A name or a binding pattern fills it instead, and so does an expression in a statement. A hole in a name that holds more, such as `(${p}: T)`, takes a name and keeps the rest. A node that fits neither throws.
-
-Code that needs a function or a generator, such as `return x;` or `yield x`, builds as it would inside one. A node that only exists inside another comes from a template of its container.
+`b` has a constructor for every node type. It sets `start` and `end` to 0, and defaults each field that may be false, null, or empty.
 
 ```js
-js`({ ${key}: ${value} })`.properties[0]; // a property
-js`switch (x) { case ${test}: }`.cases[0]; // a case
-ts`type _ = Array<${item}>;`.typeAnnotation; // a type
-js`{ ${a}; ${b}; }`.body; // several statements
+import { b } from "yuku";
+
+b.CallExpression({ callee: b.Identifier({ name: "f" }) });
+// { type: "CallExpression", start: 0, end: 0, arguments: [], optional: false, callee: ... }
+
+b.ArrowFunctionExpression({ body: b.Identifier({ name: "x" }), expression: true }); // () => x
 ```
 
-A node goes in once, and a copy of it wherever else it is used. The comments around a hole move to what fills it. A template parses once per call site, and its nodes have no position.
+A field that tells the shapes of a type apart, such as `computed` on a `MemberExpression`, has no default.
 
 ## Utils
 

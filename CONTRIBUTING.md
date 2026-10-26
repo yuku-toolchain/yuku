@@ -69,7 +69,7 @@ src/parser/
   testing/       Zig tests and the fuzzer
 npm/yuku/        the published package, one entry in index.ts
   core/          the addon and WebAssembly loaders, and the decoder
-  ast/           walk, templates, and utils
+  ast/           walk, builders, and utils
   file/          SourceFile, Project, the semantic model, and rename
   print/         the printer and source maps
   types/         the AST types

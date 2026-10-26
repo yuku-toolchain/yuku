@@ -27,7 +27,7 @@ export {
   type WalkHooks,
 } from "./ast/walk";
 
-export { js, ts, type TemplateValue } from "./ast/template";
+export { b } from "./ast/builders";
 
 export type {
   Binding,

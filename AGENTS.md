@@ -267,7 +267,7 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | Renames | `test/analyzer/rename.test.ts` |
 | Resolution as tsc or scope-manager defines it | A snippet in `test/analyzer/tsc-differential.test.ts` or `scope-manager-differential.test.ts` |
 | A real codebase to analyze | An entry in `test/projects/manifest.ts`, pinned to a commit |
-| Walking, templates, and utils | `test/ast/` |
+| Walking, builders, and utils | `test/ast/` |
 | The dialect mechanism | `src/parser/testing/dialect.zig`, a dialect that claims every position, and `test/dialect/` for its JavaScript side |
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
 | A small pure Zig helper | An inline `test` block next to the function |
@@ -276,7 +276,7 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 
 CodSpeed measures every pull request against `main` in its CPU simulation mode, which counts instructions and cache misses instead of time, so a regression shows on the pull request that causes it, even on shared CI runners.
 
-- `profile/package.ts` measures the `yuku` package as users call it: `parse`, analysis, `walk`, templates, `rename`, and `print`, with each option that has its own code path.
+- `profile/package.ts` measures the `yuku` package as users call it: `parse`, analysis, `walk`, builders, `rename`, and `print`, with each option that has its own code path.
 - `profile/native.zig`, listed in `profile/codspeed.yml`, runs `parse` and `analyze` as a native executable, so a flamegraph names the Zig functions the shipped addon and WebAssembly strip.
 - **A new operation, or an option with its own code path, gets a benchmark in the same change.**
 - Inputs are files from `test/projects/`, pinned to a commit. A changed input moves a benchmark as much as a changed toolchain does, so change one only on purpose.
