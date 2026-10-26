@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4189/4189 (100.00%)
+Passed:       4190/4190 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
@@ -36293,6 +36293,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
    |
  1 | var yield = 1
    |     ^^^^^
+   |
+
+✓ test/parser/suite/js/semantic/e2cbde52bcaa2a24.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 |   static {
+ 3 |     arguments: arguments;
+   |                ^^^^^^^^^
+ 4 |   }
    |
 
 ✓ test/parser/suite/js/semantic/e2cd22cde9e3b5ce.js

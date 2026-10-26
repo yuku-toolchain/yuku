@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       5052/5052 (100.00%)
+Passed:       5075/5075 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/00128c2237478f9e.js
@@ -437,6 +437,17 @@ error: Generators can only be declared at the top level or inside a block
    |                   ^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/fail/01ece0ee24140743.js
+error: Unexpected token ':'
+   |
+ 2 |   static {
+ 3 |     arguments::f;
+   |               ^
+ 4 |   }
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/01f84e6328bc6a81.js
 error: Invalid character at start of identifier
    |
@@ -790,6 +801,16 @@ error: 'import' is reserved and cannot be used as an identifier
    |       ^^^^^^
 43 | }
    |
+
+✓ test/parser/suite/js/fail/0385449b465d46f6.js
+error: Shorthand property cannot have a default value in object expression
+   |
+ 1 | x, {b = 1} ? c : () => {}
+   |     ^^^^^
+ 2 | /=/;
+   |
+   = help: Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.
+
 
 ✓ test/parser/suite/js/fail/03867bded9a967fe.js
 error: Numeric separator is only allowed between two digits
@@ -3352,6 +3373,14 @@ error: Lexical declaration cannot appear in a single-statement context
    |
    = help: Wrap this declaration in a block statement
 
+
+✓ test/parser/suite/js/fail/10627a651c91d3d3.module.js
+error: Expected declaration after 'export', but found 'v'
+   |
+ 1 | export v, * as ns { a } from "x";
+   |        ^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/1075eb3e880c16b0.js
 error: 'const' declarations must be initialized
@@ -5954,6 +5983,16 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
    |         ^^^^^
  4 |   }
    |
+
+✓ test/parser/suite/js/fail/1f402cadb2d35907.js
+error: for-of loop variable declaration may not have an initializer
+   |
+ 1 | for (const x = 1, [y] of z);
+   |            ^^^^^
+ 2 | 
+   |
+   = help: Remove the initializer from the loop variable.
+
 
 ✓ test/parser/suite/js/fail/1f5545052a4e3469.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -9057,6 +9096,17 @@ error: Unexpected token '.'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/2e0f78b2cf391c55.js
+error: 'await using' declarations must be initialized
+   |
+ 1 | async function f() {
+ 2 |   await using x
+   |               ^
+ 3 |   in y
+   |
+   = help: Disposable resources require an initial value that implements the dispose protocol.
+
+
 ✓ test/parser/suite/js/fail/2e1b6e3316f88e46.js
 error: Unexpected token ';'
    |
@@ -9455,6 +9505,16 @@ error: Numeric separator is only allowed between two digits
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
+
+
+✓ test/parser/suite/js/fail/2f9a6cb102962df4.module.js
+error: Expected 'from' after export *, but found '{'
+   |
+ 1 | export * as ns { a as b } from "x";
+   |                ^
+ 2 | 
+   |
+   = help: Export all declarations require 'from': export * from 'module'
 
 
 ✓ test/parser/suite/js/fail/2fa321f0374c7017.js
@@ -10207,6 +10267,17 @@ error: Unexpected token '>'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/33270ab08e679610.js
+error: 'await using' declarations must be initialized
+   |
+ 1 | async function f() {
+ 2 |   await using x
+   |               ^
+ 3 |   of
+   |
+   = help: Disposable resources require an initial value that implements the dispose protocol.
 
 
 ✓ test/parser/suite/js/fail/332fa35fabf402b1.js
@@ -17840,6 +17911,16 @@ error: Numeric separator is only allowed between two digits
    = help: Try placing the separator between two digits, or removing it
 
 
+✓ test/parser/suite/js/fail/5d6a7b8ae7e0586c.js
+error: for-of loop variable declaration may not have an initializer
+   |
+ 1 | for (let x = 1, y of z);
+   |          ^^^^^
+ 2 | 
+   |
+   = help: Remove the initializer from the loop variable.
+
+
 ✓ test/parser/suite/js/fail/5d6e47e3d2c4b34f.js
 error: Numeric separator is only allowed between two digits
    |
@@ -18928,6 +19009,17 @@ error: Unexpected token '>'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/62fdfaf84091c6a7.js
+error: 'using' declarations must be initialized
+   |
+ 1 | {
+ 2 |   using x
+   |         ^
+ 3 |   of
+   |
+   = help: Disposable resources require an initial value that implements the dispose protocol.
+
+
 ✓ test/parser/suite/js/fail/63114a42cc340c8f.js
 error: A rest element cannot have an initializer
    |
@@ -19495,6 +19587,17 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
    |         ^^^^^
  3 | }};
    |
+
+✓ test/parser/suite/js/fail/66237df853f2e331.js
+error: for-of loop variable declaration may not have an initializer
+   |
+ 1 | {
+ 2 |   for (using x = a, y of z);
+   |              ^^^^^
+ 3 | }
+   |
+   = help: Remove the initializer from the loop variable.
+
 
 ✓ test/parser/suite/js/fail/6640b0c982c7e268.js
 error: Unexpected token '>'
@@ -21336,6 +21439,16 @@ error: Expected '{' to start class body, but found '=>'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
+✓ test/parser/suite/js/fail/6fc94827db64771a.js
+error: 'const' declarations must be initialized
+   |
+ 1 | const x
+   |       ^
+ 2 | of
+   |
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+
+
 ✓ test/parser/suite/js/fail/6fcf629b83cbd879.module.js
 error: An export name cannot include a unicode lone surrogate
    |
@@ -22586,6 +22699,17 @@ error: Unexpected token ':'
  4 |   }
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/76dcf604487745d6.js
+error: for-of loop variable declaration may not have an initializer
+   |
+ 1 | async function f() {
+ 2 |   for (await using x = a, y of z);
+   |                    ^^^^^
+ 3 | }
+   |
+   = help: Remove the initializer from the loop variable.
 
 
 ✓ test/parser/suite/js/fail/76de1eeacc43b555.js
@@ -23846,6 +23970,16 @@ error: Unexpected token ';'
  3 | } catch (e) {
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/7ce42bf62361aff0.js
+error: for-of loop variable declaration may not have an initializer
+   |
+ 1 | for (const x = 1, y of z);
+   |            ^^^^^
+ 2 | 
+   |
+   = help: Remove the initializer from the loop variable.
 
 
 ✓ test/parser/suite/js/fail/7cec8d3ef5446626.js
@@ -25742,6 +25876,16 @@ error: Expected ')' to close parameter list, but found '='
    |                        ^
  2 | }
    |
+
+✓ test/parser/suite/js/fail/86fc94827db64771.module.js
+error: 'const' declarations must be initialized
+   |
+ 1 | const x
+   |       ^
+ 2 | of
+   |
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+
 
 ✓ test/parser/suite/js/fail/8711ed70d3b4fb64.js
 error: Numeric separator is only allowed between two digits
@@ -28197,6 +28341,17 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
+✓ test/parser/suite/js/fail/93e798ec4e46f2e0.js
+error: 'using' declarations must be initialized
+   |
+ 1 | {
+ 2 |   using x
+   |         ^
+ 3 |   in y
+   |
+   = help: Disposable resources require an initial value that implements the dispose protocol.
+
+
 ✓ test/parser/suite/js/fail/93eb75c3488b6c0d.js
 error: Expected ',' or '}' in object, but found 'foo'
    |
@@ -28786,6 +28941,18 @@ error: Invalid character at start of identifier
  3 | }
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
+
+
+✓ test/parser/suite/js/fail/9757bd797c264b60.js
+error: Line terminator not allowed in regular expression literal
+   |
+ 1 | () => x
+ 2 | /=/;
+   |     ^
+ 3 | 
+   | ^
+   |
+   = help: Try removing the line break here or escaping it within the regex pattern
 
 
 ✓ test/parser/suite/js/fail/9761bb8a0654fa90.js
@@ -30736,6 +30903,16 @@ error: Binary literal must contain at least one binary digit
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
 
+✓ test/parser/suite/js/fail/a0d928ca44384f3a.js
+error: for-of loop variable declaration may not have an initializer
+   |
+ 1 | for (var x = 1, y of z);
+   |          ^^^^^
+ 2 | 
+   |
+   = help: Remove the initializer from the loop variable.
+
+
 ✓ test/parser/suite/js/fail/a0f06e0b9dd3c7c4.js
 error: Invalid character in identifier
    |
@@ -30744,6 +30921,14 @@ error: Invalid character in identifier
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
+
+✓ test/parser/suite/js/fail/a100c0e36a620ce4.js
+error: Cannot use import statement outside a module
+   |
+ 1 | import x from "x";
+   | ^^^^^^^^^^^^^^^^^^
+ 2 | import * as ns from "y";
+   |
 
 ✓ test/parser/suite/js/fail/a113c7c40ea9508a.js
 error: The only valid meta properties for 'import' are 'import.meta', 'import.source()', or 'import.defer()'
@@ -33411,6 +33596,16 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  4 | }
    |
 
+✓ test/parser/suite/js/fail/afa95e79e2d813b6.js
+error: Invalid assignment target
+   |
+ 1 | (() => {})
+   | ^^^^^^^^^^
+ 2 | /=/;
+   |
+   = help: The left-hand side of a compound assignment must be a variable or property access
+
+
 ✓ test/parser/suite/js/fail/afae657bfe4ba928.js
 error: Keywords cannot contain escape characters
    |
@@ -35879,6 +36074,14 @@ error: Keywords cannot contain escape characters
    |
    = help: Remove the escape characters
 
+
+✓ test/parser/suite/js/fail/bc86b1249cecbecd.module.js
+error: Expected declaration after 'export', but found 'v'
+   |
+ 1 | export v, * as ns, { a } from "x";
+   |        ^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/bc885e08c0b3ef1e.js
 error: 'this' is reserved and cannot be used as an identifier
@@ -40929,6 +41132,16 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/d85b82a97b2ef70e.js
+error: Invalid assignment target
+   |
+ 1 | a ? b : (c => {})
+   |         ^^^^^^^^^
+ 2 | /=/;
+   |
+   = help: The left-hand side of a compound assignment must be a variable or property access
+
+
 ✓ test/parser/suite/js/fail/d85de30771fd1137.js
 error: Rest element must be the last element
    |
@@ -42696,6 +42909,16 @@ error: 'import' is reserved and cannot be used as an identifier
    |              ^^^^^^
  3 | }
    |
+
+✓ test/parser/suite/js/fail/e27802558e140383.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found '/='
+   |
+ 1 | () => {} /=/;
+   |          ^^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/js/fail/e2896b5b7606c8b5.js
 error: Invalid element in assignment pattern
@@ -45861,6 +46084,16 @@ error: Unexpected token '>'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/f32c395605c8c939.js
+error: 'const' declarations must be initialized
+   |
+ 1 | const x
+   |       ^
+ 2 | in y
+   |
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✓ test/parser/suite/js/fail/f33895decb25f48f.js
