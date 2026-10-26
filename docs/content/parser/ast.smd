@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-A parse returns an `ast.Tree`, a flat tree whose nodes, child lists, and strings live in arrays in one arena. From JavaScript, the tree decodes to [ESTree](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#the-ast).
+A parse returns an `ast.Tree`, a flat tree whose nodes, child lists, and strings live in arrays in one arena. From JavaScript, the tree decodes to [ESTree](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#the-ast).
 
 | Type         | Is                                                             |
 | ------------ | -------------------------------------------------------------- |

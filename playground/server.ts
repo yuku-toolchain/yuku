@@ -1,5 +1,5 @@
 const dir = import.meta.dir;
-const yuku = `${dir}/../packages/yuku`;
+const yuku = `${dir}/../npm/yuku`;
 
 const server = Bun.serve({
   port: Number(Bun.env.PORT) || 3000,

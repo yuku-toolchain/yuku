@@ -12,9 +12,9 @@ if (floor === undefined) {
   process.exit(1);
 }
 
-const declared = nodeFloor("packages/yuku/package.json");
+const declared = nodeFloor("npm/yuku/package.json");
 if (declared !== floor) {
-  console.error(`packages/yuku declares ${declared ?? "no engines.node"}, expected ${floor}`);
+  console.error(`npm/yuku declares ${declared ?? "no engines.node"}, expected ${floor}`);
   process.exit(1);
 }
 

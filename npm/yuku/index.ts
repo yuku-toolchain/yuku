@@ -9,7 +9,6 @@ export {
   type ParseOptions,
   type SourceFile,
 } from "./file/source-file";
-export { langFromPath, sourceTypeFromPath } from "./core/read";
 export { Core, type CoreOptions, type Platform } from "./core/core";
 
 /** Every token kind by name. */
@@ -30,8 +29,7 @@ export {
 
 export { js, ts, type TemplateValue } from "./ast/template";
 export { b } from "./ast/builders";
-export { bindingIdentifiers, clone, nameOf, unwrap } from "./ast/utils";
-export { is, type MaybeNode, type Wrapper } from "./ast/is";
+export { is, unwrap, type MaybeNode, type Wrapper } from "./ast/is";
 export * as lexical from "./ast/lexical";
 
 export type {

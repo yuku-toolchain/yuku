@@ -1,0 +1,23 @@
+{
+  "name": "@yuku-toolchain/win32-arm64",
+  "version": "0.23.0",
+  "description": "The Yuku core as a Node-API addon for win32-arm64",
+  "license": "MIT",
+  "homepage": "https://yuku.fyi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku",
+    "directory": "npm/win32-arm64"
+  },
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "yuku.node",
+  "files": [
+    "yuku.node"
+  ],
+  "preferUnplugged": true
+}

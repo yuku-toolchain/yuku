@@ -1,6 +1,6 @@
 # Dialects
 
-A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file, compiled into Yuku's parser. Yuku parses, analyzes, walks, and prints the rest of the language to the spec, and your nodes with it, from Zig and from the [`yuku` package](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme).
+A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file, compiled into Yuku's parser. Yuku parses, analyzes, walks, and prints the rest of the language to the spec, and your nodes with it, from Zig and from the [`yuku` package](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme).
 
 - [Example](#example)
 - [The dialect file](#the-dialect-file): [files](#files), [positions](#positions), [the parser](#the-parser), [nodes](#nodes), [printing](#printing)

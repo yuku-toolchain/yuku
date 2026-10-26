@@ -132,7 +132,7 @@ pub fn build(b: *std.Build) void {
         const addon_files = b.addUpdateSourceFiles();
         addon_files.addCopyFileToSource(
             addon.getEmittedBin(),
-            b.fmt("packages/yuku/core/native/{s}.node", .{platform.name}),
+            b.fmt("npm/{s}/yuku.node", .{platform.name}),
         );
         addons.dependOn(&addon_files.step);
         const host = b.graph.host.result;
@@ -170,12 +170,12 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const package_files = b.addUpdateSourceFiles();
-    package_files.addCopyFileToSource(yuku_wasm.getEmittedBin(), "packages/yuku/core/yuku.wasm");
+    package_files.addCopyFileToSource(yuku_wasm.getEmittedBin(), "npm/wasm/yuku.wasm");
     for ([_][2][]const u8{
-        .{ "decoder", "packages/yuku/core/decode.js" },
-        .{ "walk_tables", "packages/yuku/ast/generated.ts" },
-        .{ "token_types", "packages/yuku/types/tokens.ts" },
-        .{ "identifier_tables", "packages/yuku/ast/identifier-tables.ts" },
+        .{ "decoder", "npm/yuku/core/decode.js" },
+        .{ "walk_tables", "npm/yuku/ast/generated.ts" },
+        .{ "token_types", "npm/yuku/types/tokens.ts" },
+        .{ "identifier_tables", "npm/yuku/ast/identifier-tables.ts" },
     }) |output| {
         const run = b.addRunArtifact(generator);
         run.addArg(output[0]);
@@ -183,7 +183,7 @@ pub fn build(b: *std.Build) void {
     }
     const package_step = b.step(
         "package",
-        "Write the WebAssembly, this platform's addon, and the generated sources of packages/yuku",
+        "Write the WebAssembly, this platform's addon, and the generated sources of npm/",
     );
     package_step.dependOn(&package_files.step);
     if (host_addon) |addon| package_step.dependOn(addon);

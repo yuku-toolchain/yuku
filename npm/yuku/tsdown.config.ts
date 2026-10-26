@@ -15,10 +15,6 @@ export default defineConfig({
   target: "es2020",
   hash: false,
   treeshake: true,
-  copy: [
-    { from: "core/yuku.wasm", to: "dist" },
-    { from: "core/native/*.node", to: "dist/native" },
-  ],
   loader: { ".wasm": "base64" },
   dts: { entry: "index.ts" },
   deps: { neverBundle: [/^#/] },

@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-Codegen prints a tree back to source, with optional type stripping, minification, and source maps. From JavaScript, see [`print`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#print).
+Codegen prints a tree back to source, with optional type stripping, minification, and source maps. From JavaScript, see [`print`](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#print).
 
 ```zig
 var tree = try parser.parse(allocator, "const x: number = 1;", .{ .lang = .ts });

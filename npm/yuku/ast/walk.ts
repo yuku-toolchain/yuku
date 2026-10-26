@@ -1,5 +1,5 @@
 import type { Comment, Node, NodeOfType, NodeType } from "../types";
-import { ALIAS_GROUPS, type AliasMap, type AliasName } from "./aliases";
+import { ALIAS_MEMBERS, type AliasMap, type AliasName } from "./aliases";
 import { CHILD_KEYS as GENERATED_CHILD_KEYS, CHILD_VISITORS } from "./generated";
 
 export type WalkHandler<T extends Node = Node> = (node: T, ctx: WalkContext) => void;
@@ -394,13 +394,6 @@ interface CompiledVisitor {
   aliases: { members: ReadonlySet<string>; hooks: WalkHooks }[];
   typed: Record<string, WalkHooks | undefined>;
 }
-
-const ALIAS_MEMBERS: Record<string, ReadonlySet<string> | undefined> = Object.assign(
-  Object.create(null),
-  Object.fromEntries(
-    Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
-  ),
-);
 
 /** @internal */
 export class Dispatch {

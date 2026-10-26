@@ -34,7 +34,7 @@ const file = parse(`const answer: number = 42;`, { path: "answer.ts" });
 print(file, { strip: true }).code; // "const answer = 42;"
 ```
 
-One import parses, analyzes, walks, builds, and prints JavaScript and TypeScript, in Node.js, Bun, Deno, browsers, and edge runtimes. See the [package guide](packages/yuku/README.md).
+One import parses, analyzes, walks, builds, and prints JavaScript and TypeScript, in Node.js, Bun, Deno, browsers, and edge runtimes. See the [package guide](npm/yuku/README.md).
 
 ## Zig
 

@@ -19,12 +19,54 @@
         "yuku": "workspace:*",
       },
     },
-    "packages/yuku": {
+    "npm/darwin-arm64": {
+      "name": "@yuku-toolchain/darwin-arm64",
+      "version": "0.23.0",
+    },
+    "npm/darwin-x64": {
+      "name": "@yuku-toolchain/darwin-x64",
+      "version": "0.23.0",
+    },
+    "npm/linux-arm64": {
+      "name": "@yuku-toolchain/linux-arm64",
+      "version": "0.23.0",
+    },
+    "npm/linux-x64": {
+      "name": "@yuku-toolchain/linux-x64",
+      "version": "0.23.0",
+    },
+    "npm/wasm": {
+      "name": "@yuku-toolchain/wasm",
+      "version": "0.23.0",
+    },
+    "npm/win32-arm64": {
+      "name": "@yuku-toolchain/win32-arm64",
+      "version": "0.23.0",
+    },
+    "npm/win32-x64": {
+      "name": "@yuku-toolchain/win32-x64",
+      "version": "0.23.0",
+    },
+    "npm/yuku": {
       "name": "yuku",
       "version": "0.23.0",
       "devDependencies": {
         "tsdown": "0.23.0",
       },
+      "optionalDependencies": {
+        "@yuku-toolchain/darwin-arm64": "0.23.0",
+        "@yuku-toolchain/darwin-x64": "0.23.0",
+        "@yuku-toolchain/linux-arm64": "0.23.0",
+        "@yuku-toolchain/linux-x64": "0.23.0",
+        "@yuku-toolchain/win32-arm64": "0.23.0",
+        "@yuku-toolchain/win32-x64": "0.23.0",
+      },
+      "peerDependencies": {
+        "@yuku-toolchain/wasm": "0.23.0",
+      },
+      "optionalPeers": [
+        "@yuku-toolchain/wasm",
+      ],
     },
   },
   "packages": {
@@ -126,7 +168,21 @@
 
     "@yuku-core/binding-win32-x64": ["@yuku-core/binding-win32-x64@0.19.0", "", { "os": "win32", "cpu": "x64" }, "sha512-o8iY/mXwlRkedp0LNTr4+TEfXTPQwoNZmv6k+1WIAd1ZXEn8xJJTBCtB0osaVvdZo/x/cNmV16UrWrrGpM5Mvw=="],
 
+    "@yuku-toolchain/darwin-arm64": ["@yuku-toolchain/darwin-arm64@workspace:npm/darwin-arm64"],
+
+    "@yuku-toolchain/darwin-x64": ["@yuku-toolchain/darwin-x64@workspace:npm/darwin-x64"],
+
+    "@yuku-toolchain/linux-arm64": ["@yuku-toolchain/linux-arm64@workspace:npm/linux-arm64"],
+
+    "@yuku-toolchain/linux-x64": ["@yuku-toolchain/linux-x64@workspace:npm/linux-x64"],
+
     "@yuku-toolchain/types": ["@yuku-toolchain/types@0.19.0", "", {}, "sha512-tFkNbsP4WXX9UMUC5syJGdK9dPMLK0PPaIuXCcCYH75sZ8MrebfBZ2XvCILRTw8AgLivSSCfDa4R67iYBDa4Kg=="],
+
+    "@yuku-toolchain/wasm": ["@yuku-toolchain/wasm@workspace:npm/wasm"],
+
+    "@yuku-toolchain/win32-arm64": ["@yuku-toolchain/win32-arm64@workspace:npm/win32-arm64"],
+
+    "@yuku-toolchain/win32-x64": ["@yuku-toolchain/win32-x64@workspace:npm/win32-x64"],
 
     "agent-base": ["agent-base@6.0.2", "", { "dependencies": { "debug": "4" } }, "sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ=="],
 
@@ -266,7 +322,7 @@
 
     "verkit": ["verkit@0.4.1", "", {}, "sha512-mMVzj0TXExtVdlDEq+Mzp0eyOuyznNpFobNM3uAqe3HVm/Ps2c+u17BligMkZjZCA6EiXpoon8iRTer3iu40SQ=="],
 
-    "yuku": ["yuku@workspace:packages/yuku"],
+    "yuku": ["yuku@workspace:npm/yuku"],
 
     "yuku-ast": ["yuku-ast@0.19.0", "", { "dependencies": { "@yuku-toolchain/types": "^0.19.0" } }, "sha512-PyCsiScaelhxBGzL8dyeJkLqvRZycoh78R31Vrt/WqYrm0hMFoKwIw/X7Dx5mBKLWAMlV9I9HEyBOHnj2gZVyw=="],
 

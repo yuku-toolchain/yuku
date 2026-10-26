@@ -48,7 +48,7 @@ see [how Yuku is tested](https://yuku.fyi/testing/).
 ### Change the codegen
 
 The Zig printer, `src/parser/codegen/printer.zig`, and the JavaScript one,
-`packages/yuku/print/printer.ts`, mirror each other function by function, so
+`npm/yuku/print/printer.ts`, mirror each other function by function, so
 a change lands in both. `bun run test:codegen` prints the test corpus with each
 and fails on any difference.
 
@@ -67,12 +67,14 @@ src/parser/
   traverser/     AST visitors
   ffi/           Node-API and WebAssembly bindings
   testing/       Zig tests and the fuzzer
-packages/yuku/   the published package, one entry in index.ts
-  core/          the Zig core, its addon and WebAssembly loaders, and the decoder
+npm/yuku/        the published package, one entry in index.ts
+  core/          the addon and WebAssembly loaders, and the decoder
   ast/           walk, templates, builders, guards, and helpers
   file/          SourceFile, Project, the semantic model, and rename
   print/         the printer and source maps
   types/         the AST types
+npm/wasm/        the core as WebAssembly, for edge runtimes
+npm/*-*/         the core as a Node-API addon, one package per platform
 test/            test suites
 profile/         benchmarks CodSpeed runs on every pull request
 docs/            the website
@@ -89,7 +91,7 @@ cd docs && zine
 ```
 
 Then open http://localhost:1990. The JavaScript API lives in the package's
-guide, `packages/yuku/README.md`, which npm and GitHub show, and dialects in
+guide, `npm/yuku/README.md`, which npm and GitHub show, and dialects in
 `src/parser/dialect/README.md`. When you're done with any of them, run
 `bun run docs:llms`, which regenerates `llms.txt` and `llms-full.txt`.
 

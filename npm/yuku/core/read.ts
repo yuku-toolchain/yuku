@@ -62,8 +62,7 @@ export function read(source: string, options: ParseOptions, entry: Entry): Read 
   return { buffer, lang, sourceType, shapes: file?.shapes ?? null };
 }
 
-/** The `lang` a path's extension implies. */
-export function langFromPath(path: string): SourceLang {
+function langFromPath(path: string): SourceLang {
   if (/\.d\.[cm]?ts$/.test(path)) return "dts";
   if (path.endsWith(".tsx")) return "tsx";
   if (/\.[cm]?ts$/.test(path)) return "ts";
@@ -71,8 +70,7 @@ export function langFromPath(path: string): SourceLang {
   return "js";
 }
 
-/** The `sourceType` a path implies, `"commonjs"` for `.cjs` and `.cts`. */
-export function sourceTypeFromPath(path: string): SourceType {
+function sourceTypeFromPath(path: string): SourceType {
   return /\.c[jt]s$/.test(path) ? "commonjs" : "module";
 }
 

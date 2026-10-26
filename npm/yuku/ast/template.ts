@@ -3,7 +3,6 @@ import type { Comment, Identifier, Node, SourceLang } from "../types";
 import { b } from "./builders";
 import { is } from "./is";
 import { isIdentifierName } from "./lexical";
-import { clone, copyTree } from "./utils";
 import { assertNode, walk } from "./walk";
 
 type Item = Node | string | number | boolean | bigint | null | undefined;
@@ -239,7 +238,7 @@ function copyOfHole(state: Build, carrier: Node, name: Node | null): Node {
 }
 
 function place(state: Build, node: Node): Node {
-  if (state.placed.has(node)) return clone(node);
+  if (state.placed.has(node)) return copyTree(node);
   state.placed.add(node);
   return node;
 }
@@ -272,4 +271,31 @@ function checkedName(name: string, jsx: boolean): string {
   const plain = jsx && !name.startsWith("-") ? name.replace(/-/g, "_") : name;
   if (isIdentifierName(plain)) return name;
   throw new TypeError(`a template hole takes a name as a string, not "${name}"`);
+}
+
+function copyTree<T extends object>(value: T): T {
+  const pending: object[] = [];
+  const root = shallowCopy(value, pending) as T;
+  for (let item = pending.pop(); item !== undefined; item = pending.pop()) {
+    if (Array.isArray(item)) {
+      for (let i = 0; i < item.length; i++) {
+        const child: unknown = item[i];
+        if (child !== null && typeof child === "object") item[i] = shallowCopy(child, pending);
+      }
+    } else {
+      const fields = item as Record<string, unknown>;
+      for (const key in fields) {
+        const child = fields[key];
+        if (child !== null && typeof child === "object") fields[key] = shallowCopy(child, pending);
+      }
+    }
+  }
+  return root;
+}
+
+function shallowCopy(value: object, pending: object[]): object {
+  if (value instanceof RegExp) return new RegExp(value);
+  const copy = Array.isArray(value) ? value.slice() : { ...value };
+  pending.push(copy);
+  return copy;
 }

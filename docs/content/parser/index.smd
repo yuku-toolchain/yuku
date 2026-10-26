@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The parser reads JavaScript, TypeScript, and JSX into a [tree](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#parse).
+The parser reads JavaScript, TypeScript, and JSX into a [tree](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#parse).
 
 ```zig
 const std = @import("std");

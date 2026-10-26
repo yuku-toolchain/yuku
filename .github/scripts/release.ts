@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { $ } from "bun";
 
@@ -9,13 +9,23 @@ if (version === undefined || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$/.test(version)) 
 }
 
 const root = join(import.meta.dir, "..", "..");
-const manifestPath = join(root, "packages", "yuku", "package.json");
-const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-writeFileSync(manifestPath, JSON.stringify({ ...manifest, version }, null, 2) + "\n");
+const packages = join(root, "npm");
+for (const entry of readdirSync(packages, { withFileTypes: true })) {
+  if (!entry.isDirectory()) continue;
+  const manifestPath = join(packages, entry.name, "package.json");
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  manifest.version = version;
+  for (const field of ["optionalDependencies", "peerDependencies"]) {
+    for (const dependency of Object.keys(manifest[field] ?? {})) {
+      if (dependency.startsWith("@yuku-toolchain/")) manifest[field][dependency] = version;
+    }
+  }
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+}
 
 $.cwd(root);
 await $`bun install`;
-await $`git add packages/yuku/package.json bun.lock`;
+await $`git add npm/*/package.json bun.lock`;
 await $`git commit --message ${version}`;
 await $`git tag --annotate --message ${version} v${version}`;
 await $`git push --follow-tags`;

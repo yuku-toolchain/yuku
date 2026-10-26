@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join, sep } from "node:path";
 import { Glob } from "bun";
-import { langFromPath, sourceTypeFromPath, type SourceLang, type SourceType } from "yuku";
+import { parse, type SourceLang, type SourceType } from "yuku";
 import { PROJECTS, PROJECTS_DIR, type Project } from "./projects/manifest";
 
 export const CORPUS_DIRS = [
@@ -33,7 +33,7 @@ function filesUnder(dir: string, sourceTypeOf: (path: string) => SourceType): Co
   const files: CorpusFile[] = [];
   for (const relative of new Glob(CORPUS_GLOB).scanSync({ cwd: dir })) {
     const path = join(dir, relative);
-    files.push({ path, relative, lang: langFromPath(path), sourceType: sourceTypeOf(path) });
+    files.push({ path, relative, lang: parse("", { path }).lang, sourceType: sourceTypeOf(path) });
   }
   files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
   return files;
@@ -51,8 +51,10 @@ export function loadedProjects(): LoadedProject[] {
     const root = join(PROJECTS_DIR, project.name);
     if (!existsSync(root)) continue;
     const excluded = (project.exclude ?? []).map((path) => join(root, path) + sep);
-    const sourceTypeOf = (path: string): SourceType =>
-      project.type === "commonjs" && path.endsWith(".js") ? "commonjs" : sourceTypeFromPath(path);
+    const sourceTypeOf = (path: string): SourceType => {
+      if (project.type === "commonjs" && path.endsWith(".js")) return "commonjs";
+      return parse("", { path }).sourceType;
+    };
     const files = project.sources
       .flatMap((source) => filesUnder(join(root, source), sourceTypeOf))
       .filter((file) => !excluded.some((path) => file.path.startsWith(path)));

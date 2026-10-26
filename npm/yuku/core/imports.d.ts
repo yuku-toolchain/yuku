@@ -16,3 +16,11 @@ declare module "*.wasm?module" {
   const module: WebAssembly.Module;
   export default module;
 }
+
+declare module "node:module" {
+  export function createRequire(path: string): { resolve(request: string): string };
+}
+
+declare module "node:url" {
+  export function pathToFileURL(path: string): URL;
+}

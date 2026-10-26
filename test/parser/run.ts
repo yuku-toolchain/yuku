@@ -3,7 +3,6 @@ import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
 import {
-  langFromPath,
   parse,
   type Diagnostic,
   type ParseOptions,
@@ -154,7 +153,7 @@ function stem(file: string): string {
 
 function isSourceFile(path: string, langs: SourceLang[]): boolean {
   if (path.includes("/snapshots/") || path.endsWith(".snapshot.json")) return false;
-  return langs.includes(langFromPath(path));
+  return langs.includes(parse("", { path }).lang);
 }
 
 async function collectFiles(suite: TestSuite): Promise<string[]> {
@@ -170,7 +169,7 @@ async function collectFiles(suite: TestSuite): Promise<string[]> {
 function parseFile(source: string, file: string, suite: TestSuite): SourceFile {
   return parse(source, {
     sourceType: file.includes(".module.") ? "module" : "script",
-    lang: langFromPath(file),
+    lang: parse("", { path: file }).lang,
     preserveParens: true,
     ...suite.options,
   });

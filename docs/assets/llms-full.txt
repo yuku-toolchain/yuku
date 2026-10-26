@@ -19,7 +19,7 @@ Yuku is a high-performance JavaScript/TypeScript compiler toolchain written in Z
 
 **Anywhere.** Node.js, Bun, Deno, browsers, edge runtimes, and native Zig.
 
-**Zero dependencies.** Pure Zig, with no dependencies in the build or on npm.
+**Zero dependencies.** Pure Zig, with no third-party dependencies in the build or on npm.
 
 **Modern.** New and proposed syntax, including decorators, source phase and deferred imports, and `using` declarations.
 
@@ -37,7 +37,7 @@ const file = parse(`const answer: number = 42;`, { path: "answer.ts" });
 print(file, { strip: true }).code; // "const answer = 42;"
 ```
 
-One import parses, analyzes, walks, builds, renames, and prints. The [package guide](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme) documents it.
+One import parses, analyzes, walks, builds, renames, and prints. The [package guide](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme) documents it.
 
 ## Zig
 
@@ -90,7 +90,7 @@ Analyzing a whole codebase, resolving every reference and linking every import a
 
 Source: https://yuku.fyi/parser/
 
-The parser reads JavaScript, TypeScript, and JSX into a [tree](https://yuku.fyi/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#parse).
+The parser reads JavaScript, TypeScript, and JSX into a [tree](https://yuku.fyi/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#parse).
 
 ```zig
 const std = @import("std");
@@ -154,7 +154,7 @@ try tree.addDiagnostic(.{ .message = "unused", .span = span });
 
 Source: https://yuku.fyi/parser/ast/
 
-A parse returns an `ast.Tree`, a flat tree whose nodes, child lists, and strings live in arrays in one arena. From JavaScript, the tree decodes to [ESTree](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#the-ast).
+A parse returns an `ast.Tree`, a flat tree whose nodes, child lists, and strings live in arrays in one arena. From JavaScript, the tree decodes to [ESTree](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#the-ast).
 
 | Type         | Is                                                             |
 | ------------ | -------------------------------------------------------------- |
@@ -289,7 +289,7 @@ try lexical.decodeJSXEntities(gpa, raw, &out);
 
 Source: https://yuku.fyi/parser/semantic/
 
-Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the symbol it names, and reports the early errors that need scopes, such as redeclarations. From JavaScript, see [Semantic analysis](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#semantic-analysis).
+Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the symbol it names, and reports the early errors that need scopes, such as redeclarations. From JavaScript, see [Semantic analysis](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#semantic-analysis).
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
@@ -472,7 +472,7 @@ records.flags // .uses_require, .uses_module, .uses_exports, and .uses_import_me
 
 Source: https://yuku.fyi/parser/traverse/
 
-The traverser walks a tree depth-first and calls a visitor's hooks at each node, in one of four modes. From JavaScript, see [`walk`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#walk).
+The traverser walks a tree depth-first and calls a visitor's hooks at each node, in one of four modes. From JavaScript, see [`walk`](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#walk).
 
 | Mode                      | Tracks                          | Returns                                   | `ctx.tree`        |
 | ------------------------- | ------------------------------- | ----------------------------------------- | ----------------- |
@@ -653,7 +653,7 @@ pub fn exit(self: *C, comptime tag: ast.NodeTag, index: ast.NodeIndex, data: ast
 
 Source: https://yuku.fyi/parser/codegen/
 
-Codegen prints a tree back to source, with optional type stripping, minification, and source maps. From JavaScript, see [`print`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#print).
+Codegen prints a tree back to source, with optional type stripping, minification, and source maps. From JavaScript, see [`print`](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#print).
 
 ```zig
 var tree = try parser.parse(allocator, "const x: number = 1;", .{ .lang = .ts });
@@ -817,26 +817,26 @@ We aim to acknowledge reports within 72 hours. Please allow a reasonable window 
 
 # JavaScript
 
-Source: https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme
+Source: https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme
 
 ```bash
 npm install yuku
 ```
 
-```js
-import { is, js, nameOf, parse, print, walk } from "yuku";
+It runs natively where its addon for the platform installs, and as WebAssembly everywhere else. Cloudflare Workers and Vercel Edge run WebAssembly only from a file, so there also install `@yuku-toolchain/wasm`.
 
-const file = parse(`console.log("ready", port);`);
+```js
+import { js, parse, print, walk } from "yuku";
+
+const file = parse(`const area = radius ** 2 * Math.PI;`);
 
 walk(file.program, {
-  CallExpression(node, ctx) {
-    if (is.MemberExpression(node.callee) && nameOf(node.callee.object) === "console") {
-      ctx.replace(js`logger.info(${node.arguments})`);
-    }
+  BinaryExpression(node, ctx) {
+    if (node.operator === "**") ctx.replace(js`Math.pow(${node.left}, ${node.right})`);
   },
 });
 
-print(file).code; // 'logger.info("ready", port);'
+print(file).code; // "const area = Math.pow(radius, 2) * Math.PI;"
 ```
 
 ```js
@@ -895,7 +895,7 @@ The parser recovers from errors, so a file with diagnostics still has a program.
 | `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations                                                                     |
 | `core`           | the core yuku ships                                 | The Zig core to run, such as one with a [dialect](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) compiled in |
 
-A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws. `langFromPath(path)` and `sourceTypeFromPath(path)` return what a path implies.
+A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws.
 
 ### Diagnostics
 
@@ -1101,8 +1101,6 @@ b.CallExpression({ callee: b.Identifier({ name: "f" }) });
 b.ArrowFunctionExpression({ body: b.Identifier({ name: "x" }), expression: true }); // () => x
 ```
 
-`clone(node)` deep-copies a node.
-
 ### Guards and helpers
 
 ```js
@@ -1119,14 +1117,12 @@ is.Wrapper(node);                 // parentheses or an erased TypeScript asserti
 ```
 
 ```js
-import { bindingIdentifiers, lexical, nameOf, unwrap } from "yuku";
+import { lexical, unwrap } from "yuku";
 
-nameOf(node);             // an Identifier's name or a string Literal's value
-unwrap(node);             // the expression inside every wrapper
-bindingIdentifiers(node); // every Identifier a pattern declares
+unwrap(node); // the expression inside every wrapper
 
-lexical.isValidIdentifier("class");  // false, reserved
-lexical.isIdentifierName("class");   // true
+lexical.isValidIdentifier("class"); // false, reserved
+lexical.isIdentifierName("class");  // true
 ```
 
 `lexical` also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, and `isEvalOrArguments`.
@@ -1353,7 +1349,7 @@ MIT
 
 Source: https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme
 
-A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file, compiled into Yuku's parser. Yuku parses, analyzes, walks, and prints the rest of the language to the spec, and your nodes with it, from Zig and from the [`yuku` package](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme).
+A dialect adds your own syntax to JavaScript, TypeScript, or JSX, from a single operator to a whole language such as [TSRX](https://tsrx.dev). You write only the new syntax, in one Zig file, compiled into Yuku's parser. Yuku parses, analyzes, walks, and prints the rest of the language to the spec, and your nodes with it, from Zig and from the [`yuku` package](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme).
 
 - [Example](#example)
 - [The dialect file](#the-dialect-file): [files](#files), [positions](#positions), [the parser](#the-parser), [nodes](#nodes), [printing](#printing)

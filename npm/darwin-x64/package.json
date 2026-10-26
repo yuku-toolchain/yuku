@@ -1,0 +1,23 @@
+{
+  "name": "@yuku-toolchain/darwin-x64",
+  "version": "0.23.0",
+  "description": "The Yuku core as a Node-API addon for darwin-x64",
+  "license": "MIT",
+  "homepage": "https://yuku.fyi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku",
+    "directory": "npm/darwin-x64"
+  },
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "yuku.node",
+  "files": [
+    "yuku.node"
+  ],
+  "preferUnplugged": true
+}

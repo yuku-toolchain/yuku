@@ -5,7 +5,7 @@
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-The traverser walks a tree depth-first and calls a visitor's hooks at each node, in one of four modes. From JavaScript, see [`walk`](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#walk).
+The traverser walks a tree depth-first and calls a visitor's hooks at each node, in one of four modes. From JavaScript, see [`walk`](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#walk).
 
 | Mode                      | Tracks                          | Returns                                   | `ctx.tree`        |
 | ------------------------- | ------------------------------- | ----------------------------------------- | ----------------- |

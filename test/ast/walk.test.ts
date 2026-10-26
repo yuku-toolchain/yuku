@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { b, js, nameOf, parse, print, walk, type Visitors } from "yuku";
+import { b, js, parse, print, walk, type Node, type Visitors } from "yuku";
 import { nodesOf } from "../ast-helpers-for-test";
+
+function nameOf(node: Node): string | null {
+  return node.type === "Identifier" ? node.name : null;
+}
 
 function program(source: string) {
   return parse(source, { sourceType: "module", lang: "ts" }).program;

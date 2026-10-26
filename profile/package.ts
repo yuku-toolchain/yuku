@@ -5,7 +5,6 @@ import { withCodSpeed } from "@codspeed/tinybench-plugin";
 import { Bench } from "tinybench";
 import {
   b,
-  clone,
   Core,
   js,
   parse,
@@ -115,14 +114,6 @@ for (const path of FILES) {
           identifiers++;
         },
       });
-      return NO_DIAGNOSTICS;
-    },
-    parsed,
-  );
-  add(
-    `clone ${name}`,
-    () => {
-      void clone(file!.program);
       return NO_DIAGNOSTICS;
     },
     parsed,

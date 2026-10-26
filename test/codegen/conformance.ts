@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parse, print, sourceTypeFromPath, type PrintOptions, type SourceLang } from "yuku";
+import { parse, print, type PrintOptions, type SourceLang } from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
 import { commentPlacements, deepChains, INSTANTIATIONS } from "./helpers";
 
@@ -107,7 +107,7 @@ export interface Input extends CorpusFile {
 export function conformanceInputs(): Input[] {
   const input = (name: string, lang: SourceLang, source: string): Input => {
     const path = `${name}.${lang}`;
-    return { path, relative: path, lang, sourceType: sourceTypeFromPath(path), source };
+    return { path, relative: path, lang, sourceType: parse("", { path }).sourceType, source };
   };
   return [
     ...corpusAndProjectFiles(),

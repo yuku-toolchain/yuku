@@ -22,8 +22,8 @@ const ASSETS_DIR = join(DOCS_DIR, "assets");
 const GUIDES = [
   {
     slug: "javascript",
-    path: "packages/yuku/README.md",
-    url: "tree/main/packages/yuku#readme",
+    path: "npm/yuku/README.md",
+    url: "tree/main/npm/yuku#readme",
     title: "JavaScript",
     description: "Use Yuku from JavaScript and TypeScript with the yuku package.",
   },

@@ -2,7 +2,7 @@
 
 const parser = @import("parser");
 
-// packed by packages/yuku/core/read.ts
+// packed by npm/yuku/core/read.ts
 pub const source_type_mask = 0b11;
 pub const lang_shift = 2;
 pub const preserve_parens = 1 << 5;

@@ -3,6 +3,7 @@ import type {
   BooleanLiteral,
   ComputedMemberExpression,
   Directive,
+  Expression,
   Node,
   NodeOfType,
   NodeType,
@@ -19,7 +20,7 @@ import type {
   TSSatisfiesExpression,
   TSTypeAssertion,
 } from "../types";
-import { ALIAS_GROUPS, type AliasMap, type AliasName } from "./aliases";
+import { ALIAS_GROUPS, ALIAS_MEMBERS, type AliasMap, type AliasName } from "./aliases";
 import { NODE_TYPES } from "./generated";
 
 export type MaybeNode = Node | null | undefined;
@@ -55,7 +56,7 @@ const concrete = Object.fromEntries(
 
 const aliases = Object.fromEntries(
   (Object.keys(ALIAS_GROUPS) as AliasName[]).map((name) => {
-    const types = new Set<string>(ALIAS_GROUPS[name]);
+    const types = ALIAS_MEMBERS[name]!;
     return [name, (node: MaybeNode) => node != null && types.has(node.type)];
   }),
 ) as AliasGuards;
@@ -97,3 +98,10 @@ export const is: Omit<ConcreteGuards, keyof typeof shapes> & AliasGuards & typeo
   ...aliases,
   ...shapes,
 };
+
+/** The expression inside every {@link Wrapper} around `node`, or `node` itself. */
+export function unwrap<T extends MaybeNode>(node: T): T extends Wrapper ? Expression : T {
+  let current: MaybeNode = node;
+  while (is.Wrapper(current)) current = current.expression;
+  return current as T extends Wrapper ? Expression : T;
+}

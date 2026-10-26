@@ -5,7 +5,7 @@
 .date = @date("2026-07-11T00:00:00"),
 .layout = "page.shtml",
 ---
-Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the symbol it names, and reports the early errors that need scopes, such as redeclarations. From JavaScript, see [Semantic analysis](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#semantic-analysis).
+Semantic analysis builds a model of a program's scopes, symbols, and references, with each reference resolved to the symbol it names, and reports the early errors that need scopes, such as redeclarations. From JavaScript, see [Semantic analysis](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#semantic-analysis).
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});

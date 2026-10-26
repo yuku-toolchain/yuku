@@ -30,7 +30,7 @@
     "test/parser/misc",
     "test/parser/results",
     "test/projects/*/",
-    "packages/yuku/*/",
+    "npm/yuku/*/",
     "zig-out",
     "playground"
   ]

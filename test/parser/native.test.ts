@@ -1,14 +1,14 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Core, parse, type ParseOptions, type SourceFile } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
 import { corpusAndProjectFiles, corpusPresent, forEachCorpusFile } from "../corpus";
 
-const dist = new URL("../../packages/yuku/dist/", import.meta.url);
-const addon = `native/${process.platform}-${process.arch}.node`;
-const shipsAddon = existsSync(new URL(addon, dist));
-const wasm = new WebAssembly.Module(readFileSync(new URL("yuku.wasm", dist)));
+const packages = new URL("../../npm/", import.meta.url);
+const addon = `${process.platform}-${process.arch}/yuku.node`;
+const shipsAddon = existsSync(new URL(addon, packages));
+const wasm = new WebAssembly.Module(readFileSync(new URL("wasm/yuku.wasm", packages)));
 const core = new Core({ wasm });
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const SAMPLE_MAX = 8;
@@ -110,18 +110,25 @@ describe.skipIf(!shipsAddon)("the Node-API addon", () => {
   });
 });
 
-test("only runtimes with the node condition load an addon, one per shipped platform", () => {
-  const manifest = JSON.parse(readFileSync(new URL("../package.json", dist), "utf8"));
+test("only runtimes with the node condition load an addon, each from its own package", () => {
+  const yuku = new URL("yuku/", packages);
+  const manifest = JSON.parse(readFileSync(new URL("package.json", yuku), "utf8"));
   const loaders = manifest.imports["#native"];
   expect(Object.keys(loaders)).toEqual(["node", "default"]);
-  const loader = readFileSync(new URL(loaders.node, new URL("..", dist)), "utf8");
-  const fallback = readFileSync(new URL(loaders.default, new URL("..", dist)), "utf8");
-  expect(fallback).not.toContain(".node");
-  const urls = /new URL\("\.\/([a-z0-9]+-[a-z0-9]+)\.node", import\.meta\.url\)/g;
-  const platforms = [...loader.matchAll(urls)].map((match) => match[1]);
+  const loader = readFileSync(new URL(loaders.node, yuku), "utf8");
+  expect(readFileSync(new URL(loaders.default, yuku), "utf8")).not.toContain("@yuku-toolchain");
+  const calls = loader.matchAll(/addon\("([a-z0-9]+-[a-z0-9]+)"\)/g);
+  const platforms = [...calls].map((match) => match[1]!);
   expect(platforms).toHaveLength(6);
-  const shipped = readdirSync(new URL("native/", dist)).filter((name) => name.endsWith(".node"));
-  for (const name of shipped) expect(platforms).toContain(name.slice(0, -".node".length));
+  const dependencies = platforms.map((platform) => `@yuku-toolchain/${platform}`);
+  expect(Object.keys(manifest.optionalDependencies)).toEqual(dependencies);
+  for (const platform of platforms) {
+    const [os, cpu] = platform.split("-");
+    const path = new URL(`${platform}/package.json`, packages);
+    const { name, ...fields } = JSON.parse(readFileSync(path, "utf8"));
+    expect(fields).toMatchObject({ version: manifest.version, os: [os], cpu: [cpu] });
+    expect(manifest.optionalDependencies[name]).toBe(manifest.version);
+  }
 });
 
 test("the package parses with WebAssembly where no addon loads", () => {

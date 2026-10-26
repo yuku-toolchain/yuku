@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { clone, is, js, parse, ts, walk, type Node, type SourceFile } from "yuku";
+import { is, js, parse, ts, walk, type Node, type SourceFile } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
 import {
   corpusAndProjectFiles,
@@ -8,9 +8,9 @@ import {
   type CorpusFile,
 } from "../corpus";
 
-type Invariant = "clone" | "walk" | "options" | "tokens" | "template";
+type Invariant = "walk" | "options" | "tokens" | "template";
 
-const INVARIANTS: Invariant[] = ["clone", "walk", "options", "tokens", "template"];
+const INVARIANTS: Invariant[] = ["walk", "options", "tokens", "template"];
 const SAMPLE_MAX = 8;
 const CANDIDATES_MAX = 3;
 const CHILDREN_MAX = 3;
@@ -97,27 +97,6 @@ function candidatesOf(program: Node, source: string): Node[] {
   return all.filter((_, i) => i % stride === 0).slice(0, CANDIDATES_MAX);
 }
 
-function checkClone(file: CorpusFile, program: Node): Node {
-  checks.clone++;
-  const copy = clone(program);
-  if (!Bun.deepEquals(copy, program, true)) note("clone", `${file.path}: differs`);
-  const originals = new Set<object>();
-  walk(program, {
-    enter(node) {
-      originals.add(node);
-    },
-  });
-  walk(copy, {
-    enter(node, ctx) {
-      if (originals.has(node)) {
-        note("clone", `${file.path}: shares a ${node.type}`);
-        ctx.stop();
-      }
-    },
-  });
-  return copy;
-}
-
 function checkWalk(file: CorpusFile, program: Node, copy: Node): void {
   checks.walk++;
   const entered = new Set<Node>();
@@ -133,10 +112,10 @@ function checkWalk(file: CorpusFile, program: Node, copy: Node): void {
   });
   if (entered.size !== leaves) note("walk", `${file.path}: enters and leaves differ`);
 
-  const edited = clone(copy);
+  const edited = structuredClone(copy);
   walk(edited, {
     Identifier(node, ctx) {
-      ctx.replace(clone(node));
+      ctx.replace(structuredClone(node));
       ctx.skip();
     },
   });
@@ -236,8 +215,7 @@ function checkFile(file: CorpusFile, source: string): void {
   const options = { lang: file.lang, sourceType: file.sourceType, preserveParens: false };
   const plain = parse(source, options);
   if (plain.diagnostics.length > 0) return;
-  const copy = checkClone(file, plain.program);
-  checkWalk(file, plain.program, copy);
+  checkWalk(file, plain.program, structuredClone(plain.program));
   checkOptions(file, source, plain);
   checkTemplates(file, source, plain.program);
 }

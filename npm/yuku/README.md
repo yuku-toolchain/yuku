@@ -7,7 +7,7 @@
 
 **Parse, analyze, walk, build, and print JavaScript and TypeScript.**
 
-One package, no dependencies. Written in Zig, running in Node.js, Bun, Deno, browsers, and edge runtimes.
+One package, no third-party dependencies. Written in Zig, running in Node.js, Bun, Deno, browsers, and edge runtimes.
 
 [Playground](https://playground.yuku.fyi) · [Zig docs](https://yuku.fyi) · [GitHub](https://github.com/yuku-toolchain/yuku)
 
@@ -17,20 +17,20 @@ One package, no dependencies. Written in Zig, running in Node.js, Bun, Deno, bro
 npm install yuku
 ```
 
-```js
-import { is, js, nameOf, parse, print, walk } from "yuku";
+It runs natively where its addon for the platform installs, and as WebAssembly everywhere else. Cloudflare Workers and Vercel Edge run WebAssembly only from a file, so there also install `@yuku-toolchain/wasm`.
 
-const file = parse(`console.log("ready", port);`);
+```js
+import { js, parse, print, walk } from "yuku";
+
+const file = parse(`const area = radius ** 2 * Math.PI;`);
 
 walk(file.program, {
-  CallExpression(node, ctx) {
-    if (is.MemberExpression(node.callee) && nameOf(node.callee.object) === "console") {
-      ctx.replace(js`logger.info(${node.arguments})`);
-    }
+  BinaryExpression(node, ctx) {
+    if (node.operator === "**") ctx.replace(js`Math.pow(${node.left}, ${node.right})`);
   },
 });
 
-print(file).code; // 'logger.info("ready", port);'
+print(file).code; // "const area = Math.pow(radius, 2) * Math.PI;"
 ```
 
 ```js
@@ -89,7 +89,7 @@ The parser recovers from errors, so a file with diagnostics still has a program.
 | `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations                                                                     |
 | `core`           | the core yuku ships                                 | The Zig core to run, such as one with a [dialect](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) compiled in |
 
-A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws. `langFromPath(path)` and `sourceTypeFromPath(path)` return what a path implies.
+A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws.
 
 ### Diagnostics
 
@@ -295,8 +295,6 @@ b.CallExpression({ callee: b.Identifier({ name: "f" }) });
 b.ArrowFunctionExpression({ body: b.Identifier({ name: "x" }), expression: true }); // () => x
 ```
 
-`clone(node)` deep-copies a node.
-
 ### Guards and helpers
 
 ```js
@@ -313,14 +311,12 @@ is.Wrapper(node);                 // parentheses or an erased TypeScript asserti
 ```
 
 ```js
-import { bindingIdentifiers, lexical, nameOf, unwrap } from "yuku";
+import { lexical, unwrap } from "yuku";
 
-nameOf(node);             // an Identifier's name or a string Literal's value
-unwrap(node);             // the expression inside every wrapper
-bindingIdentifiers(node); // every Identifier a pattern declares
+unwrap(node); // the expression inside every wrapper
 
-lexical.isValidIdentifier("class");  // false, reserved
-lexical.isIdentifierName("class");   // true
+lexical.isValidIdentifier("class"); // false, reserved
+lexical.isIdentifierName("class");  // true
 ```
 
 `lexical` also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, and `isEvalOrArguments`.

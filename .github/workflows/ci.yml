@@ -81,12 +81,11 @@ jobs:
       - name: Build the package
         run: bun run build
 
-      - name: Pack the package and the smoke test
+      - name: Pack the packages and the smoke test
         run: |
-          mkdir -p ../../zig-out/package
-          npm pack --pack-destination ../../zig-out/package
-          bun build ../../test/runtime/smoke.ts --target=node --packages=external --outfile=../../zig-out/package/smoke.mjs
-        working-directory: packages/yuku
+          mkdir -p zig-out/package
+          for package in npm/*/; do npm pack "$package" --pack-destination zig-out/package; done
+          bun build test/runtime/smoke.ts --target=node --packages=external --outfile=zig-out/package/smoke.mjs
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -124,11 +123,18 @@ jobs:
         with:
           node-version: "24.18.0"
 
-      - name: Install the package
+      - name: Install the package with its addon and WebAssembly
         shell: bash
         run: |
-          mkdir -p node_modules/yuku
-          tar --extract --gzip --file yuku-*.tgz --strip-components=1 --directory node_modules/yuku
+          unpack() {
+            mkdir -p "node_modules/$1"
+            tar --extract --gzip --file "$2" --strip-components=1 --directory "node_modules/$1"
+          }
+          unpack yuku yuku-[0-9]*.tgz
+          unpack "@yuku-toolchain/$PLATFORM" "yuku-toolchain-$PLATFORM-"[0-9]*.tgz
+          unpack @yuku-toolchain/wasm yuku-toolchain-wasm-[0-9]*.tgz
+        env:
+          PLATFORM: ${{ matrix.platform }}
         working-directory: app
 
       - name: Run on the addon

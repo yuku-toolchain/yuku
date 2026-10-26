@@ -248,7 +248,7 @@ How this repository works. The runtime it ships to, where its tests and benchmar
 ### Runtime Baseline
 
 - Shipped JavaScript runs on **one floor**: ECMAScript 2020, on the runtime version in the root `package.json` `engines.node`. Tools downstream support older runtimes than we might, and a newer syntax or built-in breaks them silently. The package declares that same floor, and CI runs it on exactly that version.
-- The package runs Yuku as a Node-API addon where it ships one for the platform, and as WebAssembly with SIMD and no other post-MVP feature everywhere else. The addon calls only Node-API version 1 functions, so the floor is the first runtime with WebAssembly. Calling a newer Node-API function or enabling another WebAssembly feature raises the floor.
+- The package runs Yuku as a Node-API addon where one installs for the platform, and as WebAssembly with SIMD and no other post-MVP feature everywhere else. The addon calls only Node-API version 1 functions, so the floor is the first runtime with WebAssembly. Calling a newer Node-API function or enabling another WebAssembly feature raises the floor.
 - **Raising the floor is a breaking change.** Change the root `engines.node` on purpose, let the package follow it, and say so in the release notes. Never raise it implicitly by reaching for a newer feature.
 
 ### Testing
@@ -284,7 +284,7 @@ CodSpeed measures every pull request against `main` in its CPU simulation mode, 
 
 ### Documentation
 
-- **One home, two guides beside their code.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents Yuku and its Zig API. The package's README, `packages/yuku/README.md`, documents the JavaScript API, which npm and GitHub show, and `src/parser/dialect/README.md` documents dialects. None repeats another, and each links to the others where they meet.
+- **One home, two guides beside their code.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents Yuku and its Zig API. The package's README, `npm/yuku/README.md`, documents the JavaScript API, which npm and GitHub show, and `src/parser/dialect/README.md` documents dialects. None repeats another, and each links to the others where they meet.
 - **Docs change with the API.** A change to a public API updates its guide in the same change, then `bun run docs:llms` regenerates `llms.txt` and `llms-full.txt` from all three.
 - **Every example runs.** An example that states what it returns returns exactly that.
 

@@ -67,7 +67,8 @@ async function previewPlayground(): Promise<string | null> {
   return null;
 }
 
-const sha = packages.find((entry) => entry.name === "yuku")?.url.split("@").pop();
+const yuku = packages.find((entry) => entry.name === "yuku");
+const sha = yuku?.url.split("@").pop();
 const origin = (await previewPlayground()) ?? "https://playground.yuku.fyi";
 const playground = sha ? `${origin}/?pr=${sha}` : null;
 
@@ -76,7 +77,7 @@ const body = [
   "### Preview package",
   "",
   ...(playground ? [`Try this PR in the [playground](${playground}).`, ""] : []),
-  ...packages.map((entry) => `\`npm i ${entry.url}\``),
+  ...(yuku ? [`\`npm i ${yuku.url}\``] : []),
 ].join("\n");
 
 const listed = await fetch(`${api}/issues/${PR_NUMBER}/comments?per_page=100`, { headers });

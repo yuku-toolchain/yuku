@@ -12,16 +12,16 @@
   },
   "funding": "https://github.com/sponsors/arshad-yaseen",
   "workspaces": [
-    "packages/*"
+    "npm/*"
   ],
   "engines": {
     "node": ">=16.4.0"
   },
   "scripts": {
     "test": "bun fetch:fixtures && bun run build && bun typecheck && bun test:parser && bun test:codegen && bun test:ast && bun test:analyzer && bun test:dialect && bun test:sourcemap && bun test:runtime",
-    "typecheck": "tsc --noEmit && tsc --noEmit --project packages/yuku",
+    "typecheck": "tsc --noEmit && tsc --noEmit --project npm/yuku",
     "test:parser": "bun test/parser/run.ts && bun test test/parser",
-    "test:codegen": "bun run --cwd packages/yuku build && zig build codegen-reference && bun test test/codegen",
+    "test:codegen": "bun run --cwd npm/yuku build && zig build codegen-reference && bun test test/codegen",
     "test:ast": "bun test test/ast",
     "test:analyzer": "bun test test/analyzer",
     "test:dialect": "zig build wasm addon -Ddialect=src/parser/testing/dialect.zig --prefix zig-out/dialect && bun test test/dialect",
@@ -32,7 +32,7 @@
     "playground": "bun run build && bun playground/server.ts",
     "format": "zig fmt **/*.zig",
     "docs:llms": "bun docs/generate-llms.ts",
-    "build": "zig build package && bun run --cwd packages/yuku build",
+    "build": "zig build package && bun run --cwd npm/yuku build",
     "release:npm": "bun .github/scripts/release.ts",
     "fetch:fixtures": "bun test/parser/load test/parser/suite && bun test/projects/load.ts",
     "fetch:profile": "bun test/projects/load.ts typescript zod excalidraw three",

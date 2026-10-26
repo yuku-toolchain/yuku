@@ -2,11 +2,11 @@ import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Core, parse, walk, type Node } from "yuku";
-import { decodeBase64 } from "../../packages/yuku/core/base64";
+import { decodeBase64 } from "../../npm/yuku/core/base64";
 
-const shipped = readFileSync(new URL("../../packages/yuku/dist/yuku.wasm", import.meta.url));
+const shipped = readFileSync(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
 
-test("the inlined module parses as the shipped yuku.wasm does", () => {
+test("the inlined module parses as @yuku-toolchain/wasm does", () => {
   const core = new Core({ wasm: new WebAssembly.Module(shipped) });
   const source = "const x: number = 1;";
   const custom = parse(source, { lang: "ts", core });
@@ -15,13 +15,15 @@ test("the inlined module parses as the shipped yuku.wasm does", () => {
   expect(custom.diagnostics).toEqual(inlined.diagnostics);
 });
 
-test("workerd and edge-light import yuku.wasm in the form their bundlers compile", () => {
-  const manifest = new URL("../../packages/yuku/package.json", import.meta.url);
-  const loaders = JSON.parse(readFileSync(manifest, "utf8")).imports["#wasm"];
+test("workerd and edge-light import the wasm package in the form their bundlers compile", () => {
+  const manifest = new URL("../../npm/yuku/package.json", import.meta.url);
+  const { imports, peerDependenciesMeta } = JSON.parse(readFileSync(manifest, "utf8"));
+  expect(peerDependenciesMeta["@yuku-toolchain/wasm"]).toEqual({ optional: true });
+  const loaders = imports["#wasm"];
   expect(Object.keys(loaders)).toEqual(["workerd", "edge-light", "default"]);
   expect(loaders["edge-light"]).toBe(loaders.workerd);
   const loader = readFileSync(new URL(loaders.workerd, manifest), "utf8");
-  expect(loader).toContain('"../yuku.wasm?module"');
+  expect(loader).toContain('"@yuku-toolchain/wasm/yuku.wasm?module"');
   expect(loader).not.toContain("new WebAssembly.Module");
 });
 
@@ -123,7 +125,7 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
       imports: file.imports.map((entry) => [entry.name, entry.specifier]),
     };
   }`;
-  const wasmPath = fileURLToPath(new URL("../../packages/yuku/dist/yuku.wasm", import.meta.url));
+  const wasmPath = fileURLToPath(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
   const script = `globalThis.Buffer = undefined;
     const { readFileSync } = await import("node:fs");
     const { Core, parse } = await import("yuku");

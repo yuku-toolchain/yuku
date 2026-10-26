@@ -18,7 +18,7 @@ Yuku is a high-performance JavaScript/TypeScript compiler toolchain written in Z
 
 **Anywhere.** Node.js, Bun, Deno, browsers, edge runtimes, and native Zig.
 
-**Zero dependencies.** Pure Zig, with no dependencies in the build or on npm.
+**Zero dependencies.** Pure Zig, with no third-party dependencies in the build or on npm.
 
 **Modern.** New and proposed syntax, including decorators, source phase and deferred imports, and `using` declarations.
 
@@ -36,7 +36,7 @@ const file = parse(`const answer: number = 42;`, { path: "answer.ts" });
 print(file, { strip: true }).code; // "const answer = 42;"
 ```
 
-One import parses, analyzes, walks, builds, renames, and prints. The [package guide](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme) documents it.
+One import parses, analyzes, walks, builds, renames, and prints. The [package guide](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme) documents it.
 
 ## [Zig]($section.id('zig'))
 

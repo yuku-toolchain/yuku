@@ -172,6 +172,14 @@ type GroupType<A extends AliasName> = (typeof ALIAS_GROUPS)[A][number];
 /** The node union each alias covers. */
 export type AliasMap = { [A in AliasName]: NodeOfType<GroupType<A>> };
 
+export const ALIAS_MEMBERS: Readonly<Record<string, ReadonlySet<string> | undefined>> =
+  Object.assign(
+    Object.create(null),
+    Object.fromEntries(
+      Object.entries(ALIAS_GROUPS).map(([name, types]) => [name, new Set<string>(types)]),
+    ),
+  );
+
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 type Expect<T extends true> = T;
 type _groups = Expect<

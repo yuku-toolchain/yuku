@@ -12,7 +12,7 @@
 - [Codegen](https://yuku.fyi/parser/codegen/): Print a tree back to JavaScript or TypeScript, with type stripping, minification, and source maps.
 - [Testing](https://yuku.fyi/testing/): How Yuku is tested.
 - [Security](https://yuku.fyi/security/): How to report a vulnerability in Yuku, and the security practices behind the toolchain and its releases.
-- [JavaScript](https://github.com/yuku-toolchain/yuku/tree/main/packages/yuku#readme): Use Yuku from JavaScript and TypeScript with the yuku package.
+- [JavaScript](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme): Use Yuku from JavaScript and TypeScript with the yuku package.
 - [Dialects](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme): Add your own syntax to JavaScript, TypeScript, and JSX.
 
 ## Resources

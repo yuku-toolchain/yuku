@@ -1,9 +1,15 @@
 import { b } from "../ast/builders";
 import { isEvalOrArguments, isValidIdentifier } from "../ast/lexical";
-import { bindingIdentifiers } from "../ast/utils";
 import { replaceAt, slotOf, type Slot } from "../ast/walk";
 import { BindingFlags } from "../core/decode";
-import type { Diagnostic, ExportNamedDeclaration, Identifier, JSXIdentifier, Node } from "../types";
+import type {
+  BindingPattern,
+  Diagnostic,
+  ExportNamedDeclaration,
+  Identifier,
+  JSXIdentifier,
+  Node,
+} from "../types";
 import type { Binding } from "./semantic";
 import { diagnosticAt, type DiagnosticDetails, type SourceFile } from "./source-file";
 
@@ -166,9 +172,36 @@ function keepExportNames(site: ExportSite, previous: string, name: string): void
 
 function declaredNames(declaration: Node): string[] {
   if (declaration.type === "VariableDeclaration") {
-    return declaration.declarations.flatMap((declarator) =>
-      bindingIdentifiers(declarator.id).map((id) => id.name),
-    );
+    return declaration.declarations.flatMap((declarator) => boundNames(declarator.id));
   }
   return "id" in declaration && declaration.id?.type === "Identifier" ? [declaration.id.name] : [];
+}
+
+function boundNames(pattern: BindingPattern): string[] {
+  const names: string[] = [];
+  const pending: (Node | null)[] = [pattern];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node === null) continue;
+    switch (node.type) {
+      case "Identifier":
+        names.push(node.name);
+        break;
+      case "ArrayPattern":
+        for (let i = node.elements.length - 1; i >= 0; i--) pending.push(node.elements[i] ?? null);
+        break;
+      case "ObjectPattern":
+        for (let i = node.properties.length - 1; i >= 0; i--) {
+          const property = node.properties[i]!;
+          pending.push(property.type === "RestElement" ? property.argument : property.value);
+        }
+        break;
+      case "AssignmentPattern":
+        pending.push(node.left);
+        break;
+      case "RestElement":
+        pending.push(node.argument);
+        break;
+    }
+  }
+  return names;
 }
