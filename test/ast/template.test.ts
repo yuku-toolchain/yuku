@@ -90,6 +90,14 @@ describe("templates", () => {
     );
   });
 
+  test("a JSX tag closes with its own hole, and a decorated name keeps its decorators", () => {
+    const panel = js`<${"Panel"} open>{${js`body`}}</${"Panel"}>`;
+    expect(code(panel)).toBe("<Panel open>{body}</Panel>");
+    const method = ts`class A { m(@inject ${"service"}: Service) {} }`;
+    expect(code(method)).toContain("@inject");
+    expect(code(method)).toContain("service: Service");
+  });
+
   test("a binding pattern fills a declarator, and a JSX name may hold dashes", () => {
     const pattern = js<AssignmentExpression>`({ a, b } = 0)`.left;
     expect(code(js`for (const ${pattern} of items) {}`)).toBe("for (const { a, b } of items) {}");
@@ -174,6 +182,9 @@ describe("templates", () => {
     expect(() => js`f(...${"a"})`).not.toThrow();
     expect(() => js`a + ${[js`b`]}`).toThrow("a list fills a template hole in a list");
     expect(() => js`f(${{} as never})`).toThrow("template: expected an AST node");
+    const deep = "[".repeat(600) + "]".repeat(600);
+    const strings = Object.assign([deep], { raw: [deep] }) as unknown as TemplateStringsArray;
+    expect(() => js(strings)).toThrow("a template nests deeper than 1000 levels");
     expect(() => ts`let x: ${js`f()`};`).toThrow("a CallExpression does not fit a type");
   });
 });

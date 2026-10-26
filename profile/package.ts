@@ -124,6 +124,11 @@ add("template", () => {
   return NO_DIAGNOSTICS;
 });
 
+add("template with text", () => {
+  for (let i = 0; i < 1_000; i++) void js`import data from "./data/${i}.json";`;
+  return NO_DIAGNOSTICS;
+});
+
 bench.runSync();
 
 if (bench.tasks.every((task) => task.result.state === "completed")) {

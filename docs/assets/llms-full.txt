@@ -1074,6 +1074,7 @@ js`console.log(${node})`;
 js`return ${value} ?? ${fallback};`;
 ts`const total: ${type} = ${initial};`;
 js`import config from "${path}";`;
+js`<${tag} label="${label}">{${child}}</${tag}>`;
 ```
 
 | A hole takes                         | And becomes                                 |

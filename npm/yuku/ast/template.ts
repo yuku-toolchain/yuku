@@ -4,6 +4,7 @@ import type {
   Diagnostic,
   FunctionDeclaration,
   Identifier,
+  JSXIdentifier,
   Node,
   SourceLang,
   SourceType,
@@ -23,7 +24,7 @@ export function js<T extends Node = Node>(
   strings: TemplateStringsArray,
   ...values: readonly TemplateValue[]
 ): T {
-  return build(templateOf(strings, "jsx"), values) as T;
+  return build(planOf(strings, "jsx"), values) as T;
 }
 
 /** Builds a node from TypeScript, an expression unless the code ends in `;`. */
@@ -31,46 +32,55 @@ export function ts<T extends Node = Node>(
   strings: TemplateStringsArray,
   ...values: readonly TemplateValue[]
 ): T {
-  return build(templateOf(strings, "tsx"), values) as T;
+  return build(planOf(strings, "tsx"), values) as T;
 }
 
-interface Template {
-  root: Node;
-  /** Each hole by the node it stands for, and the nodes on the way to it. */
-  marks: Map<object, Mark>;
+/** How a build makes each object of a template, planned once per call site. */
+type Plan = Copy | Fill | Splice | Value | typeof NAME;
+
+/** An object copied with a plan for each of its fields that holds an object. */
+interface Copy {
+  kind: "copy";
+  source: object;
+  keys: string[];
+  children: Plan[];
 }
 
-type Mark = Hole | Text | typeof NAME | typeof PATH;
-
-/** `"bare"` is a lone name, `"wrapped"` a node around it, `"typed"` a name with a type. */
-interface Hole {
-  kind: "bare" | "wrapped" | "typed";
+/** A hole, `"bare"` a lone name, `"wrapped"` a node around it, `"typed"` a name with a type. */
+interface Fill {
+  kind: "fill";
+  shape: "bare" | "wrapped" | "typed";
   value: number;
   jsx: boolean;
+  carrier: Node;
+  /** The carrier's copy, when the hole fills its name. */
+  inner: Copy | null;
 }
 
 /** Text in quotes split around its holes, with the raw parts of template text. */
-interface Text {
-  kind: "text";
+interface Splice {
+  kind: "splice";
+  node: Node;
   values: number[];
   cooked: string[] | null;
   raw: string[] | null;
 }
 
+interface Value {
+  kind: "value";
+  value: unknown;
+}
+
 interface Build {
-  marks: Template["marks"];
   values: readonly TemplateValue[];
-  /** The copies still to fill, as their source, target, and the node their names become. */
-  stack: unknown[];
   placed: Node[];
 }
 
-const NAME = 0;
+const NAME = { kind: "name" } as const;
 const PATH = 1;
+const DEPTH_MAX = 1_000;
 
-const HOLE = "__yuku_hole_";
-const HOLE_NAME = /^__yuku_hole_(\d+)$/;
-const HOLE_IN_TEXT = /__yuku_hole_(\d+)/;
+const HOLE = "__yuku_hole__";
 const ESCAPED = /\\+(?=`|\$\{)/g;
 const TEMPLATE_RAW = /\\|`|\$\{|\r/g;
 const SEMICOLON = /^\s*;$/;
@@ -91,43 +101,51 @@ const CONTEXTS: readonly [before: string, after: string, sourceType: SourceType]
   ["", "", "commonjs"],
 ];
 
-const templates = {
-  jsx: new WeakMap<TemplateStringsArray, Template>(),
-  tsx: new WeakMap<TemplateStringsArray, Template>(),
+const plans = {
+  jsx: new WeakMap<TemplateStringsArray, Plan>(),
+  tsx: new WeakMap<TemplateStringsArray, Plan>(),
 };
 const pending: object[] = [];
 
-function templateOf(strings: TemplateStringsArray, lang: keyof typeof templates): Template {
-  let template = templates[lang].get(strings);
-  if (template === undefined) {
-    template = compile(strings, lang);
-    templates[lang].set(strings, template);
+function planOf(strings: TemplateStringsArray, lang: keyof typeof plans): Plan {
+  let plan = plans[lang].get(strings);
+  if (plan === undefined) {
+    plan = compile(strings, lang);
+    plans[lang].set(strings, plan);
   }
-  return template;
+  return plan;
 }
 
-function compile(strings: TemplateStringsArray, lang: SourceLang): Template {
-  const code = strings.raw
-    .map((part) => part.replace(ESCAPED, (slashes) => "\\".repeat(slashes.length >> 1)))
-    .reduce((joined, part, i) => `${joined}${HOLE}${i - 1}${part}`);
-  const { root, text } = parseRoot(code, lang);
-  const marks: Template["marks"] = new Map();
+function compile(strings: TemplateStringsArray, lang: SourceLang): Plan {
+  const parts = strings.raw.map((part) =>
+    part.replace(ESCAPED, (slashes) => "\\".repeat(slashes.length >> 1)),
+  );
+  let code = parts[0]!;
+  const offsets: number[] = [];
+  for (let i = 1; i < parts.length; i++) {
+    offsets.push(code.length);
+    code += HOLE + parts[i]!;
+  }
+  const { root, text, shift } = parseRoot(code, lang);
+  const holes = new Map(offsets.map((offset, value) => [offset + shift, value]));
+  const marks = new Map<object, Fill | Splice | typeof NAME | typeof PATH>();
   const filled = new Array<boolean>(strings.length - 1).fill(false);
   walk(root, {
     enter(node, ctx) {
       const path = [...ctx.ancestors(), node];
       let at = path.length - 1;
-      let mark: Hole | Text;
-      if (node.type === "Identifier" || node.type === "JSXIdentifier") {
-        const digits = HOLE_NAME.exec(node.name)?.[1];
-        if (digits === undefined) return;
+      let mark: Fill | Splice;
+      if ((node.type === "Identifier" || node.type === "JSXIdentifier") && node.name === HOLE) {
+        const value = holes.get(nameAt(node, text));
+        if (value === undefined) return;
         const typed = node.end - node.start !== node.name.length;
         while (!typed && at > 0 && spansName(path[at - 1]!, node, text)) at--;
-        const kind = typed ? "typed" : at === path.length - 1 ? "bare" : "wrapped";
-        mark = { kind, value: Number(digits), jsx: node.type === "JSXIdentifier" };
-        filled[mark.value] = true;
+        const shape = typed ? "typed" : at === path.length - 1 ? "bare" : "wrapped";
+        const jsx = node.type === "JSXIdentifier";
+        mark = { kind: "fill", shape, value, jsx, carrier: path[at]!, inner: null };
+        filled[value] = true;
       } else {
-        const found = textIn(node, ctx.parent);
+        const found = spliceIn(node, ctx.parent, holes);
         if (found === null) return;
         mark = found;
         for (const value of found.values) filled[value] = true;
@@ -148,10 +166,10 @@ function compile(strings: TemplateStringsArray, lang: SourceLang): Template {
   });
   const unfilled = filled.indexOf(false);
   if (unfilled >= 0) throw new TypeError(`hole ${unfilled} of a template is in text, not code`);
-  return { root, marks };
+  return planned(root, marks);
 }
 
-function parseRoot(code: string, lang: SourceLang): { root: Node; text: string } {
+function parseRoot(code: string, lang: SourceLang): { root: Node; text: string; shift: number } {
   let error: Diagnostic | undefined;
   for (const [before, after, sourceType] of CONTEXTS) {
     const text = `${before}${code}${after}`;
@@ -166,12 +184,13 @@ function parseRoot(code: string, lang: SourceLang): { root: Node; text: string }
     if (statement === undefined) {
       throw new TypeError(`a template is one expression or statement, not ${statements.length}`);
     }
+    const shift = before.length;
     if (statement.type !== "ExpressionStatement" || text[statement.end - 1] === ";") {
-      return { root: statement, text };
+      return { root: statement, text, shift };
     }
     const { expression, comments } = statement;
     if (comments !== undefined) expression.comments = [...comments, ...(expression.comments ?? [])];
-    return { root: expression, text };
+    return { root: expression, text, shift };
   }
   throw new SyntaxError(`${error!.message} in the template \`${code}\``);
 }
@@ -181,110 +200,133 @@ function spansName(node: Node, name: Node, text: string): boolean {
   return node.end === name.end || SEMICOLON.test(text.slice(name.end, node.end));
 }
 
-function textIn(node: Node, parent: Node | null): Text | null {
-  if (node.type === "TemplateElement") return split(node.value.cooked, node.value.raw);
+function nameAt(node: Identifier | JSXIdentifier, text: string): number {
+  const decorators = node.type === "Identifier" ? (node.decorators ?? []) : [];
+  if (decorators.length === 0) return node.start;
+  return text.indexOf(HOLE, decorators[decorators.length - 1]!.end);
+}
+
+function spliceIn(node: Node, parent: Node | null, holes: Map<number, number>): Splice | null {
+  if (node.type === "TemplateElement") return split(node, node.value.cooked, node.value.raw, holes);
   if (node.type !== "Literal" || typeof node.value !== "string") return null;
   if (parent?.type === "ExpressionStatement" && parent.directive != null) return null;
-  return split(node.value, null);
+  return split(node, node.value, null, holes);
 }
 
-function split(cooked: string | null, raw: string | null): Text | null {
-  const source = raw ?? cooked!;
-  if (!source.includes(HOLE)) return null;
-  const parts = source.split(HOLE_IN_TEXT);
-  const values = parts.filter((_, i) => i % 2 === 1).map(Number);
-  const between = (text: string) => text.split(HOLE_IN_TEXT).filter((_, i) => i % 2 === 0);
-  return {
-    kind: "text",
-    values,
-    cooked: cooked === null ? null : between(cooked),
-    raw: raw === null ? null : between(raw),
+function split(
+  node: Node,
+  cooked: string | null,
+  raw: string | null,
+  holes: Map<number, number>,
+): Splice | null {
+  const values: number[] = [];
+  for (const [offset, value] of holes) {
+    if (offset >= node.start && offset < node.end) values.push(value);
+  }
+  const parts = (raw ?? cooked!).split(HOLE);
+  if (values.length === 0 || parts.length !== values.length + 1) return null;
+  const cookedParts = cooked === null ? null : cooked.split(HOLE);
+  return { kind: "splice", node, values, cooked: cookedParts, raw: raw === null ? null : parts };
+}
+
+function planned(root: Node, marks: Map<object, Fill | Splice | typeof NAME | typeof PATH>): Plan {
+  const copies: { plan: Copy; depth: number }[] = [];
+  const copy = (source: object, depth: number): Copy => {
+    if (depth > DEPTH_MAX) throw new RangeError(`a template nests deeper than ${DEPTH_MAX} levels`);
+    const plan: Copy = { kind: "copy", source, keys: [], children: [] };
+    copies.push({ plan, depth });
+    return plan;
   };
-}
-
-function build(template: Template, values: readonly TemplateValue[]): Node {
-  const { root, marks } = template;
-  if (marks.size === 0) return copyTree(root);
-  const state: Build = { marks, values, stack: [], placed: [] };
-  const { stack } = state;
-  const result = copyMarked(state, root, marks.get(root), null);
-  while (stack.length > 0) {
-    const name = stack.pop() as Node | null;
-    const target = stack.pop() as Record<string, unknown> | unknown[];
-    const source = stack.pop() as Record<string, unknown> | unknown[];
-    if (Array.isArray(target)) {
-      for (const item of source as unknown[]) {
-        if (item === null || typeof item !== "object") {
-          target.push(item);
-          continue;
-        }
-        const mark = marks.get(item);
-        if (isHole(mark)) fillList(state, mark, item as Node, target);
-        else target.push(copyMarked(state, item, mark, name));
-      }
-    } else {
-      for (const key in source) {
-        const value = (source as Record<string, unknown>)[key];
-        if (value === null || typeof value !== "object") continue;
-        target[key] = copyMarked(state, value, marks.get(value), name);
-      }
+  const planFor = (value: unknown, depth: number): Plan => {
+    if (value === null || typeof value !== "object" || value instanceof RegExp) {
+      return { kind: "value", value };
+    }
+    const mark = marks.get(value);
+    if (mark === undefined || mark === PATH) return copy(value, depth);
+    if (mark.kind === "fill" && mark.shape !== "bare") {
+      const { comments: _, ...fields } = mark.carrier;
+      mark.inner = copy(fields, depth);
+    }
+    return mark;
+  };
+  const plan = planFor(root, 0);
+  for (let next = copies.pop(); next !== undefined; next = copies.pop()) {
+    const { source, keys, children } = next.plan;
+    if (Array.isArray(source)) {
+      for (const item of source) children.push(planFor(item, next.depth + 1));
+      continue;
+    }
+    for (const key in source) {
+      const value = (source as Record<string, unknown>)[key];
+      if (value === null || typeof value !== "object") continue;
+      keys.push(key);
+      children.push(planFor(value, next.depth + 1));
     }
   }
-  return result as Node;
+  return plan;
 }
 
-function isHole(mark: Mark | undefined): mark is Hole {
-  return typeof mark === "object" && mark.kind !== "text";
+function build(plan: Plan, values: readonly TemplateValue[]): Node {
+  return make({ values, placed: [] }, plan, null) as Node;
 }
 
-function copyMarked(
-  state: Build,
-  value: object,
-  mark: Mark | undefined,
-  name: Node | null,
-): unknown {
-  if (mark === undefined) return Array.isArray(value) ? later(state, value, name) : copyTree(value);
-  if (mark === PATH) return later(state, value, name);
-  if (mark === NAME) return place(state, name!);
-  if (mark.kind === "text") return spliced(state, value as Node, mark);
-  return fillOne(state, mark, value as Node);
+function make(state: Build, plan: Plan, name: Node | null): unknown {
+  switch (plan.kind) {
+    case "copy": {
+      const { source, keys, children } = plan;
+      if (Array.isArray(source)) {
+        const list: unknown[] = [];
+        for (const child of children) {
+          if (child.kind === "fill") fillList(state, child, list);
+          else list.push(make(state, child, name));
+        }
+        return list;
+      }
+      const target: Record<string, unknown> = { ...source };
+      for (let i = 0; i < keys.length; i++) target[keys[i]!] = make(state, children[i]!, name);
+      return target;
+    }
+    case "fill":
+      return fillOne(state, plan);
+    case "splice":
+      return spliced(state, plan);
+    case "name":
+      return place(state, name!);
+    case "value":
+      return plan.value instanceof RegExp ? new RegExp(plan.value) : plan.value;
+  }
 }
 
-function later(state: Build, value: object, name: Node | null): object {
-  const target = Array.isArray(value) ? [] : { ...value };
-  state.stack.push(value, target, name);
-  return target;
-}
-
-function fillOne(state: Build, hole: Hole, carrier: Node): Node {
-  const value = state.values[hole.value];
+function fillOne(state: Build, fill: Fill): Node {
+  const value = state.values[fill.value];
   if (Array.isArray(value)) throw new TypeError("a list fills a template hole in a list");
-  const node = standIn(state, hole, carrier, nodeOf(value as Item, hole.jsx));
-  if (carrier.comments !== undefined) moveComments(carrier.comments, node, node);
+  const node = standIn(state, fill, nodeOf(value as Item, fill.jsx));
+  if (fill.carrier.comments !== undefined) moveComments(fill.carrier.comments, node, node);
   return node;
 }
 
-function fillList(state: Build, hole: Hole, carrier: Node, list: unknown[]): void {
-  const value = state.values[hole.value];
+function fillList(state: Build, fill: Fill, list: unknown[]): void {
+  const value = state.values[fill.value];
   const from = list.length;
   const items = Array.isArray(value) ? (value as Item[]) : [value as Item];
-  for (const item of items) list.push(standIn(state, hole, carrier, nodeOf(item, hole.jsx)));
-  if (carrier.comments !== undefined && list.length > from) {
-    moveComments(carrier.comments, list[from] as Node, list[list.length - 1] as Node);
+  for (const item of items) list.push(standIn(state, fill, nodeOf(item, fill.jsx)));
+  if (fill.carrier.comments !== undefined && list.length > from) {
+    moveComments(fill.carrier.comments, list[from] as Node, list[list.length - 1] as Node);
   }
 }
 
-function standIn(state: Build, hole: Hole, carrier: Node, node: Node): Node {
-  if (hole.kind === "bare") return place(state, node);
-  if (hole.kind === "typed") {
+function standIn(state: Build, fill: Fill, node: Node): Node {
+  const { carrier } = fill;
+  if (fill.shape === "bare") return place(state, node);
+  if (fill.shape === "typed") {
     if (node.type !== "Identifier") throw new TypeError(`a ${node.type} does not fit a typed name`);
-    const renamed = copyOfHole(state, carrier, null) as Identifier;
+    const renamed = make(state, fill.inner!, null) as Identifier;
     renamed.name = node.name;
     return renamed;
   }
   if (node.type === carrier.type) return place(state, node);
   if (carrier.type === "ExpressionStatement" ? is.Expression(node) : NAMES.has(node.type)) {
-    return copyOfHole(state, carrier, node);
+    return make(state, fill.inner!, node) as Node;
   }
   if (takesWhole(carrier, node)) return place(state, node);
   throw new TypeError(`a ${node.type} does not fit a ${KINDS[carrier.type] ?? carrier.type}`);
@@ -300,23 +342,19 @@ function takesWhole(carrier: Node, node: Node): boolean {
   return node.type === "RestElement" || !(is.Expression(node) || is.Pattern(node));
 }
 
-function copyOfHole(state: Build, carrier: Node, name: Node | null): Node {
-  const { comments: _, ...fields } = carrier;
-  return later(state, fields, name) as Node;
-}
-
 function place(state: Build, node: Node): Node {
   if (state.placed.includes(node)) return copyTree(node);
   state.placed.push(node);
   return node;
 }
 
-function spliced(state: Build, node: Node, text: Text): Node {
-  const pieces = text.values.map((value) => textOf(state.values[value]));
-  const cooked = text.cooked === null ? null : joined(text.cooked, pieces);
+function spliced(state: Build, splice: Splice): Node {
+  const { node } = splice;
+  const pieces = splice.values.map((value) => textOf(state.values[value]));
+  const cooked = splice.cooked === null ? null : joined(splice.cooked, pieces);
   const comments = node.comments === undefined ? undefined : copyTree(node.comments);
   if (node.type === "TemplateElement") {
-    const raw = joined(text.raw!, pieces.map(templateRaw));
+    const raw = joined(splice.raw!, pieces.map(templateRaw));
     const element: TemplateElement = { ...node, value: { raw, cooked } };
     if (comments !== undefined) element.comments = comments;
     return element;
