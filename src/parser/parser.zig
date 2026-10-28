@@ -59,7 +59,7 @@ const ParserState = struct {
     stripped_paren: ?ast.NodeIndex = null,
 };
 
-pub const Error = error{OutOfMemory};
+pub const Error = error{};
 
 pub const Parser = struct {
     tree: ast.Tree,
@@ -102,6 +102,7 @@ pub const Parser = struct {
             self.tree.source_type,
             self.comment_mode != .none,
         );
+        self.lexer.fast_path = !self.collect_tokens;
 
         // ScriptBody is [~Yield, ~Await, ~Return], ModuleItemList is [+Await], and a
         // commonjs body is [+Return]
@@ -113,13 +114,13 @@ pub const Parser = struct {
             self.current_token = try self.recoverNextToken();
         };
 
-        try self.ensureCapacity();
+        self.ensureCapacity() catch ast.outOfMemory();
 
         const body = try self.parseBody(null, .program);
         if (self.state.cover_init_names > 0) try grammar.reportCoverInitializedNames(self);
 
         std.debug.assert(self.current_token.tag == .eof);
-        if (self.collect_tokens) try self.tokens.append(self.allocator(), self.current_token);
+        if (self.collect_tokens) self.tokens.append(self.allocator(), self.current_token) catch ast.outOfMemory();
 
         self.tree.root = try self.tree.addNode(.{ .program = .{
             .source_type = if (self.tree.source_type == .module) .module else .script,
@@ -132,7 +133,7 @@ pub const Parser = struct {
         self.tree.diagnostics = self.diagnostics;
         if (!self.preserve_parens) stripParenthesizedNodes(&self.tree);
         const collected = self.lexer.comments.items;
-        if (self.comment_mode == .attach) try comments.attach(&self.tree, collected);
+        if (self.comment_mode == .attach) comments.attach(&self.tree, collected) catch ast.outOfMemory();
         self.tree.comments = collected;
         if (self.collect_tokens) self.tree.tokens = self.tokens.items;
         return self.tree;
@@ -145,7 +146,7 @@ pub const Parser = struct {
         if (self.tokens.items.len < self.tokens.capacity) {
             self.tokens.appendAssumeCapacity(token);
         } else {
-            try self.tokens.append(self.allocator(), token);
+            self.tokens.append(self.allocator(), token) catch ast.outOfMemory();
         }
     }
 
@@ -205,7 +206,7 @@ pub const Parser = struct {
         const alloc = self.allocator();
         var buf: std.ArrayList(u8) = .empty;
         defer buf.deinit(alloc);
-        try decoder(alloc, self.source[start..end], &buf);
+        decoder(alloc, self.source[start..end], &buf) catch ast.outOfMemory();
         return try self.tree.addString(buf.items);
     }
 
@@ -216,6 +217,7 @@ pub const Parser = struct {
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
         self.lexer.mode = mode;
+        self.lexer.fast_path = mode == .normal and !self.collect_tokens;
     }
 
     pub fn flushToExtras(
@@ -232,7 +234,7 @@ pub const Parser = struct {
 
     inline fn nextTokenInto(self: *Parser, out: *Token) Error!bool {
         self.lexer.nextTokenInto(out) catch |e| {
-            if (e == error.OutOfMemory) return error.OutOfMemory;
+            if (e == error.OutOfMemory) ast.outOfMemory();
             try self.reportLexicalError(@errorCast(e));
             return false;
         };
@@ -260,11 +262,10 @@ pub const Parser = struct {
 
     /// Advances without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
+        self.prev_token_end = self.current_token.span.end;
+        if (self.lexer.tryNextToken(&self.current_token)) return;
         const leaving = self.current_token;
-        self.prev_token_end = leaving.span.end;
-        if (!self.lexer.tryNextToken(&self.current_token)) {
-            if (!try self.nextTokenInto(&self.current_token)) return null;
-        }
+        if (!try self.nextTokenInto(&self.current_token)) return null;
         try self.commitToken(leaving);
     }
 
@@ -311,7 +312,7 @@ pub const Parser = struct {
     pub fn rewind(self: *Parser, cp: Checkpoint) void {
         self.lexer.cursor = cp.lexer_cursor;
         self.lexer.state = cp.lexer_state;
-        self.lexer.mode = cp.lexer_mode;
+        self.setLexerMode(cp.lexer_mode);
         self.lexer.comments.shrinkRetainingCapacity(cp.lexer_comments_len);
         self.current_token = cp.current_token;
         self.prev_token_end = cp.prev_token_end;
@@ -442,13 +443,13 @@ pub const Parser = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Error!void {
-        try self.diagnostics.append(self.allocator(), .{
+        self.diagnostics.append(self.allocator(), .{
             .severity = opts.severity,
             .message = message,
             .span = span,
             .help = opts.help,
             .labels = opts.labels,
-        });
+        }) catch ast.outOfMemory();
     }
 
     pub fn reportExpected(
@@ -469,11 +470,11 @@ pub const Parser = struct {
     }
 
     pub fn labels(self: *Parser, items: []const ast.Label) Error![]const ast.Label {
-        return try self.allocator().dupe(ast.Label, items);
+        return self.allocator().dupe(ast.Label, items) catch ast.outOfMemory();
     }
 
     pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
-        return self.allocator().print(format, args);
+        return self.allocator().print(format, args) catch ast.outOfMemory();
     }
 
     pub fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
@@ -492,7 +493,7 @@ pub const Parser = struct {
     fn recoverNextToken(self: *Parser) Error!Token {
         while (true) {
             return self.lexer.nextToken() catch |e| {
-                if (e == error.OutOfMemory) return error.OutOfMemory;
+                if (e == error.OutOfMemory) ast.outOfMemory();
                 if (self.lexer.cursor < self.source.len) {
                     self.lexer.cursor += 1;
                 } else {
@@ -503,7 +504,7 @@ pub const Parser = struct {
         }
     }
 
-    fn ensureCapacity(self: *Parser) Error!void {
+    fn ensureCapacity(self: *Parser) std.mem.Allocator.Error!void {
         std.debug.assert(self.tree.nodes.capacity == 0);
         const alloc = self.allocator();
         const source_len = self.source.len;
@@ -558,7 +559,7 @@ const ScratchBuffer = struct {
         if (self.items.items.len < self.items.capacity) {
             self.items.appendAssumeCapacity(index);
         } else {
-            try self.items.append(alloc, index);
+            self.items.append(alloc, index) catch ast.outOfMemory();
         }
     }
 

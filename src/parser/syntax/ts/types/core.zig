@@ -448,7 +448,7 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
 
     if (conditional_allowed and parser.current_token.tag == .question) {
         parser.rewind(cp);
-        try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), extends_offset, {});
+        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), extends_offset, {}) catch ast.outOfMemory();
         return .null;
     }
 
