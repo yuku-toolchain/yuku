@@ -1,4 +1,4 @@
-import type { Node, NodeOfType, StandardNodeType } from "../types";
+import type { Node, NodeOfType, NodeType } from "../types";
 import { NODE_TYPES } from "./generated";
 
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
@@ -35,7 +35,7 @@ type Defaults<T> = {
     : K]: VariantDefaults<T>[K];
 };
 
-type Defaulted<K extends StandardNodeType> = keyof Defaults<NodeOfType<K>>;
+type Defaulted<K extends NodeType> = keyof Defaults<NodeOfType<K>>;
 
 const DEFAULTS: Partial<Record<string, object>> = {
   Program: { body: [], hashbang: null },
@@ -186,7 +186,7 @@ const DEFAULTS: Partial<Record<string, object>> = {
     static: false,
   },
 } satisfies {
-  [K in StandardNodeType as [Defaulted<K>] extends [never] ? never : K]: Defaults<NodeOfType<K>>;
+  [K in NodeType as [Defaulted<K>] extends [never] ? never : K]: Defaults<NodeOfType<K>>;
 };
 
 // distributes over unions, so b.Literal accepts each literal shape
@@ -196,7 +196,7 @@ type BuilderInput<T, D extends PropertyKey> = T extends Node
   : never;
 
 type Builders = {
-  [K in StandardNodeType]: (fields: BuilderInput<NodeOfType<K>, Defaulted<K>>) => NodeOfType<K>;
+  [K in NodeType]: (fields: BuilderInput<NodeOfType<K>, Defaulted<K>>) => NodeOfType<K>;
 };
 
 /** A node constructor per `type`, defaulting each field that may be false, null, or empty. */

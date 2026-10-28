@@ -46,7 +46,7 @@ export interface PrintOptions {
   comments?: Comments;
   /** Needs a file, for its source and path. @default false */
   sourceMap?: boolean | SourceMapOptions;
-  /** Prints the node types the printer does not know, such as a dialect's, by `type`. */
+  /** Prints the node types the printer does not know, by `type`. */
   printers?: Printers;
 }
 

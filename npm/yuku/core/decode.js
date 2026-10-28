@@ -478,7 +478,6 @@ const CHILD_SLOTS = [
   [],
   [],
   [0, 1],
-  [1, 1],
 ];
 const IS_NODE = [
   true,
@@ -652,28 +651,7 @@ const IS_NODE = [
   true,
   true,
   true,
-  true,
 ];
-function shaped(shape, start, end, node, _u32, base, count) {
-  const result = { type: shape.type, start, end };
-  const properties = shape.properties, keys = shape.keys;
-  for (let k = 0; k < keys.length; k++) result[keys[k]] = properties[keys[k]];
-  const fields = shape.fields, list = shape.list, extra = count - fields.length;
-  for (let i = 0, j = base; i < fields.length; i++) {
-    if (i !== list) {
-      const x = _u32[j++];
-      result[fields[i]] = x !== NULL ? node(x) : null;
-      continue;
-    }
-    const items = new Array(extra + 1);
-    for (let k = 0; k <= extra; k++) {
-      const x = _u32[j++];
-      items[k] = x !== NULL ? node(x) : null;
-    }
-    result[fields[i]] = items;
-  }
-  return result;
-}
 function _decodeSequenceExpression(decoder, i, b, flags, start, end) { const { _u32, nodeArr } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f2) }; }
 function _decodeParenthesizedExpression(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null }; }
 function _decodeArrowFunctionExpression(decoder, i, b, flags, start, end) { const { _isTs, _u32, fnParams, node } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return _isTs
@@ -1065,9 +1043,8 @@ const KIND_DECODERS = [
   _decodeJSXEmptyExpression,
   null,
   _decodeJSXSpreadChild,
-  null,
 ];
-function decode(buffer, source, path, shapes) {
+function decode(buffer, source, path) {
   const _u8 = new Uint8Array(buffer);
   const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
   if (BIG_ENDIAN) _hostOrder(_u32, 0, 9);
@@ -1210,9 +1187,6 @@ return { type: "Literal", start, end, value: v, raw: r }; }
     case 167: { const f1 = _u32[b + 1]; return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null }; }
     case 169: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; const raw = str(f1, f2);
 return { type: "JSXText", start, end, value: _jsxValue(raw), raw }; }
-    case 171: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; const shape = shapes[flags];
-if (shape.text) return _src.slice(start, end);
-return shaped(shape, start, end, node, _u32, _extraBase + f1, f2); }
     default: return KIND_DECODERS[tag](_decoder, i, b, flags, start, end);
     }
   }
@@ -1262,7 +1236,7 @@ return shaped(shape, start, end, node, _u32, _extraBase + f1, f2); }
     for (; _builtIndexed < _built.length; _builtIndexed++) _index(_built[_builtIndexed]);
     return _nodeIndexes.get(n);
   }
-  const _decoder = { _isTs, _src, _u32, fnParams, node, nodeArr, nodeArrHoles, shapes, str };
+  const _decoder = { _isTs, _src, _u32, fnParams, node, nodeArr, nodeArrHoles, str };
   const _nodesU32 = _nodesOff >> 2;
   function startOf(i) { return _u32[_nodesU32 + i * 12 + 10]; }
   function endOf(i) { return _u32[_nodesU32 + i * 12 + 11]; }

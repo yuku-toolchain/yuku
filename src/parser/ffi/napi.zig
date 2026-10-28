@@ -151,11 +151,6 @@ fn register(env: Env, exports: Value) Error!void {
     const api = try bindApi();
     try define(&api, env, exports, "parse", parse);
     try define(&api, env, exports, "analyze", analyze);
-    if (!parser.dialect.bound) return;
-    const description = parser.dialect.description;
-    var value: Value = undefined;
-    try check(api.napi_create_string_utf8(env, description.ptr, description.len, &value));
-    try check(api.napi_set_named_property(env, exports, "dialect", value));
 }
 
 fn define(
@@ -285,7 +280,6 @@ fn parseTree(
     source: []const u8,
     flags: u32,
 ) std.mem.Allocator.Error!parser.ast.Tree {
-    if (flags & flag.dialect != 0) std.debug.assert(parser.dialect.bound);
     std.debug.assert(flags & flag.utf16 == 0);
     return parser.parse(gpa, source, flag.parseOptions(flags));
 }

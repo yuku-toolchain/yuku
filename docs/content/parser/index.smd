@@ -28,11 +28,10 @@ The tree lives in one arena, which `tree.deinit()` frees, and borrows `source`, 
 | Field             | Default    | Description                                                                                                                              |
 | ----------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `source_type`     | `.module`  | `.script`, `.module`, or `.commonjs`, whose top level is a function body                                                                 |
-| `lang`            | `null`     | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`, or `null` for the dialect compiled in, in its first file's language, and `.js` without one      |
+| `lang`            | `.js`      | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts`                                                                                                  |
 | `preserve_parens` | `true`     | Keep `parenthesized_expression` nodes                                                                                                    |
 | `comments`        | `.collect` | `.none`, `.collect`, or `.attach`, see [Comments](/parser/ast/#comments)                                                                 |
 | `tokens`          | `false`    | Keep every token, see [Tokens](/parser/ast/#tokens)                                                                                      |
-| `dialect`         | `false`    | Read `lang` with the [dialect](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) the build has compiled in too |
 
 `ast.Lang.fromPath` and `ast.SourceType.fromPath` read them from a file name.
 

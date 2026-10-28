@@ -8,7 +8,6 @@ const spec = @import("spec");
 
 const statements = @import("syntax/statements.zig");
 const grammar = @import("grammar.zig");
-const dialect = @import("dialect/root.zig");
 const comments = @import("comments.zig");
 
 /// How comments are collected and attached to their nodes.
@@ -17,17 +16,14 @@ pub const CommentMode = enum { none, collect, attach };
 pub const Options = struct {
     /// How the source is parsed. `.commonjs` treats the top level as a function body.
     source_type: ast.SourceType = .module,
-    /// Language variant that decides which syntax features are enabled. Null reads the dialect
-    /// compiled in, in the language of its first file, and JavaScript without one.
-    lang: ?ast.Lang = null,
+    /// Language variant that decides which syntax features are enabled.
+    lang: ast.Lang = .js,
     /// Whether parenthesized expressions are kept as `ParenthesizedExpression` nodes.
     preserve_parens: bool = true,
     /// Whether comments are collected, and attached to their nodes.
     comments: CommentMode = .collect,
     /// Whether to keep every consumed token in `Tree.tokens`.
     tokens: bool = false,
-    /// Whether the dialect compiled in reads the source in `lang` too.
-    dialect: bool = false,
 };
 
 pub const Context = packed struct {
@@ -71,7 +67,6 @@ pub const Parser = struct {
     preserve_parens: bool,
     comment_mode: CommentMode,
     collect_tokens: bool,
-    dialect: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     tokens: std.ArrayList(Token) = .empty,
@@ -255,7 +250,7 @@ pub const Parser = struct {
     }
 
     /// Advances to the next token, reporting an escaped keyword consumed in keyword position.
-    pub fn advance(self: *Parser) Error!?void {
+    pub inline fn advance(self: *Parser) Error!?void {
         const token = self.current_token;
         if (token.isEscaped()) {
             if (token.tag.isKeyword()) try self.reportEscapedKeyword(token.span);
@@ -578,19 +573,16 @@ pub fn parse(
     source: []const u8,
     options: Options,
 ) Error!ast.Tree {
-    const read_dialect = options.dialect or (options.lang == null and dialect.bound);
-    if (read_dialect) std.debug.assert(dialect.bound);
     var parser: Parser = .{
         .tree = ast.Tree.init(child_allocator, source),
         .source = source,
         .preserve_parens = options.preserve_parens,
         .comment_mode = options.comments,
         .collect_tokens = options.tokens,
-        .dialect = read_dialect,
         .lexer = undefined,
         .current_token = Token.eof(0),
     };
     parser.tree.source_type = options.source_type;
-    parser.tree.lang = options.lang orelse if (dialect.bound) dialect.files[0].lang else .js;
+    parser.tree.lang = options.lang;
     return parser.parse();
 }

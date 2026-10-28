@@ -10,10 +10,6 @@ comptime {
     std.debug.assert(builtin.cpu.arch.endian() == .little);
 }
 
-// static, so the host reads it without freeing
-const description = std.mem.toBytes(std.mem.nativeToLittle(u32, parser.dialect.description.len)) ++
-    parser.dialect.description[0..parser.dialect.description.len].*;
-
 export fn alloc(len: usize) [*]u8 {
     return (gpa.alloc(u8, len) catch @trap()).ptr;
 }
@@ -30,11 +26,6 @@ export fn parse(ptr: [*]const u8, len: usize, flags: u32) usize {
 export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
     const out = withSource(ptr[0..len], flags, analyzeBuffer) catch return 0;
     return @intFromPtr(out.ptr);
-}
-
-export fn dialect() usize {
-    if (!parser.dialect.bound) return 0;
-    return @intFromPtr(&description);
 }
 
 fn withSource(

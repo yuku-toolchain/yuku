@@ -10,14 +10,9 @@ const module_record = parser.semantic.module_record;
 const Writer = std.Io.Writer;
 
 const node_data = @typeInfo(ast.NodeData).@"union";
-// a dialect node takes the types its dialect declares, so the walk tables leave the tag out
-const estree_tags = node_data.field_names[0 .. node_data.field_names.len - 1];
+const estree_tags = node_data.field_names;
 const slots_word = word(rt.PackedNode, "slots");
 const slots_len = @typeInfo(@FieldType(rt.PackedNode, "slots")).array.len;
-
-comptime {
-    std.debug.assert(eql(node_data.field_names[estree_tags.len], "dialect"));
-}
 
 pub fn generate(w: *Writer) Writer.Error!void {
     try w.writeAll(
@@ -37,29 +32,6 @@ pub fn generate(w: *Writer) Writer.Error!void {
     try writeJSXEntities(w);
     try writeTokenList(w);
     try writeChildTables(w);
-    try w.writeAll(
-        \\function shaped(shape, start, end, node, _u32, base, count) {
-        \\  const result = { type: shape.type, start, end };
-        \\  const properties = shape.properties, keys = shape.keys;
-        \\  for (let k = 0; k < keys.length; k++) result[keys[k]] = properties[keys[k]];
-        \\  const fields = shape.fields, list = shape.list, extra = count - fields.length;
-        \\  for (let i = 0, j = base; i < fields.length; i++) {
-        \\    if (i !== list) {
-        \\      const x = _u32[j++];
-        \\      result[fields[i]] = x !== NULL ? node(x) : null;
-        \\      continue;
-        \\    }
-        \\    const items = new Array(extra + 1);
-        \\    for (let k = 0; k <= extra; k++) {
-        \\      const x = _u32[j++];
-        \\      items[k] = x !== NULL ? node(x) : null;
-        \\    }
-        \\    result[fields[i]] = items;
-        \\  }
-        \\  return result;
-        \\}
-        \\
-    );
     try writeKindDecoders(w);
     try writeDecode(w);
     try w.writeAll("export { BindingFlags, decode, TokenKind };\n");
@@ -474,13 +446,12 @@ const inline_kinds = [_][]const u8{
     "assignment_expression",    "return_statement",    "logical_expression",
     "jsx_element",              "jsx_opening_element", "jsx_closing_element",
     "jsx_identifier",           "jsx_attribute",       "jsx_text",
-    "jsx_expression_container", "dialect",
+    "jsx_expression_container",
 };
 
 const decoder_fields = [_][]const u8{
     "_isTs", "_src",    "_u32",         "fnParams",
-    "node",  "nodeArr", "nodeArrHoles", "shapes",
-    "str",
+    "node",  "nodeArr", "nodeArrHoles", "str",
 };
 
 fn isInlineKind(comptime tag: []const u8) bool {
@@ -575,7 +546,7 @@ fn writeDecode(w: *Writer) !void {
         std.debug.assert(@offsetOf(Comment, "flags") == 0);
     }
     try w.print(
-        \\function decode(buffer, source, path, shapes) {{
+        \\function decode(buffer, source, path) {{
         \\  const _u8 = new Uint8Array(buffer);
         \\  const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
         \\  if (BIG_ENDIAN) _hostOrder(_u32, 0, {[header_words]d});
@@ -1322,11 +1293,6 @@ const specials = [_]Special{
     \\return { type: "Identifier", start, end, decorators: [], name: "this", optional: false,
     \\  typeAnnotation: @type_annotation };
     },
-    .{ .tag = "dialect", .body =
-    \\const shape = shapes[flags];
-    \\if (shape.text) return _src.slice(start, end);
-    \\return shaped(shape, start, end, node, _u32, _extraBase + f1, f2);
-    },
 };
 
 const pattern_ts_fields = .{ "decorators", "optional", "type_annotation" };
@@ -1477,7 +1443,6 @@ fn fieldValue(comptime tag: []const u8, comptime T: type, comptime index: usize)
 }
 
 fn isHoleyArray(comptime tag: []const u8, comptime name: []const u8) bool {
-    if (eql(tag, "dialect")) return true;
     return eql(name, "elements") and (eql(tag, "array_expression") or eql(tag, "array_pattern"));
 }
 

@@ -1,7 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const static_semantics = @import("spec").static_semantics;
-const dialect = @import("../dialect/root.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -267,9 +266,6 @@ pub const ScopeTracker = struct {
                 try self.pushScope(.class, index, flags);
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
-            .dialect => if (dialect.shape(data.dialect.kind).block_scope) {
-                try self.pushScope(.block, index, self.inheritStrictFlag());
-            },
             .decorator => {
                 try self.decorator_saved.append(self.allocator, self.current);
                 const on_class = parent != .null and self.tree.data(parent) == .class;
@@ -358,7 +354,6 @@ pub const ScopeTracker = struct {
         .ts_module_declaration,
         .class,
         .static_block,
-        .dialect,
     });
 
     fn hasParameterExpression(tree: *const ast.Tree, params: ast.NodeIndex) bool {

@@ -19,7 +19,6 @@ const parenthesized = @import("parenthesized.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
 const static_semantics = @import("spec").static_semantics;
-const dialect = @import("../dialect/root.zig");
 const ts = @import("ts/types.zig");
 
 pub const ParseExpressionOptions = struct {
@@ -47,18 +46,6 @@ pub inline fn parseExpressionFrom(
     const is_ts = parser.tree.isTs();
 
     while (true) {
-        if (comptime dialect.has(.operator)) {
-            switch (try dialect.claim(.operator, parser, .{ left, min_precedence })) {
-                .decline => {},
-                .node => |node| {
-                    left = node;
-                    continue;
-                },
-                .failed => return null,
-                .end => break,
-            }
-        }
-
         const current_token = parser.current_token;
 
         // `f<T>(x)` binds as a call before the precedence gate can read a relational `f < T`
@@ -105,10 +92,6 @@ fn parsePrefix(
     precedence: u8,
     options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
-    if (comptime dialect.has(.expression)) {
-        if (try dialect.at(.expression, parser, .{})) |expression| return expression;
-    }
-
     const tag = parser.current_token.tag;
 
     if (tag == .identifier) {
