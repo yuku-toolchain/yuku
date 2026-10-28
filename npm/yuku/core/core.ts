@@ -96,7 +96,6 @@ const MEMORY_IDLE_MS = 10_000;
 
 const globals = globalThis as Globals;
 const encoder = new TextEncoder();
-const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const instances = new WeakMap<WebAssembly.Module, Instance>();
 const NodeBuffer = globals.process?.versions?.node === undefined ? undefined : globals.Buffer;
 

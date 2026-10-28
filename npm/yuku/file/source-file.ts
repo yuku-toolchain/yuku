@@ -50,10 +50,6 @@ export interface ParseOptions extends FileOptions {
   semantic?: boolean;
   /** The file path, which `lang` and `sourceType` default from. */
   path?: string;
-  /**
-   * The Zig core to run, such as one built with other options.
-   * @default the core yuku ships
-   */
   core?: Core;
 }
 

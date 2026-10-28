@@ -199,8 +199,6 @@ const native_platforms = [_]struct { name: []const u8, query: std.Target.Query }
     .{ .name = "win32-x64", .query = .{ .cpu_arch = .x86_64, .os_tag = .windows, .abi = .gnu } },
 };
 
-/// Builds the Node-API addon for each platform the `yuku` package ships, with the options the
-/// `yuku` dependency is built with, and installs each as `native/<platform>.node`.
 pub fn addAddons(b: *std.Build, yuku: *std.Build.Dependency) void {
     for (native_platforms) |platform| {
         const addon = addAddonFrom(b, yuku.builder, platform.name);
@@ -286,8 +284,6 @@ fn createTransfer(b: *std.Build, parser: *std.Build.Module) *std.Build.Module {
     });
 }
 
-/// Builds `<name>.wasm` for the `wasm` option of the `yuku` npm package, with the options the
-/// `yuku` dependency is built with.
 pub fn addWasm(
     b: *std.Build,
     yuku: *std.Build.Dependency,

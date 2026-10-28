@@ -268,7 +268,6 @@ pub const Tree = struct {
             try self.extras.ensureUnusedCapacity(self.arena.allocator(), children.len);
         }
         const dest = self.extras.addManyAsSliceAssumeCapacity(children.len);
-        // fixed-size copies lower to plain loads and stores, where a call to memcpy would not
         switch (children.len) {
             0 => {},
             1 => dest[0] = children[0],
@@ -2550,14 +2549,6 @@ pub const NodeData = union(enum) {
             .while_statement,
             .do_while_statement,
             => true,
-            else => false,
-        };
-    }
-
-    /// Whether the node is a switch.
-    pub fn isSwitch(self: NodeData) bool {
-        return switch (self) {
-            .switch_statement => true,
             else => false,
         };
     }

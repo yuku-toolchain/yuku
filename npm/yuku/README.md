@@ -94,7 +94,6 @@ The parser recovers from errors, so a file with diagnostics still has a program.
 | `tokens`         | `false`                                             | Collect `file.tokens`                                                                                                                     |
 | `semantic`       | `false`                                             | Build the [semantic model](#semantic-analysis)                                                                                            |
 | `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations                                                                     |
-| `core`           | the core yuku ships                                 | The Zig core to run, such as one built with other options |
 
 A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws.
 

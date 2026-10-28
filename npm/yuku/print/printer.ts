@@ -621,7 +621,6 @@ class NodePrinter extends Output implements Printer {
     const flags = CTX_NO_CALL | CTX_NO_IN | CTX_NO_INSTANTIATION | CTX_NO_CHAIN;
     if ((ctx & flags) !== 0 && this.flagNeedsParens(node, type, ctx)) return true;
     if (prec <= PREC_ASSIGNMENT) return prec === PREC_ASSIGNMENT && type === "SequenceExpression";
-    // a custom-printed node may not let a subscript follow it
     if (prec >= PREC_CALL) {
       if (type === "ChainExpression" || type === "JSXElement" || type === "JSXFragment") return true;
       if (hasOwn.call(this.printers, type)) return true;

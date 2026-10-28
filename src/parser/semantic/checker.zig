@@ -174,7 +174,10 @@ pub const Checker = struct {
                     // https://tc39.es/ecma262/#sec-variablestatements-in-catch-blocks
                     if (existing.flags.catch_var) {
                         const catch_node = ctx.scope.get(scope_id).node;
-                        if (!hasSimpleCatchParameters(ctx.tree, catch_node)) {
+                        const param = ctx.tree.data(catch_node).catch_clause.param;
+                        const simple_param = param != .null and
+                            ctx.tree.data(param) == .binding_identifier;
+                        if (!simple_param) {
                             try self.reportRedeclaration(name, node_index, sym, ctx);
                             break;
                         }
@@ -1140,7 +1143,7 @@ pub const Checker = struct {
         while (iter.next()) |i| {
             const data = ctx.tree.data(i);
             if (data.isIteration()) return true;
-            if (or_switch and data.isSwitch()) return true;
+            if (or_switch and data == .switch_statement) return true;
             if (isFunctionBoundary(data)) return false;
         }
         return false;
@@ -1472,12 +1475,6 @@ pub const Checker = struct {
         return self.allocator.print(format, args);
     }
 };
-
-// whether a catch clause takes only an identifier
-fn hasSimpleCatchParameters(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-    const clause = tree.data(node).catch_clause;
-    return clause.param != .null and tree.data(clause.param) == .binding_identifier;
-}
 
 inline fn isStrict(ctx: *const SemanticCtx) bool {
     return ctx.scope.get(ctx.scope.current).flags.strict;

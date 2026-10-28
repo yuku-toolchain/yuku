@@ -371,7 +371,6 @@ pub fn keywordTag(lexeme: []const u8) TokenTag {
     return entry.tag;
 }
 
-/// Equal-length compare of a keyword's 2 to 16 bytes, so it never calls out to `eqlBytes`.
 inline fn keywordEql(a: []const u8, b: []const u8) bool {
     comptime std.debug.assert(keyword_length_max <= 16);
     std.debug.assert(a.len == b.len);
@@ -381,7 +380,6 @@ inline fn keywordEql(a: []const u8, b: []const u8) bool {
     return edgesEql(u16, a, b);
 }
 
-// the first and last `@sizeOf(T)` bytes overlap, so together they cover up to twice that
 inline fn edgesEql(comptime T: type, a: []const u8, b: []const u8) bool {
     const n = @sizeOf(T);
     std.debug.assert(a.len >= n);

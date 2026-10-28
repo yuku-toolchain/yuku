@@ -1178,7 +1178,7 @@ pub const Lexer = struct {
         self.cursor = pos;
     }
 
-    pub inline fn recordComment(
+    inline fn recordComment(
         self: *Lexer,
         @"type": ast.Comment.Type,
         start: u32,
