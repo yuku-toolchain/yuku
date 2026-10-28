@@ -14,7 +14,6 @@
 // node fields
 //
 //   bool               1 flag bit
-//   dialect kind       16 flag bits, one layout for every dialect
 //   enum               ceil(log2(n)) flag bits for n variants
 //   NodeIndex          1 u32 slot, 0xFFFFFFFF for null
 //   IndexRange         2 u32 slots (start, len)
@@ -33,7 +32,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const ast = @import("parser").ast;
-const dialect = @import("parser").dialect;
 
 pub const semantic = @import("semantic.zig");
 pub const utf16 = @import("utf16.zig");
@@ -129,7 +127,6 @@ pub fn enumBitWidth(comptime E: type) u8 {
 
 fn fieldSize(comptime Field: type, comptime T: type) Layout {
     if (Field == bool) return .{ .bit = 1, .slot = 0 };
-    if (Field == dialect.Kind) return .{ .bit = 16, .slot = 0 };
     if (Field == ?ast.ImportPhase) return .{ .bit = 1 + enumBitWidth(ast.ImportPhase), .slot = 0 };
     if (Field == ?ast.Hashbang) return .{ .bit = 1, .slot = 2 };
     if (Field == ast.NodeIndex) return .{ .bit = 0, .slot = 1 };

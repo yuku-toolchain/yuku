@@ -268,7 +268,6 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | Resolution as tsc or scope-manager defines it | A snippet in `test/analyzer/tsc-differential.test.ts` or `scope-manager-differential.test.ts` |
 | A real codebase to analyze | An entry in `test/projects/manifest.ts`, pinned to a commit |
 | Walking, builders, and utils | `test/ast/` |
-| The dialect mechanism | `src/parser/testing/dialect.zig`, a dialect that claims every position, and `test/dialect/` for its JavaScript side |
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
 | A small pure Zig helper | An inline `test` block next to the function |
 
@@ -284,8 +283,8 @@ CodSpeed measures every pull request against `main` in its CPU simulation mode, 
 
 ### Documentation
 
-- **One home, two guides beside their code.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents Yuku and its Zig API. The package's README, `npm/yuku/README.md`, documents the JavaScript API, which npm and GitHub show, and `src/parser/dialect/README.md` documents dialects. None repeats another, and each links to the others where they meet.
-- **Docs change with the API.** A change to a public API updates its guide in the same change, then `bun run docs:llms` regenerates `llms.txt` and `llms-full.txt` from all three.
+- **One home, one guide beside its code.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents Yuku and its Zig API. The package's README, `npm/yuku/README.md`, documents the JavaScript API, which npm and GitHub show. Neither repeats the other, and each links to the other where they meet.
+- **Docs change with the API.** A change to a public API updates its guide in the same change, then `bun run docs:llms` regenerates `llms.txt` and `llms-full.txt` from both.
 - **Every example runs.** An example that states what it returns returns exactly that.
 
 ### Changes

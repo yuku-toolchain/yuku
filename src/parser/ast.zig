@@ -264,11 +264,20 @@ pub const Tree = struct {
     pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
         std.debug.assert(self.extras.items.len + children.len <= std.math.maxInt(u32));
         const start: u32 = @intCast(self.extras.items.len);
-        if (self.extras.items.len + children.len <= self.extras.capacity) {
-            self.extras.appendSliceAssumeCapacity(children);
-        } else {
-            try self.extras.appendSlice(self.arena.allocator(), children);
+        if (self.extras.items.len + children.len > self.extras.capacity) {
+            try self.extras.ensureUnusedCapacity(self.arena.allocator(), children.len);
         }
+        const dest = self.extras.addManyAsSliceAssumeCapacity(children.len);
+        // fixed-size copies lower to plain loads and stores, where a call to memcpy would not
+        switch (children.len) {
+            0 => {},
+            1 => dest[0] = children[0],
+            2 => dest[0..2].* = children[0..2].*,
+            3 => dest[0..3].* = children[0..3].*,
+            4 => dest[0..4].* = children[0..4].*,
+            else => @memcpy(dest, children),
+        }
+        std.debug.assert(self.extras.items.len == start + children.len);
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
@@ -2210,13 +2219,6 @@ pub const JSXSpreadChild = struct {
     expression: NodeIndex,
 };
 
-/// A node of the compiled-in dialect, see [Dialects](https://yuku.fyi/parser/dialect/).
-pub const Dialect = struct {
-    kind: @import("dialect/root.zig").Kind,
-    /// In source order, `.null` for an absent part.
-    children: IndexRange,
-};
-
 pub const NodeData = union(enum) {
     sequence_expression: SequenceExpression,
     parenthesized_expression: ParenthesizedExpression,
@@ -2392,8 +2394,6 @@ pub const NodeData = union(enum) {
     jsx_text: JSXText,
     jsx_spread_child: JSXSpreadChild,
 
-    dialect: Dialect,
-
     /// Whether the node is an expression, counting only expression forms of `function` and `class`.
     pub fn isExpression(self: NodeData) bool {
         return switch (self) {
@@ -2550,7 +2550,6 @@ pub const NodeData = union(enum) {
             .while_statement,
             .do_while_statement,
             => true,
-            .dialect => |node| @import("dialect/root.zig").shape(node.kind).iteration,
             else => false,
         };
     }
@@ -2559,7 +2558,6 @@ pub const NodeData = union(enum) {
     pub fn isSwitch(self: NodeData) bool {
         return switch (self) {
             .switch_statement => true,
-            .dialect => |node| @import("dialect/root.zig").shape(node.kind).@"switch",
             else => false,
         };
     }

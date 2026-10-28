@@ -27,13 +27,6 @@ const GUIDES = [
     title: "JavaScript",
     description: "Use Yuku from JavaScript and TypeScript with the yuku package.",
   },
-  {
-    slug: "dialects",
-    path: "src/parser/dialect/README.md",
-    url: "tree/main/src/parser/dialect#readme",
-    title: "Dialects",
-    description: "Add your own syntax to JavaScript, TypeScript, and JSX.",
-  },
 ];
 
 const PLAYGROUND_URL = "https://playground.yuku.fyi";
@@ -48,7 +41,6 @@ const ORDER = [
   "testing",
   "security",
   "javascript",
-  "dialects",
 ];
 
 async function main() {

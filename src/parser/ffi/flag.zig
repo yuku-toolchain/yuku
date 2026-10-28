@@ -9,7 +9,6 @@ pub const preserve_parens = 1 << 5;
 pub const semantic_errors = 1 << 6;
 pub const attach_comments = 1 << 7;
 pub const tokens = 1 << 8;
-pub const dialect = 1 << 9;
 pub const utf16 = 1 << 10;
 
 pub fn parseOptions(flags: u32) parser.Options {
@@ -19,6 +18,5 @@ pub fn parseOptions(flags: u32) parser.Options {
         .preserve_parens = flags & preserve_parens != 0,
         .comments = if (flags & attach_comments != 0) .attach else .collect,
         .tokens = flags & tokens != 0,
-        .dialect = flags & dialect != 0,
     };
 }

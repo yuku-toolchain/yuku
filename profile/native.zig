@@ -30,7 +30,6 @@ pub fn main(init: std.process.Init) !void {
         .preserve_parens = true,
         .comments = .collect,
         .tokens = false,
-        .dialect = false,
     });
     defer tree.deinit();
     assert(tree.root != .null);

@@ -14,7 +14,7 @@ import { diagnosticAt, SourceFile, type FileOptions } from "./source-file";
 
 export interface ProjectOptions {
   /**
-   * The Zig core to run, such as one with a dialect compiled in.
+   * The Zig core to run, such as one built with other options.
    * @default the core yuku ships
    */
   core?: Core;

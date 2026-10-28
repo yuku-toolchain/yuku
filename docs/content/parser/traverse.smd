@@ -54,7 +54,6 @@ pub fn exit_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *Ctx) 
 - An enter hook returns an `Action`, or `std.mem.Allocator.Error!Action` to `try` an allocation.
 - A misspelled hook or a wrong payload type is a compile error. A hook that is not `pub` is never called.
 - At each node, `enter_node` runs, then `enter_<tag>` unless `enter_node` returned something other than `.proceed`, then the children in field order, then `exit_<tag>` and `exit_node`.
-- A [dialect's](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme) nodes reach `enter_dialect` and `exit_dialect` with an `ast.Dialect`.
 
 | `Action`   | Effect                                                             |
 | ---------- | ------------------------------------------------------------------ |

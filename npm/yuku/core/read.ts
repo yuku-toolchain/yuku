@@ -2,13 +2,12 @@ import type { ParseOptions } from "../file/source-file";
 import type { SourceLang, SourceType } from "../types";
 import { addons } from "#native";
 import shipped from "#wasm";
-import { Core, type Dialect, type Entry, type Shape } from "./core";
+import { Core, type Entry } from "./core";
 
 export interface Read {
   readonly buffer: ArrayBuffer;
   readonly lang: SourceLang;
   readonly sourceType: SourceType;
-  readonly shapes: Shape[] | null;
 }
 
 const LANGS: Record<string, number> = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
@@ -18,7 +17,6 @@ const PRESERVE_PARENS = 1 << 5;
 const SEMANTIC_ERRORS = 1 << 6;
 const ATTACH_COMMENTS = 1 << 7;
 const TOKENS = 1 << 8;
-const DIALECT = 1 << 9;
 
 const shippedCore = new Core({ wasm: shipped, addons });
 const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
@@ -40,9 +38,7 @@ export function sourceText(source: string | Uint8Array): { text: string; malform
 export function read(source: string, options: ParseOptions, entry: Entry): Read {
   const backend = (options.core ?? shippedCore).backend();
   const path = options.path ?? "";
-  const { dialect } = backend;
-  const file = dialect === null || options.lang !== undefined ? undefined : fileOf(dialect, path);
-  const lang = options.lang ?? file?.lang ?? langFromPath(path);
+  const lang = options.lang ?? langFromPath(path);
   const langBits = LANGS[lang];
   if (langBits === undefined) {
     throw new TypeError('`lang` must be "js", "jsx", "ts", "tsx", or "dts"');
@@ -57,9 +53,8 @@ export function read(source: string, options: ParseOptions, entry: Entry): Read 
   if (options.semanticErrors === true) flags |= SEMANTIC_ERRORS;
   if (options.attachComments === true) flags |= ATTACH_COMMENTS;
   if (options.tokens === true) flags |= TOKENS;
-  if (file !== undefined) flags |= DIALECT;
   const buffer = backend.run(entry, source, flags);
-  return { buffer, lang, sourceType, shapes: file?.shapes ?? null };
+  return { buffer, lang, sourceType };
 }
 
 function langFromPath(path: string): SourceLang {
@@ -72,12 +67,6 @@ function langFromPath(path: string): SourceLang {
 
 function sourceTypeFromPath(path: string): SourceType {
   return /\.c[jt]s$/.test(path) ? "commonjs" : "module";
-}
-
-function fileOf(dialect: Dialect, path: string): { lang: SourceLang; shapes: Shape[] } | undefined {
-  const { files, shapes } = dialect;
-  const file = path === "" ? files[0] : files.find(({ extension }) => path.endsWith(extension));
-  return file === undefined ? undefined : { lang: file.lang, shapes };
 }
 
 function malformedAt(bytes: Uint8Array): number {

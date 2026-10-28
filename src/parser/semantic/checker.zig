@@ -335,7 +335,6 @@ pub const Checker = struct {
             .export_named_declaration,
             .export_default_declaration,
             .ts_module_block,
-            .dialect,
             => !is_strict or !through_labels,
             .if_statement => !is_strict and !through_labels,
             else => false,
@@ -1474,24 +1473,10 @@ pub const Checker = struct {
     }
 };
 
-// whether a catch clause, or a dialect node that binds like one, takes only identifiers
+// whether a catch clause takes only an identifier
 fn hasSimpleCatchParameters(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-    switch (tree.data(node)) {
-        .catch_clause => |clause| {
-            return clause.param != .null and tree.data(clause.param) == .binding_identifier;
-        },
-        .dialect => |dialect_node| {
-            for (tree.extra(dialect_node.children)) |child| {
-                if (child == .null) continue;
-                switch (tree.data(child)) {
-                    .array_pattern, .object_pattern, .assignment_pattern => return false,
-                    else => {},
-                }
-            }
-            return true;
-        },
-        else => unreachable,
-    }
+    const clause = tree.data(node).catch_clause;
+    return clause.param != .null and tree.data(clause.param) == .binding_identifier;
 }
 
 inline fn isStrict(ctx: *const SemanticCtx) bool {

@@ -83,29 +83,11 @@ const NO_HANDLERS: Handlers = { enter: [], leave: [], children: null };
 const NO_KEYS: readonly string[] = [];
 const NO_NODES: Node[] = [];
 
-const childKeys: Record<string, string[]> = Object.assign(
+/** The fields of each node type that hold child nodes, in source order. */
+export const CHILD_KEYS: Readonly<Record<string, readonly string[]>> = Object.assign(
   Object.create(null),
   GENERATED_CHILD_KEYS,
 );
-const widened = new Set<string>();
-
-/** The fields of each node type that hold child nodes, in source order. */
-export const CHILD_KEYS: Readonly<Record<string, readonly string[]>> = childKeys;
-
-/** @internal */
-export function addChildKeys(type: string, keys: readonly string[]): void {
-  const existing = childKeys[type];
-  if (existing === undefined) {
-    childKeys[type] = [...keys];
-    return;
-  }
-  for (const key of keys) {
-    if (!existing.includes(key)) {
-      existing.push(key);
-      widened.add(type);
-    }
-  }
-}
 
 /** Walks a node depth-first in source order, every visitor of a list in one pass. */
 export function walk(node: Node, visitors: Visitors | readonly Visitors[]): void {
@@ -417,7 +399,7 @@ export class Dispatch {
 function childVisitorOf(type: string): ChildVisitor | null {
   const keys = CHILD_KEYS[type];
   if (keys === undefined || keys.length === 0) return null;
-  const generated = widened.has(type) ? undefined : CHILD_VISITORS[type];
+  const generated = CHILD_VISITORS[type];
   if (generated !== undefined) return generated;
   return (node, visit, state) => {
     for (const key of keys) if (!visit(state, node[key], key)) return false;

@@ -16,7 +16,6 @@ const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
 const ts_types = @import("ts/types.zig");
 const ts_decl = @import("ts/statements.zig");
-const dialect = @import("../dialect/root.zig");
 
 const ParseStatementOptions = struct {
     can_be_single_statement_context: bool = false,
@@ -29,10 +28,6 @@ pub fn parseStatement(parser: *Parser, options: ParseStatementOptions) Error!?as
 
     parser.context.directive_prologue = parser.context.directive_prologue and
         parser.current_token.tag == .string_literal;
-
-    if (comptime dialect.has(.statement)) {
-        if (try dialect.at(.statement, parser, .{})) |statement| return statement;
-    }
 
     if (parser.current_token.tag == .identifier) {
         return parseExpressionOrLabeledStatementOrDirective(parser);

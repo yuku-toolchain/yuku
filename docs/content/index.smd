@@ -59,7 +59,7 @@ var tree = try parser.parse(allocator, "const x: number = 1;", .{ .lang = .ts })
 defer tree.deinit();
 ```
 
-These pages document it: the [parser](/parser/), the [AST](/parser/ast/), [semantic analysis](/parser/semantic/), [traversal](/parser/traverse/), and [codegen](/parser/codegen/). To add syntax of your own, see [Dialects](https://github.com/yuku-toolchain/yuku/tree/main/src/parser/dialect#readme).
+These pages document it: the [parser](/parser/), the [AST](/parser/ast/), [semantic analysis](/parser/semantic/), [traversal](/parser/traverse/), and [codegen](/parser/codegen/).
 
 ## [Performance]($section.id('performance'))
 

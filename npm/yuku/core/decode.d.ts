@@ -16,7 +16,6 @@ import type {
   TokenKindMap,
   TokenList,
 } from "../types";
-import type { Shape } from "./core";
 
 export interface Semantic {
   scope: {
@@ -94,7 +93,6 @@ export declare function decode(
   buffer: ArrayBuffer,
   source: string,
   path: string | null,
-  shapes: Shape[] | null,
 ): Decoded;
 export declare const TokenKind: TokenKindMap;
 export declare const BindingFlags: BindingFlagMap;
