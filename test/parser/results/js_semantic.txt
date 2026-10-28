@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4190/4190 (100.00%)
+Passed:       4196/4196 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
@@ -4260,6 +4260,14 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
    | ^^^^^
    |
 
+✓ test/parser/suite/js/semantic/1c06f528e9bf0344.module.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | let <!-- c
+   | ^^^
+ 2 | if (x) {}
+   |
+
 ✓ test/parser/suite/js/semantic/1c0e03441df377ea.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -7218,6 +7226,15 @@ error: Label 'a' does not denote an iteration statement
    = help: A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement
 
 
+✓ test/parser/suite/js/semantic/2d0df149a26755b5.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | "use strict";
+ 2 | let
+   | ^^^
+ 3 | if (x) {}
+   |
+
 ✓ test/parser/suite/js/semantic/2d2f1465ff1589d3.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7990,6 +8007,14 @@ error: Decimals with leading zeros are not allowed in strict mode
    |
    = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
 
+
+✓ test/parser/suite/js/semantic/3243f4ed2181c1f9.module.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | export default let
+   |                ^^^
+ 2 | if (x) {}
+   |
 
 ✓ test/parser/suite/js/semantic/324d47cad7c154d9.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
@@ -15259,6 +15284,17 @@ error: 'with' statements are not allowed in strict mode
 15 |       }
    | ^^^^^^^
 16 |     })();
+   |
+
+✓ test/parser/suite/js/semantic/60e6476678cd0388.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | export default 1;
+   | ~~~~~~~~~~~~~~~~~ first exported here
+ 2 | export * as default from "y";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 3 | 
    |
 
 ✓ test/parser/suite/js/semantic/60f744adcc72d83d.module.js
@@ -22664,6 +22700,18 @@ error: Yield expression is not allowed in formal parameters
    |
  1 | function* a(){ ({ *b({[yield]: c}){} }); }
    |                        ^^^^^
+   |
+
+✓ test/parser/suite/js/semantic/91697785ff22ea30.module.js
+error: Duplicate export of 'z'
+   |
+ 1 | let x;
+ 2 | export { x as z };
+   |          ~~~~~~ first exported here
+ 3 | export * as z from "y";
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 4 | 
    |
 
 ✓ test/parser/suite/js/semantic/916b5dc33336db38.module.js
@@ -35797,6 +35845,14 @@ error: Cannot use import statement outside a module
    |
  1 | import v from './import.js';
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+✓ test/parser/suite/js/semantic/e02c3a3490be6996.module.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | let
+   | ^^^
+ 2 | if (x) {}
    |
 
 ✓ test/parser/suite/js/semantic/e05d2d93d53efa9d.module.js
