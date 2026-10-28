@@ -19,7 +19,6 @@ const parenthesized = @import("parenthesized.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
 const static_semantics = @import("spec").static_semantics;
-const dialect = @import("../dialect/root.zig");
 const ts = @import("ts/types.zig");
 
 pub const ParseExpressionOptions = struct {
@@ -32,33 +31,10 @@ pub fn parseExpression(
     min_precedence: u8,
     options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
-    const first = try parsePrefix(parser, min_precedence, options) orelse return null;
-    return parseExpressionFrom(parser, first, min_precedence, options);
-}
-
-/// Continues an expression from its first operand, already parsed.
-pub inline fn parseExpressionFrom(
-    parser: *Parser,
-    first: ast.NodeIndex,
-    min_precedence: u8,
-    options: ParseExpressionOptions,
-) Error!?ast.NodeIndex {
-    var left = first;
+    var left = try parsePrefix(parser, min_precedence, options) orelse return null;
     const is_ts = parser.tree.isTs();
 
     while (true) {
-        if (comptime dialect.has(.operator)) {
-            switch (try dialect.claim(.operator, parser, .{ left, min_precedence })) {
-                .decline => {},
-                .node => |node| {
-                    left = node;
-                    continue;
-                },
-                .failed => return null,
-                .end => break,
-            }
-        }
-
         const current_token = parser.current_token;
 
         // `f<T>(x)` binds as a call before the precedence gate can read a relational `f < T`
@@ -105,10 +81,6 @@ fn parsePrefix(
     precedence: u8,
     options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
-    if (comptime dialect.has(.expression)) {
-        if (try dialect.at(.expression, parser, .{})) |expression| return expression;
-    }
-
     const tag = parser.current_token.tag;
 
     if (tag == .identifier) {

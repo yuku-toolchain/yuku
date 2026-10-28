@@ -13,7 +13,6 @@ const class = @import("class.zig");
 const decorator = @import("decorators.zig");
 const variables = @import("variables.zig");
 const ts = @import("ts/statements.zig");
-const dialect = @import("../dialect/root.zig");
 
 // `start_from_param` lets `export public import x =` span from the legacy modifier
 pub fn parseImportDeclaration(parser: *Parser, start_from_param: ?u32) Error!?ast.NodeIndex {
@@ -441,18 +440,6 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
         }
 
         if (tag == .at) {
-            if (comptime dialect.has(.expression)) {
-                if (try dialect.at(.expression, parser, .{})) |claimed| {
-                    const first = claimed orelse return null;
-                    const expression = try expressions.parseExpressionFrom(
-                        parser,
-                        first,
-                        Precedence.Assignment,
-                        .{},
-                    ) orelse return null;
-                    return .{ .declaration = expression, .needs_semicolon = true };
-                }
-            }
             break :blk try decorator.parseDecoratedClass(parser, .{ .is_default_export = true });
         }
 
@@ -799,9 +786,6 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
 
 fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .string_literal) {
-        if (comptime dialect.has(.module_specifier)) {
-            if (try dialect.at(.module_specifier, parser, .{})) |specifier| return specifier;
-        }
         try parser.reportExpected(parser.current_token.span, "Expected module specifier", .{
             .help = "Module specifiers must be string literals, e.g., './module.js' or 'package'",
         });

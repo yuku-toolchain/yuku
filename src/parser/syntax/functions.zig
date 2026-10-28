@@ -7,7 +7,6 @@ const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const decorator = @import("decorators.zig");
 const ts = @import("ts/types.zig");
-const dialect = @import("../dialect/root.zig");
 
 const ParseFunctionOptions = struct {
     is_async: bool = false,
@@ -134,22 +133,8 @@ pub const BodyPresence = enum { required, optional };
 
 // `.null` when an optional body is absent
 pub inline fn parseFunctionBody(parser: *Parser, presence: BodyPresence) Error!?ast.NodeIndex {
-    if (comptime dialect.has(.function_body)) {
-        if (try parseDialectFunctionBody(parser)) |body| return body;
-    }
-
     if (presence == .optional and parser.current_token.tag != .left_brace) return .null;
     return parseBlockFunctionBody(parser);
-}
-
-fn parseDialectFunctionBody(parser: *Parser) Error!??ast.NodeIndex {
-    const saved = parser.context;
-    parser.context.@"return" = true;
-    parser.context.directive_prologue = true;
-    defer parser.context.@"return" = saved.@"return";
-    defer parser.context.directive_prologue = saved.directive_prologue;
-
-    return dialect.at(.function_body, parser, .{});
 }
 
 fn parseBlockFunctionBody(parser: *Parser) Error!?ast.NodeIndex {

@@ -53,7 +53,7 @@ export interface Printer {
   block(items: Node[]): void;
 }
 
-/** Prints the node types the printer does not know, such as a dialect's, by `type`. */
+/** Prints the node types the printer does not know, by `type`. */
 export type Printers = {
   [K in T.NodeType]?: (node: T.NodeOfType<K>, printer: Printer) => void;
 };
@@ -132,6 +132,7 @@ const CTX_TAGGED = 1 << 9;
 const CTX_DEFER_TRAILING = 1 << 10;
 const CTX_NO_DECORATORS = 1 << 11;
 const CTX_POSTFIX_OPERAND = 1 << 12;
+const CTX_NO_CHAIN = 1 << 13;
 
 const TPREC_TRAILING = 1;
 const TPREC_UNION = 2;
@@ -617,10 +618,13 @@ class NodePrinter extends Output implements Printer {
   needsParens(node: Node, type: string, ctx: number): boolean {
     const prec = ctx & CTX_PREC;
     if (this.lead !== LEAD_NONE && this.leadNeedsParens(node, type)) return true;
-    const flags = CTX_NO_CALL | CTX_NO_IN | CTX_NO_INSTANTIATION;
+    const flags = CTX_NO_CALL | CTX_NO_IN | CTX_NO_INSTANTIATION | CTX_NO_CHAIN;
     if ((ctx & flags) !== 0 && this.flagNeedsParens(node, type, ctx)) return true;
     if (prec <= PREC_ASSIGNMENT) return prec === PREC_ASSIGNMENT && type === "SequenceExpression";
-    if (prec >= PREC_CALL && type === "ChainExpression") return true;
+    if (prec >= PREC_CALL) {
+      if (type === "ChainExpression" || type === "JSXElement" || type === "JSXFragment") return true;
+      if (hasOwn.call(this.printers, type)) return true;
+    }
     return this.precedenceOf(node, type) < prec;
   }
 
@@ -656,6 +660,7 @@ class NodePrinter extends Output implements Printer {
       }
     }
     if ((ctx & CTX_NO_INSTANTIATION) !== 0 && type === "TSInstantiationExpression") return true;
+    if ((ctx & CTX_NO_CHAIN) !== 0 && type === "ChainExpression") return true;
     return (
       (ctx & CTX_NO_IN) !== 0 &&
       type === "BinaryExpression" &&
@@ -1086,6 +1091,7 @@ class NodePrinter extends Output implements Printer {
       case "ChainExpression":
         return ctx;
       case "TSNonNullExpression":
+        return PREC_POSTFIX | CTX_NO_INSTANTIATION | CTX_NO_CHAIN;
       case "TSInstantiationExpression":
         return PREC_POSTFIX | CTX_NO_INSTANTIATION;
       case "TSAsExpression":

@@ -28,7 +28,7 @@ import {
 } from "./semantic";
 
 export interface FileOptions {
-  /** Parses without the dialect when set. @default from `path` or the dialect, else "js" */
+  /** @default from `path`, else "js" */
   lang?: SourceLang;
   /**
    * `"commonjs"` is a script whose top level allows `return`.
@@ -48,12 +48,8 @@ export interface FileOptions {
 export interface ParseOptions extends FileOptions {
   /** Build the semantic model. @default false */
   semantic?: boolean;
-  /** The file path, which `lang`, `sourceType` and the dialect default from. */
+  /** The file path, which `lang` and `sourceType` default from. */
   path?: string;
-  /**
-   * The Zig core to run, such as one with a dialect compiled in.
-   * @default the core yuku ships
-   */
   core?: Core;
 }
 
@@ -109,10 +105,10 @@ export class SourceFile {
     this.source = text;
     this.project = project;
     const entry = project !== null || options.semantic === true ? "analyze" : "parse";
-    const { buffer, lang, sourceType, shapes } = read(text, options, entry);
+    const { buffer, lang, sourceType } = read(text, options, entry);
     this.lang = lang;
     this.sourceType = sourceType;
-    this.syntax = decode(buffer, text, this.path, shapes);
+    this.syntax = decode(buffer, text, this.path);
     if (malformed >= 0) {
       const span = { start: malformed, end: malformed + 1 };
       const help = "Save the file as UTF-8";

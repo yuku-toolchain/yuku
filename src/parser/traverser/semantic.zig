@@ -115,7 +115,7 @@ pub const Ctx = struct {
         index: ast.NodeIndex,
         data: ast.NodeData,
     ) void {
-        self.symbols.exit(tag, data);
+        self.symbols.exit(tag);
         self.scope.exit(tag, index);
         if (data.isTypeContext()) {
             std.debug.assert(self.type_position_depth > 0);

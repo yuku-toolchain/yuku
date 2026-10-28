@@ -111,12 +111,6 @@ interface Diagnostic {
 /** The `type` of every node. */
 type NodeType = Node["type"];
 
-/** The `type` of every node except dialect nodes. */
-type StandardNodeType = Exclude<NodeType, keyof DialectNodes>;
-
-/** The dialect's nodes by `type`, which module augmentation adds to `Node`. */
-export interface DialectNodes {}
-
 /** The node, or union of nodes, carrying a given `type`. */
 type NodeOfType<K extends NodeType> = Extract<Node, { type: K }>;
 
@@ -1674,7 +1668,6 @@ type Node =
   | JSXEmptyExpression
   | JSXText
   | JSXSpreadChild
-  | DialectNodes[keyof DialectNodes]
   | TSTypeAnnotation
   | TSType
   | TSTypeParameter
@@ -1703,7 +1696,6 @@ export type {
   TokenList,
   NodeOfType,
   NodeType,
-  StandardNodeType,
   Comment,
   CommentType,
   CommentPosition,

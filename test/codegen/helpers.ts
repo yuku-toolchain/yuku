@@ -236,3 +236,18 @@ export function commentPlacements(): Snippet[] {
   }
   return placements;
 }
+
+export const NON_NULL_CHAINS: string[] = [
+    "(value?.prop)!;",
+    "(value?.[x])!;",
+    "(value?.())!;",
+    "(value?.prop)!.x;",
+    "(value?.prop)![x];",
+    "(value?.prop)!();",
+    "(value?.prop)!?.x;",
+    "(value?.prop)!!;",
+    "value?.prop!.x;",
+    "value?.[x]!;",
+    "value?.()!;",
+    "value?.prop!!;",
+];

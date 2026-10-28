@@ -21,48 +21,48 @@
     },
     "npm/darwin-arm64": {
       "name": "@yuku-toolchain/darwin-arm64",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/darwin-x64": {
       "name": "@yuku-toolchain/darwin-x64",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/linux-arm64": {
       "name": "@yuku-toolchain/linux-arm64",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/linux-x64": {
       "name": "@yuku-toolchain/linux-x64",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/wasm": {
       "name": "@yuku-toolchain/wasm",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/win32-arm64": {
       "name": "@yuku-toolchain/win32-arm64",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/win32-x64": {
       "name": "@yuku-toolchain/win32-x64",
-      "version": "0.24.0",
+      "version": "0.24.1",
     },
     "npm/yuku": {
       "name": "yuku",
-      "version": "0.24.0",
+      "version": "0.24.1",
       "devDependencies": {
         "tsdown": "0.23.0",
       },
       "optionalDependencies": {
-        "@yuku-toolchain/darwin-arm64": "0.24.0",
-        "@yuku-toolchain/darwin-x64": "0.24.0",
-        "@yuku-toolchain/linux-arm64": "0.24.0",
-        "@yuku-toolchain/linux-x64": "0.24.0",
-        "@yuku-toolchain/win32-arm64": "0.24.0",
-        "@yuku-toolchain/win32-x64": "0.24.0",
+        "@yuku-toolchain/darwin-arm64": "0.24.1",
+        "@yuku-toolchain/darwin-x64": "0.24.1",
+        "@yuku-toolchain/linux-arm64": "0.24.1",
+        "@yuku-toolchain/linux-x64": "0.24.1",
+        "@yuku-toolchain/win32-arm64": "0.24.1",
+        "@yuku-toolchain/win32-x64": "0.24.1",
       },
       "peerDependencies": {
-        "@yuku-toolchain/wasm": "0.24.0",
+        "@yuku-toolchain/wasm": "0.24.1",
       },
       "optionalPeers": [
         "@yuku-toolchain/wasm",

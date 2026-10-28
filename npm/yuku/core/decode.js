@@ -478,7 +478,6 @@ const CHILD_SLOTS = [
   [],
   [],
   [0, 1],
-  [1, 1],
 ];
 const IS_NODE = [
   true,
@@ -652,18 +651,7 @@ const IS_NODE = [
   true,
   true,
   true,
-  true,
 ];
-function shaped(shape, start, end, children) {
-  const node = Object.assign({ type: shape.type, start, end }, shape.properties);
-  const fields = shape.fields, list = shape.list, extra = children.length - fields.length;
-  for (let i = 0; i < fields.length; i++) {
-    node[fields[i]] = i === list
-      ? children.slice(i, i + extra + 1)
-      : children[list >= 0 && i > list ? i + extra : i];
-  }
-  return node;
-}
 function _decodeSequenceExpression(decoder, i, b, flags, start, end) { const { _u32, nodeArr } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f2) }; }
 function _decodeParenthesizedExpression(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null }; }
 function _decodeArrowFunctionExpression(decoder, i, b, flags, start, end) { const { _isTs, _u32, fnParams, node } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return _isTs
@@ -875,23 +863,14 @@ function _decodeTSExportAssignment(decoder, i, b, flags, start, end) { const { _
 function _decodeTSNamespaceExportDeclaration(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null }; }
 function _decodeTSImportEqualsDeclaration(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "TSImportEqualsDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, moduleReference: f2 !== NULL ? node(f2) : null, importKind: IMPORT_EXPORT_KINDS[flags & 1] }; }
 function _decodeTSExternalModuleReference(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "TSExternalModuleReference", start, end, expression: f1 !== NULL ? node(f1) : null }; }
-function _decodeJSXElement(decoder, i, b, flags, start, end) { const { _u32, node, nodeArr } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f3), closingElement: f4 !== NULL ? node(f4) : null }; }
-function _decodeJSXOpeningElement(decoder, i, b, flags, start, end) { const { _isTs, _u32, node, nodeArr } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return _isTs ? { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f4), selfClosing: !!(flags & 1), typeArguments: f2 !== NULL ? node(f2) : null } : { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f4), selfClosing: !!(flags & 1) }; }
-function _decodeJSXClosingElement(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null }; }
 function _decodeJSXFragment(decoder, i, b, flags, start, end) { const { _u32, node, nodeArr } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f3), closingFragment: f4 !== NULL ? node(f4) : null }; }
 function _decodeJSXOpeningFragment(decoder, i, b, flags, start, end) { return { type: "JSXOpeningFragment", start, end }; }
 function _decodeJSXClosingFragment(decoder, i, b, flags, start, end) { return { type: "JSXClosingFragment", start, end }; }
-function _decodeJSXIdentifier(decoder, i, b, flags, start, end) { const { _u32, str } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "JSXIdentifier", start, end, name: str(f1, f2) }; }
 function _decodeJSXNamespacedName(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null }; }
 function _decodeJSXMemberExpression(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null }; }
-function _decodeJSXAttribute(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null }; }
 function _decodeJSXSpreadAttribute(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null }; }
-function _decodeJSXExpressionContainer(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null }; }
 function _decodeJSXEmptyExpression(decoder, i, b, flags, start, end) { return { type: "JSXEmptyExpression", start, end }; }
-function _decodeJSXText(decoder, i, b, flags, start, end) { const { _u32, str } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; const raw = str(f1, f2);
-return { type: "JSXText", start, end, value: _jsxValue(raw), raw }; }
 function _decodeJSXSpreadChild(decoder, i, b, flags, start, end) { const { _u32, node } = decoder; const f1 = _u32[b + 1]; return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null }; }
-function _decodeDialect(decoder, i, b, flags, start, end) { const { _u32, nodeArrHoles, shapes } = decoder; const f1 = _u32[b + 1], f2 = _u32[b + 2]; return shaped(shapes[flags], start, end, nodeArrHoles(f1, f2)); }
 const KIND_DECODERS = [
   _decodeSequenceExpression,
   _decodeParenthesizedExpression,
@@ -1049,24 +1028,23 @@ const KIND_DECODERS = [
   _decodeTSNamespaceExportDeclaration,
   _decodeTSImportEqualsDeclaration,
   _decodeTSExternalModuleReference,
-  _decodeJSXElement,
-  _decodeJSXOpeningElement,
-  _decodeJSXClosingElement,
+  null,
+  null,
+  null,
   _decodeJSXFragment,
   _decodeJSXOpeningFragment,
   _decodeJSXClosingFragment,
-  _decodeJSXIdentifier,
+  null,
   _decodeJSXNamespacedName,
   _decodeJSXMemberExpression,
-  _decodeJSXAttribute,
+  null,
   _decodeJSXSpreadAttribute,
-  _decodeJSXExpressionContainer,
+  null,
   _decodeJSXEmptyExpression,
-  _decodeJSXText,
+  null,
   _decodeJSXSpreadChild,
-  _decodeDialect,
 ];
-function decode(buffer, source, path, shapes) {
+function decode(buffer, source, path) {
   const _u8 = new Uint8Array(buffer);
   const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
   if (BIG_ENDIAN) _hostOrder(_u32, 0, 9);
@@ -1201,6 +1179,14 @@ return { type: "Literal", start, end, value: v, raw: r }; }
     case 67: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; return _isTs ? { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null, definite: !!(flags & 1) } : { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null }; }
     case 85: { const f1 = _u32[b + 1]; return { type: "TSTypeAnnotation", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null }; }
     case 100: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "TSTypeReference", start, end, typeName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null }; }
+    case 156: { const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f3), closingElement: f4 !== NULL ? node(f4) : null }; }
+    case 157: { const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4]; return _isTs ? { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f4), selfClosing: !!(flags & 1), typeArguments: f2 !== NULL ? node(f2) : null } : { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f3, f4), selfClosing: !!(flags & 1) }; }
+    case 158: { const f1 = _u32[b + 1]; return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null }; }
+    case 162: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "JSXIdentifier", start, end, name: str(f1, f2) }; }
+    case 165: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null }; }
+    case 167: { const f1 = _u32[b + 1]; return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null }; }
+    case 169: { const f1 = _u32[b + 1], f2 = _u32[b + 2]; const raw = str(f1, f2);
+return { type: "JSXText", start, end, value: _jsxValue(raw), raw }; }
     default: return KIND_DECODERS[tag](_decoder, i, b, flags, start, end);
     }
   }
@@ -1250,7 +1236,7 @@ return { type: "Literal", start, end, value: v, raw: r }; }
     for (; _builtIndexed < _built.length; _builtIndexed++) _index(_built[_builtIndexed]);
     return _nodeIndexes.get(n);
   }
-  const _decoder = { _isTs, _src, _u32, fnParams, node, nodeArr, nodeArrHoles, shapes, str };
+  const _decoder = { _isTs, _src, _u32, fnParams, node, nodeArr, nodeArrHoles, str };
   const _nodesU32 = _nodesOff >> 2;
   function startOf(i) { return _u32[_nodesU32 + i * 12 + 10]; }
   function endOf(i) { return _u32[_nodesU32 + i * 12 + 11]; }

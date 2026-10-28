@@ -6,7 +6,6 @@ const ast = @import("../ast.zig");
 const output = @import("output.zig");
 const sourcemap = @import("sourcemap.zig");
 const utils = @import("utils.zig");
-const dialect = @import("../dialect/root.zig");
 const lexical = @import("../lexical.zig");
 
 const source_maps = @import("codegen_options").source_maps;
@@ -60,34 +59,6 @@ pub const Result = struct {
 
 const Error = std.mem.Allocator.Error;
 
-/// The printer as a dialect's `print` drives it.
-pub const DialectPrinter = struct {
-    inner: *Printer,
-
-    pub inline fn tree(self: *const DialectPrinter) *const Tree {
-        return self.inner.tree;
-    }
-
-    /// Writes code, spaced from the code before it where the two would merge.
-    pub inline fn write(self: *const DialectPrinter, code: []const u8) Error!void {
-        try self.inner.out.writeStr(code);
-    }
-
-    /// Writes a space in the pretty format.
-    pub inline fn space(self: *const DialectPrinter) Error!void {
-        try self.inner.out.space();
-    }
-
-    pub inline fn node(self: *const DialectPrinter, index: NodeIndex) Error!void {
-        try self.inner.emit(index);
-    }
-
-    /// Prints `items` as a braced block of statements.
-    pub inline fn block(self: *const DialectPrinter, items: []const NodeIndex) Error!void {
-        try self.inner.printBlock(items, false);
-    }
-};
-
 pub fn generate(allocator: Allocator, tree: *const Tree, options: Options) Error!Result {
     std.debug.assert(tree.root != .null);
     var p = try Printer.init(allocator, tree, options);
@@ -114,6 +85,7 @@ const Ctx = struct {
     prec: u8 = Precedence.Lowest,
     no_in: bool = false,
     no_call: bool = false,
+    no_chain: bool = false,
     // the next token would change how TypeScript reads a trailing `f<T>`
     no_instantiation: bool = false,
     no_jsx_tag: bool = false,
@@ -611,7 +583,15 @@ const Printer = struct {
                 },
             },
             .chain_expression => .{ .idx = node.expression, .ctx = ctx },
-            .ts_non_null_expression, .ts_instantiation_expression => .{
+            .ts_non_null_expression => .{
+                .idx = node.expression,
+                .ctx = .{
+                    .prec = Precedence.Postfix,
+                    .no_instantiation = true,
+                    .no_chain = true,
+                },
+            },
+            .ts_instantiation_expression => .{
                 .idx = node.expression,
                 .ctx = .{ .prec = Precedence.Postfix, .no_instantiation = true },
             },
@@ -797,7 +777,11 @@ const Printer = struct {
             else => {},
         };
         if (ctx.no_instantiation and data == .ts_instantiation_expression) return true;
-        if (ctx.prec >= Precedence.Call and data == .chain_expression) return true;
+        if (ctx.no_chain and data == .chain_expression) return true;
+        if (ctx.prec >= Precedence.Call) switch (data) {
+            .chain_expression, .jsx_element, .jsx_fragment => return true,
+            else => {},
+        };
 
         if (ctx.no_in and data == .binary_expression and
             data.binary_expression.operator == .in) return true;
@@ -819,9 +803,6 @@ const Printer = struct {
         switch (self.node_data[@backingInt(idx)]) {
             // out of line, so the recursion's frame holds only what every node needs
             inline else => |*node, tag| {
-                if (comptime tag == .dialect) {
-                    return @call(.never_inline, emitDialect, .{ self, node, idx });
-                }
                 if (comptime isChainLink(tag)) {
                     return @call(.never_inline, emitLink, .{ self, tag, node, ctx });
                 }
@@ -1076,14 +1057,6 @@ const Printer = struct {
             self.pending_semi = false;
             try self.out.writeByte(';');
         }
-    }
-
-    fn emitDialect(self: *Self, node: *const ast.Dialect, idx: NodeIndex) Error!void {
-        if (comptime !dialect.prints) {
-            return self.diagnose(idx, "A dialect node prints only with its dialect's print");
-        }
-        var printer: DialectPrinter = .{ .inner = self };
-        try dialect.print(&printer, node.kind, self.tree.extra(node.children));
     }
 
     fn emit_block_statement(self: *Self, s: *const ast.BlockStatement) Error!void {

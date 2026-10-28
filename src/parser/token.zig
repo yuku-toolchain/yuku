@@ -367,8 +367,27 @@ pub fn keywordTag(lexeme: []const u8) TokenTag {
     const h = keywordHash(lexeme[0], lexeme[1], lexeme[lexeme.len - 1], lexeme.len);
     const entry = &keyword_table[h];
     if (entry.len != lexeme.len) return .identifier;
-    if (!std.mem.eql(u8, entry.name[0..lexeme.len], lexeme)) return .identifier;
+    if (!keywordEql(entry.name[0..lexeme.len], lexeme)) return .identifier;
     return entry.tag;
+}
+
+inline fn keywordEql(a: []const u8, b: []const u8) bool {
+    comptime std.debug.assert(keyword_length_max <= 16);
+    std.debug.assert(a.len == b.len);
+    std.debug.assert(a.len >= keyword_length_min);
+    if (a.len >= 8) return edgesEql(u64, a, b);
+    if (a.len >= 4) return edgesEql(u32, a, b);
+    return edgesEql(u16, a, b);
+}
+
+inline fn edgesEql(comptime T: type, a: []const u8, b: []const u8) bool {
+    const n = @sizeOf(T);
+    std.debug.assert(a.len >= n);
+    std.debug.assert(a.len <= 2 * n);
+    const head = std.mem.readInt(T, a[0..n], .little) == std.mem.readInt(T, b[0..n], .little);
+    const tail_a = std.mem.readInt(T, a[a.len - n ..][0..n], .little);
+    const tail_b = std.mem.readInt(T, b[b.len - n ..][0..n], .little);
+    return head and tail_a == tail_b;
 }
 
 const KeywordEntry = struct {

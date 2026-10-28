@@ -236,10 +236,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:ast
 
-      - name: Dialect
-        if: ${{ !cancelled() }}
-        run: bun run test:dialect
-
       - name: Typecheck
         if: ${{ !cancelled() }}
         run: bun run typecheck

@@ -4,8 +4,8 @@ import { basename, join } from "node:path";
 import { withCodSpeed } from "@codspeed/tinybench-plugin";
 import { Bench } from "tinybench";
 import {
+  b,
   Core,
-  js,
   parse,
   print,
   walk,
@@ -119,13 +119,11 @@ for (const path of FILES) {
   );
 }
 
-add("template", () => {
-  for (let i = 0; i < 1_000; i++) void js`console.log(${"value"}, ${i})`;
-  return NO_DIAGNOSTICS;
-});
-
-add("template with text", () => {
-  for (let i = 0; i < 1_000; i++) void js`import data from "./data/${i}.json";`;
+add("build", () => {
+  for (let i = 0; i < 1_000; i++) {
+    const callee = b.Identifier({ name: "log" });
+    void b.CallExpression({ callee, arguments: [b.Literal({ value: i })] });
+  }
   return NO_DIAGNOSTICS;
 });
 

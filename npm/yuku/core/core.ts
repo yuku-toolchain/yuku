@@ -1,5 +1,3 @@
-import { addChildKeys } from "../ast/walk";
-import type { SourceLang } from "../types";
 import { decodeBase64 } from "./base64";
 
 /** A platform as `${process.platform}-${process.arch}` names it. */
@@ -48,28 +46,14 @@ export class Core {
 
 /** A loaded core, its Node-API addon or a WebAssembly instance. */
 export interface Backend {
-  readonly dialect: Dialect | null;
   run(entry: Entry, source: string, flags: number): ArrayBuffer;
 }
 
 export type Entry = "parse" | "analyze";
 
-export interface Shape {
-  type: string;
-  fields: string[];
-  list: number;
-  properties: Record<string, unknown>;
-}
-
-export interface Dialect {
-  files: { extension: string; lang: SourceLang }[];
-  shapes: Shape[];
-}
-
 interface Addon {
   parse(source: string, flags: number): ArrayBuffer;
   analyze(source: string, flags: number): ArrayBuffer;
-  dialect: string;
 }
 
 interface Exports {
@@ -78,7 +62,6 @@ interface Exports {
   free(pointer: number, len: number): void;
   parse(pointer: number, len: number, flags: number): number;
   analyze(pointer: number, len: number, flags: number): number;
-  dialect(): number;
 }
 
 interface Instance extends Backend {
@@ -113,7 +96,6 @@ const MEMORY_IDLE_MS = 10_000;
 
 const globals = globalThis as Globals;
 const encoder = new TextEncoder();
-const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const instances = new WeakMap<WebAssembly.Module, Instance>();
 const NodeBuffer = globals.process?.versions?.node === undefined ? undefined : globals.Buffer;
 
@@ -130,13 +112,10 @@ function nativeBackend(addons: CoreOptions["addons"]): Backend | null {
   } catch {
     return null;
   }
-  const { parse, analyze, dialect } = module.exports;
+  const { parse, analyze } = module.exports;
   if (typeof parse !== "function" || typeof analyze !== "function") return null;
   const addon = { parse, analyze };
-  return {
-    dialect: typeof dialect === "string" ? parseDialect(dialect) : null,
-    run: (entry, source, flags) => addon[entry](source, flags),
-  };
+  return { run: (entry, source, flags) => addon[entry](source, flags) };
 }
 
 function ffiGranted(): boolean {
@@ -175,7 +154,6 @@ function createInstance(module: WebAssembly.Module): Instance {
   const exports = instantiate(module);
   const instance: Instance = {
     exports,
-    dialect: dialectOf(exports),
     grownAt: 0,
     run: (entry, source, flags) => call(instance, entry, source, flags),
   };
@@ -215,19 +193,6 @@ function writeSource(
     return NodeBuffer.from(memory, pointer, capacity).write(source, "utf16le");
   }
   return encoder.encodeInto(source, new Uint8Array(memory, pointer, capacity)).written;
-}
-
-function dialectOf(exports: Exports): Dialect | null {
-  const pointer = exports.dialect();
-  if (pointer === 0) return null;
-  const size = new DataView(exports.memory.buffer).getUint32(pointer, true);
-  return parseDialect(utf8.decode(new Uint8Array(exports.memory.buffer, pointer + 4, size)));
-}
-
-function parseDialect(json: string): Dialect {
-  const dialect = JSON.parse(json) as Dialect;
-  for (const shape of dialect.shapes) addChildKeys(shape.type, shape.fields);
-  return dialect;
 }
 
 function bytesOf(base64: string): Uint8Array<ArrayBuffer> {

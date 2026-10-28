@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parse, print, type PrintOptions, type SourceLang } from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
-import { commentPlacements, deepChains, INSTANTIATIONS } from "./helpers";
+import { commentPlacements, deepChains, INSTANTIATIONS, NON_NULL_CHAINS } from "./helpers";
 
 const REFERENCE = join(
   "zig-out",
@@ -113,6 +113,7 @@ export function conformanceInputs(): Input[] {
     ...corpusAndProjectFiles(),
     ...deepChains().map(({ source, lang }, i) => input(`chain-${i}`, lang, source)),
     input("instantiations", "ts", INSTANTIATIONS.join("\n")),
+    input("non-null-chains", "ts", NON_NULL_CHAINS.join("\n")),
     ...commentPlacements().map(({ source, lang }, i) => input(`comment-${i}`, lang, source)),
   ];
 }

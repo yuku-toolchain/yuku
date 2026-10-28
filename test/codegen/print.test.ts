@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { parse, type ParseOptions, print, type PrintOptions } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
-import { deepChains, gen, INSTANTIATIONS } from "./helpers";
+import { deepChains, gen, INSTANTIATIONS, NON_NULL_CHAINS } from "./helpers";
 
 test("array holes keep their elisions", () => {
   expect(
@@ -98,6 +98,15 @@ test("JSX text and attributes keep their raw text", () => {
       "const a = <a href="&amp;x" title='y' />;
       const b = <b data-x={"&lt;"}>&lt;b&gt;</b>;"
     `);
+});
+
+test("an element before a subscript keeps its parentheses", () => {
+  expect(gen("(<a />).b;\n(<a />)();\n(<></>)`t`;\n<a />.b;", {}, "input.jsx")).toMatchInlineSnapshot(`
+    "(<a />).b;
+    (<a />)();
+    (<></>)\`t\`;
+    (<a />).b;"
+  `);
 });
 
 test("TS definite assignment assertions", () => {
@@ -219,6 +228,25 @@ test("an instantiation expression keeps the parens that end its type arguments",
     const stripped = print(program, { strip: true }).code;
     expect(parse(stripped, { lang: "js" }).diagnostics, stripped).toEqual([]);
   }
+});
+
+test("non-null assertions preserve optional chain boundaries", () => {
+    // compare ASTs without original parens across both sides of the chain boundary
+    const parseOptions: ParseOptions = { lang: "ts", preserveParens: false };
+    const layouts: PrintOptions[] = [{}, { format: "compact" }, { minify: true }];
+    for (const source of NON_NULL_CHAINS) {
+        const { program, diagnostics } = parse(source, parseOptions);
+        expect(diagnostics, source).toEqual([]);
+        expect(gen(source, {}, "input.ts", parseOptions)).toBe(source);
+        for (const options of layouts) {
+            const code = print(program, options).code;
+            const reparsed = parse(code, parseOptions);
+            expect(reparsed.diagnostics, code).toEqual([]);
+            expect(astDiffPath(program, reparsed.program), code).toBeNull();
+        }
+    }
+    expect(gen("(value?.prop)!.x;", { strip: true }, "input.ts", parseOptions))
+        .toBe("(value?.prop).x;");
 });
 
 test("each switch case statement starts on its own line, and compact keeps them inline", () => {

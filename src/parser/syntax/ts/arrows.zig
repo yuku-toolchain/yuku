@@ -103,7 +103,7 @@ pub fn tryParseArrow(
     const cp = parser.checkpoint();
     const arrow = try parseArrow(parser, is_async, arrow_start, options) orelse {
         parser.rewind(cp);
-        try parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {});
+        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {}) catch ast.outOfMemory();
         return null;
     };
 

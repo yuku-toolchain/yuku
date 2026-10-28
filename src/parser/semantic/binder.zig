@@ -2,7 +2,6 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const static_semantics = @import("spec").static_semantics;
 const sc = @import("scope.zig");
-const dialect = @import("../dialect/root.zig");
 
 const Allocator = std.mem.Allocator;
 const String = ast.String;
@@ -706,22 +705,6 @@ pub const SymbolTracker = struct {
                 };
             },
 
-            .dialect => {
-                const node = data.dialect;
-                const shape = dialect.shape(node.kind);
-                if (!shape.lexical_bindings and !shape.catch_bindings) return;
-                try self.pushSavedContext();
-                self.pending = if (shape.lexical_bindings) .{
-                    .flags = .{ .block_scoped_var = true },
-                    .excludes = Symbol.Excludes.block_scoped_var.merge(self.excluded_imports),
-                    .scope = scope.current,
-                } else .{
-                    .flags = .{ .function_scoped_var = true, .catch_var = true },
-                    .excludes = Symbol.Excludes.catch_var,
-                    .scope = scope.current,
-                };
-            },
-
             // the id binds outside the scope the tracker pushed for the body
             .ts_interface_declaration, .ts_type_alias_declaration => {
                 const decl = @field(data, @tagName(tag));
@@ -1024,11 +1007,7 @@ pub const SymbolTracker = struct {
     }
 
     /// Restores the binding context a node saved on enter.
-    pub inline fn exit(
-        self: *SymbolTracker,
-        comptime tag: ast.NodeTag,
-        data: ast.NodeData,
-    ) void {
+    pub inline fn exit(self: *SymbolTracker, comptime tag: ast.NodeTag) void {
         switch (tag) {
             // the export state stays cleared so the body declares nothing exported
             .formal_parameters => {
@@ -1056,12 +1035,6 @@ pub const SymbolTracker = struct {
             => self.popSavedContext(),
 
             .export_named_declaration, .export_default_declaration => self.export_state = .none,
-
-            .dialect => {
-                const node = data.dialect;
-                const shape = dialect.shape(node.kind);
-                if (shape.lexical_bindings or shape.catch_bindings) self.popSavedContext();
-            },
 
             else => {},
         }

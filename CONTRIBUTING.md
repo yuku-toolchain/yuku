@@ -30,7 +30,7 @@ bun run test
 This builds everything and runs every suite, fetching the parser test suite and
 a few pinned open-source projects on the first run. To run one suite, use
 `test:parser`, `test:codegen`, `test:analyzer`, `test:sourcemap`, `test:ast`,
-`test:dialect`, or `test:runtime`, which runs the package with the `node` on
+or `test:runtime`, which runs the package with the `node` on
 your path, and in CI on the minimum runtime (see AGENTS.md). After editing Zig,
 run `bun run build` first so the suites see your change.
 
@@ -69,7 +69,7 @@ src/parser/
   testing/       Zig tests and the fuzzer
 npm/yuku/        the published package, one entry in index.ts
   core/          the addon and WebAssembly loaders, and the decoder
-  ast/           walk, templates, and utils
+  ast/           walk, builders, and utils
   file/          SourceFile, Project, the semantic model, and rename
   print/         the printer and source maps
   types/         the AST types
@@ -91,8 +91,7 @@ cd docs && zine
 ```
 
 Then open http://localhost:1990. The JavaScript API lives in the package's
-guide, `npm/yuku/README.md`, which npm and GitHub show, and dialects in
-`src/parser/dialect/README.md`. When you're done with any of them, run
+guide, `npm/yuku/README.md`, which npm and GitHub show. When you're done with either, run
 `bun run docs:llms`, which regenerates `llms.txt` and `llms-full.txt`.
 
 ## Open a pull request

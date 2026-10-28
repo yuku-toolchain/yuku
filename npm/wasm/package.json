@@ -1,6 +1,6 @@
 {
   "name": "@yuku-toolchain/wasm",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "The Yuku core as a WebAssembly file, for edge runtimes",
   "license": "MIT",
   "homepage": "https://yuku.fyi",

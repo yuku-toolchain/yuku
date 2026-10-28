@@ -6,5 +6,4 @@ test {
     _ = @import("cases/corpus.zig");
     _ = @import("cases/tokens.zig");
     _ = @import("cases/comments.zig");
-    _ = @import("cases/memory.zig");
 }

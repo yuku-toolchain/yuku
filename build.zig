@@ -10,15 +10,10 @@ pub fn build(b: *std.Build) void {
         "codegen-source-maps",
         "Compile source-map support into the code generator (default true)",
     ) orelse true);
-    const dialect = b.option(
-        std.Build.LazyPath,
-        "dialect",
-        "Zig source file of a dialect to compile into the parser (default: none)",
-    );
     const config: ParserConfig = .{ .codegen_options = codegen_options.createModule() };
 
     const util = createUtil(b, target, optimize);
-    const parser = config.add(b, "parser", util, dialect);
+    const parser = config.add(b, "parser", util);
     const spec = parser.import_table.get("spec").?;
 
     const gen_unicode_id = b.addExecutable(.{
@@ -58,12 +53,8 @@ pub fn build(b: *std.Build) void {
     // corpus tests read fixtures relative to the repo root
     zig_tests.setCwd(b.path("."));
     test_step.dependOn(&zig_tests.step);
-    const dialect_parser = config.add(b, null, util, b.path("src/parser/testing/dialect.zig"));
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{
-        .root_module = dialect_parser.import_table.get("dialect").?,
-    })).step);
 
-    const safe_parser = config.add(b, null, createUtil(b, b.graph.host, .safe), dialect);
+    const safe_parser = config.add(b, null, createUtil(b, b.graph.host, .safe));
     const fuzz = b.addRunArtifact(b.addExecutable(.{
         .name = "fuzz",
         .root_module = b.createModule(.{
@@ -89,7 +80,7 @@ pub fn build(b: *std.Build) void {
         .dependOn(&b.addInstallArtifact(codegen_reference, .{}).step);
 
     const profile_target = b.resolveTargetQuery(.{ .cpu_model = .baseline });
-    const profile_parser = config.add(b, null, createUtil(b, profile_target, .fast), null);
+    const profile_parser = config.add(b, null, createUtil(b, profile_target, .fast));
     const profile = b.addExecutable(.{
         .name = "profile",
         .root_module = b.createModule(.{
@@ -115,7 +106,7 @@ pub fn build(b: *std.Build) void {
         .cpu_model = .{ .explicit = &std.Target.wasm.cpu.mvp },
         .cpu_features_add = std.Target.wasm.featureSet(&.{.simd128}),
     });
-    _ = config.add(b, "parser-wasm", createUtil(b, wasm_target, .fast), dialect);
+    _ = config.add(b, "parser-wasm", createUtil(b, wasm_target, .fast));
     const yuku_wasm = addWasmFrom(b, b, "yuku");
     b.step("wasm", "Build the WebAssembly module")
         .dependOn(&b.addInstallArtifact(yuku_wasm, .{}).step);
@@ -127,7 +118,7 @@ pub fn build(b: *std.Build) void {
         var query = platform.query;
         query.cpu_model = .baseline;
         const module_name = b.fmt("parser-{s}", .{platform.name});
-        _ = config.add(b, module_name, createUtil(b, b.resolveTargetQuery(query), .fast), dialect);
+        _ = config.add(b, module_name, createUtil(b, b.resolveTargetQuery(query), .fast));
         const addon = addAddonFrom(b, b, platform.name);
         const addon_files = b.addUpdateSourceFiles();
         addon_files.addCopyFileToSource(
@@ -208,8 +199,6 @@ const native_platforms = [_]struct { name: []const u8, query: std.Target.Query }
     .{ .name = "win32-x64", .query = .{ .cpu_arch = .x86_64, .os_tag = .windows, .abi = .gnu } },
 };
 
-/// Builds the Node-API addon for each platform the `yuku` package ships, with the dialect the
-/// `yuku` dependency compiles in, and installs each as `native/<platform>.node`.
 pub fn addAddons(b: *std.Build, yuku: *std.Build.Dependency) void {
     for (native_platforms) |platform| {
         const addon = addAddonFrom(b, yuku.builder, platform.name);
@@ -246,13 +235,11 @@ fn installAddon(
 const ParserConfig = struct {
     codegen_options: *std.Build.Module,
 
-    // a dialect imports the parser that imports it, so every parser gets its own dialect module
     fn add(
         config: ParserConfig,
         b: *std.Build,
         name: ?[]const u8,
         util: *std.Build.Module,
-        dialect: ?std.Build.LazyPath,
     ) *std.Build.Module {
         const spec = b.createModule(.{
             .root_source_file = b.path("src/spec/root.zig"),
@@ -272,12 +259,6 @@ const ParserConfig = struct {
         };
         const parser = if (name) |n| b.addModule(n, options) else b.createModule(options);
         spec.addImport("parser", parser);
-        parser.addImport("dialect", if (dialect) |source| b.createModule(.{
-            .root_source_file = source,
-            .target = util.resolved_target,
-            .optimize = util.optimize,
-            .imports = &.{.{ .name = "parser", .module = parser }},
-        }) else b.addOptions().createModule());
         return parser;
     }
 };
@@ -303,8 +284,6 @@ fn createTransfer(b: *std.Build, parser: *std.Build.Module) *std.Build.Module {
     });
 }
 
-/// Builds `<name>.wasm` for the `wasm` option of the `yuku` npm package, with the dialect the
-/// `yuku` dependency compiles in.
 pub fn addWasm(
     b: *std.Build,
     yuku: *std.Build.Dependency,

@@ -7,7 +7,6 @@ const Error = @import("../../parser.zig").Error;
 
 const expressions = @import("../expressions.zig");
 const ts = @import("../ts/types.zig");
-const dialect = @import("../../dialect/root.zig");
 
 pub const JsxElementContext = enum { top_level, child, attribute };
 
@@ -24,7 +23,7 @@ pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
     return parseJsxElement(parser, .top_level);
 }
 
-pub fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?ast.NodeIndex {
+fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     // peek in jsx_tag mode so a fragment's `>` is not glued to what follows, as in `<>=</>`
@@ -40,7 +39,7 @@ pub fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Err
     var children: ast.IndexRange = .empty;
     var closing: ast.NodeIndex = .null;
     if (!opening_data.self_closing) {
-        children = try parseJsxChildren(parser, opening, end) orelse return null;
+        children = try parseJsxChildren(parser, end) orelse return null;
         closing = try parseJsxClosingElement(parser, opening_data.name, context) orelse
             return null;
         end = parser.tree.span(closing).end;
@@ -70,7 +69,7 @@ fn parseJsxFragment(parser: *Parser, comptime context: JsxElementContext) Error!
         .{ .start = start, .end = opening_end },
     );
     // parseJsxChildren rescans from the `>`
-    const children = try parseJsxChildren(parser, opening, opening_end) orelse return null;
+    const children = try parseJsxChildren(parser, opening_end) orelse return null;
 
     const closing_start = parser.current_token.span.start;
     parser.setLexerMode(.jsx_tag);
@@ -216,16 +215,6 @@ fn jsxNamesMatch(parser: *const Parser, opening: ast.NodeIndex, closing: ast.Nod
             a = x.object;
             b = y.object;
         },
-        // a dialect's `<{tag}>`, named by the expression without the comments around it
-        .jsx_expression_container => |x| {
-            if (tree.data(b) != .jsx_expression_container) return false;
-            const y = tree.data(b).jsx_expression_container;
-            return std.mem.eql(
-                u8,
-                parser.spanText(tree.span(x.expression)),
-                parser.spanText(tree.span(y.expression)),
-            );
-        },
         else => return std.mem.eql(
             u8,
             parser.spanText(tree.span(a)),
@@ -242,11 +231,7 @@ fn jsxIdentifiersMatch(tree: *const ast.Tree, a: ast.NodeIndex, b: ast.NodeIndex
 }
 
 // https://react.github.io/jsx/#prod-JSXChildren
-fn parseJsxChildren(
-    parser: *Parser,
-    opening: ast.NodeIndex,
-    opening_end: u32,
-) Error!?ast.IndexRange {
+fn parseJsxChildren(parser: *Parser, opening_end: u32) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(checkpoint);
 
@@ -254,17 +239,6 @@ fn parseJsxChildren(
     var scan_from = opening_end;
 
     while (true) {
-        if (comptime dialect.has(.jsx_child)) {
-            if (try dialect.at(.jsx_child, parser, .{ scan_from, opening })) |claimed| {
-                const child = claimed orelse return null;
-                std.debug.assert(parser.tree.span(child).start == scan_from);
-                std.debug.assert(parser.tree.span(child).end > scan_from);
-                try parser.scratch_b.append(parser.allocator(), child);
-                scan_from = parser.tree.span(child).end;
-                continue;
-            }
-        }
-
         const text_token = parser.lexer.reScanJsxText(scan_from);
 
         if (text_token.len() > 0) {
@@ -390,9 +364,6 @@ fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 // https://react.github.io/jsx/#prod-JSXAttribute
 fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .left_brace) {
-        if (comptime dialect.has(.jsx_attribute)) {
-            if (try dialect.at(.jsx_attribute, parser, .{})) |attribute| return attribute;
-        }
         return parseJsxSpreadAttribute(parser);
     }
 
@@ -461,7 +432,7 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     }
 }
 
-pub fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
+fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
     parser.setLexerMode(.normal);
@@ -524,10 +495,6 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
 // https://react.github.io/jsx/#prod-JSXElementName
 fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
-    if (comptime dialect.has(.jsx_element_name)) {
-        if (try dialect.at(.jsx_element_name, parser, .{})) |name| return name;
-    }
-
     _ = try expectJsxToken(
         parser,
         .jsx_identifier,

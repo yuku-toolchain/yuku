@@ -12,8 +12,7 @@ import type {
   ParenthesizedExpression,
   PrivateFieldExpression,
   RegExpLiteral,
-  StandardNodeType,
-  StaticMemberExpression,
+    StaticMemberExpression,
   StringLiteral,
   TSAsExpression,
   TSNonNullExpression,
@@ -43,12 +42,12 @@ const WRAPPERS: ReadonlySet<string> = new Set<Wrapper["type"]>([
   "TSTypeAssertion",
 ]);
 
-type _missing = Record<Exclude<StandardNodeType, (typeof NODE_TYPES)[number]>, never>;
-type _extra = Record<Exclude<(typeof NODE_TYPES)[number], StandardNodeType>, never>;
+type _missing = Record<Exclude<NodeType, (typeof NODE_TYPES)[number]>, never>;
+type _extra = Record<Exclude<(typeof NODE_TYPES)[number], NodeType>, never>;
 const _exhaustive: [_missing, _extra] = [{}, {}];
 void _exhaustive;
 
-type ConcreteGuards = { [K in StandardNodeType]: (node: MaybeNode) => node is NodeOfType<K> };
+type ConcreteGuards = { [K in NodeType]: (node: MaybeNode) => node is NodeOfType<K> };
 
 type AliasGuards = { [K in AliasName]: (node: MaybeNode) => node is AliasMap[K] };
 

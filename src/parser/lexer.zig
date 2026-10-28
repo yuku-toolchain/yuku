@@ -102,6 +102,7 @@ pub const Lexer = struct {
     allocator: std.mem.Allocator,
     state: LexerState,
     mode: LexerMode = .normal,
+    fast_path: bool = true,
 
     source: []const u8,
     cursor: u32,
@@ -193,7 +194,7 @@ pub const Lexer = struct {
     pub inline fn tryNextToken(self: *Lexer, out: *Token) bool {
         std.debug.assert(self.cursor <= self.source.len);
 
-        if (self.mode != .normal) return false;
+        if (!self.fast_path) return false;
 
         const src = self.source;
         if (self.cursor >= src.len) return false;
@@ -1178,7 +1179,7 @@ pub const Lexer = struct {
         self.cursor = pos;
     }
 
-    pub inline fn recordComment(
+    inline fn recordComment(
         self: *Lexer,
         @"type": ast.Comment.Type,
         start: u32,

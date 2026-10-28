@@ -182,8 +182,8 @@ pub const Tree = struct {
     }
 
     /// Appends a diagnostic to the tree.
-    pub fn addDiagnostic(self: *Tree, diag: Diagnostic) error{OutOfMemory}!void {
-        try self.diagnostics.append(self.arena.allocator(), diag);
+    pub fn addDiagnostic(self: *Tree, diag: Diagnostic) error{}!void {
+        self.diagnostics.append(self.arena.allocator(), diag) catch outOfMemory();
     }
 
     /// Returns the data for the node at the given index.
@@ -247,7 +247,7 @@ pub const Tree = struct {
         self: *Tree,
         node_data: NodeData,
         node_span: Span,
-    ) error{OutOfMemory}!NodeIndex {
+    ) error{}!NodeIndex {
         std.debug.assert(self.nodes.len < std.math.maxInt(u32));
         std.debug.assert(node_span.start <= node_span.end);
         const index: NodeIndex = @fromBackingInt(@intCast(self.nodes.len));
@@ -255,20 +255,28 @@ pub const Tree = struct {
         if (self.nodes.len < self.nodes.capacity) {
             self.nodes.appendAssumeCapacity(entry);
         } else {
-            try self.nodes.append(self.arena.allocator(), entry);
+            self.nodes.append(self.arena.allocator(), entry) catch outOfMemory();
         }
         return index;
     }
 
     /// Appends a child list and returns its range.
-    pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+    pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{}!IndexRange {
         std.debug.assert(self.extras.items.len + children.len <= std.math.maxInt(u32));
         const start: u32 = @intCast(self.extras.items.len);
-        if (self.extras.items.len + children.len <= self.extras.capacity) {
-            self.extras.appendSliceAssumeCapacity(children);
-        } else {
-            try self.extras.appendSlice(self.arena.allocator(), children);
+        if (self.extras.items.len + children.len > self.extras.capacity) {
+            self.extras.ensureUnusedCapacity(self.arena.allocator(), children.len) catch outOfMemory();
         }
+        const dest = self.extras.addManyAsSliceAssumeCapacity(children.len);
+        switch (children.len) {
+            0 => {},
+            1 => dest[0] = children[0],
+            2 => dest[0..2].* = children[0..2].*,
+            3 => dest[0..3].* = children[0..3].*,
+            4 => dest[0..4].* = children[0..4].*,
+            else => @memcpy(dest, children),
+        }
+        std.debug.assert(self.extras.items.len == start + children.len);
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
@@ -278,8 +286,8 @@ pub const Tree = struct {
     }
 
     /// Interns text that is not in the source, such as a synthesized name.
-    pub fn addString(self: *Tree, str: []const u8) error{OutOfMemory}!String {
-        return self.strings.addString(self.arena.allocator(), str);
+    pub fn addString(self: *Tree, str: []const u8) error{}!String {
+        return self.strings.addString(self.arena.allocator(), str) catch outOfMemory();
     }
 
     /// The text of a `String`.
@@ -340,6 +348,11 @@ pub const Tree = struct {
         return within[0..count];
     }
 };
+
+pub fn outOfMemory() noreturn {
+    @branchHint(.cold);
+    @panic("out of memory");
+}
 
 /// An index into `Tree.nodes`, where `.null` marks an absent child.
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
@@ -2210,13 +2223,6 @@ pub const JSXSpreadChild = struct {
     expression: NodeIndex,
 };
 
-/// A node of the compiled-in dialect, see [Dialects](https://yuku.fyi/parser/dialect/).
-pub const Dialect = struct {
-    kind: @import("dialect/root.zig").Kind,
-    /// In source order, `.null` for an absent part.
-    children: IndexRange,
-};
-
 pub const NodeData = union(enum) {
     sequence_expression: SequenceExpression,
     parenthesized_expression: ParenthesizedExpression,
@@ -2392,8 +2398,6 @@ pub const NodeData = union(enum) {
     jsx_text: JSXText,
     jsx_spread_child: JSXSpreadChild,
 
-    dialect: Dialect,
-
     /// Whether the node is an expression, counting only expression forms of `function` and `class`.
     pub fn isExpression(self: NodeData) bool {
         return switch (self) {
@@ -2550,7 +2554,6 @@ pub const NodeData = union(enum) {
             .while_statement,
             .do_while_statement,
             => true,
-            .dialect => |node| @import("dialect/root.zig").shape(node.kind).iteration,
             else => false,
         };
     }

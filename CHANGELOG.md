@@ -2,6 +2,12 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.24.1
+
+### Changes
+
+- The `b` builders are back in place of the `js` and `ts` templates, so build a node with `b`, as in `b.Identifier({ name: "x" })` (#299 by @arshad-yaseen)
+
 ## 0.24.0
 
 ### Breaking

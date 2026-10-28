@@ -13,10 +13,6 @@ import type { Binding, Definition, Export, Import, Reference } from "./semantic"
 import { diagnosticAt, SourceFile, type FileOptions } from "./source-file";
 
 export interface ProjectOptions {
-  /**
-   * The Zig core to run, such as one with a dialect compiled in.
-   * @default the core yuku ships
-   */
   core?: Core;
   /**
    * Maps a specifier to a project file path, `false` for an external module, or `null` to warn

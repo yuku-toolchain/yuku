@@ -1,9 +1,17 @@
 import { describe, expect, test } from "bun:test";
-import { js, parse, print, walk, type Node, type Visitors } from "yuku";
+import { b, parse, print, walk, type Expression, type Node, type Visitors } from "yuku";
 import { nodesOf } from "../ast-helpers-for-test";
 
 function nameOf(node: Node): string | null {
   return node.type === "Identifier" ? node.name : null;
+}
+
+function id(name: string) {
+  return b.Identifier({ name });
+}
+
+function statement(expression: Expression) {
+  return b.ExpressionStatement({ expression });
 }
 
 function program(source: string) {
@@ -43,7 +51,7 @@ describe("walk", () => {
       DebuggerStatement: (_n, ctx) => ctx.remove(),
       Identifier(node, ctx) {
         if (node.name === "a") {
-          ctx.replace(js`renamed`);
+          ctx.replace(id("renamed"));
         }
       },
     });
@@ -73,8 +81,8 @@ describe("walk", () => {
         if (name === null) return;
         seen.push(name);
         if (name === "a") {
-          ctx.insertBefore(js`before;`);
-          ctx.insertAfter(js`after;`);
+          ctx.insertBefore(statement(id("before")));
+          ctx.insertAfter(statement(id("after")));
         }
       },
     });
@@ -101,17 +109,18 @@ describe("walk", () => {
     expect(() => walk(program(`a;`), { Program: (_n, ctx) => ctx.remove() })).toThrow(
       "the walk root",
     );
-    expect(() => walk(program(`a;`), { Program: (_n, ctx) => ctx.replace(js`b`) })).toThrow(
+    expect(() => walk(program(`a;`), { Program: (_n, ctx) => ctx.replace(id("b")) })).toThrow(
       "the walk root",
     );
   });
 
   test("edits that have no place to go throw, and a removed plain field is null", () => {
     const call = (source: string) => program(source).body[0]!;
-    expect(() => walk(call(`f(a);`), { Identifier: (_n, ctx) => ctx.insertBefore(js`b`) })).toThrow(
+    const insert: Visitors = { Identifier: (_n, ctx) => ctx.insertBefore(id("b")) };
+    expect(() => walk(call(`f(a);`), insert)).toThrow(
       "insertBefore: the node is not in an array field",
     );
-    const two = [js`c`, js`d`];
+    const two = [id("c"), id("d")];
     expect(() => walk(call(`a.b;`), { Identifier: (_n, ctx) => ctx.replace(two) })).toThrow(
       "replace: several nodes need an array field",
     );
@@ -165,7 +174,7 @@ describe("walk", () => {
     let removed = 0;
     walk(root, {
       Identifier(node, ctx) {
-        if (node.name.startsWith("a")) ctx.replace(js`${`b${node.name}`}`);
+        if (node.name.startsWith("a")) ctx.replace(id(`b${node.name}`));
       },
       BinaryExpression(node, ctx) {
         if (node.right.type === "Identifier" && node.right.name === "a1500") {
@@ -201,7 +210,7 @@ describe("visitors", () => {
       {
         Identifier(node, ctx) {
           seen.push(`first ${node.name}`);
-          if (node.name === "old") ctx.replace(js`fresh`);
+          if (node.name === "old") ctx.replace(id("fresh"));
         },
       },
       { Identifier: (node) => seen.push(`second ${node.name}`) },
@@ -215,7 +224,7 @@ describe("visitors", () => {
     walk(root, {
       Identifier(node, ctx) {
         calls++;
-        ctx.replace(js`wrap(${node})`);
+        ctx.replace(b.CallExpression({ callee: id("wrap"), arguments: [node] }));
         ctx.skip();
       },
     });
@@ -227,7 +236,7 @@ describe("visitors", () => {
     expect(() =>
       walk(program(`a;`), {
         Identifier(node, ctx) {
-          ctx.replace(js`${node.name + "a"}`);
+          ctx.replace(id(node.name + "a"));
         },
       }),
     ).toThrow("replaced 64 times in one place");
@@ -240,7 +249,7 @@ describe("visitors", () => {
       ExpressionStatement(node, ctx) {
         const name = nameOf(node.expression);
         seen.push(name ?? "?");
-        if (name === "a") ctx.replace([js`b;`, js`c;`]);
+        if (name === "a") ctx.replace([statement(id("b")), statement(id("c"))]);
       },
     });
     expect(seen).toEqual(["a", "b", "c", "z"]);
@@ -252,7 +261,7 @@ describe("visitors", () => {
     walk(file.program, {
       ExpressionStatement(node, ctx) {
         if (node.expression.type === "CallExpression" && nameOf(node.expression.callee) === "old") {
-          ctx.replace(js`fresh();`);
+          ctx.replace(statement(b.CallExpression({ callee: id("fresh") })));
         }
       },
     });
