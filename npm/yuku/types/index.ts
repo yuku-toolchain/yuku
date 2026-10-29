@@ -1035,7 +1035,7 @@ interface JSXEmptyExpression extends BaseNode {
 interface JSXText extends BaseNode {
   type: "JSXText";
   value: string;
-  raw: string;
+  raw?: string;
 }
 
 interface JSXSpreadChild extends BaseNode {

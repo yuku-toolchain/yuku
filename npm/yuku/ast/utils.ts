@@ -23,6 +23,7 @@ import { decodeBase64 } from "../core/base64";
 import { ALIAS_GROUPS, ALIAS_MEMBERS, type AliasMap, type AliasName } from "./aliases";
 import { NODE_TYPES } from "./generated";
 import { CHAR, CHUNKS, START } from "./identifier-tables";
+import { JSX_ENTITIES } from "./jsx-entities";
 
 export type MaybeNode = Node | null | undefined;
 
@@ -214,4 +215,36 @@ export function isEvalOrArguments(word: string): boolean {
 export function isValidIdentifier(name: string): boolean {
   if (isKeyword(name) || isStrictReservedWord(name, true)) return false;
   return isIdentifierName(name);
+}
+
+const JSX_REFERENCE = /&(?:#x([\da-fA-F]+)|#(\d+)|([\da-zA-Z]+));/g;
+
+let jsxEntities: Map<string, number> | null = null;
+
+function jsxEntity(name: string): number | undefined {
+  if (jsxEntities === null) {
+    jsxEntities = new Map();
+    let cp = 0;
+    for (const entry of JSX_ENTITIES.split(" ")) {
+      const colon = entry.indexOf(":");
+      cp = colon === -1 ? cp + 1 : parseInt(entry.slice(colon + 1), 16);
+      jsxEntities.set(colon === -1 ? entry : entry.slice(0, colon), cp);
+    }
+  }
+  return jsxEntities.get(name);
+}
+
+/** Decodes the character references in JSX text or attribute strings. */
+export function decodeJSXEntities(text: string): string {
+  if (text.indexOf("&") === -1) return text;
+  return text.replace(
+    JSX_REFERENCE,
+    (reference: string, hex?: string, decimal?: string, name?: string) => {
+      let cp: number | undefined;
+      if (name !== undefined) cp = jsxEntity(name);
+      else if (hex !== undefined) cp = parseInt(hex, 16);
+      else cp = parseInt(decimal!, 10);
+      return cp === undefined || cp > 0x10ffff ? reference : String.fromCodePoint(cp);
+    },
+  );
 }

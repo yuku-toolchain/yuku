@@ -167,6 +167,7 @@ pub fn build(b: *std.Build) void {
         .{ "walk_tables", "npm/yuku/ast/generated.ts" },
         .{ "token_types", "npm/yuku/types/tokens.ts" },
         .{ "identifier_tables", "npm/yuku/ast/identifier-tables.ts" },
+        .{ "jsx_entities", "npm/yuku/ast/jsx-entities.ts" },
     }) |output| {
         const run = b.addRunArtifact(generator);
         run.addArg(output[0]);

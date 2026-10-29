@@ -2213,7 +2213,9 @@ pub const JSXEmptyExpression = struct {};
 
 /// Text inside a JSX element or fragment.
 pub const JSXText = struct {
-    /// The text as written, entities undecoded. `lexical.decodeJSXEntities` gives its `value`.
+    /// Text with its entities decoded.
+    value: String = .empty,
+    /// Source text, empty for a built text.
     raw: String = .empty,
 };
 

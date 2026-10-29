@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { CHILD_KEYS, parse, type Expression, type Node } from "yuku";
 import {
+  decodeJSXEntities,
   is,
   isEvalOrArguments,
   isIdentifierChar,
@@ -9,6 +10,7 @@ import {
   isValidIdentifier,
   unwrap,
 } from "yuku/utils";
+import { JSX_ENTITIES } from "../../npm/yuku/ast/jsx-entities";
 import { nodesOf } from "../ast-helpers-for-test";
 
 function nameOf(node: Node | null | undefined): string | null {
@@ -77,6 +79,23 @@ describe("names", () => {
     expect(isIdentifierStart(-1)).toBe(false);
     expect(isIdentifierName("a\u{10940}")).toBe(true);
     expect(isIdentifierName("\ud800")).toBe(false);
+  });
+
+  test("JSX entities decode as the parser decodes them", () => {
+    expect(decodeJSXEntities("Fish &amp; Chips &copy; &#x41;&#66;")).toBe("Fish & Chips © AB");
+    expect(decodeJSXEntities("&nope; &amp &#; &#x; &#X41; &#x110000;")).toBe(
+      "&nope; &amp &#; &#x; &#X41; &#x110000;",
+    );
+
+    const names = JSX_ENTITIES.split(" ").map((entry) => entry.split(":")[0]!);
+    expect(names).toHaveLength(253);
+    const edges = ["&#0065;", "&#x1F600;", "&#xD800;", "&#1114111;", "&#99999999999;", "&&amp;;"];
+    const text = [...names.map((name) => `&${name};`), ...edges].join(" ");
+    const file = parse(`<a b="${text}">${text}</a>;`, { lang: "jsx" });
+    expect(file.diagnostics).toEqual([]);
+    const [attribute] = nodesOf(file.program, "JSXAttribute").map((node) => node.value);
+    expect(is.StringLiteral(attribute) && attribute.value).toBe(decodeJSXEntities(text));
+    expect(nodesOf(file.program, "JSXText")[0]!.value).toBe(decodeJSXEntities(text));
   });
 });
 

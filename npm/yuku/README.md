@@ -282,7 +282,7 @@ A field that tells the shapes of a type apart, such as `computed` on a `MemberEx
 `yuku/utils` has the small helpers.
 
 ```js
-import { is, isIdentifierName, isValidIdentifier, unwrap } from "yuku/utils";
+import { decodeJSXEntities, is, isIdentifierName, isValidIdentifier, unwrap } from "yuku/utils";
 
 is.CallExpression(node);
 is.Expression(node);              // aliases too
@@ -296,6 +296,8 @@ unwrap(node);                     // the expression inside every wrapper
 
 isValidIdentifier("class");       // false, reserved
 isIdentifierName("class");        // true
+
+decodeJSXEntities("a &amp; b");   // "a & b"
 ```
 
 It also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, and `isEvalOrArguments`.

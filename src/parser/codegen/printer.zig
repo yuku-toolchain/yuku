@@ -119,6 +119,7 @@ const Printer = struct {
 
     stack_floor: usize = 0,
     links: std.ArrayList(Link) = .empty,
+    decoded: std.ArrayList(u8) = .empty,
 
     const Link = struct {
         idx: NodeIndex,
@@ -155,6 +156,7 @@ const Printer = struct {
         self.out.deinit();
         self.diagnostics.deinit(self.allocator);
         self.links.deinit(self.allocator);
+        self.decoded.deinit(self.allocator);
     }
 
     inline fn pretty(self: *const Self) bool {
@@ -399,6 +401,49 @@ const Printer = struct {
         self.recordMapping(idx);
         try self.out.writeStr(text);
         try self.closeComments(idx, scope, false);
+    }
+
+    fn writeNodeQuoted(
+        self: *Self,
+        idx: NodeIndex,
+        quote: u8,
+        value: []const u8,
+        comptime references: []const u8,
+    ) Error!void {
+        std.debug.assert(quote == '"' or quote == '\'');
+        const scope = try self.openComments(idx);
+        self.recordMapping(idx);
+        try self.out.writeByte(quote);
+        try self.writeCharReferences(value, references);
+        try self.out.writeRawByte(quote);
+        try self.closeComments(idx, scope, false);
+    }
+
+    fn writeCharReferences(
+        self: *Self,
+        text: []const u8,
+        comptime references: []const u8,
+    ) Error!void {
+        comptime for (references) |c| std.debug.assert(c < 0x80);
+        var start: usize = 0;
+        for (text, 0..) |c, i| {
+            if (std.mem.findScalar(u8, references, c) == null) continue;
+            var buffer: [6]u8 = undefined;
+            const reference = std.fmt.bufPrint(&buffer, "&#{d};", .{c}) catch unreachable;
+            try self.out.writeRawStr(text[start..i]);
+            try self.out.writeRawStr(reference);
+            start = i + 1;
+        }
+        std.debug.assert(start <= text.len);
+        try self.out.writeRawStr(text[start..]);
+    }
+
+    fn jsxDecodesTo(self: *Self, raw: []const u8, value: []const u8) Error!bool {
+        if (std.mem.findScalar(u8, raw, '&') == null) return std.mem.eql(u8, raw, value);
+        self.decoded.clearRetainingCapacity();
+        try lexical.decodeJSXEntities(self.allocator, raw, &self.decoded);
+        std.debug.assert(self.decoded.items.len <= raw.len);
+        return std.mem.eql(u8, self.decoded.items, value);
     }
 
     fn emitOwedComments(self: *Self) Error!void {
@@ -1077,7 +1122,14 @@ const Printer = struct {
         // an escaped `"use strict"` does not enable strict mode, so the raw lexeme must survive
         switch (self.nodeData(d.expression)) {
             .string_literal => |lit| {
-                try self.writeNodeText(d.expression, self.tree.string(lit.raw));
+                const raw = self.tree.string(lit.raw);
+                const text = self.tree.string(d.value);
+                if (raw.len >= 2 and std.mem.eql(u8, raw[1 .. raw.len - 1], text)) {
+                    try self.writeNodeText(d.expression, raw);
+                } else {
+                    const quote: u8 = if (std.mem.findScalar(u8, text, '"') == null) '"' else '\'';
+                    try self.writeNodeQuoted(d.expression, quote, text, "");
+                }
             },
             else => try self.emit(d.expression),
         }
@@ -1708,8 +1760,9 @@ const Printer = struct {
     }
 
     fn emit_regexp_literal(self: *Self, lit: *const ast.RegExpLiteral) Error!void {
+        const pattern = self.tree.string(lit.pattern);
         try self.out.writeByte('/');
-        try self.out.writeRawStr(self.tree.string(lit.pattern));
+        try self.out.writeRawStr(if (pattern.len != 0) pattern else "(?:)");
         try self.out.writeRawByte('/');
         try self.out.writeRawStr(self.tree.string(lit.flags));
     }
@@ -2944,9 +2997,16 @@ const Printer = struct {
         try self.emit(a.name);
         if (a.value != .null) {
             try self.out.writeByte('=');
-            // jsx attribute strings have no escapes, the raw lexeme is the value
             switch (self.nodeData(a.value)) {
-                .string_literal => |lit| try self.writeNodeText(a.value, self.tree.string(lit.raw)),
+                .string_literal => |lit| {
+                    const raw = self.tree.string(lit.raw);
+                    const value = self.tree.string(lit.value);
+                    if (raw.len >= 2 and try self.jsxDecodesTo(raw[1 .. raw.len - 1], value)) {
+                        try self.writeNodeText(a.value, raw);
+                    } else {
+                        try self.writeNodeQuoted(a.value, '"', value, "\"&");
+                    }
+                },
                 else => try self.emit(a.value),
             }
         }
@@ -2985,7 +3045,10 @@ const Printer = struct {
     }
 
     fn emit_jsx_text(self: *Self, t: *const ast.JSXText) Error!void {
-        try self.out.writeRawStr(self.tree.string(t.raw));
+        const raw = self.tree.string(t.raw);
+        const value = self.tree.string(t.value);
+        if (try self.jsxDecodesTo(raw, value)) return self.out.writeRawStr(raw);
+        try self.writeCharReferences(value, "&<>{}");
     }
 
     fn emit_jsx_spread_child(self: *Self, c: *const ast.JSXSpreadChild) Error!void {

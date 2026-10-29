@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
-import { parse, type ParseOptions, print, type PrintOptions } from "yuku";
-import { astDiffPath } from "../ast-helpers-for-test";
+import { b, parse, type ParseOptions, print, type PrintOptions, type Program, walk } from "yuku";
+import { is } from "yuku/utils";
+import { astDiffPath, nodesOf } from "../ast-helpers-for-test";
 import { deepChains, gen, INSTANTIATIONS, NON_NULL_CHAINS } from "./helpers";
 
 test("array holes keep their elisions", () => {
@@ -98,6 +99,75 @@ test("JSX text and attributes keep their raw text", () => {
       "const a = <a href="&amp;x" title='y' />;
       const b = <b data-x={"&lt;"}>&lt;b&gt;</b>;"
     `);
+});
+
+const LITERALS = [
+  `"use client";`,
+  `[1, 010, 08, 0x1_0, 1n, 0x10n, /a/ig, /b/ig, 'q'];`,
+  `<a b="&amp;" c="&amp;">&copy;&#10;<i>old</i></a>;`,
+].join("\n");
+const LITERALS_OPTIONS = { path: "input.jsx", sourceType: "script" } as const;
+
+function valuesOf(program: Program): unknown[] {
+  const values: unknown[] = [];
+  walk(program, {
+    enter(node) {
+      if (is.Directive(node)) values.push(node.directive);
+      if (is.RegExpLiteral(node)) values.push(node.regex);
+      else if (is.BigIntLiteral(node)) values.push(node.bigint);
+      else if (node.type === "Literal" || node.type === "JSXText") values.push(node.value);
+    },
+  });
+  return values;
+}
+
+test("an edited value wins over its stale raw lexeme", () => {
+  const { program } = parse(LITERALS, LITERALS_OPTIONS);
+  const [directive] = program.body.filter(is.Directive);
+  directive!.directive = "use server";
+  directive!.expression.value = "use server";
+  const literals = nodesOf(program, "Literal");
+  literals.filter(is.NumericLiteral)[0]!.value = 2;
+  const [bigint] = literals.filter(is.BigIntLiteral);
+  bigint!.value = 2n;
+  bigint!.bigint = "2";
+  const [first, second] = literals.filter(is.RegExpLiteral);
+  first!.regex.pattern = "c";
+  second!.regex.flags = "g";
+  const attributes = nodesOf(program, "JSXAttribute").map((attribute) => attribute.value);
+  attributes.filter(is.StringLiteral)[0]!.value = 'x "y"';
+  nodesOf(program, "JSXText")[1]!.value = "a < b { c } & d";
+
+  const { code } = print(program);
+  expect(code).toMatchInlineSnapshot(`
+    ""use server";
+    [2, 010, 08, 0x1_0, 2n, 0x10n, /c/ig, /b/g, 'q'];
+    <a b="x &#34;y&#34;" c="&amp;">&copy;&#10;<i>a &#60; b &#123; c &#125; &#38; d</i></a>;"
+  `);
+  expect(valuesOf(parse(code, LITERALS_OPTIONS).program)).toEqual(valuesOf(program));
+});
+
+test("a node without a raw lexeme prints from its value", () => {
+  const { program } = parse(LITERALS, LITERALS_OPTIONS);
+  walk(program, {
+    enter(node) {
+      if ("raw" in node) delete node.raw;
+    },
+  });
+
+  const { code } = print(program);
+  expect(code).toMatchInlineSnapshot(`
+    ""use client";
+    [1, 8, 8, 16, 1n, 16n, /a/gi, /b/gi, "q"];
+    <a b="&#38;" c="&#38;">©
+    <i>old</i></a>;"
+  `);
+  expect(valuesOf(parse(code, LITERALS_OPTIONS).program)).toEqual(valuesOf(program));
+});
+
+test("an empty regular expression pattern prints as an empty group", () => {
+  const regexp = b.Literal({ value: null, regex: { pattern: "", flags: "g" } });
+  expect(print(regexp).code).toBe("/(?:)/g");
 });
 
 test("an element before a subscript keeps its parentheses", () => {
