@@ -1,10 +1,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const parser = @import("parser");
-const flag = @import("flag.zig");
+const entries = @import("entries.zig");
 const transfer = @import("transfer/root.zig");
 
-const Error = std.mem.Allocator.Error || error{NodeApi};
+const Error = transfer.Error || error{NodeApi};
 
 const Env = *opaque {};
 const Value = *opaque {};
@@ -40,7 +39,15 @@ const Api = struct {
     napi_get_value_uint32: *const fn (Env, Value, *u32) callconv(.c) Status,
     napi_create_arraybuffer: *const fn (Env, usize, *?*anyopaque, *Value) callconv(.c) Status,
     napi_throw_error: *const fn (Env, ?[*:0]const u8, [*:0]const u8) callconv(.c) Status,
-    napi_create_string_utf8: *const fn (Env, [*]const u8, usize, *Value) callconv(.c) Status,
+    napi_get_typedarray_info: *const fn (
+        Env,
+        Value,
+        ?*c_int,
+        *usize,
+        *?*anyopaque,
+        ?*Value,
+        ?*usize,
+    ) callconv(.c) Status,
 };
 
 /// Arenas that calls on any thread borrow and return, so each call reuses the memory of an
@@ -149,8 +156,10 @@ export fn napi_register_module_v1(env: Env, exports: Value) ?Value {
 
 fn register(env: Env, exports: Value) Error!void {
     const api = try bindApi();
-    try define(&api, env, exports, "parse", parse);
-    try define(&api, env, exports, "analyze", analyze);
+    try define(&api, env, exports, "parse", withSource(entries.parse));
+    try define(&api, env, exports, "analyze", withSource(entries.analyze));
+    try define(&api, env, exports, "printTree", printTree);
+    try define(&api, env, exports, "analyzeTree", analyzeTree);
 }
 
 fn define(
@@ -158,10 +167,10 @@ fn define(
     env: Env,
     exports: Value,
     comptime name: [:0]const u8,
-    callback: Callback,
+    comptime run: Run,
 ) Error!void {
     var function: Value = undefined;
-    try check(api.napi_create_function(env, name.ptr, name.len, callback, null, &function));
+    try check(api.napi_create_function(env, name.ptr, name.len, callback(run), null, &function));
     try check(api.napi_set_named_property(env, exports, name.ptr, function));
 }
 
@@ -169,117 +178,126 @@ fn check(status: Status) error{NodeApi}!void {
     if (status != .ok) return error.NodeApi;
 }
 
-fn parse(env: Env, info: CallbackInfo) callconv(.c) ?Value {
-    return call(env, info, parseBuffer);
+const Run = fn (*const Api, std.mem.Allocator, Env, CallbackInfo) Error!Value;
+
+fn callback(comptime run: Run) Callback {
+    return struct {
+        fn call(env: Env, info: CallbackInfo) callconv(.c) ?Value {
+            const api = bindApi() catch return null;
+            const arena = pool.take() catch {
+                _ = api.napi_throw_error(env, null, "yuku: out of memory");
+                return null;
+            };
+            defer pool.give(arena);
+            return run(&api, arena.allocator(), env, info) catch |err| {
+                const message = switch (err) {
+                    error.OutOfMemory => "yuku: out of memory",
+                    error.NodeApi => "yuku: a Node-API call failed",
+                    error.InvalidTree => "yuku: the tree is malformed",
+                };
+                _ = api.napi_throw_error(env, null, message);
+                return null;
+            };
+        }
+    }.call;
 }
 
-fn analyze(env: Env, info: CallbackInfo) callconv(.c) ?Value {
-    return call(env, info, analyzeBuffer);
+fn withSource(comptime entry: anytype) Run {
+    return struct {
+        fn run(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
+            const argv = try argsOf(2, api, env, info);
+            var output: Output = .{ .api = api, .env = env };
+            const source = try sourceOf(api, gpa, env, argv[0]);
+            _ = try entry(gpa, source, try uint32Of(api, env, argv[1]), &output);
+            return output.value.?;
+        }
+    }.run;
 }
 
-const Run = fn (*const Api, std.mem.Allocator, Env, []const u8, u32) Error!Value;
-
-fn call(env: Env, info: CallbackInfo, comptime run: Run) ?Value {
-    const api = bindApi() catch return null;
-    return withSource(&api, env, info, run) catch |err| {
-        const message = switch (err) {
-            error.OutOfMemory => "yuku: out of memory",
-            error.NodeApi => "yuku: a Node-API call failed",
-        };
-        _ = api.napi_throw_error(env, null, message);
-        return null;
-    };
+fn printTree(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
+    const argv = try argsOf(7, api, env, info);
+    var output: Output = .{ .api = api, .env = env };
+    const source = try sourceOf(api, gpa, env, argv[4]);
+    const flags = try uint32Of(api, env, argv[5]);
+    const options = try uint32Of(api, env, argv[6]);
+    _ = try entries.printTree(gpa, try encodedOf(api, env, &argv), source, flags, options, &output);
+    return output.value.?;
 }
 
-fn withSource(api: *const Api, env: Env, info: CallbackInfo, comptime run: Run) Error!Value {
-    const arena = try pool.take();
-    defer pool.give(arena);
-    const gpa = arena.allocator();
+fn analyzeTree(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
+    const argv = try argsOf(5, api, env, info);
+    var output: Output = .{ .api = api, .env = env };
+    const flags = try uint32Of(api, env, argv[4]);
+    _ = try entries.analyzeTree(gpa, try encodedOf(api, env, &argv), flags, &output);
+    return output.value.?;
+}
 
-    var argc: usize = 2;
-    var argv: [2]Value = undefined;
+const Output = struct {
+    api: *const Api,
+    env: Env,
+    value: ?Value = null,
+
+    pub fn bytes(output: *Output, size: usize) Error![]u8 {
+        std.debug.assert(size > 0);
+        var data: ?*anyopaque = null;
+        var value: Value = undefined;
+        try check(output.api.napi_create_arraybuffer(output.env, size, &data, &value));
+        const bytes_out: [*]u8 = @ptrCast(data orelse return error.OutOfMemory);
+        output.value = value;
+        return bytes_out[0..size];
+    }
+};
+
+fn argsOf(comptime count: usize, api: *const Api, env: Env, info: CallbackInfo) Error![count]Value {
+    var argc: usize = count;
+    var argv: [count]Value = undefined;
     try check(api.napi_get_cb_info(env, info, &argc, &argv, null, null));
-    std.debug.assert(argc == 2);
+    std.debug.assert(argc == count);
+    return argv;
+}
 
-    var flags: u32 = undefined;
-    try check(api.napi_get_value_uint32(env, argv[1], &flags));
+fn uint32Of(api: *const Api, env: Env, value: Value) Error!u32 {
+    var result: u32 = undefined;
+    try check(api.napi_get_value_uint32(env, value, &result));
+    return result;
+}
 
+fn sourceOf(api: *const Api, gpa: std.mem.Allocator, env: Env, value: Value) Error![]const u8 {
     var units_len: usize = undefined;
-    try check(api.napi_get_value_string_utf16(env, argv[0], null, 0, &units_len));
+    try check(api.napi_get_value_string_utf16(env, value, null, 0, &units_len));
 
     const units = try gpa.alloc(u16, units_len + 1);
     var copied: usize = undefined;
-    try check(api.napi_get_value_string_utf16(env, argv[0], units.ptr, units.len, &copied));
+    try check(api.napi_get_value_string_utf16(env, value, units.ptr, units.len, &copied));
     std.debug.assert(copied == units_len);
 
     const target = try gpa.alloc(u8, units_len * 3);
-    const source = transfer.utf16.encodeUtf8(units[0..units_len], target);
-    return run(api, gpa, env, source, flags);
+    return transfer.utf16.encodeUtf8(units[0..units_len], target, .replace);
 }
 
-fn parseBuffer(
-    api: *const Api,
-    gpa: std.mem.Allocator,
-    env: Env,
-    source: []const u8,
-    flags: u32,
-) Error!Value {
-    var tree = try parseTree(gpa, source, flags);
-    defer tree.deinit();
-
-    if (flags & flag.semantic_errors != 0) try parser.semantic.check(&tree);
-
-    var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
-    defer offsets.deinit(gpa);
-
-    const out = try arrayBuffer(api, env, transfer.bufferSize(&tree));
-    const written = transfer.serializeInto(&tree, &offsets, out.bytes);
-    std.debug.assert(written == out.bytes.len);
-    return out.value;
+fn encodedOf(api: *const Api, env: Env, argv: []const Value) Error!transfer.Encoded {
+    return .{
+        .nodes = try itemsOf(transfer.PackedNode, api, env, argv[0]),
+        .extras = try itemsOf(u32, api, env, argv[1]),
+        .comments = try itemsOf(transfer.PackedComment, api, env, argv[2]),
+        .pool = try itemsOf(u16, api, env, argv[3]),
+    };
 }
 
-fn analyzeBuffer(
-    api: *const Api,
-    gpa: std.mem.Allocator,
-    env: Env,
-    source: []const u8,
-    flags: u32,
-) Error!Value {
-    var tree = try parseTree(gpa, source, flags);
-    defer tree.deinit();
-
-    const sem = try parser.semantic.analyze(&tree, .{
-        .check = flags & flag.semantic_errors != 0,
-    });
-
-    const records = try parser.semantic.module_record.collect(&tree, &sem);
-
-    var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
-    defer offsets.deinit(gpa);
-
-    const size = transfer.semantic.bufferSize(&tree, &sem, records);
-    const out = try arrayBuffer(api, env, size);
-    const written = transfer.semantic.serializeInto(&tree, &sem, records, &offsets, out.bytes);
-    std.debug.assert(written == out.bytes.len);
-    return out.value;
-}
-
-const Buffer = struct { value: Value, bytes: []u8 };
-
-fn arrayBuffer(api: *const Api, env: Env, size: usize) Error!Buffer {
-    std.debug.assert(size > 0);
+fn itemsOf(comptime T: type, api: *const Api, env: Env, value: Value) Error![]const T {
+    const uint16_array = 4;
+    const int32_array = 5;
+    var element_type: c_int = undefined;
+    var len: usize = undefined;
     var data: ?*anyopaque = null;
-    var value: Value = undefined;
-    try check(api.napi_create_arraybuffer(env, size, &data, &value));
-    const bytes: [*]u8 = @ptrCast(data orelse return error.OutOfMemory);
-    return .{ .value = value, .bytes = bytes[0..size] };
-}
-
-fn parseTree(
-    gpa: std.mem.Allocator,
-    source: []const u8,
-    flags: u32,
-) std.mem.Allocator.Error!parser.ast.Tree {
-    std.debug.assert(flags & flag.utf16 == 0);
-    return parser.parse(gpa, source, flag.parseOptions(flags));
+    try check(api.napi_get_typedarray_info(env, value, &element_type, &len, &data, null, null));
+    const bytes = len * @as(usize, switch (element_type) {
+        uint16_array => 2,
+        int32_array => 4,
+        else => return error.InvalidTree,
+    });
+    if (bytes % @sizeOf(T) != 0) return error.InvalidTree;
+    if (bytes == 0) return &.{};
+    const items: [*]const T = @ptrCast(@alignCast(data orelse return error.InvalidTree));
+    return items[0 .. bytes / @sizeOf(T)];
 }

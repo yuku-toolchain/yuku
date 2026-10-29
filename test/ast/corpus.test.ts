@@ -51,7 +51,7 @@ function checkWalk(file: CorpusFile, program: Node, copy: Node): void {
 function checkOptions(file: CorpusFile, source: string, plain: SourceFile): void {
   checks.options++;
   const options = { lang: file.lang, sourceType: file.sourceType, preserveParens: false };
-  const full = parse(source, { ...options, tokens: true, semantic: true });
+  const full = parse(source, { ...options, tokens: true, analyze: true });
   const difference = astDiffPath(full.program, plain.program);
   if (difference !== null) note("options", `${file.path}: ${difference}`);
   if (full.diagnostics.length !== plain.diagnostics.length) {

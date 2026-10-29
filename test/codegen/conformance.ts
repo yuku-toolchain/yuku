@@ -1,4 +1,5 @@
-// the Zig and JS printers must agree byte for byte
+// printing a decoded tree through the encoder must agree byte for byte with the Zig printer
+// printing the parsed tree
 //   bun test/codegen/conformance.ts [plan...] [--file <path>] [--show <n>]
 
 import { spawnSync } from "node:child_process";

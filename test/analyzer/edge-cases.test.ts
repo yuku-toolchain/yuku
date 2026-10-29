@@ -51,7 +51,7 @@ describe("string pool", () => {
     // an escaped lone surrogate crosses the wire through the WTF-8 string pool
     const surrogate = String.fromCharCode(0xd800);
     const source = `import x from ${JSON.stringify(surrogate)};`;
-    const file = parse(source, { semantic: true, path: "input.js" });
+    const file = parse(source, { analyze: true, path: "input.js" });
     expect(file.imports[0]!.specifier).toBe(surrogate);
     expect(file.imports[0]!.specifier.charCodeAt(0)).toBe(0xd800);
   });
@@ -61,7 +61,7 @@ describe("byte source", () => {
   test("a UTF-8 byte source analyzes like its string", () => {
     const source = "\uFEFFconst après = '🎉'; après;";
     const bytes = new TextEncoder().encode(source);
-    const file = parse(bytes, { semantic: true, path: "input.js" });
+    const file = parse(bytes, { analyze: true, path: "input.js" });
     expect(file.source).toBe(source);
     expect(file.program).toEqual(parse(source, { path: "input.js" }).program);
     expect(file.references[0]!.binding?.name).toBe("après");
@@ -111,7 +111,7 @@ describe("deep trees", () => {
   });
 
   test("parentOf climbs from the deepest node to the root", () => {
-    const file = parse("a" + ".b".repeat(100_000), { semantic: true, path: "input.js" });
+    const file = parse("a" + ".b".repeat(100_000), { analyze: true, path: "input.js" });
     let node: any = (file.program.body[0] as any).expression;
     while (node.type === "MemberExpression") node = node.object;
     let ancestors = 0;
@@ -123,7 +123,7 @@ describe("deep trees", () => {
 describe("nodes read before the program", () => {
   test("a reference's node is the program's own, with its comments and lookups", () => {
     const source = "const a = 1;\nfunction f(g) {\n  return g(/* the a */ a, a);\n}\n";
-    const options = { semantic: true, attachComments: true, path: "a.js" } as const;
+    const options = { analyze: true, attachComments: true, path: "a.js" } as const;
     const eager = parse(source, options);
     const lazy = parse(source, options);
     const [, first, last] = lazy.references;

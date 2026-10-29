@@ -1769,6 +1769,10 @@ const Printer = struct {
         try self.out.writeRawStr(self.tree.string(lit.flags));
     }
 
+    fn emit_template_element(self: *Self, el: *const ast.TemplateElement) Error!void {
+        try self.printTemplateElement(el.*, false);
+    }
+
     fn emit_template_literal(self: *Self, lit: *const ast.TemplateLiteral, ctx: Ctx) Error!void {
         try self.printTemplate(lit.quasis, lit.expressions, ctx.tagged);
     }
@@ -3086,7 +3090,7 @@ fn fixedString(comptime tag: NodeTag) ?[]const u8 {
 
 fn emittedByParent(comptime tag: NodeTag) bool {
     return switch (tag) {
-        .formal_parameters, .formal_parameter, .template_element => true,
+        .formal_parameters, .formal_parameter => true,
         else => false,
     };
 }

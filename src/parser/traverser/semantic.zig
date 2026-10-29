@@ -86,7 +86,8 @@ pub const Ctx = struct {
 
         if (data.isTypeContext()) self.type_position_depth += 1;
 
-        try self.symbols.setBindingContext(tag, data, parent, &self.scope);
+        const path = self.path.items[0..self.path.len];
+        try self.symbols.setBindingContext(tag, data, path, &self.scope);
     }
 
     pub inline fn post_enter(

@@ -773,7 +773,7 @@ The suite runs through the `yuku` package built from local source, so it checks 
 
 ## Codegen
 
-Every parseable file in the suite is printed under several option sets. Each output must parse again, plain output must reparse to the same AST, and printing must be a fixed point with no comment lost or duplicated. The Zig and JavaScript printers must agree byte for byte, and every identifier in a source map must trace back to its original name and position.
+Every parseable file in the suite is printed under several option sets. Each output must parse again, plain output must reparse to the same AST, and printing must be a fixed point with no comment lost or duplicated. Printing a decoded tree, encoded back for the Zig printer, must agree byte for byte with printing the parsed tree, and every identifier in a source map must trace back to its original name and position.
 
 ## Semantic analysis
 
@@ -845,7 +845,7 @@ print(file).code; // "const area = Math.pow(radius, 2) * Math.PI;"
 ```
 
 ```js
-const file = parse(`const double = (n) => n * 2;\ndouble(21);`, { semantic: true });
+const file = parse(`const double = (n) => n * 2;\ndouble(21);`, { analyze: true });
 
 const double = file.rootScope.find("double");
 double.references.length; // 1
@@ -861,7 +861,7 @@ print(file).code; // "const twice = (n) => n * 2;\ntwice(21);"
 - [Walk](#walk): [the context](#the-context), [editing](#editing), [async work](#async-work)
 - [Build](#build)
 - [Utils](#utils)
-- [Semantic analysis](#semantic-analysis): [scopes](#scopes), [bindings](#bindings), [references](#references), [imports and exports](#imports-and-exports)
+- [Semantic analysis](#semantic-analysis): [scopes](#scopes), [bindings](#bindings), [references](#references), [imports and exports](#imports-and-exports), [after edits](#after-edits)
 - [Rename](#rename)
 - [Projects](#projects)
 - [Print](#print)
@@ -897,10 +897,10 @@ The parser recovers from errors, so a file with diagnostics still has a program.
 | `preserveParens` | `true`                                              | Keep `ParenthesizedExpression` nodes                                                                                                      |
 | `attachComments` | `false`                                             | Attach each comment to its node, see [Comments](#comments)                                                                                |
 | `tokens`         | `false`                                             | Collect `file.tokens`                                                                                                                     |
-| `semantic`       | `false`                                             | Build the [semantic model](#semantic-analysis)                                                                                            |
+| `analyze`        | `false`                                             | Build the [semantic model](#semantic-analysis)                                                                                            |
 | `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations                                                                     |
 
-A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws.
+A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws, until [`reanalyze()`](#after-edits) builds the model.
 
 ### Diagnostics
 
@@ -1112,7 +1112,7 @@ It also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWor
 The semantic model resolves every name in a file, values and types alike, as the TypeScript checker does.
 
 ```js
-const file = parse(source, { path: "app.ts", semantic: true });
+const file = parse(source, { path: "app.ts", analyze: true });
 
 file.scopes;               // by id, the global scope first
 file.rootScope;            // the module scope, or the global scope of a script
@@ -1230,12 +1230,26 @@ exp.node;
 exp.resolvedFile;
 ```
 
+### After edits
+
+The model describes the program as parsed. After a pass edits it, `file.reanalyze()` builds the model again for the program as it is now, on the same node objects, so a node added with no position resolves too. It also builds the model of a file parsed without `analyze: true`.
+
+```js
+const file = parse(`let a = 1; f(a);`);
+
+const added = b.Identifier({ name: "a" });
+file.program.body.push(b.ExpressionStatement({ expression: added }));
+
+file.reanalyze();
+file.referenceOf(added).binding === file.rootScope.find("a"); // true
+```
+
 ## Rename
 
 `binding.rename(name)` renames a binding where it is declared and used, keeping the file's exports.
 
 ```js
-const file = parse(`export const a = 1;\nlet o = { a };`, { semantic: true });
+const file = parse(`export const a = 1;\nlet o = { a };`, { analyze: true });
 
 file.rootScope.find("a").rename("b"); // []
 print(file).code;
@@ -1301,7 +1315,6 @@ const { code, map, diagnostics } = print(file, { strip: true, sourceMap: true })
 | `quotes`    | `"preserve"`, or `"shortest"` minifying | `"preserve"`, `"double"`, `"single"`, or `"shortest"`                         |
 | `comments`  | `"all"`, or `"some"` minifying          | `"all"`, `"some"`, `"none"`, `"line"`, or `"block"`, of the attached comments |
 | `sourceMap` | `false`                                 | `true`, or `{ file, sourceRoot, sourcesContent }`, when printing a file       |
-| `printers`  | none                                    | Print node types the printer does not know, by `type`                         |
 
 `"some"` keeps legal headers, JSDoc, and `@` or `#` annotations, as bundlers do.
 

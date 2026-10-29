@@ -99,6 +99,11 @@ export class Project {
   }
 
   /** @internal */
+  _invalidate(): void {
+    this.dirty = true;
+  }
+
+  /** @internal */
   _link(file?: SourceFile): void {
     if (file !== undefined && !file.isCurrent) {
       throw new Error(`'${file.path}' was replaced or deleted, query its current file`);

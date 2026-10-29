@@ -1,8 +1,9 @@
 const std = @import("std");
 const decoder = @import("estree/decoder.zig");
+const encoder = @import("estree/encoder.zig");
 const identifier_tables = @import("gen_identifier_tables.zig");
 
-const Output = enum { decoder, walk_tables, token_types, identifier_tables, jsx_entities };
+const Output = enum { decoder, encoder, walk_tables, token_types, identifier_tables, jsx_entities };
 
 pub fn main(init: std.process.Init) !void {
     const args = try init.minimal.args.toSlice(init.arena.allocator());
@@ -14,6 +15,7 @@ pub fn main(init: std.process.Init) !void {
     const w = &stdout.interface;
     switch (output) {
         .decoder => try decoder.generate(w),
+        .encoder => try encoder.generate(w),
         .walk_tables => try decoder.generateWalkTables(w),
         .token_types => try decoder.generateTokenTypes(w),
         .identifier_tables => try identifier_tables.generate(w),

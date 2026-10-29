@@ -3,7 +3,7 @@ import { b, parse, type SourceFile, walk } from "yuku";
 import { nodesOf } from "../ast-helpers-for-test";
 
 function fileOf(source: string, path = "input.js"): SourceFile {
-  return parse(source, { path, semantic: true });
+  return parse(source, { path, analyze: true });
 }
 
 describe("walk", () => {

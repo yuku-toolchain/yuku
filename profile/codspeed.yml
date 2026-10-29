@@ -14,6 +14,10 @@ benchmarks:
     exec: >-
       ./zig-out/bin/profile model
       test/projects/typescript/src/compiler/checker.ts
+  - name: native print typescript/checker.ts
+    exec: >-
+      ./zig-out/bin/profile print
+      test/projects/typescript/src/compiler/checker.ts
 
   - name: native parse zod/schemas.ts
     exec: >-
@@ -26,6 +30,10 @@ benchmarks:
   - name: native model zod/schemas.ts
     exec: >-
       ./zig-out/bin/profile model
+      test/projects/zod/packages/zod/src/v4/core/schemas.ts
+  - name: native print zod/schemas.ts
+    exec: >-
+      ./zig-out/bin/profile print
       test/projects/zod/packages/zod/src/v4/core/schemas.ts
 
   - name: native parse excalidraw/App.tsx
@@ -40,6 +48,10 @@ benchmarks:
     exec: >-
       ./zig-out/bin/profile model
       test/projects/excalidraw/packages/excalidraw/components/App.tsx
+  - name: native print excalidraw/App.tsx
+    exec: >-
+      ./zig-out/bin/profile print
+      test/projects/excalidraw/packages/excalidraw/components/App.tsx
 
   - name: native parse three/WebGLRenderer.js
     exec: >-
@@ -52,4 +64,8 @@ benchmarks:
   - name: native model three/WebGLRenderer.js
     exec: >-
       ./zig-out/bin/profile model
+      test/projects/three/src/renderers/WebGLRenderer.js
+  - name: native print three/WebGLRenderer.js
+    exec: >-
+      ./zig-out/bin/profile print
       test/projects/three/src/renderers/WebGLRenderer.js

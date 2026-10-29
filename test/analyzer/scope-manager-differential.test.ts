@@ -131,7 +131,7 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
     // typescript-estree rejects the file
     return null;
   }
-  const file = parse(source, { semantic: true, sourceType, lang });
+  const file = parse(source, { analyze: true, sourceType, lang });
   const mismatches: string[] = [];
   let compared = 0;
 

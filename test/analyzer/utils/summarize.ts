@@ -15,11 +15,14 @@ import {
 import { nodesOf } from "../../ast-helpers-for-test";
 
 function parseOne(source: string, options: ParseOptions): SourceFile {
-  return parse(source, { semantic: true, path: "input.ts", ...options });
+  return parse(source, { analyze: true, path: "input.ts", ...options });
 }
 
 export function summary(source: string, options: ParseOptions = {}): string {
-  const file = parseOne(source, options);
+  return summaryOf(parseOne(source, options));
+}
+
+export function summaryOf(file: SourceFile): string {
   const lines: string[] = [];
 
   if (file.diagnostics.length > 0) {

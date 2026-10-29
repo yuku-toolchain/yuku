@@ -1,4 +1,5 @@
 import { decodeBase64 } from "./base64";
+import type { Encoded } from "./encode";
 
 /** A platform as `${process.platform}-${process.arch}` names it. */
 export type Platform =
@@ -47,13 +48,38 @@ export class Core {
 /** A loaded core, its Node-API addon or a WebAssembly instance. */
 export interface Backend {
   run(entry: Entry, source: string, flags: number): ArrayBuffer;
+  /** `source` is empty unless a source map needs it. */
+  runTree(
+    entry: TreeEntry,
+    tree: Encoded,
+    source: string,
+    flags: number,
+    options: number,
+  ): ArrayBuffer;
 }
 
 export type Entry = "parse" | "analyze";
+export type TreeEntry = "printTree" | "analyzeTree";
 
 interface Addon {
   parse(source: string, flags: number): ArrayBuffer;
   analyze(source: string, flags: number): ArrayBuffer;
+  printTree(
+    nodes: Int32Array,
+    extras: Int32Array,
+    comments: Int32Array,
+    pool: Uint16Array,
+    source: string,
+    flags: number,
+    options: number,
+  ): ArrayBuffer;
+  analyzeTree(
+    nodes: Int32Array,
+    extras: Int32Array,
+    comments: Int32Array,
+    pool: Uint16Array,
+    flags: number,
+  ): ArrayBuffer;
 }
 
 interface Exports {
@@ -62,6 +88,8 @@ interface Exports {
   free(pointer: number, len: number): void;
   parse(pointer: number, len: number, flags: number): number;
   analyze(pointer: number, len: number, flags: number): number;
+  printTree(block: number, flags: number, options: number): number;
+  analyzeTree(block: number, flags: number): number;
 }
 
 interface Instance extends Backend {
@@ -90,6 +118,8 @@ interface Globals {
 }
 
 const UTF16 = 1 << 10;
+const TREE_HEADER_WORDS = 5;
+const BIG_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 0;
 
 const MEMORY_BYTES_MAX = 128 * 1024 * 1024;
 const MEMORY_IDLE_MS = 10_000;
@@ -112,10 +142,18 @@ function nativeBackend(addons: CoreOptions["addons"]): Backend | null {
   } catch {
     return null;
   }
-  const { parse, analyze } = module.exports;
-  if (typeof parse !== "function" || typeof analyze !== "function") return null;
-  const addon = { parse, analyze };
-  return { run: (entry, source, flags) => addon[entry](source, flags) };
+  const addon = module.exports;
+  for (const entry of ["parse", "analyze", "printTree", "analyzeTree"] as const) {
+    if (typeof addon[entry] !== "function") return null;
+  }
+  const { parse, analyze, printTree, analyzeTree } = addon as Addon;
+  return {
+    run: (entry, source, flags) => (entry === "parse" ? parse : analyze)(source, flags),
+    runTree: (entry, tree, source, flags, options) =>
+      entry === "printTree"
+        ? printTree(tree.nodes, tree.extras, tree.comments, tree.pool, source, flags, options)
+        : analyzeTree(tree.nodes, tree.extras, tree.comments, tree.pool, flags),
+  };
 }
 
 function ffiGranted(): boolean {
@@ -156,6 +194,8 @@ function createInstance(module: WebAssembly.Module): Instance {
     exports,
     grownAt: 0,
     run: (entry, source, flags) => call(instance, entry, source, flags),
+    runTree: (entry, tree, source, flags, options) =>
+      callTree(instance, entry, tree, source, flags, options),
   };
   return instance;
 }
@@ -170,11 +210,65 @@ function call(instance: Instance, entry: Entry, source: string, flags: number): 
   const result = instance.exports[entry](pointer, written, flags | encoding) >>> 0;
   if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
   free(pointer, capacity);
-  if (result === 0) throw new Error("yuku: out of memory");
+  return resultOf(instance, result);
+}
+
+function callTree(
+  instance: Instance,
+  entry: TreeEntry,
+  tree: Encoded,
+  source: string,
+  flags: number,
+  options: number,
+): ArrayBuffer {
+  const { memory, alloc, free } = instance.exports;
+  const bytes = memory.buffer.byteLength;
+  const { nodes, extras, comments, pool } = tree;
+  const words = TREE_HEADER_WORDS + nodes.length + extras.length + comments.length;
+  const poolBytes = (pool.length * 2 + 3) & ~3;
+  const sourceCapacity = source.length * (NodeBuffer === undefined ? 3 : 2);
+  const capacity = words * 4 + poolBytes + sourceCapacity;
+  const pointer = alloc(capacity) >>> 0;
+  const block = new Int32Array(memory.buffer, pointer, words);
+  block[0] = nodes.length;
+  block[1] = extras.length;
+  block[2] = comments.length;
+  block[3] = pool.length;
+  block.set(nodes, TREE_HEADER_WORDS);
+  block.set(extras, TREE_HEADER_WORDS + nodes.length);
+  block.set(comments, TREE_HEADER_WORDS + nodes.length + extras.length);
+  const units = new Uint16Array(memory.buffer, pointer + words * 4, pool.length);
+  units.set(pool);
+  const sourceAt = pointer + words * 4 + poolBytes;
+  block[4] = writeSource(memory.buffer, sourceAt, sourceCapacity, source);
+  if (BIG_ENDIAN) {
+    swapWords(block);
+    for (let i = 0; i < units.length; i++) units[i] = (units[i]! << 8) | (units[i]! >>> 8);
+  }
+  const encoding = NodeBuffer === undefined ? 0 : UTF16;
+  const result =
+    entry === "printTree"
+      ? instance.exports.printTree(pointer, flags | encoding, options) >>> 0
+      : instance.exports.analyzeTree(pointer, flags | encoding) >>> 0;
+  if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
+  free(pointer, capacity);
+  return resultOf(instance, result);
+}
+
+function resultOf(instance: Instance, result: number): ArrayBuffer {
+  const { memory, free } = instance.exports;
+  if (result === 0) throw new Error("yuku: out of memory, or the tree is malformed");
   const size = new DataView(memory.buffer).getUint32(result, true);
   const buffer = memory.buffer.slice(result + 4, result + 4 + size);
   free(result, 4 + size);
   return buffer;
+}
+
+function swapWords(words: Int32Array): void {
+  for (let i = 0; i < words.length; i++) {
+    const v = words[i]!;
+    words[i] = (v << 24) | ((v & 0xff00) << 8) | ((v >>> 8) & 0xff00) | (v >>> 24);
+  }
 }
 
 function instantiate(module: WebAssembly.Module): Exports {

@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { Core, parse, type ParseOptions, type SourceFile } from "yuku";
+import { Core, parse, print, type ParseOptions, type SourceFile } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
 import { corpusAndProjectFiles, corpusPresent, forEachCorpusFile } from "../corpus";
 
@@ -12,7 +12,7 @@ const wasm = new WebAssembly.Module(readFileSync(new URL("wasm/yuku.wasm", packa
 const core = new Core({ wasm });
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const SAMPLE_MAX = 8;
-const SEMANTIC_EVERY = 8;
+const ANALYZE_EVERY = 8;
 
 function child(script: string): string {
   const run = Bun.spawnSync(["bun", "--eval", script], { cwd: root });
@@ -26,7 +26,9 @@ function summary(file: SourceFile, options: ParseOptions): unknown {
     comments: file.comments,
     diagnostics: file.diagnostics,
     tokens: options.tokens === true ? tokensOf(file) : null,
-    semantic: options.semantic === true ? semanticOf(file) : null,
+    semantic: options.analyze === true ? semanticOf(file) : null,
+    printed: [print(file).code, print(file, { minify: true, sourceMap: true }).map],
+    analyzed: options.analyze === true ? (file.reanalyze(), semanticOf(file)) : null,
   };
 }
 
@@ -69,21 +71,25 @@ describe.skipIf(!shipsAddon)("the Node-API addon", () => {
       process.dlopen = function (module, path, ...rest) {
         paths.push(path);
         dlopen.call(this, module, path, ...rest);
-        const { parse, analyze } = module.exports;
-        module.exports = {
-          parse: (...args) => (calls.push("parse"), parse(...args)),
-          analyze: (...args) => (calls.push("analyze"), analyze(...args)),
-        };
+        module.exports = Object.fromEntries(
+          Object.entries(module.exports).map(([name, entry]) => [
+            name,
+            (...args) => (calls.push(name), entry(...args)),
+          ]),
+        );
       };
-      const { parse } = await import("yuku");
+      const { parse, print } = await import("yuku");
       parse("a;").program;
-      parse("let b;", { semantic: true }).scopes;
+      const file = parse("let b;", { analyze: true });
+      file.scopes;
+      print(file);
+      file.reanalyze();
       console.log(JSON.stringify({ paths, calls }));
     `);
     const { paths, calls } = JSON.parse(loaded) as { paths: string[]; calls: string[] };
     expect(paths).toHaveLength(1);
     expect(paths[0]!.replaceAll("\\", "/").endsWith(addon)).toBe(true);
-    expect(calls).toEqual(["parse", "analyze"]);
+    expect(calls).toEqual(["parse", "analyze", "printTree", "analyzeTree"]);
   });
 
   test("agrees with WebAssembly under every option", () => {
@@ -100,9 +106,9 @@ describe.skipIf(!shipsAddon)("the Node-API addon", () => {
     const variants: ParseOptions[] = [
       { lang: "tsx" },
       { lang: "tsx", tokens: true, attachComments: true },
-      { lang: "tsx", semantic: true, semanticErrors: true },
+      { lang: "tsx", analyze: true, semanticErrors: true },
       { lang: "jsx", sourceType: "script", preserveParens: false },
-      { lang: "ts", sourceType: "commonjs", semantic: true, tokens: true },
+      { lang: "ts", sourceType: "commonjs", analyze: true, tokens: true },
     ];
     for (const source of sources) {
       for (const options of variants) expect(agrees(source, options)).toBeNull();
@@ -137,7 +143,7 @@ test("the package parses with WebAssembly where no addon loads", () => {
       throw new Error("native addons are not supported here");
     };
     const { parse } = await import("yuku");
-    const file = parse("let é = 1;", { semantic: true });
+    const file = parse("let é = 1;", { analyze: true });
     console.log(JSON.stringify([file.program.body[0].end, file.bindings.map((b) => b.name)]));
   `);
   expect(JSON.parse(output)).toEqual([10, ["é"]]);
@@ -153,8 +159,8 @@ describe.skipIf(!shipsAddon || !corpusPresent())("the Node-API addon across the 
 
   test("agrees with WebAssembly on every file", async () => {
     await forEachCorpusFile(corpusAndProjectFiles(), (file, source) => {
-      const semantic = compared % SEMANTIC_EVERY === 0;
-      const options: ParseOptions = { lang: file.lang, sourceType: file.sourceType, semantic };
+      const analyze = compared % ANALYZE_EVERY === 0;
+      const options: ParseOptions = { lang: file.lang, sourceType: file.sourceType, analyze };
       compared++;
       const difference = agrees(source, options);
       if (difference !== null && differences.length < SAMPLE_MAX) {

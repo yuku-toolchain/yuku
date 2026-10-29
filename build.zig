@@ -164,6 +164,7 @@ pub fn build(b: *std.Build) void {
     package_files.addCopyFileToSource(yuku_wasm.getEmittedBin(), "npm/wasm/yuku.wasm");
     for ([_][2][]const u8{
         .{ "decoder", "npm/yuku/core/decode.js" },
+        .{ "encoder", "npm/yuku/core/encode.js" },
         .{ "walk_tables", "npm/yuku/ast/generated.ts" },
         .{ "token_types", "npm/yuku/types/tokens.ts" },
         .{ "identifier_tables", "npm/yuku/ast/identifier-tables.ts" },

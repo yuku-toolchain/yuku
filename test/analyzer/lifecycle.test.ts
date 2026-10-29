@@ -41,10 +41,10 @@ describe("re-adding a path", () => {
 
   test("a file holds only what it was parsed with", () => {
     const file = parse(`let a = 1;`);
-    expect(() => file.rootScope).toThrow("parse with `semantic: true`");
-    expect(() => file.bindingOf(file.program)).toThrow("parse with `semantic: true`");
+    expect(() => file.rootScope).toThrow("parse with `analyze: true`");
+    expect(() => file.bindingOf(file.program)).toThrow("parse with `analyze: true`");
     expect(() => file.tokens).toThrow("parse with `tokens: true`");
-    const full = parse(`let a = 1;`, { semantic: true, tokens: true });
+    const full = parse(`let a = 1;`, { analyze: true, tokens: true });
     expect(full.rootScope.find("a")?.name).toBe("a");
     expect(full.tokens.length).toBe(5);
   });

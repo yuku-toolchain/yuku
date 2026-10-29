@@ -47,8 +47,6 @@ export interface Semantic {
     inTypePosition(id: number): boolean;
     isWrite(id: number): boolean;
     symbolId(id: number): number | null;
-    start(id: number): number;
-    end(id: number): number;
   };
   import: {
     count: number;
@@ -85,14 +83,26 @@ export interface Decoded {
   indexOf(node: Node): number | undefined;
   /** -1 at the root. */
   parentIndex(index: number): number;
-  startOf(index: number): number;
-  endOf(index: number): number;
+}
+
+/** A tree `encode` wrote, with the nodes it read, by index. */
+export interface EncodedNodes {
+  nodes: Int32Array;
+  extras: Int32Array;
+  objects: (Node | undefined)[];
 }
 
 export declare function decode(
   buffer: ArrayBuffer,
   source: string,
   path: string | null,
+  encoded?: EncodedNodes,
 ): Decoded;
+export declare function decodeDiagnostics(
+  buffer: ArrayBuffer,
+  offset: number,
+  count: number,
+  path: string | null,
+): Diagnostic[];
 export declare const TokenKind: TokenKindMap;
 export declare const BindingFlags: BindingFlagMap;

@@ -55,6 +55,6 @@ test("imported bindings count as captures", () => {
 });
 
 test("capturesOf throws on a non-function node", () => {
-  const file = parse(`let x = 1;`, { semantic: true, path: "input.js" });
+  const file = parse(`let x = 1;`, { analyze: true, path: "input.js" });
   expect(() => file.capturesOf(file.program)).toThrow();
 });

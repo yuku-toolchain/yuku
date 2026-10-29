@@ -1,13 +1,5 @@
 import { expect, test } from "bun:test";
-import {
-  parse,
-  print,
-  walk,
-  type Node,
-  type Printer,
-  type Printers,
-  type Program,
-} from "yuku";
+import { b, parse, print, walk, type Node, type Program } from "yuku";
 import { TraceMap, decodedMappings } from "@jridgewell/trace-mapping";
 import { nodesOf } from "../ast-helpers-for-test";
 import { gen } from "./helpers";
@@ -124,7 +116,6 @@ test("an option outside its values throws", () => {
   expect(() => print(program, { comments: true as never })).toThrow("`comments` must be");
   expect(() => print(program, { indent: 256 })).toThrow("`indent` must be an integer");
   expect(() => print(program, { indent: 1.5 })).toThrow("`indent` must be an integer");
-  expect(() => print(program, { printers: 1 as never })).toThrow("`printers` must be an object");
   expect(() => print(program, { minify: {} as never })).toThrow("`minify` must be true or false");
   expect(() => print(program, { print: {} } as never)).toThrow("`print` is not a print option");
   const source = { source: "a;" } as never;
@@ -165,36 +156,21 @@ test("attached comments print by default, and some keeps only the significant on
   expect(print(file, { format: "compact", comments: "some" }).code).toBe("/*! legal */\nlet a=1");
 });
 
-test("printers print the node types the printer does not know", () => {
-  const { program } = parse("items; render(item);");
-  type Each = { type: "EachStatement"; start: number; end: number; list: Node; body: Node[] };
-  const [items, render] = program.body;
-  if (items?.type !== "ExpressionStatement" || !render) throw new Error("two statements");
-  const each: Each = {
-    type: "EachStatement",
-    start: 0,
-    end: 0,
-    list: items.expression,
-    body: [render],
-  };
-  const printers = {
-    EachStatement(node: Each, w: Printer) {
-      w.write("each");
-      w.space();
-      w.write("(");
-      w.node(node.list);
-      w.write(")");
-      w.space();
-      w.block(node.body);
-    },
-  } as unknown as Printers;
-
-  expect(print(each as unknown as Node, { printers }).code).toMatchInlineSnapshot(`
-    "each (items) {
-      render(item);
-    }"
-  `);
-  expect(print(each as unknown as Node, { printers, format: "compact" }).code)
-    .toMatchInlineSnapshot(`"each(items){render(item)}"`);
-  expect(() => print(each as unknown as Node)).toThrow("unsupported node type: EachStatement");
+test("a node outside the AST shapes throws, naming the field", () => {
+  const program = parse("a.b;").program as Program & { body: [{ expression: Node }] };
+  const member = program.body[0].expression as Node & { object: unknown };
+  const cases: [Node, string][] = [
+    [{ type: "EachStatement", start: 0, end: 0 } as never, "EachStatement is not a node"],
+    [b.Identifier({ name: 1 as never }), "`Identifier.name` cannot be number"],
+    [
+      b.MemberExpression({ ...member, object: null } as never),
+      "`MemberExpression.object` must be a node",
+    ],
+    [
+      b.ClassBody({ body: [b.Identifier({ name: "x" }) as never] }),
+      "`ClassBody.body` cannot be Identifier",
+    ],
+    [b.ReturnStatement({ argument: "x" as never }), '`ReturnStatement.argument` cannot be "x"'],
+  ];
+  for (const [node, message] of cases) expect(() => print(node)).toThrow(message);
 });

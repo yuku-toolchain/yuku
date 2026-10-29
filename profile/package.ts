@@ -59,22 +59,22 @@ for (const path of FILES) {
     return file;
   });
   add(`analyze ${name}`, () => {
-    const file = parse(source, { path, semantic: true });
+    const file = parse(source, { path, analyze: true });
     void file.scopes;
     return file;
   });
   add(`analyze ${name} with WebAssembly`, () => {
-    const file = parse(source, { path, semantic: true, core });
+    const file = parse(source, { path, analyze: true, core });
     void file.scopes;
     return file;
   });
   add(`analyze ${name} with semantic errors`, () => {
-    const file = parse(source, { path, semantic: true, semanticErrors: true });
+    const file = parse(source, { path, analyze: true, semanticErrors: true });
     void file.scopes;
     return file;
   });
   add(`rename ${name}`, () => {
-    const file = parse(source, { path, semantic: true });
+    const file = parse(source, { path, analyze: true });
     const binding = file.bindings.find((candidate) => candidate.references.length > 0);
     return { diagnostics: binding?.rename(`${binding.name}_renamed`) ?? [] };
   });
@@ -99,7 +99,20 @@ for (const path of FILES) {
       commented = null;
     },
   };
+  let wasmFile: SourceFile | null = null;
+  const parsedWithWasm: Scope = {
+    setup() {
+      wasmFile = parse(source, { path, core });
+      void wasmFile.program;
+    },
+    teardown() {
+      wasmFile = null;
+    },
+  };
+  add(`reanalyze ${name}`, () => reanalyze(file!), parsed);
+  add(`reanalyze ${name} with WebAssembly`, () => reanalyze(wasmFile!), parsedWithWasm);
   add(`print ${name}`, () => print(file!), parsed);
+  add(`print ${name} with WebAssembly`, () => print(wasmFile!), parsedWithWasm);
   add(`print ${name} with comments`, () => print(commented!), withComments);
   if (typed) add(`print ${name} stripped`, () => print(file!, { strip: true }), parsed);
   add(`print ${name} minified`, () => print(file!, { minify: true }), parsed);
@@ -131,6 +144,12 @@ bench.runSync();
 
 if (bench.tasks.every((task) => task.result.state === "completed")) {
   console.table(bench.table());
+}
+
+function reanalyze(file: SourceFile): SourceFile {
+  file.reanalyze();
+  void file.scopes;
+  return file;
 }
 
 function add(name: string, run: () => Result, scope: Scope = {}): void {

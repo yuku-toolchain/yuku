@@ -1,8 +1,9 @@
 import { assertNode } from "../ast/walk";
+import { decodeDiagnostics } from "../core/decode";
+import { encode } from "../core/encode";
+import { isTs, shippedCore, treeFlags } from "../core/read";
 import { SourceFile } from "../file/source-file";
 import type { Diagnostic, Node } from "../types";
-import { printNode, type PrinterOptions, type Printers } from "./printer";
-import { encodeMappings, Mappings } from "./sourcemap";
 
 export type Format = "pretty" | "compact";
 
@@ -11,8 +12,6 @@ export type Quotes = "preserve" | "double" | "single" | "shortest";
 
 /** Which comments to print. `"some"` keeps legal comments, JSDoc and `@` or `#` annotations. */
 export type Comments = "all" | "some" | "none" | "line" | "block";
-
-export type { Printer, Printers } from "./printer";
 
 export interface SourceMapOptions {
   /** Output filename, embedded as the map's `file`. */
@@ -46,8 +45,6 @@ export interface PrintOptions {
   comments?: Comments;
   /** Needs a file, for its source and path. @default false */
   sourceMap?: boolean | SourceMapOptions;
-  /** Prints the node types the printer does not know, by `type`. */
-  printers?: Printers;
 }
 
 export interface SourceMap {
@@ -76,22 +73,48 @@ const OPTIONS: ReadonlySet<string> = new Set([
   "quotes",
   "comments",
   "sourceMap",
-  "printers",
 ]);
 const SOURCE_MAP_OPTIONS: ReadonlySet<string> = new Set(["file", "sourceRoot", "sourcesContent"]);
+
+const STRIP = 1 << 0;
+const MINIFY = 1 << 1;
+const COMPACT = 1 << 2;
+const SOURCE_MAP = 1 << 3;
+const QUOTES_SHIFT = 4;
+const COMMENTS_SHIFT = 6;
+const INDENT_SHIFT = 9;
+const RESULT_HEADER_BYTES = 12;
+
+const utf8 = new TextDecoder("utf-8", { ignoreBOM: true });
 
 /** Prints a file, or any single node, back to source. */
 export function print(target: SourceFile | Node, options: PrintOptions = {}): PrintResult {
   const file = target instanceof SourceFile ? target : null;
-  const node = target instanceof SourceFile ? target.program : target;
+  const node = file === null ? target : file.program;
   assertNode(node, "print");
-  const printerOptions = resolveOptions(options, file?.path ?? null);
   const settings = sourceMapOf(options.sourceMap ?? false);
-  if (settings === null) return { ...printNode(node, printerOptions, null), map: null };
-  if (file === null) throw new TypeError("a source map needs the source, so print the file");
-  const { source, path } = file;
-  const mappings = new Mappings(Math.max(source.length >>> 3, 1024));
-  const { code, diagnostics } = printNode(node, printerOptions, mappings);
+  let bits = optionsOf(options);
+  if (settings !== null) {
+    if (file === null) throw new TypeError("a source map needs the source, so print the file");
+    bits |= SOURCE_MAP;
+  }
+  if (node.type === "Hashbang") return { code: `#!${node.value}`, diagnostics: [], map: null };
+
+  const tree = encode(node, file !== null && isTs(file.lang), false);
+  const core = file === null ? shippedCore : file._core;
+  const flags = file === null ? 0 : treeFlags(file.lang, file.sourceType);
+  const source = settings === null ? "" : file!.source;
+  const buffer = core.backend().runTree("printTree", tree, source, flags, bits);
+
+  const header = new DataView(buffer, 0, RESULT_HEADER_BYTES);
+  const codeEnd = RESULT_HEADER_BYTES + header.getUint32(0, true);
+  const mappingsEnd = codeEnd + header.getUint32(4, true);
+  const bytes = new Uint8Array(buffer);
+  const path = file?.path ?? null;
+  const code = utf8.decode(bytes.subarray(RESULT_HEADER_BYTES, codeEnd));
+  const count = header.getUint32(8, true);
+  const diagnostics = decodeDiagnostics(buffer, (mappingsEnd + 3) & ~3, count, path);
+  if (settings === null) return { code, diagnostics, map: null };
   const map: SourceMap = {
     version: 3,
     file: settings.file ?? null,
@@ -99,7 +122,7 @@ export function print(target: SourceFile | Node, options: PrintOptions = {}): Pr
     sources: [path ?? ""],
     sourcesContent: settings.sourcesContent === true ? [source] : null,
     names: [],
-    mappings: encodeMappings(code, source, mappings),
+    mappings: utf8.decode(bytes.subarray(codeEnd, mappingsEnd)),
   };
   return { code, diagnostics, map };
 }
@@ -120,7 +143,7 @@ function sourceMapOf(sourceMap: boolean | SourceMapOptions): SourceMapOptions | 
   return sourceMap;
 }
 
-function resolveOptions(options: PrintOptions, path: string | null): PrinterOptions {
+function optionsOf(options: PrintOptions): number {
   for (const key in options) {
     if (!OPTIONS.has(key)) throw new TypeError(`\`${key}\` is not a print option`);
   }
@@ -138,29 +161,19 @@ function resolveOptions(options: PrintOptions, path: string | null): PrinterOpti
     throw new RangeError("`indent` must be an integer from 0 to 255");
   }
 
-  const quotes = options.quotes ?? (minify ? "shortest" : "preserve");
-  if (!QUOTES.includes(quotes)) {
+  const quotes = QUOTES.indexOf(options.quotes ?? (minify ? "shortest" : "preserve"));
+  if (quotes < 0) {
     throw new TypeError('`quotes` must be "preserve", "double", "single", or "shortest"');
   }
 
-  const comments = options.comments ?? (minify ? "some" : "all");
-  if (!COMMENTS.includes(comments)) {
+  const comments = COMMENTS.indexOf(options.comments ?? (minify ? "some" : "all"));
+  if (comments < 0) {
     throw new TypeError('`comments` must be "all", "some", "none", "line", or "block"');
   }
 
-  const printers = options.printers ?? {};
-  if (typeof printers !== "object" || printers === null) {
-    throw new TypeError("`printers` must be an object of functions by node type");
-  }
-
-  return {
-    strip: options.strip === true,
-    minify,
-    pretty: format === "pretty",
-    indent,
-    quotes,
-    comments,
-    printers,
-    path,
-  };
+  let bits = (quotes << QUOTES_SHIFT) | (comments << COMMENTS_SHIFT) | (indent << INDENT_SHIFT);
+  if (options.strip === true) bits |= STRIP;
+  if (minify) bits |= MINIFY;
+  if (format === "compact") bits |= COMPACT;
+  return bits;
 }

@@ -145,7 +145,7 @@ describe("strict mode", () => {
 
 describe("hoist targets", () => {
   test("a var in a nested block hoists to the enclosing function scope", () => {
-    const file = parse(`function outer() { { var v = 1; } }`, { semantic: true, path: "input.js" });
+    const file = parse(`function outer() { { var v = 1; } }`, { analyze: true, path: "input.js" });
     const fnScope = file.scopes.find((s) => s.kind === "function")!;
     const blockScope = file.scopes.find((s) => s.kind === "block")!;
     const v = file.bindings.find((s) => s.name === "v")!;
@@ -155,7 +155,7 @@ describe("hoist targets", () => {
   });
 
   test("a function scope is its own hoist target", () => {
-    const file = parse(`function f() {}`, { semantic: true, path: "input.js" });
+    const file = parse(`function f() {}`, { analyze: true, path: "input.js" });
     const fnScope = file.scopes.find((s) => s.kind === "function")!;
     expect(fnScope.hoistTarget).toBe(fnScope);
   });

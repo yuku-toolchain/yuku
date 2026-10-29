@@ -8,13 +8,13 @@ import {
 } from "../corpus";
 
 function renamed(source: string, from: string, to: string, path = "input.ts"): string {
-  const file = parse(source, { semantic: true, path });
+  const file = parse(source, { analyze: true, path });
   expect(bindingNamed(file, from).rename(to)).toEqual([]);
   return print(file).code;
 }
 
 function refused(source: string, from: string, to: string, path = "input.ts"): string[] {
-  const file = parse(source, { semantic: true, path });
+  const file = parse(source, { analyze: true, path });
   const before = print(file).code;
   const diagnostics = bindingNamed(file, from).rename(to);
   expect(print(file).code).toBe(before);
@@ -77,7 +77,7 @@ describe("rename", () => {
   });
 
   test("the binding and the file read the new name", () => {
-    const file = parse(`let a = 1; a;`, { semantic: true });
+    const file = parse(`let a = 1; a;`, { analyze: true });
     const binding = bindingNamed(file, "a");
     expect(binding.rename("b")).toEqual([]);
     expect(binding.name).toBe("b");
@@ -112,7 +112,7 @@ describe("rename", () => {
   });
 
   test("a diagnostic names the file and can suggest a fix", () => {
-    const file = parse(`const A = 1; <A />;`, { semantic: true, path: "input.tsx" });
+    const file = parse(`const A = 1; <A />;`, { analyze: true, path: "input.tsx" });
     const [diagnostic] = bindingNamed(file, "A").rename("div");
     expect(diagnostic).toMatchObject({
       severity: "error",
@@ -125,7 +125,7 @@ describe("rename", () => {
   });
 
   test("a name that is not an identifier throws", () => {
-    const binding = bindingNamed(parse(`let a;`, { semantic: true }), "a");
+    const binding = bindingNamed(parse(`let a;`, { analyze: true }), "a");
     expect(() => binding.rename("1x")).toThrow(TypeError);
     expect(() => binding.rename("class")).toThrow("'class' is not a valid identifier");
   });
@@ -159,7 +159,7 @@ describe.skipIf(!corpusPresent())("renames across the corpus", () => {
   }
 
   function checkFile(file: CorpusFile, source: string): void {
-    const options: ParseOptions = { lang: file.lang, sourceType: file.sourceType, semantic: true };
+    const options: ParseOptions = { lang: file.lang, sourceType: file.sourceType, analyze: true };
     const first = parse(source, options);
     if (first.diagnostics.length > 0) return;
     const candidates = first.bindings.filter(

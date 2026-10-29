@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { Core, parse, walk, type Node } from "yuku";
+import { Core, parse, print, walk, type Node } from "yuku";
 import { decodeBase64 } from "../../npm/yuku/core/base64";
 
 const shipped = readFileSync(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
@@ -109,7 +109,7 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
     "x".repeat(70) + "é\n" + "😀".repeat(40) + "\nlet z = 1;",
   ];
   const summarize = `(source) => {
-    const options = { lang: "tsx", tokens: true, semantic: true, attachComments: true, core };
+    const options = { lang: "tsx", tokens: true, analyze: true, attachComments: true, core };
     const file = parse(source, options);
     const tokens = [];
     for (let i = 0; i < file.tokens.length; i++) {
@@ -123,12 +123,14 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
       bindings: file.bindings.map((binding) => binding.name),
       references: file.references.map((reference) => [reference.name, reference.node.start]),
       imports: file.imports.map((entry) => [entry.name, entry.specifier]),
+      printed: [print(file).code, print(file, { sourceMap: true }).map.mappings],
+      analyzed: (file.reanalyze(), file.references.map((r) => [r.name, r.binding?.id ?? -1])),
     };
   }`;
   const wasmPath = fileURLToPath(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
   const script = `globalThis.Buffer = undefined;
     const { readFileSync } = await import("node:fs");
-    const { Core, parse } = await import("yuku");
+    const { Core, parse, print } = await import("yuku");
     const wasm = new WebAssembly.Module(readFileSync(${JSON.stringify(wasmPath)}));
     const core = new Core({ wasm });
     console.log(JSON.stringify(${JSON.stringify(sources)}.map(${summarize})));`;
@@ -137,7 +139,11 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
   });
   expect(child.stderr.toString()).toBe("");
   const core = new Core({ wasm: new WebAssembly.Module(shipped) });
-  const summary = new Function("parse", "core", `return ${summarize}`)(parse, core) as (
+  const summary = new Function("parse", "print", "core", `return ${summarize}`)(
+    parse,
+    print,
+    core,
+  ) as (
     source: string,
   ) => {
     program: Node;

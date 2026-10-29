@@ -19,9 +19,9 @@ process.dlopen = (module: { exports: unknown }, path: string) => {
 
 const source = "const answer: number = 42;\nlet count = 0;\ncount++;\n";
 
-const file = parse(source, { lang: "ts", semantic: true });
+const file = parse(source, { lang: "ts", analyze: true });
 assert.equal(loaded, addon);
-const fallback = parse(source, { lang: "ts", semantic: true, core });
+const fallback = parse(source, { lang: "ts", analyze: true, core });
 assert.equal(JSON.stringify(fallback.program), JSON.stringify(file.program));
 assert.equal(fallback.rootScope.find("count")?.references.length, 1);
 assert.deepEqual(file.diagnostics, []);

@@ -6,7 +6,7 @@ const assert = std.debug.assert;
 
 const source_bytes_max = 64 * 1024 * 1024;
 
-const Operation = enum { parse, analyze, model };
+const Operation = enum { parse, analyze, model, print };
 
 pub fn main(init: std.process.Init) !void {
     const gpa = std.heap.c_allocator;
@@ -40,9 +40,10 @@ pub fn main(init: std.process.Init) !void {
             var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
             defer offsets.deinit(gpa);
 
-            const out = try gpa.alignedAlloc(u8, .of(u32), transfer.bufferSize(&tree));
+            const sections: transfer.Sections = .{ .nodes = true };
+            const out = try gpa.alignedAlloc(u8, .of(u32), transfer.bufferSize(&tree, sections));
             defer gpa.free(out);
-            const written = transfer.serializeInto(&tree, &offsets, out);
+            const written = transfer.serializeInto(&tree, &offsets, out, sections);
             assert(written == out.len);
         },
         .analyze => {
@@ -53,11 +54,27 @@ pub fn main(init: std.process.Init) !void {
             var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
             defer offsets.deinit(gpa);
 
-            const size = transfer.semantic.bufferSize(&tree, &sem, records);
+            const sections: transfer.Sections = .{ .nodes = true };
+            const size = transfer.semantic.bufferSize(&tree, &sem, records, sections);
             const out = try gpa.alignedAlloc(u8, .of(u32), size);
             defer gpa.free(out);
-            const written = transfer.semantic.serializeInto(&tree, &sem, records, &offsets, out);
+            const written =
+                transfer.semantic.serializeInto(&tree, &sem, records, &offsets, out, sections);
             assert(written == out.len);
+        },
+        .print => {
+            const printed = try parser.codegen.generate(gpa, &tree, .{
+                .strip = false,
+                .minify = false,
+                .format = .pretty,
+                .indent = 2,
+                .quotes = .preserve,
+                .source_map = null,
+                .comments = .all,
+            });
+            defer printed.deinit(gpa);
+            assert(printed.code.len > 0);
+            assert(printed.diagnostics.len == 0);
         },
         .model => {
             const sem = try parser.semantic.analyze(&tree, .{ .check = false });
@@ -68,6 +85,6 @@ pub fn main(init: std.process.Init) !void {
 }
 
 fn usage() noreturn {
-    std.debug.print("usage: profile <parse|analyze|model> <path>\n", .{});
+    std.debug.print("usage: profile <parse|analyze|model|print> <path>\n", .{});
     std.process.exit(2);
 }

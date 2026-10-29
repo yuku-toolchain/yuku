@@ -52,8 +52,6 @@ export {
   print,
   type Comments,
   type Format,
-  type Printer,
-  type Printers,
   type PrintOptions,
   type PrintResult,
   type Quotes,

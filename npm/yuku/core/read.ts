@@ -18,7 +18,7 @@ const SEMANTIC_ERRORS = 1 << 6;
 const ATTACH_COMMENTS = 1 << 7;
 const TOKENS = 1 << 8;
 
-const shippedCore = new Core({ wasm: shipped, addons });
+export const shippedCore: Core = new Core({ wasm: shipped, addons });
 const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const lossyUtf8 = new TextDecoder("utf-8", { ignoreBOM: true });
 
@@ -39,22 +39,28 @@ export function read(source: string, options: ParseOptions, entry: Entry): Read 
   const backend = (options.core ?? shippedCore).backend();
   const path = options.path ?? "";
   const lang = options.lang ?? langFromPath(path);
-  const langBits = LANGS[lang];
-  if (langBits === undefined) {
+  if (LANGS[lang] === undefined) {
     throw new TypeError('`lang` must be "js", "jsx", "ts", "tsx", or "dts"');
   }
   const sourceType = options.sourceType ?? sourceTypeFromPath(path);
-  const sourceTypeBits = SOURCE_TYPES[sourceType];
-  if (sourceTypeBits === undefined) {
+  if (SOURCE_TYPES[sourceType] === undefined) {
     throw new TypeError('`sourceType` must be "module", "script", or "commonjs"');
   }
-  let flags = sourceTypeBits | (langBits << LANG_SHIFT);
+  let flags = treeFlags(lang, sourceType);
   if (options.preserveParens !== false) flags |= PRESERVE_PARENS;
   if (options.semanticErrors === true) flags |= SEMANTIC_ERRORS;
   if (options.attachComments === true) flags |= ATTACH_COMMENTS;
   if (options.tokens === true) flags |= TOKENS;
   const buffer = backend.run(entry, source, flags);
   return { buffer, lang, sourceType };
+}
+
+export function treeFlags(lang: SourceLang, sourceType: SourceType): number {
+  return SOURCE_TYPES[sourceType]! | (LANGS[lang]! << LANG_SHIFT);
+}
+
+export function isTs(lang: SourceLang): boolean {
+  return lang === "ts" || lang === "tsx" || lang === "dts";
 }
 
 function langFromPath(path: string): SourceLang {

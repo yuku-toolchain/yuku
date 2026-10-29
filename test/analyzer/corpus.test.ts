@@ -27,6 +27,7 @@ const INVARIANTS = {
   determinism: "analysis is deterministic",
   earlyNodes: "nodes read before the program are the program's own",
   ordering: "bindings and references are recorded in walk (source) order",
+  reanalysis: "reanalyze builds the same model on the same nodes",
 };
 
 type Invariant = keyof typeof INVARIANTS;
@@ -61,11 +62,22 @@ function expectedCaptures(file: SourceFile, fn: Node): Set<number> {
   const captured = new Set<number>();
   for (const reference of file.references) {
     if (reference.inTypePosition || reference.binding === null) continue;
-    if (reference.node.start < fn.start || reference.node.end > fn.end) continue;
-    if (within(reference.binding.scope)) continue;
+    if (!within(reference.scope) || within(reference.binding.scope)) continue;
     captured.add(reference.binding.id);
   }
   return captured;
+}
+
+function modelOf(file: SourceFile): unknown[] {
+  return [
+    ...file.scopes.flatMap((s) => [s.kind, s.strict, s.node, s.parent?.id]),
+    ...file.bindings.flatMap((b) => [b.name, b.flags, b.scope.id, b.declarations.length]),
+    ...file.bindings.flatMap((b) => b.declarations),
+    ...file.references.flatMap((r) => [r.node, r.binding?.id, r.isWrite, r.space, r.scope.id]),
+    ...file.imports.flatMap((r) => [r.kind, r.name, r.specifier, r.local?.id, r.node]),
+    ...file.exports.flatMap((r) => [r.kind, r.name, r.fromName, r.specifier, r.local?.id, r.node]),
+    ...Object.values(file.moduleFlags),
+  ];
 }
 
 function fingerprint(file: SourceFile): string {
@@ -96,7 +108,7 @@ function outOfWalkOrder<T>(
 function check(path: string, source: string, sourceType: SourceType): void {
   let file: SourceFile;
   try {
-    file = parse(source, { semantic: true, path, sourceType });
+    file = parse(source, { analyze: true, path, sourceType });
     // a decode fault throws here, not later
     void file.program;
     void file.scopes;
@@ -202,9 +214,16 @@ function check(path: string, source: string, sourceType: SourceType): void {
     }
   }
 
-  const again = parse(source, { semantic: true, path, sourceType });
+  const again = parse(source, { analyze: true, path, sourceType });
   if (fingerprint(file) !== fingerprint(again)) note("determinism", `${path}: non-deterministic`);
   checkEarlyNodes(path, again, file);
+
+  const before = modelOf(file);
+  file.reanalyze();
+  const after = modelOf(file);
+  if (before.length !== after.length || before.some((value, i) => !Object.is(value, after[i]))) {
+    note("reanalysis", `${path}: reanalyze() changed the model`);
+  }
 }
 
 function checkEarlyNodes(path: string, lazy: SourceFile, eager: SourceFile): void {

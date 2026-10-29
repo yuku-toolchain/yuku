@@ -176,7 +176,7 @@ function compare(
   sourceType: SourceType = "module",
   path = FILE_NAMES[lang],
 ): Comparison {
-  const file = parse(source, { semantic: true, path, lang, sourceType });
+  const file = parse(source, { analyze: true, path, lang, sourceType });
   const tsc = checker(source, lang, sourceType);
   const mismatches: string[] = [];
   let compared = 0;

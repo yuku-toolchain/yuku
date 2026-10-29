@@ -3,7 +3,7 @@ import { parse, TokenKind } from "yuku";
 
 test("tokens agree with the semantic model", () => {
   const source = "const double = (n: number) => n * 2;\ndouble(21);";
-  const file = parse(source, { path: "a.ts", tokens: true, semantic: true });
+  const file = parse(source, { path: "a.ts", tokens: true, analyze: true });
   const tokens = file.tokens;
   expect(file.tokens).toBe(tokens);
   expect(tokens.length).toBe(18);

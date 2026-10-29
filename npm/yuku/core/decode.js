@@ -8,7 +8,39 @@ function _hostOrder(u32, from, to) {
     u32[i] = (v << 24) | ((v & 0xff00) << 8) | ((v >>> 8) & 0xff00) | (v >>> 24);
   }
 }
-const BINARY_OPS = ["==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof"];
+function decodeDiagnostics(buffer, offset, count, path) {
+  const out = new Array(count);
+  const dv = new DataView(buffer), u8 = new Uint8Array(buffer);
+  let dp = offset;
+  for (let j = 0; j < count; j++) {
+    const sev = SEVERITY[u8[dp]]; dp++;
+    const ds = dv.getUint32(dp, true); dp += 4;
+    const de = dv.getUint32(dp, true); dp += 4;
+    const ml = dv.getUint32(dp, true); dp += 4;
+    const msg = _td.decode(u8.subarray(dp, dp + ml)); dp += ml;
+    const hh = u8[dp]; dp++;
+    let help = null;
+    if (hh) {
+      const hl = dv.getUint32(dp, true); dp += 4;
+      help = _td.decode(u8.subarray(dp, dp + hl)); dp += hl;
+    }
+    const lc = dv.getUint32(dp, true); dp += 4;
+    const labels = new Array(lc);
+    for (let k = 0; k < lc; k++) {
+      const ls = dv.getUint32(dp, true); dp += 4;
+      const le = dv.getUint32(dp, true); dp += 4;
+      const lml = dv.getUint32(dp, true); dp += 4;
+      labels[k] = {
+        start: ls,
+        end: le,
+        message: _td.decode(u8.subarray(dp, dp + lml)),
+      };
+      dp += lml;
+    }
+    out[j] = { severity: sev, message: msg, path, start: ds, end: de, labels, help };
+  }
+  return out;
+}const BINARY_OPS = ["==", "!=", "===", "!==", "<", "<=", ">", ">=", "+", "-", "*", "/", "%", "**", "|", "^", "&", "<<", ">>", ">>>", "in", "instanceof"];
 const LOGICAL_OPS = ["&&", "||", "??"];
 const UNARY_OPS = ["-", "+", "!", "~", "typeof", "void", "delete"];
 const UPDATE_OPS = ["++", "--"];
@@ -1020,7 +1052,7 @@ const KIND_DECODERS = [
   null,
   _decodeJSXSpreadChild,
 ];
-function decode(buffer, source, path) {
+function decode(buffer, source, path, encoded) {
   const _u8 = new Uint8Array(buffer);
   const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
   if (BIG_ENDIAN) _hostOrder(_u32, 0, 9);
@@ -1212,10 +1244,18 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
     for (; _builtIndexed < _built.length; _builtIndexed++) _index(_built[_builtIndexed]);
     return _nodeIndexes.get(n);
   }
+  if (encoded !== undefined) {
+    _n = encoded.objects;
+    _count = _n.length;
+  }
+  const nodeOf = encoded === undefined ? nodeAt : (i) => _n[i] ?? null;
   const _decoder = { _isTs, _src, _u32, fnParams, node, nodeArr, nodeArrHoles, str };
-  const _nodesU32 = _nodesOff >> 2;
-  function startOf(i) { return _u32[_nodesU32 + i * 12 + 10]; }
-  function endOf(i) { return _u32[_nodesU32 + i * 12 + 11]; }
+  const _nw = encoded === undefined ? _u32 : encoded.nodes;
+  const _nb = encoded === undefined ? _nodesOff >> 2 : 0;
+  const _ew = encoded === undefined ? _u32 : encoded.extras;
+  const _eb = encoded === undefined ? _extraBase : 0;
+  const _nodeCount =
+    encoded === undefined ? nodeCount : encoded.nodes.length / 12;
   function _decodeComments() {
     const out = new Array(commentCount);
     for (let j = 0; j < commentCount; j++) {
@@ -1237,39 +1277,7 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
     }
     return out;
   }
-  function _decodeDiagnostics() {
-    const out = new Array(diagCount);
-    const dv = new DataView(buffer);
-    let dp = dOff;
-    for (let j = 0; j < diagCount; j++) {
-      const sev = SEVERITY[_u8[dp]]; dp++;
-      const ds = dv.getUint32(dp, true); dp += 4;
-      const de = dv.getUint32(dp, true); dp += 4;
-      const ml = dv.getUint32(dp, true); dp += 4;
-      const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
-      const hh = _u8[dp]; dp++;
-      let help = null;
-      if (hh) {
-        const hl = dv.getUint32(dp, true); dp += 4;
-        help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
-      }
-      const lc = dv.getUint32(dp, true); dp += 4;
-      const labels = new Array(lc);
-      for (let k = 0; k < lc; k++) {
-        const ls = dv.getUint32(dp, true); dp += 4;
-        const le = dv.getUint32(dp, true); dp += 4;
-        const lml = dv.getUint32(dp, true); dp += 4;
-        labels[k] = {
-          start: ls,
-          end: le,
-          message: _td.decode(_u8.subarray(dp, dp + lml)),
-        };
-        dp += lml;
-      }
-      out[j] = { severity: sev, message: msg, path, start: ds, end: de, labels, help };
-    }
-    return out;
-  }
+  const _decodeDiagnostics = () => decodeDiagnostics(buffer, dOff, diagCount, path);
   function _subtree(root) {
     const pending = [root], found = [];
     while (pending.length > 0) {
@@ -1299,24 +1307,24 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
   let _parentArr;
   function _parents() {
     if (_parentArr !== undefined) return _parentArr;
-    const p = new Int32Array(nodeCount).fill(-2);
+    const p = new Int32Array(_nodeCount).fill(-2);
     p[progIdx] = -1;
     for (let i = progIdx; i >= 0; i--) {
       if (p[i] === -2) { p[i] = -1; continue; }
-      const b = (_nodesOff >> 2) + i * 12;
-      const tag = _u32[b] & 255;
+      const b = _nb + i * 12;
+      const tag = _nw[b] & 255;
       const parent = IS_NODE[tag] ? i : p[i];
       if (!IS_NODE[tag]) p[i] = -1;
       const ops = CHILD_SLOTS[tag];
       for (let q = 0; q < ops.length; q += 2) {
         const slot = ops[q + 1];
         if (ops[q] === 0) {
-          const c = _u32[b + slot];
+          const c = _nw[b + slot];
           if (c !== NULL) p[c] = parent;
         } else {
-          const s = _u32[b + slot], len = _u32[b + slot + 1];
+          const s = _nw[b + slot], len = _nw[b + slot + 1];
           for (let j = 0; j < len; j++) {
-            const c = _u32[_extraBase + s + j];
+            const c = _ew[_eb + s + j];
             if (c !== NULL) p[c] = parent;
           }
         }
@@ -1375,13 +1383,11 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
         count: scopeCount,
         kind: (i) => SCOPE_KINDS[scopes[i * 5 + 3] & 255],
         strict: (i) => ((scopes[i * 5 + 3] >> 8) & 1) !== 0,
-        node: (i) => nodeAt(scopes[i * 5 + 0]),
+        node: (i) => nodeOf(scopes[i * 5 + 0]),
         nodeIndex: (i) => scopes[i * 5 + 0],
         parentId: (i) => _id(scopes[i * 5 + 1]),
         hoistTargetId: (i) => scopes[i * 5 + 2],
         nextBodyId: (i) => _id(scopes[i * 5 + 4]),
-        start: (i) => startOf(scopes[i * 5 + 0]),
-        end: (i) => endOf(scopes[i * 5 + 0]),
       },
       symbol: {
         count: symbolCount,
@@ -1389,21 +1395,19 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
         flags: (i) => symbols[i * 6 + 2],
         scopeId: (i) => symbols[i * 6 + 3],
         declCount: (i) => symbols[i * 6 + 5],
-        declNode: (i, j) => nodeAt(declNodes[symbols[i * 6 + 4] + j]),
+        declNode: (i, j) => nodeOf(declNodes[symbols[i * 6 + 4] + j]),
         declNodeIndex: (i, j) => declNodes[symbols[i * 6 + 4] + j],
       },
       reference: {
         count: referenceCount,
         name: (i) => str(references[i * 6 + 0], references[i * 6 + 1]),
         scopeId: (i) => references[i * 6 + 2],
-        node: (i) => nodeAt(references[i * 6 + 3]),
+        node: (i) => nodeOf(references[i * 6 + 3]),
         nodeIndex: (i) => references[i * 6 + 3],
         space: (i) => REFERENCE_SPACES[(references[i * 6 + 4] >> 1) & 7],
         inTypePosition: (i) => ((references[i * 6 + 4] >> 4) & 1) !== 0,
         isWrite: (i) => ((references[i * 6 + 4] >> 0) & 1) !== 0,
         symbolId: (i) => _id(references[i * 6 + 5]),
-        start: (i) => startOf(references[i * 6 + 3]),
-        end: (i) => endOf(references[i * 6 + 3]),
       },
       import: {
         count: importCount,
@@ -1416,7 +1420,7 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
           (imports[i * 8 + 1] >> 4) & 1
             ? IMPORT_PHASES[(imports[i * 8 + 1] >> 5) & 1]
             : null,
-        node: (i) => nodeAt(imports[i * 8 + 6]),
+        node: (i) => nodeOf(imports[i * 8 + 6]),
         scopeId: (i) => _id(imports[i * 8 + 7]),
       },
       export: {
@@ -1427,7 +1431,7 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
         fromName: (i) => str(exports[i * 10 + 4], exports[i * 10 + 5]),
         specifier: (i) => str(exports[i * 10 + 6], exports[i * 10 + 7]),
         symbolId: (i) => _id(exports[i * 10 + 3]),
-        node: (i) => nodeAt(exports[i * 10 + 8]),
+        node: (i) => nodeOf(exports[i * 10 + 8]),
       },
       moduleFlags: {
         usesRequire: (moduleFlags & 1) !== 0,
@@ -1441,7 +1445,7 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
   let _program, _diagnostics, _comments, _tokens;
   return {
     program() {
-      if (_program === undefined) _program = nodeAt(progIdx);
+      if (_program === undefined) _program = nodeOf(progIdx);
       return _program;
     },
     tokens() {
@@ -1461,11 +1465,9 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
         : (_diagnostics = _decodeDiagnostics());
     },
     semantic: _semantic,
-    nodeOf: nodeAt,
+    nodeOf,
     indexOf,
     parentIndex: (i) => _parents()[i],
-    startOf,
-    endOf,
   };
 }
-export { BindingFlags, decode, TokenKind };
+export { BindingFlags, decode, decodeDiagnostics, TokenKind };

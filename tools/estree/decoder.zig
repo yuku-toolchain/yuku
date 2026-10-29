@@ -28,12 +28,47 @@ pub fn generate(w: *Writer) Writer.Error!void {
         \\}
         \\
     );
+    try w.writeAll(
+        \\function decodeDiagnostics(buffer, offset, count, path) {
+        \\  const out = new Array(count);
+        \\  const dv = new DataView(buffer), u8 = new Uint8Array(buffer);
+        \\  let dp = offset;
+        \\  for (let j = 0; j < count; j++) {
+        \\    const sev = SEVERITY[u8[dp]]; dp++;
+        \\    const ds = dv.getUint32(dp, true); dp += 4;
+        \\    const de = dv.getUint32(dp, true); dp += 4;
+        \\    const ml = dv.getUint32(dp, true); dp += 4;
+        \\    const msg = _td.decode(u8.subarray(dp, dp + ml)); dp += ml;
+        \\    const hh = u8[dp]; dp++;
+        \\    let help = null;
+        \\    if (hh) {
+        \\      const hl = dv.getUint32(dp, true); dp += 4;
+        \\      help = _td.decode(u8.subarray(dp, dp + hl)); dp += hl;
+        \\    }
+        \\    const lc = dv.getUint32(dp, true); dp += 4;
+        \\    const labels = new Array(lc);
+        \\    for (let k = 0; k < lc; k++) {
+        \\      const ls = dv.getUint32(dp, true); dp += 4;
+        \\      const le = dv.getUint32(dp, true); dp += 4;
+        \\      const lml = dv.getUint32(dp, true); dp += 4;
+        \\      labels[k] = {
+        \\        start: ls,
+        \\        end: le,
+        \\        message: _td.decode(u8.subarray(dp, dp + lml)),
+        \\      };
+        \\      dp += lml;
+        \\    }
+        \\    out[j] = { severity: sev, message: msg, path, start: ds, end: de, labels, help };
+        \\  }
+        \\  return out;
+        \\}
+    );
     try writeTables(w);
     try writeTokenList(w);
     try writeChildTables(w);
     try writeKindDecoders(w);
     try writeDecode(w);
-    try w.writeAll("export { BindingFlags, decode, TokenKind };\n");
+    try w.writeAll("export { BindingFlags, decode, decodeDiagnostics, TokenKind };\n");
 }
 
 pub fn generateWalkTables(w: *Writer) Writer.Error!void {
@@ -149,7 +184,7 @@ pub fn generateTokenTypes(w: *Writer) Writer.Error!void {
     try w.writeAll("}\n");
 }
 
-const tables = .{
+pub const tables = .{
     .{ "BINARY_OPS", ast.BinaryOperator },
     .{ "LOGICAL_OPS", ast.LogicalOperator },
     .{ "UNARY_OPS", ast.UnaryOperator },
@@ -284,7 +319,7 @@ fn writeTables(w: *Writer) !void {
     });
 }
 
-fn tableItem(comptime value: anytype) []const u8 {
+pub fn tableItem(comptime value: anytype) []const u8 {
     const E = @TypeOf(value);
     if (E == ast.FunctionType or E == ast.ClassType) return quoted(estreeType(@tagName(value)));
     if (E == ast.Accessibility and value == .none) return "null";
@@ -292,7 +327,7 @@ fn tableItem(comptime value: anytype) []const u8 {
     return quoted(snakeConvert(@tagName(value), false));
 }
 
-fn tableName(comptime E: type) []const u8 {
+pub fn tableName(comptime E: type) []const u8 {
     inline for (tables) |table| if (table[1] == E) return table[0];
     @compileError("no lookup table for enum: " ++ @typeName(E));
 }
@@ -424,7 +459,7 @@ fn writeChildTables(w: *Writer) !void {
 }
 
 // common kinds decode inline, the rest in small functions V8 can reoptimize one at a time
-const inline_kinds = [_][]const u8{
+pub const inline_kinds = [_][]const u8{
     "identifier_reference",     "identifier_name",     "member_expression",
     "call_expression",          "binding_identifier",  "string_literal",
     "expression_statement",     "numeric_literal",     "object_property",
@@ -534,7 +569,7 @@ fn writeDecode(w: *Writer) !void {
         std.debug.assert(@offsetOf(Comment, "flags") == 0);
     }
     try w.print(
-        \\function decode(buffer, source, path) {{
+        \\function decode(buffer, source, path, encoded) {{
         \\  const _u8 = new Uint8Array(buffer);
         \\  const _u32 = new Int32Array(buffer, 0, buffer.byteLength >> 2);
         \\  if (BIG_ENDIAN) _hostOrder(_u32, 0, {[header_words]d});
@@ -728,6 +763,11 @@ fn writeDecode(w: *Writer) !void {
         \\    for (; _builtIndexed < _built.length; _builtIndexed++) _index(_built[_builtIndexed]);
         \\    return _nodeIndexes.get(n);
         \\  }
+        \\  if (encoded !== undefined) {
+        \\    _n = encoded.objects;
+        \\    _count = _n.length;
+        \\  }
+        \\  const nodeOf = encoded === undefined ? nodeAt : (i) => _n[i] ?? null;
         \\  const _decoder = {
     );
     inline for (decoder_fields, 0..) |name, k| {
@@ -735,9 +775,12 @@ fn writeDecode(w: *Writer) !void {
     }
     try w.print(
         \\ }};
-        \\  const _nodesU32 = _nodesOff >> 2;
-        \\  function startOf(i) {{ return _u32[_nodesU32 + i * {[stride]d} + {[ss]d}]; }}
-        \\  function endOf(i) {{ return _u32[_nodesU32 + i * {[stride]d} + {[se]d}]; }}
+        \\  const _nw = encoded === undefined ? _u32 : encoded.nodes;
+        \\  const _nb = encoded === undefined ? _nodesOff >> 2 : 0;
+        \\  const _ew = encoded === undefined ? _u32 : encoded.extras;
+        \\  const _eb = encoded === undefined ? _extraBase : 0;
+        \\  const _nodeCount =
+        \\    encoded === undefined ? nodeCount : encoded.nodes.length / {[stride]d};
         \\  function _decodeComments() {{
         \\    const out = new Array(commentCount);
         \\    for (let j = 0; j < commentCount; j++) {{
@@ -759,39 +802,7 @@ fn writeDecode(w: *Writer) !void {
         \\    }}
         \\    return out;
         \\  }}
-        \\  function _decodeDiagnostics() {{
-        \\    const out = new Array(diagCount);
-        \\    const dv = new DataView(buffer);
-        \\    let dp = dOff;
-        \\    for (let j = 0; j < diagCount; j++) {{
-        \\      const sev = SEVERITY[_u8[dp]]; dp++;
-        \\      const ds = dv.getUint32(dp, true); dp += 4;
-        \\      const de = dv.getUint32(dp, true); dp += 4;
-        \\      const ml = dv.getUint32(dp, true); dp += 4;
-        \\      const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
-        \\      const hh = _u8[dp]; dp++;
-        \\      let help = null;
-        \\      if (hh) {{
-        \\        const hl = dv.getUint32(dp, true); dp += 4;
-        \\        help = _td.decode(_u8.subarray(dp, dp + hl)); dp += hl;
-        \\      }}
-        \\      const lc = dv.getUint32(dp, true); dp += 4;
-        \\      const labels = new Array(lc);
-        \\      for (let k = 0; k < lc; k++) {{
-        \\        const ls = dv.getUint32(dp, true); dp += 4;
-        \\        const le = dv.getUint32(dp, true); dp += 4;
-        \\        const lml = dv.getUint32(dp, true); dp += 4;
-        \\        labels[k] = {{
-        \\          start: ls,
-        \\          end: le,
-        \\          message: _td.decode(_u8.subarray(dp, dp + lml)),
-        \\        }};
-        \\        dp += lml;
-        \\      }}
-        \\      out[j] = {{ severity: sev, message: msg, path, start: ds, end: de, labels, help }};
-        \\    }}
-        \\    return out;
-        \\  }}
+        \\  const _decodeDiagnostics = () => decodeDiagnostics(buffer, dOff, diagCount, path);
         \\  function _subtree(root) {{
         \\    const pending = [root], found = [];
         \\    while (pending.length > 0) {{
@@ -821,24 +832,24 @@ fn writeDecode(w: *Writer) !void {
         \\  let _parentArr;
         \\  function _parents() {{
         \\    if (_parentArr !== undefined) return _parentArr;
-        \\    const p = new Int32Array(nodeCount).fill(-2);
+        \\    const p = new Int32Array(_nodeCount).fill(-2);
         \\    p[progIdx] = -1;
         \\    for (let i = progIdx; i >= 0; i--) {{
         \\      if (p[i] === -2) {{ p[i] = -1; continue; }}
-        \\      const b = (_nodesOff >> 2) + i * {[stride]d};
-        \\      const tag = _u32[b] & 255;
+        \\      const b = _nb + i * {[stride]d};
+        \\      const tag = _nw[b] & 255;
         \\      const parent = IS_NODE[tag] ? i : p[i];
         \\      if (!IS_NODE[tag]) p[i] = -1;
         \\      const ops = CHILD_SLOTS[tag];
         \\      for (let q = 0; q < ops.length; q += 2) {{
         \\        const slot = ops[q + 1];
         \\        if (ops[q] === 0) {{
-        \\          const c = _u32[b + slot];
+        \\          const c = _nw[b + slot];
         \\          if (c !== NULL) p[c] = parent;
         \\        }} else {{
-        \\          const s = _u32[b + slot], len = _u32[b + slot + 1];
+        \\          const s = _nw[b + slot], len = _nw[b + slot + 1];
         \\          for (let j = 0; j < len; j++) {{
-        \\            const c = _u32[_extraBase + s + j];
+        \\            const c = _ew[_eb + s + j];
         \\            if (c !== NULL) p[c] = parent;
         \\          }}
         \\        }}
@@ -869,8 +880,6 @@ fn writeDecode(w: *Writer) !void {
         \\
     , .{
         .stride = words(Node),
-        .ss = word(Node, "span_start"),
-        .se = word(Node, "span_end"),
         .comment_words = words(Comment),
         .value_start = word(Comment, "value_start"),
         .value_end = word(Comment, "value_end"),
@@ -919,7 +928,7 @@ fn writeDecode(w: *Writer) !void {
         \\  let _program, _diagnostics, _comments, _tokens;
         \\  return {
         \\    program() {
-        \\      if (_program === undefined) _program = nodeAt(progIdx);
+        \\      if (_program === undefined) _program = nodeOf(progIdx);
         \\      return _program;
         \\    },
         \\    tokens() {
@@ -939,11 +948,9 @@ fn writeDecode(w: *Writer) !void {
         \\        : (_diagnostics = _decodeDiagnostics());
         \\    },
         \\    semantic: _semantic,
-        \\    nodeOf: nodeAt,
+        \\    nodeOf,
         \\    indexOf,
         \\    parentIndex: (i) => _parents()[i],
-        \\    startOf,
-        \\    endOf,
         \\  };
         \\}
         \\
@@ -962,13 +969,11 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        count: scopeCount,
         \\        kind: (i) => SCOPE_KINDS[{[bits]s} & {[kmask]d}],
         \\        strict: (i) => (({[bits]s} >> {[strict]d}) & 1) !== 0,
-        \\        node: (i) => nodeAt({[n]s}),
+        \\        node: (i) => nodeOf({[n]s}),
         \\        nodeIndex: (i) => {[n]s},
         \\        parentId: (i) => _id({[p]s}),
         \\        hoistTargetId: (i) => {[h]s},
         \\        nextBodyId: (i) => _id({[b]s}),
-        \\        start: (i) => startOf({[n]s}),
-        \\        end: (i) => endOf({[n]s}),
         \\      }},
         \\
     , .{
@@ -987,7 +992,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        flags: (i) => {[flags]s},
         \\        scopeId: (i) => {[scope]s},
         \\        declCount: (i) => {[dlen]s},
-        \\        declNode: (i, j) => nodeAt(declNodes[{[dstart]s} + j]),
+        \\        declNode: (i, j) => nodeOf(declNodes[{[dstart]s} + j]),
         \\        declNodeIndex: (i, j) => declNodes[{[dstart]s} + j],
         \\      }},
         \\
@@ -1003,14 +1008,12 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        count: referenceCount,
         \\        name: (i) => {[name]s},
         \\        scopeId: (i) => {[scope]s},
-        \\        node: (i) => nodeAt({[n]s}),
+        \\        node: (i) => nodeOf({[n]s}),
         \\        nodeIndex: (i) => {[n]s},
         \\        space: (i) => REFERENCE_SPACES[({[bits]s} >> {[sshift]d}) & {[smask]d}],
         \\        inTypePosition: (i) => (({[bits]s} >> {[pbit]d}) & 1) !== 0,
         \\        isWrite: (i) => (({[bits]s} >> {[wbit]d}) & 1) !== 0,
         \\        symbolId: (i) => _id({[sym]s}),
-        \\        start: (i) => startOf({[n]s}),
-        \\        end: (i) => endOf({[n]s}),
         \\      }},
         \\
     , .{
@@ -1036,7 +1039,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\          ({[bits]s} >> {[hpbit]d}) & 1
         \\            ? IMPORT_PHASES[({[bits]s} >> {[pbit]d}) & 1]
         \\            : null,
-        \\        node: (i) => nodeAt({[n]s}),
+        \\        node: (i) => nodeOf({[n]s}),
         \\        scopeId: (i) => _id({[scope]s}),
         \\      }},
         \\
@@ -1061,7 +1064,7 @@ fn writeSemanticAccessors(w: *Writer) !void {
         \\        fromName: (i) => {[fname]s},
         \\        specifier: (i) => {[spec]s},
         \\        symbolId: (i) => _id({[sym]s}),
-        \\        node: (i) => nodeAt({[n]s}),
+        \\        node: (i) => nodeOf({[n]s}),
         \\      }},
         \\      moduleFlags: {{
         \\        usesRequire: (moduleFlags & {[require]d}) !== 0,
@@ -1109,12 +1112,21 @@ fn strCell(
 }
 
 // no types for a kind that never decodes to a node of its own
-const Special = struct {
+pub const Special = struct {
     tag: []const u8,
     types: ?[]const []const u8 = null,
     keys: ?[]const []const u8 = null,
     body: []const u8,
+    encode: Encode = .{},
 };
+
+pub const Encode = struct {
+    prelude: []const u8 = "",
+    fields: []const Override = &.{},
+    after: []const u8 = "",
+};
+
+pub const Override = struct { field: []const u8, value: []const u8, count: ?[]const u8 = null };
 
 // in a body `@field` is the decoded field and `$field` its raw slot or flag bits
 const specials = [_]Special{
@@ -1139,29 +1151,35 @@ const specials = [_]Special{
     .{ .tag = "program", .keys = &.{ "hashbang", "body" }, .body =
     \\return { type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script",
     \\  hashbang: @hashbang, body: @body };
-    },
+    , .encode = .{ .fields = &.{.{
+        .field = "source_type",
+        .value = "n.sourceType === \"module\" ? SOURCE_TYPES.module : SOURCE_TYPES.script",
+    }} } },
     .{ .tag = "directive", .types = &.{"ExpressionStatement"}, .body =
     \\return { type: "ExpressionStatement", start, end, expression: node($expression),
     \\  directive: @value };
-    },
+    , .encode = .{ .fields = &.{.{ .field = "value", .value = "n.directive" }} } },
     .{ .tag = "string_literal", .types = &.{"Literal"}, .body =
     \\return { type: "Literal", start, end, value: @value, raw: _src.slice(start, end) };
-    },
+    , .encode = .{ .fields = &.{optional_raw} } },
     .{ .tag = "jsx_text", .body =
     \\const raw = @raw;
     \\return { type: "JSXText", start, end, value: $value === $raw ? raw : @value, raw };
-    },
+    , .encode = .{ .fields = &.{optional_raw} } },
     .{ .tag = "numeric_literal", .types = &.{"Literal"}, .body =
     \\const r = _src.slice(start, end);
     \\const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, "");
     \\const v = $kind === 2 && s[1] !== "o" && s[1] !== "O" ? parseInt(s.slice(1), 8) : +s;
     \\return { type: "Literal", start, end, value: v, raw: r };
-    },
+    , .encode = .{ .prelude = "const raw = _numericRaw(n);", .fields = &.{
+        .{ .field = "kind", .value = "_numericKind(raw)" },
+        .{ .field = "raw", .value = "raw" },
+    } } },
     .{ .tag = "bigint_literal", .types = &.{"Literal"}, .body =
     \\const v = BigInt(@raw.replace(/_/g, ""));
     \\return { type: "Literal", start, end, value: v, raw: _src.slice(start, end),
     \\  bigint: v.toString() };
-    },
+    , .encode = .{ .fields = &.{.{ .field = "raw", .value = "_bigintRaw(n)" }} } },
     .{ .tag = "boolean_literal", .types = &.{"Literal"}, .body =
     \\const v = @value;
     \\return { type: "Literal", start, end, value: v, raw: v ? "true" : "false" };
@@ -1175,7 +1193,10 @@ const specials = [_]Special{
     \\try { v = new RegExp(p, fl); } catch {}
     \\return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl,
     \\  regex: { pattern: p, flags: fl.split("").sort().join("") } };
-    },
+    , .encode = .{ .prelude = "const regex = _object(n, \"regex\");", .fields = &.{
+        .{ .field = "pattern", .value = "regex.pattern" },
+        .{ .field = "flags", .value = "_regexFlags(n, regex)" },
+    } } },
     .{ .tag = "template_element", .body =
     \\const tail = @tail;
     \\return {
@@ -1188,7 +1209,18 @@ const specials = [_]Special{
     \\  },
     \\  tail,
     \\};
-    },
+    , .encode = .{
+        .prelude = "const value = _object(n, \"value\");",
+        .fields = &.{
+            .{
+                .field = "cooked",
+                .value = "typeof value.cooked === \"string\" ? value.cooked : \"\"",
+            },
+            .{ .field = "raw", .value = "typeof value.raw === \"string\" ? value.raw : \"\"" },
+            .{ .field = "is_cooked_undefined", .value = "value.cooked === null" },
+        },
+        .after = "if (_ts) _templateSpan(u, b, n.tail === true);",
+    } },
     .{ .tag = "class", .types = typeNames(ast.ClassType), .body =
     \\return _isTs
     \\  ? { type: @type, start, end, decorators: @decorators, id: @id,
@@ -1209,7 +1241,9 @@ const specials = [_]Special{
     \\      accessibility: @accessibility }
     \\  : { type: "MethodDefinition", start, end, decorators: @decorators, key: node($key),
     \\      value: node($value), kind: @kind, computed: @computed, static: @static };
-    },
+    , .encode = .{ .fields = &.{
+        .{ .field = "abstract", .value = "n.type === \"TSAbstractMethodDefinition\"" },
+    } } },
     .{ .tag = "property_definition", .types = &.{
         "PropertyDefinition",           "AccessorProperty",
         "TSAbstractPropertyDefinition", "TSAbstractAccessorProperty",
@@ -1225,7 +1259,17 @@ const specials = [_]Special{
     \\      accessibility: @accessibility }
     \\  : { type, start, end, decorators: @decorators, key: node($key), value: @value,
     \\      computed: @computed, static: @static };
-    },
+    , .encode = .{ .fields = &.{
+        .{
+            .field = "accessor",
+            .value = "n.type === \"AccessorProperty\" || n.type === \"TSAbstractAccessorProperty\"",
+        },
+        .{
+            .field = "abstract",
+            .value = "n.type === \"TSAbstractPropertyDefinition\" || " ++
+                "n.type === \"TSAbstractAccessorProperty\"",
+        },
+    } } },
     .{ .tag = "unary_expression", .body =
     \\return { type: "UnaryExpression", start, end, operator: @operator, prefix: true,
     \\  argument: @argument };
@@ -1244,7 +1288,14 @@ const specials = [_]Special{
     \\  ? { type: "ArrayPattern", start, end, elements, decorators: @decorators,
     \\      optional: @optional, typeAnnotation: @type_annotation }
     \\  : { type: "ArrayPattern", start, end, elements };
-    },
+    , .encode = .{ .prelude = "const rest = _restOf(n.elements);", .fields = &.{
+        .{
+            .field = "elements",
+            .value = "n.elements",
+            .count = "rest === null ? -1 : n.elements.length - 1",
+        },
+        .{ .field = "rest", .value = "rest" },
+    } } },
     .{ .tag = "object_pattern", .keys = &.{ "decorators", "properties", "typeAnnotation" }, .body =
     \\const properties = @properties;
     \\if ($rest !== NULL) properties.push(node($rest));
@@ -1252,7 +1303,14 @@ const specials = [_]Special{
     \\  ? { type: "ObjectPattern", start, end, properties, decorators: @decorators,
     \\      optional: @optional, typeAnnotation: @type_annotation }
     \\  : { type: "ObjectPattern", start, end, properties };
-    },
+    , .encode = .{ .prelude = "const rest = _restOf(n.properties);", .fields = &.{
+        .{
+            .field = "properties",
+            .value = "n.properties",
+            .count = "rest === null ? -1 : n.properties.length - 1",
+        },
+        .{ .field = "rest", .value = "rest" },
+    } } },
     .{ .tag = "ts_constructor_type", .body =
     \\return { type: "TSConstructorType", start, end, abstract: @abstract,
     \\  typeParameters: @type_parameters, params: @params, returnType: @return_type };
@@ -1266,7 +1324,10 @@ const specials = [_]Special{
     \\return { type: "TSMappedType", start, end, key: node($key), constraint: node($constraint),
     \\  nameType: @name_type, typeAnnotation: @type_annotation,
     \\  optional: TS_MAPPED_OPTIONAL[$optional], readonly: TS_MAPPED_READONLY[$readonly] };
-    },
+    , .encode = .{ .fields = &.{
+        .{ .field = "optional", .value = "_modifier(n, \"optional\", false)" },
+        .{ .field = "readonly", .value = "_modifier(n, \"readonly\", null)" },
+    } } },
     .{ .tag = "ts_module_declaration", .body =
     \\const r = { type: "TSModuleDeclaration", start, end, id: node($id), kind: @kind,
     \\  declare: @declare, global: false };
@@ -1281,6 +1342,11 @@ const specials = [_]Special{
     \\return { type: "Identifier", start, end, decorators: [], name: "this", optional: false,
     \\  typeAnnotation: @type_annotation };
     },
+};
+
+const optional_raw: Override = .{
+    .field = "raw",
+    .value = "typeof n.raw === \"string\" ? n.raw : \"\"",
 };
 
 const pattern_ts_fields = .{ "decorators", "optional", "type_annotation" };
@@ -1318,12 +1384,12 @@ const ts_extras = .{
     .ts_parameter_property = ", static: false",
 };
 
-fn specialOf(comptime tag: []const u8) ?Special {
+pub fn specialOf(comptime tag: []const u8) ?Special {
     for (specials) |special| if (eql(special.tag, tag)) return special;
     return null;
 }
 
-fn typesOf(comptime tag: []const u8) []const []const u8 {
+pub fn typesOf(comptime tag: []const u8) []const []const u8 {
     if (specialOf(tag)) |special| if (special.types) |types| return types;
     return &.{estreeType(tag)};
 }
@@ -1413,7 +1479,7 @@ fn fieldValue(comptime tag: []const u8, comptime T: type, comptime index: usize)
         return s ++ " !== NULL ? node(" ++ s ++ ") : null";
     }
     if (F == ast.IndexRange) {
-        const list = if (isHoleyArray(tag, name)) "nodeArrHoles(" else "nodeArr(";
+        const list = if (rt.schema.of(tag, name).nullable) "nodeArrHoles(" else "nodeArr(";
         return list ++ s ++ ", " ++ e ++ ")";
     }
     if (F == ast.String) return "str(" ++ s ++ ", " ++ e ++ ")";
@@ -1428,10 +1494,6 @@ fn fieldValue(comptime tag: []const u8, comptime T: type, comptime index: usize)
         return tableName(F) ++ "[" ++ flagBits(at.bit, rt.enumBitWidth(F)) ++ "]";
     }
     @compileError("unsupported field type in decoder: " ++ @typeName(F));
-}
-
-fn isHoleyArray(comptime tag: []const u8, comptime name: []const u8) bool {
-    return eql(name, "elements") and (eql(tag, "array_expression") or eql(tag, "array_pattern"));
 }
 
 fn fieldRaw(comptime T: type, comptime index: usize) []const u8 {
@@ -1456,11 +1518,11 @@ fn field(comptime T: type, comptime name: []const u8) usize {
         @compileError("field '" ++ name ++ "' not found in " ++ @typeName(T));
 }
 
-fn word(comptime T: type, comptime name: []const u8) u32 {
+pub fn word(comptime T: type, comptime name: []const u8) u32 {
     return @divExact(@offsetOf(T, name), 4);
 }
 
-fn words(comptime T: type) u32 {
+pub fn words(comptime T: type) u32 {
     return @divExact(@sizeOf(T), 4);
 }
 
@@ -1484,13 +1546,13 @@ fn estreeType(comptime tag: []const u8) []const u8 {
 }
 
 // `left_paren` to `LeftParen`, `jsx_text` to `JSXText`, `ts_any_keyword` to `TSAnyKeyword`
-fn pascalName(comptime tag: []const u8) []const u8 {
+pub fn pascalName(comptime tag: []const u8) []const u8 {
     if (comptime std.mem.startsWith(u8, tag, "jsx_")) return "JSX" ++ snakeConvert(tag[4..], true);
     if (comptime std.mem.startsWith(u8, tag, "ts_")) return "TS" ++ snakeConvert(tag[3..], true);
     return snakeConvert(tag, true);
 }
 
-fn estreeField(comptime tag: []const u8, comptime name: []const u8) []const u8 {
+pub fn estreeField(comptime tag: []const u8, comptime name: []const u8) []const u8 {
     if (eql(tag, "variable_declaration") and eql(name, "declarators")) return "declarations";
     // `const` is a Zig keyword
     if (eql(tag, "ts_enum_declaration") and eql(name, "is_const")) return "const";
@@ -1518,6 +1580,6 @@ fn quoted(comptime text: []const u8) []const u8 {
     return "\"" ++ text ++ "\"";
 }
 
-fn eql(a: []const u8, b: []const u8) bool {
+pub fn eql(a: []const u8, b: []const u8) bool {
     return std.mem.eql(u8, a, b);
 }

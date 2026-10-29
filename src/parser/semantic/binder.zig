@@ -569,9 +569,11 @@ pub const SymbolTracker = struct {
         self: *SymbolTracker,
         comptime tag: ast.NodeTag,
         data: ast.NodeData,
-        parent: ast.NodeIndex,
+        path: []const ast.NodeIndex,
         scope: *const sc.ScopeTracker,
     ) Allocator.Error!void {
+        std.debug.assert(path.len > 0);
+        const parent: ast.NodeIndex = if (path.len > 1) path[path.len - 2] else .null;
         switch (tag) {
             .export_named_declaration => {
                 const decl = data.export_named_declaration;
@@ -787,7 +789,7 @@ pub const SymbolTracker = struct {
                 try self.pushSavedContext();
                 // an infer declares in the enclosing conditional so its true branch sees it
                 const target = if (parent != .null and self.tree.data(parent) == .ts_infer_type)
-                    inferScope(self.tree, scope, parent)
+                    inferScope(self.tree, scope, path)
                 else
                     scope.current;
                 self.pending = .{
@@ -1527,20 +1529,30 @@ fn visibleAt(
     if (sym.flags.parameter) {
         const type_parameters = typeParametersOf(tree, scopes.get(sym.scope).node);
         if (type_parameters == .null) return true;
-        const span = tree.span(type_parameters);
-        const at = tree.span(ref.node).start;
-        return at < span.start or at >= span.end;
+        return !hasAncestor(node_parents, ref.node, type_parameters);
     }
     if (sym.flags.isHoistingVar()) {
         const body = switch (tree.data(scopes.get(sym.scope).node)) {
             inline .function, .arrow_function_expression => |f| f.body,
             else => return true,
         };
-        const span = tree.span(body);
-        const at = tree.span(ref.node).start;
-        return at >= span.start and at < span.end;
+        return hasAncestor(node_parents, ref.node, body);
     }
     return true;
+}
+
+fn hasAncestor(
+    node_parents: []const ast.NodeIndex,
+    node: ast.NodeIndex,
+    ancestor: ast.NodeIndex,
+) bool {
+    std.debug.assert(ancestor != .null);
+    var current = node_parents[@backingInt(node)];
+    for (0..node_parents.len) |_| {
+        if (current == .null) return false;
+        if (current == ancestor) return true;
+        current = node_parents[@backingInt(current)];
+    } else unreachable;
 }
 
 fn padTo(
@@ -1630,15 +1642,13 @@ fn memberOwner(node_parents: []const ast.NodeIndex, member: ast.NodeIndex) ast.N
 fn inferScope(
     tree: *const ast.Tree,
     scope: *const sc.ScopeTracker,
-    infer_node: ast.NodeIndex,
+    path: []const ast.NodeIndex,
 ) sc.ScopeId {
-    const at = tree.span(infer_node).start;
     var it = scope.ancestors(scope.current);
     while (it.next()) |id| {
         switch (tree.data(scope.get(id).node)) {
             .ts_conditional_type => |cond| {
-                const extends = tree.span(cond.extends_type);
-                if (at >= extends.start and at < extends.end) return id;
+                if (std.mem.findScalar(ast.NodeIndex, path, cond.extends_type) != null) return id;
             },
             else => {},
         }

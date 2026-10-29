@@ -262,7 +262,7 @@ describe("modifiers", () => {
 describe("value space and type space", () => {
   test("a class is in both spaces, an interface and an alias in type, a const in value", () => {
     const source = `class C {} interface I {} type A = 1; const v = 1;`;
-    const file = parse(source, { semantic: true, path: "input.ts" });
+    const file = parse(source, { analyze: true, path: "input.ts" });
     expect(spaces(file, "C")).toEqual([true, true]);
     expect(spaces(file, "I")).toEqual([false, true]);
     expect(spaces(file, "A")).toEqual([false, true]);
@@ -270,7 +270,7 @@ describe("value space and type space", () => {
   });
 
   test("an enum lives in both spaces", () => {
-    const file = parse(`enum E { A }`, { semantic: true, path: "input.ts" });
+    const file = parse(`enum E { A }`, { analyze: true, path: "input.ts" });
     expect(spaces(file, "E")).toEqual([true, true]);
   });
 });

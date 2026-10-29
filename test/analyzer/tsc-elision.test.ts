@@ -143,7 +143,7 @@ function compare(
   sourceType: SourceType = "module",
   path?: string,
 ): Comparison | null {
-  const file = parse(source, { semantic: true, path, lang, sourceType, semanticErrors: true });
+  const file = parse(source, { analyze: true, path, lang, sourceType, semanticErrors: true });
   if (file.diagnostics.some((d) => d.severity === "error")) return null;
   const list = candidates(file);
   if (list.length === 0) return { compared: 0, mismatches: [] };

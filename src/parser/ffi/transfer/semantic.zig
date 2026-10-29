@@ -189,8 +189,14 @@ comptime {
     std.debug.assert(@bitOffsetOf(module_record.Flags, "uses_import_meta") == 3);
 }
 
-pub fn bufferSize(tree: *const ast.Tree, sem: *const Semantic, records: Records) usize {
-    return std.mem.alignForward(usize, transfer.bufferSize(tree), 4) + @sizeOf(SubHeader) +
+pub fn bufferSize(
+    tree: *const ast.Tree,
+    sem: *const Semantic,
+    records: Records,
+    sections: transfer.Sections,
+) usize {
+    return std.mem.alignForward(usize, transfer.bufferSize(tree, sections), 4) +
+        @sizeOf(SubHeader) +
         sem.scopes.list.len * @sizeOf(PackedScope) +
         sem.symbols.len * @sizeOf(PackedSymbol) +
         sem.decl_nodes.len * 4 +
@@ -206,11 +212,12 @@ pub fn serializeInto(
     records: Records,
     offsets: *const transfer.utf16.Offsets,
     buf: []u8,
+    sections: transfer.Sections,
 ) usize {
-    std.debug.assert(buf.len >= bufferSize(tree, sem, records));
+    std.debug.assert(buf.len >= bufferSize(tree, sem, records, sections));
     std.debug.assert(sem.next_bodies.len == sem.scopes.list.len);
 
-    const base = transfer.serializeInto(tree, offsets, buf);
+    const base = transfer.serializeInto(tree, offsets, buf, sections);
 
     const flags_offset = @offsetOf(transfer.Header, "flags");
     const flags = std.mem.readInt(u32, buf[flags_offset..][0..4], .little);
@@ -315,6 +322,6 @@ pub fn serializeInto(
 
     transfer.writeBytes(buf, &pos, std.mem.sliceAsBytes(sem.node_scopes));
 
-    std.debug.assert(pos == bufferSize(tree, sem, records));
+    std.debug.assert(pos == bufferSize(tree, sem, records, sections));
     return pos;
 }

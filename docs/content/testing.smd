@@ -23,7 +23,7 @@ The suite runs through the `yuku` package built from local source, so it checks 
 
 ## [Codegen]($section.id('codegen'))
 
-Every parseable file in the suite is printed under several option sets. Each output must parse again, plain output must reparse to the same AST, and printing must be a fixed point with no comment lost or duplicated. The Zig and JavaScript printers must agree byte for byte, and every identifier in a source map must trace back to its original name and position.
+Every parseable file in the suite is printed under several option sets. Each output must parse again, plain output must reparse to the same AST, and printing must be a fixed point with no comment lost or duplicated. Printing a decoded tree, encoded back for the Zig printer, must agree byte for byte with printing the parsed tree, and every identifier in a source map must trace back to its original name and position.
 
 ## [Semantic analysis]($section.id('semantic-analysis'))
 

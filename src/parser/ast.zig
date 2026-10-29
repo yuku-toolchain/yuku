@@ -2561,6 +2561,20 @@ pub const NodeData = union(enum) {
     }
 
     const type_context_tags = [_]std.meta.Tag(NodeData){
+        .ts_any_keyword,
+        .ts_unknown_keyword,
+        .ts_never_keyword,
+        .ts_void_keyword,
+        .ts_null_keyword,
+        .ts_undefined_keyword,
+        .ts_string_keyword,
+        .ts_number_keyword,
+        .ts_bigint_keyword,
+        .ts_boolean_keyword,
+        .ts_symbol_keyword,
+        .ts_object_keyword,
+        .ts_intrinsic_keyword,
+        .ts_this_type,
         .ts_type_annotation,
         .ts_type_reference,
         .ts_qualified_name,

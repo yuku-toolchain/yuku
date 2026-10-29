@@ -104,9 +104,59 @@ pub const Offsets = struct {
     }
 };
 
-/// Encodes UTF-16 code units as UTF-8 into `target`, each lone surrogate as U+FFFD the way
-/// `TextEncoder` does, and returns the bytes written.
-pub fn encodeUtf8(units: []align(1) const u16, target: []u8) []u8 {
+/// The byte offset of each UTF-16 offset into UTF-8 text, the inverse of `Offsets`.
+pub const Bytes = struct {
+    units_len: u32,
+    /// The byte offset of each unit, empty for ASCII text, where both offsets agree.
+    starts: []u32,
+
+    pub fn init(gpa: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Bytes {
+        std.debug.assert(text.len <= std.math.maxInt(u32));
+        const ascii_len = asciiPrefixLen(text);
+        if (ascii_len == text.len) return .{ .units_len = ascii_len, .starts = &.{} };
+
+        var units_len: u32 = 0;
+        for (text) |byte| {
+            if (byte & 0xC0 != 0x80) units_len += 1;
+            if (byte >= 0xF0) units_len += 1;
+        }
+        const starts = try gpa.alloc(u32, units_len + 1);
+        var unit: u32 = 0;
+        for (text, 0..) |byte, index| {
+            if (byte & 0xC0 == 0x80) continue;
+            starts[unit] = @intCast(index);
+            unit += 1;
+            if (byte >= 0xF0) {
+                starts[unit] = @intCast(index);
+                unit += 1;
+            }
+        }
+        std.debug.assert(unit == units_len);
+        starts[units_len] = @intCast(text.len);
+        return .{ .units_len = units_len, .starts = starts };
+    }
+
+    pub fn deinit(bytes: *Bytes, gpa: std.mem.Allocator) void {
+        gpa.free(bytes.starts);
+        bytes.* = undefined;
+    }
+
+    pub inline fn at(bytes: *const Bytes, unit: u32) u32 {
+        std.debug.assert(unit <= bytes.units_len);
+        if (bytes.starts.len == 0) return unit;
+        return bytes.starts[unit];
+    }
+};
+
+/// How a lone surrogate encodes, as U+FFFD the way `TextEncoder` does, or kept as WTF-8.
+pub const LoneSurrogates = enum { replace, keep };
+
+/// Encodes UTF-16 code units as UTF-8 into `target` and returns the bytes written.
+pub fn encodeUtf8(
+    units: []align(1) const u16,
+    target: []u8,
+    comptime lone: LoneSurrogates,
+) []u8 {
     std.debug.assert(target.len >= units.len * 3);
     var source_index: usize = 0;
     var target_index: usize = 0;
@@ -125,7 +175,7 @@ pub fn encodeUtf8(units: []align(1) const u16, target: []u8) []u8 {
         while (source_index < end) {
             const unit = units[source_index];
             const next: u16 = if (source_index + 1 < units.len) units[source_index + 1] else 0;
-            const encoded = encodeUnit(unit, next, target[target_index..]);
+            const encoded = encodeUnit(unit, next, target[target_index..], lone);
             source_index += encoded.units;
             target_index += encoded.bytes;
         }
@@ -137,7 +187,7 @@ pub fn encodeUtf8(units: []align(1) const u16, target: []u8) []u8 {
 
 const Encoded = struct { units: u2, bytes: u3 };
 
-fn encodeUnit(unit: u16, next: u16, target: []u8) Encoded {
+fn encodeUnit(unit: u16, next: u16, target: []u8, comptime lone: LoneSurrogates) Encoded {
     std.debug.assert(target.len >= 3);
     if (unit < 0x80) {
         target[0] = @intCast(unit);
@@ -158,7 +208,8 @@ fn encodeUnit(unit: u16, next: u16, target: []u8) Encoded {
         target[3] = @intCast(0x80 | (code_point & 0x3F));
         return .{ .units = 2, .bytes = 4 };
     }
-    const code_point: u16 = if (unit >= 0xD800 and unit <= 0xDFFF) 0xFFFD else unit;
+    const surrogate = unit >= 0xD800 and unit <= 0xDFFF;
+    const code_point: u16 = if (lone == .replace and surrogate) 0xFFFD else unit;
     target[0] = @intCast(0xE0 | (code_point >> 12));
     target[1] = @intCast(0x80 | ((code_point >> 6) & 0x3F));
     target[2] = @intCast(0x80 | (code_point & 0x3F));
@@ -184,7 +235,8 @@ const testing = std.testing;
 
 fn expectEncoded(units: []const u16, expected: []const u8) !void {
     var target: [160]u8 = undefined;
-    try testing.expectEqualSlices(u8, expected, encodeUtf8(units, target[0 .. units.len * 3]));
+    const encoded = encodeUtf8(units, target[0 .. units.len * 3], .replace);
+    try testing.expectEqualSlices(u8, expected, encoded);
 }
 
 test "encodeUtf8 encodes every sequence length and replaces lone surrogates" {
@@ -197,6 +249,35 @@ test "encodeUtf8 encodes every sequence length and replaces lone surrogates" {
     try expectEncoded(&.{0xD800}, "\u{FFFD}");
     try expectEncoded(&.{ 0xDC00, 0xD800 }, "\u{FFFD}\u{FFFD}");
     try expectEncoded(&.{ 0xD800, 'a' }, "\u{FFFD}a");
+}
+
+test "encodeUtf8 keeps lone surrogates as WTF-8" {
+    const units = [_]u16{ 0xD800, 'a', 0xDFFF, 0xD83D, 0xDE00 };
+    var target: [units.len * 3]u8 = undefined;
+    const encoded = encodeUtf8(&units, &target, .keep);
+    try testing.expectEqualSlices(u8, "\xED\xA0\x80a\xED\xBF\xBF\u{1F600}", encoded);
+}
+
+test "Bytes inverts Offsets at every unit boundary" {
+    const text = "a\u{E9}b\u{4E2D}c\u{1F600}d";
+    var offsets: Offsets = try .init(testing.allocator, text);
+    defer offsets.deinit(testing.allocator);
+    var bytes: Bytes = try .init(testing.allocator, text);
+    defer bytes.deinit(testing.allocator);
+
+    try testing.expectEqual(offsets.units_len, bytes.units_len);
+    var index: u32 = 0;
+    while (index < text.len) {
+        const len = std.unicode.utf8ByteSequenceLength(text[index]) catch unreachable;
+        try testing.expectEqual(index, bytes.at(offsets.at(index)));
+        index += len;
+    }
+    try testing.expectEqual(@as(u32, text.len), bytes.at(bytes.units_len));
+
+    var ascii: Bytes = try .init(testing.allocator, "plain");
+    defer ascii.deinit(testing.allocator);
+    try testing.expectEqual(@as(u32, 3), ascii.at(3));
+    try testing.expectEqual(@as(usize, 0), ascii.starts.len);
 }
 
 test "encodeUtf8 agrees with std across vector and scalar runs" {
