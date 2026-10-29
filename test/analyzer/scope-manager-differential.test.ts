@@ -13,7 +13,7 @@ import {
   type SourceType,
 } from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
-import { differential, type Comparison, type Known } from "./utils/differential";
+import { differential, isAnnexBHoisted, type Comparison, type Known } from "./utils/differential";
 
 const UNRESOLVED = -1;
 
@@ -90,6 +90,7 @@ function ownerOf(file: SourceFile, scope: Scope): string {
 
 function declarationOwner(file: SourceFile, binding: Binding, node: Node): string | null {
   if (file.parentOf(file.parentOf(node)!)?.type === "TSInferType") return null;
+  if (isAnnexBHoisted(file, binding)) return null;
   if (binding.scope.kind !== "tsModule") return ownerOf(file, binding.scope);
   for (const ancestor of file.ancestors(node)) {
     if (ancestor.type === "TSModuleBlock") return String(file.parentOf(ancestor)!.start);
@@ -149,6 +150,7 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
       const target = node === null ? null : file.bindingOf(node);
       const consistent = binding === null || binding.visibleIn(reference.space);
       if (consistent && target !== null && !target.visibleIn(reference.space)) continue;
+      if (binding !== null && isAnnexBHoisted(file, binding)) continue;
       mismatches.push(`${reference.name}@${position}: yuku ${def}, scope-manager ${their.def}`);
     } else if (reference.isWrite !== their.write) {
       const parent = file.parentOf(reference.node);

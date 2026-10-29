@@ -104,6 +104,7 @@ The scope tree follows the specification.
 - A function body scopes its `let` and `const` apart from the parameters, as TypeScript does.
 - A class decorator sees the scope around its class, and a member decorator sees the class scope.
 - Strict mode comes from modules, classes, and `"use strict"` directives.
+- In sloppy JavaScript, a plain function declared in a block or an `if` clause binds where a `var` of its name would, unless that `var` would be an error, as engines run it ([Annex B](https://tc39.es/ecma262/#sec-block-level-function-declarations-web-legacy-compatibility-semantics)).
 
 ## [Symbols]($section.id('symbols'))
 

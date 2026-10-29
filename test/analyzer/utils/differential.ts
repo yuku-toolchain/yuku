@@ -1,7 +1,21 @@
 import { expect, test } from "bun:test";
 import ts from "typescript";
-import type { SourceType } from "yuku";
+import type { Binding, SourceFile, SourceType } from "yuku";
 import type { CorpusFile } from "../../corpus";
+
+const FUNCTIONS = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
+
+/** Whether Annex B hoists `binding` from a block, which neither tsc nor scope-manager models. */
+export function isAnnexBHoisted(file: SourceFile, binding: Binding): boolean {
+  if (binding.scope.kind === "block") return false;
+  return binding.declarations.some((node) => {
+    const declaration = file.parentOf(node);
+    if (declaration?.type !== "FunctionDeclaration") return false;
+    const holder = file.parentOf(declaration);
+    if (holder?.type === "SwitchCase" || holder?.type === "IfStatement") return true;
+    return holder?.type === "BlockStatement" && !FUNCTIONS.has(file.parentOf(holder)?.type ?? "");
+  });
+}
 
 export interface Comparison {
   compared: number;

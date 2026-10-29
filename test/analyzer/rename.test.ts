@@ -46,6 +46,15 @@ describe("rename", () => {
     expect(renamed(`const A = 1; <A />;`, "A", "B", "input.tsx")).toBe("const B = 1;\n<B />;");
   });
 
+  test("a sloppy block-level function renames with its uses past the block", () => {
+    expect(renamed(`{ function f() {} } f();`, "f", "g", "input.cjs")).toMatchInlineSnapshot(`
+      "{
+        function g() {}
+      }
+      g();"
+    `);
+  });
+
   test("the file's exports keep their names", () => {
     expect(renamed(`export const a = 1, b = a;`, "a", "x")).toBe(
       "const x = 1, b = x;\nexport { x as a, b };",

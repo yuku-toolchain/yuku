@@ -509,6 +509,7 @@ pub const SymbolTracker = struct {
     shares_members: bool = false,
     body_owner: SymbolId = .none,
     global_body: sc.ScopeId = .none,
+    block_functions: std.ArrayList(BlockFunction) = .empty,
 
     /// What the next `binding_identifier` declares.
     pending: PendingBinding = .{},
@@ -526,9 +527,12 @@ pub const SymbolTracker = struct {
         flags: Symbol.Flags = .{},
         excludes: Symbol.Flags = .{},
         scope: sc.ScopeId = .root,
+        block_function: bool = false,
     };
 
     const DeclPair = struct { symbol: SymbolId, node: ast.NodeIndex };
+
+    const BlockFunction = struct { symbol: SymbolId, block: sc.ScopeId };
 
     const SavedContext = struct {
         pending: PendingBinding,
@@ -635,6 +639,10 @@ pub const SymbolTracker = struct {
                     else
                         Symbol.Excludes.block_scoped_var).merge(self.excluded_imports),
                     .scope = target,
+                    // annex B also binds a sloppy block-level function where a var would (B.3.2)
+                    .block_function = func.type == .function_declaration and !var_like and
+                        !func.async and !func.generator and !self.tree.isTs() and
+                        !scope.get(target).flags.strict and isInStatementList(self.tree, parent),
                 };
 
                 // expression names are local
@@ -877,6 +885,12 @@ pub const SymbolTracker = struct {
                 const sym_id = try self.declare(id.name, index, scope.scopes.items);
                 if (flags.namespace_module or flags.regular_enum or flags.const_enum) {
                     self.body_owner = sym_id;
+                }
+                if (self.pending.block_function) {
+                    try self.block_functions.append(self.allocator, .{
+                        .symbol = sym_id,
+                        .block = self.pendingTarget(),
+                    });
                 }
 
                 // visible in every block it passes through so redeclarations see it
@@ -1244,6 +1258,121 @@ pub const SymbolTracker = struct {
         };
     }
 
+    // decided once every scope is complete, as a later `let` of the name rules it out (B.3.2)
+    // https://tc39.es/ecma262/#sec-functiondeclarationinstantiation
+    // https://tc39.es/ecma262/#sec-globaldeclarationinstantiation
+    fn hoistBlockFunctions(self: *SymbolTracker, scopes: []const sc.Scope) Allocator.Error!void {
+        const functions = self.block_functions.items;
+        if (functions.len == 0) return;
+        const hoists = try self.allocator.alloc(bool, functions.len);
+        for (functions, hoists) |function, *hoist| {
+            hoist.* = self.blockFunctionHoists(function, scopes);
+        }
+
+        var redirects: []SymbolId = &.{};
+        for (functions, hoists) |function, hoist| {
+            if (!hoist) continue;
+            const into = try self.hoistBlockFunction(function, scopes) orelse continue;
+            if (redirects.len == 0) {
+                redirects = try self.allocator.alloc(SymbolId, self.symbols.items.len);
+                @memset(redirects, .none);
+            }
+            redirects[@backingInt(function.symbol)] = into;
+        }
+        if (redirects.len > 0) try self.removeMergedSymbols(redirects);
+    }
+
+    // only where `var f` in its place is no early error and names no parameter, as 10.2.11 step 32
+    // and 16.1.7 step 12 require, a simple catch parameter aside (B.3.4)
+    fn blockFunctionHoists(
+        self: *const SymbolTracker,
+        function: BlockFunction,
+        scopes: []const sc.Scope,
+    ) bool {
+        const name = self.tree.string(self.symbol(function.symbol).name);
+        const block = scopes[@backingInt(function.block)];
+        const target = block.hoist_target;
+        std.debug.assert(target != function.block);
+        // a function's `arguments` stays its arguments object (10.2.11 step 32)
+        if (scopes[@backingInt(target)].kind != .global and std.mem.eql(u8, name, "arguments")) {
+            return false;
+        }
+        var scope_id = block.parent;
+        while (true) {
+            const scope = scopes[@backingInt(scope_id)];
+            if (self.ownBinding(scope_id, name)) |existing_id| {
+                const flags = self.symbol(existing_id).flags;
+                if (scope_id == target) {
+                    if (flags.parameter or flags.block_scoped_var or flags.class) return false;
+                } else if (!flags.catch_var or !isSimpleCatch(self.tree, scope)) {
+                    return false;
+                }
+            }
+            if (scope.kind == .function or scope.kind == .global) return true;
+            scope_id = scope.parent;
+        }
+    }
+
+    // an existing var or function of the name is the binding the declaration writes when it runs
+    fn hoistBlockFunction(
+        self: *SymbolTracker,
+        function: BlockFunction,
+        scopes: []const sc.Scope,
+    ) Allocator.Error!?SymbolId {
+        const name = self.tree.string(self.symbol(function.symbol).name);
+        const block_map = &self.scope_maps.items[@backingInt(function.block)];
+        if (block_map.get(name) != function.symbol) return null;
+        const removed = block_map.remove(name);
+        std.debug.assert(removed);
+
+        const target = scopes[@backingInt(function.block)].hoist_target;
+        var scope_id = function.block;
+        while (scope_id != target) : (scope_id = scopes[@backingInt(scope_id)].parent) {
+            const table = &self.hoisting_variables.items[@backingInt(scope_id)];
+            const entry = try table.getOrPut(self.allocator, name);
+            if (!entry.found_existing) entry.value_ptr.* = function.symbol;
+        }
+
+        if (self.ownBinding(target, name)) |existing| {
+            const merged = &self.symbols.items[@backingInt(existing)];
+            merged.flags = merged.flags.merge(self.symbol(function.symbol).flags);
+            return existing;
+        }
+        self.symbols.items[@backingInt(function.symbol)].scope = target;
+        try self.bind(target, name, function.symbol);
+        return null;
+    }
+
+    // bindings are listed by id, so a symbol merged away must leave no gap
+    fn removeMergedSymbols(self: *SymbolTracker, redirects: []const SymbolId) Allocator.Error!void {
+        std.debug.assert(redirects.len == self.symbols.items.len);
+        std.debug.assert(self.last_bodies.count() == 0);
+        const ids = try self.allocator.alloc(SymbolId, redirects.len);
+        var kept: u32 = 0;
+        for (redirects, 0..) |into, old| {
+            if (into != .none) continue;
+            ids[old] = @fromBackingInt(kept);
+            self.symbols.items[kept] = self.symbols.items[old];
+            self.first_decls.items[kept] = self.first_decls.items[old];
+            kept += 1;
+        }
+        for (redirects, 0..) |into, old| {
+            if (into == .none) continue;
+            std.debug.assert(redirects[@backingInt(into)] == .none);
+            ids[old] = ids[@backingInt(into)];
+        }
+        self.symbols.shrinkRetainingCapacity(kept);
+        self.first_decls.shrinkRetainingCapacity(kept);
+
+        for (self.decl_pairs.items) |*pair| pair.symbol = ids[@backingInt(pair.symbol)];
+        for ([_][]ScopeMap{ self.scope_maps.items, self.hoisting_variables.items }) |maps| {
+            for (maps) |*map| {
+                var values = map.valueIterator();
+                while (values.next()) |id| id.* = ids[@backingInt(id.*)];
+            }
+        }
+    }
+
     /// Finalizes the tracker into a `Semantic` that aliases its storage.
     pub fn finalize(
         self: *SymbolTracker,
@@ -1256,6 +1385,7 @@ pub const SymbolTracker = struct {
 
         try self.syncScopeMaps(scopes.list.len);
         try padTo(sc.ScopeId, &self.next_bodies, self.allocator, scopes.list.len, .none);
+        try self.hoistBlockFunctions(scopes.list);
 
         const decl_ranges = try self.allocator.alloc(Range, self.symbols.items.len);
         @memset(decl_ranges, .{ .start = 0, .len = 0 });
@@ -1538,6 +1668,23 @@ fn exprNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
     const current = scope.get(scope.current);
     if (current.kind == .function or current.kind == .class) return current.parent;
     return scope.current;
+}
+
+// directly in a block or case, or alone in an if clause, where annex B applies (B.3.2, B.3.3)
+// https://tc39.es/ecma262/#sec-block-level-function-declarations-web-legacy-compatibility-semantics
+fn isInStatementList(tree: *const ast.Tree, parent: ast.NodeIndex) bool {
+    if (parent == .null) return false;
+    return switch (tree.data(parent)) {
+        .block_statement, .switch_case, .if_statement => true,
+        else => false,
+    };
+}
+
+// a var may share a simple catch parameter's name (B.3.4)
+// https://tc39.es/ecma262/#sec-variablestatements-in-catch-blocks
+fn isSimpleCatch(tree: *const ast.Tree, scope: sc.Scope) bool {
+    const param = tree.data(scope.node).catch_clause.param;
+    return param != .null and tree.data(param) == .binding_identifier;
 }
 
 // at a body's top level a function declaration is var-scoped and hoists past

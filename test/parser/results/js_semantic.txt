@@ -6350,17 +6350,13 @@ error: Cannot use import statement outside a module
  2 | export let local1 = 23;
    |
 
-✓ test/parser/suite/js/semantic/28b5bfa8d6eec5a5.js
-error: Identifier 'f' has already been declared
+✓ test/parser/suite/js/semantic/28b5bfa8d6eec5a5.module.js
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (0) function f() {} let f;
-   |                            ^
-   |                 ~ 'f' was first declared as a function here
-   |                            ~ cannot be redeclared here
+   |        ^^^^^^^^^^^^^^^
  2 | { if (0) function g() {} let g; }
    |
-   = help: Consider removing or renaming this declaration of 'f'
-
 
 ✓ test/parser/suite/js/semantic/28be818a270b7e23.js
 error: Use of undefined label 'x'

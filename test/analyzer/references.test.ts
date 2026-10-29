@@ -49,6 +49,111 @@ describe("resolution", () => {
             functionBody BlockStatement"
     `);
   });
+
+  test("a sloppy block-level function also binds where a var would", () => {
+    const source = [
+      "{ function a() {} } a();",
+      "function g(x) { var b; { function b() {} }",
+      "  if (x) function c() {} else { function c() {} } c(); }",
+      "switch (x) { case 1: function d() {} } d();",
+    ].join("\n");
+    expect(summary(source, { path: "input.js", sourceType: "script" })).toMatchInlineSnapshot(`
+      "global
+        a#0  function
+        g#1  function
+        d#5  function
+        a → #0
+        x → free
+        d → #5
+        block BlockStatement
+          function "a"
+            functionBody BlockStatement
+        function "g"
+          x#2  param
+          b#3  var function ×2
+          c#4  function ×2
+          functionBody BlockStatement
+            x → #2
+            c → #4
+            block BlockStatement
+              function "b"
+                functionBody BlockStatement
+            block FunctionDeclaration
+              function "c"
+                functionBody BlockStatement
+            block BlockStatement
+              function "c"
+                functionBody BlockStatement
+        block SwitchStatement
+          function "d"
+            functionBody BlockStatement"
+    `);
+  });
+
+  test("a block-level function that a var could not replace stays in its block", () => {
+    const source = [
+      "let a; { function a() {} }",
+      "function g(b) { { function b() {} } { { function c() {} } let c; } }",
+      "{ function d() {} { function d() {} } }",
+      "try {} catch ([e]) { { function e() {} } }",
+      "{ async function h() {} function* i() {} l: function j() {} }",
+      "function s() { 'use strict'; { function k() {} } }",
+    ].join("\n");
+    expect(summary(source, { path: "input.js", sourceType: "script" })).toMatchInlineSnapshot(`
+      "global
+        a#0  let
+        g#2  function
+        d#7  function
+        s#14  function
+        block BlockStatement
+          a#1  function
+          function "a"
+            functionBody BlockStatement
+        function "g"
+          b#3  param
+          functionBody BlockStatement
+            block BlockStatement
+              b#4  function
+              function "b"
+                functionBody BlockStatement
+            block BlockStatement
+              c#6  let
+              block BlockStatement
+                c#5  function
+                function "c"
+                  functionBody BlockStatement
+        block BlockStatement
+          function "d"
+            functionBody BlockStatement
+          block BlockStatement
+            d#8  function
+            function "d"
+              functionBody BlockStatement
+        block BlockStatement
+        block CatchClause
+          e#9  catch
+          block BlockStatement
+            e#10  function
+            function "e"
+              functionBody BlockStatement
+        block BlockStatement
+          h#11  function
+          i#12  function
+          j#13  function
+          function "h"
+            functionBody BlockStatement
+          function "i"
+            functionBody BlockStatement
+          function "j"
+            functionBody BlockStatement
+        function "s" [strict]
+          functionBody BlockStatement
+            block BlockStatement
+              k#15  function
+              function "k"
+                functionBody BlockStatement"
+    `);
+  });
 });
 
 describe("write detection", () => {

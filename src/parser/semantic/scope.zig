@@ -188,6 +188,9 @@ pub const ScopeTracker = struct {
                 if (!declaration and func.id != .null) {
                     try self.pushScope(.expression_name, index, flags);
                 }
+                if (declaration and !self.tree.isTs() and isIfClause(self.tree, parent)) {
+                    try self.pushScope(.block, index, self.inheritStrictFlag());
+                }
                 try self.pushScope(.function, index, flags);
             },
             .arrow_function_expression => {
@@ -290,6 +293,12 @@ pub const ScopeTracker = struct {
     fn functionFlags(self: *const ScopeTracker, body_index: ast.NodeIndex) Scope.Flags {
         const strict = self.currentScope().flags.strict;
         return .{ .strict = strict or hasUseStrict(self.tree, body_index) };
+    }
+
+    // a function an if clause holds sits alone in a block of its own (B.3.3)
+    // https://tc39.es/ecma262/#sec-functiondeclarations-in-ifstatement-statement-clauses
+    fn isIfClause(tree: *const ast.Tree, parent: ast.NodeIndex) bool {
+        return parent != .null and tree.data(parent) == .if_statement;
     }
 
     fn hasUseStrict(tree: *const ast.Tree, body_index: ast.NodeIndex) bool {
