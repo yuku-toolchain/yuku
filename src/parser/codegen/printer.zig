@@ -121,6 +121,8 @@ const Printer = struct {
     links: std.ArrayList(Link) = .empty,
     decoded: std.ArrayList(u8) = .empty,
 
+    const DecoratorLayout = enum { own_line, same_line };
+
     const Link = struct {
         idx: NodeIndex,
         inner: Ctx,
@@ -1849,7 +1851,7 @@ const Printer = struct {
 
     fn emit_binding_identifier(self: *Self, id: *const ast.BindingIdentifier) Error!void {
         const definite = self.takeDefinite();
-        if (!self.options.strip) try self.printDecorators(id.decorators);
+        if (!self.options.strip) try self.printDecorators(id.decorators, .same_line);
         try self.writeString(id.name);
         if (id.optional) try self.emitInsideCommentsInline(self.current_idx);
         try self.printBindingSuffix(id.optional, definite, id.type_annotation);
@@ -1865,7 +1867,7 @@ const Printer = struct {
     }
 
     fn emit_assignment_pattern(self: *Self, p: *const ast.AssignmentPattern) Error!void {
-        if (!self.options.strip) try self.printDecorators(p.decorators);
+        if (!self.options.strip) try self.printDecorators(p.decorators, .same_line);
         try self.emit(p.left);
         try self.printBindingSuffix(p.optional, false, p.type_annotation);
         try self.printSpaced('=');
@@ -1873,7 +1875,7 @@ const Printer = struct {
     }
 
     fn emit_binding_rest_element(self: *Self, r: *const ast.BindingRestElement) Error!void {
-        if (!self.options.strip) try self.printDecorators(r.decorators);
+        if (!self.options.strip) try self.printDecorators(r.decorators, .same_line);
         try self.out.writeStr("...");
         try self.emit(r.argument);
         try self.printBindingSuffix(r.optional, false, r.type_annotation);
@@ -1881,7 +1883,7 @@ const Printer = struct {
 
     fn emit_array_pattern(self: *Self, p: *const ast.ArrayPattern) Error!void {
         const definite = self.takeDefinite();
-        if (!self.options.strip) try self.printDecorators(p.decorators);
+        if (!self.options.strip) try self.printDecorators(p.decorators, .same_line);
         try self.out.writeByte('[');
         try self.emitInsideCommentsInline(self.current_idx);
         const list = self.tree.extra(p.elements);
@@ -1901,7 +1903,7 @@ const Printer = struct {
 
     fn emit_object_pattern(self: *Self, p: *const ast.ObjectPattern) Error!void {
         const definite = self.takeDefinite();
-        if (!self.options.strip) try self.printDecorators(p.decorators);
+        if (!self.options.strip) try self.printDecorators(p.decorators, .same_line);
         try self.out.writeByte('{');
         try self.emitInsideCommentsInline(self.current_idx);
         const list = self.tree.extra(p.properties);
@@ -2047,7 +2049,7 @@ const Printer = struct {
 
     fn emit_class(self: *Self, c: *const ast.Class, ctx: Ctx) Error!void {
         if (self.options.strip) if (c.declare) return;
-        if (!ctx.no_decorators) try self.printDecorators(c.decorators);
+        if (!ctx.no_decorators) try self.printDecorators(c.decorators, .own_line);
         if (!self.options.strip) {
             if (c.declare) try self.out.writeStr("declare ");
             if (c.abstract) try self.out.writeStr("abstract ");
@@ -2102,7 +2104,7 @@ const Printer = struct {
     fn emit_method_definition(self: *Self, m: *const ast.MethodDefinition) Error!void {
         const fn_data = self.nodeData(m.value).function;
         if (self.options.strip) if (m.abstract or fn_data.body == .null) return;
-        try self.printDecorators(m.decorators);
+        try self.printDecorators(m.decorators, .own_line);
         try self.hoistKeyComments(m.key);
         defer self.skip_leading_of = .null;
         if (!self.options.strip) try self.printAccessibility(m.accessibility);
@@ -2126,7 +2128,7 @@ const Printer = struct {
 
     fn emit_property_definition(self: *Self, p: *const ast.PropertyDefinition) Error!void {
         if (self.options.strip) if (p.declare or p.abstract) return;
-        try self.printDecorators(p.decorators);
+        try self.printDecorators(p.decorators, .own_line);
         try self.hoistKeyComments(p.key);
         defer self.skip_leading_of = .null;
         if (!self.options.strip) {
@@ -2183,16 +2185,20 @@ const Printer = struct {
         unreachable;
     }
 
-    fn printDecorators(self: *Self, decs: IndexRange) Error!void {
+    fn printDecorators(
+        self: *Self,
+        decs: IndexRange,
+        comptime layout: DecoratorLayout,
+    ) Error!void {
         const list = self.tree.extra(decs);
         if (list.len == 0) return;
         const carry = self.out.map_start;
         for (list, 0..) |d, i| {
             try self.emit(d);
             // `@a.b class` would fuse to `@a.bclass` without a separator
-            if (self.pretty()) {
+            if (self.pretty() and layout == .own_line) {
                 try self.newline();
-            } else if (i + 1 == list.len) {
+            } else if (self.pretty() or i + 1 == list.len) {
                 try self.out.writeByte(' ');
             }
         }
@@ -2295,7 +2301,7 @@ const Printer = struct {
             }
         }
         const hoisted = self.decoratorsBeforeExport(d.declaration);
-        if (hoisted) |decorators| try self.printDecorators(decorators);
+        if (hoisted) |decorators| try self.printDecorators(decorators, .own_line);
         try self.out.writeStr("export");
         if (d.export_kind == .type and d.declaration == .null) try self.out.writeStr(" type");
         if (d.declaration != .null) {
@@ -2326,7 +2332,7 @@ const Printer = struct {
         if (self.nodeData(d.declaration).isDeclaration()) {
             if (try self.skipStripped(d.declaration)) return;
             const hoisted = self.decoratorsBeforeExport(d.declaration);
-            if (hoisted) |decorators| try self.printDecorators(decorators);
+            if (hoisted) |decorators| try self.printDecorators(decorators, .own_line);
             try self.out.writeStr("export default ");
             return self.emitExpr(d.declaration, .{ .no_decorators = hoisted != null });
         }
@@ -2931,7 +2937,7 @@ const Printer = struct {
     }
 
     fn emit_ts_parameter_property(self: *Self, p: *const ast.TSParameterProperty) Error!void {
-        try self.printDecorators(p.decorators);
+        try self.printDecorators(p.decorators, .same_line);
         try self.printAccessibility(p.accessibility);
         if (p.override) try self.out.writeStr("override ");
         if (p.readonly) try self.out.writeStr("readonly ");

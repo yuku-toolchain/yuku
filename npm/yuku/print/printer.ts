@@ -225,6 +225,8 @@ const FIXED_STRING = table({
   TSJSDocUnknownType: "?",
 });
 
+type DecoratorLayout = "ownLine" | "sameLine";
+
 interface Link {
   node: Node;
   inner: number;
@@ -1957,7 +1959,7 @@ class NodePrinter extends Output implements Printer {
 
   emitIdentifier(id: T.Identifier): void {
     const definite = this.takeDefinite();
-    if (!this.strip && id.decorators != null) this.printDecorators(id.decorators);
+    if (!this.strip && id.decorators != null) this.printDecorators(id.decorators, "sameLine");
     this.writeName(id.name);
     if (id.optional === true) this.emitInsideCommentsInline(id);
     this.printBindingSuffix(id.optional === true, definite, id.typeAnnotation);
@@ -1981,7 +1983,7 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitAssignmentPattern(p: T.AssignmentPattern): void {
-    if (!this.strip && p.decorators != null) this.printDecorators(p.decorators);
+    if (!this.strip && p.decorators != null) this.printDecorators(p.decorators, "sameLine");
     this.emit(p.left);
     this.printBindingSuffix(p.optional === true, false, p.typeAnnotation);
     this.printEq();
@@ -1989,7 +1991,7 @@ class NodePrinter extends Output implements Printer {
   }
 
   emitRestElement(r: T.RestElement): void {
-    if (!this.strip && r.decorators != null) this.printDecorators(r.decorators);
+    if (!this.strip && r.decorators != null) this.printDecorators(r.decorators, "sameLine");
     this.write("...");
     this.emit(r.argument);
     this.printBindingSuffix(r.optional === true, false, r.typeAnnotation);
@@ -1997,7 +1999,7 @@ class NodePrinter extends Output implements Printer {
 
   emitArrayPattern(p: T.ArrayPattern): void {
     const definite = this.takeDefinite();
-    if (!this.strip && p.decorators != null) this.printDecorators(p.decorators);
+    if (!this.strip && p.decorators != null) this.printDecorators(p.decorators, "sameLine");
     this.write("[");
     this.emitInsideCommentsInline(p);
     const elements = p.elements;
@@ -2009,7 +2011,7 @@ class NodePrinter extends Output implements Printer {
 
   emitObjectPattern(p: T.ObjectPattern): void {
     const definite = this.takeDefinite();
-    if (!this.strip && p.decorators != null) this.printDecorators(p.decorators);
+    if (!this.strip && p.decorators != null) this.printDecorators(p.decorators, "sameLine");
     this.write("{");
     this.emitInsideCommentsInline(p);
     const hasAny = p.properties.length > 0;
@@ -2156,7 +2158,7 @@ class NodePrinter extends Output implements Printer {
 
   emitClass(c: T.Class, ctx: number): void {
     if (this.strip && c.declare === true) return;
-    if ((ctx & CTX_NO_DECORATORS) === 0) this.printDecorators(c.decorators);
+    if ((ctx & CTX_NO_DECORATORS) === 0) this.printDecorators(c.decorators, "ownLine");
     if (!this.strip) {
       if (c.declare === true) this.writeKeyword("declare");
       if (c.abstract === true) this.writeKeyword("abstract");
@@ -2209,7 +2211,7 @@ class NodePrinter extends Output implements Printer {
     const fn = m.value as T.Function;
     const isAbstract = m.type === "TSAbstractMethodDefinition";
     if (this.strip && (isAbstract || fn.body == null)) return;
-    this.printDecorators(m.decorators);
+    this.printDecorators(m.decorators, "ownLine");
     this.hoistKeyComments(m.key);
     if (!this.strip && m.accessibility != null) this.writeKeyword(m.accessibility);
     if (m.static) this.writeKeyword("static");
@@ -2235,7 +2237,7 @@ class NodePrinter extends Output implements Printer {
       p.type === "TSAbstractPropertyDefinition" || p.type === "TSAbstractAccessorProperty";
     const isAccessor = p.type === "AccessorProperty" || p.type === "TSAbstractAccessorProperty";
     if (this.strip && (p.declare === true || isAbstract)) return;
-    this.printDecorators(p.decorators);
+    this.printDecorators(p.decorators, "ownLine");
     this.hoistKeyComments(p.key);
     if (!this.strip) {
       if (p.declare === true) this.writeKeyword("declare");
@@ -2271,14 +2273,14 @@ class NodePrinter extends Output implements Printer {
     this.emitExpr(d.expression, simple ? PREC_LOWEST : PREC_GROUPING);
   }
 
-  printDecorators(decs: readonly Node[] | null | undefined): void {
+  printDecorators(decs: readonly Node[] | null | undefined, layout: DecoratorLayout): void {
     if (decs == null || decs.length === 0) return;
     const carry = this.mapStart;
     for (let i = 0; i < decs.length; i++) {
       this.emit(decs[i]);
       // `@a.b class` would fuse to `@a.bclass` without a separator
-      if (this.pretty) this.newline();
-      else if (i + 1 === decs.length) this.write(" ");
+      if (this.pretty && layout === "ownLine") this.newline();
+      else if (this.pretty || i + 1 === decs.length) this.write(" ");
     }
     this.mapStart = carry;
   }
@@ -2352,7 +2354,7 @@ class NodePrinter extends Output implements Printer {
       }
     }
     const hoisted = decoratorsBeforeExport(d.declaration);
-    this.printDecorators(hoisted);
+    this.printDecorators(hoisted, "ownLine");
     this.write("export");
     if (d.declaration != null) {
       this.write(" ");
@@ -2381,7 +2383,7 @@ class NodePrinter extends Output implements Printer {
         return this.emitNothing(d.declaration);
       }
       const hoisted = decoratorsBeforeExport(d.declaration);
-      this.printDecorators(hoisted);
+      this.printDecorators(hoisted, "ownLine");
       this.writeKeyword("export default");
       return this.emitExpr(d.declaration, hoisted !== null ? CTX_NO_DECORATORS : 0);
     }
@@ -2661,7 +2663,7 @@ class NodePrinter extends Output implements Printer {
         this.emit(node.expression);
         return this.write(")");
       case "TSParameterProperty":
-        this.printDecorators(node.decorators);
+        this.printDecorators(node.decorators, "sameLine");
         if (node.accessibility != null) this.writeKeyword(node.accessibility);
         if (node.override) this.writeKeyword("override");
         if (node.readonly) this.writeKeyword("readonly");

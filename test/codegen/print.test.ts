@@ -409,6 +409,27 @@ test("decorators print on the side of `export` they were written on", () => {
   );
 });
 
+test("a parameter's decorators stay on its line", () => {
+  const source = [
+    "class A {",
+    "  constructor(@Inject() private a: A, @Optional() b?: B) {}",
+    "  m(@d x, @e @f [y], @g { z } = {}, @h ...rest) {}",
+    "  @m n() {}",
+    "}",
+  ].join("\n");
+  expect(gen(source)).toMatchInlineSnapshot(`
+    "class A {
+      constructor(@Inject() private a: A, @Optional() b?: B) {}
+      m(@d x, @e @f [y], @g { z } = {}, @h ...rest) {}
+      @m
+      n() {}
+    }"
+  `);
+  expect(gen(source, { format: "compact" })).toMatchInlineSnapshot(
+    `"class A{constructor(@Inject() private a:A,@Optional() b?:B){}m(@d x,@e@f[y],@g{z}={},@h...rest){}@m n(){}}"`,
+  );
+});
+
 test("a hashbang is reprinted verbatim", () => {
   expect(gen("#!/usr/bin/env node --flag \nx;", { format: "compact" }, "input.js")).toBe(
     "#!/usr/bin/env node --flag \nx",
