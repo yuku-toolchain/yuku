@@ -1,0 +1,131 @@
+---
+.title = "Parse",
+.description = "Parse JavaScript, TypeScript, and JSX into an ESTree program.",
+.author = "Arshad Yaseen",
+.date = @date("2026-10-29T00:00:00"),
+.layout = "page.shtml",
+---
+`parse` reads JavaScript, TypeScript, or JSX, from a string or UTF-8 bytes, into a `SourceFile`. From Zig, see the [parser](/parser/).
+
+```js
+import { parse } from "yuku";
+
+const file = parse(source, { path: "src/app.tsx" });
+
+file.program;     // the ESTree / TypeScript-ESTree Program
+file.comments;    // every comment, in source order
+file.diagnostics;
+file.source;
+file.path;
+file.lang;        // "tsx", from the path
+file.sourceType;  // "module"
+```
+
+The parser recovers from errors, so a file with diagnostics still has a program.
+
+## [Options]($section.id('options'))
+
+| Option           | Default                                             | Description                                                           |
+| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------- |
+| `path`           | none                                                | Names the file, and sets `lang` and `sourceType`                      |
+| `lang`           | from `path`, else `"js"`                            | `"js"`, `"jsx"`, `"ts"`, `"tsx"`, or `"dts"`                          |
+| `sourceType`     | `"commonjs"` for `.cjs` and `.cts`, else `"module"` | `"module"`, `"script"`, or `"commonjs"`                               |
+| `preserveParens` | `true`                                              | Keep `ParenthesizedExpression` nodes                                  |
+| `attachComments` | `false`                                             | Attach each comment to its node, see [Comments](#comments)            |
+| `tokens`         | `false`                                             | Collect `file.tokens`                                                 |
+| `analyze`        | `false`                                             | Build the [semantic model](/javascript/semantic/)                     |
+| `semanticErrors` | `false`                                             | Also report the early errors that need scopes, such as redeclarations |
+
+A file holds what it was parsed with, so reading `file.tokens` or the model of a file parsed without them throws, until [`reanalyze()`](/javascript/semantic/#after-edits) builds the model.
+
+## [Diagnostics]($section.id('diagnostics'))
+
+Every part of Yuku reports problems in the code in one shape, and throws only when called wrongly.
+
+```ts
+interface Diagnostic {
+  severity: "error" | "warning" | "hint" | "info";
+  message: string;
+  path: string | null;
+  start: number; // UTF-16 offsets, like nodes
+  end: number;
+  labels: { start: number; end: number; message: string }[];
+  help: string | null;
+}
+```
+
+```js
+for (const { start, message } of file.diagnostics) {
+  const { line, column } = file.locate(start);
+  console.log(`${file.path}:${line}:${column + 1} ${message}`);
+}
+```
+
+## [Comments]($section.id('comments'))
+
+`file.comments` lists every comment as `{ type, value, start, end }`. With `attachComments: true`, each also belongs to the node it prints with.
+
+```js
+const { program } = parse(`// header\nfunction foo() {} // trailing`, { attachComments: true });
+
+program.body[0].comments;
+// [
+//   { type: "Line", value: " header", start: 0, end: 9, position: "before", sameLine: false },
+//   { type: "Line", value: " trailing", start: 28, end: 39, position: "after", sameLine: true },
+// ]
+```
+
+[`print`](/javascript/print/) prints from `node.comments`, so comments move with their nodes.
+
+## [Tokens]($section.id('tokens'))
+
+`file.tokens` is a `TokenList`, where a token is an index.
+
+```js
+import { parse, TokenKind } from "yuku";
+
+const { tokens } = parse(source, { tokens: true });
+
+for (let i = 0; i < tokens.length; i++) {
+  if (tokens.kind(i) === TokenKind.Arrow) console.log(tokens.start(i), tokens.text(i));
+}
+```
+
+```js
+tokens.kind(i)                      // one of TokenKind
+tokens.text(i)
+tokens.start(i)                     // UTF-16 offsets
+tokens.end(i)
+
+tokens.isKeyword(i)
+tokens.isReserved(i)
+tokens.isUnconditionallyReserved(i)
+tokens.isStrictModeReserved(i)
+tokens.isIdentifierLike(i)
+tokens.isNumericLiteral(i)
+tokens.isBinaryOperator(i)
+tokens.isLogicalOperator(i)
+tokens.isUnaryOperator(i)
+tokens.isAssignmentOperator(i)
+tokens.precedence(i)
+
+tokens.newlineBefore(i)
+tokens.escaped(i)
+tokens.invalidEscape(i)
+tokens.loneSurrogate(i)
+
+tokens.range(node)                  // [from, to) of the tokens inside a node
+tokens.before(offset)               // the last token ending at or before an offset
+tokens.after(offset)                // the first token starting at or after it
+tokens.at(offset)                   // the token containing it
+```
+
+The queries return an index, or `-1` when there is none.
+
+## [The AST]($section.id('the-ast'))
+
+The program is plain objects: [ESTree](https://github.com/estree/estree) for JavaScript and JSX, and [TypeScript-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) for TypeScript, matching [Oxc](https://oxc.rs) down to every field. Every node has `start` and `end` in UTF-16 offsets, and the package exports the type of every node.
+
+```ts
+import type { CallExpression, Expression, Node, Program } from "yuku";
+```

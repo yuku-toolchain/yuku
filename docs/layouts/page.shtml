@@ -181,10 +181,12 @@
   <h3 class="overtitle centered">Yuku</h3>
   <h1 class="title" :text="$page.title"></h1>
   <ctx :if="$page.link().eql('/').not()">
-    <nav class="page-toc" aria-label="On this page">
-      <p class="page-toc-title">On this page</p>
-      <div :html="$page.toc()"></div>
-    </nav>
+    <ctx :if="$page.toc().contains('<li')">
+      <nav class="page-toc" aria-label="On this page">
+        <p class="page-toc-title">On this page</p>
+        <div :html="$page.toc()"></div>
+      </nav>
+    </ctx>
   </ctx>
   <div id="page" :html="$page.content()"></div>
 </div>

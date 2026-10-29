@@ -82,8 +82,8 @@ docs/            the website
 
 ## Edit the docs
 
-[yuku.fyi](https://yuku.fyi) documents Yuku and its Zig API, from the Markdown
-files in `docs/content/`. Preview them with
+[yuku.fyi](https://yuku.fyi) documents the JavaScript package and the Zig API,
+from the Markdown files in `docs/content/`. Preview them with
 [Zine](https://github.com/kristoff-it/zine/releases) 0.11.3:
 
 ```bash

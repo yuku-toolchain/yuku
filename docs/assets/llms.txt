@@ -5,6 +5,11 @@
 ## Documentation
 
 - [Introduction](https://yuku.fyi/): Yuku is a JavaScript and TypeScript compiler toolchain written in Zig.
+- [JavaScript](https://yuku.fyi/javascript/): Use Yuku from JavaScript and TypeScript with the yuku package.
+- [Parse](https://yuku.fyi/javascript/parse/): Parse JavaScript, TypeScript, and JSX into an ESTree program.
+- [Walk and build](https://yuku.fyi/javascript/walk/): Visit, edit, and build nodes.
+- [Semantic analysis](https://yuku.fyi/javascript/semantic/): Scopes, bindings, references, imports, and exports, in a file and across a project.
+- [Print](https://yuku.fyi/javascript/print/): Print a file or any node back to code.
 - [Parser](https://yuku.fyi/parser/): Parse JavaScript, TypeScript, and JSX into a tree.
 - [AST](https://yuku.fyi/parser/ast/): The tree the parser produces, and how to read, build, and edit it.
 - [Semantic Analysis](https://yuku.fyi/parser/semantic/): Scopes, symbols, resolved references, early errors, and module records for a parsed tree.
@@ -12,7 +17,6 @@
 - [Codegen](https://yuku.fyi/parser/codegen/): Print a tree back to JavaScript or TypeScript, with type stripping, minification, and source maps.
 - [Testing](https://yuku.fyi/testing/): How Yuku is tested.
 - [Security](https://yuku.fyi/security/): How to report a vulnerability in Yuku, and the security practices behind the toolchain and its releases.
-- [JavaScript](https://github.com/yuku-toolchain/yuku/tree/main/npm/yuku#readme): Use Yuku from JavaScript and TypeScript with the yuku package.
 
 ## Resources
 

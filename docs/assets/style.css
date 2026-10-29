@@ -195,3 +195,76 @@ li {
 @media screen and (min-width: 1800px) {
   :root { zoom: 1.5; }
 }
+
+#menu a.current {
+  text-decoration: underline;
+  text-decoration-color: #888;
+  text-underline-offset: 4px;
+}
+
+#layout {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.1rem;
+  padding: 0.75rem 30px 0;
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+
+.section-menu-title {
+  display: none;
+}
+
+.section-menu a {
+  color: #888;
+  font-weight: normal;
+}
+
+.section-menu a:hover,
+.section-menu a.current {
+  color: #fff;
+  text-decoration: none;
+}
+
+@media (min-width: 1440px) {
+  #layout {
+    display: grid;
+    grid-template-columns: 1fr min(600px, 100%) 1fr;
+  }
+
+  #content {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .section-menu {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    position: sticky;
+    top: 2rem;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0.55rem;
+    width: 10rem;
+    margin: 8.5rem 1.5rem 0 0;
+    padding: 0;
+  }
+
+  .section-menu-title {
+    display: block;
+    margin: 0 0 0.35rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: #eee;
+  }
+}

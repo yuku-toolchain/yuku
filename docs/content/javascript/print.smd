@@ -1,0 +1,26 @@
+---
+.title = "Print",
+.description = "Print a file or any node back to code.",
+.author = "Arshad Yaseen",
+.date = @date("2026-10-29T00:00:00"),
+.layout = "page.shtml",
+---
+`print` turns a file or any node back into code. From Zig, see [codegen](/parser/codegen/).
+
+```js
+import { print } from "yuku";
+
+const { code, map, diagnostics } = print(file, { strip: true, sourceMap: true });
+```
+
+| Option      | Default                                 | Description                                                                   |
+| ----------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| `strip`     | `false`                                 | Print TypeScript as JavaScript, reporting what has no JavaScript form         |
+| `minify`    | `false`                                 | Minify, rewriting syntax to shorter forms such as `!0` and `obj.foo`          |
+| `format`    | `"pretty"`, or `"compact"` minifying    | Or `"compact"`                                                                |
+| `indent`    | `2`                                     | Spaces per level in the pretty format                                         |
+| `quotes`    | `"preserve"`, or `"shortest"` minifying | `"preserve"`, `"double"`, `"single"`, or `"shortest"`                         |
+| `comments`  | `"all"`, or `"some"` minifying          | `"all"`, `"some"`, `"none"`, `"line"`, or `"block"`, of the attached comments |
+| `sourceMap` | `false`                                 | `true`, or `{ file, sourceRoot, sourcesContent }`, when printing a file       |
+
+`"some"` keeps legal headers, JSDoc, and `@` or `#` annotations, as bundlers do.

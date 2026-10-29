@@ -1,0 +1,193 @@
+---
+.title = "Semantic analysis",
+.description = "Scopes, bindings, references, imports, and exports, in a file and across a project.",
+.author = "Arshad Yaseen",
+.date = @date("2026-10-29T00:00:00"),
+.layout = "page.shtml",
+---
+The semantic model resolves every name in a file, values and types alike, as the TypeScript checker does. From Zig, see [semantic analysis](/parser/semantic/).
+
+```js
+const file = parse(source, { path: "app.ts", analyze: true });
+
+file.scopes;               // by id, the global scope first
+file.rootScope;            // the module scope, or the global scope of a script
+file.bindings;             // by id
+file.references;           // in source order
+file.imports;
+file.exports;
+file.moduleFlags;          // { usesRequire, usesModule, usesExports, usesImportMeta }
+
+file.bindingOf(node);      // the binding it declares or refers to
+file.referenceOf(node);
+file.scopeOf(node);
+file.capturesOf(fn);       // [{ binding, references, isWritten }]
+file.parentOf(node);
+file.ancestors(node);      // the node, then each parent up to the root
+file.nodeAt(offset);
+```
+
+## [Scopes]($section.id('scopes'))
+
+```js
+scope.kind;        // "global" | "module" | "function" | "functionBody" | "block" | "class"
+                   // | "staticBlock" | "expressionName" | "tsModule"
+scope.strict;
+scope.node;
+scope.parent;
+scope.hoistTarget; // where a var declared in it lands
+scope.bindings;
+
+scope.find("x");           // a binding it declares
+scope.lookup("x", "type"); // resolves a name as code in it would, "value" by default
+scope.contains(other);
+scope.ancestors();
+```
+
+## [Bindings]($section.id('bindings'))
+
+```js
+binding.name;
+binding.scope;
+binding.declarations; // each declaration's name node
+binding.references;   // its uses in this file
+binding.import;       // the import that declares it
+binding.flags;        // a BindingFlags bitset
+
+binding.has(BindingFlags.Function);
+binding.has(BindingFlags.Class | BindingFlags.Interface); // any of them
+binding.visibleIn("type");
+
+binding.definition();     // { file, binding, augmentations }, following imports
+binding.findReferences(); // its uses across a project
+binding.rename("next");
+```
+
+| Flag                     | Set on                                  |
+| ------------------------ | --------------------------------------- |
+| `FunctionScopedVariable` | `var`, a parameter, or a catch variable |
+| `BlockScopedVariable`    | `let`, `const`, `using`, `await using`  |
+| `Function`               | a function                              |
+| `Class`                  | a class                                 |
+| `RegularEnum`            | `enum`                                  |
+| `ConstEnum`              | `const enum`                            |
+| `ValueModule`            | a namespace with runtime content        |
+| `Interface`              | `interface`                             |
+| `TypeAlias`              | `type`                                  |
+| `TypeParameter`          | `<T>`, `infer T`, a mapped type key     |
+| `NamespaceModule`        | a namespace of any kind                 |
+| `ValueImport`            | `import x`, `import { x }`              |
+| `TypeImport`             | `import type`, `import { type x }`      |
+| `Const`                  | `const`, `using`, `await using`         |
+| `Ambient`                | `declare`                               |
+| `Parameter`              | a parameter                             |
+| `CatchVariable`          | `catch (e)`                             |
+| `Exported`               | `export`, or implicitly in ambient code |
+| `Default`                | `export default <declaration>`          |
+| `EnumMember`             | an enum member                          |
+| `Variable`               | any variable                            |
+| `Import`                 | any import                              |
+| `ValueSpace`             | anything visible at runtime             |
+| `TypeSpace`              | anything usable as a type               |
+| `NamespaceSpace`         | what a dotted type name can start from  |
+
+## [References]($section.id('references'))
+
+```js
+reference.name;
+reference.node;           // the Identifier or JSXIdentifier
+reference.scope;
+reference.binding;        // null for a global or undeclared name
+reference.space;          // "value" | "type" | "namespace" | "typeof" | "any"
+reference.inTypePosition;
+reference.isWrite;        // x = 1, x++, for (x of xs)
+```
+
+## [Imports and exports]($section.id('imports-and-exports'))
+
+```js
+imp.kind;         // "named" | "namespace" | "sideEffect" | "importEquals" | "dynamic"
+                  // | "require" | "augmentation"
+imp.name;         // "default" for a default import
+imp.local;        // the binding it declares
+imp.specifier;
+imp.typeOnly;
+imp.phase;        // "source" | "defer" | null
+imp.node;
+imp.resolvedFile; // in a project
+
+exp.kind;         // "named" | "reExport" | "namespace" | "star" | "equals" | "global"
+exp.name;         // N for export as namespace N, null for star and equals
+exp.local;        // the binding it exports
+exp.specifier;
+exp.fromName;     // the name a reExport takes
+exp.typeOnly;
+exp.node;
+exp.resolvedFile;
+```
+
+## [After edits]($section.id('after-edits'))
+
+The model describes the program as parsed. After a pass edits it, `file.reanalyze()` builds the model again for the program as it is now, on the same node objects, so a node added with no position resolves too. It also builds the model of a file parsed without `analyze: true`.
+
+```js
+const file = parse(`let a = 1; f(a);`);
+
+const added = b.Identifier({ name: "a" });
+file.program.body.push(b.ExpressionStatement({ expression: added }));
+
+file.reanalyze();
+file.referenceOf(added).binding === file.rootScope.find("a"); // true
+```
+
+## [Rename]($section.id('rename'))
+
+`binding.rename(name)` renames a binding where it is declared and used, keeping the file's exports.
+
+```js
+const file = parse(`export const a = 1;\nlet o = { a };`, { analyze: true });
+
+file.rootScope.find("a").rename("b"); // []
+print(file).code;
+// const b = 1;
+// export { b as a };
+// let o = { a: b };
+```
+
+When renaming would change what the code means, such as by shadowing or capturing another name, it changes nothing and returns the reasons as [diagnostics](/javascript/parse/#diagnostics).
+
+## [Projects]($section.id('projects'))
+
+A `Project` links the imports of many files.
+
+```js
+import { Project } from "yuku";
+
+const project = new Project();
+
+project.set("a.ts", `export const value = 1;`);
+project.set("b.ts", `export { value as renamed } from "./a.ts";`);
+const c = project.set("c.ts", `import { renamed } from "./b.ts"; renamed;`);
+
+c.rootScope.find("renamed").definition().binding.name; // "value"
+```
+
+```js
+const project = new Project({
+  // a path in the project, false for a module outside it, null when it cannot be resolved
+  resolve: (specifier, importer) => aliases.get(specifier) ?? null,
+});
+
+project.set(path, source, options); // the SourceFile, replacing any at the same path
+project.delete(path);
+project.files;                      // ReadonlyMap<string, SourceFile>
+project.diagnostics;                // every file's, and the links that fail
+
+file.dependencies;       // the files it imports from
+file.dependents;         // the files that import it
+file.exportedNames();
+file.resolveExport("x"); // { file, binding, augmentations }
+file.isCurrent;          // false once its path is set again or deleted
+```
+
+By default, relative specifiers resolve as TypeScript resolves them, and packages are external.

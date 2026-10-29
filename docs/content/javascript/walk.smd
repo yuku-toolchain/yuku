@@ -1,0 +1,117 @@
+---
+.title = "Walk and build",
+.description = "Visit, edit, and build nodes.",
+.author = "Arshad Yaseen",
+.date = @date("2026-10-29T00:00:00"),
+.layout = "page.shtml",
+---
+`walk` visits a node and everything under it, depth-first in source order. From Zig, see [traversal](/parser/traverse/).
+
+```js
+import { walk } from "yuku";
+
+walk(file.program, {
+  Identifier(node, ctx) {},
+  CallExpression: {
+    enter(node, ctx) {},
+    leave(node, ctx) {},
+  },
+  Function(node) {}, // declarations, expressions, and arrows
+  enter(node) {},    // every node
+  leave(node) {},
+});
+```
+
+Handlers are keyed by node `type`, by alias (`Expression`, `Statement`, `Declaration`, `ModuleDeclaration`, `Function`, `Class`, `Method`, `Loop`, `Pattern`, `JSX`, `TSType`), or by `enter` and `leave`. A list of visitors walks in one pass.
+
+```js
+walk(file.program, [noDebugger, noConsole, preferConst]);
+```
+
+## [The context]($section.id('the-context'))
+
+```js
+ctx.parent;      // null at the walk root
+ctx.key;         // the field of the parent holding it
+ctx.index;       // its index in an array field, or null
+ctx.ancestors(); // from the root down to the parent
+```
+
+The [semantic model](/javascript/semantic/) answers for any node a walk visits, as `file.scopeOf(node)`, `file.bindingOf(node)`, and `file.referenceOf(node)`.
+
+## [Editing]($section.id('editing'))
+
+| Call                     | Effect                                                               |
+| ------------------------ | -------------------------------------------------------------------- |
+| `ctx.skip()`             | Skip the children                                                    |
+| `ctx.stop()`             | End the walk                                                         |
+| `ctx.replace(node)`      | Put a node, or a list in an array field, in its place, then visit it |
+| `ctx.remove()`           | Remove it                                                            |
+| `ctx.insertBefore(node)` | Insert a sibling the walk passes over                                |
+| `ctx.insertAfter(node)`  | Insert a sibling the walk visits next                                |
+
+```js
+walk(file.program, {
+  DebuggerStatement(node, ctx) {
+    ctx.remove();
+  },
+});
+```
+
+## [Async work]($section.id('async-work'))
+
+A walk runs synchronously. For async work, collect the nodes in one walk, await them together, and edit in a second.
+
+```js
+const calls = [];
+walk(file.program, { CallExpression: (node) => calls.push(node) });
+
+const results = new Map(await Promise.all(calls.map(async (node) => [node, await rewrite(node)])));
+
+walk(file.program, {
+  CallExpression(node, ctx) {
+    const result = results.get(node);
+    if (result !== undefined) ctx.replace(result);
+  },
+});
+```
+
+## [Build]($section.id('build'))
+
+`b` has a constructor for every node type. It sets `start` and `end` to 0, and defaults each field that may be false, null, or empty.
+
+```js
+import { b } from "yuku";
+
+b.CallExpression({ callee: b.Identifier({ name: "f" }) });
+// { type: "CallExpression", start: 0, end: 0, arguments: [], optional: false, callee: ... }
+
+b.ArrowFunctionExpression({ body: b.Identifier({ name: "x" }), expression: true }); // () => x
+```
+
+A field that tells the shapes of a type apart, such as `computed` on a `MemberExpression`, has no default.
+
+## [Utils]($section.id('utils'))
+
+`yuku/utils` has the small helpers.
+
+```js
+import { decodeJSXEntities, is, isIdentifierName, isValidIdentifier, unwrap } from "yuku/utils";
+
+is.CallExpression(node);
+is.Expression(node);              // aliases too
+is.oneOf(node, ["FunctionDeclaration", "ClassDeclaration"]);
+is.StringLiteral(node);           // also NumericLiteral, BooleanLiteral, NullLiteral,
+                                  // BigIntLiteral, and RegExpLiteral
+is.StaticMemberExpression(node);  // also ComputedMemberExpression and PrivateFieldExpression
+is.Directive(node);
+is.Wrapper(node);                 // parentheses or an erased TypeScript assertion
+unwrap(node);                     // the expression inside every wrapper
+
+isValidIdentifier("class");       // false, reserved
+isIdentifierName("class");        // true
+
+decodeJSXEntities("a &amp; b");   // "a & b"
+```
+
+It also has `isIdentifierStart`, `isIdentifierChar`, `isKeyword`, `isReservedWord`, `isStrictReservedWord`, and `isEvalOrArguments`.

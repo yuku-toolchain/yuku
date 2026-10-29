@@ -27,14 +27,29 @@ npm install yuku
 ```
 
 ```js
-import { parse, print } from "yuku";
+import { b, parse, print, walk } from "yuku";
 
-const file = parse(`const answer: number = 42;`, { path: "answer.ts" });
+const file = parse(`
+  const RATE = 0.2;
+  export const tax = (price: number) => price * RATE;
+  export const scale = (RATE: number) => RATE * 2;
+`, { path: "tax.ts", analyze: true });
 
-print(file, { strip: true }).code; // "const answer = 42;"
+const rate = file.rootScope.find("RATE");
+
+walk(file.program, {
+  Identifier(node, ctx) {
+    if (file.referenceOf(node)?.binding === rate) ctx.replace(b.Literal({ value: 0.2 }));
+  },
+});
+
+print(file, { strip: true }).code;
+// const RATE = 0.2;
+// export const tax = (price) => price * 0.2;
+// export const scale = (RATE) => RATE * 2;
 ```
 
-One import parses, analyzes, walks, builds, and prints JavaScript and TypeScript, in Node.js, Bun, Deno, browsers, and edge runtimes. See the [package guide](npm/yuku/README.md).
+One import parses, analyzes, walks, builds, and prints JavaScript and TypeScript, in Node.js, Bun, Deno, browsers, and edge runtimes. See the [JavaScript guide](https://yuku.fyi/javascript/).
 
 ## Zig
 

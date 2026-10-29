@@ -25,15 +25,9 @@
     <nav id="menu" class="centered">
       <a href="$site.page('').link()">Introduction</a>
       •
-      <a href="$site.page('parser').link()">Parser</a>
+      <a href="$site.page('javascript').link()" class="$page.link().startsWith('/javascript/').then('current', '')">JavaScript</a>
       •
-      <a href="$site.page('parser/ast').link()">AST</a>
-      •
-      <a href="$site.page('parser/semantic').link()">Semantic</a>
-      •
-      <a href="$site.page('parser/traverse').link()">Traverse</a>
-      •
-      <a href="$site.page('parser/codegen').link()">Codegen</a>
+      <a href="$site.page('parser').link()" class="$page.link().startsWith('/parser/').then('current', '')">Zig</a>
       •
       <a href="$site.page('testing').link()">Testing</a>
       •
@@ -45,8 +39,30 @@
       •
       <a href="/llms-full.txt" target="_blank">llms-full.txt</a>
     </nav>
-    <div id="content">
-      <super>
+    <div id="layout">
+      <ctx :if="$page.link().startsWith('/javascript/')">
+        <nav class="section-menu" aria-label="JavaScript">
+          <p class="section-menu-title">JavaScript</p>
+          <a href="$site.page('javascript').link()" class="$page.link().eql($site.page('javascript').link()).then('current', '')">Overview</a>
+          <a href="$site.page('javascript/parse').link()" class="$page.link().eql($site.page('javascript/parse').link()).then('current', '')">Parse</a>
+          <a href="$site.page('javascript/walk').link()" class="$page.link().eql($site.page('javascript/walk').link()).then('current', '')">Walk and build</a>
+          <a href="$site.page('javascript/semantic').link()" class="$page.link().eql($site.page('javascript/semantic').link()).then('current', '')">Semantic analysis</a>
+          <a href="$site.page('javascript/print').link()" class="$page.link().eql($site.page('javascript/print').link()).then('current', '')">Print</a>
+        </nav>
+      </ctx>
+      <ctx :if="$page.link().startsWith('/parser/')">
+        <nav class="section-menu" aria-label="Zig">
+          <p class="section-menu-title">Zig</p>
+          <a href="$site.page('parser').link()" class="$page.link().eql($site.page('parser').link()).then('current', '')">Parser</a>
+          <a href="$site.page('parser/ast').link()" class="$page.link().eql($site.page('parser/ast').link()).then('current', '')">AST</a>
+          <a href="$site.page('parser/semantic').link()" class="$page.link().eql($site.page('parser/semantic').link()).then('current', '')">Semantic</a>
+          <a href="$site.page('parser/traverse').link()" class="$page.link().eql($site.page('parser/traverse').link()).then('current', '')">Traverse</a>
+          <a href="$site.page('parser/codegen').link()" class="$page.link().eql($site.page('parser/codegen').link()).then('current', '')">Codegen</a>
+        </nav>
+      </ctx>
+      <div id="content">
+        <super>
+      </div>
     </div>
   </body>
 </html>

@@ -1,0 +1,37 @@
+---
+.title = "JavaScript",
+.description = "Use Yuku from JavaScript and TypeScript with the yuku package.",
+.author = "Arshad Yaseen",
+.date = @date("2026-10-29T00:00:00"),
+.layout = "page.shtml",
+---
+The `yuku` package parses, analyzes, walks, builds, and prints JavaScript and TypeScript, with no third-party dependencies. It runs natively where its addon for the platform installs, and as WebAssembly everywhere else.
+
+```bash
+npm install yuku
+```
+
+Cloudflare Workers and Vercel Edge run WebAssembly only from a file, so there also install `@yuku-toolchain/wasm`.
+
+```js
+import { b, parse, print, walk } from "yuku";
+
+const file = parse(`
+  const RATE = 0.2;
+  export const tax = (price: number) => price * RATE;
+  export const scale = (RATE: number) => RATE * 2;
+`, { path: "tax.ts", analyze: true });
+
+const rate = file.rootScope.find("RATE");
+
+walk(file.program, {
+  Identifier(node, ctx) {
+    if (file.referenceOf(node)?.binding === rate) ctx.replace(b.Literal({ value: 0.2 }));
+  },
+});
+
+print(file, { strip: true }).code;
+// const RATE = 0.2;
+// export const tax = (price) => price * 0.2;
+// export const scale = (RATE) => RATE * 2;
+```

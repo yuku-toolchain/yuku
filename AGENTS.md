@@ -283,8 +283,8 @@ CodSpeed measures every pull request against `main` in its CPU simulation mode, 
 
 ### Documentation
 
-- **One home, one guide beside its code.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents Yuku and its Zig API. The package's README, `npm/yuku/README.md`, documents the JavaScript API, which npm and GitHub show. Neither repeats the other, and each links to the other where they meet.
-- **Docs change with the API.** A change to a public API updates its guide in the same change, then `bun run docs:llms` regenerates `llms.txt` and `llms-full.txt` from both.
+- **One home.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents the JavaScript package and the Zig API, and each page links its counterpart in the other. The package's README, `npm/yuku/README.md`, is its front door on npm and GitHub: what it is, one example, and links to the guide.
+- **Docs change with the API.** A change to a public API updates its guide in the same change, then `bun run docs:llms` regenerates `llms.txt` and `llms-full.txt` from the site.
 - **Every example runs.** An example that states what it returns returns exactly that.
 
 ### Changes
