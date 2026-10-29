@@ -424,7 +424,7 @@ error: Lexical declaration cannot appear in a single-statement context
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1.1_E1
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -2313,7 +2313,7 @@ error: Rest parameter may not have a trailing comma
 error: Numeric separator is only allowed between two digits
    |
  1 | {1_}
-   |    ^
+   |   ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -2540,7 +2540,7 @@ error: Expected '(' after import, but found '.'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0xa_1_, 0
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -2783,7 +2783,7 @@ error: Unexpected token ';' in binding pattern
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_
-   |   ^
+   |  ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -3425,7 +3425,7 @@ error: Keywords cannot contain escape characters
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1_.1_1;
-   |     ^
+   |    ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -3796,7 +3796,7 @@ error: Invalid element in assignment pattern
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1_.1_1, 0
-   |     ^
+   |    ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -3971,7 +3971,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0b0_n;
-   |     ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -5010,7 +5010,7 @@ error: Expected '{' to start class body, but found '+'
 error: Numeric separator is only allowed between two digits
    |
  1 | {0b01_1_}
-   |         ^
+   |        ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -6659,7 +6659,7 @@ error: Unexpected token '...'
 error: Numeric separator is only allowed between two digits
    |
  1 | (1_1_.1_1)
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -6876,7 +6876,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric separator is only allowed between two digits
    |
  1 | (1_1.1_E1)
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -7674,7 +7674,7 @@ error: Shorthand property must be an identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | [1_1.1_e1]
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -8863,9 +8863,8 @@ error: Expected ')' to close parameter list, but found '='
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1_
-   |     ^
+   |    ^
  2 | 
-   | ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -9540,7 +9539,7 @@ error: Expected 'from' after export *, but found '{'
 error: Invalid character at start of identifier
    |
  1 | var _𖫵 = 11;
-   |      ^
+   |      ^^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -10659,7 +10658,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | 10._1
-   |   ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -12733,7 +12732,7 @@ error: 'for await' is only valid in async functions or modules
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1._1_1
-   |    ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -12934,9 +12933,8 @@ error: Classes may not have a static property named 'prototype'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0xa_1_
-   |       ^
+   |      ^
  2 | 
-   | ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -13828,7 +13826,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Numeric separator is only allowed between two digits
    |
  1 | (0b01_1_)
-   |         ^
+   |        ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -14468,7 +14466,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | 10._e1
-   |   ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -15028,7 +15026,7 @@ error: Rest element must be the last element
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_n;
-   |   ^
+   |  ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -16161,7 +16159,7 @@ error: 'catch' is reserved and cannot be used as an identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1._1_1;
-   |    ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -16327,7 +16325,7 @@ error: Invalid Unicode escape sequence
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1._1_1, 0
-   |    ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -16778,7 +16776,7 @@ error: Unexpected token ')'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0b01_1_, 0
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -16914,7 +16912,7 @@ error: A rest element cannot have an initializer
 error: Numeric separator is only allowed between two digits
    |
  1 | [0b01_1_]
-   |         ^
+   |        ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -18533,7 +18531,7 @@ error: Unexpected token '%'
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_, 0
-   |   ^
+   |  ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -18832,9 +18830,8 @@ error: Invalid Unicode escape sequence
 error: Numeric separator is only allowed between two digits
    |
  1 | 0x1_1_
-   |       ^
+   |      ^
  2 | 
-   | ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -20185,7 +20182,7 @@ error: 'export' is reserved and cannot be used as an identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | 10.0_e1
-   |      ^
+   |     ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -20528,7 +20525,7 @@ error: Rest parameter may not have a trailing comma
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1_, 0
-   |     ^
+   |    ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -20556,7 +20553,7 @@ error: Expected '{' to start class body, but found 'B'
 error: Numeric separator is only allowed between two digits
    |
  1 | (1_)
-   |    ^
+   |   ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -21394,7 +21391,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric separator is only allowed between two digits
    |
  1 | (1_1._1_1)
-   |     ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -21769,7 +21766,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Numeric separator is only allowed between two digits
    |
  1 | {0o1_1_}
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -23487,7 +23484,7 @@ error: Method cannot appear in destructuring pattern
 error: Numeric separator is only allowed between two digits
    |
  1 | 10._
-   |   ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -24432,7 +24429,7 @@ error: Expected '(' after import, but found ')'
 error: Numeric separator is only allowed between two digits
    |
  1 | {0x1_1_}
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -25233,7 +25230,7 @@ error: Keywords cannot contain escape characters
 error: Numeric separator is only allowed between two digits
    |
  1 | 0o01_8
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -26008,9 +26005,8 @@ error: 'const' declarations must be initialized
 error: Numeric separator is only allowed between two digits
    |
  1 | 0o1_1_
-   |       ^
+   |      ^
  2 | 
-   | ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -26341,7 +26337,7 @@ error: Expected 'while' after do statement body, but found 'var'
 error: Numeric separator is only allowed between two digits
    |
  1 | 10_
-   |    ^
+   |   ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -26535,7 +26531,7 @@ error: Expected ')' to close parameter list, but found '='
 error: Numeric separator is only allowed between two digits
    |
  1 | [1_]
-   |    ^
+   |   ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -27074,7 +27070,7 @@ error: A rest element cannot have an initializer
 error: Numeric separator is only allowed between two digits
    |
  1 | (0xa_1_)
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -28695,7 +28691,7 @@ error: Expected 'while' after do statement body, but found ';'
 error: Numeric separator is only allowed between two digits
    |
  1 | .0_e1
-   |    ^
+   |   ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -28782,7 +28778,7 @@ error: The only valid meta properties for 'import' are 'import.meta', 'import.so
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1.1_E1, 0
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -28803,7 +28799,7 @@ error: Rest element must be the last element
 error: Invalid character at start of identifier
    |
  1 | var 🀒
-   |     ^
+   |     ^^
  2 | 
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
@@ -28991,7 +28987,7 @@ error: Unexpected token '(' in binding pattern
 error: Numeric separator is only allowed between two digits
    |
  1 | 0b0_
-   |     ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -29570,7 +29566,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1.1_e1
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -29618,7 +29614,7 @@ error: Unexpected token ')'
 error: Numeric separator is only allowed between two digits
    |
  1 | {0xa_1_}
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -29995,7 +29991,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0xa_1_;
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -30098,7 +30094,7 @@ error: Lexical declaration cannot appear in a single-statement context
 error: Numeric separator is only allowed between two digits
    |
  1 | {1_1.1_E1}
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -30415,7 +30411,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0x0_
-   |     ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -30669,7 +30665,7 @@ error: Unexpected token ')'
 error: Numeric separator is only allowed between two digits
    |
  1 | [1_1._1_1]
-   |     ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -30849,7 +30845,7 @@ error: Member expression is not allowed in binding pattern
 error: Numeric separator is only allowed between two digits
    |
  1 | 10_n;
-   |    ^
+   |   ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -31584,7 +31580,7 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_;
-   |   ^
+   |  ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -31820,7 +31816,7 @@ error: 'extends' is reserved and cannot be used as an identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | 0o1_1_, 0
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -32862,7 +32858,7 @@ error: Numeric separator is only allowed between two digits
 error: Numeric separator is only allowed between two digits
    |
  1 | 0x1_1_;
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -33435,7 +33431,7 @@ error: Class declarations are not allowed in single-statement contexts
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1.1_e1, 0
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -34161,7 +34157,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | [0xa_1_]
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -34855,7 +34851,7 @@ error: Expected declaration after 'export', but found 'A'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0o0_
-   |     ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -34959,7 +34955,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator is only allowed between two digits
    |
  1 | 0b01_1_;
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -35140,7 +35136,7 @@ error: 'catch' is reserved and cannot be used as a binding identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1_.1_1
-   |     ^
+   |    ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -35602,9 +35598,8 @@ error: Expected '{' to start block statement, but found '('
 error: Numeric separator is only allowed between two digits
    |
  1 | 0b01_1_
-   |        ^
+   |       ^
  2 | 
-   | ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -35825,7 +35820,7 @@ error: 'break' is reserved and cannot be used as a binding identifier
 error: Numeric separator is only allowed between two digits
    |
  1 | (0x1_1_)
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -35861,7 +35856,7 @@ error: Identifier cannot immediately follow a numeric literal
 error: Numeric separator is only allowed between two digits
    |
  1 | [1_1_.1_1]
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -36041,7 +36036,7 @@ error: Classes may not have a static property named 'prototype'
 error: Numeric separator is only allowed between two digits
    |
  1 | [0x1_1_]
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -36414,7 +36409,7 @@ error: Unexpected token ']'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0o1_1_;
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -36923,7 +36918,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric separator is only allowed between two digits
    |
  1 | 0x0_n;
-   |     ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -36980,7 +36975,7 @@ error: Expected identifier or string literal, but found '%'
 error: Invalid character at start of identifier
    |
  1 | var 𫠞_ = 12;
-   |     ^
+   |     ^^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -37651,7 +37646,7 @@ error: Unexpected token '>'
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1_;
-   |     ^
+   |    ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -39983,7 +39978,7 @@ error: Unexpected token '...'
 error: Numeric separator is only allowed between two digits
    |
  1 | {1_1_}
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -40614,7 +40609,7 @@ error: Invalid element in assignment pattern
 error: Numeric separator is only allowed between two digits
    |
  1 | (1_1_)
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -41073,7 +41068,7 @@ error: Unexpected token ':'
 error: Numeric separator is only allowed between two digits
    |
  1 | 0x1_1_, 0
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -41260,7 +41255,7 @@ error: A rest element cannot have an initializer
 error: Numeric separator is only allowed between two digits
    |
  1 | (0o1_1_)
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -41822,7 +41817,7 @@ error: Rest element must be the last element
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1.1_E1;
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -42860,7 +42855,7 @@ error: Bad escape sequence in untagged template literal
 error: Numeric separator is only allowed between two digits
    |
  1 | [1_1_]
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -43435,7 +43430,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator is only allowed between two digits
    |
  1 | (1_1.1_e1)
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -43586,7 +43581,7 @@ error: Numeric literal cannot contain consecutive separators
 error: Numeric separator is only allowed between two digits
    |
  1 | {1_1._1_1}
-   |     ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -43747,7 +43742,7 @@ error: Rest element is not allowed in parenthesized expression
 error: Numeric separator is only allowed between two digits
    |
  1 | 0o0_n;
-   |     ^
+   |    ^
    |
    = help: Try placing the separator between two digits, or removing it
 
@@ -45043,7 +45038,7 @@ error: Rest element must be the last element
 error: Numeric separator is only allowed between two digits
    |
  1 | {1_1.1_e1}
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -46304,7 +46299,7 @@ error: Expected identifier or string literal, but found '%'
 error: Numeric separator is only allowed between two digits
    |
  1 | [0o1_1_]
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -47603,7 +47598,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator is only allowed between two digits
    |
  1 | 1_1.1_e1;
-   |       ^
+   |      ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -48545,7 +48540,7 @@ error: Rest element must be the last element
 error: Numeric separator is only allowed between two digits
    |
  1 | {1_1_.1_1}
-   |      ^
+   |     ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it
@@ -48642,7 +48637,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric separator is only allowed between two digits
    |
  1 | [1_1.1_E1]
-   |        ^
+   |       ^
  2 | 
    |
    = help: Try placing the separator between two digits, or removing it

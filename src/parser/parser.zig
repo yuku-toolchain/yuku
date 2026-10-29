@@ -5,6 +5,7 @@ const flagMask = @import("token.zig").flagMask;
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
 const spec = @import("spec");
+const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
 const grammar = @import("grammar.zig");
@@ -244,8 +245,15 @@ pub const Parser = struct {
     pub noinline fn reportLexicalError(self: *Parser, lex_err: lexer.LexicalError) Error!void {
         @branchHint(.cold);
         const cursor = self.lexer.cursor;
+        std.debug.assert(cursor <= self.source.len);
+        const width: u32 = if (cursor == self.source.len)
+            0
+        else if (util.Utf.codePointAt(self.source, cursor)) |code_point|
+            code_point.len
+        else |_|
+            1;
         try self.report(
-            .{ .start = cursor, .end = @min(cursor + 1, self.source.len) },
+            .{ .start = cursor, .end = cursor + width },
             lexer.getLexicalErrorMessage(lex_err),
             .{ .help = lexer.getLexicalErrorHelp(lex_err) },
         );

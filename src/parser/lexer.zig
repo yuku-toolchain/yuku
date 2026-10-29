@@ -980,11 +980,9 @@ pub const Lexer = struct {
         }
 
         if (tag == .numeric_literal and self.peek(0) == '.') {
-            const next = self.peek(1);
-            if (next == '_') return error.NumericSeparatorMisuse;
             self.cursor += 1;
             has_decimal_or_exponent = true;
-            if (std.ascii.isDigit(next)) try self.consumeDecimalDigits();
+            try self.consumeDecimalDigits();
         }
 
         if (tag == .numeric_literal) {
@@ -1013,21 +1011,25 @@ pub const Lexer = struct {
             return error.NumericSeparatorMisuse;
         }
 
-        var last_was_separator = false;
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (isValidDigit(c)) {
                 self.cursor += 1;
-                last_was_separator = false;
             } else if (c == '_') {
-                if (last_was_separator) return error.ConsecutiveNumericSeparators;
-                self.cursor += 1;
-                last_was_separator = true;
+                const next = self.peek(1);
+                if (isValidDigit(next)) {
+                    self.cursor += 1;
+                } else if (next == '_') {
+                    self.cursor += 1;
+                    return error.ConsecutiveNumericSeparators;
+                } else {
+                    return error.NumericSeparatorMisuse;
+                }
             } else {
                 break;
             }
         }
-        if (last_was_separator) return error.NumericSeparatorMisuse;
+        std.debug.assert(self.cursor == self.source.len or self.source[self.cursor] != '_');
     }
 
     inline fn consumeDecimalDigits(self: *Lexer) LexicalError!void {

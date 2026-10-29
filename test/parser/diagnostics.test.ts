@@ -36,8 +36,19 @@ describe("diagnostics", () => {
     expect(firstSpan("let x = 0o_7")).toEqual([10, 11]);
     expect(firstSpan("let x = 1__2")).toEqual([10, 11]);
     expect(firstSpan("let x = 3in")).toEqual([9, 10]);
-    expect(firstSpan("let x = 1_;")).toEqual([10, 11]);
-    expect(firstSpan("let x = 1._5")).toEqual([9, 10]);
+    expect(firstSpan("let x = 1_;")).toEqual([9, 10]);
+    expect(firstSpan("let x = 1._5")).toEqual([10, 11]);
+    expect(firstSpan("let x = 1_")).toEqual([9, 10]);
+    expect(firstSpan("let x = 0b1_")).toEqual([11, 12]);
+    expect(firstSpan("let x = 1_e5")).toEqual([9, 10]);
+    expect(firstSpan("let x = 1_.5")).toEqual([9, 10]);
+    expect(firstSpan("let x = 1e5_")).toEqual([11, 12]);
+  });
+
+  test("a lexical diagnostic covers the whole character it stops at", () => {
+    expect(firstSpan("const 😀 = 1")).toEqual([6, 8]);
+    expect(firstSpan("const ·a = 1")).toEqual([6, 7]);
+    expect(firstSpan("x = #😀")).toEqual([5, 7]);
   });
 
   test("a lexical diagnostic at the end of input is zero-width", () => {
