@@ -1,6 +1,6 @@
 test/parser/suite/jsx/fail
 ==========================
-Passed:       23/23 (100.00%)
+Passed:       25/25 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/jsx/fail/007be3029be81746.jsx
@@ -142,6 +142,16 @@ error: Expected '}' to close JSX expression, but found ','
    = help: Add '}' to close the expression
 
 
+✓ test/parser/suite/jsx/fail/a721641c67e949d3.jsx
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ({ x: (a) } = 1) => {};
+   |        ^
+ 2 | ({ x: [(a)] } = 1) => {};
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/jsx/fail/ab67a6eb1c134bbe.jsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -190,6 +200,16 @@ error: Unexpected '>' in JSX text
  2 | 
    |
    = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
+
+
+✓ test/parser/suite/jsx/fail/d9a8edb415a85cbe.jsx
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ({ x: ((a)) } = 1) => {};
+   |         ^
+ 2 | (x = { y: ((a)) } = 1, { z: (b) } = 1) => {};
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
 ✓ test/parser/suite/jsx/fail/daff53a98ac58ae5.jsx

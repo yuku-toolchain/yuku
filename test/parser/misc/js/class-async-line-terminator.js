@@ -21,3 +21,13 @@ class C {
   set
   qux(value) {}
 }
+
+// an escaped word never matches a modifier, so each is a field ended by the line break
+class D {
+  st\u0061tic
+  foo() {}
+  g\u0065t
+  bar() {}
+  s\u0065t
+  baz = 1
+}

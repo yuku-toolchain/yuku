@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       5093/5093 (100.00%)
+Passed:       5131/5131 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/00128c2237478f9e.js
@@ -87,6 +87,17 @@ error: Expected declaration after 'export', but found '%'
    |        ^
  2 | 
    |
+
+✓ test/parser/suite/js/fail/0078575f9dd3a67a.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   s\u0065t value(v) {}
+   |            ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/js/fail/007bd5ca51f3a13e.js
 error: Unexpected '=>'
@@ -1507,6 +1518,16 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
+✓ test/parser/suite/js/fail/072d0c16b88743b8.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async ([(a)] = 1, await) => {};
+   |         ^^^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/0743a7da60958e7f.module.js
 error: Unexpected token '>'
    |
@@ -1676,13 +1697,13 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/0807e0b76d1ff204.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'x'
    |
  1 | class X { se\u0074 x(value) {} }
-   |           ^^^^^^^^
+   |                    ^
  2 | 
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/08089bc2ffc4367e.js
@@ -2167,6 +2188,17 @@ error: Unexpected token ';'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/0acdb6cec788df74.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   a\u0073ync value() {}
+   |              ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/0ad462f9ab670f46.js
@@ -2711,6 +2743,17 @@ error: Unexpected token ',' as property key
    = help: Property keys must be identifiers, strings, numbers, or computed expressions [expr].
 
 
+✓ test/parser/suite/js/fail/0d5221b161efa14c.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   g\u0065t value() {}
+   |            ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/0d6fa5500896addb.js
 error: Unexpected token '='
    |
@@ -2822,6 +2865,16 @@ error: Unexpected token '>'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/0e21247a7653911a.module.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ([(a)] = 1, (b.c)) => { with (x) {} };
+   |    ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
 ✓ test/parser/suite/js/fail/0e2b6b3b5a2de0f7.js
@@ -3775,6 +3828,17 @@ error: 'do' is reserved and cannot be used as an identifier
    |         ^^
  2 |   if (foo()) { f() }
    |
+
+✓ test/parser/suite/js/fail/128c2180b3072270.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   static g\u0065t value() {}
+   |                   ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/js/fail/128c5608ff4001e8.js
 error: Bad escape sequence in untagged template literal
@@ -5272,6 +5336,17 @@ error: Expected declaration after 'export', but found '3'
  1 | export 3
    |        ^
    |
+
+✓ test/parser/suite/js/fail/1b25217cf7283784.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   static st\u0061tic value() {}
+   |                      ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/js/fail/1b2e164ac5015a12.js
 error: Member expression is not allowed in binding pattern
@@ -7642,13 +7717,13 @@ error: 'function' is reserved and cannot be used as a binding identifier
    |
 
 ✓ test/parser/suite/js/fail/2728ba6acd53df3b.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'x'
    |
  1 | class X { \u0061sync x() { await x } }
-   |           ^^^^^^^^^^
+   |                      ^
  2 | 
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/272a4582480c6a0a.module.js
@@ -7658,6 +7733,17 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |                     ^^^^
    |
    = help: Try inserting a semicolon here
+
+
+✓ test/parser/suite/js/fail/273bec34c2f7904a.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   static g\u0065t value() {}
+   |                   ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/274399459fc5be82.js
@@ -8231,6 +8317,16 @@ error: Unexpected token '>'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/29ec969165a59288.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | function* g() { ([(a)] = 1, b = yield) => {} }
+   |                    ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
 ✓ test/parser/suite/js/fail/29fb02620b662387.js
@@ -9683,6 +9779,16 @@ error: Classes may not have a static property named 'prototype'
  3 | };
    |
    = help: Remove 'static' or rename the property.
+
+
+✓ test/parser/suite/js/fail/30a443f14b849d53.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ((a.b) = 1) => {};
+   |   ^^^
+ 2 | ({ a: (b.c) = 1 }) => {};
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
 ✓ test/parser/suite/js/fail/30b2c4c1d3433f86.module.js
@@ -11553,6 +11659,17 @@ error: Expected '(' for getter/setter definition, but found ';'
    = help: Getters and setters require parentheses. Use 'get prop() {}' or 'set prop(value) {}' syntax.
 
 
+✓ test/parser/suite/js/fail/39a60a4e2d52a2fd.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   acc\u0065ssor value;
+   |                 ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/39a73049e910d1c6.js
 error: 'typeof' is reserved and cannot be used as an identifier
    |
@@ -11881,6 +11998,16 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/3b297c318b6b868d.js
+error: Binary literal must contain at least one binary digit
+   |
+ 1 | 0b2111111111111111111111111111111111111111111111111111111111111;
+   |   ^
+ 2 | 0b1111111111111111111111111111111111111111111111111111111111112;
+   |
+   = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
 
 ✓ test/parser/suite/js/fail/3b2deda47f1df949.js
@@ -12530,6 +12657,17 @@ error: Invalid character at start of identifier
  3 | };
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
+
+
+✓ test/parser/suite/js/fail/3f3c60825186ee6e.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   static s\u0065t value(v) {}
+   |                   ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/3f49f2624386d860.js
@@ -13887,14 +14025,14 @@ error: Shorthand property cannot have a default value in object expression
 
 
 ✓ test/parser/suite/js/fail/479ee04ad2263a3e.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'm'
    |
  1 | class C {
  2 |     \u0061sync m(){}
-   |     ^^^^^^^^^^
+   |                ^
  3 | };
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/47a7d5091c94a47e.js
@@ -14541,6 +14679,17 @@ error: Bad escape sequence in untagged template literal
  1 | `\u{110000}`
    |  ^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/4b4fb8cb1b78dd53.js
+error: Unexpected token ')'
+   |
+ 1 | async function f() { (x = y = await 1) => {}; }
+ 2 | async (x = y = await) => {};
+   |                     ^
+ 3 | async ({ x = y = await }) => {};
+   |
+   = help: Expected an expression
+
 
 ✓ test/parser/suite/js/fail/4b530b153d486a53.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -16247,6 +16396,16 @@ error: Constructor cannot be a generator
    = help: Remove the '*' from the constructor.
 
 
+✓ test/parser/suite/js/fail/53b654fcf39c1fad.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ((a) = 1) => {};
+   |   ^
+ 2 | ([((a))] = 1) => {};
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/53c391a94c55ee4d.module.js
 error: Expected declaration after 'export', but found 'await'
    |
@@ -17257,13 +17416,13 @@ error: Unexpected token '>'
 
 
 ✓ test/parser/suite/js/fail/5995083b6920e86d.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'x'
    |
  1 | class X { static \u0061sync x() { await x } }
-   |                  ^^^^^^^^^^
+   |                             ^
  2 | 
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/5995f93582b8bd22.js
@@ -19238,6 +19397,17 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/63bc4fc4744dc683.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   static st\u0061tic value() {}
+   |                      ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/63c22e09115354f0.js
 error: Keywords cannot contain escape characters
    |
@@ -19428,6 +19598,16 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    |  ^^^^^^^^^^^^
    |
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
+
+
+✓ test/parser/suite/js/fail/64b463143e82da6f.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | function* g() { ([(a)] = yield) => {} }
+   |                    ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
 ✓ test/parser/suite/js/fail/64ca9b312bd948c8.js
@@ -19811,6 +19991,17 @@ error: 'true' is reserved and cannot be used as a binding identifier
    |     ^^^^^^^^^
    |
 
+✓ test/parser/suite/js/fail/66c17ed77ba9acf6.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   st\u0061tic value() {}
+   |               ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/66d306787b9a04f7.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'do'
    |
@@ -20121,6 +20312,17 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/68459577a1a1e355.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   static acc\u0065ssor value;
+   |                        ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/6856c5a3a26b5a3f.js
@@ -21027,6 +21229,16 @@ error: Unexpected token '>'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/6d01f07f0237c8b2.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async function f() { ([(a)] = await 1) => {} }
+   |                         ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/6d1042213be1515f.module.js
 error: Expected declaration after 'export', but found 'name'
    |
@@ -21244,6 +21456,17 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/6e514ffae383874c.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   static a\u0073ync value() {}
+   |                     ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/6e59136e6456bf0d.js
@@ -23803,13 +24026,13 @@ error: Classes may not have a static field named 'constructor'
 
 
 ✓ test/parser/suite/js/fail/7b130c273e02b6d4.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'x'
    |
  1 | class X { ge\u0074 x() {} }
-   |           ^^^^^^^^
+   |                    ^
  2 | 
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/7b36e3a116eb39f5.js
@@ -25722,6 +25945,17 @@ error: Expected ')' after for-in expression, but found ';'
  3 |     break;
    |
 
+✓ test/parser/suite/js/fail/85aae0f15d1a5463.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   st\u0061tic value() {}
+   |               ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/85ab51571417026e.js
 error: 'const' declarations must be initialized
    |
@@ -27201,6 +27435,17 @@ error: Rest element cannot have a trailing comma in object destructuring.
    = help: Remove the trailing comma after the rest element
 
 
+✓ test/parser/suite/js/fail/8cc7a8f89075f153.js
+error: Unexpected token '@' in binding pattern
+   |
+ 1 | class A {
+ 2 |   m(@dec((a) = 1) x, @dec([(a)] = 1) y) {}
+   |     ^
+ 3 |   constructor(@dec({ b: (a) } = 1) x) {}
+   |
+   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
+
+
 ✓ test/parser/suite/js/fail/8ccb602a2195e007.js
 error: A rest element cannot have an initializer
    |
@@ -28210,14 +28455,14 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/92df18e521399045.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found '*'
    |
  1 | class C {
  2 |     \u0061sync* m(){}
-   |     ^^^^^^^^^^
+   |               ^
  3 | };
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/92dfbd6c58d2c61f.js
@@ -31437,6 +31682,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
+✓ test/parser/suite/js/fail/a39915de9db964e2.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async function f() { ([(a)] = 1, b = await 1) => {} }
+   |                         ^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/a39be920807be551.js
 error: 'default' is reserved and cannot be used as a binding identifier
    |
@@ -31512,6 +31767,17 @@ error: Unexpected token '...'
  3 | };
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/a3e160095e8d17da.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   static acc\u0065ssor value;
+   |                        ^^^^^
+18 | };
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/a3ec3739bb2f89ad.js
@@ -32815,6 +33081,17 @@ error: Shorthand property cannot have a default value in object expression
    = help: Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.
 
 
+✓ test/parser/suite/js/fail/ab1c45fe0728aa07.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   static s\u0065t value(v) {}
+   |                   ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/ab32d1e17a7981cf.js
 error: Invalid character at start of identifier
    |
@@ -33194,6 +33471,16 @@ error: Expected 'from' after import clause, but found ','
  2 | 
    |
    = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+
+
+✓ test/parser/suite/js/fail/ad04b4586c99d787.js
+error: Parenthesized expression in assignment pattern must be a simple assignment target
+   |
+ 1 | [([a]) = 1] = 2;
+   |   ^^^
+ 2 | ({ x: ({ a }) = 1 } = 2);
+   |
+   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
 ✓ test/parser/suite/js/fail/ad285a850f006c3b.js
@@ -35920,6 +36207,17 @@ error: 'enum' is reserved and cannot be used as an imported binding
    |               ^^^^
    |
 
+✓ test/parser/suite/js/fail/bae3d46d645fd3e7.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   a\u0073ync value() {}
+   |              ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
+
 ✓ test/parser/suite/js/fail/bb08caaf6b68f327.js
 error: Unexpected token '='
    |
@@ -36278,6 +36576,17 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
+
+
+✓ test/parser/suite/js/fail/bcb8a33a79a6daca.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   static a\u0073ync value() {}
+   |                     ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/bcbee99b80cd5e77.js
@@ -37364,6 +37673,16 @@ error: Invalid Unicode escape sequence
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
 
+✓ test/parser/suite/js/fail/c294b068098ab5bf.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | async ([(a)] = await) => {};
+   |         ^^^
+ 2 | 
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/c2979167dd76ed7f.js
 error: Expected ')' after function arguments, but found 'new'
    |
@@ -37572,6 +37891,17 @@ error: Shorthand property must be an identifier
    |       ^^^
    |
    = help: String and numeric keys require explicit ': value' syntax.
+
+
+✓ test/parser/suite/js/fail/c469de47962c7339.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   s\u0065t value(v) {}
+   |            ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/c473ffb7c354496e.js
@@ -40635,6 +40965,17 @@ error: 'return' statement is only valid inside a function
    = help: Remove the 'return' statement or wrap the code in a function.
 
 
+✓ test/parser/suite/js/fail/d4c98c3409c0e222.js
+error: Unexpected token '@' in binding pattern
+   |
+ 1 | class A {
+ 2 |   m(@dec((a) = 1) x) {}
+   |     ^
+ 3 |   constructor(@(dec([(a)] = 1)) x) {}
+   |
+   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
+
+
 ✓ test/parser/suite/js/fail/d4cf8ae9018f6a28.js
 error: Invalid character at start of identifier
    |
@@ -41488,6 +41829,16 @@ error: Expected an identifier, but found 'end of file'
    = help: Identifiers must start with a letter, underscore (_), or dollar sign ($)
 
 
+✓ test/parser/suite/js/fail/d9434224ce3a8f36.module.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ((a)) => { with (x) {} };
+   |  ^^^
+ 2 | ([(a)] = 1) => { with (x) {} };
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
+
 ✓ test/parser/suite/js/fail/d96efa5dad3d39ac.js
 error: Numeric literal cannot contain consecutive separators
    |
@@ -41937,6 +42288,17 @@ error: 'extends' is reserved and cannot be used as an identifier
  1 | var x = { \u{65}xtends } = { extends: 42 };
    |           ^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/dc347292782bc829.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | class C {
+17 |   g\u0065t value() {}
+   |            ^^^^^
+18 | }
+   |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/js/fail/dc387b1efb227908.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -42955,6 +43317,16 @@ error: Expected an identifier, but found '%'
  2 | 
    |
    = help: Identifiers must start with a letter, underscore (_), or dollar sign ($)
+
+
+✓ test/parser/suite/js/fail/e18fb5c63b5efea8.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | ((a) = (b) = 1) => {};
+   |   ^
+ 2 | ([(a)] = [(b)] = 1) => {};
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
 
 
 ✓ test/parser/suite/js/fail/e1c60b6b9307cc64.js
@@ -44061,13 +44433,13 @@ error: Async functions can only be declared at the top level or inside a block
    |
 
 ✓ test/parser/suite/js/fail/e834f814b6496422.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'y'
    |
  1 | class X { st\u0061tic y() {} }
-   |           ^^^^^^^^^^^
+   |                       ^
  2 | 
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/e85b44c66ad38bbf.module.js
@@ -44874,14 +45246,14 @@ error: Expected an identifier, but found '/'
 
 
 ✓ test/parser/suite/js/fail/ec35b2f7cf5c7bbe.js
-error: Keywords cannot contain escape characters
+error: Expected ';' after class field, but found 'm'
    |
  1 | class C {
  2 |   st\u0061tic m() {}
-   |   ^^^^^^^^^^^
+   |               ^
  3 | }
    |
-   = help: Remove the escape characters
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/ec455ea8d45c52e0.js
@@ -47175,6 +47547,16 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/f84cc13f65207491.js
+error: Unexpected token '%'
+   |
+ 1 | ((%%a%%)) => {};
+   |   ^
+ 2 | ((%%a%%) = 1) => {};
+   |
+   = help: Expected an expression
+
+
 ✓ test/parser/suite/js/fail/f84fed08148439a1.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -47239,6 +47621,16 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  1 | ({ *method(yield) {} });
    |            ^^^^^
    |
+
+✓ test/parser/suite/js/fail/f8a172bca5c3b066.js
+error: Parentheses are not allowed in this binding pattern
+   |
+ 1 | (((a) = 1)) => {};
+   |  ^^^^^^^^^
+ 2 | ((([a]) = 1)) => {};
+   |
+   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+
 
 ✓ test/parser/suite/js/fail/f8b20220d8c85d71.js
 error: Invalid Unicode escape sequence
@@ -48742,6 +49134,17 @@ error: Unexpected token '>'
  2 | 
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/ffd4ca7243a0a494.js
+error: Expected ';' after class field, but found 'value'
+   |
+16 | var C = class {
+17 |   acc\u0065ssor value;
+   |                 ^^^^^
+18 | };
+   |
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/js/fail/ffe27e4c2cce5fa6.js

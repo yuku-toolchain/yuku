@@ -385,7 +385,6 @@ const Modifiers = struct {
     }
 };
 
-// a modifier word becomes the key when what follows cannot continue a modifier
 fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
     while (isModifier(parser.current_token.tag, parser.tree.isTs())) {
         const token = parser.current_token;
@@ -396,14 +395,14 @@ fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
             (token.tag == .get or token.tag == .set);
 
         const is_modifier =
+            !token.isEscaped() and
             canStartElementKey(next.tag) and
             !accessor_before_star and
             !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
             !modifiers.conflicts(token.tag);
         if (!is_modifier) return try literals.parseIdentifierName(parser) orelse .null;
 
-        try parser.reportIfEscapedKeyword(token);
-        try parser.advanceWithoutEscapeCheck() orelse return .null;
+        try parser.advance() orelse return .null;
         modifiers.set(token.tag);
     }
     return .null;

@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4196/4196 (100.00%)
+Passed:       4197/4197 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
@@ -14338,6 +14338,14 @@ error: Cannot use import statement outside a module
  1 | import "./setup_FIXTURE.js";
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | import defer * as ns from "./dep_FIXTURE.js";
+   |
+
+✓ test/parser/suite/js/semantic/5b4ef59cad9d4472.js
+error: Yield expression is not allowed in formal parameters
+   |
+ 1 | function* g() { (x = y = yield) => {}; }
+   |                          ^^^^^
+ 2 | function* h() { ([x = y = yield]) => {}; }
    |
 
 ✓ test/parser/suite/js/semantic/5b4f64c39159ef7d.js
