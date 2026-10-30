@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       281/281 (100.00%)
+Passed:       283/283 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -1362,6 +1362,16 @@ error: Deleting a variable in strict mode is not allowed
  4 | delete a;
    | ^^^^^^^^
    |
+
+✓ test/parser/suite/ts/semantic/70d5dab33d86d6e6.module.ts
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | let x: -01;
+   |         ^^
+ 2 | 
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✓ test/parser/suite/ts/semantic/71dd2dab092de1a4.module.ts
 error: Duplicate export of 'default'
@@ -2853,6 +2863,16 @@ error: A switch statement can only have one default clause
    |         ^^^^^^^^
 10 |         default:    // Error; third 'default' clause.
    |
+
+✓ test/parser/suite/ts/semantic/e4525a3220379c0a.module.ts
+error: Decimals with leading zeros are not allowed in strict mode
+   |
+ 1 | x as -08;
+   |       ^^
+ 2 | 
+   |
+   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
+
 
 ✓ test/parser/suite/ts/semantic/e4baed4d8736db28.module.ts
 error: 'public' is reserved in strict mode and cannot be used as a binding identifier

@@ -229,7 +229,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.inTypePosition() or !isStrict(ctx)) return .proceed;
+        if (!isStrict(ctx)) return .proceed;
 
         const span = ctx.tree.span(node_index);
         if (spec.escapes.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
@@ -248,7 +248,7 @@ pub const Checker = struct {
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.inTypePosition() or !isStrict(ctx)) return .proceed;
+        if (!isStrict(ctx)) return .proceed;
 
         const span = ctx.tree.span(node_index);
         const raw = ctx.tree.source[span.start..span.end];

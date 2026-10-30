@@ -1,8 +1,8 @@
 test/parser/misc/ts
 ===================
-Passed:       108/108 (100.00%)
+Passed:       109/109 (100.00%)
 Failed:       0
-AST mismatch: 0/108
+AST mismatch: 0/109
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
 error: Constructor cannot be abstract
@@ -282,6 +282,17 @@ error: An instantiation expression cannot be followed by a property access
 
 
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
+✓ test/parser/misc/ts/legacy-octal-literal-types.module.ts
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | // strict code rejects legacy octal numbers and escapes in types too, as tsc does
+ 2 | type Octal = 01;
+   |              ^^
+ 3 | type NegativeOctal = -01;
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/misc/ts/lookahead-keyword-lexical-error.ts
 error: Identifier cannot immediately follow a numeric literal
    |
