@@ -212,7 +212,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 23,
       "end": 24,
@@ -228,11 +228,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'b' has already been declared",
+      "message": "Duplicate identifier 'b'",
       "path": null,
       "start": 53,
       "end": 54,
@@ -248,11 +248,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'b'"
+      "help": "Rename or remove this declaration of 'b'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'c' has already been declared",
+      "message": "Duplicate identifier 'c'",
       "path": null,
       "start": 84,
       "end": 85,
@@ -268,11 +268,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'c'"
+      "help": "Rename or remove this declaration of 'c'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'd' has already been declared",
+      "message": "Duplicate identifier 'd'",
       "path": null,
       "start": 121,
       "end": 122,
@@ -288,7 +288,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'd'"
+      "help": "Rename or remove this declaration of 'd'"
     }
   ]
 }

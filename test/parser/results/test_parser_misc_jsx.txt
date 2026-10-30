@@ -5,7 +5,7 @@ Failed:       0
 AST mismatch: 0/5
 
 ✓ test/parser/misc/jsx/closing-tag-name-spacing.jsx
-error: Expected closing tag for '<a.b>' but found '</a.c>'
+error: Expected corresponding JSX closing tag for '<a.b>', but found '</a.c>'
    |
  7 | 
  8 | let a = <a.b></a.c>;
@@ -13,7 +13,7 @@ error: Expected closing tag for '<a.b>' but found '</a.c>'
    |          ~~~ opening tag
  9 | let b = <a.b.c></a.c.b>;
    |
-   = help: JSX opening and closing tags must have matching names
+   = help: Rename the closing tag to '</a.b>'
 
 
 ✓ test/parser/misc/jsx/entities.jsx

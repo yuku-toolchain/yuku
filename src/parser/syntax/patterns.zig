@@ -19,14 +19,10 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
         .left_bracket => parseArrayPattern(parser),
         .left_brace => parseObjectPattern(parser),
         else => {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
-                try parser.fmt(
-                    "Unexpected token '{s}' in binding pattern",
-                    .{parser.describeToken(parser.current_token)},
-                ),
-                .{ .help = "Expected an identifier, array pattern ([a, b])," ++
-                    " or object pattern ({a, b})." },
+                "Expected an identifier or a destructuring pattern",
+                .{},
             );
             return null;
         },

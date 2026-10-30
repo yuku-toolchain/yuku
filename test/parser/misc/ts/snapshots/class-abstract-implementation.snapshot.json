@@ -749,12 +749,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "An abstract method cannot have an implementation",
+      "message": "Method 'method' cannot have an implementation because it is marked abstract",
       "path": null,
       "start": 243,
       "end": 245,
       "labels": [],
-      "help": "Remove the body, or drop the 'abstract' modifier."
+      "help": "Remove the body, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
@@ -763,7 +763,7 @@
       "start": 270,
       "end": 272,
       "labels": [],
-      "help": "Remove the body, or drop the 'abstract' modifier."
+      "help": "Remove the body, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
@@ -772,70 +772,70 @@
       "start": 302,
       "end": 304,
       "labels": [],
-      "help": "Remove the body, or drop the 'abstract' modifier."
+      "help": "Remove the body, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
-      "message": "An abstract method cannot have an implementation",
+      "message": "Method 'generator' cannot have an implementation because it is marked abstract",
       "path": null,
       "start": 329,
       "end": 331,
       "labels": [],
-      "help": "Remove the body, or drop the 'abstract' modifier."
+      "help": "Remove the body, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
-      "message": "An abstract method cannot have an implementation",
+      "message": "Method 'asyncMethod' cannot have an implementation because it is marked abstract",
       "path": null,
       "start": 363,
       "end": 365,
       "labels": [],
-      "help": "Remove the body, or drop the 'abstract' modifier."
+      "help": "Remove the body, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
-      "message": "Constructor cannot be abstract",
+      "message": "'abstract' modifier cannot appear on a constructor declaration",
       "path": null,
       "start": 417,
       "end": 428,
       "labels": [],
-      "help": "Remove the 'abstract' modifier. Only methods and properties can be abstract."
+      "help": "Remove 'abstract'"
     },
     {
       "severity": "error",
-      "message": "Constructor cannot be abstract",
+      "message": "'abstract' modifier cannot appear on a constructor declaration",
       "path": null,
       "start": 491,
       "end": 502,
       "labels": [],
-      "help": "Remove the 'abstract' modifier. Only methods and properties can be abstract."
+      "help": "Remove 'abstract'"
     },
     {
       "severity": "error",
-      "message": "An abstract property cannot have an initializer",
+      "message": "Property 'property' cannot have an initializer because it is marked abstract",
       "path": null,
       "start": 566,
       "end": 567,
       "labels": [],
-      "help": "Remove the initializer, or drop the 'abstract' modifier."
+      "help": "Remove the initializer, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
-      "message": "An abstract property cannot have an initializer",
+      "message": "Property 'annotated' cannot have an initializer because it is marked abstract",
       "path": null,
       "start": 600,
       "end": 601,
       "labels": [],
-      "help": "Remove the initializer, or drop the 'abstract' modifier."
+      "help": "Remove the initializer, or remove the 'abstract' modifier"
     },
     {
       "severity": "error",
-      "message": "An abstract property cannot have an initializer",
+      "message": "Property 'auto' cannot have an initializer because it is marked abstract",
       "path": null,
       "start": 630,
       "end": 631,
       "labels": [],
-      "help": "Remove the initializer, or drop the 'abstract' modifier."
+      "help": "Remove the initializer, or remove the 'abstract' modifier"
     }
   ]
 }

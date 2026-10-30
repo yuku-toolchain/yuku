@@ -93,7 +93,7 @@
       "start": 30,
       "end": 39,
       "labels": [],
-      "help": "Remove the escape characters"
+      "help": "Write the keyword without escapes"
     }
   ]
 }

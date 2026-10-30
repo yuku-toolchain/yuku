@@ -67,8 +67,11 @@ pub fn parseVariableDeclaration(
 
         try parser.report(
             span,
-            "Lexical declaration cannot appear in a single-statement context",
-            .{ .help = "Wrap this declaration in a block statement" },
+            try parser.fmt(
+                "'{s}' declarations can only be declared inside a block",
+                .{kind.toString()},
+            ),
+            .{ .help = "Wrap the declaration in a block" },
         );
     }
 
@@ -114,7 +117,11 @@ pub fn parseVariableDeclarator(
     const is_destructuring = patterns.isDestructuringPattern(parser, id);
 
     if (is_using and is_destructuring) {
-        try parser.report(id_span, "Using declaration cannot have destructuring patterns.", .{});
+        try parser.report(
+            id_span,
+            try parser.fmt("'{s}' declarations may not have binding patterns", .{kind.toString()}),
+            .{},
+        );
     }
 
     if (parser.current_token.tag == .assign) {
@@ -133,23 +140,20 @@ pub fn parseVariableDeclarator(
             if (is_destructuring) {
                 try parser.report(
                     id_span,
-                    "Destructuring declaration must have an initializer",
-                    .{ .help = "Add '= value' to provide the object or array to" ++
-                        " destructure from." },
+                    "A destructuring declaration must have an initializer",
+                    .{ .help = "Add an initializer with the value to destructure" },
                 );
             } else if (kind == .@"const") {
                 try parser.report(
                     id_span,
                     "'const' declarations must be initialized",
-                    .{ .help = "Add '= value' to initialize the constant, or use 'let' if" ++
-                        " you need to assign it later." },
+                    .{ .help = "Add an initializer, or use 'let' to assign the value later" },
                 );
             } else if (is_using) {
                 try parser.report(
                     id_span,
                     try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
-                    .{ .help = "Disposable resources require an initial value that" ++
-                        " implements the dispose protocol." },
+                    .{ .help = "Add an initializer with the resource to dispose" },
                 );
             }
         },

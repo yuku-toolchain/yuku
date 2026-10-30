@@ -92,7 +92,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'A' has already been declared",
+      "message": "Duplicate identifier 'A'",
       "path": null,
       "start": 20,
       "end": 21,
@@ -108,11 +108,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A'"
+      "help": "Rename or remove this declaration of 'A'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'B' has already been declared",
+      "message": "Duplicate identifier 'B'",
       "path": null,
       "start": 50,
       "end": 51,
@@ -128,7 +128,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'B'"
+      "help": "Rename or remove this declaration of 'B'"
     }
   ]
 }

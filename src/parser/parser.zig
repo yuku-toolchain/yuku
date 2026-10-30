@@ -211,9 +211,11 @@ pub const Parser = struct {
         return try self.tree.addString(self.scratch_string.items);
     }
 
-    pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
+    pub fn describeToken(self: *Parser, token: Token) Error![]const u8 {
         if (token.tag == .eof) return "end of file";
-        return token.tag.toString() orelse token.text(self.source);
+        const text = token.tag.toString() orelse token.text(self.source);
+        if (text.len > 0 and (text[0] == '\'' or text[0] == '"' or text[0] == '`')) return text;
+        return self.fmt("'{s}'", .{text});
     }
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
@@ -280,7 +282,7 @@ pub const Parser = struct {
     pub noinline fn reportEscapedKeyword(self: *Parser, span: ast.Span) Error!void {
         @branchHint(.cold);
         try self.report(span, "Keywords cannot contain escape characters", .{
-            .help = "Remove the escape characters",
+            .help = "Write the keyword without escapes",
         });
     }
 
@@ -408,11 +410,9 @@ pub const Parser = struct {
             return semicolon_end;
         }
         if (self.canInsertImplicitSemicolon(self.current_token)) return end;
-        try self.reportExpected(
-            self.current_token.span,
-            "Expected a semicolon or an implicit semicolon after a statement",
-            .{ .help = "Try inserting a semicolon here" },
-        );
+        try self.reportExpected(self.current_token.span, "Expected ';' after the statement", .{
+            .help = "Add ';' or a line break before it",
+        });
         return null;
     }
 
@@ -466,9 +466,9 @@ pub const Parser = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Error!void {
-        const expected_message = try self.fmt("{s}, but found '{s}'", .{
+        const expected_message = try self.fmt("{s}, but found {s}", .{
             message,
-            self.describeToken(self.current_token),
+            try self.describeToken(self.current_token),
         });
         try self.report(span, expected_message, opts);
     }

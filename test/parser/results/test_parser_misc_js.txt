@@ -6,18 +6,18 @@ AST mismatch: 0/80
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/arrow-parameter-parenthesized-with-computed-key.js
-error: Parentheses are not allowed in this binding pattern
+error: Parentheses are not allowed in binding patterns
    |
  3 | 
  4 | ([(a)] = x, {[(c) = 1]: d}) => 0;
    |    ^
  5 | 
    |
-   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+   = help: Remove the parentheses
 
 
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
-error: Unexpected '=>'
+error: Unexpected token '=>'
    |
  1 | const testVariable = async
    |                      ^^^^^
@@ -25,12 +25,12 @@ error: Unexpected '=>'
    | ^^
  3 | 
    |
-   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+   = help: An arrow function takes an identifier or a parenthesized parameter list
 
 
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-2.js
 ✓ test/parser/misc/js/async-call-await-identifier.js
-error: 'await' is reserved in an async/module context and cannot be used as an identifier
+error: 'await' is a reserved word in async functions and modules and cannot be used as an identifier
    |
  7 | 
  8 | async({await}) => 1;
@@ -48,13 +48,13 @@ error: Keywords cannot contain escape characters
    |     ^^^^^^^^^^
  2 | class C extends as\u0079nc function(){} {}
    |
-   = help: Remove the escape characters
+   = help: Write the keyword without escapes
 
 
 ✓ test/parser/misc/js/async-function-line-terminator-1.js
 ✓ test/parser/misc/js/async-function-line-terminator-2.js
 ✓ test/parser/misc/js/async-function-reserved-binding.js
-error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+error: 'await' is a reserved word in async functions and modules and cannot be used as a binding identifier
    |
  1 | new async function(await){};
    |                    ^^^^^
@@ -63,37 +63,37 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 
 ✓ test/parser/misc/js/async-function.js
 ✓ test/parser/misc/js/await-exponentiation-left.module.js
-error: The left-hand side of '**' cannot be an unparenthesized await expression
+error: An 'await' expression is not allowed in the left-hand side of an exponentiation expression
    |
  1 | await promise ** 2;
    | ^^^^^^^^^^^^^
  2 | 
    |
-   = help: Add parentheses to make precedence explicit, for example `(await x) ** y`.
+   = help: Add parentheses to make the precedence explicit, such as '(await x) ** y'
 
 
 ✓ test/parser/misc/js/await-expression-in-non-async-arrow-function.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'promise'
+error: Expected ';' after the statement, but found 'promise'
    |
  1 | const execute = (promise) => {
  2 |   await promise;
    |         ^^^^^^^
  3 | };
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/misc/js/await-id-in-non-async-arrow-function.js
 ✓ test/parser/misc/js/await-using-contexts.js
 ✓ test/parser/misc/js/await-using-lexical-error.module.js
-error: Identifier cannot immediately follow a numeric literal
+error: An identifier or keyword cannot immediately follow a numeric literal
    |
  2 | 
  3 | await using 1x;
    |              ^
  4 | 
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Add a space between the number and the identifier
 
 
 ✓ test/parser/misc/js/bigint-class-property-key.js
@@ -102,61 +102,51 @@ error: Identifier cannot immediately follow a numeric literal
 ✓ test/parser/misc/js/class-accessor-modifier-names.js
 ✓ test/parser/misc/js/class-async-line-terminator.js
 ✓ test/parser/misc/js/class-extends-async-arrow-function-1.js
-error: Expected '{' to start class body, but found '=>'
+error: Expected '{' to start the class body, but found '=>'
    |
  1 | class C extends async () => {} {}
    |                          ^^
  2 | 
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/misc/js/class-extends-async-arrow-function-2.js
-error: Expected '{' to start class body, but found 'x'
+error: Expected '{' to start the class body, but found 'x'
    |
  1 | class C extends async x => x {}
    |                       ^
  2 | 
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/misc/js/class-extends-async-function-line-terminator-1.js
-error: Expected '{' to start class body, but found 'function'
+error: Expected '{' to start the class body, but found 'function'
    |
  1 | class C extends async
  2 | function(){} {}
    | ^^^^^^^^
  3 | 
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/misc/js/class-extends-async-function-line-terminator-2.js
-error: Expected '{' to start class body, but found 'function'
+error: Expected '{' to start the class body, but found 'function'
    |
  1 | class C extends async /*
  2 | */ function(){} {}
    |    ^^^^^^^^
  3 | 
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/misc/js/class-extends-async-function.js
 ✓ test/parser/misc/js/class-extends-simple-arrow-function.js
-error: Expected '{' to start class body, but found '=>'
+error: Expected '{' to start the class body, but found '=>'
    |
  1 | var C = class extends async => {} {
    |                             ^^
  2 | };
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/misc/js/class-field-await-allowed-positions.module.js
 ✓ test/parser/misc/js/class-field-await-module.module.js
-error: 'await' is reserved in an async/module context and cannot be used as an identifier
+error: 'await' is a reserved word in async functions and modules and cannot be used as an identifier
    |
  1 | export default class C {
  2 |   x = await + 1;
@@ -175,11 +165,11 @@ error: Decorators may not appear after 'export' or 'export default' if they also
    |           ^^
  2 | @c export default @d class D {}
    |
-   = help: Keep the decorators on one side of 'export'.
+   = help: Keep the decorators on one side of 'export'
 
 
 ✓ test/parser/misc/js/decorated-export-non-class.module.js
-error: Expected 'class' keyword, but found 'const'
+error: Expected 'class' after the decorators, but found 'const'
    |
  1 | @a export const x = 1;
    |           ^^^^^
@@ -191,26 +181,28 @@ error: Expected 'class' keyword, but found 'const'
 ✓ test/parser/misc/js/escaped-dollar-underscore-identifier.js
 ✓ test/parser/misc/js/export-default-async-linebreak.module.js
 ✓ test/parser/misc/js/export-default-using.module.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'resource'
+error: Expected ';' after the statement, but found 'resource'
    |
  1 | export default using resource = Bun;
    |                      ^^^^^^^^
  2 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/misc/js/for-await-errors.module.js
-error: 'for await' is only valid with for-of loops
+error: Expected 'of' in the 'for await' loop, but found ';'
    |
  1 | async function f() {
  2 |   for await (;;) {}
    |              ^
  3 |   for await (x in y) {}
    |
+   = help: 'for await' only works with 'for...of' loops
+
 
 ✓ test/parser/misc/js/for-head-in-operator.js
-error: The left-hand side of a for-in/of statement cannot be an assignment
+error: The left-hand side of a 'for...in' statement must be a variable or a property access
    |
 12 | 
 13 | for (x = a in b;;);
@@ -219,29 +211,29 @@ error: The left-hand side of a for-in/of statement cannot be an assignment
    |
 
 ✓ test/parser/misc/js/for-in-initializer.js
-error: for-in loop variable declaration may not have an initializer
+error: The variable declaration of a 'for...in' statement cannot have an initializer
    |
  2 | 
  3 | for (let c = 1 in b);
    |          ^^^^^
  4 | for (const d = 1 in b);
    |
-   = help: Remove the initializer from the loop variable.
+   = help: Remove the initializer
 
 
 ✓ test/parser/misc/js/for-of-let-lhs-invalid.js
-error: The left-hand side of a for-of statement may not start with 'let'
+error: The left-hand side of a 'for...of' statement may not start with 'let'
    |
  1 | // for-of forbids a left-hand side beginning with the `let` token
  2 | for (let.a of x) {}
    |      ^^^
  3 | 
    |
-   = help: Rename the variable or wrap it in parentheses: 'for ((let).x of ...)'
+   = help: Wrap 'let' in parentheses, such as 'for ((let).x of y)'
 
 
 ✓ test/parser/misc/js/for-using-with-line-terminator.js
-error: Expected ';' after for-loop init, but found 'id'
+error: Expected ';' after the loop initializer, but found 'id'
    |
  1 | for (using
  2 | id = value;;) {
@@ -251,32 +243,32 @@ error: Expected ';' after for-loop init, but found 'id'
 
 ✓ test/parser/misc/js/hex-literal-with-separator.js
 ✓ test/parser/misc/js/import-assertion-line-terminator-invalid.module.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
+error: Expected ';' after the statement, but found '{'
    |
  2 | import value from "pkg"
  3 | assert { type: "json" }
    |        ^
  4 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/misc/js/import-attributes-declaration-end.module.js
 ✓ test/parser/misc/js/import-attributes-line-terminator.module.js
 ✓ test/parser/misc/js/import-defer-default-binding.module.js
-error: 'import defer' only supports a namespace import
+error: Default imports are not allowed in a deferred import
    |
  1 | import defer from from "x";
    |        ^^^^^
  2 | 
    |
-   = help: Write 'import defer * as ns from "..."'.
+   = help: Use a namespace import, such as 'import defer * as ns from "m"'
 
 
 ✓ test/parser/misc/js/import-defer-normal.module.js
 ✓ test/parser/misc/js/import-defer-original.module.js
 ✓ test/parser/misc/js/import-export-in-script.js
-error: Cannot use import statement outside a module
+error: Cannot use an import declaration outside a module
    |
  1 | import "a";
    | ^^^^^^^^^^^
@@ -284,7 +276,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/misc/js/import-export-nested.module.js
-error: 'import' declaration may only appear at the top level
+error: An import declaration can only be used at the top level of a module
    |
  4 | {
  5 |   import "b";
@@ -296,101 +288,101 @@ error: 'import' declaration may only appear at the top level
 ✓ test/parser/misc/js/import-phase-call-options.module.js
 ✓ test/parser/misc/js/import-source-from-binding.module.js
 ✓ test/parser/misc/js/legacy-octal-literal-with-separator.js
-error: Identifier cannot immediately follow a numeric literal
+error: An identifier or keyword cannot immediately follow a numeric literal
    |
  1 | 012_7
    |    ^
  2 | 
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Add a space between the number and the identifier
 
 
 ✓ test/parser/misc/js/let-identifier-contexts.js
 ✓ test/parser/misc/js/lookahead-keyword-lexical-error.js
-error: Identifier cannot immediately follow a numeric literal
+error: An identifier or keyword cannot immediately follow a numeric literal
    |
  8 | 
  9 | function f() { let 1x; return 42; }
    |                     ^
 10 | let 1x;
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Add a space between the number and the identifier
 
 
 ✓ test/parser/misc/js/module-for-in-initializer.module.js
-error: for-in loop variable declaration may not have an initializer
+error: The variable declaration of a 'for...in' statement cannot have an initializer
    |
  1 | for (var a = 1 in b);
    |          ^^^^^
  2 | 
    |
-   = help: Remove the initializer from the loop variable.
+   = help: Remove the initializer
 
 
 ✓ test/parser/misc/js/new-async-arrow-function-1.js
-error: Unexpected '=>'
+error: Unexpected token '=>'
    |
  1 | new async () => {};
    | ^^^^^^^^^^^^
  2 | 
    |
-   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
+   = help: An arrow function takes an identifier or a parenthesized parameter list
 
 
 ✓ test/parser/misc/js/new-async-arrow-function-2.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
+error: Expected ';' after the statement, but found 'x'
    |
  1 | new async x => x;
    |           ^
  2 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/misc/js/new-async-function-line-terminator.js
 ✓ test/parser/misc/js/new-async-function.js
 ✓ test/parser/misc/js/octal-literal-with-separator.js
 ✓ test/parser/misc/js/operator-after-arrow-function.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '+'
+error: Expected ';' after the statement, but found '+'
    |
  1 | x = () => {} + 1;
    |              ^
  2 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/misc/js/regex-after-arrow-function.js
 ✓ test/parser/misc/js/regexp-literal-flag-errors.js
-error: The 'u' and 'v' regular expression flags cannot be used together
+error: The Unicode (u) flag and the Unicode Sets (v) flag cannot be set simultaneously
    |
  1 | const both = /x/uv;
    |                  ^
  2 | const reversed = /x/vu;
    |
-   = help: Use `v`, which extends `u`, or `u` alone.
+   = help: Keep only one of the two flags
 
 
 ✓ test/parser/misc/js/rest-trailing-comma-nested.js
-error: Rest element cannot have a trailing comma in array destructuring.
+error: A rest element cannot have a trailing comma
    |
  4 | 
  5 | [...a,] = x;
    | ^^^^^^^
  6 | ({...a,} = x);
    |
-   = help: Remove the trailing comma after the rest element
+   = help: Remove the trailing comma
 
 
 ✓ test/parser/misc/js/shorthand-default-outside-pattern.js
-error: Shorthand property cannot have a default value in object expression
+error: An '=' can only follow a property name when the containing object literal is part of a destructuring pattern
    |
  7 | 
  8 | [{a = 1}, f({})];
    |   ^^^^^
  9 | x = {a = 1, b: f({})};
    |
-   = help: Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.
+   = help: Use ':' to give the property a value, or destructure into the object
 
 
 ✓ test/parser/misc/js/tagged-template-with-optional-chaining.js
@@ -400,12 +392,12 @@ error: Tagged template expressions are not permitted in an optional chain
    |                  ^^
  2 | 
    |
-   = help: Remove the optional chaining operator '?.' before the template literal or add parentheses.
+   = help: Wrap the optional chain in parentheses
 
 
 ✓ test/parser/misc/js/tagged-template.js
 ✓ test/parser/misc/js/using-export.module.js
-error: Expected declaration after 'export', but found 'using'
+error: Expected a declaration after 'export', but found 'using'
    |
  1 | export using resource = Bun;
    |        ^^^^^
@@ -415,13 +407,13 @@ error: Expected declaration after 'export', but found 'using'
 ✓ test/parser/misc/js/using-identifier-contexts.js
 ✓ test/parser/misc/js/using-var.js
 ✓ test/parser/misc/js/yield-expression-in-arrow-function.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'cool'
+error: Expected ';' after the statement, but found 'cool'
    |
  1 |  function *a() { (b) => { yield cool }; }
    |                                 ^^^^
  2 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/misc/js/yield-id-in-arrow-function.js

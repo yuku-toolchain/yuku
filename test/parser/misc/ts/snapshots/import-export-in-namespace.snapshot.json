@@ -207,7 +207,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Cannot use 'export' declaration outside a module",
+      "message": "Cannot use an export declaration outside a module",
       "path": null,
       "start": 121,
       "end": 131,

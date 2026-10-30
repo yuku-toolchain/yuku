@@ -243,39 +243,39 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "A type argument list cannot be empty",
+      "message": "Type argument list cannot be empty",
       "path": null,
       "start": 235,
       "end": 237,
       "labels": [],
-      "help": null
+      "help": "Remove the empty '<>'"
     },
     {
       "severity": "error",
-      "message": "A type argument list cannot be empty",
+      "message": "Type argument list cannot be empty",
       "path": null,
       "start": 259,
       "end": 260,
       "labels": [],
-      "help": null
+      "help": "Remove the empty '<>'"
     },
     {
       "severity": "error",
-      "message": "A type argument list cannot be empty",
+      "message": "Type argument list cannot be empty",
       "path": null,
       "start": 276,
       "end": 277,
       "labels": [],
-      "help": null
+      "help": "Remove the empty '<>'"
     },
     {
       "severity": "error",
-      "message": "A type parameter list cannot be empty",
+      "message": "Type parameter list cannot be empty",
       "path": null,
       "start": 293,
       "end": 294,
       "labels": [],
-      "help": null
+      "help": "Remove the empty '<>'"
     }
   ]
 }

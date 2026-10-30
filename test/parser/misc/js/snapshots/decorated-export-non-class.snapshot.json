@@ -32,7 +32,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected 'class' keyword, but found 'const'",
+      "message": "Expected 'class' after the decorators, but found 'const'",
       "path": null,
       "start": 10,
       "end": 15,
@@ -41,7 +41,7 @@
     },
     {
       "severity": "error",
-      "message": "Expected 'class' keyword, but found 'function'",
+      "message": "Expected 'class' after the decorators, but found 'function'",
       "path": null,
       "start": 48,
       "end": 56,

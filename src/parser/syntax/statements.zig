@@ -125,20 +125,20 @@ const ImportExportMessages = struct {
 fn importExportMessages(data: ast.NodeData) ?ImportExportMessages {
     return switch (data) {
         .import_declaration => .{
-            .outside_module = "Cannot use import statement outside a module",
-            .nested = "'import' declaration may only appear at the top level",
+            .outside_module = "Cannot use an import declaration outside a module",
+            .nested = "An import declaration can only be used at the top level of a module",
         },
         .export_named_declaration => .{
-            .outside_module = "Cannot use 'export' declaration outside a module",
-            .nested = "'export' declaration may only appear at the top level",
+            .outside_module = "Cannot use an export declaration outside a module",
+            .nested = "An export declaration can only be used at the top level of a module",
         },
         .export_default_declaration => .{
-            .outside_module = "Cannot use 'export default' declaration outside a module",
-            .nested = "'export default' declaration may only appear at the top level",
+            .outside_module = "Cannot use 'export default' outside a module",
+            .nested = "A default export must be at the top level of a file or module declaration",
         },
         .export_all_declaration => .{
-            .outside_module = "Cannot use 'export *' declaration outside a module",
-            .nested = "'export *' declaration may only appear at the top level",
+            .outside_module = "Cannot use 'export *' outside a module",
+            .nested = "An 'export *' declaration can only be used at the top level of a module",
         },
         else => null,
     };
@@ -284,17 +284,16 @@ fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .left_brace,
-        "Expected '{' to start block statement",
-        "Block statements must be enclosed in braces: { ... }",
+        "Expected '{' to start the block",
+        null,
     )) return null;
 
     const body = try parser.parseBody(.right_brace, .other);
     const end = parser.current_token.span.end;
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close block statement",
-        "Add a closing brace '}' to complete the block statement, " ++
-            "or check for unbalanced braces inside.",
+        "Expected '}' to close the block",
+        "Check that every '{' in the block has a matching '}'",
     )) return null;
 
     return try parser.tree.addNode(
@@ -313,14 +312,18 @@ fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
     const discriminant = try parseParenthesizedHead(
         parser,
         "Expected '(' after 'switch'",
-        "Expected ')' after switch expression",
+        "Expected ')' after the 'switch' expression",
     ) orelse return null;
-    if (!try parser.expect(.left_brace, "Expected '{' to start switch body", null)) return null;
+    if (!try parser.expect(.left_brace, "Expected '{' to start the 'switch' body", null)) {
+        return null;
+    }
 
     const cases = try parseSwitchCases(parser);
 
     const end = parser.current_token.span.end;
-    if (!try parser.expect(.right_brace, "Expected '}' to close switch body", null)) return null;
+    if (!try parser.expect(.right_brace, "Expected '}' to close the 'switch' body", null)) {
+        return null;
+    }
 
     return try parser.tree.addNode(
         .{ .switch_statement = .{ .discriminant = discriminant, .cases = cases } },
@@ -356,7 +359,14 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
         try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const colon_end = parser.current_token.span.end;
-    if (!try parser.expect(.colon, "Expected ':' after case", null)) return null;
+    if (!try parser.expect(
+        .colon,
+        if (is_default)
+            "Expected ':' after 'default'"
+        else
+            "Expected ':' after the 'case' expression",
+        null,
+    )) return null;
 
     const consequent = try parseCaseConsequent(parser);
     const end = if (consequent.len > 0)
@@ -387,8 +397,12 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
             if (kind == .using or kind == .await_using) {
                 try parser.report(
                     parser.tree.span(statement),
-                    "Using declaration cannot appear in the bare case statement.",
-                    .{ .help = "Wrap this declaration in a block statement" },
+                    try parser.fmt(
+                        "'{s}' declarations are not allowed in 'case' or 'default' clauses" ++
+                            " unless contained within a block",
+                        .{kind.toString()},
+                    ),
+                    .{ .help = "Wrap the clause body in a block" },
                 );
             }
         }
@@ -409,7 +423,7 @@ fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
     const test_expr = try parseParenthesizedHead(
         parser,
         "Expected '(' after 'if'",
-        "Expected ')' after if condition",
+        "Expected ')' after the 'if' condition",
     ) orelse return null;
     const consequent = try parseSingleStatement(parser) orelse return null;
 
@@ -438,7 +452,7 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     const test_expr = try parseParenthesizedHead(
         parser,
         "Expected '(' after 'while'",
-        "Expected ')' after while condition",
+        "Expected ')' after the 'while' condition",
     ) orelse return null;
     const body = try parseSingleStatement(parser) orelse return null;
 
@@ -456,14 +470,14 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseSingleStatement(parser) orelse return null;
 
-    if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) {
+    if (!try parser.expect(.@"while", "Expected 'while' after the 'do' body", null)) {
         return null;
     }
 
     const test_expr = try parseParenthesizedHead(
         parser,
         "Expected '(' after 'while'",
-        "Expected ')' after while condition",
+        "Expected ')' after the 'while' condition",
     ) orelse return null;
 
     // ASI always inserts a semicolon after the `)` of do-while
@@ -488,7 +502,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     const object = try parseParenthesizedHead(
         parser,
         "Expected '(' after 'with'",
-        "Expected ')' after with expression",
+        "Expected ')' after the 'with' object",
     ) orelse return null;
     const body = try parseSingleStatement(parser) orelse return null;
 
@@ -544,8 +558,8 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     if (!parser.context.@"return") {
         try parser.report(
             .{ .start = start, .end = end },
-            "'return' statement is only valid inside a function",
-            .{ .help = "Remove the 'return' statement or wrap the code in a function." },
+            "A 'return' statement can only be used within a function body",
+            .{ .help = "Remove the 'return', or move it into a function" },
         );
     }
 
@@ -577,8 +591,8 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     // throw [no LineTerminator here] Expression
     if (parser.current_token.hasLineTerminatorBefore()) {
-        try parser.report(parser.current_token.span, "Illegal newline after throw", .{
-            .help = "The thrown expression must be on the same line as 'throw'",
+        try parser.report(parser.current_token.span, "Line break not permitted after 'throw'", .{
+            .help = "Put the thrown expression on the same line as 'throw'",
         });
         return null;
     }
@@ -617,9 +631,9 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (handler == .null and finalizer == .null) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
-            "Try statement requires catch or finally clause",
+            "Expected 'catch' or 'finally' after the 'try' block",
             .{},
         );
         return null;
@@ -647,7 +661,7 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
             param = try ts_types.parsePatternTypeAnnotation(parser, param) orelse return null;
         }
 
-        if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) {
+        if (!try parser.expect(.right_paren, "Expected ')' after the 'catch' parameter", null)) {
             return null;
         }
     }

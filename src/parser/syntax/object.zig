@@ -44,8 +44,8 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
         } else if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected ',' or '}' in object",
-                .{ .help = "Add a comma between properties or close the object with '}'." },
+                "Expected ',' or '}' in the object",
+                .{ .help = "Separate the properties with ','" },
             );
             return null;
         }
@@ -54,11 +54,11 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     if (parser.current_token.tag != .right_brace) {
         try parser.report(
             .{ .start = start, .end = end },
-            "Unterminated object",
+            "Unterminated object literal",
             .{
-                .help = "Add a closing '}' to complete the object.",
+                .help = "Add '}' to close the object",
                 .labels = try parser.labels(&.{
-                    parser.label(.{ .start = start, .end = start + 1 }, "Opened here"),
+                    parser.label(.{ .start = start, .end = start + 1 }, "opened here"),
                 }),
             },
         );
@@ -145,8 +145,8 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     if (is_async or is_generator or kind != .init) {
         try parser.reportExpected(
             parser.current_token.span,
-            "Expected '(' for method definition",
-            .{ .help = "Method definitions require a parameter list. Use 'method() {}' syntax." },
+            "Expected '(' to start the method parameters",
+            .{},
         );
         return null;
     }
@@ -175,17 +175,16 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         if (computed) {
             try parser.report(
                 key_span,
-                "Computed property cannot have a default value without ':'",
-                .{ .help = "Use '[key]: value = default' syntax instead." },
+                "A computed property cannot have a default value without ':'",
+                .{ .help = "Write the default after the value, such as '[key]: value = 1'" },
             );
             return null;
         }
         if (key_data != .identifier_name) {
             try parser.report(
                 key_span,
-                "Invalid shorthand property initializer",
-                .{ .help = "Only identifier keys can have default values." ++
-                    " Use 'key: value = default' syntax." },
+                "Only an identifier property can have a default value without ':'",
+                .{ .help = "Write the default after the value, such as 'key: value = 1'" },
             );
             return null;
         }
@@ -213,8 +212,8 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         if (computed) {
             try parser.report(
                 key_span,
-                "Computed property must have a value",
-                .{ .help = "Add ': value' after the computed key." },
+                "A computed property must have a value",
+                .{ .help = "Add ':' and a value after the computed name" },
             );
             return null;
         }
@@ -224,8 +223,8 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         if (key_data != .identifier_name) {
             try parser.report(
                 key_span,
-                "Shorthand property must be an identifier",
-                .{ .help = "String and numeric keys require explicit ': value' syntax." },
+                "A shorthand property name must be an identifier",
+                .{ .help = "Add ':' and a value after the name" },
             );
             return null;
         }
@@ -262,11 +261,8 @@ pub fn parsePropertyKey(
         if (owner == .object) parser.state.stripped_paren = outer_stripped_paren;
         if (!try parser.expect(
             .right_bracket,
-            if (owner == .signature)
-                "Expected ']' to close a computed property key"
-            else
-                "Expected ']' after computed property key",
-            if (owner == .signature) "A computed property key is written '[expr]'" else null,
+            "Expected ']' to close the computed property name",
+            null,
         )) return null;
         return .{ key, true };
     }
@@ -280,28 +276,22 @@ pub fn parsePropertyKey(
     else if (owner == .class and token.tag == .private_identifier)
         try literals.parsePrivateIdentifier(parser) orelse return null
     else {
-        const name, const help = switch (owner) {
+        const message, const help = switch (owner) {
             .object => .{
-                "property key",
-                "Property keys must be identifiers, strings, numbers, or" ++
-                    " computed expressions [expr].",
+                "Expected a property name",
+                "Use an identifier, a string, a number, or a computed name such as '[key]'",
             },
             .class => .{
-                "class element key",
-                "Class element keys must be identifiers, strings, numbers," ++
-                    " private identifiers (#name), or computed expressions [expr].",
+                "Expected a class member name",
+                "Use an identifier, a string, a number, a private name such as '#name', or a" ++
+                    " computed name such as '[key]'",
             },
             .signature => .{
-                "signature key",
-                "Signature keys must be identifiers, strings, numbers," ++
-                    " or computed expressions [expr].",
+                "Expected a type member name",
+                "Use an identifier, a string, a number, or a computed name such as '[key]'",
             },
         };
-        try parser.report(
-            token.span,
-            try parser.fmt("Unexpected token '{s}' as " ++ name, .{parser.describeToken(token)}),
-            .{ .help = help },
-        );
+        try parser.reportExpected(token.span, message, .{ .help = help });
         return null;
     };
     return .{ key, false };
@@ -439,16 +429,15 @@ fn toObjectPatternImpl(
                 if (grammar.isFollowedByComma(parser, prop)) {
                     try parser.report(
                         span,
-                        "Rest element cannot have a trailing comma in object destructuring.",
-                        .{ .help = "Remove the trailing comma after the rest element" },
+                        "A rest element cannot have a trailing comma",
+                        .{ .help = "Remove the trailing comma" },
                     );
                 }
             } else {
                 try parser.report(
                     parser.tree.span(prop),
-                    "Rest element must be the last property",
-                    .{ .help = "No properties can follow the rest element in a" ++
-                        " destructuring pattern." },
+                    "A rest element must be last in a destructuring pattern",
+                    .{ .help = "Move the rest element to the end" },
                 );
             }
 
@@ -459,9 +448,8 @@ fn toObjectPatternImpl(
             switch (parser.tree.data(argument)) {
                 .array_pattern, .object_pattern => try parser.report(
                     parser.tree.span(argument),
-                    "Object rest argument cannot be a destructuring pattern",
-                    .{ .help = "Collect the remaining properties into an identifier" ++
-                        " and destructure it separately." },
+                    "An object rest element cannot contain a binding pattern",
+                    .{ .help = "Collect the rest into an identifier, then destructure it" },
                 ),
                 else => {},
             }
@@ -472,7 +460,11 @@ fn toObjectPatternImpl(
         }
 
         if (prop_data != .object_property) {
-            try parser.report(parser.tree.span(prop), "Invalid property in object pattern", .{});
+            try parser.report(
+                parser.tree.span(prop),
+                "Invalid property in a destructuring pattern",
+                .{},
+            );
             continue;
         }
 
@@ -480,8 +472,8 @@ fn toObjectPatternImpl(
         if (obj_prop.method) {
             try parser.report(
                 parser.tree.span(prop),
-                "Method cannot appear in destructuring pattern",
-                .{ .help = "Use a regular property instead of a method definition." },
+                "Methods are not allowed in destructuring patterns",
+                .{ .help = "Use a property instead" },
             );
             continue;
         }
@@ -489,8 +481,8 @@ fn toObjectPatternImpl(
         if (obj_prop.kind != .init) {
             try parser.report(
                 parser.tree.span(prop),
-                "Getter/setter cannot appear in destructuring pattern",
-                .{ .help = "Use a regular property instead of a getter or setter." },
+                "Getters and setters are not allowed in destructuring patterns",
+                .{ .help = "Use a property instead" },
             );
             continue;
         }

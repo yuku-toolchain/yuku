@@ -69,7 +69,7 @@
       "start": 17,
       "end": 19,
       "labels": [],
-      "help": "Remove the optional chaining operator '?.' before the template literal or add parentheses."
+      "help": "Wrap the optional chain in parentheses"
     }
   ]
 }

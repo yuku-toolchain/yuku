@@ -448,7 +448,7 @@
       "start": 17,
       "end": 20,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -457,7 +457,7 @@
       "start": 48,
       "end": 52,
       "labels": [],
-      "help": "Name the member with an identifier or a string literal."
+      "help": "Name the member with an identifier or a string literal"
     },
     {
       "severity": "error",
@@ -466,7 +466,7 @@
       "start": 80,
       "end": 85,
       "labels": [],
-      "help": "Name the member with an identifier or a string literal."
+      "help": "Name the member with an identifier or a string literal"
     },
     {
       "severity": "error",
@@ -475,7 +475,7 @@
       "start": 191,
       "end": 196,
       "labels": [],
-      "help": "Name the member with an identifier or a string literal."
+      "help": "Name the member with an identifier or a string literal"
     },
     {
       "severity": "error",
@@ -484,16 +484,16 @@
       "start": 234,
       "end": 239,
       "labels": [],
-      "help": "Name the member with an identifier or a string literal."
+      "help": "Name the member with an identifier or a string literal"
     },
     {
       "severity": "error",
-      "message": "Enum member names cannot be template literals",
+      "message": "An enum member cannot be named with a template literal",
       "path": null,
       "start": 293,
       "end": 304,
       "labels": [],
-      "help": "Use a string literal, or put the template in brackets."
+      "help": "Use a string literal instead"
     }
   ]
 }

@@ -11,7 +11,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected declaration after 'export', but found 'using'",
+      "message": "Expected a declaration after 'export', but found 'using'",
       "path": null,
       "start": 7,
       "end": 12,

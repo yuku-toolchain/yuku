@@ -70,10 +70,19 @@ pub fn parseArrow(
     else
         .null;
 
-    if (parser.current_token.tag != .arrow or parser.current_token.hasLineTerminatorBefore()) {
+    if (parser.current_token.tag == .arrow) {
+        if (parser.current_token.hasLineTerminatorBefore()) {
+            try parser.report(
+                parser.current_token.span,
+                "Line terminator not permitted before arrow",
+                .{ .help = "Move '=>' to the line of the parameters" },
+            );
+            return null;
+        }
+    } else {
         try parser.reportExpected(
             parser.current_token.span,
-            "Expected '=>' on the same line after the arrow function parameters",
+            "Expected '=>' after the arrow function parameters",
             .{},
         );
         return null;

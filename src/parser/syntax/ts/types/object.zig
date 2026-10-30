@@ -40,8 +40,8 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
 
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close an object-type body",
-        "Each '{' in a type must be matched by a '}'",
+        "Expected '}' to close the object type",
+        "Check that every '{' in the type has a matching '}'",
     )) return null;
 
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
@@ -60,9 +60,8 @@ fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool
         else => if (!parser.current_token.hasLineTerminatorBefore()) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected ';', ',', or newline between type members",
-                .{ .help = "Separate type members with ';', ',', or a newline," ++
-                    " or close the block with '}'" },
+                "Expected ';', ',', or a line break between type members",
+                .{ .help = "Separate the members with ';', or close the type with '}'" },
             );
             return false;
         },
@@ -101,8 +100,8 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .left_bracket,
-        "Expected '[' in a mapped type",
-        "A mapped type is written '{ [K in T]: V }'",
+        "Expected '[' in the mapped type",
+        "Write a mapped type as '{ [K in T]: V }'",
     )) return null;
 
     const key = try literals.parseBindingIdentifier(parser) orelse return null;
@@ -110,7 +109,7 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
     if (!try parser.expect(
         .in,
         "Expected 'in' after the mapped type parameter name",
-        "A mapped type iterates its key with '[K in ConstraintType]'",
+        "Write the key as '[K in Keys]'",
     )) return null;
 
     const constraint = try core.parseType(parser) orelse return null;
@@ -123,8 +122,8 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_bracket,
-        "Expected ']' to close a mapped type parameter",
-        "A mapped type parameter must be closed with ']'",
+        "Expected ']' to close the mapped type parameter",
+        "Check that every '[' in the mapped type has a matching ']'",
     )) return null;
 
     const optional = try parseMappedModifier(parser, .question) orelse return null;
@@ -141,8 +140,8 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close a mapped type",
-        "Each '{' in a mapped type must be matched by a '}'",
+        "Expected '}' to close the mapped type",
+        "Check that every '{' in the mapped type has a matching '}'",
     )) return null;
 
     return try parser.tree.addNode(
@@ -177,10 +176,10 @@ fn parseMappedModifier(
     if (!try parser.expect(
         terminator,
         if (terminator == .readonly)
-            "Expected 'readonly' after '+' or '-' in a mapped type"
+            "Expected 'readonly' after '+' or '-' in the mapped type"
         else
-            "Expected '?' after '+' or '-' in a mapped type",
-        "Mapped type '+' and '-' modifiers can only decorate 'readonly' or '?'",
+            "Expected '?' after '+' or '-' in the mapped type",
+        "Mapped type '+' and '-' modifiers can only apply to 'readonly' or '?'",
     )) return null;
 
     return sign;
@@ -296,10 +295,10 @@ pub fn parseIndexSignature(
 
     const name = try literals.parseBindingIdentifier(parser) orelse return null;
     if (parser.current_token.tag != .colon) {
-        try parser.reportExpected(
+        try parser.report(
             parser.current_token.span,
-            "Expected ':' after index signature parameter name",
-            .{ .help = "Each index signature parameter requires a type: '[k: string]'" },
+            "An index signature parameter must have a type annotation",
+            .{ .help = "Add a type after the name, such as '[key: string]'" },
         );
         return null;
     }
@@ -308,7 +307,7 @@ pub fn parseIndexSignature(
         try parser.report(
             parser.current_token.span,
             "An index signature must have exactly one parameter",
-            .{ .help = "An index signature is written '[name: KeyType]: ValueType'." },
+            .{ .help = "Write an index signature as '[key: KeyType]: ValueType'" },
         );
         return null;
     }
@@ -316,15 +315,15 @@ pub fn parseIndexSignature(
 
     if (!try parser.expect(
         .right_bracket,
-        "Expected ']' to close an index signature parameter list",
-        "An index signature is written '[name: KeyType]: ValueType'",
+        "Expected ']' to close the index signature parameter",
+        "Write an index signature as '[key: KeyType]: ValueType'",
     )) return null;
 
     if (parser.current_token.tag != .colon) {
-        try parser.reportExpected(
+        try parser.report(
             parser.current_token.span,
-            "Expected ':' after index signature parameters",
-            .{ .help = "An index signature requires a value type: '[k: string]: number'" },
+            "An index signature must have a type annotation",
+            .{ .help = "Add a value type, such as '[key: string]: number'" },
         );
         return null;
     }
@@ -377,9 +376,9 @@ fn parsePropertyOrMethodSignature(
         if (is_readonly) {
             try parser.report(
                 .{ .start = start, .end = parser.tree.span(key).end },
-                "A 'readonly' modifier can only appear on a property declaration or index" ++
+                "'readonly' modifier can only appear on a property declaration or index" ++
                     " signature",
-                .{ .help = "Remove 'readonly' from this signature." },
+                .{ .help = "Remove 'readonly'" },
             );
         }
         return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
@@ -425,7 +424,7 @@ fn parseMethodSignatureBody(
             try parser.report(
                 parser.tree.span(return_type),
                 "A 'set' accessor cannot have a return type annotation",
-                .{ .help = "Setters do not return a value; remove the ': T' annotation." },
+                .{ .help = "Remove the return type annotation" },
             );
         }
     }

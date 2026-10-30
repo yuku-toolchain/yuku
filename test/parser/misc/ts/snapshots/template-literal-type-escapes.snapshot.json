@@ -1021,30 +1021,30 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Bad escape sequence in untagged template literal",
+      "message": "Invalid escape sequence in an untagged template literal",
       "path": null,
       "start": 781,
       "end": 783,
       "labels": [],
-      "help": null
+      "help": "Only tagged templates can contain invalid escapes"
     },
     {
       "severity": "error",
-      "message": "Bad escape sequence in untagged template literal",
+      "message": "Invalid escape sequence in an untagged template literal",
       "path": null,
       "start": 810,
       "end": 812,
       "labels": [],
-      "help": null
+      "help": "Only tagged templates can contain invalid escapes"
     },
     {
       "severity": "error",
-      "message": "Bad escape sequence in untagged template literal",
+      "message": "Invalid escape sequence in an untagged template literal",
       "path": null,
       "start": 845,
       "end": 849,
       "labels": [],
-      "help": null
+      "help": "Only tagged templates can contain invalid escapes"
     }
   ]
 }

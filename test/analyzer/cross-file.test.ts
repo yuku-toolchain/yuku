@@ -140,7 +140,7 @@ describe("link diagnostics", () => {
       }),
     ).toMatchInlineSnapshot(`
       "diagnostics
-        b.ts: Module './a.ts' has no export 'absent'
+        b.ts: Module './a.ts' has no exported member 'absent'
       graph
         a.ts → (none)
         b.ts → a.ts
@@ -234,7 +234,7 @@ describe("resolution", () => {
     expect(project.diagnostics).toEqual([
       {
         severity: "warning",
-        message: "Cannot resolve './utlis'",
+        message: "Cannot find module './utlis'",
         path: "main.ts",
         start: 45,
         end: 54,
@@ -249,8 +249,8 @@ describe("resolution", () => {
       "main.ts": `import "react"; import "./app.css"; import "./missing"; import "./gone.ts";`,
     });
     expect(project.diagnostics.map((d) => d.message)).toEqual([
-      "Cannot resolve './missing'",
-      "Cannot resolve './gone.ts'",
+      "Cannot find module './missing'",
+      "Cannot find module './gone.ts'",
     ]);
   });
 
@@ -258,15 +258,15 @@ describe("resolution", () => {
     const files = { "a.ts": `let x; let x;`, "b.ts": `import { y } from "./a";` };
     const project = projectOf(files, { semanticErrors: true });
     expect(project.diagnostics.map((d) => `${d.path}: ${d.message}`)).toEqual([
-      "a.ts: Identifier 'x' has already been declared",
-      "b.ts: Module './a' has no export 'y'",
+      "a.ts: Cannot redeclare block-scoped variable 'x'",
+      "b.ts: Module './a' has no exported member 'y'",
     ]);
   });
 
   test("a module reports its early errors only with semanticErrors", () => {
     const project = projectOf({ "a.ts": `let x; let x;`, "b.ts": `import { y } from "./a";` });
     expect(project.diagnostics.map((d) => `${d.path}: ${d.message}`)).toEqual([
-      "b.ts: Module './a' has no export 'y'",
+      "b.ts: Module './a' has no exported member 'y'",
     ]);
     expect(project.files.get("a.ts")!.rootScope.find("x")!.declarations).toHaveLength(2);
   });

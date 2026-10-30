@@ -11,12 +11,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'x'",
+      "message": "Expected ';' after the statement, but found 'x'",
       "path": null,
       "start": 10,
       "end": 11,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     }
   ]
 }

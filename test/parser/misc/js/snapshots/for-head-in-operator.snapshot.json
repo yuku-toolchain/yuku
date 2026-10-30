@@ -809,7 +809,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "The left-hand side of a for-in/of statement cannot be an assignment",
+      "message": "The left-hand side of a 'for...in' statement must be a variable or a property access",
       "path": null,
       "start": 392,
       "end": 397,
@@ -818,7 +818,7 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' after for-in expression, but found ';'",
+      "message": "Expected ')' after the 'for...in' expression, but found ';'",
       "path": null,
       "start": 402,
       "end": 403,
@@ -827,7 +827,7 @@
     },
     {
       "severity": "error",
-      "message": "The left-hand side of a for-in/of statement cannot be an assignment",
+      "message": "The left-hand side of a 'for...in' statement must be a variable or a property access",
       "path": null,
       "start": 412,
       "end": 430,
@@ -836,7 +836,7 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' after for-in expression, but found ';'",
+      "message": "Expected ')' after the 'for...in' expression, but found ';'",
       "path": null,
       "start": 435,
       "end": 436,

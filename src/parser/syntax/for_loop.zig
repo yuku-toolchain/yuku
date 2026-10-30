@@ -24,7 +24,8 @@ pub fn parseForStatement(parser: *Parser) Error!?ast.NodeIndex {
         if (!parser.context.await) {
             try parser.report(
                 parser.current_token.span,
-                "'for await' is only valid in async functions or modules",
+                "'for await' loops are only allowed within async functions and at the top levels" ++
+                    " of modules",
                 .{},
             );
         }
@@ -117,10 +118,11 @@ fn parseForWithDeclaration(
                 try parser.report(
                     .{ .start = decl_start, .end = end },
                     try parser.fmt(
-                        "The left-hand side of a for...in statement cannot be an {s} declaration.",
-                        .{kind.toString()},
+                        "The left-hand side of a 'for...in' statement cannot be {s} '{s}'" ++
+                            " declaration",
+                        .{ if (kind == .using) "a" else "an", kind.toString() },
                     ),
-                    .{ .help = "Did you mean to use a for...of statement?" },
+                    .{ .help = "Use a 'for...of' statement instead" },
                 );
             }
             try validateForInOfDeclarators(parser, declarators, kind, tag);
@@ -149,7 +151,12 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
             if (parser.tree.data(expr) == .assignment_expression) {
                 try parser.report(
                     parser.tree.span(expr),
-                    "The left-hand side of a for-in/of statement cannot be an assignment",
+                    if (tag == .in)
+                        "The left-hand side of a 'for...in' statement must be a variable or a" ++
+                            " property access"
+                    else
+                        "The left-hand side of a 'for...of' statement must be a variable or a" ++
+                            " property access",
                     .{},
                 );
             }
@@ -158,18 +165,16 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
                 if (head_is_let) {
                     try parser.report(
                         head.span,
-                        "The left-hand side of a for-of statement may not start with 'let'",
-                        .{ .help = "Rename the variable or wrap it in parentheses:" ++
-                            " 'for ((let).x of ...)'" },
+                        "The left-hand side of a 'for...of' statement may not start with 'let'",
+                        .{ .help = "Wrap 'let' in parentheses, such as 'for ((let).x of y)'" },
                     );
                 }
                 // for ( [lookahead ∉ { async of }] LeftHandSideExpression of ... )
                 if (!is_for_await and isAsyncIdentifier(parser, expr)) {
                     try parser.report(
                         parser.tree.span(expr),
-                        "'for (async of ...)' is not allowed, it is ambiguous with 'for await'",
-                        .{ .help = "Use a different variable name or add parentheses:" ++
-                            " 'for ((async) of ...)'" },
+                        "The left-hand side of a 'for...of' statement may not be 'async'",
+                        .{ .help = "Wrap 'async' in parentheses, such as 'for ((async) of y)'" },
                     );
                 }
             }
@@ -187,15 +192,17 @@ fn parseForStatementRest(
     is_for_await: bool,
 ) Error!?ast.NodeIndex {
     if (is_for_await) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
-            "'for await' is only valid with for-of loops",
-            .{},
+            "Expected 'of' in the 'for await' loop",
+            .{ .help = "'for await' only works with 'for...of' loops" },
         );
         return null;
     }
 
-    if (!try parser.expect(.semicolon, "Expected ';' after for-loop init", null)) return null;
+    if (!try parser.expect(.semicolon, "Expected ';' after the loop initializer", null)) {
+        return null;
+    }
 
     var test_expr: ast.NodeIndex = .null;
     if (parser.current_token.tag != .semicolon) {
@@ -203,7 +210,7 @@ fn parseForStatementRest(
             return null;
     }
 
-    if (!try parser.expect(.semicolon, "Expected ';' after for-loop condition", null)) return null;
+    if (!try parser.expect(.semicolon, "Expected ';' after the loop condition", null)) return null;
 
     var update: ast.NodeIndex = .null;
     if (parser.current_token.tag != .right_paren) {
@@ -211,7 +218,7 @@ fn parseForStatementRest(
             return null;
     }
 
-    if (!try parser.expect(.right_paren, "Expected ')' after for-loop update", null)) return null;
+    if (!try parser.expect(.right_paren, "Expected ')' after the loop update", null)) return null;
 
     const body = try statements.parseSingleStatement(parser) orelse return null;
 
@@ -231,7 +238,11 @@ fn parseForInOfStatementRest(
     comptime tag: TokenTag,
 ) Error!?ast.NodeIndex {
     if (tag == .in and is_for_await) {
-        try parser.report(parser.current_token.span, "'for await' requires 'of', not 'in'", .{});
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected 'of' in the 'for await' loop",
+            .{ .help = "'for await' only works with 'for...of' loops" },
+        );
         return null;
     }
 
@@ -244,9 +255,9 @@ fn parseForInOfStatementRest(
     if (!try parser.expect(
         .right_paren,
         if (tag == .of)
-            "Expected ')' after for-of expression"
+            "Expected ')' after the 'for...of' expression"
         else
-            "Expected ')' after for-in expression",
+            "Expected ')' after the 'for...in' expression",
         null,
     )) return null;
 
@@ -288,10 +299,10 @@ fn validateForInOfDeclarators(
         try parser.report(
             parser.tree.span(declarator),
             if (tag == .in)
-                "for-in loop variable declaration may not have an initializer"
+                "The variable declaration of a 'for...in' statement cannot have an initializer"
             else
-                "for-of loop variable declaration may not have an initializer",
-            .{ .help = "Remove the initializer from the loop variable." },
+                "The variable declaration of a 'for...of' statement cannot have an initializer",
+            .{ .help = "Remove the initializer" },
         );
         return;
     }
@@ -311,8 +322,8 @@ fn validateRegularForDeclarators(
         if (parser.tree.data(data.id) != .binding_identifier) {
             try parser.report(
                 id_span,
-                "Destructuring declaration in for loop initializer must be initialized",
-                .{ .help = "Add '= value' to provide the object or array to destructure from." },
+                "A destructuring declaration in a 'for' loop head must have an initializer",
+                .{ .help = "Add an initializer with the value to destructure" },
             );
             return false;
         }
@@ -320,8 +331,8 @@ fn validateRegularForDeclarators(
         if (kind == .@"const") {
             try parser.report(
                 id_span,
-                "'const' declarations in for loop initializer must be initialized",
-                .{ .help = "Add '= value' to initialize the constant in the for loop." },
+                "'const' declarations in a 'for' loop head must be initialized",
+                .{ .help = "Add an initializer, or use 'let' to assign the value later" },
             );
             return false;
         }
@@ -329,9 +340,11 @@ fn validateRegularForDeclarators(
         if (kind == .using or kind == .await_using) {
             try parser.report(
                 id_span,
-                try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
-                .{ .help = "Disposable resources require an initial value that" ++
-                    " implements the dispose protocol." },
+                try parser.fmt(
+                    "'{s}' declarations in a 'for' loop head must be initialized",
+                    .{kind.toString()},
+                ),
+                .{ .help = "Add an initializer with the resource to dispose" },
             );
             return false;
         }

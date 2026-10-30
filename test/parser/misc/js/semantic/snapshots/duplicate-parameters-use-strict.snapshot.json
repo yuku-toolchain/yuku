@@ -587,7 +587,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 24,
       "end": 25,
@@ -603,11 +603,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 79,
       "end": 80,
@@ -623,11 +623,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 135,
       "end": 136,
@@ -643,11 +643,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 201,
       "end": 202,
@@ -663,11 +663,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 237,
       "end": 238,
@@ -683,11 +683,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 275,
       "end": 276,
@@ -703,11 +703,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 318,
       "end": 319,
@@ -723,11 +723,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 362,
       "end": 363,
@@ -743,11 +743,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 451,
       "end": 452,
@@ -763,11 +763,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 495,
       "end": 496,
@@ -783,11 +783,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 540,
       "end": 541,
@@ -803,11 +803,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'a' has already been declared",
+      "message": "Duplicate identifier 'a'",
       "path": null,
       "start": 595,
       "end": 596,
@@ -823,7 +823,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'a'"
+      "help": "Rename or remove this declaration of 'a'"
     }
   ]
 }

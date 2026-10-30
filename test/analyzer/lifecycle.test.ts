@@ -23,7 +23,7 @@ describe("re-adding a path", () => {
 
     project.set("a.ts", `export const renamed = 1;`);
     expect(definition(project, "b.ts", "value")).toBe("(none)");
-    expect(messages(project)).toEqual(["b.ts: Module './a.ts' has no export 'value'"]);
+    expect(messages(project)).toEqual(["b.ts: Module './a.ts' has no exported member 'value'"]);
   });
 
   test("replacing a module clears a diagnostic it previously caused", () => {
@@ -31,7 +31,7 @@ describe("re-adding a path", () => {
       "a.ts": `export const present = 1;`,
       "b.ts": `import { missing } from "./a.ts"; missing;`,
     });
-    expect(messages(project)).toEqual(["b.ts: Module './a.ts' has no export 'missing'"]);
+    expect(messages(project)).toEqual(["b.ts: Module './a.ts' has no exported member 'missing'"]);
     expect(definition(project, "b.ts", "missing")).toBe("(none)");
 
     project.set("a.ts", `export const present = 1; export const missing = 2;`);

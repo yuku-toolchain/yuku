@@ -190,7 +190,7 @@ test "analyze without check reports nothing and builds the checked model" {
     const checked = try semantic.analyze(&tree, .{ .check = true });
     try testing.expectEqual(@as(usize, 1), tree.diagnostics.items.len);
     try testing.expectEqualStrings(
-        "Identifier 'a' has already been declared",
+        "Cannot redeclare block-scoped variable 'a'",
         tree.diagnostics.items[0].message,
     );
 

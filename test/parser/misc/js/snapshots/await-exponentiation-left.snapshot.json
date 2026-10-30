@@ -41,12 +41,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "The left-hand side of '**' cannot be an unparenthesized await expression",
+      "message": "An 'await' expression is not allowed in the left-hand side of an exponentiation expression",
       "path": null,
       "start": 0,
       "end": 13,
       "labels": [],
-      "help": "Add parentheses to make precedence explicit, for example `(await x) ** y`."
+      "help": "Add parentheses to make the precedence explicit, such as '(await x) ** y'"
     }
   ]
 }

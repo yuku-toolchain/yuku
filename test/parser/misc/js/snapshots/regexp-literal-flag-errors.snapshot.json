@@ -240,48 +240,48 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "The 'u' and 'v' regular expression flags cannot be used together",
+      "message": "The Unicode (u) flag and the Unicode Sets (v) flag cannot be set simultaneously",
       "path": null,
       "start": 17,
       "end": 18,
       "labels": [],
-      "help": "Use `v`, which extends `u`, or `u` alone."
+      "help": "Keep only one of the two flags"
     },
     {
       "severity": "error",
-      "message": "The 'u' and 'v' regular expression flags cannot be used together",
+      "message": "The Unicode (u) flag and the Unicode Sets (v) flag cannot be set simultaneously",
       "path": null,
       "start": 41,
       "end": 42,
       "labels": [],
-      "help": "Use `v`, which extends `u`, or `u` alone."
+      "help": "Keep only one of the two flags"
     },
     {
       "severity": "error",
-      "message": "Duplicate regular expression flag",
+      "message": "Duplicate regular expression flag 'g'",
       "path": null,
       "start": 66,
       "end": 67,
       "labels": [],
-      "help": "Each flag can appear only once."
+      "help": "Remove the repeated flag"
     },
     {
       "severity": "error",
-      "message": "Invalid regular expression flag",
+      "message": "Unknown regular expression flag 'q'",
       "path": null,
       "start": 89,
       "end": 90,
       "labels": [],
-      "help": "Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`."
+      "help": "Valid flags are 'd', 'g', 'i', 'm', 's', 'u', 'v', and 'y'"
     },
     {
       "severity": "error",
-      "message": "Invalid regular expression flag",
+      "message": "Unknown regular expression flag '1'",
       "path": null,
       "start": 110,
       "end": 111,
       "labels": [],
-      "help": "Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`."
+      "help": "Valid flags are 'd', 'g', 'i', 'm', 's', 'u', 'v', and 'y'"
     }
   ]
 }

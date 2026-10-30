@@ -4,7 +4,7 @@ Passed:       3/3 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/jsx/semantic/d703b350aed0026c.jsx
-error: Cannot use 'export' declaration outside a module
+error: Cannot use an export declaration outside a module
    |
  1 | export { "foo" } from "module-a";
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -12,7 +12,7 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/jsx/semantic/dd1d2d9693a1d5d5.jsx
-error: Cannot use import statement outside a module
+error: Cannot use an import declaration outside a module
    |
  1 | import { "foo" as bar, "default" as qux } from "module-a";
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -20,7 +20,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/jsx/semantic/fde2bbe91b2ff9c0.jsx
-error: Cannot use import statement outside a module
+error: Cannot use an import declaration outside a module
    |
  1 | import foo from "foo.json" with { type: "json" };
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

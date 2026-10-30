@@ -33,39 +33,39 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "'for await' is only valid with for-of loops",
+      "message": "Expected 'of' in the 'for await' loop, but found ';'",
       "path": null,
       "start": 34,
       "end": 35,
       "labels": [],
-      "help": null
+      "help": "'for await' only works with 'for...of' loops"
     },
     {
       "severity": "error",
-      "message": "'for await' requires 'of', not 'in'",
+      "message": "Expected 'of' in the 'for await' loop, but found 'in'",
       "path": null,
       "start": 56,
       "end": 58,
       "labels": [],
-      "help": null
+      "help": "'for await' only works with 'for...of' loops"
     },
     {
       "severity": "error",
-      "message": "'for await' requires 'of', not 'in'",
+      "message": "Expected 'of' in the 'for await' loop, but found 'in'",
       "path": null,
       "start": 84,
       "end": 86,
       "labels": [],
-      "help": null
+      "help": "'for await' only works with 'for...of' loops"
     },
     {
       "severity": "error",
-      "message": "'for await' is only valid with for-of loops",
+      "message": "Expected 'of' in the 'for await' loop, but found ';'",
       "path": null,
       "start": 115,
       "end": 116,
       "labels": [],
-      "help": null
+      "help": "'for await' only works with 'for...of' loops"
     }
   ]
 }

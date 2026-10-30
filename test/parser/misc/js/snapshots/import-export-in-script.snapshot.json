@@ -181,7 +181,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Cannot use import statement outside a module",
+      "message": "Cannot use an import declaration outside a module",
       "path": null,
       "start": 0,
       "end": 11,
@@ -190,7 +190,7 @@
     },
     {
       "severity": "error",
-      "message": "Cannot use import statement outside a module",
+      "message": "Cannot use an import declaration outside a module",
       "path": null,
       "start": 12,
       "end": 30,
@@ -199,7 +199,7 @@
     },
     {
       "severity": "error",
-      "message": "Cannot use 'export' declaration outside a module",
+      "message": "Cannot use an export declaration outside a module",
       "path": null,
       "start": 31,
       "end": 41,
@@ -208,7 +208,7 @@
     },
     {
       "severity": "error",
-      "message": "Cannot use 'export default' declaration outside a module",
+      "message": "Cannot use 'export default' outside a module",
       "path": null,
       "start": 42,
       "end": 59,
@@ -217,7 +217,7 @@
     },
     {
       "severity": "error",
-      "message": "Cannot use 'export *' declaration outside a module",
+      "message": "Cannot use 'export *' outside a module",
       "path": null,
       "start": 60,
       "end": 78,
@@ -226,7 +226,7 @@
     },
     {
       "severity": "error",
-      "message": "Cannot use 'export' declaration outside a module",
+      "message": "Cannot use an export declaration outside a module",
       "path": null,
       "start": 79,
       "end": 98,
@@ -235,7 +235,7 @@
     },
     {
       "severity": "error",
-      "message": "Cannot use 'export' declaration outside a module",
+      "message": "Cannot use an export declaration outside a module",
       "path": null,
       "start": 104,
       "end": 121,

@@ -119,7 +119,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "'await' is reserved in an async/module context and cannot be used as a binding identifier",
+      "message": "'await' is a reserved word in async functions and modules and cannot be used as a binding identifier",
       "path": null,
       "start": 19,
       "end": 24,
@@ -128,7 +128,7 @@
     },
     {
       "severity": "error",
-      "message": "'yield' is reserved in a generator context and cannot be used as a binding identifier",
+      "message": "'yield' is a reserved word in generators and cannot be used as a binding identifier",
       "path": null,
       "start": 50,
       "end": 55,
@@ -137,7 +137,7 @@
     },
     {
       "severity": "error",
-      "message": "'await' is reserved in an async/module context and cannot be used as a binding identifier",
+      "message": "'await' is a reserved word in async functions and modules and cannot be used as a binding identifier",
       "path": null,
       "start": 91,
       "end": 96,

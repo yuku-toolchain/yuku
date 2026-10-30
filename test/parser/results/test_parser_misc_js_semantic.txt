@@ -5,7 +5,7 @@ Failed:       0
 AST mismatch: 0/11
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-methods-arrows.js
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  1 | ({ method(a, a) {} });
    |              ^
@@ -13,11 +13,11 @@ error: Identifier 'a' has already been declared
    |              ~ cannot be redeclared here
  2 | ({ *generatorMethod(a, a) {} });
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-non-simple.js
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  1 | function initializer(a, a, b = 0) {}
    |                         ^
@@ -25,12 +25,12 @@ error: Identifier 'a' has already been declared
    |                         ~ cannot be redeclared here
  2 | function* leadingInitializer(a = 0, a) {}
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-sloppy.js
 ✓ test/parser/misc/js/semantic/duplicate-parameters-strict-script.js
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  2 | 
  3 | function declaration(a, a) {}
@@ -39,11 +39,11 @@ error: Identifier 'a' has already been declared
    |                         ~ cannot be redeclared here
  4 | function* generatorDeclaration(a, a) {}
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-strict.module.js
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  1 | function declaration(a, a) {}
    |                         ^
@@ -51,11 +51,11 @@ error: Identifier 'a' has already been declared
    |                         ~ cannot be redeclared here
  2 | function* generatorDeclaration(a, a) {}
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/js/semantic/duplicate-parameters-use-strict.js
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  1 | function declaration(a, a) { "use strict"; }
    |                         ^
@@ -63,12 +63,12 @@ error: Identifier 'a' has already been declared
    |                         ~ cannot be redeclared here
  2 | function* generatorDeclaration(a, a) { "use strict"; }
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/js/semantic/if-clause-function-beside-let.js
 ✓ test/parser/misc/js/semantic/redeclare-block-functions.js
-error: Identifier 'g' has already been declared
+error: Duplicate identifier 'g'
    |
  6 | 
  7 | { async function g() {} function g() {} }
@@ -77,11 +77,11 @@ error: Identifier 'g' has already been declared
    |                                  ~ cannot be redeclared here
  8 | { function h() {} function* h() {} }
    |
-   = help: Consider removing or renaming this declaration of 'g'
+   = help: Rename or remove this declaration of 'g'
 
 
 ✓ test/parser/misc/js/semantic/redeclare-class-function.js
-error: Identifier 'A' has already been declared
+error: Duplicate identifier 'A'
    |
  1 | class A {}
    |       ~ 'A' was first declared as a class here
@@ -90,11 +90,11 @@ error: Identifier 'A' has already been declared
    |          ~ cannot be redeclared here
  3 | 
    |
-   = help: Consider removing or renaming this declaration of 'A'
+   = help: Rename or remove this declaration of 'A'
 
 
 ✓ test/parser/misc/js/semantic/redeclare-import.module.js
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  1 | import a from "m";
    |        ~ 'a' was first declared as an import here
@@ -103,17 +103,17 @@ error: Identifier 'a' has already been declared
    |     ~ cannot be redeclared here
  3 | import { b } from "m";
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/js/semantic/super-in-class-field-key.js
-error: 'super' property access is only valid inside a method or class body
+error: 'super' can only be referenced in members of derived classes or object literal expressions
    |
 15 |   class C {
 16 |     [super.x];
    |      ^^^^^^^
 17 |   }
    |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+   = help: Use an arrow function to keep the method's 'super' binding
 
 

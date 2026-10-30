@@ -4,58 +4,56 @@ Passed:       25/25 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/jsx/fail/007be3029be81746.jsx
-error: Expected string literal or JSX expression for attribute value, but found 'bar'
+error: Expected an attribute value, but found 'bar'
    |
  1 | <Foo bar=bar() />
    |          ^^^
  2 | 
    |
-   = help: JSX attribute values must be either a string literal (e.g. "value") or an expression in braces (e.g. {expression})
+   = help: Use a string, an expression in braces, or a JSX element
 
 
 ✓ test/parser/suite/jsx/fail/2224661258279331.jsx
-error: Expected ';' after class field, but found '<'
+error: Expected ';' after the class field, but found '<'
    |
  1 | class NodeUtils extends UtilParser {
  2 |   finishNodeAt<T : NodeType>(node: T): T {
    |               ^
  3 |     return node;
    |
-   = help: Add a semicolon after the field declaration.
-
 
 ✓ test/parser/suite/jsx/fail/2843ea4509626b59.jsx
-error: Setter must have exactly one parameter
+error: A 'set' accessor must have exactly one parameter
    |
  1 | ({ set x(){} })
    |         ^^
  2 | 
    |
-   = help: Setters accept exactly one argument.
+   = help: Declare one parameter for the assigned value
 
 
 ✓ test/parser/suite/jsx/fail/2e5f061b58b219c3.jsx
-error: Unexpected '>' in JSX text
+error: Unexpected token '>' in JSX text
    |
  1 | <div>></div>
    |      ^
  2 | 
    |
-   = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
+   = help: Write {'>'} or '&gt;' instead
 
 
 ✓ test/parser/suite/jsx/fail/356094f49f10eea4.jsx
-error: Expected '>' to close JSX closing fragment, but found 'something'
+error: Expected corresponding closing tag for JSX fragment, but found 'something'
    |
  1 | <></something>
    |     ^^^^^^^^^
  2 | 
    |
-   = help: Add '>' to complete the fragment closing tag
+   = help: Close the fragment with '</>'
 
 
 ✓ test/parser/suite/jsx/fail/44c9428e28910f29.jsx
-error: 'do' is reserved and cannot be used as an identifier
+error: 'do' is a reserved word and cannot be used as an identifier
    |
  5 |       {
  6 |         do {
@@ -64,23 +62,23 @@ error: 'do' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/jsx/fail/577591d02114569f.module.jsx
-error: Expected JSX element name, but found '!'
+error: Expected a JSX element name, but found '!'
    |
  1 | <!--a
    |  ^
  2 | 
    |
-   = help: JSX element names must start with a valid identifier
+   = help: Start the tag name with a letter, '_', or '$'
 
 
 ✓ test/parser/suite/jsx/fail/59c4f348793b3069.jsx
-error: Expected JSX element name, but found '>'
+error: Expected a JSX element name, but found '>'
    |
  1 | <something></>
    |              ^
  2 | 
    |
-   = help: JSX element names must start with a valid identifier
+   = help: Start the tag name with a letter, '_', or '$'
 
 
 ✓ test/parser/suite/jsx/fail/61cfbf64eeb67395.jsx
@@ -90,7 +88,7 @@ error: Unterminated string literal
  2 | 
    | ^
    |
-   = help: Try adding a closing quote here to complete the string
+   = help: Add a closing quote to end the string
 
 
 ✓ test/parser/suite/jsx/fail/6833af8cb657a514.jsx
@@ -99,156 +97,147 @@ error: JSX tag names cannot start with a backslash
  1 | <\u{2F804}></\u{2F804}>
    |  ^
    |
-   = help: JSX tag names must be plain identifiers without escape sequences
+   = help: Write the tag name without escape sequences
 
 
 ✓ test/parser/suite/jsx/fail/8180a2618d705c3d.jsx
-error: Expected closing tag for '<Foo>' but found '</Bar>'
+error: Expected corresponding JSX closing tag for '<Foo>', but found '</Bar>'
    |
  1 | <Foo></Bar>
    |        ^^^
    |  ~~~ opening tag
  2 | 
    |
-   = help: JSX opening and closing tags must have matching names
+   = help: Rename the closing tag to '</Foo>'
 
 
 ✓ test/parser/suite/jsx/fail/88a2834963715677.jsx
-error: Expected '/' in JSX closing fragment, but found 'end of file'
+error: Expected corresponding closing tag for JSX fragment, but found end of file
    |
  1 | <><></>
  2 | 
    | ^
    |
-   = help: Add '/' to close the fragment
+   = help: Close the fragment with '</>'
 
 
 ✓ test/parser/suite/jsx/fail/94783750f32a8832.jsx
-error: Expected '</' to close the JSX element, but found 'end of file'
+error: JSX element 'foo' has no corresponding closing tag
    |
  1 | <foo>yes
+   |  ~~~ opening tag
  2 | 
    | ^
    |
-   = help: Add a closing tag to match the opening element
+   = help: Add '</foo>' to close the element
 
 
 ✓ test/parser/suite/jsx/fail/9b8239d602194027.jsx
-error: Expected '}' to close JSX expression, but found ','
+error: Expected '}' to close the JSX expression, but found ','
    |
  1 | <div key={console.log('foo'), JSON.stringify(props)} />
    |                             ^
    |
-   = help: Add '}' to close the expression
-
 
 ✓ test/parser/suite/jsx/fail/a721641c67e949d3.jsx
-error: Parentheses are not allowed in this binding pattern
+error: Parentheses are not allowed in binding patterns
    |
  1 | ({ x: (a) } = 1) => {};
    |        ^
  2 | ({ x: [(a)] } = 1) => {};
    |
-   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+   = help: Remove the parentheses
 
 
 ✓ test/parser/suite/jsx/fail/ab67a6eb1c134bbe.jsx
-error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
+error: Expected ';' after the statement, but found ':'
    |
  1 | var x: "string";
    |      ^
  2 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/jsx/fail/b226f7bb3b73ae99.jsx
-error: Expected '>' to close JSX opening element, but found '.'
+error: Expected '>' to end the JSX opening tag, but found '.'
    |
  1 | <a:b.c />
    |     ^
  2 | 
    |
-   = help: Add '>' to close the JSX tag
-
 
 ✓ test/parser/suite/jsx/fail/b91c8baa37a8f937.jsx
-error: Line terminator not allowed in regular expression literal
+error: Line terminators are not allowed in regular expression literals
    |
  1 | var x = <div>one</div><div>two</div>;
    |                                      ^
  2 | 
    | ^
    |
-   = help: Try removing the line break here or escaping it within the regex pattern
+   = help: Remove the line break, or match it with '\n'
 
 
 ✓ test/parser/suite/jsx/fail/c5d2e6e97c749191.jsx
-error: Expected '}' to close JSX expression, but found ','
+error: Expected '}' to close the JSX expression, but found ','
    |
  1 | <div>{console.log('foo'), JSON.stringify(props)}</div>
    |                         ^
    |
-   = help: Add '}' to close the expression
-
 
 ✓ test/parser/suite/jsx/fail/d4cd6a3bf14941ff.jsx
-error: Unexpected '>' in JSX text
+error: Unexpected token '>' in JSX text
    |
  1 | <div>() => {}
    |          ^
  2 | 
    |
-   = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
+   = help: Write {'>'} or '&gt;' instead
 
 
 ✓ test/parser/suite/jsx/fail/d9a8edb415a85cbe.jsx
-error: Parentheses are not allowed in this binding pattern
+error: Parentheses are not allowed in binding patterns
    |
  1 | ({ x: ((a)) } = 1) => {};
    |         ^
  2 | (x = { y: ((a)) } = 1, { z: (b) } = 1) => {};
    |
-   = help: Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions.
+   = help: Remove the parentheses
 
 
 ✓ test/parser/suite/jsx/fail/daff53a98ac58ae5.jsx
-error: Expected '>' to close JSX opening element, but found ':'
+error: Expected '>' to end the JSX opening tag, but found ':'
    |
  1 | <a.b:c />
    |     ^
  2 | 
    |
-   = help: Add '>' to close the JSX tag
-
 
 ✓ test/parser/suite/jsx/fail/e0dfc08ed604931a.jsx
-error: Expected '>' to close JSX opening element, but found '='
+error: Expected '>' to end the JSX opening tag, but found '='
    |
  1 | < key="nope"></>
    |      ^
  2 | 
    |
-   = help: Add '>' to close the JSX tag
-
 
 ✓ test/parser/suite/jsx/fail/ea91641e2b71f4d3.jsx
-error: Unexpected '}' in JSX text
+error: Unexpected token '}' in JSX text
    |
  1 | <div>}</div>
    |      ^
  2 | 
    |
-   = help: Escape it with an HTML entity or wrap it in an expression container like {'>'}.
+   = help: Write {'}'} or '&rbrace;' instead
 
 
 ✓ test/parser/suite/jsx/fail/f7cb5b3ea1fefffa.jsx
-error: JSX attribute value cannot be an empty expression
+error: A JSX attribute value cannot be an empty expression
    |
  1 | <foo bar={} />
    |          ^^
  2 | 
    |
-   = help: Replace {} with a valid expression or remove the braces to use a string literal
+   = help: Add an expression inside the braces, or use a string
 
 

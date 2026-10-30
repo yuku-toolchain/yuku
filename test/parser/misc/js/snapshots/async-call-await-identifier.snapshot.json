@@ -380,7 +380,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "'await' is reserved in an async/module context and cannot be used as an identifier",
+      "message": "'await' is a reserved word in async functions and modules and cannot be used as an identifier",
       "path": null,
       "start": 139,
       "end": 144,
@@ -389,7 +389,7 @@
     },
     {
       "severity": "error",
-      "message": "'await' is reserved in an async/module context and cannot be used as an identifier",
+      "message": "'await' is a reserved word in async functions and modules and cannot be used as an identifier",
       "path": null,
       "start": 159,
       "end": 164,
@@ -398,16 +398,16 @@
     },
     {
       "severity": "error",
-      "message": "Expected ',' or ')' in parenthesized expression, but found 'x'",
+      "message": "Expected ',' or ')' in the parenthesized expression, but found 'x'",
       "path": null,
       "start": 183,
       "end": 184,
       "labels": [],
-      "help": "Add a comma between elements or close with ')'."
+      "help": "Separate the expressions with ','"
     },
     {
       "severity": "error",
-      "message": "'await' is reserved in an async/module context and cannot be used as a binding identifier",
+      "message": "'await' is a reserved word in async functions and modules and cannot be used as a binding identifier",
       "path": null,
       "start": 194,
       "end": 199,

@@ -70,7 +70,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "'await' is reserved in an async/module context and cannot be used as an identifier",
+      "message": "'await' is a reserved word in async functions and modules and cannot be used as an identifier",
       "path": null,
       "start": 31,
       "end": 36,

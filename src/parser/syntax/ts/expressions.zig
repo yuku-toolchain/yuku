@@ -19,8 +19,8 @@ pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     const type_node = try core.parseType(parser) orelse return null;
     if (!try parser.expect(
         .greater_than,
-        "Expected '>' to close a type assertion",
-        "A type assertion is written '<Type>expression'",
+        "Expected '>' to close the type assertion",
+        "Write a type assertion as '<Type>value'",
     )) return null;
 
     const expr = try expressions.parseExpression(parser, Precedence.Unary, .{}) orelse return null;
@@ -88,7 +88,7 @@ pub fn parseTypeArgumentedCallOrInstantiation(
         try parser.report(
             parser.tree.span(node),
             "An instantiation expression cannot be followed by a property access",
-            .{ .help = "Wrap the instantiation expression in parentheses." },
+            .{ .help = "Wrap the instantiation expression in parentheses" },
         );
     }
     return node;

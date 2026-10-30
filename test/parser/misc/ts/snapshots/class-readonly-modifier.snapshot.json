@@ -391,48 +391,48 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 146,
       "end": 152,
       "labels": [],
-      "help": "Remove 'readonly' from this method."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 169,
       "end": 177,
       "labels": [],
-      "help": "Remove 'readonly' from this method."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 202,
       "end": 208,
       "labels": [],
-      "help": "Remove 'readonly' from this method."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 229,
       "end": 235,
       "labels": [],
-      "help": "Remove 'readonly' from this method."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 257,
       "end": 268,
       "labels": [],
-      "help": "Remove 'readonly' from this method."
+      "help": "Remove 'readonly'"
     }
   ]
 }

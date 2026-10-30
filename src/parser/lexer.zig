@@ -30,7 +30,8 @@ pub const LexicalError = error{
     InvalidExponentPart,
     NumericSeparatorMisuse,
     ConsecutiveNumericSeparators,
-    InvalidBigIntSuffix,
+    ExponentialBigInt,
+    NonIntegerBigInt,
     IdentifierAfterNumericLiteral,
     InvalidUtf8,
     OutOfMemory,
@@ -939,7 +940,8 @@ pub const Lexer = struct {
 
         const start = self.cursor;
         var tag: TokenTag = .numeric_literal;
-        var has_decimal_or_exponent = false;
+        var has_decimal = false;
+        var has_exponent = false;
         var is_leading_zero = false;
 
         if (self.peek(0) == '0') {
@@ -981,20 +983,21 @@ pub const Lexer = struct {
 
         if (tag == .numeric_literal and self.peek(0) == '.') {
             self.cursor += 1;
-            has_decimal_or_exponent = true;
+            has_decimal = true;
             try self.consumeDecimalDigits();
         }
 
         if (tag == .numeric_literal) {
             const exp = self.peek(0);
             if (exp == 'e' or exp == 'E') {
-                has_decimal_or_exponent = true;
+                has_exponent = true;
                 try self.consumeExponent();
             }
         }
 
         if (!is_leading_zero and self.peek(0) == 'n') {
-            if (has_decimal_or_exponent) return error.InvalidBigIntSuffix;
+            if (has_exponent) return error.ExponentialBigInt;
+            if (has_decimal) return error.NonIntegerBigInt;
             self.cursor += 1;
             tag = .bigint_literal;
         }
@@ -1333,23 +1336,25 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.UnterminatedString => "Unterminated string literal",
         error.NonTerminatedTemplateLiteral => "Unterminated template literal",
         error.UnterminatedRegexLiteral => "Unterminated regular expression literal",
-        error.InvalidRegexLineTerminator => "Line terminator not allowed in regular expression" ++
-            " literal",
-        error.InvalidIdentifierStart => "Invalid character at start of identifier",
-        error.InvalidIdentifierContinue => "Invalid character in identifier",
+        error.InvalidRegexLineTerminator => "Line terminators are not allowed in regular" ++
+            " expression literals",
+        error.InvalidIdentifierStart => "Invalid character at the start of an identifier",
+        error.InvalidIdentifierContinue => "Invalid character in an identifier",
         error.UnterminatedMultiLineComment => "Unterminated multi-line comment",
         error.InvalidUnicodeEscape => "Invalid Unicode escape sequence",
-        error.InvalidOctalEscape => "Invalid octal escape sequence",
-        error.InvalidOctalLiteralDigit => "Octal literal must contain at least one octal digit",
-        error.InvalidBinaryLiteral => "Binary literal must contain at least one binary digit",
-        error.InvalidHexLiteral => "Hexadecimal literal must contain at least one hex digit",
-        error.InvalidExponentPart => "Exponent part is missing a number",
-        error.NumericSeparatorMisuse => "Numeric separator is only allowed between two digits",
-        error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive" ++
-            " separators",
-        error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
-        error.IdentifierAfterNumericLiteral => "Identifier cannot immediately follow a" ++
-            " numeric literal",
+        error.InvalidOctalEscape => "Octal escape sequences are not allowed in template literals",
+        error.InvalidOctalLiteralDigit => "An octal literal must contain at least one octal digit",
+        error.InvalidBinaryLiteral => "A binary literal must contain at least one binary digit",
+        error.InvalidHexLiteral => "A hexadecimal literal must contain at least one hexadecimal" ++
+            " digit",
+        error.InvalidExponentPart => "An exponent must contain at least one digit",
+        error.NumericSeparatorMisuse => "Numeric separators are only allowed between two digits",
+        error.ConsecutiveNumericSeparators => "Multiple consecutive numeric separators are" ++
+            " not permitted",
+        error.ExponentialBigInt => "A bigint literal cannot use exponential notation",
+        error.NonIntegerBigInt => "A bigint literal must be an integer",
+        error.IdentifierAfterNumericLiteral => "An identifier or keyword cannot immediately" ++
+            " follow a numeric literal",
         error.InvalidUtf8 => "Invalid UTF-8 byte sequence",
         error.OutOfMemory => "Out of memory",
         error.JsxIdentifierCannotContainEscapes => "JSX tag names cannot contain escape" ++
@@ -1361,46 +1366,36 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
 
 pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
     return switch (error_type) {
-        error.InvalidHexEscape => "Try adding two hexadecimal digits here (e.g., \\x41 for 'A')",
-        error.UnterminatedString => "Try adding a closing quote here to complete the string",
-        error.NonTerminatedTemplateLiteral => "Try adding a closing backtick (`) here to" ++
-            " complete the template",
-        error.UnterminatedRegexLiteral => "Try adding a closing slash (/) here, optionally" ++
-            " followed by flags (g, i, m, etc.)",
-        error.InvalidRegexLineTerminator => "Try removing the line break here or escaping" ++
-            " it within the regex pattern",
-        error.InvalidIdentifierStart => "Try starting the identifier here with a letter" ++
-            " (a-z, A-Z), underscore (_), or dollar sign ($)",
-        error.InvalidIdentifierContinue => "Try using a valid identifier character here" ++
-            " (letters, digits, underscore, or dollar sign)",
-        error.UnterminatedMultiLineComment => "Try adding the closing delimiter (*/) here" ++
-            " to complete the comment",
-        error.InvalidUnicodeEscape => "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH}" ++
-            " (1-6 hex digits) here",
-        error.InvalidOctalEscape => "Try using a valid octal sequence here (\\0-7, \\00-77," ++
-            " or \\000-377)",
-        error.InvalidOctalLiteralDigit => "Try adding at least one octal digit (0-7) here" ++
-            " after '0o'",
-        error.InvalidBinaryLiteral => "Try adding at least one binary digit (0 or 1) here" ++
-            " after '0b'",
-        error.InvalidHexLiteral => "Try adding at least one hex digit (0-9, a-f, A-F) here" ++
-            " after '0x'",
-        error.InvalidExponentPart => "Try adding digits here after the exponent" ++
-            " (e.g., e10, e-5, E+2)",
-        error.NumericSeparatorMisuse => "Try placing the separator between two digits," ++
-            " or removing it",
-        error.ConsecutiveNumericSeparators => "Try removing one of the consecutive underscores" ++
-            " here",
-        error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal" ++
-            " point/exponent from the number",
-        error.IdentifierAfterNumericLiteral => "Try adding whitespace here between the number" ++
-            " and identifier",
-        error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the" ++
-            " file is saved with valid UTF-8 encoding",
+        error.InvalidHexEscape => "Write two hexadecimal digits after '\\x', such as '\\x41'",
+        error.UnterminatedString => "Add a closing quote to end the string",
+        error.NonTerminatedTemplateLiteral => "Add a closing backtick to end the template",
+        error.UnterminatedRegexLiteral => "Add a closing '/' to end the regular expression," ++
+            " followed by any flags",
+        error.InvalidRegexLineTerminator => "Remove the line break, or match it with '\\n'",
+        error.InvalidIdentifierStart => "Start the identifier with a letter, '_', or '$'",
+        error.InvalidIdentifierContinue => "Use only letters, digits, '_', and '$' in an" ++
+            " identifier",
+        error.UnterminatedMultiLineComment => "Add '*/' to close the comment",
+        error.InvalidUnicodeEscape => "Write four hexadecimal digits, such as '\\u00e9', or a" ++
+            " code point of one to six digits in braces, such as '\\u{1f600}'",
+        error.InvalidOctalEscape => "Use a hexadecimal escape instead, such as '\\x07'",
+        error.InvalidOctalLiteralDigit => "Add an octal digit (0-7) after '0o', such as '0o17'",
+        error.InvalidBinaryLiteral => "Add a binary digit (0 or 1) after '0b', such as '0b101'",
+        error.InvalidHexLiteral => "Add a hexadecimal digit (0-9, a-f) after '0x', such as" ++
+            " '0xff'",
+        error.InvalidExponentPart => "Add digits after the exponent, such as '1e10' or '1e-5'",
+        error.NumericSeparatorMisuse => "Place the separator between two digits, or remove it",
+        error.ConsecutiveNumericSeparators => "Remove the extra separator",
+        error.ExponentialBigInt => "Write the value without an exponent, or remove the 'n'" ++
+            " suffix",
+        error.NonIntegerBigInt => "Remove the fractional part, or remove the 'n' suffix",
+        error.IdentifierAfterNumericLiteral => "Add a space between the number and the" ++
+            " identifier",
+        error.InvalidUtf8 => "Save the file with UTF-8 encoding",
         error.OutOfMemory => "The system ran out of memory while parsing",
-        error.JsxIdentifierCannotContainEscapes => "Remove the escape sequence and use the" ++
-            " literal character instead",
-        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names must be plain" ++
-            " identifiers without escape sequences",
+        error.JsxIdentifierCannotContainEscapes => "Write the character itself instead of the" ++
+            " escape",
+        error.JsxIdentifierCannotStartWithBackslash => "Write the tag name without escape" ++
+            " sequences",
     };
 }

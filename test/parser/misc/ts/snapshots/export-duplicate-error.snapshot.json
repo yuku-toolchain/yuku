@@ -830,7 +830,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Duplicate export of 'E1'",
+      "message": "Duplicate export 'E1'",
       "path": null,
       "start": 139,
       "end": 141,
@@ -850,7 +850,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'E2'",
+      "message": "Duplicate export 'E2'",
       "path": null,
       "start": 200,
       "end": 202,
@@ -870,7 +870,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'E3'",
+      "message": "Duplicate export 'E3'",
       "path": null,
       "start": 302,
       "end": 304,
@@ -890,7 +890,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'E4'",
+      "message": "Duplicate export 'E4'",
       "path": null,
       "start": 392,
       "end": 394,
@@ -910,7 +910,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'E5'",
+      "message": "Duplicate export 'E5'",
       "path": null,
       "start": 478,
       "end": 485,
@@ -930,7 +930,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'E6'",
+      "message": "Duplicate export 'E6'",
       "path": null,
       "start": 587,
       "end": 589,
@@ -950,7 +950,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'E7'",
+      "message": "Duplicate export 'E7'",
       "path": null,
       "start": 701,
       "end": 703,
@@ -970,7 +970,7 @@
     },
     {
       "severity": "error",
-      "message": "Duplicate export of 'default'",
+      "message": "Duplicate export 'default'",
       "path": null,
       "start": 784,
       "end": 801,

@@ -24,7 +24,7 @@ pub fn parseFunction(
     std.debug.assert(start_from_param != null or parser.current_token.tag == .function);
 
     const start = start_from_param orelse parser.current_token.span.start;
-    if (!try parser.expect(.function, "Expected 'function' keyword", null)) return null;
+    if (!try parser.expect(.function, "Expected 'function'", null)) return null;
 
     const is_function_expression = options.is_expression and !options.is_default_export;
     const is_generator = parser.current_token.tag == .star;
@@ -51,8 +51,8 @@ pub fn parseFunction(
     if (!options.is_expression and !options.is_default_export and id == .null) {
         try parser.report(
             parser.current_token.span,
-            "Function declaration requires a name",
-            .{ .help = "Add a name after 'function', e.g. 'function myFunc() {}'." },
+            "A function declaration without the 'default' modifier must have a name",
+            .{ .help = "Add a name after 'function'" },
         );
     }
 
@@ -73,7 +73,7 @@ pub fn parseFunction(
         try parser.report(
             parser.current_token.span,
             "An implementation cannot be declared in ambient contexts",
-            .{ .help = "Remove the function body or the surrounding 'declare' modifier" },
+            .{ .help = "Remove the function body, or the surrounding 'declare' modifier" },
         );
         return null;
     }
@@ -141,8 +141,8 @@ fn parseBlockFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(
         .left_brace,
-        "Expected '{' to start function body",
-        "Function bodies must be enclosed in braces: function name() { ... }",
+        "Expected '{' to start the function body",
+        null,
     )) return null;
 
     const saved_return = parser.context.@"return";
@@ -153,8 +153,8 @@ fn parseBlockFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close function body",
-        "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
+        "Expected '}' to close the function body",
+        "Check that every '{' in the function has a matching '}'",
     )) return null;
 
     return try parser.tree.addNode(
@@ -172,7 +172,9 @@ pub fn parseFormalParameters(
 ) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
-    if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;
+    if (!try parser.expect(.left_paren, "Expected '(' to start the parameter list", null)) {
+        return null;
+    }
 
     const params_checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(params_checkpoint);
@@ -201,17 +203,16 @@ pub fn parseFormalParameters(
                     if (!parser.ts_context.ambient) {
                         try parser.report(
                             span,
-                            "Rest parameter may not have a trailing comma",
-                            .{ .help = "Remove the trailing comma after the rest parameter." },
+                            "A rest parameter cannot have a trailing comma",
+                            .{ .help = "Remove the trailing comma" },
                         );
                         return null;
                     }
                 } else {
                     try parser.report(
                         span,
-                        "Rest parameter must be the last parameter",
-                        .{ .help = "Move the '...rest' parameter to the end of the parameter" ++
-                            " list, or remove trailing parameters." },
+                        "A rest parameter must be last in a parameter list",
+                        .{ .help = "Move the rest parameter to the end" },
                     );
                     return null;
                 }
@@ -231,7 +232,9 @@ pub fn parseFormalParameters(
     }
 
     const end = parser.current_token.span.end;
-    if (!try parser.expect(.right_paren, "Expected ')' to close parameter list", null)) return null;
+    if (!try parser.expect(.right_paren, "Expected ')' to close the parameter list", null)) {
+        return null;
+    }
 
     return try parser.tree.addNode(.{ .formal_parameters = .{
         .items = try parser.flushToExtras(&parser.scratch_a, params_checkpoint),
@@ -269,7 +272,7 @@ fn parseFormalParameter(
         try parser.report(
             parser.tree.span(pattern),
             "A parameter property may not be declared using a binding pattern",
-            .{ .help = "Name the parameter, then destructure it inside the constructor body." },
+            .{ .help = "Use an identifier, then destructure it in the constructor body" },
         );
     }
 
@@ -329,11 +332,11 @@ fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModi
 /// `this` parameter. Always true when `kind` is not an accessor.
 pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex) Error!bool {
     const arity_expected: u32, const message: []const u8, const help: []const u8 = switch (kind) {
-        .get => .{ 0, "Getter must have no parameters", "Remove all parameters from the getter." },
+        .get => .{ 0, "A 'get' accessor cannot have parameters", "Remove the parameters" },
         .set => .{
             1,
-            "Setter must have exactly one parameter",
-            "Setters accept exactly one argument.",
+            "A 'set' accessor must have exactly one parameter",
+            "Declare one parameter for the assigned value",
         },
         else => return true,
     };

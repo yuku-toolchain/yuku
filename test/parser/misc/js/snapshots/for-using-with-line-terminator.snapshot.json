@@ -11,7 +11,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected ';' after for-loop init, but found 'id'",
+      "message": "Expected ';' after the loop initializer, but found 'id'",
       "path": null,
       "start": 11,
       "end": 13,

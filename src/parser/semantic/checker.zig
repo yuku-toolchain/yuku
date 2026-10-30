@@ -75,7 +75,7 @@ pub const Checker = struct {
                 try self.report(
                     ctx.tree.span(node_index),
                     try self.fmt(
-                        "'{s}' is not allowed as a binding identifier in strict mode",
+                        "'{s}' cannot be used as a binding identifier in strict mode",
                         .{name},
                     ),
                     .{},
@@ -84,7 +84,7 @@ pub const Checker = struct {
         } else if (flags.block_scoped_var and eql(u8, name, "let")) {
             try self.report(
                 ctx.tree.span(node_index),
-                "'let' is not allowed as a variable name in a lexical declaration",
+                "'let' is not allowed to be used as a name in 'let' or 'const' declarations",
                 .{},
             );
         }
@@ -203,7 +203,8 @@ pub const Checker = struct {
         if (eql(u8, name, "arguments") and !isArgumentsAvailable(ctx)) {
             try self.report(
                 ctx.tree.span(node_index),
-                "'arguments' is not allowed in class field initializers or static blocks",
+                "'arguments' cannot be referenced in property initializers or class static" ++
+                    " initialization blocks",
                 .{},
             );
         }
@@ -234,7 +235,7 @@ pub const Checker = struct {
         const span = ctx.tree.span(node_index);
         if (spec.escapes.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
             try self.report(span, "Octal escape sequences are not allowed in strict mode", .{
-                .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
+                .help = "Use a hexadecimal escape instead, such as '\\x07'",
             });
         }
 
@@ -257,16 +258,17 @@ pub const Checker = struct {
 
         const is_octal = std.mem.findAny(u8, raw, "89") == null;
 
-        const message = if (is_octal)
-            "Octal literals are not allowed in strict mode"
-        else
-            "Decimals with leading zeros are not allowed in strict mode";
-        const help = if (is_octal)
-            "Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent"
-        else
-            "Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary" ++
-                " notation";
-        try self.report(span, message, .{ .help = help });
+        if (is_octal) {
+            const trimmed = std.mem.trimStart(u8, raw, "0");
+            const digits = if (trimmed.len == 0) "0" else trimmed;
+            try self.report(span, "Octal literals are not allowed in strict mode", .{
+                .help = try self.fmt("Use the syntax '0o{s}'", .{digits}),
+            });
+        } else {
+            try self.report(span, "Decimals with leading zeros are not allowed in strict mode", .{
+                .help = "Remove the leading zeros, or use a '0o', '0x', or '0b' prefix",
+            });
+        }
         return .proceed;
     }
 
@@ -294,7 +296,7 @@ pub const Checker = struct {
         if (static_semantics.findNonSimpleParameter(ctx.tree, params)) |param| {
             try self.report(
                 ctx.tree.span(node_index),
-                "Illegal 'use strict' directive in function with non-simple parameter list",
+                "'use strict' directive cannot be used with non-simple parameter list",
                 .{ .labels = try self.labels(&.{
                     self.label(ctx.tree.span(param), "non-simple parameter"),
                 }) },
@@ -345,11 +347,11 @@ pub const Checker = struct {
 
         if (!is_valid) {
             const message = if (is_strict)
-                "In strict mode code, functions can only be declared at top level or" ++
+                "In strict mode code, functions can only be declared at the top level or" ++
                     " inside a block"
             else
-                "In non-strict mode code, functions can only be declared at top level," ++
-                    " inside a block, or as the body of an if statement";
+                "In non-strict mode code, functions can only be declared at the top level," ++
+                    " inside a block, or as the body of an 'if' statement";
             try self.report(ctx.tree.span(node_index), message, .{});
         }
         return .proceed;
@@ -364,7 +366,7 @@ pub const Checker = struct {
         if (findFormalParameters(ctx) != null) {
             try self.report(
                 ctx.tree.span(node_index),
-                "Yield expression is not allowed in formal parameters",
+                "'yield' expressions cannot be used in a parameter list",
                 .{},
             );
         }
@@ -380,9 +382,9 @@ pub const Checker = struct {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             const message = switch (ctx.tree.data(i)) {
-                .formal_parameters => "Await expression is not allowed in formal parameters",
+                .formal_parameters => "'await' expressions cannot be used in a parameter list",
                 // ClassStaticBlockBody uses [~Await]
-                .static_block => "Cannot use await in class static initialization block",
+                .static_block => "'await' expression cannot be used inside a class static block",
                 .function, .arrow_function_expression, .program => return .proceed,
                 else => continue,
             };
@@ -402,7 +404,9 @@ pub const Checker = struct {
         if (isStrict(ctx) and isEvalOrArgumentsRef(ctx.tree, expr.argument)) {
             try self.report(
                 ctx.tree.span(node_index),
-                "Cannot assign to 'eval' or 'arguments' in strict mode",
+                try self.fmt("Cannot assign to '{s}' in strict mode", .{
+                    ctx.tree.string(ctx.tree.data(expr.argument).identifier_reference.name),
+                }),
                 .{},
             );
         }
@@ -452,7 +456,7 @@ pub const Checker = struct {
                 .identifier_reference => if (isStrict(ctx)) {
                     try self.report(
                         ctx.tree.span(node_index),
-                        "Deleting a variable in strict mode is not allowed",
+                        "'delete' cannot be called on an identifier in strict mode",
                         .{},
                     );
                 },
@@ -460,7 +464,7 @@ pub const Checker = struct {
                     if (!m.computed and ctx.tree.data(m.property) == .private_identifier) {
                         try self.report(
                             ctx.tree.span(node_index),
-                            "Private fields cannot be deleted",
+                            "The operand of a 'delete' operator cannot be a private identifier",
                             .{},
                         );
                     }
@@ -489,10 +493,13 @@ pub const Checker = struct {
             if (first_proto) |first| {
                 try self.report(
                     ctx.tree.span(child),
-                    "Duplicate '__proto__' property in object literal",
-                    .{ .labels = try self.labels(&.{
-                        self.label(ctx.tree.span(first), "first defined here"),
-                    }) },
+                    "Duplicate '__proto__' property in an object literal",
+                    .{
+                        .help = "Set the prototype only once",
+                        .labels = try self.labels(&.{
+                            self.label(ctx.tree.span(first), "first defined here"),
+                        }),
+                    },
                 );
             } else {
                 first_proto = child;
@@ -509,17 +516,19 @@ pub const Checker = struct {
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (ctx.tree.data(expr.callee) == .super) {
-            const help = switch (superCallValidity(ctx)) {
+            const message: []const u8, const help: []const u8 = switch (superCallValidity(ctx)) {
                 .valid => return .proceed,
-                .not_in_constructor => "Use an arrow function instead of a regular function to" ++
-                    " inherit the 'super' binding",
-                .no_extends => "Add an 'extends' clause to the class or remove the 'super()' call",
+                .not_in_constructor => .{
+                    "Super calls are not permitted outside constructors or in nested functions" ++
+                        " inside constructors",
+                    "Use an arrow function to keep the constructor's 'super' binding",
+                },
+                .no_extends => .{
+                    "'super' can only be referenced in a derived class",
+                    "Add an 'extends' clause, or remove the 'super()' call",
+                },
             };
-            try self.report(
-                ctx.tree.span(node_index),
-                "'super()' is only valid in a constructor of a derived class",
-                .{ .help = help },
-            );
+            try self.report(ctx.tree.span(node_index), message, .{ .help = help });
         }
         return .proceed;
     }
@@ -534,9 +543,9 @@ pub const Checker = struct {
             if (!isSuperPropertyValid(ctx)) {
                 try self.report(
                     ctx.tree.span(node_index),
-                    "'super' property access is only valid inside a method or class body",
-                    .{ .help = "Use an arrow function instead of a regular function to inherit" ++
-                        " the 'super' binding" },
+                    "'super' can only be referenced in members of derived classes or object" ++
+                        " literal expressions",
+                    .{ .help = "Use an arrow function to keep the method's 'super' binding" },
                 );
             }
         }
@@ -545,7 +554,11 @@ pub const Checker = struct {
         // AllPrivateIdentifiersValid requires a declaring class
         if (!expr.computed and ctx.tree.data(expr.property) == .private_identifier) {
             if (ctx.tree.data(expr.object) == .super) {
-                try self.report(ctx.tree.span(node_index), "'super' keyword unexpected here", .{});
+                try self.report(
+                    ctx.tree.span(node_index),
+                    "Private identifiers cannot be accessed on 'super'",
+                    .{},
+                );
             } else {
                 try self.checkPrivateName(expr.property, ctx);
             }
@@ -568,7 +581,7 @@ pub const Checker = struct {
         if (eql(u8, name, "import") and !ctx.tree.isModule()) {
             try self.report(
                 ctx.tree.span(node_index),
-                "'import.meta' is only valid in module code",
+                "Cannot use 'import.meta' outside a module",
                 .{},
             );
         }
@@ -578,8 +591,8 @@ pub const Checker = struct {
         if (eql(u8, name, "new") and !isNewTargetAvailable(ctx)) {
             try self.report(
                 ctx.tree.span(node_index),
-                "'new.target' is only valid inside functions, class field initializers," ++
-                    " or static blocks",
+                "'new.target' is only allowed in functions, class field initializers, and" ++
+                    " static blocks",
                 .{},
             );
         }
@@ -690,7 +703,7 @@ pub const Checker = struct {
         if (stmt.await and !ctx.tree.isTs() and isInsideStaticBlock(ctx)) {
             try self.report(
                 ctx.tree.span(node_index),
-                "Cannot use 'for await' in class static initialization block",
+                "'for await' loops cannot be used inside a class static block",
                 .{},
             );
         }
@@ -721,7 +734,7 @@ pub const Checker = struct {
             ctx.tree.source_type == .script and isAtProgramLevel(ctx))
         {
             try self.report(ctx.tree.span(node_index), try self.fmt(
-                "'{s}' is not allowed at the top level of a script",
+                "'{s}' declarations are not allowed at the top level of a script",
                 .{decl.kind.toString()},
             ), .{});
         }
@@ -739,9 +752,9 @@ pub const Checker = struct {
         } else if (!isInsideJumpTarget(ctx, true)) {
             try self.report(
                 ctx.tree.span(node_index),
-                "Illegal break statement",
-                .{ .help = "A 'break' statement can only be used within an enclosing" ++
-                    " iteration or switch statement" },
+                "A 'break' statement can only be used within an enclosing iteration or switch" ++
+                    " statement",
+                .{},
             );
         }
         return .proceed;
@@ -760,21 +773,20 @@ pub const Checker = struct {
             if (!target.isIteration() and target != .labeled_statement) {
                 try self.report(
                     ctx.tree.span(node_index),
-                    try self.fmt(
-                        "Label '{s}' does not denote an iteration statement",
+                    "A 'continue' statement can only jump to a label of an enclosing iteration" ++
+                        " statement",
+                    .{ .help = try self.fmt(
+                        "Label '{s}' does not mark a loop",
                         .{labelName(ctx.tree, stmt.label)},
-                    ),
-                    .{ .help = "A 'continue' statement can only jump to a label of an" ++
-                        " enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of'" ++
-                        " statement" },
+                    ) },
                 );
             }
         } else if (!isInsideJumpTarget(ctx, false)) {
             try self.report(
                 ctx.tree.span(node_index),
-                "Illegal continue statement",
-                .{ .help = "A 'continue' statement can only be used within an enclosing" ++
-                    " iteration statement" },
+                "A 'continue' statement can only be used within an enclosing iteration" ++
+                    " statement",
+                .{},
             );
         }
         return .proceed;
@@ -821,9 +833,9 @@ pub const Checker = struct {
             if (first_default) |first| {
                 try self.report(
                     ctx.tree.span(child),
-                    "A switch statement can only have one default clause",
+                    "A 'default' clause cannot appear more than once in a 'switch' statement",
                     .{ .labels = try self.labels(&.{
-                        self.label(ctx.tree.span(first), "first default defined here"),
+                        self.label(ctx.tree.span(first), "first 'default' clause here"),
                     }) },
                 );
             } else {
@@ -858,12 +870,9 @@ pub const Checker = struct {
                     if (first_constructor) |first| {
                         try self.report(
                             ctx.tree.span(method.key),
-                            "A class can only have one constructor",
+                            "Multiple constructor implementations are not allowed",
                             .{ .labels = try self.labels(&.{
-                                self.label(
-                                    ctx.tree.span(first),
-                                    "first constructor defined here",
-                                ),
+                                self.label(ctx.tree.span(first), "first constructor here"),
                             }) },
                         );
                     } else {
@@ -974,7 +983,7 @@ pub const Checker = struct {
         try self.report(
             ctx.tree.span(node_index),
             try self.fmt(
-                "'{s}' is reserved in strict mode and cannot be used as " ++ as_what,
+                "'{s}' is a reserved word in strict mode and cannot be used as " ++ as_what,
                 .{name},
             ),
             .{},
@@ -995,7 +1004,10 @@ pub const Checker = struct {
         if (declarators.len > 1) {
             try self.report(
                 ctx.tree.span(left),
-                "Only a single variable declaration is allowed in a for-in/of statement",
+                if (is_for_in)
+                    "Only a single variable declaration is allowed in a 'for...in' statement"
+                else
+                    "Only a single variable declaration is allowed in a 'for...of' statement",
                 .{},
             );
             return;
@@ -1008,8 +1020,8 @@ pub const Checker = struct {
             if (static_semantics.isAnnexBForInHead(ctx.tree, decl.kind, declarator.id, is_for_in)) {
                 try self.report(
                     ctx.tree.span(child),
-                    "for-in loop variable declaration may not have an initializer",
-                    .{ .help = "Remove the initializer, or leave strict mode." },
+                    "The variable declaration of a 'for...in' statement cannot have an initializer",
+                    .{ .help = "Remove the initializer" },
                 );
                 return;
             }
@@ -1029,10 +1041,11 @@ pub const Checker = struct {
         if (node == .null) return;
         switch (ctx.tree.data(node)) {
             .identifier_reference => |id| {
-                if (lexical.isEvalOrArguments(ctx.tree.string(id.name))) {
+                const name = ctx.tree.string(id.name);
+                if (lexical.isEvalOrArguments(name)) {
                     try self.report(
                         ctx.tree.span(node),
-                        "Cannot assign to 'eval' or 'arguments' in strict mode",
+                        try self.fmt("Cannot assign to '{s}' in strict mode", .{name}),
                         .{},
                     );
                 }
@@ -1180,7 +1193,8 @@ pub const Checker = struct {
                 if (eql(u8, labelName(ctx.tree, statement.label), name)) {
                     if (!crossed_boundary) return statement.body;
                     try self.report(ctx.tree.span(node_index), try self.fmt(
-                        "Cannot " ++ keyword ++ " to label '{s}' across function boundaries",
+                        "A '" ++ keyword ++ "' statement cannot jump to label '{s}' across a" ++
+                            " function boundary",
                         .{name},
                     ), .{});
                     return null;
@@ -1190,8 +1204,12 @@ pub const Checker = struct {
         }
         try self.report(
             ctx.tree.span(node_index),
-            try self.fmt("Use of undefined label '{s}'", .{name}),
-            .{},
+            try self.fmt("Cannot find label '{s}'", .{name}),
+            .{ .help = if (comptime eql(u8, keyword, "break"))
+                "A 'break' statement can only jump to a label of an enclosing statement"
+            else
+                "A 'continue' statement can only jump to a label of an enclosing iteration" ++
+                    " statement" },
         );
         return null;
     }
@@ -1289,7 +1307,7 @@ pub const Checker = struct {
                     const name = if (!prev_key.is_string_literal) prev_key.name else key.name;
                     try self.report(
                         key.span,
-                        try self.fmt("Duplicate import attribute key '{s}'", .{name}),
+                        try self.fmt("Duplicate import attribute '{s}'", .{name}),
                         .{ .labels = try self.labels(&.{
                             self.label(prev_key.span, "first used here"),
                         }) },
@@ -1363,7 +1381,10 @@ pub const Checker = struct {
             if (symbols.binding(scope.module_scope, specifier.local_name) == null) {
                 try self.report(
                     self.tree.span(specifier.node),
-                    try self.fmt("Export '{s}' is not defined", .{specifier.local_name}),
+                    try self.fmt(
+                        "Cannot export '{s}' because it is not declared in this module",
+                        .{specifier.local_name},
+                    ),
                     .{},
                 );
             }
@@ -1396,7 +1417,7 @@ pub const Checker = struct {
         std.debug.assert(self.tree.span(first).start < self.tree.span(again).start);
         try self.report(
             self.tree.span(again),
-            try self.fmt("Duplicate export of '{s}'", .{name}),
+            try self.fmt("Duplicate export '{s}'", .{name}),
             .{ .labels = try self.labels(&.{
                 self.label(self.tree.span(first), "first exported here"),
                 self.label(self.tree.span(again), "exported again here"),
@@ -1415,7 +1436,8 @@ pub const Checker = struct {
         std.debug.assert(node_index != .null);
         const current_span = ctx.tree.span(node_index);
         const existing_span = ctx.tree.span(ctx.symbols.firstDeclOf(existing_id));
-        const kind = ctx.symbols.symbol(existing_id).flags.toString();
+        const flags = ctx.symbols.symbol(existing_id).flags;
+        const kind = flags.toString();
         std.debug.assert(kind.len > 0);
         const article: []const u8 = switch (kind[0]) {
             'a', 'e', 'i', 'o', 'u' => "an",
@@ -1424,7 +1446,10 @@ pub const Checker = struct {
 
         try self.report(
             current_span,
-            try self.fmt("Identifier '{s}' has already been declared", .{name}),
+            if (flags.block_scoped_var)
+                try self.fmt("Cannot redeclare block-scoped variable '{s}'", .{name})
+            else
+                try self.fmt("Duplicate identifier '{s}'", .{name}),
             .{
                 .labels = try self.labels(&.{
                     self.label(existing_span, try self.fmt(
@@ -1433,10 +1458,7 @@ pub const Checker = struct {
                     )),
                     self.label(current_span, "cannot be redeclared here"),
                 }),
-                .help = try self.fmt(
-                    "Consider removing or renaming this declaration of '{s}'",
-                    .{name},
-                ),
+                .help = try self.fmt("Rename or remove this declaration of '{s}'", .{name}),
             },
         );
     }

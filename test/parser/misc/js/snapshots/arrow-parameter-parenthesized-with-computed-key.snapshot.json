@@ -251,12 +251,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Parentheses are not allowed in this binding pattern",
+      "message": "Parentheses are not allowed in binding patterns",
       "path": null,
       "start": 58,
       "end": 59,
       "labels": [],
-      "help": "Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions."
+      "help": "Remove the parentheses"
     }
   ]
 }

@@ -128,7 +128,7 @@
       "start": 7,
       "end": 29,
       "labels": [],
-      "help": "Re-export with 'export { name } from \"module\"' instead."
+      "help": "Re-export with 'export { name } from \"m\"' instead"
     },
     {
       "severity": "error",
@@ -137,7 +137,7 @@
       "start": 37,
       "end": 48,
       "labels": [],
-      "help": "Re-export with 'export { name } from \"module\"' instead."
+      "help": "Re-export with 'export { name } from \"m\"' instead"
     }
   ]
 }

@@ -326,7 +326,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b>' but found '</a.c>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b>', but found '</a.c>'",
       "path": null,
       "start": 100,
       "end": 103,
@@ -337,11 +337,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b.c>' but found '</a.c.b>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b.c>', but found '</a.c.b>'",
       "path": null,
       "start": 123,
       "end": 128,
@@ -352,11 +352,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b.c>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b>' but found '</b.b>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b>', but found '</b.b>'",
       "path": null,
       "start": 146,
       "end": 149,
@@ -367,11 +367,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b>' but found '</a>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b>', but found '</a>'",
       "path": null,
       "start": 167,
       "end": 168,
@@ -382,11 +382,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a:b>' but found '</a:c>'",
+      "message": "Expected corresponding JSX closing tag for '<a:b>', but found '</a:c>'",
       "path": null,
       "start": 186,
       "end": 189,
@@ -397,11 +397,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a:b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a:b>' but found '</a.b>'",
+      "message": "Expected corresponding JSX closing tag for '<a:b>', but found '</a.b>'",
       "path": null,
       "start": 207,
       "end": 210,
@@ -412,7 +412,7 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a:b>'"
     }
   ]
 }

@@ -3892,12 +3892,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected '?' in a conditional type, but found 'extends'",
+      "message": "Expected '?' in the conditional type, but found 'extends'",
       "path": null,
       "start": 1177,
       "end": 1184,
       "labels": [],
-      "help": "A conditional type is written 'T extends U ? X : Y'"
+      "help": "Write a conditional type as 'T extends U ? X : Y'"
     },
     {
       "severity": "error",
@@ -3910,12 +3910,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected '?' in a conditional type, but found '('",
+      "message": "Expected '?' in the conditional type, but found '('",
       "path": null,
       "start": 1287,
       "end": 1288,
       "labels": [],
-      "help": "A conditional type is written 'T extends U ? X : Y'"
+      "help": "Write a conditional type as 'T extends U ? X : Y'"
     },
     {
       "severity": "error",
@@ -3928,12 +3928,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected '?' in a conditional type, but found 'extends'",
+      "message": "Expected '?' in the conditional type, but found 'extends'",
       "path": null,
       "start": 1366,
       "end": 1373,
       "labels": [],
-      "help": "A conditional type is written 'T extends U ? X : Y'"
+      "help": "Write a conditional type as 'T extends U ? X : Y'"
     },
     {
       "severity": "error",

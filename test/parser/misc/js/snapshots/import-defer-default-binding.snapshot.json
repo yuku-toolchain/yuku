@@ -39,12 +39,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "'import defer' only supports a namespace import",
+      "message": "Default imports are not allowed in a deferred import",
       "path": null,
       "start": 7,
       "end": 12,
       "labels": [],
-      "help": "Write 'import defer * as ns from \"...\"'."
+      "help": "Use a namespace import, such as 'import defer * as ns from \"m\"'"
     }
   ]
 }

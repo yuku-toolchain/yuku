@@ -56,16 +56,16 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .question,
-        "Expected '?' in a conditional type",
-        "A conditional type is written 'T extends U ? X : Y'",
+        "Expected '?' in the conditional type",
+        "Write a conditional type as 'T extends U ? X : Y'",
     )) return null;
 
     const true_type = try parseType(parser) orelse return null;
 
     if (!try parser.expect(
         .colon,
-        "Expected ':' in a conditional type",
-        "A conditional type is written 'T extends U ? X : Y'",
+        "Expected ':' in the conditional type",
+        "Write a conditional type as 'T extends U ? X : Y'",
     )) return null;
 
     const false_type = try parseType(parser) orelse return null;
@@ -161,8 +161,8 @@ fn parseArrayOrIndexedAccessType(parser: *Parser, element: ast.NodeIndex) Error!
 
     if (!try parser.expect(
         .right_bracket,
-        "Expected ']' to close an indexed access type",
-        "Each '[' in a type must be matched by a ']'",
+        "Expected ']' to close the indexed access type",
+        "Check that every '[' in the type has a matching ']'",
     )) return null;
 
     return try parser.tree.addNode(
@@ -520,8 +520,8 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     const arrow_start = parser.current_token.span.start;
     if (!try parser.expect(
         .arrow,
-        "Expected '=>' in function type",
-        "A function type is written '(params) => ReturnType'",
+        "Expected '=>' in the function type",
+        "Write a function type as '(params) => ReturnType'",
     )) return null;
 
     const return_type_inner = try predicate.parseTypeOrTypePredicate(parser) orelse return null;
@@ -556,8 +556,8 @@ fn parseParenthesizedType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_paren,
-        "Expected ')' to close a parenthesized type",
-        "Each '(' in a type must be matched by a ')'",
+        "Expected ')' to close the parenthesized type",
+        "Check that every '(' in the type has a matching ')'",
     )) return null;
 
     return try parser.tree.addNode(
@@ -585,8 +585,8 @@ fn parseTupleType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_bracket,
-        "Expected ']' to close a tuple type",
-        "Each '[' in a tuple type must be matched by a ']'",
+        "Expected ']' to close the tuple type",
+        "Check that every '[' in the tuple has a matching ']'",
     )) return null;
 
     const element_types = try parser.flushToExtras(&parser.scratch_a, checkpoint);
@@ -613,7 +613,7 @@ fn checkTupleElementOrder(parser: *Parser, element_types: ast.IndexRange) Error!
         } else if (seen_optional) return parser.report(
             parser.tree.span(element),
             "A required element cannot follow an optional element",
-            .{ .help = "Mark this element optional, or move it before the optional ones." },
+            .{ .help = "Mark the element optional, or move it before the optional elements" },
         );
     }
 }
@@ -666,7 +666,7 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
     const is_optional = parser.current_token.tag == .question;
     if (is_optional) try parser.advance() orelse return null;
 
-    if (!try parser.expect(.colon, "Expected ':' after named tuple element label", null)) {
+    if (!try parser.expect(.colon, "Expected ':' after the tuple element name", null)) {
         return null;
     }
 
@@ -729,8 +729,8 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .left_paren,
-        "Expected '(' after 'import' in an import type",
-        "An import type is written 'import(\"module\").Foo'",
+        "Expected '(' after 'import' in the import type",
+        "Write an import type as 'import(\"m\").Name'",
     )) return null;
 
     const source = try literals.parseStringLiteral(parser) orelse return null;
@@ -738,18 +738,14 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_paren,
-        "Expected ')' to close an import type",
-        "An import type's argument list must end with ')'",
+        "Expected ')' to close the import type",
+        "Check that every '(' in the import type has a matching ')'",
     )) return null;
 
     var qualifier: ast.NodeIndex = .null;
     if (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null;
-        const head = try parseQualifiedSegment(
-            parser,
-            "Expected an identifier",
-            "Each '.' in a qualified name must be followed by an identifier",
-        ) orelse return null;
+        const head = try parseQualifiedSegment(parser) orelse return null;
         qualifier = try extendQualifiedName(parser, head) orelse return null;
     }
 
@@ -789,11 +785,9 @@ fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
 fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
     const first_token = parser.current_token;
     if (!first_token.tag.isIdentifierLike()) {
-        try parser.reportExpected(
-            first_token.span,
-            "Expected an identifier",
-            .{ .help = "An entity name must start with an identifier" },
-        );
+        try parser.reportExpected(first_token.span, "Expected an identifier", .{
+            .help = "Start the type name with an identifier",
+        });
         return null;
     }
 
@@ -809,14 +803,12 @@ fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
     return extendQualifiedName(parser, head);
 }
 
-fn parseQualifiedSegment(
-    parser: *Parser,
-    comptime message: []const u8,
-    comptime help: []const u8,
-) Error!?ast.NodeIndex {
+fn parseQualifiedSegment(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     if (!token.tag.isIdentifierLike()) {
-        try parser.reportExpected(token.span, message, .{ .help = help });
+        try parser.reportExpected(token.span, "Expected an identifier after '.'", .{
+            .help = "Follow each '.' in a qualified name with an identifier",
+        });
         return null;
     }
     const node = try literals.addIdentifierName(parser, token);
@@ -828,11 +820,7 @@ pub fn extendQualifiedName(parser: *Parser, head: ast.NodeIndex) Error!?ast.Node
     var name = head;
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null;
-        const right = try parseQualifiedSegment(
-            parser,
-            "Expected an identifier after '.'",
-            "A qualified name must end with an identifier",
-        ) orelse return null;
+        const right = try parseQualifiedSegment(parser) orelse return null;
         name = try parser.tree.addNode(
             .{ .ts_qualified_name = .{ .left = name, .right = right } },
             .{ .start = parser.tree.span(name).start, .end = parser.tree.span(right).end },

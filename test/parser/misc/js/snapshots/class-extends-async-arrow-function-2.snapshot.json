@@ -11,12 +11,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected '{' to start class body, but found 'x'",
+      "message": "Expected '{' to start the class body, but found 'x'",
       "path": null,
       "start": 22,
       "end": 23,
       "labels": [],
-      "help": "Class body must be enclosed in braces: class Name { ... }"
+      "help": null
     }
   ]
 }

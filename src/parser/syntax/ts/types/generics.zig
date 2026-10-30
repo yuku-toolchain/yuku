@@ -53,9 +53,9 @@ fn parseAngleList(
 
     if (!parsed_any) {
         try parser.report(parser.current_token.span, switch (kind) {
-            .arguments => "A type argument list cannot be empty",
-            .parameters => "A type parameter list cannot be empty",
-        }, .{});
+            .arguments => "Type argument list cannot be empty",
+            .parameters => "Type parameter list cannot be empty",
+        }, .{ .help = "Remove the empty '<>'" });
     }
 
     const end = try consumeAngleClose(parser, kind, close) orelse return .null;
@@ -118,10 +118,10 @@ fn consumeAngleClose(
     try parser.reportExpected(
         token.span,
         switch (kind) {
-            .arguments => "Expected '>' to close a type argument list",
-            .parameters => "Expected '>' to close a type parameter list",
+            .arguments => "Expected '>' to close the type argument list",
+            .parameters => "Expected '>' to close the type parameter list",
         },
-        .{ .help = "Each '<' in a type must be matched by a '>'" },
+        .{ .help = "Check that every '<' in the type has a matching '>'" },
     );
     return null;
 }
@@ -147,16 +147,17 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
         if (seen_ptr.*) {
             try parser.report(
                 token.span,
-                try parser.fmt(
-                    "Duplicate '{s}' modifier on type parameter",
-                    .{token.tag.toString().?},
-                ),
-                .{},
+                try parser.fmt("'{s}' modifier already seen", .{token.tag.toString().?}),
+                .{ .help = "Remove the repeated modifier" },
             );
         } else if (this_step < step) {
+            const modifier_names = [_][]const u8{ "", "const", "in", "out" };
             try parser.report(
                 token.span,
-                "Type parameter modifiers must appear in the order 'const in out'",
+                try parser.fmt(
+                    "'{s}' modifier must precede '{s}' modifier",
+                    .{ token.tag.toString().?, modifier_names[step] },
+                ),
                 .{},
             );
         }

@@ -662,7 +662,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'T7' has already been declared",
+      "message": "Duplicate identifier 'T7'",
       "path": null,
       "start": 924,
       "end": 926,
@@ -678,7 +678,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'T7'"
+      "help": "Rename or remove this declaration of 'T7'"
     }
   ]
 }

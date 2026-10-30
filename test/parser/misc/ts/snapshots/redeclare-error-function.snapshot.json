@@ -327,7 +327,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'F1' has already been declared",
+      "message": "Duplicate identifier 'F1'",
       "path": null,
       "start": 94,
       "end": 96,
@@ -343,11 +343,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'F1'"
+      "help": "Rename or remove this declaration of 'F1'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'F2' has already been declared",
+      "message": "Duplicate identifier 'F2'",
       "path": null,
       "start": 142,
       "end": 144,
@@ -363,11 +363,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'F2'"
+      "help": "Rename or remove this declaration of 'F2'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'F3' has already been declared",
+      "message": "Duplicate identifier 'F3'",
       "path": null,
       "start": 232,
       "end": 234,
@@ -383,11 +383,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'F3'"
+      "help": "Rename or remove this declaration of 'F3'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'F5' has already been declared",
+      "message": "Duplicate identifier 'F5'",
       "path": null,
       "start": 316,
       "end": 318,
@@ -403,7 +403,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'F5'"
+      "help": "Rename or remove this declaration of 'F5'"
     }
   ]
 }

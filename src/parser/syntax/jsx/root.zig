@@ -61,8 +61,8 @@ fn parseJsxFragment(parser: *Parser, comptime context: JsxElementContext) Error!
     const opening_end = try expectJsxToken(
         parser,
         .greater_than,
-        "Expected '>' to close JSX opening fragment",
-        "Add '>' to complete the fragment opening tag",
+        "Expected '>' to end the opening fragment tag",
+        null,
     ) orelse return null;
     const opening = try parser.tree.addNode(
         .{ .jsx_opening_fragment = .{} },
@@ -77,15 +77,15 @@ fn parseJsxFragment(parser: *Parser, comptime context: JsxElementContext) Error!
 
     if (!try parser.expect(
         .slash,
-        "Expected '/' in JSX closing fragment",
-        "Add '/' to close the fragment",
+        "Expected corresponding closing tag for JSX fragment",
+        "Close the fragment with '</>'",
     )) return null;
 
     const closing_end = try expectJsxToken(
         parser,
         .greater_than,
-        "Expected '>' to close JSX closing fragment",
-        "Add '>' to complete the fragment closing tag",
+        "Expected corresponding closing tag for JSX fragment",
+        "Close the fragment with '</>'",
     ) orelse return null;
     try exitJsxElement(parser, context) orelse return null;
 
@@ -131,8 +131,8 @@ fn parseJsxOpeningElement(
     const end = try expectJsxToken(
         parser,
         .greater_than,
-        "Expected '>' to close JSX opening element",
-        "Add '>' to close the JSX tag",
+        "Expected '>' to end the JSX opening tag",
+        null,
     ) orelse return null;
     if (self_closing) try exitJsxElement(parser, context) orelse return null;
 
@@ -151,19 +151,31 @@ fn parseJsxClosingElement(
     comptime context: JsxElementContext,
 ) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    _ = try expectJsxToken(
-        parser,
-        .less_than,
-        "Expected '</' to close the JSX element",
-        "Add a closing tag to match the opening element",
-    ) orelse return null;
+    if (parser.current_token.tag != .less_than) {
+        try parser.report(
+            parser.current_token.span,
+            try parser.fmt(
+                "JSX element '{s}' has no corresponding closing tag",
+                .{parser.spanText(parser.tree.span(opening_name))},
+            ),
+            .{
+                .help = try parser.fmt("Add '</{s}>' to close the element", .{
+                    parser.spanText(parser.tree.span(opening_name)),
+                }),
+                .labels = try parser.labels(&.{
+                    parser.label(parser.tree.span(opening_name), "opening tag"),
+                }),
+            },
+        );
+        return null;
+    }
     parser.setLexerMode(.jsx_tag);
     try parser.advance() orelse return null;
 
     if (!try parser.expect(
         .slash,
-        "Expected '/' in JSX closing element",
-        "Add '/' after '<' to close the element",
+        "Expected '/' in the JSX closing tag",
+        null,
     )) return null;
 
     const name = try parseJsxElementName(parser) orelse return null;
@@ -171,8 +183,8 @@ fn parseJsxClosingElement(
     const end = try expectJsxToken(
         parser,
         .greater_than,
-        "Expected '>' to close JSX closing element",
-        "Add '>' to complete the closing tag",
+        "Expected '>' to end the JSX closing tag",
+        null,
     ) orelse return null;
     try exitJsxElement(parser, context) orelse return null;
 
@@ -181,10 +193,12 @@ fn parseJsxClosingElement(
         const closing_span = parser.tree.span(name);
 
         try parser.report(closing_span, try parser.fmt(
-            "Expected closing tag for '<{s}>' but found '</{s}>'",
+            "Expected corresponding JSX closing tag for '<{s}>', but found '</{s}>'",
             .{ parser.spanText(opening_span), parser.spanText(closing_span) },
         ), .{
-            .help = "JSX opening and closing tags must have matching names",
+            .help = try parser.fmt("Rename the closing tag to '</{s}>'", .{
+                parser.spanText(opening_span),
+            }),
             .labels = try parser.labels(&.{parser.label(opening_span, "opening tag")}),
         });
         return null;
@@ -262,11 +276,13 @@ fn parseJsxChildren(parser: *Parser, opening_end: u32) Error!?ast.IndexRange {
                 try parser.report(
                     parser.current_token.span,
                     if (parser.current_token.tag == .greater_than)
-                        "Unexpected '>' in JSX text"
+                        "Unexpected token '>' in JSX text"
                     else
-                        "Unexpected '}' in JSX text",
-                    .{ .help = "Escape it with an HTML entity or wrap it in an" ++
-                        " expression container like {'>'}." },
+                        "Unexpected token '}' in JSX text",
+                    .{ .help = if (parser.current_token.tag == .greater_than)
+                        "Write {'>'} or '&gt;' instead"
+                    else
+                        "Write {'}'} or '&rbrace;' instead" },
                 );
                 scan_from = parser.current_token.span.end;
                 continue;
@@ -295,8 +311,8 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
         const end = try expectJsxToken(
             parser,
             .right_brace,
-            "Expected '}' to close JSX spread",
-            "Add '}' to close the expression",
+            "Expected '}' to close the JSX spread child",
+            null,
         ) orelse return null;
 
         return try parser.tree.addNode(
@@ -314,8 +330,8 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     const end = try expectJsxToken(
         parser,
         .right_brace,
-        "Expected '}' to close JSX expression",
-        "Add '}' to close the expression",
+        "Expected '}' to close the JSX expression",
+        null,
     ) orelse return null;
 
     return try parser.tree.addNode(
@@ -329,7 +345,7 @@ fn expectJsxToken(
     parser: *Parser,
     comptime tag: TokenTag,
     message: []const u8,
-    help: []const u8,
+    help: ?[]const u8,
 ) Error!?u32 {
     if (parser.current_token.tag != tag) {
         try parser.reportExpected(parser.current_token.span, message, .{ .help = help });
@@ -389,8 +405,8 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
     return parseJsxNamespacedName(
         parser,
         name,
-        "Expected identifier after ':' in namespaced attribute",
-        "Namespaced attributes must have the form 'namespace:name'",
+        "Expected an identifier after ':' in the attribute name",
+        "Write a namespaced name as 'namespace:name'",
     );
 }
 
@@ -411,9 +427,8 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
             if (parser.tree.data(expr) == .jsx_empty_expression) {
                 try parser.report(
                     parser.tree.span(container),
-                    "JSX attribute value cannot be an empty expression",
-                    .{ .help = "Replace {} with a valid expression or remove the braces" ++
-                        " to use a string literal" },
+                    "A JSX attribute value cannot be an empty expression",
+                    .{ .help = "Add an expression inside the braces, or use a string" },
                 );
                 return null;
             }
@@ -424,9 +439,8 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
         else => {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected string literal or JSX expression for attribute value",
-                .{ .help = "JSX attribute values must be either a string literal" ++
-                    " (e.g. \"value\") or an expression in braces (e.g. {expression})" },
+                "Expected an attribute value",
+                .{ .help = "Use a string, an expression in braces, or a JSX element" },
             );
             return null;
         },
@@ -455,8 +469,8 @@ fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close JSX expression",
-        "Add '}' to close the expression",
+        "Expected '}' to close the JSX expression",
+        null,
     )) return null;
 
     return try parser.tree.addNode(
@@ -473,8 +487,8 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .spread,
-        "Expected '...' after '{' in JSX spread",
-        "Add '...' to spread the expression",
+        "Expected '...' after '{' in the JSX attributes",
+        "Write a spread attribute as '{...props}'",
     )) return null;
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
@@ -484,8 +498,8 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close JSX spread",
-        "Add '}' to close the spread expression",
+        "Expected '}' to close the JSX spread attribute",
+        null,
     )) return null;
 
     return try parser.tree.addNode(
@@ -499,8 +513,8 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     _ = try expectJsxToken(
         parser,
         .jsx_identifier,
-        "Expected JSX element name",
-        "JSX element names must start with a valid identifier",
+        "Expected a JSX element name",
+        "Start the tag name with a letter, '_', or '$'",
     ) orelse return null;
 
     const start = parser.current_token.span.start;
@@ -510,8 +524,8 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         return parseJsxNamespacedName(
             parser,
             name,
-            "Expected identifier after ':' in namespaced element name",
-            "Namespaced element names must have the form 'namespace:name'",
+            "Expected an identifier after ':' in the element name",
+            "Write a namespaced name as 'namespace:name'",
         );
     }
 
@@ -520,8 +534,8 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         _ = try expectJsxToken(
             parser,
             .jsx_identifier,
-            "Expected identifier after '.' in JSX member expression",
-            "Member expressions in JSX must have the form 'object.property'",
+            "Expected an identifier after '.' in the element name",
+            "Write a member name as 'object.property'",
         ) orelse return null;
         const property = try parseJsxIdentifier(parser) orelse return null;
         name = try parser.tree.addNode(.{

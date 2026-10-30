@@ -260,7 +260,7 @@ export class Project {
     const message =
       typeof resolved === "string"
         ? `'${record.specifier}' resolves to '${resolved}', which is not in the project`
-        : `Cannot resolve '${record.specifier}'`;
+        : `Cannot find module '${record.specifier}'`;
     const node = specifierNodeOf(file, record.node);
     diagnostics.push(diagnosticAt(file, node, message, { severity: "warning" }));
     return null;
@@ -277,7 +277,7 @@ export class Project {
     if (resolution !== null && resolution !== AMBIGUOUS) return;
     const message =
       resolution === null
-        ? `Module '${record.specifier}' has no export '${name}'`
+        ? `Module '${record.specifier}' has no exported member '${name}'`
         : `${what} '${name}' of module '${record.specifier}' is ambiguous: ` +
           "multiple 'export *' declarations supply it";
     diagnostics.push(diagnosticAt(file, record.node, message));

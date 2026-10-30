@@ -161,9 +161,8 @@ pub fn parseImportEqualsBody(
 
     if (!try parser.expect(
         .assign,
-        "Expected '=' in import equals declaration",
-        "An import equals declaration is written 'import x = Foo.Bar'" ++
-            " or 'import x = require(\"m\")'",
+        "Expected '=' in the import alias declaration",
+        "Write an import alias as 'import x = N.y' or 'import x = require(\"m\")'",
     )) return null;
 
     const module_reference = try parseModuleReference(parser) orelse return null;
@@ -175,7 +174,7 @@ pub fn parseImportEqualsBody(
         try parser.report(
             .{ .start = start, .end = parser.tree.span(module_reference).end },
             "An import alias cannot use 'import type'",
-            .{ .help = "Drop 'type', or import the type with 'import type x from \"m\"'." },
+            .{ .help = "Remove 'type', or use 'import type x from \"m\"'" },
         );
     }
 
@@ -203,13 +202,15 @@ fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
     if (!try parser.expect(
         .left_paren,
         "Expected '(' after 'require'",
-        "External module references are written 'require(\"module\")'",
+        "Write an external module reference as 'require(\"m\")'",
     )) return null;
 
     const expression = try literals.parseStringLiteral(parser) orelse return null;
 
     const end = parser.current_token.span.end;
-    if (!try parser.expect(.right_paren, "Expected ')' to close 'require'", null)) return null;
+    if (!try parser.expect(.right_paren, "Expected ')' to close the 'require' call", null)) {
+        return null;
+    }
 
     return try parser.tree.addNode(.{
         .ts_external_module_reference = .{ .expression = expression },
@@ -229,8 +230,8 @@ fn parseTypeAliasDeclaration(
 
     if (!try parser.expect(
         .assign,
-        "Expected '=' in type alias declaration",
-        "A type alias is written 'type Foo = Bar'",
+        "Expected '=' in the type alias declaration",
+        "Write a type alias as 'type Name = Type'",
     )) return null;
 
     const type_annotation = try types.parseTypeAliasBody(parser) orelse return null;
@@ -354,8 +355,8 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(
         .left_brace,
-        "Expected '{' to start an enum body",
-        "An enum body is written '{ A, B = 1 }'",
+        "Expected '{' to start the enum body",
+        "Write an enum body as '{ A, B = 1 }'",
     )) return null;
 
     const checkpoint = parser.scratch_a.begin();
@@ -371,8 +372,8 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close an enum body",
-        "Each '{' in an enum must be matched by a '}'",
+        "Expected '}' to close the enum body",
+        "Check that every '{' in the enum has a matching '}'",
     )) return null;
 
     const members = try parser.flushToExtras(&parser.scratch_a, checkpoint);
@@ -415,8 +416,8 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
             return null;
         if (!try parser.expect(
             .right_bracket,
-            "Expected ']' to close an enum member name",
-            "Each '[' in an enum member name must be matched by a ']'",
+            "Expected ']' to close the enum member name",
+            "Check that every '[' in the member name has a matching ']'",
         )) return null;
 
         const span: ast.Span = .{ .start = start, .end = parser.prev_token_end };
@@ -426,7 +427,7 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
             .computed => try parser.report(
                 span,
                 "Computed property names are not allowed in enums",
-                .{ .help = "Name the member with an identifier or a string literal." },
+                .{ .help = "Name the member with an identifier or a string literal" },
             ),
         }
         return .{ inner, true };
@@ -448,8 +449,8 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
         const id = try literals.parseNoSubstitutionTemplate(parser, false) orelse return null;
         try parser.report(
             parser.tree.span(id),
-            "Enum member names cannot be template literals",
-            .{ .help = "Use a string literal, or put the template in brackets." },
+            "An enum member cannot be named with a template literal",
+            .{ .help = "Use a string literal instead" },
         );
         return .{ id, false };
     }
@@ -458,14 +459,9 @@ fn parseEnumMemberName(parser: *Parser) Error!?struct { ast.NodeIndex, bool } {
         return null;
     }
 
-    try parser.report(
-        parser.current_token.span,
-        try parser.fmt(
-            "Unexpected token '{s}' as enum member name",
-            .{parser.describeToken(parser.current_token)},
-        ),
-        .{ .help = "Enum member names must be identifiers or string literals." },
-    );
+    try parser.reportExpected(parser.current_token.span, "Expected an enum member", .{
+        .help = "Name the member with an identifier or a string literal",
+    });
     return null;
 }
 
@@ -492,7 +488,7 @@ fn parseEnumMemberNameKind(
 fn reportEnumMemberNumericName(parser: *Parser, span: ast.Span) Error!void {
     std.debug.assert(span.start < span.end);
     try parser.report(span, "An enum member cannot have a numeric name", .{
-        .help = "Name the member with an identifier or a string that is not a number.",
+        .help = "Name the member with an identifier or a non-numeric string",
     });
 }
 
@@ -500,8 +496,8 @@ fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .left_brace) {
         try parser.reportExpected(
             parser.current_token.span,
-            "Expected '{' to start an interface body",
-            .{ .help = "An interface body is written '{ member1; member2 }'" },
+            "Expected '{' to start the interface body",
+            .{ .help = "Write an interface body as '{ name: Type; }'" },
         );
         return null;
     }
@@ -541,7 +537,7 @@ fn parseModuleDeclaration(
                 .namespace => "A namespace declaration requires a body",
                 .module => "A module declaration requires a body",
             },
-            .{ .help = "Add a '{ }' body after the name." },
+            .{ .help = "Add a body after the name, such as '{}'" },
         );
     }
 
@@ -583,16 +579,16 @@ fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .left_brace,
-        "Expected '{' to start a module body",
-        "A module body is written '{ <statements> }'",
+        "Expected '{' to start the module body",
+        "Write the module body in braces",
     )) return null;
 
     const body = try parser.parseBody(.right_brace, .module_block);
     const end = parser.current_token.span.end;
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close a module body",
-        "Each '{' in a module must be matched by a '}'",
+        "Expected '}' to close the module body",
+        "Check that every '{' in the module has a matching '}'",
     )) return null;
 
     return try parser.tree.addNode(
