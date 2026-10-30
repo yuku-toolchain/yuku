@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 171,
+    "end": 557,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -81,6 +81,317 @@
               "type": "JSXIdentifier",
               "start": 167,
               "end": 168,
+              "name": "a"
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 172,
+        "end": 556,
+        "expression": {
+          "type": "JSXElement",
+          "start": 172,
+          "end": 555,
+          "openingElement": {
+            "type": "JSXOpeningElement",
+            "start": 172,
+            "end": 190,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 173,
+              "end": 174,
+              "name": "a"
+            },
+            "attributes": [
+              {
+                "type": "JSXAttribute",
+                "start": 175,
+                "end": 189,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 175,
+                  "end": 180,
+                  "name": "title"
+                },
+                "value": {
+                  "type": "Literal",
+                  "start": 181,
+                  "end": 189,
+                  "value": "\"",
+                  "raw": "\"&quot;\""
+                }
+              }
+            ],
+            "selfClosing": false
+          },
+          "children": [
+            {
+              "type": "JSXText",
+              "start": 190,
+              "end": 193,
+              "value": "\n  ",
+              "raw": "\n  "
+            },
+            {
+              "type": "JSXExpressionContainer",
+              "start": 193,
+              "end": 448,
+              "expression": {
+                "type": "TemplateLiteral",
+                "start": 194,
+                "end": 447,
+                "quasis": [
+                  {
+                    "type": "TemplateElement",
+                    "start": 195,
+                    "end": 201,
+                    "value": {
+                      "raw": "\\u0041",
+                      "cooked": "A"
+                    },
+                    "tail": false
+                  },
+                  {
+                    "type": "TemplateElement",
+                    "start": 427,
+                    "end": 433,
+                    "value": {
+                      "raw": "\\u0042",
+                      "cooked": "B"
+                    },
+                    "tail": false
+                  },
+                  {
+                    "type": "TemplateElement",
+                    "start": 440,
+                    "end": 446,
+                    "value": {
+                      "raw": "\\u0043",
+                      "cooked": "C"
+                    },
+                    "tail": true
+                  }
+                ],
+                "expressions": [
+                  {
+                    "type": "JSXElement",
+                    "start": 203,
+                    "end": 426,
+                    "openingElement": {
+                      "type": "JSXOpeningElement",
+                      "start": 203,
+                      "end": 413,
+                      "name": {
+                        "type": "JSXIdentifier",
+                        "start": 204,
+                        "end": 205,
+                        "name": "b"
+                      },
+                      "attributes": [
+                        {
+                          "type": "JSXAttribute",
+                          "start": 206,
+                          "end": 412,
+                          "name": {
+                            "type": "JSXIdentifier",
+                            "start": 206,
+                            "end": 211,
+                            "name": "title"
+                          },
+                          "value": {
+                            "type": "Literal",
+                            "start": 212,
+                            "end": 412,
+                            "value": "a longer attribute forces the shared decoding buffer to grow after its first use while earlier string and template values remain intact in the AST and later shorter values reuse that capacity ©",
+                            "raw": "\"a longer attribute forces the shared decoding buffer to grow after its first use while earlier string and template values remain intact in the AST and later shorter values reuse that capacity &copy;\""
+                          }
+                        }
+                      ],
+                      "selfClosing": false
+                    },
+                    "children": [
+                      {
+                        "type": "JSXText",
+                        "start": 413,
+                        "end": 422,
+                        "value": "😀",
+                        "raw": "&#x1F600;"
+                      }
+                    ],
+                    "closingElement": {
+                      "type": "JSXClosingElement",
+                      "start": 422,
+                      "end": 426,
+                      "name": {
+                        "type": "JSXIdentifier",
+                        "start": 424,
+                        "end": 425,
+                        "name": "b"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Literal",
+                    "start": 435,
+                    "end": 439,
+                    "value": "\n",
+                    "raw": "\"\\n\""
+                  }
+                ]
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 448,
+              "end": 451,
+              "value": "\n  ",
+              "raw": "\n  "
+            },
+            {
+              "type": "JSXExpressionContainer",
+              "start": 451,
+              "end": 457,
+              "expression": {
+                "type": "Literal",
+                "start": 452,
+                "end": 456,
+                "value": "",
+                "raw": "\"\\\n\""
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 457,
+              "end": 460,
+              "value": "\n  ",
+              "raw": "\n  "
+            },
+            {
+              "type": "JSXExpressionContainer",
+              "start": 460,
+              "end": 470,
+              "expression": {
+                "type": "Literal",
+                "start": 461,
+                "end": 469,
+                "value": "\ud800",
+                "raw": "\"\\uD800\""
+              }
+            },
+            {
+              "type": "JSXExpressionContainer",
+              "start": 470,
+              "end": 486,
+              "expression": {
+                "type": "Literal",
+                "start": 471,
+                "end": 485,
+                "value": "😀",
+                "raw": "\"\\uD83D\\uDE00\""
+              }
+            },
+            {
+              "type": "JSXExpressionContainer",
+              "start": 486,
+              "end": 494,
+              "expression": {
+                "type": "Literal",
+                "start": 487,
+                "end": 493,
+                "value": "A",
+                "raw": "\"\\x41\""
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 494,
+              "end": 497,
+              "value": "\n  ",
+              "raw": "\n  "
+            },
+            {
+              "type": "JSXExpressionContainer",
+              "start": 497,
+              "end": 526,
+              "expression": {
+                "type": "TaggedTemplateExpression",
+                "start": 498,
+                "end": 525,
+                "tag": {
+                  "type": "MemberExpression",
+                  "start": 498,
+                  "end": 508,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 498,
+                    "end": 504,
+                    "name": "String"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 505,
+                    "end": 508,
+                    "name": "raw"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "quasi": {
+                  "type": "TemplateLiteral",
+                  "start": 508,
+                  "end": 525,
+                  "quasis": [
+                    {
+                      "type": "TemplateElement",
+                      "start": 509,
+                      "end": 511,
+                      "value": {
+                        "raw": "\\x",
+                        "cooked": null
+                      },
+                      "tail": false
+                    },
+                    {
+                      "type": "TemplateElement",
+                      "start": 518,
+                      "end": 524,
+                      "value": {
+                        "raw": "\\u0044",
+                        "cooked": "D"
+                      },
+                      "tail": true
+                    }
+                  ],
+                  "expressions": [
+                    {
+                      "type": "Literal",
+                      "start": 513,
+                      "end": 517,
+                      "value": "\t",
+                      "raw": "\"\\t\""
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "JSXText",
+              "start": 526,
+              "end": 551,
+              "value": "\n  & plain &unknown;\n",
+              "raw": "\n  &amp; plain &unknown;\n"
+            }
+          ],
+          "closingElement": {
+            "type": "JSXClosingElement",
+            "start": 551,
+            "end": 555,
+            "name": {
+              "type": "JSXIdentifier",
+              "start": 553,
+              "end": 554,
               "name": "a"
             }
           }

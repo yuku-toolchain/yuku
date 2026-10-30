@@ -82,6 +82,7 @@ pub const Parser = struct {
 
     scratch_a: ScratchBuffer = .{},
     scratch_b: ScratchBuffer = .{},
+    scratch_string: std.ArrayList(u8) = .empty,
 
     context: Context = .{},
     ts_context: TsContext = .{},
@@ -205,10 +206,9 @@ pub const Parser = struct {
     fn decode(self: *Parser, comptime decoder: anytype, start: u32, end: u32) Error!ast.String {
         @branchHint(.cold);
         const alloc = self.allocator();
-        var buf: std.ArrayList(u8) = .empty;
-        defer buf.deinit(alloc);
-        decoder(alloc, self.source[start..end], &buf) catch ast.outOfMemory();
-        return try self.tree.addString(buf.items);
+        self.scratch_string.clearRetainingCapacity();
+        decoder(alloc, self.source[start..end], &self.scratch_string) catch ast.outOfMemory();
+        return try self.tree.addString(self.scratch_string.items);
     }
 
     pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
