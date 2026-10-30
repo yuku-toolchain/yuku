@@ -22,16 +22,6 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | Zig internals the JS API cannot reach (traverser, scopes, walk order, allocation failure) | `src/parser/testing/cases/` |
 | A small pure Zig helper | An inline `test` block next to the function |
 
-### Profiling
-
-CodSpeed measures every pull request against `main` in its CPU simulation mode, which counts instructions and cache misses instead of time, so a regression shows on the pull request that causes it, even on shared CI runners.
-
-- `profile/package.ts` measures the `yuku` package as users call it: `parse`, analysis, `walk`, builders, `rename`, and `print`, with each option that has its own code path.
-- `profile/native.zig`, listed in `profile/codspeed.yml`, runs `parse` and `analyze` as a native executable, so a flamegraph names the Zig functions the shipped addon and WebAssembly strip.
-- **A new operation, or an option with its own code path, gets a benchmark in the same change.**
-- Inputs are files from `test/projects/`, pinned to a commit. A changed input moves a benchmark as much as a changed toolchain does, so change one only on purpose.
-- Every input is valid for its operation. A benchmark fails on any diagnostic rather than measure an error path.
-
 ### Documentation
 
 - **One home.** [yuku.fyi](https://yuku.fyi), from `docs/content/`, documents the JavaScript package and the Zig API, and each page links its counterpart in the other. The package's README, `npm/yuku/README.md`, is its front door on npm and GitHub: what it is, one example, and links to the guide.
@@ -41,9 +31,9 @@ CodSpeed measures every pull request against `main` in its CPU simulation mode, 
 ### Changes
 
 - **One change, one purpose.** The tree builds and every suite passes at every commit, and callers update in the same change as the API they use.
-- **Commit messages are plain.** What changed, lowercase and imperative, under seventy-two characters, such as `accept legal line breaks in TypeScript declarations`. Keep the message minimal and short, never verbose. No area prefix, no conventional type or scope.
-- **The subject says what, the body says why.** Write a body only when the subject cannot say why, in plain sentences wrapped at seventy-two columns. A breaking change always has one, saying what breaks and what to do instead. A pull-request description is not stored in the repository and is invisible in `git blame`, so it is not a replacement for a commit message.
-- **A pull-request title is a commit subject.** Squash-merging makes it one, so it follows the same rules.
+- **Commit subjects are short and surgical.** Name exactly what changed, in as few words as that takes, lowercase and imperative. Aim for under fifty characters, never over seventy-two. No explanation, no list of every detail, no area prefix, no conventional type or scope.
+- **The subject says what, the body says why.** Write a body only when the subject cannot say why, in a few plain sentences wrapped at seventy-two columns. A breaking change always has one, saying what breaks and what to do instead. A pull-request description is not stored in the repository and is invisible in `git blame`, so it is not a replacement for a commit message.
+- **A pull-request title is a commit subject.** Squash-merging makes it one, so it follows the same rules. A pull request with several commits still gets one short title for what they do together, never their subjects joined with "and".
 - **No attribution trailers, no tool links.** Not in commits, not in pull requests.
 - **Delete, do not deprecate.** Unused code and dependencies are removed. Removing a public export is a breaking change.
 
