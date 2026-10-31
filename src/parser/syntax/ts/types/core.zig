@@ -430,9 +430,9 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
 fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .extends) return .null;
 
-    const extends_offset = parser.current_token.span.start;
+    const key = parser.tsSpeculationKey(.infer_constraint);
     const conditional_allowed = !parser.ts_context.disallow_conditional_types;
-    if (conditional_allowed and parser.ts_rejected_speculations.contains(extends_offset)) {
+    if (conditional_allowed and parser.ts_rejected_speculations.contains(key)) {
         return .null;
     }
 
@@ -448,7 +448,7 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
 
     if (conditional_allowed and parser.current_token.tag == .question) {
         parser.rewind(cp);
-        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), extends_offset, {}) catch ast.outOfMemory();
+        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), key, {}) catch ast.outOfMemory();
         return .null;
     }
 

@@ -11,3 +11,6 @@ const fromNested = ok ? (ok ? values.filter((value): value is string => Boolean(
 const fromBody = ok ? function () { return (value): value is string => Boolean(value); } : null;
 
 const direct = ok ? (count: number): string => String(count) : null;
+
+const fromRelationalComputedKey = c ? f < { [(x): T => x]: 0 } > y : z;
+const fromTypeArgumentComputedKey = c ? f<{ [(x): T => x]: 0 }>() : z;

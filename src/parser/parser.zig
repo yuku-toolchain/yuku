@@ -60,6 +60,20 @@ const ParserState = struct {
     stripped_paren: ?ast.NodeIndex = null,
 };
 
+const TsSpeculationKey = struct {
+    position: u32,
+    context: Context,
+    ts_context: TsContext,
+    lexer_mode: lexer.LexerMode,
+    state: ParserState,
+    rule: Rule,
+
+    const Rule = union(enum) {
+        arrow: struct { is_async: bool, allow_in: bool },
+        infer_constraint,
+    };
+};
+
 pub const Error = error{};
 
 pub const Parser = struct {
@@ -88,8 +102,9 @@ pub const Parser = struct {
     ts_context: TsContext = .{},
     state: ParserState = .{},
 
-    // token offsets whose speculation failed, so a rewinding ancestor never re-parses them
-    ts_rejected_speculations: std.AutoHashMapUnmanaged(u32, void) = .empty,
+    // Failures survive rewind so an ancestor skips equivalent retries, while a
+    // different grammar rule or context can still succeed at the same position.
+    ts_rejected_speculations: std.AutoHashMapUnmanaged(TsSpeculationKey, void) = .empty,
 
     pub inline fn allocator(self: *Parser) std.mem.Allocator {
         return self.tree.allocator();
@@ -297,6 +312,17 @@ pub const Parser = struct {
         var peek = self.beginPeek();
         defer peek.end();
         return peek.next();
+    }
+
+    pub fn tsSpeculationKey(self: *const Parser, rule: TsSpeculationKey.Rule) TsSpeculationKey {
+        return .{
+            .position = self.current_token.span.start,
+            .context = self.context,
+            .ts_context = self.ts_context,
+            .lexer_mode = self.lexer.mode,
+            .state = self.state,
+            .rule = rule,
+        };
     }
 
     /// Captures a snapshot of parser state for `rewind`.

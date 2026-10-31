@@ -106,13 +106,16 @@ pub fn tryParseArrow(
     arrow_start: u32,
     options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
-    const head = parser.current_token.span.start;
-    if (parser.ts_rejected_speculations.contains(head)) return null;
+    const key = parser.tsSpeculationKey(.{ .arrow = .{
+        .is_async = is_async,
+        .allow_in = options.allow_in,
+    } });
+    if (parser.ts_rejected_speculations.contains(key)) return null;
 
     const cp = parser.checkpoint();
     const arrow = try parseArrow(parser, is_async, arrow_start, options) orelse {
         parser.rewind(cp);
-        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {}) catch ast.outOfMemory();
+        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), key, {}) catch ast.outOfMemory();
         return null;
     };
 

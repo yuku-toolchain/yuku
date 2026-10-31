@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 845,
+    "end": 977,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -1517,6 +1517,303 @@
           "end": 843
         },
         "declare": true
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 846,
+        "end": 909,
+        "expression": {
+          "type": "CallExpression",
+          "start": 846,
+          "end": 908,
+          "callee": {
+            "type": "Identifier",
+            "start": 846,
+            "end": 851,
+            "name": "async",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "arguments": [
+            {
+              "type": "AssignmentExpression",
+              "start": 853,
+              "end": 907,
+              "left": {
+                "type": "Identifier",
+                "start": 853,
+                "end": 859,
+                "name": "result",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "ArrowFunctionExpression",
+                "start": 862,
+                "end": 907,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "AssignmentPattern",
+                    "start": 863,
+                    "end": 894,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 863,
+                      "end": 868,
+                      "name": "input",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "right": {
+                      "type": "BinaryExpression",
+                      "start": 871,
+                      "end": 894,
+                      "left": {
+                        "type": "BinaryExpression",
+                        "start": 871,
+                        "end": 886,
+                        "left": {
+                          "type": "Identifier",
+                          "start": 871,
+                          "end": 876,
+                          "name": "await",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "right": {
+                          "type": "Identifier",
+                          "start": 879,
+                          "end": 886,
+                          "name": "divisor",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "operator": "/"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "start": 889,
+                        "end": 894,
+                        "name": "scale",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "operator": "/"
+                    },
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 902,
+                  "end": 907,
+                  "name": "input",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 895,
+                  "end": 898,
+                  "typeAnnotation": {
+                    "type": "TSTypeReference",
+                    "start": 897,
+                    "end": 898,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 897,
+                      "end": 898,
+                      "name": "T",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                }
+              },
+              "operator": "="
+            }
+          ],
+          "optional": false,
+          "typeArguments": null
+        },
+        "directive": null
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 910,
+        "end": 976,
+        "expression": {
+          "type": "CallExpression",
+          "start": 910,
+          "end": 975,
+          "callee": {
+            "type": "Identifier",
+            "start": 910,
+            "end": 915,
+            "name": "async",
+            "decorators": [],
+            "optional": false,
+            "typeAnnotation": null
+          },
+          "arguments": [
+            {
+              "type": "AssignmentExpression",
+              "start": 917,
+              "end": 974,
+              "left": {
+                "type": "Identifier",
+                "start": 917,
+                "end": 923,
+                "name": "result",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "right": {
+                "type": "ArrowFunctionExpression",
+                "start": 926,
+                "end": 974,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "AssignmentPattern",
+                    "start": 930,
+                    "end": 961,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 930,
+                      "end": 935,
+                      "name": "input",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "right": {
+                      "type": "BinaryExpression",
+                      "start": 938,
+                      "end": 961,
+                      "left": {
+                        "type": "BinaryExpression",
+                        "start": 938,
+                        "end": 953,
+                        "left": {
+                          "type": "Identifier",
+                          "start": 938,
+                          "end": 943,
+                          "name": "await",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "right": {
+                          "type": "Identifier",
+                          "start": 946,
+                          "end": 953,
+                          "name": "divisor",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "operator": "/"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "start": 956,
+                        "end": 961,
+                        "name": "scale",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "operator": "/"
+                    },
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 969,
+                  "end": 974,
+                  "name": "input",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": {
+                  "type": "TSTypeParameterDeclaration",
+                  "start": 926,
+                  "end": 929,
+                  "params": [
+                    {
+                      "type": "TSTypeParameter",
+                      "start": 927,
+                      "end": 928,
+                      "name": {
+                        "type": "Identifier",
+                        "start": 927,
+                        "end": 928,
+                        "name": "U",
+                        "decorators": [],
+                        "typeAnnotation": null,
+                        "optional": false
+                      },
+                      "constraint": null,
+                      "default": null,
+                      "in": false,
+                      "out": false,
+                      "const": false
+                    }
+                  ]
+                },
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 962,
+                  "end": 965,
+                  "typeAnnotation": {
+                    "type": "TSTypeReference",
+                    "start": 964,
+                    "end": 965,
+                    "typeName": {
+                      "type": "Identifier",
+                      "start": 964,
+                      "end": 965,
+                      "name": "U",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "typeArguments": null
+                  }
+                }
+              },
+              "operator": "="
+            }
+          ],
+          "optional": false,
+          "typeArguments": null
+        },
+        "directive": null
       }
     ]
   },

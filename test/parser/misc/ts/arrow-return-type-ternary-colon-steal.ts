@@ -10,3 +10,9 @@ const binaryThenArrow = flag ? 1 + (value) : other => other;
 const bodyThenArrow = flag ? (outer) => (outer) : inner => inner;
 
 const kept = flag ? (count): number => count : value;
+
+const computedObject = flag ? (result = { [(x): T => x]: 0 }) : other => other;
+const computedClass = flag ? (result = class { [(x): T => x] = 0; }) : other => other;
+const computedTypeArgument = flag ? (result = f<{ [(x): T => x]: 0 }>()) : other => other;
+const computedRelational = flag ? (result = f < { [(x): T => x]: 0 } > value) : other => other;
+const computedAsync = flag ? (result = { [async (x): T => x]: 0 }) : other => other;

@@ -256,8 +256,14 @@ pub fn parsePropertyKey(
         try parser.advance() orelse return null;
         // a key is never a pattern, so its strips must not replace the pattern's record
         const outer_stripped_paren = parser.state.stripped_paren;
-        const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
-            return null;
+        const key = key: {
+            // The brackets keep a typed arrow's ':' apart from an outer conditional.
+            const outer_ts_context = parser.ts_context;
+            parser.ts_context.allow_arrow_return_type = true;
+            defer parser.ts_context = outer_ts_context;
+            break :key try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
+                return null;
+        };
         if (owner == .object) parser.state.stripped_paren = outer_stripped_paren;
         if (!try parser.expect(
             .right_bracket,
