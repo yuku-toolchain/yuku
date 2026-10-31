@@ -27,6 +27,29 @@ describe("path", () => {
 });
 
 describe("diagnostics", () => {
+  test("a lexical error after a type prefix preserves recovery diagnostics", () => {
+    for (const [source, prefix, repeats] of [
+      ["type T = [Head /*", "Head", 2],
+      ["type T = [number /*", "number", 2],
+      ["type T = [label? /*", "?", 2],
+      ["type T = () => Head /*", "Head", 1],
+      ["type T = () => void /*", "void", 1],
+      ["declare function f(): Head /*", "Head", 1],
+      ["type T = { /*", "{", 1],
+    ] as const) {
+      for (const tokens of [false, true]) {
+        const { diagnostics } = parse(source, { lang: "ts", tokens });
+        const start = source.indexOf(prefix);
+        expect(diagnostics.map(({ message, start, end }) => [message, start, end]), source).toEqual([
+          ["Unterminated multi-line comment", source.length, source.length],
+          ...Array.from({ length: repeats }, () => [
+            `Expected a type, but found '${prefix}'`, start, start + prefix.length,
+          ]),
+        ]);
+      }
+    }
+  });
+
   test("a lexical diagnostic points at the cursor", () => {
     expect(firstSpan("let x = 0x_ab")).toEqual([10, 11]);
     expect(firstSpan("let x =   0x_ab")).toEqual([12, 13]);

@@ -39,3 +39,5 @@ type TemplateConstraint<T> = T extends infer U extends `a${string}` ? U : never;
 
 type RewoundConstraint<T> = T extends (infer U extends string ? 1 : 0) ? U : never;
 type RewoundBeforeFn<T> = T extends (infer U extends () => void ? 1 : 0) ? U : never;
+type ConditionalReturn<T> = T extends infer F extends () => T extends U ? X : Y ? F : never;
+type TupleTypeArgument<T> = T extends [infer F extends Box<T extends U ? X : Y>] ? F : never;

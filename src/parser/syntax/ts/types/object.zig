@@ -12,11 +12,14 @@ const core = @import("core.zig");
 const generics = @import("generics.zig");
 const predicate = @import("predicate.zig");
 
-pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseObjectOrMappedType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     const start = parser.current_token.span.start;
-    const members = try parseObjectTypeMembers(parser) orelse return null;
+    try parser.advance() orelse return null;
+
+    if (isStartOfMappedType(parser)) return parseMappedType(parser, start);
+    const members = try parseObjectTypeMembersBody(parser) orelse return null;
 
     return try parser.tree.addNode(
         .{ .ts_type_literal = .{ .members = members } },
@@ -28,7 +31,10 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     try parser.advance() orelse return null;
+    return parseObjectTypeMembersBody(parser);
+}
 
+fn parseObjectTypeMembersBody(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
@@ -69,13 +75,18 @@ fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool
     return true;
 }
 
-pub fn isStartOfMappedType(parser: *Parser) bool {
-    std.debug.assert(parser.current_token.tag == .left_brace);
+inline fn isStartOfMappedType(parser: *Parser) bool {
+    return switch (parser.current_token.tag) {
+        .readonly, .plus, .minus, .left_bracket => lookAheadMappedType(parser),
+        else => false,
+    };
+}
 
+fn lookAheadMappedType(parser: *Parser) bool {
+    var token = parser.current_token;
     var peek = parser.beginPeek();
     defer peek.end();
 
-    var token = peek.next();
     if (token.tag == .plus or token.tag == .minus) {
         if (peek.next().tag != .readonly) return false;
         token = peek.next();
@@ -90,12 +101,7 @@ pub fn isStartOfMappedType(parser: *Parser) bool {
     return peek.next().tag == .in;
 }
 
-pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .left_brace);
-
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return null;
-
+fn parseMappedType(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const readonly = try parseMappedModifier(parser, .readonly) orelse return null;
 
     if (!try parser.expect(

@@ -150,6 +150,32 @@ describe("tokens", () => {
     expect(values(tokens)).toEqual(["let", "=", ")", ";", "foo", "(", "1", ")", ";"]);
   });
 
+  test("type prefixes retain each token and comment once", () => {
+    const source = `type A = [head /* label */?: T, ...tail /* rest */: T[]];
+type R = (value: unknown) => value /* predicate */ is T;
+type K = () => number /* keyword */.Part;
+type M = { /* body */ [K in T]: U };`;
+    const file = parse(source, { lang: "ts", tokens: true, attachComments: true });
+    expect(file.diagnostics).toEqual([]);
+    expect(values(file.tokens)).toEqual([
+      "type", "A", "=", "[", "head", "?", ":", "T", ",", "...", "tail", ":", "T", "[", "]", "]", ";",
+      "type", "R", "=", "(", "value", ":", "unknown", ")", "=>", "value", "is", "T", ";",
+      "type", "K", "=", "(", ")", "=>", "number", ".", "Part", ";",
+      "type", "M", "=", "{", "[", "K", "in", "T", "]", ":", "U", "}", ";",
+    ]);
+    expect(file.comments.map((comment) => comment.value)).toEqual([
+      " label ", " rest ", " predicate ", " keyword ", " body ",
+    ]);
+    expect(file.program).toEqual(parse(source, { lang: "ts", attachComments: true }).program);
+
+    for (const prefix of ["Head", "number"]) {
+      const failed = parse(`type A = [${prefix} /* kept */ /*`, { lang: "ts", tokens: true });
+      expect(failed.diagnostics).toHaveLength(3);
+      expect(values(failed.tokens)).toEqual(["type", "A", "=", "[", prefix]);
+      expect(failed.comments.map((comment) => comment.value)).toEqual([" kept "]);
+    }
+  });
+
   test("an out of range index throws", () => {
     const tokens = list("a");
     expect(() => tokens.kind(1)).toThrow(RangeError);

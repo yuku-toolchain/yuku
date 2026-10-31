@@ -279,6 +279,24 @@ pub const Parser = struct {
         try self.commitToken(leaving);
     }
 
+    /// Advances without reporting lexical errors, restoring lexer state on failure.
+    pub inline fn tryAdvanceWithoutEscapeCheck(self: *Parser) Error!bool {
+        const leaving = self.current_token;
+        const peek = self.beginPeek();
+        if (self.lexer.tryNextToken(&self.current_token)) {
+            self.prev_token_end = leaving.span.end;
+            return true;
+        }
+        self.lexer.nextTokenInto(&self.current_token) catch |err| {
+            peek.end();
+            if (err == error.OutOfMemory) ast.outOfMemory();
+            return false;
+        };
+        try self.commitToken(leaving);
+        self.prev_token_end = leaving.span.end;
+        return true;
+    }
+
     pub noinline fn reportEscapedKeyword(self: *Parser, span: ast.Span) Error!void {
         @branchHint(.cold);
         try self.report(span, "Keywords cannot contain escape characters", .{

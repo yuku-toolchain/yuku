@@ -19,3 +19,7 @@ type ValidLiteral = {
 type LiteralOnSignatures = {
   readonly method(): void;
 };
+
+type ObjectPrefixes = { plain: T; readonly: U; [key: string]: V };
+type MappedPrefixes<T> = { -readonly [K in keyof T as K]+?: T[K] };
+type BareMapped<T> = { [K in T]: V };

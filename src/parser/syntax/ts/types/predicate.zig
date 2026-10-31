@@ -29,8 +29,17 @@ inline fn parseAnnotation(
     );
 }
 
-// only bare `id is T` needs lookahead, `this is T` and `asserts` go through parseType
 pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+    if (core.canParseTypeFromIdentifier(token.tag) and !token.isEscaped() and try parser.tryAdvanceWithoutEscapeCheck()) {
+        const next = parser.current_token;
+        if (next.tag != .is or next.isEscaped() or next.hasLineTerminatorBefore()) {
+            return core.parseTypeFromIdentifier(parser, token);
+        }
+        const parameter_name = try literals.addIdentifierName(parser, token);
+        return finishTypePredicate(parser, token.span.start, parameter_name, false);
+    }
+
     if (!isIdentifierPredicateStart(parser)) return core.parseType(parser);
 
     const parameter_name = try literals.parseIdentifierName(parser) orelse return null;
