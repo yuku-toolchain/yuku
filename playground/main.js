@@ -704,7 +704,7 @@ function render() {
     result = parse(source, {
       ...options(),
       tokens: view === "tokens",
-      semantic: view === "semantics",
+      analyze: view === "semantics",
     });
   } catch (e) {
     astView.replaceChildren();
