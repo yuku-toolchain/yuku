@@ -3,13 +3,8 @@ declare module "#native" {
 }
 
 declare module "#wasm" {
-  const shipped: WebAssembly.Module | string;
+  const shipped: import("./core").CoreOptions["wasm"];
   export default shipped;
-}
-
-declare module "*.wasm" {
-  const base64: string;
-  export default base64;
 }
 
 declare module "*.wasm?module" {
@@ -18,7 +13,10 @@ declare module "*.wasm?module" {
 }
 
 declare module "node:module" {
-  export function createRequire(path: string): { resolve(request: string): string };
+  export function createRequire(path: string): {
+    (id: "./inline.cjs"): string;
+    resolve(request: string): string;
+  };
 }
 
 declare module "node:url" {

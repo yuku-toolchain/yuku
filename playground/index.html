@@ -12,14 +12,14 @@
       const pr = new URLSearchParams(location.search).get("pr")?.match(/^[0-9a-f]{7,40}$/)?.[0];
       const local = !pr && ["localhost", "127.0.0.1"].includes(location.hostname);
       const yuku = local
-        ? "/pkg/dist/index.js"
+        ? "/npm/yuku/dist/index.js"
         : pr
           ? `https://esm.sh/pr/yuku-toolchain/yuku/yuku@${pr}`
           : "https://esm.sh/yuku";
       const imports = { yuku };
 
-      const pkg = { "#native": "/pkg/dist/native/none.js", "#wasm": "/pkg/dist/wasm/inline.js" };
-      const scopes = local ? { "/pkg/": pkg } : {};
+      const pkg = { "#native": "/npm/yuku/dist/native/none.js", "#wasm": "/wasm.js" };
+      const scopes = local ? { "/npm/yuku/": pkg } : {};
       document.write(`<script type="importmap">${JSON.stringify({ imports, scopes })}<\/script>`);
     </script>
   </head>

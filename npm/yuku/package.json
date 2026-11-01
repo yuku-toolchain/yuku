@@ -32,7 +32,8 @@
     "#wasm": {
       "workerd": "./dist/wasm/import.js",
       "edge-light": "./dist/wasm/import.js",
-      "default": "./dist/wasm/inline.js"
+      "node": "./dist/wasm/require.js",
+      "default": "./dist/wasm/inline.cjs"
     }
   },
   "files": [

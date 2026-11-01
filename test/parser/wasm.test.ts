@@ -6,21 +6,24 @@ import { decodeBase64 } from "../../npm/yuku/core/base64";
 
 const shipped = readFileSync(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
 
-test("the inlined module parses as @yuku-toolchain/wasm does", () => {
+test("the inline and require loaders parse as @yuku-toolchain/wasm does", async () => {
   const core = new Core({ wasm: new WebAssembly.Module(shipped) });
   const source = "const x: number = 1;";
   const custom = parse(source, { lang: "ts", core });
-  const inlined = parse(source, { lang: "ts" });
-  expect(custom.program).toEqual(inlined.program);
-  expect(custom.diagnostics).toEqual(inlined.diagnostics);
+  for (const loader of ["inline.cjs", "require.js"]) {
+    const { default: wasm } = await import(`../../npm/yuku/dist/wasm/${loader}`);
+    const loaded = parse(source, { lang: "ts", core: new Core({ wasm }) });
+    expect(custom.program).toEqual(loaded.program);
+    expect(custom.diagnostics).toEqual(loaded.diagnostics);
+  }
 });
 
-test("workerd and edge-light import the wasm package in the form their bundlers compile", () => {
+test("each runtime loads the wasm in the form it allows", () => {
   const manifest = new URL("../../npm/yuku/package.json", import.meta.url);
   const { imports, peerDependenciesMeta } = JSON.parse(readFileSync(manifest, "utf8"));
   expect(peerDependenciesMeta["@yuku-toolchain/wasm"]).toEqual({ optional: true });
   const loaders = imports["#wasm"];
-  expect(Object.keys(loaders)).toEqual(["workerd", "edge-light", "default"]);
+  expect(Object.keys(loaders)).toEqual(["workerd", "edge-light", "node", "default"]);
   expect(loaders["edge-light"]).toBe(loaders.workerd);
   const loader = readFileSync(new URL(loaders.workerd, manifest), "utf8");
   expect(loader).toContain('"@yuku-toolchain/wasm/yuku.wasm?module"');
