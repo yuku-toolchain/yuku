@@ -7,6 +7,11 @@ declare module "#wasm" {
   export default shipped;
 }
 
+declare module "*.wasm" {
+  const base64: string;
+  export default base64;
+}
+
 declare module "*.wasm?module" {
   const module: WebAssembly.Module;
   export default module;
@@ -14,7 +19,7 @@ declare module "*.wasm?module" {
 
 declare module "node:module" {
   export function createRequire(path: string): {
-    (id: "./inline.cjs"): string;
+    (id: "node:fs"): { readFileSync(path: URL, encoding: "utf8"): string };
     resolve(request: string): string;
   };
 }

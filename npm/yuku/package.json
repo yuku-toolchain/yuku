@@ -32,8 +32,11 @@
     "#wasm": {
       "workerd": "./dist/wasm/import.js",
       "edge-light": "./dist/wasm/import.js",
-      "node": "./dist/wasm/require.js",
-      "default": "./dist/wasm/inline.cjs"
+      "bun": "./dist/wasm/inline.js",
+      "deno": "./dist/wasm/inline.js",
+      "module": "./dist/wasm/inline.js",
+      "node": "./dist/wasm/read.js",
+      "default": "./dist/wasm/inline.js"
     }
   },
   "files": [
