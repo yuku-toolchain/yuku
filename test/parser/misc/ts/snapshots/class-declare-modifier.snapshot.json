@@ -482,66 +482,66 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 150,
       "end": 156,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     },
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 172,
       "end": 180,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     },
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 204,
       "end": 210,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     },
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 230,
       "end": 236,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     },
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 261,
       "end": 275,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     },
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 301,
       "end": 315,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     },
     {
       "severity": "error",
-      "message": "A 'declare' modifier cannot appear on a class element of this kind",
+      "message": "'declare' modifier can only appear on a property declaration",
       "path": null,
       "start": 342,
       "end": 353,
       "labels": [],
-      "help": "Remove 'declare'. Only class fields carry it."
+      "help": "Remove 'declare'"
     }
   ]
 }

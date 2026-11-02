@@ -1,18 +1,18 @@
 test/parser/misc/ts
 ===================
-Passed:       108/108 (100.00%)
+Passed:       110/110 (100.00%)
 Failed:       0
-AST mismatch: 0/108
+AST mismatch: 0/110
 
 ✓ test/parser/misc/ts/abstract-constructor-body.ts
-error: Constructor cannot be abstract
+error: 'abstract' modifier cannot appear on a constructor declaration
    |
  2 | abstract class A {
  3 |     abstract constructor() {}
    |              ^^^^^^^^^^^
  4 | }
    |
-   = help: Remove the 'abstract' modifier. Only methods and properties can be abstract.
+   = help: Remove 'abstract'
 
 
 ✓ test/parser/misc/ts/abstract-declare-class.ts
@@ -21,49 +21,49 @@ error: Constructor cannot be abstract
 ✓ test/parser/misc/ts/arrow-return-type-ternary-colon-steal.ts
 ✓ test/parser/misc/ts/as-satisfies-asi-before-postfix.ts
 ✓ test/parser/misc/ts/assignment-target-ts-assertions.ts
-error: Invalid assignment target
+error: The left-hand side of an assignment expression must be a variable or a property access
    |
 25 | // whole expression is still not assignable (oxc rejects this too).
 26 | f()! = b;
    | ^^^^
 27 | 
    |
-   = help: The expression behind a non-null or type assertion must itself be a simple assignment target, like an identifier or member access, not a call or other expression.
+   = help: Only a variable or a property access can be asserted here
 
 
 ✓ test/parser/misc/ts/async-function-primary.ts
 ✓ test/parser/misc/ts/catch-type-annotation.ts
 ✓ test/parser/misc/ts/class-abstract-implementation.ts
-error: An abstract method cannot have an implementation
+error: Method 'method' cannot have an implementation because it is marked abstract
    |
  9 | abstract class WithImplementation {
 10 |   abstract method() {}
    |                     ^^
 11 |   abstract get getter() {}
    |
-   = help: Remove the body, or drop the 'abstract' modifier.
+   = help: Remove the body, or remove the 'abstract' modifier
 
 
 ✓ test/parser/misc/ts/class-declare-modifier.ts
-error: A 'declare' modifier cannot appear on a class element of this kind
+error: 'declare' modifier can only appear on a property declaration
    |
  7 | class OnMethods {
  8 |   declare method() {}
    |           ^^^^^^
  9 |   declare bodyless(): void;
    |
-   = help: Remove 'declare'. Only class fields carry it.
+   = help: Remove 'declare'
 
 
 ✓ test/parser/misc/ts/class-readonly-modifier.ts
-error: A 'readonly' modifier can only appear on a property declaration or index signature
+error: 'readonly' modifier can only appear on a property declaration or index signature
    |
  7 | class OnMethods {
  8 |   readonly method() {}
    |            ^^^^^^
  9 |   readonly bodyless(): void;
    |
-   = help: Remove 'readonly' from this method.
+   = help: Remove 'readonly'
 
 
 ✓ test/parser/misc/ts/constructor-overloads.ts
@@ -75,7 +75,7 @@ error: Type parameters cannot appear on a constructor declaration
    |              ^^^
 10 | }
    |
-   = help: Declare the type parameters on the class instead.
+   = help: Declare the type parameters on the class instead
 
 
 ✓ test/parser/misc/ts/declaration-line-breaks-ambient-variable-array-binding.module.ts
@@ -106,7 +106,7 @@ error: Type parameters cannot appear on a constructor declaration
 ✓ test/parser/misc/ts/declaration-line-breaks-named-declaration-export-ambient-class.module.ts
 ✓ test/parser/misc/ts/declare-function-overloads.ts
 ✓ test/parser/misc/ts/decorated-abstract-class-expression-invalid.ts
-error: Expected 'class' keyword, but found 'abstract'
+error: Expected 'class', but found 'abstract'
    |
  1 | const C = @x(() => 0) abstract class {};
    |                       ^^^^^^^^
@@ -123,30 +123,30 @@ error: Expected 'class' keyword, but found 'abstract'
 ✓ test/parser/misc/ts/decorated-export-default-abstract-class.module.ts
 ✓ test/parser/misc/ts/decorated-export-default-declare-class.module.ts
 ✓ test/parser/misc/ts/definite-assignment-assertion.ts
-error: A declaration with a definite assignment assertion must also have a type annotation
+error: Declarations with definite assignment assertions must also have type annotations
    |
  3 | 
  4 | let bare!;
    |     ^^^^
  5 | var bareVar!;
    |
-   = help: Annotate the declaration, for example 'x!: string'.
+   = help: Add a type annotation, such as 'x!: string'
 
 
 ✓ test/parser/misc/ts/definite-assignment-bare-field.ts
-error: A declaration with a definite assignment assertion must also have a type annotation
+error: Declarations with definite assignment assertions must also have type annotations
    |
  4 | class C {
  5 |     p!;
    |     ^
  6 | }
    |
-   = help: Annotate the declaration, for example 'x!: string'.
+   = help: Add a type annotation, such as 'x!: string'
 
 
 ✓ test/parser/misc/ts/duplicate-parameters-sloppy.ts
 ✓ test/parser/misc/ts/duplicate-parameters-strict.module.ts
-error: Identifier 'a' has already been declared
+error: Duplicate identifier 'a'
    |
  1 | function declaration(a, a) {}
    |                         ^
@@ -154,17 +154,19 @@ error: Identifier 'a' has already been declared
    |                         ~ cannot be redeclared here
  2 | function* generatorDeclaration(a, a) {}
    |
-   = help: Consider removing or renaming this declaration of 'a'
+   = help: Rename or remove this declaration of 'a'
 
 
 ✓ test/parser/misc/ts/empty-type-argument-list.ts
-error: A type argument list cannot be empty
+error: Type argument list cannot be empty
    |
  4 | 
  5 | type A = Array<numbe<>>
    |                      ^^
  6 | type B = Array<numbe<> >
    |
+   = help: Remove the empty '<>'
+
 
 ✓ test/parser/misc/ts/enum-computed-member-name.ts
 error: An enum member cannot have a numeric name
@@ -174,7 +176,7 @@ error: An enum member cannot have a numeric name
    |   ^^^
  3 | }
    |
-   = help: Name the member with an identifier or a string that is not a number.
+   = help: Name the member with an identifier or a non-numeric string
 
 
 ✓ test/parser/misc/ts/enum-declaration-line-terminator.ts
@@ -186,11 +188,11 @@ error: An enum member cannot have a numeric name
    |   ^^^
  3 |   "01" = 2,
    |
-   = help: Name the member with an identifier or a string that is not a number.
+   = help: Name the member with an identifier or a non-numeric string
 
 
 ✓ test/parser/misc/ts/export-duplicate-error.module.ts
-error: Duplicate export of 'E1'
+error: Duplicate export 'E1'
    |
  4 | // re-export + type re-export
  5 | export { E1 } from "./a";
@@ -209,25 +211,25 @@ error: An import declaration cannot have modifiers
    |        ^^^^^^^^^^^^^^^^^^^^^^
  2 | export import "c";
    |
-   = help: Re-export with 'export { name } from "module"' instead.
+   = help: Re-export with 'export { name } from "m"' instead
 
 
 ✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/for-in-initializer.ts
-error: for-in loop variable declaration may not have an initializer
+error: The variable declaration of a 'for...in' statement cannot have an initializer
    |
  1 | for (var a = 1 in b);
    |          ^^^^^
  2 | 
    |
-   = help: Remove the initializer from the loop variable.
+   = help: Remove the initializer
 
 
 ✓ test/parser/misc/ts/function-overloads.ts
 ✓ test/parser/misc/ts/function-type-lookahead.ts
 ✓ test/parser/misc/ts/import-export-in-namespace.ts
-error: Cannot use 'export' declaration outside a module
+error: Cannot use an export declaration outside a module
    |
  8 | }
  9 | export {};
@@ -243,7 +245,7 @@ error: A type-only import can specify a default import or named bindings, but no
    |             ^^^^^^^^^^^^^^^^^^^
  6 | import type defaultAndNamed, { alsoNamed } from "e";
    |
-   = help: Split this into one 'import type' per clause.
+   = help: Split into two separate import declarations
 
 
 ✓ test/parser/misc/ts/import-type-equals-alias.module.ts
@@ -254,19 +256,19 @@ error: An import alias cannot use 'import type'
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  5 | import type Shorthand = Local;
    |
-   = help: Drop 'type', or import the type with 'import type x from "m"'.
+   = help: Remove 'type', or use 'import type x from "m"'
 
 
 ✓ test/parser/misc/ts/import-type-escaped.module.ts
 ✓ test/parser/misc/ts/infer-constraint-function-type.ts
-error: Expected '?' in a conditional type, but found 'extends'
+error: Expected '?' in the conditional type, but found 'extends'
    |
 16 | 
 17 | type UnionFnConstraint<T> = T extends infer F extends string | () => void ? F : never;
    |                                               ^^^^^^^
 18 | type UnionCtorConstraint<T> = T extends infer C extends string | new () => object ? C : never;
    |
-   = help: A conditional type is written 'T extends U ? X : Y'
+   = help: Write a conditional type as 'T extends U ? X : Y'
 
 
 ✓ test/parser/misc/ts/instantiation-expression-edges.ts
@@ -278,19 +280,40 @@ error: An instantiation expression cannot be followed by a property access
    | ^^^^
  3 | 
    |
-   = help: Wrap the instantiation expression in parentheses.
+   = help: Wrap the instantiation expression in parentheses
 
 
 ✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
+✓ test/parser/misc/ts/jsx-primary-expression.tsx
+error: JSX expressions must be parenthesized in this position in TypeScript
+   |
+ 1 | new <a/>();
+   |     ^^^^
+ 2 | class A extends <a/> {}
+   |
+   = help: Wrap the JSX expression in parentheses
+
+
+✓ test/parser/misc/ts/legacy-octal-literal-types.module.ts
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | // strict code rejects legacy octal numbers and escapes in types too, as tsc does
+ 2 | type Octal = 01;
+   |              ^^
+ 3 | type NegativeOctal = -01;
+   |
+   = help: Use the syntax '0o1'
+
+
 ✓ test/parser/misc/ts/lookahead-keyword-lexical-error.ts
-error: Identifier cannot immediately follow a numeric literal
+error: An identifier or keyword cannot immediately follow a numeric literal
    |
  6 | 
  7 | declare 1x
    |          ^
  8 | const enum 1x {}
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Add a space between the number and the identifier
 
 
 ✓ test/parser/misc/ts/module-declaration-body.ts
@@ -301,7 +324,7 @@ error: A namespace declaration requires a body
    | ^^^^^^^^^^^^^^^^^^
  8 | namespace Qualified.Bodyless;
    |
-   = help: Add a '{ }' body after the name.
+   = help: Add a body after the name, such as '{}'
 
 
 ✓ test/parser/misc/ts/new-expression-non-null-callee.ts
@@ -316,7 +339,7 @@ error: A parameter property may not be declared using a binding pattern
    |                      ^^
 12 | }
    |
-   = help: Name the parameter, then destructure it inside the constructor body.
+   = help: Use an identifier, then destructure it in the constructor body
 
 
 ✓ test/parser/misc/ts/private-method-overloads.ts
@@ -331,7 +354,7 @@ error: Duplicate private name '#f'
    |
 
 ✓ test/parser/misc/ts/redeclare-error-ambient.ts
-error: Identifier 'A1' has already been declared
+error: Cannot redeclare block-scoped variable 'A1'
    |
  3 | // declare let + let
  4 | declare let A1: number;
@@ -341,11 +364,11 @@ error: Identifier 'A1' has already been declared
    |     ~~ cannot be redeclared here
  6 | 
    |
-   = help: Consider removing or renaming this declaration of 'A1'
+   = help: Rename or remove this declaration of 'A1'
 
 
 ✓ test/parser/misc/ts/redeclare-error-class.ts
-error: Identifier 'B1' has already been declared
+error: Duplicate identifier 'B1'
    |
  3 | // class + class
  4 | class B1 {}
@@ -355,11 +378,11 @@ error: Identifier 'B1' has already been declared
    |       ~~ cannot be redeclared here
  6 | 
    |
-   = help: Consider removing or renaming this declaration of 'B1'
+   = help: Rename or remove this declaration of 'B1'
 
 
 ✓ test/parser/misc/ts/redeclare-error-enum.ts
-error: Identifier 'C1' has already been declared
+error: Duplicate identifier 'C1'
    |
  3 | // regular enum + const enum (different constness)
  4 | enum C1 {
@@ -371,11 +394,11 @@ error: Identifier 'C1' has already been declared
    |            ~~ cannot be redeclared here
  8 |   B,
    |
-   = help: Consider removing or renaming this declaration of 'C1'
+   = help: Rename or remove this declaration of 'C1'
 
 
 ✓ test/parser/misc/ts/redeclare-error-function.ts
-error: Identifier 'F1' has already been declared
+error: Duplicate identifier 'F1'
    |
  3 | // var + function
  4 | var F1 = 0;
@@ -385,11 +408,11 @@ error: Identifier 'F1' has already been declared
    |          ~~ cannot be redeclared here
  6 | 
    |
-   = help: Consider removing or renaming this declaration of 'F1'
+   = help: Rename or remove this declaration of 'F1'
 
 
 ✓ test/parser/misc/ts/redeclare-error-namespace.ts
-error: Identifier 'D1' has already been declared
+error: Duplicate identifier 'D1'
    |
  3 | // instantiated namespace + var (instantiated namespace occupies value space)
  4 | namespace D1 {
@@ -401,11 +424,11 @@ error: Identifier 'D1' has already been declared
    |     ~~ cannot be redeclared here
  8 | 
    |
-   = help: Consider removing or renaming this declaration of 'D1'
+   = help: Rename or remove this declaration of 'D1'
 
 
 ✓ test/parser/misc/ts/redeclare-error-type-alias.ts
-error: Identifier 'A1' has already been declared
+error: Duplicate identifier 'A1'
    |
  3 | // type alias + type alias
  4 | type A1 = number;
@@ -415,7 +438,7 @@ error: Identifier 'A1' has already been declared
    |      ~~ cannot be redeclared here
  6 | 
    |
-   = help: Consider removing or renaming this declaration of 'A1'
+   = help: Rename or remove this declaration of 'A1'
 
 
 ✓ test/parser/misc/ts/redeclare-merge-ambient.ts
@@ -423,7 +446,7 @@ error: Identifier 'A1' has already been declared
 ✓ test/parser/misc/ts/redeclare-merge-cross-space.ts
 ✓ test/parser/misc/ts/redeclare-merge-enum.ts
 ✓ test/parser/misc/ts/redeclare-merge-import.module.ts
-error: Identifier 'T7' has already been declared
+error: Duplicate identifier 'T7'
    |
 37 | // Two imports of the same name DO conflict (unambiguous duplicate).
 38 | import T7 from "./a";
@@ -433,7 +456,7 @@ error: Identifier 'T7' has already been declared
    |        ~~ cannot be redeclared here
 40 | 
    |
-   = help: Consider removing or renaming this declaration of 'T7'
+   = help: Rename or remove this declaration of 'T7'
 
 
 ✓ test/parser/misc/ts/redeclare-merge-interfaces.ts
@@ -442,35 +465,37 @@ error: Identifier 'T7' has already been declared
 ✓ test/parser/misc/ts/redeclare-type-parameter-scope.ts
 ✓ test/parser/misc/ts/rest-parameter-trailing-comma-ambient.module.d.ts
 ✓ test/parser/misc/ts/rest-parameter-trailing-comma-invalid.ts
-error: Rest parameter may not have a trailing comma
+error: A rest parameter cannot have a trailing comma
    |
  4 | 
  5 | function impl(...args: string[],): void {}
    |               ^^^^^^^^^^^^^^^^^^
  6 | 
    |
-   = help: Remove the trailing comma after the rest parameter.
+   = help: Remove the trailing comma
 
 
 ✓ test/parser/misc/ts/signature-readonly-modifier.ts
-error: A 'readonly' modifier can only appear on a property declaration or index signature
+error: 'readonly' modifier can only appear on a property declaration or index signature
    |
  6 | interface OnSignatures {
  7 |   readonly method();
    |   ^^^^^^^^^^^^^^^
  8 |   readonly generic<T>(value: T): T;
    |
-   = help: Remove 'readonly' from this signature.
+   = help: Remove 'readonly'
 
 
 ✓ test/parser/misc/ts/template-literal-type-escapes.ts
-error: Bad escape sequence in untagged template literal
+error: Invalid escape sequence in an untagged template literal
    |
 25 | // untagged template literal expression
 26 | type BadOctal = `\8${string}`;
    |                  ^^
 27 | type BadHex = `\x${string}`;
    |
+   = help: Only tagged templates can contain invalid escapes
+
 
 ✓ test/parser/misc/ts/tuple-element-order.ts
 error: A required element cannot follow an optional element
@@ -480,7 +505,7 @@ error: A required element cannot follow an optional element
    |                                      ^^^^
 10 | type RequiredAfterOptionalUnnamed = [A?, B];
    |
-   = help: Mark this element optional, or move it before the optional ones.
+   = help: Mark the element optional, or move it before the optional elements
 
 
 ✓ test/parser/misc/ts/type-assertion-vs-generic-arrow.ts
@@ -492,7 +517,7 @@ error: Keywords cannot contain escape characters
    |        ^^^^^^^^^
  3 | 
    |
-   = help: Remove the escape characters
+   = help: Write the keyword without escapes
 
 
 ✓ test/parser/misc/ts/typed-arrow-predicate-in-ternary-jsx.module.tsx

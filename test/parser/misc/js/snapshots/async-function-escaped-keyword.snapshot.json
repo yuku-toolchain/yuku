@@ -104,7 +104,7 @@
       "start": 4,
       "end": 14,
       "labels": [],
-      "help": "Remove the escape characters"
+      "help": "Write the keyword without escapes"
     },
     {
       "severity": "error",
@@ -113,7 +113,7 @@
       "start": 45,
       "end": 55,
       "labels": [],
-      "help": "Remove the escape characters"
+      "help": "Write the keyword without escapes"
     },
     {
       "severity": "error",
@@ -122,7 +122,7 @@
       "start": 73,
       "end": 83,
       "labels": [],
-      "help": "Remove the escape characters"
+      "help": "Write the keyword without escapes"
     }
   ]
 }

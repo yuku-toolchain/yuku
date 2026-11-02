@@ -25,55 +25,9 @@ Yuku is a high-performance JavaScript/TypeScript compiler toolchain written in Z
 
 ## JavaScript
 
-```bash
-npm install yuku
-```
-
-```js
-import { b, parse, print, walk } from "yuku";
-
-const file = parse(`
-  const RATE = 0.2;
-  export const tax = (price: number) => price * RATE;
-  export const scale = (RATE: number) => RATE * 2;
-`, { path: "tax.ts", analyze: true });
-
-const rate = file.rootScope.find("RATE");
-
-walk(file.program, {
-  Identifier(node, ctx) {
-    if (file.referenceOf(node)?.binding === rate) ctx.replace(b.Literal({ value: 0.2 }));
-  },
-});
-
-print(file, { strip: true }).code;
-// const RATE = 0.2;
-// export const tax = (price) => price * 0.2;
-// export const scale = (RATE) => RATE * 2;
-```
-
 The [JavaScript guide](https://yuku.fyi/javascript/) documents it.
 
 ## Zig
-
-Yuku needs Zig 0.17.0 or later.
-
-```bash
-zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
-```
-
-```zig
-// build.zig
-const yuku = b.dependency("yuku", .{ .target = target, .optimize = optimize });
-my_module.addImport("parser", yuku.module("parser"));
-```
-
-```zig
-const parser = @import("parser");
-
-var tree = try parser.parse(allocator, "const x: number = 1;", .{ .lang = .ts });
-defer tree.deinit();
-```
 
 These pages document it: the [parser](https://yuku.fyi/parser/), the [AST](https://yuku.fyi/parser/ast/), [semantic analysis](https://yuku.fyi/parser/semantic/), [traversal](https://yuku.fyi/parser/traverse/), and [codegen](https://yuku.fyi/parser/codegen/).
 
@@ -135,8 +89,6 @@ print(file, { strip: true }).code;
 // export const tax = (price) => price * 0.2;
 // export const scale = (RATE) => RATE * 2;
 ```
-
-These pages document it: [parse](https://yuku.fyi/javascript/parse/), [walk and build](https://yuku.fyi/javascript/walk/), [semantic analysis](https://yuku.fyi/javascript/semantic/), and [print](https://yuku.fyi/javascript/print/).
 
 # Parse
 
@@ -602,6 +554,18 @@ const { code, map, diagnostics } = print(file, { strip: true, sourceMap: true })
 Source: https://yuku.fyi/parser/
 
 The parser reads JavaScript, TypeScript, and JSX into a [tree](https://yuku.fyi/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](https://yuku.fyi/javascript/parse/).
+
+Yuku needs Zig 0.17.0 or later.
+
+```bash
+zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
+```
+
+```zig
+// build.zig
+const yuku = b.dependency("yuku", .{ .target = target, .optimize = optimize });
+my_module.addImport("parser", yuku.module("parser"));
+```
 
 ```zig
 const std = @import("std");

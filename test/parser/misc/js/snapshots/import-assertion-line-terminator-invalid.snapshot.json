@@ -79,21 +79,21 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '{'",
+      "message": "Expected ';' after the statement, but found '{'",
       "path": null,
       "start": 85,
       "end": 86,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '{'",
+      "message": "Expected ';' after the statement, but found '{'",
       "path": null,
       "start": 138,
       "end": 139,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     }
   ]
 }

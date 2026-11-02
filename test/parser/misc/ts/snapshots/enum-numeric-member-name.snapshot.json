@@ -425,7 +425,7 @@
       "start": 20,
       "end": 23,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -434,7 +434,7 @@
       "start": 107,
       "end": 112,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -443,7 +443,7 @@
       "start": 120,
       "end": 126,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -452,7 +452,7 @@
       "start": 134,
       "end": 143,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -461,7 +461,7 @@
       "start": 151,
       "end": 159,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -470,7 +470,7 @@
       "start": 167,
       "end": 172,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -479,7 +479,7 @@
       "start": 225,
       "end": 231,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -488,7 +488,7 @@
       "start": 239,
       "end": 243,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     },
     {
       "severity": "error",
@@ -497,7 +497,7 @@
       "start": 290,
       "end": 297,
       "labels": [],
-      "help": "Name the member with an identifier or a string literal."
+      "help": "Name the member with an identifier or a string literal"
     },
     {
       "severity": "error",
@@ -506,7 +506,7 @@
       "start": 328,
       "end": 329,
       "labels": [],
-      "help": "Name the member with an identifier or a string that is not a number."
+      "help": "Name the member with an identifier or a non-numeric string"
     }
   ]
 }

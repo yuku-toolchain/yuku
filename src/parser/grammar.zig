@@ -15,9 +15,9 @@ pub fn reportCoverInitializedNames(parser: *Parser) Error!void {
         if (!prop.shorthand or !isCoverInitializedName(parser, prop.value)) continue;
         try parser.report(
             parser.tree.span(@fromBackingInt(@intCast(i))),
-            "Shorthand property cannot have a default value in object expression",
-            .{ .help = "Use '{ a: a = 1 }' syntax or this is only valid in destructuring" ++
-                " patterns." },
+            "An '=' can only follow a property name when the containing object literal is" ++
+                " part of a destructuring pattern",
+            .{ .help = "Use ':' to give the property a value, or destructure into the object" },
         );
     }
 }
@@ -56,10 +56,8 @@ pub fn expressionToPattern(
         if (data == .parenthesized_expression or parser.state.stripped_paren == expr) {
             try parser.report(
                 parser.tree.span(expr),
-                "Parentheses are not allowed in this binding pattern",
-                .{ .help = "Remove the extra parentheses. Binding patterns can only be" ++
-                    " identifiers, destructuring patterns, or assignment patterns, not" ++
-                    " parenthesized expressions." },
+                "Parentheses are not allowed in binding patterns",
+                .{ .help = "Remove the parentheses" },
             );
             return;
         }
@@ -74,12 +72,8 @@ pub fn expressionToPattern(
             if (assign.operator != .assign) {
                 try parser.report(
                     parser.tree.span(expr),
-                    if (context == .binding)
-                        "Invalid assignment operator in binding pattern"
-                    else
-                        "Invalid assignment operator in assignment pattern",
-                    .{ .help = "Only '=' is allowed in destructuring defaults, not" ++
-                        " compound operators like '+='." },
+                    "Only '=' can assign a default value in a destructuring pattern",
+                    .{ .help = "Replace the operator with '='" },
                 );
                 return;
             }
@@ -112,7 +106,7 @@ pub fn expressionToPattern(
                 try parser.report(
                     parser.tree.span(expr),
                     "A rest element cannot have an initializer",
-                    .{ .help = "Remove the '= ...' from the rest element." },
+                    .{ .help = "Remove the initializer" },
                 );
             }
 
@@ -122,20 +116,21 @@ pub fn expressionToPattern(
         .chain_expression => try parser.report(
             parser.tree.span(expr),
             if (context == .binding)
-                "Optional chaining is not allowed in binding pattern"
+                "Optional chaining is not allowed in binding patterns"
             else
-                "Optional chaining is not allowed in assignment pattern",
-            .{ .help = "Optional chaining ('?.') cannot be used as an assignment target" ++
-                " in destructuring patterns." },
+                "The left-hand side of an assignment expression may not be an optional" ++
+                    " property access",
+            .{ .help = if (context == .binding)
+                "Use an identifier instead"
+            else
+                "Use '.' instead of '?.'" },
         ),
 
         .member_expression => if (context != .assignable) {
             try parser.report(
                 parser.tree.span(expr),
-                "Member expression is not allowed in binding pattern",
-                .{ .help = "Function parameters and variable declarations can only bind" ++
-                    " to identifiers, not member expressions like 'obj.prop' or" ++
-                    " 'obj[key]'. Use a simple identifier instead." },
+                "Member expressions are not allowed in binding patterns",
+                .{ .help = "Use an identifier instead" },
             );
         },
 
@@ -147,9 +142,8 @@ pub fn expressionToPattern(
             if (context != .assignable) {
                 try parser.report(
                     parser.tree.span(expr),
-                    "TypeScript assertion is not allowed in binding pattern",
-                    .{ .help = "Non-null ('!') and type ('as', 'satisfies', '<T>')" ++
-                        " assertions can only appear in assignment targets." },
+                    "Non-null and type assertions are not allowed in binding patterns",
+                    .{ .help = "Remove the assertion" },
                 );
                 return;
             }
@@ -157,10 +151,9 @@ pub fn expressionToPattern(
             if (!expressions.isSimpleAssignmentTarget(parser, expr)) {
                 try parser.report(
                     parser.tree.span(expr),
-                    "Invalid assignment target",
-                    .{ .help = "The expression behind a non-null or type assertion must" ++
-                        " itself be a simple assignment target, like an identifier or" ++
-                        " member access, not a call or other expression." },
+                    "The left-hand side of an assignment expression must be a variable or a" ++
+                        " property access",
+                    .{ .help = "Only a variable or a property access can be asserted here" },
                 );
             }
         },
@@ -171,10 +164,8 @@ pub fn expressionToPattern(
             if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
                     parser.tree.span(paren.expression),
-                    "Parenthesized expression in assignment pattern must be a simple" ++
-                        " assignment target",
-                    .{ .help = "Only identifiers or member expressions (without optional" ++
-                        " chaining) are allowed inside parentheses in assignment patterns." },
+                    "A parenthesized assignment target must be a variable or a property access",
+                    .{ .help = "Optional chains cannot be assigned to, even in parentheses" },
                 );
 
                 return;
@@ -227,11 +218,11 @@ pub fn expressionToPattern(
         else => try parser.report(
             parser.tree.span(expr),
             if (context == .binding)
-                "Invalid element in binding pattern"
+                "Binding patterns can only contain identifiers and nested patterns"
             else
-                "Invalid element in assignment pattern",
-            .{ .help = "Expected an identifier, array pattern, object pattern," ++
-                " or assignment pattern." },
+                "The left-hand side of an assignment expression must be a variable or a" ++
+                    " property access",
+            .{},
         ),
     }
 }

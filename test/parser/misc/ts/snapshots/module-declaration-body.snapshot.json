@@ -252,7 +252,7 @@
       "start": 157,
       "end": 175,
       "labels": [],
-      "help": "Add a '{ }' body after the name."
+      "help": "Add a body after the name, such as '{}'"
     },
     {
       "severity": "error",
@@ -261,7 +261,7 @@
       "start": 177,
       "end": 205,
       "labels": [],
-      "help": "Add a '{ }' body after the name."
+      "help": "Add a body after the name, such as '{}'"
     },
     {
       "severity": "error",
@@ -270,7 +270,7 @@
       "start": 207,
       "end": 228,
       "labels": [],
-      "help": "Add a '{ }' body after the name."
+      "help": "Add a body after the name, such as '{}'"
     },
     {
       "severity": "error",
@@ -279,7 +279,7 @@
       "start": 230,
       "end": 263,
       "labels": [],
-      "help": "Add a '{ }' body after the name."
+      "help": "Add a body after the name, such as '{}'"
     },
     {
       "severity": "error",
@@ -288,7 +288,7 @@
       "start": 265,
       "end": 301,
       "labels": [],
-      "help": "Add a '{ }' body after the name."
+      "help": "Add a body after the name, such as '{}'"
     },
     {
       "severity": "error",
@@ -297,7 +297,7 @@
       "start": 303,
       "end": 324,
       "labels": [],
-      "help": "Add a '{ }' body after the name."
+      "help": "Add a body after the name, such as '{}'"
     }
   ]
 }

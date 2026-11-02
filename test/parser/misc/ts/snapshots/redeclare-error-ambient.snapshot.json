@@ -492,7 +492,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'A1' has already been declared",
+      "message": "Cannot redeclare block-scoped variable 'A1'",
       "path": null,
       "start": 106,
       "end": 108,
@@ -508,11 +508,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A1'"
+      "help": "Rename or remove this declaration of 'A1'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'A2' has already been declared",
+      "message": "Cannot redeclare block-scoped variable 'A2'",
       "path": null,
       "start": 168,
       "end": 170,
@@ -528,11 +528,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A2'"
+      "help": "Rename or remove this declaration of 'A2'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'A3' has already been declared",
+      "message": "Duplicate identifier 'A3'",
       "path": null,
       "start": 228,
       "end": 230,
@@ -548,11 +548,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A3'"
+      "help": "Rename or remove this declaration of 'A3'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'A4' has already been declared",
+      "message": "Duplicate identifier 'A4'",
       "path": null,
       "start": 294,
       "end": 296,
@@ -568,11 +568,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A4'"
+      "help": "Rename or remove this declaration of 'A4'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'A5' has already been declared",
+      "message": "Duplicate identifier 'A5'",
       "path": null,
       "start": 370,
       "end": 372,
@@ -588,11 +588,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A5'"
+      "help": "Rename or remove this declaration of 'A5'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'A6' has already been declared",
+      "message": "Duplicate identifier 'A6'",
       "path": null,
       "start": 444,
       "end": 454,
@@ -608,11 +608,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A6'"
+      "help": "Rename or remove this declaration of 'A6'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'A7' has already been declared",
+      "message": "Duplicate identifier 'A7'",
       "path": null,
       "start": 561,
       "end": 563,
@@ -628,7 +628,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'A7'"
+      "help": "Rename or remove this declaration of 'A7'"
     }
   ]
 }

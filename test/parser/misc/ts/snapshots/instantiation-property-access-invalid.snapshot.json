@@ -82,7 +82,7 @@
       "start": 74,
       "end": 78,
       "labels": [],
-      "help": "Wrap the instantiation expression in parentheses."
+      "help": "Wrap the instantiation expression in parentheses"
     }
   ]
 }

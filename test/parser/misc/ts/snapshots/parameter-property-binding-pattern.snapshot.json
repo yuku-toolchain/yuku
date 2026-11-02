@@ -817,7 +817,7 @@
       "start": 212,
       "end": 214,
       "labels": [],
-      "help": "Name the parameter, then destructure it inside the constructor body."
+      "help": "Use an identifier, then destructure it in the constructor body"
     },
     {
       "severity": "error",
@@ -826,7 +826,7 @@
       "start": 267,
       "end": 269,
       "labels": [],
-      "help": "Name the parameter, then destructure it inside the constructor body."
+      "help": "Use an identifier, then destructure it in the constructor body"
     },
     {
       "severity": "error",
@@ -835,7 +835,7 @@
       "start": 327,
       "end": 333,
       "labels": [],
-      "help": "Name the parameter, then destructure it inside the constructor body."
+      "help": "Use an identifier, then destructure it in the constructor body"
     },
     {
       "severity": "error",
@@ -844,7 +844,7 @@
       "start": 392,
       "end": 404,
       "labels": [],
-      "help": "Name the parameter, then destructure it inside the constructor body."
+      "help": "Use an identifier, then destructure it in the constructor body"
     }
   ]
 }

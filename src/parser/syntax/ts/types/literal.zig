@@ -49,7 +49,6 @@ pub fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const parts = try literals.parseTemplateParts(
         parser,
         false,
-        "type interpolation",
         core.parseType,
     ) orelse return null;
 

@@ -1,6 +1,6 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8648/8648 (100.00%)
+Passed:       8654/8654 (100.00%)
 Failed:       0
 AST mismatch: 0/8648
 
@@ -981,6 +981,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/1c6ea71873ae2459.module.ts
 ✓ test/parser/suite/ts/pass/1c6f6560deea2dcd.ts
 ✓ test/parser/suite/ts/pass/1c7507007d296249.ts
+✓ test/parser/suite/ts/pass/1c794bc20508edd7.module.ts
 ✓ test/parser/suite/ts/pass/1c795bd58ec05472.ts
 ✓ test/parser/suite/ts/pass/1c86f44308d2593a.ts
 ✓ test/parser/suite/ts/pass/1c939cb4948dac4a.ts
@@ -1041,6 +1042,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/1e45feef8e8bbb09.ts
 ✓ test/parser/suite/ts/pass/1e638ec7ce5805c5.ts
 ✓ test/parser/suite/ts/pass/1e757da453ffa5ab.ts
+✓ test/parser/suite/ts/pass/1e7c7e410be2ed63.ts
 ✓ test/parser/suite/ts/pass/1e7d3afaa5b85579.ts
 ✓ test/parser/suite/ts/pass/1e7e5bf5f889206f.ts
 ✓ test/parser/suite/ts/pass/1e82ff8e4222b5b5.ts
@@ -2284,6 +2286,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/445fb97fb74e5925.ts
 ✓ test/parser/suite/ts/pass/4461329ea2c1c83a.ts
 ✓ test/parser/suite/ts/pass/4466d92ab30b3968.ts
+✓ test/parser/suite/ts/pass/44674bca76f982ce.ts
 ✓ test/parser/suite/ts/pass/4477ef410baf86be.module.tsx
 ✓ test/parser/suite/ts/pass/447c672d25f16f3c.ts
 ✓ test/parser/suite/ts/pass/447da4dc98d806f9.ts
@@ -3854,6 +3857,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/72d86b81a4c0ea98.ts
 ✓ test/parser/suite/ts/pass/72d99ff354c14d9f.ts
 ✓ test/parser/suite/ts/pass/72db3bda60107aa9.ts
+✓ test/parser/suite/ts/pass/72e32e616d25bf5a.ts
 ✓ test/parser/suite/ts/pass/72e870a2a3a93ffe.ts
 ✓ test/parser/suite/ts/pass/72f398b992d7fe53.ts
 ✓ test/parser/suite/ts/pass/72f3bd38b405e70e.ts
@@ -3863,6 +3867,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/73266990038db2d6.ts
 ✓ test/parser/suite/ts/pass/73271f027bee1e86.ts
 ✓ test/parser/suite/ts/pass/732de86d33d10dd3.ts
+✓ test/parser/suite/ts/pass/732e5daba6a8364c.ts
 ✓ test/parser/suite/ts/pass/733c2a0a16427a3f.ts
 ✓ test/parser/suite/ts/pass/73537e3573cd8c04.ts
 ✓ test/parser/suite/ts/pass/7358e121c7cf8161.ts
@@ -6017,6 +6022,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/b37ce651a81ecbcf.ts
 ✓ test/parser/suite/ts/pass/b380c5a8e48e37c1.ts
 ✓ test/parser/suite/ts/pass/b38cc1e74a3512e0.ts
+✓ test/parser/suite/ts/pass/b38d082da78b3f06.ts
 ✓ test/parser/suite/ts/pass/b39b1ffbdbb0f52d.ts
 ✓ test/parser/suite/ts/pass/b3a4d68201b18818.ts
 ✓ test/parser/suite/ts/pass/b3aaec550b047f8f.module.ts

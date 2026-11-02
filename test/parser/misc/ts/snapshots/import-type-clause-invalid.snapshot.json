@@ -351,7 +351,7 @@
       "start": 120,
       "end": 139,
       "labels": [],
-      "help": "Split this into one 'import type' per clause."
+      "help": "Split into two separate import declarations"
     },
     {
       "severity": "error",
@@ -360,7 +360,7 @@
       "start": 162,
       "end": 192,
       "labels": [],
-      "help": "Split this into one 'import type' per clause."
+      "help": "Split into two separate import declarations"
     },
     {
       "severity": "error",
@@ -369,7 +369,7 @@
       "start": 215,
       "end": 243,
       "labels": [],
-      "help": "Split this into one 'import type' per clause."
+      "help": "Split into two separate import declarations"
     }
   ]
 }

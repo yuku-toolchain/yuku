@@ -1431,66 +1431,66 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '('",
+      "message": "Expected ';' after the statement, but found '('",
       "path": null,
       "start": 309,
       "end": 310,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found 'new'",
+      "message": "Expected ';' after the statement, but found 'new'",
       "path": null,
       "start": 363,
       "end": 366,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '('",
+      "message": "Expected ';' after the statement, but found '('",
       "path": null,
       "start": 414,
       "end": 415,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '('",
+      "message": "Expected ';' after the statement, but found '('",
       "path": null,
       "start": 480,
       "end": 481,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '('",
+      "message": "Expected ';' after the statement, but found '('",
       "path": null,
       "start": 520,
       "end": 521,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '('",
+      "message": "Expected ';' after the statement, but found '('",
       "path": null,
       "start": 572,
       "end": 573,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected ';', ',', or newline between type members, but found '('",
+      "message": "Expected ';', ',', or a line break between type members, but found '('",
       "path": null,
       "start": 631,
       "end": 632,
       "labels": [],
-      "help": "Separate type members with ';', ',', or a newline, or close the block with '}'"
+      "help": "Separate the members with ';', or close the type with '}'"
     },
     {
       "severity": "error",
@@ -1503,12 +1503,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ']' to close a tuple type, but found '('",
+      "message": "Expected ']' to close the tuple type, but found '('",
       "path": null,
       "start": 682,
       "end": 683,
       "labels": [],
-      "help": "Each '[' in a tuple type must be matched by a ']'"
+      "help": "Check that every '[' in the tuple has a matching ']'"
     },
     {
       "severity": "error",
@@ -1521,12 +1521,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected '?' in a conditional type, but found '('",
+      "message": "Expected '?' in the conditional type, but found '('",
       "path": null,
       "start": 755,
       "end": 756,
       "labels": [],
-      "help": "A conditional type is written 'T extends U ? X : Y'"
+      "help": "Write a conditional type as 'T extends U ? X : Y'"
     },
     {
       "severity": "error",
@@ -1575,12 +1575,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '('",
+      "message": "Expected ';' after the statement, but found '('",
       "path": null,
       "start": 1088,
       "end": 1089,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
@@ -1593,12 +1593,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '<'",
+      "message": "Expected ';' after the statement, but found '<'",
       "path": null,
       "start": 1162,
       "end": 1163,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
@@ -1620,12 +1620,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 1437,
       "end": 1438,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1656,12 +1656,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 1564,
       "end": 1565,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1674,12 +1674,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 1617,
       "end": 1618,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1692,21 +1692,21 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '=>'",
+      "message": "Expected ';' after the statement, but found '=>'",
       "path": null,
       "start": 1671,
       "end": 1673,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ','",
+      "message": "Expected ')' to close the parenthesized type, but found ','",
       "path": null,
       "start": 1709,
       "end": 1710,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1719,12 +1719,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 1769,
       "end": 1770,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1737,12 +1737,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 1842,
       "end": 1843,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1773,12 +1773,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 1945,
       "end": 1946,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1791,12 +1791,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected ')' to close a parenthesized type, but found ':'",
+      "message": "Expected ')' to close the parenthesized type, but found ':'",
       "path": null,
       "start": 2013,
       "end": 2014,
       "labels": [],
-      "help": "Each '(' in a type must be matched by a ')'"
+      "help": "Check that every '(' in the type has a matching ')'"
     },
     {
       "severity": "error",
@@ -1881,12 +1881,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found ')'",
+      "message": "Expected ';' after the statement, but found ')'",
       "path": null,
       "start": 2196,
       "end": 2197,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",
@@ -1989,12 +1989,12 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '=>'",
+      "message": "Expected ';' after the statement, but found '=>'",
       "path": null,
       "start": 2417,
       "end": 2419,
       "labels": [],
-      "help": "Try inserting a semicolon here"
+      "help": "Add ';' or a line break before it"
     },
     {
       "severity": "error",

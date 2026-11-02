@@ -89,18 +89,22 @@ fn parseRegExpLiteralFlags(parser: *Parser, flags_start: u32, flags: []const u8)
         index += len;
 
         if (bit == 0) {
-            try parser.report(span, "Invalid regular expression flag", .{
-                .help = "Valid flags are `d`, `g`, `i`, `m`, `s`, `u`, `v`, and `y`.",
-            });
+            try parser.report(
+                span,
+                try parser.fmt("Unknown regular expression flag '{s}'", .{parser.spanText(span)}),
+                .{ .help = "Valid flags are 'd', 'g', 'i', 'm', 's', 'u', 'v', and 'y'" },
+            );
         } else if (seen & bit != 0) {
-            try parser.report(span, "Duplicate regular expression flag", .{
-                .help = "Each flag can appear only once.",
-            });
+            try parser.report(
+                span,
+                try parser.fmt("Duplicate regular expression flag '{s}'", .{parser.spanText(span)}),
+                .{ .help = "Remove the repeated flag" },
+            );
         } else if ((seen | bit) & unicode_modes == unicode_modes) {
             try parser.report(
                 span,
-                "The 'u' and 'v' regular expression flags cannot be used together",
-                .{ .help = "Use `v`, which extends `u`, or `u` alone." },
+                "The Unicode (u) flag and the Unicode Sets (v) flag cannot be set simultaneously",
+                .{ .help = "Keep only one of the two flags" },
             );
         }
         seen |= bit;
@@ -133,7 +137,6 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
     const parts = try parseTemplateParts(
         parser,
         tagged,
-        "expression",
         parseTemplateSubstitution,
     ) orelse return null;
 
@@ -155,7 +158,6 @@ pub const TemplateParts = struct {
 pub fn parseTemplateParts(
     parser: *Parser,
     tagged: bool,
-    comptime noun: []const u8,
     comptime parseSubstitution: fn (*Parser) Error!?ast.NodeIndex,
 ) Error!?TemplateParts {
     std.debug.assert(parser.current_token.tag == .template_head);
@@ -181,8 +183,8 @@ pub fn parseTemplateParts(
         if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected '}' to close template " ++ noun,
-                .{ .help = "Template " ++ noun ++ "s must be closed with '}'" },
+                "Expected '}' to close the template placeholder",
+                .{},
             );
             return null;
         }
@@ -222,7 +224,9 @@ inline fn addTemplateElement(
     const is_cooked_undefined = token.hasInvalidEscape();
 
     if (!tagged and is_cooked_undefined) {
-        try parser.report(span, "Bad escape sequence in untagged template literal", .{});
+        try parser.report(span, "Invalid escape sequence in an untagged template literal", .{
+            .help = "Only tagged templates can contain invalid escapes",
+        });
     }
 
     const cooked: ast.String = if (is_cooked_undefined)
@@ -317,7 +321,7 @@ pub inline fn validateIdentifier(
         try parser.reportExpected(
             token.span,
             "Expected an identifier",
-            .{ .help = "Identifiers must start with a letter, underscore (_), or dollar sign ($)" },
+            .{ .help = "Identifiers start with a letter, '_', or '$'" },
         );
     }
 
@@ -325,8 +329,8 @@ pub inline fn validateIdentifier(
         try parser.report(
             token.span,
             try parser.fmt(
-                "'{s}' is reserved and cannot be used as " ++ as_what,
-                .{parser.describeToken(token)},
+                "{s} is a reserved word and cannot be used as " ++ as_what,
+                .{try parser.describeToken(token)},
             ),
             .{},
         );
@@ -335,7 +339,7 @@ pub inline fn validateIdentifier(
     if (token.tag == .yield and parser.context.yield) {
         try parser.report(
             token.span,
-            "'yield' is reserved in a generator context and cannot be used as " ++ as_what,
+            "'yield' is a reserved word in generators and cannot be used as " ++ as_what,
             .{},
         );
     }
@@ -343,7 +347,8 @@ pub inline fn validateIdentifier(
     if (token.tag == .await and (parser.context.await or parser.tree.isModule())) {
         try parser.report(
             token.span,
-            "'await' is reserved in an async/module context and cannot be used as " ++ as_what,
+            "'await' is a reserved word in async functions and modules and cannot be used as " ++
+                as_what,
             .{},
         );
     }

@@ -26,29 +26,6 @@ Yuku is a high-performance JavaScript/TypeScript compiler toolchain written in Z
 npm install yuku
 ```
 
-```js
-import { b, parse, print, walk } from "yuku";
-
-const file = parse(`
-  const RATE = 0.2;
-  export const tax = (price: number) => price * RATE;
-  export const scale = (RATE: number) => RATE * 2;
-`, { path: "tax.ts", analyze: true });
-
-const rate = file.rootScope.find("RATE");
-
-walk(file.program, {
-  Identifier(node, ctx) {
-    if (file.referenceOf(node)?.binding === rate) ctx.replace(b.Literal({ value: 0.2 }));
-  },
-});
-
-print(file, { strip: true }).code;
-// const RATE = 0.2;
-// export const tax = (price) => price * 0.2;
-// export const scale = (RATE) => RATE * 2;
-```
-
 One import parses, analyzes, walks, builds, and prints JavaScript and TypeScript, in Node.js, Bun, Deno, browsers, and edge runtimes. See the [JavaScript guide](https://yuku.fyi/javascript/).
 
 ## Zig

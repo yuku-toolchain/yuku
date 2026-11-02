@@ -190,14 +190,14 @@ pub fn checkDefiniteAssignment(
     if (has_initializer) {
         try parser.report(
             span,
-            "A declaration with an initializer cannot also have a definite assignment assertion",
-            .{ .help = "Remove the '!'. The initializer already assigns a value." },
+            "Declarations with initializers cannot also have definite assignment assertions",
+            .{ .help = "Remove the '!', since the initializer already assigns a value" },
         );
     } else if (!has_type_annotation) {
         try parser.report(
             span,
-            "A declaration with a definite assignment assertion must also have a type annotation",
-            .{ .help = "Annotate the declaration, for example 'x!: string'." },
+            "Declarations with definite assignment assertions must also have type annotations",
+            .{ .help = "Add a type annotation, such as 'x!: string'" },
         );
     }
 }

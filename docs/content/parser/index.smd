@@ -7,6 +7,18 @@
 ---
 The parser reads JavaScript, TypeScript, and JSX into a [tree](/parser/ast/). It recovers from errors, so a parse with diagnostics still returns everything it could read. From JavaScript, see [`parse`](/javascript/parse/).
 
+Yuku needs Zig 0.17.0 or later.
+
+```bash
+zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
+```
+
+```zig
+// build.zig
+const yuku = b.dependency("yuku", .{ .target = target, .optimize = optimize });
+my_module.addImport("parser", yuku.module("parser"));
+```
+
 ```zig
 const std = @import("std");
 const parser = @import("parser");

@@ -11,12 +11,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Unexpected '=>'",
+      "message": "Unexpected token '=>'",
       "path": null,
       "start": 0,
       "end": 12,
       "labels": [],
-      "help": "'=>' is only valid after a single identifier or a parenthesized parameter list"
+      "help": "An arrow function takes an identifier or a parenthesized parameter list"
     }
   ]
 }

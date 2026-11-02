@@ -47,8 +47,8 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         } else if (!is_spread and parser.current_token.tag != .right_paren) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected ',' or ')' in parenthesized expression",
-                .{ .help = "Add a comma between elements or close with ')'." },
+                "Expected ',' or ')' in the parenthesized expression",
+                .{ .help = "Separate the expressions with ','" },
             );
             return null;
         }
@@ -59,9 +59,9 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
             .{ .start = start, .end = end },
             "Unterminated parenthesized expression",
             .{
-                .help = "Add a closing ')' to complete the expression.",
+                .help = "Add ')' to close the expression",
                 .labels = try parser.labels(&.{
-                    parser.label(.{ .start = start, .end = start + 1 }, "Opened here"),
+                    parser.label(.{ .start = start, .end = start + 1 }, "opened here"),
                 }),
             },
         );
@@ -104,8 +104,8 @@ pub fn coverToParenthesizedExpression(
     if (elements.len == 0) {
         try parser.report(
             .{ .start = cover.start, .end = cover.end },
-            "Empty parentheses are only valid as arrow function parameters",
-            .{},
+            "Empty parentheses are only allowed as arrow function parameters",
+            .{ .help = "Add '=>' after ')' to make this an arrow function" },
         );
         return null;
     }
@@ -113,8 +113,9 @@ pub fn coverToParenthesizedExpression(
     if (cover.has_trailing_comma) {
         try parser.report(
             .{ .start = cover.start, .end = cover.end },
-            "Trailing comma is not allowed in parenthesized expression",
-            .{ .help = "Remove the trailing comma or use as arrow function parameters." },
+            "A parenthesized expression cannot have a trailing comma",
+            .{ .help = "Remove the trailing comma, or add '=>' after ')' to make this an arrow" ++
+                " function" },
         );
         return null;
     }
@@ -123,8 +124,8 @@ pub fn coverToParenthesizedExpression(
         if (parser.tree.data(elem) == .spread_element) {
             try parser.report(
                 parser.tree.span(elem),
-                "Rest element is not allowed in parenthesized expression",
-                .{ .help = "Spread in parentheses is only valid for arrow function parameters." },
+                "A rest parameter is only allowed in arrow function parameters",
+                .{ .help = "Add '=>' after ')' to make this an arrow function" },
             );
             return null;
         }
@@ -230,8 +231,8 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
         if (rest != .null) {
             try parser.report(
                 parser.tree.span(rest),
-                "Rest parameter must be last formal parameter",
-                .{ .help = "Move the rest parameter to the end of the parameter list" },
+                "A rest parameter must be last in a parameter list",
+                .{ .help = "Move the rest parameter to the end" },
             );
             return null;
         }
@@ -243,8 +244,8 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             if (cover.has_trailing_comma) {
                 try parser.report(
                     parser.tree.span(elem),
-                    "Rest parameter must be last formal parameter",
-                    .{ .help = "Remove the trailing comma after the rest parameter" },
+                    "A rest parameter cannot have a trailing comma",
+                    .{ .help = "Remove the trailing comma" },
                 );
                 return null;
             }

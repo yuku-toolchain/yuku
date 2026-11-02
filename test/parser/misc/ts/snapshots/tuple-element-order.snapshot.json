@@ -1087,7 +1087,7 @@
       "start": 336,
       "end": 340,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     },
     {
       "severity": "error",
@@ -1096,7 +1096,7 @@
       "start": 384,
       "end": 385,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     },
     {
       "severity": "error",
@@ -1105,7 +1105,7 @@
       "start": 430,
       "end": 431,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     },
     {
       "severity": "error",
@@ -1114,7 +1114,7 @@
       "start": 477,
       "end": 478,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     },
     {
       "severity": "error",
@@ -1123,7 +1123,7 @@
       "start": 525,
       "end": 529,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     },
     {
       "severity": "error",
@@ -1132,7 +1132,7 @@
       "start": 574,
       "end": 575,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     },
     {
       "severity": "error",
@@ -1141,7 +1141,7 @@
       "start": 584,
       "end": 585,
       "labels": [],
-      "help": "Mark this element optional, or move it before the optional ones."
+      "help": "Mark the element optional, or move it before the optional elements"
     }
   ]
 }

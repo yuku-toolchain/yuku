@@ -327,7 +327,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'C1' has already been declared",
+      "message": "Duplicate identifier 'C1'",
       "path": null,
       "start": 116,
       "end": 118,
@@ -343,11 +343,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'C1'"
+      "help": "Rename or remove this declaration of 'C1'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'C2' has already been declared",
+      "message": "Duplicate identifier 'C2'",
       "path": null,
       "start": 196,
       "end": 198,
@@ -363,11 +363,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'C2'"
+      "help": "Rename or remove this declaration of 'C2'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'C3' has already been declared",
+      "message": "Duplicate identifier 'C3'",
       "path": null,
       "start": 285,
       "end": 287,
@@ -383,11 +383,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'C3'"
+      "help": "Rename or remove this declaration of 'C3'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'C4' has already been declared",
+      "message": "Duplicate identifier 'C4'",
       "path": null,
       "start": 386,
       "end": 388,
@@ -403,7 +403,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'C4'"
+      "help": "Rename or remove this declaration of 'C4'"
     }
   ]
 }

@@ -227,7 +227,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "'import' declaration may only appear at the top level",
+      "message": "An import declaration can only be used at the top level of a module",
       "path": null,
       "start": 39,
       "end": 50,
@@ -236,7 +236,7 @@
     },
     {
       "severity": "error",
-      "message": "'export default' declaration may only appear at the top level",
+      "message": "A default export must be at the top level of a file or module declaration",
       "path": null,
       "start": 70,
       "end": 87,
@@ -245,7 +245,7 @@
     },
     {
       "severity": "error",
-      "message": "'export *' declaration may only appear at the top level",
+      "message": "An 'export *' declaration can only be used at the top level of a module",
       "path": null,
       "start": 99,
       "end": 117,
@@ -254,7 +254,7 @@
     },
     {
       "severity": "error",
-      "message": "'export' declaration may only appear at the top level",
+      "message": "An export declaration can only be used at the top level of a module",
       "path": null,
       "start": 125,
       "end": 151,
@@ -263,7 +263,7 @@
     },
     {
       "severity": "error",
-      "message": "'export' declaration may only appear at the top level",
+      "message": "An export declaration can only be used at the top level of a module",
       "path": null,
       "start": 161,
       "end": 178,

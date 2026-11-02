@@ -87,12 +87,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Constructor cannot be abstract",
+      "message": "'abstract' modifier cannot appear on a constructor declaration",
       "path": null,
       "start": 51,
       "end": 62,
       "labels": [],
-      "help": "Remove the 'abstract' modifier. Only methods and properties can be abstract."
+      "help": "Remove 'abstract'"
     }
   ]
 }

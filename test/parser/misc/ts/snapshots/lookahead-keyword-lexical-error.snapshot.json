@@ -185,57 +185,57 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 114,
       "end": 115,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 128,
       "end": 129,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 139,
       "end": 140,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 161,
       "end": 162,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 186,
       "end": 187,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Expected ';' after class field, but found 'x'",
+      "message": "Expected ';' after the class field, but found 'x'",
       "path": null,
       "start": 186,
       "end": 187,
       "labels": [],
-      "help": "Add a semicolon after the field declaration."
+      "help": null
     }
   ]
 }

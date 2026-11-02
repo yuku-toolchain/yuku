@@ -89,12 +89,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Rest parameter may not have a trailing comma",
+      "message": "A rest parameter cannot have a trailing comma",
       "path": null,
       "start": 218,
       "end": 236,
       "labels": [],
-      "help": "Remove the trailing comma after the rest parameter."
+      "help": "Remove the trailing comma"
     }
   ]
 }

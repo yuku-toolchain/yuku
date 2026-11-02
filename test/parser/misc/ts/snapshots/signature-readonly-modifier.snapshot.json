@@ -507,57 +507,57 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 112,
       "end": 127,
       "labels": [],
-      "help": "Remove 'readonly' from this signature."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 133,
       "end": 149,
       "labels": [],
-      "help": "Remove 'readonly' from this signature."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 169,
       "end": 188,
       "labels": [],
-      "help": "Remove 'readonly' from this signature."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 202,
       "end": 221,
       "labels": [],
-      "help": "Remove 'readonly' from this signature."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 240,
       "end": 252,
       "labels": [],
-      "help": "Remove 'readonly' from this signature."
+      "help": "Remove 'readonly'"
     },
     {
       "severity": "error",
-      "message": "A 'readonly' modifier can only appear on a property declaration or index signature",
+      "message": "'readonly' modifier can only appear on a property declaration or index signature",
       "path": null,
       "start": 388,
       "end": 403,
       "labels": [],
-      "help": "Remove 'readonly' from this signature."
+      "help": "Remove 'readonly'"
     }
   ]
 }

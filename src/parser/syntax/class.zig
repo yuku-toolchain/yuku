@@ -58,7 +58,7 @@ pub fn parseClassDecorated(
     defer parser.ts_context.ambient = saved_ambient;
     if (is_declare) parser.ts_context.ambient = true;
 
-    if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
+    if (!try parser.expect(.class, "Expected 'class'", null)) return null;
 
     const class_type: ast.ClassType = if (options.is_expression and !options.is_default_export)
         .class_expression
@@ -69,8 +69,8 @@ pub fn parseClassDecorated(
         @branchHint(.unlikely);
         try parser.report(
             .{ .start = start, .end = parser.current_token.span.end },
-            "Class declarations are not allowed in single-statement contexts",
-            .{ .help = "Wrap the class declaration in a block: { class C {} }" },
+            "Classes can only be declared at the top level or inside a block",
+            .{ .help = "Wrap the declaration in a block" },
         );
     }
 
@@ -82,8 +82,8 @@ pub fn parseClassDecorated(
     if (id == .null and !options.is_expression and !options.is_default_export) {
         try parser.report(
             parser.current_token.span,
-            "Class declaration requires a name",
-            .{ .help = "Add a name after 'class', e.g. 'class MyClass {}'." },
+            "A class declaration without the 'default' modifier must have a name",
+            .{ .help = "Add a name after 'class'" },
         );
         return null;
     }
@@ -180,8 +180,8 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(
         .left_brace,
-        "Expected '{' to start class body",
-        "Class body must be enclosed in braces: class Name { ... }",
+        "Expected '{' to start the class body",
+        null,
     )) return null;
 
     const checkpoint = parser.scratch_a.begin();
@@ -199,8 +199,8 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close class body",
-        "Add a closing brace '}' to complete the class, or check for unbalanced braces inside.",
+        "Expected '}' to close the class body",
+        "Check that every '{' in the class has a matching '}'",
     )) return null;
 
     return try parser.tree.addNode(.{
@@ -260,16 +260,16 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         if (modifiers.is_accessor) {
             try parser.report(
                 parser.current_token.span,
-                "Accessor properties cannot be methods",
-                .{ .help = "Remove the parentheses to declare an auto-accessor field." },
+                "'accessor' modifier can only appear on a property declaration",
+                .{ .help = "Remove 'accessor', or remove the parameter list" },
             );
             return null;
         }
         if (modifiers.definite) {
             try parser.report(
                 parser.tree.span(key),
-                "Method cannot have a definite assignment assertion",
-                .{ .help = "Remove the '!' or declare a property instead." },
+                "A method cannot have a definite assignment assertion",
+                .{ .help = "Remove the '!'" },
             );
         }
         return parseMethodDefinition(parser, element_start, decorators, key, computed, modifiers);
@@ -278,8 +278,17 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     if (modifiers.is_async or modifiers.is_generator) {
         try parser.reportExpected(
             parser.current_token.span,
-            "Expected '(' for method definition",
-            .{ .help = "Method definitions require a parameter list. Use 'method() {}' syntax." },
+            "Expected '(' to start the method parameters",
+            .{},
+        );
+        return null;
+    }
+
+    if (modifiers.kind == .constructor) {
+        try parser.report(
+            parser.tree.span(key),
+            "Classes may not have a field named 'constructor'",
+            .{ .help = "Rename the field" },
         );
         return null;
     }
@@ -287,9 +296,8 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     if (modifiers.kind != .method) {
         try parser.reportExpected(
             parser.current_token.span,
-            "Expected '(' for getter/setter definition",
-            .{ .help = "Getters and setters require parentheses." ++
-                " Use 'get prop() {}' or 'set prop(value) {}' syntax." },
+            "Expected '(' to start the accessor parameters",
+            .{},
         );
         return null;
     }
@@ -307,8 +315,8 @@ fn parseIndexSignatureElement(
         const first = parser.tree.extra(decorators)[0];
         try parser.report(
             parser.tree.span(first),
-            "Decorators cannot be applied to an index signature",
-            .{},
+            "Decorators cannot be applied to index signatures",
+            .{ .help = "Remove the decorator" },
         );
     }
 
@@ -385,7 +393,6 @@ const Modifiers = struct {
     }
 };
 
-// a modifier word becomes the key when what follows cannot continue a modifier
 fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
     while (isModifier(parser.current_token.tag, parser.tree.isTs())) {
         const token = parser.current_token;
@@ -396,14 +403,14 @@ fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
             (token.tag == .get or token.tag == .set);
 
         const is_modifier =
+            !token.isEscaped() and
             canStartElementKey(next.tag) and
             !accessor_before_star and
             !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
             !modifiers.conflicts(token.tag);
         if (!is_modifier) return try literals.parseIdentifierName(parser) orelse .null;
 
-        try parser.reportIfEscapedKeyword(token);
-        try parser.advanceWithoutEscapeCheck() orelse return .null;
+        try parser.advance() orelse return .null;
         modifiers.set(token.tag);
     }
     return .null;
@@ -420,12 +427,14 @@ fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIn
         try parser.report(
             parser.tree.span(first),
             "Decorators cannot be applied to static blocks",
-            .{ .help = "Remove the decorator or apply it to a method or field instead." },
+            .{ .help = "Remove the decorator, or apply it to a method or field instead" },
         );
     }
     try parser.reportIfEscapedKeyword(static_token);
     try parser.advanceWithoutEscapeCheck() orelse return null;
-    if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
+    if (!try parser.expect(.left_brace, "Expected '{' to start the static block", null)) {
+        return null;
+    }
 
     // ClassStaticBlockStatementList is [~Yield, +Await, ~Return]
     const saved_await = parser.context.await;
@@ -440,7 +449,9 @@ fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIn
 
     const body = try parser.parseBody(.right_brace, .other);
     const end = parser.current_token.span.end;
-    if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
+    if (!try parser.expect(.right_brace, "Expected '}' to close the static block", null)) {
+        return null;
+    }
 
     return try parser.tree.addNode(
         .{ .static_block = .{ .body = body } },
@@ -499,7 +510,7 @@ fn parseMethodDefinition(
         try parser.report(
             parser.tree.span(type_parameters),
             "Type parameters cannot appear on a constructor declaration",
-            .{ .help = "Declare the type parameters on the class instead." },
+            .{ .help = "Declare the type parameters on the class instead" },
         );
     }
 
@@ -525,17 +536,20 @@ fn parseMethodDefinition(
         if (modifiers.abstract and modifiers.kind != .constructor) try parser.report(
             parser.tree.span(body),
             if (modifiers.kind == .method)
-                "An abstract method cannot have an implementation"
+                try parser.fmt(
+                    "Method '{s}' cannot have an implementation because it is marked abstract",
+                    .{parser.spanText(parser.tree.span(key))},
+                )
             else
                 "An abstract accessor cannot have an implementation",
-            .{ .help = "Remove the body, or drop the 'abstract' modifier." },
+            .{ .help = "Remove the body, or remove the 'abstract' modifier" },
         );
     } else if (is_ts) {
         end = try parser.eatSemicolon(return_type_end) orelse return null;
     } else {
         try parser.reportExpected(
             parser.current_token.span,
-            "Expected '{' to start method body",
+            "Expected '{' to start the method body",
             .{},
         );
         return null;
@@ -605,8 +619,11 @@ fn parsePropertyDefinition(
         if (modifiers.abstract) {
             try parser.report(
                 parser.tree.span(value),
-                "An abstract property cannot have an initializer",
-                .{ .help = "Remove the initializer, or drop the 'abstract' modifier." },
+                try parser.fmt(
+                    "Property '{s}' cannot have an initializer because it is marked abstract",
+                    .{parser.spanText(parser.tree.span(key))},
+                ),
+                .{ .help = "Remove the initializer, or remove the 'abstract' modifier" },
             );
         }
     }
@@ -629,8 +646,8 @@ fn parsePropertyDefinition(
         else => if (!parser.canInsertImplicitSemicolon(parser.current_token)) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected ';' after class field",
-                .{ .help = "Add a semicolon after the field declaration." },
+                "Expected ';' after the class field",
+                .{},
             );
             return null;
         },
@@ -660,8 +677,8 @@ fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers)
         if (std.mem.eql(u8, parser.tree.string(data.private_identifier.name), "constructor")) {
             try parser.report(
                 parser.tree.span(key),
-                "Classes can't have a private field named '#constructor'",
-                .{ .help = "Use a different name for this private member." },
+                "Classes may not have a private member named '#constructor'",
+                .{ .help = "Rename the private member" },
             );
         }
         return;
@@ -674,8 +691,8 @@ fn detectConstructor(parser: *Parser, key: ast.NodeIndex, modifiers: *Modifiers)
         .method => modifiers.kind = .constructor,
         .get, .set => try parser.report(
             prop.span,
-            "Constructor can't have get/set modifier",
-            .{ .help = "Remove the get/set keyword from the constructor." },
+            "Class constructor may not be an accessor",
+            .{ .help = "Remove the 'get' or 'set' keyword" },
         ),
         .constructor => {},
     }
@@ -687,37 +704,43 @@ fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, modifiers: Modif
     if (modifiers.declare) {
         try parser.report(
             span,
-            "A 'declare' modifier cannot appear on a class element of this kind",
-            .{ .help = "Remove 'declare'. Only class fields carry it." },
+            "'declare' modifier can only appear on a property declaration",
+            .{ .help = "Remove 'declare'" },
         );
     }
     if (modifiers.readonly) {
         try parser.report(
             span,
-            "A 'readonly' modifier can only appear on a property declaration or index signature",
-            .{ .help = "Remove 'readonly' from this method." },
+            "'readonly' modifier can only appear on a property declaration or index signature",
+            .{ .help = "Remove 'readonly'" },
         );
     }
 
     if (modifiers.kind == .constructor) {
-        if (modifiers.abstract) try parser.report(span, "Constructor cannot be abstract", .{
-            .help = "Remove the 'abstract' modifier. Only methods and properties can be abstract.",
-        });
-        if (modifiers.is_async) try parser.report(span, "Constructor cannot be async", .{
-            .help = "Remove the 'async' modifier from the constructor.",
-        });
-        if (modifiers.is_generator) try parser.report(span, "Constructor cannot be a generator", .{
-            .help = "Remove the '*' from the constructor.",
-        });
+        if (modifiers.abstract) try parser.report(
+            span,
+            "'abstract' modifier cannot appear on a constructor declaration",
+            .{ .help = "Remove 'abstract'" },
+        );
+        if (modifiers.is_async) try parser.report(
+            span,
+            "'async' modifier cannot appear on a constructor declaration",
+            .{ .help = "Remove 'async'" },
+        );
+        if (modifiers.is_generator) try parser.report(
+            span,
+            "Class constructor may not be a generator",
+            .{ .help = "Remove the '*'" },
+        );
         return;
     }
     if (!modifiers.is_generator) return;
     switch (modifiers.kind) {
-        .get => try parser.report(span, "Getter cannot be a generator", .{
-            .help = "Remove the '*' from the getter definition.",
+        .get => try parser.report(span, "A 'get' accessor cannot be a generator", .{
+            .help = "Remove the '*'",
         }),
-        .set => try parser.report(span, "Setter cannot be a generator", .{
-            .help = "Remove the '*' from the setter definition.",
+        .set => try parser.report(span, "A 'set' accessor cannot be a generator", .{
+            .help = "Remove the '*'",
         }),
         else => {},
     }
@@ -734,20 +757,20 @@ fn validateElementName(
         try parser.report(
             prop.span,
             "Classes may not have a static property named 'prototype'",
-            .{ .help = "Remove 'static' or rename the property." },
+            .{ .help = "Rename the property, or remove 'static'" },
         );
     } else if (kind == .field and prop.eql("constructor")) {
         if (is_static) {
             try parser.report(
                 prop.span,
                 "Classes may not have a static field named 'constructor'",
-                .{ .help = "Remove 'static' or rename the field." },
+                .{ .help = "Rename the field" },
             );
         } else {
             try parser.report(
                 prop.span,
-                "Classes may not have a non-static field named 'constructor'",
-                .{ .help = "Rename the field or make it a method." },
+                "Classes may not have a field named 'constructor'",
+                .{ .help = "Rename the field" },
             );
         }
     }

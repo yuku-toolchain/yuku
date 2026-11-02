@@ -191,7 +191,7 @@
       "start": 71,
       "end": 111,
       "labels": [],
-      "help": "Drop 'type', or import the type with 'import type x from \"m\"'."
+      "help": "Remove 'type', or use 'import type x from \"m\"'"
     },
     {
       "severity": "error",
@@ -200,7 +200,7 @@
       "start": 113,
       "end": 142,
       "labels": [],
-      "help": "Drop 'type', or import the type with 'import type x from \"m\"'."
+      "help": "Remove 'type', or use 'import type x from \"m\"'"
     }
   ]
 }

@@ -1,11 +1,11 @@
 test/parser/misc/jsx
 ====================
-Passed:       5/5 (100.00%)
+Passed:       6/6 (100.00%)
 Failed:       0
-AST mismatch: 0/5
+AST mismatch: 0/6
 
 ✓ test/parser/misc/jsx/closing-tag-name-spacing.jsx
-error: Expected closing tag for '<a.b>' but found '</a.c>'
+error: Expected corresponding JSX closing tag for '<a.b>', but found '</a.c>'
    |
  7 | 
  8 | let a = <a.b></a.c>;
@@ -13,10 +13,22 @@ error: Expected closing tag for '<a.b>' but found '</a.c>'
    |          ~~~ opening tag
  9 | let b = <a.b.c></a.c.b>;
    |
-   = help: JSX opening and closing tags must have matching names
+   = help: Rename the closing tag to '</a.b>'
 
 
 ✓ test/parser/misc/jsx/entities.jsx
 ✓ test/parser/misc/jsx/fragment-child-text.jsx
+✓ test/parser/misc/jsx/primary-expression.jsx
+error: Expected corresponding JSX closing tag for '<a>', but found '</b>'
+   |
+ 9 | class D extends <a/>.constructor {}
+10 | new <a></b>();
+   |          ^
+   |      ~ opening tag
+11 | class E extends <a></b> {}
+   |
+   = help: Rename the closing tag to '</a>'
+
+
 ✓ test/parser/misc/jsx/self-closing-element-attribute-value.jsx
 ✓ test/parser/misc/jsx/tag-close-followed-by-equals.jsx

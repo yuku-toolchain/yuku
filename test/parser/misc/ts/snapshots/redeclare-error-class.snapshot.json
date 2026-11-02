@@ -345,7 +345,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier 'B1' has already been declared",
+      "message": "Duplicate identifier 'B1'",
       "path": null,
       "start": 73,
       "end": 75,
@@ -361,11 +361,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'B1'"
+      "help": "Rename or remove this declaration of 'B1'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'B2' has already been declared",
+      "message": "Duplicate identifier 'B2'",
       "path": null,
       "start": 111,
       "end": 113,
@@ -381,11 +381,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'B2'"
+      "help": "Rename or remove this declaration of 'B2'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'B3' has already been declared",
+      "message": "Cannot redeclare block-scoped variable 'B3'",
       "path": null,
       "start": 153,
       "end": 155,
@@ -401,11 +401,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'B3'"
+      "help": "Rename or remove this declaration of 'B3'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'B4' has already been declared",
+      "message": "Duplicate identifier 'B4'",
       "path": null,
       "start": 303,
       "end": 305,
@@ -421,11 +421,11 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'B4'"
+      "help": "Rename or remove this declaration of 'B4'"
     },
     {
       "severity": "error",
-      "message": "Identifier 'B5' has already been declared",
+      "message": "Duplicate identifier 'B5'",
       "path": null,
       "start": 370,
       "end": 372,
@@ -441,7 +441,7 @@
           "message": "cannot be redeclared here"
         }
       ],
-      "help": "Consider removing or renaming this declaration of 'B5'"
+      "help": "Rename or remove this declaration of 'B5'"
     }
   ]
 }

@@ -312,6 +312,443 @@
             }
           }
         }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 85,
+        "end": 105,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 89,
+            "end": 104,
+            "id": {
+              "type": "Identifier",
+              "start": 89,
+              "end": 90,
+              "name": "a"
+            },
+            "init": {
+              "type": "JSXElement",
+              "start": 93,
+              "end": 104,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 93,
+                "end": 98,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 94,
+                  "end": 97,
+                  "object": {
+                    "type": "JSXIdentifier",
+                    "start": 94,
+                    "end": 95,
+                    "name": "a"
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 96,
+                    "end": 97,
+                    "name": "b"
+                  }
+                },
+                "attributes": [],
+                "selfClosing": false
+              },
+              "children": [],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 98,
+                "end": 104,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 100,
+                  "end": 103,
+                  "object": {
+                    "type": "JSXIdentifier",
+                    "start": 100,
+                    "end": 101,
+                    "name": "a"
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 102,
+                    "end": 103,
+                    "name": "c"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 106,
+        "end": 130,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 110,
+            "end": 129,
+            "id": {
+              "type": "Identifier",
+              "start": 110,
+              "end": 111,
+              "name": "b"
+            },
+            "init": {
+              "type": "JSXElement",
+              "start": 114,
+              "end": 129,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 114,
+                "end": 121,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 115,
+                  "end": 120,
+                  "object": {
+                    "type": "JSXMemberExpression",
+                    "start": 115,
+                    "end": 118,
+                    "object": {
+                      "type": "JSXIdentifier",
+                      "start": 115,
+                      "end": 116,
+                      "name": "a"
+                    },
+                    "property": {
+                      "type": "JSXIdentifier",
+                      "start": 117,
+                      "end": 118,
+                      "name": "b"
+                    }
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 119,
+                    "end": 120,
+                    "name": "c"
+                  }
+                },
+                "attributes": [],
+                "selfClosing": false
+              },
+              "children": [],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 121,
+                "end": 129,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 123,
+                  "end": 128,
+                  "object": {
+                    "type": "JSXMemberExpression",
+                    "start": 123,
+                    "end": 126,
+                    "object": {
+                      "type": "JSXIdentifier",
+                      "start": 123,
+                      "end": 124,
+                      "name": "a"
+                    },
+                    "property": {
+                      "type": "JSXIdentifier",
+                      "start": 125,
+                      "end": 126,
+                      "name": "c"
+                    }
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 127,
+                    "end": 128,
+                    "name": "b"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 131,
+        "end": 151,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 135,
+            "end": 150,
+            "id": {
+              "type": "Identifier",
+              "start": 135,
+              "end": 136,
+              "name": "c"
+            },
+            "init": {
+              "type": "JSXElement",
+              "start": 139,
+              "end": 150,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 139,
+                "end": 144,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 140,
+                  "end": 143,
+                  "object": {
+                    "type": "JSXIdentifier",
+                    "start": 140,
+                    "end": 141,
+                    "name": "a"
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 142,
+                    "end": 143,
+                    "name": "b"
+                  }
+                },
+                "attributes": [],
+                "selfClosing": false
+              },
+              "children": [],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 144,
+                "end": 150,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 146,
+                  "end": 149,
+                  "object": {
+                    "type": "JSXIdentifier",
+                    "start": 146,
+                    "end": 147,
+                    "name": "b"
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 148,
+                    "end": 149,
+                    "name": "b"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 152,
+        "end": 170,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 156,
+            "end": 169,
+            "id": {
+              "type": "Identifier",
+              "start": 156,
+              "end": 157,
+              "name": "d"
+            },
+            "init": {
+              "type": "JSXElement",
+              "start": 160,
+              "end": 169,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 160,
+                "end": 165,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 161,
+                  "end": 164,
+                  "object": {
+                    "type": "JSXIdentifier",
+                    "start": 161,
+                    "end": 162,
+                    "name": "a"
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 163,
+                    "end": 164,
+                    "name": "b"
+                  }
+                },
+                "attributes": [],
+                "selfClosing": false
+              },
+              "children": [],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 165,
+                "end": 169,
+                "name": {
+                  "type": "JSXIdentifier",
+                  "start": 167,
+                  "end": 168,
+                  "name": "a"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 171,
+        "end": 191,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 175,
+            "end": 190,
+            "id": {
+              "type": "Identifier",
+              "start": 175,
+              "end": 176,
+              "name": "e"
+            },
+            "init": {
+              "type": "JSXElement",
+              "start": 179,
+              "end": 190,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 179,
+                "end": 184,
+                "name": {
+                  "type": "JSXNamespacedName",
+                  "start": 180,
+                  "end": 183,
+                  "namespace": {
+                    "type": "JSXIdentifier",
+                    "start": 180,
+                    "end": 181,
+                    "name": "a"
+                  },
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 182,
+                    "end": 183,
+                    "name": "b"
+                  }
+                },
+                "attributes": [],
+                "selfClosing": false
+              },
+              "children": [],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 184,
+                "end": 190,
+                "name": {
+                  "type": "JSXNamespacedName",
+                  "start": 186,
+                  "end": 189,
+                  "namespace": {
+                    "type": "JSXIdentifier",
+                    "start": 186,
+                    "end": 187,
+                    "name": "a"
+                  },
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 188,
+                    "end": 189,
+                    "name": "c"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 192,
+        "end": 212,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 196,
+            "end": 211,
+            "id": {
+              "type": "Identifier",
+              "start": 196,
+              "end": 197,
+              "name": "f"
+            },
+            "init": {
+              "type": "JSXElement",
+              "start": 200,
+              "end": 211,
+              "openingElement": {
+                "type": "JSXOpeningElement",
+                "start": 200,
+                "end": 205,
+                "name": {
+                  "type": "JSXNamespacedName",
+                  "start": 201,
+                  "end": 204,
+                  "namespace": {
+                    "type": "JSXIdentifier",
+                    "start": 201,
+                    "end": 202,
+                    "name": "a"
+                  },
+                  "name": {
+                    "type": "JSXIdentifier",
+                    "start": 203,
+                    "end": 204,
+                    "name": "b"
+                  }
+                },
+                "attributes": [],
+                "selfClosing": false
+              },
+              "children": [],
+              "closingElement": {
+                "type": "JSXClosingElement",
+                "start": 205,
+                "end": 211,
+                "name": {
+                  "type": "JSXMemberExpression",
+                  "start": 207,
+                  "end": 210,
+                  "object": {
+                    "type": "JSXIdentifier",
+                    "start": 207,
+                    "end": 208,
+                    "name": "a"
+                  },
+                  "property": {
+                    "type": "JSXIdentifier",
+                    "start": 209,
+                    "end": 210,
+                    "name": "b"
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     ]
   },
@@ -326,7 +763,7 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b>' but found '</a.c>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b>', but found '</a.c>'",
       "path": null,
       "start": 100,
       "end": 103,
@@ -337,11 +774,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b.c>' but found '</a.c.b>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b.c>', but found '</a.c.b>'",
       "path": null,
       "start": 123,
       "end": 128,
@@ -352,11 +789,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b.c>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b>' but found '</b.b>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b>', but found '</b.b>'",
       "path": null,
       "start": 146,
       "end": 149,
@@ -367,11 +804,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a.b>' but found '</a>'",
+      "message": "Expected corresponding JSX closing tag for '<a.b>', but found '</a>'",
       "path": null,
       "start": 167,
       "end": 168,
@@ -382,11 +819,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a.b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a:b>' but found '</a:c>'",
+      "message": "Expected corresponding JSX closing tag for '<a:b>', but found '</a:c>'",
       "path": null,
       "start": 186,
       "end": 189,
@@ -397,11 +834,11 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a:b>'"
     },
     {
       "severity": "error",
-      "message": "Expected closing tag for '<a:b>' but found '</a.b>'",
+      "message": "Expected corresponding JSX closing tag for '<a:b>', but found '</a.b>'",
       "path": null,
       "start": 207,
       "end": 210,
@@ -412,7 +849,7 @@
           "message": "opening tag"
         }
       ],
-      "help": "JSX opening and closing tags must have matching names"
+      "help": "Rename the closing tag to '</a:b>'"
     }
   ]
 }

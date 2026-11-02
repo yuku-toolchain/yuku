@@ -54,12 +54,12 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "for-in loop variable declaration may not have an initializer",
+      "message": "The variable declaration of a 'for...in' statement cannot have an initializer",
       "path": null,
       "start": 9,
       "end": 14,
       "labels": [],
-      "help": "Remove the initializer from the loop variable."
+      "help": "Remove the initializer"
     }
   ]
 }

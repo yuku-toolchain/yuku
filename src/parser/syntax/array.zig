@@ -45,8 +45,8 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         } else if (parser.current_token.tag != .right_bracket) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected ',' or ']' in array",
-                .{ .help = "Add a comma between elements or close the array with ']'." },
+                "Expected ',' or ']' in the array",
+                .{ .help = "Separate the elements with ','" },
             );
             return null;
         }
@@ -55,11 +55,11 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     if (parser.current_token.tag != .right_bracket) {
         try parser.report(
             .{ .start = start, .end = end },
-            "Unterminated array",
+            "Unterminated array literal",
             .{
-                .help = "Add a closing ']' to complete the array.",
+                .help = "Add ']' to close the array",
                 .labels = try parser.labels(&.{
-                    parser.label(.{ .start = start, .end = start + 1 }, "Opened here"),
+                    parser.label(.{ .start = start, .end = start + 1 }, "opened here"),
                 }),
             },
         );
@@ -130,16 +130,15 @@ fn toArrayPatternImpl(
                 if (grammar.isFollowedByComma(parser, elem)) {
                     try parser.report(
                         span,
-                        "Rest element cannot have a trailing comma in array destructuring.",
-                        .{ .help = "Remove the trailing comma after the rest element" },
+                        "A rest element cannot have a trailing comma",
+                        .{ .help = "Remove the trailing comma" },
                     );
                 }
             } else {
                 try parser.report(
                     parser.tree.span(elem),
-                    "Rest element must be the last element",
-                    .{ .help = "No elements can follow the rest element in a destructuring" ++
-                        " pattern." },
+                    "A rest element must be last in a destructuring pattern",
+                    .{ .help = "Move the rest element to the end" },
                 );
             }
 

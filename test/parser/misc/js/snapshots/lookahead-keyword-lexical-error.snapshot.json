@@ -198,66 +198,66 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 111,
       "end": 112,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 132,
       "end": 133,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 142,
       "end": 143,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 152,
       "end": 153,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 163,
       "end": 164,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 176,
       "end": 177,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     },
     {
       "severity": "error",
-      "message": "Identifier cannot immediately follow a numeric literal",
+      "message": "An identifier or keyword cannot immediately follow a numeric literal",
       "path": null,
       "start": 198,
       "end": 199,
       "labels": [],
-      "help": "Try adding whitespace here between the number and identifier"
+      "help": "Add a space between the number and the identifier"
     }
   ]
 }

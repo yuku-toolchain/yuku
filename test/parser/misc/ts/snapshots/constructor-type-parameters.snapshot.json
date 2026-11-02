@@ -817,7 +817,7 @@
       "start": 162,
       "end": 165,
       "labels": [],
-      "help": "Declare the type parameters on the class instead."
+      "help": "Declare the type parameters on the class instead"
     },
     {
       "severity": "error",
@@ -826,7 +826,7 @@
       "start": 217,
       "end": 220,
       "labels": [],
-      "help": "Declare the type parameters on the class instead."
+      "help": "Declare the type parameters on the class instead"
     },
     {
       "severity": "error",
@@ -835,7 +835,7 @@
       "start": 278,
       "end": 281,
       "labels": [],
-      "help": "Declare the type parameters on the class instead."
+      "help": "Declare the type parameters on the class instead"
     },
     {
       "severity": "error",
@@ -844,7 +844,7 @@
       "start": 340,
       "end": 343,
       "labels": [],
-      "help": "Declare the type parameters on the class instead."
+      "help": "Declare the type parameters on the class instead"
     },
     {
       "severity": "error",
@@ -853,7 +853,7 @@
       "start": 402,
       "end": 405,
       "labels": [],
-      "help": "Declare the type parameters on the class instead."
+      "help": "Declare the type parameters on the class instead"
     }
   ]
 }

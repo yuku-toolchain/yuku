@@ -633,21 +633,21 @@
   "diagnostics": [
     {
       "severity": "error",
-      "message": "Invalid assignment target",
+      "message": "The left-hand side of an assignment expression must be a variable or a property access",
       "path": null,
       "start": 890,
       "end": 894,
       "labels": [],
-      "help": "The expression behind a non-null or type assertion must itself be a simple assignment target, like an identifier or member access, not a call or other expression."
+      "help": "Only a variable or a property access can be asserted here"
     },
     {
       "severity": "error",
-      "message": "TypeScript assertion is not allowed in binding pattern",
+      "message": "Non-null and type assertions are not allowed in binding patterns",
       "path": null,
       "start": 1045,
       "end": 1047,
       "labels": [],
-      "help": "Non-null ('!') and type ('as', 'satisfies', '<T>') assertions can only appear in assignment targets."
+      "help": "Remove the assertion"
     }
   ]
 }

@@ -81,7 +81,7 @@ describe("reanalyze", () => {
     file.reanalyze();
     expect(definition(project, "b.ts", "value")).toBe("(none)");
     expect(project.diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
-      "Module './a.ts' has no export 'value'",
+      "Module './a.ts' has no exported member 'value'",
     ]);
   });
 });
