@@ -14,6 +14,7 @@ const generics = @import("generics.zig");
 const literal = @import("literal.zig");
 const object = @import("object.zig");
 const predicate = @import("predicate.zig");
+const Speculation = @import("../speculation.zig").Speculation;
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     const saved = parser.ts_context.disallow_conditional_types;
@@ -430,11 +431,9 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
 fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .extends) return .null;
 
-    const extends_offset = parser.current_token.span.start;
+    const speculation: Speculation = .at(parser, .infer_constraint, .{});
     const conditional_allowed = !parser.ts_context.disallow_conditional_types;
-    if (conditional_allowed and parser.ts_rejected_speculations.contains(extends_offset)) {
-        return .null;
-    }
+    if (conditional_allowed and speculation.isRejected(parser)) return .null;
 
     const cp = parser.checkpoint();
     try parser.advance() orelse return .null;
@@ -448,7 +447,7 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
 
     if (conditional_allowed and parser.current_token.tag == .question) {
         parser.rewind(cp);
-        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), extends_offset, {}) catch ast.outOfMemory();
+        speculation.reject(parser);
         return .null;
     }
 

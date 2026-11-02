@@ -8,6 +8,7 @@ const spec = @import("spec");
 const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
+const Speculation = @import("syntax/ts/speculation.zig").Speculation;
 const grammar = @import("grammar.zig");
 const comments = @import("comments.zig");
 
@@ -47,10 +48,6 @@ pub const TsContext = packed struct {
     ambient: bool = false,
     /// A trailing `?` after a type does not start a new conditional.
     disallow_conditional_types: bool = false,
-    /// Whether a speculatively parsed arrow may carry a return type. Cleared only while a
-    /// conditional expression re-parses its consequent after a `(x): T => ...` arrow ate
-    /// the ternary `:`.
-    allow_arrow_return_type: bool = true,
 };
 
 const ParserState = struct {
@@ -88,8 +85,7 @@ pub const Parser = struct {
     ts_context: TsContext = .{},
     state: ParserState = .{},
 
-    // token offsets whose speculation failed, so a rewinding ancestor never re-parses them
-    ts_rejected_speculations: std.AutoHashMapUnmanaged(u32, void) = .empty,
+    ts_rejected_speculations: std.AutoHashMapUnmanaged(Speculation, void) = .empty,
 
     pub inline fn allocator(self: *Parser) std.mem.Allocator {
         return self.tree.allocator();

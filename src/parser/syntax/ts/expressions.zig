@@ -10,6 +10,7 @@ const expressions = @import("../expressions.zig");
 
 const core = @import("types/core.zig");
 const generics = @import("types/generics.zig");
+const Speculation = @import("speculation.zig").Speculation;
 
 pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
@@ -64,7 +65,7 @@ pub fn parseTypeArgumentedCallOrInstantiation(
     parser: *Parser,
     callee: ast.NodeIndex,
 ) Error!?ast.NodeIndex {
-    const type_arguments = try tryParseTypeArgumentsInExpression(parser);
+    const type_arguments = try tryParseTypeArgumentsInExpression(parser, false);
     if (type_arguments == .null) return null;
 
     switch (parser.current_token.tag) {
@@ -95,16 +96,25 @@ pub fn parseTypeArgumentedCallOrInstantiation(
 }
 
 // rewind so `<` can stay a relational compare
-pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
+pub fn tryParseTypeArgumentsInExpression(parser: *Parser, call_only: bool) Error!ast.NodeIndex {
     if (!generics.isAngleOpen(parser.current_token.tag)) return .null;
 
     const after = parser.peekAhead();
     if (!core.isStartOfType(after.tag) and after.tag != .greater_than) return .null;
 
+    const rule: Speculation.Rule = if (call_only) .call_type_arguments else .type_arguments;
+    const speculation: Speculation = .at(parser, rule, .{});
+    if (speculation.isRejected(parser)) return .null;
+
     const cp = parser.checkpoint();
     const args = try generics.parseTypeArgumentsInExpression(parser);
-    if (args == .null or !canFollowTypeArgumentsInExpression(parser.current_token)) {
+    const follows = if (call_only)
+        parser.current_token.tag == .left_paren
+    else
+        canFollowTypeArgumentsInExpression(parser.current_token);
+    if (args == .null or !follows) {
         parser.rewind(cp);
+        speculation.reject(parser);
         return .null;
     }
 

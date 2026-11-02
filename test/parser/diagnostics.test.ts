@@ -100,6 +100,32 @@ describe("encoding", () => {
 });
 
 describe("depth", () => {
+  test("nested speculations stay fast at any depth", () => {
+    const nests = [
+      ["a ? (x = ", ") : y => y"],
+      ["a ? (b): T => ", " : c"],
+      ["a ? async (x = ", ") : y => y"],
+      ["a ? (r = { [(x = ", ")]: 0 }) : y => y"],
+      ["a ? (r = { [(x = ", "): T => x]: 0 }) : y => y"],
+      ["a ? (r = [(x = ", "): T => x]) : y => y"],
+      ["a < { [(x = ", ")]: 0 } > b"],
+      ["(a?.b<{ [(", ")]: 0 }>)"],
+      ["(a?.b<{ [(", ")]: 0 }> c)"],
+      ["(a<{ [(", ")]: 0 }>)"],
+    ];
+    const script = `
+      const { parse } = await import("yuku");
+      for (const [open, close] of ${JSON.stringify(nests)}) {
+        const source = open.repeat(200) + "1" + close.repeat(200) + ";";
+        const { diagnostics } = parse(source, { lang: "ts", sourceType: "script" });
+        if (diagnostics.length > 0) throw new Error(open + diagnostics[0].message);
+      }
+    `;
+    const run = Bun.spawnSync(["bun", "--eval", script], { timeout: 20_000 });
+    expect(run.stderr.toString()).toBe("");
+    expect(run.exitCode).toBe(0);
+  });
+
   test("a chain of any depth decodes", () => {
     const source = "a" + ".b(/* c */ x)".repeat(1000);
     for (const attachComments of [false, true]) {
