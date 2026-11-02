@@ -290,4 +290,12 @@ describe("value space and type space", () => {
       expect([name, binding.has(BindingFlags.Ambient)]).toEqual([name, true]);
     }
   });
+
+  test("a namespace holding only a global block of types is not instantiated", () => {
+    const file = parse(`namespace A { declare global { interface X {} } } export {};`, {
+      analyze: true,
+      path: "a.ts",
+    });
+    expect(file.bindings[0]!.has(BindingFlags.ValueModule)).toBe(false);
+  });
 });

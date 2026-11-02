@@ -1745,6 +1745,7 @@ fn isInstantiatingStatement(
         // const enums included, as in tsc
         .ts_enum_declaration => true,
         .ts_module_declaration => |m| isNamespaceInstantiated(tree, m.body),
+        .ts_global_declaration => |g| isNamespaceInstantiated(tree, g.body),
         .export_named_declaration => |e| {
             // `export declare` is a type-only export of a value
             if (e.declaration != .null) {
