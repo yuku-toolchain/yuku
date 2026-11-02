@@ -273,4 +273,9 @@ describe("value space and type space", () => {
     const file = parse(`enum E { A }`, { analyze: true, path: "input.ts" });
     expect(spaces(file, "E")).toEqual([true, true]);
   });
+
+  test("an index signature's parameter is not exported with its member", () => {
+    const file = parse(`export interface I { [k: string]: any }`, { analyze: true, path: "a.ts" });
+    expect(file.bindings.find((b) => b.name === "k")!.has(BindingFlags.Exported)).toBe(false);
+  });
 });

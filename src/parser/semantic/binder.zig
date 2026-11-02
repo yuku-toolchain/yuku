@@ -808,6 +808,7 @@ pub const SymbolTracker = struct {
                     .excludes = Symbol.Excludes.parameter,
                     .scope = scope.current,
                 };
+                self.export_state = .none;
             },
 
             else => {},
