@@ -22,8 +22,8 @@ const source = "const answer: number = 42;\nlet count = 0;\ncount++;\n";
 
 const file = parse(source, { lang: "ts", analyze: true });
 assert.equal(loaded, addon);
-assert.equal(inlineReads(""), addon ? "0\n" : "1\n");
-assert.equal(inlineReads('process.dlopen = () => { throw new Error("no addon"); };'), "1\n");
+assert.equal(inlineReads(""), addon ? "" : "read\n");
+assert.equal(inlineReads("process.dlopen = () => { throw new Error(); };"), "read\n");
 const fallback = parse(source, { lang: "ts", analyze: true, core });
 assert.equal(JSON.stringify(fallback.program), JSON.stringify(file.program));
 assert.equal(fallback.rootScope.find("count")?.references.length, 1);
@@ -54,18 +54,13 @@ function installed(name: string): boolean {
 function inlineReads(setup: string): string {
   const script = `
     import fs from "node:fs";
-    const read = fs.readFileSync;
-    let reads = 0;
+    const { readFileSync } = fs;
     fs.readFileSync = (path, ...rest) => {
-      if (String(path).endsWith("/inline.js")) reads++;
-      return read(path, ...rest);
+      if (String(path).endsWith("/inline.js")) console.log("read");
+      return readFileSync(path, ...rest);
     };
     ${setup}
-    const { parse } = await import("yuku");
-    parse("let a;");
-    console.log(reads);
+    (await import("yuku")).parse("a;");
   `;
-  return execFileSync(process.execPath, ["--input-type=module", "--eval", script], {
-    encoding: "utf8",
-  });
+  return execFileSync(process.execPath, ["--input-type=module", "--eval", script]).toString();
 }

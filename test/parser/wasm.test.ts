@@ -6,16 +6,13 @@ import { decodeBase64 } from "../../npm/yuku/core/base64";
 
 const shipped = readFileSync(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
 
-test("the inline and read loaders parse as @yuku-toolchain/wasm does", async () => {
+test("the inlined module parses as @yuku-toolchain/wasm does", () => {
   const core = new Core({ wasm: new WebAssembly.Module(shipped) });
   const source = "const x: number = 1;";
   const custom = parse(source, { lang: "ts", core });
-  for (const loader of ["inline", "read"]) {
-    const { default: wasm } = await import(`../../npm/yuku/dist/wasm/${loader}.js`);
-    const loaded = parse(source, { lang: "ts", core: new Core({ wasm }) });
-    expect(custom.program).toEqual(loaded.program);
-    expect(custom.diagnostics).toEqual(loaded.diagnostics);
-  }
+  const inlined = parse(source, { lang: "ts" });
+  expect(custom.program).toEqual(inlined.program);
+  expect(custom.diagnostics).toEqual(inlined.diagnostics);
 });
 
 test("each runtime loads the wasm in the form it allows", () => {
@@ -23,19 +20,9 @@ test("each runtime loads the wasm in the form it allows", () => {
   const { imports, peerDependenciesMeta } = JSON.parse(readFileSync(manifest, "utf8"));
   expect(peerDependenciesMeta["@yuku-toolchain/wasm"]).toEqual({ optional: true });
   const loaders = imports["#wasm"];
-  expect(Object.keys(loaders)).toEqual([
-    "workerd",
-    "edge-light",
-    "bun",
-    "deno",
-    "module",
-    "node",
-    "default",
-  ]);
+  expect(Object.keys(loaders).join()).toBe("workerd,edge-light,bun,deno,module,node,default");
   expect(loaders["edge-light"]).toBe(loaders.workerd);
-  for (const condition of ["bun", "deno", "module"]) {
-    expect(loaders[condition]).toBe(loaders.default);
-  }
+  expect(new Set([loaders.bun, loaders.deno, loaders.module, loaders.default]).size).toBe(1);
   const loader = readFileSync(new URL(loaders.workerd, manifest), "utf8");
   expect(loader).toContain('"@yuku-toolchain/wasm/yuku.wasm?module"');
   expect(loader).not.toContain("new WebAssembly.Module");

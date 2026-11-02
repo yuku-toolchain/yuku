@@ -11,10 +11,7 @@ export type Platform =
   | "win32-x64";
 
 export interface CoreOptions {
-  /**
-   * The core compiled to WebAssembly, as a module or in base64, or a function that returns one
-   * and runs only where no addon loads.
-   */
+  /** The core as WebAssembly: a module, base64, or a function returning one if no addon loads. */
   wasm: WebAssembly.Module | string | (() => WebAssembly.Module | string);
   /**
    * The core compiled to a Node-API addon for each platform, as
