@@ -283,4 +283,20 @@ describe("exports", () => {
             block TSInterfaceDeclaration"
       `);
   });
+
+  test("a dotted namespace exports its first name", () => {
+    expect(summary(`export namespace A.B.C { export const v = 1 }`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          A#0  namespace value-module exported
+          tsModule
+            B#1  namespace value-module exported
+            tsModule
+              C#2  namespace value-module exported
+              tsModule
+                v#3  const exported
+      exports
+        A → #0"
+    `);
+  });
 });

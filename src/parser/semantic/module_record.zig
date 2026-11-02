@@ -328,9 +328,14 @@ const Collector = struct {
             },
             .ts_enum_declaration => |decl| try self.exportLocal(decl.id, type_only),
             .ts_module_declaration => |decl| {
+                if (decl.id == .null) return;
+                var head = decl.id;
+                while (self.tree.data(head) == .ts_qualified_name) {
+                    head = self.tree.data(head).ts_qualified_name.left;
+                }
                 // ambient module ids are string literals, not bindings
-                if (decl.id != .null and self.tree.data(decl.id) == .binding_identifier) {
-                    try self.exportLocal(decl.id, type_only);
+                if (self.tree.data(head) == .binding_identifier) {
+                    try self.exportLocal(head, type_only);
                 }
             },
             else => {},
