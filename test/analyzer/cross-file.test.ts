@@ -51,6 +51,15 @@ describe("definition", () => {
     expect(project.diagnostics).toEqual([]);
     expect(definition(project, "b.ts", "N")).toBe("a.ts:N");
   });
+
+  test("reaches a default interface", () => {
+    const project = projectOf({
+      "a.ts": `export default interface A {}`,
+      "b.ts": `import A from "./a.ts"; let a: A;`,
+    });
+    expect(project.diagnostics).toEqual([]);
+    expect(definition(project, "b.ts", "A")).toBe("a.ts:A");
+  });
 });
 
 describe("findReferences", () => {

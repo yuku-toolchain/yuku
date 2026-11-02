@@ -392,8 +392,10 @@ const Collector = struct {
         decl: ast.ExportDefaultDeclaration,
         index: ast.NodeIndex,
     ) Allocator.Error!void {
-        const symbol: SymbolId = switch (self.tree.data(decl.declaration)) {
+        const declaration = self.tree.data(decl.declaration);
+        const symbol: SymbolId = switch (declaration) {
             inline .function, .class => |d| if (d.id != .null) self.bindingSymbol(d.id) else .none,
+            .ts_interface_declaration => |d| self.bindingSymbol(d.id),
             .identifier_reference => |id| self.moduleBinding(id.name),
             else => .none,
         };
@@ -401,6 +403,7 @@ const Collector = struct {
             .kind = .named,
             .name = self.default_name,
             .symbol = symbol,
+            .type_only = declaration == .ts_interface_declaration,
             .node = index,
         });
     }

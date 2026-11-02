@@ -299,4 +299,15 @@ describe("exports", () => {
         A → #0"
     `);
   });
+
+  test("a default interface exports its binding as a type", () => {
+    expect(summary(`export default interface A {}`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          A#0  interface exported default
+          block TSInterfaceDeclaration
+      exports
+        default → #0 type"
+    `);
+  });
 });
