@@ -3,7 +3,7 @@ declare module "#native" {
 }
 
 declare module "#wasm" {
-  const shipped: WebAssembly.Module | string;
+  const shipped: import("./core").CoreOptions["wasm"];
   export default shipped;
 }
 
@@ -18,7 +18,10 @@ declare module "*.wasm?module" {
 }
 
 declare module "node:module" {
-  export function createRequire(path: string): { resolve(request: string): string };
+  export function createRequire(path: string): {
+    (id: "node:fs"): { readFileSync(path: URL, encoding: "utf8"): string };
+    resolve(request: string): string;
+  };
 }
 
 declare module "node:url" {

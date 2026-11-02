@@ -15,13 +15,14 @@ test("the inlined module parses as @yuku-toolchain/wasm does", () => {
   expect(custom.diagnostics).toEqual(inlined.diagnostics);
 });
 
-test("workerd and edge-light import the wasm package in the form their bundlers compile", () => {
+test("each runtime loads the wasm in the form it allows", () => {
   const manifest = new URL("../../npm/yuku/package.json", import.meta.url);
   const { imports, peerDependenciesMeta } = JSON.parse(readFileSync(manifest, "utf8"));
   expect(peerDependenciesMeta["@yuku-toolchain/wasm"]).toEqual({ optional: true });
   const loaders = imports["#wasm"];
-  expect(Object.keys(loaders)).toEqual(["workerd", "edge-light", "default"]);
+  expect(Object.keys(loaders).join()).toBe("workerd,edge-light,bun,deno,module,node,default");
   expect(loaders["edge-light"]).toBe(loaders.workerd);
+  expect(new Set([loaders.bun, loaders.deno, loaders.module, loaders.default]).size).toBe(1);
   const loader = readFileSync(new URL(loaders.workerd, manifest), "utf8");
   expect(loader).toContain('"@yuku-toolchain/wasm/yuku.wasm?module"');
   expect(loader).not.toContain("new WebAssembly.Module");

@@ -11,8 +11,8 @@ export type Platform =
   | "win32-x64";
 
 export interface CoreOptions {
-  /** The core compiled to WebAssembly, as a module or in base64. */
-  wasm: WebAssembly.Module | string;
+  /** The core as WebAssembly: a module, base64, or a function returning one if no addon loads. */
+  wasm: WebAssembly.Module | string | (() => WebAssembly.Module | string);
   /**
    * The core compiled to a Node-API addon for each platform, as
    * `() => new URL("./native/darwin-arm64.node", import.meta.url)`, so bundlers find it.
@@ -30,8 +30,13 @@ export class Core {
   private module: WebAssembly.Module | undefined;
 
   constructor(options: CoreOptions) {
-    if (typeof options?.wasm !== "string" && !(options?.wasm instanceof WebAssembly.Module)) {
-      throw new TypeError("`wasm` must be a WebAssembly.Module or base64");
+    const wasm = options?.wasm;
+    if (
+      typeof wasm !== "function" &&
+      typeof wasm !== "string" &&
+      !(wasm instanceof WebAssembly.Module)
+    ) {
+      throw new TypeError("`wasm` must be a WebAssembly.Module, base64, or a function to load one");
     }
     this.options = options;
   }
@@ -172,7 +177,8 @@ function pathOf(url: URL, windows: boolean): string {
   return url.host === "" ? path.slice(1) : `//${url.host}${path}`;
 }
 
-function compile(wasm: WebAssembly.Module | string): WebAssembly.Module {
+function compile(wasm: CoreOptions["wasm"]): WebAssembly.Module {
+  if (typeof wasm === "function") wasm = wasm();
   return typeof wasm === "string" ? new WebAssembly.Module(bytesOf(wasm)) : wasm;
 }
 
