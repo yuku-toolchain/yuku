@@ -189,6 +189,11 @@ fn refPosition(
             else => {},
         }
         if (!in_type_position) return .{};
+        // an expression in a type sits in a computed key
+        if (tree.data(parent).isExpression()) {
+            child = parent;
+            continue;
+        }
         return .{ .space = if (qualified_left) .namespace else .type, .type_position = true };
     }
     return .{};
