@@ -7,6 +7,7 @@ import {
   type Binding,
   type Node,
   parse,
+  type Reference,
   type Scope,
   type SourceFile,
   type SourceLang,
@@ -29,7 +30,17 @@ interface Resolution {
   name: string;
   def: number;
   write: boolean;
+  type: boolean;
+  value: boolean;
 }
+
+const SCOPE_TYPES: Partial<Record<Scope["kind"], string>> = {
+  function: "function",
+  block: "block",
+  class: "class",
+  module: "module",
+  staticBlock: "class-static-block",
+};
 
 function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) {
   const jsx = lang === "jsx" || lang === "tsx";
@@ -37,7 +48,9 @@ function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) 
   const manager = analyze(tree, { sourceType, lib: [] });
   const references = new Map<number, Resolution>();
   const declarations = new Map<number, string[]>();
+  const strict = new Map<string, boolean>();
   for (const scope of manager.scopes) {
+    strict.set(`${scope.type}@${scope.block.range[0]}`, scope.isStrict);
     for (const reference of scope.references) {
       const starts = (reference.resolved?.defs ?? [])
         .map((def) => def.name?.range?.[0])
@@ -47,6 +60,8 @@ function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) 
         name: reference.identifier.name,
         def: starts.length === 0 ? UNRESOLVED : Math.min(...starts),
         write: reference.isWrite(),
+        type: reference.isTypeReference,
+        value: reference.isValueReference,
       });
     }
     for (const variable of scope.variables) {
@@ -64,7 +79,7 @@ function scopeManager(source: string, sourceType: SourceType, lang: SourceLang) 
       }
     }
   }
-  return { references, declarations };
+  return { references, declarations, strict };
 }
 
 function theirOwner(scope: TheirScope): string {
@@ -123,6 +138,28 @@ function unmodeled(file: SourceFile, binding: Binding): boolean {
   return binding.declarations.some((node) => isUnmodeled(file, node));
 }
 
+// scope-manager calls a namespace strict, where only a directive or a module makes one so to tsc
+function inNamespace(scope: Scope): boolean {
+  for (let current: Scope | null = scope; current !== null; current = current.parent) {
+    if (current.kind === "tsModule") return true;
+  }
+  return false;
+}
+
+function meaningOf(reference: Reference): { type: boolean; value: boolean } {
+  switch (reference.space) {
+    case "value":
+    case "typeof":
+      return { type: false, value: true };
+    case "type":
+      return { type: true, value: false };
+    case "namespace":
+      return { type: reference.inTypePosition, value: !reference.inTypePosition };
+    case "any":
+      return { type: true, value: !reference.inTypePosition };
+  }
+}
+
 function compare(source: string, sourceType: SourceType, lang: SourceLang): Comparison | null {
   let theirs;
   try {
@@ -138,7 +175,14 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
   for (const reference of file.references) {
     const position = reference.node.start;
     const their = theirs.references.get(position);
-    if (their === undefined || reference.inTypePosition) continue;
+    if (their === undefined) continue;
+    compared++;
+    const meaning = meaningOf(reference);
+    if (meaning.type !== their.type || meaning.value !== their.value) {
+      const read = `scope-manager type ${their.type}, value ${their.value}`;
+      mismatches.push(`${reference.name}@${position}: yuku ${reference.space}, ${read}`);
+    }
+    if (reference.inTypePosition) continue;
     const binding = reference.binding;
     if (binding !== null && !binding.scope.contains(reference.scope)) continue;
     if (binding !== null && unmodeled(file, binding)) continue;
@@ -187,6 +231,16 @@ function compare(source: string, sourceType: SourceType, lang: SourceLang): Comp
   for (const position of ours.keys()) {
     if (!theirs.declarations.has(position)) mismatches.push(`declaration@${position}: yuku only`);
   }
+
+  for (const scope of file.scopes) {
+    const type = SCOPE_TYPES[scope.kind];
+    const strict = type && theirs.strict.get(`${type}@${scope.node.start}`);
+    if (strict === undefined || inNamespace(scope)) continue;
+    compared++;
+    if (scope.strict !== strict) {
+      mismatches.push(`${scope.kind}@${scope.node.start}: yuku strict ${scope.strict}`);
+    }
+  }
   return { compared, mismatches };
 }
 
@@ -213,6 +267,31 @@ const KNOWN: Known = {
     [`${SUITE}/b406a8bde9b46310.ts`]: [
       "declaration@196: yuku scope 170, scope-manager global",
       "declaration@365: yuku scope global, scope-manager 335",
+    ],
+  },
+  "scope-manager reads the type of `x as T` in a pattern as a value": {
+    [`${SUITE}/5a72b1a7da3bc3d5.ts`]: [
+      "T@10: yuku type, scope-manager type false, value true",
+      "T@26: yuku type, scope-manager type false, value true",
+    ],
+    [`${SUITE}/72e32e616d25bf5a.ts`]: ["T@66: yuku type, scope-manager type false, value true"],
+    [`${SUITE}/96b3506e1ba5bbd1.ts`]: [
+      "T@10: yuku type, scope-manager type false, value true",
+      "T@26: yuku type, scope-manager type false, value true",
+      "T@46: yuku type, scope-manager type false, value true",
+      "T@68: yuku type, scope-manager type false, value true",
+      "T@93: yuku type, scope-manager type false, value true",
+      "T@112: yuku type, scope-manager type false, value true",
+    ],
+  },
+  "scope-manager calls an enum strict, where tsc needs a directive or a module": {
+    [`${SUITE}/d58478bb555925d3.ts`]: [
+      "function@963: yuku strict false",
+      "function@979: yuku strict false",
+    ],
+    [`${SUITE}/d5bb4642c7ffd192.ts`]: [
+      "function@734: yuku strict false",
+      "function@771: yuku strict false",
     ],
   },
   "typescript-estree reads `<!--` in a script as operators, not an HTML-like comment": {
