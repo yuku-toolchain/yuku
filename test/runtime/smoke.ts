@@ -1,6 +1,7 @@
 // CI runs this, compiled to JavaScript, on the minimum supported runtime
 
 import { strict as assert } from "node:assert";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Core, parse, print, walk } from "yuku";
@@ -21,6 +22,8 @@ const source = "const answer: number = 42;\nlet count = 0;\ncount++;\n";
 
 const file = parse(source, { lang: "ts", analyze: true });
 assert.equal(loaded, addon);
+assert.equal(inlineReads(""), addon ? "" : "read\n");
+assert.equal(inlineReads("process.dlopen = () => { throw new Error(); };"), "read\n");
 const fallback = parse(source, { lang: "ts", analyze: true, core });
 assert.equal(JSON.stringify(fallback.program), JSON.stringify(file.program));
 assert.equal(fallback.rootScope.find("count")?.references.length, 1);
@@ -46,4 +49,18 @@ function installed(name: string): boolean {
   } catch {
     return false;
   }
+}
+
+function inlineReads(setup: string): string {
+  const script = `
+    import fs from "node:fs";
+    const { readFileSync } = fs;
+    fs.readFileSync = (path, ...rest) => {
+      if (String(path).endsWith("/inline.js")) console.log("read");
+      return readFileSync(path, ...rest);
+    };
+    ${setup}
+    (await import("yuku")).parse("a;");
+  `;
+  return execFileSync(process.execPath, ["--input-type=module", "--eval", script]).toString();
 }

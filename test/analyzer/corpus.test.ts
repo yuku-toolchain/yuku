@@ -213,6 +213,13 @@ function check(path: string, source: string, sourceType: SourceType): void {
       note("records", `${path}: export local not in bindings`);
     }
   }
+  const recorded = new Set(file.exports.map((record) => record.local));
+  for (const binding of file.bindings) {
+    const isModuleLevel = binding.scope.kind === "module";
+    if (isModuleLevel && binding.has(BindingFlags.Exported) && !recorded.has(binding)) {
+      note("records", `${path}: '${binding.name}' is exported with no record`);
+    }
+  }
 
   const again = parse(source, { analyze: true, path, sourceType });
   if (fingerprint(file) !== fingerprint(again)) note("determinism", `${path}: non-deterministic`);

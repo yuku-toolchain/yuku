@@ -79,7 +79,7 @@ binding.rename("next");
 | `ValueImport`            | `import x`, `import { x }`              |
 | `TypeImport`             | `import type`, `import { type x }`      |
 | `Const`                  | `const`, `using`, `await using`         |
-| `Ambient`                | `declare`                               |
+| `Ambient`                | `declare`, or a signature with no body  |
 | `Parameter`              | a parameter                             |
 | `CatchVariable`          | `catch (e)`                             |
 | `Exported`               | `export`, or implicitly in ambient code |

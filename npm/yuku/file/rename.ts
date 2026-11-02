@@ -123,6 +123,7 @@ function exportOf(file: SourceFile, identifier: Node): ExportSite | null | undef
   let declaration: Node = identifier;
   for (const ancestor of file.ancestors(identifier)) {
     if (ancestor.type === "Program" || ancestor.type === "TSModuleBlock") return undefined;
+    if (ancestor.type === "TSQualifiedName" && ancestor.right === declaration) return undefined;
     if (ancestor.type === "ExportNamedDeclaration") {
       const slot = slotOf(file.program, ancestor);
       return slot === null ? null : { statement: ancestor, declaration, slot };
@@ -174,7 +175,10 @@ function declaredNames(declaration: Node): string[] {
   if (declaration.type === "VariableDeclaration") {
     return declaration.declarations.flatMap((declarator) => boundNames(declarator.id));
   }
-  return "id" in declaration && declaration.id?.type === "Identifier" ? [declaration.id.name] : [];
+  if (!("id" in declaration)) return [];
+  let id: Node | null = declaration.id;
+  while (id?.type === "TSQualifiedName") id = id.left;
+  return id?.type === "Identifier" ? [id.name] : [];
 }
 
 function boundNames(pattern: BindingPattern): string[] {

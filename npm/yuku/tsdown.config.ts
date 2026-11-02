@@ -8,6 +8,7 @@ export default defineConfig({
     "native/none": "core/native/none.ts",
     "wasm/inline": "core/wasm/inline.ts",
     "wasm/import": "core/wasm/import.ts",
+    "wasm/read": "core/wasm/read.ts",
   },
   outDir: "dist",
   clean: true,

@@ -273,4 +273,29 @@ describe("value space and type space", () => {
     const file = parse(`enum E { A }`, { analyze: true, path: "input.ts" });
     expect(spaces(file, "E")).toEqual([true, true]);
   });
+
+  test("an index signature's parameter is not exported with its member", () => {
+    const file = parse(`export interface I { [k: string]: any }`, { analyze: true, path: "a.ts" });
+    expect(file.bindings.find((b) => b.name === "k")!.has(BindingFlags.Exported)).toBe(false);
+  });
+
+  test("everything a declaration binds is ambient, type parameters and imports included", () => {
+    const file = parse(
+      `declare function f<T>(a: T): void;
+      declare namespace N { import x = require("m"); interface I<U> { [k: string]: U } }`,
+      { analyze: true, path: "a.ts" },
+    );
+    for (const name of ["f", "T", "a", "N", "x", "I", "U", "k"]) {
+      const binding = file.bindings.find((b) => b.name === name)!;
+      expect([name, binding.has(BindingFlags.Ambient)]).toEqual([name, true]);
+    }
+  });
+
+  test("a namespace holding only a global block of types is not instantiated", () => {
+    const file = parse(`namespace A { declare global { interface X {} } } export {};`, {
+      analyze: true,
+      path: "a.ts",
+    });
+    expect(file.bindings[0]!.has(BindingFlags.ValueModule)).toBe(false);
+  });
 });
