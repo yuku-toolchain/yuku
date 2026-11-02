@@ -2,6 +2,23 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.27.0
+
+### Breaking
+
+- Bundling with `bun build --target=node` into one file and running it without `node_modules` now fails on the first parse, so pass `--conditions=module` or keep `yuku` external (#316 by @arshad-yaseen)
+
+### Changes
+
+- Importing `yuku` on Node no longer loads its WebAssembly when the addon runs, which saves about 5 ms and 7 MB (#316 by @arshad-yaseen)
+- `CoreOptions.wasm` also takes a function, which runs only where no addon loads (#316 by @arshad-yaseen)
+- `export namespace A.B {}` exports `A`, so another file can import it and renaming `A` keeps its export, while renaming `B` is refused since it names a member of `A` (#319 by @arshad-yaseen)
+- `export default interface A {}` keeps its binding and reads as a type, so a definition from another file finds it (#319 by @arshad-yaseen)
+- Names in a type member's computed key, such as `[a + b]`, resolve as values (#319 by @arshad-yaseen)
+- Index signature parameters in exported types are no longer `Exported`, and imports, catch variables, type parameters, and index signature parameters in ambient code are `Ambient` (#319 by @arshad-yaseen)
+- Valid typed arrows inside a conditional parse, as in `c ? (r = [(x): T => x]) : y => y` (#305 by @magic-akari, #320 by @arshad-yaseen)
+- Deeply nested conditionals, arrows, and generics no longer take exponential time to parse (#320 by @arshad-yaseen)
+
 ## 0.26.1
 
 ### Changes
