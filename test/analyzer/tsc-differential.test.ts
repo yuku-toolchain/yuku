@@ -6,27 +6,13 @@ import { parse, type SourceLang, type SourceType } from "yuku";
 import { corpusAndProjectFiles, type CorpusFile } from "../corpus";
 import {
   differential,
+  FILE_NAMES,
   isAnnexBHoisted,
+  SCRIPT_KINDS,
   singleFileProgram,
   type Comparison,
   type Known,
 } from "./utils/differential";
-
-const FILE_NAMES: Record<SourceLang, string> = {
-  js: "input.js",
-  jsx: "input.jsx",
-  ts: "input.ts",
-  tsx: "input.tsx",
-  dts: "input.d.ts",
-};
-
-const SCRIPT_KINDS: Record<SourceLang, ts.ScriptKind> = {
-  js: ts.ScriptKind.JS,
-  jsx: ts.ScriptKind.JSX,
-  ts: ts.ScriptKind.TS,
-  tsx: ts.ScriptKind.TSX,
-  dts: ts.ScriptKind.TS,
-};
 
 interface Checker {
   /** Declaration starts, or null to skip. */

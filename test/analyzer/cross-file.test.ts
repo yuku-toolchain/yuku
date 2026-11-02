@@ -42,6 +42,24 @@ describe("definition", () => {
     });
     expect(definition(project, "c.ts", "x")).toBe("(none)");
   });
+
+  test("reaches the first name of a dotted namespace", () => {
+    const project = projectOf({
+      "a.ts": `export namespace N.M { export const v = 1 }`,
+      "b.ts": `import { N } from "./a.ts"; N.M.v;`,
+    });
+    expect(project.diagnostics).toEqual([]);
+    expect(definition(project, "b.ts", "N")).toBe("a.ts:N");
+  });
+
+  test("reaches a default interface", () => {
+    const project = projectOf({
+      "a.ts": `export default interface A {}`,
+      "b.ts": `import A from "./a.ts"; let a: A;`,
+    });
+    expect(project.diagnostics).toEqual([]);
+    expect(definition(project, "b.ts", "A")).toBe("a.ts:A");
+  });
 });
 
 describe("findReferences", () => {

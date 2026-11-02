@@ -26,7 +26,7 @@ export interface BindingFlagMap {
   readonly TypeImport: number;
   /** `const`, `using`, or `await using`. */
   readonly Const: number;
-  /** `declare`. */
+  /** `declare`, or part of a signature with no body. */
   readonly Ambient: number;
   readonly Parameter: number;
   readonly CatchVariable: number;

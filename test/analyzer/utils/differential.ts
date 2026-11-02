@@ -1,7 +1,23 @@
 import { expect, test } from "bun:test";
 import ts from "typescript";
-import type { Binding, SourceFile, SourceType } from "yuku";
+import type { Binding, SourceFile, SourceLang, SourceType } from "yuku";
 import type { CorpusFile } from "../../corpus";
+
+export const FILE_NAMES: Record<SourceLang, string> = {
+  js: "input.js",
+  jsx: "input.jsx",
+  ts: "input.ts",
+  tsx: "input.tsx",
+  dts: "input.d.ts",
+};
+
+export const SCRIPT_KINDS: Record<SourceLang, ts.ScriptKind> = {
+  js: ts.ScriptKind.JS,
+  jsx: ts.ScriptKind.JSX,
+  ts: ts.ScriptKind.TS,
+  tsx: ts.ScriptKind.TSX,
+  dts: ts.ScriptKind.TS,
+};
 
 const FUNCTIONS = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
 

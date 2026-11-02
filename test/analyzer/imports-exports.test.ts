@@ -242,7 +242,7 @@ describe("exports", () => {
       "global
         g#4  var ambient
         module [strict]
-          A#0  import
+          A#0  import ambient
           x#1  const ambient exported
           I#2  interface ambient exported
           N#3  namespace ambient exported
@@ -282,5 +282,32 @@ describe("exports", () => {
             I#1  interface ambient
             block TSInterfaceDeclaration"
       `);
+  });
+
+  test("a dotted namespace exports its first name", () => {
+    expect(summary(`export namespace A.B.C { export const v = 1 }`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          A#0  namespace value-module exported
+          tsModule
+            B#1  namespace value-module exported
+            tsModule
+              C#2  namespace value-module exported
+              tsModule
+                v#3  const exported
+      exports
+        A → #0"
+    `);
+  });
+
+  test("a default interface exports its binding as a type", () => {
+    expect(summary(`export default interface A {}`)).toMatchInlineSnapshot(`
+      "global
+        module [strict]
+          A#0  interface exported default
+          block TSInterfaceDeclaration
+      exports
+        default → #0 type"
+    `);
   });
 });

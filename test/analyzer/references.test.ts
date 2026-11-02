@@ -200,6 +200,19 @@ describe("write detection", () => {
 });
 
 describe("declaration spaces", () => {
+  test("every name in a type member's computed key is a value", () => {
+    const file = parse(
+      `const a = 1, b = 2; interface A {} interface I { [a + b]: string; [A = 0]: string }`,
+      { analyze: true, path: "a.ts" },
+    );
+    const rows = file.references.map((r) => [r.name, r.space, r.binding?.declarations[0]?.start]);
+    expect(rows).toEqual([
+      ["a", "typeof", 6],
+      ["b", "typeof", 13],
+      ["A", "typeof", undefined],
+    ]);
+  });
+
   test("a name used as both a value and a type resolves in each space", () => {
     expect(summary(`class C {} const c: C = new C();`)).toMatchInlineSnapshot(`
       "global

@@ -67,6 +67,15 @@ describe("rename", () => {
     );
   });
 
+  test("a dotted namespace keeps its export, and its inner name names a member", () => {
+    expect(renamed(`export namespace A.B { export const v = 1 }`, "A", "C")).toBe(
+      "namespace C.B {\n  export const v = 1;\n}\nexport { C as A };",
+    );
+    expect(refused(`export namespace A.B {}`, "B", "C")).toEqual([
+      "Cannot rename 'B', which also names its export @19",
+    ]);
+  });
+
   test("a declaration file that exports implicitly keeps its exports by refusing", () => {
     expect(refused(`interface Base {}\nexport interface A extends Base {}`, "A", "B", "a.d.ts"))
       .toMatchInlineSnapshot(`
