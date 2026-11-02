@@ -1,6 +1,6 @@
 {
   "name": "yuku",
-  "version": "0.26.1",
+  "version": "0.27.0",
   "description": "A JavaScript and TypeScript compiler toolchain written in Zig",
   "license": "MIT",
   "homepage": "https://yuku.fyi",
@@ -46,15 +46,15 @@
     "build": "tsdown"
   },
   "optionalDependencies": {
-    "@yuku-toolchain/darwin-arm64": "0.26.1",
-    "@yuku-toolchain/darwin-x64": "0.26.1",
-    "@yuku-toolchain/linux-arm64": "0.26.1",
-    "@yuku-toolchain/linux-x64": "0.26.1",
-    "@yuku-toolchain/win32-arm64": "0.26.1",
-    "@yuku-toolchain/win32-x64": "0.26.1"
+    "@yuku-toolchain/darwin-arm64": "0.27.0",
+    "@yuku-toolchain/darwin-x64": "0.27.0",
+    "@yuku-toolchain/linux-arm64": "0.27.0",
+    "@yuku-toolchain/linux-x64": "0.27.0",
+    "@yuku-toolchain/win32-arm64": "0.27.0",
+    "@yuku-toolchain/win32-x64": "0.27.0"
   },
   "peerDependencies": {
-    "@yuku-toolchain/wasm": "0.26.1"
+    "@yuku-toolchain/wasm": "0.27.0"
   },
   "peerDependenciesMeta": {
     "@yuku-toolchain/wasm": {
