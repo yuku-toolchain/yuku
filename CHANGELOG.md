@@ -2,6 +2,16 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.26.1
+
+### Changes
+
+- Diagnostics read the way TypeScript's do, as in `Cannot redeclare block-scoped variable 'a'`, and a `Project` reports `Cannot find module './utils'` and `Module './a' has no exported member 'b'`, with shorter help text throughout (#311 by @arshad-yaseen)
+- JSX parses right after `new` and `extends`, as in `new <a/>()` and `class A extends <a/> {}`, and a `.tsx` file reports that it needs parentheses there, as TypeScript does (#308 by @magic-akari)
+- A JSX element whose closing tag does not match, as in `<a></b>`, stays in the AST next to its error (#308 by @magic-akari)
+- Strict TypeScript reports legacy octal numbers and escapes in types, such as `type A = 01`, as tsc does (#310 by @arshad-yaseen)
+- An escaped word in a class body, such as `st\u0061tic`, is a member name and never a modifier (#310 by @arshad-yaseen)
+
 ## 0.26.0
 
 ### Breaking

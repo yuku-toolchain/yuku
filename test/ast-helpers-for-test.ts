@@ -267,7 +267,8 @@ export function formatDiagnostics(
       previous = line;
 
       const text = lines[line] ?? "";
-      output.push(`${String(line + 1).padStart(gutterWidth)} | ${expandTabs(text)}`);
+      const visible = expandTabs(text.replace(/\r$/, ""));
+      output.push(`${String(line + 1).padStart(gutterWidth)} | ${visible}`);
       const lineMarkers = markersByLine.get(line);
       if (lineMarkers !== undefined) {
         output.push(...renderUnderlines(text, lineMarkers, `${blank} | `));
