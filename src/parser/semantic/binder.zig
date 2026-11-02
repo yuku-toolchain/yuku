@@ -686,9 +686,9 @@ pub const SymbolTracker = struct {
                 try self.pushSavedContext();
                 self.pending = .{
                     .flags = if (decl.import_kind == .type)
-                        .{ .type_import = true }
+                        .{ .type_import = true, .ambient = self.ambient }
                     else
-                        .{ .import = true },
+                        .{ .import = true, .ambient = self.ambient },
                     .excludes = if (self.tree.isTs())
                         Symbol.Excludes.import_binding
                     else
@@ -701,7 +701,7 @@ pub const SymbolTracker = struct {
                 const spec = data.import_specifier;
                 try self.pushSavedContext();
                 if (spec.import_kind == .type) {
-                    self.pending.flags = .{ .type_import = true };
+                    self.pending.flags = .{ .type_import = true, .ambient = self.ambient };
                     self.pending.excludes = Symbol.Excludes.import_binding;
                 }
             },
@@ -709,7 +709,11 @@ pub const SymbolTracker = struct {
             .catch_clause => {
                 try self.pushSavedContext();
                 self.pending = .{
-                    .flags = .{ .function_scoped_var = true, .catch_var = true },
+                    .flags = .{
+                        .function_scoped_var = true,
+                        .catch_var = true,
+                        .ambient = self.ambient,
+                    },
                     .excludes = Symbol.Excludes.catch_var,
                     .scope = scope.current,
                 };
@@ -793,7 +797,10 @@ pub const SymbolTracker = struct {
                 else
                     scope.current;
                 self.pending = .{
-                    .flags = .{ .type_parameter = true },
+                    .flags = .{
+                        .type_parameter = true,
+                        .ambient = self.pending.flags.ambient or self.ambient,
+                    },
                     .excludes = Symbol.Excludes.type_parameter,
                     .scope = target,
                 };
@@ -804,7 +811,11 @@ pub const SymbolTracker = struct {
             .ts_index_signature => {
                 try self.pushSavedContext();
                 self.pending = .{
-                    .flags = .{ .function_scoped_var = true, .parameter = true },
+                    .flags = .{
+                        .function_scoped_var = true,
+                        .parameter = true,
+                        .ambient = self.pending.flags.ambient or self.ambient,
+                    },
                     .excludes = Symbol.Excludes.parameter,
                     .scope = scope.current,
                 };

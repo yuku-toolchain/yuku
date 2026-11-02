@@ -278,4 +278,16 @@ describe("value space and type space", () => {
     const file = parse(`export interface I { [k: string]: any }`, { analyze: true, path: "a.ts" });
     expect(file.bindings.find((b) => b.name === "k")!.has(BindingFlags.Exported)).toBe(false);
   });
+
+  test("everything a declaration binds is ambient, type parameters and imports included", () => {
+    const file = parse(
+      `declare function f<T>(a: T): void;
+      declare namespace N { import x = require("m"); interface I<U> { [k: string]: U } }`,
+      { analyze: true, path: "a.ts" },
+    );
+    for (const name of ["f", "T", "a", "N", "x", "I", "U", "k"]) {
+      const binding = file.bindings.find((b) => b.name === name)!;
+      expect([name, binding.has(BindingFlags.Ambient)]).toEqual([name, true]);
+    }
+  });
 });

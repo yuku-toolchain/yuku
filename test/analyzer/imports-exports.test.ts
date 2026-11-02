@@ -242,7 +242,7 @@ describe("exports", () => {
       "global
         g#4  var ambient
         module [strict]
-          A#0  import
+          A#0  import ambient
           x#1  const ambient exported
           I#2  interface ambient exported
           N#3  namespace ambient exported
