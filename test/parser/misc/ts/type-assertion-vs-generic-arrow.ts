@@ -21,3 +21,12 @@ const arrowReturnType = <T>(value: T): T => value;
 declare const value: unknown;
 declare class C {}
 declare type T = unknown;
+
+async (result = (input = await / divisor / scale): T => input);
+async (result = <U>(input = await / divisor / scale): U => input);
+
+async <T>(value);
+async <T>(value) => value;
+optional?.member<T>;
+optional?.member<T>();
+optional?.<T>();

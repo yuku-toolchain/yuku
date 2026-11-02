@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 472,
+    "end": 1755,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -728,6 +728,2725 @@
                 "decorators": [],
                 "optional": false,
                 "typeAnnotation": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 473,
+        "end": 552,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 479,
+            "end": 551,
+            "id": {
+              "type": "Identifier",
+              "start": 479,
+              "end": 493,
+              "name": "computedObject",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 496,
+              "end": 551,
+              "test": {
+                "type": "Identifier",
+                "start": 496,
+                "end": 500,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 503,
+                "end": 534,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 504,
+                  "end": 533,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 504,
+                    "end": 510,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ObjectExpression",
+                    "start": 513,
+                    "end": 533,
+                    "properties": [
+                      {
+                        "type": "Property",
+                        "start": 515,
+                        "end": 531,
+                        "key": {
+                          "type": "ArrowFunctionExpression",
+                          "start": 516,
+                          "end": 527,
+                          "id": null,
+                          "generator": false,
+                          "async": false,
+                          "params": [
+                            {
+                              "type": "Identifier",
+                              "start": 517,
+                              "end": 518,
+                              "name": "x",
+                              "decorators": [],
+                              "typeAnnotation": null,
+                              "optional": false
+                            }
+                          ],
+                          "body": {
+                            "type": "Identifier",
+                            "start": 526,
+                            "end": 527,
+                            "name": "x",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "expression": true,
+                          "typeParameters": null,
+                          "returnType": {
+                            "type": "TSTypeAnnotation",
+                            "start": 519,
+                            "end": 522,
+                            "typeAnnotation": {
+                              "type": "TSTypeReference",
+                              "start": 521,
+                              "end": 522,
+                              "typeName": {
+                                "type": "Identifier",
+                                "start": 521,
+                                "end": 522,
+                                "name": "T",
+                                "decorators": [],
+                                "optional": false,
+                                "typeAnnotation": null
+                              },
+                              "typeArguments": null
+                            }
+                          }
+                        },
+                        "value": {
+                          "type": "Literal",
+                          "start": 530,
+                          "end": 531,
+                          "value": 0,
+                          "raw": "0"
+                        },
+                        "kind": "init",
+                        "method": false,
+                        "shorthand": false,
+                        "computed": true,
+                        "optional": false
+                      }
+                    ]
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 537,
+                "end": 551,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 537,
+                    "end": 542,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 546,
+                  "end": 551,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 553,
+        "end": 639,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 559,
+            "end": 638,
+            "id": {
+              "type": "Identifier",
+              "start": 559,
+              "end": 572,
+              "name": "computedClass",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 575,
+              "end": 638,
+              "test": {
+                "type": "Identifier",
+                "start": 575,
+                "end": 579,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 582,
+                "end": 621,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 583,
+                  "end": 620,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 583,
+                    "end": 589,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ClassExpression",
+                    "start": 592,
+                    "end": 620,
+                    "decorators": [],
+                    "id": null,
+                    "superClass": null,
+                    "body": {
+                      "type": "ClassBody",
+                      "start": 598,
+                      "end": 620,
+                      "body": [
+                        {
+                          "type": "PropertyDefinition",
+                          "start": 600,
+                          "end": 618,
+                          "decorators": [],
+                          "key": {
+                            "type": "ArrowFunctionExpression",
+                            "start": 601,
+                            "end": 612,
+                            "id": null,
+                            "generator": false,
+                            "async": false,
+                            "params": [
+                              {
+                                "type": "Identifier",
+                                "start": 602,
+                                "end": 603,
+                                "name": "x",
+                                "decorators": [],
+                                "typeAnnotation": null,
+                                "optional": false
+                              }
+                            ],
+                            "body": {
+                              "type": "Identifier",
+                              "start": 611,
+                              "end": 612,
+                              "name": "x",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            },
+                            "expression": true,
+                            "typeParameters": null,
+                            "returnType": {
+                              "type": "TSTypeAnnotation",
+                              "start": 604,
+                              "end": 607,
+                              "typeAnnotation": {
+                                "type": "TSTypeReference",
+                                "start": 606,
+                                "end": 607,
+                                "typeName": {
+                                  "type": "Identifier",
+                                  "start": 606,
+                                  "end": 607,
+                                  "name": "T",
+                                  "decorators": [],
+                                  "optional": false,
+                                  "typeAnnotation": null
+                                },
+                                "typeArguments": null
+                              }
+                            }
+                          },
+                          "value": {
+                            "type": "Literal",
+                            "start": 616,
+                            "end": 617,
+                            "value": 0,
+                            "raw": "0"
+                          },
+                          "computed": true,
+                          "static": false,
+                          "typeAnnotation": null,
+                          "declare": false,
+                          "override": false,
+                          "optional": false,
+                          "definite": false,
+                          "readonly": false,
+                          "accessibility": null
+                        }
+                      ]
+                    },
+                    "typeParameters": null,
+                    "superTypeArguments": null,
+                    "implements": [],
+                    "abstract": false,
+                    "declare": false
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 624,
+                "end": 638,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 624,
+                    "end": 629,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 633,
+                  "end": 638,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 640,
+        "end": 730,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 646,
+            "end": 729,
+            "id": {
+              "type": "Identifier",
+              "start": 646,
+              "end": 666,
+              "name": "computedTypeArgument",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 669,
+              "end": 729,
+              "test": {
+                "type": "Identifier",
+                "start": 669,
+                "end": 673,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 676,
+                "end": 712,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 677,
+                  "end": 711,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 677,
+                    "end": 683,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "CallExpression",
+                    "start": 686,
+                    "end": 711,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 686,
+                      "end": 687,
+                      "name": "f",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "arguments": [],
+                    "optional": false,
+                    "typeArguments": {
+                      "type": "TSTypeParameterInstantiation",
+                      "start": 687,
+                      "end": 709,
+                      "params": [
+                        {
+                          "type": "TSTypeLiteral",
+                          "start": 688,
+                          "end": 708,
+                          "members": [
+                            {
+                              "type": "TSPropertySignature",
+                              "start": 690,
+                              "end": 706,
+                              "key": {
+                                "type": "ArrowFunctionExpression",
+                                "start": 691,
+                                "end": 702,
+                                "id": null,
+                                "generator": false,
+                                "async": false,
+                                "params": [
+                                  {
+                                    "type": "Identifier",
+                                    "start": 692,
+                                    "end": 693,
+                                    "name": "x",
+                                    "decorators": [],
+                                    "typeAnnotation": null,
+                                    "optional": false
+                                  }
+                                ],
+                                "body": {
+                                  "type": "Identifier",
+                                  "start": 701,
+                                  "end": 702,
+                                  "name": "x",
+                                  "decorators": [],
+                                  "optional": false,
+                                  "typeAnnotation": null
+                                },
+                                "expression": true,
+                                "typeParameters": null,
+                                "returnType": {
+                                  "type": "TSTypeAnnotation",
+                                  "start": 694,
+                                  "end": 697,
+                                  "typeAnnotation": {
+                                    "type": "TSTypeReference",
+                                    "start": 696,
+                                    "end": 697,
+                                    "typeName": {
+                                      "type": "Identifier",
+                                      "start": 696,
+                                      "end": 697,
+                                      "name": "T",
+                                      "decorators": [],
+                                      "optional": false,
+                                      "typeAnnotation": null
+                                    },
+                                    "typeArguments": null
+                                  }
+                                }
+                              },
+                              "typeAnnotation": {
+                                "type": "TSTypeAnnotation",
+                                "start": 703,
+                                "end": 706,
+                                "typeAnnotation": {
+                                  "type": "TSLiteralType",
+                                  "start": 705,
+                                  "end": 706,
+                                  "literal": {
+                                    "type": "Literal",
+                                    "start": 705,
+                                    "end": 706,
+                                    "value": 0,
+                                    "raw": "0"
+                                  }
+                                }
+                              },
+                              "computed": true,
+                              "optional": false,
+                              "readonly": false,
+                              "accessibility": null,
+                              "static": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 715,
+                "end": 729,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 715,
+                    "end": 720,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 724,
+                  "end": 729,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 731,
+        "end": 826,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 737,
+            "end": 825,
+            "id": {
+              "type": "Identifier",
+              "start": 737,
+              "end": 755,
+              "name": "computedRelational",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 758,
+              "end": 825,
+              "test": {
+                "type": "Identifier",
+                "start": 758,
+                "end": 762,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 765,
+                "end": 808,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 766,
+                  "end": 807,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 766,
+                    "end": 772,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "BinaryExpression",
+                    "start": 775,
+                    "end": 807,
+                    "left": {
+                      "type": "BinaryExpression",
+                      "start": 775,
+                      "end": 799,
+                      "left": {
+                        "type": "Identifier",
+                        "start": 775,
+                        "end": 776,
+                        "name": "f",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "right": {
+                        "type": "ObjectExpression",
+                        "start": 779,
+                        "end": 799,
+                        "properties": [
+                          {
+                            "type": "Property",
+                            "start": 781,
+                            "end": 797,
+                            "key": {
+                              "type": "ArrowFunctionExpression",
+                              "start": 782,
+                              "end": 793,
+                              "id": null,
+                              "generator": false,
+                              "async": false,
+                              "params": [
+                                {
+                                  "type": "Identifier",
+                                  "start": 783,
+                                  "end": 784,
+                                  "name": "x",
+                                  "decorators": [],
+                                  "typeAnnotation": null,
+                                  "optional": false
+                                }
+                              ],
+                              "body": {
+                                "type": "Identifier",
+                                "start": 792,
+                                "end": 793,
+                                "name": "x",
+                                "decorators": [],
+                                "optional": false,
+                                "typeAnnotation": null
+                              },
+                              "expression": true,
+                              "typeParameters": null,
+                              "returnType": {
+                                "type": "TSTypeAnnotation",
+                                "start": 785,
+                                "end": 788,
+                                "typeAnnotation": {
+                                  "type": "TSTypeReference",
+                                  "start": 787,
+                                  "end": 788,
+                                  "typeName": {
+                                    "type": "Identifier",
+                                    "start": 787,
+                                    "end": 788,
+                                    "name": "T",
+                                    "decorators": [],
+                                    "optional": false,
+                                    "typeAnnotation": null
+                                  },
+                                  "typeArguments": null
+                                }
+                              }
+                            },
+                            "value": {
+                              "type": "Literal",
+                              "start": 796,
+                              "end": 797,
+                              "value": 0,
+                              "raw": "0"
+                            },
+                            "kind": "init",
+                            "method": false,
+                            "shorthand": false,
+                            "computed": true,
+                            "optional": false
+                          }
+                        ]
+                      },
+                      "operator": "<"
+                    },
+                    "right": {
+                      "type": "Identifier",
+                      "start": 802,
+                      "end": 807,
+                      "name": "value",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "operator": ">"
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 811,
+                "end": 825,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 811,
+                    "end": 816,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 820,
+                  "end": 825,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 827,
+        "end": 911,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 833,
+            "end": 910,
+            "id": {
+              "type": "Identifier",
+              "start": 833,
+              "end": 846,
+              "name": "computedAsync",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 849,
+              "end": 910,
+              "test": {
+                "type": "Identifier",
+                "start": 849,
+                "end": 853,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 856,
+                "end": 893,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 857,
+                  "end": 892,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 857,
+                    "end": 863,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ObjectExpression",
+                    "start": 866,
+                    "end": 892,
+                    "properties": [
+                      {
+                        "type": "Property",
+                        "start": 868,
+                        "end": 890,
+                        "key": {
+                          "type": "ArrowFunctionExpression",
+                          "start": 869,
+                          "end": 886,
+                          "id": null,
+                          "generator": false,
+                          "async": true,
+                          "params": [
+                            {
+                              "type": "Identifier",
+                              "start": 876,
+                              "end": 877,
+                              "name": "x",
+                              "decorators": [],
+                              "typeAnnotation": null,
+                              "optional": false
+                            }
+                          ],
+                          "body": {
+                            "type": "Identifier",
+                            "start": 885,
+                            "end": 886,
+                            "name": "x",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "expression": true,
+                          "typeParameters": null,
+                          "returnType": {
+                            "type": "TSTypeAnnotation",
+                            "start": 878,
+                            "end": 881,
+                            "typeAnnotation": {
+                              "type": "TSTypeReference",
+                              "start": 880,
+                              "end": 881,
+                              "typeName": {
+                                "type": "Identifier",
+                                "start": 880,
+                                "end": 881,
+                                "name": "T",
+                                "decorators": [],
+                                "optional": false,
+                                "typeAnnotation": null
+                              },
+                              "typeArguments": null
+                            }
+                          }
+                        },
+                        "value": {
+                          "type": "Literal",
+                          "start": 889,
+                          "end": 890,
+                          "value": 0,
+                          "raw": "0"
+                        },
+                        "kind": "init",
+                        "method": false,
+                        "shorthand": false,
+                        "computed": true,
+                        "optional": false
+                      }
+                    ]
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 896,
+                "end": 910,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 896,
+                    "end": 901,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 905,
+                  "end": 910,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 913,
+        "end": 978,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 919,
+            "end": 977,
+            "id": {
+              "type": "Identifier",
+              "start": 919,
+              "end": 926,
+              "name": "inArray",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 929,
+              "end": 977,
+              "test": {
+                "type": "Identifier",
+                "start": 929,
+                "end": 933,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 936,
+                "end": 960,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 937,
+                  "end": 959,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 937,
+                    "end": 943,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ArrayExpression",
+                    "start": 946,
+                    "end": 959,
+                    "elements": [
+                      {
+                        "type": "ArrowFunctionExpression",
+                        "start": 947,
+                        "end": 958,
+                        "id": null,
+                        "generator": false,
+                        "async": false,
+                        "params": [
+                          {
+                            "type": "Identifier",
+                            "start": 948,
+                            "end": 949,
+                            "name": "x",
+                            "decorators": [],
+                            "typeAnnotation": null,
+                            "optional": false
+                          }
+                        ],
+                        "body": {
+                          "type": "Identifier",
+                          "start": 957,
+                          "end": 958,
+                          "name": "x",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "expression": true,
+                        "typeParameters": null,
+                        "returnType": {
+                          "type": "TSTypeAnnotation",
+                          "start": 950,
+                          "end": 953,
+                          "typeAnnotation": {
+                            "type": "TSTypeReference",
+                            "start": 952,
+                            "end": 953,
+                            "typeName": {
+                              "type": "Identifier",
+                              "start": 952,
+                              "end": 953,
+                              "name": "T",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            },
+                            "typeArguments": null
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 963,
+                "end": 977,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 963,
+                    "end": 968,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 972,
+                  "end": 977,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 979,
+        "end": 1044,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 985,
+            "end": 1043,
+            "id": {
+              "type": "Identifier",
+              "start": 985,
+              "end": 991,
+              "name": "inCall",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 994,
+              "end": 1043,
+              "test": {
+                "type": "Identifier",
+                "start": 994,
+                "end": 998,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1001,
+                "end": 1026,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1002,
+                  "end": 1025,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1002,
+                    "end": 1008,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "CallExpression",
+                    "start": 1011,
+                    "end": 1025,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 1011,
+                      "end": 1012,
+                      "name": "f",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "arguments": [
+                      {
+                        "type": "ArrowFunctionExpression",
+                        "start": 1013,
+                        "end": 1024,
+                        "id": null,
+                        "generator": false,
+                        "async": false,
+                        "params": [
+                          {
+                            "type": "Identifier",
+                            "start": 1014,
+                            "end": 1015,
+                            "name": "x",
+                            "decorators": [],
+                            "typeAnnotation": null,
+                            "optional": false
+                          }
+                        ],
+                        "body": {
+                          "type": "Identifier",
+                          "start": 1023,
+                          "end": 1024,
+                          "name": "x",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "expression": true,
+                        "typeParameters": null,
+                        "returnType": {
+                          "type": "TSTypeAnnotation",
+                          "start": 1016,
+                          "end": 1019,
+                          "typeAnnotation": {
+                            "type": "TSTypeReference",
+                            "start": 1018,
+                            "end": 1019,
+                            "typeName": {
+                              "type": "Identifier",
+                              "start": 1018,
+                              "end": 1019,
+                              "name": "T",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            },
+                            "typeArguments": null
+                          }
+                        }
+                      }
+                    ],
+                    "optional": false,
+                    "typeArguments": null
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1029,
+                "end": 1043,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1029,
+                    "end": 1034,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1038,
+                  "end": 1043,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1045,
+        "end": 1112,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1051,
+            "end": 1111,
+            "id": {
+              "type": "Identifier",
+              "start": 1051,
+              "end": 1059,
+              "name": "inMember",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1062,
+              "end": 1111,
+              "test": {
+                "type": "Identifier",
+                "start": 1062,
+                "end": 1066,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1069,
+                "end": 1094,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1070,
+                  "end": 1093,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1070,
+                    "end": 1076,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "MemberExpression",
+                    "start": 1079,
+                    "end": 1093,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 1079,
+                      "end": 1080,
+                      "name": "a",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "property": {
+                      "type": "ArrowFunctionExpression",
+                      "start": 1081,
+                      "end": 1092,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [
+                        {
+                          "type": "Identifier",
+                          "start": 1082,
+                          "end": 1083,
+                          "name": "x",
+                          "decorators": [],
+                          "typeAnnotation": null,
+                          "optional": false
+                        }
+                      ],
+                      "body": {
+                        "type": "Identifier",
+                        "start": 1091,
+                        "end": 1092,
+                        "name": "x",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "expression": true,
+                      "typeParameters": null,
+                      "returnType": {
+                        "type": "TSTypeAnnotation",
+                        "start": 1084,
+                        "end": 1087,
+                        "typeAnnotation": {
+                          "type": "TSTypeReference",
+                          "start": 1086,
+                          "end": 1087,
+                          "typeName": {
+                            "type": "Identifier",
+                            "start": 1086,
+                            "end": 1087,
+                            "name": "T",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "typeArguments": null
+                        }
+                      }
+                    },
+                    "computed": true,
+                    "optional": false
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1097,
+                "end": 1111,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1097,
+                    "end": 1102,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1106,
+                  "end": 1111,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1113,
+        "end": 1186,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1119,
+            "end": 1185,
+            "id": {
+              "type": "Identifier",
+              "start": 1119,
+              "end": 1129,
+              "name": "inProperty",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1132,
+              "end": 1185,
+              "test": {
+                "type": "Identifier",
+                "start": 1132,
+                "end": 1136,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1139,
+                "end": 1168,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1140,
+                  "end": 1167,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1140,
+                    "end": 1146,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ObjectExpression",
+                    "start": 1149,
+                    "end": 1167,
+                    "properties": [
+                      {
+                        "type": "Property",
+                        "start": 1151,
+                        "end": 1165,
+                        "key": {
+                          "type": "Identifier",
+                          "start": 1151,
+                          "end": 1152,
+                          "name": "a",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "value": {
+                          "type": "ArrowFunctionExpression",
+                          "start": 1154,
+                          "end": 1165,
+                          "id": null,
+                          "generator": false,
+                          "async": false,
+                          "params": [
+                            {
+                              "type": "Identifier",
+                              "start": 1155,
+                              "end": 1156,
+                              "name": "x",
+                              "decorators": [],
+                              "typeAnnotation": null,
+                              "optional": false
+                            }
+                          ],
+                          "body": {
+                            "type": "Identifier",
+                            "start": 1164,
+                            "end": 1165,
+                            "name": "x",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "expression": true,
+                          "typeParameters": null,
+                          "returnType": {
+                            "type": "TSTypeAnnotation",
+                            "start": 1157,
+                            "end": 1160,
+                            "typeAnnotation": {
+                              "type": "TSTypeReference",
+                              "start": 1159,
+                              "end": 1160,
+                              "typeName": {
+                                "type": "Identifier",
+                                "start": 1159,
+                                "end": 1160,
+                                "name": "T",
+                                "decorators": [],
+                                "optional": false,
+                                "typeAnnotation": null
+                              },
+                              "typeArguments": null
+                            }
+                          }
+                        },
+                        "kind": "init",
+                        "method": false,
+                        "shorthand": false,
+                        "computed": false,
+                        "optional": false
+                      }
+                    ]
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1171,
+                "end": 1185,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1171,
+                    "end": 1176,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1180,
+                  "end": 1185,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1187,
+        "end": 1258,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1193,
+            "end": 1257,
+            "id": {
+              "type": "Identifier",
+              "start": 1193,
+              "end": 1203,
+              "name": "inTemplate",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1206,
+              "end": 1257,
+              "test": {
+                "type": "Identifier",
+                "start": 1206,
+                "end": 1210,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1213,
+                "end": 1240,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1214,
+                  "end": 1239,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1214,
+                    "end": 1220,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "TemplateLiteral",
+                    "start": 1223,
+                    "end": 1239,
+                    "quasis": [
+                      {
+                        "type": "TemplateElement",
+                        "start": 1223,
+                        "end": 1226,
+                        "value": {
+                          "raw": "",
+                          "cooked": ""
+                        },
+                        "tail": false
+                      },
+                      {
+                        "type": "TemplateElement",
+                        "start": 1237,
+                        "end": 1239,
+                        "value": {
+                          "raw": "",
+                          "cooked": ""
+                        },
+                        "tail": true
+                      }
+                    ],
+                    "expressions": [
+                      {
+                        "type": "ArrowFunctionExpression",
+                        "start": 1226,
+                        "end": 1237,
+                        "id": null,
+                        "generator": false,
+                        "async": false,
+                        "params": [
+                          {
+                            "type": "Identifier",
+                            "start": 1227,
+                            "end": 1228,
+                            "name": "x",
+                            "decorators": [],
+                            "typeAnnotation": null,
+                            "optional": false
+                          }
+                        ],
+                        "body": {
+                          "type": "Identifier",
+                          "start": 1236,
+                          "end": 1237,
+                          "name": "x",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "expression": true,
+                        "typeParameters": null,
+                        "returnType": {
+                          "type": "TSTypeAnnotation",
+                          "start": 1229,
+                          "end": 1232,
+                          "typeAnnotation": {
+                            "type": "TSTypeReference",
+                            "start": 1231,
+                            "end": 1232,
+                            "typeName": {
+                              "type": "Identifier",
+                              "start": 1231,
+                              "end": 1232,
+                              "name": "T",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            },
+                            "typeArguments": null
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1243,
+                "end": 1257,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1243,
+                    "end": 1248,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1252,
+                  "end": 1257,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1259,
+        "end": 1325,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1265,
+            "end": 1324,
+            "id": {
+              "type": "Identifier",
+              "start": 1265,
+              "end": 1273,
+              "name": "inParens",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1276,
+              "end": 1324,
+              "test": {
+                "type": "Identifier",
+                "start": 1276,
+                "end": 1280,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1283,
+                "end": 1307,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1284,
+                  "end": 1306,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1284,
+                    "end": 1290,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ParenthesizedExpression",
+                    "start": 1293,
+                    "end": 1306,
+                    "expression": {
+                      "type": "ArrowFunctionExpression",
+                      "start": 1294,
+                      "end": 1305,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [
+                        {
+                          "type": "Identifier",
+                          "start": 1295,
+                          "end": 1296,
+                          "name": "x",
+                          "decorators": [],
+                          "typeAnnotation": null,
+                          "optional": false
+                        }
+                      ],
+                      "body": {
+                        "type": "Identifier",
+                        "start": 1304,
+                        "end": 1305,
+                        "name": "x",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "expression": true,
+                      "typeParameters": null,
+                      "returnType": {
+                        "type": "TSTypeAnnotation",
+                        "start": 1297,
+                        "end": 1300,
+                        "typeAnnotation": {
+                          "type": "TSTypeReference",
+                          "start": 1299,
+                          "end": 1300,
+                          "typeName": {
+                            "type": "Identifier",
+                            "start": 1299,
+                            "end": 1300,
+                            "name": "T",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "typeArguments": null
+                        }
+                      }
+                    }
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1310,
+                "end": 1324,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1310,
+                    "end": 1315,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1319,
+                  "end": 1324,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1326,
+        "end": 1412,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1332,
+            "end": 1411,
+            "id": {
+              "type": "Identifier",
+              "start": 1332,
+              "end": 1338,
+              "name": "inBody",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1341,
+              "end": 1411,
+              "test": {
+                "type": "Identifier",
+                "start": 1341,
+                "end": 1345,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1348,
+                "end": 1394,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1349,
+                  "end": 1393,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1349,
+                    "end": 1355,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "FunctionExpression",
+                    "start": 1358,
+                    "end": 1393,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 1370,
+                      "end": 1393,
+                      "body": [
+                        {
+                          "type": "ReturnStatement",
+                          "start": 1372,
+                          "end": 1391,
+                          "argument": {
+                            "type": "ArrowFunctionExpression",
+                            "start": 1379,
+                            "end": 1390,
+                            "id": null,
+                            "generator": false,
+                            "async": false,
+                            "params": [
+                              {
+                                "type": "Identifier",
+                                "start": 1380,
+                                "end": 1381,
+                                "name": "x",
+                                "decorators": [],
+                                "typeAnnotation": null,
+                                "optional": false
+                              }
+                            ],
+                            "body": {
+                              "type": "Identifier",
+                              "start": 1389,
+                              "end": 1390,
+                              "name": "x",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            },
+                            "expression": true,
+                            "typeParameters": null,
+                            "returnType": {
+                              "type": "TSTypeAnnotation",
+                              "start": 1382,
+                              "end": 1385,
+                              "typeAnnotation": {
+                                "type": "TSTypeReference",
+                                "start": 1384,
+                                "end": 1385,
+                                "typeName": {
+                                  "type": "Identifier",
+                                  "start": 1384,
+                                  "end": 1385,
+                                  "name": "T",
+                                  "decorators": [],
+                                  "optional": false,
+                                  "typeAnnotation": null
+                                },
+                                "typeArguments": null
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "expression": false,
+                    "typeParameters": null,
+                    "returnType": null,
+                    "declare": false
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1397,
+                "end": 1411,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1397,
+                    "end": 1402,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1406,
+                  "end": 1411,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1413,
+        "end": 1491,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1419,
+            "end": 1490,
+            "id": {
+              "type": "Identifier",
+              "start": 1419,
+              "end": 1426,
+              "name": "inField",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1429,
+              "end": 1490,
+              "test": {
+                "type": "Identifier",
+                "start": 1429,
+                "end": 1433,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1436,
+                "end": 1473,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 1437,
+                  "end": 1472,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 1437,
+                    "end": 1443,
+                    "name": "result",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "right": {
+                    "type": "ClassExpression",
+                    "start": 1446,
+                    "end": 1472,
+                    "decorators": [],
+                    "id": null,
+                    "superClass": null,
+                    "body": {
+                      "type": "ClassBody",
+                      "start": 1452,
+                      "end": 1472,
+                      "body": [
+                        {
+                          "type": "PropertyDefinition",
+                          "start": 1454,
+                          "end": 1470,
+                          "decorators": [],
+                          "key": {
+                            "type": "Identifier",
+                            "start": 1454,
+                            "end": 1455,
+                            "name": "p",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "value": {
+                            "type": "ArrowFunctionExpression",
+                            "start": 1458,
+                            "end": 1469,
+                            "id": null,
+                            "generator": false,
+                            "async": false,
+                            "params": [
+                              {
+                                "type": "Identifier",
+                                "start": 1459,
+                                "end": 1460,
+                                "name": "x",
+                                "decorators": [],
+                                "typeAnnotation": null,
+                                "optional": false
+                              }
+                            ],
+                            "body": {
+                              "type": "Identifier",
+                              "start": 1468,
+                              "end": 1469,
+                              "name": "x",
+                              "decorators": [],
+                              "optional": false,
+                              "typeAnnotation": null
+                            },
+                            "expression": true,
+                            "typeParameters": null,
+                            "returnType": {
+                              "type": "TSTypeAnnotation",
+                              "start": 1461,
+                              "end": 1464,
+                              "typeAnnotation": {
+                                "type": "TSTypeReference",
+                                "start": 1463,
+                                "end": 1464,
+                                "typeName": {
+                                  "type": "Identifier",
+                                  "start": 1463,
+                                  "end": 1464,
+                                  "name": "T",
+                                  "decorators": [],
+                                  "optional": false,
+                                  "typeAnnotation": null
+                                },
+                                "typeArguments": null
+                              }
+                            }
+                          },
+                          "computed": false,
+                          "static": false,
+                          "typeAnnotation": null,
+                          "declare": false,
+                          "override": false,
+                          "optional": false,
+                          "definite": false,
+                          "readonly": false,
+                          "accessibility": null
+                        }
+                      ]
+                    },
+                    "typeParameters": null,
+                    "superTypeArguments": null,
+                    "implements": [],
+                    "abstract": false,
+                    "declare": false
+                  },
+                  "operator": "="
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1476,
+                "end": 1490,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1476,
+                    "end": 1481,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1485,
+                  "end": 1490,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1493,
+        "end": 1550,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1499,
+            "end": 1549,
+            "id": {
+              "type": "Identifier",
+              "start": 1499,
+              "end": 1509,
+              "name": "badPattern",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1512,
+              "end": 1549,
+              "test": {
+                "type": "Identifier",
+                "start": 1512,
+                "end": 1516,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1519,
+                "end": 1526,
+                "expression": {
+                  "type": "ArrayExpression",
+                  "start": 1520,
+                  "end": 1525,
+                  "elements": [
+                    {
+                      "type": "ParenthesizedExpression",
+                      "start": 1521,
+                      "end": 1524,
+                      "expression": {
+                        "type": "Identifier",
+                        "start": 1522,
+                        "end": 1523,
+                        "name": "x",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      }
+                    }
+                  ]
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1529,
+                "end": 1549,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1529,
+                    "end": 1534,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "ArrowFunctionExpression",
+                  "start": 1538,
+                  "end": 1549,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 1539,
+                      "end": 1540,
+                      "name": "y",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    }
+                  ],
+                  "body": {
+                    "type": "Identifier",
+                    "start": 1548,
+                    "end": 1549,
+                    "name": "y",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "expression": true,
+                  "typeParameters": null,
+                  "returnType": {
+                    "type": "TSTypeAnnotation",
+                    "start": 1541,
+                    "end": 1544,
+                    "typeAnnotation": {
+                      "type": "TSTypeReference",
+                      "start": 1543,
+                      "end": 1544,
+                      "typeName": {
+                        "type": "Identifier",
+                        "start": 1543,
+                        "end": 1544,
+                        "name": "T",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "typeArguments": null
+                    }
+                  }
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1551,
+        "end": 1615,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1557,
+            "end": 1614,
+            "id": {
+              "type": "Identifier",
+              "start": 1557,
+              "end": 1572,
+              "name": "badPatternTyped",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1575,
+              "end": 1614,
+              "test": {
+                "type": "Identifier",
+                "start": 1575,
+                "end": 1579,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1582,
+                "end": 1597,
+                "expression": {
+                  "type": "ArrayExpression",
+                  "start": 1583,
+                  "end": 1596,
+                  "elements": [
+                    {
+                      "type": "ArrowFunctionExpression",
+                      "start": 1584,
+                      "end": 1595,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [
+                        {
+                          "type": "Identifier",
+                          "start": 1585,
+                          "end": 1586,
+                          "name": "x",
+                          "decorators": [],
+                          "typeAnnotation": null,
+                          "optional": false
+                        }
+                      ],
+                      "body": {
+                        "type": "Identifier",
+                        "start": 1594,
+                        "end": 1595,
+                        "name": "x",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "expression": true,
+                      "typeParameters": null,
+                      "returnType": {
+                        "type": "TSTypeAnnotation",
+                        "start": 1587,
+                        "end": 1590,
+                        "typeAnnotation": {
+                          "type": "TSTypeReference",
+                          "start": 1589,
+                          "end": 1590,
+                          "typeName": {
+                            "type": "Identifier",
+                            "start": 1589,
+                            "end": 1590,
+                            "name": "T",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "typeArguments": null
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1600,
+                "end": 1614,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1600,
+                    "end": 1605,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1609,
+                  "end": 1614,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1616,
+        "end": 1680,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1622,
+            "end": 1679,
+            "id": {
+              "type": "Identifier",
+              "start": 1622,
+              "end": 1634,
+              "name": "definiteBody",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1637,
+              "end": 1679,
+              "test": {
+                "type": "Identifier",
+                "start": 1637,
+                "end": 1641,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ArrowFunctionExpression",
+                "start": 1644,
+                "end": 1675,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "ConditionalExpression",
+                  "start": 1650,
+                  "end": 1675,
+                  "test": {
+                    "type": "Identifier",
+                    "start": 1650,
+                    "end": 1655,
+                    "name": "inner",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "consequent": {
+                    "type": "ParenthesizedExpression",
+                    "start": 1658,
+                    "end": 1671,
+                    "expression": {
+                      "type": "ArrowFunctionExpression",
+                      "start": 1659,
+                      "end": 1670,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [
+                        {
+                          "type": "Identifier",
+                          "start": 1660,
+                          "end": 1661,
+                          "name": "x",
+                          "decorators": [],
+                          "typeAnnotation": null,
+                          "optional": false
+                        }
+                      ],
+                      "body": {
+                        "type": "Identifier",
+                        "start": 1669,
+                        "end": 1670,
+                        "name": "x",
+                        "decorators": [],
+                        "optional": false,
+                        "typeAnnotation": null
+                      },
+                      "expression": true,
+                      "typeParameters": null,
+                      "returnType": {
+                        "type": "TSTypeAnnotation",
+                        "start": 1662,
+                        "end": 1665,
+                        "typeAnnotation": {
+                          "type": "TSTypeReference",
+                          "start": 1664,
+                          "end": 1665,
+                          "typeName": {
+                            "type": "Identifier",
+                            "start": 1664,
+                            "end": 1665,
+                            "name": "T",
+                            "decorators": [],
+                            "optional": false,
+                            "typeAnnotation": null
+                          },
+                          "typeArguments": null
+                        }
+                      }
+                    }
+                  },
+                  "alternate": {
+                    "type": "Identifier",
+                    "start": 1674,
+                    "end": 1675,
+                    "name": "y",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  }
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              },
+              "alternate": {
+                "type": "Identifier",
+                "start": 1678,
+                "end": 1679,
+                "name": "z",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1681,
+        "end": 1754,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1687,
+            "end": 1753,
+            "id": {
+              "type": "Identifier",
+              "start": 1687,
+              "end": 1704,
+              "name": "definiteAsyncBody",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1707,
+              "end": 1753,
+              "test": {
+                "type": "Identifier",
+                "start": 1707,
+                "end": 1711,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ParenthesizedExpression",
+                "start": 1714,
+                "end": 1717,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 1715,
+                  "end": 1716,
+                  "name": "x",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                }
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1720,
+                "end": 1753,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1720,
+                    "end": 1721,
+                    "name": "y",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "ConditionalExpression",
+                  "start": 1725,
+                  "end": 1753,
+                  "test": {
+                    "type": "Identifier",
+                    "start": 1725,
+                    "end": 1730,
+                    "name": "inner",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "consequent": {
+                    "type": "Identifier",
+                    "start": 1733,
+                    "end": 1734,
+                    "name": "z",
+                    "decorators": [],
+                    "optional": false,
+                    "typeAnnotation": null
+                  },
+                  "alternate": {
+                    "type": "ArrowFunctionExpression",
+                    "start": 1737,
+                    "end": 1753,
+                    "id": null,
+                    "generator": false,
+                    "async": true,
+                    "params": [],
+                    "body": {
+                      "type": "Identifier",
+                      "start": 1752,
+                      "end": 1753,
+                      "name": "w",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "expression": true,
+                    "typeParameters": null,
+                    "returnType": {
+                      "type": "TSTypeAnnotation",
+                      "start": 1745,
+                      "end": 1748,
+                      "typeAnnotation": {
+                        "type": "TSTypeReference",
+                        "start": 1747,
+                        "end": 1748,
+                        "typeName": {
+                          "type": "Identifier",
+                          "start": 1747,
+                          "end": 1748,
+                          "name": "T",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        },
+                        "typeArguments": null
+                      }
+                    }
+                  }
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
               }
             },
             "definite": false

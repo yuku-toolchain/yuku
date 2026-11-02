@@ -9,6 +9,7 @@ const ParseExpressionOptions = @import("../expressions.zig").ParseExpressionOpti
 
 const generics = @import("types/generics.zig");
 const predicate = @import("types/predicate.zig");
+const Speculation = @import("speculation.zig").Speculation;
 
 pub const ArrowHead = enum { no, yes, maybe };
 
@@ -106,27 +107,25 @@ pub fn tryParseArrow(
     arrow_start: u32,
     options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
-    const head = parser.current_token.span.start;
-    if (parser.ts_rejected_speculations.contains(head)) return null;
+    const speculation: Speculation = .at(parser, .arrow, options);
+    if (speculation.isRejected(parser)) return null;
 
     const cp = parser.checkpoint();
-    const arrow = try parseArrow(parser, is_async, arrow_start, options) orelse {
-        parser.rewind(cp);
-        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), head, {}) catch ast.outOfMemory();
-        return null;
-    };
-
-    // the `:` after an annotated arrow may belong to an enclosing conditional
-    const return_type = parser.tree.data(arrow).arrow_function_expression.return_type;
-    if (!parser.ts_context.allow_arrow_return_type and
-        return_type != .null and
-        parser.current_token.tag != .colon)
-    {
-        parser.rewind(cp);
-        return null;
+    if (try parseArrow(parser, is_async, arrow_start, options)) |arrow| {
+        // the `:` after an annotated arrow may belong to an enclosing conditional
+        const return_type = parser.tree.data(arrow).arrow_function_expression.return_type;
+        if (options.allow_arrow_return_type or
+            return_type == .null or
+            (parser.current_token.tag == .colon and
+                parser.diagnostics.items.len == cp.diagnostics_len))
+        {
+            return arrow;
+        }
     }
 
-    return arrow;
+    parser.rewind(cp);
+    speculation.reject(parser);
+    return null;
 }
 
 // skip the checkpoint when jsx or a type assertion is likelier
