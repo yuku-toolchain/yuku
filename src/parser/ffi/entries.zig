@@ -7,14 +7,17 @@ const transfer = @import("transfer/root.zig");
 const Allocator = std.mem.Allocator;
 const Tree = parser.ast.Tree;
 
-// packed by npm/yuku/core/read.ts and npm/yuku/print/index.ts
+// packed by npm/yuku/core/read.ts, npm/yuku/core/core.ts and npm/yuku/print/index.ts
 const source_type_mask = 0b11;
 const lang_shift = 2;
 const preserve_parens = 1 << 5;
 const semantic_errors = 1 << 6;
 const attach_comments = 1 << 7;
 const tokens = 1 << 8;
+const small_stack = 1 << 9;
 pub const utf16 = 1 << 10;
+
+const small_stack_bytes = 96 * 1024;
 
 const print_strip = 1 << 0;
 const print_minify = 1 << 1;
@@ -25,7 +28,7 @@ const print_comments_shift = 6;
 const print_indent_shift = 9;
 
 pub fn parse(gpa: Allocator, source: []const u8, flags: u32, output: anytype) ![]u8 {
-    var tree = try parser.parse(gpa, source, parseOptions(flags));
+    var tree = try parser.parse(gpa, source, try parseOptions(flags));
     defer tree.deinit();
     if (flags & semantic_errors != 0) try parser.semantic.check(&tree);
 
@@ -40,7 +43,7 @@ pub fn parse(gpa: Allocator, source: []const u8, flags: u32, output: anytype) ![
 }
 
 pub fn analyze(gpa: Allocator, source: []const u8, flags: u32, output: anytype) ![]u8 {
-    var tree = try parser.parse(gpa, source, parseOptions(flags));
+    var tree = try parser.parse(gpa, source, try parseOptions(flags));
     defer tree.deinit();
     const sem = try parser.semantic.analyze(&tree, .{ .check = flags & semantic_errors != 0 });
     return serializeModel(gpa, &tree, &sem, .{ .nodes = true }, output);
@@ -57,7 +60,7 @@ pub fn printTree(
     var tree = try treeOf(gpa, encoded, source, flags);
     defer tree.deinit();
 
-    const result = try parser.codegen.generate(gpa, &tree, try printOptions(options));
+    const result = try parser.codegen.generate(gpa, &tree, try printOptions(options, flags));
     defer result.deinit(gpa);
 
     var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
@@ -73,6 +76,7 @@ pub fn printTree(
 pub fn analyzeTree(gpa: Allocator, encoded: transfer.Encoded, flags: u32, output: anytype) ![]u8 {
     var tree = try treeOf(gpa, encoded, "", flags);
     defer tree.deinit();
+    if (tree.data(tree.root) != .program) return error.InvalidTree;
     const sem = try parser.semantic.analyze(&tree, .{ .check = false });
     return serializeModel(gpa, &tree, &sem, .{ .nodes = false }, output);
 }
@@ -83,7 +87,7 @@ fn treeOf(
     source: []const u8,
     flags: u32,
 ) transfer.Error!Tree {
-    const options = parseOptions(flags);
+    const options = try parseOptions(flags);
     var tree: Tree = .init(gpa, source);
     errdefer tree.deinit();
     tree.lang = options.lang;
@@ -110,27 +114,34 @@ fn serializeModel(
     return out;
 }
 
-fn parseOptions(flags: u32) parser.Options {
+fn stackBytes(flags: u32) usize {
+    return if (flags & small_stack != 0) small_stack_bytes else (parser.Options{}).stack_bytes;
+}
+
+fn parseOptions(flags: u32) error{InvalidTree}!parser.Options {
     return .{
-        .source_type = @fromBackingInt(@truncate(flags & source_type_mask)),
-        .lang = @fromBackingInt(@truncate(flags >> lang_shift)),
+        .source_type = try enumOf(parser.ast.SourceType, flags & source_type_mask),
+        .lang = try enumOf(parser.ast.Lang, (flags >> lang_shift) & 0b111),
         .preserve_parens = flags & preserve_parens != 0,
         .comments = if (flags & attach_comments != 0) .attach else .collect,
         .tokens = flags & tokens != 0,
+        .stack_bytes = stackBytes(flags),
     };
 }
 
-fn printOptions(options: u32) error{InvalidTree}!parser.codegen.Options {
-    const quotes = std.enums.fromInt(parser.codegen.Quotes, (options >> print_quotes_shift) & 0b11);
-    const comments =
-        std.enums.fromInt(parser.codegen.Comments, (options >> print_comments_shift) & 0b111);
+fn enumOf(comptime E: type, value: u32) error{InvalidTree}!E {
+    return std.enums.fromInt(E, value) orelse error.InvalidTree;
+}
+
+fn printOptions(options: u32, flags: u32) error{InvalidTree}!parser.codegen.Options {
     return .{
         .strip = options & print_strip != 0,
         .minify = options & print_minify != 0,
         .format = if (options & print_compact != 0) .compact else .pretty,
         .indent = @truncate(options >> print_indent_shift),
-        .quotes = quotes orelse return error.InvalidTree,
-        .comments = comments orelse return error.InvalidTree,
+        .quotes = try enumOf(parser.codegen.Quotes, (options >> print_quotes_shift) & 0b11),
+        .comments = try enumOf(parser.codegen.Comments, (options >> print_comments_shift) & 0b111),
         .source_map = if (options & print_source_map != 0) .{} else null,
+        .stack_bytes = stackBytes(flags),
     };
 }

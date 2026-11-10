@@ -44,8 +44,7 @@ pub fn stripUnderscores(raw: []const u8, buf: []u8) ?[]const u8 {
 
 /// Digits without a trailing zero, already the shortest spelling.
 pub fn isMinimalInteger(raw: []const u8) bool {
-    std.debug.assert(raw.len > 0);
-    if (raw[raw.len - 1] == '0') return false;
+    if (raw.len == 0 or raw[raw.len - 1] == '0') return false;
     for (raw) |c| if (!std.ascii.isDigit(c)) return false;
     return true;
 }

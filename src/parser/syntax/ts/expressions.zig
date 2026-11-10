@@ -114,7 +114,7 @@ pub fn tryParseTypeArgumentsInExpression(parser: *Parser, call_only: bool) Error
         canFollowTypeArgumentsInExpression(parser.current_token);
     if (args == .null or !follows) {
         parser.rewind(cp);
-        speculation.reject(parser);
+        try speculation.reject(parser);
         return .null;
     }
 

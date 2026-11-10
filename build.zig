@@ -305,5 +305,6 @@ fn addWasmFrom(b: *std.Build, yuku: *std.Build, name: []const u8) *std.Build.Ste
     }) });
     wasm.entry = .disabled;
     wasm.rdynamic = true;
+    wasm.stack_size = 4 * 1024 * 1024;
     return wasm;
 }

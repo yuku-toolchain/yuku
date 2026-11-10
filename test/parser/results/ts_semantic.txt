@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       283/283 (100.00%)
+Passed:       284/284 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -1717,6 +1717,14 @@ error: Cannot redeclare block-scoped variable 'e0'
    |
    = help: Rename or remove this declaration of 'e0'
 
+
+✓ test/parser/suite/ts/semantic/8c4f33f7677b7e89.module.ts
+error: Cannot export 'a' because it is not declared in this module
+   |
+ 1 | export { a };
+   |          ^
+ 2 | declare module "m" {
+   |
 
 ✓ test/parser/suite/ts/semantic/8c9413701f93fb14.ts
 error: 'let' is not allowed to be used as a name in 'let' or 'const' declarations

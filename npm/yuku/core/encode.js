@@ -25,19 +25,19 @@ const MAPPED_MODIFIERS = { none: 0, true: 1, plus: 2, minus: 3 };
 const COMMENT_WORDS = 6;
 const COMMENT_POSITIONS = { __proto__: null, before: 0, after: 1, inside: 2 };
 const LEGACY_OCTAL = /^0[0-7]+$/;
-const NODES_MIN = 4096, RETAINED_MAX = 1 << 24;
+const NODES_MIN = 4096, RETAINED_MAX = 1 << 24, RECURSION_MAX = 256, REVISITS_MAX = 1 << 16, STARTED = -1, PENDING = -2;
 let _u32 = new Int32Array(NODES_MIN * WORDS), _count = 0;
 let _extras = new Int32Array(NODES_MIN), _extrasLen = 0, _last = 0;
 let _units = new Uint16Array(NODES_MIN * 8), _poolLen = 0;
 let _comments = new Int32Array(64 * COMMENT_WORDS), _commentsLen = 0;
-let _objects = null, _ts = false;
+let _objects = null, _ts = false, _deep = null, _done = null, _revisits = 0;
 function encode(root, ts, keep) {
   _count = 0; _extrasLen = 0; _poolLen = 0; _commentsLen = 0;
   _objects = keep ? [] : null;
   _ts = ts;
   try {
     if (root === null || typeof root !== "object") _unknown(root);
-    _node(root, ANY);
+    _root(root);
     const nodes = _u32.subarray(0, _count * WORDS);
     const extras = _extras.subarray(0, _extrasLen);
     const comments = _comments.subarray(0, _commentsLen * COMMENT_WORDS);
@@ -51,11 +51,39 @@ function encode(root, ts, keep) {
       objects: _objects,
     };
   } finally {
-    _objects = null;
+    _objects = null; _deep = null; _done = null;
     if (_u32.length > RETAINED_MAX) _u32 = new Int32Array(NODES_MIN * WORDS);
     if (_extras.length > RETAINED_MAX) _extras = new Int32Array(NODES_MIN);
     if (_units.length > RETAINED_MAX) _units = new Uint16Array(NODES_MIN * 8);
   }
+}
+function _root(root) {
+  _done = new Map();
+  const stack = [root, ANY];
+  while (stack.length > 0) {
+    const ctx = stack[stack.length - 1], n = stack[stack.length - 2];
+    if (_done.get(n) >= 0) { stack.length -= 2; continue; }
+    _done.set(n, STARTED);
+    const count = _count, extras = _extrasLen, pool = _poolLen, comments = _commentsLen;
+    _deep = []; _revisits = 0;
+    const index = _node(n, ctx, 0);
+    if (_deep.length === 0) { _done.set(n, index); stack.length -= 2; continue; }
+    _count = count; _extrasLen = extras; _poolLen = pool; _commentsLen = comments;
+    for (const item of _deep) stack.push(item);
+  }
+}
+function _spill(n, ctx) {
+  const index = _done.get(n);
+  if (index === undefined) {
+    _done.set(n, PENDING);
+    _deep.push(n, ctx);
+    return 0;
+  }
+  if (index >= 0) return index;
+  if (index === STARTED || ++_revisits > REVISITS_MAX) {
+    throw new TypeError("A node cannot contain itself");
+  }
+  return 0;
 }
 function _grow(array, needed) {
   const grown = new array.constructor(Math.max(array.length * 2, needed));
@@ -104,38 +132,38 @@ function _items(list, count, n, key) {
   if (!Array.isArray(list)) _wrong(n, key, list);
   return count < 0 ? list.length : count;
 }
-function _list(list, ctx, count, mask, n, key) {
+function _list(list, ctx, count, mask, n, key, d) {
   const len = _items(list, count, n, key), start = _reserve(len);
   for (let k = 0; k < len; k++) {
     const item = list[k];
     if (item === null || typeof item !== "object") _wrong(n, key, item);
-    const index = _node(item, ctx);
+    const index = _node(item, ctx, d + 1);
     if (mask !== null && mask[_u32[index * WORDS] & 255] === 0) _wrong(n, key, item);
     _extras[start + k] = index;
   }
   _last = len;
   return start;
 }
-function _holes(list, ctx, count, n, key) {
+function _holes(list, ctx, count, n, key, d) {
   const len = _items(list, count, n, key), start = _reserve(len);
   for (let k = 0; k < len; k++) {
     const item = list[k];
     let index = -1;
     if (item !== null && item !== undefined) {
       if (typeof item !== "object") _wrong(n, key, item);
-      index = _node(item, ctx);
+      index = _node(item, ctx, d + 1);
     }
     _extras[start + k] = index;
   }
   _last = len;
   return start;
 }
-function _listOf(list, type, write, ctx, count, n, key) {
+function _listOf(list, type, write, ctx, count, n, key, d) {
   const len = _items(list, count, n, key), start = _reserve(len);
   for (let k = 0; k < len; k++) {
     const item = list[k];
     if (item === null || item === undefined || item.type !== type) _wrong(n, key, item);
-    const index = write(item, ctx);
+    const index = write(item, ctx, d);
     _extras[start + k] = index;
   }
   _last = len;
@@ -152,7 +180,7 @@ function _restOf(list) {
   if (last === null || typeof last !== "object") return null;
   return last.type === "RestElement" ? last : null;
 }
-function _params(list, kind, n) {
+function _params(list, kind, n, d) {
   const rest = _restOf(list);
   const len = _items(list, rest === null ? -1 : list.length - 1, n, "params");
   const start = _reserve(len);
@@ -161,10 +189,10 @@ function _params(list, kind, n) {
     if (p === null || typeof p !== "object") _wrong(n, "params", p);
     let index;
     if (p.type === "TSParameterProperty") {
-      index = _TSParameterProperty(p, BINDING);
+      index = _TSParameterProperty(p, BINDING, d);
     } else {
       const pattern = p.type === "Identifier" && p.name === "this"
-        ? _TSThisParameter(p, BINDING) : _node(p, BINDING);
+        ? _TSThisParameter(p, BINDING, d) : _node(p, BINDING, d + 1);
       index = _writeFormalParameter(pattern);
       const b = index * WORDS, from = pattern * WORDS;
       _u32[b + 10] = _u32[from + 10];
@@ -172,7 +200,7 @@ function _params(list, kind, n) {
     }
     _extras[start + k] = index;
   }
-  const restIndex = rest === null ? -1 : _BindingRestElement(rest, BINDING);
+  const restIndex = rest === null ? -1 : _BindingRestElement(rest, BINDING, d);
   const i = _writeFormalParameters(start, len, restIndex, kind), b = i * WORDS;
   _u32[b + 10] = 0;
   _u32[b + 11] = 0;
@@ -266,13 +294,14 @@ function _missing(n, key) {
   throw new TypeError(`\`${n.type}.${key}\` must be a node`);
 }
 function _wrong(n, key, v) {
+  if (_deep.length > 0) return 0;
   throw new TypeError(`\`${n.type}.${key}\` cannot be ${_describe(v)}`);
 }
 function _unknown(n) {
   throw new TypeError(`${_describe(n)} is not a node`);
 }
-function _SequenceExpression(n, ctx) {
-  const f0 = _list(n.expressions, ANY, -1, null, n, "expressions"), l0 = _last;
+function _SequenceExpression(n, ctx, d) {
+  const f0 = _list(n.expressions, ANY, -1, null, n, "expressions", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -285,10 +314,10 @@ function _SequenceExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ParenthesizedExpression(n, ctx) {
+function _ParenthesizedExpression(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -301,17 +330,17 @@ function _ParenthesizedExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ArrowFunctionExpression(n, ctx) {
+function _ArrowFunctionExpression(n, ctx, d) {
   const v2 = n.typeParameters;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v2, ANY) : _wrong(n, "typeParameters", v2);
-  const f3 = _params(n.params, PARAMETER_KINDS.arrow_formal_parameters, n);
+    : (v2.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v2, ANY, d) : _wrong(n, "typeParameters", v2);
+  const f3 = _params(n.params, PARAMETER_KINDS.arrow_formal_parameters, n, d);
   const v4 = n.returnType;
   const f4 = v4 == null ? -1
-    : (v4.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v4, ANY) : _wrong(n, "returnType", v4);
+    : (v4.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v4, ANY, d) : _wrong(n, "returnType", v4);
   const v5 = n.body;
   const f5 = v5 == null ? _missing(n, "body")
-    : typeof v5 === "object" ? _node(v5, BODY) : _wrong(n, "body", v5);
+    : typeof v5 === "object" ? _node(v5, BODY, d + 1) : _wrong(n, "body", v5);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -327,20 +356,20 @@ function _ArrowFunctionExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _Function(n, ctx) {
+function _Function(n, ctx, d) {
   const v1 = n.id;
   const f1 = v1 == null ? -1
-    : (v1.type === "Identifier") ? _BindingIdentifier(v1, BINDING) : _wrong(n, "id", v1);
+    : (v1.type === "Identifier") ? _BindingIdentifier(v1, BINDING, d) : _wrong(n, "id", v1);
   const v2 = n.typeParameters;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v2, ANY) : _wrong(n, "typeParameters", v2);
-  const f3 = _params(n.params, ctx === METHOD ? PARAMETER_KINDS.unique_formal_parameters : PARAMETER_KINDS.formal_parameters, n);
+    : (v2.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v2, ANY, d) : _wrong(n, "typeParameters", v2);
+  const f3 = _params(n.params, ctx === METHOD ? PARAMETER_KINDS.unique_formal_parameters : PARAMETER_KINDS.formal_parameters, n, d);
   const v4 = n.returnType;
   const f4 = v4 == null ? -1
-    : (v4.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v4, ANY) : _wrong(n, "returnType", v4);
+    : (v4.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v4, ANY, d) : _wrong(n, "returnType", v4);
   const v5 = n.body;
   const f5 = v5 == null ? -1
-    : (v5.type === "BlockStatement") ? _FunctionBody(v5, BODY) : _wrong(n, "body", v5);
+    : (v5.type === "BlockStatement") ? _FunctionBody(v5, BODY, d) : _wrong(n, "body", v5);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -357,8 +386,8 @@ function _Function(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _FunctionBody(n, ctx) {
-  const f0 = _list(n.body, ANY, -1, null, n, "body"), l0 = _last;
+function _FunctionBody(n, ctx, d) {
+  const f0 = _list(n.body, ANY, -1, null, n, "body", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -371,8 +400,8 @@ function _FunctionBody(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BlockStatement(n, ctx) {
-  const f0 = _list(n.body, ANY, -1, null, n, "body"), l0 = _last;
+function _BlockStatement(n, ctx, d) {
+  const f0 = _list(n.body, ANY, -1, null, n, "body", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -402,13 +431,13 @@ function _writeFormalParameter(pattern) {
   u[b + 1] = pattern;
   return i;
 }
-function _BinaryExpression(n, ctx) {
+function _BinaryExpression(n, ctx, d) {
   const v0 = n.left;
   const f0 = v0 == null ? _missing(n, "left")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "left", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "left", v0);
   const v1 = n.right;
   const f1 = v1 == null ? _missing(n, "right")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "right", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "right", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -422,13 +451,13 @@ function _BinaryExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _LogicalExpression(n, ctx) {
+function _LogicalExpression(n, ctx, d) {
   const v0 = n.left;
   const f0 = v0 == null ? _missing(n, "left")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "left", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "left", v0);
   const v1 = n.right;
   const f1 = v1 == null ? _missing(n, "right")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "right", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "right", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -442,16 +471,16 @@ function _LogicalExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ConditionalExpression(n, ctx) {
+function _ConditionalExpression(n, ctx, d) {
   const v0 = n.test;
   const f0 = v0 == null ? _missing(n, "test")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "test", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "test", v0);
   const v1 = n.consequent;
   const f1 = v1 == null ? _missing(n, "consequent")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "consequent", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "consequent", v1);
   const v2 = n.alternate;
   const f2 = v2 == null ? _missing(n, "alternate")
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "alternate", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "alternate", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -466,10 +495,10 @@ function _ConditionalExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _UnaryExpression(n, ctx) {
+function _UnaryExpression(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? _missing(n, "argument")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -482,10 +511,10 @@ function _UnaryExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _UpdateExpression(n, ctx) {
+function _UpdateExpression(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? _missing(n, "argument")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -498,13 +527,13 @@ function _UpdateExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _AssignmentExpression(n, ctx) {
+function _AssignmentExpression(n, ctx, d) {
   const v0 = n.left;
   const f0 = v0 == null ? _missing(n, "left")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "left", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "left", v0);
   const v1 = n.right;
   const f1 = v1 == null ? _missing(n, "right")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "right", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "right", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -518,8 +547,8 @@ function _AssignmentExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ArrayExpression(n, ctx) {
-  const f0 = _holes(n.elements, ANY, -1, n, "elements"), l0 = _last;
+function _ArrayExpression(n, ctx, d) {
+  const f0 = _holes(n.elements, ANY, -1, n, "elements", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -532,8 +561,8 @@ function _ArrayExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ObjectExpression(n, ctx) {
-  const f0 = _list(n.properties, ANY, -1, MASK_17_16, n, "properties"), l0 = _last;
+function _ObjectExpression(n, ctx, d) {
+  const f0 = _list(n.properties, ANY, -1, MASK_17_16, n, "properties", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -546,10 +575,10 @@ function _ObjectExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _SpreadElement(n, ctx) {
+function _SpreadElement(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? _missing(n, "argument")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -562,13 +591,13 @@ function _SpreadElement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ObjectProperty(n, ctx) {
+function _ObjectProperty(n, ctx, d) {
   const v0 = n.key;
   const f0 = v0 == null ? _missing(n, "key")
-    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME) : _wrong(n, "key", v0);
+    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "key", v0);
   const v1 = n.value;
   const f1 = v1 == null ? _missing(n, "value")
-    : typeof v1 === "object" ? _node(v1, n.method === true || n.kind === "get" || n.kind === "set" ? METHOD : ANY) : _wrong(n, "value", v1);
+    : typeof v1 === "object" ? _node(v1, n.method === true || n.kind === "get" || n.kind === "set" ? METHOD : ANY, d + 1) : _wrong(n, "value", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -582,13 +611,13 @@ function _ObjectProperty(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _MemberExpression(n, ctx) {
+function _MemberExpression(n, ctx, d) {
   const v0 = n.object;
   const f0 = v0 == null ? _missing(n, "object")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "object", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "object", v0);
   const v1 = n.property;
   const f1 = v1 == null ? _missing(n, "property")
-    : typeof v1 === "object" ? _node(v1, n.computed === true ? ANY : NAME) : _wrong(n, "property", v1);
+    : typeof v1 === "object" ? _node(v1, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "property", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -602,14 +631,14 @@ function _MemberExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _CallExpression(n, ctx) {
+function _CallExpression(n, ctx, d) {
   const v0 = n.callee;
   const f0 = v0 == null ? _missing(n, "callee")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "callee", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "callee", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
-  const f2 = _list(n.arguments, ANY, -1, null, n, "arguments"), l2 = _last;
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
+  const f2 = _list(n.arguments, ANY, -1, null, n, "arguments", d), l2 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -624,10 +653,10 @@ function _CallExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ChainExpression(n, ctx) {
+function _ChainExpression(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   if (f0 >= 0 && MASK_18_19_150[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -641,16 +670,16 @@ function _ChainExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TaggedTemplateExpression(n, ctx) {
+function _TaggedTemplateExpression(n, ctx, d) {
   const v0 = n.tag;
   const f0 = v0 == null ? _missing(n, "tag")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "tag", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "tag", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
   const v2 = n.quasi;
   const f2 = v2 == null ? _missing(n, "quasi")
-    : (v2.type === "TemplateLiteral") ? _TemplateLiteral(v2, ANY) : _wrong(n, "quasi", v2);
+    : (v2.type === "TemplateLiteral") ? _TemplateLiteral(v2, ANY, d) : _wrong(n, "quasi", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -665,14 +694,14 @@ function _TaggedTemplateExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _NewExpression(n, ctx) {
+function _NewExpression(n, ctx, d) {
   const v0 = n.callee;
   const f0 = v0 == null ? _missing(n, "callee")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "callee", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "callee", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
-  const f2 = _list(n.arguments, ANY, -1, null, n, "arguments"), l2 = _last;
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
+  const f2 = _list(n.arguments, ANY, -1, null, n, "arguments", d), l2 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -687,10 +716,10 @@ function _NewExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _AwaitExpression(n, ctx) {
+function _AwaitExpression(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? _missing(n, "argument")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -703,10 +732,10 @@ function _AwaitExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _YieldExpression(n, ctx) {
+function _YieldExpression(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -719,13 +748,13 @@ function _YieldExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _MetaProperty(n, ctx) {
+function _MetaProperty(n, ctx, d) {
   const v0 = n.meta;
   const f0 = v0 == null ? _missing(n, "meta")
-    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME) : _wrong(n, "meta", v0);
+    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME, d) : _wrong(n, "meta", v0);
   const v1 = n.property;
   const f1 = v1 == null ? _missing(n, "property")
-    : (v1.type === "Identifier") ? _IdentifierName(v1, NAME) : _wrong(n, "property", v1);
+    : (v1.type === "Identifier") ? _IdentifierName(v1, NAME, d) : _wrong(n, "property", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -739,10 +768,10 @@ function _MetaProperty(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _Decorator(n, ctx) {
+function _Decorator(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -755,24 +784,24 @@ function _Decorator(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _Class(n, ctx) {
-  const f1 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l1 = _last;
+function _Class(n, ctx, d) {
+  const f1 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l1 = _last;
   const v2 = n.id;
   const f2 = v2 == null ? -1
-    : (v2.type === "Identifier") ? _BindingIdentifier(v2, BINDING) : _wrong(n, "id", v2);
+    : (v2.type === "Identifier") ? _BindingIdentifier(v2, BINDING, d) : _wrong(n, "id", v2);
   const v3 = n.typeParameters;
   const f3 = v3 == null ? -1
-    : (v3.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v3, ANY) : _wrong(n, "typeParameters", v3);
+    : (v3.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v3, ANY, d) : _wrong(n, "typeParameters", v3);
   const v4 = n.superClass;
   const f4 = v4 == null ? -1
-    : typeof v4 === "object" ? _node(v4, ANY) : _wrong(n, "superClass", v4);
+    : typeof v4 === "object" ? _node(v4, ANY, d + 1) : _wrong(n, "superClass", v4);
   const v5 = n.superTypeArguments;
   const f5 = v5 == null ? -1
-    : (v5.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v5, ANY) : _wrong(n, "superTypeArguments", v5);
-  const f6 = _listOf(n.implements, "TSClassImplements", _TSClassImplements, ANY, -1, n, "implements"), l6 = _last;
+    : (v5.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v5, ANY, d) : _wrong(n, "superTypeArguments", v5);
+  const f6 = _listOf(n.implements, "TSClassImplements", _TSClassImplements, ANY, -1, n, "implements", d), l6 = _last;
   const v7 = n.body;
   const f7 = v7 == null ? _missing(n, "body")
-    : (v7.type === "ClassBody") ? _ClassBody(v7, ANY) : _wrong(n, "body", v7);
+    : (v7.type === "ClassBody") ? _ClassBody(v7, ANY, d) : _wrong(n, "body", v7);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -791,8 +820,8 @@ function _Class(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ClassBody(n, ctx) {
-  const f0 = _list(n.body, ANY, -1, MASK_29_30_31_133, n, "body"), l0 = _last;
+function _ClassBody(n, ctx, d) {
+  const f0 = _list(n.body, ANY, -1, MASK_29_30_31_133, n, "body", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -805,14 +834,14 @@ function _ClassBody(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _MethodDefinition(n, ctx) {
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
+function _MethodDefinition(n, ctx, d) {
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
   const v1 = n.key;
   const f1 = v1 == null ? _missing(n, "key")
-    : typeof v1 === "object" ? _node(v1, n.computed === true ? ANY : NAME) : _wrong(n, "key", v1);
+    : typeof v1 === "object" ? _node(v1, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "key", v1);
   const v2 = n.value;
   const f2 = v2 == null ? _missing(n, "value")
-    : (v2.type === "FunctionDeclaration" || v2.type === "FunctionExpression" || v2.type === "TSDeclareFunction" || v2.type === "TSEmptyBodyFunctionExpression") ? _Function(v2, METHOD) : _wrong(n, "value", v2);
+    : (v2.type === "FunctionDeclaration" || v2.type === "FunctionExpression" || v2.type === "TSDeclareFunction" || v2.type === "TSEmptyBodyFunctionExpression") ? _Function(v2, METHOD, d) : _wrong(n, "value", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -827,17 +856,17 @@ function _MethodDefinition(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _PropertyDefinition(n, ctx) {
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
+function _PropertyDefinition(n, ctx, d) {
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
   const v1 = n.key;
   const f1 = v1 == null ? _missing(n, "key")
-    : typeof v1 === "object" ? _node(v1, n.computed === true ? ANY : NAME) : _wrong(n, "key", v1);
+    : typeof v1 === "object" ? _node(v1, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "key", v1);
   const v2 = n.typeAnnotation;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "typeAnnotation", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "typeAnnotation", v2);
   const v3 = n.value;
   const f3 = v3 == null ? -1
-    : typeof v3 === "object" ? _node(v3, ANY) : _wrong(n, "value", v3);
+    : typeof v3 === "object" ? _node(v3, ANY, d + 1) : _wrong(n, "value", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -853,8 +882,8 @@ function _PropertyDefinition(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _StaticBlock(n, ctx) {
-  const f0 = _list(n.body, ANY, -1, null, n, "body"), l0 = _last;
+function _StaticBlock(n, ctx, d) {
+  const f0 = _list(n.body, ANY, -1, null, n, "body", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -867,7 +896,7 @@ function _StaticBlock(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _Super(n, ctx) {
+function _Super(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -879,7 +908,7 @@ function _Super(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _StringLiteral(n, ctx) {
+function _StringLiteral(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -897,7 +926,7 @@ function _StringLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _NumericLiteral(n, ctx) {
+function _NumericLiteral(n, ctx, d) {
   const raw = _numericRaw(n);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -913,7 +942,7 @@ function _NumericLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BigintLiteral(n, ctx) {
+function _BigintLiteral(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -928,7 +957,7 @@ function _BigintLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BooleanLiteral(n, ctx) {
+function _BooleanLiteral(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -940,7 +969,7 @@ function _BooleanLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _NullLiteral(n, ctx) {
+function _NullLiteral(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -952,7 +981,7 @@ function _NullLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ThisExpression(n, ctx) {
+function _ThisExpression(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -964,7 +993,7 @@ function _ThisExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _RegexpLiteral(n, ctx) {
+function _RegexpLiteral(n, ctx, d) {
   const regex = _object(n, "regex");
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -983,9 +1012,9 @@ function _RegexpLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TemplateLiteral(n, ctx) {
-  const f0 = _listOf(n.quasis, "TemplateElement", _TemplateElement, ANY, -1, n, "quasis"), l0 = _last;
-  const f1 = _list(n.expressions, ANY, -1, null, n, "expressions"), l1 = _last;
+function _TemplateLiteral(n, ctx, d) {
+  const f0 = _listOf(n.quasis, "TemplateElement", _TemplateElement, ANY, -1, n, "quasis", d), l0 = _last;
+  const f1 = _list(n.expressions, ANY, -1, null, n, "expressions", d), l1 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -999,7 +1028,7 @@ function _TemplateLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TemplateElement(n, ctx) {
+function _TemplateElement(n, ctx, d) {
   const value = _object(n, "value");
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -1019,7 +1048,7 @@ function _TemplateElement(n, ctx) {
   if (_ts) _templateSpan(u, b, n.tail === true);
   return i;
 }
-function _IdentifierReference(n, ctx) {
+function _IdentifierReference(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1034,7 +1063,7 @@ function _IdentifierReference(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _PrivateIdentifier(n, ctx) {
+function _PrivateIdentifier(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1049,11 +1078,11 @@ function _PrivateIdentifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BindingIdentifier(n, ctx) {
-  const f1 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l1 = _last;
+function _BindingIdentifier(n, ctx, d) {
+  const f1 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l1 = _last;
   const v2 = n.typeAnnotation;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "typeAnnotation", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "typeAnnotation", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1070,7 +1099,7 @@ function _BindingIdentifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _IdentifierName(n, ctx) {
+function _IdentifierName(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1085,7 +1114,7 @@ function _IdentifierName(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _LabelIdentifier(n, ctx) {
+function _LabelIdentifier(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1100,10 +1129,10 @@ function _LabelIdentifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ExpressionStatement(n, ctx) {
+function _ExpressionStatement(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1116,16 +1145,16 @@ function _ExpressionStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _IfStatement(n, ctx) {
+function _IfStatement(n, ctx, d) {
   const v0 = n.test;
   const f0 = v0 == null ? _missing(n, "test")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "test", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "test", v0);
   const v1 = n.consequent;
   const f1 = v1 == null ? _missing(n, "consequent")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "consequent", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "consequent", v1);
   const v2 = n.alternate;
   const f2 = v2 == null ? -1
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "alternate", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "alternate", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1140,11 +1169,11 @@ function _IfStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _SwitchStatement(n, ctx) {
+function _SwitchStatement(n, ctx, d) {
   const v0 = n.discriminant;
   const f0 = v0 == null ? _missing(n, "discriminant")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "discriminant", v0);
-  const f1 = _listOf(n.cases, "SwitchCase", _SwitchCase, ANY, -1, n, "cases"), l1 = _last;
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "discriminant", v0);
+  const f1 = _listOf(n.cases, "SwitchCase", _SwitchCase, ANY, -1, n, "cases", d), l1 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1158,11 +1187,11 @@ function _SwitchStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _SwitchCase(n, ctx) {
+function _SwitchCase(n, ctx, d) {
   const v0 = n.test;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "test", v0);
-  const f1 = _list(n.consequent, ANY, -1, null, n, "consequent"), l1 = _last;
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "test", v0);
+  const f1 = _list(n.consequent, ANY, -1, null, n, "consequent", d), l1 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1176,19 +1205,19 @@ function _SwitchCase(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ForStatement(n, ctx) {
+function _ForStatement(n, ctx, d) {
   const v0 = n.init;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "init", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "init", v0);
   const v1 = n.test;
   const f1 = v1 == null ? -1
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "test", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "test", v1);
   const v2 = n.update;
   const f2 = v2 == null ? -1
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "update", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "update", v2);
   const v3 = n.body;
   const f3 = v3 == null ? _missing(n, "body")
-    : typeof v3 === "object" ? _node(v3, ANY) : _wrong(n, "body", v3);
+    : typeof v3 === "object" ? _node(v3, ANY, d + 1) : _wrong(n, "body", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1204,16 +1233,16 @@ function _ForStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ForInStatement(n, ctx) {
+function _ForInStatement(n, ctx, d) {
   const v0 = n.left;
   const f0 = v0 == null ? _missing(n, "left")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "left", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "left", v0);
   const v1 = n.right;
   const f1 = v1 == null ? _missing(n, "right")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "right", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "right", v1);
   const v2 = n.body;
   const f2 = v2 == null ? _missing(n, "body")
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "body", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "body", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1228,16 +1257,16 @@ function _ForInStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ForOfStatement(n, ctx) {
+function _ForOfStatement(n, ctx, d) {
   const v0 = n.left;
   const f0 = v0 == null ? _missing(n, "left")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "left", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "left", v0);
   const v1 = n.right;
   const f1 = v1 == null ? _missing(n, "right")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "right", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "right", v1);
   const v2 = n.body;
   const f2 = v2 == null ? _missing(n, "body")
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "body", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "body", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1252,13 +1281,13 @@ function _ForOfStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _WhileStatement(n, ctx) {
+function _WhileStatement(n, ctx, d) {
   const v0 = n.test;
   const f0 = v0 == null ? _missing(n, "test")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "test", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "test", v0);
   const v1 = n.body;
   const f1 = v1 == null ? _missing(n, "body")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "body", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1272,13 +1301,13 @@ function _WhileStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _DoWhileStatement(n, ctx) {
+function _DoWhileStatement(n, ctx, d) {
   const v0 = n.body;
   const f0 = v0 == null ? _missing(n, "body")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "body", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "body", v0);
   const v1 = n.test;
   const f1 = v1 == null ? _missing(n, "test")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "test", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "test", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1292,10 +1321,10 @@ function _DoWhileStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BreakStatement(n, ctx) {
+function _BreakStatement(n, ctx, d) {
   const v0 = n.label;
   const f0 = v0 == null ? -1
-    : (v0.type === "Identifier") ? _LabelIdentifier(v0, LABEL) : _wrong(n, "label", v0);
+    : (v0.type === "Identifier") ? _LabelIdentifier(v0, LABEL, d) : _wrong(n, "label", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1308,10 +1337,10 @@ function _BreakStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ContinueStatement(n, ctx) {
+function _ContinueStatement(n, ctx, d) {
   const v0 = n.label;
   const f0 = v0 == null ? -1
-    : (v0.type === "Identifier") ? _LabelIdentifier(v0, LABEL) : _wrong(n, "label", v0);
+    : (v0.type === "Identifier") ? _LabelIdentifier(v0, LABEL, d) : _wrong(n, "label", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1324,13 +1353,13 @@ function _ContinueStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _LabeledStatement(n, ctx) {
+function _LabeledStatement(n, ctx, d) {
   const v0 = n.label;
   const f0 = v0 == null ? _missing(n, "label")
-    : (v0.type === "Identifier") ? _LabelIdentifier(v0, LABEL) : _wrong(n, "label", v0);
+    : (v0.type === "Identifier") ? _LabelIdentifier(v0, LABEL, d) : _wrong(n, "label", v0);
   const v1 = n.body;
   const f1 = v1 == null ? _missing(n, "body")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "body", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1344,13 +1373,13 @@ function _LabeledStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _WithStatement(n, ctx) {
+function _WithStatement(n, ctx, d) {
   const v0 = n.object;
   const f0 = v0 == null ? _missing(n, "object")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "object", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "object", v0);
   const v1 = n.body;
   const f1 = v1 == null ? _missing(n, "body")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "body", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1364,10 +1393,10 @@ function _WithStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ReturnStatement(n, ctx) {
+function _ReturnStatement(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1380,10 +1409,10 @@ function _ReturnStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ThrowStatement(n, ctx) {
+function _ThrowStatement(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? _missing(n, "argument")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1396,16 +1425,16 @@ function _ThrowStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TryStatement(n, ctx) {
+function _TryStatement(n, ctx, d) {
   const v0 = n.block;
   const f0 = v0 == null ? _missing(n, "block")
-    : (v0.type === "BlockStatement") ? _BlockStatement(v0, ANY) : _wrong(n, "block", v0);
+    : (v0.type === "BlockStatement") ? _BlockStatement(v0, ANY, d) : _wrong(n, "block", v0);
   const v1 = n.handler;
   const f1 = v1 == null ? -1
-    : (v1.type === "CatchClause") ? _CatchClause(v1, ANY) : _wrong(n, "handler", v1);
+    : (v1.type === "CatchClause") ? _CatchClause(v1, ANY, d) : _wrong(n, "handler", v1);
   const v2 = n.finalizer;
   const f2 = v2 == null ? -1
-    : (v2.type === "BlockStatement") ? _BlockStatement(v2, ANY) : _wrong(n, "finalizer", v2);
+    : (v2.type === "BlockStatement") ? _BlockStatement(v2, ANY, d) : _wrong(n, "finalizer", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1420,13 +1449,13 @@ function _TryStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _CatchClause(n, ctx) {
+function _CatchClause(n, ctx, d) {
   const v0 = n.param;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, BINDING) : _wrong(n, "param", v0);
+    : typeof v0 === "object" ? _node(v0, BINDING, d + 1) : _wrong(n, "param", v0);
   const v1 = n.body;
   const f1 = v1 == null ? _missing(n, "body")
-    : (v1.type === "BlockStatement") ? _BlockStatement(v1, ANY) : _wrong(n, "body", v1);
+    : (v1.type === "BlockStatement") ? _BlockStatement(v1, ANY, d) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1440,7 +1469,7 @@ function _CatchClause(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _DebuggerStatement(n, ctx) {
+function _DebuggerStatement(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1452,7 +1481,7 @@ function _DebuggerStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _EmptyStatement(n, ctx) {
+function _EmptyStatement(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1464,8 +1493,8 @@ function _EmptyStatement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _VariableDeclaration(n, ctx) {
-  const f1 = _listOf(n.declarations, "VariableDeclarator", _VariableDeclarator, ANY, -1, n, "declarations"), l1 = _last;
+function _VariableDeclaration(n, ctx, d) {
+  const f1 = _listOf(n.declarations, "VariableDeclarator", _VariableDeclarator, ANY, -1, n, "declarations", d), l1 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1478,13 +1507,13 @@ function _VariableDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _VariableDeclarator(n, ctx) {
+function _VariableDeclarator(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : typeof v0 === "object" ? _node(v0, BINDING) : _wrong(n, "id", v0);
+    : typeof v0 === "object" ? _node(v0, BINDING, d + 1) : _wrong(n, "id", v0);
   const v1 = n.init;
   const f1 = v1 == null ? -1
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "init", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "init", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1498,10 +1527,10 @@ function _VariableDeclarator(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _Directive(n, ctx) {
+function _Directive(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : (v0.type === "Literal") ? _StringLiteral(v0, ANY) : _wrong(n, "expression", v0);
+    : (v0.type === "Literal") ? _StringLiteral(v0, ANY, d) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1517,17 +1546,17 @@ function _Directive(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _AssignmentPattern(n, ctx) {
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
+function _AssignmentPattern(n, ctx, d) {
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
   const v1 = n.left;
   const f1 = v1 == null ? _missing(n, "left")
-    : typeof v1 === "object" ? _node(v1, ctx) : _wrong(n, "left", v1);
+    : typeof v1 === "object" ? _node(v1, ctx, d + 1) : _wrong(n, "left", v1);
   const v2 = n.typeAnnotation;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "typeAnnotation", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "typeAnnotation", v2);
   const v3 = n.right;
   const f3 = v3 == null ? _missing(n, "right")
-    : typeof v3 === "object" ? _node(v3, ANY) : _wrong(n, "right", v3);
+    : typeof v3 === "object" ? _node(v3, ANY, d + 1) : _wrong(n, "right", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1543,14 +1572,14 @@ function _AssignmentPattern(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BindingRestElement(n, ctx) {
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
+function _BindingRestElement(n, ctx, d) {
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
   const v1 = n.argument;
   const f1 = v1 == null ? _missing(n, "argument")
-    : typeof v1 === "object" ? _node(v1, ctx) : _wrong(n, "argument", v1);
+    : typeof v1 === "object" ? _node(v1, ctx, d + 1) : _wrong(n, "argument", v1);
   const v2 = n.typeAnnotation;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "typeAnnotation", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "typeAnnotation", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1565,16 +1594,16 @@ function _BindingRestElement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ArrayPattern(n, ctx) {
+function _ArrayPattern(n, ctx, d) {
   const rest = _restOf(n.elements);
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
-  const f1 = _holes(n.elements, ctx, rest === null ? -1 : n.elements.length - 1, n, "elements"), l1 = _last;
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
+  const f1 = _holes(n.elements, ctx, rest === null ? -1 : n.elements.length - 1, n, "elements", d), l1 = _last;
   const v2 = rest;
   const f2 = v2 == null ? -1
-    : (v2.type === "RestElement") ? _BindingRestElement(v2, ctx) : _wrong(n, "rest", v2);
+    : (v2.type === "RestElement") ? _BindingRestElement(v2, ctx, d) : _wrong(n, "rest", v2);
   const v3 = n.typeAnnotation;
   const f3 = v3 == null ? -1
-    : (v3.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v3, ANY) : _wrong(n, "typeAnnotation", v3);
+    : (v3.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v3, ANY, d) : _wrong(n, "typeAnnotation", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1590,16 +1619,16 @@ function _ArrayPattern(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ObjectPattern(n, ctx) {
+function _ObjectPattern(n, ctx, d) {
   const rest = _restOf(n.properties);
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
-  const f1 = _listOf(n.properties, "Property", _BindingProperty, ctx, rest === null ? -1 : n.properties.length - 1, n, "properties"), l1 = _last;
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
+  const f1 = _listOf(n.properties, "Property", _BindingProperty, ctx, rest === null ? -1 : n.properties.length - 1, n, "properties", d), l1 = _last;
   const v2 = rest;
   const f2 = v2 == null ? -1
-    : (v2.type === "RestElement") ? _BindingRestElement(v2, ctx) : _wrong(n, "rest", v2);
+    : (v2.type === "RestElement") ? _BindingRestElement(v2, ctx, d) : _wrong(n, "rest", v2);
   const v3 = n.typeAnnotation;
   const f3 = v3 == null ? -1
-    : (v3.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v3, ANY) : _wrong(n, "typeAnnotation", v3);
+    : (v3.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v3, ANY, d) : _wrong(n, "typeAnnotation", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1615,13 +1644,13 @@ function _ObjectPattern(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _BindingProperty(n, ctx) {
+function _BindingProperty(n, ctx, d) {
   const v0 = n.key;
   const f0 = v0 == null ? _missing(n, "key")
-    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME) : _wrong(n, "key", v0);
+    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "key", v0);
   const v1 = n.value;
   const f1 = v1 == null ? _missing(n, "value")
-    : typeof v1 === "object" ? _node(v1, ctx) : _wrong(n, "value", v1);
+    : typeof v1 === "object" ? _node(v1, ctx, d + 1) : _wrong(n, "value", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1635,8 +1664,8 @@ function _BindingProperty(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _Program(n, ctx) {
-  const f1 = _list(n.body, ANY, -1, null, n, "body"), l1 = _last;
+function _Program(n, ctx, d) {
+  const f1 = _list(n.body, ANY, -1, null, n, "body", d), l1 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1654,13 +1683,13 @@ function _Program(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ImportExpression(n, ctx) {
+function _ImportExpression(n, ctx, d) {
   const v0 = n.source;
   const f0 = v0 == null ? _missing(n, "source")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "source", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "source", v0);
   const v1 = n.options;
   const f1 = v1 == null ? -1
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "options", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "options", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1674,12 +1703,12 @@ function _ImportExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ImportDeclaration(n, ctx) {
-  const f0 = _list(n.specifiers, ANY, -1, MASK_77_78_79, n, "specifiers"), l0 = _last;
+function _ImportDeclaration(n, ctx, d) {
+  const f0 = _list(n.specifiers, ANY, -1, MASK_77_78_79, n, "specifiers", d), l0 = _last;
   const v1 = n.source;
   const f1 = v1 == null ? _missing(n, "source")
-    : (v1.type === "Literal") ? _StringLiteral(v1, ANY) : _wrong(n, "source", v1);
-  const f2 = _listOf(n.attributes, "ImportAttribute", _ImportAttribute, ANY, -1, n, "attributes"), l2 = _last;
+    : (v1.type === "Literal") ? _StringLiteral(v1, ANY, d) : _wrong(n, "source", v1);
+  const f2 = _listOf(n.attributes, "ImportAttribute", _ImportAttribute, ANY, -1, n, "attributes", d), l2 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1694,14 +1723,14 @@ function _ImportDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ImportSpecifier(n, ctx) {
+function _ImportSpecifier(n, ctx, d) {
   const v0 = n.imported;
   const f0 = v0 == null ? _missing(n, "imported")
-    : typeof v0 === "object" ? _node(v0, NAME) : _wrong(n, "imported", v0);
+    : typeof v0 === "object" ? _node(v0, NAME, d + 1) : _wrong(n, "imported", v0);
   if (f0 >= 0 && MASK_45_33[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "imported", v0);
   const v1 = n.local;
   const f1 = v1 == null ? _missing(n, "local")
-    : (v1.type === "Identifier") ? _BindingIdentifier(v1, BINDING) : _wrong(n, "local", v1);
+    : (v1.type === "Identifier") ? _BindingIdentifier(v1, BINDING, d) : _wrong(n, "local", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1715,10 +1744,10 @@ function _ImportSpecifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ImportDefaultSpecifier(n, ctx) {
+function _ImportDefaultSpecifier(n, ctx, d) {
   const v0 = n.local;
   const f0 = v0 == null ? _missing(n, "local")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "local", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "local", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1731,10 +1760,10 @@ function _ImportDefaultSpecifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ImportNamespaceSpecifier(n, ctx) {
+function _ImportNamespaceSpecifier(n, ctx, d) {
   const v0 = n.local;
   const f0 = v0 == null ? _missing(n, "local")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "local", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "local", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1747,14 +1776,14 @@ function _ImportNamespaceSpecifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ImportAttribute(n, ctx) {
+function _ImportAttribute(n, ctx, d) {
   const v0 = n.key;
   const f0 = v0 == null ? _missing(n, "key")
-    : typeof v0 === "object" ? _node(v0, NAME) : _wrong(n, "key", v0);
+    : typeof v0 === "object" ? _node(v0, NAME, d + 1) : _wrong(n, "key", v0);
   if (f0 >= 0 && MASK_45_33[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "key", v0);
   const v1 = n.value;
   const f1 = v1 == null ? _missing(n, "value")
-    : (v1.type === "Literal") ? _StringLiteral(v1, ANY) : _wrong(n, "value", v1);
+    : (v1.type === "Literal") ? _StringLiteral(v1, ANY, d) : _wrong(n, "value", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1768,15 +1797,16 @@ function _ImportAttribute(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ExportNamedDeclaration(n, ctx) {
+function _ExportNamedDeclaration(n, ctx, d) {
   const v0 = n.declaration;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "declaration", v0);
-  const f1 = _listOf(n.specifiers, "ExportSpecifier", _ExportSpecifier, n.source == null ? ANY : NAME, -1, n, "specifiers"), l1 = _last;
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "declaration", v0);
+  if (f0 >= 0 && MASK_3_27_66_134_135_139_142_144_154_76[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "declaration", v0);
+  const f1 = _listOf(n.specifiers, "ExportSpecifier", _ExportSpecifier, n.source == null ? ANY : NAME, -1, n, "specifiers", d), l1 = _last;
   const v2 = n.source;
   const f2 = v2 == null ? -1
-    : (v2.type === "Literal") ? _StringLiteral(v2, ANY) : _wrong(n, "source", v2);
-  const f3 = _listOf(n.attributes, "ImportAttribute", _ImportAttribute, ANY, -1, n, "attributes"), l3 = _last;
+    : (v2.type === "Literal") ? _StringLiteral(v2, ANY, d) : _wrong(n, "source", v2);
+  const f3 = _listOf(n.attributes, "ImportAttribute", _ImportAttribute, ANY, -1, n, "attributes", d), l3 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1792,10 +1822,10 @@ function _ExportNamedDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ExportDefaultDeclaration(n, ctx) {
+function _ExportDefaultDeclaration(n, ctx, d) {
   const v0 = n.declaration;
   const f0 = v0 == null ? _missing(n, "declaration")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "declaration", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "declaration", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1808,15 +1838,15 @@ function _ExportDefaultDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ExportAllDeclaration(n, ctx) {
+function _ExportAllDeclaration(n, ctx, d) {
   const v0 = n.exported;
   const f0 = v0 == null ? -1
-    : typeof v0 === "object" ? _node(v0, NAME) : _wrong(n, "exported", v0);
+    : typeof v0 === "object" ? _node(v0, NAME, d + 1) : _wrong(n, "exported", v0);
   if (f0 >= 0 && MASK_45_33[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "exported", v0);
   const v1 = n.source;
   const f1 = v1 == null ? _missing(n, "source")
-    : (v1.type === "Literal") ? _StringLiteral(v1, ANY) : _wrong(n, "source", v1);
-  const f2 = _listOf(n.attributes, "ImportAttribute", _ImportAttribute, ANY, -1, n, "attributes"), l2 = _last;
+    : (v1.type === "Literal") ? _StringLiteral(v1, ANY, d) : _wrong(n, "source", v1);
+  const f2 = _listOf(n.attributes, "ImportAttribute", _ImportAttribute, ANY, -1, n, "attributes", d), l2 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1831,14 +1861,14 @@ function _ExportAllDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _ExportSpecifier(n, ctx) {
+function _ExportSpecifier(n, ctx, d) {
   const v0 = n.local;
   const f0 = v0 == null ? _missing(n, "local")
-    : typeof v0 === "object" ? _node(v0, ctx) : _wrong(n, "local", v0);
+    : typeof v0 === "object" ? _node(v0, ctx, d + 1) : _wrong(n, "local", v0);
   if (f0 >= 0 && MASK_42_45_33[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "local", v0);
   const v1 = n.exported;
   const f1 = v1 == null ? _missing(n, "exported")
-    : typeof v1 === "object" ? _node(v1, NAME) : _wrong(n, "exported", v1);
+    : typeof v1 === "object" ? _node(v1, NAME, d + 1) : _wrong(n, "exported", v1);
   if (f1 >= 0 && MASK_45_33[_u32[f1 * WORDS] & 255] === 0) _wrong(n, "exported", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -1853,10 +1883,10 @@ function _ExportSpecifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeAnnotation(n, ctx) {
+function _TSTypeAnnotation(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1869,7 +1899,7 @@ function _TSTypeAnnotation(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSAnyKeyword(n, ctx) {
+function _TSAnyKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1881,7 +1911,7 @@ function _TSAnyKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSUnknownKeyword(n, ctx) {
+function _TSUnknownKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1893,7 +1923,7 @@ function _TSUnknownKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSNeverKeyword(n, ctx) {
+function _TSNeverKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1905,7 +1935,7 @@ function _TSNeverKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSVoidKeyword(n, ctx) {
+function _TSVoidKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1917,7 +1947,7 @@ function _TSVoidKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSNullKeyword(n, ctx) {
+function _TSNullKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1929,7 +1959,7 @@ function _TSNullKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSUndefinedKeyword(n, ctx) {
+function _TSUndefinedKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1941,7 +1971,7 @@ function _TSUndefinedKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSStringKeyword(n, ctx) {
+function _TSStringKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1953,7 +1983,7 @@ function _TSStringKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSNumberKeyword(n, ctx) {
+function _TSNumberKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1965,7 +1995,7 @@ function _TSNumberKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSBigintKeyword(n, ctx) {
+function _TSBigintKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1977,7 +2007,7 @@ function _TSBigintKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSBooleanKeyword(n, ctx) {
+function _TSBooleanKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -1989,7 +2019,7 @@ function _TSBooleanKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSSymbolKeyword(n, ctx) {
+function _TSSymbolKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2001,7 +2031,7 @@ function _TSSymbolKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSObjectKeyword(n, ctx) {
+function _TSObjectKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2013,7 +2043,7 @@ function _TSObjectKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSIntrinsicKeyword(n, ctx) {
+function _TSIntrinsicKeyword(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2025,7 +2055,7 @@ function _TSIntrinsicKeyword(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSThisType(n, ctx) {
+function _TSThisType(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2037,14 +2067,14 @@ function _TSThisType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeReference(n, ctx) {
+function _TSTypeReference(n, ctx, d) {
   const v0 = n.typeName;
   const f0 = v0 == null ? _missing(n, "typeName")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeName", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeName", v0);
   if (f0 >= 0 && MASK_42_101_38[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "typeName", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2058,13 +2088,13 @@ function _TSTypeReference(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSQualifiedName(n, ctx) {
+function _TSQualifiedName(n, ctx, d) {
   const v0 = n.left;
   const f0 = v0 == null ? _missing(n, "left")
-    : typeof v0 === "object" ? _node(v0, ctx) : _wrong(n, "left", v0);
+    : typeof v0 === "object" ? _node(v0, ctx, d + 1) : _wrong(n, "left", v0);
   const v1 = n.right;
   const f1 = v1 == null ? _missing(n, "right")
-    : (v1.type === "Identifier") ? _IdentifierName(v1, NAME) : _wrong(n, "right", v1);
+    : (v1.type === "Identifier") ? _IdentifierName(v1, NAME, d) : _wrong(n, "right", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2078,13 +2108,13 @@ function _TSQualifiedName(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeQuery(n, ctx) {
+function _TSTypeQuery(n, ctx, d) {
   const v0 = n.exprName;
   const f0 = v0 == null ? _missing(n, "exprName")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "exprName", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "exprName", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2098,20 +2128,20 @@ function _TSTypeQuery(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSImportType(n, ctx) {
+function _TSImportType(n, ctx, d) {
   const v0 = n.source;
   const f0 = v0 == null ? _missing(n, "source")
-    : (v0.type === "Literal") ? _StringLiteral(v0, ANY) : _wrong(n, "source", v0);
+    : (v0.type === "Literal") ? _StringLiteral(v0, ANY, d) : _wrong(n, "source", v0);
   const v1 = n.options;
   const f1 = v1 == null ? -1
-    : (v1.type === "ObjectExpression") ? _ObjectExpression(v1, ANY) : _wrong(n, "options", v1);
+    : (v1.type === "ObjectExpression") ? _ObjectExpression(v1, ANY, d) : _wrong(n, "options", v1);
   const v2 = n.qualifier;
   const f2 = v2 == null ? -1
-    : typeof v2 === "object" ? _node(v2, NAME) : _wrong(n, "qualifier", v2);
+    : typeof v2 === "object" ? _node(v2, NAME, d + 1) : _wrong(n, "qualifier", v2);
   if (f2 >= 0 && MASK_45_101[_u32[f2 * WORDS] & 255] === 0) _wrong(n, "qualifier", v2);
   const v3 = n.typeArguments;
   const f3 = v3 == null ? -1
-    : (v3.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v3, ANY) : _wrong(n, "typeArguments", v3);
+    : (v3.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v3, ANY, d) : _wrong(n, "typeArguments", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2127,16 +2157,16 @@ function _TSImportType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeParameter(n, ctx) {
+function _TSTypeParameter(n, ctx, d) {
   const v0 = n.name;
   const f0 = v0 == null ? _missing(n, "name")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "name", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "name", v0);
   const v1 = n.constraint;
   const f1 = v1 == null ? -1
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "constraint", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "constraint", v1);
   const v2 = n.default;
   const f2 = v2 == null ? -1
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "default", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "default", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2151,8 +2181,8 @@ function _TSTypeParameter(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeParameterDeclaration(n, ctx) {
-  const f0 = _listOf(n.params, "TSTypeParameter", _TSTypeParameter, ANY, -1, n, "params"), l0 = _last;
+function _TSTypeParameterDeclaration(n, ctx, d) {
+  const f0 = _listOf(n.params, "TSTypeParameter", _TSTypeParameter, ANY, -1, n, "params", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2165,8 +2195,8 @@ function _TSTypeParameterDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeParameterInstantiation(n, ctx) {
-  const f0 = _list(n.params, ANY, -1, null, n, "params"), l0 = _last;
+function _TSTypeParameterInstantiation(n, ctx, d) {
+  const f0 = _list(n.params, ANY, -1, null, n, "params", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2179,10 +2209,10 @@ function _TSTypeParameterInstantiation(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSLiteralType(n, ctx) {
+function _TSLiteralType(n, ctx, d) {
   const v0 = n.literal;
   const f0 = v0 == null ? _missing(n, "literal")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "literal", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "literal", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2195,9 +2225,9 @@ function _TSLiteralType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTemplateLiteralType(n, ctx) {
-  const f0 = _listOf(n.quasis, "TemplateElement", _TemplateElement, ANY, -1, n, "quasis"), l0 = _last;
-  const f1 = _list(n.types, ANY, -1, null, n, "types"), l1 = _last;
+function _TSTemplateLiteralType(n, ctx, d) {
+  const f0 = _listOf(n.quasis, "TemplateElement", _TemplateElement, ANY, -1, n, "quasis", d), l0 = _last;
+  const f1 = _list(n.types, ANY, -1, null, n, "types", d), l1 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2211,10 +2241,10 @@ function _TSTemplateLiteralType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSArrayType(n, ctx) {
+function _TSArrayType(n, ctx, d) {
   const v0 = n.elementType;
   const f0 = v0 == null ? _missing(n, "elementType")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "elementType", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "elementType", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2227,13 +2257,13 @@ function _TSArrayType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSIndexedAccessType(n, ctx) {
+function _TSIndexedAccessType(n, ctx, d) {
   const v0 = n.objectType;
   const f0 = v0 == null ? _missing(n, "objectType")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "objectType", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "objectType", v0);
   const v1 = n.indexType;
   const f1 = v1 == null ? _missing(n, "indexType")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "indexType", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "indexType", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2247,8 +2277,8 @@ function _TSIndexedAccessType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTupleType(n, ctx) {
-  const f0 = _list(n.elementTypes, ANY, -1, null, n, "elementTypes"), l0 = _last;
+function _TSTupleType(n, ctx, d) {
+  const f0 = _list(n.elementTypes, ANY, -1, null, n, "elementTypes", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2261,13 +2291,13 @@ function _TSTupleType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSNamedTupleMember(n, ctx) {
+function _TSNamedTupleMember(n, ctx, d) {
   const v0 = n.label;
   const f0 = v0 == null ? _missing(n, "label")
-    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME) : _wrong(n, "label", v0);
+    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME, d) : _wrong(n, "label", v0);
   const v1 = n.elementType;
   const f1 = v1 == null ? _missing(n, "elementType")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "elementType", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "elementType", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2281,10 +2311,10 @@ function _TSNamedTupleMember(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSOptionalType(n, ctx) {
+function _TSOptionalType(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2297,10 +2327,10 @@ function _TSOptionalType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSRestType(n, ctx) {
+function _TSRestType(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2313,10 +2343,10 @@ function _TSRestType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSJsdocNullableType(n, ctx) {
+function _TSJsdocNullableType(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2329,10 +2359,10 @@ function _TSJsdocNullableType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSJsdocNonNullableType(n, ctx) {
+function _TSJsdocNonNullableType(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2345,7 +2375,7 @@ function _TSJsdocNonNullableType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSJsdocUnknownType(n, ctx) {
+function _TSJsdocUnknownType(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2357,8 +2387,8 @@ function _TSJsdocUnknownType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSUnionType(n, ctx) {
-  const f0 = _list(n.types, ANY, -1, null, n, "types"), l0 = _last;
+function _TSUnionType(n, ctx, d) {
+  const f0 = _list(n.types, ANY, -1, null, n, "types", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2371,8 +2401,8 @@ function _TSUnionType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSIntersectionType(n, ctx) {
-  const f0 = _list(n.types, ANY, -1, null, n, "types"), l0 = _last;
+function _TSIntersectionType(n, ctx, d) {
+  const f0 = _list(n.types, ANY, -1, null, n, "types", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2385,19 +2415,19 @@ function _TSIntersectionType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSConditionalType(n, ctx) {
+function _TSConditionalType(n, ctx, d) {
   const v0 = n.checkType;
   const f0 = v0 == null ? _missing(n, "checkType")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "checkType", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "checkType", v0);
   const v1 = n.extendsType;
   const f1 = v1 == null ? _missing(n, "extendsType")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "extendsType", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "extendsType", v1);
   const v2 = n.trueType;
   const f2 = v2 == null ? _missing(n, "trueType")
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "trueType", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "trueType", v2);
   const v3 = n.falseType;
   const f3 = v3 == null ? _missing(n, "falseType")
-    : typeof v3 === "object" ? _node(v3, ANY) : _wrong(n, "falseType", v3);
+    : typeof v3 === "object" ? _node(v3, ANY, d + 1) : _wrong(n, "falseType", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2413,10 +2443,10 @@ function _TSConditionalType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSInferType(n, ctx) {
+function _TSInferType(n, ctx, d) {
   const v0 = n.typeParameter;
   const f0 = v0 == null ? _missing(n, "typeParameter")
-    : (v0.type === "TSTypeParameter") ? _TSTypeParameter(v0, ANY) : _wrong(n, "typeParameter", v0);
+    : (v0.type === "TSTypeParameter") ? _TSTypeParameter(v0, ANY, d) : _wrong(n, "typeParameter", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2429,10 +2459,10 @@ function _TSInferType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeOperator(n, ctx) {
+function _TSTypeOperator(n, ctx, d) {
   const v1 = n.typeAnnotation;
   const f1 = v1 == null ? _missing(n, "typeAnnotation")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "typeAnnotation", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "typeAnnotation", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2445,10 +2475,10 @@ function _TSTypeOperator(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSParenthesizedType(n, ctx) {
+function _TSParenthesizedType(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2461,14 +2491,14 @@ function _TSParenthesizedType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSFunctionType(n, ctx) {
+function _TSFunctionType(n, ctx, d) {
   const v0 = n.typeParameters;
   const f0 = v0 == null ? -1
-    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY) : _wrong(n, "typeParameters", v0);
-  const f1 = _params(n.params, PARAMETER_KINDS.signature, n);
+    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY, d) : _wrong(n, "typeParameters", v0);
+  const f1 = _params(n.params, PARAMETER_KINDS.signature, n, d);
   const v2 = n.returnType;
   const f2 = v2 == null ? _missing(n, "returnType")
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "returnType", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "returnType", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2483,14 +2513,14 @@ function _TSFunctionType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSConstructorType(n, ctx) {
+function _TSConstructorType(n, ctx, d) {
   const v0 = n.typeParameters;
   const f0 = v0 == null ? -1
-    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY) : _wrong(n, "typeParameters", v0);
-  const f1 = _params(n.params, PARAMETER_KINDS.signature, n);
+    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY, d) : _wrong(n, "typeParameters", v0);
+  const f1 = _params(n.params, PARAMETER_KINDS.signature, n, d);
   const v2 = n.returnType;
   const f2 = v2 == null ? _missing(n, "returnType")
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "returnType", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "returnType", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2505,14 +2535,14 @@ function _TSConstructorType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypePredicate(n, ctx) {
+function _TSTypePredicate(n, ctx, d) {
   const v0 = n.parameterName;
   const f0 = v0 == null ? _missing(n, "parameterName")
-    : typeof v0 === "object" ? _node(v0, NAME) : _wrong(n, "parameterName", v0);
+    : typeof v0 === "object" ? _node(v0, NAME, d + 1) : _wrong(n, "parameterName", v0);
   if (f0 >= 0 && MASK_45_99[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "parameterName", v0);
   const v1 = n.typeAnnotation;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v1, ANY) : _wrong(n, "typeAnnotation", v1);
+    : (v1.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v1, ANY, d) : _wrong(n, "typeAnnotation", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2526,8 +2556,8 @@ function _TSTypePredicate(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeLiteral(n, ctx) {
-  const f0 = _list(n.members, ANY, -1, MASK_129_130_131_132_133, n, "members"), l0 = _last;
+function _TSTypeLiteral(n, ctx, d) {
+  const f0 = _list(n.members, ANY, -1, MASK_129_130_131_132_133, n, "members", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2540,19 +2570,19 @@ function _TSTypeLiteral(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSMappedType(n, ctx) {
+function _TSMappedType(n, ctx, d) {
   const v0 = n.key;
   const f0 = v0 == null ? _missing(n, "key")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "key", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "key", v0);
   const v1 = n.constraint;
   const f1 = v1 == null ? _missing(n, "constraint")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "constraint", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "constraint", v1);
   const v2 = n.nameType;
   const f2 = v2 == null ? -1
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "nameType", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "nameType", v2);
   const v3 = n.typeAnnotation;
   const f3 = v3 == null ? -1
-    : typeof v3 === "object" ? _node(v3, ANY) : _wrong(n, "typeAnnotation", v3);
+    : typeof v3 === "object" ? _node(v3, ANY, d + 1) : _wrong(n, "typeAnnotation", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2568,13 +2598,13 @@ function _TSMappedType(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSPropertySignature(n, ctx) {
+function _TSPropertySignature(n, ctx, d) {
   const v0 = n.key;
   const f0 = v0 == null ? _missing(n, "key")
-    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME) : _wrong(n, "key", v0);
+    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "key", v0);
   const v1 = n.typeAnnotation;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v1, ANY) : _wrong(n, "typeAnnotation", v1);
+    : (v1.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v1, ANY, d) : _wrong(n, "typeAnnotation", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2588,17 +2618,17 @@ function _TSPropertySignature(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSMethodSignature(n, ctx) {
+function _TSMethodSignature(n, ctx, d) {
   const v0 = n.key;
   const f0 = v0 == null ? _missing(n, "key")
-    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME) : _wrong(n, "key", v0);
+    : typeof v0 === "object" ? _node(v0, n.computed === true ? ANY : NAME, d + 1) : _wrong(n, "key", v0);
   const v1 = n.typeParameters;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v1, ANY) : _wrong(n, "typeParameters", v1);
-  const f2 = _params(n.params, PARAMETER_KINDS.signature, n);
+    : (v1.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v1, ANY, d) : _wrong(n, "typeParameters", v1);
+  const f2 = _params(n.params, PARAMETER_KINDS.signature, n, d);
   const v3 = n.returnType;
   const f3 = v3 == null ? -1
-    : (v3.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v3, ANY) : _wrong(n, "returnType", v3);
+    : (v3.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v3, ANY, d) : _wrong(n, "returnType", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2614,14 +2644,14 @@ function _TSMethodSignature(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSCallSignatureDeclaration(n, ctx) {
+function _TSCallSignatureDeclaration(n, ctx, d) {
   const v0 = n.typeParameters;
   const f0 = v0 == null ? -1
-    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY) : _wrong(n, "typeParameters", v0);
-  const f1 = _params(n.params, PARAMETER_KINDS.signature, n);
+    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY, d) : _wrong(n, "typeParameters", v0);
+  const f1 = _params(n.params, PARAMETER_KINDS.signature, n, d);
   const v2 = n.returnType;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "returnType", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "returnType", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2636,14 +2666,14 @@ function _TSCallSignatureDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSConstructSignatureDeclaration(n, ctx) {
+function _TSConstructSignatureDeclaration(n, ctx, d) {
   const v0 = n.typeParameters;
   const f0 = v0 == null ? -1
-    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY) : _wrong(n, "typeParameters", v0);
-  const f1 = _params(n.params, PARAMETER_KINDS.signature, n);
+    : (v0.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v0, ANY, d) : _wrong(n, "typeParameters", v0);
+  const f1 = _params(n.params, PARAMETER_KINDS.signature, n, d);
   const v2 = n.returnType;
   const f2 = v2 == null ? -1
-    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY) : _wrong(n, "returnType", v2);
+    : (v2.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v2, ANY, d) : _wrong(n, "returnType", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2658,11 +2688,11 @@ function _TSConstructSignatureDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSIndexSignature(n, ctx) {
-  const f0 = _listOf(n.parameters, "Identifier", _BindingIdentifier, BINDING, -1, n, "parameters"), l0 = _last;
+function _TSIndexSignature(n, ctx, d) {
+  const f0 = _listOf(n.parameters, "Identifier", _BindingIdentifier, BINDING, -1, n, "parameters", d), l0 = _last;
   const v1 = n.typeAnnotation;
   const f1 = v1 == null ? _missing(n, "typeAnnotation")
-    : (v1.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v1, ANY) : _wrong(n, "typeAnnotation", v1);
+    : (v1.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v1, ANY, d) : _wrong(n, "typeAnnotation", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2676,16 +2706,16 @@ function _TSIndexSignature(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeAliasDeclaration(n, ctx) {
+function _TSTypeAliasDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "id", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "id", v0);
   const v1 = n.typeParameters;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v1, ANY) : _wrong(n, "typeParameters", v1);
+    : (v1.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v1, ANY, d) : _wrong(n, "typeParameters", v1);
   const v2 = n.typeAnnotation;
   const f2 = v2 == null ? _missing(n, "typeAnnotation")
-    : typeof v2 === "object" ? _node(v2, ANY) : _wrong(n, "typeAnnotation", v2);
+    : typeof v2 === "object" ? _node(v2, ANY, d + 1) : _wrong(n, "typeAnnotation", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2700,17 +2730,17 @@ function _TSTypeAliasDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSInterfaceDeclaration(n, ctx) {
+function _TSInterfaceDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "id", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "id", v0);
   const v1 = n.typeParameters;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v1, ANY) : _wrong(n, "typeParameters", v1);
-  const f2 = _listOf(n.extends, "TSInterfaceHeritage", _TSInterfaceHeritage, ANY, -1, n, "extends"), l2 = _last;
+    : (v1.type === "TSTypeParameterDeclaration") ? _TSTypeParameterDeclaration(v1, ANY, d) : _wrong(n, "typeParameters", v1);
+  const f2 = _listOf(n.extends, "TSInterfaceHeritage", _TSInterfaceHeritage, ANY, -1, n, "extends", d), l2 = _last;
   const v3 = n.body;
   const f3 = v3 == null ? _missing(n, "body")
-    : (v3.type === "TSInterfaceBody") ? _TSInterfaceBody(v3, ANY) : _wrong(n, "body", v3);
+    : (v3.type === "TSInterfaceBody") ? _TSInterfaceBody(v3, ANY, d) : _wrong(n, "body", v3);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2726,8 +2756,8 @@ function _TSInterfaceDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSInterfaceBody(n, ctx) {
-  const f0 = _list(n.body, ANY, -1, MASK_129_130_131_132_133, n, "body"), l0 = _last;
+function _TSInterfaceBody(n, ctx, d) {
+  const f0 = _list(n.body, ANY, -1, MASK_129_130_131_132_133, n, "body", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2740,13 +2770,13 @@ function _TSInterfaceBody(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSInterfaceHeritage(n, ctx) {
+function _TSInterfaceHeritage(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2760,13 +2790,13 @@ function _TSInterfaceHeritage(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSClassImplements(n, ctx) {
+function _TSClassImplements(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2780,13 +2810,13 @@ function _TSClassImplements(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSEnumDeclaration(n, ctx) {
+function _TSEnumDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "id", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "id", v0);
   const v1 = n.body;
   const f1 = v1 == null ? _missing(n, "body")
-    : (v1.type === "TSEnumBody") ? _TSEnumBody(v1, ANY) : _wrong(n, "body", v1);
+    : (v1.type === "TSEnumBody") ? _TSEnumBody(v1, ANY, d) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2800,8 +2830,8 @@ function _TSEnumDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSEnumBody(n, ctx) {
-  const f0 = _listOf(n.members, "TSEnumMember", _TSEnumMember, ANY, -1, n, "members"), l0 = _last;
+function _TSEnumBody(n, ctx, d) {
+  const f0 = _listOf(n.members, "TSEnumMember", _TSEnumMember, ANY, -1, n, "members", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2814,14 +2844,14 @@ function _TSEnumBody(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSEnumMember(n, ctx) {
+function _TSEnumMember(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : typeof v0 === "object" ? _node(v0, NAME) : _wrong(n, "id", v0);
+    : typeof v0 === "object" ? _node(v0, NAME, d + 1) : _wrong(n, "id", v0);
   if (f0 >= 0 && MASK_45_33_40[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "id", v0);
   const v1 = n.initializer;
   const f1 = v1 == null ? -1
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "initializer", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "initializer", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2835,14 +2865,14 @@ function _TSEnumMember(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSModuleDeclaration(n, ctx) {
+function _TSModuleDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : typeof v0 === "object" ? _node(v0, BINDING) : _wrong(n, "id", v0);
+    : typeof v0 === "object" ? _node(v0, BINDING, d + 1) : _wrong(n, "id", v0);
   if (f0 >= 0 && MASK_44_33_101[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "id", v0);
   const v1 = n.body;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSModuleBlock") ? _TSModuleBlock(v1, ANY) : _wrong(n, "body", v1);
+    : (v1.type === "TSModuleBlock") ? _TSModuleBlock(v1, ANY, d) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2856,8 +2886,8 @@ function _TSModuleDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSModuleBlock(n, ctx) {
-  const f0 = _list(n.body, ANY, -1, null, n, "body"), l0 = _last;
+function _TSModuleBlock(n, ctx, d) {
+  const f0 = _list(n.body, ANY, -1, null, n, "body", d), l0 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2870,13 +2900,13 @@ function _TSModuleBlock(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSGlobalDeclaration(n, ctx) {
+function _TSGlobalDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME) : _wrong(n, "id", v0);
+    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME, d) : _wrong(n, "id", v0);
   const v1 = n.body;
   const f1 = v1 == null ? _missing(n, "body")
-    : (v1.type === "TSModuleBlock") ? _TSModuleBlock(v1, ANY) : _wrong(n, "body", v1);
+    : (v1.type === "TSModuleBlock") ? _TSModuleBlock(v1, ANY, d) : _wrong(n, "body", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2890,11 +2920,11 @@ function _TSGlobalDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSParameterProperty(n, ctx) {
-  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators"), l0 = _last;
+function _TSParameterProperty(n, ctx, d) {
+  const f0 = _listOf(n.decorators, "Decorator", _Decorator, ANY, -1, n, "decorators", d), l0 = _last;
   const v1 = n.parameter;
   const f1 = v1 == null ? _missing(n, "parameter")
-    : typeof v1 === "object" ? _node(v1, BINDING) : _wrong(n, "parameter", v1);
+    : typeof v1 === "object" ? _node(v1, BINDING, d + 1) : _wrong(n, "parameter", v1);
   if (f1 >= 0 && MASK_44_69[_u32[f1 * WORDS] & 255] === 0) _wrong(n, "parameter", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -2909,10 +2939,10 @@ function _TSParameterProperty(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSThisParameter(n, ctx) {
+function _TSThisParameter(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? -1
-    : (v0.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : (v0.type === "TSTypeAnnotation") ? _TSTypeAnnotation(v0, ANY, d) : _wrong(n, "typeAnnotation", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2925,13 +2955,13 @@ function _TSThisParameter(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSAsExpression(n, ctx) {
+function _TSAsExpression(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const v1 = n.typeAnnotation;
   const f1 = v1 == null ? _missing(n, "typeAnnotation")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "typeAnnotation", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "typeAnnotation", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2945,13 +2975,13 @@ function _TSAsExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSSatisfiesExpression(n, ctx) {
+function _TSSatisfiesExpression(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const v1 = n.typeAnnotation;
   const f1 = v1 == null ? _missing(n, "typeAnnotation")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "typeAnnotation", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "typeAnnotation", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2965,13 +2995,13 @@ function _TSSatisfiesExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSTypeAssertion(n, ctx) {
+function _TSTypeAssertion(n, ctx, d) {
   const v0 = n.typeAnnotation;
   const f0 = v0 == null ? _missing(n, "typeAnnotation")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "typeAnnotation", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "typeAnnotation", v0);
   const v1 = n.expression;
   const f1 = v1 == null ? _missing(n, "expression")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "expression", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "expression", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -2985,10 +3015,10 @@ function _TSTypeAssertion(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSNonNullExpression(n, ctx) {
+function _TSNonNullExpression(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3001,13 +3031,13 @@ function _TSNonNullExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSInstantiationExpression(n, ctx) {
+function _TSInstantiationExpression(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? _missing(n, "typeArguments")
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3021,10 +3051,10 @@ function _TSInstantiationExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSExportAssignment(n, ctx) {
+function _TSExportAssignment(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3037,10 +3067,10 @@ function _TSExportAssignment(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSNamespaceExportDeclaration(n, ctx) {
+function _TSNamespaceExportDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME) : _wrong(n, "id", v0);
+    : (v0.type === "Identifier") ? _IdentifierName(v0, NAME, d) : _wrong(n, "id", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3053,13 +3083,13 @@ function _TSNamespaceExportDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSImportEqualsDeclaration(n, ctx) {
+function _TSImportEqualsDeclaration(n, ctx, d) {
   const v0 = n.id;
   const f0 = v0 == null ? _missing(n, "id")
-    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING) : _wrong(n, "id", v0);
+    : (v0.type === "Identifier") ? _BindingIdentifier(v0, BINDING, d) : _wrong(n, "id", v0);
   const v1 = n.moduleReference;
   const f1 = v1 == null ? _missing(n, "moduleReference")
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "moduleReference", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "moduleReference", v1);
   if (f1 >= 0 && MASK_155_42_101[_u32[f1 * WORDS] & 255] === 0) _wrong(n, "moduleReference", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -3074,10 +3104,10 @@ function _TSImportEqualsDeclaration(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _TSExternalModuleReference(n, ctx) {
+function _TSExternalModuleReference(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : (v0.type === "Literal") ? _StringLiteral(v0, ANY) : _wrong(n, "expression", v0);
+    : (v0.type === "Literal") ? _StringLiteral(v0, ANY, d) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3090,14 +3120,14 @@ function _TSExternalModuleReference(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXElement(n, ctx) {
+function _JSXElement(n, ctx, d) {
   const v0 = n.openingElement;
   const f0 = v0 == null ? _missing(n, "openingElement")
-    : (v0.type === "JSXOpeningElement") ? _JSXOpeningElement(v0, ANY) : _wrong(n, "openingElement", v0);
-  const f1 = _list(n.children, ANY, -1, MASK_169_167_170_156_159, n, "children"), l1 = _last;
+    : (v0.type === "JSXOpeningElement") ? _JSXOpeningElement(v0, ANY, d) : _wrong(n, "openingElement", v0);
+  const f1 = _list(n.children, ANY, -1, MASK_169_167_170_156_159, n, "children", d), l1 = _last;
   const v2 = n.closingElement;
   const f2 = v2 == null ? -1
-    : (v2.type === "JSXClosingElement") ? _JSXClosingElement(v2, ANY) : _wrong(n, "closingElement", v2);
+    : (v2.type === "JSXClosingElement") ? _JSXClosingElement(v2, ANY, d) : _wrong(n, "closingElement", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3112,15 +3142,15 @@ function _JSXElement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXOpeningElement(n, ctx) {
+function _JSXOpeningElement(n, ctx, d) {
   const v0 = n.name;
   const f0 = v0 == null ? _missing(n, "name")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "name", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "name", v0);
   if (f0 >= 0 && MASK_162_163_164[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "name", v0);
   const v1 = n.typeArguments;
   const f1 = v1 == null ? -1
-    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY) : _wrong(n, "typeArguments", v1);
-  const f2 = _list(n.attributes, ANY, -1, MASK_165_166, n, "attributes"), l2 = _last;
+    : (v1.type === "TSTypeParameterInstantiation") ? _TSTypeParameterInstantiation(v1, ANY, d) : _wrong(n, "typeArguments", v1);
+  const f2 = _list(n.attributes, ANY, -1, MASK_165_166, n, "attributes", d), l2 = _last;
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3135,10 +3165,10 @@ function _JSXOpeningElement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXClosingElement(n, ctx) {
+function _JSXClosingElement(n, ctx, d) {
   const v0 = n.name;
   const f0 = v0 == null ? _missing(n, "name")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "name", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "name", v0);
   if (f0 >= 0 && MASK_162_163_164[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "name", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -3152,14 +3182,14 @@ function _JSXClosingElement(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXFragment(n, ctx) {
+function _JSXFragment(n, ctx, d) {
   const v0 = n.openingFragment;
   const f0 = v0 == null ? _missing(n, "openingFragment")
-    : (v0.type === "JSXOpeningFragment") ? _JSXOpeningFragment(v0, ANY) : _wrong(n, "openingFragment", v0);
-  const f1 = _list(n.children, ANY, -1, MASK_169_167_170_156_159, n, "children"), l1 = _last;
+    : (v0.type === "JSXOpeningFragment") ? _JSXOpeningFragment(v0, ANY, d) : _wrong(n, "openingFragment", v0);
+  const f1 = _list(n.children, ANY, -1, MASK_169_167_170_156_159, n, "children", d), l1 = _last;
   const v2 = n.closingFragment;
   const f2 = v2 == null ? _missing(n, "closingFragment")
-    : (v2.type === "JSXClosingFragment") ? _JSXClosingFragment(v2, ANY) : _wrong(n, "closingFragment", v2);
+    : (v2.type === "JSXClosingFragment") ? _JSXClosingFragment(v2, ANY, d) : _wrong(n, "closingFragment", v2);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3174,7 +3204,7 @@ function _JSXFragment(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXOpeningFragment(n, ctx) {
+function _JSXOpeningFragment(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3186,7 +3216,7 @@ function _JSXOpeningFragment(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXClosingFragment(n, ctx) {
+function _JSXClosingFragment(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3198,7 +3228,7 @@ function _JSXClosingFragment(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXIdentifier(n, ctx) {
+function _JSXIdentifier(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3213,13 +3243,13 @@ function _JSXIdentifier(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXNamespacedName(n, ctx) {
+function _JSXNamespacedName(n, ctx, d) {
   const v0 = n.namespace;
   const f0 = v0 == null ? _missing(n, "namespace")
-    : (v0.type === "JSXIdentifier") ? _JSXIdentifier(v0, ANY) : _wrong(n, "namespace", v0);
+    : (v0.type === "JSXIdentifier") ? _JSXIdentifier(v0, ANY, d) : _wrong(n, "namespace", v0);
   const v1 = n.name;
   const f1 = v1 == null ? _missing(n, "name")
-    : (v1.type === "JSXIdentifier") ? _JSXIdentifier(v1, ANY) : _wrong(n, "name", v1);
+    : (v1.type === "JSXIdentifier") ? _JSXIdentifier(v1, ANY, d) : _wrong(n, "name", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3233,14 +3263,14 @@ function _JSXNamespacedName(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXMemberExpression(n, ctx) {
+function _JSXMemberExpression(n, ctx, d) {
   const v0 = n.object;
   const f0 = v0 == null ? _missing(n, "object")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "object", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "object", v0);
   if (f0 >= 0 && MASK_162_164[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "object", v0);
   const v1 = n.property;
   const f1 = v1 == null ? _missing(n, "property")
-    : (v1.type === "JSXIdentifier") ? _JSXIdentifier(v1, ANY) : _wrong(n, "property", v1);
+    : (v1.type === "JSXIdentifier") ? _JSXIdentifier(v1, ANY, d) : _wrong(n, "property", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3254,14 +3284,14 @@ function _JSXMemberExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXAttribute(n, ctx) {
+function _JSXAttribute(n, ctx, d) {
   const v0 = n.name;
   const f0 = v0 == null ? _missing(n, "name")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "name", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "name", v0);
   if (f0 >= 0 && MASK_162_163[_u32[f0 * WORDS] & 255] === 0) _wrong(n, "name", v0);
   const v1 = n.value;
   const f1 = v1 == null ? -1
-    : typeof v1 === "object" ? _node(v1, ANY) : _wrong(n, "value", v1);
+    : typeof v1 === "object" ? _node(v1, ANY, d + 1) : _wrong(n, "value", v1);
   if (f1 >= 0 && MASK_33_167_156_159[_u32[f1 * WORDS] & 255] === 0) _wrong(n, "value", v1);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
@@ -3276,10 +3306,10 @@ function _JSXAttribute(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXSpreadAttribute(n, ctx) {
+function _JSXSpreadAttribute(n, ctx, d) {
   const v0 = n.argument;
   const f0 = v0 == null ? _missing(n, "argument")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "argument", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "argument", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3292,10 +3322,10 @@ function _JSXSpreadAttribute(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXExpressionContainer(n, ctx) {
+function _JSXExpressionContainer(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3308,7 +3338,7 @@ function _JSXExpressionContainer(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXEmptyExpression(n, ctx) {
+function _JSXEmptyExpression(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3320,7 +3350,7 @@ function _JSXEmptyExpression(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXText(n, ctx) {
+function _JSXText(n, ctx, d) {
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3338,10 +3368,10 @@ function _JSXText(n, ctx) {
   if (_objects !== null) _objects[i] = n;
   return i;
 }
-function _JSXSpreadChild(n, ctx) {
+function _JSXSpreadChild(n, ctx, d) {
   const v0 = n.expression;
   const f0 = v0 == null ? _missing(n, "expression")
-    : typeof v0 === "object" ? _node(v0, ANY) : _wrong(n, "expression", v0);
+    : typeof v0 === "object" ? _node(v0, ANY, d + 1) : _wrong(n, "expression", v0);
   const i = _count++, b = i * WORDS;
   if (b === _u32.length) _u32 = _grow(_u32, b + WORDS);
   const u = _u32;
@@ -3359,6 +3389,7 @@ const MASK_18_19_150 = _mask([18, 19, 150]);
 const MASK_29_30_31_133 = _mask([29, 30, 31, 133]);
 const MASK_77_78_79 = _mask([77, 78, 79]);
 const MASK_45_33 = _mask([45, 33]);
+const MASK_3_27_66_134_135_139_142_144_154_76 = _mask([3, 27, 66, 134, 135, 139, 142, 144, 154, 76]);
 const MASK_42_45_33 = _mask([42, 45, 33]);
 const MASK_42_101_38 = _mask([42, 101, 38]);
 const MASK_45_101 = _mask([45, 101]);
@@ -3374,172 +3405,173 @@ const MASK_165_166 = _mask([165, 166]);
 const MASK_162_164 = _mask([162, 164]);
 const MASK_162_163 = _mask([162, 163]);
 const MASK_33_167_156_159 = _mask([33, 167, 156, 159]);
-function _node(n, ctx) {
+function _node(n, ctx, d) {
+  if (d === RECURSION_MAX) return _spill(n, ctx);
   switch (n.type) {
-    case "Identifier": return ctx === BINDING ? _BindingIdentifier(n, ctx) : ctx === NAME ? _IdentifierName(n, ctx) : ctx === LABEL ? _LabelIdentifier(n, ctx) : _IdentifierReference(n, ctx);
-    case "MemberExpression": return _MemberExpression(n, ctx);
-    case "CallExpression": return _CallExpression(n, ctx);
+    case "Identifier": return ctx === BINDING ? _BindingIdentifier(n, ctx, d) : ctx === NAME ? _IdentifierName(n, ctx, d) : ctx === LABEL ? _LabelIdentifier(n, ctx, d) : _IdentifierReference(n, ctx, d);
+    case "MemberExpression": return _MemberExpression(n, ctx, d);
+    case "CallExpression": return _CallExpression(n, ctx, d);
     case "Literal": return _literal(n);
-    case "ExpressionStatement": return typeof n.directive === "string" ? _Directive(n, ctx) : _ExpressionStatement(n, ctx);
-    case "Property": return _ObjectProperty(n, ctx);
-    case "TSTypeReference": return _TSTypeReference(n, ctx);
-    case "VariableDeclarator": return _VariableDeclarator(n, ctx);
-    case "VariableDeclaration": return _VariableDeclaration(n, ctx);
-    case "BinaryExpression": return _BinaryExpression(n, ctx);
-    case "TSTypeAnnotation": return _TSTypeAnnotation(n, ctx);
-    case "BlockStatement": return ctx === BODY ? _FunctionBody(n, ctx) : _BlockStatement(n, ctx);
-    case "IfStatement": return _IfStatement(n, ctx);
-    case "AssignmentExpression": return _AssignmentExpression(n, ctx);
-    case "ReturnStatement": return _ReturnStatement(n, ctx);
-    case "LogicalExpression": return _LogicalExpression(n, ctx);
-    case "JSXElement": return _JSXElement(n, ctx);
-    case "JSXOpeningElement": return _JSXOpeningElement(n, ctx);
-    case "JSXClosingElement": return _JSXClosingElement(n, ctx);
-    case "JSXIdentifier": return _JSXIdentifier(n, ctx);
-    case "JSXAttribute": return _JSXAttribute(n, ctx);
-    case "JSXText": return _JSXText(n, ctx);
-    case "JSXExpressionContainer": return _JSXExpressionContainer(n, ctx);
-    case "SequenceExpression": return _SequenceExpression(n, ctx);
-    case "ParenthesizedExpression": return _ParenthesizedExpression(n, ctx);
-    case "ArrowFunctionExpression": return _ArrowFunctionExpression(n, ctx);
-    case "FunctionDeclaration": return _Function(n, ctx);
-    case "FunctionExpression": return _Function(n, ctx);
-    case "TSDeclareFunction": return _Function(n, ctx);
-    case "TSEmptyBodyFunctionExpression": return _Function(n, ctx);
-    case "ConditionalExpression": return _ConditionalExpression(n, ctx);
-    case "UnaryExpression": return _UnaryExpression(n, ctx);
-    case "UpdateExpression": return _UpdateExpression(n, ctx);
-    case "ArrayExpression": return _ArrayExpression(n, ctx);
-    case "ObjectExpression": return _ObjectExpression(n, ctx);
-    case "SpreadElement": return _SpreadElement(n, ctx);
-    case "ChainExpression": return _ChainExpression(n, ctx);
-    case "TaggedTemplateExpression": return _TaggedTemplateExpression(n, ctx);
-    case "NewExpression": return _NewExpression(n, ctx);
-    case "AwaitExpression": return _AwaitExpression(n, ctx);
-    case "YieldExpression": return _YieldExpression(n, ctx);
-    case "MetaProperty": return _MetaProperty(n, ctx);
-    case "Decorator": return _Decorator(n, ctx);
-    case "ClassDeclaration": return _Class(n, ctx);
-    case "ClassExpression": return _Class(n, ctx);
-    case "ClassBody": return _ClassBody(n, ctx);
-    case "MethodDefinition": return _MethodDefinition(n, ctx);
-    case "TSAbstractMethodDefinition": return _MethodDefinition(n, ctx);
-    case "PropertyDefinition": return _PropertyDefinition(n, ctx);
-    case "AccessorProperty": return _PropertyDefinition(n, ctx);
-    case "TSAbstractPropertyDefinition": return _PropertyDefinition(n, ctx);
-    case "TSAbstractAccessorProperty": return _PropertyDefinition(n, ctx);
-    case "StaticBlock": return _StaticBlock(n, ctx);
-    case "Super": return _Super(n, ctx);
-    case "ThisExpression": return _ThisExpression(n, ctx);
-    case "TemplateLiteral": return _TemplateLiteral(n, ctx);
-    case "TemplateElement": return _TemplateElement(n, ctx);
-    case "PrivateIdentifier": return _PrivateIdentifier(n, ctx);
-    case "SwitchStatement": return _SwitchStatement(n, ctx);
-    case "SwitchCase": return _SwitchCase(n, ctx);
-    case "ForStatement": return _ForStatement(n, ctx);
-    case "ForInStatement": return _ForInStatement(n, ctx);
-    case "ForOfStatement": return _ForOfStatement(n, ctx);
-    case "WhileStatement": return _WhileStatement(n, ctx);
-    case "DoWhileStatement": return _DoWhileStatement(n, ctx);
-    case "BreakStatement": return _BreakStatement(n, ctx);
-    case "ContinueStatement": return _ContinueStatement(n, ctx);
-    case "LabeledStatement": return _LabeledStatement(n, ctx);
-    case "WithStatement": return _WithStatement(n, ctx);
-    case "ThrowStatement": return _ThrowStatement(n, ctx);
-    case "TryStatement": return _TryStatement(n, ctx);
-    case "CatchClause": return _CatchClause(n, ctx);
-    case "DebuggerStatement": return _DebuggerStatement(n, ctx);
-    case "EmptyStatement": return _EmptyStatement(n, ctx);
-    case "AssignmentPattern": return _AssignmentPattern(n, ctx);
-    case "RestElement": return _BindingRestElement(n, ctx);
-    case "ArrayPattern": return _ArrayPattern(n, ctx);
-    case "ObjectPattern": return _ObjectPattern(n, ctx);
-    case "Program": return _Program(n, ctx);
-    case "ImportExpression": return _ImportExpression(n, ctx);
-    case "ImportDeclaration": return _ImportDeclaration(n, ctx);
-    case "ImportSpecifier": return _ImportSpecifier(n, ctx);
-    case "ImportDefaultSpecifier": return _ImportDefaultSpecifier(n, ctx);
-    case "ImportNamespaceSpecifier": return _ImportNamespaceSpecifier(n, ctx);
-    case "ImportAttribute": return _ImportAttribute(n, ctx);
-    case "ExportNamedDeclaration": return _ExportNamedDeclaration(n, ctx);
-    case "ExportDefaultDeclaration": return _ExportDefaultDeclaration(n, ctx);
-    case "ExportAllDeclaration": return _ExportAllDeclaration(n, ctx);
-    case "ExportSpecifier": return _ExportSpecifier(n, ctx);
-    case "TSAnyKeyword": return _TSAnyKeyword(n, ctx);
-    case "TSUnknownKeyword": return _TSUnknownKeyword(n, ctx);
-    case "TSNeverKeyword": return _TSNeverKeyword(n, ctx);
-    case "TSVoidKeyword": return _TSVoidKeyword(n, ctx);
-    case "TSNullKeyword": return _TSNullKeyword(n, ctx);
-    case "TSUndefinedKeyword": return _TSUndefinedKeyword(n, ctx);
-    case "TSStringKeyword": return _TSStringKeyword(n, ctx);
-    case "TSNumberKeyword": return _TSNumberKeyword(n, ctx);
-    case "TSBigIntKeyword": return _TSBigintKeyword(n, ctx);
-    case "TSBooleanKeyword": return _TSBooleanKeyword(n, ctx);
-    case "TSSymbolKeyword": return _TSSymbolKeyword(n, ctx);
-    case "TSObjectKeyword": return _TSObjectKeyword(n, ctx);
-    case "TSIntrinsicKeyword": return _TSIntrinsicKeyword(n, ctx);
-    case "TSThisType": return _TSThisType(n, ctx);
-    case "TSQualifiedName": return _TSQualifiedName(n, ctx);
-    case "TSTypeQuery": return _TSTypeQuery(n, ctx);
-    case "TSImportType": return _TSImportType(n, ctx);
-    case "TSTypeParameter": return _TSTypeParameter(n, ctx);
-    case "TSTypeParameterDeclaration": return _TSTypeParameterDeclaration(n, ctx);
-    case "TSTypeParameterInstantiation": return _TSTypeParameterInstantiation(n, ctx);
-    case "TSLiteralType": return _TSLiteralType(n, ctx);
-    case "TSTemplateLiteralType": return _TSTemplateLiteralType(n, ctx);
-    case "TSArrayType": return _TSArrayType(n, ctx);
-    case "TSIndexedAccessType": return _TSIndexedAccessType(n, ctx);
-    case "TSTupleType": return _TSTupleType(n, ctx);
-    case "TSNamedTupleMember": return _TSNamedTupleMember(n, ctx);
-    case "TSOptionalType": return _TSOptionalType(n, ctx);
-    case "TSRestType": return _TSRestType(n, ctx);
-    case "TSJSDocNullableType": return _TSJsdocNullableType(n, ctx);
-    case "TSJSDocNonNullableType": return _TSJsdocNonNullableType(n, ctx);
-    case "TSJSDocUnknownType": return _TSJsdocUnknownType(n, ctx);
-    case "TSUnionType": return _TSUnionType(n, ctx);
-    case "TSIntersectionType": return _TSIntersectionType(n, ctx);
-    case "TSConditionalType": return _TSConditionalType(n, ctx);
-    case "TSInferType": return _TSInferType(n, ctx);
-    case "TSTypeOperator": return _TSTypeOperator(n, ctx);
-    case "TSParenthesizedType": return _TSParenthesizedType(n, ctx);
-    case "TSFunctionType": return _TSFunctionType(n, ctx);
-    case "TSConstructorType": return _TSConstructorType(n, ctx);
-    case "TSTypePredicate": return _TSTypePredicate(n, ctx);
-    case "TSTypeLiteral": return _TSTypeLiteral(n, ctx);
-    case "TSMappedType": return _TSMappedType(n, ctx);
-    case "TSPropertySignature": return _TSPropertySignature(n, ctx);
-    case "TSMethodSignature": return _TSMethodSignature(n, ctx);
-    case "TSCallSignatureDeclaration": return _TSCallSignatureDeclaration(n, ctx);
-    case "TSConstructSignatureDeclaration": return _TSConstructSignatureDeclaration(n, ctx);
-    case "TSIndexSignature": return _TSIndexSignature(n, ctx);
-    case "TSTypeAliasDeclaration": return _TSTypeAliasDeclaration(n, ctx);
-    case "TSInterfaceDeclaration": return _TSInterfaceDeclaration(n, ctx);
-    case "TSInterfaceBody": return _TSInterfaceBody(n, ctx);
-    case "TSInterfaceHeritage": return _TSInterfaceHeritage(n, ctx);
-    case "TSClassImplements": return _TSClassImplements(n, ctx);
-    case "TSEnumDeclaration": return _TSEnumDeclaration(n, ctx);
-    case "TSEnumBody": return _TSEnumBody(n, ctx);
-    case "TSEnumMember": return _TSEnumMember(n, ctx);
-    case "TSModuleDeclaration": return n.kind === "global" ? _TSGlobalDeclaration(n, ctx) : _TSModuleDeclaration(n, ctx);
-    case "TSModuleBlock": return _TSModuleBlock(n, ctx);
-    case "TSParameterProperty": return _TSParameterProperty(n, ctx);
-    case "TSAsExpression": return _TSAsExpression(n, ctx);
-    case "TSSatisfiesExpression": return _TSSatisfiesExpression(n, ctx);
-    case "TSTypeAssertion": return _TSTypeAssertion(n, ctx);
-    case "TSNonNullExpression": return _TSNonNullExpression(n, ctx);
-    case "TSInstantiationExpression": return _TSInstantiationExpression(n, ctx);
-    case "TSExportAssignment": return _TSExportAssignment(n, ctx);
-    case "TSNamespaceExportDeclaration": return _TSNamespaceExportDeclaration(n, ctx);
-    case "TSImportEqualsDeclaration": return _TSImportEqualsDeclaration(n, ctx);
-    case "TSExternalModuleReference": return _TSExternalModuleReference(n, ctx);
-    case "JSXFragment": return _JSXFragment(n, ctx);
-    case "JSXOpeningFragment": return _JSXOpeningFragment(n, ctx);
-    case "JSXClosingFragment": return _JSXClosingFragment(n, ctx);
-    case "JSXNamespacedName": return _JSXNamespacedName(n, ctx);
-    case "JSXMemberExpression": return _JSXMemberExpression(n, ctx);
-    case "JSXSpreadAttribute": return _JSXSpreadAttribute(n, ctx);
-    case "JSXEmptyExpression": return _JSXEmptyExpression(n, ctx);
-    case "JSXSpreadChild": return _JSXSpreadChild(n, ctx);
+    case "ExpressionStatement": return typeof n.directive === "string" ? _Directive(n, ctx, d) : _ExpressionStatement(n, ctx, d);
+    case "Property": return _ObjectProperty(n, ctx, d);
+    case "TSTypeReference": return _TSTypeReference(n, ctx, d);
+    case "VariableDeclarator": return _VariableDeclarator(n, ctx, d);
+    case "VariableDeclaration": return _VariableDeclaration(n, ctx, d);
+    case "BinaryExpression": return _BinaryExpression(n, ctx, d);
+    case "TSTypeAnnotation": return _TSTypeAnnotation(n, ctx, d);
+    case "BlockStatement": return ctx === BODY ? _FunctionBody(n, ctx, d) : _BlockStatement(n, ctx, d);
+    case "IfStatement": return _IfStatement(n, ctx, d);
+    case "AssignmentExpression": return _AssignmentExpression(n, ctx, d);
+    case "ReturnStatement": return _ReturnStatement(n, ctx, d);
+    case "LogicalExpression": return _LogicalExpression(n, ctx, d);
+    case "JSXElement": return _JSXElement(n, ctx, d);
+    case "JSXOpeningElement": return _JSXOpeningElement(n, ctx, d);
+    case "JSXClosingElement": return _JSXClosingElement(n, ctx, d);
+    case "JSXIdentifier": return _JSXIdentifier(n, ctx, d);
+    case "JSXAttribute": return _JSXAttribute(n, ctx, d);
+    case "JSXText": return _JSXText(n, ctx, d);
+    case "JSXExpressionContainer": return _JSXExpressionContainer(n, ctx, d);
+    case "SequenceExpression": return _SequenceExpression(n, ctx, d);
+    case "ParenthesizedExpression": return _ParenthesizedExpression(n, ctx, d);
+    case "ArrowFunctionExpression": return _ArrowFunctionExpression(n, ctx, d);
+    case "FunctionDeclaration": return _Function(n, ctx, d);
+    case "FunctionExpression": return _Function(n, ctx, d);
+    case "TSDeclareFunction": return _Function(n, ctx, d);
+    case "TSEmptyBodyFunctionExpression": return _Function(n, ctx, d);
+    case "ConditionalExpression": return _ConditionalExpression(n, ctx, d);
+    case "UnaryExpression": return _UnaryExpression(n, ctx, d);
+    case "UpdateExpression": return _UpdateExpression(n, ctx, d);
+    case "ArrayExpression": return _ArrayExpression(n, ctx, d);
+    case "ObjectExpression": return _ObjectExpression(n, ctx, d);
+    case "SpreadElement": return _SpreadElement(n, ctx, d);
+    case "ChainExpression": return _ChainExpression(n, ctx, d);
+    case "TaggedTemplateExpression": return _TaggedTemplateExpression(n, ctx, d);
+    case "NewExpression": return _NewExpression(n, ctx, d);
+    case "AwaitExpression": return _AwaitExpression(n, ctx, d);
+    case "YieldExpression": return _YieldExpression(n, ctx, d);
+    case "MetaProperty": return _MetaProperty(n, ctx, d);
+    case "Decorator": return _Decorator(n, ctx, d);
+    case "ClassDeclaration": return _Class(n, ctx, d);
+    case "ClassExpression": return _Class(n, ctx, d);
+    case "ClassBody": return _ClassBody(n, ctx, d);
+    case "MethodDefinition": return _MethodDefinition(n, ctx, d);
+    case "TSAbstractMethodDefinition": return _MethodDefinition(n, ctx, d);
+    case "PropertyDefinition": return _PropertyDefinition(n, ctx, d);
+    case "AccessorProperty": return _PropertyDefinition(n, ctx, d);
+    case "TSAbstractPropertyDefinition": return _PropertyDefinition(n, ctx, d);
+    case "TSAbstractAccessorProperty": return _PropertyDefinition(n, ctx, d);
+    case "StaticBlock": return _StaticBlock(n, ctx, d);
+    case "Super": return _Super(n, ctx, d);
+    case "ThisExpression": return _ThisExpression(n, ctx, d);
+    case "TemplateLiteral": return _TemplateLiteral(n, ctx, d);
+    case "TemplateElement": return _TemplateElement(n, ctx, d);
+    case "PrivateIdentifier": return _PrivateIdentifier(n, ctx, d);
+    case "SwitchStatement": return _SwitchStatement(n, ctx, d);
+    case "SwitchCase": return _SwitchCase(n, ctx, d);
+    case "ForStatement": return _ForStatement(n, ctx, d);
+    case "ForInStatement": return _ForInStatement(n, ctx, d);
+    case "ForOfStatement": return _ForOfStatement(n, ctx, d);
+    case "WhileStatement": return _WhileStatement(n, ctx, d);
+    case "DoWhileStatement": return _DoWhileStatement(n, ctx, d);
+    case "BreakStatement": return _BreakStatement(n, ctx, d);
+    case "ContinueStatement": return _ContinueStatement(n, ctx, d);
+    case "LabeledStatement": return _LabeledStatement(n, ctx, d);
+    case "WithStatement": return _WithStatement(n, ctx, d);
+    case "ThrowStatement": return _ThrowStatement(n, ctx, d);
+    case "TryStatement": return _TryStatement(n, ctx, d);
+    case "CatchClause": return _CatchClause(n, ctx, d);
+    case "DebuggerStatement": return _DebuggerStatement(n, ctx, d);
+    case "EmptyStatement": return _EmptyStatement(n, ctx, d);
+    case "AssignmentPattern": return _AssignmentPattern(n, ctx, d);
+    case "RestElement": return _BindingRestElement(n, ctx, d);
+    case "ArrayPattern": return _ArrayPattern(n, ctx, d);
+    case "ObjectPattern": return _ObjectPattern(n, ctx, d);
+    case "Program": return _Program(n, ctx, d);
+    case "ImportExpression": return _ImportExpression(n, ctx, d);
+    case "ImportDeclaration": return _ImportDeclaration(n, ctx, d);
+    case "ImportSpecifier": return _ImportSpecifier(n, ctx, d);
+    case "ImportDefaultSpecifier": return _ImportDefaultSpecifier(n, ctx, d);
+    case "ImportNamespaceSpecifier": return _ImportNamespaceSpecifier(n, ctx, d);
+    case "ImportAttribute": return _ImportAttribute(n, ctx, d);
+    case "ExportNamedDeclaration": return _ExportNamedDeclaration(n, ctx, d);
+    case "ExportDefaultDeclaration": return _ExportDefaultDeclaration(n, ctx, d);
+    case "ExportAllDeclaration": return _ExportAllDeclaration(n, ctx, d);
+    case "ExportSpecifier": return _ExportSpecifier(n, ctx, d);
+    case "TSAnyKeyword": return _TSAnyKeyword(n, ctx, d);
+    case "TSUnknownKeyword": return _TSUnknownKeyword(n, ctx, d);
+    case "TSNeverKeyword": return _TSNeverKeyword(n, ctx, d);
+    case "TSVoidKeyword": return _TSVoidKeyword(n, ctx, d);
+    case "TSNullKeyword": return _TSNullKeyword(n, ctx, d);
+    case "TSUndefinedKeyword": return _TSUndefinedKeyword(n, ctx, d);
+    case "TSStringKeyword": return _TSStringKeyword(n, ctx, d);
+    case "TSNumberKeyword": return _TSNumberKeyword(n, ctx, d);
+    case "TSBigIntKeyword": return _TSBigintKeyword(n, ctx, d);
+    case "TSBooleanKeyword": return _TSBooleanKeyword(n, ctx, d);
+    case "TSSymbolKeyword": return _TSSymbolKeyword(n, ctx, d);
+    case "TSObjectKeyword": return _TSObjectKeyword(n, ctx, d);
+    case "TSIntrinsicKeyword": return _TSIntrinsicKeyword(n, ctx, d);
+    case "TSThisType": return _TSThisType(n, ctx, d);
+    case "TSQualifiedName": return _TSQualifiedName(n, ctx, d);
+    case "TSTypeQuery": return _TSTypeQuery(n, ctx, d);
+    case "TSImportType": return _TSImportType(n, ctx, d);
+    case "TSTypeParameter": return _TSTypeParameter(n, ctx, d);
+    case "TSTypeParameterDeclaration": return _TSTypeParameterDeclaration(n, ctx, d);
+    case "TSTypeParameterInstantiation": return _TSTypeParameterInstantiation(n, ctx, d);
+    case "TSLiteralType": return _TSLiteralType(n, ctx, d);
+    case "TSTemplateLiteralType": return _TSTemplateLiteralType(n, ctx, d);
+    case "TSArrayType": return _TSArrayType(n, ctx, d);
+    case "TSIndexedAccessType": return _TSIndexedAccessType(n, ctx, d);
+    case "TSTupleType": return _TSTupleType(n, ctx, d);
+    case "TSNamedTupleMember": return _TSNamedTupleMember(n, ctx, d);
+    case "TSOptionalType": return _TSOptionalType(n, ctx, d);
+    case "TSRestType": return _TSRestType(n, ctx, d);
+    case "TSJSDocNullableType": return _TSJsdocNullableType(n, ctx, d);
+    case "TSJSDocNonNullableType": return _TSJsdocNonNullableType(n, ctx, d);
+    case "TSJSDocUnknownType": return _TSJsdocUnknownType(n, ctx, d);
+    case "TSUnionType": return _TSUnionType(n, ctx, d);
+    case "TSIntersectionType": return _TSIntersectionType(n, ctx, d);
+    case "TSConditionalType": return _TSConditionalType(n, ctx, d);
+    case "TSInferType": return _TSInferType(n, ctx, d);
+    case "TSTypeOperator": return _TSTypeOperator(n, ctx, d);
+    case "TSParenthesizedType": return _TSParenthesizedType(n, ctx, d);
+    case "TSFunctionType": return _TSFunctionType(n, ctx, d);
+    case "TSConstructorType": return _TSConstructorType(n, ctx, d);
+    case "TSTypePredicate": return _TSTypePredicate(n, ctx, d);
+    case "TSTypeLiteral": return _TSTypeLiteral(n, ctx, d);
+    case "TSMappedType": return _TSMappedType(n, ctx, d);
+    case "TSPropertySignature": return _TSPropertySignature(n, ctx, d);
+    case "TSMethodSignature": return _TSMethodSignature(n, ctx, d);
+    case "TSCallSignatureDeclaration": return _TSCallSignatureDeclaration(n, ctx, d);
+    case "TSConstructSignatureDeclaration": return _TSConstructSignatureDeclaration(n, ctx, d);
+    case "TSIndexSignature": return _TSIndexSignature(n, ctx, d);
+    case "TSTypeAliasDeclaration": return _TSTypeAliasDeclaration(n, ctx, d);
+    case "TSInterfaceDeclaration": return _TSInterfaceDeclaration(n, ctx, d);
+    case "TSInterfaceBody": return _TSInterfaceBody(n, ctx, d);
+    case "TSInterfaceHeritage": return _TSInterfaceHeritage(n, ctx, d);
+    case "TSClassImplements": return _TSClassImplements(n, ctx, d);
+    case "TSEnumDeclaration": return _TSEnumDeclaration(n, ctx, d);
+    case "TSEnumBody": return _TSEnumBody(n, ctx, d);
+    case "TSEnumMember": return _TSEnumMember(n, ctx, d);
+    case "TSModuleDeclaration": return n.kind === "global" ? _TSGlobalDeclaration(n, ctx, d) : _TSModuleDeclaration(n, ctx, d);
+    case "TSModuleBlock": return _TSModuleBlock(n, ctx, d);
+    case "TSParameterProperty": return _TSParameterProperty(n, ctx, d);
+    case "TSAsExpression": return _TSAsExpression(n, ctx, d);
+    case "TSSatisfiesExpression": return _TSSatisfiesExpression(n, ctx, d);
+    case "TSTypeAssertion": return _TSTypeAssertion(n, ctx, d);
+    case "TSNonNullExpression": return _TSNonNullExpression(n, ctx, d);
+    case "TSInstantiationExpression": return _TSInstantiationExpression(n, ctx, d);
+    case "TSExportAssignment": return _TSExportAssignment(n, ctx, d);
+    case "TSNamespaceExportDeclaration": return _TSNamespaceExportDeclaration(n, ctx, d);
+    case "TSImportEqualsDeclaration": return _TSImportEqualsDeclaration(n, ctx, d);
+    case "TSExternalModuleReference": return _TSExternalModuleReference(n, ctx, d);
+    case "JSXFragment": return _JSXFragment(n, ctx, d);
+    case "JSXOpeningFragment": return _JSXOpeningFragment(n, ctx, d);
+    case "JSXClosingFragment": return _JSXClosingFragment(n, ctx, d);
+    case "JSXNamespacedName": return _JSXNamespacedName(n, ctx, d);
+    case "JSXMemberExpression": return _JSXMemberExpression(n, ctx, d);
+    case "JSXSpreadAttribute": return _JSXSpreadAttribute(n, ctx, d);
+    case "JSXEmptyExpression": return _JSXEmptyExpression(n, ctx, d);
+    case "JSXSpreadChild": return _JSXSpreadChild(n, ctx, d);
   }
   return _unknown(n);
 }

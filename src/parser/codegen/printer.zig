@@ -41,6 +41,7 @@ pub const Options = struct {
     quotes: Quotes = .preserve,
     source_map: ?SourceMapOptions = null,
     comments: Comments = .some,
+    stack_bytes: usize = util.StackGuard.default_bytes,
 };
 
 const Diagnostic = ast.Diagnostic;
@@ -117,7 +118,8 @@ const Printer = struct {
     // the node whose trailing comments follow its parent's next token
     owed: NodeIndex = .null,
 
-    stack_floor: usize = 0,
+    stack: util.StackGuard,
+    chain_stack: util.StackGuard,
     links: std.ArrayList(Link) = .empty,
     decoded: std.ArrayList(u8) = .empty,
 
@@ -150,7 +152,8 @@ const Printer = struct {
                 options.source_map,
                 tree.source,
             ),
-            .stack_floor = @frameAddress() -| chain_stack_bytes_max,
+            .stack = .init(options.stack_bytes),
+            .chain_stack = .init(options.stack_bytes / 8),
         };
     }
 
@@ -334,6 +337,9 @@ const Printer = struct {
 
     fn emitExpr(self: *Self, idx: NodeIndex, ctx: Ctx) Error!void {
         if (idx == .null) return;
+        if (self.stack.exhausted()) {
+            return self.diagnose(idx, "Code is nested too deeply to print");
+        }
 
         if (self.options.strip) {
             if (try self.emitStrippedNode(idx, ctx)) return;
@@ -463,16 +469,15 @@ const Printer = struct {
 
     fn emitLink(self: *Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) Error!void {
         const head = self.linkHead(tag, node, ctx);
-        if (@frameAddress() > self.stack_floor) {
-            try self.emitExpr(head.idx, head.ctx);
-        } else {
+        if (self.chain_stack.exhausted()) {
             try self.emitChainIteratively(head);
+        } else {
+            try self.emitExpr(head.idx, head.ctx);
         }
         try self.emitLinkSuffix(tag, node, ctx);
     }
 
     noinline fn emitChainIteratively(self: *Self, head: Head) Error!void {
-        std.debug.assert(@frameAddress() <= self.stack_floor);
         const first = self.stripped(head.idx);
         if (first == .null or !isChainLink(self.tagOf(first))) {
             return self.emitExpr(head.idx, head.ctx);
@@ -1413,7 +1418,7 @@ const Printer = struct {
     fn emit_variable_declarator(self: *Self, d: *const ast.VariableDeclarator) Error!void {
         if (!self.options.strip) self.definite_pending = d.definite;
         try self.emit(d.id);
-        std.debug.assert(!self.definite_pending);
+        self.definite_pending = false;
         if (d.init != .null) {
             try self.printSpaced('=');
             try self.emitExpr(d.init, .{ .prec = Precedence.Assignment, .no_in = self.decl_no_in });
@@ -1569,7 +1574,8 @@ const Printer = struct {
     }
 
     fn emit_object_property(self: *Self, p: *const ast.ObjectProperty) Error!void {
-        if (p.method or p.kind == .get or p.kind == .set) {
+        const is_method = p.method or p.kind == .get or p.kind == .set;
+        if (is_method and self.nodeData(p.value) == .function) {
             const fn_data = self.nodeData(p.value).function;
             switch (p.kind) {
                 .get => try self.out.writeStr("get "),
@@ -3262,8 +3268,6 @@ fn canFollowTypeArguments(operator: ast.BinaryOperator) bool {
         else => true,
     };
 }
-
-const chain_stack_bytes_max = 256 * 1024;
 
 fn isChainLink(tag: NodeTag) bool {
     return switch (tag) {

@@ -33,8 +33,71 @@ const signature = .{
 };
 const pattern = .{ .decorators = decorators, .type_annotation = annotation };
 
+const structural = blk: {
+    @setEvalBranchQuota(100_000);
+    var set: std.StaticBitSet(@typeInfo(Tag).@"enum".field_names.len) = .empty;
+    for ([_]Tag{
+        .program,
+        .function_body,
+        .formal_parameters,
+        .formal_parameter,
+        .class_body,
+        .method_definition,
+        .property_definition,
+        .static_block,
+        .decorator,
+        .template_element,
+        .switch_case,
+        .catch_clause,
+        .variable_declarator,
+        .object_property,
+        .binding_property,
+        .import_specifier,
+        .import_default_specifier,
+        .import_namespace_specifier,
+        .import_attribute,
+        .export_specifier,
+        .label_identifier,
+        .ts_type_annotation,
+        .ts_type_parameter,
+        .ts_type_parameter_declaration,
+        .ts_type_parameter_instantiation,
+        .ts_property_signature,
+        .ts_method_signature,
+        .ts_call_signature_declaration,
+        .ts_construct_signature_declaration,
+        .ts_index_signature,
+        .ts_interface_body,
+        .ts_interface_heritage,
+        .ts_class_implements,
+        .ts_enum_body,
+        .ts_enum_member,
+        .ts_module_block,
+        .ts_parameter_property,
+        .ts_this_parameter,
+        .ts_external_module_reference,
+        .jsx_opening_element,
+        .jsx_closing_element,
+        .jsx_opening_fragment,
+        .jsx_closing_fragment,
+        .jsx_attribute,
+        .jsx_spread_attribute,
+        .jsx_empty_expression,
+        .jsx_text,
+        .jsx_spread_child,
+    }) |tag| set.set(@backingInt(tag));
+    break :blk set;
+};
+
 const fields = .{
-    .arrow_function_expression = signature,
+    .arrow_function_expression = .{
+        .type_parameters = declaration,
+        .params = .{.formal_parameters},
+        .return_type = annotation,
+        .body = .{ .any, .function_body },
+    },
+    .formal_parameter = .{ .pattern = .{ .any, .ts_this_parameter } },
+    .jsx_expression_container = .{ .expression = .{ .any, .jsx_empty_expression } },
     .function = .{
         .id = .{ .null, .binding_identifier },
         .type_parameters = declaration,
@@ -125,7 +188,19 @@ const fields = .{
     .import_namespace_specifier = .{ .local = .{.binding_identifier} },
     .import_attribute = .{ .key = names, .value = .{.string_literal} },
     .export_named_declaration = .{
-        .declaration = .{.null},
+        .declaration = .{
+            .null,
+            .function,
+            .class,
+            .variable_declaration,
+            .ts_type_alias_declaration,
+            .ts_interface_declaration,
+            .ts_enum_declaration,
+            .ts_module_declaration,
+            .ts_global_declaration,
+            .ts_import_equals_declaration,
+            .import_declaration,
+        },
         .specifiers = .{.export_specifier},
         .source = .{ .null, .string_literal },
         .attributes = .{.import_attribute},
@@ -260,11 +335,11 @@ const fields = .{
 
 pub const Field = struct {
     nullable: bool = false,
-    /// Empty when any node is allowed.
+    open: bool = true,
     tags: []const Tag = &.{},
 
     pub inline fn allows(comptime field: Field, tag: u8) bool {
-        if (field.tags.len == 0) return true;
+        if (field.open and tag < structural.capacity() and !structural.isSet(tag)) return true;
         inline for (field.tags) |allowed| if (@backingInt(allowed) == tag) return true;
         return false;
     }
@@ -276,13 +351,17 @@ pub fn of(comptime tag: []const u8, comptime name: []const u8) Field {
         const rules = @field(fields, tag);
         if (!@hasField(@TypeOf(rules), name)) return .{};
         var field: Field = .{};
+        var open = false;
         for (@field(rules, name)) |kind| {
             if (kind == .null) {
                 field.nullable = true;
+            } else if (kind == .any) {
+                open = true;
             } else {
                 field.tags = field.tags ++ &[_]Tag{kind};
             }
         }
+        field.open = open or field.tags.len == 0;
         return field;
     }
 }

@@ -2,6 +2,7 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const static_semantics = @import("spec").static_semantics;
 const sc = @import("scope.zig");
+const StackGuard = @import("util").StackGuard;
 
 const Allocator = std.mem.Allocator;
 const String = ast.String;
@@ -760,7 +761,11 @@ pub const SymbolTracker = struct {
                 const decl = data.ts_module_declaration;
                 try self.pushSavedContext();
                 self.body_owner = .none;
-                const instantiated = isNamespaceInstantiated(self.tree, decl.body);
+                const instantiated = isNamespaceInstantiated(
+                    self.tree,
+                    decl.body,
+                    .init(StackGuard.default_bytes),
+                );
                 self.pending = .{
                     .flags = .{
                         .value_module = instantiated,
@@ -1024,7 +1029,7 @@ pub const SymbolTracker = struct {
                     q.right,
                 },
                 .binding_identifier => |id| .{ id.name, part },
-                else => unreachable,
+                else => return,
             };
             if (owner != .none) try self.addBody(try self.lastBodyOf(owner), target);
             self.export_state = if (owner == .none) export_state else .named;
@@ -1425,7 +1430,6 @@ pub const SymbolTracker = struct {
             node_links[@backingInt(pair.node)] = .{ .id = symbol_id, .reference = false };
         }
         for (self.references.items, 0..) |ref, i| {
-            std.debug.assert(node_links[@backingInt(ref.node)] == NodeLink.none);
             node_links[@backingInt(ref.node)] = .{ .id = @intCast(i), .reference = true };
         }
 
@@ -1719,15 +1723,19 @@ fn declNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
 }
 
 // body-less ambient modules are instantiated by spec
-fn isNamespaceInstantiated(tree: *const ast.Tree, body_node: ast.NodeIndex) bool {
-    if (body_node == .null) return true;
+fn isNamespaceInstantiated(
+    tree: *const ast.Tree,
+    body_node: ast.NodeIndex,
+    stack: StackGuard,
+) bool {
+    if (body_node == .null or stack.exhausted()) return true;
     const block = switch (tree.data(body_node)) {
         .ts_module_block => |b| b,
         else => return true,
     };
     const statements = tree.extra(block.body);
     for (statements) |stmt| {
-        if (isInstantiatingStatement(tree, stmt, statements)) return true;
+        if (isInstantiatingStatement(tree, stmt, statements, stack)) return true;
     }
     return false;
 }
@@ -1736,6 +1744,7 @@ fn isInstantiatingStatement(
     tree: *const ast.Tree,
     idx: ast.NodeIndex,
     statements: []const ast.NodeIndex,
+    stack: StackGuard,
 ) bool {
     return switch (tree.data(idx)) {
         .ts_interface_declaration,
@@ -1744,17 +1753,17 @@ fn isInstantiatingStatement(
         => false,
         // const enums included, as in tsc
         .ts_enum_declaration => true,
-        .ts_module_declaration => |m| isNamespaceInstantiated(tree, m.body),
-        .ts_global_declaration => |g| isNamespaceInstantiated(tree, g.body),
+        .ts_module_declaration => |m| isNamespaceInstantiated(tree, m.body, stack),
+        .ts_global_declaration => |g| isNamespaceInstantiated(tree, g.body, stack),
         .export_named_declaration => |e| {
             // `export declare` is a type-only export of a value
             if (e.declaration != .null) {
                 if (tree.data(e.declaration) == .ts_import_equals_declaration) return true;
-                return isInstantiatingStatement(tree, e.declaration, statements);
+                return isInstantiatingStatement(tree, e.declaration, statements, stack);
             }
             if (e.export_kind == .type) return false;
             if (e.source != .null) return true;
-            return exportsValue(tree, e.specifiers, statements);
+            return exportsValue(tree, e.specifiers, statements, stack);
         },
         else => true,
     };
@@ -1765,6 +1774,7 @@ fn exportsValue(
     tree: *const ast.Tree,
     specifiers: ast.IndexRange,
     statements: []const ast.NodeIndex,
+    stack: StackGuard,
 ) bool {
     for (tree.extra(specifiers)) |specifier| {
         const spec = tree.data(specifier).export_specifier;
@@ -1778,7 +1788,7 @@ fn exportsValue(
             if (!declaresName(tree, stmt, name)) continue;
             found = true;
             if (tree.data(stmt) == .ts_import_equals_declaration) return true;
-            if (isInstantiatingStatement(tree, stmt, statements)) return true;
+            if (isInstantiatingStatement(tree, stmt, statements, stack)) return true;
         }
         if (!found) return true;
     }

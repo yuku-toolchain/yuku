@@ -194,14 +194,25 @@ function wasmBackend(module: WebAssembly.Module): Backend {
   return instance;
 }
 
+const SMALL_STACK = 1 << 9;
+
 function createInstance(module: WebAssembly.Module): Instance {
   const exports = instantiate(module);
+  const contained = (run: (flags: number) => ArrayBuffer, flags: number): ArrayBuffer => {
+    try {
+      return run(flags);
+    } catch (error) {
+      instance.exports = instantiate(module);
+      if (flags & SMALL_STACK || !(error instanceof RangeError)) throw error;
+      return contained(run, flags | SMALL_STACK);
+    }
+  };
   const instance: Instance = {
     exports,
     grownAt: 0,
-    run: (entry, source, flags) => call(instance, entry, source, flags),
+    run: (entry, source, flags) => contained((f) => call(instance, entry, source, f), flags),
     runTree: (entry, tree, source, flags, options) =>
-      callTree(instance, entry, tree, source, flags, options),
+      contained((f) => callTree(instance, entry, tree, source, f, options), flags),
   };
   return instance;
 }
@@ -210,7 +221,7 @@ function call(instance: Instance, entry: Entry, source: string, flags: number): 
   const { memory, alloc, free } = instance.exports;
   const bytes = memory.buffer.byteLength;
   const capacity = source.length * (NodeBuffer === undefined ? 3 : 2) || 1;
-  const pointer = alloc(capacity) >>> 0;
+  const pointer = allocated(alloc(capacity));
   const written = writeSource(memory.buffer, pointer, capacity, source);
   const encoding = NodeBuffer === undefined ? 0 : UTF16;
   const result = instance.exports[entry](pointer, written, flags | encoding) >>> 0;
@@ -234,7 +245,7 @@ function callTree(
   const poolBytes = (pool.length * 2 + 3) & ~3;
   const sourceCapacity = source.length * (NodeBuffer === undefined ? 3 : 2);
   const capacity = words * 4 + poolBytes + sourceCapacity;
-  const pointer = alloc(capacity) >>> 0;
+  const pointer = allocated(alloc(capacity));
   const block = new Int32Array(memory.buffer, pointer, words);
   block[0] = nodes.length;
   block[1] = extras.length;
@@ -259,6 +270,11 @@ function callTree(
   if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
   free(pointer, capacity);
   return resultOf(instance, result);
+}
+
+function allocated(pointer: number): number {
+  if (pointer === 0) throw new Error("yuku: out of memory");
+  return pointer >>> 0;
 }
 
 function resultOf(instance: Instance, result: number): ArrayBuffer {

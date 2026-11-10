@@ -491,7 +491,7 @@ pub const Mutator = struct {
             11, 12 => {
                 const openers = [_][]const u8{ "(", "[", "{", "`${", "/", "a&", "a?b:", "typeof " };
                 const op = openers[self.rng.uintLessThan(usize, openers.len)];
-                const count = self.rng.intRangeAtMost(usize, 1, 400);
+                const count = self.rng.intRangeAtMost(usize, 1, 4_000);
                 var prefix: std.ArrayList(u8) = .empty;
                 defer prefix.deinit(gpa);
                 var k: usize = 0;

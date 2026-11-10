@@ -23,6 +23,7 @@ const ParseStatementOptions = struct {
 };
 
 pub fn parseStatement(parser: *Parser, options: ParseStatementOptions) Error!?ast.NodeIndex {
+    try parser.ensureStack() orelse return null;
     parser.context.single_statement = options.can_be_single_statement_context;
     defer parser.context.single_statement = false;
 

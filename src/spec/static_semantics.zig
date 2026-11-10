@@ -71,8 +71,7 @@ pub fn stringLiteralLike(tree: *const ast.Tree, node: ast.NodeIndex) ?ast.String
     switch (tree.data(node)) {
         .string_literal => |literal| return literal.value,
         .template_literal => |template| {
-            if (template.expressions.len > 0) return null;
-            std.debug.assert(template.quasis.len == 1);
+            if (template.expressions.len > 0 or template.quasis.len != 1) return null;
             const quasi = tree.data(tree.extra(template.quasis)[0]).template_element;
             if (quasi.is_cooked_undefined) return null;
             return quasi.cooked;
@@ -85,10 +84,7 @@ pub fn stringLiteralLike(tree: *const ast.Tree, node: ast.NodeIndex) ?ast.String
 pub fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
     std.debug.assert(node != .null);
     var current = node;
-    // at most one paren node per syntactic level, so nesting depth bounds the chain
-    var depth: u32 = 0;
-    while (true) : (depth += 1) {
-        std.debug.assert(depth < 1_000_000);
+    while (true) {
         switch (tree.data(current)) {
             .parenthesized_expression => |p| current = p.expression,
             else => return current,

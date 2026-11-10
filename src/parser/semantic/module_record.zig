@@ -344,31 +344,36 @@ const Collector = struct {
 
     fn patternNames(
         self: *Collector,
-        pattern: ast.NodeIndex,
+        root: ast.NodeIndex,
         type_only: bool,
     ) Allocator.Error!void {
-        if (pattern == .null) return;
+        var stack: std.ArrayList(ast.NodeIndex) = .empty;
+        defer stack.deinit(self.allocator);
+        try stack.append(self.allocator, root);
 
-        switch (self.tree.data(pattern)) {
-            .binding_identifier => try self.exportLocal(pattern, type_only),
-            .assignment_pattern => |p| try self.patternNames(p.left, type_only),
-            .binding_rest_element => |p| try self.patternNames(p.argument, type_only),
-            .array_pattern => |p| {
-                for (self.tree.extra(p.elements)) |element| {
-                    try self.patternNames(element, type_only);
-                }
-                try self.patternNames(p.rest, type_only);
-            },
-            .object_pattern => |p| {
-                for (self.tree.extra(p.properties)) |property| {
-                    if (self.tree.data(property) == .binding_property) {
-                        const value = self.tree.data(property).binding_property.value;
-                        try self.patternNames(value, type_only);
+        while (stack.pop()) |pattern| {
+            if (pattern == .null) continue;
+            switch (self.tree.data(pattern)) {
+                .binding_identifier => try self.exportLocal(pattern, type_only),
+                .assignment_pattern => |p| try stack.append(self.allocator, p.left),
+                .binding_rest_element => |p| try stack.append(self.allocator, p.argument),
+                .array_pattern => |p| {
+                    try stack.append(self.allocator, p.rest);
+                    var elements = std.mem.reverseIterator(self.tree.extra(p.elements));
+                    while (elements.next()) |element| try stack.append(self.allocator, element);
+                },
+                .object_pattern => |p| {
+                    try stack.append(self.allocator, p.rest);
+                    var properties = std.mem.reverseIterator(self.tree.extra(p.properties));
+                    while (properties.next()) |property| {
+                        if (self.tree.data(property) == .binding_property) {
+                            const value = self.tree.data(property).binding_property.value;
+                            try stack.append(self.allocator, value);
+                        }
                     }
-                }
-                try self.patternNames(p.rest, type_only);
-            },
-            else => {},
+                },
+                else => {},
+            }
         }
     }
 

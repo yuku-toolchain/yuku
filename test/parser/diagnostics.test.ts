@@ -137,3 +137,55 @@ describe("depth", () => {
     }
   });
 });
+
+describe("nesting", () => {
+  const depth = 200_000;
+  const message = "Code is nested too deeply to parse";
+  const bombs: [ParseOptions["lang"], string, string][] = [
+    ["js", "", "("],
+    ["js", "", "["],
+    ["js", "x=", "{a:"],
+    ["js", "", "`${"],
+    ["js", "", "!"],
+    ["js", "", "a?b:"],
+    ["js", "", "a=>"],
+    ["js", "", "f("],
+    ["js", "", "new "],
+    ["js", "x=", "class extends "],
+    ["js", "", "{"],
+    ["js", "", "if(a)"],
+    ["js", "", "function f(){"],
+    ["js", "let ", "["],
+    ["js", "let ", "{a:"],
+    ["ts", "", "("],
+    ["ts", "", "<T>"],
+    ["ts", "", "namespace a{"],
+    ["ts", "type T=", "("],
+    ["ts", "type T=", "["],
+    ["ts", "type T=", "{a:"],
+    ["ts", "type T=", "keyof "],
+    ["ts", "type T=", "()=>"],
+    ["ts", "type T=", "new()=>"],
+    ["ts", "type T=", "({a"],
+    ["ts", "type T=", "A<"],
+    ["ts", "type T=", "A extends B?C:"],
+    ["jsx", "", "<a>"],
+    ["jsx", "", "<a b="],
+    ["jsx", "", "<>{"],
+  ];
+
+  test.each(bombs)("%s %s%s is a diagnostic", (lang, head, opener) => {
+    const { diagnostics } = parse(head + opener.repeat(depth), { lang });
+    expect(diagnostics.map((d) => d.message)).toContain(message);
+  });
+
+  test("failed speculation stays linear", () => {
+    const started = performance.now();
+    parse("a<".repeat(150_000), { lang: "ts" });
+    expect(performance.now() - started).toBeLessThan(5000);
+  });
+
+  test("ordinary nesting parses", () => {
+    expect(parse("(".repeat(200) + "1" + ")".repeat(200)).diagnostics).toEqual([]);
+  });
+});

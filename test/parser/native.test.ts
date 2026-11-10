@@ -63,6 +63,12 @@ function agrees(source: string, options: ParseOptions): string | null {
 }
 
 describe.skipIf(!shipsAddon)("the Node-API addon", () => {
+  test("a malformed call throws", () => {
+    const raw = require(fileURLToPath(new URL(addon, packages)));
+    expect(() => raw.parse("a;")).toThrow("Node-API");
+    expect(() => raw.parse("a;", 0xffff_ffff)).toThrow("malformed");
+  });
+
   test("loads for this platform and parses in place of WebAssembly", () => {
     const loaded = child(`
       const dlopen = process.dlopen;

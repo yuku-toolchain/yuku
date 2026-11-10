@@ -124,7 +124,7 @@ pub fn tryParseArrow(
     }
 
     parser.rewind(cp);
-    speculation.reject(parser);
+    try speculation.reject(parser);
     return null;
 }
 

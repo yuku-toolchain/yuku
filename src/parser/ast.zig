@@ -182,8 +182,8 @@ pub const Tree = struct {
     }
 
     /// Appends a diagnostic to the tree.
-    pub fn addDiagnostic(self: *Tree, diag: Diagnostic) error{}!void {
-        self.diagnostics.append(self.arena.allocator(), diag) catch outOfMemory();
+    pub fn addDiagnostic(self: *Tree, diag: Diagnostic) std.mem.Allocator.Error!void {
+        try self.diagnostics.append(self.arena.allocator(), diag);
     }
 
     /// Returns the data for the node at the given index.
@@ -247,7 +247,7 @@ pub const Tree = struct {
         self: *Tree,
         node_data: NodeData,
         node_span: Span,
-    ) error{}!NodeIndex {
+    ) std.mem.Allocator.Error!NodeIndex {
         std.debug.assert(self.nodes.len < std.math.maxInt(u32));
         std.debug.assert(node_span.start <= node_span.end);
         const index: NodeIndex = @fromBackingInt(@intCast(self.nodes.len));
@@ -255,17 +255,27 @@ pub const Tree = struct {
         if (self.nodes.len < self.nodes.capacity) {
             self.nodes.appendAssumeCapacity(entry);
         } else {
-            self.nodes.append(self.arena.allocator(), entry) catch outOfMemory();
+            try self.growNodes(entry);
         }
         return index;
     }
 
+    noinline fn growNodes(self: *Tree, entry: Node) std.mem.Allocator.Error!void {
+        @branchHint(.cold);
+        try self.nodes.append(self.arena.allocator(), entry);
+    }
+
+    noinline fn growExtras(self: *Tree, len: usize) std.mem.Allocator.Error!void {
+        @branchHint(.cold);
+        try self.extras.ensureUnusedCapacity(self.arena.allocator(), len);
+    }
+
     /// Appends a child list and returns its range.
-    pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{}!IndexRange {
+    pub inline fn addExtra(self: *Tree, children: []const NodeIndex) std.mem.Allocator.Error!IndexRange {
         std.debug.assert(self.extras.items.len + children.len <= std.math.maxInt(u32));
         const start: u32 = @intCast(self.extras.items.len);
         if (self.extras.items.len + children.len > self.extras.capacity) {
-            self.extras.ensureUnusedCapacity(self.arena.allocator(), children.len) catch outOfMemory();
+            try self.growExtras(children.len);
         }
         const dest = self.extras.addManyAsSliceAssumeCapacity(children.len);
         switch (children.len) {
@@ -286,8 +296,8 @@ pub const Tree = struct {
     }
 
     /// Interns text that is not in the source, such as a synthesized name.
-    pub fn addString(self: *Tree, str: []const u8) error{}!String {
-        return self.strings.addString(self.arena.allocator(), str) catch outOfMemory();
+    pub fn addString(self: *Tree, str: []const u8) std.mem.Allocator.Error!String {
+        return self.strings.addString(self.arena.allocator(), str);
     }
 
     /// The text of a `String`.
@@ -348,11 +358,6 @@ pub const Tree = struct {
         return within[0..count];
     }
 };
-
-pub fn outOfMemory() noreturn {
-    @branchHint(.cold);
-    @panic("out of memory");
-}
 
 /// An index into `Tree.nodes`, where `.null` marks an absent child.
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };

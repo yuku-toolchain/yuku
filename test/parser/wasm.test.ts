@@ -163,3 +163,51 @@ test("sources cross as UTF-16 with Buffer and as UTF-8 without, with the same re
     });
   }
 });
+
+test("too deep nesting is a diagnostic", () => {
+  const core = new Core({ wasm: new WebAssembly.Module(shipped) });
+  const { diagnostics } = parse("(".repeat(200_000), { core });
+  expect(diagnostics[0]!.message).toBe("Code is nested too deeply to parse");
+  expect(parse("a;", { core }).diagnostics).toEqual([]);
+});
+
+test("a trapped instance is replaced", () => {
+  const core = new Core({ wasm: new WebAssembly.Module(shipped) });
+  const Instance = WebAssembly.Instance;
+  let made = 0;
+  WebAssembly.Instance = function (module: WebAssembly.Module) {
+    const { exports } = new Instance(module);
+    if (made++ > 0) return { exports };
+    const parse = () => {
+      throw new WebAssembly.RuntimeError("unreachable");
+    };
+    return { exports: { ...exports, parse } };
+  } as unknown as typeof WebAssembly.Instance;
+  try {
+    expect(() => parse("a;", { core })).toThrow("unreachable");
+    expect(parse("a;", { core }).program.body).toHaveLength(1);
+    expect(made).toBe(2);
+  } finally {
+    WebAssembly.Instance = Instance;
+  }
+});
+
+test("a host stack overflow retries on a small stack", () => {
+  const core = new Core({ wasm: new WebAssembly.Module(shipped) });
+  const Instance = WebAssembly.Instance;
+  let made = 0;
+  WebAssembly.Instance = function (module: WebAssembly.Module) {
+    const { exports } = new Instance(module);
+    if (made++ > 0) return { exports };
+    const parse = () => {
+      throw new RangeError("Maximum call stack size exceeded");
+    };
+    return { exports: { ...exports, parse } };
+  } as unknown as typeof WebAssembly.Instance;
+  try {
+    expect(parse("a;", { core }).program.body).toHaveLength(1);
+    expect(made).toBe(2);
+  } finally {
+    WebAssembly.Instance = Instance;
+  }
+});

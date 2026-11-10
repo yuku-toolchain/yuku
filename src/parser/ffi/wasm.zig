@@ -18,8 +18,8 @@ const TreeHeader = extern struct {
     source_bytes: u32,
 };
 
-export fn alloc(len: usize) [*]align(4) u8 {
-    return (gpa.alignedAlloc(u8, .of(u32), len) catch @trap()).ptr;
+export fn alloc(len: usize) usize {
+    return @intFromPtr((gpa.alignedAlloc(u8, .of(u32), len) catch return 0).ptr);
 }
 
 export fn free(ptr: [*]align(4) u8, len: usize) void {

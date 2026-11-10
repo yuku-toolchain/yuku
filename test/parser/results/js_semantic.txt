@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4197/4197 (100.00%)
+Passed:       4199/4199 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
@@ -3698,6 +3698,16 @@ error: Duplicate identifier 'f'
    = help: Rename or remove this declaration of 'f'
 
 
+✓ test/parser/suite/js/semantic/185c93b6fc3427a1.module.js
+error: A string literal cannot be used as an exported binding without 'from'
+   |
+ 1 | export { a, "a" } as ns from "x";
+   |             ^^^
+ 2 | 
+   |
+   = help: Add a 'from' clause, or export a local binding with 'as'
+
+
 ✓ test/parser/suite/js/semantic/185cc309566f0a77.js
 error: The variable declaration of a 'for...in' statement cannot have an initializer
    |
@@ -6691,6 +6701,18 @@ error: Cannot assign to 'arguments' in strict mode
  1 | function a() {'use strict'; --arguments; }
    |                             ^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/2a7286228fd899ff.module.js
+error: Duplicate identifier 'a'
+   |
+ 1 | import { a, a } from "x";
+   |             ^
+   |          ~ 'a' was first declared as an import here
+   |             ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Rename or remove this declaration of 'a'
+
 
 ✓ test/parser/suite/js/semantic/2a74bf3e0cf12ce9.js
 error: 'use strict' directive cannot be used with non-simple parameter list
