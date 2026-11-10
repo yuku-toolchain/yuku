@@ -2,6 +2,21 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.28.0
+
+### Breaking
+
+- `print` and `reanalyze` throw on a hand-built tree with a node where the parser never puts one, such as a `Program` inside an expression, so place nodes where the parser does (#323 by @arshad-yaseen)
+- The Zig parser returns `error.OutOfMemory` instead of panicking and `ast.outOfMemory` is gone, so handle the error from `parser.parse` (#323 by @arshad-yaseen)
+
+### Changes
+
+- Code nested too deeply reports `Code is nested too deeply to parse` instead of crashing the process (#323 by @arshad-yaseen)
+- Running out of memory throws an error instead of aborting the process (#323 by @arshad-yaseen)
+- `print` handles long chains and deep nesting instead of throwing a `RangeError`, and a tree too deep to print reports it in `diagnostics` (#323 by @arshad-yaseen)
+- A failed WebAssembly call no longer breaks every parse after it (#323 by @arshad-yaseen)
+- TypeScript such as `a<a<a<` no longer takes quadratic time to parse (#323 by @arshad-yaseen)
+
 ## 0.27.0
 
 ### Breaking
