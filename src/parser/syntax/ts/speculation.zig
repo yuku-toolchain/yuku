@@ -1,4 +1,3 @@
-const ast = @import("../../ast.zig");
 const parser_module = @import("../../parser.zig");
 const Parser = parser_module.Parser;
 const ParseExpressionOptions = @import("../expressions.zig").ParseExpressionOptions;
@@ -26,8 +25,7 @@ pub const Speculation = packed struct {
         return parser.ts_rejected_speculations.contains(self);
     }
 
-    pub fn reject(self: Speculation, parser: *Parser) void {
-        parser.ts_rejected_speculations.putNoClobber(parser.allocator(), self, {}) catch
-            ast.outOfMemory();
+    pub fn reject(self: Speculation, parser: *Parser) parser_module.Error!void {
+        try parser.ts_rejected_speculations.put(parser.allocator(), self, {});
     }
 };

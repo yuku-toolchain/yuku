@@ -187,6 +187,7 @@ fn parseJSDocPostfix(
 }
 
 fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
+    try parser.ensureStack() orelse return null;
     const token = parser.current_token;
 
     switch (token.tag) {
@@ -447,7 +448,7 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
 
     if (conditional_allowed and parser.current_token.tag == .question) {
         parser.rewind(cp);
-        speculation.reject(parser);
+        try speculation.reject(parser);
         return .null;
     }
 
@@ -504,6 +505,7 @@ fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
 }
 
 fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
+    try parser.ensureStack() orelse return null;
     const start = parser.current_token.span.start;
 
     const is_abstract = parser.current_token.tag == .abstract;

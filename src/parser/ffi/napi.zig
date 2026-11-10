@@ -252,7 +252,7 @@ fn argsOf(comptime count: usize, api: *const Api, env: Env, info: CallbackInfo) 
     var argc: usize = count;
     var argv: [count]Value = undefined;
     try check(api.napi_get_cb_info(env, info, &argc, &argv, null, null));
-    std.debug.assert(argc == count);
+    if (argc < count) return error.NodeApi;
     return argv;
 }
 
@@ -298,6 +298,7 @@ fn itemsOf(comptime T: type, api: *const Api, env: Env, value: Value) Error![]co
     });
     if (bytes % @sizeOf(T) != 0) return error.InvalidTree;
     if (bytes == 0) return &.{};
+    if (!std.mem.isAligned(@intFromPtr(data), @alignOf(T))) return error.InvalidTree;
     const items: [*]const T = @ptrCast(@alignCast(data orelse return error.InvalidTree));
     return items[0 .. bytes / @sizeOf(T)];
 }

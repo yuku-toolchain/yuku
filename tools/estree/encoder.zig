@@ -39,19 +39,19 @@ const roles = .{
 const choosers = .{
     .{
         "Identifier",
-        "ctx === BINDING ? _BindingIdentifier(n, ctx) : ctx === NAME ? _IdentifierName(n, ctx)" ++
-            " : ctx === LABEL ? _LabelIdentifier(n, ctx) : _IdentifierReference(n, ctx)",
+        "ctx === BINDING ? _BindingIdentifier(n, ctx, d) : ctx === NAME ? _IdentifierName(n, ctx, d)" ++
+            " : ctx === LABEL ? _LabelIdentifier(n, ctx, d) : _IdentifierReference(n, ctx, d)",
     },
     .{ "Literal", "_literal(n)" },
-    .{ "Property", "_ObjectProperty(n, ctx)" },
-    .{ "BlockStatement", "ctx === BODY ? _FunctionBody(n, ctx) : _BlockStatement(n, ctx)" },
+    .{ "Property", "_ObjectProperty(n, ctx, d)" },
+    .{ "BlockStatement", "ctx === BODY ? _FunctionBody(n, ctx, d) : _BlockStatement(n, ctx, d)" },
     .{
         "ExpressionStatement",
-        "typeof n.directive === \"string\" ? _Directive(n, ctx) : _ExpressionStatement(n, ctx)",
+        "typeof n.directive === \"string\" ? _Directive(n, ctx, d) : _ExpressionStatement(n, ctx, d)",
     },
     .{
         "TSModuleDeclaration",
-        "n.kind === \"global\" ? _TSGlobalDeclaration(n, ctx) : _TSModuleDeclaration(n, ctx)",
+        "n.kind === \"global\" ? _TSGlobalDeclaration(n, ctx, d) : _TSModuleDeclaration(n, ctx, d)",
     },
 };
 
@@ -118,19 +118,19 @@ fn writeRuntime(w: *Writer) !void {
         \\const COMMENT_WORDS = {[comment_words]d};
         \\const COMMENT_POSITIONS = {{ __proto__: null, before: 0, after: 1, inside: 2 }};
         \\const LEGACY_OCTAL = /^0[0-7]+$/;
-        \\const NODES_MIN = 4096, RETAINED_MAX = 1 << 24;
+        \\const NODES_MIN = 4096, RETAINED_MAX = 1 << 24, RECURSION_MAX = 256, REVISITS_MAX = 1 << 16, STARTED = -1, PENDING = -2;
         \\let _u32 = new Int32Array(NODES_MIN * WORDS), _count = 0;
         \\let _extras = new Int32Array(NODES_MIN), _extrasLen = 0, _last = 0;
         \\let _units = new Uint16Array(NODES_MIN * 8), _poolLen = 0;
         \\let _comments = new Int32Array(64 * COMMENT_WORDS), _commentsLen = 0;
-        \\let _objects = null, _ts = false;
+        \\let _objects = null, _ts = false, _deep = null, _done = null, _revisits = 0;
         \\function encode(root, ts, keep) {{
         \\  _count = 0; _extrasLen = 0; _poolLen = 0; _commentsLen = 0;
         \\  _objects = keep ? [] : null;
         \\  _ts = ts;
         \\  try {{
         \\    if (root === null || typeof root !== "object") _unknown(root);
-        \\    _node(root, ANY);
+        \\    _root(root);
         \\    const nodes = _u32.subarray(0, _count * WORDS);
         \\    const extras = _extras.subarray(0, _extrasLen);
         \\    const comments = _comments.subarray(0, _commentsLen * COMMENT_WORDS);
@@ -144,11 +144,39 @@ fn writeRuntime(w: *Writer) !void {
         \\      objects: _objects,
         \\    }};
         \\  }} finally {{
-        \\    _objects = null;
+        \\    _objects = null; _deep = null; _done = null;
         \\    if (_u32.length > RETAINED_MAX) _u32 = new Int32Array(NODES_MIN * WORDS);
         \\    if (_extras.length > RETAINED_MAX) _extras = new Int32Array(NODES_MIN);
         \\    if (_units.length > RETAINED_MAX) _units = new Uint16Array(NODES_MIN * 8);
         \\  }}
+        \\}}
+        \\function _root(root) {{
+        \\  _done = new Map();
+        \\  const stack = [root, ANY];
+        \\  while (stack.length > 0) {{
+        \\    const ctx = stack[stack.length - 1], n = stack[stack.length - 2];
+        \\    if (_done.get(n) >= 0) {{ stack.length -= 2; continue; }}
+        \\    _done.set(n, STARTED);
+        \\    const count = _count, extras = _extrasLen, pool = _poolLen, comments = _commentsLen;
+        \\    _deep = []; _revisits = 0;
+        \\    const index = _node(n, ctx, 0);
+        \\    if (_deep.length === 0) {{ _done.set(n, index); stack.length -= 2; continue; }}
+        \\    _count = count; _extrasLen = extras; _poolLen = pool; _commentsLen = comments;
+        \\    for (const item of _deep) stack.push(item);
+        \\  }}
+        \\}}
+        \\function _spill(n, ctx) {{
+        \\  const index = _done.get(n);
+        \\  if (index === undefined) {{
+        \\    _done.set(n, PENDING);
+        \\    _deep.push(n, ctx);
+        \\    return 0;
+        \\  }}
+        \\  if (index >= 0) return index;
+        \\  if (index === STARTED || ++_revisits > REVISITS_MAX) {{
+        \\    throw new TypeError("A node cannot contain itself");
+        \\  }}
+        \\  return 0;
         \\}}
         \\function _grow(array, needed) {{
         \\  const grown = new array.constructor(Math.max(array.length * 2, needed));
@@ -197,38 +225,38 @@ fn writeRuntime(w: *Writer) !void {
         \\  if (!Array.isArray(list)) _wrong(n, key, list);
         \\  return count < 0 ? list.length : count;
         \\}}
-        \\function _list(list, ctx, count, mask, n, key) {{
+        \\function _list(list, ctx, count, mask, n, key, d) {{
         \\  const len = _items(list, count, n, key), start = _reserve(len);
         \\  for (let k = 0; k < len; k++) {{
         \\    const item = list[k];
         \\    if (item === null || typeof item !== "object") _wrong(n, key, item);
-        \\    const index = _node(item, ctx);
+        \\    const index = _node(item, ctx, d + 1);
         \\    if (mask !== null && mask[_u32[index * WORDS] & 255] === 0) _wrong(n, key, item);
         \\    _extras[start + k] = index;
         \\  }}
         \\  _last = len;
         \\  return start;
         \\}}
-        \\function _holes(list, ctx, count, n, key) {{
+        \\function _holes(list, ctx, count, n, key, d) {{
         \\  const len = _items(list, count, n, key), start = _reserve(len);
         \\  for (let k = 0; k < len; k++) {{
         \\    const item = list[k];
         \\    let index = -1;
         \\    if (item !== null && item !== undefined) {{
         \\      if (typeof item !== "object") _wrong(n, key, item);
-        \\      index = _node(item, ctx);
+        \\      index = _node(item, ctx, d + 1);
         \\    }}
         \\    _extras[start + k] = index;
         \\  }}
         \\  _last = len;
         \\  return start;
         \\}}
-        \\function _listOf(list, type, write, ctx, count, n, key) {{
+        \\function _listOf(list, type, write, ctx, count, n, key, d) {{
         \\  const len = _items(list, count, n, key), start = _reserve(len);
         \\  for (let k = 0; k < len; k++) {{
         \\    const item = list[k];
         \\    if (item === null || item === undefined || item.type !== type) _wrong(n, key, item);
-        \\    const index = write(item, ctx);
+        \\    const index = write(item, ctx, d);
         \\    _extras[start + k] = index;
         \\  }}
         \\  _last = len;
@@ -245,7 +273,7 @@ fn writeRuntime(w: *Writer) !void {
         \\  if (last === null || typeof last !== "object") return null;
         \\  return last.type === "RestElement" ? last : null;
         \\}}
-        \\function _params(list, kind, n) {{
+        \\function _params(list, kind, n, d) {{
         \\  const rest = _restOf(list);
         \\  const len = _items(list, rest === null ? -1 : list.length - 1, n, "params");
         \\  const start = _reserve(len);
@@ -254,10 +282,10 @@ fn writeRuntime(w: *Writer) !void {
         \\    if (p === null || typeof p !== "object") _wrong(n, "params", p);
         \\    let index;
         \\    if (p.type === "TSParameterProperty") {{
-        \\      index = _TSParameterProperty(p, BINDING);
+        \\      index = _TSParameterProperty(p, BINDING, d);
         \\    }} else {{
         \\      const pattern = p.type === "Identifier" && p.name === "this"
-        \\        ? _TSThisParameter(p, BINDING) : _node(p, BINDING);
+        \\        ? _TSThisParameter(p, BINDING, d) : _node(p, BINDING, d + 1);
         \\      index = _writeFormalParameter(pattern);
         \\      const b = index * WORDS, from = pattern * WORDS;
         \\      _u32[b + {[ss]d}] = _u32[from + {[ss]d}];
@@ -265,7 +293,7 @@ fn writeRuntime(w: *Writer) !void {
         \\    }}
         \\    _extras[start + k] = index;
         \\  }}
-        \\  const restIndex = rest === null ? -1 : _BindingRestElement(rest, BINDING);
+        \\  const restIndex = rest === null ? -1 : _BindingRestElement(rest, BINDING, d);
         \\  const i = _writeFormalParameters(start, len, restIndex, kind), b = i * WORDS;
         \\  _u32[b + {[ss]d}] = 0;
         \\  _u32[b + {[se]d}] = 0;
@@ -359,6 +387,7 @@ fn writeRuntime(w: *Writer) !void {
         \\  throw new TypeError(`\`${{n.type}}.${{key}}\` must be a node`);
         \\}}
         \\function _wrong(n, key, v) {{
+        \\  if (_deep.length > 0) return 0;
         \\  throw new TypeError(`\`${{n.type}}.${{key}}\` cannot be ${{_describe(v)}}`);
         \\}}
         \\function _unknown(n) {{
@@ -405,7 +434,7 @@ fn writeEncoder(w: *Writer, comptime tag: []const u8, comptime index: usize) !vo
         }
         try w.writeAll(") {\n" ++ allocate);
     } else {
-        try w.print("function _{s}(n, ctx) {{\n", .{comptime decoder.pascalName(tag)});
+        try w.print("function _{s}(n, ctx, d) {{\n", .{comptime decoder.pascalName(tag)});
         if (encode.prelude.len != 0) try w.print("  {s}\n", .{encode.prelude});
         inline for (info.field_names, info.field_types, 0..) |name, Field, i| {
             if (Field == ast.NodeIndex or Field == ast.IndexRange) {
@@ -570,39 +599,39 @@ fn childStatements(
         const role = roleOf(tag, name, rule);
         const f = std.fmt.comptimePrint("f{d}", .{index});
         if (Field == ast.NodeIndex) {
-            if (rule.tags.len == 1 and rule.tags[0] == .formal_parameters) {
+            if (!rule.open and rule.tags.len == 1 and rule.tags[0] == .formal_parameters) {
                 return "  const " ++ f ++ " = _params(" ++ source ++ ", " ++ paramsKind(tag) ++
-                    ", n);\n";
+                    ", n, d);\n";
             }
-            if (rule.tags.len == 1) {
+            if (!rule.open and rule.tags.len == 1) {
                 const child = @tagName(rule.tags[0]);
                 const v = std.fmt.comptimePrint("v{d}", .{index});
                 return "  const " ++ v ++ " = " ++ source ++ ";\n  const " ++ f ++ " = " ++ v ++
                     " == null ? " ++
                     (if (rule.nullable) "-1" else "_missing(" ++ key ++ ")") ++ "\n    : " ++
                     typeCheck(v, decoder.typesOf(child)) ++ " ? _" ++ decoder.pascalName(child) ++
-                    "(" ++ v ++ ", " ++ role ++ ") : _wrong(" ++ key ++ ", " ++ v ++ ");\n";
+                    "(" ++ v ++ ", " ++ role ++ ", d) : _wrong(" ++ key ++ ", " ++ v ++ ");\n";
             }
             const v = std.fmt.comptimePrint("v{d}", .{index});
-            const check = if (rule.tags.len == 0) "" else "\n  if (" ++ f ++ " >= 0 && " ++
+            const check = if (rule.open) "" else "\n  if (" ++ f ++ " >= 0 && " ++
                 maskOf(rule) ++ "[_u32[" ++ f ++ " * WORDS] & 255] === 0) _wrong(" ++ key ++ ", " ++
                 v ++ ");";
             return "  const " ++ v ++ " = " ++ source ++ ";\n  const " ++ f ++ " = " ++ v ++
                 " == null ? " ++ (if (rule.nullable) "-1" else "_missing(" ++ key ++ ")") ++
                 "\n    : typeof " ++ v ++ " === \"object\" ? _node(" ++ v ++ ", " ++ role ++
-                ") : _wrong(" ++ key ++ ", " ++ v ++ ");" ++ check ++ "\n";
+                ", d + 1) : _wrong(" ++ key ++ ", " ++ v ++ ");" ++ check ++ "\n";
         }
         const count = if (overrideOf(encode, name)) |override| override.count orelse "-1" else "-1";
         const call = if (rule.nullable)
-            "_holes(" ++ source ++ ", " ++ role ++ ", " ++ count ++ ", " ++ key ++ ")"
-        else if (rule.tags.len == 1) blk: {
+            "_holes(" ++ source ++ ", " ++ role ++ ", " ++ count ++ ", " ++ key ++ ", d)"
+        else if (!rule.open and rule.tags.len == 1) blk: {
             const child = @tagName(rule.tags[0]);
             const child_types = decoder.typesOf(child);
             std.debug.assert(child_types.len == 1);
             break :blk "_listOf(" ++ source ++ ", \"" ++ child_types[0] ++ "\", _" ++
-                decoder.pascalName(child) ++ ", " ++ role ++ ", " ++ count ++ ", " ++ key ++ ")";
+                decoder.pascalName(child) ++ ", " ++ role ++ ", " ++ count ++ ", " ++ key ++ ", d)";
         } else "_list(" ++ source ++ ", " ++ role ++ ", " ++ count ++ ", " ++ maskOf(rule) ++
-            ", " ++ key ++ ")";
+            ", " ++ key ++ ", d)";
         return "  const " ++ f ++ " = " ++ call ++ ", " ++
             std.fmt.comptimePrint("l{d}", .{index}) ++ " = _last;\n";
     }
@@ -657,7 +686,7 @@ fn roleOf(
 fn maskOf(comptime rule: schema.Field) []const u8 {
     comptime {
         @setEvalBranchQuota(1_000_000);
-        if (rule.tags.len == 0) return "null";
+        if (rule.open) return "null";
         var name: []const u8 = "MASK";
         for (rule.tags) |t| name = name ++ std.fmt.comptimePrint("_{d}", .{@backingInt(t)});
         return name;
@@ -674,7 +703,7 @@ fn writeDispatch(w: *Writer) !void {
         inline for (info.field_names, info.field_types) |name, Field| {
             if (Field != ast.NodeIndex and Field != ast.IndexRange) continue;
             const rule = comptime schema.of(tag, name);
-            if (rule.tags.len < 2) continue;
+            if (rule.open or rule.tags.len < 2) continue;
             const mask = comptime maskOf(rule);
             const seen = for (written[0..written_len]) |earlier| {
                 if (eql(earlier, mask)) break true;
@@ -691,12 +720,12 @@ fn writeDispatch(w: *Writer) !void {
         }
     }
 
-    try w.writeAll("function _node(n, ctx) {\n  switch (n.type) {\n");
+    try w.writeAll("function _node(n, ctx, d) {\n  if (d === RECURSION_MAX) return _spill(n, ctx);\n  switch (n.type) {\n");
     const types = comptime estreeTypes();
     inline for (types) |estree_type| {
         const tags = comptime tagsOf(estree_type);
         if (tags.len == 1) {
-            try w.print("    case \"{s}\": return _{s}(n, ctx);\n", .{
+            try w.print("    case \"{s}\": return _{s}(n, ctx, d);\n", .{
                 estree_type,
                 comptime decoder.pascalName(tags[0]),
             });

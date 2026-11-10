@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       5131/5131 (100.00%)
+Passed:       5253/5253 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/00128c2237478f9e.js
@@ -84,6 +84,16 @@ error: Expected a declaration after 'export', but found '%'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/0076f6e828ed5efd.module.js
+error: Expected ';' after the statement, but found '\u0053'
+   |
+ 1 | struct \u0053 {}
+   |        ^^^^^^
+ 2 | export struct \u0054 {}
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/0078575f9dd3a67a.js
 error: Expected ';' after the class field, but found 'value'
    |
@@ -115,6 +125,14 @@ error: Unterminated string literal
    |
    = help: Add a closing quote to end the string
 
+
+✓ test/parser/suite/js/fail/008c680922356b5d.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 1 | export struct S {}
+   |        ^^^^^^
+ 2 | export { S };
+   |
 
 ✓ test/parser/suite/js/fail/008c8197cd0f7f32.js
 error: A rest parameter cannot have a trailing comma
@@ -564,6 +582,14 @@ error: Unterminated multi-line comment
    |
    = help: Add '*/' to close the comment
 
+
+✓ test/parser/suite/js/fail/0295a5695d2c7f75.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer { x } from "x";
+   |        ^^^^^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/0299347e6da9938c.js
 error: 'const' declarations must be initialized
@@ -1043,6 +1069,16 @@ error: A parenthesized assignment target must be a variable or a property access
    = help: Optional chains cannot be assigned to, even in parentheses
 
 
+✓ test/parser/suite/js/fail/04570a377907f318.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | const mod1 = import.sync("./foo.json", /* 1 */);
+   |                     ^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
+
 ✓ test/parser/suite/js/fail/04596d4433d33b6d.js
 error: Expected ')' after the 'if' condition, but found 'p'
    |
@@ -1271,12 +1307,31 @@ error: An identifier or keyword cannot immediately follow a numeric literal
    = help: Add a space between the number and the identifier
 
 
+✓ test/parser/suite/js/fail/05d469550e4baeac.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer * from "x";
+   |        ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/05d7d052c31831d1.js
 error: 'new' is a reserved word and cannot be used as an identifier
    |
  1 | var x = ({ n\u0065w }) => {};
    |            ^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/05dafdb5a34bc720.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a }
+ 2 | as ns from "x";
+   | ^^
+ 3 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
 
 ✓ test/parser/suite/js/fail/05e76a03d5dbdc01.js
 error: A rest element cannot have an initializer
@@ -1685,6 +1740,17 @@ error: The left-hand side of an assignment expression must be a variable or a pr
  1 | x && y = 1;
    | ^^^^^^
    |
+
+✓ test/parser/suite/js/fail/084225e833b0e98e.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 3 | // `import.sync` is a proposal syntax separate from `import()`
+ 4 | const mod = import.sync("./foo.js");
+   |                    ^^^^
+ 5 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
 
 ✓ test/parser/suite/js/fail/0843712f1abd6816.js
 error: Invalid character at the start of an identifier
@@ -2113,6 +2179,14 @@ error: Expected an expression, but found ';'
    |
  1 | for (let let;;;) {}
    |               ^
+ 2 | 
+   |
+
+✓ test/parser/suite/js/fail/0ac6b3a213e5bbd0.js
+error: 'import' is a reserved word and cannot be used as an identifier
+   |
+ 1 | const mod = new import.sync("./foo.js");
+   |                 ^^^^^^
  2 | 
    |
 
@@ -2871,6 +2945,22 @@ error: An '=' can only follow a property name when the containing object literal
    = help: Use ':' to give the property a value, or destructure into the object
 
 
+✓ test/parser/suite/js/fail/0ecb4f07d8e5dfec.js
+error: Cannot use an export declaration outside a module
+   |
+ 1 | export { x } from "x";
+   | ^^^^^^^^^^^^^^^^^^^^^^
+ 2 | export * as ns from "y";
+   |
+
+✓ test/parser/suite/js/fail/0ecc0e5ccedc5bdf.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 1 | export struct S {
+   |        ^^^^^^
+ 2 |   property = 0;
+   |
+
 ✓ test/parser/suite/js/fail/0eccf632d6d4162d.js
 error: A rest element cannot have an initializer
    |
@@ -3536,6 +3626,15 @@ error: Expected an expression, but found ')'
  4 |   break;
    |
 
+✓ test/parser/suite/js/fail/11a534d040d10ab5.js
+error: 'in' is a reserved word and cannot be used as an identifier
+   |
+ 1 | function* g() {
+ 2 |   for (var x = yield in z);
+   |                      ^^
+ 3 |   for (var y = yield yield in z);
+   |
+
 ✓ test/parser/suite/js/fail/11b13d5d44d170d6.js
 error: Empty parentheses are only allowed as arrow function parameters
    |
@@ -3599,6 +3698,16 @@ error: The left-hand side of an assignment expression must be a variable or a pr
  1 | x | y = 1;
    | ^^^^^
    |
+
+✓ test/parser/suite/js/fail/122df00c35b10f52.module.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | export default struct S
+   |                       ^
+ 2 | {};
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/12356ce5b3bf3f28.js
 error: A rest element cannot have an initializer
@@ -4070,6 +4179,16 @@ error: Expected an expression, but found '>'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/14c011b2816f64c8.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {};
+   |        ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/14d6adc74d396c58.js
 error: A rest element must be last in a destructuring pattern
    |
@@ -4154,6 +4273,16 @@ error: Generators can only be declared at the top level or inside a block
  1 | if (true) function* g() {  } else function* _g() {}
    |           ^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/15297306572fa928.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export { a } as ns;
+   |              ^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/1541d5bac599a477.js
 error: Binding patterns can only contain identifiers and nested patterns
@@ -4555,6 +4684,16 @@ error: 'await' is a reserved word in async functions and modules and cannot be u
  5 |     });
    |
 
+✓ test/parser/suite/js/fail/176e1c230c308fce.js
+error: Unexpected token '=>'
+   |
+ 1 | a + (() => {}) + (b) => c
+   | ^^^^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/176e6857de06a87b.js
 error: Expected ';' after the statement, but found 'function𝐬'
    |
@@ -4571,6 +4710,17 @@ error: Expected an expression, but found '.'
  1 | f(..a)
    |   ^
    |
+
+✓ test/parser/suite/js/fail/179e7e394c6fd8ac.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 2 | 
+ 3 | const mod = import.sync(...args);
+   |                    ^^^^
+ 4 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
 
 ✓ test/parser/suite/js/fail/17c930ac0108a238.js
 error: Expected an expression, but found '>'
@@ -4881,6 +5031,16 @@ error: Expected an expression, but found ')'
  1 | async(a = (...await) => {}) => {};
    |                    ^
    |
+
+✓ test/parser/suite/js/fail/19c3522601e93b4e.module.js
+error: Expected ';' after the statement, but found '𝕊'
+   |
+ 1 | struct 𝕊 {}
+   |        ^^
+ 2 | export struct 𝕋 {}
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/19dbd55de9b8570d.js
 error: Line terminator not permitted before arrow
@@ -5873,6 +6033,14 @@ error: 'import' is a reserved word and cannot be used as an identifier
    |     ^^^^^^
    |
 
+✓ test/parser/suite/js/fail/1fc70abf5e4b9438.module.js
+error: Expected an expression, but found '%'
+   |
+ 1 | export default from\u{61} %%FILE%%;
+   |                            ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/1fc78fd0e00f4e92.js
 error: 'default' is a reserved word and cannot be used as a binding identifier
    |
@@ -5985,6 +6153,14 @@ error: 'finally' is a reserved word and cannot be used as an identifier
    |
  1 | finally
    | ^^^^^^^
+   |
+
+✓ test/parser/suite/js/fail/20699c0a927b8a00.module.js
+error: Expected 'function', but found 'function\u{61}'
+   |
+ 1 | export async function\u{61} () {}
+   |              ^^^^^^^^^^^^^^
+ 2 | 
    |
 
 ✓ test/parser/suite/js/fail/207657f4b3fecb0b.js
@@ -6225,6 +6401,15 @@ error: Expected ';' after the class field, but found 'a'
  3 | }
    |
 
+✓ test/parser/suite/js/fail/21cd4de9ff3710cc.js
+error: 'in' is a reserved word and cannot be used as an identifier
+   |
+ 1 | function* g() {
+ 2 |   for (var x = yield* in z);
+   |                       ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/21cd896f3e950e3b.js
 error: Keywords cannot contain escape characters
    |
@@ -6383,6 +6568,16 @@ error: A rest element must be last in a destructuring pattern
  4 | callCount = callCount + 1;
    |
    = help: Move the rest element to the end
+
+
+✓ test/parser/suite/js/fail/22c2e310613d6cd7.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export { a, b } as ns from "x";
+   |                 ^^
+ 2 | export { a, } as ns2 from "x";
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/22c61e6e4cd34977.js
@@ -6788,6 +6983,16 @@ error: Expected ',' or ']' in the array, but found 'null'
    = help: Separate the elements with ','
 
 
+✓ test/parser/suite/js/fail/24b35c25836c890a.module.js
+error: A reserved word cannot be used as an exported binding without 'from'
+   |
+ 1 | export { default, if, "string name" } as "string ns" from "x";
+   |          ^^^^^^^
+ 2 | 
+   |
+   = help: Add a 'from' clause, such as 'export { default } from "m"'
+
+
 ✓ test/parser/suite/js/fail/24c6a0914f8d66c6.js
 error: Numeric separators are only allowed between two digits
    |
@@ -6953,6 +7158,16 @@ error: Invalid escape sequence in an untagged template literal
    = help: Only tagged templates can contain invalid escapes
 
 
+✓ test/parser/suite/js/fail/2557a9104f3566f3.js
+error: Unexpected token '=>'
+   |
+ 1 | a + [() => {}] + b => c
+   | ^^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/256404787cbdf502.js
 error: A rest element cannot have an initializer
    |
@@ -7081,6 +7296,16 @@ error: Expected an expression, but found '>'
    |        ^
  2 | 
    |
+
+✓ test/parser/suite/js/fail/25f7ad6966ce6a71.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {];
+   |        ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/26031afc9eaef976.js
 error: Invalid Unicode escape sequence
@@ -8003,6 +8228,16 @@ error: A rest element must be last in a destructuring pattern
    = help: Move the rest element to the end
 
 
+✓ test/parser/suite/js/fail/2a19f715cbdc1856.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 |   property = S.#undefinedPrivateName;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/2a1ad2f92dbd92c7.module.js
 error: Expected a declaration after 'export', but found 'B'
    |
@@ -8294,6 +8529,14 @@ error: Expected ')' to close the parameter list, but found '?.'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/2b9a17de79bbf0a1.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer /* c */ { a } from "x";
+   |        ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/2ba17623d190bbd1.js
 error: Expected an identifier or a destructuring pattern, but found ')'
    |
@@ -8427,6 +8670,16 @@ error: A rest parameter cannot have a trailing comma
  3 | }
    |
    = help: Remove the trailing comma
+
+
+✓ test/parser/suite/js/fail/2c9732f328cb13c7.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 |   property = 0;
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/2ca43549ce2ed372.js
@@ -8891,6 +9144,14 @@ error: A function declaration without the 'default' modifier must have a name
    = help: Add a name after 'function'
 
 
+✓ test/parser/suite/js/fail/2e58338ec7945cd9.js
+error: Expected ')' to close the parameter list, but found 'do'
+   |
+ 1 | function f(a = async do { await 1 }) {}
+   |                      ^^
+ 2 | async function g(a = async do { await 1 }) {}
+   |
+
 ✓ test/parser/suite/js/fail/2e59ed65e8ba0f22.js
 error: Invalid escape sequence in an untagged template literal
    |
@@ -9033,6 +9294,16 @@ error: 'void' is a reserved word and cannot be used as a binding identifier
  1 | var void = 123;
    |     ^^^^
    |
+
+✓ test/parser/suite/js/fail/2edd89911dd006e7.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { /* a */ a, /* b */ b /* c */ } /* d */ as ns from "x";
+   |                                                 ^^
+ 2 | export { /* e */ e } as ns2 from "x";
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
 
 ✓ test/parser/suite/js/fail/2ee560b23367c796.js
 error: Expected '(' after 'while', but found 'hood'
@@ -9283,6 +9554,16 @@ error: Numeric separators are only allowed between two digits
  2 | 
    |
    = help: Place the separator between two digits, or remove it
+
+
+✓ test/parser/suite/js/fail/30378ee480881611.module.js
+error: Expected ';' after the statement, but found '{'
+   |
+ 1 | export default struct {};
+   |                       ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/305ebbf168c6d218.js
@@ -9583,6 +9864,16 @@ error: Expected an expression, but found ','
  2 | 
    |
 
+✓ test/parser/suite/js/fail/314c746e9ab66708.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import {} as ns from "x";
+   |           ^^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
+
 ✓ test/parser/suite/js/fail/314d22939dc5c5b3.js
 error: Keywords cannot contain escape characters
    |
@@ -9646,6 +9937,15 @@ error: Expected an expression, but found ')'
  3 | }
  4 | export default class extends fn(await /1/) {}
    |                                          ^
+   |
+
+✓ test/parser/suite/js/fail/31a7f8e24f1a8f13.js
+error: Expected 'class', but found 'struct'
+   |
+ 1 | @f
+ 2 | struct S {}
+   | ^^^^^^
+ 3 | 
    |
 
 ✓ test/parser/suite/js/fail/31ae73f157b40e54.js
@@ -9734,6 +10034,14 @@ error: Generators can only be declared at the top level or inside a block
    |
  1 | a: function* a(){}
    |    ^^^^^^^^^^^^^
+   |
+
+✓ test/parser/suite/js/fail/32197c918114d761.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer x from "x";
+   |        ^^^^^
+ 2 | 
    |
 
 ✓ test/parser/suite/js/fail/322606a4cc66860c.js
@@ -10018,6 +10326,16 @@ error: Expected an expression, but found ')'
    |        ^
    |
 
+✓ test/parser/suite/js/fail/33a581616560b893.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | const mod = import.sync("./foo.json", { with: { type: "json" } });
+   |                    ^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
+
 ✓ test/parser/suite/js/fail/33bc068464342558.js
 error: Expected ';' after the class field, but found ':'
    |
@@ -10040,6 +10358,17 @@ error: Class constructor may not be an accessor
    |              ^^^^^^^^^^^
    |
    = help: Remove the 'get' or 'set' keyword
+
+
+✓ test/parser/suite/js/fail/33c5c77cceccdb10.js
+error: Expected a property name, but found '@'
+   |
+ 1 | var obj = {
+ 2 |   @foo bar: 1,
+   |   ^
+ 3 |   @foo @baz() method() {},
+   |
+   = help: Use an identifier, a string, a number, or a computed name such as '[key]'
 
 
 ✓ test/parser/suite/js/fail/33c7999131314b0b.js
@@ -10596,6 +10925,16 @@ error: This use of 'import' is invalid
  3 | };
    |
    = help: Use 'import.meta', or call 'import()' with parentheses
+
+
+✓ test/parser/suite/js/fail/3710e0b1132749ef.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a, b } as ns from "x";
+   |                 ^^
+ 2 | import { a, } as ns2 from "x";
+   |
+   = help: Follow the import clause with 'from' and a module specifier
 
 
 ✓ test/parser/suite/js/fail/37269a24518166ba.module.js
@@ -11674,6 +12013,14 @@ error: 'switch' is a reserved word and cannot be used as a binding identifier
    |     ^^^^^^
    |
 
+✓ test/parser/suite/js/fail/3c8a4de17318a37d.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer { a } from "x";
+   |        ^^^^^
+ 2 | export defer * as ns from "x";
+   |
+
 ✓ test/parser/suite/js/fail/3c8fd2ee402c073b.js
 error: 'using' declarations must be initialized
    |
@@ -12010,6 +12357,14 @@ error: A function declaration without the 'default' modifier must have a name
    = help: Add a name after 'function'
 
 
+✓ test/parser/suite/js/fail/3ec153b688020a8b.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer from "x";
+   |        ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/3ed9940fc98af8e4.js
 error: Expected ';' after the statement, but found ''
    |
@@ -12161,6 +12516,16 @@ error: 'yield' is a reserved word in generators and cannot be used as an identif
  3 | }}
    |
 
+✓ test/parser/suite/js/fail/3fedaf8a63ff165c.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 |   x = 01;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/3fef843d5227f2e1.js
 error: Expected an expression, but found ')'
    |
@@ -12204,6 +12569,16 @@ error: Numeric separators are only allowed between two digits
  2 | 
    |
    = help: Place the separator between two digits, or remove it
+
+
+✓ test/parser/suite/js/fail/402f807a1a3c4cf0.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a, /* a */ } as ns from "x";
+   |                       ^^
+ 2 | export { b, /* b */ } as ns2 from "x";
+   |
+   = help: Follow the import clause with 'from' and a module specifier
 
 
 ✓ test/parser/suite/js/fail/4031c5a311ab8eda.js
@@ -13326,6 +13701,16 @@ error: Numeric separators are only allowed between two digits
    = help: Place the separator between two digits, or remove it
 
 
+✓ test/parser/suite/js/fail/4723b32319e5d2cf.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a } as ns from "x" with { type: "json" };
+   |              ^^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
+
 ✓ test/parser/suite/js/fail/47275edb5ae5da7d.js
 error: Invalid escape sequence in an untagged template literal
    |
@@ -13871,6 +14256,16 @@ error: Expected an expression, but found '%'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/4a33c6412d2bb6c7.js
+error: Unexpected token '=>'
+   |
+ 1 | a || f(() => {}) || b => c
+   | ^^^^^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/4a39cb33a2a78fe7.js
 error: A rest element must be last in a destructuring pattern
    |
@@ -13888,6 +14283,16 @@ error: Expected '(' after 'while', but found '='
  1 | while = 1;
    |       ^
    |
+
+✓ test/parser/suite/js/fail/4a4ab60b1b24261b.module.js
+error: Expected 'from' after the import clause, but found '{'
+   |
+ 1 | import type { a } as ns from "x";
+   |             ^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
 
 ✓ test/parser/suite/js/fail/4a60c5ef64506821.js
 error: The operand of an increment or decrement operator must be a variable or a property access
@@ -13933,6 +14338,17 @@ error: Numeric separators are only allowed between two digits
    |    ^
    |
    = help: Place the separator between two digits, or remove it
+
+
+✓ test/parser/suite/js/fail/4aa5b792185bb174.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 5 | /* 2 */
+ 6 | sync
+   | ^^^^
+ 7 | /* 3 */
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
 
 
 ✓ test/parser/suite/js/fail/4aa964c9923ef975.js
@@ -14830,6 +15246,14 @@ error: A rest element cannot have an initializer
    |
    = help: Remove the initializer
 
+
+✓ test/parser/suite/js/fail/4f44a1ab8884eefa.js
+error: Cannot use an export declaration outside a module
+   |
+ 1 | export { a }
+   | ^^^^^^^^^^^^
+ 2 | as(1);
+   |
 
 ✓ test/parser/suite/js/fail/4f4638f84e8e7a38.js
 error: Expected a property name, but found '#x'
@@ -15770,6 +16194,17 @@ error: The left-hand side of an assignment expression must be a variable or a pr
    | ^^^^^^
    |
 
+✓ test/parser/suite/js/fail/543e92989f4a033a.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 2 | await + 0;
+ 3 | import.sync("./foo.json");
+   |        ^^^^
+ 4 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
+
 ✓ test/parser/suite/js/fail/54490a2da590c074.js
 error: An identifier or keyword cannot immediately follow a numeric literal
    |
@@ -15958,6 +16393,17 @@ error: Expected an expression, but found '>'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/55cc14d96e909f15.module.js
+error: Expected ';' after the statement, but found 'ns'
+   |
+ 1 | export { a }
+ 2 | as ns from "x";
+   |    ^^
+ 3 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/55d0af36e22dd31e.js
 error: Expected an expression, but found ';'
    |
@@ -16036,6 +16482,16 @@ error: 'class' is a reserved word and cannot be used as a binding identifier
  1 | var class = 1;
    |     ^^^^^
    |
+
+✓ test/parser/suite/js/fail/56205a919680cb3a.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a } as ns from "x";
+   |              ^^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
 
 ✓ test/parser/suite/js/fail/5644b127cdd7d868.js
 error: 'export' is a reserved word and cannot be used as a binding identifier
@@ -16693,6 +17149,14 @@ error: The operand of an increment or decrement operator must be a variable or a
    | ^
    |
 
+✓ test/parser/suite/js/fail/59ebe5ab18851c40.module.js
+error: 'typeof' is a reserved word and cannot be used as a binding identifier
+   |
+ 1 | import typeof { a } as ns from "x";
+   |        ^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/59f1ee7215e37731.js
 error: Expected an expression, but found '>'
    |
@@ -16829,6 +17293,16 @@ error: Expected ',' or ']' in the array, but found 'foo'
    = help: Separate the elements with ','
 
 
+✓ test/parser/suite/js/fail/5a89043dcb2a331c.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export { a } as ns from "x";
+   |              ^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/5aa4a3abddf17cbb.js
 error: An identifier or keyword cannot immediately follow a numeric literal
    |
@@ -16929,6 +17403,14 @@ error: The operand of an increment or decrement operator must be a variable or a
    |
  1 | this--;
    | ^^^^
+   |
+
+✓ test/parser/suite/js/fail/5b14035fc81d4299.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 1 | export struct
+   |        ^^^^^^
+ 2 | S
    |
 
 ✓ test/parser/suite/js/fail/5b2aac649adc410f.js
@@ -17788,6 +18270,14 @@ error: 'yield' is a reserved word in generators and cannot be used as a binding 
  3 | };
    |
 
+✓ test/parser/suite/js/fail/5f98e906241f84d0.js
+error: 'do' is a reserved word and cannot be used as an identifier
+   |
+ 1 | async function f(a = do { await 1 }) {}
+   |                      ^^
+ 2 | async function g(a = do { b = async do { 1 }; await 1 }) {}
+   |
+
 ✓ test/parser/suite/js/fail/5f9b1bb8394dbe47.js
 error: Expected an expression, but found '>'
    |
@@ -18263,6 +18753,16 @@ error: Classes can only be declared at the top level or inside a block
    = help: Wrap the declaration in a block
 
 
+✓ test/parser/suite/js/fail/627584c0854fe1bb.module.js
+error: Expected 'from' after the import clause, but found '{'
+   |
+ 1 | import source { a } as ns from "x";
+   |               ^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
+
 ✓ test/parser/suite/js/fail/627deedff49c96a8.js
 error: Keywords cannot contain escape characters
    |
@@ -18558,6 +19058,16 @@ error: Expected ';' after the class field, but found '=>'
  3 | }
    |
 
+✓ test/parser/suite/js/fail/63e38d2719bfb843.js
+error: Unexpected token '=>'
+   |
+ 1 | a + (() => {}) + b => c
+   | ^^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/63e918a2df1dcdde.js
 error: Invalid character at the start of an identifier
    |
@@ -18804,6 +19314,16 @@ error: Empty parentheses are only allowed as arrow function parameters
  2 | }
    |
    = help: Add '=>' after ')' to make this an arrow function
+
+
+✓ test/parser/suite/js/fail/6509a079e2e2aba7.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 |   @f property;
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/651b90516c14275d.js
@@ -19321,6 +19841,24 @@ error: 'for' is a reserved word and cannot be used as a binding identifier
  1 | var for = 123;
    |     ^^^
    |
+
+✓ test/parser/suite/js/fail/67c256eddda88971.module.js
+error: Expected a declaration after 'export', but found 'v'
+   |
+ 1 | export v from\u{61};
+   |        ^
+ 2 | 
+   |
+
+✓ test/parser/suite/js/fail/67c442b84835d5f2.module.js
+error: Expected 'from' after the import clause, but found '{'
+   |
+ 1 | import defer { a, b } as ns from "x";
+   |              ^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
 
 ✓ test/parser/suite/js/fail/67e1c8f828783987.js
 error: A parenthesized assignment target must be a variable or a property access
@@ -20224,6 +20762,16 @@ error: Expected ';' after the statement, but found 'thenable'
    = help: Add ';' or a line break before it
 
 
+✓ test/parser/suite/js/fail/6ce8f9e7fbeef3f3.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import d, { a } as ns from "x";
+   |                 ^^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
+
 ✓ test/parser/suite/js/fail/6cef671e185523e4.js
 error: A rest element cannot have an initializer
    |
@@ -20473,6 +21021,16 @@ error: Expected ';' after the class field, but found 'value'
 18 | }
    |
 
+✓ test/parser/suite/js/fail/6e58715979df22f4.module.js
+error: Expected ';' after the statement, but found '{'
+   |
+ 1 | export default struct {
+   |                       ^
+ 2 |   property = 0;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/6e59136e6456bf0d.js
 error: A rest element must be last in a destructuring pattern
    |
@@ -20482,6 +21040,16 @@ error: A rest element must be last in a destructuring pattern
  4 | callCount = callCount + 1;
    |
    = help: Move the rest element to the end
+
+
+✓ test/parser/suite/js/fail/6e6514142adf72ad.module.js
+error: Expected ';' after the statement, but found 'function\u{61}'
+   |
+ 1 | export default async function\u{61} () {}
+   |                      ^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/6e666875cb8059d2.js
@@ -20911,6 +21479,15 @@ error: Expected an expression, but found ':'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/710b9a7806126104.js
+error: 'in' is a reserved word and cannot be used as an identifier
+   |
+ 1 | function* g() {
+ 2 |   for (var x = (yield in y) in z);
+   |                       ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/7130adc05569421b.js
 error: Expected an expression, but found '>'
    |
@@ -21306,6 +21883,16 @@ error: Expected ')' to close the parameter list, but found '='
  2 | }
    |
 
+✓ test/parser/suite/js/fail/737b192909094779.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a } as ns from "x";
+   |              ^^
+ 2 | let a;
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
+
 ✓ test/parser/suite/js/fail/7394f64e60376886.module.js
 error: Expected ';' after the statement, but found 'basic'
    |
@@ -21493,6 +22080,16 @@ error: 'typeof' is a reserved word and cannot be used as an imported binding
    |          ^^^^^^
  2 | 
    |
+
+✓ test/parser/suite/js/fail/7497bdc89d80de13.js
+error: Expected ';' after the statement, but found '{'
+   |
+ 1 | const S = struct {};
+   |                  ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/749e2e5a437cb498.js
 error: Numeric separators are only allowed between two digits
@@ -22620,6 +23217,15 @@ error: Expected an expression, but found '>'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/79b740df486a2f7e.js
+error: 'in' is a reserved word and cannot be used as an identifier
+   |
+ 1 | function* g() {
+ 2 |   for (let x = yield in z);
+   |                      ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/79c3e269a37789d5.js
 error: Expected an expression, but found '>'
    |
@@ -22948,6 +23554,16 @@ error: Expected '(' after 'while', but found ''
  1 | do break; while '';
    |                 ^^
    |
+
+✓ test/parser/suite/js/fail/7b7ecf0289db52b8.module.js
+error: Expected ';' after the statement, but found "x"
+   |
+ 1 | export default from\u{61} "x";
+   |                           ^^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/7b7f1d645953100a.js
 error: Expected an expression, but found '>'
@@ -23533,6 +24149,16 @@ error: A parenthesized assignment target must be a variable or a property access
    = help: Optional chains cannot be assigned to, even in parentheses
 
 
+✓ test/parser/suite/js/fail/7f47a79c57df5285.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S extends B {
+   |        ^
+ 2 |   property = 0;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/7f4de3bc1cd304ac.js
 error: Expected '(' after 'import', but found '}'
    |
@@ -23610,6 +24236,16 @@ error: A rest element must be last in a destructuring pattern
  3 | iterCount += 1;
    |
    = help: Move the rest element to the end
+
+
+✓ test/parser/suite/js/fail/7fbd8bb598076d01.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 |   accessor property = 0;
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/7fc173197c3cc75d.js
@@ -23733,6 +24369,14 @@ error: Parentheses are not allowed in binding patterns
    |
    = help: Remove the parentheses
 
+
+✓ test/parser/suite/js/fail/8055547f7e14a37f.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer { a } as ns from "x";
+   |        ^^^^^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/8065b14e7cea96a8.js
 error: A rest element must be last in a destructuring pattern
@@ -25090,6 +25734,14 @@ error: Expected an expression, but found ')'
  3 |   break;
    |
 
+✓ test/parser/suite/js/fail/87aa848a6db134a8.module.js
+error: Expected a declaration after 'export', but found 'type'
+   |
+ 1 | export type { a } as ns from "x";
+   |        ^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/87c24103f26cc8ac.js
 error: A parenthesized assignment target must be a variable or a property access
    |
@@ -25632,6 +26284,14 @@ error: 'var' is a reserved word and cannot be used as a binding identifier
    |
  1 | var va\u0072 = 123;
    |     ^^^^^^^^
+   |
+
+✓ test/parser/suite/js/fail/8ad57427936d15d0.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer { a } as ns from "x" with { type: "json" };
+   |        ^^^^^
+ 2 | 
    |
 
 ✓ test/parser/suite/js/fail/8aea8853a6fb0b64.js
@@ -27605,6 +28265,16 @@ error: 'then' is not a valid meta-property for keyword 'import'
    = help: Use 'import.meta', 'import.source()', or 'import.defer()'
 
 
+✓ test/parser/suite/js/fail/957a46a1ad9508e3.module.js
+error: A string literal import name requires an 'as' clause
+   |
+ 1 | import { a, "a" } as ns from "x";
+   |             ^^^
+ 2 | 
+   |
+   = help: Rename the import, such as 'import { "a-b" as ab } from "m"'
+
+
 ✓ test/parser/suite/js/fail/95807eb8be193f11.js
 error: Numeric separators are only allowed between two digits
    |
@@ -27850,6 +28520,15 @@ error: 'throw' is a reserved word and cannot be used as a binding identifier
    |
  1 | var throw = 123;
    |     ^^^^^
+   |
+
+✓ test/parser/suite/js/fail/97011123549ae13b.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 1 | export { S };
+ 2 | export struct S {}
+   |        ^^^^^^
+ 3 | 
    |
 
 ✓ test/parser/suite/js/fail/970d6f67dbf7741b.js
@@ -28189,6 +28868,26 @@ error: Expected ';' after the statement, but found 'await'
    |       ^^^^^
    |
    = help: Add ';' or a line break before it
+
+
+✓ test/parser/suite/js/fail/992c6d6f5d421617.module.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | export default struct S {};
+   |                       ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
+✓ test/parser/suite/js/fail/9949e5bcdba2995d.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | import.sync ["x")
+   |        ^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
 
 
 ✓ test/parser/suite/js/fail/995bfd633bd32ef4.js
@@ -28532,6 +29231,16 @@ error: Expected an expression, but found '>'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/9b2cc89bf569e20f.js
+error: '\u0073ync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | const mod1 = import.\u0073ync("./foo.js");
+   |                     ^^^^^^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
+
 ✓ test/parser/suite/js/fail/9b2f36e03450c3ed.js
 error: A rest element must be last in a destructuring pattern
    |
@@ -28667,6 +29376,17 @@ error: Expected ')' to close the parameter list, but found '='
    |                     ^
  3 | }
    |
+
+✓ test/parser/suite/js/fail/9bdc5b85c6d95c25.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export * as ns from "y";
+ 2 | export { a } as ns from "x";
+   |              ^^
+ 3 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/9bfeec35e0c04d33.js
 error: A rest element cannot have an initializer
@@ -29562,6 +30282,14 @@ error: Expected an expression, but found ')'
  3 | }
    |
 
+✓ test/parser/suite/js/fail/a028055b3f642367.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 1 | export struct S {};
+   |        ^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/a02f724571e03846.js
 error: Invalid escape sequence in an untagged template literal
    |
@@ -29958,6 +30686,16 @@ error: Expected an expression, but found '>'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/a223aff1f449ef77.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a as b } as ns from "x";
+   |                   ^^
+ 2 | 
+   |
+   = help: Follow the import clause with 'from' and a module specifier
+
+
 ✓ test/parser/suite/js/fail/a22feb87d52572c5.js
 error: 'default' is a reserved word and cannot be used as an identifier
    |
@@ -30103,6 +30841,16 @@ error: An '=' can only follow a property name when the containing object literal
    = help: Use ':' to give the property a value, or destructure into the object
 
 
+✓ test/parser/suite/js/fail/a34bae3c8e3261b5.module.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | export default s\u0074ruct S {};
+   |                            ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/a3710b36f9b97324.js
 error: Expected an expression, but found '.'
    |
@@ -30168,6 +30916,14 @@ error: Expected an expression, but found '>'
    |
  1 | value |> do { if (yes) null; else #; }
    |        ^
+ 2 | 
+   |
+
+✓ test/parser/suite/js/fail/a3bb5d6217e0c61b.module.js
+error: 'default' is a reserved word and cannot be used as an imported binding
+   |
+ 1 | import { default, if, "string name" } as ns from "x";
+   |          ^^^^^^^
  2 | 
    |
 
@@ -30571,6 +31327,14 @@ error: Keywords cannot contain escape characters
    = help: Write the keyword without escapes
 
 
+✓ test/parser/suite/js/fail/a5edec64bb0d8b58.js
+error: Expected an expression, but found '>'
+   |
+ 1 | x |> y + z => w
+   |    ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/a6247db1809ef715.js
 error: A rest element cannot have an initializer
    |
@@ -30661,6 +31425,16 @@ error: An identifier or keyword cannot immediately follow a numeric literal
    = help: Add a space between the number and the identifier
 
 
+✓ test/parser/suite/js/fail/a6c364fc59faa31d.module.js
+error: Expected ';' after the statement, but found 'extends'
+   |
+ 1 | export default struct extends B {
+   |                       ^^^^^^^
+ 2 |   property = 0;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/a70131dbd50d7d96.js
 error: Expected ';' after the statement, but found 'foo'
    |
@@ -30708,6 +31482,15 @@ error: A rest element cannot have an initializer
    |
    = help: Remove the initializer
 
+
+✓ test/parser/suite/js/fail/a7329b6a824a741b.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | var a;
+ 2 | export defer { a };
+   |        ^^^^^
+ 3 | 
+   |
 
 ✓ test/parser/suite/js/fail/a743b1b0a3aa684b.js
 error: Expected an expression, but found '>'
@@ -30927,6 +31710,14 @@ error: Expected ';' after the statement, but found '1'
    |
    = help: Add ';' or a line break before it
 
+
+✓ test/parser/suite/js/fail/a86b15935dbf36c8.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer { a, b } as ns from "x";
+   |        ^^^^^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/a86ca14e14dcbac8.js
 error: A rest element must be last in a destructuring pattern
@@ -31933,6 +32724,14 @@ error: A bigint literal cannot use exponential notation
    = help: Write the value without an exponent, or remove the 'n' suffix
 
 
+✓ test/parser/suite/js/fail/ad94ff72cbb45c6a.module.js
+error: Expected '}' to close the named imports, but found 'a'
+   |
+ 1 | import { type a, typeof b } as ns from "x";
+   |               ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/ad9b2567257720f9.js
 error: A parenthesized assignment target must be a variable or a property access
    |
@@ -32382,6 +33181,16 @@ error: Keywords cannot contain escape characters
    = help: Write the keyword without escapes
 
 
+✓ test/parser/suite/js/fail/afb350b486f4ff56.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export { a as b } as ns from "x";
+   |                   ^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/afc92cd75aca0290.js
 error: 'import' is a reserved word and cannot be used as an identifier
    |
@@ -32570,6 +33379,17 @@ error: A parenthesized assignment target must be a variable or a property access
    = help: Optional chains cannot be assigned to, even in parentheses
 
 
+✓ test/parser/suite/js/fail/b0aac95087f5af0d.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 2 |   static {
+ 3 |     struct S {
+   |            ^
+ 4 |       static #privateProperty;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/b0bad26f8efc3c46.js
 error: 'await' is a reserved word in async functions and modules and cannot be used as a binding identifier
    |
@@ -32681,6 +33501,16 @@ error: Expected ';' after the class field, but found '{'
    |         ^
  4 | }
    |
+
+✓ test/parser/suite/js/fail/b1429703c4133872.js
+error: Expected ';' after the statement, but found '{'
+   |
+ 1 | struct {};
+   |        ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/b1429b03f38679aa.js
 error: Expected ';' after the statement, but found '0'
@@ -33091,6 +33921,15 @@ error: A rest element cannot have an initializer
    |
    = help: Remove the initializer
 
+
+✓ test/parser/suite/js/fail/b48347f8a1291a52.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 2 | export { value as S };
+ 3 | export struct S {}
+   |        ^^^^^^
+ 4 | 
+   |
 
 ✓ test/parser/suite/js/fail/b48bdd4be8adc5d9.js
 error: An octal literal must contain at least one octal digit
@@ -33783,6 +34622,16 @@ error: The left-hand side of an assignment expression must be a variable or a pr
  1 | 1 %= 1;
    | ^
    |
+
+✓ test/parser/suite/js/fail/b7d1ec5ed69bb5fc.js
+error: Expected ';' after the statement, but found 'function\u{61}'
+   |
+ 1 | async function\u{61} f() {}
+   |       ^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/b7e2a0c3a37227f5.module.js
 error: 'await' is a reserved word in async functions and modules and cannot be used as a binding identifier
@@ -35392,6 +36241,14 @@ error: Expected an expression, but found ';'
    |          ^
    |
 
+✓ test/parser/suite/js/fail/bfacedcf9d5740d1.module.js
+error: Expected a declaration after 'export', but found 'defer'
+   |
+ 1 | export defer * as ns from "x";
+   |        ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/bfade85c065552c7.module.js
 error: Keywords cannot contain escape characters
    |
@@ -35695,12 +36552,30 @@ error: An identifier or keyword cannot immediately follow a numeric literal
    = help: Add a space between the number and the identifier
 
 
+✓ test/parser/suite/js/fail/c11e9859d66f4ef5.js
+error: Expected ')' to close the parameter list, but found 'do'
+   |
+ 1 | function f(a = async do { (b = await 1) => {} }) {}
+   |                      ^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/c12717c746927ff2.js
 error: 'finally' is a reserved word and cannot be used as a binding identifier
    |
  1 | var fina\u{6c}ly = 123;
    |     ^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/c151f971935c8a43.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | if (true) struct S {};
+   |                  ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/c15f2d3cb5b09ead.js
 error: 'super' cannot be the target of a 'new' expression
@@ -36049,6 +36924,16 @@ error: 'import' is a reserved word and cannot be used as an identifier
    |       ^^^^^^
  3 | };
    |
+
+✓ test/parser/suite/js/fail/c41ca10e07c8d53f.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {};
+   |        ^
+ 2 | struct \u0053 {};
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/c4236b612ac61d44.js
 error: Expected an identifier or a destructuring pattern, but found ';'
@@ -36688,6 +37573,16 @@ error: Expected an expression, but found '>'
  2 |   @classDecorator
    |
 
+✓ test/parser/suite/js/fail/c79231fa2a80d8dd.module.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | export default struct S {
+   |                       ^
+ 2 |   property = 0;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/c79647e7baf81f8f.js
 error: Invalid hexadecimal escape sequence
    |
@@ -36885,6 +37780,14 @@ error: A rest parameter must be last in a parameter list
    |
    = help: Move the rest parameter to the end
 
+
+✓ test/parser/suite/js/fail/c903784b60dee00f.module.js
+error: Expected a declaration after 'export', but found 'struct'
+   |
+ 1 | export struct S extends B {
+   |        ^^^^^^
+ 2 |   property = 0;
+   |
 
 ✓ test/parser/suite/js/fail/c903c4cc608cff4f.js
 error: A parenthesized assignment target must be a variable or a property access
@@ -37636,6 +38539,16 @@ error: Numeric separators are only allowed between two digits
  2 | 
    |
    = help: Place the separator between two digits, or remove it
+
+
+✓ test/parser/suite/js/fail/cd7e204dd5660c01.module.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | import.sync("./foo.js");
+   |        ^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
 
 
 ✓ test/parser/suite/js/fail/cd9f5706aa63ce29.js
@@ -38556,6 +39469,16 @@ error: A parenthesized assignment target must be a variable or a property access
    = help: Optional chains cannot be assigned to, even in parentheses
 
 
+✓ test/parser/suite/js/fail/d24b39fe8d93d955.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | const mod1 = import.sync();
+   |                     ^^^^
+ 2 | const mod2 = import.sync("./foo.js", { with: { type: "json"} }, { defer: true });
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
+
 ✓ test/parser/suite/js/fail/d25063ca5765ef8e.js
 error: Expected an expression, but found ','
    |
@@ -39453,6 +40376,16 @@ error: A rest element must be last in a destructuring pattern
    = help: Move the rest element to the end
 
 
+✓ test/parser/suite/js/fail/d73dc578e8e98a98.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | const mod = import.sync("./foo.js");
+   |                    ^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
+
 ✓ test/parser/suite/js/fail/d742134c4cd248c4.js
 error: A rest element cannot have an initializer
    |
@@ -39851,6 +40784,16 @@ error: Multiple consecutive numeric separators are not permitted
    = help: Remove the extra separator
 
 
+✓ test/parser/suite/js/fail/d9728558eca1b2cc.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 |   x;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/d97dd11d33ffb7e3.js
 error: An identifier or keyword cannot immediately follow a numeric literal
    |
@@ -39858,6 +40801,16 @@ error: An identifier or keyword cannot immediately follow a numeric literal
    |  ^
    |
    = help: Add a space between the number and the identifier
+
+
+✓ test/parser/suite/js/fail/d99456bdca74aae6.module.js
+error: Expected 'from' after the import clause, but found 'as'
+   |
+ 1 | import { a } as ns from "x";
+   |              ^^
+ 2 | import ns from "y";
+   |
+   = help: Follow the import clause with 'from' and a module specifier
 
 
 ✓ test/parser/suite/js/fail/d9a33ed3ef815c4b.js
@@ -40343,6 +41296,15 @@ error: A parenthesized assignment target must be a variable or a property access
    |
    = help: Optional chains cannot be assigned to, even in parentheses
 
+
+✓ test/parser/suite/js/fail/dc75335fcf595595.js
+error: Cannot use 'export default' outside a module
+   |
+ 4 | 
+ 5 | export default struct
+   | ^^^^^^^^^^^^^^^^^^^^^
+ 6 | {};
+   |
 
 ✓ test/parser/suite/js/fail/dc77fac29a8e082d.js
 error: The left-hand side of an assignment expression must be a variable or a property access
@@ -41304,12 +42266,31 @@ error: Expected an expression, but found '...'
  4 | }
    |
 
+✓ test/parser/suite/js/fail/e20b805f8448a730.js
+error: Expected ';' after the statement, but found 'x'
+   |
+ 1 | async function f() {
+ 2 |   await using\u{61} x = y;
+   |                     ^
+ 3 | }
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/e22fc24f97f5cb66.js
 error: Expected an expression, but found '%'
    |
  1 | new %DebugPrint(null);
    |     ^
  2 | 
+   |
+
+✓ test/parser/suite/js/fail/e249273de01cc522.module.js
+error: Expected an identifier or string literal, but found '%'
+   |
+ 1 | import { %%a%%, %%b%% } as ns from "m";
+   |          ^
+ 2 | export { %%c%%, %%d%% } as ns2 from "m";
    |
 
 ✓ test/parser/suite/js/fail/e24cfc5e8334ad9f.js
@@ -41865,6 +42846,16 @@ error: A rest element must be last in a destructuring pattern
    = help: Move the rest element to the end
 
 
+✓ test/parser/suite/js/fail/e54b60897564880a.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export { a } as ns from "x";
+   |              ^^
+ 2 | import { a } as ns2 from "x";
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/e54bd3ac2dc351de.js
 error: Invalid escape sequence in an untagged template literal
    |
@@ -41916,6 +42907,16 @@ error: Unexpected token '=>'
    |
  1 | await (x) => {}
    | ^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
+✓ test/parser/suite/js/fail/e58b11dcacc9b890.js
+error: Unexpected token '=>'
+   |
+ 1 | a + `${() => {}}` + b => c
+   | ^^^^^^^^^^^^^^^^^^^^^
  2 | 
    |
    = help: An arrow function takes an identifier or a parenthesized parameter list
@@ -42134,6 +43135,16 @@ error: 'import' is a reserved word and cannot be used as an identifier
 45 | 
    |
 
+✓ test/parser/suite/js/fail/e6f90afcc958fda4.js
+error: Unexpected token '=>'
+   |
+ 1 | a + (() => {}) + async (b) => c
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/e7074121e3fb4a1c.js
 error: 'super' is a reserved word and cannot be used as a binding identifier
    |
@@ -42218,6 +43229,14 @@ error: A rest element must be last in a destructuring pattern
    = help: Move the rest element to the end
 
 
+✓ test/parser/suite/js/fail/e797b146416a86fa.module.js
+error: Expected '(' after 'import', but found '['
+   |
+ 1 | import.defer ["x")
+   |              ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/e7b2b3790afb8b3e.js
 error: Expected an expression, but found '>'
    |
@@ -42296,6 +43315,16 @@ error: Expected '{' to start the function body, but found '1'
  1 | function a() 1 // expression closure is not supported
    |              ^
    |
+
+✓ test/parser/suite/js/fail/e82748afb72505f0.module.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | export default struct S
+   |                       ^
+ 2 | extends B {};
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/e82872eefff483c8.js
 error: Async functions can only be declared at the top level or inside a block
@@ -42434,6 +43463,16 @@ error: 'enum' is a reserved word and cannot be used as a binding identifier
  2 | 
    |
 
+✓ test/parser/suite/js/fail/e912d3af1567378c.js
+error: Unexpected token '=>'
+   |
+ 1 | a ** (() => {}) ** b => c
+   | ^^^^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: An arrow function takes an identifier or a parenthesized parameter list
+
+
 ✓ test/parser/suite/js/fail/e912f60dfaff1d2d.js
 error: Invalid escape sequence in an untagged template literal
    |
@@ -42471,6 +43510,16 @@ error: Keywords cannot contain escape characters
  4 |   }
    |
    = help: Write the keyword without escapes
+
+
+✓ test/parser/suite/js/fail/e921bc9471ff12a2.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S {
+   |        ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
 
 
 ✓ test/parser/suite/js/fail/e922f1c6f6e5fdef.module.js
@@ -43000,6 +44049,16 @@ error: 'import' is a reserved word and cannot be used as an identifier
  3 | }
    |
 
+✓ test/parser/suite/js/fail/ebd5678819fd89d0.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | s\u0074ruct S {};
+   |             ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/ebdf547906203d81.js
 error: Expected ';' after the class field, but found '{'
    |
@@ -43217,6 +44276,16 @@ error: Expected an expression, but found '^'
  2 | 
    |
 
+✓ test/parser/suite/js/fail/ed405324f020fe4a.module.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | export default struct S extends B {
+   |                       ^
+ 2 |   property = 0;
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/ed47478126a4eb75.js
 error: A rest element must be last in a destructuring pattern
    |
@@ -43298,6 +44367,14 @@ error: Expected an expression, but found ')'
  3 | comment */
  4 | )
    | ^
+   |
+
+✓ test/parser/suite/js/fail/ed9ba7af10b1d68d.module.js
+error: Expected '(' after 'import', but found '['
+   |
+ 1 | import.source ["x")
+   |               ^
+ 2 | 
    |
 
 ✓ test/parser/suite/js/fail/eda2698e73097ac5.js
@@ -44347,6 +45424,16 @@ error: 'await' is a reserved word in async functions and modules and cannot be u
    |       ^^^^^
  3 | };
    |
+
+✓ test/parser/suite/js/fail/f2f8ccaa3d92a224.js
+error: 'sync' is not a valid meta-property for keyword 'import'
+   |
+ 1 | import.sync("./foo.json");
+   |        ^^^^
+ 2 | 
+   |
+   = help: Use 'import.meta', 'import.source()', or 'import.defer()'
+
 
 ✓ test/parser/suite/js/fail/f2fc6dc8a9373708.js
 error: Numeric separators are only allowed between two digits
@@ -45431,6 +46518,15 @@ error: Generators can only be declared at the top level or inside a block
    |    ^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/fail/f8e9a6170510eaa9.js
+error: 'in' is a reserved word and cannot be used as an identifier
+   |
+ 2 | function* g() {
+ 3 |   for (var x = yield in z);
+   |                      ^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/fail/f90a23cb806e24f5.js
 error: Expected an expression, but found '>'
    |
@@ -45685,6 +46781,14 @@ error: 'await using' declarations are not allowed in 'case' or 'default' clauses
    = help: Wrap the clause body in a block
 
 
+✓ test/parser/suite/js/fail/fa1f4704980aef0d.js
+error: Expected a declaration after 'export', but found 's\u0074ruct'
+   |
+ 1 | export s\u0074ruct S {};
+   |        ^^^^^^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/fa1f70f835722577.js
 error: A parenthesized assignment target must be a variable or a property access
    |
@@ -45799,6 +46903,15 @@ error: Expected ';' after the statement, but found '++'
    = help: Add ';' or a line break before it
 
 
+✓ test/parser/suite/js/fail/fabfe1a20ee31ec3.module.js
+error: 'extends' is a reserved word and cannot be used as an identifier
+   |
+ 1 | export default struct
+ 2 | extends B {};
+   | ^^^^^^^
+ 3 | 
+   |
+
 ✓ test/parser/suite/js/fail/faca2b846a160750.js
 error: A rest element cannot have an initializer
    |
@@ -45864,6 +46977,16 @@ error: 'import' is a reserved word and cannot be used as an identifier
    |       ^^^^^^
 44 | }
    |
+
+✓ test/parser/suite/js/fail/fb051ab01f243183.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | struct S [};
+   |        ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/fb11d73df76b66dc.js
 error: 'yield' is a reserved word in generators and cannot be used as a binding identifier
@@ -46144,6 +47267,16 @@ error: Invalid escape sequence in an untagged template literal
    = help: Only tagged templates can contain invalid escapes
 
 
+✓ test/parser/suite/js/fail/fc4260103620102c.js
+error: Expected ';' after the statement, but found 'b'
+   |
+ 1 | a + (() => {}) + async b => c
+   |                        ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/fc491ad4dd94aa1c.js
 error: The left-hand side of an assignment expression must be a variable or a property access
    |
@@ -46291,6 +47424,16 @@ error: Generators can only be declared at the top level or inside a block
    |        ^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/fail/fd04d9b0c9dafefd.module.js
+error: Expected ';' after the statement, but found 'as'
+   |
+ 1 | export {} as ns from "x";
+   |           ^^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
+
 ✓ test/parser/suite/js/fail/fd09d4a8517f0577.js
 error: Expected an expression, but found '>'
    |
@@ -46417,6 +47560,16 @@ error: 'instanceof' is a reserved word and cannot be used as a binding identifie
  1 | var insta\u006eceof = 123;
    |     ^^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/fda8f664c1403dbf.js
+error: Expected ';' after the statement, but found 'S'
+   |
+ 1 | \u0073truct S {};
+   |             ^
+ 2 | 
+   |
+   = help: Add ';' or a line break before it
+
 
 ✓ test/parser/suite/js/fail/fdd017511053d3ab.module.js
 error: Expected an expression, but found ')'

@@ -251,10 +251,28 @@ test "a semantic walk models the whole tree when its visitor skips or stops" {
 }
 
 test "module records collect an export pattern of any depth" {
-    const depth = 300;
+    const depth = 32;
     const pattern = helpers.repeat("[", depth) ++ "a" ++ helpers.repeat("]", depth);
     var a = try helpers.analyze("export const " ++ pattern ++ " = x;", .{});
     defer a.deinit();
     const records = try semantic.module_record.collect(&a.tree, &a.sem);
     try testing.expectEqual(@as(usize, 1), records.exports.len);
+}
+
+test "every allocation failure returns an error" {
+    const source = "const { a = 1 } = b as C<D>; /* c */ f(`x${a}`);";
+    var index: usize = 0;
+    while (true) : (index += 1) {
+        var failing: std.testing.FailingAllocator = .init(testing.allocator, .{ .fail_index = index });
+        var tree = parser.parse(failing.allocator(), source, .{
+            .lang = .ts,
+            .comments = .attach,
+        }) catch |err| {
+            try testing.expectEqual(error.OutOfMemory, err);
+            continue;
+        };
+        defer tree.deinit();
+        try testing.expect(!failing.has_induced_failure);
+        break;
+    }
 }

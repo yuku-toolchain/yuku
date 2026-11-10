@@ -26,6 +26,7 @@ pub const Options = struct {
     comments: CommentMode = .collect,
     /// Whether to keep every consumed token in `Tree.tokens`.
     tokens: bool = false,
+    stack_bytes: usize = util.StackGuard.default_bytes,
 };
 
 pub const Context = packed struct {
@@ -57,7 +58,7 @@ const ParserState = struct {
     stripped_paren: ?ast.NodeIndex = null,
 };
 
-pub const Error = error{};
+pub const Error = std.mem.Allocator.Error;
 
 pub const Parser = struct {
     tree: ast.Tree,
@@ -65,6 +66,7 @@ pub const Parser = struct {
     preserve_parens: bool,
     comment_mode: CommentMode,
     collect_tokens: bool,
+    stack: util.StackGuard,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     tokens: std.ArrayList(Token) = .empty,
@@ -112,13 +114,13 @@ pub const Parser = struct {
             self.current_token = try self.recoverNextToken();
         };
 
-        self.ensureCapacity() catch ast.outOfMemory();
+        try self.ensureCapacity();
 
         const body = try self.parseBody(null, .program);
         if (self.state.cover_init_names > 0) try grammar.reportCoverInitializedNames(self);
 
         std.debug.assert(self.current_token.tag == .eof);
-        if (self.collect_tokens) self.tokens.append(self.allocator(), self.current_token) catch ast.outOfMemory();
+        if (self.collect_tokens) try self.tokens.append(self.allocator(), self.current_token);
 
         self.tree.root = try self.tree.addNode(.{ .program = .{
             .source_type = if (self.tree.source_type == .module) .module else .script,
@@ -131,7 +133,7 @@ pub const Parser = struct {
         self.tree.diagnostics = self.diagnostics;
         if (!self.preserve_parens) stripParenthesizedNodes(&self.tree);
         const collected = self.lexer.comments.items;
-        if (self.comment_mode == .attach) comments.attach(&self.tree, collected) catch ast.outOfMemory();
+        if (self.comment_mode == .attach) try comments.attach(&self.tree, collected);
         self.tree.comments = collected;
         if (self.collect_tokens) self.tree.tokens = self.tokens.items;
         return self.tree;
@@ -144,7 +146,7 @@ pub const Parser = struct {
         if (self.tokens.items.len < self.tokens.capacity) {
             self.tokens.appendAssumeCapacity(token);
         } else {
-            self.tokens.append(self.allocator(), token) catch ast.outOfMemory();
+            try self.tokens.append(self.allocator(), token);
         }
     }
 
@@ -203,7 +205,7 @@ pub const Parser = struct {
         @branchHint(.cold);
         const alloc = self.allocator();
         self.scratch_string.clearRetainingCapacity();
-        decoder(alloc, self.source[start..end], &self.scratch_string) catch ast.outOfMemory();
+        try decoder(alloc, self.source[start..end], &self.scratch_string);
         return try self.tree.addString(self.scratch_string.items);
     }
 
@@ -233,7 +235,7 @@ pub const Parser = struct {
 
     inline fn nextTokenInto(self: *Parser, out: *Token) Error!bool {
         self.lexer.nextTokenInto(out) catch |e| {
-            if (e == error.OutOfMemory) ast.outOfMemory();
+            if (e == error.OutOfMemory) return error.OutOfMemory;
             try self.reportLexicalError(@errorCast(e));
             return false;
         };
@@ -255,6 +257,18 @@ pub const Parser = struct {
             lexer.getLexicalErrorMessage(lex_err),
             .{ .help = lexer.getLexicalErrorHelp(lex_err) },
         );
+    }
+
+    pub inline fn ensureStack(self: *Parser) Error!?void {
+        if (self.stack.exhausted()) return self.reportNestedTooDeeply();
+    }
+
+    noinline fn reportNestedTooDeeply(self: *Parser) Error!?void {
+        @branchHint(.cold);
+        try self.report(self.current_token.span, "Code is nested too deeply to parse", .{
+            .help = "Split the code into smaller functions or expressions",
+        });
+        return null;
     }
 
     /// Advances to the next token, reporting an escaped keyword consumed in keyword position.
@@ -447,13 +461,13 @@ pub const Parser = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Error!void {
-        self.diagnostics.append(self.allocator(), .{
+        try self.diagnostics.append(self.allocator(), .{
             .severity = opts.severity,
             .message = message,
             .span = span,
             .help = opts.help,
             .labels = opts.labels,
-        }) catch ast.outOfMemory();
+        });
     }
 
     pub fn reportExpected(
@@ -474,11 +488,11 @@ pub const Parser = struct {
     }
 
     pub fn labels(self: *Parser, items: []const ast.Label) Error![]const ast.Label {
-        return self.allocator().dupe(ast.Label, items) catch ast.outOfMemory();
+        return self.allocator().dupe(ast.Label, items);
     }
 
     pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
-        return self.allocator().print(format, args) catch ast.outOfMemory();
+        return self.allocator().print(format, args);
     }
 
     pub fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
@@ -497,7 +511,7 @@ pub const Parser = struct {
     fn recoverNextToken(self: *Parser) Error!Token {
         while (true) {
             return self.lexer.nextToken() catch |e| {
-                if (e == error.OutOfMemory) ast.outOfMemory();
+                if (e == error.OutOfMemory) return error.OutOfMemory;
                 if (self.lexer.cursor < self.source.len) {
                     self.lexer.cursor += 1;
                 } else {
@@ -508,7 +522,7 @@ pub const Parser = struct {
         }
     }
 
-    fn ensureCapacity(self: *Parser) std.mem.Allocator.Error!void {
+    fn ensureCapacity(self: *Parser) Error!void {
         std.debug.assert(self.tree.nodes.capacity == 0);
         const alloc = self.allocator();
         const source_len = self.source.len;
@@ -563,8 +577,13 @@ const ScratchBuffer = struct {
         if (self.items.items.len < self.items.capacity) {
             self.items.appendAssumeCapacity(index);
         } else {
-            self.items.append(alloc, index) catch ast.outOfMemory();
+            try self.grow(alloc, index);
         }
+    }
+
+    noinline fn grow(self: *ScratchBuffer, alloc: std.mem.Allocator, index: ast.NodeIndex) Error!void {
+        @branchHint(.cold);
+        try self.items.append(alloc, index);
     }
 
     pub inline fn reset(self: *ScratchBuffer, checkpoint: usize) void {
@@ -578,12 +597,14 @@ pub fn parse(
     source: []const u8,
     options: Options,
 ) Error!ast.Tree {
+    if (source.len >= std.math.maxInt(u32)) return error.OutOfMemory;
     var parser: Parser = .{
         .tree = ast.Tree.init(child_allocator, source),
         .source = source,
         .preserve_parens = options.preserve_parens,
         .comment_mode = options.comments,
         .collect_tokens = options.tokens,
+        .stack = .init(options.stack_bytes),
         .lexer = undefined,
         .current_token = Token.eof(0),
     };

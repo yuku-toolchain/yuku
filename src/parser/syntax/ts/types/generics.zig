@@ -5,9 +5,13 @@ const TokenTag = @import("../../../token.zig").TokenTag;
 
 const literals = @import("../../literals.zig");
 const core = @import("core.zig");
+const Speculation = @import("../speculation.zig").Speculation;
 
-pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
-    return parseAngleList(parser, .arguments, .peel);
+pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
+    const speculation: Speculation = .at(parser, .type_arguments, .{});
+    const arguments = try parseAngleList(parser, .arguments, .peel);
+    if (arguments == .null) try speculation.reject(parser);
+    return arguments;
 }
 
 // a fused `>=` or `>>` fails so `f<T>= x` stays relational like tsc
@@ -19,7 +23,7 @@ pub inline fn parseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeInde
 pub inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
     if (!isAngleOpen(parser.current_token.tag)) return .null;
     if (parser.current_token.hasLineTerminatorBefore()) return .null;
-    return parseAngleList(parser, .arguments, .peel);
+    return parseTypeArguments(parser);
 }
 
 pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {

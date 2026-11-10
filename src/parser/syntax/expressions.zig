@@ -32,6 +32,7 @@ pub fn parseExpression(
     min_precedence: u8,
     options: ParseExpressionOptions,
 ) Error!?ast.NodeIndex {
+    try parser.ensureStack() orelse return null;
     var left = try parsePrefix(parser, min_precedence, options) orelse return null;
     const is_ts = parser.tree.isTs();
 
@@ -77,7 +78,7 @@ inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
     return token.tag.precedence();
 }
 
-fn parsePrefix(
+inline fn parsePrefix(
     parser: *Parser,
     precedence: u8,
     options: ParseExpressionOptions,
@@ -114,7 +115,7 @@ fn parsePrefix(
     return parsePrimaryExpression(parser, precedence);
 }
 
-fn parseInfix(
+inline fn parseInfix(
     parser: *Parser,
     precedence: u8,
     left: ast.NodeIndex,
@@ -560,6 +561,7 @@ fn parseMetaProperty(
 }
 
 fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
+    try parser.ensureStack() orelse return null;
     std.debug.assert(parser.current_token.tag == .new);
     const start = parser.current_token.span.start;
     try parser.reportIfEscapedKeyword(parser.current_token);
@@ -1139,6 +1141,7 @@ pub fn parseLeftHandSideExpression(
     parser: *Parser,
     context: LeftHandSideContext,
 ) Error!?ast.NodeIndex {
+    try parser.ensureStack() orelse return null;
     var expr: ast.NodeIndex = switch (parser.current_token.tag) {
         .left_paren => try parseParenthesizedExpression(parser) orelse return null,
         .new => try parseNewExpression(parser) orelse return null,

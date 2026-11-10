@@ -435,3 +435,42 @@ test("a hashbang is reprinted verbatim", () => {
     "#!/usr/bin/env node --flag \nx",
   );
 });
+
+test("a chain of any depth prints", () => {
+  const source = `a${".b".repeat(100_000)}`;
+  expect(print(parse(source), { format: "compact" }).code).toBe(source);
+});
+
+test("nesting past the encoder's recursion prints", () => {
+  for (const source of [`${"!".repeat(600)}a`, `x=${"{a:".repeat(600)}1${"}".repeat(600)}`]) {
+    const printed = print(parse(source), { format: "compact" });
+    expect(printed.diagnostics).toEqual([]);
+    expect(printed.code.replace(/\s/g, "")).toBe(source);
+  }
+});
+
+test("a tree too deep to print is a diagnostic", () => {
+  let node: any = { type: "Identifier", name: "a", start: 0, end: 1 };
+  for (let i = 0; i < 300_000; i++) {
+    node = { type: "UnaryExpression", operator: "!", prefix: true, argument: node, start: 0, end: 1 };
+  }
+  expect(print(node).diagnostics.map((d) => d.message)).toContain(
+    "Code is nested too deeply to print",
+  );
+});
+
+test("a node containing itself throws", () => {
+  const node: any = { type: "UnaryExpression", operator: "!", prefix: true, start: 0, end: 1 };
+  node.argument = node;
+  expect(() => print(node)).toThrow("A node cannot contain itself");
+});
+
+test("a tree the parser could not build is rejected", () => {
+  const file = parse("a;");
+  (file.program.body[0] as any).expression = { type: "Program", body: [], start: 0, end: 0 };
+  expect(() => print(file)).toThrow();
+
+  const rooted = parse("a;");
+  Object.assign(rooted.program, { type: "EmptyStatement" });
+  expect(() => rooted.reanalyze()).toThrow();
+});
