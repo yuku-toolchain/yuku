@@ -92,14 +92,9 @@ pub const State = struct {
 
     inline fn isPlainAscii(bytes: []const u8) bool {
         var i: usize = 0;
-        while (i + 16 <= bytes.len) : (i += 16) {
-            const chunk = Simd.loadChunk(bytes, i);
-            const special = (chunk >= Simd.splat(0x80)) | (chunk == Simd.splat('\n')) |
-                (chunk == Simd.splat('\r'));
-            if (@reduce(.Or, special)) return false;
-        }
-        while (i < bytes.len) : (i += 1) {
-            if (bytes[i] >= 0x80 or bytes[i] == '\n' or bytes[i] == '\r') return false;
+        while (i < bytes.len) : (i += 16) {
+            const chunk = if (bytes.len - i >= 16) Simd.loadChunk(bytes, i) else Simd.loadTail(bytes[i..]);
+            if (@reduce(.Or, notPlainAscii(chunk))) return false;
         }
         return true;
     }
@@ -207,19 +202,33 @@ pub const SourceCursor = struct {
 
     pub fn resolve(self: *SourceCursor, source: []const u8, target: u32) LineCol {
         if (target >= self.byte) {
-            while (self.byte < target and self.byte < source.len) {
-                const brk = spec.line_terminators.lineBreakLen(source, self.byte);
+            const end = @min(target, source.len);
+            var byte = self.byte;
+            var utf16 = self.utf16;
+            while (byte < end) {
+                // plain ASCII is one column a byte, so a run of it moves the cursor at once
+                if (source.len - byte >= 16) {
+                    const chunk = Simd.loadChunk(source, byte);
+                    const plain = @min(Simd.firstTrueLane(notPlainAscii(chunk)), end - byte);
+                    byte += plain;
+                    utf16 += plain;
+                    if (byte == end) break;
+                    if (plain == 16) continue;
+                }
+                const brk = spec.line_terminators.lineBreakLen(source, byte);
                 if (brk > 0) {
                     self.line += 1;
-                    self.byte += brk;
-                    self.utf16 += if (brk == 2) @as(u32, 2) else 1;
-                    self.line_start_utf16 = self.utf16;
+                    byte += brk;
+                    utf16 += if (brk == 2) @as(u32, 2) else 1;
+                    self.line_start_utf16 = utf16;
                 } else {
-                    const len = std.unicode.utf8ByteSequenceLength(source[self.byte]) catch 1;
-                    self.byte += len;
-                    self.utf16 += utf16Width(len);
+                    const len = std.unicode.utf8ByteSequenceLength(source[byte]) catch 1;
+                    byte += len;
+                    utf16 += utf16Width(len);
                 }
             }
+            self.byte = byte;
+            self.utf16 = utf16;
         } else {
             while (self.byte > target) {
                 self.byte -= 1;
@@ -251,6 +260,11 @@ pub const SourceCursor = struct {
         return self.utf16 - units_back;
     }
 };
+
+/// The lanes holding a line break or the start of a non-ASCII character.
+inline fn notPlainAscii(chunk: Simd.Chunk) @Vector(16, bool) {
+    return (chunk >= Simd.splat(0x80)) | (chunk == Simd.splat('\n')) | (chunk == Simd.splat('\r'));
+}
 
 inline fn isContinuation(byte: u8) bool {
     return (byte & 0xC0) == 0x80;
