@@ -2,6 +2,14 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.28.1
+
+### Changes
+
+- `print` on a file whose `program` and `comments` have not been read prints straight from its source, without building the tree in JavaScript, so parsing and printing a file is faster (#325 by @arshad-yaseen)
+- Parsing is faster on code with many operators, strings, and block comments (#325 by @arshad-yaseen)
+- A parenthesized arrow body that cannot be arrow parameters no longer takes the conditional's `:` as its return type, so `a ? (...b) => ([(c)]) : d => e` parses as TypeScript reads it (#326 by @arshad-yaseen)
+
 ## 0.28.0
 
 ### Breaking
