@@ -1233,14 +1233,17 @@ pub const Lexer = struct {
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
-        while (pos < src.len) {
-            const c = src[pos];
-            switch (c) {
+        // the second `*` of `/**` would only stop the search below
+        if (pos + 1 < src.len and src[pos] == '*' and src[pos + 1] != '/') pos += 1;
+        // up to the first line break, which the next token is flagged with
+        while (true) {
+            pos = findAnyPos("*\n\r\xe2", src, pos);
+            if (pos >= src.len) break;
+            switch (src[pos]) {
                 '*' => {
                     if (pos + 1 < src.len and src[pos + 1] == '/') {
-                        pos += 2;
-                        self.cursor = pos;
-                        try self.recordComment(.block, start, pos);
+                        self.cursor = pos + 2;
+                        try self.recordComment(.block, start, self.cursor);
                         return;
                     }
                     pos += 1;
@@ -1250,19 +1253,18 @@ pub const Lexer = struct {
                     pos += 1;
                     break;
                 },
-                0x80...0xFF => {
+                else => {
                     const lt_len = spec.line_terminators.unicodeSeparatorLen(src, pos);
+                    pos += @max(1, lt_len);
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
-                        pos += lt_len;
                         break;
-                    } else pos += 1;
+                    }
                 },
-                else => pos += 1,
             }
         }
-        // the offset load catches `*/` across chunks
-        var w = pos - 1;
+        // past it only `*/` matters, the offset load catches one across chunks
+        var w = pos;
         while (w + 17 <= src.len) {
             const stars = Simd.loadChunk(src, w) == Simd.splat('*');
             const slashes = Simd.loadChunk(src, w + 1) == Simd.splat('/');
