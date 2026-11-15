@@ -1,7 +1,7 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8687/8690 (99.97%)
-Failed:       3
+Passed:       8687/8687 (100.00%)
+Failed:       0
 AST mismatch: 0/8648
 
 ✓ test/parser/suite/ts/pass/00039563c6c76095.ts
@@ -2943,17 +2943,6 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/571c999c4a352199.ts
 ✓ test/parser/suite/ts/pass/572322d9af6deda1.ts
 ✓ test/parser/suite/ts/pass/57271fb720a6f21b.ts
-✗ test/parser/suite/ts/pass/57376b3edef0bcdc.ts (parse errors)
-error: Expected ':' in the conditional expression, but found ';'
-   |
- 2 | // type even if it is not followed by `:`, like in TypeScript.
- 3 | a ? (b: B) => (c) : d => e;
-   |                           ^
- 4 | 
-   |
-   = help: Separate the two branches with ':'
-
-
 ✓ test/parser/suite/ts/pass/573cedca383170eb.ts
 ✓ test/parser/suite/ts/pass/5743f461082d4ec7.ts
 ✓ test/parser/suite/ts/pass/5748d3a13d1d42ea.tsx
@@ -5674,17 +5663,6 @@ error: Expected ':' in the conditional expression, but found ';'
 ✓ test/parser/suite/ts/pass/a8185369c7e2e904.ts
 ✓ test/parser/suite/ts/pass/a822f2cc78e2a923.ts
 ✓ test/parser/suite/ts/pass/a82337ea8a1b0798.ts
-✗ test/parser/suite/ts/pass/a8243a8d1f492200.ts (parse errors)
-error: Expected ':' in the conditional expression, but found ';'
-   |
- 2 | // return type even if it is not followed by `:`, like in TypeScript.
- 3 | a ? async (...b) => (c) : d => e;
-   |                                 ^
- 4 | 
-   |
-   = help: Separate the two branches with ':'
-
-
 ✓ test/parser/suite/ts/pass/a82544969d9cfd62.ts
 ✓ test/parser/suite/ts/pass/a828cef7a9617b3e.ts
 ✓ test/parser/suite/ts/pass/a82d75f39bd6cb28.ts
@@ -5710,17 +5688,6 @@ error: Expected ':' in the conditional expression, but found ';'
 ✓ test/parser/suite/ts/pass/a8d85e3749a0dc01.ts
 ✓ test/parser/suite/ts/pass/a8e69dfb646b075e.ts
 ✓ test/parser/suite/ts/pass/a904bc3df2955b34.ts
-✗ test/parser/suite/ts/pass/a9136d40215f4e5a.ts (parse errors)
-error: Expected ':' in the conditional expression, but found ';'
-   |
- 2 | // type even if it is not followed by `:`, like in TypeScript.
- 3 | a ? (b?) => (c) : d => e;
-   |                         ^
- 4 | 
-   |
-   = help: Separate the two branches with ':'
-
-
 ✓ test/parser/suite/ts/pass/a91d41d371317695.ts
 ✓ test/parser/suite/ts/pass/a93b97fcafd8c2a1.ts
 ✓ test/parser/suite/ts/pass/a9534649d125a160.ts
