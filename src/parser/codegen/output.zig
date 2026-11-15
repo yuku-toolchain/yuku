@@ -20,20 +20,16 @@ pub const Output = struct {
     map_start: ?u32 = null,
     held_spaces: u32 = 0,
     held_literal: bool = false,
-    // where the last number ends and how long it is, read when a `.` follows it
     number_end: usize = std.math.maxInt(usize),
     number_len: usize = 0,
     lead: Lead = .none,
     mapped: bool = false,
-    // set when an allocation fails, after which writes are dropped and `generate` reports it
     failed: bool = false,
-    // text ending within `backed_span` of `backed_from` has its last 16 bytes inside the source
     backed_from: usize = std.math.maxInt(usize),
     backed_span: usize = 0,
 
     const Text = enum { token, literal, comment };
 
-    // the most spaces a fast write commits and the most text it copies, so it never calls out
     const fast_spaces = 4 * space_chunk_len;
     const fast_text = 32;
 
@@ -94,8 +90,6 @@ pub const Output = struct {
         self.lead = .none;
     }
 
-    /// Where a fast write lands, with the held spaces already in place before it, or null
-    /// when the write needs the slow path. Nothing is committed until the caller moves the end.
     inline fn fastSpot(self: *Output, held: u32, at: usize) ?[*]u8 {
         if (self.mapped or held > fast_spaces) return null;
         if (self.code.capacity - at < fast_spaces + fast_text) return null;
@@ -109,8 +103,6 @@ pub const Output = struct {
         return dst + held;
     }
 
-    /// Whether a token starting with `next` follows the held spaces as they are, with no
-    /// space for compact mode to drop and none to add against a fusing byte.
     inline fn joins(self: *const Output, next: u8, held: u32, at: usize) bool {
         if (held == 0) return !self.fuses(next, at);
         return self.pretty or utils.isIdCont(next);
@@ -131,12 +123,10 @@ pub const Output = struct {
         if (comptime source_maps) if (self.map != null) self.advanceMap(&.{b});
     }
 
-    /// Writes a token the printer spells itself, a keyword or an operator.
     pub inline fn writeStr(self: *Output, s: []const u8) void {
         self.writeText(s, .token, false);
     }
 
-    /// Writes a token whose text comes from the tree, a name or a number.
     pub inline fn writeToken(self: *Output, s: []const u8) void {
         self.writeText(s, .token, true);
     }
@@ -184,14 +174,12 @@ pub const Output = struct {
         self.map_start = span.start;
     }
 
-    /// Writes a numeric literal and remembers where, since `1.x` would lex as a fraction.
     pub inline fn writeNumber(self: *Output, text: []const u8) void {
         self.writeToken(text);
         self.number_end = self.code.items.len;
         self.number_len = text.len;
     }
 
-    /// Writes `text` between two `quote` bytes. The text prints as it is, with no escape.
     pub inline fn writeQuoted(self: *Output, quote: u8, text: []const u8) void {
         const held = self.held_spaces;
         const at = self.code.items.len;
@@ -216,7 +204,6 @@ pub const Output = struct {
         self.writeRawByte(quote);
     }
 
-    /// `from_tree` text is copied without a branch when it lies in the source.
     inline fn writeText(
         self: *Output,
         s: []const u8,
@@ -281,7 +268,6 @@ pub const Output = struct {
         }
     }
 
-    /// Whether `next` would fuse with the last byte written, as in `+ +` or `1 .x`.
     inline fn fuses(self: *const Output, next: u8, at: usize) bool {
         const prev = fuses_after[next];
         if (prev == 0) return false;
@@ -350,7 +336,6 @@ pub const Output = struct {
         copyShort(self.code.items.ptr + old, s);
     }
 
-    /// Whether `additional` bytes fit, growing the buffer when they do not yet.
     inline fn hasRoom(self: *Output, additional: usize) bool {
         return self.code.capacity - self.code.items.len >= additional or self.grow(additional);
     }
@@ -382,20 +367,15 @@ inline fn copyShort(dst: [*]u8, s: []const u8) void {
     }
 }
 
-// how many bytes before a text's end `copyBacked` reads
 const backed_len = 16;
 
-/// Copies 1 to 32 bytes without a branch on the length. The `backed_len` bytes before the
-/// text's end must be readable, and `dst` must have room for 32.
 inline fn copyBacked(dst: [*]u8, src: [*]const u8, n: usize) void {
     std.debug.assert(n >= 1 and n <= 2 * backed_len);
     const long = n > backed_len;
     const tail = src + n - backed_len;
     const low = std.mem.readInt(u64, tail[0..8], .little);
     const high = std.mem.readInt(u64, tail[8..16], .little);
-    // a long text copies its first and last 16 bytes
     dst[0..backed_len].* = (if (long) src else tail)[0..backed_len].*;
-    // a short one shifts out the bytes that precede it
     const drop: u64 = if (long) 0 else 8 * (backed_len - n);
     const wide = drop >= 64;
     const shift: u6 = @truncate(drop);

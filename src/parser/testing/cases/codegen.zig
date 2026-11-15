@@ -79,14 +79,12 @@ test "an empty regular expression pattern prints as an empty group" {
 }
 
 test "every allocation failure while printing returns an error" {
-    // the output outgrows the source, a long chain prints iteratively, and an entity is decoded
     const repeat = helpers.repeat;
     const text = repeat("a=[1,2,3];", 64) ++ "x" ++ repeat(".y", 8192) ++ ";<a b=\"&amp;\"/>;";
     var tree = try parser.parse(testing.allocator, text, .{ .lang = .jsx, .comments = .attach });
     defer tree.deinit();
     try testing.expect(!tree.hasErrors());
 
-    // a small stack diagnoses the nesting instead
     const plans = [_]parser.codegen.Options{ .{ .source_map = .{} }, .{ .stack_bytes = 2048 } };
     for (plans) |options| {
         var index: usize = 0;

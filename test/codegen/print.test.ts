@@ -447,7 +447,6 @@ test("nesting past the encoder's recursion prints", () => {
 
 test("a tree too deep to print is a diagnostic", () => {
   let node: any = { type: "Identifier", name: "a", start: 0, end: 1 };
-  // an array closes after its element, so each level holds a frame
   for (let i = 0; i < 300_000; i++) {
     node = { type: "ArrayExpression", elements: [node], start: 0, end: 1 };
   }

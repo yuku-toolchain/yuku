@@ -206,7 +206,6 @@ pub const SourceCursor = struct {
             var byte = self.byte;
             var utf16 = self.utf16;
             while (byte < end) {
-                // plain ASCII is one column a byte, so a run of it moves the cursor at once
                 if (source.len - byte >= 16) {
                     const chunk = Simd.loadChunk(source, byte);
                     const plain = @min(Simd.firstTrueLane(notPlainAscii(chunk)), end - byte);
@@ -261,7 +260,6 @@ pub const SourceCursor = struct {
     }
 };
 
-/// The lanes holding a line break or the start of a non-ASCII character.
 inline fn notPlainAscii(chunk: Simd.Chunk) @Vector(16, bool) {
     return (chunk >= Simd.splat(0x80)) | (chunk == Simd.splat('\n')) | (chunk == Simd.splat('\r'));
 }

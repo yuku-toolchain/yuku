@@ -1,7 +1,6 @@
 const std = @import("std");
 const lexical = @import("../lexical.zig");
 
-/// Whether an operator is a word, as `in`, `instanceof`, `typeof`, `void`, and `delete` are.
 pub inline fn isWordOp(op: []const u8) bool {
     return std.ascii.isLower(op[0]);
 }

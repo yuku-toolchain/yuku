@@ -81,7 +81,6 @@ pub fn generate(allocator: Allocator, tree: *const Tree, options: Options) Error
     return .{ .code = code, .diagnostics = diagnostics, .map = map };
 }
 
-// packed, so it passes in a register
 const Ctx = packed struct(u32) {
     prec: u8 = Precedence.Lowest,
     no_in: bool = false,
@@ -94,7 +93,6 @@ const Ctx = packed struct(u32) {
     defer_trailing: bool = false,
     no_decorators: bool = false,
     postfix_operand: bool = false,
-    // the node's parentheses and comments are already open
     bare: bool = false,
     _: u14 = 0,
 };
@@ -107,7 +105,6 @@ const Printer = struct {
     out: Output,
     diagnostics: std.ArrayList(Diagnostic) = .empty,
 
-    // whether any comment can print, so a tree without comments never looks for one
     comments_on: bool,
     indent_depth: u32 = 0,
     pending_semi: bool = false,
@@ -273,13 +270,11 @@ const Printer = struct {
         return self.emitExpr(idx, .{});
     }
 
-    /// Prints the node at `idx`, one indirect call to the handler of its tag.
     inline fn emitExpr(self: *Self, idx: NodeIndex, ctx: Ctx) void {
         if (idx == .null) return;
         return handlers[@backingInt(self.tagOf(idx))](self, idx, ctx);
     }
 
-    /// The handler of `tag`, with its parenthesis rules resolved and its emitter inlined.
     fn Handler(comptime tag: NodeTag) type {
         return struct {
             fn run(self: *Self, idx: NodeIndex, ctx: Ctx) void {
@@ -306,7 +301,6 @@ const Printer = struct {
                 if (comptime emittedByParent(tag)) {
                     std.debug.panic("codegen: {s} is emitted by its parent", .{@tagName(tag)});
                 }
-                // an emitter takes the node, after its index and before the context when it needs them
                 const emitter = @field(Self, "emit_" ++ @tagName(tag));
                 const params = @typeInfo(@TypeOf(emitter)).@"fn".param_types;
                 const with_idx = params[1].? == NodeIndex;
@@ -318,7 +312,6 @@ const Printer = struct {
         };
     }
 
-    /// The slow path of a node that needs parentheses or has comments.
     noinline fn emitDressed(self: *Self, idx: NodeIndex, ctx: Ctx, wrap: bool) void {
         var inner: Ctx = if (wrap) .{} else ctx;
         inner.bare = true;
@@ -661,7 +654,6 @@ const Printer = struct {
         }
     }
 
-    /// Whether the node must be parenthesized where it stands. Each tag keeps only its own rules.
     inline fn needsParens(self: *const Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) bool {
         if (ctx.no_instantiation) std.debug.assert(ctx.prec >= Precedence.Relational);
         const lead = self.out.lead;
@@ -683,7 +675,6 @@ const Printer = struct {
             else => false,
         };
         const fixed = comptime node_precedence[@backingInt(tag)];
-        // nothing binds tighter than a primary expression
         if (fixed == Precedence.Grouping) return required;
         const precedence = switch (tag) {
             .logical_expression, .binary_expression => node.operator.toToken().precedence(),
@@ -1463,7 +1454,6 @@ const Printer = struct {
     fn emit_string_literal(self: *Self, lit: *const ast.StringLiteral) void {
         const value = self.tree.string(lit.value);
         const q = self.pickQuote(value, lit.raw);
-        // most strings hold nothing to escape
         if (plainRunLength(value, 0, q, self.options.minify) == value.len) {
             return self.out.writeQuoted(q, value);
         }
@@ -1484,7 +1474,6 @@ const Printer = struct {
             },
             .single => '\'',
             .double => '"',
-            // only a double quote to escape can make the single quote shorter
             .shortest => if (std.mem.findScalar(u8, s, '"') == null) '"' else fewerEscapes(s),
         };
     }
@@ -3054,7 +3043,6 @@ const handlers = blk: {
     break :blk table;
 };
 
-// a leaf prints no child, so it cannot deepen the recursion
 fn isLeaf(comptime tag: NodeTag) bool {
     return fixedString(tag) != null or switch (tag) {
         .identifier_reference,

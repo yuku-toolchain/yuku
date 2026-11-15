@@ -16,7 +16,6 @@ pub inline fn loadChunk(bytes: []const u8, offset: usize) Chunk {
     return @as(*align(1) const Chunk, @ptrCast(bytes.ptr + offset)).*;
 }
 
-/// Up to 15 bytes as a chunk, zero in the lanes past them.
 pub inline fn loadTail(bytes: []const u8) Chunk {
     const n = bytes.len;
     std.debug.assert(n < 16);
@@ -24,7 +23,6 @@ pub inline fn loadTail(bytes: []const u8) Chunk {
     if (n >= 8) {
         halves[0] = @bitCast(bytes[0..8].*);
         const last: u64 = @bitCast(bytes[n - 8 ..][0..8].*);
-        // the last 8 bytes overlap the first, so shift out what the low half already has
         halves[1] = (last >> 1) >> @intCast(8 * (16 - n) - 1);
     } else if (n >= 4) {
         const first: u32 = @bitCast(bytes[0..4].*);
