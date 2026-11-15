@@ -146,6 +146,8 @@ export function runPlan(plan: Plan, files: Input[]): PlanResult {
     const options: PrintOptions = { ...plan.js, sourceMap: plan.map };
     let result;
     try {
+      // an unread file prints from its source, so read the tree this compares
+      void parsed.program;
       result = print(parsed, options);
     } catch (error) {
       mismatch("threw", "", String((error as Error).stack ?? error));

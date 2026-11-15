@@ -27,11 +27,15 @@ export fn free(ptr: [*]align(4) u8, len: usize) void {
 }
 
 export fn parse(ptr: [*]const u8, len: usize, flags: u32) usize {
-    return resultOf(withSource(ptr[0..len], flags, entries.parse));
+    return resultOf(withSource(ptr[0..len], flags, 0, .parse));
 }
 
 export fn analyze(ptr: [*]const u8, len: usize, flags: u32) usize {
-    return resultOf(withSource(ptr[0..len], flags, entries.analyze));
+    return resultOf(withSource(ptr[0..len], flags, 0, .analyze));
+}
+
+export fn printSource(ptr: [*]const u8, len: usize, flags: u32, options: u32) usize {
+    return resultOf(withSource(ptr[0..len], flags, options, .print));
 }
 
 export fn printTree(block: [*]align(4) const u8, flags: u32, options: u32) usize {
@@ -46,10 +50,20 @@ fn resultOf(out: transfer.Error![]u8) usize {
     return @intFromPtr((out catch return 0).ptr) - 4;
 }
 
-fn withSource(input: []const u8, flags: u32, comptime run: anytype) transfer.Error![]u8 {
+fn withSource(
+    input: []const u8,
+    flags: u32,
+    options: u32,
+    comptime entry: enum { parse, analyze, print },
+) transfer.Error![]u8 {
     const target = try gpa.alloc(u8, if (flags & entries.utf16 != 0) input.len / 2 * 3 else 0);
     defer gpa.free(target);
-    return run(gpa, sourceOf(input, flags, target), flags, Prefixed{});
+    const source = sourceOf(input, flags, target);
+    return switch (entry) {
+        .parse => entries.parse(gpa, source, flags, Prefixed{}),
+        .analyze => entries.analyze(gpa, source, flags, Prefixed{}),
+        .print => entries.printSource(gpa, source, flags, options, Prefixed{}),
+    };
 }
 
 fn withTree(
