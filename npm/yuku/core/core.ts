@@ -52,7 +52,6 @@ export class Core {
 
 /** A loaded core, its Node-API addon or a WebAssembly instance. */
 export interface Backend {
-  /** `options` is for `printSource` alone. */
   run(entry: Entry, source: string, flags: number, options: number): ArrayBuffer;
   /** `source` is empty unless a source map needs it. */
   runTree(
@@ -154,12 +153,10 @@ function nativeBackend(addons: CoreOptions["addons"]): Backend | null {
   for (const entry of ["parse", "analyze", "printSource", "printTree", "analyzeTree"] as const) {
     if (typeof addon[entry] !== "function") return null;
   }
-  const { parse, analyze, printSource, printTree, analyzeTree } = addon as Addon;
+  const native = addon as Addon;
+  const { printTree, analyzeTree } = native;
   return {
-    run: (entry, source, flags, options) =>
-      entry === "printSource"
-        ? printSource(source, flags, options)
-        : (entry === "parse" ? parse : analyze)(source, flags),
+    run: (entry, source, flags, options) => native[entry](source, flags, options),
     runTree: (entry, tree, source, flags, options) =>
       entry === "printTree"
         ? printTree(tree.nodes, tree.extras, tree.comments, tree.pool, source, flags, options)
@@ -237,10 +234,7 @@ function call(
   const pointer = allocated(alloc(capacity));
   const written = writeSource(memory.buffer, pointer, capacity, source);
   const encoding = NodeBuffer === undefined ? 0 : UTF16;
-  const result =
-    entry === "printSource"
-      ? instance.exports.printSource(pointer, written, flags | encoding, options) >>> 0
-      : instance.exports[entry](pointer, written, flags | encoding) >>> 0;
+  const result = instance.exports[entry](pointer, written, flags | encoding, options) >>> 0;
   if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
   free(pointer, capacity);
   return resultOf(instance, result);

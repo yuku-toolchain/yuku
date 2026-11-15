@@ -90,24 +90,22 @@ const utf8 = new TextDecoder("utf-8", { ignoreBOM: true });
 /** Prints a file, or any single node, back to source. */
 export function print(target: SourceFile | Node, options: PrintOptions = {}): PrintResult {
   const file = target instanceof SourceFile ? target : null;
-  const root = target instanceof SourceFile ? null : target;
-  if (file === null) assertNode(root, "print");
+  if (file === null) assertNode(target, "print");
   const settings = sourceMapOf(options.sourceMap ?? false);
   let bits = optionsOf(options);
   if (settings !== null) {
     if (file === null) throw new TypeError("a source map needs the source, so print the file");
     bits |= SOURCE_MAP;
   }
+  const source = settings === null ? "" : file!.source;
 
-  // a file whose nodes no one has read prints from its source, and its tree never crosses over
   let buffer = file === null ? null : file._printSource(bits);
   if (buffer === null) {
-    const node = root ?? file!.program;
+    const node = target instanceof SourceFile ? target.program : target;
     if (node.type === "Hashbang") return { code: `#!${node.value}`, diagnostics: [], map: null };
     const tree = encode(node, file !== null && isTs(file.lang), false);
     const core = file === null ? shippedCore : file._core;
     const flags = file === null ? 0 : treeFlags(file.lang, file.sourceType);
-    const source = settings === null ? "" : file!.source;
     buffer = core.backend().runTree("printTree", tree, source, flags, bits);
   }
 
@@ -125,7 +123,7 @@ export function print(target: SourceFile | Node, options: PrintOptions = {}): Pr
     file: settings.file ?? null,
     sourceRoot: settings.sourceRoot ?? null,
     sources: [path ?? ""],
-    sourcesContent: settings.sourcesContent === true ? [file!.source] : null,
+    sourcesContent: settings.sourcesContent === true ? [source] : null,
     names: [],
     mappings: utf8.decode(bytes.subarray(codeEnd, mappingsEnd)),
   };

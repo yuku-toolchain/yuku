@@ -197,10 +197,7 @@ export class Binding {
   /** Each declaration's name node. */
   get declarations(): readonly Node[] {
     const { symbol } = this.model.semantic;
-    const count = symbol.declCount(this.id);
-    const nodes: Node[] = [];
-    for (let i = 0; i < count; i++) nodes.push(symbol.declNode(this.id, i));
-    return nodes;
+    return arrayOf(symbol.declCount(this.id), (i) => symbol.declNode(this.id, i));
   }
   /** Its uses in this file. */
   get references(): readonly Reference[] {
@@ -440,7 +437,7 @@ export class Model {
 
   scopeBindings(scope: number): Binding[] {
     if (this.bindingsByScope === null) {
-      const lists = emptyLists<Binding>(this.semantic.scope.count);
+      const lists = arrayOf(this.semantic.scope.count, (): Binding[] => []);
       for (const binding of this.bindings) lists[binding.scope.id]!.push(binding);
       this.bindingsByScope = lists;
     }
@@ -449,7 +446,7 @@ export class Model {
 
   bindingReferences(binding: number): Reference[] {
     if (this.referencesByBinding === null) {
-      const lists = emptyLists<Reference>(this.semantic.symbol.count);
+      const lists = arrayOf(this.semantic.symbol.count, (): Reference[] => []);
       const { reference } = this.semantic;
       for (const row of this.references) {
         const target = reference.symbolId(row.id);
@@ -531,16 +528,14 @@ export class Model {
   }
 
   private rows<T>(Row: Row<T>, count: number): T[] {
-    const rows: T[] = [];
-    for (let id = 0; id < count; id++) rows.push(new Row(this, id));
-    return rows;
+    return arrayOf(count, (id) => new Row(this, id));
   }
 }
 
-function emptyLists<T>(count: number): T[][] {
-  const lists: T[][] = [];
-  for (let i = 0; i < count; i++) lists.push([]);
-  return lists;
+function arrayOf<T>(count: number, make: (index: number) => T): T[] {
+  const items: T[] = [];
+  for (let i = 0; i < count; i++) items.push(make(i));
+  return items;
 }
 
 function isArgumentsScope(scope: Scope): boolean {

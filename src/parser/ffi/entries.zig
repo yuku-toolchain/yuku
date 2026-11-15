@@ -49,7 +49,6 @@ pub fn analyze(gpa: Allocator, source: []const u8, flags: u32, output: anytype) 
     return serializeModel(gpa, &tree, &sem, .{ .nodes = true }, output);
 }
 
-/// Prints `source` as it parses, for a tree that never left the core.
 pub fn printSource(
     gpa: Allocator,
     source: []const u8,

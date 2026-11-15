@@ -8,7 +8,6 @@ export interface Read {
   readonly buffer: ArrayBuffer;
   readonly lang: SourceLang;
   readonly sourceType: SourceType;
-  /** The flags that shape the tree, enough to parse the same one again. */
   readonly flags: number;
 }
 
@@ -50,11 +49,10 @@ export function read(source: string, options: ParseOptions, entry: Entry): Read 
   }
   let flags = treeFlags(lang, sourceType);
   if (options.preserveParens !== false) flags |= PRESERVE_PARENS;
+  if (options.semanticErrors === true) flags |= SEMANTIC_ERRORS;
   if (options.attachComments === true) flags |= ATTACH_COMMENTS;
-  let extras = 0;
-  if (options.semanticErrors === true) extras |= SEMANTIC_ERRORS;
-  if (options.tokens === true) extras |= TOKENS;
-  const buffer = backend.run(entry, source, flags | extras, 0);
+  if (options.tokens === true) flags |= TOKENS;
+  const buffer = backend.run(entry, source, flags, 0);
   return { buffer, lang, sourceType, flags };
 }
 

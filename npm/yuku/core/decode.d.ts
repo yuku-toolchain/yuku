@@ -74,7 +74,6 @@ export interface Semantic {
 }
 
 export interface Decoded {
-  /** Whether no node or comment was read, so the tree is still as it parsed. */
   untouched(): boolean;
   program(): Program;
   tokens(): TokenList | null;

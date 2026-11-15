@@ -21,10 +21,8 @@ function child(script: string): string {
 }
 
 function summary(file: SourceFile, options: ParseOptions): unknown {
-  // a file prints from its source until a node is read, and from its tree after
-  const unread = [print(file).code, print(file, { minify: true, sourceMap: true }).map];
   return {
-    unread,
+    unread: [print(file).code, print(file, { minify: true, sourceMap: true }).map],
     program: file.program,
     comments: file.comments,
     diagnostics: file.diagnostics,

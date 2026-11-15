@@ -296,11 +296,7 @@ export class SourceFile {
     (this.project ?? this.solo)?._invalidate();
   }
 
-  /**
-   * The source printed by the core alone, or null once a node or comment was read and the tree
-   * may have changed. A lone surrogate also needs the tree, as the core reads it as U+FFFD.
-   * @internal
-   */
+  /** @internal */
   _printSource(options: number): ArrayBuffer | null {
     if (!this.syntax.untouched() || !isWellFormed(this.source)) return null;
     return this._core.backend().run("printSource", this.source, this.flags, options);
@@ -324,11 +320,9 @@ export class SourceFile {
   }
 }
 
-const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?:^|[^\ud800-\udbff])[\udc00-\udfff]/;
-
 function isWellFormed(text: string): boolean {
   const { isWellFormed } = text as { isWellFormed?(this: string): boolean };
-  return isWellFormed === undefined ? !LONE_SURROGATE.test(text) : isWellFormed.call(text);
+  return isWellFormed === undefined ? !/\p{Cs}/u.test(text) : isWellFormed.call(text);
 }
 
 function within(scope: Semantic["scope"], id: number | null, ancestor: number): boolean {

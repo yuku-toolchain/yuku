@@ -157,17 +157,14 @@ test("attached comments print by default, and some keeps only the significant on
 });
 
 test("a file prints from its source until its tree is read, then from the tree", () => {
-  const source = "#!/usr/bin/env node\n// note\nconst s: string = ('é' as string);\nenum E { A }\n";
+  const source = "#!/usr/bin/env node\n// note\nlet s: T = ('é' as T);\nenum E {}\n";
   const options = { lang: "ts", attachComments: true, preserveParens: false } as const;
   for (const how of [{}, { strip: true }, { minify: true }, { sourceMap: true }]) {
     const read = parse(source, options);
     void read.program;
     expect(print(parse(source, options), how)).toEqual(print(read, how));
   }
-
-  // the core reads a lone surrogate as U+FFFD, and only the tree still has it
-  const lone = `x = "${String.fromCharCode(0xd800)}";`;
-  expect(print(parse(lone)).code).toBe('x = "\\ud800";');
+  expect(print(parse(`x = "${String.fromCharCode(0xd800)}";`)).code).toBe('x = "\\ud800";');
 
   const file = parse("// note\nlet a = 1;", { attachComments: true });
   expect(print(file).code).toBe("// note\nlet a = 1;");
