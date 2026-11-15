@@ -1,10 +1,11 @@
 test/parser/suite/ts/pass
 =========================
-Passed:       8663/8663 (100.00%)
-Failed:       0
+Passed:       8687/8690 (99.97%)
+Failed:       3
 AST mismatch: 0/8648
 
 ✓ test/parser/suite/ts/pass/00039563c6c76095.ts
+✓ test/parser/suite/ts/pass/00039b8003a16911.module.ts
 ✓ test/parser/suite/ts/pass/0003f142baf8015e.ts
 ✓ test/parser/suite/ts/pass/00104e04e13fbcff.ts
 ✓ test/parser/suite/ts/pass/0023e08125c7746e.tsx
@@ -1484,6 +1485,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/2b2231eef7b64de9.ts
 ✓ test/parser/suite/ts/pass/2b2c769fb5fe27f8.ts
 ✓ test/parser/suite/ts/pass/2b2d9bbe9aca9485.ts
+✓ test/parser/suite/ts/pass/2b3a412ccff4cd0d.ts
 ✓ test/parser/suite/ts/pass/2b408564a42fcd53.module.ts
 ✓ test/parser/suite/ts/pass/2b60391b0d83e3de.ts
 ✓ test/parser/suite/ts/pass/2b6770987718527e.ts
@@ -2201,6 +2203,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/419097be1ee471c4.ts
 ✓ test/parser/suite/ts/pass/4191fad6df84fcf6.ts
 ✓ test/parser/suite/ts/pass/41ccdaf52e276d1f.ts
+✓ test/parser/suite/ts/pass/41cf12fd135378fd.module.ts
 ✓ test/parser/suite/ts/pass/41d04a6079920fc3.ts
 ✓ test/parser/suite/ts/pass/41d9e1ed4273bc9f.ts
 ✓ test/parser/suite/ts/pass/41da3dc691ec1e89.ts
@@ -2475,6 +2478,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/4969fe419f1a10ba.ts
 ✓ test/parser/suite/ts/pass/496d48eb6cba8c34.ts
 ✓ test/parser/suite/ts/pass/497740c0ec532826.ts
+✓ test/parser/suite/ts/pass/498a4341da952cc0.ts
 ✓ test/parser/suite/ts/pass/498b7bd147e4f02c.module.ts
 ✓ test/parser/suite/ts/pass/49993896e98b0f8d.ts
 ✓ test/parser/suite/ts/pass/49a95090a757b8c3.ts
@@ -2540,6 +2544,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/4b54fd160ba990c8.ts
 ✓ test/parser/suite/ts/pass/4b5c04543290a7c4.ts
 ✓ test/parser/suite/ts/pass/4b61a642b79dc1cc.ts
+✓ test/parser/suite/ts/pass/4b6516289b1d86da.tsx
 ✓ test/parser/suite/ts/pass/4b68a8db4b6d51ad.ts
 ✓ test/parser/suite/ts/pass/4b8563006472e905.ts
 ✓ test/parser/suite/ts/pass/4b869a0507cbe9a4.ts
@@ -2938,6 +2943,17 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/571c999c4a352199.ts
 ✓ test/parser/suite/ts/pass/572322d9af6deda1.ts
 ✓ test/parser/suite/ts/pass/57271fb720a6f21b.ts
+✗ test/parser/suite/ts/pass/57376b3edef0bcdc.ts (parse errors)
+error: Expected ':' in the conditional expression, but found ';'
+   |
+ 2 | // type even if it is not followed by `:`, like in TypeScript.
+ 3 | a ? (b: B) => (c) : d => e;
+   |                           ^
+ 4 | 
+   |
+   = help: Separate the two branches with ':'
+
+
 ✓ test/parser/suite/ts/pass/573cedca383170eb.ts
 ✓ test/parser/suite/ts/pass/5743f461082d4ec7.ts
 ✓ test/parser/suite/ts/pass/5748d3a13d1d42ea.tsx
@@ -3332,6 +3348,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/632da683a2ffcb6e.ts
 ✓ test/parser/suite/ts/pass/633107b493dc8781.ts
 ✓ test/parser/suite/ts/pass/63371aa77401c991.ts
+✓ test/parser/suite/ts/pass/6339ff10f5dfda3a.ts
 ✓ test/parser/suite/ts/pass/634242316cbc4460.ts
 ✓ test/parser/suite/ts/pass/6346746715c97a04.ts
 ✓ test/parser/suite/ts/pass/634da6e26038e380.ts
@@ -3454,6 +3471,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/66a53b6221ee1461.ts
 ✓ test/parser/suite/ts/pass/66a742df778aea6f.ts
 ✓ test/parser/suite/ts/pass/66b2c6e2cb9881d6.ts
+✓ test/parser/suite/ts/pass/66bd94a818a642ff.ts
 ✓ test/parser/suite/ts/pass/66c86e10b495f8e8.ts
 ✓ test/parser/suite/ts/pass/66d46016adf6e64a.ts
 ✓ test/parser/suite/ts/pass/66d687e06567cf4d.ts
@@ -3821,6 +3839,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/71c3b50e9c25c351.ts
 ✓ test/parser/suite/ts/pass/71c554e05c4c6d2a.ts
 ✓ test/parser/suite/ts/pass/71c766127b82167c.ts
+✓ test/parser/suite/ts/pass/71c8c654cd3563d5.ts
 ✓ test/parser/suite/ts/pass/71cbbdb0386da8ed.ts
 ✓ test/parser/suite/ts/pass/71d6a9ec426efd28.ts
 ✓ test/parser/suite/ts/pass/71d94c072fb91455.ts
@@ -3945,6 +3964,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/755fa4ac876dceb5.ts
 ✓ test/parser/suite/ts/pass/75692938dd1f2490.ts
 ✓ test/parser/suite/ts/pass/75822c96544c87fc.ts
+✓ test/parser/suite/ts/pass/759068d049310646.ts
 ✓ test/parser/suite/ts/pass/759727f4f9c05a66.ts
 ✓ test/parser/suite/ts/pass/759870caf527cc11.ts
 ✓ test/parser/suite/ts/pass/75add7e6b108dd7d.ts
@@ -3980,6 +4000,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/769341725cd4256c.ts
 ✓ test/parser/suite/ts/pass/7696bf6e4b423d20.module.ts
 ✓ test/parser/suite/ts/pass/769b7bf5b391cf18.ts
+✓ test/parser/suite/ts/pass/76a319f7f3a786db.module.ts
 ✓ test/parser/suite/ts/pass/76adc0c8307e2066.module.ts
 ✓ test/parser/suite/ts/pass/76b07f09c9cf5296.ts
 ✓ test/parser/suite/ts/pass/76b0846051a07973.ts
@@ -4552,6 +4573,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/86daa12627795764.ts
 ✓ test/parser/suite/ts/pass/86ec2edd7100828e.ts
 ✓ test/parser/suite/ts/pass/86ed548065208107.ts
+✓ test/parser/suite/ts/pass/86ee27c7f4fbeef5.module.ts
 ✓ test/parser/suite/ts/pass/86efb7083b7144a9.ts
 ✓ test/parser/suite/ts/pass/86f6f9f6896e5458.ts
 ✓ test/parser/suite/ts/pass/86f8212447758256.ts
@@ -4622,6 +4644,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/88e3c293988902be.ts
 ✓ test/parser/suite/ts/pass/88e43093973306fd.ts
 ✓ test/parser/suite/ts/pass/88ee0c58bdccacd7.ts
+✓ test/parser/suite/ts/pass/89040c0d4ecb30f2.ts
 ✓ test/parser/suite/ts/pass/890fb70e1bd2afb9.ts
 ✓ test/parser/suite/ts/pass/89202f61e28527cd.ts
 ✓ test/parser/suite/ts/pass/89203d7ad6d04ea3.ts
@@ -4992,6 +5015,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/938da6804a054c3f.ts
 ✓ test/parser/suite/ts/pass/93a344aad5909686.ts
 ✓ test/parser/suite/ts/pass/93a5964d614f41ba.ts
+✓ test/parser/suite/ts/pass/93a8edeaa67b43d9.tsx
 ✓ test/parser/suite/ts/pass/93b66575caca6bc4.ts
 ✓ test/parser/suite/ts/pass/93c59e3cf92a4280.ts
 ✓ test/parser/suite/ts/pass/93c8b6892fa0ecb5.ts
@@ -5080,6 +5104,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/95ed40dfda687165.module.d.ts
 ✓ test/parser/suite/ts/pass/95ef54cc1548e3f4.ts
 ✓ test/parser/suite/ts/pass/95f65a4098dbf371.ts
+✓ test/parser/suite/ts/pass/9612d79cff2b32b0.ts
 ✓ test/parser/suite/ts/pass/96196d52fdf39d1a.ts
 ✓ test/parser/suite/ts/pass/962a2b6ae419c416.ts
 ✓ test/parser/suite/ts/pass/962d92ab38108fc3.module.ts
@@ -5110,6 +5135,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/96c1c9b506dc10ef.ts
 ✓ test/parser/suite/ts/pass/96cdfc3f230a7811.ts
 ✓ test/parser/suite/ts/pass/96cf1114c848b253.ts
+✓ test/parser/suite/ts/pass/96cf8c931662ccfd.ts
 ✓ test/parser/suite/ts/pass/96d81e60bb53e62b.ts
 ✓ test/parser/suite/ts/pass/96dc33eb9edd04cd.ts
 ✓ test/parser/suite/ts/pass/96df07b3d43a7f8e.module.ts
@@ -5648,6 +5674,17 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/a8185369c7e2e904.ts
 ✓ test/parser/suite/ts/pass/a822f2cc78e2a923.ts
 ✓ test/parser/suite/ts/pass/a82337ea8a1b0798.ts
+✗ test/parser/suite/ts/pass/a8243a8d1f492200.ts (parse errors)
+error: Expected ':' in the conditional expression, but found ';'
+   |
+ 2 | // return type even if it is not followed by `:`, like in TypeScript.
+ 3 | a ? async (...b) => (c) : d => e;
+   |                                 ^
+ 4 | 
+   |
+   = help: Separate the two branches with ':'
+
+
 ✓ test/parser/suite/ts/pass/a82544969d9cfd62.ts
 ✓ test/parser/suite/ts/pass/a828cef7a9617b3e.ts
 ✓ test/parser/suite/ts/pass/a82d75f39bd6cb28.ts
@@ -5673,6 +5710,17 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/a8d85e3749a0dc01.ts
 ✓ test/parser/suite/ts/pass/a8e69dfb646b075e.ts
 ✓ test/parser/suite/ts/pass/a904bc3df2955b34.ts
+✗ test/parser/suite/ts/pass/a9136d40215f4e5a.ts (parse errors)
+error: Expected ':' in the conditional expression, but found ';'
+   |
+ 2 | // type even if it is not followed by `:`, like in TypeScript.
+ 3 | a ? (b?) => (c) : d => e;
+   |                         ^
+ 4 | 
+   |
+   = help: Separate the two branches with ':'
+
+
 ✓ test/parser/suite/ts/pass/a91d41d371317695.ts
 ✓ test/parser/suite/ts/pass/a93b97fcafd8c2a1.ts
 ✓ test/parser/suite/ts/pass/a9534649d125a160.ts
@@ -5797,6 +5845,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/acc521e87c95c3a8.ts
 ✓ test/parser/suite/ts/pass/acd55b203a5ada89.ts
 ✓ test/parser/suite/ts/pass/acdc1a03379a0eaf.ts
+✓ test/parser/suite/ts/pass/acdcea6b6824e92f.module.ts
 ✓ test/parser/suite/ts/pass/acddc9377e8fe813.ts
 ✓ test/parser/suite/ts/pass/ace09b041cdc64be.ts
 ✓ test/parser/suite/ts/pass/ace4bc3e635e6271.ts
@@ -6039,6 +6088,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/b3c1f9fc42b39d3b.ts
 ✓ test/parser/suite/ts/pass/b3cd7dd27c476715.ts
 ✓ test/parser/suite/ts/pass/b3d02e87c62dac77.ts
+✓ test/parser/suite/ts/pass/b3d9ff7d3f6760c6.ts
 ✓ test/parser/suite/ts/pass/b3da00a634a4e657.module.ts
 ✓ test/parser/suite/ts/pass/b3ed21bf47c46c1d.ts
 ✓ test/parser/suite/ts/pass/b3f83a5e58553549.ts
@@ -6338,6 +6388,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/bc977662ba56341a.ts
 ✓ test/parser/suite/ts/pass/bc9fdfdddf3617c6.ts
 ✓ test/parser/suite/ts/pass/bcab4ac98a8d40e8.ts
+✓ test/parser/suite/ts/pass/bcb1e6d8f04b0933.ts
 ✓ test/parser/suite/ts/pass/bcb255664c571d84.ts
 ✓ test/parser/suite/ts/pass/bcb56a0afa211c5a.ts
 ✓ test/parser/suite/ts/pass/bcbc3a3b780fe112.ts
@@ -6634,6 +6685,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/c4d488a57e7043f3.ts
 ✓ test/parser/suite/ts/pass/c4d9e7e8996f3262.ts
 ✓ test/parser/suite/ts/pass/c4e15b04596be178.ts
+✓ test/parser/suite/ts/pass/c4e726e52b1a7e31.ts
 ✓ test/parser/suite/ts/pass/c4eab0138890bf9e.ts
 ✓ test/parser/suite/ts/pass/c4f8cba6ba96d8e7.ts
 ✓ test/parser/suite/ts/pass/c4fc76b0f669e2ec.ts
@@ -6805,6 +6857,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/c9f31ccfdb074af5.ts
 ✓ test/parser/suite/ts/pass/c9f442406b057444.ts
 ✓ test/parser/suite/ts/pass/c9fe620cb6823251.ts
+✓ test/parser/suite/ts/pass/ca0f0c62cf60d2d9.ts
 ✓ test/parser/suite/ts/pass/ca1149906fe893b5.ts
 ✓ test/parser/suite/ts/pass/ca14d9db4be57934.ts
 ✓ test/parser/suite/ts/pass/ca164a98425d7bd3.ts
@@ -7407,6 +7460,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/dc8ffaf32a04444a.ts
 ✓ test/parser/suite/ts/pass/dc95d394f0db8a58.module.ts
 ✓ test/parser/suite/ts/pass/dc975bb046a6b388.ts
+✓ test/parser/suite/ts/pass/dc9bd480efea5dca.ts
 ✓ test/parser/suite/ts/pass/dc9f88216147475a.ts
 ✓ test/parser/suite/ts/pass/dca5d9e3ec33191a.ts
 ✓ test/parser/suite/ts/pass/dca905c64da93ccf.ts
@@ -7738,6 +7792,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/e542d98f3680e721.ts
 ✓ test/parser/suite/ts/pass/e544ec769a999c90.ts
 ✓ test/parser/suite/ts/pass/e54829373c9dbc98.ts
+✓ test/parser/suite/ts/pass/e549c9ea63f6f1e2.ts
 ✓ test/parser/suite/ts/pass/e54c78ed4d9d471d.ts
 ✓ test/parser/suite/ts/pass/e55a22218cdbd607.ts
 ✓ test/parser/suite/ts/pass/e55e3c8284296e44.ts
@@ -8280,6 +8335,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/f3e2d7e92545eab7.ts
 ✓ test/parser/suite/ts/pass/f3e5dc5bd670fffb.ts
 ✓ test/parser/suite/ts/pass/f3f4f8b7bf050f51.ts
+✓ test/parser/suite/ts/pass/f404cc830078a723.ts
 ✓ test/parser/suite/ts/pass/f411c9e3516b4282.module.ts
 ✓ test/parser/suite/ts/pass/f41be78b18425c95.ts
 ✓ test/parser/suite/ts/pass/f42a23086af0a451.ts
@@ -8467,6 +8523,7 @@ AST mismatch: 0/8648
 ✓ test/parser/suite/ts/pass/fa1a00a1c3173247.ts
 ✓ test/parser/suite/ts/pass/fa1d9d2bb71c3c15.ts
 ✓ test/parser/suite/ts/pass/fa1e7c0a14b429d3.ts
+✓ test/parser/suite/ts/pass/fa447d81d929b993.ts
 ✓ test/parser/suite/ts/pass/fa4f7639e7349fe1.ts
 ✓ test/parser/suite/ts/pass/fa56ac14a0730962.ts
 ✓ test/parser/suite/ts/pass/fa5df9906decbb01.ts

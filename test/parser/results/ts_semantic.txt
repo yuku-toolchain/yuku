@@ -1,6 +1,6 @@
 test/parser/suite/ts/semantic
 =============================
-Passed:       284/284 (100.00%)
+Passed:       291/291 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/ts/semantic/0023fc841b30e8cd.ts
@@ -108,6 +108,18 @@ error: Only a single variable declaration is allowed in a 'for...in' statement
    |      ^^^^^^^^
  3 | }
    |
+
+✓ test/parser/suite/ts/semantic/0a3c64cfd80d8704.ts
+error: Duplicate identifier 'x'
+   |
+ 1 | a ? <T>(x, x): U => d : e;
+   |            ^
+   |         ~ 'x' was first declared as a parameter here
+   |            ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Rename or remove this declaration of 'x'
+
 
 ✓ test/parser/suite/ts/semantic/0a910b81c3b50fde.module.ts
 error: 'interface' is a reserved word in strict mode and cannot be used as a binding identifier
@@ -251,6 +263,15 @@ error: Private field '#method' must be declared in an enclosing class
 11 | C.getInstance().#method; // Error
    |                 ^^^^^^^
 12 | C.getInstance().#field; // Error
+   |
+
+✓ test/parser/suite/ts/semantic/14a557c0d90d31bd.ts
+error: 'eval' cannot be used as a binding identifier in strict mode
+   |
+ 2 | // Followed by `:`: keep the arrow function and its error
+ 3 | a ? (eval): b => c : d;
+   |      ^^^^
+ 4 | 
    |
 
 ✓ test/parser/suite/ts/semantic/1614b5e3b631638a.ts
@@ -1159,6 +1180,18 @@ error: Duplicate export 'default'
    | ~ exported again here
    |
 
+✓ test/parser/suite/ts/semantic/617467513568e9f8.tsx
+error: Duplicate identifier 'x'
+   |
+ 1 | a ? <T,>(x, x): U => d : e;
+   |             ^
+   |          ~ 'x' was first declared as a parameter here
+   |             ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Rename or remove this declaration of 'x'
+
+
 ✓ test/parser/suite/ts/semantic/621cf30715ef183b.ts
 error: 'new.target' is only allowed in functions, class field initializers, and static blocks
    |
@@ -1525,6 +1558,19 @@ error: Duplicate identifier 'A'
    = help: Rename or remove this declaration of 'A'
 
 
+✓ test/parser/suite/ts/semantic/7bfc29afe90f07b6.ts
+error: Duplicate identifier 'b'
+   |
+ 1 | // Followed by `:`: keep the arrow function and its error
+ 2 | a ? (b, b): c => d : e;
+   |         ^
+   |      ~ 'b' was first declared as a parameter here
+   |         ~ cannot be redeclared here
+ 3 | // Not followed by `:`: the error is discarded when parsing again
+   |
+   = help: Rename or remove this declaration of 'b'
+
+
 ✓ test/parser/suite/ts/semantic/80623c0607bb90f8.ts
 error: Duplicate identifier 'i3'
    |
@@ -1773,6 +1819,14 @@ error: 'let' is a reserved word in strict mode and cannot be used as a binding i
  3 | var let = 10;
    |     ^^^
  4 | var a = 10;
+   |
+
+✓ test/parser/suite/ts/semantic/940ac5de6a73e5bc.module.tsx
+error: 'eval' cannot be used as a binding identifier in strict mode
+   |
+ 1 | a ? b ? <T,>(eval): U => d : c : e;
+   |              ^^^^
+ 2 | 
    |
 
 ✓ test/parser/suite/ts/semantic/94bc55e998d9f000.ts
@@ -2758,6 +2812,19 @@ error: Duplicate identifier 'Markup'
    = help: Rename or remove this declaration of 'Markup'
 
 
+✓ test/parser/suite/ts/semantic/db70932251eed2cf.ts
+error: Duplicate identifier 'x'
+   |
+ 1 | // Followed by `:`: keep the arrow function and its error
+ 2 | a ? <T>(x, x): U => d : e;
+   |            ^
+   |         ~ 'x' was first declared as a parameter here
+   |            ~ cannot be redeclared here
+ 3 | a ? <T>(x): U => { let y; let y; } : e;
+   |
+   = help: Rename or remove this declaration of 'x'
+
+
 ✓ test/parser/suite/ts/semantic/dceaa6f7ed6bb3bf.ts
 error: Duplicate identifier 'Point'
    |
@@ -2938,6 +3005,19 @@ error: 'let' is not allowed to be used as a name in 'let' or 'const' declaration
    |               ^^^
  5 | 
    |
+
+✓ test/parser/suite/ts/semantic/e9b03756f82adbf8.ts
+error: Duplicate identifier 'x'
+   |
+ 1 | // Followed by `:`: keep the arrow function and its error
+ 2 | a ? (x) : c => { let x; } : e;
+   |                      ^
+   |      ~ 'x' was first declared as a parameter here
+   |                      ~ cannot be redeclared here
+ 3 | a ? async(x) : c => { let x; } : e;
+   |
+   = help: Rename or remove this declaration of 'x'
+
 
 ✓ test/parser/suite/ts/semantic/e9b97ad5b9898d84.ts
 error: 'super' can only be referenced in a derived class

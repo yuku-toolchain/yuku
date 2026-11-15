@@ -48,7 +48,9 @@ pub fn parseArrow(
     is_async: bool,
     arrow_start: u32,
     options: ParseExpressionOptions,
+    speculative: bool,
 ) Error!?ast.NodeIndex {
+    const diagnostics_len = parser.diagnostics.items.len;
     const saved_await = parser.context.await;
     if (is_async) parser.context.await = true;
     defer parser.context.await = saved_await;
@@ -70,6 +72,10 @@ pub fn parseArrow(
         try predicate.parseReturnTypeAnnotation(parser) orelse return null
     else
         .null;
+
+    if (speculative and has_return_type and parser.diagnostics.items.len != diagnostics_len) {
+        return null;
+    }
 
     if (parser.current_token.tag == .arrow) {
         if (parser.current_token.hasLineTerminatorBefore()) {
@@ -111,7 +117,7 @@ pub fn tryParseArrow(
     if (speculation.isRejected(parser)) return null;
 
     const cp = parser.checkpoint();
-    if (try parseArrow(parser, is_async, arrow_start, options)) |arrow| {
+    if (try parseArrow(parser, is_async, arrow_start, options, true)) |arrow| {
         // the `:` after an annotated arrow may belong to an enclosing conditional
         const return_type = parser.tree.data(arrow).arrow_function_expression.return_type;
         if (options.allow_arrow_return_type or
