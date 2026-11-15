@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 1755,
+    "end": 1832,
     "sourceType": "script",
     "hashbang": null,
     "body": [
@@ -3320,17 +3320,143 @@
       {
         "type": "VariableDeclaration",
         "start": 1681,
-        "end": 1754,
+        "end": 1757,
         "kind": "const",
         "declarations": [
           {
             "type": "VariableDeclarator",
             "start": 1687,
-            "end": 1753,
+            "end": 1756,
             "id": {
               "type": "Identifier",
               "start": 1687,
-              "end": 1704,
+              "end": 1709,
+              "name": "definiteBadPatternBody",
+              "decorators": [],
+              "typeAnnotation": null,
+              "optional": false
+            },
+            "init": {
+              "type": "ConditionalExpression",
+              "start": 1712,
+              "end": 1756,
+              "test": {
+                "type": "Identifier",
+                "start": 1712,
+                "end": 1716,
+                "name": "flag",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "consequent": {
+                "type": "ArrowFunctionExpression",
+                "start": 1719,
+                "end": 1739,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "RestElement",
+                    "start": 1720,
+                    "end": 1727,
+                    "argument": {
+                      "type": "Identifier",
+                      "start": 1723,
+                      "end": 1727,
+                      "name": "rest",
+                      "decorators": [],
+                      "typeAnnotation": null,
+                      "optional": false
+                    },
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false,
+                    "value": null
+                  }
+                ],
+                "body": {
+                  "type": "ParenthesizedExpression",
+                  "start": 1732,
+                  "end": 1739,
+                  "expression": {
+                    "type": "ArrayExpression",
+                    "start": 1733,
+                    "end": 1738,
+                    "elements": [
+                      {
+                        "type": "ParenthesizedExpression",
+                        "start": 1734,
+                        "end": 1737,
+                        "expression": {
+                          "type": "Identifier",
+                          "start": 1735,
+                          "end": 1736,
+                          "name": "x",
+                          "decorators": [],
+                          "optional": false,
+                          "typeAnnotation": null
+                        }
+                      }
+                    ]
+                  }
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              },
+              "alternate": {
+                "type": "ArrowFunctionExpression",
+                "start": 1742,
+                "end": 1756,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 1742,
+                    "end": 1747,
+                    "name": "other",
+                    "decorators": [],
+                    "typeAnnotation": null,
+                    "optional": false
+                  }
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 1751,
+                  "end": 1756,
+                  "name": "other",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "expression": true,
+                "typeParameters": null,
+                "returnType": null
+              }
+            },
+            "definite": false
+          }
+        ],
+        "declare": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 1758,
+        "end": 1831,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 1764,
+            "end": 1830,
+            "id": {
+              "type": "Identifier",
+              "start": 1764,
+              "end": 1781,
               "name": "definiteAsyncBody",
               "decorators": [],
               "typeAnnotation": null,
@@ -3338,12 +3464,12 @@
             },
             "init": {
               "type": "ConditionalExpression",
-              "start": 1707,
-              "end": 1753,
+              "start": 1784,
+              "end": 1830,
               "test": {
                 "type": "Identifier",
-                "start": 1707,
-                "end": 1711,
+                "start": 1784,
+                "end": 1788,
                 "name": "flag",
                 "decorators": [],
                 "optional": false,
@@ -3351,12 +3477,12 @@
               },
               "consequent": {
                 "type": "ParenthesizedExpression",
-                "start": 1714,
-                "end": 1717,
+                "start": 1791,
+                "end": 1794,
                 "expression": {
                   "type": "Identifier",
-                  "start": 1715,
-                  "end": 1716,
+                  "start": 1792,
+                  "end": 1793,
                   "name": "x",
                   "decorators": [],
                   "optional": false,
@@ -3365,16 +3491,16 @@
               },
               "alternate": {
                 "type": "ArrowFunctionExpression",
-                "start": 1720,
-                "end": 1753,
+                "start": 1797,
+                "end": 1830,
                 "id": null,
                 "generator": false,
                 "async": false,
                 "params": [
                   {
                     "type": "Identifier",
-                    "start": 1720,
-                    "end": 1721,
+                    "start": 1797,
+                    "end": 1798,
                     "name": "y",
                     "decorators": [],
                     "typeAnnotation": null,
@@ -3383,12 +3509,12 @@
                 ],
                 "body": {
                   "type": "ConditionalExpression",
-                  "start": 1725,
-                  "end": 1753,
+                  "start": 1802,
+                  "end": 1830,
                   "test": {
                     "type": "Identifier",
-                    "start": 1725,
-                    "end": 1730,
+                    "start": 1802,
+                    "end": 1807,
                     "name": "inner",
                     "decorators": [],
                     "optional": false,
@@ -3396,8 +3522,8 @@
                   },
                   "consequent": {
                     "type": "Identifier",
-                    "start": 1733,
-                    "end": 1734,
+                    "start": 1810,
+                    "end": 1811,
                     "name": "z",
                     "decorators": [],
                     "optional": false,
@@ -3405,16 +3531,16 @@
                   },
                   "alternate": {
                     "type": "ArrowFunctionExpression",
-                    "start": 1737,
-                    "end": 1753,
+                    "start": 1814,
+                    "end": 1830,
                     "id": null,
                     "generator": false,
                     "async": true,
                     "params": [],
                     "body": {
                       "type": "Identifier",
-                      "start": 1752,
-                      "end": 1753,
+                      "start": 1829,
+                      "end": 1830,
                       "name": "w",
                       "decorators": [],
                       "optional": false,
@@ -3424,16 +3550,16 @@
                     "typeParameters": null,
                     "returnType": {
                       "type": "TSTypeAnnotation",
-                      "start": 1745,
-                      "end": 1748,
+                      "start": 1822,
+                      "end": 1825,
                       "typeAnnotation": {
                         "type": "TSTypeReference",
-                        "start": 1747,
-                        "end": 1748,
+                        "start": 1824,
+                        "end": 1825,
                         "typeName": {
                           "type": "Identifier",
-                          "start": 1747,
-                          "end": 1748,
+                          "start": 1824,
+                          "end": 1825,
                           "name": "T",
                           "decorators": [],
                           "optional": false,

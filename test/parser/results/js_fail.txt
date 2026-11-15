@@ -1,6 +1,6 @@
 test/parser/suite/js/fail
 =========================
-Passed:       5253/5253 (100.00%)
+Passed:       5267/5267 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/00128c2237478f9e.js
@@ -6656,6 +6656,16 @@ error: 'throw' is a reserved word and cannot be used as an identifier
  3 | }
    |
 
+✓ test/parser/suite/js/fail/23324cfd9934c736.js
+error: Invalid Unicode escape sequence
+   |
+ 1 | x = "\u{FFFFFFFFFFFFFFFFF}";
+   |       ^
+ 2 | 
+   |
+   = help: Write four hexadecimal digits, such as '\u00e9', or a code point of one to six digits in braces, such as '\u{1f600}'
+
+
 ✓ test/parser/suite/js/fail/23368c25ea374e2f.js
 error: A parenthesized assignment target must be a variable or a property access
    |
@@ -10665,6 +10675,14 @@ error: 'super' must be followed by an argument list or member access
    |
    = help: Call it as 'super()', or access a member as 'super.name' or 'super[name]'
 
+
+✓ test/parser/suite/js/fail/355e4abbd61698ad.js
+error: Expected ';' after the class field, but found '@'
+   |
+ 1 | class A { static @dec x }
+   |                  ^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/358f8f8181901e70.js
 error: Invalid character at the start of an identifier
@@ -16968,6 +16986,14 @@ error: Expected ';' after the class field, but found 'a'
  3 | }
    |
 
+✓ test/parser/suite/js/fail/58b7ff0c6dfc005b.js
+error: Expected an expression, but found ','
+   |
+ 1 | import(,);
+   |        ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/58c0fc002fcbe044.js
 error: Expected 'of' in the 'for await' loop, but found ';'
    |
@@ -19424,6 +19450,15 @@ error: Unterminated multi-line comment
    |  ^
    |
    = help: Add '*/' to close the comment
+
+
+✓ test/parser/suite/js/fail/65aa0d000fe08f0a.js
+error: Invalid Unicode escape sequence
+   |
+ 1 | a\u{
+   |   ^
+   |
+   = help: Write four hexadecimal digits, such as '\u00e9', or a code point of one to six digits in braces, such as '\u{1f600}'
 
 
 ✓ test/parser/suite/js/fail/65c1913517b18339.js
@@ -27160,6 +27195,21 @@ error: Expected an expression, but found '>'
    |    ^
    |
 
+✓ test/parser/suite/js/fail/8edc5f2c4e8a68b0.js
+error: Cannot use 'export default' outside a module
+   |
+22 | 
+23 | export default class {
+   | ^^^^^^^^^^^^^^^^^^^^^^
+24 |   get
+   | ^^^^^
+25 |   @dec a
+   | ^^^^^^^^
+26 | }
+   | ^
+27 | 
+   |
+
 ✓ test/parser/suite/js/fail/8ee6dec3c2e3e273.js
 error: Expected an expression, but found '>'
    |
@@ -34553,6 +34603,14 @@ error: 'var' is a reserved word and cannot be used as an identifier
    |            ^^^^^^^^
    |
 
+✓ test/parser/suite/js/fail/b78883fec19a66a7.js
+error: Expected an expression, but found '%'
+   |
+ 1 | %enum();
+   | ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/b78ebc736143b60c.js
 error: 'catch' is a reserved word and cannot be used as a binding identifier
    |
@@ -35843,6 +35901,15 @@ error: Expected ';' after the statement, but found '9'
    |
    = help: Add ';' or a line break before it
 
+
+✓ test/parser/suite/js/fail/bd887284200adec9.js
+error: The operand of an increment or decrement operator must be a variable or a property access
+   |
+ 5 | [delete {a = 1}].x = 0;
+ 6 | for (++{a = 1} in arr);
+   |        ^^^^^^^
+ 7 | 
+   |
 
 ✓ test/parser/suite/js/fail/bd8abf1b26d90ab8.module.js
 error: Expected ';' after the statement, but found '{'
@@ -37686,6 +37753,16 @@ error: Invalid escape sequence in an untagged template literal
    = help: Only tagged templates can contain invalid escapes
 
 
+✓ test/parser/suite/js/fail/c866b1a7aa46481a.js
+error: Invalid Unicode escape sequence
+   |
+ 1 | "\u{";
+   |   ^
+ 2 | "\u{61";
+   |
+   = help: Write four hexadecimal digits, such as '\u00e9', or a code point of one to six digits in braces, such as '\u{1f600}'
+
+
 ✓ test/parser/suite/js/fail/c86872dc97dd35aa.js
 error: Expected an identifier or a destructuring pattern, but found end of file
    |
@@ -39487,6 +39564,14 @@ error: Expected an expression, but found ','
  2 | 
    |
 
+✓ test/parser/suite/js/fail/d2509394e9994317.js
+error: Expected an expression, but found ','
+   |
+ 1 | f(a,,b);
+   |     ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/fail/d25c981149c563af.js
 error: The left-hand side of an assignment expression must be a variable or a property access
    |
@@ -40209,6 +40294,16 @@ error: 'yield' is a reserved word in generators and cannot be used as an identif
  3 | }};
    |
 
+✓ test/parser/suite/js/fail/d63af81f840ca993.js
+error: Invalid Unicode escape sequence
+   |
+ 1 | x = "\u{110000}";
+   |       ^
+ 2 | 
+   |
+   = help: Write four hexadecimal digits, such as '\u00e9', or a code point of one to six digits in braces, such as '\u{1f600}'
+
+
 ✓ test/parser/suite/js/fail/d65452ddaed68d73.js
 error: 'super' is a reserved word and cannot be used as a binding identifier
    |
@@ -40487,6 +40582,16 @@ error: A rest element must be last in a destructuring pattern
  4 | callCount = callCount + 1;
    |
    = help: Move the rest element to the end
+
+
+✓ test/parser/suite/js/fail/d7f803e76510b994.js
+error: Invalid Unicode escape sequence
+   |
+ 1 | a\u{110000}b;
+   |   ^
+ 2 | 
+   |
+   = help: Write four hexadecimal digits, such as '\u00e9', or a code point of one to six digits in braces, such as '\u{1f600}'
 
 
 ✓ test/parser/suite/js/fail/d7fd6bf91b84482f.js
@@ -40914,6 +41019,16 @@ error: A rest element cannot have an initializer
    = help: Remove the initializer
 
 
+✓ test/parser/suite/js/fail/da36c44658f8265a.js
+error: Invalid Unicode escape sequence
+   |
+ 1 | class C { #\u{110000}; }
+   |             ^
+ 2 | 
+   |
+   = help: Write four hexadecimal digits, such as '\u00e9', or a code point of one to six digits in braces, such as '\u{1f600}'
+
+
 ✓ test/parser/suite/js/fail/da44a15f8e5fee79.js
 error: Expected an expression, but found '>'
    |
@@ -41067,6 +41182,14 @@ error: The left-hand side of an assignment expression must be a variable or a pr
    |
  1 | import('') >>>= 1;
    | ^^^^^^^^^^
+   |
+
+✓ test/parser/suite/js/fail/db2325dd80df4a4e.js
+error: Expected an expression, but found ','
+   |
+ 1 | async(,) => 1;
+   |       ^
+ 2 | 
    |
 
 ✓ test/parser/suite/js/fail/db41a80ccf646002.js
@@ -44757,6 +44880,14 @@ error: A rest element must be last in a destructuring pattern
    |
    = help: Move the rest element to the end
 
+
+✓ test/parser/suite/js/fail/efb01a4019170eaa.js
+error: Expected ';' after the class field, but found '@'
+   |
+ 1 | class A { get @dec x }
+   |               ^
+ 2 | 
+   |
 
 ✓ test/parser/suite/js/fail/efb9e5d27e1cfa30.js
 error: Expected ';' after the statement, but found '10'

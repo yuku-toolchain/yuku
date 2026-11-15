@@ -1,6 +1,6 @@
 test/parser/suite/js/semantic
 =============================
-Passed:       4199/4199 (100.00%)
+Passed:       4200/4200 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
@@ -33687,6 +33687,14 @@ error: Duplicate identifier 'a'
    |
    = help: Rename or remove this declaration of 'a'
 
+
+✓ test/parser/suite/js/semantic/d3d877a8403d0e0a.js
+error: Duplicate label 'l'
+   |
+ 1 | l: l: l: ;
+   |    ^
+ 2 | a: b: a: b: ;
+   |
 
 ✓ test/parser/suite/js/semantic/d3e1746fa11b1067.js
 error: Duplicate identifier 'param'

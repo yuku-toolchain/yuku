@@ -29,4 +29,5 @@ const inField = flag ? (result = class { p = (x): T => x; }) : other => other;
 const badPattern = flag ? ([(x)]) : other => (y): T => y;
 const badPatternTyped = flag ? ([(x): T => x]) : other => other;
 const definiteBody = flag ? () => inner ? ((x): T => x) : y : z;
+const definiteBadPatternBody = flag ? (...rest) => ([(x)]) : other => other;
 const definiteAsyncBody = flag ? (x) : y => inner ? z : async (): T => w;
