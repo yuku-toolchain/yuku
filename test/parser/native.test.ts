@@ -22,6 +22,7 @@ function child(script: string): string {
 
 function summary(file: SourceFile, options: ParseOptions): unknown {
   return {
+    unread: [print(file).code, print(file, { minify: true, sourceMap: true }).map],
     program: file.program,
     comments: file.comments,
     diagnostics: file.diagnostics,
@@ -90,12 +91,13 @@ describe.skipIf(!shipsAddon)("the Node-API addon", () => {
       file.scopes;
       print(file);
       file.reanalyze();
+      print(file);
       console.log(JSON.stringify({ paths, calls }));
     `);
     const { paths, calls } = JSON.parse(loaded) as { paths: string[]; calls: string[] };
     expect(paths).toHaveLength(1);
     expect(paths[0]!.replaceAll("\\", "/").endsWith(addon)).toBe(true);
-    expect(calls).toEqual(["parse", "analyze", "printTree", "analyzeTree"]);
+    expect(calls).toEqual(["parse", "analyze", "printSource", "analyzeTree", "printTree"]);
   });
 
   test("agrees with WebAssembly under every option", () => {

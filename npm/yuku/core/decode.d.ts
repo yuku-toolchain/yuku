@@ -74,6 +74,7 @@ export interface Semantic {
 }
 
 export interface Decoded {
+  untouched(): boolean;
   program(): Program;
   tokens(): TokenList | null;
   comments(): readonly Comment[];

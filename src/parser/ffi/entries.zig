@@ -49,6 +49,18 @@ pub fn analyze(gpa: Allocator, source: []const u8, flags: u32, output: anytype) 
     return serializeModel(gpa, &tree, &sem, .{ .nodes = true }, output);
 }
 
+pub fn printSource(
+    gpa: Allocator,
+    source: []const u8,
+    flags: u32,
+    options: u32,
+    output: anytype,
+) ![]u8 {
+    var tree = try parser.parse(gpa, source, try parseOptions(flags));
+    defer tree.deinit();
+    return serializePrinted(gpa, &tree, flags, options, output);
+}
+
 pub fn printTree(
     gpa: Allocator,
     encoded: transfer.Encoded,
@@ -59,18 +71,7 @@ pub fn printTree(
 ) ![]u8 {
     var tree = try treeOf(gpa, encoded, source, flags);
     defer tree.deinit();
-
-    const result = try parser.codegen.generate(gpa, &tree, try printOptions(options, flags));
-    defer result.deinit(gpa);
-
-    var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
-    defer offsets.deinit(gpa);
-
-    const out = try output.bytes(transfer.printedSize(&result));
-    const spans = if (tree.source.len == 0) null else &offsets;
-    const written = transfer.serializePrinted(&result, spans, out);
-    std.debug.assert(written == out.len);
-    return out;
+    return serializePrinted(gpa, &tree, flags, options, output);
 }
 
 pub fn analyzeTree(gpa: Allocator, encoded: transfer.Encoded, flags: u32, output: anytype) ![]u8 {
@@ -94,6 +95,26 @@ fn treeOf(
     tree.source_type = options.source_type;
     try transfer.unpack(gpa, &tree, encoded);
     return tree;
+}
+
+fn serializePrinted(
+    gpa: Allocator,
+    tree: *Tree,
+    flags: u32,
+    options: u32,
+    output: anytype,
+) ![]u8 {
+    const result = try parser.codegen.generate(gpa, tree, try printOptions(options, flags));
+    defer result.deinit(gpa);
+
+    var offsets: transfer.utf16.Offsets = try .init(gpa, tree.source);
+    defer offsets.deinit(gpa);
+
+    const out = try output.bytes(transfer.printedSize(&result));
+    const spans = if (tree.source.len == 0) null else &offsets;
+    const written = transfer.serializePrinted(&result, spans, out);
+    std.debug.assert(written == out.len);
+    return out;
 }
 
 fn serializeModel(

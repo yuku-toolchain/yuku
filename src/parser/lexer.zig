@@ -219,6 +219,18 @@ pub const Lexer = struct {
                 out.* = self.puncToken(1, .dot, self.cursor);
                 return true;
             },
+            .operator => {
+                out.* = self.scanPunctuation();
+                return true;
+            },
+            .string => {
+                const start = self.cursor;
+                out.* = self.scanString() catch {
+                    self.cursor = start;
+                    return false;
+                };
+                return true;
+            },
             .slow => return false,
         }
     }
@@ -304,7 +316,7 @@ pub const Lexer = struct {
         break :blk t;
     };
 
-    const FastClass = enum(u8) { slow, ident, punct, dot };
+    const FastClass = enum(u8) { slow, ident, punct, dot, operator, string };
 
     const fast_class: [256]FastClass = blk: {
         var t: [256]FastClass = @splat(.slow);
@@ -313,6 +325,9 @@ pub const Lexer = struct {
             if (simple_punct_tag[c] != .eof) t[c] = .punct;
         }
         t['.'] = .dot;
+        for ("=&|!?+*%^>") |c| t[c] = .operator;
+        t['"'] = .string;
+        t['\''] = .string;
         break :blk t;
     };
 
@@ -336,7 +351,7 @@ pub const Lexer = struct {
         return self.createToken(tag, start, self.cursor);
     }
 
-    fn scanPunctuation(self: *Lexer) LexicalError!Token {
+    fn scanPunctuation(self: *Lexer) Token {
         std.debug.assert(self.cursor < self.source.len);
 
         const start = self.cursor;
@@ -1233,9 +1248,11 @@ pub const Lexer = struct {
         const start = self.cursor;
         const src = self.source;
         var pos = start + 2;
-        while (pos < src.len) {
-            const c = src[pos];
-            switch (c) {
+        if (pos + 1 < src.len and src[pos] == '*' and src[pos + 1] != '/') pos += 1;
+        while (true) {
+            pos = findAnyPos("*\n\r\xe2", src, pos);
+            if (pos >= src.len) break;
+            switch (src[pos]) {
                 '*' => {
                     if (pos + 1 < src.len and src[pos + 1] == '/') {
                         pos += 2;
@@ -1250,7 +1267,7 @@ pub const Lexer = struct {
                     pos += 1;
                     break;
                 },
-                0x80...0xFF => {
+                else => {
                     const lt_len = spec.line_terminators.unicodeSeparatorLen(src, pos);
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
@@ -1258,7 +1275,6 @@ pub const Lexer = struct {
                         break;
                     } else pos += 1;
                 },
-                else => pos += 1,
             }
         }
         // the offset load catches `*/` across chunks

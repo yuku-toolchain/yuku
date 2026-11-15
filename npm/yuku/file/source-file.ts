@@ -95,6 +95,7 @@ export class SourceFile {
   readonly project: Project | null;
   /** @internal */
   readonly _core: Core;
+  private readonly flags: number;
   private syntax: Decoded;
   private analyzed: Decoded;
   private model: Model | null = null;
@@ -109,9 +110,10 @@ export class SourceFile {
     this.project = project;
     this._core = options.core ?? shippedCore;
     const entry = project !== null || options.analyze === true ? "analyze" : "parse";
-    const { buffer, lang, sourceType } = read(text, options, entry);
+    const { buffer, lang, sourceType, flags } = read(text, options, entry);
     this.lang = lang;
     this.sourceType = sourceType;
+    this.flags = flags;
     this.syntax = decode(buffer, text, this.path);
     this.analyzed = this.syntax;
     if (malformed >= 0) {
@@ -295,6 +297,12 @@ export class SourceFile {
   }
 
   /** @internal */
+  _printSource(options: number): ArrayBuffer | null {
+    if (!this.syntax.untouched() || !isWellFormed(this.source)) return null;
+    return this._core.backend().run("printSource", this.source, this.flags, options);
+  }
+
+  /** @internal */
   get _model(): Model {
     if (this.model !== null) return this.model;
     const semantic = this.analyzed.semantic();
@@ -310,6 +318,11 @@ export class SourceFile {
   get _project(): Project {
     return this.project ?? (this.solo ??= Project._solo(this));
   }
+}
+
+function isWellFormed(text: string): boolean {
+  const { isWellFormed } = text as { isWellFormed?(this: string): boolean };
+  return isWellFormed === undefined ? !/\p{Cs}/u.test(text) : isWellFormed.call(text);
 }
 
 function within(scope: Semantic["scope"], id: number | null, ancestor: number): boolean {

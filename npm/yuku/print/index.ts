@@ -90,21 +90,24 @@ const utf8 = new TextDecoder("utf-8", { ignoreBOM: true });
 /** Prints a file, or any single node, back to source. */
 export function print(target: SourceFile | Node, options: PrintOptions = {}): PrintResult {
   const file = target instanceof SourceFile ? target : null;
-  const node = file === null ? target : file.program;
-  assertNode(node, "print");
+  if (file === null) assertNode(target, "print");
   const settings = sourceMapOf(options.sourceMap ?? false);
   let bits = optionsOf(options);
   if (settings !== null) {
     if (file === null) throw new TypeError("a source map needs the source, so print the file");
     bits |= SOURCE_MAP;
   }
-  if (node.type === "Hashbang") return { code: `#!${node.value}`, diagnostics: [], map: null };
-
-  const tree = encode(node, file !== null && isTs(file.lang), false);
-  const core = file === null ? shippedCore : file._core;
-  const flags = file === null ? 0 : treeFlags(file.lang, file.sourceType);
   const source = settings === null ? "" : file!.source;
-  const buffer = core.backend().runTree("printTree", tree, source, flags, bits);
+
+  let buffer = file === null ? null : file._printSource(bits);
+  if (buffer === null) {
+    const node = target instanceof SourceFile ? target.program : target;
+    if (node.type === "Hashbang") return { code: `#!${node.value}`, diagnostics: [], map: null };
+    const tree = encode(node, file !== null && isTs(file.lang), false);
+    const core = file === null ? shippedCore : file._core;
+    const flags = file === null ? 0 : treeFlags(file.lang, file.sourceType);
+    buffer = core.backend().runTree("printTree", tree, source, flags, bits);
+  }
 
   const header = new DataView(buffer, 0, RESULT_HEADER_BYTES);
   const codeEnd = RESULT_HEADER_BYTES + header.getUint32(0, true);

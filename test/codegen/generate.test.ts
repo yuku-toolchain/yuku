@@ -156,6 +156,25 @@ test("attached comments print by default, and some keeps only the significant on
   expect(print(file, { format: "compact", comments: "some" }).code).toBe("/*! legal */\nlet a=1");
 });
 
+test("a file prints from its source until its tree is read, then from the tree", () => {
+  const source = "#!/usr/bin/env node\n// note\nlet s: T = ('é' as T);\nenum E {}\n";
+  const options = { lang: "ts", attachComments: true, preserveParens: false } as const;
+  for (const how of [{}, { strip: true }, { minify: true }, { sourceMap: true }]) {
+    const read = parse(source, options);
+    void read.program;
+    expect(print(parse(source, options), how)).toEqual(print(read, how));
+  }
+  expect(print(parse(`x = "${String.fromCharCode(0xd800)}";`)).code).toBe('x = "\\ud800";');
+
+  const file = parse("// note\nlet a = 1;", { attachComments: true });
+  expect(print(file).code).toBe("// note\nlet a = 1;");
+  file.comments[0]!.value = " edited";
+  expect(print(file).code).toBe("// edited\nlet a = 1;");
+  const [declaration] = file.program.body;
+  if (declaration?.type === "VariableDeclaration") declaration.kind = "const";
+  expect(print(file).code).toBe("// edited\nconst a = 1;");
+});
+
 test("a node outside the AST shapes throws, naming the field", () => {
   const program = parse("a.b;").program as Program & { body: [{ expression: Node }] };
   const member = program.body[0].expression as Node & { object: unknown };

@@ -52,7 +52,7 @@ export class Core {
 
 /** A loaded core, its Node-API addon or a WebAssembly instance. */
 export interface Backend {
-  run(entry: Entry, source: string, flags: number): ArrayBuffer;
+  run(entry: Entry, source: string, flags: number, options: number): ArrayBuffer;
   /** `source` is empty unless a source map needs it. */
   runTree(
     entry: TreeEntry,
@@ -63,12 +63,13 @@ export interface Backend {
   ): ArrayBuffer;
 }
 
-export type Entry = "parse" | "analyze";
+export type Entry = "parse" | "analyze" | "printSource";
 export type TreeEntry = "printTree" | "analyzeTree";
 
 interface Addon {
   parse(source: string, flags: number): ArrayBuffer;
   analyze(source: string, flags: number): ArrayBuffer;
+  printSource(source: string, flags: number, options: number): ArrayBuffer;
   printTree(
     nodes: Int32Array,
     extras: Int32Array,
@@ -93,6 +94,7 @@ interface Exports {
   free(pointer: number, len: number): void;
   parse(pointer: number, len: number, flags: number): number;
   analyze(pointer: number, len: number, flags: number): number;
+  printSource(pointer: number, len: number, flags: number, options: number): number;
   printTree(block: number, flags: number, options: number): number;
   analyzeTree(block: number, flags: number): number;
 }
@@ -148,12 +150,13 @@ function nativeBackend(addons: CoreOptions["addons"]): Backend | null {
     return null;
   }
   const addon = module.exports;
-  for (const entry of ["parse", "analyze", "printTree", "analyzeTree"] as const) {
+  for (const entry of ["parse", "analyze", "printSource", "printTree", "analyzeTree"] as const) {
     if (typeof addon[entry] !== "function") return null;
   }
-  const { parse, analyze, printTree, analyzeTree } = addon as Addon;
+  const native = addon as Addon;
+  const { printTree, analyzeTree } = native;
   return {
-    run: (entry, source, flags) => (entry === "parse" ? parse : analyze)(source, flags),
+    run: (entry, source, flags, options) => native[entry](source, flags, options),
     runTree: (entry, tree, source, flags, options) =>
       entry === "printTree"
         ? printTree(tree.nodes, tree.extras, tree.comments, tree.pool, source, flags, options)
@@ -210,21 +213,28 @@ function createInstance(module: WebAssembly.Module): Instance {
   const instance: Instance = {
     exports,
     grownAt: 0,
-    run: (entry, source, flags) => contained((f) => call(instance, entry, source, f), flags),
+    run: (entry, source, flags, options) =>
+      contained((f) => call(instance, entry, source, f, options), flags),
     runTree: (entry, tree, source, flags, options) =>
       contained((f) => callTree(instance, entry, tree, source, f, options), flags),
   };
   return instance;
 }
 
-function call(instance: Instance, entry: Entry, source: string, flags: number): ArrayBuffer {
+function call(
+  instance: Instance,
+  entry: Entry,
+  source: string,
+  flags: number,
+  options: number,
+): ArrayBuffer {
   const { memory, alloc, free } = instance.exports;
   const bytes = memory.buffer.byteLength;
   const capacity = source.length * (NodeBuffer === undefined ? 3 : 2) || 1;
   const pointer = allocated(alloc(capacity));
   const written = writeSource(memory.buffer, pointer, capacity, source);
   const encoding = NodeBuffer === undefined ? 0 : UTF16;
-  const result = instance.exports[entry](pointer, written, flags | encoding) >>> 0;
+  const result = instance.exports[entry](pointer, written, flags | encoding, options) >>> 0;
   if (memory.buffer.byteLength > bytes) instance.grownAt = Date.now();
   free(pointer, capacity);
   return resultOf(instance, result);

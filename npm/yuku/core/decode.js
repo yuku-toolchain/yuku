@@ -1444,6 +1444,7 @@ return { type: "JSXText", start, end, value: f1 === f3 ? raw : str(f1, f2), raw 
   }
   let _program, _diagnostics, _comments, _tokens;
   return {
+    untouched: () => _n === undefined && _comments === undefined,
     program() {
       if (_program === undefined) _program = nodeOf(progIdx);
       return _program;

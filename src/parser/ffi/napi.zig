@@ -158,6 +158,7 @@ fn register(env: Env, exports: Value) Error!void {
     const api = try bindApi();
     try define(&api, env, exports, "parse", withSource(entries.parse));
     try define(&api, env, exports, "analyze", withSource(entries.analyze));
+    try define(&api, env, exports, "printSource", printSource);
     try define(&api, env, exports, "printTree", printTree);
     try define(&api, env, exports, "analyzeTree", analyzeTree);
 }
@@ -212,6 +213,16 @@ fn withSource(comptime entry: anytype) Run {
             return output.value.?;
         }
     }.run;
+}
+
+fn printSource(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {
+    const argv = try argsOf(3, api, env, info);
+    var output: Output = .{ .api = api, .env = env };
+    const source = try sourceOf(api, gpa, env, argv[0]);
+    const flags = try uint32Of(api, env, argv[1]);
+    const options = try uint32Of(api, env, argv[2]);
+    _ = try entries.printSource(gpa, source, flags, options, &output);
+    return output.value.?;
 }
 
 fn printTree(api: *const Api, gpa: std.mem.Allocator, env: Env, info: CallbackInfo) Error!Value {

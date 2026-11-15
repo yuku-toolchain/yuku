@@ -8,6 +8,7 @@ export interface Read {
   readonly buffer: ArrayBuffer;
   readonly lang: SourceLang;
   readonly sourceType: SourceType;
+  readonly flags: number;
 }
 
 const LANGS: Record<string, number> = { js: 0, ts: 1, jsx: 2, tsx: 3, dts: 4 };
@@ -51,8 +52,8 @@ export function read(source: string, options: ParseOptions, entry: Entry): Read 
   if (options.semanticErrors === true) flags |= SEMANTIC_ERRORS;
   if (options.attachComments === true) flags |= ATTACH_COMMENTS;
   if (options.tokens === true) flags |= TOKENS;
-  const buffer = backend.run(entry, source, flags);
-  return { buffer, lang, sourceType };
+  const buffer = backend.run(entry, source, flags, 0);
+  return { buffer, lang, sourceType, flags };
 }
 
 export function treeFlags(lang: SourceLang, sourceType: SourceType): number {

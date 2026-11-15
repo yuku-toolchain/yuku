@@ -146,6 +146,7 @@ export function runPlan(plan: Plan, files: Input[]): PlanResult {
     const options: PrintOptions = { ...plan.js, sourceMap: plan.map };
     let result;
     try {
+      void parsed.program;
       result = print(parsed, options);
     } catch (error) {
       mismatch("threw", "", String((error as Error).stack ?? error));
