@@ -39,7 +39,6 @@ const bench = withCodSpeed(new Bench({ time: 1000, warmupTime: 250, throws: true
 for (const path of FILES) {
   const source = readFileSync(path, "utf8");
   const name = `${path.split("/")[2]}/${basename(path)}`;
-  const typed = /\.tsx?$/.test(path);
 
   add(`parse ${name}`, () => parse(source, { path }));
   add(`parse ${name} with WebAssembly`, () => parse(source, { path, core }));
@@ -114,7 +113,6 @@ for (const path of FILES) {
   add(`print ${name}`, () => print(file!), parsed);
   add(`print ${name} with WebAssembly`, () => print(wasmFile!), parsedWithWasm);
   add(`print ${name} with comments`, () => print(commented!), withComments);
-  if (typed) add(`print ${name} stripped`, () => print(file!, { strip: true }), parsed);
   add(`print ${name} minified`, () => print(file!, { minify: true }), parsed);
   add(`print ${name} with source map`, () => print(file!, { sourceMap: true }), parsed);
   add(

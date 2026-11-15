@@ -64,7 +64,6 @@ pub fn main(init: std.process.Init) !void {
         },
         .print => {
             const printed = try parser.codegen.generate(gpa, &tree, .{
-                .strip = false,
                 .minify = false,
                 .format = .pretty,
                 .indent = 2,

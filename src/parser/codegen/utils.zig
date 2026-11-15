@@ -1,10 +1,8 @@
 const std = @import("std");
 const lexical = @import("../lexical.zig");
 
-pub fn isWordOp(op: []const u8) bool {
-    return std.mem.eql(u8, op, "in") or std.mem.eql(u8, op, "instanceof") or
-        std.mem.eql(u8, op, "typeof") or std.mem.eql(u8, op, "void") or
-        std.mem.eql(u8, op, "delete");
+pub inline fn isWordOp(op: []const u8) bool {
+    return std.ascii.isLower(op[0]);
 }
 
 /// True when `c` can continue an ASCII identifier or is a non-ASCII byte.

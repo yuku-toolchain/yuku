@@ -35,7 +35,7 @@ pub fn main() !void {
     var visitor: Visitor = .{};
     try basic.traverse(Visitor, &tree, &visitor);
 
-    const output = try parser.codegen.generate(gpa, &tree, .{ .strip = true });
+    const output = try parser.codegen.generate(gpa, &tree, .{});
     defer output.deinit(gpa);
     std.debug.print("\n{s}\n", .{output.code});
 }

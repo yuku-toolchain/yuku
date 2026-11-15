@@ -19,7 +19,6 @@ pub const utf16 = 1 << 10;
 
 const small_stack_bytes = 96 * 1024;
 
-const print_strip = 1 << 0;
 const print_minify = 1 << 1;
 const print_compact = 1 << 2;
 const print_source_map = 1 << 3;
@@ -156,7 +155,6 @@ fn enumOf(comptime E: type, value: u32) error{InvalidTree}!E {
 
 fn printOptions(options: u32, flags: u32) error{InvalidTree}!parser.codegen.Options {
     return .{
-        .strip = options & print_strip != 0,
         .minify = options & print_minify != 0,
         .format = if (options & print_compact != 0) .compact else .pretty,
         .indent = @truncate(options >> print_indent_shift),

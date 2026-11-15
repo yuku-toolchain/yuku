@@ -385,17 +385,6 @@ test("a node the parent writes itself keeps its comments", () => {
   );
 });
 
-test("strip keeps the comments of a cast and drops those of a type-only specifier", () => {
-  expect(gen("const a = /*#__PURE__*/ make() as Thing;", { strip: true })).toMatchInlineSnapshot(
-    `"const a = /*#__PURE__*/ make();"`,
-  );
-  const source = 'f(a as T /* c */, b);\nimport { /* c */ type A, B } from "a";';
-  expect(gen(source, { ...ALL, strip: true })).toMatchInlineSnapshot(`
-    "f(a, /* c */ b);
-    import { B } from "a";"
-  `);
-});
-
 test("a trailing line comment follows a token no line break may precede", () => {
   const source = [
     "x = a as // c\n  T;",
@@ -447,7 +436,6 @@ test("a comment in any gap survives every plan", () => {
     ALL,
     { ...ALL, format: "compact" },
     { ...ALL, minify: true },
-    { ...ALL, strip: true },
   ];
   const failures: string[] = [];
   for (const { source, lang } of commentPlacements()) {
@@ -457,8 +445,7 @@ test("a comment in any gap survives every plan", () => {
       const second = gen(first, plan, undefined, options);
       const reparsed = parse(first, options);
       const kept = [reparsed, parse(second, options)].map((r) => r.comments.length).join();
-      const typed = plan.strip === true && lang !== "js" && lang !== "jsx";
-      if (reparsed.diagnostics.length > 0 || (!typed && kept !== "1,1")) {
+      if (reparsed.diagnostics.length > 0 || kept !== "1,1") {
         failures.push(JSON.stringify([plan, source, first]));
       }
     }

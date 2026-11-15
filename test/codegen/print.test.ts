@@ -295,8 +295,6 @@ test("an instantiation expression keeps the parens that end its type arguments",
       expect(astDiffPath(program, reparsed.program), code).toBeNull();
       expect(print(reparsed.program, options).code, code).toBe(code);
     }
-    const stripped = print(program, { strip: true }).code;
-    expect(parse(stripped, { lang: "js" }).diagnostics, stripped).toEqual([]);
   }
 });
 
@@ -315,8 +313,6 @@ test("non-null assertions preserve optional chain boundaries", () => {
             expect(astDiffPath(program, reparsed.program), code).toBeNull();
         }
     }
-    expect(gen("(value?.prop)!.x;", { strip: true }, "input.ts", parseOptions))
-        .toBe("(value?.prop).x;");
 });
 
 test("each switch case statement starts on its own line, and compact keeps them inline", () => {
@@ -452,7 +448,7 @@ test("nesting past the encoder's recursion prints", () => {
 test("a tree too deep to print is a diagnostic", () => {
   let node: any = { type: "Identifier", name: "a", start: 0, end: 1 };
   for (let i = 0; i < 300_000; i++) {
-    node = { type: "UnaryExpression", operator: "!", prefix: true, argument: node, start: 0, end: 1 };
+    node = { type: "ArrayExpression", elements: [node], start: 0, end: 1 };
   }
   expect(print(node).diagnostics.map((d) => d.message)).toContain(
     "Code is nested too deeply to print",

@@ -739,7 +739,6 @@ function render() {
   const outScroll = outView.scrollTop;
   try {
     const out = print(result, {
-      strip: $("strip").checked,
       minify: $("minify").checked,
       format: $("format").value,
       quotes: $("quotes").value,
@@ -1061,7 +1060,6 @@ const CONTROLS = [
   "preserveParens",
   "semanticErrors",
   "attachComments",
-  "strip",
   "minify",
   "format",
   "quotes",
@@ -1139,7 +1137,7 @@ function applyState(s) {
     if (c.type === "checkbox") c.checked = !!s[id];
     else c.value = s[id];
   }
-  if (s.op === "strip" || s.op === "minify") $(s.op).checked = true;
+  if (s.op === "minify") $(s.op).checked = true;
   if (s.problems !== undefined) problemsOpen = !!s.problems;
   if (s.theme === "dark" || s.theme === "light") {
     document.documentElement.dataset.theme = s.theme;

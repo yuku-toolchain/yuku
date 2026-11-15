@@ -12,5 +12,6 @@ pub const generate = printer.generate;
 
 test {
     _ = printer;
+    _ = @import("output.zig");
     _ = @import("sourcemap.zig");
 }

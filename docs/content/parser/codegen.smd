@@ -1,20 +1,20 @@
 ---
 .title = "Codegen",
-.description = "Print a tree back to JavaScript or TypeScript, with type stripping, minification, and source maps.",
+.description = "Print a tree back to JavaScript or TypeScript, with minification and source maps.",
 .author = "Arshad Yaseen",
 .date = @date("2026-06-23T00:00:00"),
 .layout = "page.shtml",
 ---
-Codegen prints a tree back to source, with optional type stripping, minification, and source maps. From JavaScript, see [`print`](/javascript/print/).
+Codegen prints a tree back to source, with optional minification and source maps. From JavaScript, see [`print`](/javascript/print/).
 
 ```zig
 var tree = try parser.parse(allocator, "const x: number = 1;", .{ .lang = .ts });
 defer tree.deinit();
 
-const result = try parser.codegen.generate(allocator, &tree, .{ .strip = true });
+const result = try parser.codegen.generate(allocator, &tree, .{});
 defer result.deinit(allocator);
 
-std.debug.print("{s}\n", .{result.code}); // const x = 1;
+std.debug.print("{s}\n", .{result.code}); // const x: number = 1;
 ```
 
 ```zig
@@ -22,7 +22,7 @@ pub fn generate(allocator: std.mem.Allocator, tree: *const ast.Tree, options: Op
 
 pub const Result = struct {
     code: []const u8,
-    diagnostics: []const ast.Diagnostic, // what strip could not print
+    diagnostics: []const ast.Diagnostic, // code nested too deeply to print
     map: ?SourceMap = null,
 
     pub fn deinit(self: Result, allocator: std.mem.Allocator) void
@@ -35,7 +35,6 @@ pub const Result = struct {
 
 | Field        | Default     | Description                                                           |
 | ------------ | ----------- | --------------------------------------------------------------------- |
-| `strip`      | `false`     | Print TypeScript as JavaScript, see [Type stripping](#type-stripping) |
 | `minify`     | `false`     | Rewrite syntax to shorter forms, see [Minification](#minification)    |
 | `format`     | `.pretty`   | `.pretty`, or `.compact` with only the whitespace the grammar needs   |
 | `indent`     | `2`         | Spaces per level in the pretty format                                 |
@@ -44,10 +43,6 @@ pub const Result = struct {
 | `source_map` | `null`      | A `SourceMapOptions`, see [Source maps](#source-maps)                 |
 
 Comments print from the nodes they are [attached to](/parser/ast/#comments), so parse with `.comments = .attach` to keep them. `.some` keeps the block comments bundlers keep: those opening with `!` or `*`, those whose text starts with `@` or `#`, and those holding `@license`, `@preserve`, or `@cc_on`.
-
-## [Type stripping]($section.id('type-stripping'))
-
-`strip` prints TypeScript as JavaScript. Types, interfaces, type aliases, generics, assertions, `satisfies`, non-null `!`, `declare`, and `abstract` strip cleanly. `enum`, `namespace`, `export =`, `import = require()`, and parameter properties need new runtime code, so they are left out and reported in `diagnostics`. Their ambient forms strip silently.
 
 ## [Minification]($section.id('minification'))
 

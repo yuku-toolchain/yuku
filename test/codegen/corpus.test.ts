@@ -1,7 +1,7 @@
 // every plan reparses, keeps each comment, and is idempotent, and print and compact keep the AST
 
 import { beforeAll, describe, expect, test } from "bun:test";
-import { parse, type ParseOptions, print, type PrintOptions, type SourceLang } from "yuku";
+import { parse, type ParseOptions, print, type PrintOptions } from "yuku";
 import { astDiffPath } from "../ast-helpers-for-test";
 import {
   corpusAndProjectFiles,
@@ -10,17 +10,16 @@ import {
   type CorpusFile,
 } from "../corpus";
 
-type Plan = "print" | "compact" | "strip" | "minify";
+type Plan = "print" | "compact" | "minify";
 
 const PLANS: Record<Plan, PrintOptions> = {
   print: { comments: "all" },
   compact: { format: "compact", comments: "all" },
-  strip: { strip: true, comments: "all" },
   minify: { minify: true, comments: "all" },
 };
 
 const SAMPLE_MAX = 8;
-const failures: Record<Plan, string[]> = { print: [], compact: [], strip: [], minify: [] };
+const failures: Record<Plan, string[]> = { print: [], compact: [], minify: [] };
 let checked = 0;
 
 function note(plan: Plan, detail: string): void {
@@ -39,7 +38,6 @@ function checkFile(file: CorpusFile, source: string): void {
   if (ast.diagnostics.length > 0) return;
   checked++;
 
-  const typed = file.lang !== "js" && file.lang !== "jsx";
   for (const [plan, options] of Object.entries(PLANS) as [Plan, PrintOptions][]) {
     let code: string;
     try {
@@ -49,15 +47,13 @@ function checkFile(file: CorpusFile, source: string): void {
       continue;
     }
 
-    const lang = plan === "strip" ? stripLang(file.lang) : file.lang;
-    const reparseOptions = { ...parseOptions, lang };
-    const reparsed = parse(code, reparseOptions);
+    const reparsed = parse(code, parseOptions);
     if (reparsed.diagnostics.length > 0) {
       note(plan, `${file.path}: reparse failed`);
       continue;
     }
 
-    if (!(plan === "strip" && typed) && commentKey(ast) !== commentKey(reparsed)) {
+    if (commentKey(ast) !== commentKey(reparsed)) {
       note(plan, `${file.path}: comment lost or duplicated`);
       continue;
     }
@@ -79,7 +75,7 @@ function checkFile(file: CorpusFile, source: string): void {
     }
     if (second === code) continue;
 
-    const reparsedTwice = parse(second, reparseOptions);
+    const reparsedTwice = parse(second, parseOptions);
     const bare = { ...options, comments: "none" as const };
     if (print(reparsed.program, bare).code !== print(reparsedTwice.program, bare).code) {
       note(plan, `${file.path}: not idempotent (code)`);
@@ -103,12 +99,6 @@ function commentKey(result: { comments: readonly { type: string; value: string }
     .join("\0");
 }
 
-function stripLang(lang: SourceLang): SourceLang {
-  if (lang === "tsx") return "jsx";
-  if (lang === "ts" || lang === "dts") return "js";
-  return lang;
-}
-
 describe.skipIf(!corpusPresent())("codegen corpus invariants", () => {
   beforeAll(async () => {
     await forEachCorpusFile(corpusAndProjectFiles(), checkFile);
@@ -124,10 +114,6 @@ describe.skipIf(!corpusPresent())("codegen corpus invariants", () => {
 
   test("compact round-trips and is idempotent", () => {
     expect(failures.compact).toEqual([]);
-  });
-
-  test("strip reparses and is idempotent", () => {
-    expect(failures.strip).toEqual([]);
   });
 
   test("minify reparses and is idempotent", () => {

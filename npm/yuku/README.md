@@ -36,10 +36,10 @@ walk(file.program, {
   },
 });
 
-print(file, { strip: true }).code;
+print(file).code;
 // const RATE = 0.2;
-// export const tax = (price) => price * 0.2;
-// export const scale = (RATE) => RATE * 2;
+// export const tax = (price: number) => price * 0.2;
+// export const scale = (RATE: number) => RATE * 2;
 ```
 
 The [guide](https://yuku.fyi/javascript/) documents how to [parse](https://yuku.fyi/javascript/parse/), [walk and build](https://yuku.fyi/javascript/walk/), [analyze](https://yuku.fyi/javascript/semantic/), and [print](https://yuku.fyi/javascript/print/).

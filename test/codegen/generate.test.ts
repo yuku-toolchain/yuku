@@ -1,17 +1,7 @@
 import { expect, test } from "bun:test";
 import { b, parse, print, walk, type Node, type Program } from "yuku";
 import { TraceMap, decodedMappings } from "@jridgewell/trace-mapping";
-import { nodesOf } from "../ast-helpers-for-test";
 import { gen } from "./helpers";
-
-test("strip and minify compose in a single call", () => {
-  expect(
-    gen(`const x: number = 1000000;\nif (true) { obj["foo"] = undefined; }`, {
-      strip: true,
-      minify: true,
-    }),
-  ).toMatchInlineSnapshot(`"const x=1e6;if(!0){obj.foo=undefined}"`);
-});
 
 test("minify defaults the format, quotes, and comments, and the options say otherwise", () => {
   const source = `// note\n/*! legal */\nconst x = 1000000;\nconst s = 'plain';`;
@@ -103,12 +93,6 @@ test("any node prints on its own", () => {
   `);
 });
 
-test("a lone type strips to nothing", () => {
-  const { program } = parse("let x: this | string;", { lang: "ts" });
-  const types = nodesOf(program, "TSUnionType", "TSThisType", "TSStringKeyword");
-  expect(types.map((node) => print(node, { strip: true }).code)).toEqual(["", "", ""]);
-});
-
 test("an option outside its values throws", () => {
   const { program } = parse(`a;`);
   expect(() => print(program, { format: "tight" as never })).toThrow('`format` must be "pretty"');
@@ -159,7 +143,7 @@ test("attached comments print by default, and some keeps only the significant on
 test("a file prints from its source until its tree is read, then from the tree", () => {
   const source = "#!/usr/bin/env node\n// note\nlet s: T = ('é' as T);\nenum E {}\n";
   const options = { lang: "ts", attachComments: true, preserveParens: false } as const;
-  for (const how of [{}, { strip: true }, { minify: true }, { sourceMap: true }]) {
+  for (const how of [{}, { minify: true }, { sourceMap: true }]) {
     const read = parse(source, options);
     void read.program;
     expect(print(parse(source, options), how)).toEqual(print(read, how));
