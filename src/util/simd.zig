@@ -19,20 +19,24 @@ pub inline fn loadChunk(bytes: []const u8, offset: usize) Chunk {
 pub inline fn loadTail(bytes: []const u8) Chunk {
     const n = bytes.len;
     std.debug.assert(n < 16);
-    var halves: [2]u64 = .{ 0, 0 };
+    var low: u64 = 0;
+    var high: u64 = 0;
     if (n >= 8) {
-        halves[0] = @bitCast(bytes[0..8].*);
-        const last: u64 = @bitCast(bytes[n - 8 ..][0..8].*);
-        halves[1] = (last >> 1) >> @intCast(8 * (16 - n) - 1);
+        low = std.mem.readInt(u64, bytes[0..8], .little);
+        const last = std.mem.readInt(u64, bytes[n - 8 ..][0..8], .little);
+        high = (last >> 1) >> @intCast(8 * (16 - n) - 1);
     } else if (n >= 4) {
-        const first: u32 = @bitCast(bytes[0..4].*);
-        const last: u32 = @bitCast(bytes[n - 4 ..][0..4].*);
-        halves[0] = first | @as(u64, last) << @intCast(8 * (n - 4));
+        const first = std.mem.readInt(u32, bytes[0..4], .little);
+        const last = std.mem.readInt(u32, bytes[n - 4 ..][0..4], .little);
+        low = first | @as(u64, last) << @intCast(8 * (n - 4));
     } else if (n > 0) {
-        halves[0] = bytes[0] | @as(u64, bytes[n >> 1]) << @intCast(8 * (n >> 1)) |
+        low = bytes[0] | @as(u64, bytes[n >> 1]) << @intCast(8 * (n >> 1)) |
             @as(u64, bytes[n - 1]) << @intCast(8 * (n - 1));
     }
-    return @bitCast(halves);
+    var out: [16]u8 = undefined;
+    std.mem.writeInt(u64, out[0..8], low, .little);
+    std.mem.writeInt(u64, out[8..16], high, .little);
+    return out;
 }
 
 /// First set lane, 16 if none.
