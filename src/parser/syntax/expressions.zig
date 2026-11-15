@@ -260,7 +260,13 @@ fn parseParenthesizedOrArrowFunction(
 
     if (parser.tree.isTs() and precedence <= Precedence.Assignment) {
         switch (ts.classifyArrowHead(parser)) {
-            .yes => return ts.parseArrow(parser, false, start, .{ .allow_in = options.allow_in }),
+            .yes => return ts.parseArrow(
+                parser,
+                false,
+                start,
+                .{ .allow_in = options.allow_in },
+                false,
+            ),
             .maybe => if (try ts.tryParseArrow(parser, false, start, options)) |arrow| {
                 return arrow;
             },
@@ -342,7 +348,7 @@ fn parseAsyncFunctionOrArrow(
         if (isArrowNext(parser, precedence)) {
             parser.rewind(head);
             try parser.reportIfEscapedKeyword(async_token);
-            return ts.parseArrow(parser, true, start, .{ .allow_in = options.allow_in });
+            return ts.parseArrow(parser, true, start, .{ .allow_in = options.allow_in }, false);
         }
 
         return try parenthesized.coverToCallExpression(parser, cover, async_id);
