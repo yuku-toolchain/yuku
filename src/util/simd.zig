@@ -16,6 +16,27 @@ pub inline fn loadChunk(bytes: []const u8, offset: usize) Chunk {
     return @as(*align(1) const Chunk, @ptrCast(bytes.ptr + offset)).*;
 }
 
+/// Up to 15 bytes as a chunk, zero in the lanes past them.
+pub inline fn loadTail(bytes: []const u8) Chunk {
+    const n = bytes.len;
+    std.debug.assert(n < 16);
+    var halves: [2]u64 = .{ 0, 0 };
+    if (n >= 8) {
+        halves[0] = @bitCast(bytes[0..8].*);
+        const last: u64 = @bitCast(bytes[n - 8 ..][0..8].*);
+        // the last 8 bytes overlap the first, so shift out what the low half already has
+        halves[1] = (last >> 1) >> @intCast(8 * (16 - n) - 1);
+    } else if (n >= 4) {
+        const first: u32 = @bitCast(bytes[0..4].*);
+        const last: u32 = @bitCast(bytes[n - 4 ..][0..4].*);
+        halves[0] = first | @as(u64, last) << @intCast(8 * (n - 4));
+    } else if (n > 0) {
+        halves[0] = bytes[0] | @as(u64, bytes[n >> 1]) << @intCast(8 * (n >> 1)) |
+            @as(u64, bytes[n - 1]) << @intCast(8 * (n - 1));
+    }
+    return @bitCast(halves);
+}
+
 /// First set lane, 16 if none.
 pub inline fn firstTrueLane(lanes: @Vector(16, bool)) u32 {
     const index: u32 = if (comptime has_nibble_mask)
@@ -48,6 +69,15 @@ inline fn nibbleMask(lanes: @Vector(16, bool)) u64 {
 }
 
 const testing = std.testing;
+
+test "a tail loads its bytes and zero past them" {
+    const text = "0123456789abcdef";
+    for (0..16) |n| {
+        var expected: [16]u8 = @splat(0);
+        @memcpy(expected[0..n], text[0..n]);
+        try testing.expectEqual(@as(Chunk, expected), loadTail(text[0..n]));
+    }
+}
 
 test "lane scans find every boundary" {
     for (0..17) |boundary| {

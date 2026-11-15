@@ -1,6 +1,8 @@
 const std = @import("std");
 const parser = @import("parser");
 
+const helpers = @import("../helpers.zig");
+
 const ast = parser.ast;
 const testing = std.testing;
 
@@ -74,4 +76,32 @@ test "an empty regular expression pattern prints as an empty group" {
 
     try expectPrinted(&tree, "\"use client\";\n/(?:)/g;\n" ++
         "<a b=\"&amp;\" c=\"&amp;\">&copy;&#10;<i>old</i></a>;");
+}
+
+test "every allocation failure while printing returns an error" {
+    // the output outgrows the source, a long chain prints iteratively, and an entity is decoded
+    const repeat = helpers.repeat;
+    const text = repeat("a=[1,2,3];", 64) ++ "x" ++ repeat(".y", 8192) ++ ";<a b=\"&amp;\"/>;";
+    var tree = try parser.parse(testing.allocator, text, .{ .lang = .jsx, .comments = .attach });
+    defer tree.deinit();
+    try testing.expect(!tree.hasErrors());
+
+    // a small stack diagnoses the nesting instead
+    const plans = [_]parser.codegen.Options{ .{ .source_map = .{} }, .{ .stack_bytes = 2048 } };
+    for (plans) |options| {
+        var index: usize = 0;
+        while (true) : (index += 1) {
+            var failing: std.testing.FailingAllocator = .init(testing.allocator, .{ .fail_index = index });
+            const printed = parser.codegen.generate(failing.allocator(), &tree, options) catch |err| {
+                try testing.expectEqual(error.OutOfMemory, err);
+                continue;
+            };
+            defer printed.deinit(failing.allocator());
+            try testing.expect(!failing.has_induced_failure);
+            const diagnosed = printed.diagnostics.len > 0;
+            try testing.expectEqual(options.source_map == null, diagnosed);
+            if (!diagnosed) try testing.expect(printed.code.len > text.len);
+            break;
+        }
+    }
 }

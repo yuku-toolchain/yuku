@@ -447,8 +447,9 @@ test("nesting past the encoder's recursion prints", () => {
 
 test("a tree too deep to print is a diagnostic", () => {
   let node: any = { type: "Identifier", name: "a", start: 0, end: 1 };
+  // an array closes after its element, so each level holds a frame
   for (let i = 0; i < 300_000; i++) {
-    node = { type: "UnaryExpression", operator: "!", prefix: true, argument: node, start: 0, end: 1 };
+    node = { type: "ArrayExpression", elements: [node], start: 0, end: 1 };
   }
   expect(print(node).diagnostics.map((d) => d.message)).toContain(
     "Code is nested too deeply to print",
