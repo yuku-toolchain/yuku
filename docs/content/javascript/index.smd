@@ -30,8 +30,8 @@ walk(file.program, {
   },
 });
 
-print(file, { strip: true }).code;
+print(file).code;
 // const RATE = 0.2;
-// export const tax = (price) => price * 0.2;
-// export const scale = (RATE) => RATE * 2;
+// export const tax = (price: number) => price * 0.2;
+// export const scale = (RATE: number) => RATE * 2;
 ```

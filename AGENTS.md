@@ -13,7 +13,7 @@ Test at the layer that changed, in the form that layer already uses. Every layer
 | What the parser accepts or rejects, AST shape, diagnostic messages | A fixture in `test/parser/misc/` |
 | The token API, or diagnostic spans across many one-line inputs | `test/parser/tokens.test.ts`, `test/parser/diagnostics.test.ts` |
 | How the package loads and calls the Node-API addon or WebAssembly | `test/parser/native.test.ts`, `test/parser/wasm.test.ts` |
-| Codegen output | An inline snapshot in `test/codegen/`: `print` (default and compact), `strip`, `minify`, `comments`, `quotes`, or `generate` for option composition and source map output |
+| Codegen output | An inline snapshot in `test/codegen/`: `print` (default and compact), `minify`, `comments`, `quotes`, or `generate` for option composition and source map output |
 | Scopes, bindings, references, imports, exports | An inline snapshot of `summary()` in `test/analyzer/<topic>.test.ts`, or `links()` for cross-file behavior |
 | Renames | `test/analyzer/rename.test.ts` |
 | Resolution as tsc or scope-manager defines it | A snippet in `test/analyzer/tsc-differential.test.ts` or `scope-manager-differential.test.ts` |

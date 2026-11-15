@@ -28,7 +28,7 @@ const fallback = parse(source, { lang: "ts", analyze: true, core });
 assert.equal(JSON.stringify(fallback.program), JSON.stringify(file.program));
 assert.equal(fallback.rootScope.find("count")?.references.length, 1);
 assert.deepEqual(file.diagnostics, []);
-assert.equal(print(file, { strip: true }).code, "const answer = 42;\nlet count = 0;\ncount++;");
+assert.equal(print(file).code, "const answer: number = 42;\nlet count = 0;\ncount++;");
 
 let identifiers = 0;
 walk(file.program, {

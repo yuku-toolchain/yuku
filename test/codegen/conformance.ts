@@ -38,7 +38,6 @@ export const PLANS: Plan[] = [
   definePlan("some", ["--comments=some"], { comments: "some" }),
   definePlan("all", ["--comments=all"], { comments: "all" }),
   definePlan("compact", ["--compact", "--comments=all"], { format: "compact", comments: "all" }),
-  definePlan("strip", ["--strip", "--comments=all"], { strip: true, comments: "all" }),
   definePlan("minify", ["--minify", "--compact", "--quotes=shortest", "--comments=all"], {
     minify: true,
     comments: "all",
@@ -61,7 +60,6 @@ export const PLANS: Plan[] = [
   definePlan(
     "everything",
     [
-      "--strip",
       "--minify",
       "--compact",
       "--source-map",
@@ -71,7 +69,6 @@ export const PLANS: Plan[] = [
       "--indent=4",
     ],
     {
-      strip: true,
       minify: true,
       format: "compact",
       quotes: "single",

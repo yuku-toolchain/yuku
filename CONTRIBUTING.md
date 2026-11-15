@@ -62,7 +62,7 @@ src/parser/
   parser.zig     parser entry point
   ast.zig        node definitions
   syntax/        grammar by construct, with ts/ and jsx/
-  codegen/       print, strip, minify, source maps
+  codegen/       print, minify, source maps
   semantic/      scopes, symbols, references, early errors
   traverser/     AST visitors
   ffi/           Node-API and WebAssembly bindings

@@ -24,12 +24,6 @@ export interface SourceMapOptions {
 
 export interface PrintOptions {
   /**
-   * Drop TypeScript-only syntax and emit plain JavaScript. Constructs with no JavaScript
-   * equivalent (`enum`, `namespace`, ...) are reported in `diagnostics` and elided.
-   * @default false
-   */
-  strip?: boolean;
-  /**
    * Rewrite syntax to shorter forms, such as `!0` and `obj.foo`, and default to the compact
    * format, the shortest quotes, and `"some"` comments.
    * @default false
@@ -66,7 +60,6 @@ export interface PrintResult {
 const QUOTES = ["preserve", "double", "single", "shortest"] as const;
 const COMMENTS = ["none", "all", "some", "line", "block"] as const;
 const OPTIONS: ReadonlySet<string> = new Set([
-  "strip",
   "minify",
   "format",
   "indent",
@@ -76,7 +69,6 @@ const OPTIONS: ReadonlySet<string> = new Set([
 ]);
 const SOURCE_MAP_OPTIONS: ReadonlySet<string> = new Set(["file", "sourceRoot", "sourcesContent"]);
 
-const STRIP = 1 << 0;
 const MINIFY = 1 << 1;
 const COMPACT = 1 << 2;
 const SOURCE_MAP = 1 << 3;
@@ -175,7 +167,6 @@ function optionsOf(options: PrintOptions): number {
   }
 
   let bits = (quotes << QUOTES_SHIFT) | (comments << COMMENTS_SHIFT) | (indent << INDENT_SHIFT);
-  if (options.strip === true) bits |= STRIP;
   if (minify) bits |= MINIFY;
   if (format === "compact") bits |= COMPACT;
   return bits;

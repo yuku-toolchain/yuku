@@ -295,22 +295,15 @@ fn roundTrip(gpa: Allocator, mode: Mode, src: []const u8) Allocator.Error!void {
         }
     }
 
-    const plain: ast.Lang = switch (mode.lang) {
-        .ts, .dts => .js,
-        .tsx => .jsx,
-        .js, .jsx => mode.lang,
-    };
-    const rewrites = [_]codegen.Options{
-        .{ .strip = true, .comments = .all },
-        .{ .minify = true, .format = .compact, .quotes = .shortest, .comments = .all },
-    };
-    for (rewrites) |options| {
-        var res = try codegen.generate(gpa, &tree, options);
-        defer res.deinit(gpa);
-        const lang = if (options.strip) plain else mode.lang;
-        const reparsed = try reparse(gpa, mode, lang, src, res.code);
-        reparsed.deinit();
-    }
+    var minified = try codegen.generate(gpa, &tree, .{
+        .minify = true,
+        .format = .compact,
+        .quotes = .shortest,
+        .comments = .all,
+    });
+    defer minified.deinit(gpa);
+    const reparsed_minified = try reparse(gpa, mode, mode.lang, src, minified.code);
+    reparsed_minified.deinit();
 }
 
 fn reparse(

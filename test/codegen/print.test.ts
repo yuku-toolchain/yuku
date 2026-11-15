@@ -295,8 +295,6 @@ test("an instantiation expression keeps the parens that end its type arguments",
       expect(astDiffPath(program, reparsed.program), code).toBeNull();
       expect(print(reparsed.program, options).code, code).toBe(code);
     }
-    const stripped = print(program, { strip: true }).code;
-    expect(parse(stripped, { lang: "js" }).diagnostics, stripped).toEqual([]);
   }
 });
 
@@ -315,8 +313,6 @@ test("non-null assertions preserve optional chain boundaries", () => {
             expect(astDiffPath(program, reparsed.program), code).toBeNull();
         }
     }
-    expect(gen("(value?.prop)!.x;", { strip: true }, "input.ts", parseOptions))
-        .toBe("(value?.prop).x;");
 });
 
 test("each switch case statement starts on its own line, and compact keeps them inline", () => {

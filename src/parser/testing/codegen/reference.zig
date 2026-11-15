@@ -15,7 +15,7 @@
 //! Only the status is written for a skipped file. The options mirror `codegen.Options`, and
 //! `--no-preserve-parens` parses without parenthesized expressions.
 //!
-//!   --strip --minify --compact --source-map --no-preserve-parens --indent=<n>
+//!   --minify --compact --source-map --no-preserve-parens --indent=<n>
 //!   --quotes=<preserve|double|single|shortest> --comments=<none|all|some|line|block>
 
 const std = @import("std");
@@ -119,9 +119,7 @@ fn writeBytes(out: *std.Io.Writer, bytes: []const u8) !void {
 fn planParse(args: []const []const u8) !Plan {
     var plan: Plan = .{};
     for (args) |arg| {
-        if (std.mem.eql(u8, arg, "--strip")) {
-            plan.codegen.strip = true;
-        } else if (std.mem.eql(u8, arg, "--minify")) {
+        if (std.mem.eql(u8, arg, "--minify")) {
             plan.codegen.minify = true;
         } else if (std.mem.eql(u8, arg, "--compact")) {
             plan.codegen.format = .compact;
