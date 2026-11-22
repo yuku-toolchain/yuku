@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parse, Project, walk } from "yuku";
+import { BindingFlags, parse, Project, walk } from "yuku";
 import { summary } from "./utils/summarize";
 
 describe("write detection through wrappers", () => {
@@ -117,6 +117,20 @@ describe("deep trees", () => {
     let ancestors = 0;
     for (let parent = file.parentOf(node); parent; parent = file.parentOf(parent)) ancestors++;
     expect(ancestors).toBe(100_000 + 2);
+  });
+
+  test("a namespace nested past any stack is a value only if its innermost body is", () => {
+    for (const [inner, value] of [["type T = 1;", false], ["const v = 1;", true]] as const) {
+      const file = parse(`namespace a { ${inner} }`, { path: "a.ts" });
+      let namespace: any = file.program.body[0];
+      for (let i = 0; i < 5000; i++) {
+        const body = { ...namespace.body, body: [namespace] };
+        namespace = { ...namespace, id: { ...namespace.id }, body };
+      }
+      file.program.body = [namespace];
+      file.reanalyze();
+      expect(file.bindings[0]!.has(BindingFlags.ValueModule)).toBe(value);
+    }
   });
 });
 

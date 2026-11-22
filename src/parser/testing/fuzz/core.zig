@@ -72,8 +72,8 @@ pub const seeds = [_][]const u8{
     "const o = { m /* c */ () {} }; x = <a b=/* c */\"x\">{/* d */}</a>;",
 };
 
-const typeof_units: [300]["typeof ".len]u8 = @splat("typeof ".*);
-const typeof_chain: [300 * "typeof ".len]u8 = @bitCast(typeof_units);
+const member_units: [300][".b".len]u8 = @splat(".b".*);
+const member_chain: [300 * ".b".len]u8 = @bitCast(member_units);
 
 pub const regressions = [_][]const u8{
     "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
@@ -88,7 +88,7 @@ pub const regressions = [_][]const u8{
     "x as T\r[1, 2]", // member access on a cast reprinted as a type index T[1,2]
     "class C{async get x(){await 0}}", // async getter whose async the printer dropped
     "0x; let a = 1;", // a lexical error in the first token dropped the rest of the file
-    typeof_chain ++ "function f() { switch (a) { case 1: b } }", // past NodePath capacity
+    "(function f() { switch (a) { case 1: b } })" ++ member_chain, // past NodePath capacity
     "type T<U> = U extends string ? ? & B : C0", // compact printed `??`
     "f<T> == x", // compact fused the type argument closer into `>=`
     "'\\u{1F600}\xed\\uD83D\\uDE00'", // a stray 0xED read as a surrogate ate the next emoji
@@ -317,6 +317,7 @@ fn reparse(
         .lang = lang,
         .source_type = mode.source_type,
         .preserve_parens = false,
+        .max_depth = 2 * (parser.Options{}).max_depth,
     });
     if (tree.hasErrors()) fail("a clean parse printed to output that fails to reparse", src, code);
     return tree;

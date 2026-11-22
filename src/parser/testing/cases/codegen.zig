@@ -85,7 +85,7 @@ test "every allocation failure while printing returns an error" {
     defer tree.deinit();
     try testing.expect(!tree.hasErrors());
 
-    const plans = [_]parser.codegen.Options{ .{ .source_map = .{} }, .{ .stack_bytes = 2048 } };
+    const plans = [_]parser.codegen.Options{ .{ .source_map = .{} }, .{ .max_depth = 3 } };
     for (plans) |options| {
         var index: usize = 0;
         while (true) : (index += 1) {

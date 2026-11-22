@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { parse, type ParseOptions } from "yuku";
+import { readFileSync } from "node:fs";
+import { Core, parse, type ParseOptions } from "yuku";
 
 const script: ParseOptions = { sourceType: "script" };
 
@@ -100,7 +101,7 @@ describe("encoding", () => {
 });
 
 describe("depth", () => {
-  test("nested speculations stay fast at any depth", () => {
+  test("nested speculations stay fast as deep as the parser reads", () => {
     const nests = [
       ["a ? (x = ", ") : y => y"],
       ["a ? (b): T => ", " : c"],
@@ -116,7 +117,7 @@ describe("depth", () => {
     const script = `
       const { parse } = await import("yuku");
       for (const [open, close] of ${JSON.stringify(nests)}) {
-        const source = open.repeat(200) + "1" + close.repeat(200) + ";";
+        const source = open.repeat(40) + "1" + close.repeat(40) + ";";
         const { diagnostics } = parse(source, { lang: "ts", sourceType: "script" });
         if (diagnostics.length > 0) throw new Error(open + diagnostics[0].message);
       }
@@ -139,8 +140,9 @@ describe("depth", () => {
 });
 
 describe("nesting", () => {
-  const depth = 200_000;
   const message = "Code is nested too deeply to parse";
+  const shipped = readFileSync(new URL("../../npm/wasm/yuku.wasm", import.meta.url));
+  const wasm = new Core({ wasm: new WebAssembly.Module(shipped) });
   const bombs: [ParseOptions["lang"], string, string][] = [
     ["js", "", "("],
     ["js", "", "["],
@@ -169,20 +171,36 @@ describe("nesting", () => {
     ["ts", "type T=", "({a"],
     ["ts", "type T=", "A<"],
     ["ts", "type T=", "A extends B?C:"],
+    ["ts", "type T=", "A extends B?"],
+    ["ts", "type T=", "A["],
+    ["ts", "", "a<"],
     ["jsx", "", "<a>"],
     ["jsx", "", "<a b="],
     ["jsx", "", "<>{"],
   ];
 
-  test.each(bombs)("%s %s%s is a diagnostic", (lang, head, opener) => {
-    const { diagnostics } = parse(head + opener.repeat(depth), { lang });
-    expect(diagnostics.map((d) => d.message)).toContain(message);
+  test.each(bombs)("%s %s%s stops at the same level in every build", (lang, head, opener) => {
+    const source = head + opener.repeat(1000);
+    const native = parse(source, { lang });
+    expect(native.program.body).toEqual([]);
+    expect(native.diagnostics.map((d) => d.message)).toEqual([message]);
+    expect(parse(source, { lang, core: wasm }).diagnostics).toEqual(native.diagnostics);
   });
 
-  test("failed speculation stays linear", () => {
-    const started = performance.now();
-    parse("a<".repeat(150_000), { lang: "ts" });
-    expect(performance.now() - started).toBeLessThan(5000);
+  test("code nests 256 levels", () => {
+    const parens = (n: number) => `${"(".repeat(n)}1${")".repeat(n)}`;
+    expect(parse(parens(254)).diagnostics).toEqual([]);
+    expect(parse(parens(255)).diagnostics.map((d) => d.message)).toEqual([message]);
+  });
+
+  test("a speculation cannot read code too deep for it another way", () => {
+    const nest = (n: number) => `${"(".repeat(n)}f<A<A>>(1)${")".repeat(n)}`;
+    const parses = (n: number) => parse(nest(n), { lang: "ts" }).diagnostics.length === 0;
+    const deepest = [...Array(256).keys()].findLast(parses)!;
+    const call = parse(nest(deepest), { lang: "ts", preserveParens: false }).program.body[0] as any;
+    expect(call.expression.typeArguments.params).toHaveLength(1);
+    const deeper = parse(nest(deepest + 1), { lang: "ts" });
+    expect(deeper.diagnostics.map((d) => d.message)).toEqual([message]);
   });
 
   test("ordinary nesting parses", () => {

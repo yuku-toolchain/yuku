@@ -50,8 +50,9 @@ test "Scope.Kind.isHoistTarget matches the spec hoist boundaries" {
 }
 
 test "nesting deeper than the path capacity analyzes without a parent" {
-    const source = helpers.repeat("typeof ", 300) ++ "function f() { switch (a) { case 1: b } }";
+    const source = "(function f() { switch (a) { case 1: b } })" ++ helpers.repeat(".b", 300);
     var result = try helpers.analyzeAllowErrors(source, .{});
     defer result.deinit();
-    try testing.expect(result.sem.scopes.list.len >= 2);
+    try testing.expect(!result.tree.hasErrors());
+    try testing.expectEqual(6, result.sem.scopes.list.len);
 }

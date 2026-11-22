@@ -26,7 +26,7 @@ pub const Options = struct {
     comments: CommentMode = .collect,
     /// Whether to keep every consumed token in `Tree.tokens`.
     tokens: bool = false,
-    stack_bytes: usize = util.StackGuard.default_bytes,
+    max_depth: u32 = 256,
 };
 
 pub const Context = packed struct {
@@ -58,7 +58,7 @@ const ParserState = struct {
     stripped_paren: ?ast.NodeIndex = null,
 };
 
-pub const Error = std.mem.Allocator.Error;
+pub const Error = std.mem.Allocator.Error || error{NestedTooDeeply};
 
 pub const Parser = struct {
     tree: ast.Tree,
@@ -66,7 +66,8 @@ pub const Parser = struct {
     preserve_parens: bool,
     comment_mode: CommentMode,
     collect_tokens: bool,
-    stack: util.StackGuard,
+    max_depth: u32,
+    depth: u32 = 0,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     tokens: std.ArrayList(Token) = .empty,
@@ -259,16 +260,14 @@ pub const Parser = struct {
         );
     }
 
-    pub inline fn ensureStack(self: *Parser) Error!?void {
-        if (self.stack.exhausted()) return self.reportNestedTooDeeply();
+    pub inline fn descend(self: *Parser) Error!void {
+        if (self.depth == self.max_depth) return error.NestedTooDeeply;
+        self.depth += 1;
     }
 
-    noinline fn reportNestedTooDeeply(self: *Parser) Error!?void {
-        @branchHint(.cold);
-        try self.report(self.current_token.span, "Code is nested too deeply to parse", .{
-            .help = "Split the code into smaller functions or expressions",
-        });
-        return null;
+    pub inline fn ascend(self: *Parser) void {
+        std.debug.assert(self.depth > 0);
+        self.depth -= 1;
     }
 
     /// Advances to the next token, reporting an escaped keyword consumed in keyword position.
@@ -596,7 +595,7 @@ pub fn parse(
     child_allocator: std.mem.Allocator,
     source: []const u8,
     options: Options,
-) Error!ast.Tree {
+) std.mem.Allocator.Error!ast.Tree {
     if (source.len >= std.math.maxInt(u32)) return error.OutOfMemory;
     var parser: Parser = .{
         .tree = ast.Tree.init(child_allocator, source),
@@ -604,11 +603,43 @@ pub fn parse(
         .preserve_parens = options.preserve_parens,
         .comment_mode = options.comments,
         .collect_tokens = options.tokens,
-        .stack = .init(options.stack_bytes),
+        .max_depth = options.max_depth,
         .lexer = undefined,
         .current_token = Token.eof(0),
     };
     parser.tree.source_type = options.source_type;
     parser.tree.lang = options.lang;
-    return parser.parse();
+    return parser.parse() catch |err| switch (err) {
+        error.OutOfMemory => error.OutOfMemory,
+        error.NestedTooDeeply => nestedTooDeeply(
+            child_allocator,
+            source,
+            options,
+            parser.current_token.span,
+        ),
+    };
+}
+
+fn nestedTooDeeply(
+    child_allocator: std.mem.Allocator,
+    source: []const u8,
+    options: Options,
+    span: ast.Span,
+) std.mem.Allocator.Error!ast.Tree {
+    const end: u32 = @intCast(source.len);
+    var tree: ast.Tree = .init(child_allocator, source);
+    errdefer tree.deinit();
+    tree.source_type = options.source_type;
+    tree.lang = options.lang;
+    try tree.addDiagnostic(.{
+        .message = "Code is nested too deeply to parse",
+        .span = span,
+        .help = "Split the code into smaller functions or expressions",
+    });
+    tree.root = try tree.addNode(.{ .program = .{
+        .source_type = if (tree.source_type == .module) .module else .script,
+        .body = .empty,
+    } }, .{ .start = 0, .end = end });
+    if (options.tokens) tree.tokens = try tree.allocator().dupe(Token, &.{.eof(end)});
+    return tree;
 }
