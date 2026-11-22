@@ -197,16 +197,22 @@ pub const Lexer = struct {
         if (self.mode != .normal) return false;
 
         const src = self.source;
-        if (self.cursor >= src.len) return false;
-
-        if (src[self.cursor] == ' ') {
-            self.cursor += 1;
-            if (self.cursor >= src.len) return false;
-        } else if (src[self.cursor] == '\n') {
-            return self.tryNextTokenOnNewLine(out);
+        const start = self.cursor;
+        if (start >= src.len) return false;
+        switch (src[start]) {
+            '\n' => return self.tryNextTokenOnNewLine(out),
+            ' ' => {
+                self.cursor += 1;
+                if (self.cursor < src.len and self.tryScanToken(out)) return true;
+                self.cursor = start;
+                return false;
+            },
+            else => return self.tryScanToken(out),
         }
+    }
 
-        switch (fast_class[src[self.cursor]]) {
+    inline fn tryScanToken(self: *Lexer, out: *Token) bool {
+        switch (fast_class[self.source[self.cursor]]) {
             .ident => return self.scanAsciiIdentifier(out),
             .punct => {
                 out.* = self.scanSimplePunctuation();
