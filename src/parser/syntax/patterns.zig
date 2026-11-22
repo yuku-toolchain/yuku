@@ -11,7 +11,8 @@ const expressions = @import("expressions.zig");
 const ts = @import("ts/types.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
-    try parser.ensureStack() orelse return null;
+    try parser.descend();
+    defer parser.ascend();
     if (parser.current_token.tag.isIdentifierLike()) {
         return literals.parseBindingIdentifier(parser);
     }

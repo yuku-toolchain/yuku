@@ -39,7 +39,7 @@ pub const Options = struct {
     quotes: Quotes = .preserve,
     source_map: ?SourceMapOptions = null,
     comments: Comments = .some,
-    stack_bytes: usize = util.StackGuard.default_bytes,
+    max_depth: u32 = 2048,
 };
 
 const Diagnostic = ast.Diagnostic;
@@ -67,6 +67,7 @@ pub fn generate(allocator: Allocator, tree: *const Tree, options: Options) Error
     std.debug.assert(p.owed == .null);
     std.debug.assert(p.defer_trailing_of == .null);
     std.debug.assert(p.links.items.len == 0);
+    std.debug.assert(p.depth == 0);
     std.debug.assert(p.restricted == null);
     std.debug.assert(p.indent_depth == 0);
 
@@ -119,8 +120,7 @@ const Printer = struct {
     // the node whose trailing comments follow its parent's next token
     owed: NodeIndex = .null,
 
-    stack: util.StackGuard,
-    chain_stack: util.StackGuard,
+    depth: u32 = 0,
     links: std.ArrayList(Link) = .empty,
     decoded: std.ArrayList(u8) = .empty,
 
@@ -134,7 +134,7 @@ const Printer = struct {
         comments: ?ast.CommentIterator,
     };
 
-    const Head = struct { idx: NodeIndex, ctx: Ctx };
+    const Head = struct { idx: NodeIndex, ctx: Ctx, type_floor: ?u8 = null };
     const Self = @This();
 
     fn init(allocator: Allocator, tree: *const Tree, options: Options) Error!Self {
@@ -152,8 +152,6 @@ const Printer = struct {
                 options.source_map,
                 tree.source,
             ),
-            .stack = .init(options.stack_bytes),
-            .chain_stack = .init(options.stack_bytes / 8),
         };
     }
 
@@ -280,14 +278,17 @@ const Printer = struct {
             fn run(self: *Self, idx: NodeIndex, ctx: Ctx) void {
                 @setEvalBranchQuota(10_000);
                 const node = &@field(self.node_data[@backingInt(idx)], @tagName(tag));
+                const nests = (comptime !isLeaf(tag)) and !ctx.bare;
+                if (nests) {
+                    if (self.depth == self.options.max_depth) {
+                        return self.diagnose(idx, "Code is nested too deeply to print");
+                    }
+                    self.depth += 1;
+                }
+                defer if (nests) {
+                    self.depth -= 1;
+                };
                 if (!ctx.bare) {
-                    const exhausted = if (comptime isLeaf(tag))
-                        false
-                    else if (comptime isChainLink(tag))
-                        self.chain_stack.exhausted() and self.stack.exhausted()
-                    else
-                        self.stack.exhausted();
-                    if (exhausted) return self.diagnose(idx, "Code is nested too deeply to print");
                     const wrap = self.needsParens(tag, node, ctx);
                     if (wrap or self.hasComments(idx)) return self.emitDressed(idx, ctx, wrap);
                 }
@@ -421,17 +422,17 @@ const Printer = struct {
 
     inline fn emitLink(self: *Self, comptime tag: NodeTag, node: anytype, ctx: Ctx) void {
         const head = self.linkHead(tag, node, ctx);
-        if (self.chain_stack.exhausted()) {
-            self.emitChainIteratively(head);
+        if (self.depth < self.options.max_depth / 4) {
+            self.emitHead(head);
         } else {
-            self.emitExpr(head.idx, head.ctx);
+            self.emitChainIteratively(head);
         }
         self.emitLinkSuffix(tag, node, ctx);
     }
 
     noinline fn emitChainIteratively(self: *Self, head: Head) void {
         if (head.idx == .null or !isChainLink(self.tagOf(head.idx))) {
-            return self.emitExpr(head.idx, head.ctx);
+            return self.emitHead(head);
         }
 
         const base = self.links.items.len;
@@ -439,7 +440,7 @@ const Printer = struct {
         while (true) {
             const next_head = self.linkHeadOf(link.idx, link.inner);
             if (next_head.idx == .null or !isChainLink(self.tagOf(next_head.idx))) {
-                self.emitExpr(next_head.idx, next_head.ctx);
+                self.emitHead(next_head);
                 break;
             }
             std.debug.assert(self.links.items.len - base < self.tree.nodes.len);
@@ -454,6 +455,14 @@ const Printer = struct {
             self.closeLink(link);
             if (self.links.items.len == base) break;
             link = self.links.pop().?;
+        }
+    }
+
+    inline fn emitHead(self: *Self, head: Head) void {
+        if (head.type_floor) |floor| {
+            self.emitType(head.idx, floor, head.ctx);
+        } else {
+            self.emitExpr(head.idx, head.ctx);
         }
     }
 
@@ -568,6 +577,22 @@ const Printer = struct {
                     .defer_trailing = true,
                 },
             },
+            .ts_array_type => .{
+                .idx = node.element_type,
+                .ctx = .{ .defer_trailing = true },
+                .type_floor = TPrec.primary,
+            },
+            .ts_indexed_access_type => .{
+                .idx = node.object_type,
+                .ctx = .{ .defer_trailing = true },
+                .type_floor = TPrec.primary,
+            },
+            .ts_jsdoc_nullable_type, .ts_jsdoc_non_nullable_type => .{
+                .idx = if (node.postfix) node.type_annotation else .null,
+                .ctx = .{},
+            },
+            .ts_qualified_name => .{ .idx = node.left, .ctx = .{} },
+            .jsx_member_expression => .{ .idx = node.object, .ctx = .{} },
             else => @compileError("not a chain link: " ++ @tagName(tag)),
         };
     }
@@ -649,6 +674,29 @@ const Printer = struct {
             .ts_satisfies_expression => {
                 self.writeKeywordThenOwed(" satisfies");
                 self.emit(node.type_annotation);
+            },
+            .ts_array_type => {
+                self.out.writeByte('[');
+                self.emitOwedComments();
+                self.out.writeByte(']');
+            },
+            .ts_indexed_access_type => {
+                self.out.writeByte('[');
+                self.emitOwedComments();
+                self.emit(node.index_type);
+                self.out.writeByte(']');
+            },
+            .ts_jsdoc_nullable_type, .ts_jsdoc_non_nullable_type => {
+                self.out.writeByte(if (tag == .ts_jsdoc_nullable_type) '?' else '!');
+                if (!node.postfix) self.emit(node.type_annotation);
+            },
+            .ts_qualified_name => {
+                self.out.writeByte('.');
+                self.emit(node.right);
+            },
+            .jsx_member_expression => {
+                self.out.writeByte('.');
+                self.emit(node.property);
             },
             else => @compileError("not a chain link: " ++ @tagName(tag)),
         }
@@ -2212,12 +2260,6 @@ const Printer = struct {
         self.emit(t.type_arguments);
     }
 
-    fn emit_ts_qualified_name(self: *Self, q: *const ast.TSQualifiedName) void {
-        self.emit(q.left);
-        self.out.writeByte('.');
-        self.emit(q.right);
-    }
-
     fn emit_ts_type_query(self: *Self, q: *const ast.TSTypeQuery) void {
         self.out.writeStr("typeof ");
         self.emit(q.expr_name);
@@ -2310,21 +2352,6 @@ const Printer = struct {
         };
     }
 
-    fn emit_ts_array_type(self: *Self, t: *const ast.TSArrayType) void {
-        self.emitType(t.element_type, TPrec.primary, .{ .defer_trailing = true });
-        self.out.writeByte('[');
-        self.emitOwedComments();
-        self.out.writeByte(']');
-    }
-
-    fn emit_ts_indexed_access_type(self: *Self, t: *const ast.TSIndexedAccessType) void {
-        self.emitType(t.object_type, TPrec.primary, .{ .defer_trailing = true });
-        self.out.writeByte('[');
-        self.emitOwedComments();
-        self.emit(t.index_type);
-        self.out.writeByte(']');
-    }
-
     fn emit_ts_tuple_type(self: *Self, idx: NodeIndex, t: *const ast.TSTupleType) void {
         self.out.writeByte('[');
         self.emitInsideCommentsInline(idx);
@@ -2347,23 +2374,6 @@ const Printer = struct {
     fn emit_ts_rest_type(self: *Self, t: *const ast.TSRestType) void {
         self.out.writeStr("...");
         self.emit(t.type_annotation);
-    }
-
-    fn emit_ts_jsdoc_nullable_type(self: *Self, t: *const ast.TSJSDocNullableType) void {
-        self.printJSDocNullability('?', t.type_annotation, t.postfix);
-    }
-
-    fn emit_ts_jsdoc_non_nullable_type(
-        self: *Self,
-        t: *const ast.TSJSDocNonNullableType,
-    ) void {
-        self.printJSDocNullability('!', t.type_annotation, t.postfix);
-    }
-
-    fn printJSDocNullability(self: *Self, marker: u8, idx: NodeIndex, postfix: bool) void {
-        if (!postfix) self.out.writeByte(marker);
-        self.emit(idx);
-        if (postfix) self.out.writeByte(marker);
     }
 
     fn emit_ts_union_type(self: *Self, t: *const ast.TSUnionType) void {
@@ -2806,12 +2816,6 @@ const Printer = struct {
         self.emit(n.name);
     }
 
-    fn emit_jsx_member_expression(self: *Self, m: *const ast.JSXMemberExpression) void {
-        self.emit(m.object);
-        self.out.writeByte('.');
-        self.emit(m.property);
-    }
-
     fn emit_jsx_attribute(self: *Self, a: *const ast.JSXAttribute) void {
         self.emit(a.name);
         if (a.value != .null) {
@@ -3029,6 +3033,12 @@ fn isChainLink(tag: NodeTag) bool {
         .ts_instantiation_expression,
         .ts_as_expression,
         .ts_satisfies_expression,
+        .ts_array_type,
+        .ts_indexed_access_type,
+        .ts_jsdoc_nullable_type,
+        .ts_jsdoc_non_nullable_type,
+        .ts_qualified_name,
+        .jsx_member_expression,
         => true,
         else => false,
     };

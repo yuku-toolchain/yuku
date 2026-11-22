@@ -47,6 +47,8 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
         return check_type;
     }
 
+    try parser.descend();
+    defer parser.ascend();
     try parser.advance() orelse return null;
 
     // parentheses reset the flag through parseType
@@ -146,6 +148,8 @@ fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseArrayOrIndexedAccessType(parser: *Parser, element: ast.NodeIndex) Error!?ast.NodeIndex {
+    try parser.descend();
+    defer parser.ascend();
     const start = parser.tree.span(element).start;
     try parser.advance() orelse return null;
 
@@ -187,7 +191,8 @@ fn parseJSDocPostfix(
 }
 
 fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
-    try parser.ensureStack() orelse return null;
+    try parser.descend();
+    defer parser.ascend();
     const token = parser.current_token;
 
     switch (token.tag) {
@@ -505,7 +510,8 @@ fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
 }
 
 fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
-    try parser.ensureStack() orelse return null;
+    try parser.descend();
+    defer parser.ascend();
     const start = parser.current_token.span.start;
 
     const is_abstract = parser.current_token.tag == .abstract;

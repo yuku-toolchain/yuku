@@ -433,15 +433,42 @@ test("a hashbang is reprinted verbatim", () => {
 });
 
 test("a chain of any depth prints", () => {
-  const source = `a${".b".repeat(100_000)}`;
-  expect(print(parse(source), { format: "compact" }).code).toBe(source);
+  const chains: [ParseOptions["lang"], string][] = [
+    ["js", `a${".b".repeat(100_000)}`],
+    ["ts", `type T=A${"[]".repeat(100_000)}`],
+    ["ts", `type T=A${"[K]".repeat(100_000)}`],
+    ["ts", `type T=A${".B".repeat(100_000)}`],
+    ["ts", `type T=A${"!".repeat(100_000)}`],
+    ["jsx", `<a${".b".repeat(100_000)}/>`],
+  ];
+  for (const [lang, source] of chains) {
+    expect(print(parse(source, { lang }), { format: "compact" }).code).toBe(source);
+  }
 });
 
 test("nesting past the encoder's recursion prints", () => {
-  for (const source of [`${"!".repeat(600)}a`, `x=${"{a:".repeat(600)}1${"}".repeat(600)}`]) {
-    const printed = print(parse(source), { format: "compact" });
+  const sources = [
+    `x=${"{a:".repeat(200)}1${"}".repeat(200)}`,
+    `x=${"[...".repeat(200)}a${"]".repeat(200)}`,
+  ];
+  for (const source of sources) {
+    const printed = print(parse(source).program, { format: "compact" });
     expect(printed.diagnostics).toEqual([]);
     expect(printed.code.replace(/\s/g, "")).toBe(source);
+  }
+});
+
+test("code nested as deeply as the parser reads prints", () => {
+  const shapes: [ParseOptions["lang"], (n: number) => string][] = [
+    ["ts", (n) => `type T=${"{a:".repeat(n)}A${"}".repeat(n)}`],
+    ["ts", (n) => `type T=${"{m(a:".repeat(n)}A${"[]):void}".repeat(n)}`],
+    ["jsx", (n) => `${"<a b=".repeat(n)}<c/>${"/>".repeat(n)}`],
+  ];
+  for (const [lang, nest] of shapes) {
+    const parses = (n: number) => parse(nest(n), { lang }).diagnostics.length === 0;
+    const deepest = [...Array(256).keys()].findLast(parses)!;
+    expect(deepest).toBeGreaterThan(250);
+    expect(print(parse(nest(deepest), { lang })).diagnostics).toEqual([]);
   }
 });
 

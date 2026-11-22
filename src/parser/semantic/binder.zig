@@ -2,7 +2,6 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const static_semantics = @import("spec").static_semantics;
 const sc = @import("scope.zig");
-const StackGuard = @import("util").StackGuard;
 
 const Allocator = std.mem.Allocator;
 const String = ast.String;
@@ -520,6 +519,7 @@ pub const SymbolTracker = struct {
     excluded_imports: Symbol.Flags,
 
     saved_stack: std.ArrayList(SavedContext) = .empty,
+    namespace_bodies: std.ArrayList(ast.NodeIndex) = .empty,
 
     pub const ExportState = enum { none, named, default };
 
@@ -761,11 +761,7 @@ pub const SymbolTracker = struct {
                 const decl = data.ts_module_declaration;
                 try self.pushSavedContext();
                 self.body_owner = .none;
-                const instantiated = isNamespaceInstantiated(
-                    self.tree,
-                    decl.body,
-                    .init(StackGuard.default_bytes),
-                );
+                const instantiated = try self.isNamespaceInstantiated(decl.body);
                 self.pending = .{
                     .flags = .{
                         .value_module = instantiated,
@@ -1231,6 +1227,80 @@ pub const SymbolTracker = struct {
     ) Allocator.Error!void {
         try padTo(bool, &self.export_contexts, self.allocator, @backingInt(scope_id) + 1, false);
         self.export_contexts.items[@backingInt(scope_id)] = value;
+    }
+
+    // body-less ambient modules are instantiated by spec
+    fn isNamespaceInstantiated(self: *SymbolTracker, body: ast.NodeIndex) Allocator.Error!bool {
+        const queue = &self.namespace_bodies;
+        queue.clearRetainingCapacity();
+        try queue.append(self.allocator, body);
+        while (queue.pop()) |next| {
+            if (next == .null) return true;
+            const block = switch (self.tree.data(next)) {
+                .ts_module_block => |b| b,
+                else => return true,
+            };
+            const statements = self.tree.extra(block.body);
+            for (statements) |stmt| {
+                if (try self.isInstantiatingStatement(stmt, statements)) return true;
+            }
+        }
+        return false;
+    }
+
+    fn isInstantiatingStatement(
+        self: *SymbolTracker,
+        idx: ast.NodeIndex,
+        statements: []const ast.NodeIndex,
+    ) Allocator.Error!bool {
+        switch (self.tree.data(idx)) {
+            .ts_interface_declaration,
+            .ts_type_alias_declaration,
+            .ts_import_equals_declaration,
+            => return false,
+            // const enums included, as in tsc
+            .ts_enum_declaration => return true,
+            .ts_module_declaration => |m| try self.namespace_bodies.append(self.allocator, m.body),
+            .ts_global_declaration => |g| try self.namespace_bodies.append(self.allocator, g.body),
+            .export_named_declaration => |e| {
+                // `export declare` is a type-only export of a value
+                if (e.declaration != .null) {
+                    if (self.tree.data(e.declaration) == .ts_import_equals_declaration) return true;
+                    return self.isInstantiatingStatement(e.declaration, statements);
+                }
+                if (e.export_kind == .type) return false;
+                if (e.source != .null) return true;
+                return self.exportsValue(e.specifiers, statements);
+            },
+            else => return true,
+        }
+        return false;
+    }
+
+    // `export { x }` exports a value unless x is declared only as types
+    fn exportsValue(
+        self: *SymbolTracker,
+        specifiers: ast.IndexRange,
+        statements: []const ast.NodeIndex,
+    ) Allocator.Error!bool {
+        const tree = self.tree;
+        for (tree.extra(specifiers)) |specifier| {
+            const spec = tree.data(specifier).export_specifier;
+            if (spec.export_kind == .type) continue;
+            const name = switch (tree.data(spec.local)) {
+                .identifier_reference => |id| tree.string(id.name),
+                else => return true,
+            };
+            var found = false;
+            for (statements) |stmt| {
+                if (!declaresName(tree, stmt, name)) continue;
+                found = true;
+                if (tree.data(stmt) == .ts_import_equals_declaration) return true;
+                if (try self.isInstantiatingStatement(stmt, statements)) return true;
+            }
+            if (!found) return true;
+        }
+        return false;
     }
 
     fn lastModuleBody(
@@ -1720,79 +1790,6 @@ fn declNameScope(scope: *const sc.ScopeTracker) sc.ScopeId {
     const enclosing_scope = scope.get(enclosing);
     if (enclosing_scope.kind == .function_body) return enclosing_scope.hoist_target;
     return enclosing;
-}
-
-// body-less ambient modules are instantiated by spec
-fn isNamespaceInstantiated(
-    tree: *const ast.Tree,
-    body_node: ast.NodeIndex,
-    stack: StackGuard,
-) bool {
-    if (body_node == .null or stack.exhausted()) return true;
-    const block = switch (tree.data(body_node)) {
-        .ts_module_block => |b| b,
-        else => return true,
-    };
-    const statements = tree.extra(block.body);
-    for (statements) |stmt| {
-        if (isInstantiatingStatement(tree, stmt, statements, stack)) return true;
-    }
-    return false;
-}
-
-fn isInstantiatingStatement(
-    tree: *const ast.Tree,
-    idx: ast.NodeIndex,
-    statements: []const ast.NodeIndex,
-    stack: StackGuard,
-) bool {
-    return switch (tree.data(idx)) {
-        .ts_interface_declaration,
-        .ts_type_alias_declaration,
-        .ts_import_equals_declaration,
-        => false,
-        // const enums included, as in tsc
-        .ts_enum_declaration => true,
-        .ts_module_declaration => |m| isNamespaceInstantiated(tree, m.body, stack),
-        .ts_global_declaration => |g| isNamespaceInstantiated(tree, g.body, stack),
-        .export_named_declaration => |e| {
-            // `export declare` is a type-only export of a value
-            if (e.declaration != .null) {
-                if (tree.data(e.declaration) == .ts_import_equals_declaration) return true;
-                return isInstantiatingStatement(tree, e.declaration, statements, stack);
-            }
-            if (e.export_kind == .type) return false;
-            if (e.source != .null) return true;
-            return exportsValue(tree, e.specifiers, statements, stack);
-        },
-        else => true,
-    };
-}
-
-// `export { x }` exports a value unless x is declared only as types
-fn exportsValue(
-    tree: *const ast.Tree,
-    specifiers: ast.IndexRange,
-    statements: []const ast.NodeIndex,
-    stack: StackGuard,
-) bool {
-    for (tree.extra(specifiers)) |specifier| {
-        const spec = tree.data(specifier).export_specifier;
-        if (spec.export_kind == .type) continue;
-        const name = switch (tree.data(spec.local)) {
-            .identifier_reference => |id| tree.string(id.name),
-            else => return true,
-        };
-        var found = false;
-        for (statements) |stmt| {
-            if (!declaresName(tree, stmt, name)) continue;
-            found = true;
-            if (tree.data(stmt) == .ts_import_equals_declaration) return true;
-            if (isInstantiatingStatement(tree, stmt, statements, stack)) return true;
-        }
-        if (!found) return true;
-    }
-    return false;
 }
 
 /// Whether a declaration module without export statements exports all but its imports.

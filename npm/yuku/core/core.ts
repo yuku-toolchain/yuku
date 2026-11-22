@@ -124,7 +124,7 @@ interface Globals {
   Buffer?: NodeBufferConstructor;
 }
 
-const UTF16 = 1 << 10;
+const UTF16 = 1 << 9;
 const TREE_HEADER_WORDS = 5;
 const BIG_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 0;
 
@@ -197,26 +197,23 @@ function wasmBackend(module: WebAssembly.Module): Backend {
   return instance;
 }
 
-const SMALL_STACK = 1 << 9;
-
 function createInstance(module: WebAssembly.Module): Instance {
   const exports = instantiate(module);
-  const contained = (run: (flags: number) => ArrayBuffer, flags: number): ArrayBuffer => {
+  const contained = (run: () => ArrayBuffer): ArrayBuffer => {
     try {
-      return run(flags);
+      return run();
     } catch (error) {
       instance.exports = instantiate(module);
-      if (flags & SMALL_STACK || !(error instanceof RangeError)) throw error;
-      return contained(run, flags | SMALL_STACK);
+      throw error;
     }
   };
   const instance: Instance = {
     exports,
     grownAt: 0,
     run: (entry, source, flags, options) =>
-      contained((f) => call(instance, entry, source, f, options), flags),
+      contained(() => call(instance, entry, source, flags, options)),
     runTree: (entry, tree, source, flags, options) =>
-      contained((f) => callTree(instance, entry, tree, source, f, options), flags),
+      contained(() => callTree(instance, entry, tree, source, flags, options)),
   };
   return instance;
 }

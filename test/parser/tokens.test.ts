@@ -150,6 +150,10 @@ describe("tokens", () => {
     expect(values(tokens)).toEqual(["let", "=", ")", ";", "foo", "(", "1", ")", ";"]);
   });
 
+  test("code nested too deeply to parse has none", () => {
+    expect(list("(".repeat(300)).length).toBe(0);
+  });
+
   test("an out of range index throws", () => {
     const tokens = list("a");
     expect(() => tokens.kind(1)).toThrow(RangeError);

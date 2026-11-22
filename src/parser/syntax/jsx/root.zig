@@ -24,7 +24,8 @@ pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?ast.NodeIndex {
-    try parser.ensureStack() orelse return null;
+    try parser.descend();
+    defer parser.ascend();
     const start = parser.current_token.span.start;
 
     // peek in jsx_tag mode so a fragment's `>` is not glued to what follows, as in `<>=</>`
