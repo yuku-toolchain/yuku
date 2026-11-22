@@ -103,7 +103,6 @@ pub const Parser = struct {
             self.tree.source_type,
             self.comment_mode != .none,
         );
-        self.lexer.fast_path = !self.collect_tokens;
 
         // ScriptBody is [~Yield, ~Await, ~Return], ModuleItemList is [+Await], and a
         // commonjs body is [+Return]
@@ -219,7 +218,6 @@ pub const Parser = struct {
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
         self.lexer.mode = mode;
-        self.lexer.fast_path = mode == .normal and !self.collect_tokens;
     }
 
     pub fn flushToExtras(
@@ -282,9 +280,10 @@ pub const Parser = struct {
     /// Advances without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.prev_token_end = self.current_token.span.end;
-        if (self.lexer.tryNextToken(&self.current_token)) return;
         const leaving = self.current_token;
-        if (!try self.nextTokenInto(&self.current_token)) return null;
+        if (!self.lexer.tryNextToken(&self.current_token)) {
+            if (!try self.nextTokenInto(&self.current_token)) return null;
+        }
         try self.commitToken(leaving);
     }
 

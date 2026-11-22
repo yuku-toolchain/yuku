@@ -1,8 +1,8 @@
 test/parser/misc/comments
 =========================
-Passed:       52/52 (100.00%)
+Passed:       53/53 (100.00%)
 Failed:       0
-AST mismatch: 0/52
+AST mismatch: 0/53
 
 ✓ test/parser/misc/comments/after-block-not-leaking.js
 ✓ test/parser/misc/comments/array-destructure-mid.js
@@ -19,6 +19,7 @@ AST mismatch: 0/52
 ✓ test/parser/misc/comments/dense-mixed.module.js
 ✓ test/parser/misc/comments/for-loop-init-inline.js
 ✓ test/parser/misc/comments/hashbang-not-comment.js
+✓ test/parser/misc/comments/html-close-indented-at-file-start.js
 ✓ test/parser/misc/comments/html-style-script.js
 ✓ test/parser/misc/comments/if-else-empty-bodies.js
 ✓ test/parser/misc/comments/inside-empty-array.js
