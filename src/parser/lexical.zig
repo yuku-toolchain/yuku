@@ -147,6 +147,15 @@ test "keywords" {
     for ([_][]const u8{ "", "foo", "Class", "constructor", "accessor" }) |name| {
         try testing.expectEqual(null, keyword(name));
     }
+    for ([_][]const u8{
+        "async\x00",
+        "of\x00\x00",
+        "class\x00",
+        "let\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+    }) |name| {
+        try testing.expectEqual(null, keyword(name));
+        try testing.expect(!isValidIdentifier(name));
+    }
     for ([_][]const u8{ "foo", "async", "of", "eval", "arguments", "constructor" }) |name| {
         try testing.expect(isValidIdentifier(name));
     }

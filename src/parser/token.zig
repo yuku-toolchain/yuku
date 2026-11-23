@@ -377,7 +377,9 @@ pub inline fn keywordTagAt(bytes: [*]const u8, len: u32) TokenTag {
     const high = std.mem.readInt(u32, bytes[8..12], .little) & keyword_high_mask[index];
     const entry = &keyword_table[keywordSlot(low, high)];
     const identifier = @backingInt(TokenTag.identifier);
-    const matches = @intFromBool(entry.low == low) & @intFromBool(entry.high == high);
+    const high_and_length = high | @as(u32, index) << keyword_length_shift;
+    const matches = @intFromBool(entry.low == low) &
+        @intFromBool(entry.high_and_length == high_and_length);
     const select = -%@as(u32, matches);
     return @fromBackingInt(identifier ^ ((@backingInt(entry.tag) ^ identifier) & select));
 }
@@ -397,9 +399,11 @@ const keyword_high_mask: [keyword_read_len + 1]u32 = blk: {
 
 const KeywordEntry = extern struct {
     low: u64 = 0,
-    high: u32 = 0,
+    high_and_length: u32 = 0,
     tag: TokenTag = .identifier,
 };
+
+const keyword_length_shift = 8 * (keyword_read_len - 8 - 1);
 
 const keyword_slot_bits = 8;
 
@@ -423,7 +427,11 @@ const keyword_table: [1 << keyword_slot_bits]KeywordEntry = blk: {
         const high = std.mem.readInt(u32, padded[8..12], .little);
         const slot = keywordSlot(low, high);
         if (table[slot].tag != .identifier) @compileError("keyword hash collision: " ++ name);
-        table[slot] = .{ .low = low, .high = high, .tag = keyword_tag };
+        table[slot] = .{
+            .low = low,
+            .high_and_length = high | @as(u32, name.len) << keyword_length_shift,
+            .tag = keyword_tag,
+        };
     }
     break :blk table;
 };
