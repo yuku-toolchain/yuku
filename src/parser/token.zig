@@ -359,64 +359,73 @@ pub const TokenTag = enum(u32) {
 pub const keyword_length_min = 2;
 pub const keyword_length_max = 11;
 
+pub const keyword_read_len = 12;
+
 /// The tag of the word `lexeme`, or `.identifier`.
 pub fn keywordTag(lexeme: []const u8) TokenTag {
     if (lexeme.len < keyword_length_min or lexeme.len > keyword_length_max) {
         return .identifier;
     }
-    const h = keywordHash(lexeme[0], lexeme[1], lexeme[lexeme.len - 1], lexeme.len);
-    const entry = &keyword_table[h];
-    if (entry.len != lexeme.len) return .identifier;
-    if (!keywordEql(entry.name[0..lexeme.len], lexeme)) return .identifier;
-    return entry.tag;
+    var padded: [keyword_read_len]u8 = @splat(0);
+    @memcpy(padded[0..lexeme.len], lexeme);
+    return keywordTagAt(&padded, @intCast(lexeme.len));
 }
 
-inline fn keywordEql(a: []const u8, b: []const u8) bool {
-    comptime std.debug.assert(keyword_length_max <= 16);
-    std.debug.assert(a.len == b.len);
-    std.debug.assert(a.len >= keyword_length_min);
-    if (a.len >= 8) return edgesEql(u64, a, b);
-    if (a.len >= 4) return edgesEql(u32, a, b);
-    return edgesEql(u16, a, b);
+pub inline fn keywordTagAt(bytes: [*]const u8, len: u32) TokenTag {
+    const index = @min(len, keyword_read_len);
+    const low = std.mem.readInt(u64, bytes[0..8], .little) & keyword_low_mask[index];
+    const high = std.mem.readInt(u32, bytes[8..12], .little) & keyword_high_mask[index];
+    const entry = &keyword_table[keywordSlot(low, high)];
+    const identifier = @backingInt(TokenTag.identifier);
+    const matches = @intFromBool(entry.low == low) & @intFromBool(entry.high == high);
+    const select = -%@as(u32, matches);
+    return @fromBackingInt(identifier ^ ((@backingInt(entry.tag) ^ identifier) & select));
 }
 
-inline fn edgesEql(comptime T: type, a: []const u8, b: []const u8) bool {
-    const n = @sizeOf(T);
-    std.debug.assert(a.len >= n);
-    std.debug.assert(a.len <= 2 * n);
-    const head = std.mem.readInt(T, a[0..n], .little) == std.mem.readInt(T, b[0..n], .little);
-    const tail_a = std.mem.readInt(T, a[a.len - n ..][0..n], .little);
-    const tail_b = std.mem.readInt(T, b[b.len - n ..][0..n], .little);
-    return head and tail_a == tail_b;
-}
-
-const KeywordEntry = struct {
-    name: [keyword_length_max]u8,
-    len: u8,
-    tag: TokenTag,
+const keyword_low_mask: [keyword_read_len + 1]u64 = blk: {
+    var masks: [keyword_read_len + 1]u64 = @splat(std.math.maxInt(u64));
+    for (0..8) |len| masks[len] = (@as(u64, 1) << (8 * len)) - 1;
+    break :blk masks;
 };
 
-inline fn keywordHash(c0: u8, c1: u8, c_last: u8, length: usize) u32 {
-    const h = @as(u32, c0) * 56 + @as(u32, c1) * 97 +
-        @as(u32, c_last) * 108 + @as(u32, @intCast(length)) * 117;
-    return h & 511;
+const keyword_high_mask: [keyword_read_len + 1]u32 = blk: {
+    var masks: [keyword_read_len + 1]u32 = @splat(0);
+    for (9..keyword_read_len) |len| masks[len] = (@as(u32, 1) << (8 * (len - 8))) - 1;
+    masks[keyword_read_len] = std.math.maxInt(u32);
+    break :blk masks;
+};
+
+const KeywordEntry = extern struct {
+    low: u64 = 0,
+    high: u32 = 0,
+    tag: TokenTag = .identifier,
+};
+
+const keyword_slot_bits = 8;
+
+const keyword_hash_multiplier: u64 = 0x0de0b6bd6b785d8f;
+
+inline fn keywordSlot(low: u64, high: u32) usize {
+    return @intCast(((low +% high) *% keyword_hash_multiplier) >> (64 - keyword_slot_bits));
 }
 
-const keyword_table: [512]KeywordEntry = blk: {
+const keyword_table: [1 << keyword_slot_bits]KeywordEntry = blk: {
     @setEvalBranchQuota(20_000);
-    var t: [512]KeywordEntry = @splat(.{ .name = @splat(0), .len = 0, .tag = .identifier });
+    var table: [1 << keyword_slot_bits]KeywordEntry = @splat(.{});
     for (std.enums.values(TokenTag)) |keyword_tag| {
         if (!keyword_tag.isIdentifierLike()) continue;
         const name = keyword_tag.toString() orelse continue;
         std.debug.assert(name.len >= keyword_length_min);
         std.debug.assert(name.len <= keyword_length_max);
-        const h = keywordHash(name[0], name[1], name[name.len - 1], name.len);
-        if (t[h].len != 0) @compileError("keyword perfect hash collision: " ++ name);
-        var entry: KeywordEntry = .{ .name = @splat(0), .len = name.len, .tag = keyword_tag };
-        @memcpy(entry.name[0..name.len], name);
-        t[h] = entry;
+        var padded: [keyword_read_len]u8 = @splat(0);
+        @memcpy(padded[0..name.len], name);
+        const low = std.mem.readInt(u64, padded[0..8], .little);
+        const high = std.mem.readInt(u32, padded[8..12], .little);
+        const slot = keywordSlot(low, high);
+        if (table[slot].tag != .identifier) @compileError("keyword hash collision: " ++ name);
+        table[slot] = .{ .low = low, .high = high, .tag = keyword_tag };
     }
-    break :blk t;
+    break :blk table;
 };
 
 pub const Span = extern struct {
@@ -507,6 +516,8 @@ pub const Precedence = struct {
 
 comptime {
     std.debug.assert(@sizeOf(Token) == 16);
+    std.debug.assert(@sizeOf(KeywordEntry) == 16);
+    std.debug.assert(keyword_length_max < keyword_read_len);
     // a tag missing from `toString` hits its `unreachable` here
     for (std.enums.values(TokenTag)) |tag| _ = tag.toString();
 }

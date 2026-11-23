@@ -1,6 +1,7 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
 const Parser = @import("../../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../parser.zig").Error;
 const Token = @import("../../token.zig").Token;
 const TokenTag = @import("../../token.zig").TokenTag;
@@ -12,7 +13,11 @@ const core = @import("types/core.zig");
 const generics = @import("types/generics.zig");
 const Speculation = @import("speculation.zig").Speculation;
 
-pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseTypeAssertionImpl, .{parser});
+}
+
+fn parseTypeAssertionImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
@@ -32,7 +37,11 @@ pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+pub inline fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    return inRegister(parseAsOrSatisfiesExpressionImpl, .{ parser, left });
+}
+
+fn parseAsOrSatisfiesExpressionImpl(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const keyword_tag = parser.current_token.tag;
     std.debug.assert(keyword_tag == .as or keyword_tag == .satisfies);
     try parser.advance() orelse return null;
@@ -50,7 +59,11 @@ pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!
     });
 }
 
-pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+pub inline fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    return inRegister(parseNonNullExpressionImpl, .{ parser, left });
+}
+
+fn parseNonNullExpressionImpl(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .logical_not);
     const bang_end = parser.current_token.span.end;
     try parser.advance() orelse return null;
@@ -61,7 +74,14 @@ pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     );
 }
 
-pub fn parseTypeArgumentedCallOrInstantiation(
+pub inline fn parseTypeArgumentedCallOrInstantiation(
+    parser: *Parser,
+    callee: ast.NodeIndex,
+) Error!?ast.NodeIndex {
+    return inRegister(parseTypeArgumentedCallOrInstantiationImpl, .{ parser, callee });
+}
+
+fn parseTypeArgumentedCallOrInstantiationImpl(
     parser: *Parser,
     callee: ast.NodeIndex,
 ) Error!?ast.NodeIndex {
@@ -96,7 +116,11 @@ pub fn parseTypeArgumentedCallOrInstantiation(
 }
 
 // rewind so `<` can stay a relational compare
-pub fn tryParseTypeArgumentsInExpression(parser: *Parser, call_only: bool) Error!ast.NodeIndex {
+pub inline fn tryParseTypeArgumentsInExpression(parser: *Parser, call_only: bool) Error!ast.NodeIndex {
+    return inRegister(tryParseTypeArgumentsInExpressionImpl, .{ parser, call_only });
+}
+
+fn tryParseTypeArgumentsInExpressionImpl(parser: *Parser, call_only: bool) Error!ast.NodeIndex {
     if (!generics.isAngleOpen(parser.current_token.tag)) return .null;
 
     const after = parser.peekAhead();

@@ -1,6 +1,7 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
 const Parser = @import("../../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../parser.zig").Error;
 
 const functions = @import("../functions.zig");
@@ -43,7 +44,17 @@ pub fn classifyArrowHead(parser: *Parser) ArrowHead {
     }
 }
 
-pub fn parseArrow(
+pub inline fn parseArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+    speculative: bool,
+) Error!?ast.NodeIndex {
+    return inRegister(parseArrowImpl, .{ parser, is_async, arrow_start, options, speculative });
+}
+
+fn parseArrowImpl(
     parser: *Parser,
     is_async: bool,
     arrow_start: u32,
@@ -107,7 +118,16 @@ pub fn parseArrow(
 }
 
 // rewind on failure so a parenthesized expression, call, jsx, or `<T>` assertion can win
-pub fn tryParseArrow(
+pub inline fn tryParseArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
+    return inRegister(tryParseArrowImpl, .{ parser, is_async, arrow_start, options });
+}
+
+fn tryParseArrowImpl(
     parser: *Parser,
     is_async: bool,
     arrow_start: u32,
@@ -135,7 +155,16 @@ pub fn tryParseArrow(
 }
 
 // skip the checkpoint when jsx or a type assertion is likelier
-pub fn tryParseGenericArrow(
+pub inline fn tryParseGenericArrow(
+    parser: *Parser,
+    is_async: bool,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
+    return inRegister(tryParseGenericArrowImpl, .{ parser, is_async, arrow_start, options });
+}
+
+fn tryParseGenericArrowImpl(
     parser: *Parser,
     is_async: bool,
     arrow_start: u32,

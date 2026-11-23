@@ -162,11 +162,17 @@ pub const Tree = struct {
     }
 
     pub inline fn isTs(self: *const Tree) bool {
-        return self.lang == .ts or self.lang == .tsx or self.lang == .dts;
+        return switch (self.lang) {
+            .ts, .tsx, .dts => true,
+            .js, .jsx => false,
+        };
     }
 
     pub inline fn isJsx(self: *const Tree) bool {
-        return self.lang == .tsx or self.lang == .jsx;
+        return switch (self.lang) {
+            .tsx, .jsx => true,
+            .js, .ts, .dts => false,
+        };
     }
 
     pub inline fn isModule(self: *const Tree) bool {

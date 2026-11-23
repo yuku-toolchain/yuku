@@ -1,6 +1,7 @@
 const std = @import("std");
 const ast = @import("../../../ast.zig");
 const Parser = @import("../../../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../../parser.zig").Error;
 const TokenTag = @import("../../../token.zig").TokenTag;
 
@@ -12,7 +13,11 @@ const core = @import("core.zig");
 const generics = @import("generics.zig");
 const predicate = @import("predicate.zig");
 
-pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseTypeLiteralImpl, .{parser});
+}
+
+fn parseTypeLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     const start = parser.current_token.span.start;
@@ -24,7 +29,11 @@ pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
+pub inline fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
+    return inRegister(parseObjectTypeMembersImpl, .{parser});
+}
+
+fn parseObjectTypeMembersImpl(parser: *Parser) Error!?ast.IndexRange {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     try parser.advance() orelse return null;
@@ -33,7 +42,7 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
     defer parser.scratch_a.reset(checkpoint);
 
     while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
-        const member = try parseTypeMember(parser) orelse return null;
+        const member = try @call(.always_inline, parseTypeMemberImpl, .{parser}) orelse return null;
         try parser.scratch_a.append(parser.allocator(), member);
         if (!try consumeTypeMemberSeparator(parser, member)) return null;
     }
@@ -48,7 +57,11 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
 }
 
 // the separator joins the member span, matching TS-ESTree
-fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool {
+inline fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool {
+    return inRegister(consumeTypeMemberSeparatorImpl, .{ parser, member });
+}
+
+fn consumeTypeMemberSeparatorImpl(parser: *Parser, member: ast.NodeIndex) Error!bool {
     switch (parser.current_token.tag) {
         .semicolon, .comma => {
             const sep_end = parser.current_token.span.end;
@@ -90,7 +103,11 @@ pub fn isStartOfMappedType(parser: *Parser) bool {
     return peek.next().tag == .in;
 }
 
-pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseMappedTypeImpl, .{parser});
+}
+
+fn parseMappedTypeImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     const start = parser.current_token.span.start;
@@ -185,7 +202,11 @@ fn parseMappedModifier(
     return sign;
 }
 
-fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseTypeMemberImpl, .{parser});
+}
+
+fn parseTypeMemberImpl(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
     const start = parser.current_token.span.start;
 
@@ -285,7 +306,15 @@ pub const IndexSignatureModifiers = struct {
     static: bool = false,
 };
 
-pub fn parseIndexSignature(
+pub inline fn parseIndexSignature(
+    parser: *Parser,
+    start: u32,
+    modifiers: IndexSignatureModifiers,
+) Error!?ast.NodeIndex {
+    return inRegister(parseIndexSignatureImpl, .{ parser, start, modifiers });
+}
+
+fn parseIndexSignatureImpl(
     parser: *Parser,
     start: u32,
     modifiers: IndexSignatureModifiers,
@@ -341,7 +370,15 @@ pub fn parseIndexSignature(
     );
 }
 
-fn parsePropertyOrMethodSignature(
+inline fn parsePropertyOrMethodSignature(
+    parser: *Parser,
+    start: u32,
+    is_readonly: bool,
+) Error!?ast.NodeIndex {
+    return inRegister(parsePropertyOrMethodSignatureImpl, .{ parser, start, is_readonly });
+}
+
+fn parsePropertyOrMethodSignatureImpl(
     parser: *Parser,
     start: u32,
     is_readonly: bool,
@@ -402,7 +439,18 @@ fn parsePropertyOrMethodSignature(
     );
 }
 
-fn parseMethodSignatureBody(
+inline fn parseMethodSignatureBody(
+    parser: *Parser,
+    start: u32,
+    key: ast.NodeIndex,
+    kind: ast.TSMethodSignatureKind,
+    computed: bool,
+    is_optional: bool,
+) Error!?ast.NodeIndex {
+    return inRegister(parseMethodSignatureBodyImpl, .{ parser, start, key, kind, computed, is_optional });
+}
+
+fn parseMethodSignatureBodyImpl(
     parser: *Parser,
     start: u32,
     key: ast.NodeIndex,

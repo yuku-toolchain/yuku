@@ -74,7 +74,7 @@ pub const ScopeTree = struct {
     }
 
     /// Iterates from `start` up to the root.
-    pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
+    pub inline fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
         std.debug.assert(start == .none or @backingInt(start) < self.list.len);
         return .{ .list = self.list, .current = start };
     }
@@ -85,7 +85,7 @@ pub const ScopeTree = struct {
         current: ScopeId,
 
         /// The next scope id, or `null` past the root.
-        pub fn next(self: *AncestorIterator) ?ScopeId {
+        pub inline fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
             std.debug.assert(@backingInt(id) < self.list.len);

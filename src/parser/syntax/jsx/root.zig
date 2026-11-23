@@ -3,6 +3,7 @@ const ast = @import("../../ast.zig");
 const Precedence = @import("../../token.zig").Precedence;
 const TokenTag = @import("../../token.zig").TokenTag;
 const Parser = @import("../../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../parser.zig").Error;
 
 const expressions = @import("../expressions.zig");
@@ -18,7 +19,11 @@ fn exitJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?v
 }
 
 // https://react.github.io/jsx/#prod-JSXElement
-pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxExpressionImpl, .{parser});
+}
+
+fn parseJsxExpressionImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
     return parseJsxElement(parser, .top_level);
 }
@@ -246,7 +251,11 @@ fn jsxIdentifiersMatch(tree: *const ast.Tree, a: ast.NodeIndex, b: ast.NodeIndex
 }
 
 // https://react.github.io/jsx/#prod-JSXChildren
-fn parseJsxChildren(parser: *Parser, opening_end: u32) Error!?ast.IndexRange {
+inline fn parseJsxChildren(parser: *Parser, opening_end: u32) Error!?ast.IndexRange {
+    return inRegister(parseJsxChildrenImpl, .{ parser, opening_end });
+}
+
+fn parseJsxChildrenImpl(parser: *Parser, opening_end: u32) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(checkpoint);
 
@@ -297,7 +306,11 @@ fn parseJsxChildren(parser: *Parser, opening_end: u32) Error!?ast.IndexRange {
     return try parser.flushToExtras(&parser.scratch_b, checkpoint);
 }
 
-fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxChildFromLeftBraceImpl, .{parser});
+}
+
+fn parseJsxChildFromLeftBraceImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
@@ -355,7 +368,11 @@ fn expectJsxToken(
     return parser.current_token.span.end;
 }
 
-fn addEmptyExpressionContainer(parser: *Parser, start: u32, end: u32) Error!ast.NodeIndex {
+inline fn addEmptyExpressionContainer(parser: *Parser, start: u32, end: u32) Error!ast.NodeIndex {
+    return inRegister(addEmptyExpressionContainerImpl, .{ parser, start, end });
+}
+
+fn addEmptyExpressionContainerImpl(parser: *Parser, start: u32, end: u32) Error!ast.NodeIndex {
     const empty = try parser.tree.addNode(
         .{ .jsx_empty_expression = .{} },
         .{ .start = start + 1, .end = end - 1 },
@@ -367,7 +384,11 @@ fn addEmptyExpressionContainer(parser: *Parser, start: u32, end: u32) Error!ast.
 }
 
 // https://react.github.io/jsx/#prod-JSXAttributes
-fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
+inline fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
+    return inRegister(parseJsxAttributesImpl, .{parser});
+}
+
+fn parseJsxAttributesImpl(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
@@ -380,7 +401,11 @@ fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 }
 
 // https://react.github.io/jsx/#prod-JSXAttribute
-fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxAttributeImpl, .{parser});
+}
+
+fn parseJsxAttributeImpl(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .left_brace) {
         return parseJsxSpreadAttribute(parser);
     }
@@ -399,7 +424,11 @@ fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // https://react.github.io/jsx/#prod-JSXAttributeName
-fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxAttributeNameImpl, .{parser});
+}
+
+fn parseJsxAttributeNameImpl(parser: *Parser) Error!?ast.NodeIndex {
     const name = try parseJsxIdentifier(parser) orelse return null;
     if (parser.current_token.tag != .colon) return name;
 
@@ -412,7 +441,11 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // https://react.github.io/jsx/#prod-JSXAttributeValue
-fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxAttributeValueImpl, .{parser});
+}
+
+fn parseJsxAttributeValueImpl(parser: *Parser) Error!?ast.NodeIndex {
     switch (parser.current_token.tag) {
         .string_literal => {
             const span = parser.current_token.span;
@@ -448,7 +481,11 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     }
 }
 
-fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxExpressionContainerImpl, .{parser});
+}
+
+fn parseJsxExpressionContainerImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
     parser.setLexerMode(.normal);
@@ -480,7 +517,11 @@ fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxSpreadAttributeImpl, .{parser});
+}
+
+fn parseJsxSpreadAttributeImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const start = parser.current_token.span.start;
     parser.setLexerMode(.normal);
@@ -510,7 +551,11 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // https://react.github.io/jsx/#prod-JSXElementName
-fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxElementNameImpl, .{parser});
+}
+
+fn parseJsxElementNameImpl(parser: *Parser) Error!?ast.NodeIndex {
     _ = try expectJsxToken(
         parser,
         .jsx_identifier,
@@ -562,7 +607,11 @@ fn parseJsxNamespacedName(
     }, .{ .start = parser.tree.span(namespace).start, .end = parser.tree.span(name).end });
 }
 
-fn parseJsxIdentifier(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseJsxIdentifier(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseJsxIdentifierImpl, .{parser});
+}
+
+fn parseJsxIdentifierImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .jsx_identifier);
     const token = parser.current_token;
     const identifier = try parser.tree.addNode(

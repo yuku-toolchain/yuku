@@ -1,5 +1,6 @@
 const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
 const Precedence = @import("../token.zig").Precedence;
@@ -80,7 +81,15 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 }
 
 /// Converts the cover to a CallExpression.
-pub fn coverToCallExpression(
+pub inline fn coverToCallExpression(
+    parser: *Parser,
+    cover: ParenthesizedCover,
+    callee: ast.NodeIndex,
+) Error!ast.NodeIndex {
+    return inRegister(coverToCallExpressionImpl, .{ parser, cover, callee });
+}
+
+fn coverToCallExpressionImpl(
     parser: *Parser,
     cover: ParenthesizedCover,
     callee: ast.NodeIndex,
@@ -96,7 +105,14 @@ pub fn coverToCallExpression(
 }
 
 /// Converts the cover to a ParenthesizedExpression.
-pub fn coverToParenthesizedExpression(
+pub inline fn coverToParenthesizedExpression(
+    parser: *Parser,
+    cover: ParenthesizedCover,
+) Error!?ast.NodeIndex {
+    return inRegister(coverToParenthesizedExpressionImpl, .{ parser, cover });
+}
+
+fn coverToParenthesizedExpressionImpl(
     parser: *Parser,
     cover: ParenthesizedCover,
 ) Error!?ast.NodeIndex {
@@ -153,7 +169,16 @@ pub fn coverToParenthesizedExpression(
 }
 
 // async and TypeScript arrows go through `parseArrow` instead
-pub fn coverToArrowFunction(
+pub inline fn coverToArrowFunction(
+    parser: *Parser,
+    cover: ParenthesizedCover,
+    arrow_start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
+    return inRegister(coverToArrowFunctionImpl, .{ parser, cover, arrow_start, options });
+}
+
+fn coverToArrowFunctionImpl(
     parser: *Parser,
     cover: ParenthesizedCover,
     arrow_start: u32,
@@ -164,7 +189,17 @@ pub fn coverToArrowFunction(
 }
 
 /// Converts a lone identifier into an arrow function for `x => body`.
-pub fn identifierToArrowFunction(
+pub inline fn identifierToArrowFunction(
+    parser: *Parser,
+    id: ast.NodeIndex,
+    is_async: bool,
+    start: u32,
+    options: ParseExpressionOptions,
+) Error!?ast.NodeIndex {
+    return inRegister(identifierToArrowFunctionImpl, .{ parser, id, is_async, start, options });
+}
+
+fn identifierToArrowFunctionImpl(
     parser: *Parser,
     id: ast.NodeIndex,
     is_async: bool,
@@ -222,7 +257,11 @@ pub fn buildArrowFunction(
     );
 }
 
-fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
+inline fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
+    return inRegister(convertToFormalParametersImpl, .{ parser, cover });
+}
+
+fn convertToFormalParametersImpl(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
     const checkpoint = parser.scratch_cover.begin();
     defer parser.scratch_cover.reset(checkpoint);
 
@@ -267,7 +306,11 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
     );
 }
 
-fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!ast.NodeIndex {
+inline fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!ast.NodeIndex {
+    return inRegister(convertToFormalParameterImpl, .{ parser, expr });
+}
+
+fn convertToFormalParameterImpl(parser: *Parser, expr: ast.NodeIndex) Error!ast.NodeIndex {
     try grammar.expressionToPattern(parser, expr, .binding);
 
     return try parser.tree.addNode(

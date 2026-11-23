@@ -101,13 +101,19 @@ pub const Ctx = struct {
             .check => {},
             .analyze => {
                 var flags: Reference.Flags = .{};
-                if (tag == .identifier_reference) {
+                if (tag == .identifier_reference and self.placesReference()) {
                     flags = refPosition(self.tree, &self.path, self.inTypePosition());
                     flags.write = isWriteTarget(self.tree, &self.path);
                 }
                 try self.symbols.addReferences(tag, index, data, &self.scope, flags);
             },
         }
+    }
+
+    inline fn placesReference(self: *const Ctx) bool {
+        if (self.inTypePosition()) return true;
+        const parent = self.path.parent() orelse return false;
+        return placing_parents.contains(self.tree.data(parent));
     }
 
     pub inline fn exit(
@@ -133,6 +139,29 @@ pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!
     try wk.walk(Ctx, V, visitor, &ctx, .{ .whole_tree = true });
     return ctx.finalize();
 }
+
+const placing_parents = std.EnumSet(ast.NodeTag).initMany(&.{
+    .ts_qualified_name,
+    .ts_type_query,
+    .export_specifier,
+    .export_default_declaration,
+    .ts_export_assignment,
+    .ts_import_equals_declaration,
+    .assignment_expression,
+    .update_expression,
+    .for_in_statement,
+    .for_of_statement,
+    .array_pattern,
+    .object_pattern,
+    .binding_property,
+    .assignment_pattern,
+    .binding_rest_element,
+    .parenthesized_expression,
+    .ts_non_null_expression,
+    .ts_as_expression,
+    .ts_satisfies_expression,
+    .ts_type_assertion,
+});
 
 fn refPosition(
     tree: *const ast.Tree,

@@ -103,6 +103,7 @@ pub const Parser = struct {
             self.tree.source_type,
             self.comment_mode != .none,
         );
+        self.lexer.setFastOpen(!self.collect_tokens);
 
         // ScriptBody is [~Yield, ~Await, ~Return], ModuleItemList is [+Await], and a
         // commonjs body is [+Return]
@@ -210,6 +211,7 @@ pub const Parser = struct {
     }
 
     pub fn describeToken(self: *Parser, token: Token) Error![]const u8 {
+        @branchHint(.cold);
         if (token.tag == .eof) return "end of file";
         const text = token.tag.toString() orelse token.text(self.source);
         if (text.len > 0 and (text[0] == '\'' or text[0] == '"' or text[0] == '`')) return text;
@@ -217,7 +219,7 @@ pub const Parser = struct {
     }
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
-        self.lexer.mode = mode;
+        self.lexer.setMode(mode);
     }
 
     pub fn flushToExtras(
@@ -232,12 +234,23 @@ pub const Parser = struct {
         return self.source[span.start..span.end];
     }
 
-    inline fn nextTokenInto(self: *Parser, out: *Token) Error!bool {
+    fn nextTokenInto(self: *Parser, out: *Token) Error!bool {
         self.lexer.nextTokenInto(out) catch |e| {
             if (e == error.OutOfMemory) return error.OutOfMemory;
             try self.reportLexicalError(@errorCast(e));
             return false;
         };
+        return true;
+    }
+
+    noinline fn advanceSlow(self: *Parser) Error!bool {
+        const leaving = self.current_token;
+        const fast = self.collect_tokens and self.lexer.tryNextTokenAlways(&self.current_token);
+        if (!fast) {
+            const scanned = @call(.always_inline, nextTokenInto, .{ self, &self.current_token });
+            if (!try scanned) return false;
+        }
+        try self.commitToken(leaving);
         return true;
     }
 
@@ -280,11 +293,11 @@ pub const Parser = struct {
     /// Advances without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.prev_token_end = self.current_token.span.end;
-        const leaving = self.current_token;
+        var advanced: ?void = {};
         if (!self.lexer.tryNextToken(&self.current_token)) {
-            if (!try self.nextTokenInto(&self.current_token)) return null;
+            if (!try self.advanceSlow()) advanced = null;
         }
-        try self.commitToken(leaving);
+        return advanced;
     }
 
     pub noinline fn reportEscapedKeyword(self: *Parser, span: ast.Span) Error!void {
@@ -297,6 +310,11 @@ pub const Parser = struct {
     /// Reports an escaped-keyword error for a token consumed before its role was known.
     pub inline fn reportIfEscapedKeyword(self: *Parser, token: Token) Error!void {
         if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
+    }
+
+    pub inline fn nextMayStartWith(self: *const Parser, byte: u8) bool {
+        const next = self.lexer.peekByte();
+        return next == byte or next == 0;
     }
 
     /// Peeks the token after `current_token` without advancing. Use `beginPeek` for
@@ -351,7 +369,7 @@ pub const Parser = struct {
 
         pub inline fn next(self: *Peek) Token {
             var token: Token = undefined;
-            if (self.parser.lexer.tryNextToken(&token)) return token;
+            if (self.parser.lexer.tryNextTokenAlways(&token)) return token;
             return self.parser.lexer.nextToken() catch Token.invalid(self.parser.lexer.cursor);
         }
 
@@ -372,7 +390,7 @@ pub const Parser = struct {
     }
 
     /// Replaces the current token with a re-scanned one and advances past it.
-    pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
+    pub fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
         var rescanned = token;
         // a rescan past the current token completes it, one inside it supersedes it
         if (token.span.start >= self.current_token.span.end) {
@@ -385,7 +403,7 @@ pub const Parser = struct {
     }
 
     /// Re-tokenizes the current token in the current lexer mode.
-    pub inline fn reScanCurrent(self: *Parser) Error!?void {
+    pub fn reScanCurrent(self: *Parser) Error!?void {
         const replaced = self.current_token;
         self.lexer.rewindTo(replaced.span.start);
         if (!try self.nextTokenInto(&self.current_token)) return null;
@@ -397,31 +415,38 @@ pub const Parser = struct {
         return token.flags & flagMask(.line_terminator_before);
     }
 
-    pub fn expect(
+    pub inline fn expect(
         self: *Parser,
         comptime tag: TokenTag,
         message: []const u8,
         help: ?[]const u8,
     ) Error!bool {
-        if (self.current_token.tag == tag) {
-            try self.advance() orelse return false;
-            return true;
+        var matched = self.current_token.tag == tag;
+        if (matched) {
+            if (try self.advance() == null) matched = false;
+        } else {
+            try self.reportExpected(self.current_token.span, message, .{ .help = help });
         }
-        try self.reportExpected(self.current_token.span, message, .{ .help = help });
-        return false;
+        return matched;
     }
 
-    pub fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
+    pub inline fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
+        var statement_end: ?u32 = end;
         if (self.current_token.tag == .semicolon) {
-            const semicolon_end = self.current_token.span.end;
-            try self.advance() orelse return null;
-            return semicolon_end;
+            statement_end = self.current_token.span.end;
+            if (try self.advance() == null) statement_end = null;
+        } else if (!self.canInsertImplicitSemicolon(self.current_token)) {
+            try self.reportMissingSemicolon();
+            statement_end = null;
         }
-        if (self.canInsertImplicitSemicolon(self.current_token)) return end;
+        return statement_end;
+    }
+
+    fn reportMissingSemicolon(self: *Parser) Error!void {
+        @branchHint(.cold);
         try self.reportExpected(self.current_token.span, "Expected ';' after the statement", .{
             .help = "Add ';' or a line break before it",
         });
-        return null;
     }
 
     /// https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion
@@ -459,6 +484,7 @@ pub const Parser = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Error!void {
+        @branchHint(.cold);
         try self.diagnostics.append(self.allocator(), .{
             .severity = opts.severity,
             .message = message,
@@ -474,6 +500,7 @@ pub const Parser = struct {
         message: []const u8,
         opts: ReportOptions,
     ) Error!void {
+        @branchHint(.cold);
         const expected_message = try self.fmt("{s}, but found {s}", .{
             message,
             try self.describeToken(self.current_token),
@@ -486,10 +513,12 @@ pub const Parser = struct {
     }
 
     pub fn labels(self: *Parser, items: []const ast.Label) Error![]const ast.Label {
+        @branchHint(.cold);
         return self.allocator().dupe(ast.Label, items);
     }
 
     pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
+        @branchHint(.cold);
         return self.allocator().print(format, args);
     }
 

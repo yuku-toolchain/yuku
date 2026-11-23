@@ -81,7 +81,7 @@ pub const Checker = struct {
                     .{},
                 );
             }
-        } else if (flags.block_scoped_var and eql(u8, name, "let")) {
+        } else if (flags.block_scoped_var and name.len == "let".len and eql(u8, name, "let")) {
             try self.report(
                 ctx.tree.span(node_index),
                 "'let' is not allowed to be used as a name in 'let' or 'const' declarations",
@@ -188,7 +188,7 @@ pub const Checker = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
-    pub fn enter_identifier_reference(
+    pub inline fn enter_identifier_reference(
         self: *Self,
         id: ast.IdentifierReference,
         node_index: ast.NodeIndex,
@@ -197,10 +197,22 @@ pub const Checker = struct {
         if (ctx.inTypePosition()) return .proceed;
 
         const name = ctx.tree.string(id.name);
+        if (lexical.mayBeStrictReserved(name) or lexical.isArguments(name)) {
+            try self.checkIdentifierReference(name, node_index, ctx);
+        }
+        return .proceed;
+    }
+
+    fn checkIdentifierReference(
+        self: *Self,
+        name: []const u8,
+        node_index: ast.NodeIndex,
+        ctx: *SemanticCtx,
+    ) AnalysisError!void {
         try self.checkStrictReserved(name, node_index, ctx, "an identifier");
 
         // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
-        if (eql(u8, name, "arguments") and !isArgumentsAvailable(ctx)) {
+        if (lexical.isArguments(name) and !isArgumentsAvailable(ctx)) {
             try self.report(
                 ctx.tree.span(node_index),
                 "'arguments' cannot be referenced in property initializers or class static" ++
@@ -208,8 +220,6 @@ pub const Checker = struct {
                 .{},
             );
         }
-
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
@@ -224,26 +234,34 @@ pub const Checker = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-string-literals-early-errors
-    pub fn enter_string_literal(
+    pub inline fn enter_string_literal(
         self: *Self,
-        _: ast.StringLiteral,
+        literal: ast.StringLiteral,
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
         if (!isStrict(ctx)) return .proceed;
+        const verbatim = literal.value.start == literal.raw.start + 1 and
+            literal.value.end + 1 == literal.raw.end;
+        if (!verbatim) try self.checkStringEscapes(node_index, ctx);
+        return .proceed;
+    }
 
+    fn checkStringEscapes(
+        self: *Self,
+        node_index: ast.NodeIndex,
+        ctx: *SemanticCtx,
+    ) AnalysisError!void {
         const span = ctx.tree.span(node_index);
         if (spec.escapes.hasOctalEscape(ctx.tree.source[span.start..span.end])) {
             try self.report(span, "Octal escape sequences are not allowed in strict mode", .{
                 .help = "Use a hexadecimal escape instead, such as '\\x07'",
             });
         }
-
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
-    pub fn enter_numeric_literal(
+    pub inline fn enter_numeric_literal(
         self: *Self,
         _: ast.NumericLiteral,
         node_index: ast.NodeIndex,
@@ -253,9 +271,13 @@ pub const Checker = struct {
 
         const span = ctx.tree.span(node_index);
         const raw = ctx.tree.source[span.start..span.end];
+        if (isLegacyNumericLiteral(raw)) try self.reportLegacyNumericLiteral(span, raw);
+        return .proceed;
+    }
 
-        if (!isLegacyNumericLiteral(raw)) return .proceed;
-
+    fn reportLegacyNumericLiteral(self: *Self, span: ast.Span, raw: []const u8) AnalysisError!void {
+        @branchHint(.cold);
+        std.debug.assert(isLegacyNumericLiteral(raw));
         const is_octal = std.mem.findAny(u8, raw, "89") == null;
 
         if (is_octal) {
@@ -269,7 +291,6 @@ pub const Checker = struct {
                 .help = "Remove the leading zeros, or use a '0o', '0x', or '0b' prefix",
             });
         }
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
@@ -509,36 +530,50 @@ pub const Checker = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
-    pub fn enter_call_expression(
+    pub inline fn enter_call_expression(
         self: *Self,
         expr: ast.CallExpression,
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
-        if (ctx.tree.data(expr.callee) == .super) {
-            const message: []const u8, const help: []const u8 = switch (superCallValidity(ctx)) {
-                .valid => return .proceed,
-                .not_in_constructor => .{
-                    "Super calls are not permitted outside constructors or in nested functions" ++
-                        " inside constructors",
-                    "Use an arrow function to keep the constructor's 'super' binding",
-                },
-                .no_extends => .{
-                    "'super' can only be referenced in a derived class",
-                    "Add an 'extends' clause, or remove the 'super()' call",
-                },
-            };
-            try self.report(ctx.tree.span(node_index), message, .{ .help = help });
-        }
+        if (ctx.tree.data(expr.callee) == .super) try self.checkSuperCall(node_index, ctx);
         return .proceed;
     }
 
-    pub fn enter_member_expression(
+    fn checkSuperCall(self: *Self, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+        const message: []const u8, const help: []const u8 = switch (superCallValidity(ctx)) {
+            .valid => return,
+            .not_in_constructor => .{
+                "Super calls are not permitted outside constructors or in nested functions" ++
+                    " inside constructors",
+                "Use an arrow function to keep the constructor's 'super' binding",
+            },
+            .no_extends => .{
+                "'super' can only be referenced in a derived class",
+                "Add an 'extends' clause, or remove the 'super()' call",
+            },
+        };
+        try self.report(ctx.tree.span(node_index), message, .{ .help = help });
+    }
+
+    pub inline fn enter_member_expression(
         self: *Self,
         expr: ast.MemberExpression,
         node_index: ast.NodeIndex,
         ctx: *SemanticCtx,
     ) AnalysisError!Action {
+        const on_super = ctx.tree.data(expr.object) == .super;
+        const private = !expr.computed and ctx.tree.data(expr.property) == .private_identifier;
+        if (on_super or private) try self.checkMemberExpression(expr, node_index, ctx);
+        return .proceed;
+    }
+
+    fn checkMemberExpression(
+        self: *Self,
+        expr: ast.MemberExpression,
+        node_index: ast.NodeIndex,
+        ctx: *SemanticCtx,
+    ) AnalysisError!void {
         if (ctx.tree.data(expr.object) == .super) {
             if (!isSuperPropertyValid(ctx)) {
                 try self.report(
@@ -563,8 +598,6 @@ pub const Checker = struct {
                 try self.checkPrivateName(expr.property, ctx);
             }
         }
-
-        return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-left-hand-side-expressions-static-semantics-early-errors
@@ -978,6 +1011,7 @@ pub const Checker = struct {
         comptime as_what: []const u8,
     ) AnalysisError!void {
         if (!isStrict(ctx)) return;
+        if (!lexical.mayBeStrictReserved(name)) return;
         const tag = lexical.keyword(name) orelse return;
         if (!tag.isStrictModeReserved()) return;
         try self.report(
