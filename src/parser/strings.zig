@@ -16,7 +16,7 @@ pub const ASTStringPool = struct {
     const DedupMap = std.HashMapUnmanaged(String, void, MapCtx, 80);
 
     /// Returns the string content for a `String`.
-    pub fn get(self: *const ASTStringPool, id: String) []const u8 {
+    pub inline fn get(self: *const ASTStringPool, id: String) []const u8 {
         std.debug.assert(id.end >= id.start);
         if (id.start == id.end) return "";
         const src_len: u32 = @intCast(self.source.len);

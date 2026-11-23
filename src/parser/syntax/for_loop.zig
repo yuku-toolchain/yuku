@@ -3,6 +3,7 @@ const ast = @import("../ast.zig");
 const Precedence = @import("../token.zig").Precedence;
 const TokenTag = @import("../token.zig").TokenTag;
 const Parser = @import("../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 
 const expressions = @import("expressions.zig");
@@ -14,7 +15,11 @@ const static_semantics = @import("spec").static_semantics;
 /// Parses `for`, `for-in`, `for-of`, and `for await` statements.
 /// https://tc39.es/ecma262/#sec-for-statement
 /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
-pub fn parseForStatement(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseForStatement(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseForStatementImpl, .{parser});
+}
+
+fn parseForStatementImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"for");
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
@@ -85,7 +90,17 @@ pub fn parseForStatement(parser: *Parser) Error!?ast.NodeIndex {
     return parseForWithDeclaration(parser, start, is_for_await, kind, decl_start);
 }
 
-fn parseForWithDeclaration(
+inline fn parseForWithDeclaration(
+    parser: *Parser,
+    start: u32,
+    is_for_await: bool,
+    kind: ast.VariableKind,
+    decl_start: u32,
+) Error!?ast.NodeIndex {
+    return inRegister(parseForWithDeclarationImpl, .{ parser, start, is_for_await, kind, decl_start });
+}
+
+fn parseForWithDeclarationImpl(
     parser: *Parser,
     start: u32,
     is_for_await: bool,
@@ -135,7 +150,11 @@ fn parseForWithDeclaration(
     }
 }
 
-fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
+inline fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
+    return inRegister(parseForWithExpressionImpl, .{ parser, start, is_for_await });
+}
+
+fn parseForWithExpressionImpl(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
     // escaped `let` is exempt from the for-of lookahead restriction
     const head = parser.current_token;
     const head_is_let = head.tag == .let and !head.isEscaped();
@@ -185,7 +204,16 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     }
 }
 
-fn parseForStatementRest(
+inline fn parseForStatementRest(
+    parser: *Parser,
+    start: u32,
+    init: ast.NodeIndex,
+    is_for_await: bool,
+) Error!?ast.NodeIndex {
+    return inRegister(parseForStatementRestImpl, .{ parser, start, init, is_for_await });
+}
+
+fn parseForStatementRestImpl(
     parser: *Parser,
     start: u32,
     init: ast.NodeIndex,
@@ -308,7 +336,15 @@ fn validateForInOfDeclarators(
     }
 }
 
-fn validateRegularForDeclarators(
+inline fn validateRegularForDeclarators(
+    parser: *Parser,
+    declarators: ast.IndexRange,
+    kind: ast.VariableKind,
+) Error!bool {
+    return inRegister(validateRegularForDeclaratorsImpl, .{ parser, declarators, kind });
+}
+
+fn validateRegularForDeclaratorsImpl(
     parser: *Parser,
     declarators: ast.IndexRange,
     kind: ast.VariableKind,

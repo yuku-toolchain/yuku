@@ -5,7 +5,8 @@ const Span = @import("token.zig").Span;
 const TokenFlag = @import("token.zig").TokenFlag;
 const flagMask = @import("token.zig").flagMask;
 const keywordTag = @import("token.zig").keywordTag;
-const keyword_length_min = @import("token.zig").keyword_length_min;
+const keywordTagAt = @import("token.zig").keywordTagAt;
+const keyword_read_len = @import("token.zig").keyword_read_len;
 const keyword_length_max = @import("token.zig").keyword_length_max;
 const ast = @import("ast.zig");
 const lexical = @import("lexical.zig");
@@ -46,17 +47,19 @@ pub const LexerMode = enum {
     jsx_tag,
 };
 
-inline fn identContinueRun(chunk: Simd.Chunk) u32 {
+inline fn isIdentifierChunk(chunk: Simd.Chunk) @Vector(16, bool) {
+    if (Simd.ByteSet.is_fast and !@inComptime()) return identifier_bytes.contains(chunk);
     const lower = chunk | Simd.splat(0x20);
     const alpha = (lower -% Simd.splat('a')) < Simd.splat(26);
     const digit = (chunk -% Simd.splat('0')) < Simd.splat(10);
     const underscore = chunk == Simd.splat('_');
     const dollar = chunk == Simd.splat('$');
-    return Simd.leadingTrueCount(alpha | digit | underscore | dollar);
+    return alpha | digit | underscore | dollar;
 }
 
 const identifier_start_ascii = asciiTable(lexical.isIdentifierStart);
 const identifier_char_ascii = asciiTable(lexical.isIdentifierChar);
+const identifier_bytes: Simd.ByteSet = .init(identifier_char_ascii);
 const identifier_char_jsx_ascii = asciiTable(lexical.isJSXIdentifierChar);
 
 fn asciiTable(comptime predicate: fn (u21) bool) [256]bool {
@@ -69,8 +72,9 @@ fn asciiTable(comptime predicate: fn (u21) bool) [256]bool {
 comptime {
     @setEvalBranchQuota(20_000);
     for (0..256) |c| {
-        const run: u32 = if (identifier_char_ascii[c]) 16 else 0;
-        std.debug.assert(identContinueRun(Simd.splat(c)) == run);
+        const lanes = isIdentifierChunk(Simd.splat(c));
+        std.debug.assert(@reduce(.And, lanes) == identifier_char_ascii[c]);
+        std.debug.assert(@reduce(.Or, lanes) == identifier_char_ascii[c]);
     }
 }
 
@@ -96,6 +100,12 @@ pub const LexerState = struct {
     token_flags: u8 = 0,
 };
 
+const IdentifierBlocks = struct {
+    start: u32,
+    first: u64,
+    second: u64,
+};
+
 pub const Lexer = struct {
     /// Comments in source order, populated only when `collect_comments` is set.
     comments: std.ArrayList(ast.Comment),
@@ -106,9 +116,15 @@ pub const Lexer = struct {
 
     source: []const u8,
     cursor: u32,
+    fast_limit: u32,
+    fast_end: u32,
+    fast_open: bool = true,
+    blocks: IdentifierBlocks,
 
     source_type: ast.SourceType,
     hashbang: ?struct { start: u32, len: u32 } = null,
+
+    const fast_margin = 80;
 
     pub fn init(
         source: []const u8,
@@ -121,14 +137,49 @@ pub const Lexer = struct {
             .source = source,
             .state = .{},
             .cursor = 0,
+            .fast_limit = @intCast(source.len -| fast_margin),
+            .fast_end = @intCast(source.len -| fast_margin),
+            .blocks = undefined,
             .comments = .empty,
             .collect_comments = collect_comments,
             .allocator = allocator,
             .source_type = source_type,
         };
+        self.blocks = .{
+            .start = 0,
+            .first = self.identifierBlock(0),
+            .second = self.identifierBlock(64),
+        };
         self.skipHashbang();
         std.debug.assert(self.cursor <= self.source.len);
         return self;
+    }
+
+    pub inline fn setMode(self: *Lexer, mode: LexerMode) void {
+        self.mode = mode;
+        self.fast_limit = if (mode == .normal) @intCast(self.source.len -| fast_margin) else 0;
+        self.fast_end = if (self.fast_open) self.fast_limit else 0;
+    }
+
+    pub inline fn peekByte(self: *const Lexer) u8 {
+        const src = self.source;
+        var position: usize = self.cursor;
+        while (position < src.len and src[position] == ' ') position += 1;
+        if (position >= src.len) return 0;
+        const byte = src[position];
+        return if (starts_token[byte]) byte else 0;
+    }
+
+    const starts_token: [256]bool = blk: {
+        var t: [256]bool = @splat(false);
+        for (0x21..0x7F) |c| t[c] = true;
+        for ("/<-\\") |c| t[c] = false;
+        break :blk t;
+    };
+
+    pub fn setFastOpen(self: *Lexer, open: bool) void {
+        self.fast_open = open;
+        self.fast_end = if (open) self.fast_limit else 0;
     }
 
     fn skipHashbang(self: *Lexer) void {
@@ -190,161 +241,382 @@ pub const Lexer = struct {
         };
     }
 
-    /// Fast path into `out` for identifiers and simple punctuation, false otherwise.
     pub inline fn tryNextToken(self: *Lexer, out: *Token) bool {
-        std.debug.assert(self.cursor <= self.source.len);
+        if (self.cursor >= self.fast_end) return false;
+        return self.scanFast(out);
+    }
 
-        if (self.mode != .normal) return false;
+    pub inline fn tryNextTokenAlways(self: *Lexer, out: *Token) bool {
+        if (self.cursor >= self.fast_limit) return false;
+        return self.scanFast(out);
+    }
 
-        const src = self.source;
-        const start = self.cursor;
-        if (start >= src.len) return false;
-        switch (src[start]) {
-            '\n' => return self.tryNextTokenOnNewLine(out),
-            ' ' => {
-                self.cursor += 1;
-                if (self.cursor < src.len and self.tryScanToken(out)) return true;
-                self.cursor = start;
-                return false;
-            },
-            else => return self.tryScanToken(out),
+    inline fn scanFast(self: *Lexer, out: *Token) bool {
+        var start = self.cursor;
+        std.debug.assert(start < self.fast_limit);
+        std.debug.assert(self.mode == .normal);
+        std.debug.assert(start + fast_margin <= self.source.len);
+
+        const src = self.source.ptr;
+        var c = src[start];
+        if (c == ' ') {
+            start += 1;
+            c = src[start];
+        }
+
+        return self.scanTokenAt(start, 0, c, out);
+    }
+
+    inline fn scanTokenAt(self: *Lexer, at: u32, flags_before: u8, first: u8, out: *Token) bool {
+        const src = self.source.ptr;
+        var start = at;
+        var flags = flags_before;
+        var c = first;
+        while (true) {
+            const info = &byte_info[c];
+            const class = info.class;
+            if (class & Class.identifier != 0) return self.scanIdentifierFast(start, flags, out);
+            if (class & (Class.punctuation | Class.operator) != 0) {
+                const end = start + 1;
+                if (class & Class.operator != 0 and
+                    byte_info[src[end]].group & info.continued_by != 0)
+                {
+                    return self.scanOperatorFast(start, flags, out);
+                }
+                self.cursor = end;
+                writeToken(out, start, end, info.tag, flags);
+                return true;
+            }
+            if (class & Class.digit != 0) return self.scanDecimalFast(start, flags, out);
+            if (class & Class.quote != 0) return self.scanStringFast(start, flags, out);
+            if (class & Class.line_break == 0) return false;
+
+            start = self.skipLineBreaks(start);
+            if (start == 0) return false;
+            flags = flagMask(.line_terminator_before);
+            c = src[start];
         }
     }
 
-    inline fn tryScanToken(self: *Lexer, out: *Token) bool {
-        switch (fast_class[self.source[self.cursor]]) {
-            .ident => return self.scanAsciiIdentifier(out),
-            .punct => {
-                out.* = self.scanSimplePunctuation();
-                return true;
-            },
-            .dot => {
-                const c1 = self.peek(1);
-                if (c1 == '.' or std.ascii.isDigit(c1)) return false;
-                out.* = self.puncToken(1, .dot, self.cursor);
-                return true;
-            },
-            .operator => {
-                out.* = self.scanPunctuation();
-                return true;
-            },
-            .string => {
-                const start = self.cursor;
-                out.* = self.scanString() catch {
-                    self.cursor = start;
-                    return false;
-                };
-                return true;
-            },
-            .slow => return false,
+    noinline fn skipLineBreaks(self: *const Lexer, from: u32) u32 {
+        const src = self.source.ptr;
+        std.debug.assert(src[from] == '\n' or src[from] == '\r');
+        var position = from;
+        while (true) {
+            position = self.skipIndentation(position + 1) orelse return 0;
+            if (byte_info[src[position]].class & Class.line_break == 0) return position;
         }
     }
 
-    // a miss rewinds to the line feed
-    inline fn tryNextTokenOnNewLine(self: *Lexer, out: *Token) bool {
-        const src = self.source;
-        const line_feed = self.cursor;
-        std.debug.assert(src[line_feed] == '\n');
-
-        var pos = line_feed + 1;
-        while (pos + 16 <= src.len) {
-            const run = Simd.leadingTrueCount(Simd.loadChunk(src, pos) == Simd.splat(' '));
-            pos += run;
-            if (run < 16) break;
-        } else {
-            while (pos < src.len and src[pos] == ' ') pos += 1;
+    inline fn writeToken(out: *Token, start: u32, end: u32, tag: TokenTag, flags: u8) void {
+        comptime {
+            std.debug.assert(@offsetOf(Token, "span") == 0 and @offsetOf(Token, "tag") == 8);
+            std.debug.assert(@offsetOf(Token, "flags") == 12 and @sizeOf(Token) == 16);
+            std.debug.assert(@import("builtin").target.cpu.arch.endian() == .little);
         }
-        if (pos >= src.len) return false;
-        std.debug.assert(src[pos] != ' ');
+        const span: u64 = @as(u64, start) | @as(u64, end) << 32;
+        const rest: u64 = @as(u64, @backingInt(tag)) | @as(u64, flags) << 32;
+        const words: *align(@alignOf(Token)) u128 = @ptrCast(out);
+        words.* = @as(u128, span) | @as(u128, rest) << 64;
+    }
 
-        const class = fast_class[src[pos]];
-        if (class != .ident and class != .punct) return false;
-
-        self.cursor = pos;
-        self.clearTokenFlags();
-        self.setTokenFlag(.line_terminator_before);
-
-        if (class == .ident) {
-            if (self.scanAsciiIdentifier(out)) return true;
-            self.cursor = line_feed;
-            return false;
+    inline fn skipIndentation(self: *const Lexer, from: u32) ?u32 {
+        const src = self.source.ptr;
+        var position = from;
+        while (position < self.fast_limit) : (position += 8) {
+            const word = std.mem.readInt(u64, src[position..][0..8], .little);
+            const other = nonZeroBytes(word ^ repeated(' ')) & nonZeroBytes(word ^ repeated('\t'));
+            if (other != 0) return position + (@ctz(other) >> 3);
         }
-        out.* = self.scanSimplePunctuation();
+        return null;
+    }
+
+    inline fn repeated(byte: u8) u64 {
+        return @bitCast(@as([8]u8, @splat(byte)));
+    }
+
+    inline fn nonZeroBytes(word: u64) u64 {
+        const low = repeated(0x7F);
+        return (((word & low) +% low) | word) & repeated(0x80);
+    }
+
+    inline fn scanIdentifierFast(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
+        if (start -% self.blocks.start >= 64) return self.scanIdentifierReloaded(start, flags, out);
+        return self.scanIdentifierInBlocks(start, flags, out);
+    }
+
+    noinline fn scanIdentifierReloaded(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
+        @call(.always_inline, loadBlocks, .{ self, start });
+        return self.scanIdentifierInBlocks(start, flags, out);
+    }
+
+    inline fn scanIdentifierInBlocks(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
+        const src = self.source.ptr;
+        std.debug.assert(identifier_start_ascii[src[start]]);
+        std.debug.assert(start -% self.blocks.start < 64);
+
+        const len = self.identifierRunInBlocks(start);
+        const end = start + len;
+        std.debug.assert(len > 0);
+        std.debug.assert(end < self.source.len);
+        const after = src[end];
+        if (byte_info[after].class & Class.identifier_part != 0) return false;
+
+        self.cursor = end;
+        writeToken(out, start, end, keywordTagAt(src + start, len), flags);
         return true;
     }
 
-    inline fn scanAsciiIdentifier(self: *Lexer, out: *Token) bool {
+    const identifier_run_max = 64;
+
+    inline fn identifierRun(self: *Lexer, position: u32) u32 {
+        if (position -% self.blocks.start >= 64) self.loadBlocks(position);
+        return self.identifierRunInBlocks(position);
+    }
+
+    inline fn identifierRunInBlocks(self: *const Lexer, position: u32) u32 {
+        const shift: u6 = @intCast(position -% self.blocks.start);
+        const run = (self.blocks.first >> shift) | ((self.blocks.second << 1) << (63 - shift));
+        return @ctz(~run);
+    }
+
+    fn loadBlocks(self: *Lexer, position: u32) void {
+        const start = position & ~@as(u32, 63);
+        const first = if (start == self.blocks.start +% 64)
+            self.blocks.second
+        else
+            self.identifierBlock(start);
+        self.blocks = .{
+            .start = start,
+            .first = first,
+            .second = self.identifierBlock(@as(u64, start) + 64),
+        };
+    }
+
+    inline fn identifierBlock(self: *const Lexer, start: u64) u64 {
+        const src = self.source;
+        if (start + 64 > src.len) {
+            @branchHint(.unlikely);
+            var tail: [64]u8 = @splat(0);
+            if (start < src.len) {
+                const rest = src[@intCast(start)..];
+                @memcpy(tail[0..rest.len], rest);
+            }
+            return Simd.mask64(&tail, isIdentifierChunk);
+        }
+        return Simd.mask64(src[@intCast(start)..][0..64], isIdentifierChunk);
+    }
+
+    fn scanAsciiIdentifier(self: *Lexer, out: *Token) bool {
         const src = self.source;
         const start = self.cursor;
         std.debug.assert(identifier_start_ascii[src[start]]);
 
-        var pos = start + 1;
-        while (pos + 16 <= src.len) {
-            const run = identContinueRun(Simd.loadChunk(src, pos));
-            pos += run;
-            if (run < 16) break;
-        } else {
-            while (pos < src.len and identifier_char_ascii[src[pos]]) {
-                pos += 1;
-            }
-        }
-        std.debug.assert(pos > start);
-        if (pos < src.len) std.debug.assert(!identifier_char_ascii[src[pos]]);
-        if (pos < src.len and (src[pos] == '\\' or src[pos] >= 0x80)) return false;
+        const len = self.identifierRun(start);
+        const end = start + len;
+        std.debug.assert(len > 0);
+        std.debug.assert(end <= src.len);
+        if (len == identifier_run_max) return false;
+        if (end < src.len and (src[end] == '\\' or src[end] >= 0x80)) return false;
 
-        self.cursor = pos;
-        const first = src[start];
-        const len = pos - start;
-        const is_keyword_candidate = first >= 'a' and first <= 'z' and
-            len >= keyword_length_min and len <= keyword_length_max;
-        const tag: TokenTag = if (is_keyword_candidate)
-            keywordTag(src[start..pos])
+        const tag = if (@as(usize, start) + keyword_read_len <= src.len)
+            keywordTagAt(src.ptr + start, len)
         else
-            .identifier;
-        out.* = self.createToken(tag, start, pos);
+            keywordTag(src[start..end]);
+        self.cursor = end;
+        out.* = self.createToken(tag, start, end);
         return true;
     }
 
-    const simple_punct_tag: [256]TokenTag = blk: {
-        var t: [256]TokenTag = @splat(.eof);
-        t['~'] = .bitwise_not;
-        t['('] = .left_paren;
-        t[')'] = .right_paren;
-        t['{'] = .left_brace;
-        t['}'] = .right_brace;
-        t['['] = .left_bracket;
-        t[']'] = .right_bracket;
-        t[';'] = .semicolon;
-        t[','] = .comma;
-        t[':'] = .colon;
-        t['@'] = .at;
-        break :blk t;
-    };
-
-    const FastClass = enum(u8) { slow, ident, punct, dot, operator, string };
-
-    const fast_class: [256]FastClass = blk: {
-        var t: [256]FastClass = @splat(.slow);
-        for (0..256) |c| {
-            if (identifier_start_ascii[c]) t[c] = .ident;
-            if (simple_punct_tag[c] != .eof) t[c] = .punct;
+    noinline fn scanOperatorFast(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
+        const src = self.source.ptr;
+        const next = src[start + 1];
+        switch (src[start]) {
+            '/' => if (next == '/' or next == '*') return self.scanAfterComments(start, flags, out),
+            '<' => if (next == '!') return false,
+            '-' => if (next == '-') return false,
+            '.' => return false,
+            else => {},
         }
-        t['.'] = .dot;
-        for ("=&|!?+*%^>") |c| t[c] = .operator;
-        t['"'] = .string;
-        t['\''] = .string;
+        self.cursor = start;
+        self.state.token_flags = flags;
+        out.* = self.scanPunctuation();
+        return true;
+    }
+
+    fn scanAfterComments(self: *Lexer, start: u32, flags_before: u8, out: *Token) bool {
+        const src = self.source.ptr;
+        const entry = self.cursor;
+        const comments_len = self.comments.items.len;
+        var flags = flags_before;
+        var position = start;
+
+        const reached_token = comments: while (true) {
+            std.debug.assert(src[position] == '/');
+            self.cursor = position;
+            self.clearTokenFlags();
+            if (src[position + 1] == '/') {
+                self.scanLineComment() catch break :comments false;
+            } else {
+                self.scanBlockComment() catch break :comments false;
+                if (self.hasTokenFlag(.line_terminator_before)) {
+                    flags = flagMask(.line_terminator_before);
+                }
+            }
+            position = self.cursor;
+
+            while (true) {
+                if (position >= self.fast_limit) break :comments false;
+                const c = src[position];
+                if (byte_info[c].class & Class.line_break != 0) {
+                    position = self.skipLineBreaks(position);
+                    if (position == 0) break :comments false;
+                    flags = flagMask(.line_terminator_before);
+                } else if (c == ' ' or c == '\t') {
+                    position = self.skipIndentation(position) orelse break :comments false;
+                } else break;
+            }
+            const next = src[position + 1];
+            if (src[position] != '/' or (next != '/' and next != '*')) break :comments true;
+        };
+
+        self.clearTokenFlags();
+        if (reached_token and self.scanTokenAt(position, flags, src[position], out)) return true;
+
+        self.cursor = entry;
+        self.clearTokenFlags();
+        self.comments.shrinkRetainingCapacity(comments_len);
+        return false;
+    }
+
+    noinline fn scanDecimalFast(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
+        const src = self.source.ptr;
+        std.debug.assert(std.ascii.isDigit(src[start]));
+
+        const limit = start + decimal_fast_len_max;
+        var end = start + 1;
+        while (end < limit and std.ascii.isDigit(src[end])) end += 1;
+        std.debug.assert(end < self.source.len);
+        const after = src[end];
+        if (after == '.' or byte_info[after].class & Class.identifier_part != 0) return false;
+        if (src[start] == '0' and end - start > 1) return false;
+
+        self.cursor = end;
+        writeToken(out, start, end, .numeric_literal, flags);
+        return true;
+    }
+
+    const decimal_fast_len_max = 32;
+
+    noinline fn scanStringFast(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
+        const entry = self.cursor;
+        self.cursor = start;
+        self.state.token_flags = flags;
+        out.* = self.scanString() catch {
+            self.cursor = entry;
+            self.clearTokenFlags();
+            return false;
+        };
+        return true;
+    }
+
+    const Class = struct {
+        const identifier: u8 = 1 << 0;
+        const punctuation: u8 = 1 << 1;
+        const operator: u8 = 1 << 2;
+        const digit: u8 = 1 << 3;
+        const quote: u8 = 1 << 4;
+        const line_break: u8 = 1 << 6;
+        const identifier_part: u8 = 1 << 5;
+    };
+
+    const Group = struct {
+        const equals: u8 = 1 << 0;
+        const operator: u8 = 1 << 1;
+        const dot: u8 = 1 << 2;
+        const digit: u8 = 1 << 3;
+    };
+
+    const ByteInfo = extern struct {
+        tag: TokenTag = .eof,
+        class: u8 = 0,
+        group: u8 = 0,
+        continued_by: u8 = 0,
+        _pad: u8 = 0,
+    };
+
+    const byte_info: [256]ByteInfo = blk: {
+        @setEvalBranchQuota(10_000);
+        var t: [256]ByteInfo = @splat(.{});
+        for (0..256) |c| {
+            if (identifier_start_ascii[c]) t[c].class |= Class.identifier;
+            if (identifier_char_ascii[c] or c == '\\' or c >= 0x80) {
+                t[c].class |= Class.identifier_part;
+            }
+            if (std.ascii.isDigit(c)) {
+                t[c].class |= Class.digit;
+                t[c].group = Group.digit;
+            }
+        }
+        t['\n'].class = Class.line_break;
+        t['\r'].class = Class.line_break;
+        t['"'].class = Class.quote;
+        t['\''].class = Class.quote;
+
+        const punctuation = [_]struct { u8, TokenTag }{
+            .{ '~', .bitwise_not },   .{ '(', .left_paren },  .{ ')', .right_paren },
+            .{ '{', .left_brace },    .{ '}', .right_brace }, .{ '[', .left_bracket },
+            .{ ']', .right_bracket }, .{ ';', .semicolon },   .{ ',', .comma },
+            .{ ':', .colon },         .{ '@', .at },
+        };
+        for (punctuation) |entry| {
+            t[entry[0]].class = Class.punctuation;
+            t[entry[0]].tag = entry[1];
+        }
+
+        const repeats = Group.equals | Group.operator;
+        const operators = [_]struct { u8, TokenTag, u8 }{
+            .{ '=', .assign, repeats },                      .{ '+', .plus, repeats },
+            .{ '-', .minus, repeats },                       .{ '*', .star, repeats },
+            .{ '/', .slash, repeats },                       .{ '&', .bitwise_and, repeats },
+            .{ '|', .bitwise_or, repeats },                  .{ '<', .less_than, repeats },
+            .{ '>', .greater_than, repeats },                .{ '!', .logical_not, Group.equals },
+            .{ '%', .percent, Group.equals },                .{ '^', .bitwise_xor, Group.equals },
+            .{ '?', .question, Group.operator | Group.dot }, .{ '.', .dot, Group.dot | Group.digit },
+        };
+        for (operators) |entry| {
+            t[entry[0]].class = Class.operator;
+            t[entry[0]].tag = entry[1];
+            t[entry[0]].continued_by = entry[2];
+        }
+        t['='].group = Group.equals;
+        t['.'].group = Group.dot;
+        for ("<>&|?+-*/!") |c| t[c].group = Group.operator;
         break :blk t;
     };
+
+    comptime {
+        std.debug.assert(@sizeOf(ByteInfo) == 8);
+        for ([_][]const u8{
+            "++", "+=", "--", "-=", "**", "*=", "/=", "%=", "<<", "<=", ">>", ">=", "==",
+            "=>", "!=", "&&", "&=", "||", "|=", "^=", "??", "?.", "..", "//", "/*", "<!",
+            ".5",
+        }) |operator| {
+            const first = byte_info[operator[0]];
+            std.debug.assert(first.class == Class.operator);
+            std.debug.assert(byte_info[operator[1]].group & first.continued_by != 0);
+        }
+    }
 
     inline fn scanSimplePunctuation(self: *Lexer) Token {
         std.debug.assert(self.cursor < self.source.len);
 
         const start = self.cursor;
-        const tag = simple_punct_tag[self.source[start]];
+        const info = byte_info[self.source[start]];
+        std.debug.assert(info.class == Class.punctuation);
         self.cursor = start + 1;
 
-        std.debug.assert(tag != .eof);
-        return self.createToken(tag, start, start + 1);
+        return self.createToken(info.tag, start, start + 1);
     }
 
     inline fn puncToken(self: *Lexer, len: u32, tag: TokenTag, start: u32) Token {

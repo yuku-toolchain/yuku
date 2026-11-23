@@ -1,5 +1,6 @@
 const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
 const Precedence = @import("../token.zig").Precedence;
@@ -31,19 +32,31 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-fn parseArrayPattern(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseArrayPattern(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseArrayPatternImpl, .{parser});
+}
+
+fn parseArrayPatternImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     const cover = try array.parseCover(parser) orelse return null;
     return try array.coverToPattern(parser, cover, .binding);
 }
 
-fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseObjectPatternImpl, .{parser});
+}
+
+fn parseObjectPatternImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
     const cover = try object.parseCover(parser) orelse return null;
     return try object.coverToPattern(parser, cover, .binding);
 }
 
-pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+pub inline fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    return inRegister(parseAssignmentPatternImpl, .{ parser, left });
+}
+
+fn parseAssignmentPatternImpl(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(left != .null);
     if (parser.current_token.tag != .assign) return left;
 
@@ -58,7 +71,11 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     );
 }
 
-pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseBindingRestElementImpl, .{parser});
+}
+
+fn parseBindingRestElementImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .spread);
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;

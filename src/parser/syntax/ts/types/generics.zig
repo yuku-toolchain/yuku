@@ -1,5 +1,6 @@
 const ast = @import("../../../ast.zig");
 const Parser = @import("../../../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../../parser.zig").Error;
 const TokenTag = @import("../../../token.zig").TokenTag;
 
@@ -7,7 +8,11 @@ const literals = @import("../../literals.zig");
 const core = @import("core.zig");
 const Speculation = @import("../speculation.zig").Speculation;
 
-pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
+pub inline fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
+    return inRegister(parseTypeArgumentsImpl, .{parser});
+}
+
+fn parseTypeArgumentsImpl(parser: *Parser) Error!ast.NodeIndex {
     const speculation: Speculation = .at(parser, .type_arguments, .{});
     const arguments = try parseAngleList(parser, .arguments, .peel);
     if (arguments == .null) try speculation.reject(parser);
@@ -26,7 +31,8 @@ pub inline fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeI
     return parseTypeArguments(parser);
 }
 
-pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
+pub inline fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
+    if (!isAngleOpen(parser.current_token.tag)) return .null;
     return parseAngleList(parser, .parameters, .peel);
 }
 
@@ -90,7 +96,11 @@ inline fn isAngleClose(tag: TokenTag) bool {
     };
 }
 
-fn consumeAngleOpen(parser: *Parser) Error!?u32 {
+inline fn consumeAngleOpen(parser: *Parser) Error!?u32 {
+    return inRegister(consumeAngleOpenImpl, .{parser});
+}
+
+fn consumeAngleOpenImpl(parser: *Parser) Error!?u32 {
     const start = parser.current_token.span.start;
     switch (parser.current_token.tag) {
         .less_than => try parser.advance() orelse return null,
@@ -130,7 +140,11 @@ fn consumeAngleClose(
     return null;
 }
 
-fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseTypeParameterImpl, .{parser});
+}
+
+fn parseTypeParameterImpl(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var flags: struct { @"const": bool = false, in: bool = false, out: bool = false } = .{};
     var step: u8 = 0;

@@ -63,9 +63,38 @@ pub fn isValidIdentifier(name: []const u8) bool {
 }
 
 /// Whether `name` is `eval` or `arguments`, which strict code can neither bind nor assign.
-pub fn isEvalOrArguments(name: []const u8) bool {
-    return std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
+pub inline fn isEvalOrArguments(name: []const u8) bool {
+    return switch (name.len) {
+        "eval".len => std.mem.eql(u8, name, "eval"),
+        "arguments".len => std.mem.eql(u8, name, "arguments"),
+        else => false,
+    };
 }
+
+pub inline fn isArguments(name: []const u8) bool {
+    return name.len == "arguments".len and std.mem.eql(u8, name, "arguments");
+}
+
+pub inline fn mayBeStrictReserved(name: []const u8) bool {
+    if (name.len < strict_reserved_len_min or name.len > strict_reserved_len_max) return false;
+    return strict_reserved_first[name[0]];
+}
+
+const strict_reserved_len_min = 3;
+const strict_reserved_len_max = 10;
+
+const strict_reserved_first: [256]bool = blk: {
+    @setEvalBranchQuota(10_000);
+    var table: [256]bool = @splat(false);
+    for (std.enums.values(TokenTag)) |tag| {
+        if (!tag.isStrictModeReserved()) continue;
+        const name = tag.toString().?;
+        std.debug.assert(name.len >= strict_reserved_len_min);
+        std.debug.assert(name.len <= strict_reserved_len_max);
+        table[name[0]] = true;
+    }
+    break :blk table;
+};
 
 pub const lineBreakLen = spec.line_terminators.lineBreakLen;
 pub const decodeStringEscapes = spec.escapes.decodeStringEscapes;
@@ -118,6 +147,15 @@ test "keywords" {
     for ([_][]const u8{ "", "foo", "Class", "constructor", "accessor" }) |name| {
         try testing.expectEqual(null, keyword(name));
     }
+    for ([_][]const u8{
+        "async\x00",
+        "of\x00\x00",
+        "class\x00",
+        "let\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+    }) |name| {
+        try testing.expectEqual(null, keyword(name));
+        try testing.expect(!isValidIdentifier(name));
+    }
     for ([_][]const u8{ "foo", "async", "of", "eval", "arguments", "constructor" }) |name| {
         try testing.expect(isValidIdentifier(name));
     }
@@ -129,7 +167,19 @@ test "keywords" {
 test "isEvalOrArguments" {
     try testing.expect(isEvalOrArguments("eval"));
     try testing.expect(isEvalOrArguments("arguments"));
+    try testing.expect(isArguments("arguments"));
     for ([_][]const u8{ "", "Eval", "evaluate", "argument", "\\u0065val" }) |name| {
         try testing.expect(!isEvalOrArguments(name));
+        try testing.expect(!isArguments(name));
     }
+}
+
+test "mayBeStrictReserved passes every strict mode reserved word" {
+    for (std.enums.values(TokenTag)) |tag| {
+        if (tag.isStrictModeReserved()) try testing.expect(mayBeStrictReserved(tag.toString().?));
+    }
+    for ([_][]const u8{ "", "x", "foo", "index", "a_very_long_identifier" }) |name| {
+        try testing.expect(!mayBeStrictReserved(name) or name[0] == 'i');
+    }
+    try testing.expect(!mayBeStrictReserved("foo"));
 }

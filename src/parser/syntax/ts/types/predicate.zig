@@ -1,22 +1,32 @@
 const std = @import("std");
 const ast = @import("../../../ast.zig");
 const Parser = @import("../../../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../../parser.zig").Error;
 
 const literals = @import("../../literals.zig");
 const core = @import("core.zig");
 
-pub fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
-    return parseAnnotation(parser, core.parseType);
+pub inline fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseTypeAnnotationImpl, .{parser});
 }
 
-pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
+fn parseTypeAnnotationImpl(parser: *Parser) Error!?ast.NodeIndex {
+    @setEvalBranchQuota(10_000);
+    return parseAnnotation(parser, core.parseTypeInline);
+}
+
+pub inline fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseReturnTypeAnnotationImpl, .{parser});
+}
+
+fn parseReturnTypeAnnotationImpl(parser: *Parser) Error!?ast.NodeIndex {
     return parseAnnotation(parser, parseTypeOrTypePredicate);
 }
 
 inline fn parseAnnotation(
     parser: *Parser,
-    comptime parseInner: fn (*Parser) Error!?ast.NodeIndex,
+    comptime parseInner: anytype,
 ) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
     const start = parser.current_token.span.start;
@@ -30,8 +40,13 @@ inline fn parseAnnotation(
 }
 
 // only bare `id is T` needs lookahead, `this is T` and `asserts` go through parseType
-pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
-    if (!isIdentifierPredicateStart(parser)) return core.parseType(parser);
+pub inline fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseTypeOrTypePredicateImpl, .{parser});
+}
+
+fn parseTypeOrTypePredicateImpl(parser: *Parser) Error!?ast.NodeIndex {
+    @setEvalBranchQuota(10_000);
+    if (!isIdentifierPredicateStart(parser)) return core.parseTypeInline(parser);
 
     const parameter_name = try literals.parseIdentifierName(parser) orelse return null;
     return finishTypePredicate(
@@ -42,7 +57,11 @@ pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-pub fn parseThisTypeOrPredicate(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseThisTypeOrPredicate(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseThisTypeOrPredicateImpl, .{parser});
+}
+
+fn parseThisTypeOrPredicateImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .this);
 
     const this_token = parser.current_token;
@@ -56,7 +75,11 @@ pub fn parseThisTypeOrPredicate(parser: *Parser) Error!?ast.NodeIndex {
     return finishTypePredicate(parser, this_token.span.start, this_type, false);
 }
 
-pub fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+pub inline fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parseAssertsTypePredicateImpl, .{parser});
+}
+
+fn parseAssertsTypePredicateImpl(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .asserts);
 
     const start = parser.current_token.span.start;
@@ -66,7 +89,11 @@ pub fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     return finishTypePredicate(parser, start, parameter_name, true);
 }
 
-fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
+    return inRegister(parsePredicateParameterNameImpl, .{parser});
+}
+
+fn parsePredicateParameterNameImpl(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .this) return literals.parseIdentifierName(parser);
 
     const token = parser.current_token;
@@ -74,7 +101,16 @@ fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.addNode(.{ .ts_this_type = .{} }, token.span);
 }
 
-fn finishTypePredicate(
+inline fn finishTypePredicate(
+    parser: *Parser,
+    start: u32,
+    parameter_name: ast.NodeIndex,
+    asserts: bool,
+) Error!?ast.NodeIndex {
+    return inRegister(finishTypePredicateImpl, .{ parser, start, parameter_name, asserts });
+}
+
+fn finishTypePredicateImpl(
     parser: *Parser,
     start: u32,
     parameter_name: ast.NodeIndex,
@@ -128,11 +164,16 @@ fn isIdentifierPredicateStart(parser: *Parser) bool {
         return false;
     }
 
+    if (!parser.nextMayStartWith('i')) return false;
     const next = parser.peekAhead();
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
-pub fn parsePatternTypeAnnotation(parser: *Parser, pattern: ast.NodeIndex) Error!?ast.NodeIndex {
+pub inline fn parsePatternTypeAnnotation(parser: *Parser, pattern: ast.NodeIndex) Error!?ast.NodeIndex {
+    return inRegister(parsePatternTypeAnnotationImpl, .{ parser, pattern });
+}
+
+fn parsePatternTypeAnnotationImpl(parser: *Parser, pattern: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
     std.debug.assert(@backingInt(pattern) + 1 == parser.tree.nodes.len);
 

@@ -2,6 +2,7 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const static_semantics = @import("spec").static_semantics;
 const sc = @import("scope.zig");
+const lexical = @import("../lexical.zig");
 
 const Allocator = std.mem.Allocator;
 const String = ast.String;
@@ -19,7 +20,159 @@ const NodeLink = packed struct(u32) {
     const none: NodeLink = .{ .id = std.math.maxInt(u31), .reference = true };
 };
 
-const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
+const ScopeMap = struct {
+    slots: [*]Slot = @constCast(&no_slots),
+    mask: u32 = 0,
+    len: u32 = 0,
+
+    const empty: ScopeMap = .{};
+
+    const Slot = struct {
+        name: [*]const u8,
+        hash: u32,
+        id: SymbolId,
+
+        const free: Slot = .{ .name = "", .hash = 0, .id = .none };
+    };
+
+    const no_slots = [1]Slot{.free};
+
+    const capacity_min = 4;
+
+    inline fn get(
+        self: *const ScopeMap,
+        symbols: []const Symbol,
+        name: []const u8,
+        hash: NameHash,
+    ) ?SymbolId {
+        const index = self.find(symbols, name, hash) orelse return null;
+        return self.slots[index].id;
+    }
+
+    inline fn find(
+        self: *const ScopeMap,
+        symbols: []const Symbol,
+        name: []const u8,
+        hash: NameHash,
+    ) ?u32 {
+        const tag = hash.tag();
+        var index = tag & self.mask;
+        while (true) : (index = (index + 1) & self.mask) {
+            const slot = self.slots[index];
+            if (slot.id == .none) return null;
+            if (slot.hash != tag) continue;
+            const bound = symbols[@backingInt(slot.id)].name;
+            if (bound.end - bound.start != name.len) continue;
+            if (nameEql(slot.name[0..name.len], name)) return index;
+        }
+    }
+
+    fn putIfAbsent(
+        self: *ScopeMap,
+        allocator: Allocator,
+        symbols: []const Symbol,
+        name: []const u8,
+        hash: NameHash,
+        id: SymbolId,
+    ) Allocator.Error!void {
+        if (self.find(symbols, name, hash) == null) try self.putNew(allocator, name, hash, id);
+    }
+
+    fn putNew(
+        self: *ScopeMap,
+        allocator: Allocator,
+        name: []const u8,
+        hash: NameHash,
+        id: SymbolId,
+    ) Allocator.Error!void {
+        std.debug.assert(id != .none);
+        if (self.len == (self.mask + 1) / 4 * 3) try self.grow(allocator);
+        const tag = hash.tag();
+        var index = tag & self.mask;
+        while (self.slots[index].id != .none) index = (index + 1) & self.mask;
+        self.slots[index] = .{ .name = name.ptr, .hash = tag, .id = id };
+        self.len += 1;
+    }
+
+    noinline fn grow(self: *ScopeMap, allocator: Allocator) Allocator.Error!void {
+        const old = self.slots[0 .. self.mask + 1];
+        std.debug.assert(old.len < std.math.maxInt(u32) / 2);
+        const capacity: u32 = @max(capacity_min, (self.mask + 1) * 2);
+        const slots = try allocator.alloc(Slot, capacity);
+        @memset(slots, Slot.free);
+        const mask = capacity - 1;
+        for (old) |slot| {
+            if (slot.id == .none) continue;
+            var index = slot.hash & mask;
+            while (slots[index].id != .none) index = (index + 1) & mask;
+            slots[index] = slot;
+        }
+        if (self.mask != 0) allocator.free(old);
+        self.slots = slots.ptr;
+        self.mask = mask;
+    }
+
+    fn removeAt(self: *ScopeMap, index: u32) void {
+        std.debug.assert(index <= self.mask);
+        std.debug.assert(self.slots[index].id != .none);
+        var hole = index;
+        var next = (hole + 1) & self.mask;
+        while (self.slots[next].id != .none) : (next = (next + 1) & self.mask) {
+            const home = self.slots[next].hash & self.mask;
+            if ((next -% home) & self.mask >= (next -% hole) & self.mask) {
+                self.slots[hole] = self.slots[next];
+                hole = next;
+            }
+        }
+        self.slots[hole].id = .none;
+        self.len -= 1;
+    }
+
+    inline fn iterator(self: *const ScopeMap) Iterator {
+        return .{ .slots = self.slots[0 .. self.mask + 1] };
+    }
+
+    const Iterator = struct {
+        slots: []const Slot,
+        index: usize = 0,
+
+        fn next(self: *Iterator) ?SymbolId {
+            while (self.index < self.slots.len) {
+                const id = self.slots[self.index].id;
+                self.index += 1;
+                if (id != .none) return id;
+            }
+            return null;
+        }
+    };
+};
+
+inline fn nameHash(name: []const u8) u64 {
+    const len = name.len;
+    var low: u64 = 0;
+    var high: u64 = 0;
+    if (len >= 8) {
+        low = word(u64, name, 0);
+        high = word(u64, name, len - 8);
+        var offset: usize = 8;
+        while (offset + 8 < len) : (offset += 8) {
+            low = mix(low ^ word(u64, name, offset), name_hash_keys[2]);
+        }
+    } else if (len >= 4) {
+        low = word(u32, name, 0);
+        high = word(u32, name, len - 4);
+    } else if (len > 0) {
+        low = @as(u64, name[0]) | @as(u64, name[len >> 1]) << 8 | @as(u64, name[len - 1]) << 16;
+    }
+    return mix(low ^ name_hash_keys[0], high ^ name_hash_keys[1] ^ len);
+}
+
+const name_hash_keys = [3]u64{ 0xa0761d6478bd642f, 0xe7037ed1a0b428db, 0x8ebc6af09c88c6e3 };
+
+inline fn mix(a: u64, b: u64) u64 {
+    const product = @as(u128, a) *% b;
+    return @as(u64, @truncate(product)) ^ @as(u64, @truncate(product >> 64));
+}
 
 const Range = struct { start: u32, len: u32 };
 
@@ -88,7 +241,7 @@ pub const Symbol = struct {
         }
 
         /// Whether the binding is visible in `space`, as an import always is.
-        pub fn visibleIn(self: Flags, space: Reference.Space) bool {
+        pub inline fn visibleIn(self: Flags, space: Reference.Space) bool {
             if (self.intersects(any_import)) return true;
             return switch (space) {
                 .value, .typeof => self.inValueSpace(),
@@ -333,15 +486,17 @@ pub const Semantic = struct {
     pub fn binding(self: Semantic, scope_id: sc.ScopeId, name: []const u8) ?SymbolId {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@backingInt(scope_id) < self.scope_maps.len);
-        return self.scope_maps[@backingInt(scope_id)].get(name) orelse
-            self.hoisting_variables[@backingInt(scope_id)].get(name);
+        const hash: NameHash = .of(name);
+        const index = @backingInt(scope_id);
+        return self.scope_maps[index].get(self.symbols, name, hash) orelse
+            self.hoisting_variables[index].get(self.symbols, name, hash);
     }
 
     /// Iterates the symbols declared directly in the scope.
     pub fn bindings(self: Semantic, scope_id: sc.ScopeId) BindingIterator {
         std.debug.assert(scope_id != .none);
         std.debug.assert(@backingInt(scope_id) < self.scope_maps.len);
-        return .{ .inner = self.scope_maps[@backingInt(scope_id)].valueIterator() };
+        return .{ .inner = self.scope_maps[@backingInt(scope_id)].iterator() };
     }
 
     /// The nearest binding of `name` visible in `space` from the scope.
@@ -357,10 +512,10 @@ pub const Semantic = struct {
             .symbols = self.symbols,
             .next = self.next_bodies,
         };
-        const prehashed: PrehashedContext = .of(name);
+        const hash: NameHash = .of(name);
         var it = self.scopes.ancestors(scope_id);
         while (it.next()) |ancestor| {
-            if (prehashed.find(self.scope_maps, self.scope_names, ancestor, name)) |id| {
+            if (hash.find(self.scope_maps, self.scope_names, self.symbols, ancestor, name)) |id| {
                 if (self.symbol(id).flags.visibleIn(space)) return id;
             }
             if (bodies.sharedMember(ancestor, name, space)) |id| return id;
@@ -379,10 +534,10 @@ pub const Semantic = struct {
         std.debug.assert(owner != .none);
         std.debug.assert(@backingInt(owner) < self.symbols.len);
         const first = self.owner_bodies.get(owner) orelse return null;
-        const prehashed: PrehashedContext = .of(name);
+        const hash: NameHash = .of(name);
         var body = first;
         for (0..self.scopes.list.len) |_| {
-            if (prehashed.find(self.scope_maps, self.scope_names, body, name)) |id| {
+            if (hash.find(self.scope_maps, self.scope_names, self.symbols, body, name)) |id| {
                 const flags = self.symbol(id).flags;
                 const in_enum = self.scopes.list[@backingInt(body)].kind != .ts_module;
                 const shared = if (in_enum) flags.enum_member else flags.exported;
@@ -412,11 +567,11 @@ pub const Semantic = struct {
 
     /// Yields the symbols declared directly in a scope.
     pub const BindingIterator = struct {
-        inner: ScopeMap.ValueIterator,
+        inner: ScopeMap.Iterator,
 
         /// The next symbol id, or `null` when done.
         pub fn next(self: *BindingIterator) ?SymbolId {
-            return if (self.inner.next()) |id| id.* else null;
+            return self.inner.next();
         }
     };
 };
@@ -438,8 +593,10 @@ const Bodies = struct {
         var body = self.next[@backingInt(scope_id)];
         if (body == .none) return null;
         const in_enum = self.scopes[@backingInt(scope_id)].kind != .ts_module;
+        const hash: NameHash = .of(name);
         while (body != scope_id) : (body = self.next[@backingInt(body)]) {
-            const id = self.scope_maps[@backingInt(body)].get(name) orelse continue;
+            const map = &self.scope_maps[@backingInt(body)];
+            const id = map.get(self.symbols, name, hash) orelse continue;
             const flags = self.symbols[@backingInt(id)].flags;
             const shared = if (in_enum) flags.enum_member else flags.exported;
             if (shared and flags.visibleIn(space)) return id;
@@ -448,38 +605,58 @@ const Bodies = struct {
     }
 };
 
-const PrehashedContext = struct {
-    hash_value: u64,
+const NameHash = struct {
+    value: u64,
 
-    fn of(name: []const u8) PrehashedContext {
-        return .{ .hash_value = std.hash.Wyhash.hash(0, name) };
+    inline fn of(name: []const u8) NameHash {
+        return .{ .value = nameHash(name) };
     }
 
-    fn bit(self: PrehashedContext) u64 {
-        return @as(u64, 1) << @intCast(self.hash_value >> 58);
+    inline fn bit(self: NameHash) u64 {
+        return @as(u64, 1) << @intCast(self.value >> 58);
+    }
+
+    inline fn tag(self: NameHash) u32 {
+        return @truncate(self.value);
     }
 
     // a scope's binding of the name, its map skipped when its names rule the name out
     inline fn find(
-        self: PrehashedContext,
+        self: NameHash,
         maps: []const ScopeMap,
         names: []const u64,
+        symbols: []const Symbol,
         scope: sc.ScopeId,
         name: []const u8,
     ) ?SymbolId {
-        const i = @backingInt(scope);
-        if (names[i] & self.bit() == 0) return null;
-        return maps[i].getAdapted(name, self);
-    }
-
-    pub fn hash(self: PrehashedContext, _: []const u8) u64 {
-        return self.hash_value;
-    }
-
-    pub fn eql(_: PrehashedContext, a: []const u8, b: []const u8) bool {
-        return std.mem.eql(u8, a, b);
+        const index = @backingInt(scope);
+        if (names[index] & self.bit() == 0) return null;
+        return maps[index].get(symbols, name, self);
     }
 };
+
+inline fn nameEql(a: []const u8, b: []const u8) bool {
+    if (a.len != b.len) return false;
+    const len = a.len;
+    if (len >= 8) {
+        var offset: usize = 0;
+        while (offset + 8 < len) : (offset += 8) {
+            if (word(u64, a, offset) != word(u64, b, offset)) return false;
+        }
+        return word(u64, a, len - 8) == word(u64, b, len - 8);
+    }
+    if (len >= 4) {
+        return word(u32, a, 0) == word(u32, b, 0) and word(u32, a, len - 4) == word(u32, b, len - 4);
+    }
+    for (a, b) |x, y| {
+        if (x != y) return false;
+    }
+    return true;
+}
+
+inline fn word(comptime T: type, bytes: []const u8, offset: usize) T {
+    return std.mem.readInt(T, bytes[offset..][0..@sizeOf(T)], .little);
+}
 
 /// What a semantic walk records.
 pub const Mode = enum {
@@ -520,6 +697,9 @@ pub const SymbolTracker = struct {
 
     saved_stack: std.ArrayList(SavedContext) = .empty,
     namespace_bodies: std.ArrayList(ast.NodeIndex) = .empty,
+
+    hashed_name: []const u8 = "",
+    hashed_value: u64 = 0,
 
     pub const ExportState = enum { none, named, default };
 
@@ -910,12 +1090,19 @@ pub const SymbolTracker = struct {
 
                 // visible in every block it passes through so redeclarations see it
                 if (flags.isHoistingVar()) {
+                    const name = self.tree.string(id.name);
+                    const hash = self.prehash(name);
                     var iter = scope.ancestors(scope.current);
                     while (iter.next()) |scope_id| {
                         if (scope_id == self.pending.scope) break;
                         const table = &self.hoisting_variables.items[@backingInt(scope_id)];
-                        const gop = try table.getOrPut(self.allocator, self.tree.string(id.name));
-                        if (!gop.found_existing) gop.value_ptr.* = sym_id;
+                        try table.putIfAbsent(
+                            self.allocator,
+                            self.symbols.items,
+                            name,
+                            hash,
+                            sym_id,
+                        );
                     }
                 }
             },
@@ -1082,12 +1269,13 @@ pub const SymbolTracker = struct {
         std.debug.assert(node != .null);
 
         const name_str = self.tree.string(name);
+        const hash = self.prehash(name_str);
 
         const exported = self.pendingExported(target);
         // an export merges across the bodies of its namespace
-        const own = self.binding(target, name_str);
+        const own = self.bindingHashed(target, name_str, hash);
         const shared = if (own == null) self.sharedExport(target, name_str, scopes) else null;
-        if (shared) |existing| try self.bind(target, name_str, existing);
+        if (shared) |existing| try self.bindHashed(target, name_str, existing, hash);
 
         const id = if (own orelse shared) |existing| sid: {
             const sym = &self.symbols.items[@backingInt(existing)];
@@ -1112,7 +1300,7 @@ pub const SymbolTracker = struct {
                 .scope = target,
             });
             try self.first_decls.append(self.allocator, node);
-            try self.bind(target, name_str, new_id);
+            try self.bindHashed(target, name_str, new_id, hash);
             break :sid new_id;
         };
 
@@ -1179,15 +1367,36 @@ pub const SymbolTracker = struct {
     pub fn ownBinding(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
         const idx = @backingInt(scope);
         if (idx >= self.scope_maps.items.len) return null;
-        return self.scope_maps.items[idx].get(name);
+        return self.scope_maps.items[idx].get(self.symbols.items, name, .of(name));
     }
 
     /// The binding of `name` in `scope`, a hoisting `var` passing through included.
     pub fn binding(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        if (self.ownBinding(scope, name)) |id| return id;
+        return self.bindingHashed(scope, name, .of(name));
+    }
+
+    inline fn prehash(self: *SymbolTracker, name: []const u8) NameHash {
+        if (name.ptr != self.hashed_name.ptr or name.len != self.hashed_name.len) {
+            self.hashed_name = name;
+            self.hashed_value = NameHash.of(name).value;
+        }
+        return .{ .value = self.hashed_value };
+    }
+
+    fn bindingHashed(
+        self: *const SymbolTracker,
+        scope: sc.ScopeId,
+        name: []const u8,
+        hash: NameHash,
+    ) ?SymbolId {
         const idx = @backingInt(scope);
+        const symbols = self.symbols.items;
+        if (idx < self.scope_maps.items.len) {
+            const maps = self.scope_maps.items;
+            if (hash.find(maps, self.scope_names.items, symbols, scope, name)) |id| return id;
+        }
         if (idx < self.hoisting_variables.items.len) {
-            return self.hoisting_variables.items[idx].get(name);
+            return self.hoisting_variables.items[idx].get(symbols, name, hash);
         }
         return null;
     }
@@ -1198,16 +1407,20 @@ pub const SymbolTracker = struct {
         name: []const u8,
         id: SymbolId,
     ) Allocator.Error!void {
-        const prehashed: PrehashedContext = .of(name);
-        const entry = try self.scope_maps.items[@backingInt(scope)].getOrPutContextAdapted(
-            self.allocator,
-            name,
-            prehashed,
-            .{},
-        );
-        if (!entry.found_existing) entry.key_ptr.* = name;
-        entry.value_ptr.* = id;
-        self.scope_names.items[@backingInt(scope)] |= prehashed.bit();
+        return self.bindHashed(scope, name, id, .of(name));
+    }
+
+    fn bindHashed(
+        self: *SymbolTracker,
+        scope: sc.ScopeId,
+        name: []const u8,
+        id: SymbolId,
+        hash: NameHash,
+    ) Allocator.Error!void {
+        const map = &self.scope_maps.items[@backingInt(scope)];
+        std.debug.assert(map.find(self.symbols.items, name, hash) == null);
+        try map.putNew(self.allocator, name, hash, id);
+        self.scope_names.items[@backingInt(scope)] |= hash.bit();
     }
 
     inline fn syncScopeMaps(self: *SymbolTracker, count: usize) Allocator.Error!void {
@@ -1409,17 +1622,23 @@ pub const SymbolTracker = struct {
         scopes: []const sc.Scope,
     ) Allocator.Error!?SymbolId {
         const name = self.tree.string(self.symbol(function.symbol).name);
+        const hash: NameHash = .of(name);
         const block_map = &self.scope_maps.items[@backingInt(function.block)];
-        if (block_map.get(name) != function.symbol) return null;
-        const removed = block_map.remove(name);
-        std.debug.assert(removed);
+        const slot = block_map.find(self.symbols.items, name, hash) orelse return null;
+        if (block_map.slots[slot].id != function.symbol) return null;
+        block_map.removeAt(slot);
 
         const target = scopes[@backingInt(function.block)].hoist_target;
         var scope_id = function.block;
         while (scope_id != target) : (scope_id = scopes[@backingInt(scope_id)].parent) {
             const table = &self.hoisting_variables.items[@backingInt(scope_id)];
-            const entry = try table.getOrPut(self.allocator, name);
-            if (!entry.found_existing) entry.value_ptr.* = function.symbol;
+            try table.putIfAbsent(
+                self.allocator,
+                self.symbols.items,
+                name,
+                hash,
+                function.symbol,
+            );
         }
 
         if (self.ownBinding(target, name)) |existing| {
@@ -1456,14 +1675,86 @@ pub const SymbolTracker = struct {
         for (self.decl_pairs.items) |*pair| pair.symbol = ids[@backingInt(pair.symbol)];
         for ([_][]ScopeMap{ self.scope_maps.items, self.hoisting_variables.items }) |maps| {
             for (maps) |*map| {
-                var values = map.valueIterator();
-                while (values.next()) |id| id.* = ids[@backingInt(id.*)];
+                for (map.slots[0 .. map.mask + 1]) |*slot| {
+                    if (slot.id != .none) slot.id = ids[@backingInt(slot.id)];
+                }
             }
         }
     }
 
+    inline fn resolve(
+        self: *const SymbolTracker,
+        ref: *const Reference,
+        scopes: sc.ScopeTree,
+        named_above: []const sc.ScopeId,
+        node_parents: []const ast.NodeIndex,
+        members: Bodies,
+    ) SymbolId {
+        const name = self.tree.string(ref.name);
+        const hash: NameHash = .of(name);
+        const space = ref.flags.space;
+        const symbols = self.symbols.items;
+        const names = self.scope_names.items;
+        const maps = self.scope_maps.items;
+        const bit = hash.bit();
+
+        var scope = ref.scope;
+        if (space == .value or space == .typeof) {
+            if (lexical.isArguments(name)) return self.resolveFrom(ref, scope, scopes, node_parents, members);
+        }
+        while (scope != .none) : (scope = named_above[@backingInt(scope)]) {
+            const index = @backingInt(scope);
+            if (names[index] & bit == 0) continue;
+            if (maps[index].get(symbols, name, hash)) |id| {
+                if (plainlyVisible(symbols[@backingInt(id)].flags, ref.flags)) return id;
+                break;
+            }
+            if (self.shares_members and members.next[index] != .none) break;
+        }
+        if (scope == .none) return .none;
+        return self.resolveFrom(ref, scope, scopes, node_parents, members);
+    }
+
+    noinline fn resolveFrom(
+        self: *const SymbolTracker,
+        ref: *const Reference,
+        start: sc.ScopeId,
+        scopes: sc.ScopeTree,
+        node_parents: []const ast.NodeIndex,
+        members: Bodies,
+    ) SymbolId {
+        const name = self.tree.string(ref.name);
+        const space = ref.flags.space;
+        const hash: NameHash = .of(name);
+        const symbols = self.symbols.items;
+        // an implicit arguments object hides outer bindings but not its own scope's (10.2.11)
+        const arguments_barrier = (space == .value or space == .typeof) and
+            lexical.isArguments(name);
+        const shares_members = self.shares_members;
+
+        var it = scopes.ancestors(start);
+        while (it.next()) |ancestor| {
+            const maps = self.scope_maps.items;
+            if (hash.find(maps, self.scope_names.items, symbols, ancestor, name)) |id| {
+                const sym = self.symbol(id);
+                if (sym.flags.visibleIn(space) and
+                    visibleAt(self.tree, sym, ref, scopes, node_parents))
+                {
+                    return id;
+                }
+            }
+            if (shares_members) {
+                if (members.sharedMember(ancestor, name, space)) |id| return id;
+            }
+            if (arguments_barrier and isArgumentsBarrier(self.tree, scopes.get(ancestor))) {
+                return .none;
+            }
+        }
+        return .none;
+    }
+
     /// Finalizes the tracker into a `Semantic` that aliases its storage.
-    pub fn finalize(
+    pub noinline fn finalize(
         self: *SymbolTracker,
         scopes: sc.ScopeTree,
         node_scopes: []const sc.ScopeId,
@@ -1503,36 +1794,29 @@ pub const SymbolTracker = struct {
             node_links[@backingInt(ref.node)] = .{ .id = @intCast(i), .reference = true };
         }
 
+        if (self.shares_members) {
+            for (self.next_bodies.items, self.scope_names.items) |next, *names| {
+                if (next != .none) names.* = std.math.maxInt(u64);
+            }
+        }
+        const scope_names = self.scope_names.items;
+        std.debug.assert(scope_names.len == scopes.list.len);
+        const named_above = try self.allocator.alloc(sc.ScopeId, scopes.list.len);
+        defer self.allocator.free(named_above);
+        for (scopes.list, named_above, 0..) |scope, *above, index| {
+            const parent = scope.parent;
+            std.debug.assert(parent == .none or @backingInt(parent) < index);
+            above.* = if (parent == .none)
+                .none
+            else if (scope_names[@backingInt(parent)] != 0)
+                parent
+            else
+                named_above[@backingInt(parent)];
+        }
+
         const members = self.bodies(scopes.list);
-        const shares_members = self.shares_members;
         for (self.references.items) |*ref| {
-            const name = self.tree.string(ref.name);
-            const space = ref.flags.space;
-            const prehashed: PrehashedContext = .of(name);
-            // an implicit arguments object hides outer bindings but not its own scope's (10.2.11)
-            const arguments_barrier = (space == .value or space == .typeof) and
-                std.mem.eql(u8, name, "arguments");
-            ref.symbol = blk: {
-                var it = scopes.ancestors(ref.scope);
-                while (it.next()) |ancestor| {
-                    const maps = self.scope_maps.items;
-                    if (prehashed.find(maps, self.scope_names.items, ancestor, name)) |id| {
-                        const sym = self.symbol(id);
-                        if (sym.flags.visibleIn(space) and
-                            visibleAt(self.tree, sym, ref, scopes, node_parents))
-                        {
-                            break :blk id;
-                        }
-                    }
-                    if (shares_members) {
-                        if (members.sharedMember(ancestor, name, space)) |id| break :blk id;
-                    }
-                    if (arguments_barrier and isArgumentsBarrier(self.tree, scopes.get(ancestor))) {
-                        break :blk .none;
-                    }
-                }
-                break :blk .none;
-            };
+            ref.symbol = self.resolve(ref, scopes, named_above, node_parents, members);
         }
 
         const use_ranges = try self.allocator.alloc(Range, self.symbols.items.len);
@@ -1576,9 +1860,10 @@ pub const SymbolTracker = struct {
 
 /// The symbol the pending declaration of `name` merges into, the scope's own binding or an
 /// export another body of its namespace shares.
-pub fn prior(tracker: *const SymbolTracker, name: []const u8, scopes: []const sc.Scope) ?SymbolId {
+pub fn prior(tracker: *SymbolTracker, name: []const u8, scopes: []const sc.Scope) ?SymbolId {
     const target = tracker.pendingTarget();
-    return tracker.binding(target, name) orelse tracker.sharedExport(target, name, scopes);
+    return tracker.bindingHashed(target, name, tracker.prehash(name)) orelse
+        tracker.sharedExport(target, name, scopes);
 }
 
 /// Whether `pending` cannot merge into a symbol with `flags`.
@@ -1588,6 +1873,14 @@ pub fn conflicts(pending: SymbolTracker.PendingBinding, flags: Symbol.Flags) boo
     if (pending.flags.class and pending.flags.ambient) excludes.function = false;
     if (pending.flags.function and flags.class and flags.ambient) excludes.class = false;
     return flags.intersects(excludes);
+}
+
+inline fn plainlyVisible(flags: Symbol.Flags, reference: Reference.Flags) bool {
+    const placed: Symbol.Flags = if (reference.type_position)
+        .{ .type_parameter = true, .parameter = true, .function_scoped_var = true }
+    else
+        .{ .type_parameter = true };
+    return flags.visibleIn(reference.space) and !flags.intersects(placed);
 }
 
 // infer variables exist only in their conditional's true branch, class type

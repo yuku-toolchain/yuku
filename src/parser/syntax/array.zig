@@ -1,5 +1,6 @@
 const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
+const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
 const Precedence = @import("../token.zig").Precedence;
@@ -77,7 +78,11 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 }
 
 /// Converts an array cover to an ArrayExpression.
-pub fn coverToExpression(parser: *Parser, cover: ArrayCover) Error!ast.NodeIndex {
+pub inline fn coverToExpression(parser: *Parser, cover: ArrayCover) Error!ast.NodeIndex {
+    return inRegister(coverToExpressionImpl, .{ parser, cover });
+}
+
+fn coverToExpressionImpl(parser: *Parser, cover: ArrayCover) Error!ast.NodeIndex {
     return parser.tree.addNode(
         .{ .array_expression = .{ .elements = cover.elements } },
         .{ .start = cover.start, .end = cover.end },

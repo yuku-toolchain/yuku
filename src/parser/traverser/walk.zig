@@ -417,7 +417,7 @@ pub const NodePath = struct {
     }
 
     /// Iterates from the current node up to the root.
-    pub fn ancestors(self: *const NodePath) AncestorIterator {
+    pub inline fn ancestors(self: *const NodePath) AncestorIterator {
         return .{ .items = self.items[0..self.len], .pos = self.len };
     }
 
@@ -427,7 +427,7 @@ pub const NodePath = struct {
         pos: usize,
 
         /// The next node up the path, or `null` past the root.
-        pub fn next(self: *AncestorIterator) ?ast.NodeIndex {
+        pub inline fn next(self: *AncestorIterator) ?ast.NodeIndex {
             if (self.pos == 0) return null;
             self.pos -= 1;
             return self.items[self.pos];
@@ -435,14 +435,14 @@ pub const NodePath = struct {
     };
 
     /// Pushes an entered node.
-    pub fn push(self: *NodePath, index: ast.NodeIndex) void {
+    pub inline fn push(self: *NodePath, index: ast.NodeIndex) void {
         std.debug.assert(index != .null);
         self.items[self.len] = index;
         self.len += 1;
     }
 
     /// Pops the exited node.
-    pub fn pop(self: *NodePath) void {
+    pub inline fn pop(self: *NodePath) void {
         std.debug.assert(self.len > 0);
         self.len -= 1;
     }
