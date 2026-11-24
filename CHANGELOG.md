@@ -2,6 +2,22 @@
 
 What changed in each release of Yuku, newest first. Releases up to 0.14.0 are listed on [GitHub](https://github.com/yuku-toolchain/yuku/releases).
 
+## 0.29.0
+
+### Breaking
+
+- `print` no longer strips TypeScript, and passing `strip` throws, so stay on 0.28 if you need JavaScript output until the transformer lands (#327 by @arshad-yaseen)
+- Code nested more than 256 levels deep parses to an empty program with one diagnostic, where a partial tree came back before (#330 by @arshad-yaseen)
+- In Zig, `stack_bytes` is gone from `parser.Options` and `codegen.Options`, so set `max_depth` instead (#330 by @arshad-yaseen)
+- WebAssembly throws when the host runs out of stack instead of retrying on a smaller one (#330 by @arshad-yaseen)
+
+### Changes
+
+- The Node-API addon and WebAssembly accept exactly the same code, where each used to stop wherever its stack ran out (#330 by @arshad-yaseen)
+- TypeScript such as `f<A>(1)` nested close to the limit is no longer read as two comparisons (#330 by @arshad-yaseen)
+- `print` handles array, indexed access, and JSDoc postfix types, qualified names, and JSX member names of any length (#330 by @arshad-yaseen)
+- Parsing and analysis are faster, and parsing with `tokens: true` costs less on top of a plain parse (#331, #333 by @arshad-yaseen)
+
 ## 0.28.1
 
 ### Changes
