@@ -1,6 +1,6 @@
 .{
     .name = .yuku,
-    .version = "0.28.1",
+    .version = "0.29.0",
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
     .minimum_zig_version = "0.17.0",
     .paths = .{
