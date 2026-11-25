@@ -101,9 +101,11 @@ pub const LexerState = struct {
 };
 
 const IdentifierBlocks = struct {
-    start: u32,
-    first: u64,
-    second: u64,
+    start: u32 = std.math.maxInt(u32),
+    first: u64 = 0,
+    second: u64 = 0,
+
+    const start_mask = ~@as(u32, 63);
 };
 
 pub const Lexer = struct {
@@ -139,16 +141,11 @@ pub const Lexer = struct {
             .cursor = 0,
             .fast_limit = @intCast(source.len -| fast_margin),
             .fast_end = @intCast(source.len -| fast_margin),
-            .blocks = undefined,
+            .blocks = .{},
             .comments = .empty,
             .collect_comments = collect_comments,
             .allocator = allocator,
             .source_type = source_type,
-        };
-        self.blocks = .{
-            .start = 0,
-            .first = self.identifierBlock(0),
-            .second = self.identifierBlock(64),
         };
         self.skipHashbang();
         std.debug.assert(self.cursor <= self.source.len);
@@ -341,7 +338,7 @@ pub const Lexer = struct {
     }
 
     inline fn scanIdentifierFast(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
-        if (start -% self.blocks.start >= 64) return self.scanIdentifierReloaded(start, flags, out);
+        if (start & IdentifierBlocks.start_mask != self.blocks.start) return self.scanIdentifierReloaded(start, flags, out);
         return self.scanIdentifierInBlocks(start, flags, out);
     }
 
@@ -353,7 +350,7 @@ pub const Lexer = struct {
     inline fn scanIdentifierInBlocks(self: *Lexer, start: u32, flags: u8, out: *Token) bool {
         const src = self.source.ptr;
         std.debug.assert(identifier_start_ascii[src[start]]);
-        std.debug.assert(start -% self.blocks.start < 64);
+        std.debug.assert(start & IdentifierBlocks.start_mask == self.blocks.start);
 
         const len = self.identifierRunInBlocks(start);
         const end = start + len;
@@ -370,19 +367,24 @@ pub const Lexer = struct {
     const identifier_run_max = 64;
 
     inline fn identifierRun(self: *Lexer, position: u32) u32 {
-        if (position -% self.blocks.start >= 64) self.loadBlocks(position);
+        if (position & IdentifierBlocks.start_mask != self.blocks.start) self.loadBlocks(position);
         return self.identifierRunInBlocks(position);
     }
 
     inline fn identifierRunInBlocks(self: *const Lexer, position: u32) u32 {
-        const shift: u6 = @intCast(position -% self.blocks.start);
-        const run = (self.blocks.first >> shift) | ((self.blocks.second << 1) << (63 - shift));
-        return @ctz(~run);
+        const shift: u6 = @truncate(position);
+        const stops = ~self.blocks.first >> shift;
+        if (stops == 0) {
+            @branchHint(.unlikely);
+            const len = 64 - @as(u32, shift) + @as(u32, @ctz(~self.blocks.second));
+            return @min(len, identifier_run_max);
+        }
+        return @ctz(stops);
     }
 
     fn loadBlocks(self: *Lexer, position: u32) void {
-        const start = position & ~@as(u32, 63);
-        const first = if (start == self.blocks.start +% 64)
+        const start = position & IdentifierBlocks.start_mask;
+        const first = if (start == @as(u64, self.blocks.start) + 64)
             self.blocks.second
         else
             self.identifierBlock(start);
