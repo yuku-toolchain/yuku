@@ -1,7 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 
 const literals = @import("literals.zig");
@@ -17,15 +16,7 @@ const ParseFunctionOptions = struct {
     is_default_export: bool = false,
 };
 
-pub inline fn parseFunction(
-    parser: *Parser,
-    options: ParseFunctionOptions,
-    start_from_param: ?u32,
-) Error!?ast.NodeIndex {
-    return inRegister(parseFunctionImpl, .{ parser, options, start_from_param });
-}
-
-fn parseFunctionImpl(
+pub fn parseFunction(
     parser: *Parser,
     options: ParseFunctionOptions,
     start_from_param: ?u32,
@@ -146,11 +137,7 @@ pub inline fn parseFunctionBody(parser: *Parser, presence: BodyPresence) Error!?
     return parseBlockFunctionBody(parser);
 }
 
-inline fn parseBlockFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseBlockFunctionBodyImpl, .{parser});
-}
-
-fn parseBlockFunctionBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseBlockFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(
         .left_brace,
@@ -178,15 +165,7 @@ fn parseBlockFunctionBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
 
 /// Parses a parenthesized parameter list.
 /// `allow_parameter_properties` enables the constructor-only `constructor(public x: T)` shorthand.
-pub inline fn parseFormalParameters(
-    parser: *Parser,
-    kind: ast.FormalParameterKind,
-    allow_parameter_properties: bool,
-) Error!?ast.NodeIndex {
-    return inRegister(parseFormalParametersImpl, .{ parser, kind, allow_parameter_properties });
-}
-
-fn parseFormalParametersImpl(
+pub fn parseFormalParameters(
     parser: *Parser,
     kind: ast.FormalParameterKind,
     allow_parameter_properties: bool,
@@ -272,16 +251,7 @@ const ParameterPropertyModifiers = struct {
 };
 
 /// Parses one parameter after the caller has collected its `decorators` and `start`.
-inline fn parseFormalParameter(
-    parser: *Parser,
-    allow_parameter_properties: bool,
-    decorators: ast.IndexRange,
-    start: u32,
-) Error!?ast.NodeIndex {
-    return inRegister(parseFormalParameterImpl, .{ parser, allow_parameter_properties, decorators, start });
-}
-
-fn parseFormalParameterImpl(
+fn parseFormalParameter(
     parser: *Parser,
     allow_parameter_properties: bool,
     decorators: ast.IndexRange,
@@ -383,11 +353,7 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
 }
 
 // wrapped in `formal_parameter` so signature walks and the decoder unwrap rule keep working
-inline fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseThisParameterImpl, .{parser});
-}
-
-fn parseThisParameterImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null;

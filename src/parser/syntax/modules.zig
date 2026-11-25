@@ -1,7 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const Token = @import("../token.zig").Token;
 const TokenTag = @import("../token.zig").TokenTag;
@@ -16,11 +15,7 @@ const variables = @import("variables.zig");
 const ts = @import("ts/statements.zig");
 
 // `start_from_param` lets `export public import x =` span from the legacy modifier
-pub inline fn parseImportDeclaration(parser: *Parser, start_from_param: ?u32) Error!?ast.NodeIndex {
-    return inRegister(parseImportDeclarationImpl, .{ parser, start_from_param });
-}
-
-fn parseImportDeclarationImpl(parser: *Parser, start_from_param: ?u32) Error!?ast.NodeIndex {
+pub fn parseImportDeclaration(parser: *Parser, start_from_param: ?u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .import);
     const start = start_from_param orelse parser.current_token.span.start;
     const is_ts = parser.tree.isTs();
@@ -102,17 +97,7 @@ fn peekSecond(parser: *Parser) Token {
     return peek.next();
 }
 
-inline fn parseImportSource(
-    parser: *Parser,
-    start: u32,
-    specifiers: ast.IndexRange,
-    phase: ?ast.ImportPhase,
-    import_kind: ast.ImportOrExportKind,
-) Error!?ast.NodeIndex {
-    return inRegister(parseImportSourceImpl, .{ parser, start, specifiers, phase, import_kind });
-}
-
-fn parseImportSourceImpl(
+fn parseImportSource(
     parser: *Parser,
     start: u32,
     specifiers: ast.IndexRange,
@@ -132,11 +117,7 @@ fn parseImportSourceImpl(
     } }, .{ .start = start, .end = end });
 }
 
-inline fn parseImportClause(parser: *Parser, import_kind: ast.ImportOrExportKind) Error!?ast.IndexRange {
-    return inRegister(parseImportClauseImpl, .{ parser, import_kind });
-}
-
-fn parseImportClauseImpl(parser: *Parser, import_kind: ast.ImportOrExportKind) Error!?ast.IndexRange {
+fn parseImportClause(parser: *Parser, import_kind: ast.ImportOrExportKind) Error!?ast.IndexRange {
     if (parser.current_token.tag == .left_brace) return parseNamedImports(parser);
 
     const checkpoint = parser.scratch_a.begin();
@@ -180,11 +161,7 @@ fn parseImportClauseImpl(parser: *Parser, import_kind: ast.ImportOrExportKind) E
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-inline fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseImportDefaultSpecifierImpl, .{parser});
-}
-
-fn parseImportDefaultSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const local = try literals.parseBindingIdentifier(parser) orelse return null;
 
@@ -193,11 +170,7 @@ fn parseImportDefaultSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = parser.tree.span(local).end });
 }
 
-inline fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseImportNamespaceSpecifierImpl, .{parser});
-}
-
-fn parseImportNamespaceSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(.star, "Expected '*' to start the namespace import", null)) return null;
@@ -214,11 +187,7 @@ fn parseImportNamespaceSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = parser.tree.span(local).end });
 }
 
-inline fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
-    return inRegister(parseNamedImportsImpl, .{parser});
-}
-
-fn parseNamedImportsImpl(parser: *Parser) Error!?ast.IndexRange {
+fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
@@ -241,11 +210,7 @@ fn parseNamedImportsImpl(parser: *Parser) Error!?ast.IndexRange {
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-inline fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseImportSpecifierImpl, .{parser});
-}
-
-fn parseImportSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const parts = try parseSpecifierParts(parser) orelse return null;
     const imported = if (parts.property_name != .null) parts.property_name else parts.name;
@@ -375,11 +340,7 @@ fn canStartModuleExportName(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .string_literal;
 }
 
-pub inline fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseExportDeclarationImpl, .{parser});
-}
-
-fn parseExportDeclarationImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"export");
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
@@ -410,11 +371,7 @@ fn parseExportDeclarationImpl(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-inline fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    return inRegister(parseTSExportAssignmentImpl, .{ parser, start });
-}
-
-fn parseTSExportAssignmentImpl(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse
@@ -426,11 +383,7 @@ fn parseTSExportAssignmentImpl(parser: *Parser, start: u32) Error!?ast.NodeIndex
     }, .{ .start = start, .end = end });
 }
 
-inline fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    return inRegister(parseTSNamespaceExportDeclarationImpl, .{ parser, start });
-}
-
-fn parseTSNamespaceExportDeclarationImpl(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     if (!try parser.expect(.namespace, "Expected 'namespace' after 'export as'", null)) {
@@ -452,11 +405,7 @@ fn isLegacyAccessibilityImport(parser: *Parser) bool {
 
 const DefaultExportPart = struct { declaration: ast.NodeIndex, needs_semicolon: bool };
 
-inline fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    return inRegister(parseExportDefaultDeclarationImpl, .{ parser, start });
-}
-
-fn parseExportDefaultDeclarationImpl(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     const part = try parseExportDefaultPart(parser) orelse return null;
@@ -523,15 +472,7 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
     return .{ .declaration = declaration orelse return null, .needs_semicolon = false };
 }
 
-inline fn parseExportAllDeclaration(
-    parser: *Parser,
-    start: u32,
-    export_kind: ast.ImportOrExportKind,
-) Error!?ast.NodeIndex {
-    return inRegister(parseExportAllDeclarationImpl, .{ parser, start, export_kind });
-}
-
-fn parseExportAllDeclarationImpl(
+fn parseExportAllDeclaration(
     parser: *Parser,
     start: u32,
     export_kind: ast.ImportOrExportKind,
@@ -564,15 +505,7 @@ fn parseExportAllDeclarationImpl(
 }
 
 // caller already consumed `export` and any `type`
-inline fn parseExportNamedFromClause(
-    parser: *Parser,
-    start: u32,
-    export_kind: ast.ImportOrExportKind,
-) Error!?ast.NodeIndex {
-    return inRegister(parseExportNamedFromClauseImpl, .{ parser, start, export_kind });
-}
-
-fn parseExportNamedFromClauseImpl(
+fn parseExportNamedFromClause(
     parser: *Parser,
     start: u32,
     export_kind: ast.ImportOrExportKind,
@@ -605,11 +538,7 @@ fn parseExportNamedFromClauseImpl(
     } }, .{ .start = start, .end = end });
 }
 
-inline fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    return inRegister(parseExportWithDeclarationImpl, .{ parser, start });
-}
-
-fn parseExportWithDeclarationImpl(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
 
     if (is_ts and ts.isStartOfTsDeclaration(parser)) {
@@ -664,16 +593,7 @@ fn parseExportWithDeclarationImpl(parser: *Parser, start: u32) Error!?ast.NodeIn
     return try addExportNamedDeclaration(parser, start, declaration, .value);
 }
 
-inline fn addExportNamedDeclaration(
-    parser: *Parser,
-    start: u32,
-    declaration: ast.NodeIndex,
-    export_kind: ast.ImportOrExportKind,
-) Error!ast.NodeIndex {
-    return inRegister(addExportNamedDeclarationImpl, .{ parser, start, declaration, export_kind });
-}
-
-fn addExportNamedDeclarationImpl(
+fn addExportNamedDeclaration(
     parser: *Parser,
     start: u32,
     declaration: ast.NodeIndex,
@@ -688,11 +608,7 @@ fn addExportNamedDeclarationImpl(
     } }, .{ .start = start, .end = parser.tree.span(declaration).end });
 }
 
-inline fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(reportMissingExportDeclarationImpl, .{parser});
-}
-
-fn reportMissingExportDeclarationImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     try parser.reportExpected(
         parser.current_token.span,
         "Expected a declaration after 'export'",
@@ -701,11 +617,7 @@ fn reportMissingExportDeclarationImpl(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-pub inline fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
-    return inRegister(parseExportDecoratedImpl, .{ parser, decorators });
-}
-
-fn parseExportDecoratedImpl(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
+pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"export");
     std.debug.assert(decorators.len > 0);
     const start = parser.current_token.span.start;
@@ -808,11 +720,7 @@ fn resolveLocalExportSpecifiers(
     }
 }
 
-inline fn parseExportSpecifiers(parser: *Parser) Error!?ast.IndexRange {
-    return inRegister(parseExportSpecifiersImpl, .{parser});
-}
-
-fn parseExportSpecifiersImpl(parser: *Parser) Error!?ast.IndexRange {
+fn parseExportSpecifiers(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
@@ -837,11 +745,7 @@ fn parseExportSpecifiersImpl(parser: *Parser) Error!?ast.IndexRange {
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-inline fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseExportSpecifierImpl, .{parser});
-}
-
-fn parseExportSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const parts = try parseSpecifierParts(parser) orelse return null;
 
@@ -858,11 +762,7 @@ fn parseExportSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
     } }, .{ .start = start, .end = parser.tree.span(exported).end });
 }
 
-inline fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseModuleExportNameImpl, .{parser});
-}
-
-fn parseModuleExportNameImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
     if (tag == .string_literal) {
@@ -887,11 +787,7 @@ fn parseModuleExportNameImpl(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-inline fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseModuleSpecifierImpl, .{parser});
-}
-
-fn parseModuleSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .string_literal) {
         try parser.reportExpected(parser.current_token.span, "Expected a module specifier", .{
             .help = "Write the module specifier as a string, such as './file.js'",
@@ -902,11 +798,7 @@ fn parseModuleSpecifierImpl(parser: *Parser) Error!?ast.NodeIndex {
     return literals.parseStringLiteral(parser);
 }
 
-inline fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
-    return inRegister(parseWithClauseImpl, .{parser});
-}
-
-fn parseWithClauseImpl(parser: *Parser) Error!ast.IndexRange {
+fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
     if (parser.current_token.tag == .assert and parser.current_token.hasLineTerminatorBefore()) {
         return ast.IndexRange.empty;
     }
@@ -939,11 +831,7 @@ fn parseWithClauseImpl(parser: *Parser) Error!ast.IndexRange {
     return parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-inline fn parseImportAttribute(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseImportAttributeImpl, .{parser});
-}
-
-fn parseImportAttributeImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseImportAttribute(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const key = try parseAttributeKey(parser) orelse return null;
 
@@ -968,11 +856,7 @@ fn parseImportAttributeImpl(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn parseAttributeKey(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseAttributeKeyImpl, .{parser});
-}
-
-fn parseAttributeKeyImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseAttributeKey(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
     if (tag == .string_literal) return literals.parseStringLiteral(parser);
     if (tag.isIdentifierLike()) return literals.parseIdentifierName(parser);
@@ -985,15 +869,7 @@ fn parseAttributeKeyImpl(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-pub inline fn parseDynamicImport(
-    parser: *Parser,
-    import_keyword: ast.NodeIndex,
-    phase: ?ast.ImportPhase,
-) Error!?ast.NodeIndex {
-    return inRegister(parseDynamicImportImpl, .{ parser, import_keyword, phase });
-}
-
-fn parseDynamicImportImpl(
+pub fn parseDynamicImport(
     parser: *Parser,
     import_keyword: ast.NodeIndex,
     phase: ?ast.ImportPhase,

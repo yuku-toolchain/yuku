@@ -1,6 +1,5 @@
 const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
 const Token = @import("../token.zig").Token;
@@ -76,11 +75,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     };
 }
 
-inline fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseCoverPropertyImpl, .{parser});
-}
-
-fn parseCoverPropertyImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     const prop_start = parser.current_token.span.start;
     var is_async = false;
     var is_generator = false;
@@ -381,11 +376,7 @@ fn parseObjectMethodProperty(
 }
 
 /// Converts an object cover to an ObjectExpression.
-pub inline fn coverToExpression(parser: *Parser, cover: ObjectCover) Error!ast.NodeIndex {
-    return inRegister(coverToExpressionImpl, .{ parser, cover });
-}
-
-fn coverToExpressionImpl(parser: *Parser, cover: ObjectCover) Error!ast.NodeIndex {
+pub fn coverToExpression(parser: *Parser, cover: ObjectCover) Error!ast.NodeIndex {
     return parser.tree.addNode(
         .{ .object_expression = .{ .properties = cover.properties } },
         .{ .start = cover.start, .end = cover.end },

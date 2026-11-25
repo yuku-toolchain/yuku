@@ -4,15 +4,10 @@ const Token = @import("../token.zig").Token;
 const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const expressions = @import("expressions.zig");
 
-pub inline fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseStringLiteralImpl, .{parser});
-}
-
-fn parseStringLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .string_literal) {
         try parser.reportExpected(parser.current_token.span, "Expected a string literal", .{});
         return null;
@@ -26,11 +21,7 @@ fn parseStringLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
     } }, token.span);
 }
 
-pub inline fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseBooleanLiteralImpl, .{parser});
-}
-
-fn parseBooleanLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .true or parser.current_token.tag == .false);
     const token = parser.current_token;
     try parser.advance() orelse return null;
@@ -39,22 +30,14 @@ fn parseBooleanLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
     }, token.span);
 }
 
-pub inline fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseNullLiteralImpl, .{parser});
-}
-
-fn parseNullLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .null_literal);
     const token = parser.current_token;
     try parser.advance() orelse return null;
     return try parser.tree.addNode(.{ .null_literal = .{} }, token.span);
 }
 
-pub inline fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseNumericLiteralImpl, .{parser});
-}
-
-fn parseNumericLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag.isNumericLiteral());
     const token = parser.current_token;
     try parser.advance() orelse return null;
@@ -71,11 +54,7 @@ fn parseNumericLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
     } }, token.span);
 }
 
-pub inline fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseRegExpLiteralImpl, .{parser});
-}
-
-fn parseRegExpLiteralImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .slash or
         parser.current_token.tag == .slash_assign);
     const token = parser.current_token;
@@ -141,11 +120,7 @@ fn regExpFlagBit(flag: u8) u32 {
     };
 }
 
-pub inline fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
-    return inRegister(parseNoSubstitutionTemplateImpl, .{ parser, tagged });
-}
-
-fn parseNoSubstitutionTemplateImpl(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
+pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .no_substitution_template);
     const token = parser.current_token;
 
@@ -158,11 +133,7 @@ fn parseNoSubstitutionTemplateImpl(parser: *Parser, tagged: bool) Error!?ast.Nod
     } }, token.span);
 }
 
-pub inline fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
-    return inRegister(parseTemplateLiteralImpl, .{ parser, tagged });
-}
-
-fn parseTemplateLiteralImpl(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
+pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const parts = try parseTemplateParts(
         parser,
@@ -175,11 +146,7 @@ fn parseTemplateLiteralImpl(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
     }, .{ .start = start, .end = parts.end });
 }
 
-inline fn parseTemplateSubstitution(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseTemplateSubstitutionImpl, .{parser});
-}
-
-fn parseTemplateSubstitutionImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseTemplateSubstitution(parser: *Parser) Error!?ast.NodeIndex {
     return expressions.parseExpression(parser, Precedence.Lowest, .{});
 }
 
@@ -192,7 +159,7 @@ pub const TemplateParts = struct {
 pub fn parseTemplateParts(
     parser: *Parser,
     tagged: bool,
-    comptime parseSubstitution: anytype,
+    comptime parseSubstitution: fn (*Parser) Error!?ast.NodeIndex,
 ) Error!?TemplateParts {
     std.debug.assert(parser.current_token.tag == .template_head);
 
@@ -321,11 +288,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     }, token.span);
 }
 
-pub inline fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseIdentifierNameImpl, .{parser});
-}
-
-fn parseIdentifierNameImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag.isIdentifierLike());
     const token = parser.current_token;
     try parser.advanceWithoutEscapeCheck() orelse return null;
@@ -340,11 +303,7 @@ pub inline fn addIdentifierName(parser: *Parser, token: Token) Error!ast.NodeInd
     );
 }
 
-pub inline fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseLabelIdentifierImpl, .{parser});
-}
-
-fn parseLabelIdentifierImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try validateIdentifier(parser, "a label", token);
     try parser.advance() orelse return null;

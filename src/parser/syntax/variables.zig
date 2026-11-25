@@ -1,7 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const Precedence = @import("../token.zig").Precedence;
 const TokenTag = @import("../token.zig").TokenTag;
@@ -25,15 +24,7 @@ pub const DeclaratorContext = enum {
     for_loop,
 };
 
-pub inline fn parseVariableDeclaration(
-    parser: *Parser,
-    options: ParseVariableDeclarationOptions,
-    start_from_param: ?u32,
-) Error!?ast.NodeIndex {
-    return inRegister(parseVariableDeclarationImpl, .{ parser, options, start_from_param });
-}
-
-fn parseVariableDeclarationImpl(
+pub fn parseVariableDeclaration(
     parser: *Parser,
     options: ParseVariableDeclarationOptions,
     start_from_param: ?u32,
@@ -62,7 +53,7 @@ fn parseVariableDeclarationImpl(
     while (true) {
         const declarator = try @call(
             .always_inline,
-            parseVariableDeclaratorImpl,
+            parseVariableDeclarator,
             .{ parser, kind, context },
         ) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
@@ -95,15 +86,7 @@ fn parseVariableDeclarationImpl(
     } }, span);
 }
 
-pub inline fn parseVariableDeclarator(
-    parser: *Parser,
-    kind: ast.VariableKind,
-    context: DeclaratorContext,
-) Error!?ast.NodeIndex {
-    return inRegister(parseVariableDeclaratorImpl, .{ parser, kind, context });
-}
-
-fn parseVariableDeclaratorImpl(
+pub fn parseVariableDeclarator(
     parser: *Parser,
     kind: ast.VariableKind,
     context: DeclaratorContext,

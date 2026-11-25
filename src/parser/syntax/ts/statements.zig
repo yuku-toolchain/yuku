@@ -3,7 +3,6 @@ const spec = @import("spec");
 const ast = @import("../../ast.zig");
 const static_semantics = @import("spec").static_semantics;
 const Parser = @import("../../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../parser.zig").Error;
 const Token = @import("../../token.zig").Token;
 const TokenTag = @import("../../token.zig").TokenTag;
@@ -93,11 +92,7 @@ fn isDeclarationName(token: Token) bool {
         !token.hasLineTerminatorBefore();
 }
 
-pub inline fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseTsDeclarationImpl, .{parser});
-}
-
-fn parseTsDeclarationImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var modifiers: Modifiers = .{};
 
@@ -157,15 +152,7 @@ fn parseTsDeclarationImpl(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // caller already consumed `import`
-pub inline fn parseImportEqualsBody(
-    parser: *Parser,
-    start: u32,
-    import_kind: ast.ImportOrExportKind,
-) Error!?ast.NodeIndex {
-    return inRegister(parseImportEqualsBodyImpl, .{ parser, start, import_kind });
-}
-
-fn parseImportEqualsBodyImpl(
+pub fn parseImportEqualsBody(
     parser: *Parser,
     start: u32,
     import_kind: ast.ImportOrExportKind,
@@ -200,11 +187,7 @@ fn parseImportEqualsBodyImpl(
     } }, .{ .start = start, .end = end });
 }
 
-inline fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseModuleReferenceImpl, .{parser});
-}
-
-fn parseModuleReferenceImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .require and parser.peekAhead().tag == .left_paren) {
         return parseExternalModuleReference(parser);
     }
@@ -212,11 +195,7 @@ fn parseModuleReferenceImpl(parser: *Parser) Error!?ast.NodeIndex {
     return types.extendQualifiedName(parser, head);
 }
 
-inline fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseExternalModuleReferenceImpl, .{parser});
-}
-
-fn parseExternalModuleReferenceImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
 
@@ -238,15 +217,7 @@ fn parseExternalModuleReferenceImpl(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-inline fn parseTypeAliasDeclaration(
-    parser: *Parser,
-    modifiers: Modifiers,
-    start: u32,
-) Error!?ast.NodeIndex {
-    return inRegister(parseTypeAliasDeclarationImpl, .{ parser, modifiers, start });
-}
-
-fn parseTypeAliasDeclarationImpl(
+fn parseTypeAliasDeclaration(
     parser: *Parser,
     modifiers: Modifiers,
     start: u32,
@@ -277,15 +248,7 @@ fn parseTypeAliasDeclarationImpl(
     );
 }
 
-pub inline fn parseInterfaceDeclaration(
-    parser: *Parser,
-    modifiers: Modifiers,
-    start: u32,
-) Error!?ast.NodeIndex {
-    return inRegister(parseInterfaceDeclarationImpl, .{ parser, modifiers, start });
-}
-
-fn parseInterfaceDeclarationImpl(
+pub fn parseInterfaceDeclaration(
     parser: *Parser,
     modifiers: Modifiers,
     start: u32,
@@ -343,11 +306,7 @@ pub fn parseHeritageClause(
     return try parser.flushToExtras(&parser.scratch_a, checkpoint);
 }
 
-inline fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseHeritageExpressionImpl, .{parser});
-}
-
-fn parseHeritageExpressionImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     var expression = if (parser.current_token.tag == .this) blk: {
         const span = parser.current_token.span;
         try parser.advance() orelse return null;
@@ -374,11 +333,7 @@ fn parseHeritageExpressionImpl(parser: *Parser) Error!?ast.NodeIndex {
     return expression;
 }
 
-inline fn parseEnumDeclaration(parser: *Parser, modifiers: Modifiers, start: u32) Error!?ast.NodeIndex {
-    return inRegister(parseEnumDeclarationImpl, .{ parser, modifiers, start });
-}
-
-fn parseEnumDeclarationImpl(parser: *Parser, modifiers: Modifiers, start: u32) Error!?ast.NodeIndex {
+fn parseEnumDeclaration(parser: *Parser, modifiers: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"enum");
     try parser.advance() orelse return null;
 
@@ -396,11 +351,7 @@ fn parseEnumDeclarationImpl(parser: *Parser, modifiers: Modifiers, start: u32) E
     );
 }
 
-inline fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseEnumBodyImpl, .{parser});
-}
-
-fn parseEnumBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(
         .left_brace,
@@ -432,11 +383,7 @@ fn parseEnumBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseEnumMemberImpl, .{parser});
-}
-
-fn parseEnumMemberImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id, const computed = try parseEnumMemberName(parser) orelse return null;
     const id_span = parser.tree.span(id);
@@ -545,11 +492,7 @@ fn reportEnumMemberNumericName(parser: *Parser, span: ast.Span) Error!void {
     });
 }
 
-inline fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseInterfaceBodyImpl, .{parser});
-}
-
-fn parseInterfaceBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .left_brace) {
         try parser.reportExpected(
             parser.current_token.span,
@@ -568,16 +511,7 @@ fn parseInterfaceBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn parseModuleDeclaration(
-    parser: *Parser,
-    modifiers: Modifiers,
-    start: u32,
-    kind: ast.TSModuleDeclarationKind,
-) Error!?ast.NodeIndex {
-    return inRegister(parseModuleDeclarationImpl, .{ parser, modifiers, start, kind });
-}
-
-fn parseModuleDeclarationImpl(
+fn parseModuleDeclaration(
     parser: *Parser,
     modifiers: Modifiers,
     start: u32,
@@ -623,11 +557,7 @@ fn parseModuleDeclarationImpl(
     );
 }
 
-inline fn parseGlobalDeclaration(parser: *Parser, modifiers: Modifiers, start: u32) Error!?ast.NodeIndex {
-    return inRegister(parseGlobalDeclarationImpl, .{ parser, modifiers, start });
-}
-
-fn parseGlobalDeclarationImpl(parser: *Parser, modifiers: Modifiers, start: u32) Error!?ast.NodeIndex {
+fn parseGlobalDeclaration(parser: *Parser, modifiers: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .global);
 
     const id = try literals.parseIdentifierName(parser) orelse return null;
@@ -639,20 +569,12 @@ fn parseGlobalDeclarationImpl(parser: *Parser, modifiers: Modifiers, start: u32)
     );
 }
 
-inline fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseModuleNameImpl, .{parser});
-}
-
-fn parseModuleNameImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
     const head = try literals.parseBindingIdentifier(parser) orelse return null;
     return types.extendQualifiedName(parser, head);
 }
 
-inline fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseModuleBlockImpl, .{parser});
-}
-
-fn parseModuleBlockImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     if (!try parser.expect(

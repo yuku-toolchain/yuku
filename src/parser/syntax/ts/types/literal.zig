@@ -1,16 +1,11 @@
 const ast = @import("../../../ast.zig");
 const Parser = @import("../../../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../../../parser.zig").Error;
 
 const literals = @import("../../literals.zig");
 const core = @import("core.zig");
 
-pub inline fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseLiteralTypeImpl, .{parser});
-}
-
-fn parseLiteralTypeImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     const literal: ast.NodeIndex = switch (token.tag) {
         .true, .false => try literals.parseBooleanLiteral(parser) orelse return null,
@@ -33,11 +28,7 @@ fn parseLiteralTypeImpl(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn parseSignedNumericLiteralType(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseSignedNumericLiteralTypeImpl, .{parser});
-}
-
-fn parseSignedNumericLiteralTypeImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseSignedNumericLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const sign_token = parser.current_token;
     if (!parser.peekAhead().tag.isNumericLiteral()) return null;
 
@@ -53,11 +44,7 @@ fn parseSignedNumericLiteralTypeImpl(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-pub inline fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseTemplateLiteralTypeImpl, .{parser});
-}
-
-fn parseTemplateLiteralTypeImpl(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const parts = try literals.parseTemplateParts(
         parser,

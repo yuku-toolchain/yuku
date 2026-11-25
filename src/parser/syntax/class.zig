@@ -1,7 +1,6 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
-const inRegister = @import("util").Register.inRegister;
 const Error = @import("../parser.zig").Error;
 const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
@@ -24,15 +23,7 @@ pub const ParseClassOptions = struct {
 };
 
 /// https://tc39.es/ecma262/#sec-class-definitions
-pub inline fn parseClass(
-    parser: *Parser,
-    options: ParseClassOptions,
-    start_from_param: ?u32,
-) Error!?ast.NodeIndex {
-    return inRegister(parseClassImpl, .{ parser, options, start_from_param });
-}
-
-fn parseClassImpl(
+pub fn parseClass(
     parser: *Parser,
     options: ParseClassOptions,
     start_from_param: ?u32,
@@ -40,16 +31,7 @@ fn parseClassImpl(
     return parseClassDecorated(parser, options, start_from_param, .empty);
 }
 
-pub inline fn parseClassDecorated(
-    parser: *Parser,
-    options: ParseClassOptions,
-    start_from_param: ?u32,
-    decorators: ast.IndexRange,
-) Error!?ast.NodeIndex {
-    return inRegister(parseClassDecoratedImpl, .{ parser, options, start_from_param, decorators });
-}
-
-fn parseClassDecoratedImpl(
+pub fn parseClassDecorated(
     parser: *Parser,
     options: ParseClassOptions,
     start_from_param: ?u32,
@@ -194,11 +176,7 @@ inline fn canStartClassName(parser: *Parser) bool {
     return true;
 }
 
-inline fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseClassBodyImpl, .{parser});
-}
-
-fn parseClassBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(
         .left_brace,
@@ -230,11 +208,7 @@ fn parseClassBodyImpl(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-inline fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
-    return inRegister(parseClassElementImpl, .{parser});
-}
-
-fn parseClassElementImpl(parser: *Parser) Error!?ast.NodeIndex {
+fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const element_start = parser.current_token.span.start;
     const decorators: ast.IndexRange = if (parser.current_token.tag == .at)
@@ -331,16 +305,7 @@ fn parseClassElementImpl(parser: *Parser) Error!?ast.NodeIndex {
     return parsePropertyDefinition(parser, element_start, decorators, key, computed, modifiers);
 }
 
-inline fn parseIndexSignatureElement(
-    parser: *Parser,
-    element_start: u32,
-    decorators: ast.IndexRange,
-    modifiers: Modifiers,
-) Error!?ast.NodeIndex {
-    return inRegister(parseIndexSignatureElementImpl, .{ parser, element_start, decorators, modifiers });
-}
-
-fn parseIndexSignatureElementImpl(
+fn parseIndexSignatureElement(
     parser: *Parser,
     element_start: u32,
     decorators: ast.IndexRange,
@@ -428,11 +393,7 @@ const Modifiers = struct {
     }
 };
 
-inline fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
-    return inRegister(parseModifiersImpl, .{ parser, modifiers });
-}
-
-fn parseModifiersImpl(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
+fn parseModifiers(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeIndex {
     while (isModifier(parser.current_token.tag, parser.tree.isTs())) {
         const token = parser.current_token;
         const next = parser.peekAhead();
@@ -456,11 +417,7 @@ fn parseModifiersImpl(parser: *Parser, modifiers: *Modifiers) Error!ast.NodeInde
 }
 
 // runs before modifiers so a decorated static block still parses
-inline fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
-    return inRegister(tryStaticBlockImpl, .{ parser, decorators });
-}
-
-fn tryStaticBlockImpl(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
+fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .static) return null;
     if (parser.peekAhead().tag != .left_brace) return null;
 
@@ -526,18 +483,7 @@ inline fn requiresSameLine(tag: TokenTag) bool {
     };
 }
 
-inline fn parseMethodDefinition(
-    parser: *Parser,
-    element_start: u32,
-    decorators: ast.IndexRange,
-    key: ast.NodeIndex,
-    computed: bool,
-    modifiers: Modifiers,
-) Error!?ast.NodeIndex {
-    return inRegister(parseMethodDefinitionImpl, .{ parser, element_start, decorators, key, computed, modifiers });
-}
-
-fn parseMethodDefinitionImpl(
+fn parseMethodDefinition(
     parser: *Parser,
     element_start: u32,
     decorators: ast.IndexRange,
@@ -634,18 +580,7 @@ fn parseMethodDefinitionImpl(
     } }, .{ .start = element_start, .end = end });
 }
 
-inline fn parsePropertyDefinition(
-    parser: *Parser,
-    element_start: u32,
-    decorators: ast.IndexRange,
-    key: ast.NodeIndex,
-    computed: bool,
-    modifiers: Modifiers,
-) Error!?ast.NodeIndex {
-    return inRegister(parsePropertyDefinitionImpl, .{ parser, element_start, decorators, key, computed, modifiers });
-}
-
-fn parsePropertyDefinitionImpl(
+fn parsePropertyDefinition(
     parser: *Parser,
     element_start: u32,
     decorators: ast.IndexRange,
