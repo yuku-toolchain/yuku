@@ -100,9 +100,7 @@ pub const LexerState = struct {
     token_flags: u8 = 0,
 };
 
-/// Identifier-continue masks for two adjacent 64-byte source blocks.
 const IdentifierBlocks = struct {
-    // An unaligned start cannot match any source block, even near the end of a u32-sized source.
     start: u32 = std.math.maxInt(u32),
     first: u64 = 0,
     second: u64 = 0,
