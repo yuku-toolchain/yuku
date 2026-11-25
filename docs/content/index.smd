@@ -50,6 +50,6 @@ On npm, it parses faster than the alternatives, on small and large files.
 
 Analyzing a whole codebase, resolving every reference and linking every import across files, Yuku is faster than typescript-eslint and the TypeScript API, and on a single large file too.
 
-![Analyzing three.js (755 files) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/three.svg "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing three.js")
+![Analyzing Svelte (416 files) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/svelte.svg "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing Svelte")
 
-![Analyzing `typescript.js` (7.8 MB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/typescript_js.svg "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing typescript.js")
+![Analyzing `lib.dom.d.ts` (2.2 MB) on npm · [benchmark](https://github.com/yuku-toolchain/ecmascript-analyzer-benchmark-js)](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-analyzer-benchmark-js/refs/heads/main/charts/lib_dom.svg "npm benchmark comparing Yuku, TypeScript, and typescript-eslint analyzing lib.dom.d.ts")
