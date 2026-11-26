@@ -75,6 +75,8 @@ pub const seeds = [_][]const u8{
 const member_units: [300][".b".len]u8 = @splat(".b".*);
 const member_chain: [300 * ".b".len]u8 = @bitCast(member_units);
 
+const long_name: [255]u8 = @splat('a');
+
 pub const regressions = [_][]const u8{
     "'\\uD800", // high-surrogate escape at eof caused an oob read in the lexer
     "switch (x) { case \xa01: break; default", // lex error spun parseSwitchCases
@@ -98,6 +100,7 @@ pub const regressions = [_][]const u8{
     "h <>(",
     "export as namespace 1;",
     "interface I extends A. {}",
+    long_name ++ "\\u00e9",
 };
 
 // a runaway allocation panics attributably instead of a silent oom kill

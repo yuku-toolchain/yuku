@@ -67,8 +67,10 @@ pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
                 buf[out] = @intCast(parsed.value);
                 out += 1;
             } else {
-                const n = std.unicode.utf8Encode(@intCast(parsed.value), buf[out..]) catch
-                    return raw;
+                var unit: [4]u8 = undefined;
+                const n = std.unicode.utf8Encode(@intCast(parsed.value), &unit) catch return raw;
+                if (out + n > buf.len) return raw;
+                @memcpy(buf[out..][0..n], unit[0..n]);
                 out += n;
             }
             i = parsed.end;
@@ -178,6 +180,14 @@ inline fn hexVal(c: u8) ?u8 {
 }
 
 const testing = std.testing;
+
+test "decodeIdentifierEscapes returns a name that outgrows the buffer as written" {
+    var buf: [256]u8 = undefined;
+    const long: [254]u8 = @splat('a');
+    try testing.expectEqualStrings(long ++ "é", decodeIdentifierEscapes(long ++ "\\u00e9", &buf));
+    const outgrows = long ++ "a\\u00e9";
+    try testing.expectEqualStrings(outgrows, decodeIdentifierEscapes(outgrows, &buf));
+}
 
 test "isOctalDigit" {
     for ('0'..'8') |c| try testing.expect(isOctalDigit(@intCast(c)));
