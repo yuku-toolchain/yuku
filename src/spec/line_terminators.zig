@@ -2,14 +2,9 @@
 
 const std = @import("std");
 
-/// Returns 3 if a U+2028 LINE SEPARATOR or U+2029 PARAGRAPH SEPARATOR starts at `pos`, else 0.
 pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
-    if (pos + 2 < source.len and source[pos] == 0xE2 and source[pos + 1] == 0x80) {
-        if (source[pos + 2] == 0xA8 or source[pos + 2] == 0xA9) {
-            return 3;
-        }
-    }
-    return 0;
+    if (pos + 2 >= source.len or source[pos] != 0xE2 or source[pos + 1] != 0x80) return 0;
+    return if (source[pos + 2] == 0xA8 or source[pos + 2] == 0xA9) 3 else 0;
 }
 
 /// https://tc39.es/ecma262/#prod-LineTerminatorSequence

@@ -18,47 +18,34 @@ pub fn isIdentifierChar(code_point: u21) bool {
 
 /// Whether `code_point` can continue a JSX identifier, which also takes `-`.
 pub fn isJSXIdentifierChar(code_point: u21) bool {
-    if (code_point == '-') return true;
-    return isIdentifierChar(code_point);
+    return code_point == '-' or isIdentifierChar(code_point);
 }
 
 /// Whether `name` is an IdentifierName, reserved words included.
 pub fn isIdentifierName(name: []const u8) bool {
-    if (name.len == 0) return false;
     var index: usize = 0;
     while (index < name.len) {
         const code_point = util.Utf.codePointAt(name, index) catch return false;
-        const valid = if (index == 0)
+        const is_valid = if (index == 0)
             isIdentifierStart(code_point.value)
         else
             isIdentifierChar(code_point.value);
-        if (!valid) return false;
-        std.debug.assert(code_point.len > 0);
+        if (!is_valid) return false;
         index += code_point.len;
     }
-    std.debug.assert(index == name.len);
-    return true;
+    return name.len > 0;
 }
 
 /// The token tag of the keyword `name`, contextual keywords included.
 pub fn keyword(name: []const u8) ?TokenTag {
     const tag = keywordTag(name);
-    std.debug.assert(tag.isIdentifierLike());
-    if (tag.isKeyword()) {
-        std.debug.assert(std.mem.eql(u8, tag.toString().?, name));
-        return tag;
-    }
-    return null;
+    return if (tag.isKeyword()) tag else null;
 }
 
 /// Whether `name` is an identifier that no code reserves. `eval` and `arguments` pass, though
 /// strict code cannot bind them, see `isEvalOrArguments`.
 pub fn isValidIdentifier(name: []const u8) bool {
-    if (keyword(name)) |tag| {
-        std.debug.assert(isIdentifierName(name));
-        if (tag.isReserved()) return false;
-        return tag != .await;
-    }
+    if (keyword(name)) |tag| return !tag.isReserved() and tag != .await;
     return isIdentifierName(name);
 }
 

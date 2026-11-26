@@ -5,8 +5,6 @@ const lineBreakLen = @import("lexical.zig").lineBreakLen;
 const Error = error{OutOfMemory};
 const none = std.math.maxInt(u32);
 
-/// Each node's comments as chains of ids in id order, where ids past `Tree.comments.len` index
-/// `added`.
 pub const Index = struct {
     owners: std.ArrayList(u64) = .empty,
     chains: std.AutoHashMapUnmanaged(ast.NodeIndex, Chain) = .empty,
@@ -122,8 +120,6 @@ pub const Iterator = struct {
     }
 };
 
-/// Attaches every comment of `list` to the node it prints with, and records
-/// where it sits.
 pub fn attach(tree: *ast.Tree, list: []ast.Comment) Error!void {
     std.debug.assert(tree.root != .null);
     if (list.len == 0) return;
@@ -256,18 +252,12 @@ const Walk = struct {
         while (self.cursor < self.list.len) {
             const span = self.list[self.cursor].span;
             if (span.start >= next_start) return;
-            if (has_prev and has_next) {
-                if (self.sameLine(span.end, next_start)) {
-                    try self.place(next, .before, true);
-                } else if (self.sameLine(prev_end, span.start)) {
-                    try self.place(prev, .after, true);
-                } else {
-                    try self.place(next, .before, false);
-                }
-            } else if (has_next) {
-                try self.place(next, .before, self.sameLine(span.end, next_start));
+            const leads = has_next and self.sameLine(span.end, next_start);
+            const trails = has_prev and !leads and self.sameLine(prev_end, span.start);
+            if (has_next and !trails) {
+                try self.place(next, .before, leads);
             } else if (has_prev) {
-                try self.place(prev, .after, self.sameLine(prev_end, span.start));
+                try self.place(prev, .after, trails);
             } else {
                 try self.place(host, .inside, false);
             }

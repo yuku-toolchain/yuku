@@ -5,10 +5,8 @@ const std = @import("std");
 const string_bytes_max = 25;
 const digits_max = 17;
 
-/// Whether `text` is exactly what ECMAScript's `Number::toString` writes for a finite number.
 pub fn isCanonicalString(text: []const u8) bool {
-    if (text.len == 0) return false;
-    if (text.len > string_bytes_max) return false;
+    if (text.len == 0 or text.len > string_bytes_max) return false;
     if (text[0] != '-' and !std.ascii.isDigit(text[0])) return false;
     const value = std.fmt.parseFloat(f64, text) catch return false;
     if (!std.math.isFinite(value)) return false;

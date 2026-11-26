@@ -10,8 +10,6 @@ pub fn codePointAt(str: []const u8, i: usize) error{InvalidUtf8}!CodePoint {
     return .{ .len = @intCast(len), .value = value };
 }
 
-/// Returns the code unit of a WTF-8 lone surrogate (`ED A0..BF 80..BF`) at `s[i]`, else
-/// null.
 pub fn loneSurrogateAt(s: []const u8, i: usize) ?u21 {
     if (s[i] != 0xED or i + 2 >= s.len) return null;
     if (s[i + 1] < 0xA0 or s[i + 1] > 0xBF or s[i + 2] & 0xC0 != 0x80) return null;
@@ -20,27 +18,16 @@ pub fn loneSurrogateAt(s: []const u8, i: usize) ?u21 {
         @as(u21, s[i + 2] & 0x3F);
 }
 
-/// Appends `cp` as WTF-8, where a surrogate takes three bytes of its own.
 pub fn appendCodePoint(
     out: *std.ArrayList(u8),
     alloc: std.mem.Allocator,
     cp: u21,
 ) error{OutOfMemory}!void {
-    std.debug.assert(cp <= 0x10FFFF);
-    if (cp >= 0xD800 and cp <= 0xDFFF) {
-        try out.appendSlice(alloc, &[3]u8{
-            0xE0 | @as(u8, @intCast(cp >> 12)),
-            0x80 | @as(u8, @intCast((cp >> 6) & 0x3F)),
-            0x80 | @as(u8, @intCast(cp & 0x3F)),
-        });
-    } else {
-        var buf: [4]u8 = undefined;
-        const n = std.unicode.utf8Encode(cp, &buf) catch unreachable;
-        try out.appendSlice(alloc, buf[0..n]);
-    }
+    var buf: [4]u8 = undefined;
+    const len = std.unicode.wtf8Encode(cp, &buf) catch unreachable;
+    try out.appendSlice(alloc, buf[0..len]);
 }
 
-/// Rewrites each pair of WTF-8 surrogates from `start` on as the one code point they encode.
 pub fn joinSurrogatePairs(out: *std.ArrayList(u8), start: usize) void {
     const items = out.items;
     var read = start;

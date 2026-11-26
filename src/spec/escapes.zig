@@ -12,47 +12,29 @@ pub fn parseOctal(input: []const u8, start: usize) Decoded {
     const digits_max: usize = if (input[start] <= '3') 3 else 2;
     var value: u21 = 0;
     var i = start;
-    while (i < input.len and i - start < digits_max and isOctalDigit(input[i])) : (i += 1) {
+    while (i < input.len and i - start < digits_max and input[i] -% '0' < 8) : (i += 1) {
         value = (value << 3) | (input[i] - '0');
     }
     return .{ .value = value, .end = i };
 }
 
 /// https://tc39.es/ecma262/#prod-HexEscapeSequence
-pub inline fn parseHex2(input: []const u8, start: usize) ?Decoded {
-    if (start + 2 > input.len) return null;
-    const hi = hexVal(input[start]) orelse return null;
-    const lo = hexVal(input[start + 1]) orelse return null;
-    return .{ .value = (@as(u21, hi) << 4) | lo, .end = start + 2 };
-}
-
-inline fn parseHex4(input: []const u8, start: usize) ?Decoded {
-    if (start + 4 > input.len) return null;
-    var value: u21 = 0;
-    for (input[start..][0..4]) |c| value = (value << 4) | (hexVal(c) orelse return null);
-    return .{ .value = value, .end = start + 4 };
-}
-
-fn parseHexVariable(input: []const u8, start: usize, digits_max: usize) ?Decoded {
+pub fn parseHex(input: []const u8, start: usize, len: usize) ?Decoded {
+    if (len == 0 or start + len > input.len) return null;
     var value: u32 = 0;
-    var i = start;
-    while (i < input.len and i - start < digits_max) : (i += 1) {
-        value = (value << 4) | (hexVal(input[i]) orelse break);
+    for (input[start..][0..len]) |c| {
+        value = (value << 4) | (std.fmt.charToDigit(c, 16) catch return null);
         if (value > 0x10FFFF) return null;
     }
-    if (i == start) return null;
-    return .{ .value = @intCast(value), .end = i };
+    return .{ .value = @intCast(value), .end = start + len };
 }
 
 /// https://tc39.es/ecma262/#prod-UnicodeEscapeSequence
 pub fn parseUnicodeEscape(input: []const u8, start: usize) ?Decoded {
-    if (start < input.len and input[start] == '{') {
-        const brace_end = std.mem.findScalarPos(u8, input, start + 1, '}') orelse return null;
-        const r = parseHexVariable(input, start + 1, brace_end - start - 1) orelse return null;
-        if (r.end != brace_end) return null;
-        return .{ .value = r.value, .end = brace_end + 1 };
-    }
-    return parseHex4(input, start);
+    if (start >= input.len or input[start] != '{') return parseHex(input, start, 4);
+    const close = std.mem.findScalarPos(u8, input, start + 1, '}') orelse return null;
+    const code_point = parseHex(input, start + 1, close - start - 1) orelse return null;
+    return .{ .value = code_point.value, .end = close + 1 };
 }
 
 /// https://tc39.es/ecma262/#sec-identifier-names-static-semantics-stringvalue
@@ -60,26 +42,16 @@ pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
     var out: usize = 0;
     var i: usize = 0;
     while (i < raw.len) {
+        var unit: [4]u8 = .{ raw[i], 0, 0, 0 };
+        var unit_len: usize = 1;
         if (raw[i] == '\\' and i + 1 < raw.len and raw[i + 1] == 'u') {
             const parsed = parseUnicodeEscape(raw, i + 2) orelse return raw;
-            if (parsed.value < 0x80) {
-                if (out >= buf.len) return raw;
-                buf[out] = @intCast(parsed.value);
-                out += 1;
-            } else {
-                var unit: [4]u8 = undefined;
-                const n = std.unicode.utf8Encode(@intCast(parsed.value), &unit) catch return raw;
-                if (out + n > buf.len) return raw;
-                @memcpy(buf[out..][0..n], unit[0..n]);
-                out += n;
-            }
+            unit_len = std.unicode.utf8Encode(parsed.value, &unit) catch return raw;
             i = parsed.end;
-        } else {
-            if (out >= buf.len) return raw;
-            buf[out] = raw[i];
-            out += 1;
-            i += 1;
-        }
+        } else i += 1;
+        if (out + unit_len > buf.len) return raw;
+        @memcpy(buf[out..][0..unit_len], unit[0..unit_len]);
+        out += unit_len;
     }
     return buf[0..out];
 }
@@ -96,63 +68,39 @@ pub fn decodeStringEscapes(
         util.Utf.joinSurrogatePairs(out, start);
     };
     var i: usize = 0;
-    while (i < raw.len) {
-        const run_start = i;
-
-        while (i < raw.len and raw[i] != '\\' and raw[i] != '\r') : (i += 1) {}
-
-        if (i > run_start) try out.appendSlice(gpa, raw[run_start..i]);
-        if (i >= raw.len) break;
-
-        if (raw[i] == '\r') {
+    while (std.mem.findAnyPos(u8, raw, i, "\\\r")) |special| {
+        try out.appendSlice(gpa, raw[i..special]);
+        if (raw[special] == '\r') {
             try out.append(gpa, '\n');
-            i += line_terminators.lineBreakLen(raw, i);
+            i = special + line_terminators.lineBreakLen(raw, special);
             continue;
         }
-        i += 1;
-        if (i >= raw.len) break;
-        switch (raw[i]) {
-            'n', 'r', 't', 'b', 'f', 'v' => |c| {
-                try out.append(gpa, switch (c) {
-                    'n' => '\n',
-                    'r' => '\r',
-                    't' => '\t',
-                    'b' => 0x08,
-                    'f' => 0x0C,
-                    'v' => 0x0B,
-                    else => unreachable,
-                });
-                i += 1;
-            },
-            '0'...'7' => {
-                const r = parseOctal(raw, i);
-                try util.Utf.appendCodePoint(out, gpa, r.value);
-                i = r.end;
-            },
-            'x', 'u' => |c| {
-                const parsed = if (c == 'x')
-                    parseHex2(raw, i + 1)
-                else
-                    parseUnicodeEscape(raw, i + 1);
-                if (parsed) |r| {
-                    try util.Utf.appendCodePoint(out, gpa, r.value);
-                    i = r.end;
-                } else {
-                    try out.append(gpa, c);
-                    i += 1;
-                }
-            },
-            else => {
-                const break_len = line_terminators.lineBreakLen(raw, i);
-                if (break_len > 0) {
-                    i += break_len;
-                } else {
-                    try out.append(gpa, raw[i]);
-                    i += 1;
-                }
-            },
+        i = special + 1;
+        if (i == raw.len) return;
+        const escape: ?Decoded = switch (raw[i]) {
+            '0'...'7' => parseOctal(raw, i),
+            'x' => parseHex(raw, i + 1, 2),
+            'u' => parseUnicodeEscape(raw, i + 1),
+            else => null,
+        };
+        if (escape) |code_point| {
+            try util.Utf.appendCodePoint(out, gpa, code_point.value);
+            i = code_point.end;
+            continue;
         }
+        const break_len = line_terminators.lineBreakLen(raw, i);
+        if (break_len == 0) try out.append(gpa, switch (raw[i]) {
+            'n' => '\n',
+            'r' => '\r',
+            't' => '\t',
+            'b' => 0x08,
+            'f' => 0x0C,
+            'v' => 0x0B,
+            else => |c| c,
+        });
+        i += @max(1, break_len);
     }
+    try out.appendSlice(gpa, raw[i..]);
 }
 
 /// https://tc39.es/ecma262/#sec-string-literals-early-errors
@@ -171,30 +119,7 @@ pub fn hasOctalEscape(str: []const u8) bool {
     return false;
 }
 
-fn isOctalDigit(digit: u8) bool {
-    return digit >= '0' and digit <= '7';
-}
-
-inline fn hexVal(c: u8) ?u8 {
-    return std.fmt.charToDigit(c, 16) catch null;
-}
-
 const testing = std.testing;
-
-test "decodeIdentifierEscapes returns a name that outgrows the buffer as written" {
-    var buf: [256]u8 = undefined;
-    const long: [254]u8 = @splat('a');
-    try testing.expectEqualStrings(long ++ "é", decodeIdentifierEscapes(long ++ "\\u00e9", &buf));
-    const outgrows = long ++ "a\\u00e9";
-    try testing.expectEqualStrings(outgrows, decodeIdentifierEscapes(outgrows, &buf));
-}
-
-test "isOctalDigit" {
-    for ('0'..'8') |c| try testing.expect(isOctalDigit(@intCast(c)));
-    try testing.expect(!isOctalDigit('8'));
-    try testing.expect(!isOctalDigit('9'));
-    try testing.expect(!isOctalDigit('a'));
-}
 
 fn expectDecoded(value: u21, end: usize, actual: ?Decoded) !void {
     const decoded = actual orelse return error.TestExpectedDecoded;
@@ -207,22 +132,22 @@ test "parseOctal takes three digits after 0 to 3, two after 4 to 7" {
     try expectDecoded(0o377, 3, parseOctal("377", 0));
     try expectDecoded(0o77, 2, parseOctal("77", 0));
     try expectDecoded(0o12, 2, parseOctal("129", 0));
+    try expectDecoded(0o1, 1, parseOctal("18", 0));
+    try expectDecoded(0o7, 1, parseOctal("7/", 0));
 }
 
-test "parseHex2 and parseHex4 read a fixed digit count" {
-    try expectDecoded(0xFF, 2, parseHex2("FF", 0));
-    try expectDecoded(0xAB, 2, parseHex2("ab", 0));
-    try testing.expect(parseHex2("F", 0) == null);
-    try testing.expect(parseHex2("GG", 0) == null);
-    try expectDecoded(0x00E9, 4, parseHex4("00E9rest", 0));
-    try testing.expect(parseHex4("00E", 0) == null);
-}
-
-test "parseHexVariable stops at the digit limit and past U+10FFFF" {
-    try expectDecoded(0x1F600, 5, parseHexVariable("1F600", 0, 6));
-    try expectDecoded(0xAB, 2, parseHexVariable("ABCDEF", 0, 2));
-    try testing.expect(parseHexVariable("FFFFFF", 0, 6) == null);
-    try testing.expect(parseHexVariable("xyz", 0, 6) == null);
+test "parseHex reads an exact digit count, up to U+10FFFF" {
+    try expectDecoded(0xFF, 2, parseHex("FF", 0, 2));
+    try expectDecoded(0xAB, 2, parseHex("ab", 0, 2));
+    try expectDecoded(0xAB, 2, parseHex("ABCDEF", 0, 2));
+    try expectDecoded(0x00E9, 4, parseHex("00E9rest", 0, 4));
+    try expectDecoded(0x1F600, 5, parseHex("1F600", 0, 5));
+    try expectDecoded(0x09AFAF, 6, parseHex("09afAF", 0, 6));
+    const invalid = [_]struct { []const u8, usize }{
+        .{ "F", 2 },   .{ "GG", 2 },     .{ "gg", 2 },  .{ "  ", 2 },
+        .{ "00E", 4 }, .{ "FFFFFF", 6 }, .{ "xyz", 3 }, .{ "FF", 0 },
+    };
+    for (invalid) |case| try testing.expect(parseHex(case[0], 0, case[1]) == null);
 }
 
 test "parseUnicodeEscape reads the braced and four digit forms" {
@@ -230,19 +155,19 @@ test "parseUnicodeEscape reads the braced and four digit forms" {
     try expectDecoded(0x1F600, 7, parseUnicodeEscape("{1F600}!", 0));
     try expectDecoded(0xA, 3, parseUnicodeEscape("{A}z", 0));
     try testing.expect(parseUnicodeEscape("{1F600", 0) == null);
+    try testing.expect(parseUnicodeEscape("{}", 0) == null);
+    try testing.expect(parseUnicodeEscape("{110000}", 0) == null);
     try testing.expect(parseUnicodeEscape("GHIJ", 0) == null);
 }
 
-test "hexVal" {
-    try testing.expectEqual(@as(u8, 0), hexVal('0').?);
-    try testing.expectEqual(@as(u8, 9), hexVal('9').?);
-    try testing.expectEqual(@as(u8, 10), hexVal('a').?);
-    try testing.expectEqual(@as(u8, 15), hexVal('f').?);
-    try testing.expectEqual(@as(u8, 10), hexVal('A').?);
-    try testing.expectEqual(@as(u8, 15), hexVal('F').?);
-    try testing.expect(hexVal('g') == null);
-    try testing.expect(hexVal('G') == null);
-    try testing.expect(hexVal(' ') == null);
+test "decodeIdentifierEscapes decodes into the buffer, or returns the name as written" {
+    var buf: [256]u8 = undefined;
+    try testing.expectEqualStrings("café", decodeIdentifierEscapes("c\\u0061f\\u{e9}", &buf));
+    try testing.expectEqualStrings("\\u00zz", decodeIdentifierEscapes("\\u00zz", &buf));
+    const long: [254]u8 = @splat('a');
+    try testing.expectEqualStrings(long ++ "é", decodeIdentifierEscapes(long ++ "\\u00e9", &buf));
+    const outgrows = long ++ "a\\u00e9";
+    try testing.expectEqualStrings(outgrows, decodeIdentifierEscapes(outgrows, &buf));
 }
 
 fn expectDecode(input: []const u8, expected: []const u8) !void {
